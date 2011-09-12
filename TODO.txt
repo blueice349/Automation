@@ -1,0 +1,8 @@
+TODO.txt
+ConnectCRM
+ 
+Created by Joseandro on 2011-09-09.
+Copyright 2011 Joseandro. All rights reserved.
+
+TODO list: 
+* Make a better documentation.
