@@ -84,7 +84,7 @@ function showIndicator(show)
 function hideIndicator()
 {
     actInd.hide();
-    indWin.close({opacity:0,duration:0});
+    indWin.close();
 };
 
 

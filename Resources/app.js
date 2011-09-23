@@ -62,7 +62,7 @@ var tf1 = Titanium.UI.createTextField({
 	top: '31.3%',
 	height: '9%',
 	color:'#000000',
-	//value: 'test user',
+	value: 'test user',
 	keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
 	returnKeyType:Titanium.UI.RETURNKEY_DEFAULT,
 	softKeyboardOnFocus : Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS,
@@ -83,7 +83,7 @@ var tf2 = Titanium.UI.createTextField({
 	height: '9%',
 	top: '48.1%',	
     passwordMask:true,
-	//value: 'testing',
+	value: 'testing',
     keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
 	returnKeyType:Titanium.UI.RETURNKEY_DONE,
 	softKeyboardOnFocus : Ti.UI.Android.SOFT_KEYBOARD_SHOW_ON_FOCUS,
@@ -186,7 +186,7 @@ b1.addEventListener('click', function(){
 		var xhr = Ti.Network.createHTTPClient();
 		
 		//Define connection
-		xhr.open('POST', picker.getSelectedRow(0).value+'/js-login/system/connect.xml');
+		xhr.open('POST', picker.getSelectedRow(0).value+'/js-login/system/connect.json');
 
 		//Parameters to send ()
 		var parms = {
@@ -198,10 +198,10 @@ b1.addEventListener('click', function(){
 		// When infos are retrieved:
 		xhr.onload = function(e) {
 			//XML document object
-			var doc = this.responseXML.documentElement; 	
+			var doc = JSON.parse(this.responseText); 	
 
    			//Retrieving Session ID
-			var value = doc.childNodes.item(0).text;
+			var value = doc.sessid;
 	        
 	        //Debugg code 
 	        Ti.API.info('Session ID: '+value);
@@ -211,10 +211,10 @@ b1.addEventListener('click', function(){
 			//Timeout until error:
 			log.setTimeout(10000);
 			
-			log.open('POST', picker.getSelectedRow(0).value+'/js-login/user/login.xml');
+			log.open('POST', picker.getSelectedRow(0).value+'/js-login/user/login.json');
 			
 			//Header parameters
-			log.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+			log.setRequestHeader("Content-Type", "application/json");
 			
 			//Information to send
 			var log_parms = {
@@ -222,6 +222,7 @@ b1.addEventListener('click', function(){
 					username: tf1.value,
 					password: tf2.value
     		}
+    		//Ti.API.info("Parametros: Sessid = "+log_parms["sessid"]+" Username = "+log_parms["username"]+" Pass = "+log_parms["password"]);
 
 			//When sucefully connected
 			log.onload = function(e) {
@@ -256,7 +257,9 @@ b1.addEventListener('click', function(){
 					label_error.text = "Check your username or password and try again ";
     		}
 			//Sending information and try to log in
-			log.send(log_parms);				
+			//log.send(log_parms);
+			log.send('{"sessid":"'+log_parms["sessid"]+'","username":"'+log_parms["username"]+'","password":"'+log_parms["password"] +'"}');
+			Ti.API.info('{"sessid":"'+log_parms["sessid"]+'","username":"'+log_parms["username"]+'","password":"'+log_parms["password"] +'"}');				
 		}
 		//Connection refused, services are down
 		xhr.onerror = function(e) {
@@ -265,7 +268,7 @@ b1.addEventListener('click', function(){
 			label_error.text = "Services are not available at the moment, wait until we fix the problem";
 		}
 		//Sending information and try to retrieve session ID
-		xhr.send(parms);
+		xhr.send('{"username":"'+parms["username"]+'","password":"'+parms["password"] +'"}');
 		
 	} 
 });
@@ -283,6 +286,7 @@ win1.addEventListener('android:back', function() {
 // he is gonna see the standart "Inform your credentials" message
 // instead of something else that stands inside logStatus
 Ti.App.Properties.removeProperty('logStatus');
+
 
 //Make everthing happen:
 win1.open();

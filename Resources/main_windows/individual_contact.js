@@ -50,6 +50,7 @@ win4.addEventListener('android:back', function() {
 	win4.close();
 });
 
+/*
 //Checks internet connection's status
 if ( !(Titanium.Network.online)) {
 		// Goes to the first screen in case of no connection is found
@@ -600,3 +601,4 @@ else {
 	//Sending information
 	win4.log.send();				
 }
+*/
