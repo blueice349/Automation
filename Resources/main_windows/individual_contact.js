@@ -49,7 +49,8 @@ win4.addEventListener('android:back', function() {
 	goToWindow.open();
 	win4.close();
 });
-
+		showToolbar( win4.name, win4);
+		showBottom(win4, goToWindow);
 /*
 //Checks internet connection's status
 if ( !(Titanium.Network.online)) {

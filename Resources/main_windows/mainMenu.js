@@ -28,7 +28,7 @@ var label_status = Titanium.UI.createLabel({
 	textAlign:'center'
 });
 
-var db = Ti.Database.install('../database/db.sqlite', 'omadiDb200');
+var db = Ti.Database.install('../database/db.sqlite', 'omadiDb201');
 var dicElements = [];
 var actualItem = 0;
 var dicSize;

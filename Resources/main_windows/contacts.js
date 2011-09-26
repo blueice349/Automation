@@ -51,6 +51,7 @@ win3.addEventListener('android:back', function() {
 
 // showToolbar(name, actualWindow)
 showToolbar(win3.name, win3);
+
 var db = Ti.Database.install('../database/db.sqlite', 'omadiDb120');
 var resultsNames  = db.execute('SELECT * FROM field_person LEFT OUTER JOIN contact ON field_person.nid = contact.nid');
 
