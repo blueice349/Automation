@@ -5,6 +5,7 @@ Created by Joseandro on 2011-09-09.
 Copyright 2011 Joseandro. All rights reserved.
 
 TODO list: 
+<<<<<<< HEAD
 
 
 Delta is not present in API, I add manually one each iterarion.
@@ -21,3 +22,6 @@ If a term is deleted the value 0 is attributed to field_phone.type_id (Managed b
 Implement:
 
 When app is executed for the first time create the taxonomy
+=======
+* Make a better documentation.
+>>>>>>> 09acbd897b08ce56f4911e6880406968c35763de
