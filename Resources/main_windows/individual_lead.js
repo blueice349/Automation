@@ -32,7 +32,7 @@ var logWindow = Titanium.UI.createWindow({
 //Definition of the window before (opens when the user clicks on the back button)
 var goToWindow = Titanium.UI.createWindow({  
 	fullscreen: true,
-	url:'contacts.js',
+	url:'leads.js',
 });
 
 //When back button on the phone is pressed, it opens mainMenu.js and close the current window
@@ -52,7 +52,7 @@ win4.addEventListener('android:back', function() {
 	
 var db = Ti.Database.install('../database/db.sqlite', 'omadiDb367');
 
-var results  = db.execute('SELECT phone, cell_phone, fax, email FROM contact WHERE  nid = '+win4.nid);
+var results  = db.execute('SELECT phone, cell_phone, fax, email FROM lead WHERE  nid = '+win4.nid);
 
 // showToolbar(name, actualWindow)
 showToolbar( win4.name, win4);
@@ -107,6 +107,9 @@ var screenWidth = Titanium.Platform.displayCaps.platformWidth;
 var screenHeight = Titanium.Platform.displayCaps.platformHeight;
 
 var mailResult = results.fieldByName("email");
+Ti.API.info("Phone: "+results.fieldByName("phone"));
+Ti.API.info("Cell Phone: "+results.fieldByName("cell_phone"));
+Ti.API.info("Fax : "+results.fieldByName("fax"));
 
 if  (  ( (results.fieldByName("phone") != null) && (results.fieldByName("cell_phone") == null) && (results.fieldByName("fax") == null) )  
 	|| ( (results.fieldByName("phone") == null) && (results.fieldByName("cell_phone") != null) && (results.fieldByName("fax") == null) )
@@ -278,7 +281,7 @@ else if  (  ( (results.fieldByName("phone") != null) 	  && (results.fieldByName(
 	number_second.addEventListener('click', function(){
 		Titanium.Platform.openURL('tel:'+auxNum_second);
 	});
-	resultViewfor.add(number_second);
+	resultView.add(number_second);
 	
 
 	if (mailResult != null){
@@ -301,7 +304,7 @@ else if  (  ( (results.fieldByName("phone") != null) 	  && (results.fieldByName(
 }
 else if ( (results.fieldByName("phone") == null) && (results.fieldByName("cell_phone") == null) && (results.fieldByName("fax") == null) ) {
 	var typeLabel_first = Ti.UI.createLabel({
-		text: "No numbers for this contact",
+		text: "No numbers for this lead",
 		height: "10%",
 		width:  "100%",
 		textAlign: 'center',
@@ -311,6 +314,7 @@ else if ( (results.fieldByName("phone") == null) && (results.fieldByName("cell_p
 	});
 	resultView.add(typeLabel_first);
 }
+
 else {
 	Ti.API.info("THREE NUMBERS");
 	
@@ -337,6 +341,7 @@ else {
 		left: "50%"
 	});
 
+	Ti.API.info("Number from DB: "+ numberString_first);
 	//When number is clicked, make the call
 	var auxNum_first = numberString_first.replace(/\D/g, '' );
 	Ti.API.info("Raw number: "+ auxNum_first);

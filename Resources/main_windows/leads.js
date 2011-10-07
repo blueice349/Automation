@@ -1,7 +1,7 @@
 /**
- * Name: contacts.js
+ * Name: leads.js
  * Function:
- * 		Show contact list retrieved from the server
+ * 		Show lead list retrieved from the server
  * Provides:
  * 		Internet connection checking.
  * 		the window called by mainMenu.js(contact button) and individual_contact.js(Back button)
@@ -53,7 +53,7 @@ win3.addEventListener('android:back', function() {
 showToolbar(win3.name, win3);
 
 var db = Ti.Database.install('../database/db.sqlite', 'omadiDb367');
-var resultsNames  = db.execute('SELECT nid, first_name, last_name FROM contact');
+var resultsNames  = db.execute('SELECT nid, first_name, last_name FROM lead');
 
 var data = [];
 var i = 0;
@@ -87,11 +87,11 @@ if(data.length < 1) {
 		height : 'auto',
 		width : 'auto',
 		top : '50%',
-		text : 'Empty contact list!'
+		text : 'Empty lead list!'
 	});
 
 	//Debug
-	Ti.API.info("XXXXXXX ---- No contacts ! ----- XXXXXX");
+	Ti.API.info("XXXXXXX ---- No leads ! ----- XXXXXX");
 
 	win3.add(empty);
 	//showBottom(actualWindow, goToWindow )
@@ -136,7 +136,7 @@ else {
 		//Next window to be opened
 		var win4 = Titanium.UI.createWindow({
 			fullscreen : true,
-			url : 'individual_contact.js'
+			url : 'individual_lead.js'
 		});
 
 		search.blur();

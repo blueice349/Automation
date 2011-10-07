@@ -32,7 +32,7 @@ var logWindow = Titanium.UI.createWindow({
 //Definition of the window before (opens when the user clicks on the back button)
 var goToWindow = Titanium.UI.createWindow({  
 	fullscreen: true,
-	url:'contacts.js',
+	url:'accounts.js',
 });
 
 //When back button on the phone is pressed, it opens mainMenu.js and close the current window
@@ -52,7 +52,7 @@ win4.addEventListener('android:back', function() {
 	
 var db = Ti.Database.install('../database/db.sqlite', 'omadiDb367');
 
-var results  = db.execute('SELECT phone, cell_phone, fax, email FROM contact WHERE  nid = '+win4.nid);
+var results  = db.execute('SELECT phone, fax, website FROM account WHERE  nid = '+win4.nid);
 
 // showToolbar(name, actualWindow)
 showToolbar( win4.name, win4);
@@ -106,11 +106,12 @@ header.add(labelNameContent);
 var screenWidth = Titanium.Platform.displayCaps.platformWidth;
 var screenHeight = Titanium.Platform.displayCaps.platformHeight;
 
-var mailResult = results.fieldByName("email");
+var siteResult = results.fieldByName("website");
+Ti.API.info("Phone: "+results.fieldByName("phone"));
+Ti.API.info("Fax : "+results.fieldByName("fax"));
 
-if  (  ( (results.fieldByName("phone") != null) && (results.fieldByName("cell_phone") == null) && (results.fieldByName("fax") == null) )  
-	|| ( (results.fieldByName("phone") == null) && (results.fieldByName("cell_phone") != null) && (results.fieldByName("fax") == null) )
-	|| ( (results.fieldByName("phone") == null) && (results.fieldByName("cell_phone") == null) && (results.fieldByName("fax") != null) ) ){
+if  (  ( (results.fieldByName("phone") != null) && (results.fieldByName("fax") == null) )  
+	|| ( (results.fieldByName("phone") == null) && (results.fieldByName("fax") != null) ) ){
 	
 	Ti.API.info("ONE NUMBER");
 	
@@ -121,15 +122,11 @@ if  (  ( (results.fieldByName("phone") != null) && (results.fieldByName("cell_ph
 		type = "Phone: ";
 		dbType = "phone";
 	}
-
-	else if (results.fieldByName("cell_phone") != null){
-		type = "Cell Phone: ";
-		dbType = "cell_phone";
-	}
 	else{
 		type = "Fax: ";
 		dbType = "fax";
 	}
+
 	var typeLabel = Ti.UI.createLabel({
 		text: type,
 		height: "10%",
@@ -162,9 +159,9 @@ if  (  ( (results.fieldByName("phone") != null) && (results.fieldByName("cell_ph
 	});
 	resultView.add(number);
 
-	if (mailResult != null){
-		var email = Ti.UI.createLabel({
-			text: results.fieldByName("email"),
+	if (siteResult != null){
+		var website = Ti.UI.createLabel({
+			text: results.fieldByName("website"),
 			height: "10%",
 			width:  "80%",
 			textAlign: 'center',
@@ -172,17 +169,17 @@ if  (  ( (results.fieldByName("phone") != null) && (results.fieldByName("cell_ph
 			left: "10%"
 		});
 	
-		Ti.API.info("Email : "+ results.fieldByName("email"));
-		email.addEventListener('click', function(){
-			Titanium.Platform.openURL('mailto:'+mailResult);
+		Ti.API.info("Website : "+ results.fieldByName("website"));
+		
+		
+		website.addEventListener('click', function(){
+			Titanium.Platform.openURL(siteResult);
 		});
-		resultView.add(email);
+		resultView.add(website);
 	}
 	results.close();
 }
-else if  (  ( (results.fieldByName("phone") != null) 	  && (results.fieldByName("cell_phone") != null) && (results.fieldByName("fax") == null) 		)  
-         || ( (results.fieldByName("cell_phone") != null) && (results.fieldByName("fax") != null)   	 && (results.fieldByName("phone") == null)      )
-         || ( (results.fieldByName("phone") != null) 	  && (results.fieldByName("fax") != null)        && (results.fieldByName("cell_phone") == null) ) ){
+else if ( (results.fieldByName("phone") != null) && (results.fieldByName("fax") != null) ){
 
 	Ti.API.info("TWO NUMBERS");
 	Ti.API.info("Fax: "+results.fieldByName("fax"));
@@ -192,27 +189,11 @@ else if  (  ( (results.fieldByName("phone") != null) 	  && (results.fieldByName(
 	var type_second;
 	var dbType_second;
 	
-	if ( (results.fieldByName("phone") != null) && (results.fieldByName("cell_phone") != null) ){
-		type_first = "Phone: ";
-		dbType_first = "phone";
+	type_first = "Phone: ";
+	dbType_first = "phone";
 
-		type_second = "Cell Phone: ";
-		dbType_second = "cell_phone";
-	}
-	else if ( (results.fieldByName("cell_phone") != null) && (results.fieldByName("fax") != null)   ){
-		type_first = "Cell Phone: ";
-		dbType_first = "cell_phone";
-
-		type_second = "Fax: ";
-		dbType_second = "fax";	
-	}
-	else{
-		type_first = "Phone: ";
-		dbType_first = "phone";
-
-		type_second = "Fax: ";
-		dbType_second = "fax";	
-	}
+	type_second = "Fax: ";
+	dbType_second = "fax";	
 
 
 	var typeLabel_first = Ti.UI.createLabel({
@@ -278,12 +259,12 @@ else if  (  ( (results.fieldByName("phone") != null) 	  && (results.fieldByName(
 	number_second.addEventListener('click', function(){
 		Titanium.Platform.openURL('tel:'+auxNum_second);
 	});
-	resultViewfor.add(number_second);
+	resultView.add(number_second);
 	
 
-	if (mailResult != null){
-		var email = Ti.UI.createLabel({
-			text: results.fieldByName("email"),
+	if (siteResult != null){
+		var website = Ti.UI.createLabel({
+			text: results.fieldByName("website"),
 			height: "10%",
 			width:  "80%",
 			textAlign: 'center',
@@ -291,17 +272,17 @@ else if  (  ( (results.fieldByName("phone") != null) 	  && (results.fieldByName(
 			left: "10%"
 		});
 	
-		Ti.API.info("Email : "+ results.fieldByName("email"));
-		email.addEventListener('click', function(){
-			Titanium.Platform.openURL('mailto:'+mailResult);
+		Ti.API.info("Website : "+ results.fieldByName("website"));
+		website.addEventListener('click', function(){
+			Titanium.Platform.openURL(siteResult);
 		});
-		resultView.add(email);
+		resultView.add(website);
 	}
 	results.close();
 }
-else if ( (results.fieldByName("phone") == null) && (results.fieldByName("cell_phone") == null) && (results.fieldByName("fax") == null) ) {
+else  {
 	var typeLabel_first = Ti.UI.createLabel({
-		text: "No numbers for this contact",
+		text: "No numbers for this account",
 		height: "10%",
 		width:  "100%",
 		textAlign: 'center',
@@ -310,126 +291,6 @@ else if ( (results.fieldByName("phone") == null) && (results.fieldByName("cell_p
 		left: 0
 	});
 	resultView.add(typeLabel_first);
-}
-else {
-	Ti.API.info("THREE NUMBERS");
-	
-	var typeLabel_first = Ti.UI.createLabel({
-		text: "Phone: ",
-		height: "10%",
-		width:  "30%",
-		textAlign: 'left',
-		top: "25%",
-		touchEnabled: false,
-		left: "10%"
-	});
-	resultView.add(typeLabel_first);
-	
-	var numberString_first  = results.fieldByName("phone");
-	
-	//Print number in the format (XXX) XXX-XXXX 
-	var number_first = Ti.UI.createLabel({
-		text: numberString_first,
-		height: "10%",
-		width:  "40%",
-		textAlign: 'right',
-		top: "25%",
-		left: "50%"
-	});
-
-	//When number is clicked, make the call
-	var auxNum_first = numberString_first.replace(/\D/g, '' );
-	Ti.API.info("Raw number: "+ auxNum_first);
-	
-	number_first.addEventListener('click', function(){
-		Titanium.Platform.openURL('tel:'+auxNum_first);
-	});
-	resultView.add(number_first);
-	
-	//Second number:
-	var typeLabel_second = Ti.UI.createLabel({
-		text: "Cell Phone: ",
-		height: "10%",
-		width:  "30%",
-		textAlign: 'left',
-		top: "50%",
-		touchEnabled: false,
-		left: "10%"
-	});
-	resultView.add(typeLabel_second);
-	
-	var numberString_second  = results.fieldByName("cell_phone");
-	
-	//Print number in the format (XXX) XXX-XXXX 
-	var number_second = Ti.UI.createLabel({
-		text: numberString_second,
-		height: "10%",
-		width:  "40%",
-		textAlign: 'right',
-		top: "50%",
-		left: "50%"
-	});
-
-	//When number is clicked, make the call
-	var auxNum_second = numberString_second.replace(/\D/g, '' );
-	Ti.API.info("Raw number: "+ auxNum_second);
-	
-	number_second.addEventListener('click', function(){
-		Titanium.Platform.openURL('tel:'+auxNum_second);
-	});
-	resultView.add(number_second);
-	
-	//Third number:
-	var typeLabel_third = Ti.UI.createLabel({
-		text: "Fax: ",
-		height: "10%",
-		width:  "30%",
-		textAlign: 'left',
-		top: "75%",
-		touchEnabled: false,
-		left: "10%"
-	});
-	resultView.add(typeLabel_third);
-	
-	var numberString_third  = results.fieldByName("fax");
-	
-	//Print number in the format (XXX) XXX-XXXX 
-	var number_third = Ti.UI.createLabel({
-		text: numberString_third,
-		height: "10%",
-		width:  "40%",
-		textAlign: 'right',
-		top: "75%",
-		left: "50%"
-	});
-
-	//When number is clicked, make the call
-	var auxNum_third = numberString_third.replace(/\D/g, '' );
-	Ti.API.info("Raw number: "+ auxNum_third);
-	
-	number_third.addEventListener('click', function(){
-		Titanium.Platform.openURL('tel:'+auxNum_third);
-	});
-	resultView.add(number_third);
-	
-	if (mailResult != null){
-		var email = Ti.UI.createLabel({
-			text: results.fieldByName("email"),
-			height: "10%",
-			width:  "80%",
-			textAlign: 'center',
-			top: "92%",
-			left: "10%"
-		});
-	
-		Ti.API.info("Email : "+ results.fieldByName("email"));
-		email.addEventListener('click', function(){
-			Titanium.Platform.openURL('mailto:'+mailResult);
-		});
-		resultView.add(email);
-	}
-	results.close();
-
 }
 
 //showBottom(actualWindow, goToWindow )
