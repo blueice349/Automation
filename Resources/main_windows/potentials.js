@@ -53,7 +53,7 @@ win3.addEventListener('android:back', function() {
 showToolbar(win3.name, win3);
 
 var db = Ti.Database.install('../database/db.sqlite', 'omadiDb400');
-var resultsNames  = db.execute('SELECT nid, first_name, last_name FROM contact');
+var resultsNames  = db.execute('SELECT nid, name FROM potential');
 
 var data = [];
 var i = 0;
@@ -61,7 +61,7 @@ var i = 0;
 i = 0;
 while (resultsNames.isValidRow())
 {
-	var fullName = resultsNames.fieldByName('first_name') +" "+ resultsNames.fieldByName('last_name');
+	var fullName = resultsNames.fieldByName('name');
 	var row = Ti.UI.createTableViewRow({
 		height : 'auto',
 		hasChild : false,
@@ -87,11 +87,11 @@ if(data.length < 1) {
 		height : 'auto',
 		width : 'auto',
 		top : '50%',
-		text : 'Empty contact list!'
+		text : 'Empty potential list!'
 	});
 
 	//Debug
-	Ti.API.info("XXXXXXX ---- No contacts ! ----- XXXXXX");
+	Ti.API.info("XXXXXXX ---- No potentials ! ----- XXXXXX");
 
 	win3.add(empty);
 	//showBottom(actualWindow, goToWindow )

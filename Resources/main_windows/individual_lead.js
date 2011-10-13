@@ -50,9 +50,9 @@ win4.addEventListener('android:back', function() {
 	win4.close();
 });
 	
-var db = Ti.Database.install('../database/db.sqlite', 'omadiDb367');
+var db = Ti.Database.install('../database/db.sqlite', 'omadiDb400');
 
-var results  = db.execute('SELECT phone, cell_phone, fax, email FROM lead WHERE  nid = '+win4.nid);
+var results  = db.execute('SELECT * FROM lead WHERE  nid = '+win4.nid);
 
 // showToolbar(name, actualWindow)
 showToolbar( win4.name, win4);
@@ -110,7 +110,7 @@ var mailResult = results.fieldByName("email");
 Ti.API.info("Phone: "+results.fieldByName("phone"));
 Ti.API.info("Cell Phone: "+results.fieldByName("cell_phone"));
 Ti.API.info("Fax : "+results.fieldByName("fax"));
-
+/*
 if  (  ( (results.fieldByName("phone") != null) && (results.fieldByName("cell_phone") == null) && (results.fieldByName("fax") == null) )  
 	|| ( (results.fieldByName("phone") == null) && (results.fieldByName("cell_phone") != null) && (results.fieldByName("fax") == null) )
 	|| ( (results.fieldByName("phone") == null) && (results.fieldByName("cell_phone") == null) && (results.fieldByName("fax") != null) ) ){
@@ -165,23 +165,6 @@ if  (  ( (results.fieldByName("phone") != null) && (results.fieldByName("cell_ph
 	});
 	resultView.add(number);
 
-	if (mailResult != null){
-		var email = Ti.UI.createLabel({
-			text: results.fieldByName("email"),
-			height: "10%",
-			width:  "80%",
-			textAlign: 'center',
-			top: "92%",
-			left: "10%"
-		});
-	
-		Ti.API.info("Email : "+ results.fieldByName("email"));
-		email.addEventListener('click', function(){
-			Titanium.Platform.openURL('mailto:'+mailResult);
-		});
-		resultView.add(email);
-	}
-	results.close();
 }
 else if  (  ( (results.fieldByName("phone") != null) 	  && (results.fieldByName("cell_phone") != null) && (results.fieldByName("fax") == null) 		)  
          || ( (results.fieldByName("cell_phone") != null) && (results.fieldByName("fax") != null)   	 && (results.fieldByName("phone") == null)      )
@@ -283,24 +266,6 @@ else if  (  ( (results.fieldByName("phone") != null) 	  && (results.fieldByName(
 	});
 	resultView.add(number_second);
 	
-
-	if (mailResult != null){
-		var email = Ti.UI.createLabel({
-			text: results.fieldByName("email"),
-			height: "10%",
-			width:  "80%",
-			textAlign: 'center',
-			top: "92%",
-			left: "10%"
-		});
-	
-		Ti.API.info("Email : "+ results.fieldByName("email"));
-		email.addEventListener('click', function(){
-			Titanium.Platform.openURL('mailto:'+mailResult);
-		});
-		resultView.add(email);
-	}
-	results.close();
 }
 else if ( (results.fieldByName("phone") == null) && (results.fieldByName("cell_phone") == null) && (results.fieldByName("fax") == null) ) {
 	var typeLabel_first = Ti.UI.createLabel({
@@ -416,26 +381,191 @@ else {
 		Titanium.Platform.openURL('tel:'+auxNum_third);
 	});
 	resultView.add(number_third);
-	
-	if (mailResult != null){
-		var email = Ti.UI.createLabel({
-			text: results.fieldByName("email"),
-			height: "10%",
-			width:  "80%",
-			textAlign: 'center',
-			top: "92%",
-			left: "10%"
-		});
-	
-		Ti.API.info("Email : "+ results.fieldByName("email"));
-		email.addEventListener('click', function(){
-			Titanium.Platform.openURL('mailto:'+mailResult);
-		});
-		resultView.add(email);
-	}
-	results.close();
-
 }
+
+if (mailResult != null){
+	var email = Ti.UI.createLabel({
+		text: results.fieldByName("email"),
+		height: "10%",
+		width:  "80%",
+		textAlign: 'center',
+		top: "92%",
+		left: "10%"
+	});
+
+	Ti.API.info("Email : "+ results.fieldByName("email"));
+	email.addEventListener('click', function(){
+		Titanium.Platform.openURL('mailto:'+mailResult);
+	});
+	resultView.add(email);
+}
+results.close();
+
+*/
+var l1 = Ti.UI.createLabel({
+	text: "Nid: "+results.fieldByName("nid"),
+	height: "5%",
+	width:  "100%",
+	textAlign: 'center',
+	top: "25%"
+});
+resultView.add(l1);
+
+var l3 = Ti.UI.createLabel({
+	text: "First name: "+results.fieldByName("first_name"),
+	height: "5%",
+	width:  "100%",
+	textAlign: 'center',
+	top: "30%",
+});
+resultView.add(l3);
+
+var l4 = Ti.UI.createLabel({
+	text: "Last name: "+results.fieldByName("last_name"),
+	height: "5%",
+	width:  "100%",
+	textAlign: 'center',
+	top: "35%",
+});
+resultView.add(l4);
+
+var fresh = null;
+
+if (results.fieldByName("job_title_tid") != null){
+	var auxRes  = db.execute('SELECT * FROM term_data WHERE  tid = '+results.fieldByName("job_title_tid"));
+	var fresh = auxRes.fieldByName("name");
+	auxRes.close();
+}
+
+
+var l5 = Ti.UI.createLabel({
+	text: "Job title tid: "+fresh,
+	height: "5%",
+	width:  "100%",
+	textAlign: 'center',
+	top: "40%",
+});
+resultView.add(l5);
+
+
+var fresh1 = null;
+
+if (results.fieldByName("lead_status_tid") != null){
+	var auxRes  = db.execute('SELECT * FROM term_data WHERE  tid = '+results.fieldByName("lead_status_tid"));
+	var fresh1 = auxRes.fieldByName("name");
+	auxRes.close();
+}
+
+var l6 = Ti.UI.createLabel({
+	text: "Lead Status tid: "+fresh1,
+	height: "5%",
+	width:  "100%",
+	textAlign: 'center',
+	top: "45%",
+});
+resultView.add(l6);
+
+
+var fresh2 = null;
+
+if (results.fieldByName("lead_source_tid") != null){
+	var auxRes  = db.execute('SELECT * FROM term_data WHERE  tid = '+results.fieldByName("lead_source_tid"));
+	var fresh2 = auxRes.fieldByName("name");
+	auxRes.close();
+}
+
+var l7 = Ti.UI.createLabel({
+	text: "Lead source tid: "+fresh2,
+	height: "5%",
+	width:  "100%",
+	textAlign: 'center',
+	top: "50%",
+});
+resultView.add(l7);
+
+var fresh3 = null;
+
+if (results.fieldByName("competing_company_tid") != null){
+	var auxRes  = db.execute('SELECT * FROM term_data WHERE  tid = '+results.fieldByName("competing_company_tid"));
+	var fresh3 = auxRes.fieldByName("name");
+	auxRes.close();
+}
+
+
+var l8 = Ti.UI.createLabel({
+	text: "Comp. company tid: "+fresh3,
+	height: "5%",
+	width:  "100%",
+	textAlign: 'center',
+	top: "55%",
+});
+resultView.add(l8);
+
+var l9 = Ti.UI.createLabel({
+	text: "Company: "+results.fieldByName("company"),
+	height: "5%",
+	width:  "100%",
+	textAlign: 'center',
+	top: "60%",
+});
+resultView.add(l9);
+
+var l10 = Ti.UI.createLabel({
+	text: "Phone: "+results.fieldByName("phone"),
+	height: "5%",
+	width:  "100%",
+	textAlign: 'center',
+	top: "65%",
+});
+resultView.add(l10);
+
+var l11 = Ti.UI.createLabel({
+	text: "cell_phone: "+results.fieldByName("cell_phone"),
+	height: "5%",
+	width:  "100%",
+	textAlign: 'center',
+	top: "70%",
+});
+resultView.add(l11);
+
+var l12 = Ti.UI.createLabel({
+	text: "Fax: "+results.fieldByName("fax"),
+	height: "5%",
+	width:  "100%",
+	textAlign: 'center',
+	top: "75%",
+});
+resultView.add(l12);
+
+var l14 = Ti.UI.createLabel({
+	text: "email: "+results.fieldByName("email"),
+	height: "5%",
+	width:  "100%",
+	textAlign: 'center',
+	top: "80%",
+});
+resultView.add(l14);
+
+var l15 = Ti.UI.createLabel({
+	text: "Website: "+results.fieldByName("website"),
+	height: "auto",
+	width:  "auto",
+	textAlign: 'center',
+	top: "85%",
+});
+resultView.add(l15);
+
+
+var l16 = Ti.UI.createLabel({
+	text: "Description: "+results.fieldByName("description"),
+	height: "auto",
+	width:  "auto",
+	textAlign: 'center',
+	top: "90%",
+});
+resultView.add(l16);
+
+results.close();
 
 //showBottom(actualWindow, goToWindow )
 showBottom(win4, goToWindow);

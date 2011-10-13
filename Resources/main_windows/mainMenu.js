@@ -27,7 +27,7 @@ var label_status = Titanium.UI.createLabel({
 	textAlign:'center'
 });
 
-var db = Ti.Database.install('../database/db.sqlite', 'omadiDb367');
+var db = Ti.Database.install('../database/db.sqlite', 'omadiDb400');
 var dicElements = [];
 var actualItem = 0;
 var dicSize;
@@ -59,14 +59,14 @@ function checkUpdate (){
 		else
 		{
 			label_status.text = "Database needs sycronization!";
-			bSync.show();
+			//////bSync.show();
 		}
 	}
 
 	//Connection error:
 	objectsTaxCheck.onerror = function(e) {
 		label_status.text  = version;
-		bSync.show();
+		//////bSync.show();
 	}
 
 	//Sending information and try to connect
@@ -100,14 +100,14 @@ function checkUpdate (){
 			else
 			{
 				label_status.text = "Database needs sycronization!";
-				bSync.show();
+				//////bSync.show();
 			}
 		}
 	
 		//Connection error:
 		objectsAccCheck.onerror = function(e) {
 			label_status.text  = version;
-			bSync.show();
+			//////bSync.show();
 		}
 	
 		//Sending information and try to connect
@@ -143,14 +143,14 @@ function checkUpdate (){
 			else
 			{
 				label_status.text = "Database needs sycronization!";
-				bSync.show();
+				//////bSync.show();
 			}
 		}
 	
 		//Connection error:
 		 objectsLeadCheck.onerror = function(e) {
 			label_status.text  = version;
-			bSync.show();
+			////bSync.show();
 		}
 	
 		//Sending information and try to connect
@@ -185,14 +185,14 @@ function checkUpdate (){
 			else
 			{
 				label_status.text = "Database needs sycronization!";
-				bSync.show();
+				////bSync.show();
 			}
 		}
 	
 		//Connection error:
 		 objectsContactCheck.onerror = function(e) {
 			label_status.text  = version;
-			bSync.show();
+			////bSync.show();
 		}
 	
 		//Sending information and try to connect
@@ -223,22 +223,23 @@ function checkUpdate (){
 			//If Database is already last version
 			if (json.potentials.length == 0){
 				label_status.text = version;
-				bSync.hide();
+				//bSync.hide();
 				bContacts.enabled = true;
 				bLeads.enabled = true;
 				bAccounts.enabled = true;
+				bPotentials.enabled = true;
 			}
 			else
 			{
 				label_status.text = "Database needs sycronization!";
-				bSync.show();
+				////bSync.show();
 			}
 		}
 	
 		//Connection error:
 		 objectsPotentialCheck.onerror = function(e) {
 			label_status.text  = version;
-			bSync.show();
+			////bSync.show();
 		}
 	
 		//Sending information and try to connect
@@ -247,8 +248,55 @@ function checkUpdate (){
 
 };
 
+//Button Contacts
+var bContacts = Titanium.UI.createButton({
+   title: 'Contacts',
+   width: '80%',
+   height: '9%',
+   top: '20%' 
+});
+
+//Button Leads
+var bLeads = Titanium.UI.createButton({
+   title: 'Leads',
+   width: '80%',
+   height: '9%',
+   top: '40%' 
+});
+
+//Button Accounts
+var bAccounts = Titanium.UI.createButton({
+   title: 'Accounts',
+   width: '80%',
+   height: '9%',
+   top: '60%' 
+});
+
+//Button Accounts
+var bPotentials = Titanium.UI.createButton({
+   title: 'Potentials',
+   width: '80%',
+   height: '9%',
+   top: '80%' 
+});
+
+var bSync = Titanium.UI.createButton({
+	width: '10%',
+	height: '90%',
+	top: '10%',
+	image: Titanium.Android.R.drawable.emo_im_wtf,
+	left: '90%'
+});
+
+//bSync.hide();
+
+
 function installDic (){
 	label_status.text  = "Installing Vocabulary";
+	bAccounts.enabled = false;
+	bLeads.enabled = false;
+	bContacts.enabled = false;
+	bPotentials.enabled = false;
 	//Ti.API.info(win2.picked + '/js-sync/taxonomy_vocabulary.json');
 
 	var objectsTaxDic = win2.log;
@@ -266,7 +314,18 @@ function installDic (){
 	objectsTaxDic.onload = function(e) {
 		var timeStamp = new Date().getTime();
 		var syncTime = parseInt(timeStamp / 1000);
+		Ti.API.info("Time sync: "+syncTime);
 		
+		var currentDate = new Date();
+		var day = currentDate.getUTCDate();
+		var month = currentDate.getUTCMonth();
+		var year = currentDate.getUTCFullYear();
+		var hour = currentDate.getUTCHours();
+		var min = currentDate.getUTCMinutes();
+		var sec = currentDate.getUTCSeconds();
+		var mili = currentDate.getUTCMilliseconds();
+		
+	  	Ti.API.info("Time right: "+Date.UTC(year,month,day, hour, min, sec, mili ));
 		db.execute('UPDATE updated SET "timestampTax"='+ syncTime +' WHERE "rowid"=1');
 
 		//Parses response into strings
@@ -400,7 +459,7 @@ if (updatedTime.fieldByName('timestampTax') < 10000){
 }
 else{
 	//Ti.API.info("NOT FIRST TIME! Check UPDATES NOW!");
-	checkUpdate();
+	//checkUpdate();
 }
 updatedTime.close();
 
@@ -418,44 +477,6 @@ var name = jsonLogin.user.name;
 
 // showToolbar(name, actualWindow)					
 showToolbar( name, win2 );
-
-
-//Button Contacts
-var bContacts = Titanium.UI.createButton({
-   title: 'Contacts',
-   width: '80%',
-   height: '9%',
-   top: '20%' 
-});
-
-//Button Leads
-var bLeads = Titanium.UI.createButton({
-   title: 'Leads',
-   width: '80%',
-   height: '9%',
-   top: '50%' 
-});
-
-//Button Accounts
-var bAccounts = Titanium.UI.createButton({
-   title: 'Accounts',
-   width: '80%',
-   height: '9%',
-   top: '80%' 
-});
-
-var bSync = Titanium.UI.createButton({
-	width: '10%',
-	height: '90%',
-	top: '10%',
-	image: Titanium.Android.R.drawable.emo_im_wtf,
-	left: '90%'
-});
-
-bSync.hide();
-
-
-
 
 //Go to contact.js when contact's button is clicked
 bContacts.addEventListener('click',function(e){
@@ -484,7 +505,7 @@ bContacts.addEventListener('click',function(e){
 	win2.close();
 
 });
-bContacts.enabled = false;
+//bContacts.enabled = false;
 
 //Show black screen when Leads's button is clicked
 // When the black screen receives one click, it closes
@@ -513,7 +534,7 @@ bLeads.addEventListener('click',function(e){
 	win3.open();
 	win2.close();
 });
-bLeads.enabled = false;
+//bLeads.enabled = false;
 
 //Go to contact.js when contact's button is clicked
 bAccounts.addEventListener('click',function(e){
@@ -543,7 +564,34 @@ bAccounts.addEventListener('click',function(e){
 
 });
 
-bAccounts.enabled = false;
+bPotentials.addEventListener('click',function(e){
+
+	var win3 = Titanium.UI.createWindow({  
+		fullscreen: true,
+		url:'potentials.js',
+	});
+
+	//Passes parameter to the contact's window:
+	win3.log	     = win2.log;
+	win3.picked 	 = win2.picked;
+	win3.name   	 = name;
+	win3.result      = win2.result;
+	//taxConUP.close();
+	//objectsConCheck.close();
+
+	//objectsConUP.close();
+	//objectsLeaUP.close();
+	//objectsAccUP.close();
+
+	db.close();
+	
+	//Manages memory leaking
+	win3.open();
+	win2.close();
+
+});
+
+
 
 //Action taken when syncronization button is pressed
 bSync.addEventListener('click', function(){
@@ -601,6 +649,7 @@ bSync.addEventListener('click', function(){
 			//terms: 
 			if (taxJson.terms.insert){
 				for (var i = 0; i < taxJson.terms.insert.length; i++ ){
+					Ti.API.info("Term: "+taxJson.terms.insert[i]);
 					db.execute('INSERT INTO term_data (vid, tid, name, description, weight) VALUES (?,?,?,?,?)', taxJson.terms.insert[i].vid, taxJson.terms.insert[i].tid, taxJson.terms.insert[i].name, taxJson.terms.insert[i].desc, taxJson.terms.insert[i].weight);				
 				}
 			}
@@ -610,8 +659,10 @@ bSync.addEventListener('click', function(){
 			}
 			if (taxJson.terms["delete"]){
 				for (var i = 0; i < taxJson.terms["delete"].length; i++ ){
-					db.execute('DELETE FROM term_data WHERE "tid"=?',taxJson.terms["delete"][i].tid);				
-				}				
+					db.execute('DELETE FROM term_data WHERE "tid"=?',taxJson.terms["delete"][i].tid);
+					//Insert in another tables a default value or simply attribute a default value in case of no results returning from a query?
+					//A: Default value in case of no results returning from a query. (Way faster and easyer than set up every table linked to this deleted field) 
+				}
 			}
 		}
 		installAcc();
@@ -763,7 +814,6 @@ bSync.addEventListener('click', function(){
 		//Connection error:
 		objectsLeaUP.onerror = function(e) {
 			Ti.API.info("Services are down");
-			lastUpdate.close();
 			label_status.text  = "Services are down at the moment, please try again later";
 			hideIndicator();
 		}	
@@ -832,7 +882,6 @@ bSync.addEventListener('click', function(){
 
 		//Connection error:
 		objectsConUP.onerror = function(e) {
-			lastUpdate.close();
 			//Ti.API.info("Services are down");
 			version = "Services are down at the moment, please try again later";
 			hideIndicator();
@@ -893,21 +942,20 @@ bSync.addEventListener('click', function(){
 				for (var i = 0; i <  jsonPotential.potentials["delete"].length; i++ ){
 					//Deletes current row (contact)
 					db.execute('DELETE FROM potential WHERE "nid"=?', jsonPotential.potentials["delete"][i].nid);
-				}				
+				}
 				Ti.API.info("Deleted Potentials sucefully!");
 			}
-								
+
 			label_status.text = "Database updated";
 			
 			hideIndicator();
-			bContacts.enabled = true;
-			bLeads.enabled = true;
-			bAccounts.enabled = true;
+			//bContacts.enabled = true;
+			//bLeads.enabled = true;
+			//bAccounts.enabled = true;
 			Ti.API.info("SUCCESS");
 		}
 		//Connection error:
 		objectsPotUP.onerror = function(e) {
-			lastUpdate.close();
 			//Ti.API.info("Services are down");
 			version = "Services are down at the moment, please try again later";
 			hideIndicator();
@@ -938,6 +986,7 @@ win2.add(databaseStatusView);
 win2.add(bContacts);
 win2.add(bLeads);
 win2.add(bAccounts);
+win2.add(bPotentials);
 
 //Sets only portrait mode
 win2.orientationModes = [ Titanium.UI.PORTRAIT ];
@@ -953,4 +1002,4 @@ win2.addEventListener('android:back', function() {
 //checkUpdate();
 
 //Check behind the courtins if there is a new version - 5 minutes
-setInterval(checkUpdate, 300000);
+//setInterval(checkUpdate, 30000);

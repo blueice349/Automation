@@ -52,7 +52,7 @@ win3.addEventListener('android:back', function() {
 // showToolbar(name, actualWindow)
 showToolbar(win3.name, win3);
 
-var db = Ti.Database.install('../database/db.sqlite', 'omadiDb367');
+var db = Ti.Database.install('../database/db.sqlite', 'omadiDb400');
 var resultsNames  = db.execute('SELECT nid, name FROM account');
 
 var data = [];
@@ -108,6 +108,7 @@ else {
 		autocorrect : false,
 		barColor : '#000'
 	});
+	search.blur();
 
 	//Contat list container
 	var listTableView = Titanium.UI.createTableView({
@@ -159,6 +160,8 @@ else {
 	});
 	//Adds contact list container to the UI
 	win3.add(listTableView);
+	search.blur();
+
 }
 	
 //showBottom(actualWindow, goToWindow )

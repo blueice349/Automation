@@ -50,9 +50,9 @@ win4.addEventListener('android:back', function() {
 	win4.close();
 });
 	
-var db = Ti.Database.install('../database/db.sqlite', 'omadiDb367');
+var db = Ti.Database.install('../database/db.sqlite', 'omadiDb400');
 
-var results  = db.execute('SELECT phone, fax, website FROM account WHERE  nid = '+win4.nid);
+var results  = db.execute('SELECT * FROM account WHERE  nid = '+win4.nid);
 
 // showToolbar(name, actualWindow)
 showToolbar( win4.name, win4);
@@ -110,6 +110,7 @@ var siteResult = results.fieldByName("website");
 Ti.API.info("Phone: "+results.fieldByName("phone"));
 Ti.API.info("Fax : "+results.fieldByName("fax"));
 
+/*
 if  (  ( (results.fieldByName("phone") != null) && (results.fieldByName("fax") == null) )  
 	|| ( (results.fieldByName("phone") == null) && (results.fieldByName("fax") != null) ) ){
 	
@@ -158,26 +159,6 @@ if  (  ( (results.fieldByName("phone") != null) && (results.fieldByName("fax") =
 		Titanium.Platform.openURL('tel:'+auxNum);
 	});
 	resultView.add(number);
-
-	if (siteResult != null){
-		var website = Ti.UI.createLabel({
-			text: results.fieldByName("website"),
-			height: "10%",
-			width:  "80%",
-			textAlign: 'center',
-			top: "92%",
-			left: "10%"
-		});
-	
-		Ti.API.info("Website : "+ results.fieldByName("website"));
-		
-		
-		website.addEventListener('click', function(){
-			Titanium.Platform.openURL(siteResult);
-		});
-		resultView.add(website);
-	}
-	results.close();
 }
 else if ( (results.fieldByName("phone") != null) && (results.fieldByName("fax") != null) ){
 
@@ -260,26 +241,8 @@ else if ( (results.fieldByName("phone") != null) && (results.fieldByName("fax") 
 		Titanium.Platform.openURL('tel:'+auxNum_second);
 	});
 	resultView.add(number_second);
-	
-
-	if (siteResult != null){
-		var website = Ti.UI.createLabel({
-			text: results.fieldByName("website"),
-			height: "10%",
-			width:  "80%",
-			textAlign: 'center',
-			top: "92%",
-			left: "10%"
-		});
-	
-		Ti.API.info("Website : "+ results.fieldByName("website"));
-		website.addEventListener('click', function(){
-			Titanium.Platform.openURL(siteResult);
-		});
-		resultView.add(website);
-	}
-	results.close();
 }
+
 else  {
 	var typeLabel_first = Ti.UI.createLabel({
 		text: "No numbers for this account",
@@ -292,6 +255,109 @@ else  {
 	});
 	resultView.add(typeLabel_first);
 }
+
+if (siteResult != null){
+	var website = Ti.UI.createLabel({
+		text: results.fieldByName("website"),
+		height: "10%",
+		width:  "80%",
+		textAlign: 'center',
+		top: "92%",
+		left: "10%"
+	});
+
+	Ti.API.info("Website : "+ results.fieldByName("website"));
+	
+	
+	website.addEventListener('click', function(){
+		Titanium.Platform.openURL(siteResult);
+	});
+	resultView.add(website);
+}
+results.close();
+*/
+
+var l1 = Ti.UI.createLabel({
+	text: "Nid: "+results.fieldByName("nid"),
+	height: "5%",
+	width:  "100%",
+	textAlign: 'center',
+	top: "20%"
+});
+resultView.add(l1);
+
+var fresh = null;
+
+if (results.fieldByName("account_type_tid") != null){
+	var auxRes  = db.execute('SELECT * FROM term_data WHERE  tid = '+results.fieldByName("account_type_tid"));
+	var fresh = auxRes.fieldByName("name");
+	auxRes.close();
+}
+
+var l2 = Ti.UI.createLabel({
+	text: "Account type tid: "+fresh,
+	height: "5%",
+	width:  "100%",
+	textAlign: 'center',
+	top: "25%"
+});
+resultView.add(l2);
+
+var l3 = Ti.UI.createLabel({
+	text: "Parent account nid: "+results.fieldByName("parent_account_nid"),
+	height: "5%",
+	width:  "100%",
+	textAlign: 'center',
+	top: "30%",
+});
+resultView.add(l3);
+
+var l4 = Ti.UI.createLabel({
+	text: "Website: "+results.fieldByName("website"),
+	height: "5%",
+	width:  "100%",
+	textAlign: 'center',
+	top: "35%",
+});
+resultView.add(l4);
+
+var l5 = Ti.UI.createLabel({
+	text: "Phone: "+results.fieldByName("phone"),
+	height: "5%",
+	width:  "100%",
+	textAlign: 'center',
+	top: "40%",
+});
+resultView.add(l5);
+
+var l6 = Ti.UI.createLabel({
+	text: "Fax: "+results.fieldByName("fax"),
+	height: "5%",
+	width:  "100%",
+	textAlign: 'center',
+	top: "45%",
+});
+resultView.add(l6);
+
+var l7 = Ti.UI.createLabel({
+	text: "Description: "+results.fieldByName("description"),
+	height: "auto",
+	width:  "auto",
+	textAlign: 'center',
+	top: "50%",
+});
+resultView.add(l7);
+
+var l8 = Ti.UI.createLabel({
+	text: "Name: "+results.fieldByName("name"),
+	height: "5%",
+	width:  "100%",
+	textAlign: 'center',
+	top: "55%",
+});
+resultView.add(l8);
+
+results.close();
 
 //showBottom(actualWindow, goToWindow )
 showBottom(win4, goToWindow);
