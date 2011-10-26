@@ -280,8 +280,15 @@ function showBottom(actualWindow, goToWindow ){
     	goToWindow.picked = actualWindow.picked;
     	goToWindow.result = actualWindow.result;
 		goToWindow.name = actualWindow.name;
+		if (actualWindow.returnTo == "individual_contacts.js"){
+			goToWindow.nid = actualWindow.nidToReturn;
+			goToWindow.nameSelected = actualWindow.nameToReturn;
+		}
+
+		//Avoiding memory leaking problems:	
+		if (!goToWindow.notOpen)
+			goToWindow.open();
 		
-		goToWindow.open();
 		actualWindow.close();
 	});					
 	actualWindow.add(backView);

@@ -1,14 +1,12 @@
 /**
- * Name: leads.js
+ * Name: account.js
  * Function:
- * 		Show lead list retrieved from the server
+ * 		Show account's list retrieved from the database
  * Provides:
- * 		Internet connection checking.
- * 		the window called by mainMenu.js(contact button) and individual_contact.js(Back button)
+ * 		the window called by mainMenu.js and individual_account.js(Back button)
  *		a way to close the current window and open mainMenu.js. This is achieved when the user clicks on
  * 			"back" on the phone or on the Back button at the app's bottom
- *		the log out button.
- *		the contact list.
+ *		the account's list.
  * @author Joseandro
  */
 
@@ -50,9 +48,9 @@ win3.addEventListener('android:back', function() {
 });
 
 // showToolbar(name, actualWindow)
-showToolbar(win3.name, win3);
+//showToolbar(win3.name, win3);
 
-var db = Ti.Database.install('../database/db.sqlite', 'omadiDb400');
+var db = Ti.Database.install('../database/db.sqlite', 'omadiDb416');
 var resultsNames  = db.execute('SELECT nid, name FROM account');
 
 var data = [];
@@ -77,7 +75,7 @@ while (resultsNames.isValidRow())
 	i++;
 	resultsNames.next();
 }
-resultsNames.close();
+
 
 
 //Check if the list is empty or not
@@ -113,10 +111,11 @@ else {
 	//Contat list container
 	var listTableView = Titanium.UI.createTableView({
 		data : data,
-		top : '12%',
+		top : '3%',
 		search : search,
-		height : '85%'
+		height : '91%'
 	});
+
 
 	// SEARCH BAR EVENTS
 	search.addEventListener('change', function(e) {
@@ -131,6 +130,13 @@ else {
 		search.blur();
 		//hides the keyboard
 	});
+	
+	win3.addEventListener('focus', function(){
+		search.blur();
+		listTableView.search.blur();
+	});
+
+	
 	//When the user clicks on a certain contact, it opens individual_contact.js
 	listTableView.addEventListener('click', function(e) {
 
@@ -155,6 +161,7 @@ else {
 		//Avoiding memory leaking
 		win4.open();
 		search.hide();
+		resultsNames.close();
 		win3.close();
 
 	});

@@ -1,14 +1,12 @@
 /**
- * Name: contacts.js
+ * Name: potentials.js
  * Function:
- * 		Show contact list retrieved from the server
+ * 		Show potential's list retrieved from the server
  * Provides:
- * 		Internet connection checking.
- * 		the window called by mainMenu.js(contact button) and individual_contact.js(Back button)
+ * 		the window called by mainMenu.js and individual_potential.js(Back button)
  *		a way to close the current window and open mainMenu.js. This is achieved when the user clicks on
  * 			"back" on the phone or on the Back button at the app's bottom
- *		the log out button.
- *		the contact list.
+ *		the potential's list.
  * @author Joseandro
  */
 
@@ -16,10 +14,10 @@
 Ti.include('../lib/functions.js');
 
 //Current window's instance
-var win3 = Ti.UI.currentWindow;
+var win5 = Ti.UI.currentWindow;
 
 //Sets only portrait mode
-win3.orientationModes = [Titanium.UI.PORTRAIT];
+win5.orientationModes = [Titanium.UI.PORTRAIT];
 
 //
 // create base UI root window
@@ -36,23 +34,23 @@ var goToWindow = Titanium.UI.createWindow({
 });
 
 //When back button on the phone is pressed, it opens mainMenu.js and close the current window
-win3.addEventListener('android:back', function() {
+win5.addEventListener('android:back', function() {
 	Ti.API.info("Back to the step before");
 
 	//Passing back the parameters
-	goToWindow.log = win3.log;
-	goToWindow.picked = win3.picked;
-	goToWindow.result = win3.result;
+	goToWindow.log = win5.log;
+	goToWindow.picked = win5.picked;
+	goToWindow.result = win5.result;
 
 	//Avoids memory leaking problems:
 	goToWindow.open();
-	win3.close();
+	win5.close();
 });
 
 // showToolbar(name, actualWindow)
-showToolbar(win3.name, win3);
+//showToolbar(win5.name, win5);
 
-var db = Ti.Database.install('../database/db.sqlite', 'omadiDb400');
+var db = Ti.Database.install('../database/db.sqlite', 'omadiDb416');
 var resultsNames  = db.execute('SELECT nid, name FROM potential');
 
 var data = [];
@@ -77,7 +75,6 @@ while (resultsNames.isValidRow())
 	i++;
 	resultsNames.next();
 }
-resultsNames.close();
 
 
 //Check if the list is empty or not
@@ -93,9 +90,9 @@ if(data.length < 1) {
 	//Debug
 	Ti.API.info("XXXXXXX ---- No potentials ! ----- XXXXXX");
 
-	win3.add(empty);
+	win5.add(empty);
 	//showBottom(actualWindow, goToWindow )
-	showBottom(win3, goToWindow);
+	showBottom(win5, goToWindow);
 }
 //Shows the contacts
 else {
@@ -112,11 +109,14 @@ else {
 	//Contat list container
 	var listTableView = Titanium.UI.createTableView({
 		data : data,
-		top : '12%',
+		top : '3%',
 		search : search,
-		height : '85%'
+		height : '91%'
 	});
+
+
 	search.blur();
+	listTableView.search.blur();
 	
 	// SEARCH BAR EVENTS
 	search.addEventListener('change', function(e) {
@@ -131,37 +131,44 @@ else {
 		search.blur();
 		//hides the keyboard
 	});
+	
+	win5.addEventListener('focus', function(){
+		search.blur();
+		listTableView.search.blur();
+	});
+	
 	//When the user clicks on a certain contact, it opens individual_contact.js
 	listTableView.addEventListener('click', function(e) {
 
 		//Next window to be opened
 		var win4 = Titanium.UI.createWindow({
 			fullscreen : true,
-			url : 'individual_contact.js'
+			url : 'individual_potential.js'
 		});
 
 		search.blur();
-		//hide keyboard
+		//hide keyboard 
 
 		//Passing parameters
-		win4.log = win3.log;
-		win4.picked = win3.picked;
-		win4.name = win3.name;
-		win4.label_error = win3.label_error;
-		win4.result = win3.result;
+		win4.log = win5.log;
+		win4.picked = win5.picked;
+		win4.name = win5.name;
+		win4.label_error = win5.label_error;
+		win4.result = win5.result;
 		win4.nid = e.row.nid;
 		win4.nameSelected = e.row.name;
 
 		//Avoiding memory leaking
 		win4.open();
 		search.hide();
-		win3.close();
+		resultsNames.close();
+		win5.close();
 
 	});
 	//Adds contact list container to the UI
-	win3.add(listTableView);
+	win5.add(listTableView);
 	search.blur();
 }
 	
 //showBottom(actualWindow, goToWindow )
-showBottom(win3, goToWindow);
+showBottom(win5, goToWindow);
