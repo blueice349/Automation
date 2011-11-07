@@ -48,8 +48,7 @@ win4.addEventListener('android:back', function() {
 	win4.close();
 });
 	
-var db = Ti.Database.install('../database/db.sqlite', 'omadiDb416');
-
+var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 var results  = db.execute('SELECT * FROM contact WHERE  nid = '+win4.nid);
 
 //The view where the results are presented

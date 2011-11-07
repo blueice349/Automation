@@ -31,6 +31,7 @@ var logWindow = Titanium.UI.createWindow({
 var goToWindow = Titanium.UI.createWindow({
 	fullscreen : true,
 	url : 'mainMenu.js',
+	notOpen: true
 });
 
 //When back button on the phone is pressed, it opens mainMenu.js and close the current window
@@ -50,7 +51,7 @@ win3.addEventListener('android:back', function() {
 // showToolbar(name, actualWindow)
 //showToolbar(win3.name, win3);
 
-var db = Ti.Database.install('../database/db.sqlite', 'omadiDb416');
+var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 var resultsNames  = db.execute('SELECT nid, name FROM account');
 
 var data = [];
@@ -85,7 +86,7 @@ if(data.length < 1) {
 		height : 'auto',
 		width : 'auto',
 		top : '50%',
-		text : 'Empty lead list!'
+		text : 'Empty account list!'
 	});
 
 	//Debug
