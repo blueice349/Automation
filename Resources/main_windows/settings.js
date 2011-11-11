@@ -19,6 +19,13 @@ var label_status = Titanium.UI.createLabel({
 	textAlign:'center'
 });
 
+if ( !Titanium.App.Properties.getBool("succesSync") && !win2.firstOpen){
+	label_status.text = 'The operation timed out. Please try again later.';
+	setTimeout(function(){
+		label_status.text = 'Settings';
+		},4000);	
+}
+
 var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
 //Definition of the window before (opens when the user clicks on the back button)

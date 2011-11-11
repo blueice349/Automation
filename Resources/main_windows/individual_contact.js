@@ -73,123 +73,99 @@ var header = Ti.UI.createView({
 });
 resultView.add(header);
 
-//Label containing "Name" 
-var labelName = Ti.UI.createLabel({
-	text: 'Name: ',
-	height: 'auto',
-	width:  '18%',
-	left: '5%',
-	font: {fontSize: 11},
-	textAlign: 'left',
-	touchEnabled: false,
-});
-
 //Label containing the selected name
 var labelNameContent = Ti.UI.createLabel({
 	text: win4.nameSelected,
 	height: 'auto',
-	width:  '77%',
-	left: '23%',
-	font: {fontSize: 11},
-	textAlign: 'left',
-	touchEnabled: false,
-});
-
-header.add(labelName);
-header.add(labelNameContent);
-
-var screenWidth = Titanium.Platform.displayCaps.platformWidth;
-var screenHeight = Titanium.Platform.displayCaps.platformHeight;
-
-var l2 = Ti.UI.createLabel({
-	text: "Owner: ",
-	height: "5%",
-	left: 0,
-	width:  "50%",
-	textAlign: 'right',
-	top: "27%",
+	width:  '90%',
+	font: {fontSize: 18},
+	textAlign: 'center',
 	touchEnabled: false
 });
-resultView.add(l2);
+
+header.add(labelNameContent);
+
+var label = [];
+var content = []; 
+var count = 0;
 
 var owner = results.fieldByName("owner_uid");
 
-if ( owner == null )
-	owner = "";
+if ( owner != null ){
 	
-var l2l = Ti.UI.createLabel({
-	text: ""+owner,
-	height: "5%",
-	width:  "50%",
-	left: "50%",
-	textAlign: 'left',
-	top: "27%"
-});
-resultView.add(l2l);
-
-var l3 = Ti.UI.createLabel({
-	text: "First name: ",
-	height: "5%",
-	left: 0,
-	width:  "50%",
-	textAlign: 'right',
-	top: "33%",
-	touchEnabled: false
-});
-resultView.add(l3);
+	label[count] = Ti.UI.createLabel({
+		text: "Owner: ",
+		height: "5%",
+		left: 0,
+		width:  "50%",
+		textAlign: 'right',
+		top: "27%",
+		touchEnabled: false
+	});
+		
+	content[count] = Ti.UI.createLabel({
+		text: ""+owner,
+		height: "5%",
+		width:  "50%",
+		left: "50%",
+		textAlign: 'left',
+		top: "27%"
+	});
+	
+	count++;
+}
 
 var first_name = results.fieldByName("first_name");
 
-if (first_name == null )
-	first_name = "";
+if (first_name == null ){
 	
-var l3l = Ti.UI.createLabel({
-	text: ""+first_name,
-	height: "5%",
-	width:  "50%",
-	textAlign: 'left',
-	left: "50%",
-	top: "33%"
-});
-resultView.add(l3l);
-
-var l4 = Ti.UI.createLabel({
-	text: "Last name: ",
-	height: "5%",
-	width:  "50%",
-	textAlign: 'right',
-	left: 0,
-	top: "39%",
-	touchEnabled: false
-});
-resultView.add(l4);
+	label[count] = Ti.UI.createLabel({
+		text: "First name: ",
+		height: "5%",
+		left: 0,
+		width:  "50%",
+		textAlign: 'right',
+		top: "33%",
+		touchEnabled: false
+	});
+		
+	content[count] = Ti.UI.createLabel({
+		text: ""+first_name,
+		height: "5%",
+		width:  "50%",
+		textAlign: 'left',
+		left: "50%",
+		top: "33%"
+	});
+	
+	count++;
+}
 
 var last_name = results.fieldByName("last_name");
 
-if ( last_name == null)
-	last_name = "";
-
-var l4l = Ti.UI.createLabel({
-	text: ""+last_name,
-	height: "5%",
-	width:  "50%",
-	textAlign: 'left',
-	left: "50%",
-	top: "39%",
-});
-resultView.add(l4l);
-
-var l5 = Ti.UI.createLabel({
-	text: "Account: ",
-	height: "5%",
-	width:  "50%",
-	textAlign: 'right',
-	top: "45%",
-	left: 0,
-	touchEnabled: false
-});
-resultView.add(l5);
-
+if ( last_name == null){
+	
+	label[count] = Ti.UI.createLabel({
+		text: "Last name: ",
+		height: "5%",
+		width:  "50%",
+		textAlign: 'right',
+		left: 0,
+		top: "39%",
+		touchEnabled: false
+	});
+	
+	content[count] = Ti.UI.createLabel({
+		text: ""+last_name,
+		height: "5%",
+		width:  "50%",
+		textAlign: 'left',
+		left: "50%",
+		top: "39%",
+	});
+	
+	count++;
+}
 
 var account_nid = results.fieldByName("account_nid");
 
@@ -197,38 +173,49 @@ if (account_nid != null){
 	var auxRes  = db.execute('SELECT * FROM account WHERE  nid = '+account_nid);
 	account_name = auxRes.fieldByName("name");
 	auxRes.close();
-}
-else
-	account_name = "";
-		
-var l5l = Ti.UI.createLabel({
-	text: ""+account_name,
-	height: "5%",
-	width:  "50%",
-	textAlign: 'left',
-	top: "45%",
-	left: "50%"
-});
-resultView.add(l5l);
-
-// When account is clicked opens a modal window to show off the content of the specific touched
-// object.
-
-l5l.addEventListener('click', function(){
 	
-	var newWin = Ti.UI.createWindow({
-		fullscreen: true,
-		url: "individual_account.js"
+	label[count] = Ti.UI.createLabel({
+		text: "Account: ",
+		height: "5%",
+		width:  "50%",
+		textAlign: 'right',
+		top: "45%",
+		left: 0,
+		touchEnabled: false
 	});
 	
-	newWin.returnTo = "individual_contacts.js";
-	newWin.nid      = account_nid;
-	newWin.nameSelected  = account_name;
-	newWin.nidToReturn   = win4.nid;
-	newWin.nameToReturn  = win4.nameSelected;
+	var l5l = Ti.UI.createLabel({
+		text: ""+account_name,
+		height: "5%",
+		width:  "50%",
+		textAlign: 'left',
+		top: "45%",
+		left: "50%"
+	});
 	
-	newWin.open();
-});
+	// When account is clicked opens a modal window to show off the content of the specific touched
+	// object.
+	
+	l5l.addEventListener('click', function(){
+		
+		var newWin = Ti.UI.createWindow({
+			fullscreen: true,
+			url: "individual_account.js"
+		});
+		
+		newWin.returnTo = "individual_contact.js";
+		newWin.nid      = account_nid;
+		newWin.nameSelected  = account_name;
+		newWin.nidToReturn   = win4.nid;
+		newWin.nameToReturn  = win4.nameSelected;
+		
+		newWin.open();
+	});
+	
+	content[count] = l5l;
+	count++;
+
+}
 
 
 var fresh = "";
@@ -237,29 +224,29 @@ if (results.fieldByName("lead_source") != null){
 	var auxRes  = db.execute('SELECT * FROM term_data WHERE  tid = '+results.fieldByName("lead_source"));
 	var fresh = auxRes.fieldByName("name");
 	auxRes.close();
+
+	label[count] = Ti.UI.createLabel({
+		text: "Lead Source: ",
+		height: "5%",
+		width:  "50%",
+		textAlign: 'right',
+		top: "51%",
+		left: 0,
+		touchEnabled: false
+	});
+	
+	content[count] = Ti.UI.createLabel({
+		text: ""+fresh,
+		height: "5%",
+		width:  "50%",
+		textAlign: 'left',
+		top: "51%",
+		left: "50%"
+	});
+	
+	count++;
+
 }
-
-
-var l6 = Ti.UI.createLabel({
-	text: "Lead Source: ",
-	height: "5%",
-	width:  "50%",
-	textAlign: 'right',
-	top: "51%",
-	left: 0,
-	touchEnabled: false
-});
-resultView.add(l6);
-
-var l6l = Ti.UI.createLabel({
-	text: ""+fresh,
-	height: "5%",
-	width:  "50%",
-	textAlign: 'left',
-	top: "51%",
-	left: "50%"
-});
-resultView.add(l6l);
 
 var fresh1 = "";
 
@@ -267,55 +254,52 @@ if (results.fieldByName("job_title_tid") != null){
 	var auxRes  = db.execute('SELECT * FROM term_data WHERE  tid = '+results.fieldByName("job_title_tid"));
 	var fresh1 = auxRes.fieldByName("name");
 	auxRes.close();
+
+	label[count] = Ti.UI.createLabel({
+		text: "Job title: ",
+		height: "5%",
+		width:  "50%",
+		textAlign: 'right',
+		top: "57%",
+		left: 0,
+		touchEnabled: false
+	});
+	
+	content[count] = Ti.UI.createLabel({
+		text: ""+fresh1,
+		height: "5%",
+		width:  "50%",
+		textAlign: 'left',
+		top: "57%",
+		left: "50%"
+	});
+	
+	count++;
+
 }
-
-
-var l7 = Ti.UI.createLabel({
-	text: "Job title: ",
-	height: "5%",
-	width:  "50%",
-	textAlign: 'right',
-	top: "57%",
-	left: 0,
-	touchEnabled: false
-});
-resultView.add(l7);
-
-var l7l = Ti.UI.createLabel({
-	text: ""+fresh1,
-	height: "5%",
-	width:  "50%",
-	textAlign: 'left',
-	top: "57%",
-	left: "50%"
-});
-resultView.add(l7l);
-
-var l8 = Ti.UI.createLabel({
-	text: "Phone: ",
-	height: "5%",
-	width:  "50%",
-	textAlign: 'right',
-	top: "63%",
-	left: 0,
-	touchEnabled: false
-});
-resultView.add(l8);
-
-var l8l = Ti.UI.createLabel({
-	height: "5%",
-	width:  "50%",
-	textAlign: 'left',
-	top: "63%",
-	left: "50%"
-});
-resultView.add(l8l);
 
 var phone = results.fieldByName("phone");
 
-if (phone == null)
-	phone = "";
-else{
+if (phone != null){
+
+	label[count] = Ti.UI.createLabel({
+		text: "Phone: ",
+		height: "5%",
+		width:  "50%",
+		textAlign: 'right',
+		top: "63%",
+		left: 0,
+		touchEnabled: false
+	});
+	
+	var l8l = Ti.UI.createLabel({
+		height: "5%",
+		width:  "50%",
+		textAlign: 'left',
+		top: "63%",
+		left: "50%"
+	});
+
 	//When number is clicked, make the call
 	var auxNumPhone = phone.replace(/\D/g, '' );
 	Ti.API.info("Raw phone number: "+ auxNumPhone);
@@ -323,35 +307,35 @@ else{
 	l8l.addEventListener('click', function(){
 		Titanium.Platform.openURL('tel:'+auxNumPhone);
 	});
+
+	l8l.text = ""+phone;
+	
+	content[count] = l8l;
+	count++;
 }
-
-l8l.text = ""+phone;
-
-var l9 = Ti.UI.createLabel({
-	text: "Cell phone: ",
-	height: "5%",
-	left: 0,
-	width:  "50%",
-	textAlign: 'right',
-	top: "69%",
-	touchEnabled: false
-});
-resultView.add(l9);
-
-var l9l = Ti.UI.createLabel({
-	height: "5%",
-	width:  "50%",
-	textAlign: 'left',
-	top: "69%",
-	left: "50%"
-});
-resultView.add(l9l);
 
 var cell_phone = results.fieldByName("cell_phone");
 
-if ( cell_phone == null)
-	cell_phone = "";
-else{
+if ( cell_phone != null)
+{
+	label[count] = Ti.UI.createLabel({
+		text: "Cell phone: ",
+		height: "5%",
+		left: 0,
+		width:  "50%",
+		textAlign: 'right',
+		top: "69%",
+		touchEnabled: false
+	});
+	
+	var l9l = Ti.UI.createLabel({
+		height: "5%",
+		width:  "50%",
+		textAlign: 'left',
+		top: "69%",
+		left: "50%"
+	});
+
 	//When number is clicked, make the call
 	var auxNumCell = cell_phone.replace(/\D/g, '' );
 	Ti.API.info("Raw cell phone number: "+ auxNumCell);
@@ -359,36 +343,35 @@ else{
 	l9l.addEventListener('click', function(){
 		Titanium.Platform.openURL('tel:'+auxNumCell);
 	});
+
+	l9l.text = ""+cell_phone;
+	
+	content[count] = l9l;
+	count++;
 }
-
-l9l.text = ""+cell_phone;
-
-
-var l10 = Ti.UI.createLabel({
-	text: "Fax: ",
-	height: "5%",
-	left: 0,
-	width:  "50%",
-	textAlign: 'right',
-	top: "75%",
-	touchEnabled: false
-});
-resultView.add(l10);
-
-var l10l = Ti.UI.createLabel({
-	height: "5%",
-	width:  "50%",
-	textAlign: 'left',
-	top: "75%",
-	left: "50%"
-});
-resultView.add(l10l);
 
 var fax = results.fieldByName("fax");
 
-if ( fax == null)
-	fax = "";
-else{
+if ( fax != null){
+
+	label[count] = Ti.UI.createLabel({
+		text: "Fax: ",
+		height: "5%",
+		left: 0,
+		width:  "50%",
+		textAlign: 'right',
+		top: "75%",
+		touchEnabled: false
+	});
+	
+	var l10l = Ti.UI.createLabel({
+		height: "5%",
+		width:  "50%",
+		textAlign: 'left',
+		top: "75%",
+		left: "50%"
+	});
+
 	//When number is clicked, make the call
 	var auxNumFax = fax.replace(/\D/g, '' );
 	Ti.API.info("Raw fax number: "+ auxNumFax);
@@ -396,62 +379,78 @@ else{
 	l10l.addEventListener('click', function(){
 		Titanium.Platform.openURL('tel:'+auxNumFax);
 	});
-}
 
-l10l.text = ""+fax;
+	l10l.text = ""+fax;
 	
-
-var l11 = Ti.UI.createLabel({
-	text: "Email: ",
-	height: "5%",
-	width:  "50%",
-	textAlign: 'right',
-	top: "81%",
-	left: 0,
-	touchEnabled: false
-});
-resultView.add(l11);
+	content[count] = l10l;
+	count++;
+}
 
 var email  =  results.fieldByName("email");
 
-if ( email == null )
-	email = "";
+if ( email != null ){
+	label[count] = Ti.UI.createLabel({
+		text: "Email: ",
+		height: "5%",
+		width:  "50%",
+		textAlign: 'right',
+		top: "81%",
+		left: 0,
+		touchEnabled: false
+	});
+	
+	content[count] = Ti.UI.createLabel({
+		text: ""+email,
+		height: "5%",
+		width:  "50%",
+		textAlign: 'left',
+		top: "81%",
+		left: "50%"
+	});
+	count++;
+}
 
-var l11l = Ti.UI.createLabel({
-	text: ""+email,
-	height: "5%",
-	width:  "50%",
-	textAlign: 'left',
-	top: "81%",
-	left: "50%"
-});
-resultView.add(l11l);
-
-var l12 = Ti.UI.createLabel({
-	text: "Description: ",
-	height: "auto",
-	width:  "50%",
-	textAlign: 'right',
-	top: "87%",
-	left: 0,
-	touchEnabled: false
-});
-resultView.add(l12);
 
 var description = results.fieldByName("description");
  	
-if ( description == null)
-	description = "";
+if ( description != null){
 	
-var l12l = Ti.UI.createLabel({
-	text: ""+description,
-	height: "auto",
-	width:  "50%",
-	textAlign: 'left',
-	top: "87%",
-	left: "50%"
-});
-resultView.add(l12l);
+	label[count] = Ti.UI.createLabel({
+		text: "Description: ",
+		height: "auto",
+		width:  "50%",
+		textAlign: 'right',
+		top: "87%",
+		left: 0,
+		touchEnabled: false
+	});
+	
+	content[count] = Ti.UI.createLabel({
+		text: ""+description,
+		height: "auto",
+		width:  "50%",
+		textAlign: 'left',
+		top: "87%",
+		left: "50%"
+	});
+	count++;
+}
+
+var hScreen = Titanium.Platform.displayCaps.platformHeight;
+
+var base = 0.42 - ((count - 1)*0.02);
+
+Ti.API.info("Items (count): "+ count);
+
+for (var i = 0; i < count ; i++){
+
+	var newTop = base + (i*0.05);
+	label[i].top = newTop*hScreen;
+	content[i].top = newTop*hScreen;
+	
+	resultView.add(label[i]);
+	resultView.add(content[i]);
+}
 
 
 results.close();

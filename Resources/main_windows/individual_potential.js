@@ -74,62 +74,102 @@ var header = Ti.UI.createView({
 });
 resultView.add(header);
 
-//Label containing "Name" 
-var labelName = Ti.UI.createLabel({
-	text: 'Name: ',
-	height: 'auto',
-	width:  '18%',
-	left: '5%',
-	font: {fontSize: 11},
-	textAlign: 'left',
-	touchEnabled: false,
-});
-
 //Label containing the selected name
 var labelNameContent = Ti.UI.createLabel({
 	text: win4.nameSelected,
 	height: 'auto',
-	width:  '77%',
-	left: '23%',
-	font: {fontSize: 11},
-	textAlign: 'left',
-	touchEnabled: false,
+	width:  '90%',
+	font: {fontSize: 18},
+	textAlign: 'center',
+	touchEnabled: false
 });
 
-header.add(labelName);
 header.add(labelNameContent);
 
-var screenWidth = Titanium.Platform.displayCaps.platformWidth;
-var screenHeight = Titanium.Platform.displayCaps.platformHeight;
+var label = [];
+var content = []; 
+var count = 0;
+
 
 Ti.API.info("Phone: "+results.fieldByName("phone"));
 Ti.API.info("Fax : "+results.fieldByName("fax"));
 
-var l3 = Ti.UI.createLabel({
-	text: "Name: ",
-	height: "5%",
-	width:  "50%",
-	textAlign: 'right',
-	top: "28%",
-	left: 0,
-	touchEnabled: false
-});
-resultView.add(l3);
-
 var name = results.fieldByName("name");
 
-if ( name == null)
-	name = "";
+if ( name != null){
 	
-var l3l = Ti.UI.createLabel({
-	text: ""+name,
-	height: "5%",
-	width:  "50%",
-	textAlign: 'left',
-	top: "28%",
-	left: "50%"
-});
-resultView.add(l3l);
+	label[count] = Ti.UI.createLabel({
+		text: "Name: ",
+		height: "5%",
+		width:  "50%",
+		textAlign: 'right',
+		top: "28%",
+		left: 0,
+		touchEnabled: false
+	});
+	
+	content[count] = Ti.UI.createLabel({
+		text: ""+name,
+		height: "5%",
+		width:  "50%",
+		textAlign: 'left',
+		top: "28%",
+		left: "50%"
+	});
+	
+	count++;
+
+}
+
+var account_nid = results.fieldByName("account_nid");
+
+if (account_nid != null){
+	var auxRes  = db.execute('SELECT * FROM account WHERE  nid = '+account_nid);
+	account_name = auxRes.fieldByName("name");
+	auxRes.close();
+	
+	label[count] = Ti.UI.createLabel({
+		text: "Account: ",
+		height: "5%",
+		width:  "50%",
+		textAlign: 'right',
+		top: "45%",
+		left: 0,
+		touchEnabled: false
+	});
+	
+	var l5l = Ti.UI.createLabel({
+		text: ""+account_name,
+		height: "5%",
+		width:  "50%",
+		textAlign: 'left',
+		top: "45%",
+		left: "50%"
+	});
+	
+	// When account is clicked opens a modal window to show off the content of the specific touched
+	// object.
+	
+	l5l.addEventListener('click', function(){
+		
+		var newWin = Ti.UI.createWindow({
+			fullscreen: true,
+			url: "individual_account.js"
+		});
+		
+		newWin.returnTo = "individual_potential.js";
+		newWin.nid      = account_nid;
+		newWin.nameSelected  = account_name;
+		newWin.nidToReturn   = win4.nid;
+		newWin.nameToReturn  = win4.nameSelected;
+		
+		newWin.open();
+	});
+	
+	content[count] = l5l;
+	count++;
+
+}
 
 var fresh = "";
 
@@ -137,29 +177,28 @@ if (results.fieldByName("potential_stage_tid") != null){
 	var auxRes  = db.execute('SELECT * FROM term_data WHERE  tid = '+results.fieldByName("potential_stage_tid"));
 	var fresh = auxRes.fieldByName("name");
 	auxRes.close();
+
+	label[count] = Ti.UI.createLabel({
+		text: "Potential stage: ",
+		height: "5%",
+		width:  "50%",
+		textAlign: 'right',
+		top: "38%",
+		left: 0,
+		touchEnabled: false
+	});
+	
+	content[count] = Ti.UI.createLabel({
+		text: ""+fresh,
+		height: "5%",
+		width:  "50%",
+		textAlign: 'left',
+		top: "38%",
+		left: "50%"
+	});
+	
+	count++;
 }
-
-
-var l5 = Ti.UI.createLabel({
-	text: "Potential stage: ",
-	height: "5%",
-	width:  "50%",
-	textAlign: 'right',
-	top: "38%",
-	left: 0,
-	touchEnabled: false
-});
-resultView.add(l5);
-
-var l5l = Ti.UI.createLabel({
-	text: ""+fresh,
-	height: "5%",
-	width:  "50%",
-	textAlign: 'left',
-	top: "38%",
-	left: "50%"
-});
-resultView.add(l5l);
 
 
 var fresh1 = "";
@@ -168,29 +207,28 @@ if (results.fieldByName("competing_company_tid") != null){
 	var auxRes  = db.execute('SELECT * FROM term_data WHERE  tid = '+results.fieldByName("competing_company_tid"));
 	var fresh1 = auxRes.fieldByName("name");
 	auxRes.close();
+
+	label[count] = Ti.UI.createLabel({
+		text: "Competing company: ",
+		height: "5%",
+		width:  "50%",
+		textAlign: 'right',
+		top: "48%",
+		left: 0,
+		touchEnabled: false
+	});
+	
+	content[count] = Ti.UI.createLabel({
+		text: ""+fresh1,
+		height: "5%",
+		width:  "50%",
+		textAlign: 'left',
+		top: "48%",
+		left: "50%"
+	});
+	
+	count++;
 }
-
-var l6 = Ti.UI.createLabel({
-	text: "Competing company: ",
-	height: "5%",
-	width:  "50%",
-	textAlign: 'right',
-	top: "48%",
-	left: 0,
-	touchEnabled: false
-});
-resultView.add(l6);
-
-
-var l6l = Ti.UI.createLabel({
-	text: ""+fresh1,
-	height: "5%",
-	width:  "50%",
-	textAlign: 'left',
-	top: "48%",
-	left: "50%"
-});
-resultView.add(l6l);
 
 var fresh2 = "";
 
@@ -198,106 +236,126 @@ if (results.fieldByName("potential_type_tid") != null){
 	var auxRes  = db.execute('SELECT * FROM term_data WHERE  tid = '+results.fieldByName("potential_type_tid"));
 	var fresh2 = auxRes.fieldByName("name");
 	auxRes.close();
+
+	label[count] = Ti.UI.createLabel({
+		text: "Potential type: ",
+		height: "5%",
+		width:  "50%",
+		textAlign: 'right',
+		top: "58%",
+		left: 0,
+		touchEnabled: false
+	});
+	
+	content[count] = Ti.UI.createLabel({
+		text: ""+fresh2,
+		height: "5%",
+		width:  "50%",
+		textAlign: 'left',
+		top: "58%",
+		left: "50%"
+	});
+	
+	count++;
 }
-
-var l7 = Ti.UI.createLabel({
-	text: "Potential type: ",
-	height: "5%",
-	width:  "50%",
-	textAlign: 'right',
-	top: "58%",
-	left: 0,
-	touchEnabled: false
-});
-resultView.add(l7);
-
-var l7l = Ti.UI.createLabel({
-	text: ""+fresh2,
-	height: "5%",
-	width:  "50%",
-	textAlign: 'left',
-	top: "58%",
-	left: "50%"
-});
-resultView.add(l7l);
-
-var l8 = Ti.UI.createLabel({
-	text: "Closing date: ",
-	height: "5%",
-	width:  "50%",
-	textAlign: 'right',
-	top: "68%",
-	left: 0,
-	touchEnabled: false
-});
-resultView.add(l8);
 
 var closing_date = results.fieldByName("closing_date");
 
-if ( closing_date == null)
-	closing_date = "";
+if ( closing_date != null){
 	
-var l8l = Ti.UI.createLabel({
-	text: ""+closing_date,
-	height: "5%",
-	width:  "50%",
-	textAlign: 'left',
-	top: "68%",
-	left: "50%"
-});
-resultView.add(l8l);
+	label[count] = Ti.UI.createLabel({
+		text: "Closing date: ",
+		height: "5%",
+		width:  "50%",
+		textAlign: 'right',
+		top: "68%",
+		left: 0,
+		touchEnabled: false
+	});	
+		
+	content[count] = Ti.UI.createLabel({
+		text: ""+closing_date,
+		height: "5%",
+		width:  "50%",
+		textAlign: 'left',
+		top: "68%",
+		left: "50%"
+	});
+	
+	count++;
 
-var l9 = Ti.UI.createLabel({
-	text: "Next step: ",
-	height: "5%",
-	width:  "50%",
-	textAlign: 'right',
-	top: "78%",
-	left:0,
-	touchEnabled: false
-});
-resultView.add(l9);
+}
+
 
 var next_step = results.fieldByName("next_step");
 
-if ( next_step == null )
-	next_step = "";
+if ( next_step != null ){
 	
-var l9l = Ti.UI.createLabel({
-	text: ""+next_step,
-	height: "5%",
-	width:  "50%",
-	textAlign: 'left',
-	top: "78%",
-	left: "50%"
-});
-resultView.add(l9l);
+	label[count] = Ti.UI.createLabel({
+		text: "Next step: ",
+		height: "5%",
+		width:  "50%",
+		textAlign: 'right',
+		top: "78%",
+		left:0,
+		touchEnabled: false
+	});
+		
+	content[count] = Ti.UI.createLabel({
+		text: ""+next_step,
+		height: "5%",
+		width:  "50%",
+		textAlign: 'left',
+		top: "78%",
+		left: "50%"
+	});
+	
+	count++;
+}
 
-var l10 = Ti.UI.createLabel({
-	text: "Description: ",
-	height: "auto",
-	width:  "50%",
-	textAlign: 'right',
-	top: "88%",
-	left: 0,
-	touchEnabled: false
-});
-resultView.add(l10);
 
 var description = results.fieldByName("description");
 
-if ( description == null )
-	description = "";
+if ( description != null ){
 	
-var l10l = Ti.UI.createLabel({
-	text: ""+description,
-	height: "auto",
-	width:  "50%",
-	textAlign: 'left',
-	top: "88%",
-	left: "50%"
-});
-resultView.add(l10l);
+	label[count] = Ti.UI.createLabel({
+		text: "Description: ",
+		height: "auto",
+		width:  "50%",
+		textAlign: 'right',
+		top: "88%",
+		left: 0,
+		touchEnabled: false
+	});
+		
+	content[count] = Ti.UI.createLabel({
+		text: ""+description,
+		height: "auto",
+		width:  "50%",
+		textAlign: 'left',
+		top: "88%",
+		left: "50%"
+	});
+	
+	count++;
+}
+
+var hScreen = Titanium.Platform.displayCaps.platformHeight;
+
+var base = 0.42 - ((count - 1)*0.02);
+
+Ti.API.info("Items (count): "+ count);
+
+for (var i = 0; i < count ; i++){
+
+	var newTop = base + (i*0.05);
+	label[i].top = newTop*hScreen;
+	content[i].top = newTop*hScreen;
+	
+	resultView.add(label[i]);
+	resultView.add(content[i]);
+}
+
 
 results.close();
 

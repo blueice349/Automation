@@ -3,6 +3,8 @@ Logfile initialized
 [DEBUG] /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/builder.py distribute ConnectCRM /home/joseandro/Apps/android-sdk /home/joseandro/Apps/ConnectCRM joseandro.connect.com /home/joseandro/keystores/android.keystore borsoi87 omadi /home/joseandro/Desktop 10
 [INFO] Titanium SDK version: 1.7.2 (07/21/11 09:36 97c3689)
 [INFO] Copying project resources..
+[TRACE] COPYING MODIFIED FILE: /home/joseandro/Apps/ConnectCRM/Resources/lib/functions.js => /home/joseandro/Apps/ConnectCRM/build/android/bin/assets/Resources/lib/functions.js
+[TRACE] COPYING MODIFIED FILE: /home/joseandro/Apps/ConnectCRM/Resources/app.js => /home/joseandro/Apps/ConnectCRM/build/android/bin/assets/Resources/app.js
 [TRACE] Generating Java Classes
 [DEBUG] Processing Android resource drawables
 [DEBUG] copying app icon: /home/joseandro/Apps/ConnectCRM/build/android/bin/assets/Resources/appicon.png

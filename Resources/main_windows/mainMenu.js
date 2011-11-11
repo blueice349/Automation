@@ -19,6 +19,7 @@ Ti.include('../lib/functions.js');
 
 var version = 'Omadi Inc';
 
+var isFirstTime = false;
 var label_status = Titanium.UI.createLabel({
 	color:'#FFFFFF',
 	text: 'Omadi Inc',
@@ -27,7 +28,6 @@ var label_status = Titanium.UI.createLabel({
 	textAlign:'center'
 });
 
-Titanium.App.Properties.setString("databaseVersion", "omadiDb456");
 Titanium.App.Properties.setBool("UpRunning", false);
 
 var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
@@ -80,29 +80,30 @@ function checkUpdate (){
 
 var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
 if (updatedTime.fieldByName('timestamp') == 0){
+	isFirstTime = true;
 	checkUpdate();
 }
 updatedTime.close();
 
 
 //Button Contacts
-var bContacts = Titanium.UI.createButton({
-   title: 'Contacts',
+var bFirst = Titanium.UI.createButton({
+   title: 'Leads',
    width: '80%',
    height: '9%',
    top: '13%' 
 });
 
 //Button Leads
-var bLeads = Titanium.UI.createButton({
-   title: 'Leads',
+var bSecond = Titanium.UI.createButton({
+   title: 'Contacts',
    width: '80%',
    height: '9%',
    top: '30%' 
 });
 
 //Button Accounts
-var bAccounts = Titanium.UI.createButton({
+var bThird = Titanium.UI.createButton({
    title: 'Accounts',
    width: '80%',
    height: '9%',
@@ -110,7 +111,7 @@ var bAccounts = Titanium.UI.createButton({
 });
 
 //Button Accounts
-var bPotentials = Titanium.UI.createButton({
+var bFourth = Titanium.UI.createButton({
    title: 'Potentials',
    width: '80%',
    height: '9%',
@@ -118,7 +119,7 @@ var bPotentials = Titanium.UI.createButton({
 });
 
 //Button Settings
-var bSettings = Titanium.UI.createButton({
+var bFiveth = Titanium.UI.createButton({
    title: 'Settings',
    width: '80%',
    height: '9%',
@@ -131,15 +132,60 @@ var jsonLogin = JSON.parse(win2.result) ;
 //Retrieves username
 var name = jsonLogin.user.name;
 
-// showToolbar(name, actualWindow)					
-showToolbar( name, win2 );
+// showToolbar(name, win2)					
+var loggedView = Titanium.UI.createView({
+	top: '0px',	
+	backgroundColor:'#111',
+	height: '10%',
+	width: '100%',
+	opacity: 0.99,
+	borderRadius:5
+});
+
+var label_top = Titanium.UI.createLabel({
+	color:'#FFFFFF',
+	text:'Logged in as '+ name,
+	textAlign: 'left',
+	width:'75%',
+	left: '5%',
+	horizontalAlign: 'left',
+	height: 'auto'
+}); 
+
+var offImage = Titanium.UI.createImageView({
+    image: Titanium.Android.R.drawable.ic_menu_close_clear_cancel,
+	left: '85%',
+	width:'30px',
+	height: '30px'
+});
+
+loggedView.add(label_top);
+loggedView.add(offImage);					
+win2.add(loggedView);
+
+offImage.addEventListener('click',function(e)
+{
+	// window container
+	indLog = Titanium.UI.createWindow({
+	    url: 'logDecision.js',
+	    fullscreen: true
+	});
+
+	//Setting both windows with login values:
+	indLog.log		 = win2.log;
+	indLog.result	 = win2.result;
+	indLog.picked 	 = win2.picked;
+    
+    indLog.open();
+   	win2.close();    	
+});
 
 //Go to contact.js when contact's button is clicked
-bContacts.addEventListener('click',function(e){
+bFirst.addEventListener('click',function(e){
 
 	var win3 = Titanium.UI.createWindow({  
 		fullscreen: true,
-		url:'contacts.js'
+		url:'leads.js'
 	});
 
 	//Passes parameter to the contact's window:
@@ -154,11 +200,11 @@ bContacts.addEventListener('click',function(e){
 
 //Show black screen when Leads's button is clicked
 // When the black screen receives one click, it closes
-bLeads.addEventListener('click',function(e){
+bSecond.addEventListener('click',function(e){
 
 	var win3 = Titanium.UI.createWindow({  
 		fullscreen: true,
-		url:'leads.js',
+		url:'contacts.js',
 	});
 
 	//Passes parameter to the contact's window:
@@ -170,10 +216,10 @@ bLeads.addEventListener('click',function(e){
 	//Manages memory leaking
 	win3.open();
 });
-//bLeads.enabled = false;
+//bSecond.enabled = false;
 
 //Go to contact.js when contact's button is clicked
-bAccounts.addEventListener('click',function(e){
+bThird.addEventListener('click',function(e){
 
 	var win3 = Titanium.UI.createWindow({  
 		fullscreen: true,
@@ -189,7 +235,7 @@ bAccounts.addEventListener('click',function(e){
 	win3.open();
 });
 
-bPotentials.addEventListener('click',function(e){
+bFourth.addEventListener('click',function(e){
 
 	var win3 = Titanium.UI.createWindow({  
 		fullscreen: true,
@@ -206,11 +252,12 @@ bPotentials.addEventListener('click',function(e){
 	win3.open();
 });
 
-bSettings.addEventListener('click',function(e){
+
+bFiveth.addEventListener('click',function(e){
 
 	var win3 = Titanium.UI.createWindow({  
 		fullscreen: true,
-		url:'settings.js',
+		url:'settings.js'
 	});
 
 	//Passes parameter to the contact's window:
@@ -218,6 +265,7 @@ bSettings.addEventListener('click',function(e){
 	win3.picked 	 = win2.picked;
 	win3.name   	 = name;
 	win3.result      = win2.result;
+	win3.firstOpen	 = true;
 
 	//Manages memory leaking
 	win3.open();
@@ -225,6 +273,7 @@ bSettings.addEventListener('click',function(e){
 
 //Action taken when syncronization button is pressed
 function updateMe(){
+
 	var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
 	
 	Ti.API.info("Timestamp: "+ updatedTime.fieldByName('timestamp'));	
@@ -253,11 +302,11 @@ databaseStatusView.add(label_status);
 win2.add(databaseStatusView);
 
 //Adds both buttons to the current window
-win2.add(bContacts);
-win2.add(bLeads);
-win2.add(bAccounts);
-win2.add(bPotentials);
-win2.add(bSettings);
+win2.add(bFirst);
+win2.add(bSecond);
+win2.add(bThird);
+win2.add(bFourth);
+win2.add(bFiveth);
 
 //Sets only portrait mode
 win2.orientationModes = [ Titanium.UI.PORTRAIT ];

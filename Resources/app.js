@@ -24,6 +24,9 @@ var win1 = Titanium.UI.createWindow({
     fullscreen: true
 });
 
+Titanium.App.Properties.setString("databaseVersion", "omadiDb461");
+
+var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
 //Label Website:
 var label_website = Titanium.UI.createLabel({
@@ -170,6 +173,30 @@ b1.addEventListener('click', function(){
 	tf2.blur();
 	tf1.blur();
 	//alert(picker.getSelectedRow(0).value);
+	
+	//Check database:
+	
+	
+	var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
+	if (updatedTime.fieldByName('timestamp') != 0){
+		var url = db.execute('SELECT url FROM updated WHERE rowid=1');
+		if ( url.fieldByName('url') !=  picker.getSelectedRow(0).value){
+			showIndicatorDelete("Hold on, we are deleting the old database and creating a fresh one for you");
+			db.execute('DELETE FROM account');
+			db.execute('DELETE FROM contact');
+			db.execute('DELETE FROM lead');			
+			db.execute('DELETE FROM node');
+			db.execute('DELETE FROM potential');
+			db.execute('DELETE FROM task');
+			db.execute('DELETE FROM term_data');
+			db.execute('DELETE FROM updated');
+			db.execute('DELETE FROM users');
+			db.execute('DELETE FROM vocabulary');
+			db.execute('INSERT INTO updated (timestamp, url) VALUES (?,?)', 0 , null);				
+			hideIndicator();
+		}
+	}
+	updatedTime.close();
 	
 	//Empty text fields
 	if ( tf1.value == "" || tf2.value == "" ){

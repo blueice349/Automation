@@ -26,12 +26,11 @@ setInterval(function(){
 			url: "settings.js",
 			fullscreen: true
 		});
-
 		winSettings.log	     = updateWin.log;
 		winSettings.picked 	 = updateWin.picked;
 		winSettings.name   	 = updateWin.name;
 		winSettings.result   = updateWin.result;
-
+						
 		winSettings.open();
 		updateWin.close();
 	}
