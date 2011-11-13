@@ -227,6 +227,9 @@ bFiveth.addEventListener('click',function(e){
 		fullscreen: true,
 		url:'settings.js'
 	});
+	
+	win3.log		 = win2.log;
+	win3.picked 	 = win2.picked;
 	win3.open();
 });
 

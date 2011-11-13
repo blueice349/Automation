@@ -61,8 +61,6 @@ bSync.addEventListener('click', function(){
 		
 		updateWin.log	     = win2.log;
 		updateWin.picked 	 = win2.picked;
-		updateWin.name   	 = win2.name;
-		updateWin.result     = win2.result;
 
 		updateWin.open();
 		win2.close();

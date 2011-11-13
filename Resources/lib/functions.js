@@ -417,7 +417,7 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 			if (( calledFrom == "settings") && !existsMorePages){
 				setInterval(function(){
 						hideIndicator();
-					}, 3000);	
+					}, 2000);	
 			}
 		}
 		else

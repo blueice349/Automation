@@ -26,6 +26,9 @@ setInterval(function(){
 			fullscreen: true
 		});
 
+		winSettings.log	     = updateWin.log;
+		winSettings.picked 	 = updateWin.picked;
+
 		winSettings.open();
 		updateWin.close();
 	}
