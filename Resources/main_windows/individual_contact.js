@@ -31,20 +31,12 @@ var logWindow = Titanium.UI.createWindow({
 var goToWindow = Titanium.UI.createWindow({  
 	fullscreen: true,
 	url:'contacts.js',
+	notOpen: true	
 });
 
 //When back button on the phone is pressed, it opens mainMenu.js and close the current window
 win4.addEventListener('android:back', function() {
 	Ti.API.info("Back to the step before");
-
-	//Passing back the parameters
-	goToWindow.log = win4.log;
-   	goToWindow.picked = win4.picked;
-	goToWindow.result = win4.result;
-	goToWindow.name = win4.name;
-
-	//Avoiding memory leaking problems:	
-	goToWindow.open();
 	win4.close();
 });
 	
@@ -78,7 +70,7 @@ var labelNameContent = Ti.UI.createLabel({
 	text: win4.nameSelected,
 	height: 'auto',
 	width:  '90%',
-	font: {fontSize: 18},
+	font: {fontSize: 18,  fontWeight: "bold"},
 	textAlign: 'center',
 	touchEnabled: false
 });
@@ -110,58 +102,6 @@ if ( owner != null ){
 		left: "50%",
 		textAlign: 'left',
 		top: "27%"
-	});
-	
-	count++;
-}
-
-var first_name = results.fieldByName("first_name");
-
-if (first_name == null ){
-	
-	label[count] = Ti.UI.createLabel({
-		text: "First name: ",
-		height: "5%",
-		left: 0,
-		width:  "50%",
-		textAlign: 'right',
-		top: "33%",
-		touchEnabled: false
-	});
-		
-	content[count] = Ti.UI.createLabel({
-		text: ""+first_name,
-		height: "5%",
-		width:  "50%",
-		textAlign: 'left',
-		left: "50%",
-		top: "33%"
-	});
-	
-	count++;
-}
-
-var last_name = results.fieldByName("last_name");
-
-if ( last_name == null){
-	
-	label[count] = Ti.UI.createLabel({
-		text: "Last name: ",
-		height: "5%",
-		width:  "50%",
-		textAlign: 'right',
-		left: 0,
-		top: "39%",
-		touchEnabled: false
-	});
-	
-	content[count] = Ti.UI.createLabel({
-		text: ""+last_name,
-		height: "5%",
-		width:  "50%",
-		textAlign: 'left',
-		left: "50%",
-		top: "39%",
 	});
 	
 	count++;
@@ -446,10 +386,14 @@ for (var i = 0; i < count ; i++){
 
 	var newTop = base + (i*0.05);
 	label[i].top = newTop*hScreen;
-	content[i].top = newTop*hScreen;
+	label[i].color = "#999999";
 	
+	content[i].top = newTop*hScreen;
+	content[i].color = "#FFFFFF";
+		
 	resultView.add(label[i]);
 	resultView.add(content[i]);
+
 }
 
 

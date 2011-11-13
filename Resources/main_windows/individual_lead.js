@@ -19,32 +19,16 @@ var win4 = Ti.UI.currentWindow;
 //Sets only portrait mode
 win4.orientationModes = [ Titanium.UI.PORTRAIT ];
 
-//
-// create base UI root window
-//
-var logWindow = Titanium.UI.createWindow({  
-	fullscreen: true,
-	url:'../app.js',
-});
-
 //Definition of the window before (opens when the user clicks on the back button)
 var goToWindow = Titanium.UI.createWindow({  
 	fullscreen: true,
 	url:'leads.js',
+	notOpen: true
 });
 
 //When back button on the phone is pressed, it opens mainMenu.js and close the current window
 win4.addEventListener('android:back', function() {
 	Ti.API.info("Back to the step before");
-
-	//Passing back the parameters
-	goToWindow.log = win4.log;
-   	goToWindow.picked = win4.picked;
-	goToWindow.result = win4.result;
-	goToWindow.name = win4.name;
-
-	//Avoiding memory leaking problems:	
-	goToWindow.open();
 	win4.close();
 });
 	
@@ -81,7 +65,7 @@ var labelNameContent = Ti.UI.createLabel({
 	text: win4.nameSelected,
 	height: 'auto',
 	width:  '90%',
-	font: {fontSize: 18},
+	font: {fontSize: 18 , fontWeight: "bold"},
 	textAlign: 'center',
 	touchEnabled: false
 });
@@ -97,53 +81,6 @@ Ti.API.info("Fax : "+results.fieldByName("fax"));
 var label = [];
 var content = []; 
 var count = 0;
-
-var first_name = results.fieldByName("first_name");
-
-if (first_name != null){
-	label[count]  = Ti.UI.createLabel({
-		text: "First name: ",
-		height: "5%",
-		width:  "50%",
-		textAlign: 'right',
-		left: 0,
-		touchEnabled: false
-	});
-
-	content[count] = Ti.UI.createLabel({
-		text: ""+first_name,
-		height: "5%",
-		width:  "50%",
-		textAlign: 'left',
-		left: "50%"
-	});
-	Ti.API.info("Name : "+ count); 
-	count++;
-}
-	
-var last_name = results.fieldByName("last_name");
-
-if (last_name != null){
-	label[count] = Ti.UI.createLabel({
-		text: "Last name: ",
-		height: "5%",
-		width:  "50%",
-		textAlign: 'right',
-		left: 0,
-		touchEnabled: false
-	});
-		
-	content[count] = Ti.UI.createLabel({
-		text: ""+last_name,
-		height: "5%",
-		width:  "50%",
-		textAlign: 'left',
-		left: "50%"
-	});
-	Ti.API.info("Last name: "+ count);
-
-	count++;
-}
 
 var fresh = "";
 
@@ -489,8 +426,11 @@ for (var i = 0; i < count ; i++){
 
 	var newTop = base + (i*0.05);
 	label[i].top = newTop*hScreen;
-	content[i].top = newTop*hScreen;
+	label[i].color = "#999999";
 	
+	content[i].top = newTop*hScreen;
+	content[i].color = "#FFFFFF";
+		
 	resultView.add(label[i]);
 	resultView.add(content[i]);
 }

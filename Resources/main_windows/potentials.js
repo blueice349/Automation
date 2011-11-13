@@ -19,6 +19,14 @@ var win5 = Ti.UI.currentWindow;
 //Sets only portrait mode
 win5.orientationModes = [Titanium.UI.PORTRAIT];
 
+win5.addEventListener('open', function(){
+    win5.softKeyboardOnFocus = 0;
+});
+
+Ti.UI.currentWindow.addEventListener('focus', function(e) {
+    search.blur();
+});
+
 //
 // create base UI root window
 //
@@ -38,14 +46,6 @@ var goToWindow = Titanium.UI.createWindow({
 //When back button on the phone is pressed, it opens mainMenu.js and close the current window
 win5.addEventListener('android:back', function() {
 	Ti.API.info("Back to the step before");
-
-	//Passing back the parameters
-	goToWindow.log = win5.log;
-	goToWindow.picked = win5.picked;
-	goToWindow.result = win5.result;
-
-	//Avoids memory leaking problems:
-	goToWindow.open();
 	win5.close();
 });
 
@@ -152,19 +152,13 @@ else {
 		//hide keyboard 
 
 		//Passing parameters
-		win4.log = win5.log;
-		win4.picked = win5.picked;
-		win4.name = win5.name;
-		win4.label_error = win5.label_error;
 		win4.result = win5.result;
 		win4.nid = e.row.nid;
 		win4.nameSelected = e.row.name;
 
 		//Avoiding memory leaking
 		win4.open();
-		search.hide();
 		resultsNames.close();
-		win5.close();
 
 	});
 	//Adds contact list container to the UI

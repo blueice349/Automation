@@ -38,14 +38,6 @@ var goToWindow = Titanium.UI.createWindow({
 //When back button on the phone is pressed, it opens mainMenu.js and close the current window
 win3.addEventListener('android:back', function() {
 	Ti.API.info("Back to the step before");
-
-	//Passing back the parameters
-	goToWindow.log = win3.log;
-	goToWindow.picked = win3.picked;
-	goToWindow.result = win3.result;
-
-	//Avoids memory leaking problems:
-	goToWindow.open();
 	win3.close();
 });
 
@@ -61,7 +53,15 @@ var i = 0;
 i = 0;
 while (resultsNames.isValidRow())
 {
-	var fullName = resultsNames.fieldByName('first_name') +" "+ resultsNames.fieldByName('last_name');
+
+	if ((resultsNames.fieldByName('first_name') != null) && (resultsNames.fieldByName('last_name') != null ))
+		var fullName = resultsNames.fieldByName('first_name') +" "+ resultsNames.fieldByName('last_name');	
+	else if (resultsNames.fieldByName('first_name') == null)  
+		var fullName = resultsNames.fieldByName('last_name');
+	else
+		var fullName = resultsNames.fieldByName('first_name');
+
+
 	var row = Ti.UI.createTableViewRow({
 		height : 'auto',
 		hasChild : false,
@@ -116,6 +116,14 @@ else {
 		height : '91%'
 	});
 
+	win3.addEventListener('open', function(){
+	    win3.softKeyboardOnFocus = 0;
+	});
+
+	Ti.UI.currentWindow.addEventListener('focus', function(e) {
+	    search.blur();
+	});
+
 	// SEARCH BAR EVENTS
 	search.addEventListener('change', function(e) {
 		e.value // search string as user types
@@ -144,29 +152,20 @@ else {
 			url : 'individual_lead.js'
 		});
 
-		search.blur();
 		//hide keyboard
+		search.blur();
 
 		//Passing parameters
-		win4.log = win3.log;
-		win4.picked = win3.picked;
-		win4.name = win3.name;
-		win4.label_error = win3.label_error;
-		win4.result = win3.result;
 		win4.nid = e.row.nid;
 		win4.nameSelected = e.row.name;
 
 		//Avoiding memory leaking
 		win4.open();
-		search.hide();
 		resultsNames.close();
-		win3.close();
-
 	});
 	//Adds contact list container to the UI
 	win3.add(listTableView);
 	search.blur();
-
 }
 	
 //showBottom(actualWindow, goToWindow )

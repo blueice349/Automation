@@ -78,14 +78,6 @@ function checkUpdate (){
 	}
 };
 
-var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
-if (updatedTime.fieldByName('timestamp') == 0){
-	isFirstTime = true;
-	checkUpdate();
-}
-updatedTime.close();
-
-
 //Button Contacts
 var bFirst = Titanium.UI.createButton({
    title: 'Leads',
@@ -165,19 +157,26 @@ win2.add(loggedView);
 
 offImage.addEventListener('click',function(e)
 {
-	// window container
-	indLog = Titanium.UI.createWindow({
-	    url: 'logDecision.js',
-	    fullscreen: true
-	});
+	if (Titanium.App.Properties.getBool("UpRunning")){
+		alert ("We are updating your database, please hold on");
+	}
+	else{
+		// window container
+		indLog = Titanium.UI.createWindow({
+		    url: 'logDecision.js',
+		    fullscreen: true
+		});
+	
+		//Setting both windows with login values:
+		indLog.log		 = win2.log;
+		indLog.result	 = win2.result;
+		indLog.picked 	 = win2.picked;
+	    
+	    indLog.open();
+	    db.close();
+	   	win2.close();    	
+	}
 
-	//Setting both windows with login values:
-	indLog.log		 = win2.log;
-	indLog.result	 = win2.result;
-	indLog.picked 	 = win2.picked;
-    
-    indLog.open();
-   	win2.close();    	
 });
 
 //Go to contact.js when contact's button is clicked
@@ -187,14 +186,6 @@ bFirst.addEventListener('click',function(e){
 		fullscreen: true,
 		url:'leads.js'
 	});
-
-	//Passes parameter to the contact's window:
-	win3.name   	 = name;
-	win3.result      = win2.result;
-	win3.log	     = win2.log;
-	win3.picked 	 = win2.picked;
-	
-	//Manages memory leaking
 	win3.open();
 });
 
@@ -206,14 +197,6 @@ bSecond.addEventListener('click',function(e){
 		fullscreen: true,
 		url:'contacts.js',
 	});
-
-	//Passes parameter to the contact's window:
-	win3.name   	 = name;
-	win3.result      = win2.result;
-	win3.log	     = win2.log;
-	win3.picked 	 = win2.picked;
-
-	//Manages memory leaking
 	win3.open();
 });
 //bSecond.enabled = false;
@@ -225,13 +208,6 @@ bThird.addEventListener('click',function(e){
 		fullscreen: true,
 		url:'accounts.js',
 	});
-
-	//Passes parameter to the contact's window:
-	win3.name   	 = name;
-	win3.result      = win2.result;
-	win3.log	     = win2.log;
-	win3.picked 	 = win2.picked;
-
 	win3.open();
 });
 
@@ -241,14 +217,6 @@ bFourth.addEventListener('click',function(e){
 		fullscreen: true,
 		url:'potentials.js',
 	});
-
-	//Passes parameter to the contact's window:
-	win3.name   	 = name;
-	win3.result      = win2.result;
-	win3.log	     = win2.log;
-	win3.picked 	 = win2.picked;
-
-	//Manages memory leaking
 	win3.open();
 });
 
@@ -259,15 +227,6 @@ bFiveth.addEventListener('click',function(e){
 		fullscreen: true,
 		url:'settings.js'
 	});
-
-	//Passes parameter to the contact's window:
-	win3.log	     = win2.log;
-	win3.picked 	 = win2.picked;
-	win3.name   	 = name;
-	win3.result      = win2.result;
-	win3.firstOpen	 = true;
-
-	//Manages memory leaking
 	win3.open();
 });
 
@@ -289,17 +248,25 @@ function updateMe(){
 
 //View at the bottom to show user the database's status
 var databaseStatusView = Titanium.UI.createView({
-	bottom: '0px',	
 	backgroundColor:'#111',
 	height: '7%',
 	width: '100%',
 	opacity: 0.99,
-	borderRadius:0
+	borderRadius:0,
+	bottom: 0
 });
 
 databaseStatusView.add(label_status);
-
 win2.add(databaseStatusView);
+
+var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
+if (updatedTime.fieldByName('timestamp') == 0){
+	Titanium.App.Properties.setInt("maxIndex", 100); 
+	fireStatusFirstInstall();
+	isFirstTime = true;
+	checkUpdate();
+}
+updatedTime.close();
 
 //Adds both buttons to the current window
 win2.add(bFirst);

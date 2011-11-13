@@ -39,14 +39,6 @@ var goToWindow = Titanium.UI.createWindow({
 //When back button on the phone is pressed, it opens mainMenu.js and close the current window
 win2.addEventListener('android:back', function() {
 	Ti.API.info("Back to the step before");
-
-	//Passing back the parameters
-	goToWindow.log = win2.log;
-	goToWindow.picked = win2.picked;
-	goToWindow.result = win2.result;
-
-	//Avoids memory leaking problems:
-	goToWindow.open();
 	win2.close();
 });
 

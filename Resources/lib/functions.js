@@ -110,6 +110,81 @@ function showIndicator(show)
     actInd.show();
 };
 
+function fireStatusFirstInstall(){
+	
+	var firstRound = true;
+	
+   	var a1 = Titanium.UI.createAnimation();
+	a1.bottom =  -1*Ti.Platform.displayCaps.platformHeight*0.1;
+	a1.duration = 1000;
+
+   	var a2 = Titanium.UI.createAnimation();
+	a2.bottom = 0;
+	a2.duration = 1000;
+
+
+    // black view
+    var indView = Titanium.UI.createView({
+        height: '8%',
+        width: '100%',
+        backgroundColor:'#111',
+        opacity:0.9,
+        bottom: -1*Ti.Platform.displayCaps.platformHeight*0.1,
+    });
+
+    Ti.UI.currentWindow.add(indView);
+    
+    databaseStatusView.animate(a1);
+	
+	setTimeout (function (){
+		indView.animate(a2);
+	}, 700);
+   	
+    var pb=Titanium.UI.createProgressBar({
+	    width:"70%",
+	    min:0,
+	    max:100,
+	    value:0,
+	    color:'#fff',
+	    message:'Installing Updates',
+	    font:{fontSize:14}
+	});
+ 	
+ 	indView.add(pb);
+	
+	var alreadyAnimating = false;
+	
+	function updateStatus(){
+		if (Titanium.App.Properties.getInt("maxIndex", 0) < 0 ){
+			pb.value = 100;
+		}
+		else
+		{
+			if ((Titanium.App.Properties.getInt("index") == 0) && (Titanium.App.Properties.getInt("maxIndex") == 1)){
+				pb.value = 50;
+			}
+			else{
+				pb.value = (Titanium.App.Properties.getInt("index")*100/Titanium.App.Properties.getInt("maxIndex") );					
+			}
+		}
+		
+		if ((pb.value == 100 ) && (!alreadyAnimating)){
+			clearInterval(timer);
+			firstRound = false;
+			alreadyAnimating = true;
+			indView.animate(a1);
+			setTimeout (function (){
+				databaseStatusView.animate(a2);
+			}, 700);
+
+		}
+
+	}
+	var timer = setInterval(updateStatus, 1500);
+	
+}
+
+
 function showIndicatorDelete(inform)
 {
 	Titanium.App.Properties.setBool("indicatorActive", true);
@@ -235,16 +310,17 @@ function showBottom(actualWindow, goToWindow ){
 		height: 'auto'
 	}); 
 	
-	
 	backView.add(label_bottom);
 	
 	backView.addEventListener('click', function(){
-		goToWindow.log = actualWindow.log;
-    	goToWindow.picked = actualWindow.picked;
-    	goToWindow.result = actualWindow.result;
-		goToWindow.name = actualWindow.name;
+		if (!goToWindow.notOpen){
+			goToWindow.log = actualWindow.log;
+	    	goToWindow.picked = actualWindow.picked;
+	    	goToWindow.result = actualWindow.result;
+			goToWindow.name = actualWindow.name;
+		}
 		
-		if (actualWindow.returnTo == "individual_contacts.js"){
+		if ((actualWindow.returnTo == "individual_contact.js") || (actualWindow.returnTo == "individual_potential.js") ){
 			goToWindow.nid = actualWindow.nidToReturn;
 			goToWindow.nameSelected = actualWindow.nameToReturn;
 		}
@@ -329,7 +405,8 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 						bSecond.enabled = true;
 						bThird.enabled = true;
 						bFourth.enabled = true;
-						bFiveth.enabled = true;												
+						bFiveth.enabled = true;
+										
 					}
 					isFirstTime = false;
 			}

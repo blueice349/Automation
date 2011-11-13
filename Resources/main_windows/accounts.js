@@ -36,15 +36,6 @@ var goToWindow = Titanium.UI.createWindow({
 
 //When back button on the phone is pressed, it opens mainMenu.js and close the current window
 win3.addEventListener('android:back', function() {
-	Ti.API.info("Back to the step before");
-
-	//Passing back the parameters
-	goToWindow.log = win3.log;
-	goToWindow.picked = win3.picked;
-	goToWindow.result = win3.result;
-
-	//Avoids memory leaking problems:
-	goToWindow.open();
 	win3.close();
 });
 
@@ -98,6 +89,14 @@ if(data.length < 1) {
 }
 //Shows the contacts
 else {
+	
+	win3.addEventListener('open', function(){
+    	win3.softKeyboardOnFocus = 0;
+	});
+
+	Ti.UI.currentWindow.addEventListener('focus', function(e) {
+	    search.blur();
+	});
 	//Sort the array (A>B>C>...>Z):
 	data.sort(sortTableView);
 
@@ -151,20 +150,12 @@ else {
 		//hide keyboard
 
 		//Passing parameters
-		win4.log = win3.log;
-		win4.picked = win3.picked;
-		win4.name = win3.name;
-		win4.label_error = win3.label_error;
-		win4.result = win3.result;
 		win4.nid = e.row.nid;
 		win4.nameSelected = e.row.name;
 
 		//Avoiding memory leaking
 		win4.open();
-		search.hide();
 		resultsNames.close();
-		win3.close();
-
 	});
 	//Adds contact list container to the UI
 	win3.add(listTableView);

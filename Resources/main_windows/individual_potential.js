@@ -31,20 +31,12 @@ var logWindow = Titanium.UI.createWindow({
 var goToWindow = Titanium.UI.createWindow({  
 	fullscreen: true,
 	url:'potentials.js',
+	notOpen: true
 });
 
 //When back button on the phone is pressed, it opens mainMenu.js and close the current window
 win4.addEventListener('android:back', function() {
 	Ti.API.info("Back to the step before");
-
-	//Passing back the parameters
-	goToWindow.log = win4.log;
-   	goToWindow.picked = win4.picked;
-	goToWindow.result = win4.result;
-	goToWindow.name = win4.name;
-
-	//Avoiding memory leaking problems:	
-	goToWindow.open();
 	win4.close();
 });
 	
@@ -79,7 +71,7 @@ var labelNameContent = Ti.UI.createLabel({
 	text: win4.nameSelected,
 	height: 'auto',
 	width:  '90%',
-	font: {fontSize: 18},
+	font: {fontSize: 18, fontWeight: "bold"},
 	textAlign: 'center',
 	touchEnabled: false
 });
@@ -93,33 +85,6 @@ var count = 0;
 
 Ti.API.info("Phone: "+results.fieldByName("phone"));
 Ti.API.info("Fax : "+results.fieldByName("fax"));
-
-var name = results.fieldByName("name");
-
-if ( name != null){
-	
-	label[count] = Ti.UI.createLabel({
-		text: "Name: ",
-		height: "5%",
-		width:  "50%",
-		textAlign: 'right',
-		top: "28%",
-		left: 0,
-		touchEnabled: false
-	});
-	
-	content[count] = Ti.UI.createLabel({
-		text: ""+name,
-		height: "5%",
-		width:  "50%",
-		textAlign: 'left',
-		top: "28%",
-		left: "50%"
-	});
-	
-	count++;
-
-}
 
 var account_nid = results.fieldByName("account_nid");
 
@@ -350,10 +315,14 @@ for (var i = 0; i < count ; i++){
 
 	var newTop = base + (i*0.05);
 	label[i].top = newTop*hScreen;
-	content[i].top = newTop*hScreen;
+	label[i].color = "#999999";
 	
+	content[i].top = newTop*hScreen;
+	content[i].color = "#FFFFFF";
+		
 	resultView.add(label[i]);
 	resultView.add(content[i]);
+
 }
 
 

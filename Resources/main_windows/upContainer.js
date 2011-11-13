@@ -4,7 +4,6 @@ var updateWin = Ti.UI.currentWindow;
 //Common used functions
 Ti.include('../lib/functions.js');
 
-
 var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
 var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
@@ -26,13 +25,8 @@ setInterval(function(){
 			url: "settings.js",
 			fullscreen: true
 		});
-		winSettings.log	     = updateWin.log;
-		winSettings.picked 	 = updateWin.picked;
-		winSettings.name   	 = updateWin.name;
-		winSettings.result   = updateWin.result;
-						
+
 		winSettings.open();
 		updateWin.close();
 	}
-	
 }, 1000);

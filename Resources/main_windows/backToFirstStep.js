@@ -10,23 +10,16 @@
  * @author Joseandro
  */
 
-// this sets the background color of every window
-Titanium.UI.setBackgroundColor('#000000');
-
-//Common used functions
-Ti.include('lib/functions.js');
-
 //
 // create base UI root window
 //
-var win1 = Titanium.UI.createWindow({  
-    title:'Welcome!',
-    fullscreen: true
-});
+var win1 = Ti.UI.currentWindow;
 
-Titanium.App.Properties.setString("databaseVersion", "omadiDb522");
 
-var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+//Common used functions
+Ti.include('../lib/functions.js');
+
+var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
 //Label Website:
 var label_website = Titanium.UI.createLabel({
@@ -168,6 +161,7 @@ win1.add(b1);
  * Purpouse: Provides Log in to the system using 
  * 			 tf1.value and tf2.value as the user's credentials. 
  */
+
 b1.addEventListener('click', function(){
 	//Onblur the text fields, remove keyboard from screen
 	tf2.blur();
@@ -314,7 +308,3 @@ win1.addEventListener('android:back', function() {
 // he is gonna see the standart "Inform your credentials" message
 // instead of something else that stands inside logStatus
 Ti.App.Properties.removeProperty('logStatus');
-
-
-//Make everthing happen:
-win1.open();
