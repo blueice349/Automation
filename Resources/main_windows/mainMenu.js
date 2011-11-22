@@ -16,6 +16,7 @@ var win2 = Ti.UI.currentWindow;
 
 //Common used functions
 Ti.include('../lib/functions.js');
+Ti.include('geolocation.js');
 
 var version = 'Omadi Inc';
 
@@ -259,6 +260,7 @@ var databaseStatusView = Titanium.UI.createView({
 	bottom: 0
 });
 
+    
 databaseStatusView.add(label_status);
 win2.add(databaseStatusView);
 
@@ -285,7 +287,6 @@ win2.orientationModes = [ Titanium.UI.PORTRAIT ];
 //When back button on the phone is pressed, it alerts the user (pop up box)
 // that he needs to log out in order to go back to the root window
 win2.addEventListener('android:back', function() {
-	//Ti.API.info("Use log off button");
 	alert("In order to log off, please click on the X next to your username at the top ");
 });
 

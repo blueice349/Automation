@@ -89,16 +89,6 @@ if(data.length < 1) {
 }
 //Shows the contacts
 else {
-	
-	win3.addEventListener('open', function(){
-    	win3.softKeyboardOnFocus = 0;
-	});
-
-	Ti.UI.currentWindow.addEventListener('focus', function(e) {
-	    search.blur();
-	});
-	//Sort the array (A>B>C>...>Z):
-	data.sort(sortTableView);
 
 	//Search bar definition
 	var search = Ti.UI.createSearchBar({
@@ -106,8 +96,7 @@ else {
 		autocorrect : false,
 		barColor : '#000'
 	});
-	search.blur();
-
+	
 	//Contat list container
 	var listTableView = Titanium.UI.createTableView({
 		data : data,
@@ -115,7 +104,14 @@ else {
 		search : search,
 		height : '91%'
 	});
-
+	
+	listTableView.addEventListener('focus', function(e) {
+		search.blur();
+		//hides the keyboard
+	});
+	
+	//Sort the array (A>B>C>...>Z):
+	data.sort(sortTableView);
 
 	// SEARCH BAR EVENTS
 	search.addEventListener('change', function(e) {
@@ -126,20 +122,16 @@ else {
 		search.blur();
 		//hides the keyboard
 	});
+	
 	search.addEventListener('cancel', function(e) {
 		search.blur();
 		//hides the keyboard
 	});
-	
-	win3.addEventListener('focus', function(){
-		search.blur();
-		listTableView.search.blur();
-	});
 
-	
 	//When the user clicks on a certain contact, it opens individual_contact.js
 	listTableView.addEventListener('click', function(e) {
-
+		//Hide keyboard when returning 
+		firstClick = true;
 		//Next window to be opened
 		var win4 = Titanium.UI.createWindow({
 			fullscreen : true,
@@ -160,8 +152,13 @@ else {
 	//Adds contact list container to the UI
 	win3.add(listTableView);
 	search.blur();
-
 }
 	
 //showBottom(actualWindow, goToWindow )
 showBottom(win3, goToWindow);
+
+win3.addEventListener('focus', function(){
+	setTimeout(function (){
+		search.blur();
+	}, 100 );
+});

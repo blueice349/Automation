@@ -362,9 +362,9 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 	//Opens address to retrieve contact list
 
 	if (pageIndex == 0 )   
-		objectsUp.open('GET', win.picked + '/js-sync/sync.json?timestamp=' + timeIndex +'&reset=1&limit=50' );
+		objectsUp.open('GET', win.picked + '/js-sync/sync.json?timestamp=' + timeIndex +'&reset=1&limit=35' );
 	else
-		objectsUp.open('GET', win.picked + '/js-sync/sync.json?timestamp=' + timeIndex +'&page='+pageIndex+'&limit=50');
+		objectsUp.open('GET', win.picked + '/js-sync/sync.json?timestamp=' + timeIndex +'&page='+pageIndex+'&limit=35');
 	
 	//Header parameters
 	objectsUp.setRequestHeader("Content-Type", "application/json");
@@ -374,6 +374,24 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 		//Parses response into strings
 		var json = JSON.parse(this.responseText);
 		var existsMorePages;
+		
+		if (json.delete_all == true){
+			Ti.API.info("=================== ############ ===================");
+			Ti.API.info("Reseting database, delete_all is required");
+			Ti.API.info("=================== ############ ===================");
+			//If delete_all is present, delete all contents:
+			db.execute('DELETE FROM account');
+			db.execute('DELETE FROM contact');
+			db.execute('DELETE FROM lead');			
+			db.execute('DELETE FROM node');
+			db.execute('DELETE FROM potential');
+			db.execute('DELETE FROM task');
+			db.execute('DELETE FROM term_data');
+			db.execute('DELETE FROM updated');
+			db.execute('DELETE FROM users');
+			db.execute('DELETE FROM vocabulary');
+			db.execute('INSERT INTO updated (timestamp, url) VALUES (?,?)', 0 , null);		
+		}
 		
 		pageIndex++;
 
@@ -430,16 +448,17 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 
 			db.execute('UPDATE updated SET "timestamp"='+ json.request_time +' WHERE "rowid"=1');		
 			Ti.API.info("COUNT: "+json.total_item_count);	
+
 			//Vocabulary:
 			if (json.vocabularies){
 				if (json.vocabularies.insert){
 					for (var i = 0; i < json.vocabularies.insert.length; i++ ){
-						db.execute('INSERT INTO vocabulary (vid, name) VALUES (?,?)', json.vocabularies.insert[i].vid , json.vocabularies.insert[i].name);				
+						db.execute('INSERT INTO vocabulary (vid, name, machine_name) VALUES (?,?,?)', json.vocabularies.insert[i].vid , json.vocabularies.insert[i].name, json.vocabularies.insert[i].machine_name);				
 					}
 				}
 				if (json.vocabularies.update){
 					for (var i = 0; i < json.vocabularies.update.length; i++ ){
-						db.execute('UPDATE vocabulary SET "name"=? WHERE "vid"=?',json.vocabularies.update[i].name ,json.vocabularies.update[i].vid);
+						db.execute('UPDATE vocabulary SET "name"=?, "machine_name"=? WHERE "vid"=?',json.vocabularies.update[i].name, json.vocabularies.update[i].machine_name, json.vocabularies.update[i].vid);
 					}
 				}
 				if (json.vocabularies["delete"]){
@@ -588,7 +607,53 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 					}
 					Ti.API.info("Deleted Potentials sucefully!");
 				}
+				
 			}
+			
+			/*********** Users *************/
+			if(json.users){
+				//Insert - Users
+				if (json.users.insert){
+					for (var i = 0; i < json.users.insert.length; i++ ){
+						db.execute('INSERT INTO users (uid, username, mail, realname, status ) VALUES (?,?,?,?,?)', json.users.insert[i].uid, json.users.insert[i].username, json.users.insert[i].mail, json.users.insert[i].realname, json.users.insert[i].status);
+
+						for (var j = 0; j < json.users.insert[i].roles.length; j++ ){
+							db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.insert[i].uid, json.users.insert[i].roles[j]);
+						}
+					}
+					Ti.API.info("Inserted users sucefully!");
+				}
+
+				//Update - Users
+				if (json.users.update){
+					for (var i = 0; i < json.users.update.length; i++ ){
+						db.execute('UPDATE users SET "username"=? , "mail"=?, "realname"=?, "status"=? WHERE "uid"=?', json.users.update[i].username, json.users.update[i].mail, json.users.update[i].realname, json.users.update[i].status, json.users.update[i].uid );
+						
+						//Delete every row present at user_roles
+						db.execute('DELETE FROM user_roles WHERE "uid"=?', json.users.update[i].uid);
+						
+						//Insert it over again!
+						for (var j = 0; j < json.users.update.roles.length; i++ ){
+							db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.update[i].uid, json.users.update[i].roles[j]);
+						}
+						
+					}
+					Ti.API.info("Updated Users sucefully!");
+				}
+				
+				//Delete - Contacts
+				if (json.users["delete"])	{
+					for (var i = 0; i <  json.users["delete"].length; i++ ){
+						//Deletes current row (contact)
+						db.execute('DELETE FROM users WHERE "uid"=?', json.users["delete"][i].uid);
+						db.execute('DELETE FROM user_roles WHERE "uid"=?', json.users["delete"][i].uid);
+						
+					}
+					Ti.API.info("Deleted Users sucefully!");
+				}
+				
+			}
+			
 			Ti.API.info("SUCCESS");
 			if ( existsMorePages ){
 				installMe(pageIndex, win, timeIndex, calledFrom);

@@ -113,7 +113,6 @@ else {
 		search : search,
 		height : '91%'
 	});
-	search.blur();
 	
 	// SEARCH BAR EVENTS
 	search.addEventListener('change', function(e) {
@@ -129,11 +128,6 @@ else {
 		//hides the keyboard
 	});
 	
-	win3.addEventListener('focus', function(){
-		search.blur();
-		listTableView.search.blur();
-	});
-
 	//When the user clicks on a certain contact, it opens individual_contact.js
 	listTableView.addEventListener('click', function(e) {
 
@@ -158,14 +152,13 @@ else {
 	//Adds contact list container to the UI
 	win3.add(listTableView);
 	search.blur();
-	win3.addEventListener('open', function(){
-    	win3.softKeyboardOnFocus = 0;
-	});
-	
-	Ti.UI.currentWindow.addEventListener('focus', function(e) {
-    	search.blur();
-	});
 }
 	
 //showBottom(actualWindow, goToWindow )
 showBottom(win3, goToWindow);
+
+win3.addEventListener('focus', function(){
+	setTimeout(function (){
+		search.blur();
+	}, 100 );
+});

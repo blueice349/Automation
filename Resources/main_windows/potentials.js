@@ -19,13 +19,6 @@ var win5 = Ti.UI.currentWindow;
 //Sets only portrait mode
 win5.orientationModes = [Titanium.UI.PORTRAIT];
 
-win5.addEventListener('open', function(){
-    win5.softKeyboardOnFocus = 0;
-});
-
-Ti.UI.currentWindow.addEventListener('focus', function(e) {
-    search.blur();
-});
 
 //
 // create base UI root window
@@ -115,10 +108,6 @@ else {
 		search : search,
 		height : '91%'
 	});
-
-
-	search.blur();
-	listTableView.search.blur();
 	
 	// SEARCH BAR EVENTS
 	search.addEventListener('change', function(e) {
@@ -133,12 +122,7 @@ else {
 		search.blur();
 		//hides the keyboard
 	});
-	
-	win5.addEventListener('focus', function(){
-		search.blur();
-		listTableView.search.blur();
-	});
-	
+		
 	//When the user clicks on a certain contact, it opens individual_contact.js
 	listTableView.addEventListener('click', function(e) {
 
@@ -168,3 +152,10 @@ else {
 	
 //showBottom(actualWindow, goToWindow )
 showBottom(win5, goToWindow);
+
+
+win5.addEventListener('focus', function(){
+	setTimeout(function (){
+		search.blur();
+	}, 100 );
+});
