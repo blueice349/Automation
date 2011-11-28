@@ -25,7 +25,7 @@ var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.ge
 var label_website = Titanium.UI.createLabel({
 	color:'#FFFFFF',
 	text:'Website: ',
-	top: '9.4%',
+	top: '4.4%',
 	textAlign:'center',
 	width:'auto'
 });
@@ -36,8 +36,8 @@ win1.add(label_website);
 //Web site picker 
 var picker = Titanium.UI.createPicker({
 	width:'65%',
-	top: '14%',
-	height: '9%'
+	top: '10%',
+	height: '13%'
 });
 
 //Array of addresses 
@@ -55,8 +55,8 @@ win1.add(picker);
 var tf1 = Titanium.UI.createTextField({
 	hintText:'Username',
 	width:'65%',
-	top: '31.3%',
-	height: '9%',
+	top: '29.5%',
+	height: '13%',
 	color:'#000000',
 	value: 'test user',
 	keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
@@ -76,8 +76,8 @@ var tf2 = Titanium.UI.createTextField({
 	hintText:'Password',
 	color:'#000000',
 	width:'65%',
-	height: '9%',
-	top: '48.1%',	
+	height: '13%',
+	top: '50.1%',	
     passwordMask:true,
 	value: 'testing',
     keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
@@ -142,8 +142,8 @@ win1.add(label_error);
 var b1 = Titanium.UI.createButton({
    title: 'Log In',
    width: '80%',
-   height: '9%',
-   top: '66%' 
+   height: '15%',
+   top: '70%' 
 });
 
 //Adds button to the interface

@@ -148,14 +148,13 @@ else {
 	//Adds contact list container to the UI
 	win5.add(listTableView);
 	search.blur();
+
+	win5.addEventListener('focus', function(){
+		setTimeout(function (){
+			search.blur();
+		}, 110 );
+	});
 }
 	
 //showBottom(actualWindow, goToWindow )
 showBottom(win5, goToWindow);
-
-
-win5.addEventListener('focus', function(){
-	setTimeout(function (){
-		search.blur();
-	}, 100 );
-});

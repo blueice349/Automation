@@ -79,51 +79,71 @@ function checkUpdate (){
 	}
 };
 
-//Button Contacts
-var bFirst = Titanium.UI.createButton({
-   title: 'Leads',
-   width: '80%',
-   height: '9%',
-   top: '13%' 
+var data = [];
+
+
+var rowFirst = Ti.UI.createTableViewRow({
+	height : 'auto',	
+	hasChild : true,
+	title : 'Leads'
 });
 
-//Button Leads
-var bSecond = Titanium.UI.createButton({
-   title: 'Contacts',
-   width: '80%',
-   height: '9%',
-   top: '30%' 
+
+//Populates the array
+data[0] = rowFirst;
+
+var rowSecond = Ti.UI.createTableViewRow({
+	height : 'auto',
+	hasChild : true,
+	title : 'Contacts'
 });
 
-//Button Accounts
-var bThird = Titanium.UI.createButton({
-   title: 'Accounts',
-   width: '80%',
-   height: '9%',
-   top: '48%' 
+//Populates the array
+data[1] = rowSecond;
+
+var rowThird = Ti.UI.createTableViewRow({
+	height : 'auto',
+	hasChild : true,
+	title : 'Accounts'
 });
 
-//Button Accounts
-var bFourth = Titanium.UI.createButton({
-   title: 'Potentials',
-   width: '80%',
-   height: '9%',
-   top: '66%' 
+//Populates the array
+data[2] = rowThird;
+
+var rowFourth = Ti.UI.createTableViewRow({
+	height : 'auto',
+	hasChild : true,
+	title : 'Potentials'
 });
 
-//Button Settings
-var bFiveth = Titanium.UI.createButton({
-   title: 'Settings',
-   width: '80%',
-   height: '9%',
-   top: '82%' 
+//Populates the array
+data[3] = rowFourth;
+
+var rowFiveth = Ti.UI.createTableViewRow({
+	height : 'auto',
+	hasChild : true,
+	title : 'Settings'
 });
+
+//Populates the array
+data[4] = rowFiveth;
+
+
+var listView = Titanium.UI.createTableView({
+	data : data,
+	top : '10%',
+	height : '84%',
+	scrollable: true
+});
+
+win2.add(listView);
+
 
 //Parses result from user's login 
 var jsonLogin = JSON.parse(win2.result) ;
 
 //Retrieves username
-var name = jsonLogin.user.name;
+var name = jsonLogin.user.realname;
 
 // showToolbar(name, win2)					
 var loggedView = Titanium.UI.createView({
@@ -137,7 +157,7 @@ var loggedView = Titanium.UI.createView({
 
 var label_top = Titanium.UI.createLabel({
 	color:'#FFFFFF',
-	text:'Logged in as '+ name,
+	text:''+ name,
 	textAlign: 'left',
 	width:'75%',
 	left: '5%',
@@ -145,12 +165,15 @@ var label_top = Titanium.UI.createLabel({
 	height: 'auto'
 }); 
 
-var offImage = Titanium.UI.createImageView({
-    image: Titanium.Android.R.drawable.ic_menu_close_clear_cancel,
-	left: '85%',
-	width:'30px',
+
+var offImage = Titanium.UI.createLabel({
+	color:'#FFFFFF',
+	text:'Log Out',
+	width:'20%',
+	horizontalAlign: 'left',
+	left: '80%',
 	height: '30px'
-});
+}); 
 
 loggedView.add(label_top);
 loggedView.add(offImage);					
@@ -181,57 +204,65 @@ offImage.addEventListener('click',function(e)
 });
 
 //Go to contact.js when contact's button is clicked
-bFirst.addEventListener('click',function(e){
-
-	var win3 = Titanium.UI.createWindow({  
-		fullscreen: true,
-		url:'leads.js'
-	});
-	win3.open();
+rowFirst.addEventListener('click',function(e){
+	if (!isFirstTime){
+		var win3 = Titanium.UI.createWindow({  
+			fullscreen: true,
+			url:'leads.js'
+		});
+		win3.open();
+	}
 });
 
 //Show black screen when Leads's button is clicked
 // When the black screen receives one click, it closes
-bSecond.addEventListener('click',function(e){
-
-	var win3 = Titanium.UI.createWindow({  
-		fullscreen: true,
-		url:'contacts.js',
-	});
-	win3.open();
+rowSecond.addEventListener('click',function(e){
+	if (!isFirstTime){
+		var win3 = Titanium.UI.createWindow({  
+			fullscreen: true,
+			url:'contacts.js',
+		});
+		win3.open();
+	}
 });
-//bSecond.enabled = false;
 
 //Go to contact.js when contact's button is clicked
-bThird.addEventListener('click',function(e){
+rowThird.addEventListener('click',function(e){
 
-	var win3 = Titanium.UI.createWindow({  
-		fullscreen: true,
-		url:'accounts.js',
-	});
-	win3.open();
-});
-
-bFourth.addEventListener('click',function(e){
-
-	var win3 = Titanium.UI.createWindow({  
-		fullscreen: true,
-		url:'potentials.js',
-	});
-	win3.open();
-});
-
-
-bFiveth.addEventListener('click',function(e){
-
-	var win3 = Titanium.UI.createWindow({  
-		fullscreen: true,
-		url:'settings.js'
-	});
+	if (!isFirstTime){
 	
-	win3.log		 = win2.log;
-	win3.picked 	 = win2.picked;
-	win3.open();
+		var win3 = Titanium.UI.createWindow({  
+			fullscreen: true,
+			url:'accounts.js',
+		});
+		win3.open();
+	}
+});
+
+rowFourth.addEventListener('click',function(e){
+
+	if (!isFirstTime){
+		var win3 = Titanium.UI.createWindow({  
+			fullscreen: true,
+			url:'potentials.js',
+		});
+		win3.open();
+	}
+});
+
+
+rowFiveth.addEventListener('click',function(e){
+
+	if (!isFirstTime){
+		var win3 = Titanium.UI.createWindow({  
+			fullscreen: true,
+			url:'settings.js'
+		});
+		
+		win3.log		 = win2.log;
+		win3.picked 	 = win2.picked;
+		win3.open();
+	}
 });
 
 //Action taken when syncronization button is pressed
@@ -260,7 +291,7 @@ var databaseStatusView = Titanium.UI.createView({
 	bottom: 0
 });
 
-    
+    		
 databaseStatusView.add(label_status);
 win2.add(databaseStatusView);
 
@@ -273,13 +304,6 @@ if (updatedTime.fieldByName('timestamp') == 0){
 }
 updatedTime.close();
 
-//Adds both buttons to the current window
-win2.add(bFirst);
-win2.add(bSecond);
-win2.add(bThird);
-win2.add(bFourth);
-win2.add(bFiveth);
-
 //Sets only portrait mode
 win2.orientationModes = [ Titanium.UI.PORTRAIT ];
 
@@ -287,7 +311,7 @@ win2.orientationModes = [ Titanium.UI.PORTRAIT ];
 //When back button on the phone is pressed, it alerts the user (pop up box)
 // that he needs to log out in order to go back to the root window
 win2.addEventListener('android:back', function() {
-	alert("In order to log off, please click on the X next to your username at the top ");
+	alert("In order to log off, please click on 'Log Out' next to your username at the top ");
 });
 
 

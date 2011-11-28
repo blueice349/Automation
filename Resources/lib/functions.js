@@ -8,13 +8,13 @@
 /* Function Name: showIndicator(show)
  * Purpouse: Show the loading screen
  * Parameters: 
- * 	show:   Used to decide if the loading screen should be modal or
+ * 	show:   Used to decide if the loading screen should be modal or  
  * 			full screen.
  * Variables: 
  * 	indWin:  Window that is supposed to contain the loading screen
  * 			 modal or fullscreen.
- * 	indView: The view that contains actInd.
- * 	actInd:  Activity indicator.  
+ * 	indView: The view that contains actIndFun.
+ * 	actIndFun:  Activity indicator.  
  *  
  */
 function showIndicator(show)
@@ -47,13 +47,13 @@ function showIndicator(show)
     indWin.add(indView);
  
     // loading indicator
-    actInd = Titanium.UI.createActivityIndicator({
+    actIndFun = Titanium.UI.createActivityIndicator({
         height:'7%',
         message: "Loading ...",
         width: '30%'
     });
     
-    indWin.add(actInd);
+    indWin.add(actIndFun);
     
     if ( show == "settings")
     {
@@ -107,7 +107,7 @@ function showIndicator(show)
 
 	indWin.orientationModes = [ Titanium.UI.PORTRAIT ];
     indWin.open();
-    actInd.show();
+    actIndFun.show();
 };
 
 function fireStatusFirstInstall(){
@@ -209,13 +209,13 @@ function showIndicatorDelete(inform)
     indWin.add(indView);
  
     // loading indicator
-    actInd = Titanium.UI.createActivityIndicator({
+    actIndFun = Titanium.UI.createActivityIndicator({
         height:'7%',
         message: "Loading ...",
         width: '30%'
     });
     
-    indWin.add(actInd);
+    indWin.add(actIndFun);
     
 	// message
     var message = Titanium.UI.createLabel({
@@ -231,7 +231,7 @@ function showIndicatorDelete(inform)
 
 	indWin.orientationModes = [ Titanium.UI.PORTRAIT ];
     indWin.open();
-    actInd.show();
+    actIndFun.show();
 };
 
 
@@ -242,13 +242,13 @@ function showIndicatorDelete(inform)
  * Variables: 
  * 	indWin:  Window that is supposed to contain the loading screen
  * 			 modal or fullscreen.
- * 	actInd:  Activity indicator.  
+ * 	actIndFun:  Activity indicator.  
  *  
  */
 
 function hideIndicator()
 {
-    actInd.hide();
+    actIndFun.hide();
     indWin.close();
     Titanium.App.Properties.setBool("indicatorActive", false);
 };
@@ -258,7 +258,7 @@ function hideIndicatorFistPage()
     setInterval(function (){
     	if (Titanium.App.Properties.getBool("isFirstPage"))
     	{
-		    actInd.hide();
+		    actIndFun.hide();
 		    indWin.close();
     	}
    	}, 1000);
@@ -345,14 +345,6 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 		showIndicator("settings");
 	}	
 	
-	if ((calledFrom == "mainMenu") && isFirstTime){
-		bFirst.enabled  = false;
-		bSecond.enabled = false;
-		bThird.enabled  = false;
-		bFourth.enabled = false;
-		bFiveth.enabled = false;												
-	}
-	
 	var objectsUp = win.log;
 
 	//Timeout until error:
@@ -418,14 +410,6 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 			
 			if ( calledFrom == "mainMenu"){
 					Ti.API.info('Called from value: '+calledFrom);
-					if (isFirstTime){
-						bFirst.enabled = true;
-						bSecond.enabled = true;
-						bThird.enabled = true;
-						bFourth.enabled = true;
-						bFiveth.enabled = true;
-										
-					}
 					isFirstTime = false;
 			}
 			
@@ -626,17 +610,28 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 
 				//Update - Users
 				if (json.users.update){
+					Ti.API.info('################ Check ################');
+					Ti.API.info(json.users.update);
+					Ti.API.info(json.users);
+					Ti.API.info(json);
 					for (var i = 0; i < json.users.update.length; i++ ){
+						Ti.API.info(json.users.update.length);
 						db.execute('UPDATE users SET "username"=? , "mail"=?, "realname"=?, "status"=? WHERE "uid"=?', json.users.update[i].username, json.users.update[i].mail, json.users.update[i].realname, json.users.update[i].status, json.users.update[i].uid );
 						
 						//Delete every row present at user_roles
 						db.execute('DELETE FROM user_roles WHERE "uid"=?', json.users.update[i].uid);
 						
 						//Insert it over again!
-						for (var j = 0; j < json.users.update.roles.length; i++ ){
-							db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.update[i].uid, json.users.update[i].roles[j]);
+						if(json.users.update.roles){
+							if (json.users.update.roles.length){
+								for (var j = 0; j < json.users.update.roles.length ; i++ ){
+									db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.update[i].uid, json.users.update[i].roles[j]);
+								}							
+							}
+							else{
+								db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.update[i].uid, json.users.update[i].roles);
+							}
 						}
-						
 					}
 					Ti.API.info("Updated Users sucefully!");
 				}
@@ -664,13 +659,6 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 					hideIndicator();
 				else{
 					Ti.API.info('Called from value: '+calledFrom);
-					if (isFirstTime){
-						bFirst.enabled = true;
-						bSecond.enabled = true;
-						bThird.enabled = true;
-						bFourth.enabled = true;
-						bFiveth.enabled = true;												
-					}
 					isFirstTime = false;
 					label_status.text = version;
 										
@@ -700,3 +688,74 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 	objectsUp.send();
 }
 
+function getMult (count){
+	 
+	 result = Array();
+	 result["calc"] = 0;
+	 result["baseConstant"] = 0;
+	
+	switch (count){
+		case 0:
+		break;
+		
+		case 1:
+			result["calc"] = 0.3;
+			result["baseConstant"] = 0.42;
+		break;
+		
+		case 2:
+			result["calc"] = 0.3;
+			result["baseConstant"] = 0.32;
+		break;
+		
+		case 3:
+			result["calc"] = 0.24;
+			result["baseConstant"] = 0.24;
+		break;
+		
+		case 4:
+			result["calc"] = 0.17;
+			result["baseConstant"] = 0.26;
+		break;
+		
+		case 5:
+			result["calc"] = 0.13;
+			result["baseConstant"] = 0.28;
+		break;
+		
+		case 6:
+			result["calc"] = 0.11;
+			result["baseConstant"] = 0.30;
+		break;
+		
+		case 7:
+			result["calc"] = 0.09;
+			result["baseConstant"] = 0.32;
+		break;
+		
+		case 8:
+			result["calc"] = 0.08;
+			result["baseConstant"] = 0.334;
+		break;
+		
+		case 9:
+			result["calc"] = 0.064;
+			result["baseConstant"] = 0.36;
+		break;
+		
+		case 10:
+			result["calc"] = 0.064;
+			result["baseConstant"] = 0.36;
+		break;	
+	
+		case 11:
+			result["calc"] = 0.06;
+			result["baseConstant"] = 0.36;
+		break;
+		
+		default:
+	}
+	
+	return result;
+	
+}
