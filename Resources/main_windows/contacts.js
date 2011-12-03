@@ -24,12 +24,14 @@ win3.orientationModes = [Titanium.UI.PORTRAIT];
 //
 var logWindow = Titanium.UI.createWindow({
 	fullscreen : true,
+	title:'Omadi CRM',
 	url : '../app.js',
 });
 
 //Definition of the window before (opens when the user clicks on the back button)
 var goToWindow = Titanium.UI.createWindow({
 	fullscreen : true,
+	title:'Omadi CRM',
 	url : 'mainMenu.js',
 	notOpen: true
 });
@@ -134,6 +136,7 @@ else {
 		//Next window to be opened
 		var win4 = Titanium.UI.createWindow({
 			fullscreen : true,
+			title:'Contact',
 			url : 'individual_contact.js'
 		});
 

@@ -22,6 +22,7 @@ win4.orientationModes = [ Titanium.UI.PORTRAIT ];
 //Definition of the window before (opens when the user clicks on the back button)
 var goToWindow = Titanium.UI.createWindow({  
 	fullscreen: true,
+	title:'Leads',
 	url:'leads.js',
 	notOpen: true
 });
@@ -40,7 +41,7 @@ var results  = db.execute('SELECT * FROM lead WHERE  nid = '+win4.nid);
 //The view where the results are presented
 var resultView = Ti.UI.createView({
 	top: '5%',
-	height: '86%',
+	height: '85%',
 	width: '90%',
 	borderRadius: 5,
 	backgroundColor: '#A9A9A9',
@@ -56,7 +57,8 @@ var header = Ti.UI.createView({
 	width: '100%',
 	borderRadius: 5,
 	backgroundColor: '#A9A9A9',
-	opacity: 0.1
+	opacity: 0.23,
+	zIndex: 11
 });
 resultView.add(header);
 
@@ -72,6 +74,21 @@ var labelNameContent = Ti.UI.createLabel({
 
 header.add(labelNameContent);
 
+
+var viewContent = Ti.UI.createScrollView({
+    height:"auto",
+    top: "19%",
+    backgroundColor: '#111111',
+	showHorizontalScrollIndicator: false,
+	showVerticalScrollIndicator: true,
+	opacity: 1,
+	borderRadius: 7,
+	zIndex: 10
+});
+
+resultView.add(viewContent);
+
+
 var mailResult = results.fieldByName("email");
 Ti.API.info("Phone: "+results.fieldByName("phone"));
 Ti.API.info("Cell Phone: "+results.fieldByName("cell_phone"));
@@ -80,10 +97,12 @@ Ti.API.info("Fax : "+results.fieldByName("fax"));
 
 var label = [];
 var content = []; 
+var border = [];
+var cell = [];
 var count = 0;
-var heightValue = 15;
-var hasSelection = false;
+var heightValue = 38;
 var fresh = "";
+
 
 if (results.fieldByName("job_title_tid") != null){
 	var auxRes  = db.execute('SELECT * FROM term_data WHERE  tid = '+results.fieldByName("job_title_tid"));
@@ -93,31 +112,24 @@ if (results.fieldByName("job_title_tid") != null){
 	
 	label[count] = Ti.UI.createLabel({
 		text: "Job title: ",
-		height:  heightValue,
-		width:  "50%",
-		textAlign: 'right',
-		left: 0,
+		width:  "33%",
+		textAlign: 'left',
+		left: 5,
 		touchEnabled: false
 	});
 	
 	var label1 = Ti.UI.createLabel({
 		text: ""+fresh,
-		height:  heightValue,
-		width:  "auto",
+		width:  "67%",
 		textAlign: 'left',
-		left: "50%"
+		left: "33%"
 	});
-	Ti.API.info("Job title: "+ count);
 
+	var aux1 = count;
 	label1.addEventListener('click', function(){
-		if (hasSelection){
-			for (var arp=0 ; arp < count; arp++){
-				content[arp].backgroundColor = '#111111'; 
-			}
-		}
-		label1.backgroundColor = "#89A676";
-		hasSelection = true;
+		highlightMe(aux1);
 	});
+
 
 	content[count] = label1;
 	count++;
@@ -133,29 +145,22 @@ if (results.fieldByName("lead_status_tid") != null){
 
 	label[count] = Ti.UI.createLabel({
 		text: "Lead status: ",
-		height:  heightValue,
-		width:  "50%",
-		textAlign: 'right',
-		left: 0,
+		width:  "30%",
+		textAlign: 'left',
+		left: 5,
 		touchEnabled: false
 	});
 	
 	label2 = Ti.UI.createLabel({
 		text: ""+fresh1,
-		height:  heightValue,
-		width:  "auto",
+		width:  "67%",
 		textAlign: 'left',
-		left: "50%"
+		left: "33%"
 	});
 		
+	var aux2 = count;
 	label2.addEventListener('click', function(){
-		if (hasSelection){
-			for (var arp=0 ; arp < count; arp++){
-				content[arp].backgroundColor = '#111111'; 
-			}
-		}
-		label2.backgroundColor = "#89A676";
-		hasSelection = true;
+		highlightMe( aux2);
 	});
 
 	content[count] = label2;
@@ -176,35 +181,25 @@ if (results.fieldByName("lead_source_tid") != null){
 
 	label[count] = Ti.UI.createLabel({
 		text: "Lead source: ",
-		height:  heightValue,
-		width:  "50%",
-		textAlign: 'right',
-		left: 0,
+		width:  "30%",
+		textAlign: 'left',
+		left: 5,
 		touchEnabled: false
 	});
 	
 	label3 = Ti.UI.createLabel({
 		text: ""+fresh2,
-		height:  heightValue,
-		width:  "auto",
+		width:  "67%",
 		textAlign: 'left',
-		left: "50%"
+		left: "33%"
 	});
 
+	var aux3 = count;
 	label3.addEventListener('click', function(){
-		if (hasSelection){
-			for (var arp=0 ; arp < count; arp++){
-				content[arp].backgroundColor = '#111111'; 
-			}
-		}
-		label3.backgroundColor = "#89A676";
-		hasSelection = true;
+		highlightMe( aux3);
 	});
 
 	content[count] = label3;
-
-
-	Ti.API.info("Lead source: "+ count);
 	count++;
 }
 
@@ -217,37 +212,27 @@ if (results.fieldByName("competing_company_tid") != null){
 	auxRes.close();
 
 	label[count] = Ti.UI.createLabel({
-		text: "Comp. company: ",
-		height:  heightValue,
-		width:  "50%",
-		textAlign: 'right',
-		left: 0,
+		text: "Competing company: ",
+		width:  "30%",
+		textAlign: 'left',
+		left: 5,
 		touchEnabled: false
 	});
 	
 	var label4 = Ti.UI.createLabel({
 		text: ""+fresh3,
-		height:  heightValue,
-		width:  "auto",
+		width:  "67%",
 		textAlign: 'left',
-		left: "50%"
+		left: "33%"
 	});
 
+
+	var aux4 = count;
 	label4.addEventListener('click', function(){
-		if (hasSelection){
-			for (var arp=0 ; arp < count; arp++){
-				content[arp].backgroundColor = '#111111'; 
-			}
-		}
-		label4.backgroundColor = "#89A676";
-		hasSelection = true;
+		highlightMe( aux4);
 	});
 
 	content[count] = label4;
-
-
-	Ti.API.info("Comp. company: "+ count);
-
 	count++;
 }
 
@@ -257,29 +242,22 @@ var company = results.fieldByName("company");
 if (company != null){
 	label[count] = Ti.UI.createLabel({
 		text: "Company: ",
-		height:  heightValue,
-		width:  "50%",
-		textAlign: 'right',
-		left: 0,
+		width:  "33%",
+		textAlign: 'left',
+		left: 5,
 		touchEnabled: false
 	});
 	
 	label5 = Ti.UI.createLabel({
 		text: ""+company,
-		height:  heightValue,
-		width:  "auto",
+		width:  "67%",
 		textAlign: 'left',
-		left: "50%"
+		left: "33%"
 	});
 
+	var aux5 = count;
 	label5.addEventListener('click', function(){
-		if (hasSelection){
-			for (var arp=0 ; arp < count; arp++){
-				content[arp].backgroundColor = '#111111'; 
-			}
-		}
-		label5.backgroundColor = "#89A676";
-		hasSelection = true;
+		highlightMe( aux5);
 	});
 
 	content[count] = label5;
@@ -298,33 +276,26 @@ if (phone != null)
 
 	label[count] = Ti.UI.createLabel({
 		text: "Phone: ",
-		height:  heightValue,
-		width:  "50%",
-		textAlign: 'right',
-		left: 0,
+		width:  "33%",
+		textAlign: 'left',
+		left: 5,
 		touchEnabled: false
 	});
 	
 	var l10l = Ti.UI.createLabel({
-		height:  heightValue,
-		width:  "auto",
+		width:  "67%",
 		textAlign: 'left',
-		left: "50%"
+		left: "33%"
 	});
 
+
+	var aux6 = count;
 	//When number is clicked, make the call
 	var auxNumPhone = phone.replace(/\D/g, '' );
 	Ti.API.info("Raw phone number: "+ auxNumPhone);
 	
 	l10l.addEventListener('click', function(){
-		if (hasSelection){
-			for (var arp=0 ; arp < count; arp++){
-				content[arp].backgroundColor = '#111111'; 
-			}
-		}
-		l10l.backgroundColor = "#89A676";
-		hasSelection = true;
-
+		highlightMe( aux6);
 		Titanium.Platform.openURL('tel:'+auxNumPhone);
 	});
 	
@@ -343,33 +314,26 @@ if (cell_phone != null ){
 
 	label[count] = Ti.UI.createLabel({
 		text: "Cell phone: ",
-		height:  heightValue,
-		width:  "50%",
-		textAlign: 'right',
-		left: 0,
+		width:  "33%",
+		textAlign: 'left',
+		left: 5,
 		touchEnabled: false
 	});
 	
 	var l11l = Ti.UI.createLabel({
-		height:  heightValue,
-		width:  "auto",
+		width:  "67%",
 		textAlign: 'left',
-		left: "50%"
+		left: "33%"
 	});
+
+	var aux7 = count;
 
 	//When number is clicked, make the call
 	var auxNumCell = cell_phone.replace(/\D/g, '' );
 	Ti.API.info("Raw phone number: "+ auxNumCell);
 	
 	l11l.addEventListener('click', function(){
-		if (hasSelection){
-			for (var arp=0 ; arp < count; arp++){
-				content[arp].backgroundColor = '#111111'; 
-			}
-		}
-		l11l.backgroundColor = "#89A676";
-		hasSelection = true;
-
+		highlightMe( aux7);
 		Titanium.Platform.openURL('tel:'+auxNumCell);
 	});
 	
@@ -386,34 +350,26 @@ var fax = results.fieldByName("fax");
 if ( fax != null){
 	label[count] = Ti.UI.createLabel({
 		text: "Fax: ",
-		height:  heightValue,
-		width:  "50%",
-		textAlign: 'right',
-		left: 0,
+		width:  "33%",
+		textAlign: 'left',
+		left: 5,
 		touchEnabled: false
 	});
 	
 	var l12l = Ti.UI.createLabel({
-		height:  heightValue,
-		width:  "auto",
+		width:  "67%",
 		textAlign: 'left',
-		left: "50%"
+		left: "33%"
 	});
+
+	var aux8 = count;
 
 	//When number is clicked, make the call
 	var auxNumFax = fax.replace(/\D/g, '' );
 	Ti.API.info("Raw phone number: "+ auxNumFax);
 	
 	l12l.addEventListener('click', function(){
-		if (hasSelection){
-			for (var arp=0 ; arp < count; arp++){
-				content[arp].backgroundColor = '#111111'; 
-			}
-		}
-		l12l.backgroundColor = "#89A676";
-		hasSelection = true;
-
-
+		highlightMe( aux8);
 		Titanium.Platform.openURL('tel:'+auxNumFax);
 	});
 
@@ -430,10 +386,9 @@ var email = results.fieldByName("email");
 if ( email != null){
 	label[count] = Ti.UI.createLabel({
 		text: "Email: ",
-		height:  heightValue,
-		width:  "50%",
-		textAlign: 'right',
-		left: 0,
+		width:  "33%",
+		textAlign: 'left',
+		left: 5,
 		touchEnabled: false
 	});
 	
@@ -441,20 +396,14 @@ if ( email != null){
 		
 	label6 = Ti.UI.createLabel({
 		text: email, 
-		height:  heightValue,
 		width:  "100%",
 		textAlign: 'left',
-		left: "50%"
+		left: "33%"
 	});
 
+	var aux9 = count;
 	label6.addEventListener('click', function(){
-		if (hasSelection){
-			for (var arp=0 ; arp < count; arp++){
-				content[arp].backgroundColor = '#111111'; 
-			}
-		}
-		label6.backgroundColor = "#89A676";
-		hasSelection = true;
+		highlightMe( aux9);
 	});
 
 	content[count] = label6;
@@ -470,36 +419,30 @@ var website = results.fieldByName("website");
 if ( website != null){
 	label[count] = Ti.UI.createLabel({
 		text: "Website: ",
-		height:  heightValue,
-		width:  "50%",
-		textAlign: 'right',
-		left: 0,
+		width:  "33%",
+		textAlign: 'left',
+		left: 5,
 		touchEnabled: false
 	});
 			
 	label7 = Ti.UI.createLabel({
 		text: ""+website,
-		height:  heightValue,
-		width:  "auto",
+		width:  "67%",
 		textAlign: 'left',
-		left: "50%"
+		left: "33%"
 	});
 
+	website = website.replace("http://","");
+
+	var aux10 = count;
+
 	label7.addEventListener('click', function(){
-		if (hasSelection){
-			for (var arp=0 ; arp < count; arp++){
-				content[arp].backgroundColor = '#111111'; 
-			}
-		}
-		label7.backgroundColor = "#89A676";
-		hasSelection = true;
+		highlightMe( aux10);
+		website = website.replace("http://","");
+		Titanium.Platform.openURL("http://"+website);
 	});
 
 	content[count] = label7;
-
-	
-	Ti.API.info("Website: "+ count);
-
 	count++;
 }
 
@@ -508,106 +451,115 @@ var description = results.fieldByName("description");
 if ( description != null ){
 	label[count]  = Ti.UI.createLabel({
 		text: "Description: ",
-		height:  heightValue,
-		width:  "50%",
-		left: 0,
-		textAlign: 'right',
+		width:  "33%",
+		left: 5,
+		textAlign: 'left',
 		touchEnabled: false
 	});
-		
-		
-	var openMe = Titanium.UI.createButton({
-			title: 'Open',
-			width: '30%',
-			height:  heightValue+4,
-			left: "50%",
-			width:  "50%",
-		    backgroundColor: '#000000',
-		    backgroundSelectedColor: "#E4A520",
-		    borderColor: '#1c1d1c',
-		    borderRadius: 6,
-		    color: '#ffffff',
-		    borderWidth: '0',
-		    font:{size:7, fontWeight:'lighter'},
-		    backgroundImage: 'none',
-	});
+
+	var descAux = description;
+	var openDescWin = false;
 	
-	openMe.addEventListener('click', function(){
-		var descWin = Ti.UI.createWindow({
-			modal: true,
-			opacity: 0.99
-		});
+	if (description.length > 50){
+		description = description.substring(0,50);
+		description = description+"...";
+		openDescWin = true;
+	}
+	
+	var labelDesc = Ti.UI.createLabel({
+		text: ""+description,
+		width:  "67%",
+		textAlign: 'left',
+		left: "33%"
+	});
+
+	var auxDesc = count;
+
+	labelDesc.addEventListener('click', function(){
+		highlightMe(auxDesc);
 		
-		//Header where the selected name is presented
-		var descHeader = Ti.UI.createView({
-			top: '0',
-			height: '20%',
-			width: '100%',
-			borderRadius: 5,
-			backgroundColor: '#A9A9A9',
-			opacity: 0.5
-		});
-		descWin.add(descHeader);
-		
-		//Label containing the selected name
-		var labelDescContent = Ti.UI.createLabel({
-			text: "Description",
-			height: 'auto',
-			color: "#FFFFFF",
-			width:  '90%',
-			font: {fontSize: 18,  fontWeight: "bold"},
-			textAlign: 'center',
-			touchEnabled: false
-		});
-		
-		descHeader.add(labelDescContent);
+		if (openDescWin)
+		{
+			var descWin = Ti.UI.createWindow({
+				modal: true,
+				opacity: 0.99
+			});
 			
-		var textDesc = Ti.UI.createTextArea({
-			value: description,
-			color: "blue",
-			editable: false,
-			top: "30%"
-		});	
-		
-		descWin.add(textDesc);
-		
-		descWin.open();
-		
-		descWin.addEventListener('click', function(){
-			descWin.close();
-		});
-		
+			//Header where the selected name is presented
+			var descHeader = Ti.UI.createView({
+				top: '0',
+				height: '20%',
+				width: '100%',
+				borderRadius: 5,
+				backgroundColor: '#A9A9A9',
+				opacity: 0.5
+			});
+			descWin.add(descHeader);
+			
+			//Label containing the selected name
+			var labelDescContent = Ti.UI.createLabel({
+				text: "Description",
+				height: 'auto',
+				color: "#FFFFFF",
+				width:  '90%',
+				font: {fontSize: 18,  fontWeight: "bold"},
+				textAlign: 'center',
+				touchEnabled: false
+			});
+			
+			descHeader.add(labelDescContent);
+				
+			var textDesc = Ti.UI.createTextArea({
+				value: descAux,
+				color: "blue",
+				editable: false,
+				top: "30%"
+			});	
+			
+			descWin.add(textDesc);
+			
+			descWin.open();
+			
+			descWin.addEventListener('click', function(){
+				descWin.close();
+			});
+		}
 	});
-	
-	content[count] = openMe;
+
+	content[count] = labelDesc;	
 	count++;
-
 }
-
-
-var result = Array();
- 
-result = getMult(count);
-
-var hScreen = Titanium.Platform.displayCaps.platformHeight;
-
-var base = result["baseConstant"] - ((count - 1)*0.02);
 
 Ti.API.info("Items (count): "+ count);
-
-	
 for (var i = 0; i < count ; i++){
 
-	var newTop = base + (i*result["calc"]);
-	label[i].top = newTop*hScreen;
+	cell[i] = Ti.UI.createView({
+		height: heightValue,
+		top : 40*i
+	});
 	label[i].color = "#999999";
-	
-	content[i].top = newTop*hScreen;
 	content[i].color = "#FFFFFF";
-		
-	resultView.add(label[i]);
-	resultView.add(content[i]);
+	
+	cell[i].add(label[i]);
+	cell[i].add(content[i]);
+
+	viewContent.add(cell[i]);	
+	
+	border[i] = Ti.UI.createView({
+		backgroundColor:"#F16A0B",
+		height:2,
+		top: (40*(i+1))-2
+	});
+	viewContent.add(border[i]);
 }
+
+function highlightMe(data) {
+	cell[data].backgroundColor = "#F16A0B";
+	setTimeout(function(){
+		cell[data].backgroundColor = '#111111'; 
+	}, 100);
+};
+
 
 results.close();
 

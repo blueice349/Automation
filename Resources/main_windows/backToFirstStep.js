@@ -256,6 +256,7 @@ b1.addEventListener('click', function(){
 				//Creation of the main menu window
 				var win2 = Titanium.UI.createWindow({  
 					fullscreen: true,
+					title:'Omadi CRM',
 					url:'main_windows/mainMenu.js',
 				});
 				

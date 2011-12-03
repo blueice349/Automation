@@ -25,12 +25,14 @@ function showIndicator(show)
     if ( show == 'modal'){ 
     indWin = Titanium.UI.createWindow({
         modal: true,
+    	title:'Omadi CRM',
         opacity: 0.9,
         backgroundColor: '#000000'
     });
     }
     else{ 
 	    indWin = Titanium.UI.createWindow({
+    		title:'Omadi CRM',
 	        fullscreen: true
 	    });
     }
@@ -192,6 +194,7 @@ function showIndicatorDelete(inform)
     // window container
 
     indWin = Titanium.UI.createWindow({
+        title:'Omadi CRM',
         modal: true,
         opacity: 0.9,
         backgroundColor: '#000000'
@@ -688,74 +691,3 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 	objectsUp.send();
 }
 
-function getMult (count){
-	 
-	 result = Array();
-	 result["calc"] = 0;
-	 result["baseConstant"] = 0;
-	
-	switch (count){
-		case 0:
-		break;
-		
-		case 1:
-			result["calc"] = 0.3;
-			result["baseConstant"] = 0.42;
-		break;
-		
-		case 2:
-			result["calc"] = 0.3;
-			result["baseConstant"] = 0.32;
-		break;
-		
-		case 3:
-			result["calc"] = 0.24;
-			result["baseConstant"] = 0.24;
-		break;
-		
-		case 4:
-			result["calc"] = 0.17;
-			result["baseConstant"] = 0.26;
-		break;
-		
-		case 5:
-			result["calc"] = 0.13;
-			result["baseConstant"] = 0.28;
-		break;
-		
-		case 6:
-			result["calc"] = 0.11;
-			result["baseConstant"] = 0.30;
-		break;
-		
-		case 7:
-			result["calc"] = 0.09;
-			result["baseConstant"] = 0.32;
-		break;
-		
-		case 8:
-			result["calc"] = 0.08;
-			result["baseConstant"] = 0.334;
-		break;
-		
-		case 9:
-			result["calc"] = 0.064;
-			result["baseConstant"] = 0.36;
-		break;
-		
-		case 10:
-			result["calc"] = 0.064;
-			result["baseConstant"] = 0.36;
-		break;	
-	
-		case 11:
-			result["calc"] = 0.06;
-			result["baseConstant"] = 0.36;
-		break;
-		
-		default:
-	}
-	
-	return result;
-	
-}

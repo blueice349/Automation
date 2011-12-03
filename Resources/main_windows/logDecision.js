@@ -7,12 +7,14 @@ Ti.include('../lib/functions.js');
 //Definition of the window before (opens when the user clicks on the back button)
 var goToWindow = Titanium.UI.createWindow({
 	fullscreen : true,
+	title:'Omadi CRM',	
 	url : 'mainMenu.js',
 	notOpen: false
 });
 
 var logWindow = Titanium.UI.createWindow({  
 	fullscreen: true,
+	title:'Omadi CRM',	
 	url : 'backToFirstStep.js'
 });
 

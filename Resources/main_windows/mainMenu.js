@@ -188,6 +188,7 @@ offImage.addEventListener('click',function(e)
 		// window container
 		indLog = Titanium.UI.createWindow({
 		    url: 'logDecision.js',
+			title:'Omadi CRM',		    
 		    fullscreen: true
 		});
 	
@@ -207,6 +208,7 @@ offImage.addEventListener('click',function(e)
 rowFirst.addEventListener('click',function(e){
 	if (!isFirstTime){
 		var win3 = Titanium.UI.createWindow({  
+			title:'Leads',
 			fullscreen: true,
 			url:'leads.js'
 		});
@@ -214,11 +216,10 @@ rowFirst.addEventListener('click',function(e){
 	}
 });
 
-//Show black screen when Leads's button is clicked
-// When the black screen receives one click, it closes
 rowSecond.addEventListener('click',function(e){
 	if (!isFirstTime){
 		var win3 = Titanium.UI.createWindow({  
+			title:'Contacts',
 			fullscreen: true,
 			url:'contacts.js',
 		});
@@ -232,6 +233,7 @@ rowThird.addEventListener('click',function(e){
 	if (!isFirstTime){
 	
 		var win3 = Titanium.UI.createWindow({  
+			title:'Accounts',
 			fullscreen: true,
 			url:'accounts.js',
 		});
@@ -243,6 +245,7 @@ rowFourth.addEventListener('click',function(e){
 
 	if (!isFirstTime){
 		var win3 = Titanium.UI.createWindow({  
+			title:'Potentials',
 			fullscreen: true,
 			url:'potentials.js',
 		});
@@ -255,6 +258,7 @@ rowFiveth.addEventListener('click',function(e){
 
 	if (!isFirstTime){
 		var win3 = Titanium.UI.createWindow({  
+			title:'Omadi CRM',
 			fullscreen: true,
 			url:'settings.js'
 		});

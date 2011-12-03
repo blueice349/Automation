@@ -22,6 +22,7 @@ installMe(pageIndex, updateWin, time, "settings");
 setInterval(function(){
 	if (!Titanium.App.Properties.getBool("indicatorActive")){
 		var winSettings = Ti.UI.createWindow({
+			title:'Omadi CRM',
 			url: "settings.js",
 			fullscreen: true
 		});

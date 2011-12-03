@@ -20,7 +20,7 @@ Ti.include('lib/functions.js');
 // create base UI root window
 //
 var win1 = Titanium.UI.createWindow({  
-    title:'Welcome!',
+    title:'Omadi CRM',
     fullscreen: true
 });
 
@@ -262,6 +262,7 @@ b1.addEventListener('click', function(){
 				//Creation of the main menu window
 				var win2 = Titanium.UI.createWindow({  
 					fullscreen: true,
+					title:'Omadi CRM',
 					url:'main_windows/mainMenu.js',
 				});
 				

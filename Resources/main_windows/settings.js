@@ -31,6 +31,7 @@ var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.ge
 //Definition of the window before (opens when the user clicks on the back button)
 var goToWindow = Titanium.UI.createWindow({
 	fullscreen : true,
+	title:'Omadi CRM',
 	url : 'mainMenu.js',
 	notOpen: true
 });
