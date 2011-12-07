@@ -26,8 +26,6 @@ function translateErrorCode(code) {
 
 Ti.Geolocation.preferredProvider = Titanium.Geolocation.PROVIDER_GPS;
 Ti.Geolocation.purpose = "User tracking";
-Titanium.Geolocation.accuracy = Titanium.Geolocation.ACCURACY_BEST;
-Titanium.Geolocation.distanceFilter = 10;
 
 // state vars used by resume/pause
 var headingAdded = false;
@@ -99,10 +97,9 @@ else
 		var altitudeAccuracy = e.coords.altitudeAccuracy;
 		Ti.API.info('speed ' + speed);
 		
-		db.execute('INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES (?,?,?,?)', longitude, latitude, Math.round(timestamp/1000), "notUploaded");
-		//alert("Geo inserted into database");
-
-		Titanium.API.info('geo - current location: ' + new Date(timestamp) + ' long ' + longitude + ' lat ' + latitude + ' accuracy ' + accuracy);
+		if (accuracy <= 50){
+			db.execute('INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES (?,?,?,?)', longitude, latitude, Math.round(timestamp/1000), "notUploaded");
+		}
 	});
 
 	//
@@ -127,7 +124,7 @@ else
 
 		//Titanium.Geolocation.distanceFilter = 100; //changed after first location event
 
-
+		/*
 		// reverse geo
 		Titanium.Geolocation.reverseGeocoder(latitude,longitude,function(evt)
 		{
@@ -141,17 +138,14 @@ else
 				Ti.API.debug("reverse geolocation result = "+JSON.stringify(evt));
 			}
 			else {
-				//Ti.UI.createAlertDialog({
-				//	title:'Reverse geo error',
-				//	message:evt.error
-				// }).show();
 				Ti.API.info("Code translation: "+translateErrorCode(e.code));
 			}
 		});
-		db.execute('INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES (?,?,?,?)', longitude, latitude, Math.round(timestamp/1000), "notUploaded");
-		//alert("Geo inserted into database");
+		*/
+		if (accuracy <= 50){
+			db.execute('INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES (?,?,?,?)', longitude, latitude, Math.round(timestamp/1000), "notUploaded");
+		}
 		
-		Titanium.API.info('geo - location updated: ' + new Date(timestamp) + ' long ' + longitude + ' lat ' + latitude + ' accuracy ' + accuracy);
 	};
 	Titanium.Geolocation.addEventListener('location', locationCallback);
 	locationAdded = true;
@@ -188,10 +182,10 @@ if (Titanium.Platform.name == 'android')
 
 setInterval(function (){
 	if ( !Titanium.App.Properties.getBool("UpRunning") ){	
-		Ti.API.info("Geo in");
 		Titanium.App.Properties.setBool("UpRunning", true);
 		var result = db.execute("SELECT * FROM user_location WHERE status = 'notUploaded' ");
 		
+		//Build JSON structure
 		var json = "{ \"data\": [";
 		for(var i = 0; i < result.rowCount ; i++) {
 		    (i == result.rowCount-1) ?  
@@ -221,15 +215,11 @@ setInterval(function (){
 			//Parses response into strings
 			var resultReq = JSON.parse(this.responseText);
 			
-			Ti.API.info("Inserted! ");
-			
-			//If Database is already last version 
 			if ( resultReq.inserted ){
-				//alert("Inserted: "+ resultReq.inserted);
 				if (resultReq.success)
-					Ti.API.info("Success: "+ resultReq.success);
+					Ti.API.info(resultReq.success+"GPS coordinates sucefully inserted: ");
 				else
-					Ti.API.info("Errors: "+ resultReq.errors);
+					Ti.API.info("GPS coordinates not inserted, we had "+ resultReq.errors+" errors");
 			}
 			db.execute('DELETE FROM user_location WHERE status="notUploaded"');
 	
@@ -237,10 +227,10 @@ setInterval(function (){
 		//Connection error:
 		objectsCheck.onerror = function(e) {
 			Titanium.App.Properties.setBool("UpRunning", false);
-			//alert("Error checking if update is needed, not running");
 		}
 		
 		//Sending information and try to connect
 		objectsCheck.send(json);
 	} 
 }, 120000);
+

@@ -164,5 +164,7 @@ else {
 
 }
 	
+resultsNames.close();
+db.close();
 //showBottom(actualWindow, goToWindow )
 showBottom(win3, goToWindow);

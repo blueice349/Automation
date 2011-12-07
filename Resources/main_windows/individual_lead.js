@@ -32,7 +32,8 @@ win4.addEventListener('android:back', function() {
 	Ti.API.info("Back to the step before");
 	win4.close();
 });
-	
+
+
 var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 var results  = db.execute('SELECT * FROM lead WHERE  nid = '+win4.nid);
 
@@ -460,8 +461,8 @@ if ( description != null ){
 	var descAux = description;
 	var openDescWin = false;
 	
-	if (description.length > 50){
-		description = description.substring(0,50);
+	if (description.length > 45){
+		description = description.substring(0,45);
 		description = description+"...";
 		openDescWin = true;
 	}
@@ -480,49 +481,7 @@ if ( description != null ){
 		
 		if (openDescWin)
 		{
-			var descWin = Ti.UI.createWindow({
-				modal: true,
-				opacity: 0.99
-			});
-			
-			//Header where the selected name is presented
-			var descHeader = Ti.UI.createView({
-				top: '0',
-				height: '20%',
-				width: '100%',
-				borderRadius: 5,
-				backgroundColor: '#A9A9A9',
-				opacity: 0.5
-			});
-			descWin.add(descHeader);
-			
-			//Label containing the selected name
-			var labelDescContent = Ti.UI.createLabel({
-				text: "Description",
-				height: 'auto',
-				color: "#FFFFFF",
-				width:  '90%',
-				font: {fontSize: 18,  fontWeight: "bold"},
-				textAlign: 'center',
-				touchEnabled: false
-			});
-			
-			descHeader.add(labelDescContent);
-				
-			var textDesc = Ti.UI.createTextArea({
-				value: descAux,
-				color: "blue",
-				editable: false,
-				top: "30%"
-			});	
-			
-			descWin.add(textDesc);
-			
-			descWin.open();
-			
-			descWin.addEventListener('click', function(){
-				descWin.close();
-			});
+			openBigText(descAux);
 		}
 	});
 
@@ -562,6 +521,7 @@ function highlightMe(data) {
 
 
 results.close();
+db.close();
 
 //showBottom(actualWindow, goToWindow )
 showBottom(win4, goToWindow);

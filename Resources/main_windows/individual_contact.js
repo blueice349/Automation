@@ -395,8 +395,8 @@ if ( description != null ){
 	var descAux = description;
 	var openDescWin = false;
 	
-	if (description.length > 50){
-		description = description.substring(0,50);
+	if (description.length > 45){
+		description = description.substring(0,45);
 		description = description+"...";
 		openDescWin = true;
 	}
@@ -415,56 +415,13 @@ if ( description != null ){
 		
 		if (openDescWin)
 		{
-			var descWin = Ti.UI.createWindow({
-				modal: true,
-				opacity: 0.99
-			});
-			
-			//Header where the selected name is presented
-			var descHeader = Ti.UI.createView({
-				top: '0',
-				height: '20%',
-				width: '100%',
-				borderRadius: 5,
-				backgroundColor: '#A9A9A9',
-				opacity: 0.5
-			});
-			descWin.add(descHeader);
-			
-			//Label containing the selected name
-			var labelDescContent = Ti.UI.createLabel({
-				text: "Description",
-				height: 'auto',
-				color: "#FFFFFF",
-				width:  '90%',
-				font: {fontSize: 18,  fontWeight: "bold"},
-				textAlign: 'center',
-				touchEnabled: false
-			});
-			
-			descHeader.add(labelDescContent);
-				
-			var textDesc = Ti.UI.createTextArea({
-				value: descAux,
-				color: "blue",
-				editable: false,
-				top: "30%"
-			});	
-			
-			descWin.add(textDesc);
-			
-			descWin.open();
-			
-			descWin.addEventListener('click', function(){
-				descWin.close();
-			});
+			openBigText(descAux);
 		}
 	});
 
 	content[count] = labelDesc;	
 	count++;
 }
-
 
 Ti.API.info("Items (count): "+ count);
 for (var i = 0; i < count ; i++){
@@ -497,7 +454,8 @@ function highlightMe(data) {
 };
 
 
-results.close();
 
+results.close();
+db.close();
 //showBottom(actualWindow, goToWindow )
 showBottom(win4, goToWindow);

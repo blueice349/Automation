@@ -145,8 +145,6 @@ else {
 
 		//Avoiding memory leaking
 		win4.open();
-		resultsNames.close();
-
 	});
 	//Adds contact list container to the UI
 	win5.add(listTableView);
@@ -158,6 +156,9 @@ else {
 		}, 110 );
 	});
 }
+
+resultsNames.close();
+db.close();
 	
 //showBottom(actualWindow, goToWindow )
 showBottom(win5, goToWindow);

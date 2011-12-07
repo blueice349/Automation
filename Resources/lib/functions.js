@@ -355,7 +355,7 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 
 	Ti.API.info("Current page: "+ pageIndex);
 	//Opens address to retrieve contact list
-
+	Ti.API.info("TIME: "+timeIndex);
 	if (pageIndex == 0 )   
 		objectsUp.open('GET', win.picked + '/js-sync/sync.json?timestamp=' + timeIndex +'&reset=1&limit=35' );
 	else
@@ -439,73 +439,118 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 			//Vocabulary:
 			if (json.vocabularies){
 				if (json.vocabularies.insert){
-					for (var i = 0; i < json.vocabularies.insert.length; i++ ){
-						db.execute('INSERT INTO vocabulary (vid, name, machine_name) VALUES (?,?,?)', json.vocabularies.insert[i].vid , json.vocabularies.insert[i].name, json.vocabularies.insert[i].machine_name);				
+					if (json.vocabularies.insert.length){
+						for (var i = 0; i < json.vocabularies.insert.length; i++ ){
+							db.execute('INSERT INTO vocabulary (vid, name, machine_name) VALUES (?,?,?)', json.vocabularies.insert[i].vid , json.vocabularies.insert[i].name, json.vocabularies.insert[i].machine_name);				
+						}
+					}
+					else{
+							db.execute('INSERT INTO vocabulary (vid, name, machine_name) VALUES (?,?,?)', json.vocabularies.insert.vid , json.vocabularies.insert.name, json.vocabularies.insert.machine_name);						
 					}
 				}
 				if (json.vocabularies.update){
-					for (var i = 0; i < json.vocabularies.update.length; i++ ){
-						db.execute('UPDATE vocabulary SET "name"=?, "machine_name"=? WHERE "vid"=?',json.vocabularies.update[i].name, json.vocabularies.update[i].machine_name, json.vocabularies.update[i].vid);
+					if (json.vocabularies.update.length){
+						for (var i = 0; i < json.vocabularies.update.length; i++ ){
+							db.execute('UPDATE vocabulary SET "name"=?, "machine_name"=? WHERE "vid"=?',json.vocabularies.update[i].name, json.vocabularies.update[i].machine_name, json.vocabularies.update[i].vid);
+						}
+					}
+					else{
+							db.execute('UPDATE vocabulary SET "name"=?, "machine_name"=? WHERE "vid"=?',json.vocabularies.update.name, json.vocabularies.update.machine_name, json.vocabularies.update.vid);						
 					}
 				}
 				if (json.vocabularies["delete"]){
-					for (var i = 0; i < json.vocabularies["delete"].length; i++ ){
-						//Deletes rows from terms
-						db.execute('DELETE FROM term_data WHERE "vid"=?',json.vocabularies["delete"][i].vid);							
+					if (json.vocabularies["delete"].length){
+						for (var i = 0; i < json.vocabularies["delete"].length; i++ ){
+							//Deletes rows from terms
+							db.execute('DELETE FROM term_data WHERE "vid"=?',json.vocabularies["delete"][i].vid);							
+							
+							//Deletes corresponding rows in vocabulary
+							db.execute('DELETE FROM vocabulary WHERE "vid"=?',json.vocabularies["delete"][i].vid);				
+						}
+					}
+					else{
+						//Deletes row from terms
+						db.execute('DELETE FROM term_data WHERE "vid"=?',json.vocabularies["delete"].vid);							
 						
-						//Deletes corresponding rows in vocabulary
-						db.execute('DELETE FROM vocabulary WHERE "vid"=?',json.vocabularies["delete"][i].vid);				
+						//Deletes corresponding row in vocabulary
+						db.execute('DELETE FROM vocabulary WHERE "vid"=?',json.vocabularies["delete"].vid);				
 					}
 				}
 			}
 			//Terms:
 			if (json.terms){
 				if (json.terms.insert){
-					for (var i = 0; i < json.terms.insert.length; i++ ){
-						Ti.API.info("Term: "+json.terms.insert[i]);
-						db.execute('INSERT INTO term_data (vid, tid, name, description, weight) VALUES (?,?,?,?,?)', json.terms.insert[i].vid, json.terms.insert[i].tid, json.terms.insert[i].name, json.terms.insert[i].desc, json.terms.insert[i].weight);				
+					if (json.terms.insert.length){
+						for (var i = 0; i < json.terms.insert.length; i++ ){
+							db.execute('INSERT INTO term_data (vid, tid, name, description, weight) VALUES (?,?,?,?,?)', json.terms.insert[i].vid, json.terms.insert[i].tid, json.terms.insert[i].name, json.terms.insert[i].desc, json.terms.insert[i].weight);				
+						}
+					}
+					else{
+							db.execute('INSERT INTO term_data (vid, tid, name, description, weight) VALUES (?,?,?,?,?)', json.terms.insert.vid, json.terms.insert.tid, json.terms.insert.name, json.terms.insert.desc, json.terms.insert.weight);						
 					}
 				}
 				if (json.terms.update){
-					//db.execute('UPDATE term_data SET "name"="'+ json.terms.update[i].name +'", "description"="'+ json.terms.update[i].desc +'",  "weight"='+ json.terms.update[i].weight +', "vid"='+ json.terms.update[i].vid +'  WHERE "tid"='+json.terms.update[i].tid);				
-					db.execute('UPDATE term_data SET "name"=?, "description"=?,  "weight"=?, "vid"=?  WHERE "tid"=?', json.terms.update[i].name, json.terms.update[i].desc, json.terms.update[i].weight, json.terms.update[i].vid, json.terms.update[i].tid);
+					if (json.terms.update.length){
+						for (var i = 0; i < json.terms.update.length; i++ ){
+							db.execute('UPDATE term_data SET "name"=?, "description"=?,  "weight"=?, "vid"=?  WHERE "tid"=?', json.terms.update[i].name, json.terms.update[i].desc, json.terms.update[i].weight, json.terms.update[i].vid, json.terms.update[i].tid);
+						}
+					}
+					else{
+							db.execute('UPDATE term_data SET "name"=?, "description"=?,  "weight"=?, "vid"=?  WHERE "tid"=?', json.terms.update.name, json.terms.update.desc, json.terms.update.weight, json.terms.update.vid, json.terms.update.tid);						
+					}
 				}
 				if (json.terms["delete"]){
-					for (var i = 0; i < json.terms["delete"].length; i++ ){
-						db.execute('DELETE FROM term_data WHERE "tid"=?',json.terms["delete"][i].tid);
-						//Insert in another tables a default value or simply attribute a default value in case of no results returning from a query?
-						//A: Default value in case of no results returning from a query. (Way faster and easyer than set up every table linked to this deleted field) 
+					if (json.terms["delete"].length){
+						for (var i = 0; i < json.terms["delete"].length; i++ ){
+							db.execute('DELETE FROM term_data WHERE "tid"=?',json.terms["delete"][i].tid);
+						}
+					}
+					else{
+						db.execute('DELETE FROM term_data WHERE "tid"=?',json.terms["delete"].tid);
 					}
 				}
 			}
-			
 			if (json.account){
 				//Insert - Accounts
 				if (json.account.insert){
-					for (var i = 0; i < json.account.insert.length; i++ ){
-						//Inserts into account table
-						Ti.API.info("Phone Account: "+ json.account.insert[i].phone);
-						db.execute('INSERT INTO account (nid, name, account_type_tid, parent_account_nid, website, phone, fax, description) VALUES (?,?,?,?,?,?,?,?)', json.account.insert[i].nid,json.account.insert[i].name, json.account.insert[i].account_type_tid, json.account.insert[i].account_nid, json.account.insert[i].website, json.account.insert[i].phone, json.account.insert[i].fax, json.account.insert[i].description);
+					if (json.account.insert.length){
+						for (var i = 0; i < json.account.insert.length; i++ ){
+							//Inserts into account table
+							Ti.API.info("Phone Account: "+ json.account.insert[i].phone);
+							db.execute('INSERT INTO account (nid, name, account_type_tid, parent_account_nid, website, phone, fax, description) VALUES (?,?,?,?,?,?,?,?)', json.account.insert[i].nid,json.account.insert[i].name, json.account.insert[i].account_type_tid, json.account.insert[i].account_nid, json.account.insert[i].website, json.account.insert[i].phone, json.account.insert[i].fax, json.account.insert[i].description);
+						}
+					}
+					else{
+						db.execute('INSERT INTO account (nid, name, account_type_tid, parent_account_nid, website, phone, fax, description) VALUES (?,?,?,?,?,?,?,?)', json.account.insert.nid,json.account.insert.name, json.account.insert.account_type_tid, json.account.insert.account_nid, json.account.insert.website, json.account.insert.phone, json.account.insert.fax, json.account.insert.description);						
 					}
 					Ti.API.info("Inserted account sucefully!");				
 				}
 				
 				//Update - Accounts
 				if (json.account.update){
-					for (var i = 0; i < json.account.update.length; i++ ){
-						//Updating account table
-						db.execute('UPDATE account SET "name"=?, "account_type_tid"=?, "parent_account_nid"=?, "website"=?, "phone"=?, "fax"=?, "description"=? WHERE  "nid"=?', json.account.update[i].name, json.account.update[i].account_type_tid, json.account.update[i].account_nid, json.account.update[i].website, json.account.update[i].phone, json.account.update[i].fax, json.account.update[i].description, json.account.update[i].nid );
+					if (json.account.update.length){
+						for (var i = 0; i < json.account.update.length; i++ ){
+							//Updating account table
+							db.execute('UPDATE account SET "name"=?, "account_type_tid"=?, "parent_account_nid"=?, "website"=?, "phone"=?, "fax"=?, "description"=? WHERE  "nid"=?', json.account.update[i].name, json.account.update[i].account_type_tid, json.account.update[i].account_nid, json.account.update[i].website, json.account.update[i].phone, json.account.update[i].fax, json.account.update[i].description, json.account.update[i].nid );
+						}
+					}
+					else{
+						db.execute('UPDATE account SET "name"=?, "account_type_tid"=?, "parent_account_nid"=?, "website"=?, "phone"=?, "fax"=?, "description"=? WHERE  "nid"=?', json.account.update.name, json.account.update.account_type_tid, json.account.update.account_nid, json.account.update.website, json.account.update.phone, json.account.update.fax, json.account.update.description, json.account.update.nid );	
 					}
 					Ti.API.info("Updated account sucefully!");
 				}
 				
 				//Delete - Accounts
 				if (json.account["delete"])	{
-					//Ti.API.info("Deleting Accounts");
-					for (var i = 0; i <  json.account["delete"].length; i++ ){
-						//Deletes current row
-						db.execute('DELETE FROM account WHERE "nid"=?',json.account["delete"][i].nid);
-					}				
+					if (json.account["delete"].length){
+						for (var i = 0; i <  json.account["delete"].length; i++ ){
+							//Deletes current row
+							db.execute('DELETE FROM account WHERE "nid"=?',json.account["delete"][i].nid);
+						}				
+					}
+					else{
+						db.execute('DELETE FROM account WHERE "nid"=?',json.account["delete"].nid);
+					}
 					Ti.API.info("Deleted account sucefully!");
 				}
 			}
@@ -513,28 +558,42 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 			if (json.lead){
 				//Insert - Leads
 				if (json.lead.insert){
-					for (var i = 0; i < json.lead.insert.length; i++ ){
-						//Inserts a new person
-						db.execute('INSERT INTO lead (nid, first_name, last_name, job_title_tid, lead_status_tid, lead_source_tid, competing_company_tid, company, phone, cell_phone, fax, email, description, website) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)', json.lead.insert[i].nid, json.lead.insert[i].first_name, json.lead.insert[i].last_name, json.lead.insert[i].job_title_tid, json.lead.insert[i].lead_status_tid, json.lead.insert[i].lead_source_tid, json.lead.insert[i].competing_company_tid, json.lead.insert[i].company, json.lead.insert[i].phone, json.lead.insert[i].cell_phone, json.lead.insert[i].fax, json.lead.insert[i].email, json.lead.insert[i].description, json.lead.insert[i].website);
+					if (json.lead.insert.length){
+						for (var i = 0; i < json.lead.insert.length; i++ ){
+							//Inserts a new person
+							db.execute('INSERT INTO lead (nid, first_name, last_name, job_title_tid, lead_status_tid, lead_source_tid, competing_company_tid, company, phone, cell_phone, fax, email, description, website) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)', json.lead.insert[i].nid, json.lead.insert[i].first_name, json.lead.insert[i].last_name, json.lead.insert[i].job_title_tid, json.lead.insert[i].lead_status_tid, json.lead.insert[i].lead_source_tid, json.lead.insert[i].competing_company_tid, json.lead.insert[i].company, json.lead.insert[i].phone, json.lead.insert[i].cell_phone, json.lead.insert[i].fax, json.lead.insert[i].email, json.lead.insert[i].description, json.lead.insert[i].website);
+						}
+					}
+					else{
+						db.execute('INSERT INTO lead (nid, first_name, last_name, job_title_tid, lead_status_tid, lead_source_tid, competing_company_tid, company, phone, cell_phone, fax, email, description, website) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)', json.lead.insert.nid, json.lead.insert.first_name, json.lead.insert.last_name, json.lead.insert.job_title_tid, json.lead.insert.lead_status_tid, json.lead.insert.lead_source_tid, json.lead.insert.competing_company_tid, json.lead.insert.company, json.lead.insert.phone, json.lead.insert.cell_phone, json.lead.insert.fax, json.lead.insert.email, json.lead.insert.description, json.lead.insert.website);	
 					}
 					Ti.API.info("Inserted lead sucefully!");				
 				}
-		
 				//Update - Leads
 				if (json.lead.update){
-					for (var i = 0; i < json.lead.update.length; i++ ){
-						//Updating lead table
-						db.execute('UPDATE lead SET "first_name"=?, "last_name"=?, "job_title_tid"=?, "lead_status_tid"=?, "lead_source_tid"=?, "competing_company_tid"=?, "company"=?, "phone"=?, "cell_phone"=?, "fax"=?, "email"=?, "description"=?, "website"=? WHERE  "nid"=?', json.lead.update[i].first_name, json.lead.update[i].last_name, json.lead.update[i].job_title_tid, json.lead.update[i].lead_status_tid, json.lead.update[i].lead_source_tid, json.lead.update[i].competing_company_tid, json.lead.update[i].company, json.lead.update[i].phone, json.lead.update[i].cell_phone, json.lead.update[i].fax, json.lead.update[i].email, json.lead.update[i].description, json.lead.update[i].website , json.lead.update[i].nid );
+					if (json.lead.update.length){
+						for (var i = 0; i < json.lead.update.length; i++ ){
+							//Updating lead table
+							db.execute('UPDATE lead SET "first_name"=?, "last_name"=?, "job_title_tid"=?, "lead_status_tid"=?, "lead_source_tid"=?, "competing_company_tid"=?, "company"=?, "phone"=?, "cell_phone"=?, "fax"=?, "email"=?, "description"=?, "website"=? WHERE  "nid"=?', json.lead.update[i].first_name, json.lead.update[i].last_name, json.lead.update[i].job_title_tid, json.lead.update[i].lead_status_tid, json.lead.update[i].lead_source_tid, json.lead.update[i].competing_company_tid, json.lead.update[i].company, json.lead.update[i].phone, json.lead.update[i].cell_phone, json.lead.update[i].fax, json.lead.update[i].email, json.lead.update[i].description, json.lead.update[i].website , json.lead.update[i].nid );
+						}
+					}
+					else{
+						db.execute('UPDATE lead SET "first_name"=?, "last_name"=?, "job_title_tid"=?, "lead_status_tid"=?, "lead_source_tid"=?, "competing_company_tid"=?, "company"=?, "phone"=?, "cell_phone"=?, "fax"=?, "email"=?, "description"=?, "website"=? WHERE  "nid"=?', json.lead.update.first_name, json.lead.update.last_name, json.lead.update.job_title_tid, json.lead.update.lead_status_tid, json.lead.update.lead_source_tid, json.lead.update.competing_company_tid, json.lead.update.company, json.lead.update.phone, json.lead.update.cell_phone, json.lead.update.fax, json.lead.update.email, json.lead.update.description, json.lead.update.website , json.lead.update.nid );	
 					}
 					Ti.API.info("Updated Leads sucefully!");
 				}
 				
 				//Delete - Leads
-				if (json.lead["delete"])	{
-					for (var i = 0; i <  json.lead["delete"].length; i++ ){
-						//Deletes current row (lead)
-						db.execute('DELETE FROM lead WHERE "nid"=?',json.lead["delete"][i].nid);
-					}				
+				if (json.lead["delete"]){
+					if (json.lead["delete"].length){
+						for (var i = 0; i <  json.lead["delete"].length; i++ ){
+							//Deletes current row (lead)
+							db.execute('DELETE FROM lead WHERE "nid"=?',json.lead["delete"][i].nid);
+						}				
+					}
+					else{
+						db.execute('DELETE FROM lead WHERE "nid"=?',json.lead["delete"].nid);
+					}
 					Ti.API.info("Deleted Leads sucefully!");
 				}
 
@@ -544,26 +603,41 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 			if (json.contact){
 				//Insert - Contacts
 				if (json.contact.insert){
-					for (var i = 0; i < json.contact.insert.length; i++ ){
-						db.execute('INSERT INTO contact (nid, first_name, last_name, account_nid, lead_source, job_title_tid, phone, cell_phone, fax, email, description ) VALUES (?,?,?,?,?,?,?,?,?,?,?)', json.contact.insert[i].nid, json.contact.insert[i].first_name, json.contact.insert[i].last_name, json.contact.insert[i].account_nid, json.contact.insert[i].lead_source_tid, json.contact.insert[i].job_title_tid, json.contact.insert[i].phone, json.contact.insert[i].cell_phone, json.contact.insert[i].fax, json.contact.insert[i].email, json.contact.insert[i].description );
+					if (json.contact.insert.length){
+						for (var i = 0; i < json.contact.insert.length; i++ ){
+							db.execute('INSERT INTO contact (nid, first_name, last_name, account_nid, lead_source, job_title_tid, phone, cell_phone, fax, email, description ) VALUES (?,?,?,?,?,?,?,?,?,?,?)', json.contact.insert[i].nid, json.contact.insert[i].first_name, json.contact.insert[i].last_name, json.contact.insert[i].account_nid, json.contact.insert[i].lead_source_tid, json.contact.insert[i].job_title_tid, json.contact.insert[i].phone, json.contact.insert[i].cell_phone, json.contact.insert[i].fax, json.contact.insert[i].email, json.contact.insert[i].description );
+						}
+					}
+					else{
+						db.execute('INSERT INTO contact (nid, first_name, last_name, account_nid, lead_source, job_title_tid, phone, cell_phone, fax, email, description ) VALUES (?,?,?,?,?,?,?,?,?,?,?)', json.contact.insert.nid, json.contact.insert.first_name, json.contact.insert.last_name, json.contact.insert.account_nid, json.contact.insert.lead_source_tid, json.contact.insert.job_title_tid, json.contact.insert.phone, json.contact.insert.cell_phone, json.contact.insert.fax, json.contact.insert.email, json.contact.insert.description );
 					}
 					Ti.API.info("Inserted contact sucefully!");				
 				}
 		
 				//Update - Contacts
 				if (json.contact.update){
-					for (var i = 0; i < json.contact.update.length; i++ ){
-						db.execute('UPDATE contact SET "first_name"=?, "last_name"=?, "account_nid"=? , "lead_source"=? , "job_title_tid"=?, "phone"=?, "cell_phone"=?, "fax"=?, "email"=?, "description"=? WHERE "nid"=?', json.contact.update[i].first_name , json.contact.update[i].last_name , json.contact.update[i].account_nid , json.contact.update[i].lead_source_tid , json.contact.update[i].job_title_tid , json.contact.update[i].phone , json.contact.update[i].cell_phone , json.contact.update[i].fax , json.contact.update[i].email , json.contact.update[i].description , json.contact.update[i].nid );
+					if (json.contact.update.length){
+						for (var i = 0; i < json.contact.update.length; i++ ){
+							db.execute('UPDATE contact SET "first_name"=?, "last_name"=?, "account_nid"=? , "lead_source"=? , "job_title_tid"=?, "phone"=?, "cell_phone"=?, "fax"=?, "email"=?, "description"=? WHERE "nid"=?', json.contact.update[i].first_name , json.contact.update[i].last_name , json.contact.update[i].account_nid , json.contact.update[i].lead_source_tid , json.contact.update[i].job_title_tid , json.contact.update[i].phone , json.contact.update[i].cell_phone , json.contact.update[i].fax , json.contact.update[i].email , json.contact.update[i].description , json.contact.update[i].nid );
+						}
+					}
+					else{
+						db.execute('UPDATE contact SET "first_name"=?, "last_name"=?, "account_nid"=? , "lead_source"=? , "job_title_tid"=?, "phone"=?, "cell_phone"=?, "fax"=?, "email"=?, "description"=? WHERE "nid"=?', json.contact.update.first_name , json.contact.update.last_name , json.contact.update.account_nid , json.contact.update.lead_source_tid , json.contact.update.job_title_tid , json.contact.update.phone , json.contact.update.cell_phone , json.contact.update.fax , json.contact.update.email , json.contact.update.description , json.contact.update.nid );	
 					}
 					Ti.API.info("Updated Contacts sucefully!");
 				}
 				
 				//Delete - Contacts
 				if (json.contact["delete"])	{
-					for (var i = 0; i <  json.contact["delete"].length; i++ ){
-						//Deletes current row (contact)
-						db.execute('DELETE FROM contact WHERE "nid"=?', json.contact["delete"][i].nid);
-					}				
+					if (json.contact["delete"].length){
+						for (var i = 0; i <  json.contact["delete"].length; i++ ){
+							//Deletes current row (contact)
+							db.execute('DELETE FROM contact WHERE "nid"=?', json.contact["delete"][i].nid);
+						}				
+					}
+					else{
+						db.execute('DELETE FROM contact WHERE "nid"=?', json.contact["delete"].nid);	
+					}
 					Ti.API.info("Deleted Contacts sucefully!");
 				}
 			}
@@ -572,25 +646,40 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 			if(json.potential){
 				//Insert - Potentials
 				if (json.potential.insert){
-					for (var i = 0; i < json.potential.insert.length; i++ ){
-						db.execute('INSERT INTO potential (nid, name, account_nid, potential_stage_tid, competing_company_tid, potential_type_tid, closing_date, next_step, description ) VALUES (?,?,?,?,?,?,?,?,?)', json.potential.insert[i].nid, json.potential.insert[i].name, json.potential.insert[i].account_nid, json.potential.insert[i].potential_stage_tid, json.potential.insert[i].competing_company_tid, json.potential.insert[i].potential_type_tid, json.potential.insert[i].closing_date, json.potential.insert[i].next_step, json.potential.insert[i].description);
+					if (json.potential.insert.length){
+						for (var i = 0; i < json.potential.insert.length; i++ ){
+							db.execute('INSERT INTO potential (nid, name, account_nid, potential_stage_tid, competing_company_tid, potential_type_tid, closing_date, next_step, description ) VALUES (?,?,?,?,?,?,?,?,?)', json.potential.insert[i].nid, json.potential.insert[i].name, json.potential.insert[i].account_nid, json.potential.insert[i].potential_stage_tid, json.potential.insert[i].competing_company_tid, json.potential.insert[i].potential_type_tid, json.potential.insert[i].closing_date, json.potential.insert[i].next_step, json.potential.insert[i].description);
+						}
+					}
+					else{
+						db.execute('INSERT INTO potential (nid, name, account_nid, potential_stage_tid, competing_company_tid, potential_type_tid, closing_date, next_step, description ) VALUES (?,?,?,?,?,?,?,?,?)', json.potential.insert.nid, json.potential.insert.name, json.potential.insert.account_nid, json.potential.insert.potential_stage_tid, json.potential.insert.competing_company_tid, json.potential.insert.potential_type_tid, json.potential.insert.closing_date, json.potential.insert.next_step, json.potential.insert.description);	
 					}
 					Ti.API.info("Inserted potential sucefully!");				
 				}
 	
 				//Update - Contacts
 				if (json.potential.update){
-					for (var i = 0; i < json.potential.update.length; i++ ){
-						db.execute('UPDATE potential SET "name"=? , "account_nid"=?, "potential_stage_tid"=?, "competing_company_tid"=?, "potential_type_tid"=?, "closing_date"=?, "next_step"=?, "description"=? WHERE "nid"=?', json.potential.update[i].name, json.potential.update[i].account_nid, json.potential.update[i].potential_stage_tid, json.potential.update[i].competing_company_tid, json.potential.update[i].potential_type_tid, json.potential.update[i].closing_date, json.potential.update[i].next_step, json.potential.update[i].description, json.potential.update[i].nid );
+					if (json.potential.update.length){
+						for (var i = 0; i < json.potential.update.length; i++ ){
+							db.execute('UPDATE potential SET "name"=? , "account_nid"=?, "potential_stage_tid"=?, "competing_company_tid"=?, "potential_type_tid"=?, "closing_date"=?, "next_step"=?, "description"=? WHERE "nid"=?', json.potential.update[i].name, json.potential.update[i].account_nid, json.potential.update[i].potential_stage_tid, json.potential.update[i].competing_company_tid, json.potential.update[i].potential_type_tid, json.potential.update[i].closing_date, json.potential.update[i].next_step, json.potential.update[i].description, json.potential.update[i].nid );
+						}
+					}
+					else{
+						db.execute('UPDATE potential SET "name"=? , "account_nid"=?, "potential_stage_tid"=?, "competing_company_tid"=?, "potential_type_tid"=?, "closing_date"=?, "next_step"=?, "description"=? WHERE "nid"=?', json.potential.update.name, json.potential.update.account_nid, json.potential.update.potential_stage_tid, json.potential.update.competing_company_tid, json.potential.update.potential_type_tid, json.potential.update.closing_date, json.potential.update.next_step, json.potential.update.description, json.potential.update.nid );	
 					}
 					Ti.API.info("Updated Potentials sucefully!");
 				}
 				
 				//Delete - Contacts
-				if (json.potential["delete"])	{
-					for (var i = 0; i <  json.potential["delete"].length; i++ ){
-						//Deletes current row (contact)
-						db.execute('DELETE FROM potential WHERE "nid"=?', json.potential["delete"][i].nid);
+				if (json.potential["delete"]){
+					if ( json.potential["delete"].length){
+						for (var i = 0; i <  json.potential["delete"].length; i++ ){
+							//Deletes current row (contact)
+							db.execute('DELETE FROM potential WHERE "nid"=?', json.potential["delete"][i].nid);
+						}
+					}
+					else{
+						db.execute('DELETE FROM potential WHERE "nid"=?', json.potential["delete"].nid);
 					}
 					Ti.API.info("Deleted Potentials sucefully!");
 				}
@@ -601,11 +690,30 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 			if(json.users){
 				//Insert - Users
 				if (json.users.insert){
-					for (var i = 0; i < json.users.insert.length; i++ ){
-						db.execute('INSERT INTO users (uid, username, mail, realname, status ) VALUES (?,?,?,?,?)', json.users.insert[i].uid, json.users.insert[i].username, json.users.insert[i].mail, json.users.insert[i].realname, json.users.insert[i].status);
-
-						for (var j = 0; j < json.users.insert[i].roles.length; j++ ){
-							db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.insert[i].uid, json.users.insert[i].roles[j]);
+					if (json.users.insert.length){
+						for (var i = 0; i < json.users.insert.length; i++ ){
+							db.execute('INSERT INTO users (uid, username, mail, realname, status ) VALUES (?,?,?,?,?)', json.users.insert[i].uid, json.users.insert[i].username, json.users.insert[i].mail, json.users.insert[i].realname, json.users.insert[i].status);
+							
+							if (json.users.insert[i].roles.length){
+								for (var j = 0; j < json.users.insert[i].roles.length; j++ ){
+									db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.insert[i].uid, json.users.insert[i].roles[j]);
+								}
+							}
+							else{
+								db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.insert[i].uid, json.users.insert[i].roles);
+							}
+						}
+					}
+					else{
+						db.execute('INSERT INTO users (uid, username, mail, realname, status ) VALUES (?,?,?,?,?)', json.users.insert.uid, json.users.insert.username, json.users.insert.mail, json.users.insert.realname, json.users.insert.status);
+						
+						if (json.users.insert.roles.length){
+							for (var j = 0; j < json.users.insert.roles.length; j++ ){
+								db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.insert.uid, json.users.insert.roles[j]);
+							}
+						}
+						else{
+							db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.insert.uid, json.users.insert.roles);
 						}
 					}
 					Ti.API.info("Inserted users sucefully!");
@@ -613,26 +721,42 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 
 				//Update - Users
 				if (json.users.update){
-					Ti.API.info('################ Check ################');
-					Ti.API.info(json.users.update);
-					Ti.API.info(json.users);
-					Ti.API.info(json);
-					for (var i = 0; i < json.users.update.length; i++ ){
-						Ti.API.info(json.users.update.length);
-						db.execute('UPDATE users SET "username"=? , "mail"=?, "realname"=?, "status"=? WHERE "uid"=?', json.users.update[i].username, json.users.update[i].mail, json.users.update[i].realname, json.users.update[i].status, json.users.update[i].uid );
-						
+					if (json.users.update.length){
+						for (var i = 0; i < json.users.update.length; i++ ){
+							db.execute('UPDATE users SET "username"=? , "mail"=?, "realname"=?, "status"=? WHERE "uid"=?', json.users.update[i].username, json.users.update[i].mail, json.users.update[i].realname, json.users.update[i].status, json.users.update[i].uid );
+							
+							//Delete every row present at user_roles
+							db.execute('DELETE FROM user_roles WHERE "uid"=?', json.users.update[i].uid);
+							
+							//Insert it over again!
+							if(json.users.update[i].roles){
+								
+								if (json.users.update[i].roles.length){
+									for (var j = 0; j < json.users.update[i].roles.length ; j++ ){
+										db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.update[i].uid, json.users.update[i].roles[j]);
+									}							
+								}
+								else{
+									db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.update[i].uid, json.users.update[i].roles);
+								}
+							}
+						}
+					}
+					else{
+						db.execute('UPDATE users SET "username"=? , "mail"=?, "realname"=?, "status"=? WHERE "uid"=?', json.users.update.username, json.users.update.mail, json.users.update.realname, json.users.update.status, json.users.update.uid );
+							
 						//Delete every row present at user_roles
-						db.execute('DELETE FROM user_roles WHERE "uid"=?', json.users.update[i].uid);
+						db.execute('DELETE FROM user_roles WHERE "uid"=?', json.users.update.uid);
 						
 						//Insert it over again!
 						if(json.users.update.roles){
 							if (json.users.update.roles.length){
-								for (var j = 0; j < json.users.update.roles.length ; i++ ){
-									db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.update[i].uid, json.users.update[i].roles[j]);
+								for (var j = 0; j < json.users.update.roles.length ; j++ ){
+									db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.update.uid, json.users.update.roles[j]);
 								}							
 							}
 							else{
-								db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.update[i].uid, json.users.update[i].roles);
+								db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.update.uid, json.users.update.roles);
 							}
 						}
 					}
@@ -641,13 +765,19 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 				
 				//Delete - Contacts
 				if (json.users["delete"])	{
-					for (var i = 0; i <  json.users["delete"].length; i++ ){
-						//Deletes current row (contact)
-						db.execute('DELETE FROM users WHERE "uid"=?', json.users["delete"][i].uid);
-						db.execute('DELETE FROM user_roles WHERE "uid"=?', json.users["delete"][i].uid);
-						
+					if (json.users["delete"].length){
+						for (var i = 0; i <  json.users["delete"].length; i++ ){
+							//Deletes current row (contact)
+							db.execute('DELETE FROM users WHERE "uid"=?', json.users["delete"][i].uid);
+							db.execute('DELETE FROM user_roles WHERE "uid"=?', json.users["delete"][i].uid);
+							
+						}
 					}
-					Ti.API.info("Deleted Users sucefully!");
+					else{
+						db.execute('DELETE FROM users WHERE "uid"=?', json.users["delete"].uid);
+						db.execute('DELETE FROM user_roles WHERE "uid"=?', json.users["delete"].uid);
+					}
+				Ti.API.info("Deleted Users sucefully!");
 				}
 				
 			}
@@ -691,3 +821,50 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 	objectsUp.send();
 }
 
+//Function Opens a new window to display descAux.
+//The window closes when receives a click event
+function openBigText(descAux){
+	var descWin = Ti.UI.createWindow({
+		modal: true,
+		opacity: 0.99
+	});
+	
+	//Header where the selected name is presented
+	var descHeader = Ti.UI.createView({
+		top: '0',
+		height: '20%',
+		width: '100%',
+		borderRadius: 5,
+		backgroundColor: '#A9A9A9',
+		opacity: 0.5
+	});
+	descWin.add(descHeader);
+	
+	//Label containing the selected name
+	var labelDescContent = Ti.UI.createLabel({
+		text: "Description",
+		height: 'auto',
+		color: "#FFFFFF",
+		width:  '90%',
+		font: {fontSize: 18,  fontWeight: "bold"},
+		textAlign: 'center',
+		touchEnabled: false
+	});
+	
+	descHeader.add(labelDescContent);
+		
+	var textDesc = Ti.UI.createTextArea({
+		value: descAux,
+		color: "blue",
+		editable: false,
+		top: "30%"
+	});	
+	
+	descWin.add(textDesc);
+	
+	descWin.open();
+	
+	descWin.addEventListener('click', function(){
+		descWin.close();
+	});
+}
