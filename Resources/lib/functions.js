@@ -410,6 +410,8 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 		Ti.API.info("Next page (no limit): "+pageIndex);
 		
 		
+		Ti.API.info("Joseandro");
+		
 		//If Database is already last version
 		if ( json.total_item_count == 0 ){
 			
