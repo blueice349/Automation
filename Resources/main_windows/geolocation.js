@@ -30,7 +30,8 @@ Ti.Geolocation.purpose = "User tracking";
 // state vars used by resume/pause
 var headingAdded = false;
 var locationAdded = false;
-
+var howManyInputs = 10;
+var currentInputs = 0;
 //
 //  SHOW CUSTOM ALERT IF DEVICE HAS GEO TURNED OFF
 //
@@ -97,7 +98,8 @@ else
 		var altitudeAccuracy = e.coords.altitudeAccuracy;
 		Ti.API.info('speed ' + speed);
 		
-		if (accuracy <= 50){
+		if ( (accuracy <= 50) && (currentInputs <= 5)){
+			++currentInputs;
 			db.execute('INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES (?,?,?,?)', longitude, latitude, Math.round(timestamp/1000), "notUploaded");
 		}
 	});
@@ -142,11 +144,12 @@ else
 			}
 		});
 		*/
-		if (accuracy <= 50){
+		if ( (accuracy <= 50) && (currentInputs <= 5)){
+			++currentInputs;
 			db.execute('INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES (?,?,?,?)', longitude, latitude, Math.round(timestamp/1000), "notUploaded");
-		}
-		
+		}		
 	};
+	
 	Titanium.Geolocation.addEventListener('location', locationCallback);
 	locationAdded = true;
 }
@@ -154,6 +157,7 @@ else
 if (Titanium.Platform.name == 'android')
 {
 	//  as the destroy handler will remove the listener, only set the pause handler to remove if you need battery savings
+	/*
 	Ti.Android.currentActivity.addEventListener('pause', function(e) {
 		Ti.API.info("pause event received");
 		if (locationAdded) {
@@ -162,6 +166,8 @@ if (Titanium.Platform.name == 'android')
 			locationAdded = false;
 		}
 	});
+	*/
+	
 	Ti.Android.currentActivity.addEventListener('destroy', function(e) {
 		Ti.API.info("destroy event received");
 		if (locationAdded) {
@@ -170,6 +176,7 @@ if (Titanium.Platform.name == 'android')
 			locationAdded = false;
 		}
 	});
+
 	Ti.Android.currentActivity.addEventListener('resume', function(e) {
 		Ti.API.info("resume event received");
 		if (!locationAdded) {
@@ -234,3 +241,8 @@ setInterval(function (){
 	} 
 }, 120000);
 
+
+//Sets back to 0 the current number of gathered GPS coordinates
+setInterval(function (){
+	currentInputs = 0;
+}, 1000);

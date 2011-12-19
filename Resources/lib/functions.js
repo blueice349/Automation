@@ -356,10 +356,11 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 	Ti.API.info("Current page: "+ pageIndex);
 	//Opens address to retrieve contact list
 	Ti.API.info("TIME: "+timeIndex);
-	if (pageIndex == 0 )   
-		objectsUp.open('GET', win.picked + '/js-sync/sync.json?timestamp=' + timeIndex +'&reset=1&limit=35' );
+
+	if (timeIndex == 0 )
+		objectsUp.open('GET', win.picked + '/js-sync/sync.json?timestamp=' + timeIndex +'&reset=1&limit=35&page='+pageIndex );
 	else
-		objectsUp.open('GET', win.picked + '/js-sync/sync.json?timestamp=' + timeIndex +'&page='+pageIndex+'&limit=35');
+		objectsUp.open('GET', win.picked + '/js-sync/sync.json?timestamp=' + timeIndex +'&reset=0&limit=35&page='+pageIndex );
 	
 	//Header parameters
 	objectsUp.setRequestHeader("Content-Type", "application/json");
@@ -389,6 +390,7 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 		}
 		
 		pageIndex++;
+		
 
 		Ti.API.info("Max page integer: "+parseInt(json.max_page));
 		Ti.API.info("Current page integer: "+parseInt(json.page));
@@ -409,13 +411,13 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 		
 		
 		//If Database is already last version
-		if ( json.current_page_item_count == 0 ){
+		if ( json.total_item_count == 0 ){
 			
 			if ( calledFrom == "mainMenu"){
 					Ti.API.info('Called from value: '+calledFrom);
 					isFirstTime = false;
 			}
-			
+			db.execute('UPDATE updated SET "timestamp"='+ json.request_time +' WHERE "rowid"=1');
 			//Success
 			Titanium.App.Properties.setBool("succesSync", true);
 			Ti.API.info("SUCCESS -> No items ");
@@ -432,8 +434,10 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 						db.execute('UPDATE updated SET "url"="'+ win.picked +'" WHERE "rowid"=1');						
 					}
 			}
-
-			db.execute('UPDATE updated SET "timestamp"='+ json.request_time +' WHERE "rowid"=1');		
+			//pageIndex == 1 means first load, pageIndex is incremented some lines above
+			if (pageIndex == 1 ){
+				db.execute('UPDATE updated SET "timestamp"='+ json.request_time +' WHERE "rowid"=1');				
+			}   
 			Ti.API.info("COUNT: "+json.total_item_count);	
 
 			//Vocabulary:
@@ -476,7 +480,7 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 						db.execute('DELETE FROM vocabulary WHERE "vid"=?',json.vocabularies["delete"].vid);				
 					}
 				}
-			}
+			} 
 			//Terms:
 			if (json.terms){
 				if (json.terms.insert){
@@ -784,6 +788,7 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 			
 			Ti.API.info("SUCCESS");
 			if ( existsMorePages ){
+				Ti.API.info("IMPORTANT TIMESTAMP RECURSIVE =======> "+timeIndex);
 				installMe(pageIndex, win, timeIndex, calledFrom);
 			}
 				

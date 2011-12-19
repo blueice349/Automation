@@ -43,7 +43,7 @@ function checkUpdate (){
 		objectsCheck.setTimeout(10000);
 	
 		Ti.API.info("Timestamp: "+ updatedTime.fieldByName('timestamp'));
-		//Opens address to retrieve contact list
+		//Opens address to retrieve lists
 		objectsCheck.open('GET', win2.picked + '/js-sync/sync.json?timestamp=' + updatedTime.fieldByName('timestamp') +'&reset=1');
 		updatedTime.close();
 	
@@ -191,14 +191,13 @@ offImage.addEventListener('click',function(e)
 			title:'Omadi CRM',		    
 		    fullscreen: true
 		});
-	
+	    db.close();	
 		//Setting both windows with login values:
 		indLog.log		 = win2.log;
 		indLog.result	 = win2.result;
 		indLog.picked 	 = win2.picked;
 	    
 	    indLog.open();
-	    db.close();
 	   	win2.close();    	
 	}
 
@@ -255,7 +254,6 @@ rowFourth.addEventListener('click',function(e){
 
 
 rowFiveth.addEventListener('click',function(e){
-
 	if (!isFirstTime){
 		var win3 = Titanium.UI.createWindow({  
 			title:'Omadi CRM',
@@ -300,6 +298,7 @@ databaseStatusView.add(label_status);
 win2.add(databaseStatusView);
 
 var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
+
 if (updatedTime.fieldByName('timestamp') == 0){
 	Titanium.App.Properties.setInt("maxIndex", 100); 
 	fireStatusFirstInstall();

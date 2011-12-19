@@ -1,39 +1,88 @@
 Logfile initialized
 [INFO] logfile = /home/joseandro/Apps/ConnectCRM/build.log
-[DEBUG] /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/builder.py distribute ConnectCRM /home/joseandro/Apps/android-sdk /home/joseandro/Apps/ConnectCRM joseandro.connect.com /home/joseandro/keystores/android.keystore borsoi87 omadi /home/joseandro/Desktop 10
+[DEBUG] /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/builder.py install ConnectCRM /home/joseandro/Apps/android-sdk /home/joseandro/Apps/ConnectCRM joseandro.connect.com 10
 [INFO] Titanium SDK version: 1.7.2 (07/21/11 09:36 97c3689)
+[DEBUG] Waiting for device to be ready ...
+[TRACE] adb devices returned 1 devices/emulators
+[DEBUG] Device connected... (waited 0 seconds)
+[DEBUG] waited 0.062158 seconds on emulator to get ready
+[DEBUG] joseandro.connect.com installed? False
 [INFO] Copying project resources..
-[TRACE] COPYING MODIFIED FILE: /home/joseandro/Apps/ConnectCRM/Resources/main_windows/geolocation.js => /home/joseandro/Apps/ConnectCRM/build/android/bin/assets/Resources/main_windows/geolocation.js
-[TRACE] COPYING MODIFIED FILE: /home/joseandro/Apps/ConnectCRM/Resources/main_windows/individual_potential.js => /home/joseandro/Apps/ConnectCRM/build/android/bin/assets/Resources/main_windows/individual_potential.js
-[TRACE] Generating Java Classes
+[INFO] Tiapp.xml unchanged, skipping class generation
 [DEBUG] Processing Android resource drawables
-[DEBUG] copying app icon: /home/joseandro/Apps/ConnectCRM/build/android/bin/assets/Resources/appicon.png
-[DEBUG] generating theme.xml
 [DEBUG] found drawable-notlong-land-ldpi splash screen at /home/joseandro/Apps/ConnectCRM/Resources/android/images/res-notlong-land-ldpi/default.png
-[DEBUG] copying /home/joseandro/Apps/ConnectCRM/Resources/android/images/res-notlong-land-ldpi/default.png splash screen to /home/joseandro/Apps/ConnectCRM/build/android/res/drawable-notlong-land-ldpi/background.png
 [DEBUG] found drawable-long-land-ldpi splash screen at /home/joseandro/Apps/ConnectCRM/Resources/android/images/res-long-land-ldpi/default.png
-[DEBUG] copying /home/joseandro/Apps/ConnectCRM/Resources/android/images/res-long-land-ldpi/default.png splash screen to /home/joseandro/Apps/ConnectCRM/build/android/res/drawable-long-land-ldpi/background.png
 [DEBUG] found drawable-notlong-port-mdpi splash screen at /home/joseandro/Apps/ConnectCRM/Resources/android/images/res-notlong-port-mdpi/default.png
-[DEBUG] copying /home/joseandro/Apps/ConnectCRM/Resources/android/images/res-notlong-port-mdpi/default.png splash screen to /home/joseandro/Apps/ConnectCRM/build/android/res/drawable-notlong-port-mdpi/background.png
 [DEBUG] found drawable-notlong-port-ldpi splash screen at /home/joseandro/Apps/ConnectCRM/Resources/android/images/res-notlong-port-ldpi/default.png
-[DEBUG] copying /home/joseandro/Apps/ConnectCRM/Resources/android/images/res-notlong-port-ldpi/default.png splash screen to /home/joseandro/Apps/ConnectCRM/build/android/res/drawable-notlong-port-ldpi/background.png
 [DEBUG] found drawable-long-land-hdpi splash screen at /home/joseandro/Apps/ConnectCRM/Resources/android/images/res-long-land-hdpi/default.png
-[DEBUG] copying /home/joseandro/Apps/ConnectCRM/Resources/android/images/res-long-land-hdpi/default.png splash screen to /home/joseandro/Apps/ConnectCRM/build/android/res/drawable-long-land-hdpi/background.png
 [DEBUG] found drawable-notlong-land-mdpi splash screen at /home/joseandro/Apps/ConnectCRM/Resources/android/images/res-notlong-land-mdpi/default.png
-[DEBUG] copying /home/joseandro/Apps/ConnectCRM/Resources/android/images/res-notlong-land-mdpi/default.png splash screen to /home/joseandro/Apps/ConnectCRM/build/android/res/drawable-notlong-land-mdpi/background.png
 [DEBUG] found drawable-long-port-ldpi splash screen at /home/joseandro/Apps/ConnectCRM/Resources/android/images/res-long-port-ldpi/default.png
-[DEBUG] copying /home/joseandro/Apps/ConnectCRM/Resources/android/images/res-long-port-ldpi/default.png splash screen to /home/joseandro/Apps/ConnectCRM/build/android/res/drawable-long-port-ldpi/background.png
 [DEBUG] found drawable-notlong-land-hdpi splash screen at /home/joseandro/Apps/ConnectCRM/Resources/android/images/res-notlong-land-hdpi/default.png
-[DEBUG] copying /home/joseandro/Apps/ConnectCRM/Resources/android/images/res-notlong-land-hdpi/default.png splash screen to /home/joseandro/Apps/ConnectCRM/build/android/res/drawable-notlong-land-hdpi/background.png
 [DEBUG] found drawable-notlong-port-hdpi splash screen at /home/joseandro/Apps/ConnectCRM/Resources/android/images/res-notlong-port-hdpi/default.png
-[DEBUG] copying /home/joseandro/Apps/ConnectCRM/Resources/android/images/res-notlong-port-hdpi/default.png splash screen to /home/joseandro/Apps/ConnectCRM/build/android/res/drawable-notlong-port-hdpi/background.png
 [DEBUG] found drawable-long-port-hdpi splash screen at /home/joseandro/Apps/ConnectCRM/Resources/android/images/res-long-port-hdpi/default.png
-[DEBUG] copying /home/joseandro/Apps/ConnectCRM/Resources/android/images/res-long-port-hdpi/default.png splash screen to /home/joseandro/Apps/ConnectCRM/build/android/res/drawable-long-port-hdpi/background.png
-[DEBUG] copying default splash screen
-[TRACE] Writing out AndroidManifest.xml
-[DEBUG] adding /home/joseandro/Apps/ConnectCRM/build/android/gen/joseandro/connect/com/R.java to javac build list
-[DEBUG] adding /home/joseandro/Apps/ConnectCRM/build/android/gen/joseandro/connect/com/ConnectcrmAppInfo.java to javac build list
-[DEBUG] adding /home/joseandro/Apps/ConnectCRM/build/android/gen/joseandro/connect/com/ConnectcrmActivity.java to javac build list
-[DEBUG] adding /home/joseandro/Apps/ConnectCRM/build/android/gen/joseandro/connect/com/ConnectcrmApplication.java to javac build list
-[DEBUG] Building Java Sources: "/home/joseandro/Apps/ConnectCRM/build/android/gen/joseandro/connect/com/R.java" "/home/joseandro/Apps/ConnectCRM/build/android/gen/joseandro/connect/com/ConnectcrmAppInfo.java" "/home/joseandro/Apps/ConnectCRM/build/android/gen/joseandro/connect/com/ConnectcrmActivity.java" "/home/joseandro/Apps/ConnectCRM/build/android/gen/joseandro/connect/com/ConnectcrmApplication.java"
-[INFO] Compiling Android Resources... This could take some time
+[DEBUG] creating unsigned apk: /home/joseandro/Apps/ConnectCRM/build/android/bin/app-unsigned.apk
+[DEBUG] from resource zip => assets/Resources/database/db.sqlite
+[DEBUG] from resource zip => assets/Resources/images/whiteArrow.png
+[DEBUG] from resource zip => assets/Resources/lib/functions.js
+[DEBUG] from resource zip => assets/Resources/main_windows/accounts.js
+[DEBUG] from resource zip => assets/Resources/main_windows/backToFirstStep.js
+[DEBUG] from resource zip => assets/Resources/main_windows/contacts.js
+[DEBUG] from resource zip => assets/Resources/main_windows/geolocation.js
+[DEBUG] from resource zip => assets/Resources/main_windows/individual_account.js
+[DEBUG] from resource zip => assets/Resources/main_windows/individual_contact.js
+[DEBUG] from resource zip => assets/Resources/main_windows/individual_lead.js
+[DEBUG] from resource zip => assets/Resources/main_windows/individual_potential.js
+[DEBUG] from resource zip => assets/Resources/main_windows/leads.js
+[DEBUG] from resource zip => assets/Resources/main_windows/logDecision.js
+[DEBUG] from resource zip => assets/Resources/main_windows/mainMenu.js
+[DEBUG] from resource zip => assets/Resources/main_windows/potentials.js
+[DEBUG] from resource zip => assets/Resources/main_windows/settings.js
+[DEBUG] from resource zip => assets/Resources/main_windows/upContainer.js
+[DEBUG] from resource zip => assets/Resources/main_windows/version.js
+[DEBUG] from resource zip => assets/Resources/app.js
+[DEBUG] from resource zip => assets/Resources/appicon.png
+[DEBUG] from resource zip => assets/Resources/icon.png
+[DEBUG] from resource zip => assets/tiapp.xml
+[DEBUG] from resource zip => res/drawable/appicon.png
+[DEBUG] from resource zip => res/drawable/background.png
+[DEBUG] from resource zip => res/layout/titanium_tabgroup.xml
+[DEBUG] from resource zip => AndroidManifest.xml
+[DEBUG] from resource zip => resources.arsc
+[DEBUG] from resource zip => res/drawable-long-land-hdpi/background.png
+[DEBUG] from resource zip => res/drawable-long-land-ldpi/background.png
+[DEBUG] from resource zip => res/drawable-long-port-hdpi/background.png
+[DEBUG] from resource zip => res/drawable-long-port-ldpi/background.png
+[DEBUG] from resource zip => res/drawable-notlong-land-hdpi/background.png
+[DEBUG] from resource zip => res/drawable-notlong-land-ldpi/background.png
+[DEBUG] from resource zip => res/drawable-notlong-land-mdpi/background.png
+[DEBUG] from resource zip => res/drawable-notlong-port-hdpi/background.png
+[DEBUG] from resource zip => res/drawable-notlong-port-ldpi/background.png
+[DEBUG] from resource zip => res/drawable-notlong-port-mdpi/background.png
+[DEBUG] from JAR /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/modules/titanium-ui.jar => ti/modules/titanium/ui/widget/webview/binding.js
+[DEBUG] from JAR /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/modules/titanium-ui.jar => ti/modules/titanium/ui/widget/webview/binding.min.js
+[DEBUG] from JAR /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/modules/titanium-ui.jar => ti/modules/titanium/ui/widget/webview/json2.js
+[DEBUG] from JAR /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/titanium.jar => org/apache/Commons-NOTICE.txt
+[DEBUG] from JAR /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/titanium.jar => org/apache/HttpComponents-NOTICE.txt
+[DEBUG] from JAR /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/titanium.jar => org/apache/mime4j-NOTICE.txt
+[DEBUG] from JAR /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/titanium.jar => org/appcelerator/titanium/build.properties
+[DEBUG] from JAR /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/titanium.jar => org/appcelerator/titanium/res/drawable/background.png
+[DEBUG] from JAR /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/titanium.jar => org/appcelerator/titanium/res/drawable/btn_check_buttonless_on.png
+[DEBUG] from JAR /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/titanium.jar => org/appcelerator/titanium/res/drawable/btn_check_buttonless_on_18.png
+[DEBUG] from JAR /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/titanium.jar => org/appcelerator/titanium/res/drawable/btn_check_buttonless_on_48.png
+[DEBUG] from JAR /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/titanium.jar => org/appcelerator/titanium/res/drawable/btn_more.png
+[DEBUG] from JAR /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/titanium.jar => org/appcelerator/titanium/res/drawable/btn_more_18.png
+[DEBUG] from JAR /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/titanium.jar => org/appcelerator/titanium/res/drawable/btn_more_48.png
+[DEBUG] from JAR /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/titanium.jar => org/appcelerator/titanium/res/drawable/btn_picker_normal.9.png
+[DEBUG] from JAR /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/titanium.jar => org/appcelerator/titanium/res/drawable/btn_picker_pressed.9.png
+[DEBUG] from JAR /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/titanium.jar => org/appcelerator/titanium/res/drawable/btn_picker_selected.9.png
+[DEBUG] from JAR /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/titanium.jar => org/appcelerator/titanium/res/drawable/default_icon.png
+[DEBUG] from JAR /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/titanium.jar => org/appcelerator/titanium/res/drawable/photoDefault.png
+[DEBUG] from JAR /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/smalljs.jar => org/mozilla/javascript/resources/Messages.properties
+[DEBUG] from JAR /home/joseandro/.titanium/mobilesdk/linux/1.7.2/android/smalljs.jar => org/mozilla/javascript/resources/Messages_fr.properties
+[DEBUG] Waiting for device to be ready ...
+[TRACE] adb devices returned 1 devices/emulators
+[DEBUG] Device connected... (waited 0 seconds)
+[DEBUG] waited 0.006960 seconds on emulator to get ready
+[INFO] Installing application on emulator
+[INFO] Application installed. Launch from drawer on Home Screen
+[INFO] Android Emulator has exited
