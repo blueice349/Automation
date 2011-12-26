@@ -425,6 +425,51 @@ if ( description != null ){
 	count++;
 }
 
+//Adding fields:
+var num_results = results.fieldCount;
+Ti.API.info(num_results);
+for (var k = 0; k < num_results; k++){
+	var textTitle = getTitle(results.fieldName(k));
+	label[count]  = Ti.UI.createLabel({
+		text: results.fieldName(k),
+		width:  "33%",
+		left: 5,
+		textAlign: 'left',
+		touchEnabled: false
+	});
+
+	var descAux = description;
+	var openDescWin = false;
+	
+	if (description.length > 45){
+		description = description.substring(0,45);
+		description = description+"...";
+		openDescWin = true;
+	}
+	
+	var labelDesc = Ti.UI.createLabel({
+		text: ""+description,
+		width:  "67%",
+		textAlign: 'left',
+		left: "33%"
+	});
+
+	var auxDesc = count;
+
+	labelDesc.addEventListener('click', function(){
+		highlightMe(auxDesc);
+		
+		if (openDescWin)
+		{
+			openBigText(descAux);
+		}
+	});
+
+	content[count] = labelDesc;	
+	count++;
+}
+
+
 Ti.API.info("Items (count): "+ count);
 for (var i = 0; i < count ; i++){
 

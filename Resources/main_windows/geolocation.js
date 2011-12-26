@@ -22,8 +22,6 @@ function translateErrorCode(code) {
 	}
 }
 
-
-
 Ti.Geolocation.preferredProvider = Titanium.Geolocation.PROVIDER_GPS;
 Ti.Geolocation.purpose = "User tracking";
 
@@ -243,6 +241,7 @@ setInterval(function (){
 
 
 //Sets back to 0 the current number of gathered GPS coordinates
+//Time interval is one minute
 setInterval(function (){
 	currentInputs = 0;
-}, 1000);
+}, 60000);
