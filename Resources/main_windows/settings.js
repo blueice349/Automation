@@ -47,24 +47,23 @@ win2.addEventListener('android:back', function() {
 //Button Contacts
 var bSync = Titanium.UI.createButton({
    title: 'Synchronize',
-   width: '80%',
-   height: '9%',
-   top: '45%' 
+	height:'20%',
+	width:'80%',
+	top: '40%' 
 });
 
 //Action taken when syncronization button is pressed
 bSync.addEventListener('click', function(){
 	if ( !Titanium.App.Properties.getBool("UpRunning") ){
 		var updateWin = Ti.UI.createWindow({
-			url: "upContainer.js",
-			fullscreen: true
+			url: "upContainer.js"
+			//fullscreen: true
 		});		
 		
 		updateWin.log	     = win2.log;
 		updateWin.picked 	 = win2.picked;
 
 		updateWin.open();
-		win2.close();
 	}
 	else{
 		alert("Database is already being updated!");

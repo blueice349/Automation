@@ -15,22 +15,19 @@ updatedTime.close();
 var pageIndex = 0;
 
 //call function to install updates
-// installMe(pageIndex, win, timeIndex)
 Titanium.App.Properties.setBool("indicatorActive", true);
 installMe(pageIndex, updateWin, time, "settings");
 
-setInterval(function(){
+/*
+var time_c = setInterval(function(){
 	if (!Titanium.App.Properties.getBool("indicatorActive")){
-		var winSettings = Ti.UI.createWindow({
-			title:'Omadi CRM',
-			url: "settings.js",
-			fullscreen: true
-		});
-
-		winSettings.log	     = updateWin.log;
-		winSettings.picked 	 = updateWin.picked;
-
-		winSettings.open();
-		updateWin.close();
+		//updateWin.close();
+		Ti.API.info('Loop');
 	}
 }, 1000);
+
+updateWin.addEventListener('close', function(){
+	Ti.API.info("Closed window for time interval");
+	clearInterval(time_c);	
+});
+*/

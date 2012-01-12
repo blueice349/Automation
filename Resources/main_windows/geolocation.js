@@ -189,53 +189,54 @@ setInterval(function (){
 	if ( !Titanium.App.Properties.getBool("UpRunning") ){	
 		Titanium.App.Properties.setBool("UpRunning", true);
 		var result = db.execute("SELECT * FROM user_location WHERE status = 'notUploaded' ");
-		
-		//Build JSON structure
-		var json = "{ \"data\": [";
-		for(var i = 0; i < result.rowCount ; i++) {
-		    (i == result.rowCount-1) ?  
-		    					json += " {\"lat\" : \""+ result.fieldByName('latitude') +"\", \"lng\" : \"" + result.fieldByName('longitude')  + "\" , \"time\" : \"" + result.fieldByName('timestamp') + "\"}" :
-		    					json += " {\"lat\" : \""+ result.fieldByName('latitude') +"\", \"lng\" : \"" + result.fieldByName('longitude')  + "\" , \"time\" : \"" + result.fieldByName('timestamp') + "\"}, ";	 
-			result.next();		
-		}
-		json += "], \"current_time\": \" "+ Math.round(new Date().getTime() / 1000)+"\" }";
-		Ti.API.info(json);
-		result.close();
-		
-		//alert ("Before open connection");
-		var objectsCheck = win.log;
-		//Timeout until error:
-		objectsCheck.setTimeout(10000);
-		
-		//Opens address to retrieve contact list
-		objectsCheck.open('POST', win.picked + '/js-location/mobile_location.json');
-		
-		
-		//Header parameters
-		objectsCheck.setRequestHeader("Content-Type", "application/json");
-		
-		//When connected
-		objectsCheck.onload = function(e) {
-			Titanium.App.Properties.setBool("UpRunning", false);
-			//Parses response into strings
-			var resultReq = JSON.parse(this.responseText);
+		if (result.rowCount > 0){
 			
-			if ( resultReq.inserted ){
-				if (resultReq.success)
-					Ti.API.info(resultReq.success+"GPS coordinates sucefully inserted: ");
-				else
-					Ti.API.info("GPS coordinates not inserted, we had "+ resultReq.errors+" errors");
+			//Build JSON structure
+			var json = "{ \"data\": [";
+			for(var i = 0; i < result.rowCount ; i++) {
+			    (i == result.rowCount-1) ?  
+			    					json += " {\"lat\" : \""+ result.fieldByName('latitude') +"\", \"lng\" : \"" + result.fieldByName('longitude')  + "\" , \"time\" : \"" + result.fieldByName('timestamp') + "\"}" :
+			    					json += " {\"lat\" : \""+ result.fieldByName('latitude') +"\", \"lng\" : \"" + result.fieldByName('longitude')  + "\" , \"time\" : \"" + result.fieldByName('timestamp') + "\"}, ";	 
+				result.next();		
 			}
-			db.execute('DELETE FROM user_location WHERE status="notUploaded"');
+			json += "], \"current_time\": \" "+ Math.round(new Date().getTime() / 1000)+"\" }";
 	
-		}
-		//Connection error:
-		objectsCheck.onerror = function(e) {
-			Titanium.App.Properties.setBool("UpRunning", false);
-		}
+			result.close();
+			
+			//alert ("Before open connection");
+			var objectsCheck = win.log;
+			//Timeout until error:
+			objectsCheck.setTimeout(10000);
+			
+			//Opens address to retrieve contact list
+			objectsCheck.open('POST', win.picked + '/js-location/mobile_location.json');
+			
+			//Header parameters
+			objectsCheck.setRequestHeader("Content-Type", "application/json");
+			
+			//When connected
+			objectsCheck.onload = function(e) {
+				Titanium.App.Properties.setBool("UpRunning", false);
+				//Parses response into strings
+				var resultReq = JSON.parse(this.responseText);
+				
+				if ( resultReq.inserted ){
+					if (resultReq.success)
+						Ti.API.info(resultReq.success+"GPS coordinates sucefully inserted: ");
+					else
+						Ti.API.info("GPS coordinates not inserted, we had "+ resultReq.errors+" errors");
+				}
+				db.execute('DELETE FROM user_location WHERE status="notUploaded"');
 		
-		//Sending information and try to connect
-		objectsCheck.send(json);
+			}
+			//Connection error:
+			objectsCheck.onerror = function(e) {
+				Titanium.App.Properties.setBool("UpRunning", false);
+			}
+			
+			//Sending information and try to connect
+			objectsCheck.send(json);
+		}
 	} 
 }, 120000);
 

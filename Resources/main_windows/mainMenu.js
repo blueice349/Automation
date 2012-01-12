@@ -209,7 +209,8 @@ rowFirst.addEventListener('click',function(e){
 		var win3 = Titanium.UI.createWindow({  
 			title:'Leads',
 			fullscreen: true,
-			url:'leads.js'
+			url:'objects.js',
+			type: "lead"
 		});
 		win3.open();
 	}
@@ -220,7 +221,8 @@ rowSecond.addEventListener('click',function(e){
 		var win3 = Titanium.UI.createWindow({  
 			title:'Contacts',
 			fullscreen: true,
-			url:'contacts.js',
+			url:'objects.js',
+			type: "contact"
 		});
 		win3.open();
 	}
@@ -234,7 +236,8 @@ rowThird.addEventListener('click',function(e){
 		var win3 = Titanium.UI.createWindow({  
 			title:'Accounts',
 			fullscreen: true,
-			url:'accounts.js',
+			url:'objects.js',
+			type: "account"
 		});
 		win3.open();
 	}
@@ -246,12 +249,12 @@ rowFourth.addEventListener('click',function(e){
 		var win3 = Titanium.UI.createWindow({  
 			title:'Potentials',
 			fullscreen: true,
-			url:'potentials.js',
+			url:'objects.js',
+			type: "potential"
 		});
 		win3.open();
 	}
 });
-
 
 rowFiveth.addEventListener('click',function(e){
 	if (!isFirstTime){
@@ -297,10 +300,11 @@ var databaseStatusView = Titanium.UI.createView({
 databaseStatusView.add(label_status);
 win2.add(databaseStatusView);
 
+//First time install
 var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
-
 if (updatedTime.fieldByName('timestamp') == 0){
-	Titanium.App.Properties.setInt("maxIndex", 100); 
+	Titanium.App.Properties.setInt("index",    0);
+	Titanium.App.Properties.setInt("maxIndex",    100);
 	fireStatusFirstInstall();
 	isFirstTime = true;
 	checkUpdate();

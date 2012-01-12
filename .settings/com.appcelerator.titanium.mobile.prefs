@@ -1,6 +1,6 @@
-#Tue Sep 27 01:37:29 CEST 2011
+#Thu Jan 12 06:07:32 CET 2012
 MOBILE_PROJECT_SDK_VERSION=1.7.2
 android/alias=omadi
-android/keystore=/home/joseandro/keystores/android.keystore
+android/keystore=/home/jo/keystores/android.keystore
 android/output_location=/home/joseandro/Desktop
 eclipse.preferences.version=1

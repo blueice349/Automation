@@ -89,8 +89,6 @@ function showIndicator(show)
 
 		}
 		var timer = setInterval(updateStatus, 500);
-
-		
 	} 	
 	else
 	{
@@ -262,6 +260,7 @@ function hideIndicatorFistPage()
     	if (Titanium.App.Properties.getBool("isFirstPage"))
     	{
 		    actIndFun.hide();
+		    Titanium.App.Properties.setBool("indicatorActive", false);
 		    indWin.close();
     	}
    	}, 1000);
@@ -337,6 +336,353 @@ function showBottom(actualWindow, goToWindow ){
 	actualWindow.add(backView);
 };
 
+
+function bottomBack(actualWindow ){
+	var backView = Titanium.UI.createView({
+		top: '95%',	
+		backgroundColor:'#111',
+		height: '6%',
+		width: '100%',
+		opacity: 0.99,
+		borderRadius:5
+	});
+	
+	var label_bottom = Titanium.UI.createLabel({
+		color:'#FFFFFF',
+		text:'Back',
+		textAlign: 'center',
+		height: 'auto'
+	}); 
+	
+	backView.add(label_bottom);
+	
+	backView.addEventListener('click', function(){
+		actualWindow.close();
+	});					
+	actualWindow.add(backView);
+};
+
+
+
+//
+//Check type at field table
+// Return values
+// 0 => It is a number
+// 1 => It is text
+//
+
+function check_type(name, object){
+	var qRes = db.execute("SELECT DISTINCT type FROM fields WHERE field_name=? AND bundle=?", name ,  object);
+	
+	if (qRes.isValidRow()){
+		switch(qRes.fieldByName("type")){
+			case "number_integer":
+				type = 0
+			break;
+			
+			case "number_decimal":
+				type = 0;
+			break;
+			
+			default:
+				type = 1;
+			break;
+		}	
+	}
+	else{
+		Ti.API.info("Field type not found!!");
+		//Treat as text!
+		type = 1;
+	}
+	qRes.close();
+	return type;
+}
+
+//
+// Function's signature : process_object(json,obj)
+// Purpouse: Insert, update and delete objects such as contact, potential, account and lead 
+// Parameters:
+//		json: Receveid answer from API's request.
+//		obj: Name of the object (contact/potential/account/lead)
+// Returns: An empty return to callback the parent's action.
+// 
+
+function process_object(json, obj){
+	var deploy = db.execute('SELECT field_name FROM fields WHERE bundle = "'+obj+'"');
+	var col_titles = [];
+	
+	var ind_column = 0;
+	while (deploy.isValidRow()){
+		col_titles[ind_column] = deploy.fieldByName('field_name'); 
+		ind_column++;
+		deploy.next();
+	}
+	deploy.close();
+	
+	//Insert
+	if (json[obj].insert){
+		//Multiple objects
+		if (json[obj].insert.length){
+			for (var i = 0; i < json[obj].insert.length; i++ ){
+				
+				// Original query
+				var aux_column = ind_column;
+
+				//Insert into node table
+				var obj_title = json[obj].insert[i].title;
+				if ((obj_title == null) || (obj_title == 'undefined')) 
+					obj_title = "No Title";
+					
+				var node_id = db.execute('INSERT INTO node (nid, created, changed, title, author_uid) VALUES (?,?,?,?,?)', json[obj].insert[i].nid, json[obj].insert[i].created, json[obj].insert[i].changed, obj_title, json[obj].insert[i].author_uid);
+				
+				if (aux_column > 0)
+					var query = 'INSERT INTO '+obj+' (nid, ';
+				//This would happen only if table has no columns, shouldn't happen
+				else
+					var query = 'INSERT INTO '+obj+' (nid) VALUES ('+json[obj].insert[i].nid+')';
+				
+				while (aux_column > 0){
+					if (aux_column == 1)
+						query += ' '+col_titles[aux_column-1]+') VALUES ('+json[obj].insert[i].nid+', ';
+					else
+						query += ' '+col_titles[aux_column-1]+', ';
+					aux_column--;
+				}
+
+				aux_column = ind_column;
+				while (aux_column > 0){
+					var parse_api = col_titles[aux_column-1];
+					//Ti.API.info("Inserting ["+obj+"] : "+json[obj].insert[i][parse_api]);
+					//Get type:
+					var mark = '';
+					switch (check_type(parse_api, obj)){
+						//Number
+						case 0:
+							mark = '';
+						break;
+						
+						//Text
+						case 1:
+							mark = '"';
+						break;	
+					}
+					
+					if (aux_column == 1){
+						if ( (json[obj].insert[i][parse_api] == null ) || (json[obj].insert[i][parse_api] == "undefined" ) ) 
+							query += ' null )';
+						else	
+							query += ' '+mark+''+json[obj].insert[i][parse_api]+''+mark+' )';
+					}
+						
+					else{
+						if ( (json[obj].insert[i][parse_api] == null ) || (json[obj].insert[i][parse_api] == "undefined" ) )
+							query += ' null ,';
+						else
+							query += ' '+mark+''+json[obj].insert[i][parse_api]+''+mark+' ,';
+					}
+					aux_column--;
+				}
+				Ti.API.info(query);
+				//Inserts into object table
+				db.execute(query);
+			}
+		}
+		
+		//Only one object
+		else{
+				var aux_column = ind_column;
+				var node_id = db.execute('INSERT INTO node (nid, created, changed, title, author_uid) VALUES (?,?,?,?,?)', json[obj].insert.nid, json[obj].insert.created, json[obj].insert.changed, json[obj].insert.title, json[obj].insert.author_uid);
+				
+				
+				if (aux_column > 0)
+					var query = 'INSERT INTO '+obj+' (nid, ';
+				else
+					var query = 'INSERT INTO '+obj+' (nid) VALUES ('+json[obj].insert.nid+')';
+				
+				while (aux_column > 0){
+					if (aux_column == 1)
+						query += ' '+col_titles[aux_column-1]+') VALUES ('+json[obj].insert.nid+', ';
+					else
+						query += ' '+col_titles[aux_column-1]+', ';
+					aux_column--;
+				}
+
+				aux_column = ind_column;
+				while (aux_column > 0){
+					var parse_api = col_titles[aux_column-1];
+					Ti.API.info("Inserting ["+obj+"] : "+json[obj].insert[parse_api]);
+					//Get type:
+					var mark = '';
+					switch (check_type(parse_api, obj)){
+						//Number
+						case 0:
+							mark = '';
+						break;
+						
+						//Text
+						case 1:
+							mark = '"';
+						break;	
+					}
+					
+					if (aux_column == 1){
+						if ( (json[obj].insert[parse_api] == null ) || (json[obj].insert[parse_api] == "undefined" ) ) 
+							query += ' null )';
+						else	
+							query += ' '+mark+''+json[obj].insert[parse_api]+''+mark+' )';
+					}
+						
+					else{
+						if ( (json[obj].insert[parse_api] == null ) || (json[obj].insert[parse_api] == "undefined" ) )
+							query += ' null ,';
+						else
+							query += ' '+mark+''+json[obj].insert[parse_api]+''+mark+' ,';
+					}
+					aux_column--;
+				}
+				//Inserts into account table
+				db.execute(query);
+		}
+		Ti.API.info("Inserted object ["+obj+"] sucefully!");				
+	}
+	
+	//Update Object
+	if (json[obj].update){
+		if (json[obj].update.length){
+			for (var i = 0; i < json[obj].update.length; i++ ){
+				var aux_column = ind_column;
+
+				//Updates node table
+				var node_id = db.execute('UPDATE node SET "created"='+json[obj].update[i].created+', "changed"='+json[obj].update[i].changed+', "title"="'+json[obj].update[i].title+'", "author_uid"='+json[obj].update[i].author_uid+' WHERE "nid"='+json[obj].update[i].nid);
+
+				//Must have more then 1 column (excluding nid)
+				if (aux_column > 0){
+					var query = 'UPDATE '+obj+' SET ';
+
+					while (aux_column > 0){
+						var parse_api = col_titles[aux_column-1];
+						Ti.API.info("Prepared field: "+json[obj].update[i][parse_api]+" for update");
+						//Get type:
+						var mark = '';
+						switch (check_type(parse_api, obj)){
+							//Number
+							case 0:
+								mark = '';
+							break;
+							
+							//Text
+							case 1:
+								mark = '"';
+							break;	
+						}
+						
+						
+						if (aux_column == 1){
+							if ( (json[obj].update[i][parse_api] == null ) || (json[obj].update[i][parse_api] == "undefined" ) ) 
+								query += ' "'+col_titles[aux_column-1]+'"=null WHERE "nid"='+json[obj].update[i].nid;
+							else	
+								query += ' "'+col_titles[aux_column-1]+'"='+mark+''+json[obj].update[i][parse_api]+''+mark+' WHERE "nid"='+json[obj].update[i].nid;
+						}
+							
+						else{
+							if ( (json[obj].update[i][parse_api] == null ) || (json[obj].update[i][parse_api] == "undefined" ) )
+								query += ' "'+col_titles[aux_column-1]+'"=null , ';
+							else
+								query += ' "'+col_titles[aux_column-1]+'"='+mark+''+json[obj].update[i][parse_api]+''+mark+' , ';
+						}
+
+						aux_column--;
+					}
+
+					//Updates object's row
+					db.execute(query);
+				}
+				//Doesn't make sense to update the primary key in this case
+				/*
+				else
+					var query = 'UPDATE '+obj+' SET "nid"='+json[obj].update[i].nid;
+				*/
+			}
+		}
+		//Only one object
+		else{
+			var aux_column = ind_column;
+
+			//Updates node's table
+			var node_id = db.execute('UPDATE node SET "created"='+json[obj].update.created+', "changed"='+json[obj].update.changed+', "title"="'+json[obj].update.title+'", "author_uid"='+json[obj].update.author_uid+' WHERE "nid"='+json[obj].update.nid);
+
+			//Must have more then 1 column (excluding nid)
+			if (aux_column > 0){
+				var query = 'UPDATE '+obj+' SET ';
+			
+				while (aux_column > 0){
+					var parse_api = col_titles[aux_column-1];
+					Ti.API.info("Prepared field: "+json[obj].update[parse_api]+" for update");
+					//Get type:
+					var mark = '';
+					switch (check_type(parse_api, obj)){
+						//Number
+						case 0:
+							mark = '';
+						break;
+						
+						//Text
+						case 1:
+							mark = '"';
+						break;	
+					}
+					
+					if (aux_column == 1){
+						if ( (json[obj].update[parse_api] == null ) || (json[obj].update[parse_api] == "undefined" ) ) 
+							query += ' "'+col_titles[aux_column-1]+'"=null WHERE "nid"='+json[obj].update.nid;
+						else	
+							query += ' "'+col_titles[aux_column-1]+'"='+mark+''+json[obj].update[parse_api]+''+mark+' WHERE "nid"='+json[obj].update.nid;
+					}
+						
+					else{
+						if ( (json[obj].update[parse_api] == null ) || (json[obj].update[parse_api] == "undefined" ) )
+							query += ' "'+col_titles[aux_column-1]+'"=null , ';
+						else
+							query += ' "'+col_titles[aux_column-1]+'"='+mark+''+json[obj].update[parse_api]+''+mark+' , ';
+					}
+
+					aux_column--;
+				}
+
+				//Updates account row
+				db.execute(query);
+			}
+			//Doesn't make sense to update the primary key in this case
+			/*
+			else
+				var query = 'UPDATE account SET "nid"='+json.account.update.nid;
+			*/
+		}
+		Ti.API.info("Updated object ["+obj+"] sucefully!");
+	}
+	
+	//Delete 
+	if (json[obj]["delete"])	{
+		if (json[obj]["delete"].length){
+			for (var i = 0; i <  json[obj]["delete"].length; i++ ){
+				//Deletes from object's table
+				db.execute('DELETE FROM '+obj+' WHERE "nid"=?', json[obj]["delete"][i].nid);
+				//Deletes from node table
+				db.execute('DELETE FROM node WHERE "nid"=?', json[obj]["delete"][i].nid);
+			}
+		}
+		else{
+			//Deletes from account table
+			db.execute('DELETE FROM '+obj+' WHERE "nid"=?', json[obj]["delete"].nid);
+			
+			//Deletes from node table
+			db.execute('DELETE FROM node WHERE "nid"=?', json[obj]["delete"].nid);
+		}
+		Ti.API.info("Deleted object ["+obj+"] sucefully!");
+	}
+	return;
+}
+
 //Install new updates using pagination
 //Load existing data with pagination
 function installMe(pageIndex, win, timeIndex, calledFrom)
@@ -359,7 +705,6 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 
 	if (timeIndex == 0 ){
 		objectsUp.open('GET', win.picked + '/js-sync/sync.json?timestamp=' + timeIndex +'&reset=1&limit=35&page='+pageIndex );
-		Ti.API.info("First EXECUTION");
 	}
 	else
 		objectsUp.open('GET', win.picked + '/js-sync/sync.json?timestamp=' + timeIndex +'&reset=0&limit=35&page='+pageIndex );
@@ -380,37 +725,52 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 			Ti.API.info("=================== ############ ===================");
 			Ti.API.info("Reseting database, delete_all is required");
 			Ti.API.info("=================== ############ ===================");
+
 			//If delete_all is present, delete all contents:
-			//db.execute('DELETE FROM account');
 			db.execute('DROP TABLE IF EXISTS account');
-			db.execute('CREATE TABLE account');
+			db.execute('CREATE TABLE "account" ("nid" INTEGER PRIMARY KEY NOT NULL  UNIQUE )');
 			
 			db.execute('DROP TABLE IF EXISTS contact');
-			db.execute('CREATE TABLE contact');
+			db.execute('CREATE TABLE "contact" ("nid" INTEGER PRIMARY KEY NOT NULL  UNIQUE )');
 
 			db.execute('DROP TABLE IF EXISTS lead');
-			db.execute('CREATE TABLE lead');
+			db.execute('CREATE TABLE "lead" ("nid" INTEGER PRIMARY KEY   NOT NULL  UNIQUE )');
 			
 			db.execute('DROP TABLE IF EXISTS node');
-			db.execute('CREATE TABLE node');
+			db.execute('CREATE TABLE "node" ("nid" INTEGER PRIMARY KEY NOT NULL  UNIQUE , "title" VARCHAR, "created" INTEGER, "changed" INTEGER, "author_uid" INTEGER)');
 						
 			db.execute('DROP TABLE IF EXISTS potential');
-			db.execute('CREATE TABLE potential');
+			db.execute('CREATE TABLE "potential" ("nid" INTEGER PRIMARY KEY NOT NULL  UNIQUE )');
+
+			db.execute('DROP TABLE IF EXISTS user_location');
+			db.execute('CREATE TABLE "user_location" ("uid" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , "longitude" TEXT NOT NULL , "latitude" TEXT NOT NULL , "timestamp" INTEGER NOT NULL , "status" TEXT)');
 						
+			db.execute('DROP TABLE IF EXISTS user_roles');
+			db.execute('CREATE TABLE "user_roles" ("uid" INTEGER, "rid" INTEGER)');
+
 			db.execute('DROP TABLE IF EXISTS task');
-			db.execute('CREATE TABLE task');
-						
+			db.execute('CREATE TABLE "task" ("nid" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE )');
+			
+			db.execute('DROP TABLE IF EXISTS boot');
+			db.execute('CREATE TABLE "boot" ("boot_id" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE )');
+
+			db.execute('DROP TABLE IF EXISTS bundles');
+			db.execute('CREATE TABLE "bundles" ("bid" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , "fid" INTEGER NOT NULL , "bundle_name" VARCHAR)');
+			
+			db.execute('DROP TABLE IF EXISTS fields');
+			db.execute('CREATE TABLE "fields" ("id" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE, "fid" INTEGER NOT NULL , "type" TEXT, "field_name" TEXT, "label" TEXT, "description" TEXT, "bundle" TEXT NOT NULL , "weight" INTEGER, "required" TEXT , "widget" TEXT, "settings" TEXT)');
+			
 			db.execute('DROP TABLE IF EXISTS term_data');
-			db.execute('CREATE TABLE term_data');
+			db.execute('CREATE TABLE "term_data" ("tid" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "vid" INTEGER, "name" VARCHAR, "description" VARCHAR, "weight" VARCHAR)');
 						
 			db.execute('DROP TABLE IF EXISTS updated');
-			db.execute('CREATE TABLE updated');
-						
+			db.execute('CREATE TABLE "updated" ("timestamp" INTEGER DEFAULT 0, "url" TEXT DEFAULT NULL)');
+			
 			db.execute('DROP TABLE IF EXISTS users');
-			db.execute('CREATE TABLE users');
+			db.execute('CREATE TABLE "users" ("uid" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "username" TEXT, "mail" TEXT, "realname" TEXT, "status" INTEGER)');
 						
 			db.execute('DROP TABLE IF EXISTS vocabulary');
-			db.execute('CREATE TABLE vocabulary');
+			db.execute('CREATE TABLE "vocabulary" ("vid" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "name" VARCHAR, "machine_name" TEXT)');
 						
 			db.execute('INSERT INTO updated (timestamp, url) VALUES (?,?)', 0 , null);		
 		}
@@ -472,15 +832,11 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 				if (json.fields.insert){
 					if (json.fields.insert.length){
 						for (var i = 0; i < json.fields.insert.length; i++ ){
+
 							var var_widget = JSON.stringify(json.fields.insert[i].widget);
 							var var_settings = JSON.stringify(json.fields.insert[i].settings); 
-							//Insert into fields
-							//Ti.API.info("Fid: "+json.fields.insert[i].fid +", Type: "+ json.fields.insert[i].type +", Field name: "+ json.fields.insert[i].field_name +", Label: "+ json.fields.insert[i].label +", Description: "+ json.fields.insert[i].description +", Bundle: "+ json.fields.insert[i].bundle +", Weight: "+ json.fields.insert[i].weight +", Required: "+ json.fields.insert[i].required +", Var_widget: "+ var_widget +", Var_settings: "+ var_settings );
-							//db.execute('INSERT INTO fields (fid, type, field_name, label, description, bundle, weight, required, widget, settings) VALUES (?,?,?,?,?,?,?,?,?,?)', json.fields.insert[i].fid , json.fields.insert[i].type , json.fields.insert[i].field_name , json.fields.insert[i].label , json.fields.insert[i].description , json.fields.insert[i].bundle , json.fields.insert[i].weight, json.fields.insert[i].required , var_widget , var_settings );
 							var fid = json.fields.insert[i].fid;
-							Ti.API.info("Index: "+fid);
-							
-							
+
 							if (json.fields.insert[i].type != null )
 								var type = json.fields.insert[i].type.replace(/'/gi, '"');
 							else
@@ -525,8 +881,16 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 								var settings = var_settings.replace(/'/gi, '"');
 							else
 								var settings = null;
+							
+							//Multiple parts
+							if (json.fields.insert[i].settings.parts){
+								for (var f_value_i in json.fields.insert[i].settings.parts ) {
+									db.execute("INSERT INTO fields (fid, type, field_name, label, description, bundle, weight, required, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+f_value_i+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"','"+widget+"','"+settings+"' )");
+								}
+							}
+							else
+								db.execute("INSERT INTO fields (fid, type, field_name, label, description, bundle, weight, required, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"','"+widget+"','"+settings+"' )");
 
-							db.execute("INSERT INTO fields (fid, type, field_name, label, description, bundle, weight, required, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"','"+widget+"','"+settings+"' )");
 							//Insert into bundles
 							db.execute('INSERT INTO bundles (fid, bundle_name) VALUES ('+fid+',"'+bundle+'")' );
 							
@@ -555,7 +919,16 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 								case "account":
 								case "task":
 								case "boot":
-									db.execute('ALTER TABLE '+json.fields.insert[i].bundle+' ADD '+json.fields.insert[i].field_name+' '+ type);
+									if (json.fields.insert[i].settings.parts){
+										for (var f_value_i in json.fields.insert[i].settings.parts ) {
+											db.execute('ALTER TABLE '+json.fields.insert[i].bundle+' ADD '+json.fields.insert[i].field_name+'___'+f_value_i+' '+ type);
+											Ti.API.info("Inserted: "+json.fields.insert[i].field_name+"___"+f_value_i+" to "+json.fields.insert[i].bundle);
+										}
+									}
+									else{
+										db.execute('ALTER TABLE '+json.fields.insert[i].bundle+' ADD '+json.fields.insert[i].field_name+' '+ type);
+										Ti.API.info("Inserted: "+json.fields.insert[i].field_name+" to "+json.fields.insert[i].bundle);
+									}
 								break;
 							}
 
@@ -573,9 +946,6 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 						
 						var type = "";
 						switch(json.fields.insert.type){
-							case "taxonomy_term_reference":
-							case "term_reference":
-							case "datestamp":
 							case "number_integer":
 								type = "INTEGER"
 							break;
@@ -600,8 +970,11 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 							break;
 						}
 					}
+					
+					Ti.API.info("Success for fields, it was inserted!");
 				}
 				if (json.fields.update){
+					Ti.API.info("Fields update defined!");
 					if (json.fields.update.length){
 						for (var i = 0; i < json.fields.update.length; i++ ){
 							var_widget = JSON.stringify(json.fields.update[i].widget);
@@ -618,7 +991,7 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 				
 				/*
 				 * Delete fields from fields table
-				 * Not implemented yet from the server side
+				 * Needs to be implemented from the server side
 				 */
 				/*
 				if (json.fields["delete"]){
@@ -645,26 +1018,50 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 				if (json.vocabularies.insert){
 					if (json.vocabularies.insert.length){
 						for (var i = 0; i < json.vocabularies.insert.length; i++ ){
-							db.execute('INSERT INTO vocabulary (vid, name, machine_name) VALUES (?,?,?)', json.vocabularies.insert[i].vid , json.vocabularies.insert[i].name, json.vocabularies.insert[i].machine_name);				
+							var vid_v = json.vocabularies.insert[i].vid;
+							var name_v = json.vocabularies.insert[i].name;
+							var machine_v = json.vocabularies.insert[i].machine_name;
+							
+							if (name_v == null)
+								name_v = "null";
+							if (machine_v == null)
+								machine_v = "";
+							Ti.API.info("About to insert vocabulary: "+vid_v);
+							db.execute('INSERT INTO vocabulary (vid, name, machine_name) VALUES (?,?,?)', vid_v , name_v, machine_v);				
 						}
 					}
 					else{
-							db.execute('INSERT INTO vocabulary (vid, name, machine_name) VALUES (?,?,?)', json.vocabularies.insert.vid , json.vocabularies.insert.name, json.vocabularies.insert.machine_name);						
+							var vid_v = json.vocabularies.insert.vid;
+							var name_v = json.vocabularies.insert.name;
+							var machine_v = json.vocabularies.insert.machine_name;
+							
+							if (name_v == null)
+								name_v = "null";
+							
+							if (machine_v == null)
+								machine_v = "";
+							Ti.API.info("About to insert vocabulary: "+vid_v);
+							db.execute('INSERT INTO vocabulary (vid, name, machine_name) VALUES (?,?,?)', vid_v , name_v, machine_v);						
 					}
+					Ti.API.info("Vocabulary inserted!");
 				}
 				if (json.vocabularies.update){
 					if (json.vocabularies.update.length){
 						for (var i = 0; i < json.vocabularies.update.length; i++ ){
+							Ti.API.info("About to update vocabulary: "+json.vocabularies.update[i].vid);
 							db.execute('UPDATE vocabulary SET "name"=?, "machine_name"=? WHERE "vid"=?',json.vocabularies.update[i].name, json.vocabularies.update[i].machine_name, json.vocabularies.update[i].vid);
 						}
 					}
 					else{
+							Ti.API.info("About to update vocabulary: "+json.vocabularies.update.vid);
 							db.execute('UPDATE vocabulary SET "name"=?, "machine_name"=? WHERE "vid"=?',json.vocabularies.update.name, json.vocabularies.update.machine_name, json.vocabularies.update.vid);						
 					}
+					Ti.API.info("Vocabulary updated!");
 				}
 				if (json.vocabularies["delete"]){
 					if (json.vocabularies["delete"].length){
 						for (var i = 0; i < json.vocabularies["delete"].length; i++ ){
+							Ti.API.info("About to delete vocabulary: "+json.vocabularies["delete"][i].vid);
 							//Deletes rows from terms
 							db.execute('DELETE FROM term_data WHERE "vid"=?',json.vocabularies["delete"][i].vid);							
 							
@@ -673,370 +1070,119 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 						}
 					}
 					else{
+							Ti.API.info("About to delete vocabulary: "+json.vocabularies["delete"].vid);
+
 						//Deletes row from terms
 						db.execute('DELETE FROM term_data WHERE "vid"=?',json.vocabularies["delete"].vid);							
 						
 						//Deletes corresponding row in vocabulary
 						db.execute('DELETE FROM vocabulary WHERE "vid"=?',json.vocabularies["delete"].vid);				
 					}
+					Ti.API.info("Vocabulary deleted!");
 				}
+				
 			} 
 			//Terms:
 			if (json.terms){
 				if (json.terms.insert){
 					if (json.terms.insert.length){
 						for (var i = 0; i < json.terms.insert.length; i++ ){
-							db.execute('INSERT INTO term_data (vid, tid, name, description, weight) VALUES (?,?,?,?,?)', json.terms.insert[i].vid, json.terms.insert[i].tid, json.terms.insert[i].name, json.terms.insert[i].desc, json.terms.insert[i].weight);				
+							//Ti.API.info("Vid: "+json.terms.insert[i].vid);
+							//Ti.API.info("Tid: "+json.terms.insert[i].tid);
+							//Ti.API.info("Name: "+json.terms.insert[i].name);
+							//Ti.API.info("Description: "+json.terms.insert[i].description);
+							//Ti.API.info("Weight: "+json.terms.insert[i].weight);
+							
+							var vid_t = json.terms.insert[i].vid;
+							var tid_t = json.terms.insert[i].tid;
+							var name_t = json.terms.insert[i].name;
+							var desc_t = json.terms.insert[i].description;
+							var weight_t = json.terms.insert[i].weight;
+							
+							if (desc_t == null)
+								desc_t = "";
+							if (name_t == null)
+								name_t = "";
+								
+							Ti.API.info("About to insert term: "+tid_t);  	
+							db.execute('INSERT INTO term_data ( tid , vid, name, description, weight) VALUES (?,?,?,?,?)', tid_t, vid_t, name_t, desc_t, weight_t);				
 						}
 					}
 					else{
-							db.execute('INSERT INTO term_data (vid, tid, name, description, weight) VALUES (?,?,?,?,?)', json.terms.insert.vid, json.terms.insert.tid, json.terms.insert.name, json.terms.insert.desc, json.terms.insert.weight);						
+							var vid_t = json.terms.insert.vid;
+							var tid_t = json.terms.insert.tid;
+							var name_t = json.terms.insert.name;
+							var desc_t = json.terms.insert.description;
+							var weight_t = json.terms.insert.weight;
+							
+							if (desc_t == null)
+								desc_t = "";
+							if (name_t == null)
+								name_t = "";
+
+							Ti.API.info("About to insert term: "+tid_t);
+							db.execute('INSERT INTO term_data ( tid , vid, name, description, weight) VALUES (?,?,?,?,?)', tid_t, vid_t, name_t, desc_t, weight_t);						
 					}
 				}
 				if (json.terms.update){
 					if (json.terms.update.length){
 						for (var i = 0; i < json.terms.update.length; i++ ){
-							db.execute('UPDATE term_data SET "name"=?, "description"=?,  "weight"=?, "vid"=?  WHERE "tid"=?', json.terms.update[i].name, json.terms.update[i].desc, json.terms.update[i].weight, json.terms.update[i].vid, json.terms.update[i].tid);
+							Ti.API.info("About to update term: "+json.terms.update[i].tid);							
+							db.execute('UPDATE term_data SET "name"=?, "description"=?,  "weight"=?, "vid"=?  WHERE "tid"=?', json.terms.update[i].name, json.terms.update[i].description, json.terms.update[i].weight, json.terms.update[i].vid, json.terms.update[i].tid);
 						}
 					}
 					else{
-							db.execute('UPDATE term_data SET "name"=?, "description"=?,  "weight"=?, "vid"=?  WHERE "tid"=?', json.terms.update.name, json.terms.update.desc, json.terms.update.weight, json.terms.update.vid, json.terms.update.tid);						
+							Ti.API.info("About to update term: "+json.terms.update.tid);
+							db.execute('UPDATE term_data SET "name"=?, "description"=?,  "weight"=?, "vid"=?  WHERE "tid"=?', json.terms.update.name, json.terms.update.description, json.terms.update.weight, json.terms.update.vid, json.terms.update.tid);						
 					}
 				}
 				if (json.terms["delete"]){
 					if (json.terms["delete"].length){
 						for (var i = 0; i < json.terms["delete"].length; i++ ){
+							Ti.API.info("About to delete term: "+json.terms["delete"][i].tid);
 							db.execute('DELETE FROM term_data WHERE "tid"=?',json.terms["delete"][i].tid);
 						}
 					}
 					else{
+						Ti.API.info("About to delete term: "+json.terms["delete"].tid);
 						db.execute('DELETE FROM term_data WHERE "tid"=?',json.terms["delete"].tid);
 					}
 				}
 			}
+			
+			var callback;
+			
+			/*********** Account *************/
 			if (json.account){
-				var deploy = db.execute('SELECT field_name FROM fields WHERE bundle = "account"');
-				var col_titles = [];
-				
-				var ind_column = 0;
-				while (deploy.isValidRow()){
-					col_titles[ind_column] = deploy.fieldByName('field_name'); 
-					ind_column++;
-					deploy.next();
-				}
-				deploy.close();
-				//Insert - Accounts
-				if (json.account.insert){
-					if (json.account.insert.length){
-						for (var i = 0; i < json.account.insert.length; i++ ){
-							var aux_column = ind_column;
-							var node_id = db.execute('INSERT INTO node (nid, type) VALUES (?,?)', db.lastInsertRowId+1, "account");
-							
-							Ti.API.info("Last row: "+db.lastInsertRowId);
-							if (aux_column > 0)
-								var query = 'INSERT INTO account (nid, ';
-							else
-								var query = 'INSERT INTO account (nid) VALUES ('+db.lastInsertRowId+')';
-							
-							while (aux_column > 0){
-								if (aux_column == 1)
-									query += ' '+col_titles[aux_column-1]+') VALUES ('+db.lastInsertRowId+', ';
-								else
-									query += ' '+col_titles[aux_column-1]+', ';
-								aux_column--;
-							}
-
-							aux_column = ind_column;
-							while (aux_column > 0){
-								var parse_api = col_titles[aux_column-1];
-								Ti.API.info("Inserting: "+json.account.insert[i][parse_api]);
-								if (aux_column == 1)
-									query += ' '+json.account.insert[i][parse_api]+' )';
-								else
-									query += ' '+json.account.insert[i][parse_api]+' ,';
-								aux_column--;
-							}
-							//Inserts into account table
-							db.execute(query);
-						}
-					}
-					else{
-						//db.execute('INSERT INTO account (nid, name, account_type_tid, parent_account_nid, website, phone, fax, description) VALUES (?,?,?,?,?,?,?,?)', json.account.insert.nid,json.account.insert.name, json.account.insert.account_type_tid, json.account.insert.account_nid, json.account.insert.website, json.account.insert.phone, json.account.insert.fax, json.account.insert.description);						
-					}
-					Ti.API.info("Inserted account sucefully!");				
-				}
-				
-				//Update - Accounts
-				if (json.account.update){
-					if (json.account.update.length){
-						for (var i = 0; i < json.account.update.length; i++ ){
-							//Updating account table
-							//db.execute('UPDATE account SET "name"=?, "account_type_tid"=?, "parent_account_nid"=?, "website"=?, "phone"=?, "fax"=?, "description"=? WHERE  "nid"=?', json.account.update[i].name, json.account.update[i].account_type_tid, json.account.update[i].account_nid, json.account.update[i].website, json.account.update[i].phone, json.account.update[i].fax, json.account.update[i].description, json.account.update[i].nid );
-						}
-					}
-					else{
-						//db.execute('UPDATE account SET "name"=?, "account_type_tid"=?, "parent_account_nid"=?, "website"=?, "phone"=?, "fax"=?, "description"=? WHERE  "nid"=?', json.account.update.name, json.account.update.account_type_tid, json.account.update.account_nid, json.account.update.website, json.account.update.phone, json.account.update.fax, json.account.update.description, json.account.update.nid );	
-					}
-					Ti.API.info("Updated account sucefully!");
-				}
-				
-				//Delete - Accounts
-				if (json.account["delete"])	{
-					if (json.account["delete"].length){
-						for (var i = 0; i <  json.account["delete"].length; i++ ){
-							//Deletes current row
-							//db.execute('DELETE FROM account WHERE "nid"=?',json.account["delete"][i].nid);
-						}				
-					}
-					else{
-						//db.execute('DELETE FROM account WHERE "nid"=?',json.account["delete"].nid);
-					}
-					Ti.API.info("Deleted account sucefully!");
-				}
+				callback = process_object(json, "account");
 			}
 			
+			/*********** Lead *************/
 			if (json.lead){
-				var deploy = db.execute('SELECT field_name FROM fields WHERE bundle = "lead"');
-				var col_titles = [];
-				
-				var ind_column = 0;
-				while (deploy.isValidRow()){
-					col_titles[ind_column] = deploy.fieldByName('field_name'); 
-					ind_column++;
-					deploy.next();
-				}
-				deploy.close();
-
-
-				//Insert - Leads
-				if (json.lead.insert){
-					if (json.lead.insert.length){
-						for (var i = 0; i < json.lead.insert.length; i++ ){
-							//Inserts a new person
-							var aux_column = ind_column;
-							var node_id = db.execute('INSERT INTO node (nid, type) VALUES (?,?)', db.lastInsertRowId+1, "lead");
-							
-							if (aux_column > 0)
-								var query = 'INSERT INTO lead (nid, ';
-							else
-								var query = 'INSERT INTO lead (nid) VALUES ('+db.lastInsertRowId+')';
-								
-							while (aux_column > 0){
-								if (aux_column == 1)
-									query += ' '+col_titles[aux_column-1]+') VALUES ('+db.lastInsertRowId+', ';
-								else
-									query += ' '+col_titles[aux_column-1]+', ';
-								aux_column--;
-							}
-							aux_column = ind_column;
-							while (aux_column > 0){
-								var parse_api = col_titles[aux_column-1];
-								Ti.API.info("Inserting: "+json.lead.insert[i][parse_api]);
-								if (aux_column == 1)
-									query += ' '+json.lead.insert[i][parse_api]+' )';
-								else
-									query += ' '+json.lead.insert[i][parse_api]+' ,';
-								aux_column--;
-							}
-							//Inserts into lead table
-							db.execute(query);
-						}
-					}
-					else{
-						//db.execute('INSERT INTO lead (nid, first_name, last_name, job_title_tid, lead_status_tid, lead_source_tid, competing_company_tid, company, phone, cell_phone, fax, email, description, website) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)', json.lead.insert.nid, json.lead.insert.first_name, json.lead.insert.last_name, json.lead.insert.job_title_tid, json.lead.insert.lead_status_tid, json.lead.insert.lead_source_tid, json.lead.insert.competing_company_tid, json.lead.insert.company, json.lead.insert.phone, json.lead.insert.cell_phone, json.lead.insert.fax, json.lead.insert.email, json.lead.insert.description, json.lead.insert.website);	
-					}
-					Ti.API.info("Inserted lead sucefully!");				
-				}
-				//Update - Leads
-				if (json.lead.update){
-					if (json.lead.update.length){
-						for (var i = 0; i < json.lead.update.length; i++ ){
-							//Updating lead table
-							//db.execute('UPDATE lead SET "first_name"=?, "last_name"=?, "job_title_tid"=?, "lead_status_tid"=?, "lead_source_tid"=?, "competing_company_tid"=?, "company"=?, "phone"=?, "cell_phone"=?, "fax"=?, "email"=?, "description"=?, "website"=? WHERE  "nid"=?', json.lead.update[i].first_name, json.lead.update[i].last_name, json.lead.update[i].job_title_tid, json.lead.update[i].lead_status_tid, json.lead.update[i].lead_source_tid, json.lead.update[i].competing_company_tid, json.lead.update[i].company, json.lead.update[i].phone, json.lead.update[i].cell_phone, json.lead.update[i].fax, json.lead.update[i].email, json.lead.update[i].description, json.lead.update[i].website , json.lead.update[i].nid );
-						}
-					}
-					else{
-						//db.execute('UPDATE lead SET "first_name"=?, "last_name"=?, "job_title_tid"=?, "lead_status_tid"=?, "lead_source_tid"=?, "competing_company_tid"=?, "company"=?, "phone"=?, "cell_phone"=?, "fax"=?, "email"=?, "description"=?, "website"=? WHERE  "nid"=?', json.lead.update.first_name, json.lead.update.last_name, json.lead.update.job_title_tid, json.lead.update.lead_status_tid, json.lead.update.lead_source_tid, json.lead.update.competing_company_tid, json.lead.update.company, json.lead.update.phone, json.lead.update.cell_phone, json.lead.update.fax, json.lead.update.email, json.lead.update.description, json.lead.update.website , json.lead.update.nid );	
-					}
-					Ti.API.info("Updated Leads sucefully!");
-				}
-				
-				//Delete - Leads
-				if (json.lead["delete"]){
-					if (json.lead["delete"].length){
-						for (var i = 0; i <  json.lead["delete"].length; i++ ){
-							//Deletes current row (lead)
-							//db.execute('DELETE FROM lead WHERE "nid"=?',json.lead["delete"][i].nid);
-						}				
-					}
-					else{
-						//db.execute('DELETE FROM lead WHERE "nid"=?',json.lead["delete"].nid);
-					}
-					Ti.API.info("Deleted Leads sucefully!");
-				}
-
+				callback = process_object(json, "lead");
 			}
 			
-			/*********** Contacts *************/
+			/*********** Contact *************/
 			if (json.contact){
-				var deploy = db.execute('SELECT field_name FROM fields WHERE bundle = "contact"');
-				var col_titles = [];
-				
-				var ind_column = 0;
-				while (deploy.isValidRow()){
-					col_titles[ind_column] = deploy.fieldByName('field_name'); 
-					ind_column++;
-					deploy.next();
-				}
-				deploy.close();
-
-				//Insert - Contacts
-				if (json.contact.insert){
-					if (json.contact.insert.length){
-						for (var i = 0; i < json.contact.insert.length; i++ ){
-							var aux_column = ind_column;
-							var node_id = db.execute('INSERT INTO node (nid, type) VALUES (?,?)', db.lastInsertRowId+1, "contact");
-							
-							if (aux_column > 0)
-								var query = 'INSERT INTO contact (nid, ';
-							else
-								var query = 'INSERT INTO contact (nid) VALUES ('+db.lastInsertRowId+')';
-								
-							while (aux_column > 0){
-								if (aux_column == 1)
-									query += ' '+col_titles[aux_column-1]+') VALUES ('+db.lastInsertRowId+', ';
-								else
-									query += ' '+col_titles[aux_column-1]+', ';
-								aux_column--;
-							}
-							aux_column = ind_column;
-							while (aux_column > 0){
-								var parse_api = col_titles[aux_column-1];
-								Ti.API.info("Inserting: "+json.contact.insert[i][parse_api]);
-								if (aux_column == 1)
-									query += ' '+json.contact.insert[i][parse_api]+' )';
-								else
-									query += ' '+json.contact.insert[i][parse_api]+' ,';
-								aux_column--;
-							}
-							//Inserts into contact table
-							db.execute(query);
-						}
-					}
-					else{
-						//db.execute('INSERT INTO contact (nid, first_name, last_name, account_nid, lead_source, job_title_tid, phone, cell_phone, fax, email, description ) VALUES (?,?,?,?,?,?,?,?,?,?,?)', json.contact.insert.nid, json.contact.insert.first_name, json.contact.insert.last_name, json.contact.insert.account_nid, json.contact.insert.lead_source_tid, json.contact.insert.job_title_tid, json.contact.insert.phone, json.contact.insert.cell_phone, json.contact.insert.fax, json.contact.insert.email, json.contact.insert.description );
-					}
-					Ti.API.info("Inserted contact sucefully!");				
-				}
-		
-				//Update - Contacts
-				if (json.contact.update){
-					if (json.contact.update.length){
-						for (var i = 0; i < json.contact.update.length; i++ ){
-							//db.execute('UPDATE contact SET "first_name"=?, "last_name"=?, "account_nid"=? , "lead_source"=? , "job_title_tid"=?, "phone"=?, "cell_phone"=?, "fax"=?, "email"=?, "description"=? WHERE "nid"=?', json.contact.update[i].first_name , json.contact.update[i].last_name , json.contact.update[i].account_nid , json.contact.update[i].lead_source_tid , json.contact.update[i].job_title_tid , json.contact.update[i].phone , json.contact.update[i].cell_phone , json.contact.update[i].fax , json.contact.update[i].email , json.contact.update[i].description , json.contact.update[i].nid );
-						}
-					}
-					else{
-						//db.execute('UPDATE contact SET "first_name"=?, "last_name"=?, "account_nid"=? , "lead_source"=? , "job_title_tid"=?, "phone"=?, "cell_phone"=?, "fax"=?, "email"=?, "description"=? WHERE "nid"=?', json.contact.update.first_name , json.contact.update.last_name , json.contact.update.account_nid , json.contact.update.lead_source_tid , json.contact.update.job_title_tid , json.contact.update.phone , json.contact.update.cell_phone , json.contact.update.fax , json.contact.update.email , json.contact.update.description , json.contact.update.nid );	
-					}
-					Ti.API.info("Updated Contacts sucefully!");
-				}
-				
-				//Delete - Contacts
-				if (json.contact["delete"])	{
-					if (json.contact["delete"].length){
-						for (var i = 0; i <  json.contact["delete"].length; i++ ){
-							//Deletes current row (contact)
-							//db.execute('DELETE FROM contact WHERE "nid"=?', json.contact["delete"][i].nid);
-						}				
-					}
-					else{
-						//db.execute('DELETE FROM contact WHERE "nid"=?', json.contact["delete"].nid);	
-					}
-					Ti.API.info("Deleted Contacts sucefully!");
-				}
+				callback = process_object(json, "contact");
 			}
 
 			/*********** Potentials *************/
 			if(json.potential){
-				var deploy = db.execute('SELECT field_name FROM fields WHERE bundle = "potential"');
-				var col_titles = [];
-				
-				var ind_column = 0;
-				while (deploy.isValidRow()){
-					col_titles[ind_column] = deploy.fieldByName('field_name'); 
-					ind_column++;
-					deploy.next();
-				}
-				deploy.close();
-				
-				//Insert - Potentials
-				if (json.potential.insert){
-					if (json.potential.insert.length){
-						for (var i = 0; i < json.potential.insert.length; i++ ){
-							var aux_column = ind_column;
-							var node_id = db.execute('INSERT INTO node (nid, type) VALUES (?,?)', db.lastInsertRowId+1, "potential");
-							
-							if (aux_column > 0)
-								var query = 'INSERT INTO potential (nid, ';
-							else
-								var query = 'INSERT INTO potential (nid) VALUES ('+node_id.lastInsertRowId+')';
-								
-							while (aux_column > 0){
-								if (aux_column == 1)
-									query += ' '+col_titles[aux_column-1]+') VALUES ('+node_id.lastInsertRowId+', ';
-								else
-									query += ' '+col_titles[aux_column-1]+', ';
-								aux_column--;
-							}
-							aux_column = ind_column;
-							while (aux_column > 0){
-								var parse_api = col_titles[aux_column-1];
-								Ti.API.info("Inserting: "+json.potential.insert[i][parse_api]);
-								if (aux_column == 1)
-									query += ' '+json.potential.insert[i][parse_api]+' )';
-								else
-									query += ' '+json.potential.insert[i][parse_api]+' ,';
-								aux_column--;
-							}
-							//Inserts into contact table
-							db.execute(query);
-						}
-					}
-					else{
-						//db.execute('INSERT INTO potential (nid, name, account_nid, potential_stage_tid, competing_company_tid, potential_type_tid, closing_date, next_step, description ) VALUES (?,?,?,?,?,?,?,?,?)', json.potential.insert.nid, json.potential.insert.name, json.potential.insert.account_nid, json.potential.insert.potential_stage_tid, json.potential.insert.competing_company_tid, json.potential.insert.potential_type_tid, json.potential.insert.closing_date, json.potential.insert.next_step, json.potential.insert.description);	
-					}
-					Ti.API.info("Inserted potential sucefully!");				
-				}
-	
-				//Update - Contacts
-				if (json.potential.update){
-					if (json.potential.update.length){
-						for (var i = 0; i < json.potential.update.length; i++ ){
-							//db.execute('UPDATE potential SET "name"=? , "account_nid"=?, "potential_stage_tid"=?, "competing_company_tid"=?, "potential_type_tid"=?, "closing_date"=?, "next_step"=?, "description"=? WHERE "nid"=?', json.potential.update[i].name, json.potential.update[i].account_nid, json.potential.update[i].potential_stage_tid, json.potential.update[i].competing_company_tid, json.potential.update[i].potential_type_tid, json.potential.update[i].closing_date, json.potential.update[i].next_step, json.potential.update[i].description, json.potential.update[i].nid );
-						}
-					}
-					else{
-						//db.execute('UPDATE potential SET "name"=? , "account_nid"=?, "potential_stage_tid"=?, "competing_company_tid"=?, "potential_type_tid"=?, "closing_date"=?, "next_step"=?, "description"=? WHERE "nid"=?', json.potential.update.name, json.potential.update.account_nid, json.potential.update.potential_stage_tid, json.potential.update.competing_company_tid, json.potential.update.potential_type_tid, json.potential.update.closing_date, json.potential.update.next_step, json.potential.update.description, json.potential.update.nid );	
-					}
-					Ti.API.info("Updated Potentials sucefully!");
-				}
-				
-				//Delete - Contacts
-				if (json.potential["delete"]){
-					if ( json.potential["delete"].length){
-						for (var i = 0; i <  json.potential["delete"].length; i++ ){
-							//Deletes current row (contact)
-							//db.execute('DELETE FROM potential WHERE "nid"=?', json.potential["delete"][i].nid);
-						}
-					}
-					else{
-						//db.execute('DELETE FROM potential WHERE "nid"=?', json.potential["delete"].nid);
-					}
-					Ti.API.info("Deleted Potentials sucefully!");
-				}
-				
+				callback = process_object(json, "potential");
 			}
+			
+			/*********** Boot *************/
+			//It doesn't have nodes, wait Chris come up with new API
+			// if(json.boot){
+			//	callback = process_object(json, "boot");
+			//}
+			
+			/*********** task *************/
+			//It doesn't have nodes, wait Chris come up with new API
+			// if(json.task){
+			//	callback = process_object(json, "task");
+			//}
 			
 			/*********** Users *************/
 			if(json.users){
@@ -1044,6 +1190,7 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 				if (json.users.insert){
 					if (json.users.insert.length){
 						for (var i = 0; i < json.users.insert.length; i++ ){
+							Ti.API.info("USER UID: "+json.users.insert[i].uid);
 							db.execute('INSERT INTO users (uid, username, mail, realname, status ) VALUES (?,?,?,?,?)', json.users.insert[i].uid, json.users.insert[i].username, json.users.insert[i].mail, json.users.insert[i].realname, json.users.insert[i].status);
 							if (json.users.insert[i].roles.length){
 								for (var j = 0; j < json.users.insert[i].roles.length; j++ ){
@@ -1114,7 +1261,7 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 					Ti.API.info("Updated Users sucefully!");
 				}
 				
-				//Delete - Contacts
+				//Delete - Users
 				if (json.users["delete"])	{
 					if (json.users["delete"].length){
 						for (var i = 0; i <  json.users["delete"].length; i++ ){
@@ -1139,13 +1286,12 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 			}
 				
 			else{
+				Ti.API.info('Called from value: '+calledFrom);
 				if ( calledFrom == "settings")
 					hideIndicator();
 				else{
-					Ti.API.info('Called from value: '+calledFrom);
 					isFirstTime = false;
 					label_status.text = version;
-										
 				}
 
 				Titanium.App.Properties.setBool("UpRunning", false);
@@ -1172,8 +1318,8 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 	objectsUp.send();
 }
 
-//Function Opens a new window to display descAux.
-//The window closes when receives a click event
+//Function Opens a new window to display descAux [Description?].
+//The window closes when it receives a click event
 function openBigText(descAux){
 	var descWin = Ti.UI.createWindow({
 		modal: true,
@@ -1220,81 +1366,445 @@ function openBigText(descAux){
 	});
 }
 
-function getTitle(i){
-	var value = "";
-	switch(i){
-		case "first_name":
-			value = "First name: ";
-		break;
-		case last_name:
-			value = "First name: ";
-		break;
-		case first_name:
-			value = "First name: ";
-		break;
-		case first_name:
-			value = "First name: ";
-		break;
-		case first_name:
-			value = "First name: ";
-		break;
-		case first_name:
-			value = "First name: ";
-		break;
-		case first_name:
-			value = "First name: ";
-		break;
-		case first_name:
-			value = "First name: ";
-		break;
-		case first_name:
-			value = "First name: ";
-		break;
-		case first_name:
-			value = "First name: ";
-		break;
-		case first_name:
-			value = "First name: ";
-		break;
-		case first_name:
-			value = "First name: ";
-		break;
-		case first_name:
-			value = "First name: ";
-		break;
-		case first_name:
-			value = "First name: ";
-		break;
-		case first_name:
-			value = "First name: ";
-		break;
-		case first_name:
-			value = "First name: ";
-		break;
-		case first_name:
-			value = "First name: ";
-		break;
-		case first_name:
-			value = "First name: ";
-		break;
-		case first_name:
-			value = "First name: ";
-		break;
-		case first_name:
-			value = "First name: ";
-		break;
-		case first_name:
-			value = "First name: ";
-		break;
-		case first_name:
-			value = "First name: ";
-		break;
-		case first_name:
-			value = "First name: ";
-		break;
-		case first_name:
-			value = "First name: ";
-		break;
+
+//Display contents for any type of object
+
+function display_content (){
+
+	while (fields_result.isValidRow()){
+		
+		fields[fields_result.fieldByName('field_name')] = new Array(); 
+		fields[fields_result.fieldByName('field_name')]['label']  = fields_result.fieldByName('label');
+		fields[fields_result.fieldByName('field_name')]['type']  = fields_result.fieldByName('type');
+		
+		c_index++;
+		fields_result.next();
 	}
-	return value;
+	
+	if (c_index > 0){
+		var c_type = [];
+		var c_label = [];
+		var c_content = [];
+		var c_settings = [];
+		
+		for (var f_name_f in fields ){
+			Ti.API.info(f_name_f+" => "+results.fieldByName(f_name_f)+" => "+fields[f_name_f]['type']);
+			if (results.fieldByName(f_name_f) != null){
+			
+				//fields from Fields table that match with current object
+				c_type[count]   	= fields[f_name_f]['type'];
+				c_label[count]		= fields[f_name_f]['label'];
+				c_settings[count]	= fields[f_name_f]['settings'];
+				
+				
+				//Content
+				c_content[count] = results.fieldByName(f_name_f);
+				
+				switch(c_type[count]){
+					
+					//Treatment follows the same for text or text_long
+					case 'text':
+					case 'text_long':
+						label[count]  = Ti.UI.createLabel({
+							text: c_label[count],
+							width:  "33%", 
+							left: 5,
+							textAlign: 'left',
+							touchEnabled: false
+						});
+					
+
+						var openDescWin = false;
+						
+						if (c_content[count].length > 45){
+							c_content[count] = c_content[count].substring(0,45);
+							c_content[count] = c_content[count]+"...";
+							openDescWin = true;
+						}
+						
+						content[count] = Ti.UI.createLabel({
+							text: ""+c_content[count],
+							width:  "100%",
+							height: "100%",
+							textAlign: 'left',
+							left: "33%",
+							id: count,
+							open: openDescWin,
+							w_content:c_content[count]
+						});
+	
+						content[count].addEventListener('click', function(e){
+							highlightMe(e.source.id);
+							if (e.source.open)
+							{
+								openBigText(e.source.w_content);
+							}
+						});
+						count++;
+					break;
+					
+					
+					//Phone
+					case 'phone':
+						label[count] = Ti.UI.createLabel({
+							text: c_label[count],
+							width:  "33%",
+							textAlign: 'left',
+							left: 5,
+							touchEnabled: false
+						});
+						 
+						content[count] = Ti.UI.createLabel({
+							text: ""+c_content[count],
+							width:  "100%",
+							height: "100%",
+							textAlign: 'left',
+							left: "33%",
+							id: count,
+							number: c_content[count].replace(/\D/g, '' )
+						});
+											
+						content[count].addEventListener('click', function(e){
+							highlightMe( e.source.id);
+							Titanium.Platform.openURL('tel:'+e.source.number);
+						});
+					
+						content[count].text = ""+c_content[count];
+						count++;
+					break;
+					
+					//Refers to some object:
+					case 'omadi_reference':
+						var auxRes  = db.execute('SELECT DISTINCT node.title FROM node INNER JOIN account ON node.nid='+c_content[count]);
+						ref_name = auxRes.fieldByName("title");
+						auxRes.close();
+						
+						label[count] = Ti.UI.createLabel({
+							text: c_label[count],
+							width:  "33%",
+							textAlign: 'left',
+							left: 5,
+							touchEnabled: false
+						});
+						
+						content[count] = Ti.UI.createLabel({
+							text: ""+ref_name,
+							width:  "100%",
+							height: "100%",
+							textAlign: 'left',
+							left: "33%",
+							id: count,
+							nid: c_content[count]
+						});
+						
+						// When account is clicked opens a modal window to show off the content of the specific touched
+						// object.
+						
+						content[count].addEventListener('click', function(e){
+							highlightMe( e.source.id );
+							var newWin = Ti.UI.createWindow({
+								fullscreen: true,
+								title:'Account',
+								url: "individual_object.js"
+							});
+							
+							newWin.nameSelected  = ref_name;
+							newWin.type = "account";
+							newWin.nid = e.source.nid;
+							newWin.open();
+						});
+						
+						count++;
+					break;
+									
+					//Must open browser if clicked
+					case 'link_field':
+						label[count] = Ti.UI.createLabel({
+							text: c_label[count],
+							width:  "100%",
+							height: "100%",
+							textAlign: 'left',
+							left: 5,
+							touchEnabled: false
+						});
+					
+						content[count] = Ti.UI.createLabel({
+							text: ""+c_content[count],
+							width:  "100%",
+							height: "100%",
+							textAlign: 'left',
+							left: "33%",
+							address: c_content[count].replace("http://",""),
+							id: count
+						});
+										
+						content[count].addEventListener('click', function(e){
+							highlightMe( e.source.id );
+							//website = website.replace("http://","");
+							Titanium.Platform.openURL(e.source.address);
+						});
+	
+						count++;
+					break;
+									
+					//Must open mail client if clicked - Not supported by Android yet
+					case 'email':
+						label[count] = Ti.UI.createLabel({
+							text: c_label[count],
+							width:  "33%",
+							textAlign: 'left',
+							left: 5,
+							touchEnabled: false
+						});
+						
+						content[count] = Ti.UI.createLabel({
+							text: ""+c_content[count],
+							width:  "100%",
+							height: "100%",
+							textAlign: 'left',
+							left: "33%",
+							id: count,
+							email: c_content[count]
+						});
+	
+						content[count].addEventListener('click', function(e){
+							highlightMe( e.source.id );
+							var emailDialog = Titanium.UI.createEmailDialog();
+							emailDialog.subject = "Omadi CRM";
+							emailDialog.toRecipients = e.source.email;
+							emailDialog.open();
+						});
+						count++;
+	
+					break;
+									
+					//Link to taxonomy table:
+					case 'taxonomy_term_reference':
+						var auxRes  = db.execute('SELECT * FROM term_data WHERE tid = '+c_content[count]);
+						var ref_name = auxRes.fieldByName("name");
+						auxRes.close();
+					
+						label[count] = Ti.UI.createLabel({
+							text: c_label[count],
+							width:  "30%",
+							textAlign: 'left',
+							left: 5,
+							touchEnabled: false
+						});
+						
+						content[count] = Ti.UI.createLabel({
+							text: ""+ref_name,
+							width:  "100%",
+							height: "100%",
+							textAlign: 'left',
+							left: "33%",
+							id: count
+						});
+	
+						content[count].addEventListener('click', function(e){
+							highlightMe( e.source.id );
+						});
+						count++;
+	
+					break;
+									
+					//Just prints the user_reference .. If references table users, link to it
+					case 'user_reference':
+						var auxRes  = db.execute('SELECT realname FROM users WHERE uid = '+c_content[count]);
+						var ref_name = "";
+						if (auxRes.isValidRow())
+							ref_name = auxRes.fieldByName("realname");
+						else
+							ref_name = "Not defined";
+						auxRes.close();
+						
+						label[count] = Ti.UI.createLabel({
+							text: c_label[count],
+							width:  "33%",
+							textAlign: 'left',
+							left: 5,
+							touchEnabled: false
+						});
+						
+						content[count] = Ti.UI.createLabel({
+							text: ""+ref_name,
+							width:  "100%",
+							height: "100%",
+							textAlign: 'left',
+							left: "33%",
+							id: count
+						});
+						
+						content[count].addEventListener('click', function(e){
+							Ti.API.info("X = "+e.source.id);
+							highlightMe( e.source.id );
+						});
+						
+						count++;
+	
+					break;
+									
+					//Formats as decimal
+					case 'number_decimal':
+						label[count] = Ti.UI.createLabel({
+							text: c_label[count],
+							width:  "33%",
+							textAlign: 'left',
+							left: 5,
+							touchEnabled: false
+						});
+						
+						content[count] = Ti.UI.createLabel({
+							text: ""+c_content[count],
+							width:  "100%",
+							height: "100%",
+							textAlign: 'left',
+							left: "33%",
+							id: count
+						});
+						
+						content[count].addEventListener('click', function(e){
+							highlightMe( e.source.id );
+						});
+						count++;
+	
+					break;
+									
+					//Formats as integer
+					case 'number_integer':
+						label[count] = Ti.UI.createLabel({
+							text: c_label[count],
+							width:  "33%",
+							textAlign: 'left',
+							left: 5,
+							touchEnabled: false
+						});
+						
+						content[count] = Ti.UI.createLabel({
+							text: ""+c_content[count],
+							width:  "100%",
+							height: "100%",
+							textAlign: 'left',
+							left: "33%",
+							id: count
+						});
+						
+						content[count].addEventListener('click', function(e){
+							highlightMe( e.source.id );
+						});
+						count++;
+					break;
+									
+					//Shows up date (check how it is exhibited):
+					case 'datestamp':
+						label[count] = Ti.UI.createLabel({
+							text: c_label[count],
+							width:  "33%",
+							textAlign: 'left',
+							left: 5,
+							touchEnabled: false
+						});
+						
+						content[count] = Ti.UI.createLabel({
+							text: ""+c_content[count],
+							width:  "100%",
+							height: "100%",
+							textAlign: 'left',
+							left: "33%",
+							id: count
+						});
+						
+						content[count].addEventListener('click', function(e){
+							highlightMe( e.source.id );
+						});
+						count++;
+					break;
+									
+					//Shows the on and off button?
+					case 'list_boolean':
+						label[count] = Ti.UI.createLabel({
+							text: c_label[count],
+							width:  "33%",
+							textAlign: 'left',
+							left: 5,
+							touchEnabled: false
+						});
+						
+						content[count] = Ti.UI.createLabel({
+							text: ""+c_content[count],
+							width:  "100%",
+							height: "100%",
+							textAlign: 'left',
+							left: "33%",
+							id: count
+						});
+						
+						content[count].addEventListener('click', function(e){
+							highlightMe( e.source.id );
+						});
+						count++;
+					
+					break;
+					//Prints out content
+	
+					case 'license_plate':
+						label[count] = Ti.UI.createLabel({
+							text: c_label[count],
+							width:  "33%",
+							textAlign: 'left',
+							left: 5,
+							touchEnabled: false
+						});
+						
+						content[count] = Ti.UI.createLabel({
+							text: ""+c_content[count],
+							width:  "100%",
+							height: "100%",
+							textAlign: 'left',
+							left: "33%",
+							id: count
+						});
+						
+						content[count].addEventListener('click', function(e){
+							highlightMe( e.source.id );
+						});
+						count++;
+					break;
+				}
+			}
+		}
+	
+		Ti.API.info("Items (count): "+ count);
+		for (var i = 0; i < count ; i++){
+		
+			cell[i] = Ti.UI.createView({
+				height: heightValue,
+				top : 40*i
+			});
+			label[i].color = "#999999";
+			content[i].color = "#FFFFFF";
+			
+			cell[i].add(label[i]);
+			cell[i].add(content[i]);
+		
+			viewContent.add(cell[i]);	
+			
+			border[i] = Ti.UI.createView({
+				backgroundColor:"#F16A0B",
+				height:2,
+				top: (40*(i+1))-2
+			});
+			viewContent.add(border[i]);
+		
+		}
+	}
 }
+
+//Highlitghts clicked row
+function highlightMe(data) {
+	Ti.API.info("DATA => "+data);
+	cell[data].backgroundColor = "#F16A0B";
+	setTimeout(function(){
+		cell[data].backgroundColor = '#111111'; 
+	}, 100);
+};
