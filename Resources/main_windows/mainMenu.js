@@ -13,13 +13,7 @@
 
 //Current window's instance
 var win2 = Ti.UI.currentWindow;
-
-//Common used functions
-Ti.include('../lib/functions.js');
-Ti.include('geolocation.js');
-
 var version = 'Omadi Inc';
-
 var isFirstTime = false;
 var label_status = Titanium.UI.createLabel({
 	color:'#FFFFFF',
@@ -32,6 +26,11 @@ var label_status = Titanium.UI.createLabel({
 Titanium.App.Properties.setBool("UpRunning", false);
 
 var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+
+//Common used functions
+Ti.include('../lib/functions.js');
+Ti.include('geolocation.js');
+
 
 function checkUpdate (){
 	if ( !Titanium.App.Properties.getBool("UpRunning") ){

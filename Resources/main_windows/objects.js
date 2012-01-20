@@ -19,15 +19,6 @@ var win3 = Ti.UI.currentWindow;
 //Sets only portrait mode
 win3.orientationModes = [Titanium.UI.PORTRAIT];
 
-//
-// create base UI root window
-//
-var logWindow = Titanium.UI.createWindow({
-	fullscreen : true,
-	title:'Omadi CRM',	
-	url : '../app.js',
-});
-
 //Definition of the window before (opens when the user clicks on the back button)
 var goToWindow = Titanium.UI.createWindow({
 	fullscreen : true,
@@ -76,11 +67,11 @@ if(data.length < 1) {
 		height : 'auto',
 		width : 'auto',
 		top : '50%',
-		text : 'Empty account list!'
+		text : 'Empty '+win3.type+' list!'
 	});
 
 	//Debug
-	Ti.API.info("XXXXXXX ---- No Accounts ! ----- XXXXXX");
+	Ti.API.info("XXXXXXX ---- No "+win3.type+" ! ----- XXXXXX");
 
 	win3.add(empty);
 	//showBottom(actualWindow, goToWindow )

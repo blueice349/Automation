@@ -176,7 +176,7 @@ function fireStatusFirstInstall(){
 			setTimeout (function (){
 				databaseStatusView.animate(a2);
 			}, 700);
-
+   
 		}
 
 	}
@@ -390,7 +390,7 @@ function check_type(name, object){
 		}	
 	}
 	else{
-		Ti.API.info("Field type not found!!");
+		//Ti.API.info("Field type not found!!");
 		//Treat as text!
 		type = 1;
 	}
@@ -452,7 +452,7 @@ function process_object(json, obj){
 				aux_column = ind_column;
 				while (aux_column > 0){
 					var parse_api = col_titles[aux_column-1];
-					//Ti.API.info("Inserting ["+obj+"] : "+json[obj].insert[i][parse_api]);
+					////Ti.API.info("Inserting ["+obj+"] : "+json[obj].insert[i][parse_api]);
 					//Get type:
 					var mark = '';
 					switch (check_type(parse_api, obj)){
@@ -466,23 +466,22 @@ function process_object(json, obj){
 							mark = '"';
 						break;	
 					}
-					
 					if (aux_column == 1){
 						if ( (json[obj].insert[i][parse_api] == null ) || (json[obj].insert[i][parse_api] == "undefined" ) ) 
 							query += ' null )';
 						else	
-							query += ' '+mark+''+json[obj].insert[i][parse_api]+''+mark+' )';
+							query += ' '+mark+''+json[obj].insert[i][parse_api].replace(/"/gi, "'")+''+mark+' )';
 					}
 						
 					else{
 						if ( (json[obj].insert[i][parse_api] == null ) || (json[obj].insert[i][parse_api] == "undefined" ) )
 							query += ' null ,';
 						else
-							query += ' '+mark+''+json[obj].insert[i][parse_api]+''+mark+' ,';
+							query += ' '+mark+''+json[obj].insert[i][parse_api].replace(/"/gi, "'")+''+mark+' ,';
 					}
 					aux_column--;
 				}
-				Ti.API.info(query);
+				//Ti.API.info(query);
 				//Inserts into object table
 				db.execute(query);
 			}
@@ -510,7 +509,7 @@ function process_object(json, obj){
 				aux_column = ind_column;
 				while (aux_column > 0){
 					var parse_api = col_titles[aux_column-1];
-					Ti.API.info("Inserting ["+obj+"] : "+json[obj].insert[parse_api]);
+					//Ti.API.info("Inserting ["+obj+"] : "+json[obj].insert[parse_api]);
 					//Get type:
 					var mark = '';
 					switch (check_type(parse_api, obj)){
@@ -524,26 +523,26 @@ function process_object(json, obj){
 							mark = '"';
 						break;	
 					}
-					
+					//Ti.API.info("String ====>   "+json[obj].insert[parse_api].replace('"', '\"'));
 					if (aux_column == 1){
 						if ( (json[obj].insert[parse_api] == null ) || (json[obj].insert[parse_api] == "undefined" ) ) 
 							query += ' null )';
 						else	
-							query += ' '+mark+''+json[obj].insert[parse_api]+''+mark+' )';
+							query += ' '+mark+''+json[obj].insert[parse_api].replace('"', '\"')+''+mark+' )';
 					}
 						
 					else{
 						if ( (json[obj].insert[parse_api] == null ) || (json[obj].insert[parse_api] == "undefined" ) )
 							query += ' null ,';
 						else
-							query += ' '+mark+''+json[obj].insert[parse_api]+''+mark+' ,';
+							query += ' '+mark+''+json[obj].insert[parse_api].replace('"', '\"')+''+mark+' ,';
 					}
 					aux_column--;
 				}
 				//Inserts into account table
 				db.execute(query);
 		}
-		Ti.API.info("Inserted object ["+obj+"] sucefully!");				
+		//Ti.API.info("Inserted object ["+obj+"] sucefully!");				
 	}
 	
 	//Update Object
@@ -561,7 +560,7 @@ function process_object(json, obj){
 
 					while (aux_column > 0){
 						var parse_api = col_titles[aux_column-1];
-						Ti.API.info("Prepared field: "+json[obj].update[i][parse_api]+" for update");
+						//Ti.API.info("Prepared field: "+json[obj].update[i][parse_api]+" for update");
 						//Get type:
 						var mark = '';
 						switch (check_type(parse_api, obj)){
@@ -617,7 +616,7 @@ function process_object(json, obj){
 			
 				while (aux_column > 0){
 					var parse_api = col_titles[aux_column-1];
-					Ti.API.info("Prepared field: "+json[obj].update[parse_api]+" for update");
+					//Ti.API.info("Prepared field: "+json[obj].update[parse_api]+" for update");
 					//Get type:
 					var mark = '';
 					switch (check_type(parse_api, obj)){
@@ -658,7 +657,7 @@ function process_object(json, obj){
 				var query = 'UPDATE account SET "nid"='+json.account.update.nid;
 			*/
 		}
-		Ti.API.info("Updated object ["+obj+"] sucefully!");
+		//Ti.API.info("Updated object ["+obj+"] sucefully!");
 	}
 	
 	//Delete 
@@ -678,7 +677,7 @@ function process_object(json, obj){
 			//Deletes from node table
 			db.execute('DELETE FROM node WHERE "nid"=?', json[obj]["delete"].nid);
 		}
-		Ti.API.info("Deleted object ["+obj+"] sucefully!");
+		//Ti.API.info("Deleted object ["+obj+"] sucefully!");
 	}
 	return;
 }
@@ -699,15 +698,15 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 	//Timeout until error:
 	objectsUp.setTimeout(10000);
 
-	Ti.API.info("Current page: "+ pageIndex);
+	//Ti.API.info("Current page: "+ pageIndex);
 	//Opens address to retrieve contact list
-	Ti.API.info("TIME: "+timeIndex);
+	//Ti.API.info("TIME: "+timeIndex);
 
 	if (timeIndex == 0 ){
-		objectsUp.open('GET', win.picked + '/js-sync/sync.json?timestamp=' + timeIndex +'&reset=1&limit=35&page='+pageIndex );
+		objectsUp.open('GET', win.picked + '/js-sync/sync.json?timestamp=' + timeIndex +'&reset=1&limit=250&page='+pageIndex );
 	}
 	else
-		objectsUp.open('GET', win.picked + '/js-sync/sync.json?timestamp=' + timeIndex +'&reset=0&limit=35&page='+pageIndex );
+		objectsUp.open('GET', win.picked + '/js-sync/sync.json?timestamp=' + timeIndex +'&reset=0&limit=250&page='+pageIndex );
 	
 	//Header parameters
 	objectsUp.setRequestHeader("Content-Type", "application/json");
@@ -718,13 +717,13 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 		var json = JSON.parse(this.responseText);
 		var existsMorePages;
 		
-		Ti.API.info("JSON: "+json);
-		Ti.API.info("Delete all value: "+json.delete_all);
+		//Ti.API.info("JSON: "+json);
+		//Ti.API.info("Delete all value: "+json.delete_all);
 		
 		if (json.delete_all == true){
-			Ti.API.info("=================== ############ ===================");
-			Ti.API.info("Reseting database, delete_all is required");
-			Ti.API.info("=================== ############ ===================");
+			//Ti.API.info("=================== ############ ===================");
+			//Ti.API.info("Reseting database, delete_all is required");
+			//Ti.API.info("=================== ############ ===================");
 
 			//If delete_all is present, delete all contents:
 			db.execute('DROP TABLE IF EXISTS account');
@@ -742,8 +741,10 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 			db.execute('DROP TABLE IF EXISTS potential');
 			db.execute('CREATE TABLE "potential" ("nid" INTEGER PRIMARY KEY NOT NULL  UNIQUE )');
 
-			db.execute('DROP TABLE IF EXISTS user_location');
-			db.execute('CREATE TABLE "user_location" ("uid" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , "longitude" TEXT NOT NULL , "latitude" TEXT NOT NULL , "timestamp" INTEGER NOT NULL , "status" TEXT)');
+
+			//Do not delete user_location, it is gonna always be in a small size
+			//db.execute('DROP TABLE IF EXISTS user_location');
+			//db.execute('CREATE TABLE "user_location" ("uid" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , "longitude" TEXT NOT NULL , "latitude" TEXT NOT NULL , "timestamp" INTEGER NOT NULL , "status" TEXT)');
 						
 			db.execute('DROP TABLE IF EXISTS user_roles');
 			db.execute('CREATE TABLE "user_roles" ("uid" INTEGER, "rid" INTEGER)');
@@ -778,8 +779,8 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 		pageIndex++;
 		
 
-		Ti.API.info("Max page integer: "+parseInt(json.max_page));
-		Ti.API.info("Current page integer: "+parseInt(json.page));
+		//Ti.API.info("Max page integer: "+parseInt(json.max_page));
+		//Ti.API.info("Current page integer: "+parseInt(json.page));
 				
 		Titanium.App.Properties.setInt("maxIndex", parseInt(json.max_page));
 		Titanium.App.Properties.setInt("index",    parseInt(json.page));
@@ -790,10 +791,10 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 		else
 			existsMorePages = true;	
 		
-		Ti.API.info("Current page: "+json.page);
-		Ti.API.info("Maximum pages: "+json.max_page);
-		Ti.API.info("Exist more pages? "+existsMorePages);
-		Ti.API.info("Next page (no limit): "+pageIndex);
+		//Ti.API.info("Current page: "+json.page);
+		//Ti.API.info("Maximum pages: "+json.max_page);
+		//Ti.API.info("Exist more pages? "+existsMorePages);
+		//Ti.API.info("Next page (no limit): "+pageIndex);
 		
 		
 		
@@ -801,13 +802,13 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 		if ( json.total_item_count == 0 ){
 			
 			if ( calledFrom == "mainMenu"){
-					Ti.API.info('Called from value: '+calledFrom);
+					//Ti.API.info('Called from value: '+calledFrom);
 					isFirstTime = false;
 			}
 			db.execute('UPDATE updated SET "timestamp"='+ json.request_time +' WHERE "rowid"=1');
 			//Success
 			Titanium.App.Properties.setBool("succesSync", true);
-			Ti.API.info("SUCCESS -> No items ");
+			//Ti.API.info("SUCCESS -> No items ");
 			if (( calledFrom == "settings") && !existsMorePages){
 				setInterval(function(){
 						hideIndicator();
@@ -825,7 +826,7 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 			if (pageIndex == 1 ){
 				db.execute('UPDATE updated SET "timestamp"='+ json.request_time +' WHERE "rowid"=1');				
 			}   
-			Ti.API.info("COUNT: "+json.total_item_count);	
+			//Ti.API.info("COUNT: "+json.total_item_count);	
 			
 			//Fields:
 			if (json.fields){
@@ -922,12 +923,12 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 									if (json.fields.insert[i].settings.parts){
 										for (var f_value_i in json.fields.insert[i].settings.parts ) {
 											db.execute('ALTER TABLE '+json.fields.insert[i].bundle+' ADD '+json.fields.insert[i].field_name+'___'+f_value_i+' '+ type);
-											Ti.API.info("Inserted: "+json.fields.insert[i].field_name+"___"+f_value_i+" to "+json.fields.insert[i].bundle);
+											//Ti.API.info("Inserted: "+json.fields.insert[i].field_name+"___"+f_value_i+" to "+json.fields.insert[i].bundle);
 										}
 									}
 									else{
 										db.execute('ALTER TABLE '+json.fields.insert[i].bundle+' ADD '+json.fields.insert[i].field_name+' '+ type);
-										Ti.API.info("Inserted: "+json.fields.insert[i].field_name+" to "+json.fields.insert[i].bundle);
+										//Ti.API.info("Inserted: "+json.fields.insert[i].field_name+" to "+json.fields.insert[i].bundle);
 									}
 								break;
 							}
@@ -971,10 +972,10 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 						}
 					}
 					
-					Ti.API.info("Success for fields, it was inserted!");
+					//Ti.API.info("Success for fields, it was inserted!");
 				}
 				if (json.fields.update){
-					Ti.API.info("Fields update defined!");
+					//Ti.API.info("Fields update defined!");
 					if (json.fields.update.length){
 						for (var i = 0; i < json.fields.update.length; i++ ){
 							var_widget = JSON.stringify(json.fields.update[i].widget);
@@ -1026,7 +1027,7 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 								name_v = "null";
 							if (machine_v == null)
 								machine_v = "";
-							Ti.API.info("About to insert vocabulary: "+vid_v);
+							//Ti.API.info("About to insert vocabulary: "+vid_v);
 							db.execute('INSERT INTO vocabulary (vid, name, machine_name) VALUES (?,?,?)', vid_v , name_v, machine_v);				
 						}
 					}
@@ -1040,28 +1041,28 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 							
 							if (machine_v == null)
 								machine_v = "";
-							Ti.API.info("About to insert vocabulary: "+vid_v);
+							//Ti.API.info("About to insert vocabulary: "+vid_v);
 							db.execute('INSERT INTO vocabulary (vid, name, machine_name) VALUES (?,?,?)', vid_v , name_v, machine_v);						
 					}
-					Ti.API.info("Vocabulary inserted!");
+					//Ti.API.info("Vocabulary inserted!");
 				}
 				if (json.vocabularies.update){
 					if (json.vocabularies.update.length){
 						for (var i = 0; i < json.vocabularies.update.length; i++ ){
-							Ti.API.info("About to update vocabulary: "+json.vocabularies.update[i].vid);
+							//Ti.API.info("About to update vocabulary: "+json.vocabularies.update[i].vid);
 							db.execute('UPDATE vocabulary SET "name"=?, "machine_name"=? WHERE "vid"=?',json.vocabularies.update[i].name, json.vocabularies.update[i].machine_name, json.vocabularies.update[i].vid);
 						}
 					}
 					else{
-							Ti.API.info("About to update vocabulary: "+json.vocabularies.update.vid);
+							//Ti.API.info("About to update vocabulary: "+json.vocabularies.update.vid);
 							db.execute('UPDATE vocabulary SET "name"=?, "machine_name"=? WHERE "vid"=?',json.vocabularies.update.name, json.vocabularies.update.machine_name, json.vocabularies.update.vid);						
 					}
-					Ti.API.info("Vocabulary updated!");
+					//Ti.API.info("Vocabulary updated!");
 				}
 				if (json.vocabularies["delete"]){
 					if (json.vocabularies["delete"].length){
 						for (var i = 0; i < json.vocabularies["delete"].length; i++ ){
-							Ti.API.info("About to delete vocabulary: "+json.vocabularies["delete"][i].vid);
+							//Ti.API.info("About to delete vocabulary: "+json.vocabularies["delete"][i].vid);
 							//Deletes rows from terms
 							db.execute('DELETE FROM term_data WHERE "vid"=?',json.vocabularies["delete"][i].vid);							
 							
@@ -1070,7 +1071,7 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 						}
 					}
 					else{
-							Ti.API.info("About to delete vocabulary: "+json.vocabularies["delete"].vid);
+							//Ti.API.info("About to delete vocabulary: "+json.vocabularies["delete"].vid);
 
 						//Deletes row from terms
 						db.execute('DELETE FROM term_data WHERE "vid"=?',json.vocabularies["delete"].vid);							
@@ -1078,7 +1079,7 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 						//Deletes corresponding row in vocabulary
 						db.execute('DELETE FROM vocabulary WHERE "vid"=?',json.vocabularies["delete"].vid);				
 					}
-					Ti.API.info("Vocabulary deleted!");
+					//Ti.API.info("Vocabulary deleted!");
 				}
 				
 			} 
@@ -1087,11 +1088,11 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 				if (json.terms.insert){
 					if (json.terms.insert.length){
 						for (var i = 0; i < json.terms.insert.length; i++ ){
-							//Ti.API.info("Vid: "+json.terms.insert[i].vid);
-							//Ti.API.info("Tid: "+json.terms.insert[i].tid);
-							//Ti.API.info("Name: "+json.terms.insert[i].name);
-							//Ti.API.info("Description: "+json.terms.insert[i].description);
-							//Ti.API.info("Weight: "+json.terms.insert[i].weight);
+							////Ti.API.info("Vid: "+json.terms.insert[i].vid);
+							////Ti.API.info("Tid: "+json.terms.insert[i].tid);
+							////Ti.API.info("Name: "+json.terms.insert[i].name);
+							////Ti.API.info("Description: "+json.terms.insert[i].description);
+							////Ti.API.info("Weight: "+json.terms.insert[i].weight);
 							
 							var vid_t = json.terms.insert[i].vid;
 							var tid_t = json.terms.insert[i].tid;
@@ -1104,7 +1105,7 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 							if (name_t == null)
 								name_t = "";
 								
-							Ti.API.info("About to insert term: "+tid_t);  	
+							//Ti.API.info("About to insert term: "+tid_t);  	
 							db.execute('INSERT INTO term_data ( tid , vid, name, description, weight) VALUES (?,?,?,?,?)', tid_t, vid_t, name_t, desc_t, weight_t);				
 						}
 					}
@@ -1120,31 +1121,31 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 							if (name_t == null)
 								name_t = "";
 
-							Ti.API.info("About to insert term: "+tid_t);
+							//Ti.API.info("About to insert term: "+tid_t);
 							db.execute('INSERT INTO term_data ( tid , vid, name, description, weight) VALUES (?,?,?,?,?)', tid_t, vid_t, name_t, desc_t, weight_t);						
 					}
 				}
 				if (json.terms.update){
 					if (json.terms.update.length){
 						for (var i = 0; i < json.terms.update.length; i++ ){
-							Ti.API.info("About to update term: "+json.terms.update[i].tid);							
+							//Ti.API.info("About to update term: "+json.terms.update[i].tid);							
 							db.execute('UPDATE term_data SET "name"=?, "description"=?,  "weight"=?, "vid"=?  WHERE "tid"=?', json.terms.update[i].name, json.terms.update[i].description, json.terms.update[i].weight, json.terms.update[i].vid, json.terms.update[i].tid);
 						}
 					}
 					else{
-							Ti.API.info("About to update term: "+json.terms.update.tid);
+							//Ti.API.info("About to update term: "+json.terms.update.tid);
 							db.execute('UPDATE term_data SET "name"=?, "description"=?,  "weight"=?, "vid"=?  WHERE "tid"=?', json.terms.update.name, json.terms.update.description, json.terms.update.weight, json.terms.update.vid, json.terms.update.tid);						
 					}
 				}
 				if (json.terms["delete"]){
 					if (json.terms["delete"].length){
 						for (var i = 0; i < json.terms["delete"].length; i++ ){
-							Ti.API.info("About to delete term: "+json.terms["delete"][i].tid);
+							//Ti.API.info("About to delete term: "+json.terms["delete"][i].tid);
 							db.execute('DELETE FROM term_data WHERE "tid"=?',json.terms["delete"][i].tid);
 						}
 					}
 					else{
-						Ti.API.info("About to delete term: "+json.terms["delete"].tid);
+						//Ti.API.info("About to delete term: "+json.terms["delete"].tid);
 						db.execute('DELETE FROM term_data WHERE "tid"=?',json.terms["delete"].tid);
 					}
 				}
@@ -1190,7 +1191,7 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 				if (json.users.insert){
 					if (json.users.insert.length){
 						for (var i = 0; i < json.users.insert.length; i++ ){
-							Ti.API.info("USER UID: "+json.users.insert[i].uid);
+							//Ti.API.info("USER UID: "+json.users.insert[i].uid);
 							db.execute('INSERT INTO users (uid, username, mail, realname, status ) VALUES (?,?,?,?,?)', json.users.insert[i].uid, json.users.insert[i].username, json.users.insert[i].mail, json.users.insert[i].realname, json.users.insert[i].status);
 							if (json.users.insert[i].roles.length){
 								for (var j = 0; j < json.users.insert[i].roles.length; j++ ){
@@ -1214,7 +1215,7 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 							db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.insert.uid, json.users.insert.roles);
 						}
 					}
-					Ti.API.info("Inserted users sucefully!");
+					//Ti.API.info("Inserted users sucefully!");
 				}
 
 				//Update - Users
@@ -1258,7 +1259,7 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 							}
 						}
 					}
-					Ti.API.info("Updated Users sucefully!");
+					//Ti.API.info("Updated Users sucefully!");
 				}
 				
 				//Delete - Users
@@ -1275,18 +1276,18 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 						db.execute('DELETE FROM users WHERE "uid"=?', json.users["delete"].uid);
 						db.execute('DELETE FROM user_roles WHERE "uid"=?', json.users["delete"].uid);
 					}
-				Ti.API.info("Deleted Users sucefully!");
+				//Ti.API.info("Deleted Users sucefully!");
 				}
 				
 			}
 			
-			Ti.API.info("SUCCESS");
+			//Ti.API.info("SUCCESS");
 			if ( existsMorePages ){
 				installMe(pageIndex, win, timeIndex, calledFrom);
 			}
 				
 			else{
-				Ti.API.info('Called from value: '+calledFrom);
+				//Ti.API.info('Called from value: '+calledFrom);
 				if ( calledFrom == "settings")
 					hideIndicator();
 				else{
@@ -1303,11 +1304,11 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 	}
 	//Connection error:
 	objectsUp.onerror = function(e) {
-		Ti.API.info("Services are down");
+		//Ti.API.info("Services are down");
 		if ( calledFrom == "settings")
 			hideIndicator();
 		else{
-			Ti.API.info('Called from value: '+calledFrom);
+			//Ti.API.info('Called from value: '+calledFrom);
 			label_status.text = version;					
 		}
 		Titanium.App.Properties.setBool("UpRunning", false);
@@ -1388,7 +1389,7 @@ function display_content (){
 		var c_settings = [];
 		
 		for (var f_name_f in fields ){
-			Ti.API.info(f_name_f+" => "+results.fieldByName(f_name_f)+" => "+fields[f_name_f]['type']);
+			//Ti.API.info(f_name_f+" => "+results.fieldByName(f_name_f)+" => "+fields[f_name_f]['type']);
 			if (results.fieldByName(f_name_f) != null){
 			
 				//fields from Fields table that match with current object
@@ -1580,7 +1581,9 @@ function display_content (){
 									
 					//Link to taxonomy table:
 					case 'taxonomy_term_reference':
+						//Ti.API.info('Conteúdo: '+c_content[count]);
 						var auxRes  = db.execute('SELECT * FROM term_data WHERE tid = '+c_content[count]);
+						//Ti.API.info('Temos : '+ auxRes.rowCount +' linhas no resultado');
 						var ref_name = auxRes.fieldByName("name");
 						auxRes.close();
 					
@@ -1599,7 +1602,7 @@ function display_content (){
 							textAlign: 'left',
 							left: "33%",
 							id: count
-						});
+						}); 
 	
 						content[count].addEventListener('click', function(e){
 							highlightMe( e.source.id );
@@ -1636,7 +1639,7 @@ function display_content (){
 						});
 						
 						content[count].addEventListener('click', function(e){
-							Ti.API.info("X = "+e.source.id);
+							//Ti.API.info("X = "+e.source.id);
 							highlightMe( e.source.id );
 						});
 						
@@ -1774,7 +1777,7 @@ function display_content (){
 			}
 		}
 	
-		Ti.API.info("Items (count): "+ count);
+		//Ti.API.info("Items (count): "+ count);
 		for (var i = 0; i < count ; i++){
 		
 			cell[i] = Ti.UI.createView({
@@ -1802,7 +1805,7 @@ function display_content (){
 
 //Highlitghts clicked row
 function highlightMe(data) {
-	Ti.API.info("DATA => "+data);
+	//Ti.API.info("DATA => "+data);
 	cell[data].backgroundColor = "#F16A0B";
 	setTimeout(function(){
 		cell[data].backgroundColor = '#111111'; 

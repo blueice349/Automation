@@ -1,4 +1,3 @@
-var win = Titanium.UI.currentWindow;
 
 function translateErrorCode(code) {
 	if (code == null) {
@@ -45,19 +44,19 @@ else
 		if (authorization == Titanium.Geolocation.AUTHORIZATION_DENIED) {
 			Ti.UI.createAlertDialog({
 				title:'Omadi',
-				message:'You have disallowed Titanium from running geolocation services.'
+				message:'You have disallowed Omadi from running geolocation services.'
 			}).show();
 		}
 		else if (authorization == Titanium.Geolocation.AUTHORIZATION_RESTRICTED) {
 			Ti.UI.createAlertDialog({
 				title:'Omadi',
-				message:'Your system has disallowed Titanium from running geolocation services.'
+				message:'Your system has disallowed Omadi from running geolocation services.'
 			}).show();
 		}
 	}
 
 	//
-	//  SET ACCURACY - THE FOLLOWING VALUES ARE SUPPORTED
+	//  SET ACCURACY - THE FOLLOwin2G VALUES ARE SUPPORTED
 	//
 	// Titanium.Geolocation.ACCURACY_BEST
 	// Titanium.Geolocation.ACCURACY_NEAREST_TEN_METERS
@@ -91,13 +90,13 @@ else
 		var altitude = e.coords.altitude;
 		var heading = e.coords.heading;
 		var accuracy = e.coords.accuracy;
-		var speed = e.coords.speed;
+		//var speed = e.coords.speed;
 		var timestamp = e.coords.timestamp;
 		var altitudeAccuracy = e.coords.altitudeAccuracy;
-		Ti.API.info('speed ' + speed);
+		//Ti.API.info('speed ' + speed);
 		
 		if ( (accuracy <= 50) && (currentInputs <= 5)){
-			++currentInputs;
+			currentInputs++;
 			db.execute('INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES (?,?,?,?)', longitude, latitude, Math.round(timestamp/1000), "notUploaded");
 		}
 	});
@@ -110,6 +109,7 @@ else
 		if (!e.success || e.error)
 		{
 			Ti.API.info("Code translation: "+translateErrorCode(e.code));
+			Ti.API.info('Error was retrieved !');
 			return;
 		}
 
@@ -118,7 +118,7 @@ else
 		var altitude = e.coords.altitude;
 		var heading = e.coords.heading;
 		var accuracy = e.coords.accuracy;
-		var speed = e.coords.speed;
+		//var speed = e.coords.speed;
 		var timestamp = e.coords.timestamp;
 		var altitudeAccuracy = e.coords.altitudeAccuracy;
 
@@ -143,7 +143,7 @@ else
 		});
 		*/
 		if ( (accuracy <= 50) && (currentInputs <= 5)){
-			++currentInputs;
+			currentInputs++;
 			db.execute('INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES (?,?,?,?)', longitude, latitude, Math.round(timestamp/1000), "notUploaded");
 		}		
 	};
@@ -204,12 +204,12 @@ setInterval(function (){
 			result.close();
 			
 			//alert ("Before open connection");
-			var objectsCheck = win.log;
+			var objectsCheck = win2.log;
 			//Timeout until error:
 			objectsCheck.setTimeout(10000);
 			
 			//Opens address to retrieve contact list
-			objectsCheck.open('POST', win.picked + '/js-location/mobile_location.json');
+			objectsCheck.open('POST', win2.picked + '/js-location/mobile_location.json');
 			
 			//Header parameters
 			objectsCheck.setRequestHeader("Content-Type", "application/json");
@@ -218,13 +218,14 @@ setInterval(function (){
 			objectsCheck.onload = function(e) {
 				Titanium.App.Properties.setBool("UpRunning", false);
 				//Parses response into strings
+
 				var resultReq = JSON.parse(this.responseText);
 				
 				if ( resultReq.inserted ){
 					if (resultReq.success)
 						Ti.API.info(resultReq.success+"GPS coordinates sucefully inserted: ");
 					else
-						Ti.API.info("GPS coordinates not inserted, we had "+ resultReq.errors+" errors");
+		 				Ti.API.info("GPS coordinates not inserted, we had "+ resultReq.errors+" errors");
 				}
 				db.execute('DELETE FROM user_location WHERE status="notUploaded"');
 		
