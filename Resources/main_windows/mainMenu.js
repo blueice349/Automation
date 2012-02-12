@@ -13,6 +13,7 @@
 
 //Current window's instance
 var win2 = Ti.UI.currentWindow;
+
 var version = 'Omadi Inc';
 var isFirstTime = false;
 var label_status = Titanium.UI.createLabel({
@@ -31,20 +32,17 @@ var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.ge
 Ti.include('../lib/functions.js');
 Ti.include('geolocation.js');
 
-
 function checkUpdate (){
 	if ( !Titanium.App.Properties.getBool("UpRunning") ){
+		
 		Titanium.App.Properties.setBool("UpRunning", true);
-		var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
 		
 		var objectsCheck = win2.log;
 		//Timeout until error:
 		objectsCheck.setTimeout(10000);
 	
-		Ti.API.info("Timestamp: "+ updatedTime.fieldByName('timestamp'));
 		//Opens address to retrieve lists
-		objectsCheck.open('GET', win2.picked + '/js-sync/sync.json?timestamp=' + updatedTime.fieldByName('timestamp') +'&reset=1');
-		updatedTime.close();
+		objectsCheck.open('GET', win2.picked + '/js-sync/sync.json?reset=1');
 	
 		//Header parameters
 		objectsCheck.setRequestHeader("Content-Type", "application/json");
@@ -56,15 +54,35 @@ function checkUpdate (){
 	
 			//If Database is already last version 
 			if ( json.current_page_item_count == 0 ){
-				label_status.text = version;
 				Ti.API.info("SUCCESS -> No items");
 				Titanium.App.Properties.setBool("UpRunning", false);
 			}
 			else
 			{
-				label_status.text = "Synchronizing database, don't close the App !";
-				Ti.API.info("Fired database install");
-				updateMe();				
+				var pageIndex = 0;
+
+				var db_up = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+
+				var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');
+
+				//instance progress bar object:
+				var pb = new Progress_install(0, 100);
+
+				var see = db_up.execute('SELECT * FROM bundles WHERE display_on_menu="true"');
+				//Normal install
+				if ( see.rowCount > 0 ){
+					Ti.API.info("Fired normal database install");
+					//installMe(pageIndex, win, timeIndex, progress_bar, menu_list)
+					installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView);
+				}
+				//First install
+				else{
+					Ti.API.info("Fired first database install");
+					//installMe(pageIndex, win, timeIndex, progress_bar, menu_list, img)
+					installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, img);
+				}
+				updatedTime.close();
+				db_up.close();
 			}
 		}
 		//Connection error:
@@ -78,64 +96,71 @@ function checkUpdate (){
 	}
 };
 
-var data = [];
-
-
-var rowFirst = Ti.UI.createTableViewRow({
-	height : 'auto',	
-	hasChild : true,
-	title : 'Leads'
-});
-
-
-//Populates the array
-data[0] = rowFirst;
-
-var rowSecond = Ti.UI.createTableViewRow({
-	height : 'auto',
-	hasChild : true,
-	title : 'Contacts'
-});
-
-//Populates the array
-data[1] = rowSecond;
-
-var rowThird = Ti.UI.createTableViewRow({
-	height : 'auto',
-	hasChild : true,
-	title : 'Accounts'
-});
-
-//Populates the array
-data[2] = rowThird;
-
-var rowFourth = Ti.UI.createTableViewRow({
-	height : 'auto',
-	hasChild : true,
-	title : 'Potentials'
-});
-
-//Populates the array
-data[3] = rowFourth;
-
-var rowFiveth = Ti.UI.createTableViewRow({
-	height : 'auto',
-	hasChild : true,
-	title : 'Settings'
-});
-
-//Populates the array
-data[4] = rowFiveth;
-
 
 var listView = Titanium.UI.createTableView({
-	data : data,
+	data : [],
 	top : '10%',
-	height : '84%',
-	scrollable: true
+	height : '80%',
+	scrollable: true,
+	zIndex: 999
 });
 
+var elements = db.execute('SELECT * FROM bundles');
+var check = 0;
+
+
+while ( elements.isValidRow() ){
+	var name_table   = elements.fieldByName("bundle_name");
+	var display      = elements.fieldByName("display_name");
+	var description  = elements.fieldByName("description");
+	var flag_display = elements.fieldByName("display_on_menu");
+	
+	if (flag_display){
+		check++;
+		var row_t = Ti.UI.createTableViewRow({
+			height      : 60,	
+			hasChild    : true,
+			title       : display,
+			description : description,
+			name_table  : name_table
+		});
+		
+		listView.appendRow(row_t);
+	}
+	elements.next();
+}
+elements.close();
+
 win2.add(listView);
+
+if (check == 0){
+	var img = Ti.UI.createImageView({
+		image: '../images/message.png',
+		width: 'auto',
+		height: 'auto',
+		top: '25%',
+		zIndex: 0
+	});
+	
+	win2.add(img);
+}
+
+//Go to contact.js when contact's button is clicked
+listView.addEventListener('click',function(e){
+	Ti.API.info("row click on table view. index = "+e.index+", row_desc = "+e.row.description+", section = "+e.section+", source_desc="+e.source.description);
+	
+	var win3 = Titanium.UI.createWindow({  
+		title: e.row.display,
+		fullscreen: true,
+		url:'objects.js',
+		type: e.row.name_table
+	});
+	win3.open();
+	
+});
+
+
+
 
 
 //Parses result from user's login 
@@ -178,10 +203,17 @@ loggedView.add(label_top);
 loggedView.add(offImage);					
 win2.add(loggedView);
 
+var a = Titanium.UI.createAlertDialog({
+	title:'Omadi',
+	buttonNames: ['OK']
+});
+
 offImage.addEventListener('click',function(e)
 {
-	if (Titanium.App.Properties.getBool("UpRunning")){
-		alert ("We are updating your database, please hold on");
+	Ti.API.info('Is there an update happening? '+Titanium.App.Properties.getBool("UpRunning"));
+	if (Titanium.App.Properties.getBool("UpRunning") === true){
+		a.message = 'A data sync is in progress. Please wait a moment to log out.';
+		a.show();
 	}
 	else{
 		// window container
@@ -190,7 +222,7 @@ offImage.addEventListener('click',function(e)
 			title:'Omadi CRM',		    
 		    fullscreen: true
 		});
-	    db.close();	
+
 		//Setting both windows with login values:
 		indLog.log		 = win2.log;
 		indLog.result	 = win2.result;
@@ -202,109 +234,22 @@ offImage.addEventListener('click',function(e)
 
 });
 
-//Go to contact.js when contact's button is clicked
-rowFirst.addEventListener('click',function(e){
-	if (!isFirstTime){
-		var win3 = Titanium.UI.createWindow({  
-			title:'Leads',
-			fullscreen: true,
-			url:'objects.js',
-			type: "lead"
-		});
-		win3.open();
-	}
-});
-
-rowSecond.addEventListener('click',function(e){
-	if (!isFirstTime){
-		var win3 = Titanium.UI.createWindow({  
-			title:'Contacts',
-			fullscreen: true,
-			url:'objects.js',
-			type: "contact"
-		});
-		win3.open();
-	}
-});
-
-//Go to contact.js when contact's button is clicked
-rowThird.addEventListener('click',function(e){
-
-	if (!isFirstTime){
-	
-		var win3 = Titanium.UI.createWindow({  
-			title:'Accounts',
-			fullscreen: true,
-			url:'objects.js',
-			type: "account"
-		});
-		win3.open();
-	}
-});
-
-rowFourth.addEventListener('click',function(e){
-
-	if (!isFirstTime){
-		var win3 = Titanium.UI.createWindow({  
-			title:'Potentials',
-			fullscreen: true,
-			url:'objects.js',
-			type: "potential"
-		});
-		win3.open();
-	}
-});
-
-rowFiveth.addEventListener('click',function(e){
-	if (!isFirstTime){
-		var win3 = Titanium.UI.createWindow({  
-			title:'Omadi CRM',
-			fullscreen: true,
-			url:'settings.js'
-		});
-		
-		win3.log		 = win2.log;
-		win3.picked 	 = win2.picked;
-		win3.open();
-	}
-});
-
-//Action taken when syncronization button is pressed
-function updateMe(){
-
-	var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
-	
-	Ti.API.info("Timestamp: "+ updatedTime.fieldByName('timestamp'));	
-	
-	var timeIndex = updatedTime.fieldByName('timestamp');
-	updatedTime.close();
-
-	var pageIndex = 0;
-
-	//installMe(pageIndex, win, timeIndex, calledFrom)
-	installMe(pageIndex, win2, timeIndex, "mainMenu");
-};
-
 //View at the bottom to show user the database's status
 var databaseStatusView = Titanium.UI.createView({
 	backgroundColor:'#111',
-	height: '7%',
+	height: '10%',
 	width: '100%',
 	opacity: 0.99,
 	borderRadius:0,
 	bottom: 0
 });
 
-    		
 databaseStatusView.add(label_status);
 win2.add(databaseStatusView);
 
 //First time install
 var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
 if (updatedTime.fieldByName('timestamp') == 0){
-	Titanium.App.Properties.setInt("index",    0);
-	Titanium.App.Properties.setInt("maxIndex",    100);
-	fireStatusFirstInstall();
 	isFirstTime = true;
 	checkUpdate();
 }
@@ -317,9 +262,26 @@ win2.orientationModes = [ Titanium.UI.PORTRAIT ];
 //When back button on the phone is pressed, it alerts the user (pop up box)
 // that he needs to log out in order to go back to the root window
 win2.addEventListener('android:back', function() {
-	alert("In order to log off, please click on 'Log Out' next to your username at the top ");
+	a.message = 'In order to log off, please click on \'Log Out\' next to your username at the top ';
+	a.show();
 });
 
+var activity = Ti.Android.currentActivity;
+
+activity.onCreateOptionsMenu = function(e) {
+    var menu = e.menu;
+    var menuItem = menu.add({ title: "Update" });
+    menuItem.setIcon('../images/item1.png');
+    
+    menuItem.addEventListener("click", function(e) {
+		Ti.API.info('Refresh event!');
+		checkUpdate();
+    });
+};
+
+
+//Close database
+db.close();
 
 //Check behind the courtins if there is a new version - 5 minutes
 setInterval(checkUpdate, 300000);

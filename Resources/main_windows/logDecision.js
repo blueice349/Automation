@@ -68,8 +68,7 @@ var labelIn = Titanium.UI.createButton({
 
 labelOut.addEventListener('click',function (){
 	showIndicator("full");
-	//alert(picked);
-	indLog.log.open('POST', indLog.picked+'/js-login/user/logout.json');
+	indLog.log.open('POST', indLog.picked+'/js-sync/sync/logout.json');
 	
 	//Timeout until error:
 	indLog.log.setTimeout(10000);

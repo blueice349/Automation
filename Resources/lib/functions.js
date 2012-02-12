@@ -110,12 +110,20 @@ function showIndicator(show)
     actIndFun.show();
 };
 
-function fireStatusFirstInstall(){
+//
+// The progress bar for every install/update
+//
+// 1st param : sets the first value of the progress bar (instance of this object)
+// 2nd param : Maximum the progress bar can reach
+//
+
+function Progress_install(current, max){
 	
-	var firstRound = true;
+	this.current = current;
+	this.max = max;
 	
-   	var a1 = Titanium.UI.createAnimation();
-	a1.bottom =  -1*Ti.Platform.displayCaps.platformHeight*0.1;
+	var a1 = Titanium.UI.createAnimation();
+	a1.bottom =  -1*Ti.Platform.displayCaps.platformHeight*0.14;
 	a1.duration = 1000;
 
    	var a2 = Titanium.UI.createAnimation();
@@ -125,22 +133,23 @@ function fireStatusFirstInstall(){
 
     // black view
     var indView = Titanium.UI.createView({
-        height: '8%',
+        height: '13%',
         width: '100%',
         backgroundColor:'#111',
         opacity:0.9,
-        bottom: -1*Ti.Platform.displayCaps.platformHeight*0.1,
+        bottom: -1*Ti.Platform.displayCaps.platformHeight*0.14,
     });
 
     Ti.UI.currentWindow.add(indView);
     
+    //If bar is not hiding change this to be incorporated at mainMenu.js
     databaseStatusView.animate(a1);
 	
 	setTimeout (function (){
 		indView.animate(a2);
 	}, 700);
    	
-    var pb=Titanium.UI.createProgressBar({
+    var pb = Titanium.UI.createProgressBar({
 	    width:"70%",
 	    min:0,
 	    max:100,
@@ -151,37 +160,39 @@ function fireStatusFirstInstall(){
 	});
  	
  	indView.add(pb);
+
+	pb.value = this.current;
 	
-	var alreadyAnimating = false;
+	this.set_max = function (value){
+		this.max = value;
+	}
 	
-	function updateStatus(){
-		if (Titanium.App.Properties.getInt("maxIndex", 0) < 0 ){
+	this.set = function (){
+		this.current++;
+		
+		if (this.max <= 0 ){
 			pb.value = 100;
 		}
 		else
 		{
-			if ((Titanium.App.Properties.getInt("index") == 0) && (Titanium.App.Properties.getInt("maxIndex") == 1)){
+			//Only one page case
+			if ( (this.current == 0) && (this.max == 1) ){
 				pb.value = 50;
 			}
 			else{
-				pb.value = (Titanium.App.Properties.getInt("index")*100/Titanium.App.Properties.getInt("maxIndex") );					
+				var perc = parseInt( ( this.current * 100 ) / this.max );
+				pb.value = perc;
+				Ti.API.info("Progress: "+ pb.value +" ... Index: "+this.current+" ... Max_Index : "+this.max);					
 			}
 		}
-		
-		if ((pb.value == 100 ) && (!alreadyAnimating)){
-			clearInterval(timer);
-			firstRound = false;
-			alreadyAnimating = true;
+	}
+	
+	this.close = function () {
 			indView.animate(a1);
 			setTimeout (function (){
 				databaseStatusView.animate(a2);
 			}, 700);
-   
-		}
-
 	}
-	var timer = setInterval(updateStatus, 1500);
-	
 }
 
 
@@ -372,7 +383,8 @@ function bottomBack(actualWindow ){
 //
 
 function check_type(name, object){
-	var qRes = db.execute("SELECT DISTINCT type FROM fields WHERE field_name=? AND bundle=?", name ,  object);
+	var db_type = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+	var qRes = db_type.execute("SELECT DISTINCT type FROM fields WHERE field_name=? AND bundle=?", name ,  object);
 	
 	if (qRes.isValidRow()){
 		switch(qRes.fieldByName("type")){
@@ -390,13 +402,20 @@ function check_type(name, object){
 		}	
 	}
 	else{
-		//Ti.API.info("Field type not found!!");
+		Ti.API.info("Field type not found!!");
 		//Treat as text!
 		type = 1;
 	}
 	qRes.close();
+	db_type.close();
+	
 	return type;
 }
+
+function isNumber(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
 
 //
 // Function's signature : process_object(json,obj)
@@ -407,8 +426,11 @@ function check_type(name, object){
 // Returns: An empty return to callback the parent's action.
 // 
 
-function process_object(json, obj){
-	var deploy = db.execute('SELECT field_name FROM fields WHERE bundle = "'+obj+'"');
+function process_object(json, obj, f_marks, progress){
+	
+	var db_process_object = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+	
+	var deploy = db_process_object.execute('SELECT field_name FROM fields WHERE bundle = "'+obj+'"');
 	var col_titles = [];
 	
 	var ind_column = 0;
@@ -419,78 +441,142 @@ function process_object(json, obj){
 	}
 	deploy.close();
 	
+	var process_obj = [];
+	
 	//Insert
 	if (json[obj].insert){
 		//Multiple objects
 		if (json[obj].insert.length){
 			for (var i = 0; i < json[obj].insert.length; i++ ){
-				
+				//Increments Progress Bar
+				progress.set();
+
 				// Original query
 				var aux_column = ind_column;
-
-				//Insert into node table
-				var obj_title = json[obj].insert[i].title;
-				if ((obj_title == null) || (obj_title == 'undefined')) 
-					obj_title = "No Title";
-					
-				var node_id = db.execute('INSERT INTO node (nid, created, changed, title, author_uid) VALUES (?,?,?,?,?)', json[obj].insert[i].nid, json[obj].insert[i].created, json[obj].insert[i].changed, obj_title, json[obj].insert[i].author_uid);
+				var query = "";
 				
-				if (aux_column > 0)
-					var query = 'INSERT INTO '+obj+' (nid, ';
+				//Insert into node table
+				if ((json[obj].insert[i].title === null) || (json[obj].insert[i].title == 'undefined') || (json[obj].insert[i].title === false)) 
+					json[obj].insert[i].title = "No Title";
+				
+				process_obj[process_obj.length] = 'INSERT INTO node (nid, created, changed, title, author_uid) VALUES ('+json[obj].insert[i].nid+', '+json[obj].insert[i].created+', '+json[obj].insert[i].changed+', "'+json[obj].insert[i].title.replace(/"/gi, "'")+'" , '+json[obj].insert[i].author_uid+')';
+				
+				if (aux_column > 0){
+					query = 'INSERT INTO '+obj+' (nid, ';
+				}
 				//This would happen only if table has no columns, shouldn't happen
-				else
-					var query = 'INSERT INTO '+obj+' (nid) VALUES ('+json[obj].insert[i].nid+')';
+				else{
+					query = 'INSERT INTO '+obj+' (nid) VALUES ('+json[obj].insert[i].nid+')';
+				}
 				
 				while (aux_column > 0){
-					if (aux_column == 1)
+					if (aux_column == 1){
 						query += ' '+col_titles[aux_column-1]+') VALUES ('+json[obj].insert[i].nid+', ';
-					else
+					}
+					else{
 						query += ' '+col_titles[aux_column-1]+', ';
+					}
 					aux_column--;
 				}
-
+				
 				aux_column = ind_column;
+				var mark = '';
 				while (aux_column > 0){
 					var parse_api = col_titles[aux_column-1];
-					////Ti.API.info("Inserting ["+obj+"] : "+json[obj].insert[i][parse_api]);
-					//Get type:
-					var mark = '';
-					switch (check_type(parse_api, obj)){
-						//Number
-						case 0:
-							mark = '';
-						break;
-						
-						//Text
-						case 1:
-							mark = '"';
-						break;	
+					mark = '"';
+					for (var i_index in f_marks){
+						if (i_index == parse_api){
+							for (var j_index in f_marks[i_index]){
+								if (j_index == obj){
+									mark = '';
+								}
+							}
+						}
 					}
 					if (aux_column == 1){
-						if ( (json[obj].insert[i][parse_api] == null ) || (json[obj].insert[i][parse_api] == "undefined" ) ) 
+						if ( (json[obj].insert[i][parse_api] == null ) || (json[obj].insert[i][parse_api] == "undefined" ) ){ 
 							query += ' null )';
-						else	
-							query += ' '+mark+''+json[obj].insert[i][parse_api].replace(/"/gi, "'")+''+mark+' )';
+						}
+						else{
+							if (mark == ''){
+								var num_to_insert = json[obj].insert[i][parse_api];
+
+								if ( isNumber(num_to_insert) ){
+									query += ' '+num_to_insert+' )';
+								}
+								else if (num_to_insert instanceof Array){
+									Ti.API.info("ARRAY FOR "+obj);
+									query += ' null )';
+								}
+								else{
+									Ti.API.info('Null ==> The value '+num_to_insert+' is a number? '+isNumber(num_to_insert) );
+									query += ' null )';
+								}
+							}
+							else{
+								if (json[obj].insert[i][parse_api] instanceof Array){
+									Ti.API.info("ARRAY FOR "+obj);
+									query += ' '+mark+''+mark+' )';								
+								}
+								else{
+									query += ' '+mark+''+json[obj].insert[i][parse_api].replace(/"/gi, "'")+''+mark+' )';
+								}
+							}
+						}
 					}
-						
 					else{
-						if ( (json[obj].insert[i][parse_api] == null ) || (json[obj].insert[i][parse_api] == "undefined" ) )
+						if ( (json[obj].insert[i][parse_api] == null ) || (json[obj].insert[i][parse_api] == "undefined" ) ){
 							query += ' null ,';
-						else
-							query += ' '+mark+''+json[obj].insert[i][parse_api].replace(/"/gi, "'")+''+mark+' ,';
+						}
+						else{
+							if (mark == ''){
+								var num_to_insert = json[obj].insert[i][parse_api];
+
+								if ( isNumber(num_to_insert) ){
+									query += ' '+num_to_insert+' ,';
+								}
+								else if (num_to_insert instanceof Array){
+									Ti.API.info("ARRAY FOR "+obj);
+									query += ' null ,';								
+								}
+								else{
+									Ti.API.info('Null ==> The value '+num_to_insert+' is a number? '+isNumber(num_to_insert) );
+									query += ' null ,';
+								}
+							}
+							else{
+								if (json[obj].insert[i][parse_api] instanceof Array){
+									Ti.API.info("ARRAY FOR "+obj);
+									query += ' '+mark+''+mark+' ,';	
+								}
+								else{
+									query += ' '+mark+''+json[obj].insert[i][parse_api].replace(/"/gi, "'")+''+mark+' ,';								
+								}
+							}
+						}
 					}
 					aux_column--;
 				}
-				//Ti.API.info(query);
 				//Inserts into object table
-				db.execute(query);
+				process_obj[process_obj.length] = query;
+				
 			}
 		}
 		
 		//Only one object
 		else{
+				//Increments Progress Bar
+				progress.set();
+				
+				Ti.API.info('####################### NOT READY ########################');
 				var aux_column = ind_column;
-				var node_id = db.execute('INSERT INTO node (nid, created, changed, title, author_uid) VALUES (?,?,?,?,?)', json[obj].insert.nid, json[obj].insert.created, json[obj].insert.changed, json[obj].insert.title, json[obj].insert.author_uid);
+
+				//Insert into node table
+				var obj_title = json[obj].insert.title;
+				if ((obj_title == null) || (obj_title == 'undefined')) 
+					obj_title = "No Title";
+
+				process_obj[process_obj.length] = 'INSERT INTO node (nid, created, changed, title, author_uid) VALUES ('+json[obj].insert.nid+', '+json[obj].insert.created+', '+json[obj].insert.changed+', '+obj_title+' , '+json[obj].insert.author_uid+')';
 				
 				
 				if (aux_column > 0)
@@ -509,7 +595,7 @@ function process_object(json, obj){
 				aux_column = ind_column;
 				while (aux_column > 0){
 					var parse_api = col_titles[aux_column-1];
-					//Ti.API.info("Inserting ["+obj+"] : "+json[obj].insert[parse_api]);
+					Ti.API.info("Inserting ["+obj+"] : "+json[obj].insert[parse_api]);
 					//Get type:
 					var mark = '';
 					switch (check_type(parse_api, obj)){
@@ -523,16 +609,16 @@ function process_object(json, obj){
 							mark = '"';
 						break;	
 					}
-					//Ti.API.info("String ====>   "+json[obj].insert[parse_api].replace('"', '\"'));
+					Ti.API.info("String ====>   "+json[obj].insert[parse_api].replace('"', '\"'));
 					if (aux_column == 1){
-						if ( (json[obj].insert[parse_api] == null ) || (json[obj].insert[parse_api] == "undefined" ) ) 
+						if ( (json[obj].insert[parse_api] == null ) || (json[obj].insert[parse_api] == "undefined" ) || ( (mark == '') && (json[obj].insert[parse_api] == '') ) ) 
 							query += ' null )';
 						else	
 							query += ' '+mark+''+json[obj].insert[parse_api].replace('"', '\"')+''+mark+' )';
 					}
 						
 					else{
-						if ( (json[obj].insert[parse_api] == null ) || (json[obj].insert[parse_api] == "undefined" ) )
+						if ( (json[obj].insert[parse_api] == null ) || (json[obj].insert[parse_api] == "undefined" ) || ( (mark == '') && (json[obj].insert[parse_api] == '') ))
 							query += ' null ,';
 						else
 							query += ' '+mark+''+json[obj].insert[parse_api].replace('"', '\"')+''+mark+' ,';
@@ -540,19 +626,23 @@ function process_object(json, obj){
 					aux_column--;
 				}
 				//Inserts into account table
-				db.execute(query);
+				//db_process_object.execute(query);
+				process_obj[process_obj.length] = query; 
 		}
-		//Ti.API.info("Inserted object ["+obj+"] sucefully!");				
+		Ti.API.info("Inserted object ["+obj+"] sucefully!");				
 	}
 	
 	//Update Object
 	if (json[obj].update){
 		if (json[obj].update.length){
 			for (var i = 0; i < json[obj].update.length; i++ ){
+				//Increments Progress Bar
+				progress.set();
+		
 				var aux_column = ind_column;
 
 				//Updates node table
-				var node_id = db.execute('UPDATE node SET "created"='+json[obj].update[i].created+', "changed"='+json[obj].update[i].changed+', "title"="'+json[obj].update[i].title+'", "author_uid"='+json[obj].update[i].author_uid+' WHERE "nid"='+json[obj].update[i].nid);
+				process_obj [process_obj.length] =  'UPDATE node SET "created"='+json[obj].update[i].created+', "changed"='+json[obj].update[i].changed+', "title"="'+json[obj].update[i].title+'", "author_uid"='+json[obj].update[i].author_uid+' WHERE "nid"='+json[obj].update[i].nid;
 
 				//Must have more then 1 column (excluding nid)
 				if (aux_column > 0){
@@ -560,7 +650,7 @@ function process_object(json, obj){
 
 					while (aux_column > 0){
 						var parse_api = col_titles[aux_column-1];
-						//Ti.API.info("Prepared field: "+json[obj].update[i][parse_api]+" for update");
+						Ti.API.info("Prepared field: "+json[obj].update[i][parse_api]+" for update");
 						//Get type:
 						var mark = '';
 						switch (check_type(parse_api, obj)){
@@ -594,7 +684,7 @@ function process_object(json, obj){
 					}
 
 					//Updates object's row
-					db.execute(query);
+					process_obj [process_obj.length] =  query;
 				}
 				//Doesn't make sense to update the primary key in this case
 				/*
@@ -605,10 +695,14 @@ function process_object(json, obj){
 		}
 		//Only one object
 		else{
+			
+			//Increments Progress Bar
+			progress.set();
+				
 			var aux_column = ind_column;
 
 			//Updates node's table
-			var node_id = db.execute('UPDATE node SET "created"='+json[obj].update.created+', "changed"='+json[obj].update.changed+', "title"="'+json[obj].update.title+'", "author_uid"='+json[obj].update.author_uid+' WHERE "nid"='+json[obj].update.nid);
+			process_obj [process_obj.length] =  'UPDATE node SET "created"='+json[obj].update.created+', "changed"='+json[obj].update.changed+', "title"="'+json[obj].update.title+'", "author_uid"='+json[obj].update.author_uid+' WHERE "nid"='+json[obj].update.nid;
 
 			//Must have more then 1 column (excluding nid)
 			if (aux_column > 0){
@@ -616,7 +710,7 @@ function process_object(json, obj){
 			
 				while (aux_column > 0){
 					var parse_api = col_titles[aux_column-1];
-					//Ti.API.info("Prepared field: "+json[obj].update[parse_api]+" for update");
+					Ti.API.info("Prepared field: "+json[obj].update[parse_api]+" for update");
 					//Get type:
 					var mark = '';
 					switch (check_type(parse_api, obj)){
@@ -649,7 +743,7 @@ function process_object(json, obj){
 				}
 
 				//Updates account row
-				db.execute(query);
+				process_obj [process_obj.length] = query;
 			}
 			//Doesn't make sense to update the primary key in this case
 			/*
@@ -657,56 +751,85 @@ function process_object(json, obj){
 				var query = 'UPDATE account SET "nid"='+json.account.update.nid;
 			*/
 		}
-		//Ti.API.info("Updated object ["+obj+"] sucefully!");
+		Ti.API.info("Updated object ["+obj+"] sucefully!");
 	}
 	
 	//Delete 
-	if (json[obj]["delete"])	{
+	if (json[obj]["delete"]){
 		if (json[obj]["delete"].length){
 			for (var i = 0; i <  json[obj]["delete"].length; i++ ){
+				//Increments Progress Bar
+				progress.set();
+		
 				//Deletes from object's table
-				db.execute('DELETE FROM '+obj+' WHERE "nid"=?', json[obj]["delete"][i].nid);
+				process_obj [process_obj.length] =  'DELETE FROM '+obj+' WHERE "nid"=?', json[obj]["delete"][i].nid;
 				//Deletes from node table
-				db.execute('DELETE FROM node WHERE "nid"=?', json[obj]["delete"][i].nid);
+				process_obj [process_obj.length] =  'DELETE FROM node WHERE "nid"=?', json[obj]["delete"][i].nid;
 			}
 		}
 		else{
+			//Increments Progress Bar
+			progress.set();
+			
 			//Deletes from account table
-			db.execute('DELETE FROM '+obj+' WHERE "nid"=?', json[obj]["delete"].nid);
+			process_obj [process_obj.length] = 'DELETE FROM '+obj+' WHERE "nid"=?', json[obj]["delete"].nid;
 			
 			//Deletes from node table
-			db.execute('DELETE FROM node WHERE "nid"=?', json[obj]["delete"].nid);
+			process_obj [process_obj.length] = 'DELETE FROM node WHERE "nid"=?', json[obj]["delete"].nid;
 		}
-		//Ti.API.info("Deleted object ["+obj+"] sucefully!");
+		Ti.API.info("Deleted object ["+obj+"] sucefully!");
 	}
+	
+	Ti.API.info('########## CRITICAL STEP ##########');
+	
+	var iObj = 0;
+	var iStart = Math.round(new Date().getTime() / 1000);
+	Ti.API.info("Objects started at : "+iStart);
+	
+	db_process_object.execute("BEGIN IMMEDIATE TRANSACTION");
+	while (iObj <= process_obj.length - 1 ){
+		db_process_object.execute(process_obj[iObj]);
+		iObj++;
+	}
+	db_process_object.execute("COMMIT TRANSACTION");
+	
+	var iEnd = Math.round(new Date().getTime() / 1000);
+	Ti.API.info("Object finishes at : "+iEnd);
+	
+	var iResult = iEnd - iStart;
+	Ti.API.info('Object seconds: '+ iResult);
+	
 	return;
 }
 
 //Install new updates using pagination
 //Load existing data with pagination
-function installMe(pageIndex, win, timeIndex, calledFrom)
+function installMe(pageIndex, win, timeIndex, progress, menu, img)
 {
-	if ((calledFrom == "settings") && (pageIndex == 0))
-	{
-		Titanium.App.Properties.setInt("index",    0);
-		Titanium.App.Properties.setInt("maxIndex",    100);
-		showIndicator("settings");
-	}	
+	var db_installMe = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 	
 	var objectsUp = win.log;
 
 	//Timeout until error:
 	objectsUp.setTimeout(10000);
 
-	//Ti.API.info("Current page: "+ pageIndex);
-	//Opens address to retrieve contact list
-	//Ti.API.info("TIME: "+timeIndex);
+	Ti.API.info("Current page: "+ pageIndex);
+	
+	Ti.API.info("TIME: "+timeIndex);
 
+	//Opens address to retrieve contact list
 	if (timeIndex == 0 ){
-		objectsUp.open('GET', win.picked + '/js-sync/sync.json?timestamp=' + timeIndex +'&reset=1&limit=250&page='+pageIndex );
+		if (pageIndex == 0)
+			objectsUp.open('GET', win.picked + '/js-sync/sync.json?reset=1&limit=250' );
+		else
+			objectsUp.open('GET', win.picked + '/js-sync/sync.json?sync_timestamp='+ timeIndex+'&reset=1&limit=250&page='+pageIndex );
 	}
-	else
-		objectsUp.open('GET', win.picked + '/js-sync/sync.json?timestamp=' + timeIndex +'&reset=0&limit=250&page='+pageIndex );
+	else{
+		if (pageIndex == 0)
+			objectsUp.open('GET', win.picked + '/js-sync/sync.json?reset=0&limit=250');
+		else
+			objectsUp.open('GET', win.picked + '/js-sync/sync.json?sync_timestamp=' + timeIndex +'&reset=1&limit=250&page='+pageIndex );
+	}
 	
 	//Header parameters
 	objectsUp.setRequestHeader("Content-Type", "application/json");
@@ -714,128 +837,226 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 	//When connected
 	objectsUp.onload = function(e) {
 		//Parses response into strings
+		Ti.API.info("Onload reached");
 		var json = JSON.parse(this.responseText);
 		var existsMorePages;
+
+		//Set our maximum 
+		if (pageIndex == 0){
+			Ti.API.info("######## CHECK ########  "+parseInt(json.total_item_count));
+			//Set max value for progress bar
+			progress.set_max(parseInt(json.total_item_count));
+		}
 		
-		//Ti.API.info("JSON: "+json);
-		//Ti.API.info("Delete all value: "+json.delete_all);
 		
+		Ti.API.info("JSON: "+json);
+		Ti.API.info("Delete all value: "+json.delete_all);
+		
+		
+		//Check this function
 		if (json.delete_all == true){
-			//Ti.API.info("=================== ############ ===================");
-			//Ti.API.info("Reseting database, delete_all is required");
-			//Ti.API.info("=================== ############ ===================");
+			Ti.API.info("=================== ############ ===================");
+			Ti.API.info("Reseting database, delete_all is required");
+			Ti.API.info("=================== ############ ===================");
 
 			//If delete_all is present, delete all contents:
-			db.execute('DROP TABLE IF EXISTS account');
-			db.execute('CREATE TABLE "account" ("nid" INTEGER PRIMARY KEY NOT NULL  UNIQUE )');
+			db_installMe.execute('DROP TABLE IF EXISTS account');
+			db_installMe.execute('CREATE TABLE "account" ("nid" INTEGER PRIMARY KEY NOT NULL  UNIQUE )');
 			
-			db.execute('DROP TABLE IF EXISTS contact');
-			db.execute('CREATE TABLE "contact" ("nid" INTEGER PRIMARY KEY NOT NULL  UNIQUE )');
+			db_installMe.execute('DROP TABLE IF EXISTS contact');
+			db_installMe.execute('CREATE TABLE "contact" ("nid" INTEGER PRIMARY KEY NOT NULL  UNIQUE )');
 
-			db.execute('DROP TABLE IF EXISTS lead');
-			db.execute('CREATE TABLE "lead" ("nid" INTEGER PRIMARY KEY   NOT NULL  UNIQUE )');
+			db_installMe.execute('DROP TABLE IF EXISTS lead');
+			db_installMe.execute('CREATE TABLE "lead" ("nid" INTEGER PRIMARY KEY   NOT NULL  UNIQUE )');
 			
-			db.execute('DROP TABLE IF EXISTS node');
-			db.execute('CREATE TABLE "node" ("nid" INTEGER PRIMARY KEY NOT NULL  UNIQUE , "title" VARCHAR, "created" INTEGER, "changed" INTEGER, "author_uid" INTEGER)');
+			db_installMe.execute('DROP TABLE IF EXISTS node');
+			db_installMe.execute('CREATE TABLE "node" ("nid" INTEGER PRIMARY KEY NOT NULL  UNIQUE , "title" VARCHAR, "created" INTEGER, "changed" INTEGER, "author_uid" INTEGER)');
 						
-			db.execute('DROP TABLE IF EXISTS potential');
-			db.execute('CREATE TABLE "potential" ("nid" INTEGER PRIMARY KEY NOT NULL  UNIQUE )');
+			db_installMe.execute('DROP TABLE IF EXISTS potential');
+			db_installMe.execute('CREATE TABLE "potential" ("nid" INTEGER PRIMARY KEY NOT NULL  UNIQUE )');
 
 
 			//Do not delete user_location, it is gonna always be in a small size
-			//db.execute('DROP TABLE IF EXISTS user_location');
-			//db.execute('CREATE TABLE "user_location" ("uid" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , "longitude" TEXT NOT NULL , "latitude" TEXT NOT NULL , "timestamp" INTEGER NOT NULL , "status" TEXT)');
+			//db_installMe.execute('DROP TABLE IF EXISTS user_location');
+			//db_installMe.execute('CREATE TABLE "user_location" ("uid" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , "longitude" TEXT NOT NULL , "latitude" TEXT NOT NULL , "timestamp" INTEGER NOT NULL , "status" TEXT)');
 						
-			db.execute('DROP TABLE IF EXISTS user_roles');
-			db.execute('CREATE TABLE "user_roles" ("uid" INTEGER, "rid" INTEGER)');
+			db_installMe.execute('DROP TABLE IF EXISTS user_roles');
+			db_installMe.execute('CREATE TABLE "user_roles" ("uid" INTEGER, "rid" INTEGER)');
 
-			db.execute('DROP TABLE IF EXISTS task');
-			db.execute('CREATE TABLE "task" ("nid" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE )');
+			db_installMe.execute('DROP TABLE IF EXISTS task');
+			db_installMe.execute('CREATE TABLE "task" ("nid" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE )');
 			
-			db.execute('DROP TABLE IF EXISTS boot');
-			db.execute('CREATE TABLE "boot" ("boot_id" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE )');
+			db_installMe.execute('DROP TABLE IF EXISTS boot');
+			db_installMe.execute('CREATE TABLE "boot" ("boot_id" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE )');
 
-			db.execute('DROP TABLE IF EXISTS bundles');
-			db.execute('CREATE TABLE "bundles" ("bid" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , "fid" INTEGER NOT NULL , "bundle_name" VARCHAR)');
+			db_installMe.execute('DROP TABLE IF EXISTS bundles');
+			db_installMe.execute('CREATE TABLE "bundles" ("bid" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , "bundle_name" VARCHAR)');
 			
-			db.execute('DROP TABLE IF EXISTS fields');
-			db.execute('CREATE TABLE "fields" ("id" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE, "fid" INTEGER NOT NULL , "type" TEXT, "field_name" TEXT, "label" TEXT, "description" TEXT, "bundle" TEXT NOT NULL , "weight" INTEGER, "required" TEXT , "widget" TEXT, "settings" TEXT)');
+			db_installMe.execute('DROP TABLE IF EXISTS fields');
+			db_installMe.execute('CREATE TABLE "fields" ("id" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE, "fid" INTEGER NOT NULL , "type" TEXT, "field_name" TEXT, "label" TEXT, "description" TEXT, "bundle" TEXT NOT NULL , "weight" INTEGER, "required" TEXT , "widget" TEXT, "settings" TEXT, "disabled" INTEGER DEFAULT 0)');
 			
-			db.execute('DROP TABLE IF EXISTS term_data');
-			db.execute('CREATE TABLE "term_data" ("tid" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "vid" INTEGER, "name" VARCHAR, "description" VARCHAR, "weight" VARCHAR)');
+			db_installMe.execute('DROP TABLE IF EXISTS term_data');
+			db_installMe.execute('CREATE TABLE "term_data" ("tid" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "vid" INTEGER, "name" VARCHAR, "description" VARCHAR, "weight" VARCHAR)');
 						
-			db.execute('DROP TABLE IF EXISTS updated');
-			db.execute('CREATE TABLE "updated" ("timestamp" INTEGER DEFAULT 0, "url" TEXT DEFAULT NULL)');
+			db_installMe.execute('DROP TABLE IF EXISTS updated');
+			db_installMe.execute('CREATE TABLE "updated" ("timestamp" INTEGER DEFAULT 0, "url" TEXT DEFAULT NULL)');
 			
-			db.execute('DROP TABLE IF EXISTS users');
-			db.execute('CREATE TABLE "users" ("uid" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "username" TEXT, "mail" TEXT, "realname" TEXT, "status" INTEGER)');
+			db_installMe.execute('DROP TABLE IF EXISTS users');
+			db_installMe.execute('CREATE TABLE "users" ("uid" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "username" TEXT, "mail" TEXT, "realname" TEXT, "status" INTEGER)');
 						
-			db.execute('DROP TABLE IF EXISTS vocabulary');
-			db.execute('CREATE TABLE "vocabulary" ("vid" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "name" VARCHAR, "machine_name" TEXT)');
+			db_installMe.execute('DROP TABLE IF EXISTS vocabulary');
+			db_installMe.execute('CREATE TABLE "vocabulary" ("vid" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "name" VARCHAR, "machine_name" TEXT)');
 						
-			db.execute('INSERT INTO updated (timestamp, url) VALUES (?,?)', 0 , null);		
+			db_installMe.execute('INSERT INTO updated (timestamp, url) VALUES (?,?)', 0 , null);		
 		}
 		
 		pageIndex++;
 		
 
-		//Ti.API.info("Max page integer: "+parseInt(json.max_page));
-		//Ti.API.info("Current page integer: "+parseInt(json.page));
-				
-		Titanium.App.Properties.setInt("maxIndex", parseInt(json.max_page));
-		Titanium.App.Properties.setInt("index",    parseInt(json.page));
-		
+		Ti.API.info("Max itens: "+parseInt(json.total_item_count));
+		Ti.API.info("Current page integer: "+parseInt(json.page));
+
 		//If it is the end
 		if ( (json.page == json.max_page) || json.max_page == -1 )
 			existsMorePages = false;
 		else
 			existsMorePages = true;	
 		
-		//Ti.API.info("Current page: "+json.page);
-		//Ti.API.info("Maximum pages: "+json.max_page);
-		//Ti.API.info("Exist more pages? "+existsMorePages);
-		//Ti.API.info("Next page (no limit): "+pageIndex);
-		
-		
+		Ti.API.info("Current page: "+json.page);
+		Ti.API.info("Maximum pages: "+json.max_page);
+		Ti.API.info("Exist more pages? "+existsMorePages);
+		Ti.API.info("Next page (no limit): "+pageIndex);
 		
 		//If Database is already last version
-		if ( json.total_item_count == 0 ){
+		if (json.total_item_count == 0 ){
+			Ti.API.info('######### Last request : '+json.sync_timestamp);
+			db_installMe.execute('UPDATE updated SET "timestamp"='+ json.sync_timestamp +' WHERE "rowid"=1');
+			db_installMe.close();
 			
-			if ( calledFrom == "mainMenu"){
-					//Ti.API.info('Called from value: '+calledFrom);
-					isFirstTime = false;
-			}
-			db.execute('UPDATE updated SET "timestamp"='+ json.request_time +' WHERE "rowid"=1');
-			//Success
-			Titanium.App.Properties.setBool("succesSync", true);
-			//Ti.API.info("SUCCESS -> No items ");
-			if (( calledFrom == "settings") && !existsMorePages){
-				setInterval(function(){
-						hideIndicator();
-					}, 2000);	
-			}
+			Titanium.App.Properties.setBool("UpRunning", false);
+			Ti.API.info("SUCCESS -> No items ");
+			Ti.API.info('Is there an update happening? '+Titanium.App.Properties.getBool("UpRunning"));
+			
+			progress.set();
+			progress.close();
 		}
 		else
 		{
-			if ( calledFrom == "mainMenu"){
-					if ((isFirstTime) && (pageIndex==1)){
-						db.execute('UPDATE updated SET "url"="'+ win.picked +'" WHERE "rowid"=1');						
-					}
+			if ((isFirstTime) && (pageIndex==1)){
+				db_installMe.execute('UPDATE updated SET "url"="'+ win.picked +'" WHERE "rowid"=1');						
 			}
+
 			//pageIndex == 1 means first load, pageIndex is incremented some lines above
 			if (pageIndex == 1 ){
-				db.execute('UPDATE updated SET "timestamp"='+ json.request_time +' WHERE "rowid"=1');				
+				Ti.API.info('######### Last request : '+json.sync_timestamp);
+				db_installMe.execute('UPDATE updated SET "timestamp"='+ json.sync_timestamp +' WHERE "rowid"=1');				
 			}   
-			//Ti.API.info("COUNT: "+json.total_item_count);	
+			Ti.API.info("COUNT: "+json.total_item_count);	
 			
+			//Node types creation:
+			if (json.node_type){
+				var node_db = [];
+				//Node type inserts
+				if (json.node_type.insert){
+					//Multiple nodes inserts
+					if (json.node_type.insert.length){
+						for (var i = 0; i < json.node_type.insert.length; i++ ){
+							if (json.node_type.insert[i].type != 'user'){
+								//Increment the progress bar
+								progress.set();
+								node_db[node_db.length] = "CREATE TABLE "+json.node_type.insert[i].type+" ('nid' INTEGER PRIMARY KEY NOT NULL  UNIQUE )";
+								node_db[node_db.length] = "INSERT INTO bundles (bundle_name, display_name, description) VALUES ('"+json.node_type.insert[i].type+"', '"+json.node_type.insert[i].name+"' , '"+json.node_type.insert[i].description+"' )";
+								Ti.API.info('Node type : '+json.node_type.insert[i].type+' has been created');
+							}
+						}
+					}
+					
+					//Unique node insert
+					else{
+						if (json.node_type.insert.type != 'user'){
+							progress.set();
+							node_db[node_db.length] = "CREATE TABLE "+json.node_type.insert.type+" ('nid' INTEGER PRIMARY KEY NOT NULL  UNIQUE )";
+							node_db[node_db.length] = "INSERT INTO bundles (bundle_name) VALUES ('"+json.node_type.insert.type+"')";						
+							Ti.API.info('Node type : '+json.node_type.insert.type+' has been created');
+						}						
+					}
+				}
+				//Doesn't make sense to update it at this moment because we create an empty table
+				//The only thing to consideer is deletion.
+				//Node type updates - Not implemented yet (API's side)
+				else if (json.node_type.update){
+					//Multiple nodes updates
+					if (json.node_type.update.length){
+						for (var i = 0; i < json.node_type.update.length; i++ ){
+							//Increment the progress bar
+							progress.set();
+							//Just in case it is working
+							Ti.API.info('@Developer: Updates for node_type need to be created');
+						}
+					}
+					//Unique node update
+					else{
+						progress.set();
+						Ti.API.info('@Developer: Updates for node_type need to be created');
+					}
+				}
+				
+				//Node type deletion - Not implemented yet (API's side)
+				else if (json.node_type['delete']){
+					//Multiple node deletions
+					if ( json.node_type['delete'].length ){
+						for (var i = 0; i < json.node_type['delete'].length; i++ ){
+							//Increment the progress bar
+							progress.set();
+							node_db[node_db.length] = "DROP TABLE "+json.node_type.insert[i].type;
+							node_db[node_db.length] = "DELETE FROM bundles WHERE bundle_name = '"+json.node_type.insert[i].type+"'";
+							Ti.API.info('@Developer: Deletions for node_type need to be created');
+						}
+					}
+					//Unique node deletion
+					else{
+						progress.set();
+						node_db[node_db.length] = "DROP TABLE "+json.node_type.insert.type;
+						node_db[node_db.length] = "DELETE FROM bundles WHERE bundle_name = '"+json.node_type.insert.type+"'";
+						Ti.API.info('@Developer: Deletions for node_type need to be created');
+					}
+				}
+				
+				//DB operations
+				var iPerform = 0;
+				var iStart = Math.round(new Date().getTime() / 1000);
+				Ti.API.info("Node_type started at : "+iStart);
+
+				db_installMe.execute("BEGIN IMMEDIATE TRANSACTION");
+				while (iPerform <= node_db.length - 1 ){
+					db_installMe.execute(node_db[iPerform]);
+					iPerform++;
+				}
+				db_installMe.execute("COMMIT TRANSACTION");
+				
+				var iEnd = Math.round(new Date().getTime() / 1000);
+				Ti.API.info("Node_type finishes at : "+iEnd);
+				
+				var iResult = iEnd - iStart;
+				Ti.API.info('Node_type seconds: '+ iResult);
+				Ti.API.info("Success for node_types, db operations ran smoothly!");
+			}
+
 			//Fields:
 			if (json.fields){
 				if (json.fields.insert){
+					//SQL actions:
+					var perform = [];
+					//Array of objects
 					if (json.fields.insert.length){
 						for (var i = 0; i < json.fields.insert.length; i++ ){
-
+							//Increment Progress Bar
+							progress.set();
+							
+							//Encode:
 							var var_widget = JSON.stringify(json.fields.insert[i].widget);
 							var var_settings = JSON.stringify(json.fields.insert[i].settings); 
+							
 							var fid = json.fields.insert[i].fid;
 
 							if (json.fields.insert[i].type != null )
@@ -886,15 +1107,15 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 							//Multiple parts
 							if (json.fields.insert[i].settings.parts){
 								for (var f_value_i in json.fields.insert[i].settings.parts ) {
-									db.execute("INSERT INTO fields (fid, type, field_name, label, description, bundle, weight, required, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+f_value_i+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"','"+widget+"','"+settings+"' )");
+									//db_installMe.execute("INSERT INTO fields (fid, type, field_name, label, description, bundle, weight, required, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+f_value_i+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"','"+widget+"','"+settings+"' )");
+									perform[perform.length] = "INSERT INTO fields (fid, type, field_name, label, description, bundle, weight, required, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+f_value_i+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"','"+widget+"','"+settings+"' )";
 								}
 							}
-							else
-								db.execute("INSERT INTO fields (fid, type, field_name, label, description, bundle, weight, required, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"','"+widget+"','"+settings+"' )");
+							//Normal field
+							else {
+								perform[perform.length] = "INSERT INTO fields (fid, type, field_name, label, description, bundle, weight, required, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"','"+widget+"','"+settings+"' )";
+							}
 
-							//Insert into bundles
-							db.execute('INSERT INTO bundles (fid, bundle_name) VALUES ('+fid+',"'+bundle+'")' );
-							
 							var type = "";
 							switch(json.fields.insert[i].type){
 								case "taxonomy_term_reference":
@@ -913,37 +1134,36 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 								break;
 							}
 							
-							switch(json.fields.insert[i].bundle){
-								case "lead":
-								case "contact":
-								case "potential":
-								case "account":
-								case "task":
-								case "boot":
-									if (json.fields.insert[i].settings.parts){
-										for (var f_value_i in json.fields.insert[i].settings.parts ) {
-											db.execute('ALTER TABLE '+json.fields.insert[i].bundle+' ADD '+json.fields.insert[i].field_name+'___'+f_value_i+' '+ type);
-											//Ti.API.info("Inserted: "+json.fields.insert[i].field_name+"___"+f_value_i+" to "+json.fields.insert[i].bundle);
-										}
+							//Check if it is a valid bundle (automatically inserted throught the API):
+							var q_bund = db_installMe.execute('SELECT * FROM bundles WHERE bundle_name = "'+json.fields.insert[i].bundle+'"');
+							if ( q_bund.isValidRow() ){
+								if (json.fields.insert[i].settings.parts){
+									for (var f_value_i in json.fields.insert[i].settings.parts ) {
+										perform[perform.length] = 'ALTER TABLE '+json.fields.insert[i].bundle+' ADD '+json.fields.insert[i].field_name+'___'+f_value_i+' '+ type;
+										Ti.API.info("Inserted: "+json.fields.insert[i].field_name+"___"+f_value_i+" to be used in "+json.fields.insert[i].bundle);
 									}
-									else{
-										db.execute('ALTER TABLE '+json.fields.insert[i].bundle+' ADD '+json.fields.insert[i].field_name+' '+ type);
-										//Ti.API.info("Inserted: "+json.fields.insert[i].field_name+" to "+json.fields.insert[i].bundle);
-									}
-								break;
+								}
+								else{
+									perform[perform.length] = 'ALTER TABLE '+json.fields.insert[i].bundle+' ADD '+json.fields.insert[i].field_name+' '+ type;
+									Ti.API.info("Inserted: "+json.fields.insert[i].field_name+" to be used in "+json.fields.insert[i].bundle);
+								}
 							}
-
+							else{
+								Ti.API.info('=====================>>>>> Avoiding fields creation for table: '+json.fields.insert[i].bundle);
+							}
 						}
+						q_bund.close();
 					}
+					//Single object
 					else{
+						//Increment Progress Bar
+						progress.set();
+						
 						var var_widget = JSON.stringify(json.fields.insert.widget);
 						var var_settings = JSON.stringify(json.fields.insert.settings); 
 
 						//Insert into fields
-						db.execute('INSERT INTO fields (fid, type, field_name, label, description, bundle, weight, required, widget, settings) VALUES (?,?,?,?,?,?,?,?,?,?)', json.fields.insert.fid , json.fields.insert.type , json.fields.insert.field_name , json.fields.insert.label , json.fields.insert.description , json.fields.insert.bundle , json.fields.insert.weight, json.fields.insert.required , "var_widget", "var_settings" );
-
-						//Insert into bundles
-						db.execute('INSERT INTO bundles (fid, bundle_name) VALUES (?,?)', json.fields.insert.fid,  json.fields.insert.bundle );
+						perform[perform.length] = 'INSERT INTO fields (fid, type, field_name, label, description, bundle, weight, required, widget, settings) VALUES (?,?,?,?,?,?,?,?,?,?)', json.fields.insert.fid , json.fields.insert.type , json.fields.insert.field_name , json.fields.insert.label , json.fields.insert.description , json.fields.insert.bundle , json.fields.insert.weight, json.fields.insert.required , "var_widget", "var_settings" ;
 						
 						var type = "";
 						switch(json.fields.insert.type){
@@ -960,65 +1180,125 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 							break;
 						}
 						
-						switch(json.fields.insert.bundle){
-							case "lead":
-							case "contact":
-							case "potential":
-							case "account":
-							case "task":
-							case "boot":
-								db.execute('ALTER TABLE '+json.fields.insert.bundle+' ADD '+json.fields.insert.field_name+' '+ type);
-							break;
+						//Check if it is a valid bundle (automatically inserted throught the API):
+						var q_bund = db_installMe.execute('SELECT * FROM bundles WHERE bundle_name = "'+json.fields.insert[i].bundle+'"');
+						if ( q_bund.isValidRow() ){
+							if (json.fields.insert.settings.parts){
+								for (var f_value_i in json.fields.insert.settings.parts ) {
+									perform[perform.length] = 'ALTER TABLE '+json.fields.insert.bundle+' ADD '+json.fields.insert.field_name+'___'+f_value_i+' '+ type;
+									Ti.API.info("Inserted: "+json.fields.insert.field_name+"___"+f_value_i+" to be used in "+json.fields.insert.bundle);
+								}
+							}
+							else{
+								perform[perform.length] = 'ALTER TABLE '+json.fields.insert.bundle+' ADD '+json.fields.insert.field_name+' '+ type;
+								Ti.API.info("Inserted: "+json.fields.insert.field_name+" to be used in "+json.fields.insert.bundle);
+							}
 						}
+						else{
+							Ti.API.info('Avoiding fields creation for table: '+json.fields.insert.bundle);
+						}
+						q_bund.close();
 					}
-					
-					//Ti.API.info("Success for fields, it was inserted!");
 				}
 				if (json.fields.update){
-					//Ti.API.info("Fields update defined!");
+					Ti.API.info("Fields update defined!");
 					if (json.fields.update.length){
 						for (var i = 0; i < json.fields.update.length; i++ ){
+							//Increment Progress Bar
+							progress.set();
 							var_widget = JSON.stringify(json.fields.update[i].widget);
 							var_settings = JSON.stringify(json.fields.update[i].settings); 
-							db.execute('UPDATE fields SET "type"=?, "field_name"=?, "label"=?, "description"=?, "bundle"=?, "weight"=?, "required"=?, "widget"=?, "settings"=? WHERE "fid"=?', json.fields.insert[i].type , json.fields.insert[i].field_name , json.fields.insert[i].label , json.fields.insert[i].description , json.fields.insert[i].bundle , json.fields.insert[i].weight, json.fields.insert[i].required , var_widget , var_settings, json.fields.insert[i].fid );
+							db_installMe.execute('UPDATE fields SET "type"=?, "field_name"=?, "label"=?, "description"=?, "bundle"=?, "weight"=?, "required"=?, "widget"=?, "settings"=? WHERE "fid"=?', json.fields.insert[i].type , json.fields.insert[i].field_name , json.fields.insert[i].label , json.fields.insert[i].description , json.fields.insert[i].bundle , json.fields.insert[i].weight, json.fields.insert[i].required , var_widget , var_settings, json.fields.insert[i].fid );
 						}
 					}
 					else{
+							//Increment Progress Bar
+							progress.set();
 							var_widget = JSON.stringify(json.fields.update.widget);
 							var_settings = JSON.stringify(json.fields.update.settings); 
-							db.execute('UPDATE fields SET "type"=?, "field_name"=?, "label"=?, "description"=?, "bundle"=?, "weight"=?, "required"=?, "widget"=?, "settings"=? WHERE "fid"=?', json.fields.insert.type , json.fields.insert.field_name , json.fields.insert.label , json.fields.insert.description , json.fields.insert.bundle , json.fields.insert.weight, json.fields.insert.required , var_widget, var_settings, json.fields.insert.fid );
+							db_installMe.execute('UPDATE fields SET "type"=?, "field_name"=?, "label"=?, "description"=?, "bundle"=?, "weight"=?, "required"=?, "widget"=?, "settings"=? WHERE "fid"=?', json.fields.insert.type , json.fields.insert.field_name , json.fields.insert.label , json.fields.insert.description , json.fields.insert.bundle , json.fields.insert.weight, json.fields.insert.required , var_widget, var_settings, json.fields.insert.fid );
 					}
 				}
 				
 				/*
 				 * Delete fields from fields table
 				 * Needs to be implemented from the server side
-				 */
-				/*
+				 *
+				 * 
 				if (json.fields["delete"]){
 					if (json.fields["delete"].length){
 						for (var i = 0; i < json.fields["delete"].length; i++ ){
 							//Deletes rows from terms
-							db.execute('DELETE FROM fields WHERE "fid"=?',json.fields["delete"][i].vid);											
+							db_installMe.execute('DELETE FROM fields WHERE "fid"=?',json.fields["delete"][i].vid);											
 						}
 					}
 					else{
 						//Deletes row from terms
-						db.execute('DELETE FROM term_data WHERE "vid"=?',json.vocabularies["delete"].vid);							
+						db_installMe.execute('DELETE FROM term_data WHERE "vid"=?',json.vocabularies["delete"].vid);							
 						
 						//Deletes corresponding row in vocabulary
-						db.execute('DELETE FROM vocabulary WHERE "vid"=?',json.vocabularies["delete"].vid);				
+						db_installMe.execute('DELETE FROM vocabulary WHERE "vid"=?',json.vocabularies["delete"].vid);				
 					}
 				}
 				*/
+
+				var iPerform = 0;
+				var iStart = Math.round(new Date().getTime() / 1000);
+				Ti.API.info("Fields started at : "+iStart);
+
+				db_installMe.execute("BEGIN IMMEDIATE TRANSACTION");
+				while (iPerform <= perform.length - 1 ){
+					db_installMe.execute(perform[iPerform]);
+					iPerform++;
+				}
+				db_installMe.execute("COMMIT TRANSACTION");
+				
+				var iEnd = Math.round(new Date().getTime() / 1000);
+				Ti.API.info("Fields finishes at : "+iEnd);
+				
+				var iResult = iEnd - iStart;
+				Ti.API.info('Fields seconds: '+ iResult);
+				Ti.API.info("Success for fields, it was inserted!");
 				
 			} 
 			
+			//
+			//Retrieve objects that need quotes:
+			//
+			var iStart = Math.round(new Date().getTime() / 1000);
+			Ti.API.info("Finding proccess started at : "+iStart);
+
+			var need_at = db_installMe.execute("SELECT field_name,bundle FROM fields WHERE type='number_integer' OR type='number_decimal' ");
+			
+			var quotes = new Array(); 
+			
+			while (need_at.isValidRow()){
+				quotes[need_at.fieldByName('field_name')] = new Array(); 
+				quotes[need_at.fieldByName('field_name')][need_at.fieldByName('bundle')] = true;
+				need_at.next();
+			}
+			
+			var iEnd = Math.round(new Date().getTime() / 1000);
+			Ti.API.info("Finding proccess ended at : "+iEnd);
+			
+			var iResult = iEnd - iStart;
+			Ti.API.info('Found in seconds: '+ iResult);
+			Ti.API.info("Success for finding!");
+			
+			for (var index in quotes ){
+				for (var jndex in quotes[index])
+					Ti.API.info("For index "+index+" in "+jndex+" we got "+quotes[index][jndex]);
+			}
+			
 			//Vocabulary:
 			if (json.vocabularies){
+				Ti.API.info('Vocabularies');
 				if (json.vocabularies.insert){
+					var perform_vocabulary = [];
 					if (json.vocabularies.insert.length){
 						for (var i = 0; i < json.vocabularies.insert.length; i++ ){
+							//Increment Progress Bar
+							progress.set();
 							var vid_v = json.vocabularies.insert[i].vid;
 							var name_v = json.vocabularies.insert[i].name;
 							var machine_v = json.vocabularies.insert[i].machine_name;
@@ -1028,10 +1308,13 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 							if (machine_v == null)
 								machine_v = "";
 							//Ti.API.info("About to insert vocabulary: "+vid_v);
-							db.execute('INSERT INTO vocabulary (vid, name, machine_name) VALUES (?,?,?)', vid_v , name_v, machine_v);				
+							perform_vocabulary[perform_vocabulary.length] = 'INSERT INTO vocabulary (vid, name, machine_name) VALUES ('+vid_v+',"'+name_v+'","'+machine_v+'")'; 				
 						}
 					}
 					else{
+							//Increment Progress Bar
+							progress.set();
+
 							var vid_v = json.vocabularies.insert.vid;
 							var name_v = json.vocabularies.insert.name;
 							var machine_v = json.vocabularies.insert.machine_name;
@@ -1042,57 +1325,88 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 							if (machine_v == null)
 								machine_v = "";
 							//Ti.API.info("About to insert vocabulary: "+vid_v);
-							db.execute('INSERT INTO vocabulary (vid, name, machine_name) VALUES (?,?,?)', vid_v , name_v, machine_v);						
+							perform_vocabulary[perform_vocabulary.length] = 'INSERT INTO vocabulary (vid, name, machine_name) VALUES ('+vid_v+',"'+name_v+'","'+machine_v+'")';
 					}
-					//Ti.API.info("Vocabulary inserted!");
+					
 				}
 				if (json.vocabularies.update){
 					if (json.vocabularies.update.length){
 						for (var i = 0; i < json.vocabularies.update.length; i++ ){
+							//Increment Progress Bar
+							progress.set();
+
 							//Ti.API.info("About to update vocabulary: "+json.vocabularies.update[i].vid);
-							db.execute('UPDATE vocabulary SET "name"=?, "machine_name"=? WHERE "vid"=?',json.vocabularies.update[i].name, json.vocabularies.update[i].machine_name, json.vocabularies.update[i].vid);
+							perform_vocabulary[perform_vocabulary.length] =  'UPDATE vocabulary SET "name"="'+json.vocabularies.update[i].name+'", "machine_name"="'+json.vocabularies.update[i].machine_name+'" WHERE "vid"='+json.vocabularies.update[i].vid;
 						}
 					}
 					else{
+							//Increment Progress Bar
+							progress.set();
+
 							//Ti.API.info("About to update vocabulary: "+json.vocabularies.update.vid);
-							db.execute('UPDATE vocabulary SET "name"=?, "machine_name"=? WHERE "vid"=?',json.vocabularies.update.name, json.vocabularies.update.machine_name, json.vocabularies.update.vid);						
+							perform_vocabulary[perform_vocabulary.length] =  'UPDATE vocabulary SET "name"="'+json.vocabularies.update.name+'", "machine_name"="'+json.vocabularies.update.machine_name+'" WHERE "vid"='+json.vocabularies.update.vid;						
 					}
-					//Ti.API.info("Vocabulary updated!");
+					Ti.API.info("Vocabulary updated!");
 				}
 				if (json.vocabularies["delete"]){
 					if (json.vocabularies["delete"].length){
 						for (var i = 0; i < json.vocabularies["delete"].length; i++ ){
+							//Increment Progress Bar
+							progress.set();
+
 							//Ti.API.info("About to delete vocabulary: "+json.vocabularies["delete"][i].vid);
 							//Deletes rows from terms
-							db.execute('DELETE FROM term_data WHERE "vid"=?',json.vocabularies["delete"][i].vid);							
+							perform_vocabulary[perform_vocabulary.length] = 'DELETE FROM term_data WHERE "vid"='+json.vocabularies["delete"][i].vid;							
 							
 							//Deletes corresponding rows in vocabulary
-							db.execute('DELETE FROM vocabulary WHERE "vid"=?',json.vocabularies["delete"][i].vid);				
+							perform_vocabulary[perform_vocabulary.length] = 'DELETE FROM vocabulary WHERE "vid"='+json.vocabularies["delete"][i].vid;
 						}
 					}
 					else{
-							//Ti.API.info("About to delete vocabulary: "+json.vocabularies["delete"].vid);
+						//Ti.API.info("About to delete vocabulary: "+json.vocabularies["delete"].vid);
+
+						//Increment Progress Bar
+						progress.set();
 
 						//Deletes row from terms
-						db.execute('DELETE FROM term_data WHERE "vid"=?',json.vocabularies["delete"].vid);							
+						perform_vocabulary[perform_vocabulary.length] = 'DELETE FROM term_data WHERE "vid"='+json.vocabularies["delete"].vid;							
 						
 						//Deletes corresponding row in vocabulary
-						db.execute('DELETE FROM vocabulary WHERE "vid"=?',json.vocabularies["delete"].vid);				
+						perform_vocabulary[perform_vocabulary.length] = 'DELETE FROM vocabulary WHERE "vid"='+json.vocabularies["delete"].vid;				
 					}
-					//Ti.API.info("Vocabulary deleted!");
+					Ti.API.info("Vocabulary deleted!");
 				}
+				var iVocabulary = 0;
+					
+				var iStart = Math.round(new Date().getTime() / 1000);
+				Ti.API.info("Vocabulary started at : "+iStart);
+
+				db_installMe.execute("BEGIN IMMEDIATE TRANSACTION");
+				while (iVocabulary <= perform_vocabulary.length-1 ){
+					db_installMe.execute(perform_vocabulary[iVocabulary]);
+					iVocabulary++;
+				}
+				db_installMe.execute("COMMIT TRANSACTION");
 				
+				var iEnd = Math.round(new Date().getTime() / 1000);
+				Ti.API.info("Vocabulary finishes at : "+iEnd);
+				
+				var iResult = iEnd - iStart;
+				Ti.API.info('Vocabulary seconds: '+ iResult);
+
+				Ti.API.info("Vocabulary inserted!");
 			} 
 			//Terms:
 			if (json.terms){
+				Ti.API.info('Terms');
 				if (json.terms.insert){
+					var perform_term = [];
 					if (json.terms.insert.length){
 						for (var i = 0; i < json.terms.insert.length; i++ ){
-							////Ti.API.info("Vid: "+json.terms.insert[i].vid);
-							////Ti.API.info("Tid: "+json.terms.insert[i].tid);
-							////Ti.API.info("Name: "+json.terms.insert[i].name);
-							////Ti.API.info("Description: "+json.terms.insert[i].description);
-							////Ti.API.info("Weight: "+json.terms.insert[i].weight);
+
+							//Increment Progress Bar
+							progress.set();
+
 							
 							var vid_t = json.terms.insert[i].vid;
 							var tid_t = json.terms.insert[i].tid;
@@ -1104,12 +1418,17 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 								desc_t = "";
 							if (name_t == null)
 								name_t = "";
-								
+							if (weight_t == null)
+								weight_t = "";
+																
 							//Ti.API.info("About to insert term: "+tid_t);  	
-							db.execute('INSERT INTO term_data ( tid , vid, name, description, weight) VALUES (?,?,?,?,?)', tid_t, vid_t, name_t, desc_t, weight_t);				
+							perform_term [perform_term.length] = 'INSERT INTO term_data ( tid , vid, name, description, weight) VALUES ('+tid_t+','+vid_t+',"'+name_t+'","'+desc_t+'","'+weight_t+'")';
 						}
 					}
 					else{
+							//Increment Progress Bar
+							progress.set();
+
 							var vid_t = json.terms.insert.vid;
 							var tid_t = json.terms.insert.tid;
 							var name_t = json.terms.insert.name;
@@ -1120,200 +1439,308 @@ function installMe(pageIndex, win, timeIndex, calledFrom)
 								desc_t = "";
 							if (name_t == null)
 								name_t = "";
+							if (weight_t == null)
+								weight_t = "";
 
 							//Ti.API.info("About to insert term: "+tid_t);
-							db.execute('INSERT INTO term_data ( tid , vid, name, description, weight) VALUES (?,?,?,?,?)', tid_t, vid_t, name_t, desc_t, weight_t);						
+							perform_term [perform_term.length] = 'INSERT INTO term_data ( tid , vid, name, description, weight) VALUES ('+tid_t+','+vid_t+',"'+name_t+'","'+desc_t+'","'+weight_t+'")';
 					}
+					
 				}
 				if (json.terms.update){
 					if (json.terms.update.length){
 						for (var i = 0; i < json.terms.update.length; i++ ){
+							//Increment Progress Bar
+							progress.set();
+
 							//Ti.API.info("About to update term: "+json.terms.update[i].tid);							
-							db.execute('UPDATE term_data SET "name"=?, "description"=?,  "weight"=?, "vid"=?  WHERE "tid"=?', json.terms.update[i].name, json.terms.update[i].description, json.terms.update[i].weight, json.terms.update[i].vid, json.terms.update[i].tid);
+							perform_term[perform_term.length] = 'UPDATE term_data SET "name"="'+json.terms.update[i].name+'", "description"="'+json.terms.update[i].description+'",  "weight"="'+json.terms.update[i].weight+'", "vid"='+json.terms.update[i].vid+'  WHERE "tid"='+json.terms.update[i].tid;
 						}
 					}
 					else{
+							//Increment Progress Bar
+							progress.set();
+
 							//Ti.API.info("About to update term: "+json.terms.update.tid);
-							db.execute('UPDATE term_data SET "name"=?, "description"=?,  "weight"=?, "vid"=?  WHERE "tid"=?', json.terms.update.name, json.terms.update.description, json.terms.update.weight, json.terms.update.vid, json.terms.update.tid);						
+							perform_term[perform_term.length] = 'UPDATE term_data SET "name"="'+json.terms.update.name+'", "description"="'+json.terms.update.description+'",  "weight"="'+json.terms.update.weight+'", "vid"='+json.terms.update.vid+'  WHERE "tid"='+json.terms.update.tid;						
 					}
 				}
 				if (json.terms["delete"]){
 					if (json.terms["delete"].length){
 						for (var i = 0; i < json.terms["delete"].length; i++ ){
+							//Increment Progress Bar
+							progress.set();
+
 							//Ti.API.info("About to delete term: "+json.terms["delete"][i].tid);
-							db.execute('DELETE FROM term_data WHERE "tid"=?',json.terms["delete"][i].tid);
+							perform_term[perform_term.length] = 'DELETE FROM term_data WHERE "tid"='+json.terms["delete"][i].tid;
 						}
 					}
 					else{
+						//Increment Progress Bar
+						progress.set();
+
 						//Ti.API.info("About to delete term: "+json.terms["delete"].tid);
-						db.execute('DELETE FROM term_data WHERE "tid"=?',json.terms["delete"].tid);
+						perform_term[perform_term.length] = 'DELETE FROM term_data WHERE "tid"='+json.terms["delete"].tid;
 					}
 				}
-			}
-			
-			var callback;
-			
-			/*********** Account *************/
-			if (json.account){
-				callback = process_object(json, "account");
-			}
-			
-			/*********** Lead *************/
-			if (json.lead){
-				callback = process_object(json, "lead");
-			}
-			
-			/*********** Contact *************/
-			if (json.contact){
-				callback = process_object(json, "contact");
-			}
 
-			/*********** Potentials *************/
-			if(json.potential){
-				callback = process_object(json, "potential");
+				var iTerm = 0;
+				
+				var iStart = Math.round(new Date().getTime() / 1000);
+				Ti.API.info("Term started at : "+iStart);
+
+				db_installMe.execute("BEGIN IMMEDIATE TRANSACTION");
+				while (iTerm <= perform_term.length-1 ){
+					db_installMe.execute(perform_term[iTerm]);
+					iTerm++;
+				}
+				db_installMe.execute("COMMIT TRANSACTION");
+				
+				var iEnd = Math.round(new Date().getTime() / 1000);
+				Ti.API.info("Term finishes at : "+iEnd);
+				
+				var iResult = iEnd - iStart;
+				Ti.API.info('Term seconds: '+ iResult);
+				Ti.API.info('Terms were succefully installed');
+				
 			}
 			
-			/*********** Boot *************/
-			//It doesn't have nodes, wait Chris come up with new API
-			// if(json.boot){
-			//	callback = process_object(json, "boot");
-			//}
+			// Adds new itemns to menu and also processes each object
+			var callback;
+			var n_bund = db_installMe.execute('SELECT * FROM bundles');
+			var take = db_installMe.execute('SELECT * FROM bundles WHERE display_on_menu="true"');
+			var count_t = 0;
 			
-			/*********** task *************/
-			//It doesn't have nodes, wait Chris come up with new API
-			// if(json.task){
-			//	callback = process_object(json, "task");
-			//}
+			while ( n_bund.isValidRow() ){
+				var name_table = n_bund.fieldByName("bundle_name");
+				if ( (json.node) && (json.node[name_table]) ){
+						Ti.API.info('##### Called '+name_table);
+						callback = process_object(json.node, name_table , quotes, progress);
+
+						//Hides the image alert:
+						if ( (take.rowCount === 0 ) && (count_t === 0) ){
+							var zoomImage = Titanium.UI.createAnimation();
+							t = Ti.UI.create2DMatrix();
+							t = t.scale(0);
+							zoomImage.transform = t;
+							zoomImage.duration = 1400;
+							img.animate(zoomImage);
+							
+							zoomImage.addEventListener('complete', function(){
+								win.remove(img);
+							});
+							
+							count_t++;
+						}
+
+						//Add it to the main screen
+						var display      = n_bund.fieldByName("display_name");
+						var description  = n_bund.fieldByName("description");
+						var flag_display = n_bund.fieldByName("display_on_menu");
+						var id 			 = n_bund.fieldByName("bid");
+						
+						if (flag_display == 'false'){
+							var row_try = Ti.UI.createTableViewRow({
+									height      : 60,	
+									hasChild    : true,
+									title       : display,
+									description : description,
+									name_table  : name_table
+							});
+							menu.appendRow(row_try);
+							db_installMe.execute('UPDATE bundles SET display_on_menu =\'true\' WHERE bid='+id);
+						}
+						
+				}
+				n_bund.next();
+			}
+			n_bund.close();
 			
 			/*********** Users *************/
 			if(json.users){
+				
+				var perform_user = [];
+				
 				//Insert - Users
 				if (json.users.insert){
 					if (json.users.insert.length){
 						for (var i = 0; i < json.users.insert.length; i++ ){
-							//Ti.API.info("USER UID: "+json.users.insert[i].uid);
-							db.execute('INSERT INTO users (uid, username, mail, realname, status ) VALUES (?,?,?,?,?)', json.users.insert[i].uid, json.users.insert[i].username, json.users.insert[i].mail, json.users.insert[i].realname, json.users.insert[i].status);
+							//Increment Progress Bar
+							progress.set();
+
+							Ti.API.info("USER UID: "+json.users.insert[i].uid);
+							//db_installMe.execute('INSERT INTO users (uid, username, mail, realname, status ) VALUES (?,?,?,?,?)', json.users.insert[i].uid, json.users.insert[i].username, json.users.insert[i].mail, json.users.insert[i].realname, json.users.insert[i].status);
+							perform_user[perform_user.length] = 'INSERT INTO user (uid, username, mail, realname, status ) VALUES ('+json.users.insert[i].uid+',"'+json.users.insert[i].username+'","'+json.users.insert[i].mail+'","'+json.users.insert[i].realname+'",'+json.users.insert[i].status+')';
+							
 							if (json.users.insert[i].roles.length){
 								for (var j = 0; j < json.users.insert[i].roles.length; j++ ){
-									db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.insert[i].uid, json.users.insert[i].roles[j]);
+									//db_installMe.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.insert[i].uid, json.users.insert[i].roles[j]);
+									perform_user[perform_user.length] = 'INSERT INTO user_roles (uid, rid ) VALUES ('+json.users.insert[i].uid+','+json.users.insert[i].roles[j]+')';
 								}
 							}
 							else{
-								db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.insert[i].uid, json.users.insert[i].roles);
+								//db_installMe.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.insert[i].uid, json.users.insert[i].roles);
+								perform_user[perform_user.length] = 'INSERT INTO user_roles (uid, rid ) VALUES ('+json.users.insert[i].uid+','+json.users.insert[i].roles+')';
 							}
 						}
 					}
 					else{
-						db.execute('INSERT INTO users (uid, username, mail, realname, status ) VALUES (?,?,?,?,?)', json.users.insert.uid, json.users.insert.username, json.users.insert.mail, json.users.insert.realname, json.users.insert.status);
+						//Increment Progress Bar
+						progress.set();
+
+						
+						//db_installMe.execute('INSERT INTO users (uid, username, mail, realname, status ) VALUES (?,?,?,?,?)', json.users.insert.uid, json.users.insert.username, json.users.insert.mail, json.users.insert.realname, json.users.insert.status);
+						perform_user[perform_user.length] = 'INSERT INTO user (uid, username, mail, realname, status ) VALUES ('+json.users.insert.uid+',"'+json.users.insert.username+'","'+json.users.insert.mail+'","'+json.users.insert.realname+'",'+json.users.insert.status+')';
 						
 						if (json.users.insert.roles.length){
 							for (var j = 0; j < json.users.insert.roles.length; j++ ){
-								db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.insert.uid, json.users.insert.roles[j]);
+								//db_installMe.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.insert.uid, json.users.insert.roles[j]);
+								perform_user[perform_user.length] = 'INSERT INTO user_roles (uid, rid ) VALUES ('+json.users.insert.uid+','+json.users.insert.roles[j]+')' ; 
 							}
 						}
 						else{
-							db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.insert.uid, json.users.insert.roles);
+							//db_installMe.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.insert.uid, json.users.insert.roles);
+							perform_user[perform_user.length] = 'INSERT INTO user_roles (uid, rid ) VALUES ('+json.users.insert.uid+','+json.users.insert.roles+')';
 						}
 					}
-					//Ti.API.info("Inserted users sucefully!");
+					Ti.API.info("Inserted users sucefully!");
 				}
 
 				//Update - Users
 				if (json.users.update){
 					if (json.users.update.length){
 						for (var i = 0; i < json.users.update.length; i++ ){
-							db.execute('UPDATE users SET "username"=? , "mail"=?, "realname"=?, "status"=? WHERE "uid"=?', json.users.update[i].username, json.users.update[i].mail, json.users.update[i].realname, json.users.update[i].status, json.users.update[i].uid );
+							//Increment Progress Bar
+							progress.set();
+
+							//db_installMe.execute('UPDATE users SET "username"=? , "mail"=?, "realname"=?, "status"=? WHERE "uid"=?', json.users.update[i].username, json.users.update[i].mail, json.users.update[i].realname, json.users.update[i].status, json.users.update[i].uid );
+							perform_user[perform_user.length] = 'UPDATE user SET "username"="'+json.users.update[i].username+'" , "mail"="'+json.users.update[i].mail+'", "realname"="'+json.users.update[i].realname+'", "status"='+json.users.update[i].status+' WHERE "uid"='+json.users.update[i].uid;
 							
 							//Delete every row present at user_roles
-							db.execute('DELETE FROM user_roles WHERE "uid"=?', json.users.update[i].uid);
+							//db_installMe.execute('DELETE FROM user_roles WHERE "uid"=?', json.users.update[i].uid);
+							
+							perform_user[perform_user.length] = 'DELETE FROM user_roles WHERE "uid"='+json.users.update[i].uid ;
 							
 							//Insert it over again!
 							if(json.users.update[i].roles){
 								
 								if (json.users.update[i].roles.length){
 									for (var j = 0; j < json.users.update[i].roles.length ; j++ ){
-										db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.update[i].uid, json.users.update[i].roles[j]);
+										perform_user[perform_user.length] = 'INSERT INTO user_roles (uid, rid ) VALUES ('+json.users.update[i].uid+','+json.users.update[i].roles[j]+')';
 									}							
 								}
 								else{
-									db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.update[i].uid, json.users.update[i].roles);
+									//db_installMe.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.update[i].uid, json.users.update[i].roles);
+									perform_user[perform_user.length] = 'INSERT INTO user_roles (uid, rid ) VALUES ('+json.users.update[i].uid+','+json.users.update[i].roles+')';
 								}
 							}
 						}
 					}
 					else{
-						db.execute('UPDATE users SET "username"=? , "mail"=?, "realname"=?, "status"=? WHERE "uid"=?', json.users.update.username, json.users.update.mail, json.users.update.realname, json.users.update.status, json.users.update.uid );
-							
+						//Increment Progress Bar
+						progress.set();
+
+
+						//db_installMe.execute('UPDATE users SET "username"=? , "mail"=?, "realname"=?, "status"=? WHERE "uid"=?', json.users.update.username, json.users.update.mail, json.users.update.realname, json.users.update.status, json.users.update.uid );
+						perform_user[perform_user.length] = 'UPDATE user SET "username"="'+json.users.update.username+'" , "mail"="'+json.users.update.mail+'", "realname"="'+json.users.update.realname+'", "status"='+json.users.update.status+' WHERE "uid"='+json.users.update.uid;
 						//Delete every row present at user_roles
-						db.execute('DELETE FROM user_roles WHERE "uid"=?', json.users.update.uid);
+						//db_installMe.execute('DELETE FROM user_roles WHERE "uid"=?', json.users.update.uid);
+						
+						perform_user[perform_user.length] = 'DELETE FROM user_roles WHERE "uid"='+json.users.update.uid;
 						
 						//Insert it over again!
 						if(json.users.update.roles){
 							if (json.users.update.roles.length){
 								for (var j = 0; j < json.users.update.roles.length ; j++ ){
-									db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.update.uid, json.users.update.roles[j]);
+									//db_installMe.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.update.uid, json.users.update.roles[j]);
+									perform_user[perform_user.length] = 'INSERT INTO user_roles (uid, rid ) VALUES ('+json.users.update.uid+','+json.users.update.roles[j]+')';
 								}							
 							}
 							else{
-								db.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.update.uid, json.users.update.roles);
+								//db_installMe.execute('INSERT INTO user_roles (uid, rid ) VALUES (?,?)', json.users.update.uid, json.users.update.roles);
+								perform_user[perform_user.length] = 'INSERT INTO user_roles (uid, rid ) VALUES ('+json.users.update.uid+','+json.users.update.roles+')';
 							}
 						}
 					}
-					//Ti.API.info("Updated Users sucefully!");
+					Ti.API.info("Updated Users sucefully!");
 				}
 				
 				//Delete - Users
 				if (json.users["delete"])	{
 					if (json.users["delete"].length){
 						for (var i = 0; i <  json.users["delete"].length; i++ ){
+							//Increment Progress Bar
+							progress.set();
+
+
 							//Deletes current row (contact)
-							db.execute('DELETE FROM users WHERE "uid"=?', json.users["delete"][i].uid);
-							db.execute('DELETE FROM user_roles WHERE "uid"=?', json.users["delete"][i].uid);
+							//db_installMe.execute('DELETE FROM users WHERE "uid"=?', json.users["delete"][i].uid);
+							perform_user[perform_user.length] = 'DELETE FROM user WHERE "uid"='+json.users["delete"][i].uid ;
 							
+							//db_installMe.execute('DELETE FROM user_roles WHERE "uid"=?', json.users["delete"][i].uid);
+							perform_user[perform_user.length] = 'DELETE FROM user_roles WHERE "uid"='+json.users["delete"][i].uid;
 						}
 					}
 					else{
-						db.execute('DELETE FROM users WHERE "uid"=?', json.users["delete"].uid);
-						db.execute('DELETE FROM user_roles WHERE "uid"=?', json.users["delete"].uid);
+						//Increment Progress Bar
+						progress.set();
+
+
+						//db_installMe.execute('DELETE FROM users WHERE "uid"=?', json.users["delete"].uid);
+						perform_user[perform_user.length] = 'DELETE FROM user WHERE "uid"='+json.users["delete"].uid;
+						
+						//db_installMe.execute('DELETE FROM user_roles WHERE "uid"=?', json.users["delete"].uid);
+						perform_user[perform_user.length] = 'DELETE FROM user_roles WHERE "uid"='+json.users["delete"].uid;
 					}
-				//Ti.API.info("Deleted Users sucefully!");
+				Ti.API.info("Deleted Users sucefully!");
 				}
+				
+				
+				var iUser = 0;
+				
+				var iStart = Math.round(new Date().getTime() / 1000);
+				Ti.API.info("User started at : "+iStart);
+	
+				db_installMe.execute("BEGIN IMMEDIATE TRANSACTION");
+				while (iUser <= perform_user.length-1 ){
+					db_installMe.execute(perform_user[iUser]);
+					iUser++;
+				}
+				db_installMe.execute("COMMIT TRANSACTION");
+				
+				var iEnd = Math.round(new Date().getTime() / 1000);
+				Ti.API.info("User finishes at : "+iEnd);
+				
+				var iResult = iEnd - iStart;
+				Ti.API.info('User seconds: '+ iResult);
+	
+				Ti.API.info("User ended!");
 				
 			}
 			
-			//Ti.API.info("SUCCESS");
 			if ( existsMorePages ){
-				installMe(pageIndex, win, timeIndex, calledFrom);
+				Ti.API.info('Another Call');
+				installMe(pageIndex, win, json.sync_timestamp, progress, menu, img);
 			}
-				
 			else{
-				//Ti.API.info('Called from value: '+calledFrom);
-				if ( calledFrom == "settings")
-					hideIndicator();
-				else{
-					isFirstTime = false;
-					label_status.text = version;
-				}
-
 				Titanium.App.Properties.setBool("UpRunning", false);
-				//Success
-				Titanium.App.Properties.setBool("succesSync", true);
-			}
+				Ti.API.info('Is there an update happening? '+Titanium.App.Properties.getBool("UpRunning"));
+				Ti.API.info("SUCCESS");
+				progress.close();
+				Ti.API.info('Called from value: '+calledFrom);
+				db_installMe.close();
 
+			}
 		}
 	}
+	
 	//Connection error:
 	objectsUp.onerror = function(e) {
-		//Ti.API.info("Services are down");
-		if ( calledFrom == "settings")
-			hideIndicator();
-		else{
-			//Ti.API.info('Called from value: '+calledFrom);
-			label_status.text = version;					
-		}
 		Titanium.App.Properties.setBool("UpRunning", false);
-		//Failure
-		Titanium.App.Properties.setBool("succesSync", false);
+		progress.close();
+		db_installMe.close();
+		Ti.API.info("Services are down");
+		Ti.API.info('Called from value: '+calledFrom);
 	}
 	//Sending information and try to connect
 	objectsUp.send();
@@ -1368,446 +1795,16 @@ function openBigText(descAux){
 }
 
 
-//Display contents for any type of object
-
-function display_content (){
-
-	while (fields_result.isValidRow()){
-		
-		fields[fields_result.fieldByName('field_name')] = new Array(); 
-		fields[fields_result.fieldByName('field_name')]['label']  = fields_result.fieldByName('label');
-		fields[fields_result.fieldByName('field_name')]['type']  = fields_result.fieldByName('type');
-		
-		c_index++;
-		fields_result.next();
-	}
-	
-	if (c_index > 0){
-		var c_type = [];
-		var c_label = [];
-		var c_content = [];
-		var c_settings = [];
-		
-		for (var f_name_f in fields ){
-			//Ti.API.info(f_name_f+" => "+results.fieldByName(f_name_f)+" => "+fields[f_name_f]['type']);
-			if (results.fieldByName(f_name_f) != null){
-			
-				//fields from Fields table that match with current object
-				c_type[count]   	= fields[f_name_f]['type'];
-				c_label[count]		= fields[f_name_f]['label'];
-				c_settings[count]	= fields[f_name_f]['settings'];
-				
-				
-				//Content
-				c_content[count] = results.fieldByName(f_name_f);
-				
-				switch(c_type[count]){
-					
-					//Treatment follows the same for text or text_long
-					case 'text':
-					case 'text_long':
-						label[count]  = Ti.UI.createLabel({
-							text: c_label[count],
-							width:  "33%", 
-							left: 5,
-							textAlign: 'left',
-							touchEnabled: false
-						});
-					
-
-						var openDescWin = false;
-						
-						if (c_content[count].length > 45){
-							c_content[count] = c_content[count].substring(0,45);
-							c_content[count] = c_content[count]+"...";
-							openDescWin = true;
-						}
-						
-						content[count] = Ti.UI.createLabel({
-							text: ""+c_content[count],
-							width:  "100%",
-							height: "100%",
-							textAlign: 'left',
-							left: "33%",
-							id: count,
-							open: openDescWin,
-							w_content:c_content[count]
-						});
-	
-						content[count].addEventListener('click', function(e){
-							highlightMe(e.source.id);
-							if (e.source.open)
-							{
-								openBigText(e.source.w_content);
-							}
-						});
-						count++;
-					break;
-					
-					
-					//Phone
-					case 'phone':
-						label[count] = Ti.UI.createLabel({
-							text: c_label[count],
-							width:  "33%",
-							textAlign: 'left',
-							left: 5,
-							touchEnabled: false
-						});
-						 
-						content[count] = Ti.UI.createLabel({
-							text: ""+c_content[count],
-							width:  "100%",
-							height: "100%",
-							textAlign: 'left',
-							left: "33%",
-							id: count,
-							number: c_content[count].replace(/\D/g, '' )
-						});
-											
-						content[count].addEventListener('click', function(e){
-							highlightMe( e.source.id);
-							Titanium.Platform.openURL('tel:'+e.source.number);
-						});
-					
-						content[count].text = ""+c_content[count];
-						count++;
-					break;
-					
-					//Refers to some object:
-					case 'omadi_reference':
-						var auxRes  = db.execute('SELECT DISTINCT node.title FROM node INNER JOIN account ON node.nid='+c_content[count]);
-						ref_name = auxRes.fieldByName("title");
-						auxRes.close();
-						
-						label[count] = Ti.UI.createLabel({
-							text: c_label[count],
-							width:  "33%",
-							textAlign: 'left',
-							left: 5,
-							touchEnabled: false
-						});
-						
-						content[count] = Ti.UI.createLabel({
-							text: ""+ref_name,
-							width:  "100%",
-							height: "100%",
-							textAlign: 'left',
-							left: "33%",
-							id: count,
-							nid: c_content[count]
-						});
-						
-						// When account is clicked opens a modal window to show off the content of the specific touched
-						// object.
-						
-						content[count].addEventListener('click', function(e){
-							highlightMe( e.source.id );
-							var newWin = Ti.UI.createWindow({
-								fullscreen: true,
-								title:'Account',
-								url: "individual_object.js"
-							});
-							
-							newWin.nameSelected  = ref_name;
-							newWin.type = "account";
-							newWin.nid = e.source.nid;
-							newWin.open();
-						});
-						
-						count++;
-					break;
-									
-					//Must open browser if clicked
-					case 'link_field':
-						label[count] = Ti.UI.createLabel({
-							text: c_label[count],
-							width:  "100%",
-							height: "100%",
-							textAlign: 'left',
-							left: 5,
-							touchEnabled: false
-						});
-					
-						content[count] = Ti.UI.createLabel({
-							text: ""+c_content[count],
-							width:  "100%",
-							height: "100%",
-							textAlign: 'left',
-							left: "33%",
-							address: c_content[count].replace("http://",""),
-							id: count
-						});
-										
-						content[count].addEventListener('click', function(e){
-							highlightMe( e.source.id );
-							//website = website.replace("http://","");
-							Titanium.Platform.openURL(e.source.address);
-						});
-	
-						count++;
-					break;
-									
-					//Must open mail client if clicked - Not supported by Android yet
-					case 'email':
-						label[count] = Ti.UI.createLabel({
-							text: c_label[count],
-							width:  "33%",
-							textAlign: 'left',
-							left: 5,
-							touchEnabled: false
-						});
-						
-						content[count] = Ti.UI.createLabel({
-							text: ""+c_content[count],
-							width:  "100%",
-							height: "100%",
-							textAlign: 'left',
-							left: "33%",
-							id: count,
-							email: c_content[count]
-						});
-	
-						content[count].addEventListener('click', function(e){
-							highlightMe( e.source.id );
-							var emailDialog = Titanium.UI.createEmailDialog();
-							emailDialog.subject = "Omadi CRM";
-							emailDialog.toRecipients = e.source.email;
-							emailDialog.open();
-						});
-						count++;
-	
-					break;
-									
-					//Link to taxonomy table:
-					case 'taxonomy_term_reference':
-						//Ti.API.info('Conteúdo: '+c_content[count]);
-						var auxRes  = db.execute('SELECT * FROM term_data WHERE tid = '+c_content[count]);
-						//Ti.API.info('Temos : '+ auxRes.rowCount +' linhas no resultado');
-						var ref_name = auxRes.fieldByName("name");
-						auxRes.close();
-					
-						label[count] = Ti.UI.createLabel({
-							text: c_label[count],
-							width:  "30%",
-							textAlign: 'left',
-							left: 5,
-							touchEnabled: false
-						});
-						
-						content[count] = Ti.UI.createLabel({
-							text: ""+ref_name,
-							width:  "100%",
-							height: "100%",
-							textAlign: 'left',
-							left: "33%",
-							id: count
-						}); 
-	
-						content[count].addEventListener('click', function(e){
-							highlightMe( e.source.id );
-						});
-						count++;
-	
-					break;
-									
-					//Just prints the user_reference .. If references table users, link to it
-					case 'user_reference':
-						var auxRes  = db.execute('SELECT realname FROM users WHERE uid = '+c_content[count]);
-						var ref_name = "";
-						if (auxRes.isValidRow())
-							ref_name = auxRes.fieldByName("realname");
-						else
-							ref_name = "Not defined";
-						auxRes.close();
-						
-						label[count] = Ti.UI.createLabel({
-							text: c_label[count],
-							width:  "33%",
-							textAlign: 'left',
-							left: 5,
-							touchEnabled: false
-						});
-						
-						content[count] = Ti.UI.createLabel({
-							text: ""+ref_name,
-							width:  "100%",
-							height: "100%",
-							textAlign: 'left',
-							left: "33%",
-							id: count
-						});
-						
-						content[count].addEventListener('click', function(e){
-							//Ti.API.info("X = "+e.source.id);
-							highlightMe( e.source.id );
-						});
-						
-						count++;
-	
-					break;
-									
-					//Formats as decimal
-					case 'number_decimal':
-						label[count] = Ti.UI.createLabel({
-							text: c_label[count],
-							width:  "33%",
-							textAlign: 'left',
-							left: 5,
-							touchEnabled: false
-						});
-						
-						content[count] = Ti.UI.createLabel({
-							text: ""+c_content[count],
-							width:  "100%",
-							height: "100%",
-							textAlign: 'left',
-							left: "33%",
-							id: count
-						});
-						
-						content[count].addEventListener('click', function(e){
-							highlightMe( e.source.id );
-						});
-						count++;
-	
-					break;
-									
-					//Formats as integer
-					case 'number_integer':
-						label[count] = Ti.UI.createLabel({
-							text: c_label[count],
-							width:  "33%",
-							textAlign: 'left',
-							left: 5,
-							touchEnabled: false
-						});
-						
-						content[count] = Ti.UI.createLabel({
-							text: ""+c_content[count],
-							width:  "100%",
-							height: "100%",
-							textAlign: 'left',
-							left: "33%",
-							id: count
-						});
-						
-						content[count].addEventListener('click', function(e){
-							highlightMe( e.source.id );
-						});
-						count++;
-					break;
-									
-					//Shows up date (check how it is exhibited):
-					case 'datestamp':
-						label[count] = Ti.UI.createLabel({
-							text: c_label[count],
-							width:  "33%",
-							textAlign: 'left',
-							left: 5,
-							touchEnabled: false
-						});
-						
-						content[count] = Ti.UI.createLabel({
-							text: ""+c_content[count],
-							width:  "100%",
-							height: "100%",
-							textAlign: 'left',
-							left: "33%",
-							id: count
-						});
-						
-						content[count].addEventListener('click', function(e){
-							highlightMe( e.source.id );
-						});
-						count++;
-					break;
-									
-					//Shows the on and off button?
-					case 'list_boolean':
-						label[count] = Ti.UI.createLabel({
-							text: c_label[count],
-							width:  "33%",
-							textAlign: 'left',
-							left: 5,
-							touchEnabled: false
-						});
-						
-						content[count] = Ti.UI.createLabel({
-							text: ""+c_content[count],
-							width:  "100%",
-							height: "100%",
-							textAlign: 'left',
-							left: "33%",
-							id: count
-						});
-						
-						content[count].addEventListener('click', function(e){
-							highlightMe( e.source.id );
-						});
-						count++;
-					
-					break;
-					//Prints out content
-	
-					case 'license_plate':
-						label[count] = Ti.UI.createLabel({
-							text: c_label[count],
-							width:  "33%",
-							textAlign: 'left',
-							left: 5,
-							touchEnabled: false
-						});
-						
-						content[count] = Ti.UI.createLabel({
-							text: ""+c_content[count],
-							width:  "100%",
-							height: "100%",
-							textAlign: 'left',
-							left: "33%",
-							id: count
-						});
-						
-						content[count].addEventListener('click', function(e){
-							highlightMe( e.source.id );
-						});
-						count++;
-					break;
-				}
-			}
-		}
-	
-		//Ti.API.info("Items (count): "+ count);
-		for (var i = 0; i < count ; i++){
-		
-			cell[i] = Ti.UI.createView({
-				height: heightValue,
-				top : 40*i
-			});
-			label[i].color = "#999999";
-			content[i].color = "#FFFFFF";
-			
-			cell[i].add(label[i]);
-			cell[i].add(content[i]);
-		
-			viewContent.add(cell[i]);	
-			
-			border[i] = Ti.UI.createView({
-				backgroundColor:"#F16A0B",
-				height:2,
-				top: (40*(i+1))-2
-			});
-			viewContent.add(border[i]);
-		
-		}
-	}
+function timeConverter(UNIX_timestamp){
+	 var a = new Date(UNIX_timestamp*1000);
+	 var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+	 var year = a.getFullYear();
+	 var month = months[a.getMonth()];
+	 var date = a.getDate();
+	 var hour = a.getHours();
+	 var min = a.getMinutes();
+	 var sec = a.getSeconds();
+	 var time = date+' , '+month+' '+year+' '+hour+':'+min+':'+sec ;
+	 return time;
 }
 
-//Highlitghts clicked row
-function highlightMe(data) {
-	//Ti.API.info("DATA => "+data);
-	cell[data].backgroundColor = "#F16A0B";
-	setTimeout(function(){
-		cell[data].backgroundColor = '#111111'; 
-	}, 100);
-};
