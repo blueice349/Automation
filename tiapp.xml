@@ -11,10 +11,10 @@
     <id>joseandro.connect.com</id>
     <name>Omadi</name>
     <version>1.3</version>
-    <publisher>joseandro</publisher>
+    <publisher>Joseandro</publisher>
     <url>http://www.comp.ufscar.br/~joseandro</url>
     <description>CRM from Omadi</description>
-    <copyright>2012 by joseandro</copyright>
+    <copyright>2012 by Joseandro</copyright>
     <icon>appicon.png</icon>
     <persistent-wifi>false</persistent-wifi>
     <prerendered-icon>false</prerendered-icon>

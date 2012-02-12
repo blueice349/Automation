@@ -95,10 +95,14 @@ else
 		var altitudeAccuracy = e.coords.altitudeAccuracy;
 		//Ti.API.info('speed ' + speed);
 		
+		var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+
 		if ( (accuracy <= 50) && (currentInputs <= 5)){
 			currentInputs++;
 			db.execute('INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES (?,?,?,?)', longitude, latitude, Math.round(timestamp/1000), "notUploaded");
 		}
+		
+		db.close();
 	});
 
 	//
@@ -142,10 +146,14 @@ else
 			}
 		});
 		*/
+		var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+
 		if ( (accuracy <= 50) && (currentInputs <= 5)){
 			currentInputs++;
 			db.execute('INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES (?,?,?,?)', longitude, latitude, Math.round(timestamp/1000), "notUploaded");
-		}		
+		}
+		
+		db.close();		
 	};
 	
 	Titanium.Geolocation.addEventListener('location', locationCallback);
@@ -186,7 +194,10 @@ if (Titanium.Platform.name == 'android')
 }
 
 setInterval(function (){
-	if ( !Titanium.App.Properties.getBool("UpRunning") ){	
+	if ( !Titanium.App.Properties.getBool("UpRunning") ){
+	
+		var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+
 		Titanium.App.Properties.setBool("UpRunning", true);
 		var result = db.execute("SELECT * FROM user_location WHERE status = 'notUploaded' ");
 		if (result.rowCount > 0){
@@ -228,11 +239,13 @@ setInterval(function (){
 		 				Ti.API.info("GPS coordinates not inserted, we had "+ resultReq.errors+" errors");
 				}
 				db.execute('DELETE FROM user_location WHERE status="notUploaded"');
+				db.close();
 		
 			}
 			//Connection error:
 			objectsCheck.onerror = function(e) {
 				Titanium.App.Properties.setBool("UpRunning", false);
+				db.close();
 			}
 			
 			//Sending information and try to connect
