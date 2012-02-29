@@ -194,14 +194,13 @@ if (Titanium.Platform.name == 'android')
 }
 
 setInterval(function (){
-	if ( !Titanium.App.Properties.getBool("UpRunning") ){
+	if ( !isUpdating() ){
 	
+		setUse();
 		var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
-		Titanium.App.Properties.setBool("UpRunning", true);
 		var result = db.execute("SELECT * FROM user_location WHERE status = 'notUploaded' ");
 		if (result.rowCount > 0){
-			
 			//Build JSON structure
 			var json = "{ \"data\": [";
 			for(var i = 0; i < result.rowCount ; i++) {
@@ -227,7 +226,7 @@ setInterval(function (){
 			
 			//When connected
 			objectsCheck.onload = function(e) {
-				Titanium.App.Properties.setBool("UpRunning", false);
+				unsetUse();
 				//Parses response into strings
 
 				var resultReq = JSON.parse(this.responseText);
@@ -244,12 +243,15 @@ setInterval(function (){
 			}
 			//Connection error:
 			objectsCheck.onerror = function(e) {
-				Titanium.App.Properties.setBool("UpRunning", false);
+				unsetUse();
 				db.close();
 			}
 			
 			//Sending information and try to connect
 			objectsCheck.send(json);
+		}
+		else{
+			unsetUse();
 		}
 	} 
 }, 120000);

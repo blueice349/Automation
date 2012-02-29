@@ -38,7 +38,7 @@ var message = Titanium.UI.createLabel({
     width:'auto',
     height:'auto',
     textAlign:'center',
-    font:{fontFamily:'Helvetica Neue',fontWeight:'bold', fontSize:'14'},
+    font:{fontFamily:'Quicksand-Regular',fontWeight:'bold', fontSize:'14'},
     top:'35%'
 });
  
@@ -50,7 +50,7 @@ var labelOut = Titanium.UI.createButton({
     color:'#000',
     width:'25%',
     height:'auto',
-    font:{fontFamily:'Helvetica Neue',fontWeight:'bold'},
+    font:{fontFamily:'Lobster',fontWeight:'bold'},
     top:'50%',
     left: '15%'
 }); 
@@ -61,7 +61,7 @@ var labelIn = Titanium.UI.createButton({
     width:'25%',
     height:'auto',
     textAlign:'center',
-    font:{fontFamily:'Helvetica Neue',fontWeight:'bold'},
+    font:{fontFamily:'Lobster',fontWeight:'bold'},
     top:'50%',
     left: '58%'
 });    

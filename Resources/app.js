@@ -21,7 +21,7 @@ var win1 = Titanium.UI.createWindow({
     fullscreen: true
 });
 
-Titanium.App.Properties.setString("databaseVersion", "omadiDb1111");
+Titanium.App.Properties.setString("databaseVersion", "omadiDb1156");
 
 var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
@@ -41,7 +41,7 @@ win1.add(label_website);
 var picker = Titanium.UI.createPicker({
 	width:'65%',
 	top: '10%',
-	height: '13%'
+	height: '13%',
 });
 
 //Array of addresses 

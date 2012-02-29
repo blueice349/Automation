@@ -2,7 +2,7 @@
  * Name: mainMenu.js
  * Function: 
  * 		Show buttons where the user can select where he
- *		wants to go.
+ *		wants to go.  
  * Provides:
  * 		First window the user sees when he logs in.
  *		Alert messages when user clicks on "back" on the phone.
@@ -24,75 +24,65 @@ var label_status = Titanium.UI.createLabel({
 	textAlign:'center'
 });
 
-Titanium.App.Properties.setBool("UpRunning", false);
-
 var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
 //Common used functions
 Ti.include('../lib/functions.js');
+
+unsetUse();
+//Geolocation module
 Ti.include('geolocation.js');
 
-function checkUpdate (){
-	if ( !Titanium.App.Properties.getBool("UpRunning") ){
+function checkUpdate (evt){
+	if ( !isUpdating() ){
+		//Sets status to 'updating'
+		setUse();
+		if (evt == 'from_menu'){
+			//instance progress bar object:
+			var pb = new Progress_install(0, 100);	
+		}
+		else{
+			//No progress bar
+			var pb = null;
+		}
 		
-		Titanium.App.Properties.setBool("UpRunning", true);
+		var pageIndex = 0;
+
+		var db_up = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+
+		var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');
+
+		var see = db_up.execute('SELECT * FROM bundles WHERE display_on_menu="true"');
+		var up_flag = db_up.execute('SELECT * FROM node WHERE flag_is_updated=1');
 		
-		var objectsCheck = win2.log;
-		//Timeout until error:
-		objectsCheck.setTimeout(10000);
-	
-		//Opens address to retrieve lists
-		objectsCheck.open('GET', win2.picked + '/js-sync/sync.json?reset=1');
-	
-		//Header parameters
-		objectsCheck.setRequestHeader("Content-Type", "application/json");
-	
-		//When connected
-		objectsCheck.onload = function(e) {
-			//Parses response into strings
-			var json = JSON.parse(this.responseText);
-	
-			//If Database is already last version 
-			if ( json.current_page_item_count == 0 ){
-				Ti.API.info("SUCCESS -> No items");
-				Titanium.App.Properties.setBool("UpRunning", false);
+		if (up_flag.rowCount > 0){
+			Ti.API.info("Fired nodes update");
+			installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, null, 'POST');
+		}
+		else{
+			//Normal install
+			if ( see.rowCount > 0 ){
+				Ti.API.info("Fired normal database install");
+				//installMe(pageIndex, win, timeIndex, progress_bar, menu_list)
+				installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, null, 'GET');
 			}
-			else
-			{
-				var pageIndex = 0;
-
-				var db_up = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
-
-				var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');
-
-				//instance progress bar object:
-				var pb = new Progress_install(0, 100);
-
-				var see = db_up.execute('SELECT * FROM bundles WHERE display_on_menu="true"');
-				//Normal install
-				if ( see.rowCount > 0 ){
-					Ti.API.info("Fired normal database install");
-					//installMe(pageIndex, win, timeIndex, progress_bar, menu_list)
-					installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView);
-				}
-				//First install
-				else{
-					Ti.API.info("Fired first database install");
-					//installMe(pageIndex, win, timeIndex, progress_bar, menu_list, img)
-					installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, img);
-				}
-				updatedTime.close();
-				db_up.close();
+			//First install
+			else{
+				Ti.API.info("Fired first database install");
+				//installMe(pageIndex, win, timeIndex, progress, menu, img, type)
+				installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, img, 'GET');
 			}
 		}
-		//Connection error:
-		objectsCheck.onerror = function(e) {
-			Ti.API.info("Error checking if update is needed, not running");
-			Titanium.App.Properties.setBool("UpRunning", false);
+		updatedTime.close();
+		db_up.close();
+	}
+	else{
+		if (evt = 'from_menu'){
+			Ti.UI.createNotification({
+				message : 'Another updated is already running'
+			}).show();
+
 		}
-	
-		//Sending information and try to connect
-		objectsCheck.send();	
 	}
 };
 
@@ -119,11 +109,33 @@ while ( elements.isValidRow() ){
 		check++;
 		var row_t = Ti.UI.createTableViewRow({
 			height      : 60,	
-			hasChild    : true,
-			title       : display,
+			display     : display,
 			description : description,
-			name_table  : name_table
+			name_table  : name_table,
+			className	: 'menu_row' // this is to optimize the rendering
 		});
+		
+		var title = Titanium.UI.createLabel({
+			text: display,
+			font:{
+				fontSize:28
+			},
+			width:'auto',
+			textAlign:'left',
+			left:'17%',
+			height:'auto'
+		});
+		
+		var plus =  Titanium.UI.createImageView({
+			image: '../images/plus_transparent.png',
+			width:'15%',
+			height:'100%',
+			left:0,
+			is_plus: true
+		});
+		
+		row_t.add(title);
+		row_t.add(plus);
 		
 		listView.appendRow(row_t);
 	}
@@ -149,19 +161,29 @@ if (check == 0){
 listView.addEventListener('click',function(e){
 	Ti.API.info("row click on table view. index = "+e.index+", row_desc = "+e.row.description+", section = "+e.section+", source_desc="+e.source.description);
 	
-	var win3 = Titanium.UI.createWindow({  
-		title: e.row.display,
-		fullscreen: true,
-		url:'objects.js',
-		type: e.row.name_table
-	});
-	win3.open();
-	
+	//Creates a new node_type
+	if (e.source.is_plus){
+		//alert('You clicked the '+e.row.display+' . His table\'s name is '+e.row.name_table);
+		var win_new = Titanium.UI.createWindow({  
+			title: "New "+e.row.display,
+			fullscreen: true,
+			url:'create_node.js',
+			type: e.row.name_table,
+			uid: jsonLogin.user.uid
+		});
+		win_new.open();
+	}
+	else{
+		var win_new = Titanium.UI.createWindow({  
+			title: e.row.display,
+			fullscreen: true,
+			url:'objects.js',
+			type: e.row.name_table,
+			uid: jsonLogin.user.uid
+		});
+		win_new.open();
+	}	
 });
-
-
-
-
 
 //Parses result from user's login 
 var jsonLogin = JSON.parse(win2.result) ;
@@ -183,19 +205,18 @@ var label_top = Titanium.UI.createLabel({
 	color:'#FFFFFF',
 	text:''+ name,
 	textAlign: 'left',
-	width:'75%',
+	width:'70%',
 	left: '5%',
 	horizontalAlign: 'left',
 	height: 'auto'
 }); 
-
 
 var offImage = Titanium.UI.createLabel({
 	color:'#FFFFFF',
 	text:'Log Out',
 	width:'20%',
 	horizontalAlign: 'left',
-	left: '80%',
+	right: '5%',
 	height: '30px'
 }); 
 
@@ -210,8 +231,7 @@ var a = Titanium.UI.createAlertDialog({
 
 offImage.addEventListener('click',function(e)
 {
-	Ti.API.info('Is there an update happening? '+Titanium.App.Properties.getBool("UpRunning"));
-	if (Titanium.App.Properties.getBool("UpRunning") === true){
+	if ( isUpdating() ){
 		a.message = 'A data sync is in progress. Please wait a moment to log out.';
 		a.show();
 	}
@@ -251,14 +271,13 @@ win2.add(databaseStatusView);
 var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
 if (updatedTime.fieldByName('timestamp') == 0){
 	isFirstTime = true;
-	checkUpdate();
+	checkUpdate('from_menu');
 }
 updatedTime.close();
 
 //Sets only portrait mode
 win2.orientationModes = [ Titanium.UI.PORTRAIT ];
 
-//Ti.App.Properties.removeProperty('update');
 //When back button on the phone is pressed, it alerts the user (pop up box)
 // that he needs to log out in order to go back to the root window
 win2.addEventListener('android:back', function() {
@@ -271,14 +290,13 @@ var activity = Ti.Android.currentActivity;
 activity.onCreateOptionsMenu = function(e) {
     var menu = e.menu;
     var menuItem = menu.add({ title: "Update" });
-    menuItem.setIcon('../images/item1.png');
+    menuItem.setIcon('/images/item1.png');
     
     menuItem.addEventListener("click", function(e) {
 		Ti.API.info('Refresh event!');
-		checkUpdate();
+		checkUpdate('from_menu');
     });
 };
-
 
 //Close database
 db.close();

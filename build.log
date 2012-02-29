@@ -3,7 +3,6 @@ Logfile initialized
 [DEBUG] /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/builder.py distribute Omadi /home/jo/Apps/android-sdk /home/jo/Apps/ConnectCRM joseandro.connect.com /home/jo/keystores/android.keystore borsoi87 omadi /home/jo/Desktop/ 8
 [INFO] Titanium SDK version: 1.8.0.1 (12/22/11 13:09 fbdc96f)
 [INFO] Copying project resources..
-[TRACE] COPYING MODIFIED FILE: /home/jo/Apps/ConnectCRM/Resources/lib/functions.js => /home/jo/Apps/ConnectCRM/build/android/bin/assets/Resources/lib/functions.js
 [TRACE] Generating Java Classes
 [DEBUG] Processing Android resource drawables
 [DEBUG] copying app icon: /home/jo/Apps/ConnectCRM/build/android/bin/assets/Resources/appicon.png
@@ -35,3 +34,74 @@ Logfile initialized
 [DEBUG] adding /home/jo/Apps/ConnectCRM/build/android/gen/joseandro/connect/com/R.java to javac build list
 [DEBUG] adding /home/jo/Apps/ConnectCRM/build/android/gen/joseandro/connect/com/OmadiActivity.java to javac build list
 [DEBUG] Building Java Sources: "/home/jo/Apps/ConnectCRM/build/android/gen/joseandro/connect/com/OmadiApplication.java" "/home/jo/Apps/ConnectCRM/build/android/gen/joseandro/connect/com/OmadiAppInfo.java" "/home/jo/Apps/ConnectCRM/build/android/gen/joseandro/connect/com/R.java" "/home/jo/Apps/ConnectCRM/build/android/gen/joseandro/connect/com/OmadiActivity.java"
+[INFO] Compiling Android Resources... This could take some time
+[DEBUG] Android classes.dex built
+[DEBUG] creating unsigned apk: /home/jo/Apps/ConnectCRM/build/android/bin/app-unsigned.apk
+[DEBUG] from resource zip => assets/Resources/database/db.sqlite
+[DEBUG] from resource zip => assets/Resources/fonts/AnnieUseYourTelescope.ttf
+[DEBUG] from resource zip => assets/Resources/fonts/Armata.ttf
+[DEBUG] from resource zip => assets/Resources/fonts/BadScript.ttf
+[DEBUG] from resource zip => assets/Resources/fonts/FugazOne.ttf
+[DEBUG] from resource zip => assets/Resources/fonts/Lobster.ttf
+[DEBUG] from resource zip => assets/Resources/fonts/Macondo.ttf
+[DEBUG] from resource zip => assets/Resources/fonts/Quicksand-Regular.ttf
+[DEBUG] from resource zip => assets/Resources/fonts/Righteous-Regular.ttf
+[DEBUG] from resource zip => assets/Resources/images/high/save.png
+[DEBUG] from resource zip => assets/Resources/images/low/save.png
+[DEBUG] from resource zip => assets/Resources/images/medium/save.png
+[DEBUG] from resource zip => assets/Resources/images/email.png
+[DEBUG] from resource zip => assets/Resources/images/item1.png
+[DEBUG] from resource zip => assets/Resources/images/message.png
+[DEBUG] from resource zip => assets/Resources/images/minus.png
+[DEBUG] from resource zip => assets/Resources/images/phone.png
+[DEBUG] from resource zip => assets/Resources/images/plus.png
+[DEBUG] from resource zip => assets/Resources/images/plus_dark.png
+[DEBUG] from resource zip => assets/Resources/images/plus_transparent.png
+[DEBUG] from resource zip => assets/Resources/images/save.png
+[DEBUG] from resource zip => assets/Resources/lib/functions.js
+[DEBUG] from resource zip => assets/Resources/main_windows/backToFirstStep.js
+[DEBUG] from resource zip => assets/Resources/main_windows/create_node.js
+[DEBUG] from resource zip => assets/Resources/main_windows/geolocation.js
+[DEBUG] from resource zip => assets/Resources/main_windows/individual_object.js
+[DEBUG] from resource zip => assets/Resources/main_windows/logDecision.js
+[DEBUG] from resource zip => assets/Resources/main_windows/mainMenu.js
+[DEBUG] from resource zip => assets/Resources/main_windows/objects.js
+[DEBUG] from resource zip => assets/Resources/main_windows/upContainer.js
+[DEBUG] from resource zip => assets/Resources/main_windows/version.js
+[DEBUG] from resource zip => assets/Resources/app.js
+[DEBUG] from resource zip => assets/Resources/appicon.png
+[DEBUG] from resource zip => assets/Resources/icon.png
+[DEBUG] from resource zip => assets/app.json
+[DEBUG] from resource zip => assets/index.json
+[DEBUG] from resource zip => assets/tiapp.xml
+[DEBUG] from resource zip => res/drawable/appicon.png
+[DEBUG] from resource zip => res/drawable/background.png
+[DEBUG] from resource zip => res/layout/titanium_tabgroup.xml
+[DEBUG] from resource zip => AndroidManifest.xml
+[DEBUG] from resource zip => resources.arsc
+[DEBUG] from resource zip => res/drawable-long-land-hdpi/background.png
+[DEBUG] from resource zip => res/drawable-long-land-ldpi/background.png
+[DEBUG] from resource zip => res/drawable-long-port-hdpi/background.png
+[DEBUG] from resource zip => res/drawable-long-port-ldpi/background.png
+[DEBUG] from resource zip => res/drawable-notlong-land-hdpi/background.png
+[DEBUG] from resource zip => res/drawable-notlong-land-ldpi/background.png
+[DEBUG] from resource zip => res/drawable-notlong-land-mdpi/background.png
+[DEBUG] from resource zip => res/drawable-notlong-port-hdpi/background.png
+[DEBUG] from resource zip => res/drawable-notlong-port-ldpi/background.png
+[DEBUG] from resource zip => res/drawable-notlong-port-mdpi/background.png
+[DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/modules/titanium-ui.jar => ti/modules/titanium/ui/widget/webview/binding.js
+[DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/modules/titanium-ui.jar => ti/modules/titanium/ui/widget/webview/binding.min.js
+[DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/modules/titanium-ui.jar => ti/modules/titanium/ui/widget/webview/json2.js
+[DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/titanium.jar => org/appcelerator/titanium/build.properties
+[DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/titanium.jar => org/appcelerator/titanium/res/drawable/background.png
+[DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/titanium.jar => org/appcelerator/titanium/res/drawable/btn_check_buttonless_on.png
+[DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/titanium.jar => org/appcelerator/titanium/res/drawable/btn_check_buttonless_on_18.png
+[DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/titanium.jar => org/appcelerator/titanium/res/drawable/btn_check_buttonless_on_48.png
+[DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/titanium.jar => org/appcelerator/titanium/res/drawable/btn_more.png
+[DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/titanium.jar => org/appcelerator/titanium/res/drawable/btn_more_18.png
+[DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/titanium.jar => org/appcelerator/titanium/res/drawable/btn_more_48.png
+[DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/titanium.jar => org/appcelerator/titanium/res/drawable/btn_picker_normal.9.png
+[DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/titanium.jar => org/appcelerator/titanium/res/drawable/btn_picker_pressed.9.png
+[DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/titanium.jar => org/appcelerator/titanium/res/drawable/btn_picker_selected.9.png
+[DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/titanium.jar => org/appcelerator/titanium/res/drawable/default_icon.png
+[DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/titanium.jar => org/appcelerator/titanium/res/drawable/photoDefault.png
