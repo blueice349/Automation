@@ -33,6 +33,7 @@ unsetUse();
 //Geolocation module
 Ti.include('geolocation.js');
 
+<<<<<<< HEAD
 function checkUpdate (evt){
 	if ( !isUpdating() ){
 		//Sets status to 'updating'
@@ -71,6 +72,59 @@ function checkUpdate (evt){
 				Ti.API.info("Fired first database install");
 				//installMe(pageIndex, win, timeIndex, progress, menu, img, type)
 				installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, img, 'GET');
+=======
+function checkUpdate (){
+	if ( !Titanium.App.Properties.getBool("UpRunning") ){
+		
+		Titanium.App.Properties.setBool("UpRunning", true);
+		
+		var objectsCheck = win2.log;
+		//Timeout until error:
+		objectsCheck.setTimeout(10000);
+	
+		//Opens address to retrieve lists
+		objectsCheck.open('GET', win2.picked + '/js-sync/sync.json?reset=1');
+	
+		//Header parameters
+		objectsCheck.setRequestHeader("Content-Type", "application/json");
+	
+		//When connected
+		objectsCheck.onload = function(e) {
+			//Parses response into strings
+			var json = JSON.parse(this.responseText);
+	
+			//If Database is already last version 
+			if ( json.current_page_item_count == 0 ){
+				Ti.API.info("SUCCESS -> No items");
+				Titanium.App.Properties.setBool("UpRunning", false);
+			}
+			else
+			{
+				var pageIndex = 0;
+
+				var db_up = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+
+				var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');
+
+				//instance progress bar object:
+				var pb = new Progress_install(0, 100);
+
+				var see = db_up.execute('SELECT * FROM bundles WHERE display_on_menu="true"');
+				//Normal install
+				if ( see.rowCount > 0 ){
+					Ti.API.info("Fired normal database install");
+					//installMe(pageIndex, win, timeIndex, progress_bar, menu_list)
+					installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView);
+				}
+				//First install
+				else{
+					Ti.API.info("Fired first database install");
+					//installMe(pageIndex, win, timeIndex, progress_bar, menu_list, img)
+					installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, img);
+				}
+				updatedTime.close();
+				db_up.close();
+>>>>>>> 2696447049ef095bd171249c415a58c543975f20
 			}
 		}
 		updatedTime.close();
@@ -86,6 +140,7 @@ function checkUpdate (evt){
 	}
 };
 
+<<<<<<< HEAD
 
 var listView = Titanium.UI.createTableView({
 	data : [],
@@ -144,6 +199,43 @@ while ( elements.isValidRow() ){
 elements.close();
 
 win2.add(listView);
+=======
+
+var listView = Titanium.UI.createTableView({
+	data : [],
+	top : '10%',
+	height : '80%',
+	scrollable: true,
+	zIndex: 999
+});
+
+var elements = db.execute('SELECT * FROM bundles');
+var check = 0;
+
+
+while ( elements.isValidRow() ){
+	var name_table   = elements.fieldByName("bundle_name");
+	var display      = elements.fieldByName("display_name");
+	var description  = elements.fieldByName("description");
+	var flag_display = elements.fieldByName("display_on_menu");
+	
+	if (flag_display){
+		check++;
+		var row_t = Ti.UI.createTableViewRow({
+			height      : 60,	
+			hasChild    : true,
+			title       : display,
+			description : description,
+			name_table  : name_table
+		});
+		
+		listView.appendRow(row_t);
+	}
+	elements.next();
+}
+elements.close();
+
+win2.add(listView);
 
 if (check == 0){
 	var img = Ti.UI.createImageView({
@@ -157,6 +249,35 @@ if (check == 0){
 	win2.add(img);
 }
 
+//Go to contact.js when contact's button is clicked
+listView.addEventListener('click',function(e){
+	Ti.API.info("row click on table view. index = "+e.index+", row_desc = "+e.row.description+", section = "+e.section+", source_desc="+e.source.description);
+	
+	var win3 = Titanium.UI.createWindow({  
+		title: e.row.display,
+		fullscreen: true,
+		url:'objects.js',
+		type: e.row.name_table
+	});
+	win3.open();
+	
+});
+
+>>>>>>> 2696447049ef095bd171249c415a58c543975f20
+
+if (check == 0){
+	var img = Ti.UI.createImageView({
+		image: '../images/message.png',
+		width: 'auto',
+		height: 'auto',
+		top: '25%',
+		zIndex: 0
+	});
+	
+	win2.add(img);
+}
+
+<<<<<<< HEAD
 //Go to contact.js when contact's button is clicked
 listView.addEventListener('click',function(e){
 	Ti.API.info("row click on table view. index = "+e.index+", row_desc = "+e.row.description+", section = "+e.section+", source_desc="+e.source.description);
@@ -184,6 +305,9 @@ listView.addEventListener('click',function(e){
 		win_new.open();
 	}	
 });
+=======
+
+>>>>>>> 2696447049ef095bd171249c415a58c543975f20
 
 //Parses result from user's login 
 var jsonLogin = JSON.parse(win2.result) ;
@@ -231,7 +355,12 @@ var a = Titanium.UI.createAlertDialog({
 
 offImage.addEventListener('click',function(e)
 {
+<<<<<<< HEAD
 	if ( isUpdating() ){
+=======
+	Ti.API.info('Is there an update happening? '+Titanium.App.Properties.getBool("UpRunning"));
+	if (Titanium.App.Properties.getBool("UpRunning") === true){
+>>>>>>> 2696447049ef095bd171249c415a58c543975f20
 		a.message = 'A data sync is in progress. Please wait a moment to log out.';
 		a.show();
 	}
@@ -290,6 +419,7 @@ var activity = Ti.Android.currentActivity;
 activity.onCreateOptionsMenu = function(e) {
     var menu = e.menu;
     var menuItem = menu.add({ title: "Update" });
+<<<<<<< HEAD
     menuItem.setIcon('/images/item1.png');
     
     menuItem.addEventListener("click", function(e) {
@@ -298,6 +428,17 @@ activity.onCreateOptionsMenu = function(e) {
     });
 };
 
+=======
+    menuItem.setIcon('../images/item1.png');
+    
+    menuItem.addEventListener("click", function(e) {
+		Ti.API.info('Refresh event!');
+		checkUpdate();
+    });
+};
+
+
+>>>>>>> 2696447049ef095bd171249c415a58c543975f20
 //Close database
 db.close();
 

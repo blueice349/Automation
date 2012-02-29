@@ -194,11 +194,19 @@ if (Titanium.Platform.name == 'android')
 }
 
 setInterval(function (){
+<<<<<<< HEAD
 	if ( !isUpdating() ){
 	
 		setUse();
 		var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
+=======
+	if ( !Titanium.App.Properties.getBool("UpRunning") ){
+	
+		var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+
+		Titanium.App.Properties.setBool("UpRunning", true);
+>>>>>>> 2696447049ef095bd171249c415a58c543975f20
 		var result = db.execute("SELECT * FROM user_location WHERE status = 'notUploaded' ");
 		if (result.rowCount > 0){
 			//Build JSON structure
@@ -243,7 +251,11 @@ setInterval(function (){
 			}
 			//Connection error:
 			objectsCheck.onerror = function(e) {
+<<<<<<< HEAD
 				unsetUse();
+=======
+				Titanium.App.Properties.setBool("UpRunning", false);
+>>>>>>> 2696447049ef095bd171249c415a58c543975f20
 				db.close();
 			}
 			

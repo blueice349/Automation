@@ -21,7 +21,11 @@ var win1 = Titanium.UI.createWindow({
     fullscreen: true
 });
 
+<<<<<<< HEAD
 Titanium.App.Properties.setString("databaseVersion", "omadiDb1156");
+=======
+Titanium.App.Properties.setString("databaseVersion", "omadiDb1111");
+>>>>>>> 2696447049ef095bd171249c415a58c543975f20
 
 var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
