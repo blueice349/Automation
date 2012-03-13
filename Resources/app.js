@@ -21,11 +21,7 @@ var win1 = Titanium.UI.createWindow({
     fullscreen: true
 });
 
-<<<<<<< HEAD
-Titanium.App.Properties.setString("databaseVersion", "omadiDb1156");
-=======
-Titanium.App.Properties.setString("databaseVersion", "omadiDb1111");
->>>>>>> 2696447049ef095bd171249c415a58c543975f20
+Titanium.App.Properties.setString("databaseVersion", "omadiDb1177");
 
 var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
@@ -66,7 +62,7 @@ var tf1 = Titanium.UI.createTextField({
 	top: '29.5%',
 	height: '13%',
 	color:'#000000',
-	value: 'test user',
+	value: 'luiz',
 	keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
 	returnKeyType:Titanium.UI.RETURNKEY_DEFAULT,
 	softKeyboardOnFocus : Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS,

@@ -95,14 +95,21 @@ else
 		var altitudeAccuracy = e.coords.altitudeAccuracy;
 		//Ti.API.info('speed ' + speed);
 		
-		var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+		if ( !isUpdating() ){		
+			var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
-		if ( (accuracy <= 50) && (currentInputs <= 5)){
-			currentInputs++;
-			db.execute('INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES (?,?,?,?)', longitude, latitude, Math.round(timestamp/1000), "notUploaded");
+			if ( (accuracy <= 50) && (currentInputs <= 5)){
+				currentInputs++;
+				try{
+					db.execute('INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES (?,?,?,?)', longitude, latitude, Math.round(timestamp/1000), "notUploaded");
+				}
+				catch(e){
+					Ti.API.info('Exception for geolocation insert');
+				}
+
+			}
+			db.close();
 		}
-		
-		db.close();
 	});
 
 	//
@@ -146,14 +153,21 @@ else
 			}
 		});
 		*/
-		var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
-
-		if ( (accuracy <= 50) && (currentInputs <= 5)){
-			currentInputs++;
-			db.execute('INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES (?,?,?,?)', longitude, latitude, Math.round(timestamp/1000), "notUploaded");
-		}
-		
-		db.close();		
+		if ( !isUpdating() ){
+			var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+	
+			if ( (accuracy <= 50) && (currentInputs <= 5)){
+				currentInputs++;
+				try{
+					db.execute('INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES (?,?,?,?)', longitude, latitude, Math.round(timestamp/1000), "notUploaded");
+				}
+				catch(e){
+					Ti.API.info('Exception for geolocation insert');
+				}
+			}
+			
+			db.close();
+		}		
 	};
 	
 	Titanium.Geolocation.addEventListener('location', locationCallback);
@@ -194,19 +208,11 @@ if (Titanium.Platform.name == 'android')
 }
 
 setInterval(function (){
-<<<<<<< HEAD
 	if ( !isUpdating() ){
 	
 		setUse();
 		var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
-=======
-	if ( !Titanium.App.Properties.getBool("UpRunning") ){
-	
-		var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
-
-		Titanium.App.Properties.setBool("UpRunning", true);
->>>>>>> 2696447049ef095bd171249c415a58c543975f20
 		var result = db.execute("SELECT * FROM user_location WHERE status = 'notUploaded' ");
 		if (result.rowCount > 0){
 			//Build JSON structure
@@ -234,7 +240,6 @@ setInterval(function (){
 			
 			//When connected
 			objectsCheck.onload = function(e) {
-				unsetUse();
 				//Parses response into strings
 
 				var resultReq = JSON.parse(this.responseText);
@@ -247,16 +252,12 @@ setInterval(function (){
 				}
 				db.execute('DELETE FROM user_location WHERE status="notUploaded"');
 				db.close();
-		
+				unsetUse();	
 			}
 			//Connection error:
 			objectsCheck.onerror = function(e) {
-<<<<<<< HEAD
-				unsetUse();
-=======
-				Titanium.App.Properties.setBool("UpRunning", false);
->>>>>>> 2696447049ef095bd171249c415a58c543975f20
 				db.close();
+				unsetUse();
 			}
 			
 			//Sending information and try to connect

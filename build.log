@@ -3,10 +3,7 @@ Logfile initialized
 [DEBUG] /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/builder.py distribute Omadi /home/jo/Apps/android-sdk /home/jo/Apps/ConnectCRM joseandro.connect.com /home/jo/keystores/android.keystore borsoi87 omadi /home/jo/Desktop/ 8
 [INFO] Titanium SDK version: 1.8.0.1 (12/22/11 13:09 fbdc96f)
 [INFO] Copying project resources..
-<<<<<<< HEAD
-=======
-[TRACE] COPYING MODIFIED FILE: /home/jo/Apps/ConnectCRM/Resources/lib/functions.js => /home/jo/Apps/ConnectCRM/build/android/bin/assets/Resources/lib/functions.js
->>>>>>> 2696447049ef095bd171249c415a58c543975f20
+[TRACE] COPYING MODIFIED FILE: /home/jo/Apps/ConnectCRM/Resources/main_windows/create_node.js => /home/jo/Apps/ConnectCRM/build/android/bin/assets/Resources/main_windows/create_node.js
 [TRACE] Generating Java Classes
 [DEBUG] Processing Android resource drawables
 [DEBUG] copying app icon: /home/jo/Apps/ConnectCRM/build/android/bin/assets/Resources/appicon.png
@@ -38,7 +35,6 @@ Logfile initialized
 [DEBUG] adding /home/jo/Apps/ConnectCRM/build/android/gen/joseandro/connect/com/R.java to javac build list
 [DEBUG] adding /home/jo/Apps/ConnectCRM/build/android/gen/joseandro/connect/com/OmadiActivity.java to javac build list
 [DEBUG] Building Java Sources: "/home/jo/Apps/ConnectCRM/build/android/gen/joseandro/connect/com/OmadiApplication.java" "/home/jo/Apps/ConnectCRM/build/android/gen/joseandro/connect/com/OmadiAppInfo.java" "/home/jo/Apps/ConnectCRM/build/android/gen/joseandro/connect/com/R.java" "/home/jo/Apps/ConnectCRM/build/android/gen/joseandro/connect/com/OmadiActivity.java"
-<<<<<<< HEAD
 [INFO] Compiling Android Resources... This could take some time
 [DEBUG] Android classes.dex built
 [DEBUG] creating unsigned apk: /home/jo/Apps/ConnectCRM/build/android/bin/app-unsigned.apk
@@ -110,5 +106,5 @@ Logfile initialized
 [DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/titanium.jar => org/appcelerator/titanium/res/drawable/btn_picker_selected.9.png
 [DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/titanium.jar => org/appcelerator/titanium/res/drawable/default_icon.png
 [DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/titanium.jar => org/appcelerator/titanium/res/drawable/photoDefault.png
-=======
->>>>>>> 2696447049ef095bd171249c415a58c543975f20
+[DEBUG] signal caught: 15
+[DEBUG] calling emulator kill on 6150
