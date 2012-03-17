@@ -40,7 +40,7 @@ unsetUse();
 Ti.include('geolocation.js');
 
 function checkUpdate (evt){
-	if ( !isUpdating() ){
+	if ( (!isUpdating()) && (Titanium.Network.online) ){
 		//Sets status to 'updating'
 		setUse();
 		if (evt == 'from_menu'){
@@ -84,10 +84,18 @@ function checkUpdate (evt){
 	}
 	else{
 		if (evt = 'from_menu'){
-			Ti.UI.createNotification({
-				message : 'Another updated is already running'
-			}).show();
-
+			if ( !(Titanium.Network.online)) {
+				Ti.UI.createNotification({
+					message : 'You have no internet access, make sure you are online in order to update'
+				}).show();
+				//If offline, set up database for use
+				unsetUse();
+			}
+			else{
+				Ti.UI.createNotification({
+					message : 'Another updated is already running'
+				}).show();
+			}
 		}
 	}
 };

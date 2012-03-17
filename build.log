@@ -1,9 +1,17 @@
 Logfile initialized
 [INFO] logfile = /home/jo/Apps/ConnectCRM/build.log
-[DEBUG] /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/builder.py distribute Omadi /home/jo/Apps/android-sdk /home/jo/Apps/ConnectCRM joseandro.connect.com /home/jo/keystores/android.keystore borsoi87 omadi /home/jo/Desktop/ 8
+[DEBUG] /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/builder.py install Omadi /home/jo/Apps/android-sdk /home/jo/Apps/ConnectCRM joseandro.connect.com 8
 [INFO] Titanium SDK version: 1.8.0.1 (12/22/11 13:09 fbdc96f)
+[DEBUG] Waiting for device to be ready ...
+[TRACE] adb devices returned 1 devices/emulators
+[TRACE] adb devices returned 1 devices/emulators
+[TRACE] adb devices returned 2 devices/emulators
+[DEBUG] Device connected... (waited 10 seconds)
+[DEBUG] waited 10.196478 seconds on emulator to get ready
+[INFO] Waiting for the Android Emulator to become available
+[ERROR] Timed out waiting for android.process.acore
+[DEBUG] joseandro.connect.com installed? False
 [INFO] Copying project resources..
-[TRACE] COPYING MODIFIED FILE: /home/jo/Apps/ConnectCRM/Resources/main_windows/create_node.js => /home/jo/Apps/ConnectCRM/build/android/bin/assets/Resources/main_windows/create_node.js
 [TRACE] Generating Java Classes
 [DEBUG] Processing Android resource drawables
 [DEBUG] copying app icon: /home/jo/Apps/ConnectCRM/build/android/bin/assets/Resources/appicon.png
@@ -106,5 +114,9 @@ Logfile initialized
 [DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/titanium.jar => org/appcelerator/titanium/res/drawable/btn_picker_selected.9.png
 [DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/titanium.jar => org/appcelerator/titanium/res/drawable/default_icon.png
 [DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/titanium.jar => org/appcelerator/titanium/res/drawable/photoDefault.png
-[DEBUG] signal caught: 15
-[DEBUG] calling emulator kill on 6150
+[DEBUG] Waiting for device to be ready ...
+[TRACE] adb devices returned 2 devices/emulators
+[DEBUG] Device connected... (waited 0 seconds)
+[DEBUG] waited 0.005859 seconds on emulator to get ready
+[INFO] Installing application on emulator
+[INFO] Application installed. Launch from drawer on Home Screen

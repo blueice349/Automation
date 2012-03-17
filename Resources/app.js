@@ -21,7 +21,7 @@ var win1 = Titanium.UI.createWindow({
     fullscreen: true
 });
 
-Titanium.App.Properties.setString("databaseVersion", "omadiDb1177");
+Titanium.App.Properties.setString("databaseVersion", "omadiDb1181");
 
 var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
@@ -55,6 +55,9 @@ picker.add(portals);
 //Adds picker to root window
 win1.add(picker);
 
+var credentials = db.execute('SELECT username, password FROM updated WHERE "rowid"=1');
+
+
 //Text field for username
 var tf1 = Titanium.UI.createTextField({
 	hintText:'Username',
@@ -62,7 +65,7 @@ var tf1 = Titanium.UI.createTextField({
 	top: '29.5%',
 	height: '13%',
 	color:'#000000',
-	value: 'luiz',
+	value: credentials.fieldByName('username'),
 	keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
 	returnKeyType:Titanium.UI.RETURNKEY_DEFAULT,
 	softKeyboardOnFocus : Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS,
@@ -83,13 +86,14 @@ var tf2 = Titanium.UI.createTextField({
 	height: '13%',
 	top: '50.1%',	
     passwordMask:true,
-	value: 'testing',
+	value: credentials.fieldByName('password'),
     keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
 	returnKeyType:Titanium.UI.RETURNKEY_DONE,
 	softKeyboardOnFocus : Ti.UI.Android.SOFT_KEYBOARD_SHOW_ON_FOCUS,
     borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED
 });
 
+credentials.close();
 //No autocorrection for password
 tf2.autocorrect = false;
 
@@ -118,7 +122,7 @@ Ti.API.info('The value for logStatus we found in app.js is : '+Ti.App.Properties
 if ( ( Ti.App.Properties.getString('logStatus') == null) || (Ti.App.Properties.getString('logStatus') == "") ){
 	var label_error = Titanium.UI.createLabel({
 		color:'#FFFFFF',
-		text:'Inform your credentials',
+		text:'Please login',
 		height:'auto',
 		width:'auto',
 		textAlign:'center'
@@ -184,7 +188,6 @@ b1.addEventListener('click', function(){
 	
 	//Everything ok, so let's login:
 	else{
-		
 		//Check database:
 		var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
 		if (updatedTime.fieldByName('timestamp') != 0){
@@ -237,6 +240,12 @@ b1.addEventListener('click', function(){
 		Ti.API.info('"model": '+Titanium.Platform.model+', "version": '+Titanium.Platform.version+', "architecture": '+Titanium.Platform.architecture+', "platform": '+Titanium.Platform.name+', "os_type": '+Titanium.Platform.ostype+', "screen_density": '+Titanium.Platform.DisplayCaps.density+', "primary_language": '+Titanium.Platform.locale+', "processor_count": '+Titanium.Platform.processorCount );
 		// When infos are retrieved:
 		xhr.onload = function(e) {
+				
+				//Update credentials
+				var db_n = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+				db_n.execute('UPDATE updated SET username = "'+tf1.value+'", password = "'+tf2.value+'" WHERE "rowid"=1');
+				db_n.close();
+				
 				//Debug
 				Ti.API.info("You have just connected");
 				
