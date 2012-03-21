@@ -64,7 +64,9 @@ var tf1 = Titanium.UI.createTextField({
 	keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
 	returnKeyType:Titanium.UI.RETURNKEY_DEFAULT,
 	softKeyboardOnFocus : Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS,
-	borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED
+	borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+	autocapitalization: TEXT_AUTOCAPITALIZATION_NONE,
+	autocorrect: false
 });
 
 //No autocorrection for username
@@ -85,10 +87,13 @@ var tf2 = Titanium.UI.createTextField({
     keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
 	returnKeyType:Titanium.UI.RETURNKEY_DONE,
 	softKeyboardOnFocus : Ti.UI.Android.SOFT_KEYBOARD_SHOW_ON_FOCUS,
-    borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED
+    borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+	autocapitalization: TEXT_AUTOCAPITALIZATION_NONE,
+	autocorrect: false
 });
 
 credentials.close();
+
 //No autocorrection for password
 tf2.autocorrect = false;
 

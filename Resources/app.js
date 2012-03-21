@@ -21,7 +21,7 @@ var win1 = Titanium.UI.createWindow({
     fullscreen: true
 });
 
-Titanium.App.Properties.setString("databaseVersion", "omadiDb1181");
+Titanium.App.Properties.setString("databaseVersion", "omadiDb1191");
 
 var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
@@ -69,7 +69,9 @@ var tf1 = Titanium.UI.createTextField({
 	keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
 	returnKeyType:Titanium.UI.RETURNKEY_DEFAULT,
 	softKeyboardOnFocus : Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS,
-	borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED
+	borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+	autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_NONE,
+	autocorrect: false
 });
 
 //No autocorrection for username
@@ -90,7 +92,9 @@ var tf2 = Titanium.UI.createTextField({
     keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
 	returnKeyType:Titanium.UI.RETURNKEY_DONE,
 	softKeyboardOnFocus : Ti.UI.Android.SOFT_KEYBOARD_SHOW_ON_FOCUS,
-    borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED
+    borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+	autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_NONE,
+	autocorrect: false
 });
 
 credentials.close();
@@ -177,7 +181,7 @@ b1.addEventListener('click', function(){
 	tf2.blur();
 	tf1.blur();
 	
-	//Empty text fields
+	//Empty text fields 
 	if ( tf1.value == "" || tf2.value == "" ){
 		alert ("Please, in order to login, fill out the boxes.");
 	}
@@ -188,6 +192,7 @@ b1.addEventListener('click', function(){
 	
 	//Everything ok, so let's login:
 	else{
+
 		//Check database:
 		var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
 		if (updatedTime.fieldByName('timestamp') != 0){

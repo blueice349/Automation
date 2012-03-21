@@ -58,8 +58,6 @@ while (resultsNames.isValidRow())
 	resultsNames.next();
 }
 
-
-
 //Check if the list is empty or not
 if(data.length < 1) {
 	//Shows the empty list

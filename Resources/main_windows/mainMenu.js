@@ -134,17 +134,17 @@ while ( elements.isValidRow() ){
 			font:{
 				fontSize:28
 			},
-			width:'auto',
+			width:'83%',
 			textAlign:'left',
-			left:'17%',
+			left:'0%',
 			height:'auto'
 		});
-		
-		var plus =  Titanium.UI.createImageView({
-			image: '../images/plus_transparent.png',
+
+		var plus =  Titanium.UI.createButton({
+			title: '+',
 			width:'15%',
 			height:'100%',
-			left:0,
+			right:0,
 			is_plus: true
 		});
 		

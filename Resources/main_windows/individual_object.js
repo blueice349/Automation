@@ -97,7 +97,8 @@ while (fields_result.isValidRow()){
 	fields[fields_result.fieldByName('field_name')] = new Array(); 
 	fields[fields_result.fieldByName('field_name')]['label']  = fields_result.fieldByName('label');
 	fields[fields_result.fieldByName('field_name')]['type']  = fields_result.fieldByName('type');
-	
+	fields[fields_result.fieldByName('field_name')]['settings']  = fields_result.fieldByName('settings');
+		
 	c_index++;
 	fields_result.next();
 }
@@ -261,9 +262,29 @@ if (c_index > 0){
 					//Refers to some object:
 					case 'omadi_reference':
 						Ti.API.info("Contains: "+c_content[count]+" for nid "+win4.nid);
+						Ti.API.info('SETTINGS: '+c_settings[count]);
+						var json = JSON.parse(c_settings[count]);
+
+						//Define available tables:
+						var tables_array = new Array();
+						for (var i in json.reference_types){
+							tables_array.push(json.reference_types[i]);
+						}
+						
+						var count_tables = 0;
+						var tables_query = "";
+						for (var i in tables_array){
+							if (tables_array.length-1 == count_tables){
+								tables_query+= tables_array[i];
+							}
+							else{
+								tables_query+= tables_array[i]+", ";
+							}
+						}
+						Ti.API.info('TABLES: '+tables_query);
 						try{
 							
-							var auxA  = db_display.execute('SELECT * FROM account WHERE nid='+c_content[count]);
+							var auxA  = db_display.execute('SELECT * FROM '+tables_query+' WHERE nid='+c_content[count]);
 							if (auxA.rowCount === 0 ){
 								bug[bug.length] = c_content[count];
 							}

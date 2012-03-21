@@ -434,7 +434,6 @@ function process_object(json, obj, f_marks, progress, type_request){
 	
 	var deploy = db_process_object.execute('SELECT field_name FROM fields WHERE bundle = "'+obj+'"');
 	var col_titles = [];
-	Ti.API.info('1');
 	var ind_column = 0;
 	while (deploy.isValidRow()){
 		col_titles[ind_column] = deploy.fieldByName('field_name'); 
@@ -450,7 +449,6 @@ function process_object(json, obj, f_marks, progress, type_request){
 		//Multiple objects
 		if (json[obj].insert.length){
 			for (var i = 0; i < json[obj].insert.length; i++ ){
-
 				if (progress != null){
 					//Increments Progress Bar
 					progress.set();
@@ -464,7 +462,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 					json[obj].insert[i].title = "No Title";
 				
 				//'update' is a flag to decide whether the node needs to be synced to the server or not 
-				process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ( '+json[obj].insert[i].nid+', '+json[obj].insert[i].created+' , '+json[obj].insert[i].changed+', "'+json[obj].insert[i].title.replace(/"/gi, "'")+'" , '+json[obj].insert[i].author_uid+' , 0 , "'+obj+'") ';
+				process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ( '+json[obj].insert[i].nid+', '+json[obj].insert[i].created+' , '+json[obj].insert[i].changed+', "'+json[obj].insert[i].title.replace(/"/gi, "'")+'" , '+json[obj].insert[i].author_uid+' , 0 , "'+obj+'") ';
 				
 				if (aux_column > 0){
 					query = 'INSERT OR REPLACE  INTO '+obj+' (\'nid\', ';
@@ -634,80 +632,199 @@ function process_object(json, obj, f_marks, progress, type_request){
 				}
 				
 			}
+
 		}
-		
 		//Only one object
 		else{
-				if (progress != null){
-					//Increments Progress Bar
-					progress.set();
+			if (progress != null){
+				//Increments Progress Bar
+				progress.set();
+			}
+			// Original query
+			var aux_column = ind_column;
+			var query = "";
+			
+			//Insert into node table
+			if ((json[obj].insert.title === null) || (json[obj].insert.title == 'undefined') || (json[obj].insert.title === false)) 
+				json[obj].insert.title = "No Title";
+			
+			//'update' is a flag to decide whether the node needs to be synced to the server or not 
+			process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ( '+json[obj].insert.nid+', '+json[obj].insert.created+' , '+json[obj].insert.changed+', "'+json[obj].insert.title.replace(/"/gi, "'")+'" , '+json[obj].insert.author_uid+' , 0 , "'+obj+'") ';
+			
+			if (aux_column > 0){
+				query = 'INSERT OR REPLACE  INTO '+obj+' (\'nid\', ';
+			}
+			//This would happen only if table has no columns, shouldn't happen
+			else{
+				query = 'INSERT OR REPLACE  INTO '+obj+' (nid) VALUES ('+json[obj].insert.nid+')';
+			}
+			
+			while (aux_column > 0){
+				if (aux_column == 1){
+					query += ' \''+col_titles[aux_column-1]+'\') VALUES ('+json[obj].insert.nid+', ';
 				}
-				
-				Ti.API.info('####################### NOT READY ########################');
-				var aux_column = ind_column;
-
-				//Insert into node table
-				var obj_title = json[obj].insert.title;
-				if ((obj_title == null) || (obj_title == 'undefined')) 
-					obj_title = "No Title";
-
-				process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO node (nid, created, changed, title, author_uid) VALUES ('+json[obj].insert.nid+', '+json[obj].insert.created+', '+json[obj].insert.changed+', '+obj_title+' , '+json[obj].insert.author_uid+')';
-				
-				
-				if (aux_column > 0)
-					var query = 'INSERT OR REPLACE  INTO '+obj+' (nid, ';
-				else
-					var query = 'INSERT OR REPLACE  INTO '+obj+' (nid) VALUES ('+json[obj].insert.nid+')';
-				
-				while (aux_column > 0){
-					if (aux_column == 1)
-						query += ' '+col_titles[aux_column-1]+') VALUES ('+json[obj].insert.nid+', ';
-					else
-						query += ' '+col_titles[aux_column-1]+', ';
-					aux_column--;
+				else{
+					query += ' \''+col_titles[aux_column-1]+'\', ';
 				}
-
-				aux_column = ind_column;
-				while (aux_column > 0){
-					var parse_api = col_titles[aux_column-1];
-					Ti.API.info("Inserting ["+obj+"] : "+json[obj].insert[parse_api]);
-					//Get type:
-					var mark = '';
-					switch (check_type(parse_api, obj)){
-						//Number
-						case 0:
-							mark = '';
-						break;
-						
-						//Text
-						case 1:
-							mark = '"';
-						break;	
+				aux_column--;
+			}
+			
+			aux_column = ind_column;
+			var mark = '';
+			while (aux_column > 0){
+				var parse_api = col_titles[aux_column-1];
+				mark = '"';
+				for (var i_index in f_marks){
+					if (i_index == parse_api){
+						for (var j_index in f_marks[i_index]){
+							if (j_index == obj){
+								mark = '';
+							}
+						}
 					}
-					Ti.API.info("String ====>   "+json[obj].insert[parse_api].replace('"', '\"'));
-					if (aux_column == 1){
-				 		if ( (json[obj].insert[parse_api] == null ) || (json[obj].insert[parse_api] == "undefined" ) || ( (mark == '') && (json[obj].insert[parse_api] == '') ) ) 
-							query += ' null )';
-						else	
-							query += ' '+mark+''+json[obj].insert[parse_api].replace('"', '\"')+''+mark+' )';
+				}
+				if (aux_column == 1){
+					if ( (json[obj].insert[parse_api] == null ) || (json[obj].insert[parse_api] == "undefined" ) ){ 
+						query += ' null )';
 					}
-						
 					else{
-						if ( (json[obj].insert[parse_api] == null ) || (json[obj].insert[parse_api] == "undefined" ) || ( (mark == '') && (json[obj].insert[parse_api] == '') ))
-							query += ' null ,';
-						else
-							query += ' '+mark+''+json[obj].insert[parse_api].replace('"', '\"')+''+mark+' ,';
+						if (mark == ''){
+							var num_to_insert = json[obj].insert[parse_api];
+
+							if ( isNumber(num_to_insert) ){
+								query += ' '+num_to_insert+' )';
+							}
+							else if (num_to_insert instanceof Array){
+
+								//If we have only one object in array we don't need another table to help us out
+								if (num_to_insert.length == 1 ){
+									if (isNumber(num_to_insert[0])){
+										query += ' '+num_to_insert[0]+' )';	
+									}
+									else{
+										query += ' null )';
+									}
+								}
+								else{
+									content_s = treatArray(num_to_insert, 1);
+									
+									// table structure:
+									// incremental, node_id, field_name, value
+									process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+									
+									// Code must to be a number since this database field accepts only integers numbers
+									// Token to indentify array of numbers is 7411176117105122
+									query += ' 7411317618171051229 )';
+								}
+							}
+							else{
+								Ti.API.info('Null ==> The value '+num_to_insert+' is a number? '+isNumber(num_to_insert) );
+								query += ' null )';
+							}
+						}
+						else{
+							if (json[obj].insert[parse_api] instanceof Array){
+								//If we have only one object in array we don't need another table to help us out
+								if (json[obj].insert[parse_api].length == 1 ){
+									query += ' '+json[obj].insert[parse_api][0]+' )';										
+								}
+								else{
+									content_s = treatArray(json[obj].insert[parse_api] , 2);
+									
+									// table structure:
+									// incremental, node_id, field_name, value
+									process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+									
+									// Code must to be a number since this database field accepts only integers numbers
+									// Token to indentify array of numbers is 7411176117105122
+									query += ' '+mark+'7411317618171051229'+mark+' )';
+								}								
+							}
+							else{
+								query += ' '+mark+''+json[obj].insert[parse_api].replace(/"/gi, "'")+''+mark+' )';
+							}
+						}
 					}
-					aux_column--;
 				}
-				//Inserts into account table
-				//db_process_object.execute(query);
-				process_obj[process_obj.length] = query; 
+				else{
+					if ( (json[obj].insert[parse_api] == null ) || (json[obj].insert[parse_api] == "undefined" ) ){
+						query += ' null ,';
+					}
+					else{
+						if (mark == ''){
+							var num_to_insert = json[obj].insert[parse_api];
+
+							if ( isNumber(num_to_insert) ){
+								query += ' '+num_to_insert+' ,';
+							}
+							else if (num_to_insert instanceof Array){
+								//If we have only one object in array we don't need another table to help us
+								if (num_to_insert.length == 1 ){
+									if (isNumber(num_to_insert[0])){
+										query += ' '+num_to_insert[0]+' ,';	
+									}
+									else{
+										query += ' null ,';
+									}
+								}
+								else{
+									content_s = treatArray(num_to_insert , 3);
+								
+									// table structure:
+									// incremental, node_id, field_name, value
+									process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+									
+									// Code must to be a number since this database field accepts only integers numbers
+									// Token to indentify array of numbers is 7411176117105122
+									query += ' 7411317618171051229 ,';	
+								}
+							}
+							else{
+								query += ' null ,';
+							}
+						}
+						else{
+							if (json[obj].insert[parse_api] instanceof Array){
+								
+								//If we have only one object in array we don't need another table to help us out
+								if (json[obj].insert[parse_api].length == 1 ){
+									query += ' '+mark+''+json[obj].insert[parse_api][0].replace(/"/gi, "'")+''+mark+' ,';										
+								}
+								else{
+									content_s = treatArray(json[obj].insert[parse_api] , 4);
+								
+									// table structure:
+									// incremental, node_id, field_name, value
+									process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+									
+									// Code must to be a number since this database field accepts only integers numbers
+									// Token to indentify array of numbers is 7411176117105122
+									query += ' '+mark+'7411317618171051229'+mark+' ,';	
+								}
+							}
+							else{
+								query += ' '+mark+''+json[obj].insert[parse_api].replace(/"/gi, "'")+''+mark+' ,';								
+							}
+						}
+					}
+				}
+				aux_column--;
+			}
+			//Inserts into object table
+			process_obj[process_obj.length] = query;
+			if (type_request == 'POST'){
+				process_obj[process_obj.length] = 'DELETE FROM '+obj+' WHERE nid='+json[obj].insert.__negative_nid;
+				process_obj[process_obj.length] = 'DELETE FROM node WHERE nid='+json[obj].insert.__negative_nid;
+			}
 		}
 		Ti.API.info("Inserted object ["+obj+"] sucefully!");				
 	}
 	
 	//Update Object
+	//We use 'insert or replace' for updates in order to reuse the logic for inserts
+	//If an updated field doesn't exists, the app is gonna create it avoiding errors returns
+	//It will never freezes if a field that needs update isn't found in the database yet
+	
 	if (json[obj].update){
 		if (json[obj].update.length){
 			for (var i = 0; i < json[obj].update.length; i++ ){
@@ -715,58 +832,179 @@ function process_object(json, obj, f_marks, progress, type_request){
 					//Increments Progress Bar
 					progress.set();
 				}
+				// Original query
 				var aux_column = ind_column;
-
-				//Updates node table
-				process_obj [process_obj.length] =  'UPDATE node SET "created"='+json[obj].update[i].created+', "changed"='+json[obj].update[i].changed+', "title"="'+json[obj].update[i].title+'", "author_uid"='+json[obj].update[i].author_uid+' WHERE "nid"='+json[obj].update[i].nid;
-
-				//Must have more then 1 column (excluding nid)
+				var query = "";
+				
+				//Insert into node table
+				if ((json[obj].update[i].title === null) || (json[obj].update[i].title == 'undefined') || (json[obj].update[i].title === false)) 
+					json[obj].update[i].title = "No Title";
+				
+				//'update' is a flag to decide whether the node needs to be synced to the server or not 
+				process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ( '+json[obj].update[i].nid+', '+json[obj].update[i].created+' , '+json[obj].update[i].changed+', "'+json[obj].update[i].title.replace(/"/gi, "'")+'" , '+json[obj].update[i].author_uid+' , 0 , "'+obj+'") ';
+				
 				if (aux_column > 0){
-					var query = 'UPDATE '+obj+' SET ';
-
-					while (aux_column > 0){
-						var parse_api = col_titles[aux_column-1];
-						Ti.API.info("Prepared field: "+json[obj].update[i][parse_api]+" for update");
-						//Get type:
-						var mark = '';
-						switch (check_type(parse_api, obj)){
-							//Number
-							case 0:
-								mark = '';
-							break;
-							
-							//Text
-							case 1:
-								mark = '"';
-							break;	
-						}
-						
-						
-						if (aux_column == 1){
-							if ( (json[obj].update[i][parse_api] == null ) || (json[obj].update[i][parse_api] == "undefined" ) ) 
-								query += ' "'+col_titles[aux_column-1]+'"=null WHERE "nid"='+json[obj].update[i].nid;
-							else	
-								query += ' "'+col_titles[aux_column-1]+'"='+mark+''+json[obj].update[i][parse_api]+''+mark+' WHERE "nid"='+json[obj].update[i].nid;
-						}
-							
-						else{
-							if ( (json[obj].update[i][parse_api] == null ) || (json[obj].update[i][parse_api] == "undefined" ) )
-								query += ' "'+col_titles[aux_column-1]+'"=null , ';
-							else
-								query += ' "'+col_titles[aux_column-1]+'"='+mark+''+json[obj].update[i][parse_api]+''+mark+' , ';
-						}
-
-						aux_column--;
-					}
-
-					//Updates object's row
-					process_obj [process_obj.length] =  query;
+					query = 'INSERT OR REPLACE  INTO '+obj+' (\'nid\', ';
 				}
-				//Doesn't make sense to update the primary key in this case
-				/*
-				else
-					var query = 'UPDATE '+obj+' SET "nid"='+json[obj].update[i].nid;
-				*/
+				//This would happen only if table has no columns, shouldn't happen
+				else{
+					query = 'INSERT OR REPLACE  INTO '+obj+' (nid) VALUES ('+json[obj].update[i].nid+')';
+				}
+				
+				while (aux_column > 0){
+					if (aux_column == 1){
+						query += ' \''+col_titles[aux_column-1]+'\') VALUES ('+json[obj].update[i].nid+', ';
+					}
+					else{
+						query += ' \''+col_titles[aux_column-1]+'\', ';
+					}
+					aux_column--;
+				}
+				
+				aux_column = ind_column;
+				var mark = '';
+				while (aux_column > 0){
+					var parse_api = col_titles[aux_column-1];
+					mark = '"';
+					for (var i_index in f_marks){
+						if (i_index == parse_api){
+							for (var j_index in f_marks[i_index]){
+								if (j_index == obj){
+									mark = '';
+								}
+							}
+						}
+					}
+					if (aux_column == 1){
+						if ( (json[obj].update[i][parse_api] == null ) || (json[obj].update[i][parse_api] == "undefined" ) ){ 
+							query += ' null )';
+						}
+						else{
+							if (mark == ''){
+								var num_to_insert = json[obj].update[i][parse_api];
+
+								if ( isNumber(num_to_insert) ){
+									query += ' '+num_to_insert+' )';
+								}
+								else if (num_to_insert instanceof Array){
+
+									//If we have only one object in array we don't need another table to help us out
+									if (num_to_insert.length == 1 ){
+										if (isNumber(num_to_insert[0])){
+											query += ' '+num_to_insert[0]+' )';	
+										}
+										else{
+											query += ' null )';
+										}
+									}
+									else{
+										content_s = treatArray(num_to_insert, 1);
+										
+										// table structure:
+										// incremental, node_id, field_name, value
+										process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].update[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+										
+										// Code must to be a number since this database field accepts only integers numbers
+										// Token to indentify array of numbers is 7411176117105122
+										query += ' 7411317618171051229 )';
+									}
+								}
+								else{
+									Ti.API.info('Null ==> The value '+num_to_insert+' is a number? '+isNumber(num_to_insert) );
+									query += ' null )';
+								}
+							}
+							else{
+								if (json[obj].update[i][parse_api] instanceof Array){
+									//If we have only one object in array we don't need another table to help us out
+									if (json[obj].update[i][parse_api].length == 1 ){
+										query += ' '+json[obj].update[i][parse_api][0]+' )';										
+									}
+									else{
+										content_s = treatArray(json[obj].update[i][parse_api] , 2);
+										
+										// table structure:
+										// incremental, node_id, field_name, value
+										process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].update[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+										
+										// Code must to be a number since this database field accepts only integers numbers
+										// Token to indentify array of numbers is 7411176117105122
+										query += ' '+mark+'7411317618171051229'+mark+' )';
+									}								
+								}
+								else{
+									query += ' '+mark+''+json[obj].update[i][parse_api].replace(/"/gi, "'")+''+mark+' )';
+								}
+							}
+						}
+					}
+					else{
+						if ( (json[obj].update[i][parse_api] == null ) || (json[obj].update[i][parse_api] == "undefined" ) ){
+							query += ' null ,';
+						}
+						else{
+							if (mark == ''){
+								var num_to_insert = json[obj].update[i][parse_api];
+
+								if ( isNumber(num_to_insert) ){
+									query += ' '+num_to_insert+' ,';
+								}
+								else if (num_to_insert instanceof Array){
+
+									//If we have only one object in array we don't need another table to help us out
+									if (num_to_insert.length == 1 ){
+										if (isNumber(num_to_insert[0])){
+											query += ' '+num_to_insert[0]+' ,';	
+										}
+										else{
+											query += ' null ,';
+										}
+									}
+									else{
+										content_s = treatArray(num_to_insert , 3);
+									
+										// table structure:
+										// incremental, node_id, field_name, value
+										process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].update[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+										
+										// Code must to be a number since this database field accepts only integers numbers
+										// Token to indentify array of numbers is 7411176117105122
+										query += ' 7411317618171051229 ,';	
+									}
+								}
+								else{
+									query += ' null ,';
+								}
+							}
+							else{
+								if (json[obj].update[i][parse_api] instanceof Array){
+									
+									//If we have only one object in array we don't need another table to help us out
+									if (json[obj].update[i][parse_api].length == 1 ){
+										query += ' '+mark+''+json[obj].update[i][parse_api][0].replace(/"/gi, "'")+''+mark+' ,';										
+									}
+									else{
+										content_s = treatArray(json[obj].update[i][parse_api] , 4);
+									
+										// table structure:
+										// incremental, node_id, field_name, value
+										process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].update[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+										
+										// Code must to be a number since this database field accepts only integers numbers
+										// Token to indentify array of numbers is 7411176117105122
+										query += ' '+mark+'7411317618171051229'+mark+' ,';	
+									}
+								}
+								else{
+									query += ' '+mark+''+json[obj].update[i][parse_api].replace(/"/gi, "'")+''+mark+' ,';								
+								}
+							}
+						}
+					}
+					aux_column--;
+				}
+				//Inserts into object table
+				process_obj[process_obj.length] = query;
 			}
 		}
 		//Only one object
@@ -775,57 +1013,179 @@ function process_object(json, obj, f_marks, progress, type_request){
 				//Increments Progress Bar
 				progress.set();
 			}
+			// Original query
 			var aux_column = ind_column;
-
-			//Updates node's table
-			process_obj [process_obj.length] =  'UPDATE node SET "created"='+json[obj].update.created+', "changed"='+json[obj].update.changed+', "title"="'+json[obj].update.title+'", "author_uid"='+json[obj].update.author_uid+' WHERE "nid"='+json[obj].update.nid;
-
-			//Must have more then 1 column (excluding nid)
-			if (aux_column > 0){
-				var query = 'UPDATE '+obj+' SET ';
+			var query = "";
 			
-				while (aux_column > 0){
-					var parse_api = col_titles[aux_column-1];
-					Ti.API.info("Prepared field: "+json[obj].update[parse_api]+" for update");
-					//Get type:
-					var mark = '';
-					switch (check_type(parse_api, obj)){
-						//Number
-						case 0:
-							mark = '';
-						break;
-						
-						//Text
-						case 1:
-							mark = '"';
-						break;	
-					}
-					
-					if (aux_column == 1){
-						if ( (json[obj].update[parse_api] == null ) || (json[obj].update[parse_api] == "undefined" ) ) 
-							query += ' "'+col_titles[aux_column-1]+'"=null WHERE "nid"='+json[obj].update.nid;
-						else	
-							query += ' "'+col_titles[aux_column-1]+'"='+mark+''+json[obj].update[parse_api]+''+mark+' WHERE "nid"='+json[obj].update.nid;
-					}
-						
-					else{
-						if ( (json[obj].update[parse_api] == null ) || (json[obj].update[parse_api] == "undefined" ) )
-							query += ' "'+col_titles[aux_column-1]+'"=null , ';
-						else
-							query += ' "'+col_titles[aux_column-1]+'"='+mark+''+json[obj].update[parse_api]+''+mark+' , ';
-					}
-
-					aux_column--;
-				}
-
-				//Updates account row
-				process_obj [process_obj.length] = query;
+			//Insert into node table
+			if ((json[obj].update.title === null) || (json[obj].update.title == 'undefined') || (json[obj].update.title === false)) 
+				json[obj].update.title = "No Title";
+			
+			//'update' is a flag to decide whether the node needs to be synced to the server or not 
+			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ( '+json[obj].update.nid+', '+json[obj].update.created+' , '+json[obj].update.changed+', "'+json[obj].update.title.replace(/"/gi, "'")+'" , '+json[obj].update.author_uid+' , 0 , "'+obj+'") ';
+			
+			if (aux_column > 0){
+				query = 'INSERT OR REPLACE  INTO '+obj+' (\'nid\', ';
 			}
-			//Doesn't make sense to update the primary key in this case
-			/*
-			else
-				var query = 'UPDATE account SET "nid"='+json.account.update.nid;
-			*/
+			//This would happen only if table has no columns, shouldn't happen
+			else{
+				query = 'INSERT OR REPLACE  INTO '+obj+' (nid) VALUES ('+json[obj].update.nid+')';
+			}
+			
+			while (aux_column > 0){
+				if (aux_column == 1){
+					query += ' \''+col_titles[aux_column-1]+'\') VALUES ('+json[obj].update.nid+', ';
+				}
+				else{
+					query += ' \''+col_titles[aux_column-1]+'\', ';
+				}
+				aux_column--;
+			}
+			
+			aux_column = ind_column;
+			var mark = '';
+			while (aux_column > 0){
+				var parse_api = col_titles[aux_column-1];
+				mark = '"';
+				for (var i_index in f_marks){
+					if (i_index == parse_api){
+						for (var j_index in f_marks[i_index]){
+							if (j_index == obj){
+								mark = '';
+							}
+						}
+					}
+				}
+				if (aux_column == 1){
+					if ( (json[obj].update[parse_api] == null ) || (json[obj].update[parse_api] == "undefined" ) ){ 
+						query += ' null )';
+					}
+					else{
+						if (mark == ''){
+							var num_to_insert = json[obj].update[parse_api];
+
+							if ( isNumber(num_to_insert) ){
+								query += ' '+num_to_insert+' )';
+							}
+							else if (num_to_insert instanceof Array){
+
+								//If we have only one object in array we don't need another table to help us out
+								if (num_to_insert.length == 1 ){
+									if (isNumber(num_to_insert[0])){
+										query += ' '+num_to_insert[0]+' )';	
+									}
+									else{
+										query += ' null )';
+									}
+								}
+								else{
+									content_s = treatArray(num_to_insert, 1);
+									
+									// table structure:
+									// incremental, node_id, field_name, value
+									process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].update.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+									
+									// Code must to be a number since this database field accepts only integers numbers
+									// Token to indentify array of numbers is 7411176117105122
+									query += ' 7411317618171051229 )';
+								}
+							}
+							else{
+								Ti.API.info('Null ==> The value '+num_to_insert+' is a number? '+isNumber(num_to_insert) );
+								query += ' null )';
+							}
+						}
+						else{
+							if (json[obj].update[parse_api] instanceof Array){
+								//If we have only one object in array we don't need another table to help us out
+								if (json[obj].update[parse_api].length == 1 ){
+									query += ' '+json[obj].update[parse_api][0]+' )';										
+								}
+								else{
+									content_s = treatArray(json[obj].update[parse_api] , 2);
+									
+									// table structure:
+									// incremental, node_id, field_name, value
+									process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].update.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+									
+									// Code must to be a number since this database field accepts only integers numbers
+									// Token to indentify array of numbers is 7411176117105122
+									query += ' '+mark+'7411317618171051229'+mark+' )';
+								}								
+							}
+							else{
+								query += ' '+mark+''+json[obj].update[parse_api].replace(/"/gi, "'")+''+mark+' )';
+							}
+						}
+					}
+				}
+				else{
+					if ( (json[obj].update[parse_api] == null ) || (json[obj].update[parse_api] == "undefined" ) ){
+						query += ' null ,';
+					}
+					else{
+						if (mark == ''){
+							var num_to_insert = json[obj].update[parse_api];
+
+							if ( isNumber(num_to_insert) ){
+								query += ' '+num_to_insert+' ,';
+							}
+							else if (num_to_insert instanceof Array){
+
+								//If we have only one object in array we don't need another table to help us out
+								if (num_to_insert.length == 1 ){
+									if (isNumber(num_to_insert[0])){
+										query += ' '+num_to_insert[0]+' ,';	
+									}
+									else{
+										query += ' null ,';
+									}
+								}
+								else{
+									content_s = treatArray(num_to_insert , 3);
+								
+									// table structure:
+									// incremental, node_id, field_name, value
+									process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].update.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+									
+									// Code must to be a number since this database field accepts only integers numbers
+									// Token to indentify array of numbers is 7411176117105122
+									query += ' 7411317618171051229 ,';	
+								}
+							}
+							else{
+								query += ' null ,';
+							}
+						}
+						else{
+							if (json[obj].update[parse_api] instanceof Array){
+								
+								//If we have only one object in array we don't need another table to help us out
+								if (json[obj].update[parse_api].length == 1 ){
+									query += ' '+mark+''+json[obj].update[parse_api][0].replace(/"/gi, "'")+''+mark+' ,';										
+								}
+								else{
+									content_s = treatArray(json[obj].update[parse_api] , 4);
+								
+									// table structure:
+									// incremental, node_id, field_name, value
+									process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].update.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+									
+									// Code must to be a number since this database field accepts only integers numbers
+									// Token to indentify array of numbers is 7411176117105122
+									query += ' '+mark+'7411317618171051229'+mark+' ,';	
+								}
+							}
+							else{
+								query += ' '+mark+''+json[obj].update[parse_api].replace(/"/gi, "'")+''+mark+' ,';								
+							}
+						}
+					}
+				}
+				aux_column--;
+			}
+			//Inserts into object table
+			process_obj[process_obj.length] = query;
 		}
 		Ti.API.info("Updated object ["+obj+"] sucefully!");
 	}
@@ -849,7 +1209,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 				//Increments Progress Bar
 				progress.set();
 			}
-			//Deletes from account table
+			//Deletes from object's table
 			process_obj [process_obj.length] = 'DELETE FROM '+obj+' WHERE "nid"=?', json[obj]["delete"].nid;
 			
 			//Deletes from node table
@@ -1164,7 +1524,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 								progress.set();
 							}
 							node_db[node_db.length] = "CREATE TABLE "+json.node_type.insert.type+" ('nid' INTEGER PRIMARY KEY NOT NULL  UNIQUE )";
-							node_db[node_db.length] = "INSERT INTO bundles (bundle_name) VALUES ('"+json.node_type.insert.type+"')";						
+							node_db[node_db.length] = "INSERT OR REPLACE INTO bundles (bundle_name, display_name, description) VALUES ('"+json.node_type.insert.type+"', '"+json.node_type.insert.name+"' , '"+json.node_type.insert.description+"' )";				
 							Ti.API.info('Node type : '+json.node_type.insert.type+' has been created');
 						}						
 					}
@@ -1360,14 +1720,75 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 							progress.set();
 						}
 						
+						//Encode:
 						var var_widget = JSON.stringify(json.fields.insert.widget);
 						var var_settings = JSON.stringify(json.fields.insert.settings); 
-
-						//Insert into fields
-						perform[perform.length] = 'INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, weight, required, widget, settings) VALUES (?,?,?,?,?,?,?,?,?,?)', json.fields.insert.fid , json.fields.insert.type , json.fields.insert.field_name , json.fields.insert.label , json.fields.insert.description , json.fields.insert.bundle , json.fields.insert.weight, json.fields.insert.required , "var_widget", "var_settings" ;
 						
+						var fid = json.fields.insert.fid;
+
+						if (json.fields.insert.type != null )
+							var type = json.fields.insert.type.replace(/'/gi, '"');
+						else
+							var type = null;
+						
+						if (json.fields.insert.field_name != null)
+							var field_name = json.fields.insert.field_name.replace(/'/gi, '"');
+						else
+							var field_name = null;
+						
+						if (json.fields.insert.label != null)
+							var label = json.fields.insert.label.replace(/'/gi, '"');
+						else
+							var label = null;
+								
+						if (json.fields.insert.description != null)
+							var description = json.fields.insert.description.replace(/'/gi, '"');
+						else
+							var description = null;
+						
+						if (json.fields.insert.bundle != null )		
+							var bundle = json.fields.insert.bundle.replace(/'/gi, '"');
+						else
+							var bundle = null;
+						
+						if (json.fields.insert.weight != null)		
+							var weight = json.fields.insert.weight;
+						else
+							var weight = null;
+						
+						if (json.fields.insert.required != null)
+							var required = json.fields.insert.required;
+						else
+							var required = null;
+						
+						if (var_widget != null)
+							var widget = var_widget.replace(/'/gi, '"');
+						else
+							var widget = null;	
+						
+						if (var_settings != null)
+							var settings = var_settings.replace(/'/gi, '"');
+						else
+							var settings = null;
+						
+						//Multiple parts
+						if (json.fields.insert.settings.parts){
+							for (var f_value_i in json.fields.insert.settings.parts ) {
+								//db_installMe.execute("INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, weight, required, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+f_value_i+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"','"+widget+"','"+settings+"' )");
+								perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, weight, required, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+f_value_i+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"','"+widget+"','"+settings+"' )";
+							}
+						}
+						//Normal field
+						else {
+							perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, weight, required, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"','"+widget+"','"+settings+"' )";
+						}
+
 						var type = "";
+
 						switch(json.fields.insert.type){
+							case "taxonomy_term_reference":
+							case "term_reference":
+							case "datestamp":
 							case "number_integer":
 								type = "INTEGER"
 							break;
@@ -1382,7 +1803,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 						}
 						
 						//Check if it is a valid bundle (automatically inserted throught the API):
-						var q_bund = db_installMe.execute('SELECT * FROM bundles WHERE bundle_name = "'+json.fields.insert[i].bundle+'"');
+						var q_bund = db_installMe.execute('SELECT * FROM bundles WHERE bundle_name = "'+json.fields.insert.bundle+'"');
 						if ( q_bund.isValidRow() ){
 							if (json.fields.insert.settings.parts){
 								for (var f_value_i in json.fields.insert.settings.parts ) {
@@ -1396,13 +1817,14 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 							}
 						}
 						else{
-							Ti.API.info('Avoiding fields creation for table: '+json.fields.insert.bundle);
+							Ti.API.info('=====================>>>>> Avoiding fields creation for table: '+json.fields.insert.bundle);
 						}
-						q_bund.close();
 					}
+					q_bund.close();
+
 				}
 				if (json.fields.update){
-					Ti.API.info("Fields update defined!");
+					Ti.API.info("Fields update found!");
 					if (json.fields.update.length){
 						for (var i = 0; i < json.fields.update.length; i++ ){
 							if (progress != null){
@@ -1411,17 +1833,17 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 							}
 							var_widget = JSON.stringify(json.fields.update[i].widget);
 							var_settings = JSON.stringify(json.fields.update[i].settings); 
-							db_installMe.execute('UPDATE fields SET "type"=?, "field_name"=?, "label"=?, "description"=?, "bundle"=?, "weight"=?, "required"=?, "widget"=?, "settings"=? WHERE "fid"=?', json.fields.insert[i].type , json.fields.insert[i].field_name , json.fields.insert[i].label , json.fields.insert[i].description , json.fields.insert[i].bundle , json.fields.insert[i].weight, json.fields.insert[i].required , var_widget , var_settings, json.fields.insert[i].fid );
+							db_installMe.execute('UPDATE fields SET "type"=?, "field_name"=?, "label"=?, "description"=?, "bundle"=?, "weight"=?, "required"=?, "widget"=?, "settings"=? WHERE "fid"=?', json.fields.update[i].type , json.fields.update[i].field_name , json.fields.update[i].label , json.fields.update[i].description , json.fields.update[i].bundle , json.fields.update[i].weight, json.fields.update[i].required , var_widget , var_settings, json.fields.update[i].fid );
 						}
 					}
 					else{ 
-							if (progress != null){
-								//Increment Progress Bar
-								progress.set();
-							}
-							var_widget = JSON.stringify(json.fields.update.widget);
-							var_settings = JSON.stringify(json.fields.update.settings); 
-							db_installMe.execute('UPDATE fields SET "type"=?, "field_name"=?, "label"=?, "description"=?, "bundle"=?, "weight"=?, "required"=?, "widget"=?, "settings"=? WHERE "fid"=?', json.fields.insert.type , json.fields.insert.field_name , json.fields.insert.label , json.fields.insert.description , json.fields.insert.bundle , json.fields.insert.weight, json.fields.insert.required , var_widget, var_settings, json.fields.insert.fid );
+						if (progress != null){
+							//Increment Progress Bar
+							progress.set();
+						}
+						var_widget = JSON.stringify(json.fields.update.widget);
+						var_settings = JSON.stringify(json.fields.update.settings); 
+						db_installMe.execute('UPDATE fields SET "type"=?, "field_name"=?, "label"=?, "description"=?, "bundle"=?, "weight"=?, "required"=?, "widget"=?, "settings"=? WHERE "fid"=?', json.fields.update.type , json.fields.update.field_name , json.fields.update.label , json.fields.update.description , json.fields.update.bundle , json.fields.update.weight, json.fields.update.required , var_widget, var_settings, json.fields.update.fid );
 					}
 				}
 				
@@ -1638,7 +2060,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 							//Ti.API.info("About to insert term: "+tid_t);  	
 							perform_term [perform_term.length] = 'INSERT OR REPLACE  INTO term_data ( tid , vid, name, description, weight) VALUES ('+tid_t+','+vid_t+',"'+name_t+'","'+desc_t+'","'+weight_t+'")';
 							if (type_request == 'POST'){
-								perform_term [perform_term.length] = 'DELETE FROM term_data WHERE "tid"='+json.terms.insert[i].__negative_tid;								
+								perform_term [perform_term.length] = 'DELETE FROM term_data WHERE "tid"='+json.terms.insert[i].__negative_tid;
 							}
 							
 						}
@@ -1783,17 +2205,17 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 								font:{
 									fontSize:28
 								},
-								width:'auto',
+								width:'83%',
 								textAlign:'left',
-								left:'17%',
+								left:'0%',
 								height:'auto'
 							});
 							
-							var plus_a =  Titanium.UI.createImageView({
-								image: '../images/plus_transparent.png',
+							var plus_a =  Titanium.UI.createButton({
+								title: '+',
 								width:'15%',
 								height:'100%',
-								left:0,
+								right:0,
 								is_plus: true
 							});
 							
@@ -1823,17 +2245,14 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 								progress.set();
 							}
 							Ti.API.info("USER UID: "+json.users.insert[i].uid);
-							//db_installMe.execute('INSERT OR REPLACE  INTO users (uid, username, mail, realname, status ) VALUES (?,?,?,?,?)', json.users.insert[i].uid, json.users.insert[i].username, json.users.insert[i].mail, json.users.insert[i].realname, json.users.insert[i].status);
 							perform_user[perform_user.length] = 'INSERT OR REPLACE  INTO user (uid, username, mail, realname, status ) VALUES ('+json.users.insert[i].uid+',"'+json.users.insert[i].username+'","'+json.users.insert[i].mail+'","'+json.users.insert[i].realname+'",'+json.users.insert[i].status+')';
 							
 							if (json.users.insert[i].roles.length){
 								for (var j = 0; j < json.users.insert[i].roles.length; j++ ){
-									//db_installMe.execute('INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES (?,?)', json.users.insert[i].uid, json.users.insert[i].roles[j]);
 									perform_user[perform_user.length] = 'INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES ('+json.users.insert[i].uid+','+json.users.insert[i].roles[j]+')';
 								}
 							}
 							else{
-								//db_installMe.execute('INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES (?,?)', json.users.insert[i].uid, json.users.insert[i].roles);
 								perform_user[perform_user.length] = 'INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES ('+json.users.insert[i].uid+','+json.users.insert[i].roles+')';
 							}
 						}
@@ -1844,17 +2263,15 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 							progress.set();
 						}
 						
-						//db_installMe.execute('INSERT OR REPLACE  INTO users (uid, username, mail, realname, status ) VALUES (?,?,?,?,?)', json.users.insert.uid, json.users.insert.username, json.users.insert.mail, json.users.insert.realname, json.users.insert.status);
-						perform_user[perform_user.length] = 'INSERT OR REPLACE  INTO user (uid, username, mail, realname, status ) VALUES ('+json.users.insert.uid+',"'+json.users.insert.username+'","'+json.users.insert.mail+'","'+json.users.insert.realname+'",'+json.users.insert.status+')';
+						Ti.API.info("USER UID: "+json.users.insert.uid);
+						perform_user[perform_user.length] = 'INSERT OR REPLACE INTO user (uid, username, mail, realname, status ) VALUES ('+json.users.insert.uid+',"'+json.users.insert.username+'","'+json.users.insert.mail+'","'+json.users.insert.realname+'",'+json.users.insert.status+')';
 						
 						if (json.users.insert.roles.length){
 							for (var j = 0; j < json.users.insert.roles.length; j++ ){
-								//db_installMe.execute('INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES (?,?)', json.users.insert.uid, json.users.insert.roles[j]);
 								perform_user[perform_user.length] = 'INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES ('+json.users.insert.uid+','+json.users.insert.roles[j]+')' ; 
 							}
 						}
 						else{
-							//db_installMe.execute('INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES (?,?)', json.users.insert.uid, json.users.insert.roles);
 							perform_user[perform_user.length] = 'INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES ('+json.users.insert.uid+','+json.users.insert.roles+')';
 						}
 					}
@@ -1869,24 +2286,19 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 								//Increment Progress Bar
 								progress.set();
 							}
-							//db_installMe.execute('UPDATE users SET "username"=? , "mail"=?, "realname"=?, "status"=? WHERE "uid"=?', json.users.update[i].username, json.users.update[i].mail, json.users.update[i].realname, json.users.update[i].status, json.users.update[i].uid );
 							perform_user[perform_user.length] = 'UPDATE user SET "username"="'+json.users.update[i].username+'" , "mail"="'+json.users.update[i].mail+'", "realname"="'+json.users.update[i].realname+'", "status"='+json.users.update[i].status+' WHERE "uid"='+json.users.update[i].uid;
 							
 							//Delete every row present at user_roles
-							//db_installMe.execute('DELETE FROM user_roles WHERE "uid"=?', json.users.update[i].uid);
-							
 							perform_user[perform_user.length] = 'DELETE FROM user_roles WHERE "uid"='+json.users.update[i].uid ;
 							
 							//Insert it over again!
 							if(json.users.update[i].roles){
-								
 								if (json.users.update[i].roles.length){
 									for (var j = 0; j < json.users.update[i].roles.length ; j++ ){
-										perform_user[perform_user.length] = 'INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES ('+json.users.update[i].uid+','+json.users.update[i].roles[j]+')';
+										perform_user[perform_user.length] = 'INSERT OR REPLACE INTO user_roles (uid, rid ) VALUES ('+json.users.update[i].uid+','+json.users.update[i].roles[j]+')';
 									}							
 								}
 								else{
-									//db_installMe.execute('INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES (?,?)', json.users.update[i].uid, json.users.update[i].roles);
 									perform_user[perform_user.length] = 'INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES ('+json.users.update[i].uid+','+json.users.update[i].roles+')';
 								}
 							}
@@ -1898,23 +2310,19 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 							progress.set();
 						}
 
-						//db_installMe.execute('UPDATE users SET "username"=? , "mail"=?, "realname"=?, "status"=? WHERE "uid"=?', json.users.update.username, json.users.update.mail, json.users.update.realname, json.users.update.status, json.users.update.uid );
 						perform_user[perform_user.length] = 'UPDATE user SET "username"="'+json.users.update.username+'" , "mail"="'+json.users.update.mail+'", "realname"="'+json.users.update.realname+'", "status"='+json.users.update.status+' WHERE "uid"='+json.users.update.uid;
+
 						//Delete every row present at user_roles
-						//db_installMe.execute('DELETE FROM user_roles WHERE "uid"=?', json.users.update.uid);
-						
 						perform_user[perform_user.length] = 'DELETE FROM user_roles WHERE "uid"='+json.users.update.uid;
 						
 						//Insert it over again!
 						if(json.users.update.roles){
 							if (json.users.update.roles.length){
 								for (var j = 0; j < json.users.update.roles.length ; j++ ){
-									//db_installMe.execute('INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES (?,?)', json.users.update.uid, json.users.update.roles[j]);
 									perform_user[perform_user.length] = 'INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES ('+json.users.update.uid+','+json.users.update.roles[j]+')';
 								}							
 							}
 							else{
-								//db_installMe.execute('INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES (?,?)', json.users.update.uid, json.users.update.roles);
 								perform_user[perform_user.length] = 'INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES ('+json.users.update.uid+','+json.users.update.roles+')';
 							}
 						}
@@ -1932,10 +2340,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 							}
 
 							//Deletes current row (contact)
-							//db_installMe.execute('DELETE FROM users WHERE "uid"=?', json.users["delete"][i].uid);
 							perform_user[perform_user.length] = 'DELETE FROM user WHERE "uid"='+json.users["delete"][i].uid ;
-							
-							//db_installMe.execute('DELETE FROM user_roles WHERE "uid"=?', json.users["delete"][i].uid);
 							perform_user[perform_user.length] = 'DELETE FROM user_roles WHERE "uid"='+json.users["delete"][i].uid;
 						}
 					}
@@ -1947,8 +2352,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 
 						//db_installMe.execute('DELETE FROM users WHERE "uid"=?', json.users["delete"].uid);
 						perform_user[perform_user.length] = 'DELETE FROM user WHERE "uid"='+json.users["delete"].uid;
-						
-						//db_installMe.execute('DELETE FROM user_roles WHERE "uid"=?', json.users["delete"].uid);
 						perform_user[perform_user.length] = 'DELETE FROM user_roles WHERE "uid"='+json.users["delete"].uid;
 					}
 				Ti.API.info("Deleted Users sucefully!");
@@ -1977,6 +2380,117 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 				
 			}
 			
+			/*********** Regions *************/
+			if(json.regions){																		
+				Ti.API.info('>>>>>>>>>>>>>>>>####################### REGIONS #######################<<<<<<<<<<<<<<<<');
+				var perform_region = [];
+				
+				//Insert - Regions
+				if (json.regions.insert){
+					Ti.API.info('####################### Regions insert');
+					if (json.regions.insert.length){
+						for (var i = 0; i < json.regions.insert.length; i++ ){
+							if (progress != null){
+								//Increment Progress Bar
+								progress.set();
+							}
+							
+							//Encode:
+							var var_settings = JSON.stringify(json.regions.insert[i].settings); 
+							
+							if (var_settings != null)
+								var settings = var_settings.replace(/'/gi, '"');
+							else
+								var settings = null;
+							
+							Ti.API.info("REGION RID: "+json.regions.insert[i].rid);
+							perform_region[perform_region.length] = 'INSERT OR REPLACE INTO regions (rid, node_type, label, region_name, weight, settings ) VALUES ('+json.regions.insert[i].rid+', \''+json.regions.insert[i].node_type+'\' , \''+json.regions.insert[i].label+'\', \''+json.regions.insert[i].region_name+'\' , '+json.regions.insert[i].weight+', \''+settings+'\' )';
+						}
+					}
+					else{
+						if (progress != null){
+							//Increment Progress Bar
+							progress.set();
+						}
+						
+						Ti.API.info("REGION RID: "+json.regions.insert.rid);
+						//Encode:
+						var var_settings = JSON.stringify(json.regions.insert.settings); 
+						
+						if (var_settings != null)
+							var settings = var_settings.replace(/'/gi, '"');
+						else
+							var settings = null;
+						
+						Ti.API.info("REGION RID: "+json.regions.insert.rid);
+						perform_region[perform_region.length] = 'INSERT OR REPLACE INTO regions (rid, node_type, label, region_name, weight, settings ) VALUES ('+json.regions.insert.rid+', \''+json.regions.insert.node_type+'\' , \''+json.regions.insert.label+'\', \''+json.regions.insert.region_name+'\' , '+json.regions.insert.weight+', \''+settings+'\' )';
+						
+					}
+					Ti.API.info("Inserted regions sucefully!");
+				}
+
+				//Update - Regions
+				if (json.regions.update){
+					Ti.API.info('####################### Regions update');
+					if (json.regions.update.length){
+						for (var i = 0; i < json.regions.update.length; i++ ){
+							if (progress != null){
+								//Increment Progress Bar
+								progress.set();
+							}
+							perform_region[perform_region.length] = 'UPDATE regions SET \'node_type\'=\''+json.regions.update[i].node_type+'\' , \'label\'=\''+json.regions.update[i].label+'\', \'region_name\'=\''+json.regions.update[i].region_name+'\', \'weight\'='+json.regions.update[i].weight+', \'settings\'=\''+json.regions.update[i].settings+'\' WHERE \'rid\'='+json.regions.update[i].rid;
+						}
+					}
+					else{
+						if (progress != null){
+							//Increment Progress Bar
+							progress.set();
+						}
+						perform_region[perform_region.length] = 'UPDATE regions SET \'node_type\'=\''+json.regions.update.node_type+'\' , \'label\'=\''+json.regions.update.label+'\', \'region_name\'=\''+json.regions.update.region_name+'\', \'weight\'='+json.regions.update.weight+', \'settings\'=\''+json.regions.update.settings+'\' WHERE \'rid\'='+json.regions.update.rid;
+					}
+					Ti.API.info("Updated Regions sucefully!");
+				}
+				
+				//Delete - Regions
+				if (json.regions["delete"]){
+					Ti.API.info('####################### Regions delete');
+					if (json.regions["delete"].length){
+						for (var i = 0; i <  json.regions["delete"].length; i++ ){
+							if (progress != null){
+								//Increment Progress Bar
+								progress.set();
+							}
+							perform_region[perform_region.length] = 'DELETE FROM regions WHERE "rid"='+json.regions["delete"][i].rid ;
+						}
+					}
+					else{
+						if (progress != null){
+							//Increment Progress Bar
+							progress.set();
+						}
+						perform_region[perform_region.length] = 'DELETE FROM regions WHERE "rid"='+json.regions["delete"].rid ;
+					}
+				Ti.API.info("Deleted Regions sucefully!");
+				}
+				
+				Ti.API.info('####################### Regions install');
+				var iRegion = 0;
+				var iStart = Math.round(new Date().getTime() / 1000);
+				Ti.API.info("Regions started at : "+iStart);
+				db_installMe.execute("BEGIN IMMEDIATE TRANSACTION");
+				while (iRegion <= perform_region.length-1 ){
+					db_installMe.execute(perform_region[iRegion]);
+					iRegion++;
+				}
+				db_installMe.execute("COMMIT TRANSACTION");
+				var iEnd = Math.round(new Date().getTime() / 1000);
+				Ti.API.info("Region finishes at : "+iEnd);
+				var iResult = iEnd - iStart;
+				Ti.API.info('Region seconds: '+ iResult);
+				Ti.API.info("Region ended!");
+				
+			}
+
 			if ( existsMorePages ){
 				Ti.API.info('Another Call');
 				installMe(pageIndex, win, json.sync_timestamp, progress, menu, img, 'GET');
