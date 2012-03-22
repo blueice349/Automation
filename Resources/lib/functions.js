@@ -1199,9 +1199,9 @@ function process_object(json, obj, f_marks, progress, type_request){
 					progress.set();
 				}
 				//Deletes from object's table
-				process_obj [process_obj.length] =  'DELETE FROM '+obj+' WHERE "nid"=?', json[obj]["delete"][i].nid;
+				process_obj [process_obj.length] =  'DELETE FROM '+obj+' WHERE "nid"='+ json[obj]["delete"][i].nid;
 				//Deletes from node table
-				process_obj [process_obj.length] =  'DELETE FROM node WHERE "nid"=?', json[obj]["delete"][i].nid;
+				process_obj [process_obj.length] =  'DELETE FROM node WHERE "nid"='+ json[obj]["delete"][i].nid;
 			}
 		}
 		else{
@@ -1210,10 +1210,10 @@ function process_object(json, obj, f_marks, progress, type_request){
 				progress.set();
 			}
 			//Deletes from object's table
-			process_obj [process_obj.length] = 'DELETE FROM '+obj+' WHERE "nid"=?', json[obj]["delete"].nid;
+			process_obj [process_obj.length] = 'DELETE FROM '+obj+' WHERE "nid"='+ json[obj]["delete"].nid;
 			
 			//Deletes from node table
-			process_obj [process_obj.length] = 'DELETE FROM node WHERE "nid"=?', json[obj]["delete"].nid;
+			process_obj [process_obj.length] = 'DELETE FROM node WHERE "nid"='+json[obj]["delete"].nid;
 		}
 		Ti.API.info("Deleted object ["+obj+"] sucefully!");
 	}
@@ -2614,13 +2614,18 @@ function unsetUse(){
 function isUpdating(){
 	var db_gu = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 	var res_set = db_gu.execute('SELECT updating FROM updated WHERE rowid=1');
-	
-	if (res_set.fieldByName('updating') == 1)
+
+	if (res_set.fieldByName('updating') == 1){
+		res_set.close();
+		db_gu.close();
 		return true;
-	else
+	}
+	else{
+		res_set.close();
+		db_gu.close();
 		return false;
-		
-	db_gu.close();
+	}
+
 }
 
 

@@ -44,7 +44,7 @@ var win = Ti.UI.currentWindow;
 //Sets only portrait mode
 win.orientationModes = [ Titanium.UI.PORTRAIT ];
 
-var db_display = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+var db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
 //The view where the results are presented
 var resultView = Ti.UI.createView({
@@ -88,10 +88,12 @@ var viewContent = Ti.UI.createScrollView({
 });
 resultView.add(viewContent);
 
-var fields_result = db_display.execute('SELECT label, weight, type, field_name, settings, widget FROM fields WHERE bundle = "'+win.type+'" ORDER BY weight ASC');
+var regions			 = db_display.execute('SELECT * FROM regions WHERE node_type = "'+win.type+'" ORDER BY weight ASC');
+var fields_result	 = db_display.execute('SELECT label, weight, type, field_name, settings, widget FROM fields WHERE bundle = "'+win.type+'" ORDER BY weight ASC');
 
 //Populate array with field name and configs
 var field_arr		=	new Array();
+var unsorted_res	=   new Array();
 var label			=	new Array();
 var content			=	new Array();
 var border			=	new Array();
@@ -100,26 +102,69 @@ var count = 0;
 var title = 0;
 
 setTimeout(function(e){
-
+	//Load an array containing fields_result 
 	while (fields_result.isValidRow()){
-		//Index the array by label
-		if (!field_arr[fields_result.fieldByName('label')]){
-			field_arr[fields_result.fieldByName('label')] = new Array();
-		}
-		
-		////
-		//Array of fields
-		// field_arr[label][length] 
-		// field_arr[address][0], field_arr[address][1], field_arr[address][2]
-		////
-		field_arr[fields_result.fieldByName('label')][field_arr[fields_result.fieldByName('label')].length] = {
+		unsorted_res.push({
 					label:fields_result.fieldByName('label'),
 					type:fields_result.fieldByName('type'), 
 					field_name: fields_result.fieldByName('field_name'),
 					settings: fields_result.fieldByName('settings'),
 					widget: fields_result.fieldByName('widget')
+		});
+		fields_result.next();	
+	}
+	
+	while (regions.isValidRow()){
+		field_arr[regions.fieldByName('label')] = new Array();
+
+		//Display region title:
+		field_arr[regions.fieldByName('label')][field_arr[regions.fieldByName('label')].length] = {
+				label			: regions.fieldByName('label'),
+				type			: 'region_separator_mode', 
+				field_name		: regions.fieldByName('region_name'),
+				settings		: null,
+				widget			: null,
+				region_settings	: ''+regions.fieldByName('settings')
 		};
-		fields_result.next();
+		
+		Ti.API.info(' Region_name: '+regions.fieldByName('region_name'));
+		Ti.API.info(' Weight: '+regions.fieldByName('weight'));
+
+		//Organizing every field into regions:
+		//while (fields_result.isValidRow()){
+		for (var i in unsorted_res){
+			var settings = JSON.parse(unsorted_res[i].settings);
+			Ti.API.info('Field region = '+settings.region);
+			if (regions.fieldByName('region_name') == settings.region ){
+				Ti.API.info('Regions match! ');
+				Ti.API.info('Field label: '+unsorted_res[i].label);
+				Ti.API.info('Field type: '+unsorted_res[i].type);
+				Ti.API.info('Field name: '+unsorted_res[i].field_name);
+
+				
+				//Index the array by label
+				if (!field_arr[unsorted_res[i].label]){
+					 field_arr[unsorted_res[i].label] = new Array();
+				}
+				
+				////
+				//Array of fields
+				// field_arr[label][length] 
+				// field_arr[address][0], field_arr[address][1], field_arr[address][2]
+				////
+				field_arr[unsorted_res[i].label][field_arr[unsorted_res[i].label].length] = {
+							label		: unsorted_res[i].label,
+							type		: unsorted_res[i].type, 
+							field_name	: unsorted_res[i].field_name,
+							settings	: unsorted_res[i].settings,
+							widget		: unsorted_res[i].widget
+				};
+			}
+			else{
+				Ti.API.info(' Regions dont match! ');
+			}
+		}
+		regions.next();
 	}
 	var top = 0;
 	var field_definer = 0;
@@ -311,7 +356,7 @@ setTimeout(function(e){
 						top				: top
 					});
 					top += heightValue;
-	
+	 
 					manager.last_text = count;				
 					content[count] = Ti.UI.createTextField({
 						hintText		: field_arr[index_label][index_size].label,
@@ -706,6 +751,7 @@ setTimeout(function(e){
 										//Check match
 						        		if (e.source.value == list[i].title){
 						        			e.source.nid	= list[i].nid;
+					
 						        		}
 						        		else{
 						        			e.source.nid	= null;
@@ -1112,7 +1158,31 @@ setTimeout(function(e){
 	
 				break;
 				
-				
+				case 'region_separator_mode':
+					if (top == 0){
+						var regionTop = 0;
+					}
+					else{
+						var regionTop = top+10;
+					}
+					label[count] = Ti.UI.createLabel({
+						text			: field_arr[index_label][index_size].label+' :',
+						color			: '#000000',
+						font 			: {
+											fontSize: 18, fontWeight: 'bold'
+						},
+						textAlign		: 'center',
+						width			: '100%',
+						touchEnabled	: false,
+						height			: 40,
+						top				: regionTop,
+						backgroundColor	: '#FFFFFF'
+					});
+					top += 40;
+					
+					viewContent.add(label[count]);
+					count++;
+				break;
 			}
 		}
 	}

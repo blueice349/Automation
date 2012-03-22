@@ -79,10 +79,12 @@ var viewContent = Ti.UI.createScrollView({
 
 resultView.add(viewContent);
 
-var fields_result = db_display.execute('SELECT label, weight, type, field_name, settings FROM fields WHERE bundle = "'+win4.type+'" ORDER BY weight ASC');
+var fields_result 	= db_display.execute('SELECT label, weight, type, field_name, widget, settings FROM fields WHERE bundle = "'+win4.type+'" ORDER BY weight ASC');
+var regions			= db_display.execute('SELECT * FROM regions WHERE node_type = "'+win4.type+'" ORDER BY weight ASC');
 
 //Populate array with field name and configs
-var fields = new Array();
+var fields 			=   new Array();
+var unsorted_res	=   new Array();
 var c_index = 0;
 var label = [];
 var content = []; 
@@ -93,14 +95,55 @@ var heightValue = 60;
 var bug = [];
 
 while (fields_result.isValidRow()){
-	
-	fields[fields_result.fieldByName('field_name')] = new Array(); 
-	fields[fields_result.fieldByName('field_name')]['label']  = fields_result.fieldByName('label');
-	fields[fields_result.fieldByName('field_name')]['type']  = fields_result.fieldByName('type');
-	fields[fields_result.fieldByName('field_name')]['settings']  = fields_result.fieldByName('settings');
-		
+	unsorted_res.push({
+				label:fields_result.fieldByName('label'),
+				type:fields_result.fieldByName('type'), 
+				field_name: fields_result.fieldByName('field_name'),
+				settings: fields_result.fieldByName('settings'),
+				widget: fields_result.fieldByName('widget')
+	});
 	c_index++;
-	fields_result.next();
+	fields_result.next();	
+}
+
+while (regions.isValidRow()){
+
+	fields[regions.fieldByName('region_name')] = new Array();
+
+	//Display region title:
+	fields[regions.fieldByName('region_name')]['label']		= regions.fieldByName('label');
+	fields[regions.fieldByName('region_name')]['type']		= 'region_separator_mode'; 
+	fields[regions.fieldByName('region_name')]['settings'] 	= regions.fieldByName('settings');
+	
+	Ti.API.info(' Region_name: '+regions.fieldByName('region_name'));
+	Ti.API.info(' Weight: '+regions.fieldByName('weight'));
+
+	//Organizing every field into regions:
+	//while (fields_result.isValidRow()){
+	for (var i in unsorted_res){
+		
+		var settings = JSON.parse(unsorted_res[i].settings);
+		Ti.API.info('Field region = '+settings.region);
+		if (regions.fieldByName('region_name') == settings.region ){
+			Ti.API.info('Regions match! ');
+			Ti.API.info('Field label: '+unsorted_res[i].label);
+			Ti.API.info('Field type: '+unsorted_res[i].type);
+			Ti.API.info('Field name: '+unsorted_res[i].field_name);
+			Ti.API.info('Field settings: '+unsorted_res[i].settings);
+			
+			fields[unsorted_res[i].field_name] = new Array();
+		
+			//Display region title:
+			fields[unsorted_res[i].field_name]['label']		= unsorted_res[i].label;
+			fields[unsorted_res[i].field_name]['type']		= unsorted_res[i].type; 
+			fields[unsorted_res[i].field_name]['settings'] 	= unsorted_res[i].settings;
+			fields[unsorted_res[i].field_name]['widget'] 	= unsorted_res[i].widget;
+		}
+		else{
+			Ti.API.info(' Regions dont match! ');
+		}
+	}
+	regions.next();
 }
 
 
@@ -110,16 +153,16 @@ if (c_index > 0){
 	var c_content = [];
 	var c_settings = [];
 	var is_array = false;
+	var show_region = new Array();
 	
 	for (var f_name_f in fields ){
 		Ti.API.info(f_name_f+" => "+results.fieldByName(f_name_f)+" => "+fields[f_name_f]['type']);
-		if ((results.fieldByName(f_name_f) != null) && (results.fieldByName(f_name_f) != "")){
+		if ( (results.fieldByName(f_name_f) != null && results.fieldByName(f_name_f) != "") ||  (fields[f_name_f]['type'] == 'region_separator_mode')) {
 		
 			//fields from Fields table that match with current object
 			c_type[count]   	= fields[f_name_f]['type'];
 			c_label[count]		= fields[f_name_f]['label'];
 			c_settings[count]	= fields[f_name_f]['settings'];
-			
 			
 			//Content
 			c_content[count] = results.fieldByName(f_name_f);
@@ -161,7 +204,7 @@ if (c_index > 0){
 					c_label[count]		= keep_label;
 					c_settings[count]	= keep_sett;
 					
-					Ti.API.info('For type: '+c_type[count]+' ****************************** '+c_content[count]);
+					Ti.API.info('For type: '+c_type[count]+' is associated '+c_content[count]);
 				}
 				
 				loop_times--;
@@ -185,6 +228,18 @@ if (c_index > 0){
 				 * 
 				 */
 				
+				if ((c_settings[count] != null) && (c_settings[count] != 'null') && (c_settings[count] != undefined) && (c_settings[count] != 'undefined')&& (c_settings[count] != '')){
+					Ti.API.info('Settings: '+c_settings[count]);
+					var settings = JSON.parse(c_settings[count]); 
+					if (show_region[settings.region]){
+						show_region[settings.region] = true;
+						Ti.API.info('Region added : '+settings.region);
+					}
+					else{
+						show_region[settings.region] = new Array();
+					}
+				}
+				
 				switch(c_type[count]){
 					//Treatment follows the same for text or text_long
 					case 'text':
@@ -194,7 +249,8 @@ if (c_index > 0){
 							width:  "33%", 
 							left: 5,
 							textAlign: 'left',
-							touchEnabled: false
+							touchEnabled: false,
+							field: true
 						});
 					
 	
@@ -237,7 +293,8 @@ if (c_index > 0){
 							width:  "33%",
 							textAlign: 'left',
 							left: 5,
-							touchEnabled: false
+							touchEnabled: false,
+							field: true
 						});
 						 
 						content[count] = Ti.UI.createLabel({
@@ -299,7 +356,8 @@ if (c_index > 0){
 									width:  "33%",
 									textAlign: 'left',
 									left: 5,
-									touchEnabled: false
+									touchEnabled: false,
+									field: true
 								});
 								
 								content[count] = Ti.UI.createLabel({
@@ -345,7 +403,8 @@ if (c_index > 0){
 							height: "100%",
 							textAlign: 'left',
 							left: 5,
-							touchEnabled: false
+							touchEnabled: false,
+							field: true
 						});
 					
 						content[count] = Ti.UI.createLabel({
@@ -375,7 +434,8 @@ if (c_index > 0){
 							width:  "33%",
 							textAlign: 'left',
 							left: 5,
-							touchEnabled: false
+							touchEnabled: false,
+							field: true
 						});
 						
 						content[count] = Ti.UI.createLabel({
@@ -412,7 +472,8 @@ if (c_index > 0){
 							width:  "30%",
 							textAlign: 'left',
 							left: 5,
-							touchEnabled: false
+							touchEnabled: false,
+							field: true
 						});
 						
 						content[count] = Ti.UI.createLabel({
@@ -446,7 +507,8 @@ if (c_index > 0){
 							width:  "33%",
 							textAlign: 'left',
 							left: 5,
-							touchEnabled: false
+							touchEnabled: false,
+							field: true
 						});
 						
 						content[count] = Ti.UI.createLabel({
@@ -474,7 +536,8 @@ if (c_index > 0){
 							width:  "33%",
 							textAlign: 'left',
 							left: 5,
-							touchEnabled: false
+							touchEnabled: false,
+							field: true
 						});
 						
 						content[count] = Ti.UI.createLabel({
@@ -500,7 +563,8 @@ if (c_index > 0){
 							width:  "33%",
 							textAlign: 'left',
 							left: 5,
-							touchEnabled: false
+							touchEnabled: false,
+							field: true
 						});
 						
 						content[count] = Ti.UI.createLabel({
@@ -525,7 +589,8 @@ if (c_index > 0){
 							width:  "33%",
 							textAlign: 'left',
 							left: 5,
-							touchEnabled: false
+							touchEnabled: false,
+							field: true
 						});
 						
 						content[count] = Ti.UI.createLabel({
@@ -550,7 +615,8 @@ if (c_index > 0){
 							width:  "33%",
 							textAlign: 'left',
 							left: 5,
-							touchEnabled: false
+							touchEnabled: false,
+							field: true
 						});
 						
 						content[count] = Ti.UI.createLabel({
@@ -576,7 +642,8 @@ if (c_index > 0){
 							width:  "33%",
 							textAlign: 'left',
 							left: 5,
-							touchEnabled: false
+							touchEnabled: false,
+							field: true
 						});
 						
 						content[count] = Ti.UI.createLabel({
@@ -593,6 +660,25 @@ if (c_index > 0){
 						});
 						count++;
 					break;
+					
+					case 'region_separator_mode':
+						 
+						label[count] = Ti.UI.createLabel({
+							text			: c_label[count],
+							color			: '#FFFFFF',
+							font 			: {
+												fontSize: 18, fontWeight: 'bold'
+							},
+							textAlign		: 'center',
+							width			: '100%',
+							touchEnabled	: false,
+							height			: '100%',
+							is_region		: true,
+							ref				: f_name_f,
+							field			: false
+						});
+						count++;
+					break;
 				}
 			}
 		}
@@ -600,28 +686,63 @@ if (c_index > 0){
 
 	if (bug.length === 0){
 		Ti.API.info("Items (count): "+ count);
+		var index_fields = 0
 		for (var i = 0; i < count ; i++){
-		
-			cell[i] = Ti.UI.createView({
-				height: heightValue,
-				top : (heightValue+2)*i,
-				width: '100%'
-			});
-			label[i].color = "#999999";
-			content[i].color = "#FFFFFF";
+			//Normal fields
+			if ((label[i].is_region !== true) && (label[i].field === true)){
+				
+				cell[i] = Ti.UI.createView({
+					height: heightValue,
+					top : (heightValue+2)*index_fields,
+					width: '100%'
+				});
+
+				label[i].color = "#999999";
+				content[i].color = "#FFFFFF";
+				
+				cell[i].add(label[i]);
+				cell[i].add(content[i]);
+				
+				viewContent.add(cell[i]);
 			
-			cell[i].add(label[i]);
-			cell[i].add(content[i]);
-		
-			viewContent.add(cell[i]);
-			
-			border[i] = Ti.UI.createView({
-				backgroundColor:"#F16A0B",
-				height:2,
-				top: ((heightValue+2)*(i+1))-2
-			});
-			viewContent.add(border[i]);
-		
+				border[i] = Ti.UI.createView({
+					backgroundColor:"#F16A0B",
+					height:2,
+					top: ((heightValue+2)*(index_fields+1))-2
+				});
+				viewContent.add(border[i]);
+				index_fields++;
+			}
+			//Regions
+			else{
+				var cnd = 0;
+				for (var j in show_region){
+					if (j == label[i].ref){
+						cnd++;
+						
+						cell[i] = Ti.UI.createView({
+							height: heightValue,
+							top : (heightValue+2)*index_fields,
+							width: '100%'
+						});
+
+						cell[i].add(label[i]);
+						viewContent.add(cell[i]);
+						
+						border[i] = Ti.UI.createView({
+							backgroundColor:"#F16A0B",
+							height:2,
+							top: ((heightValue+2)*(index_fields+1))-2
+						});
+						viewContent.add(border[i]);
+						Ti.API.info('Added region: '+label[i].ref);
+						index_fields++;
+					}
+				}
+				if (cnd == 0){
+						Ti.API.info('No content for region: '+label[i].ref)
+				}
+			}
 		}
 	}
 	else{
