@@ -21,7 +21,7 @@ var win1 = Titanium.UI.createWindow({
     fullscreen: true
 });
 
-Titanium.App.Properties.setString("databaseVersion", "omadiDb1191");
+Titanium.App.Properties.setString("databaseVersion", "omadiDb1192");
 
 var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
@@ -216,7 +216,7 @@ b1.addEventListener('click', function(){
 		}
 		updatedTime.close();
 
-		showIndicator('full');
+		showIndicator('Logging you in...');
 		//Create internet connection
 		var xhr = Ti.Network.createHTTPClient();
 		

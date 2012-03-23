@@ -1,31 +1,7 @@
 Logfile initialized
 [INFO] logfile = /home/jo/Apps/ConnectCRM/build.log
-[DEBUG] /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/builder.py simulator Omadi /home/jo/Apps/android-sdk /home/jo/Apps/ConnectCRM joseandro.connect.com 12 WQVGA400 
-[INFO] Building Omadi for Android ... one moment
+[DEBUG] /home/jo/.titanium/mobilesdk/linux/1.8.0.1/android/builder.py distribute Omadi /home/jo/Apps/android-sdk /home/jo/Apps/ConnectCRM joseandro.connect.com /home/jo/keystores/android.keystore borsoi87 omadi /home/jo/Desktop/ 8
 [INFO] Titanium SDK version: 1.8.0.1 (12/22/11 13:09 fbdc96f)
-[DEBUG] Waiting for device to be ready ...
-[TRACE] adb devices returned 1 devices/emulators
-[DEBUG] Device connected... (waited 0 seconds)
-[DEBUG] waited 0.005340 seconds on emulator to get ready
-[DEBUG] joseandro.connect.com installed? True
-[INFO] Fastdev server running, deploying in Fastdev mode
 [INFO] Copying project resources..
-[TRACE] COPYING MODIFIED FILE: /home/jo/Apps/ConnectCRM/Resources/main_windows/individual_object.js => /home/jo/Apps/ConnectCRM/build/android/bin/assets/Resources/main_windows/individual_object.js
-[INFO] Tiapp.xml unchanged, skipping class generation
-[DEBUG] Processing Android resource drawables
-[DEBUG] found drawable-long-port-hdpi splash screen at /home/jo/Apps/ConnectCRM/Resources/android/images/res-long-port-hdpi/default.png
-[DEBUG] found drawable-notlong-land-hdpi splash screen at /home/jo/Apps/ConnectCRM/Resources/android/images/res-notlong-land-hdpi/default.png
-[DEBUG] found drawable-long-land-hdpi splash screen at /home/jo/Apps/ConnectCRM/Resources/android/images/res-long-land-hdpi/default.png
-[DEBUG] found drawable-long-port-ldpi splash screen at /home/jo/Apps/ConnectCRM/Resources/android/images/res-long-port-ldpi/default.png
-[DEBUG] found drawable-notlong-port-ldpi splash screen at /home/jo/Apps/ConnectCRM/Resources/android/images/res-notlong-port-ldpi/default.png
-[DEBUG] found drawable-notlong-port-hdpi splash screen at /home/jo/Apps/ConnectCRM/Resources/android/images/res-notlong-port-hdpi/default.png
-[DEBUG] found drawable-notlong-port-mdpi splash screen at /home/jo/Apps/ConnectCRM/Resources/android/images/res-notlong-port-mdpi/default.png
-[DEBUG] found drawable-long-land-ldpi splash screen at /home/jo/Apps/ConnectCRM/Resources/android/images/res-long-land-ldpi/default.png
-[DEBUG] found drawable-notlong-land-ldpi splash screen at /home/jo/Apps/ConnectCRM/Resources/android/images/res-notlong-land-ldpi/default.png
-[DEBUG] found drawable-notlong-land-mdpi splash screen at /home/jo/Apps/ConnectCRM/Resources/android/images/res-notlong-land-mdpi/default.png
-[INFO] Waiting for SDCard to become available..
-[INFO] Re-launching application ... Omadi
-[INFO] Launching application ... Omadi
-[TRACE] Launch output: Starting: Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] cmp=joseandro.connect.com/.OmadiActivity }
-Warning: Activity not started, its current task has been brought to the front
-
+[TRACE] COPYING MODIFIED FILE: /home/jo/Apps/ConnectCRM/Resources/main_windows/create_node.js => /home/jo/Apps/ConnectCRM/build/android/bin/assets/Resources/main_windows/create_node.js
+[TRACE] Generating Java Classes

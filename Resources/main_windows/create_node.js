@@ -115,53 +115,59 @@ setTimeout(function(e){
 	}
 	
 	while (regions.isValidRow()){
+		Ti.API.info('Label '+regions.fieldByName('label'));
 		field_arr[regions.fieldByName('label')] = new Array();
-
-		//Display region title:
-		field_arr[regions.fieldByName('label')][field_arr[regions.fieldByName('label')].length] = {
-				label			: regions.fieldByName('label'),
-				type			: 'region_separator_mode', 
-				field_name		: regions.fieldByName('region_name'),
-				settings		: null,
-				widget			: null,
-				region_settings	: ''+regions.fieldByName('settings')
-		};
-		
-		Ti.API.info(' Region_name: '+regions.fieldByName('region_name'));
-		Ti.API.info(' Weight: '+regions.fieldByName('weight'));
-
-		//Organizing every field into regions:
-		//while (fields_result.isValidRow()){
-		for (var i in unsorted_res){
-			var settings = JSON.parse(unsorted_res[i].settings);
-			Ti.API.info('Field region = '+settings.region);
-			if (regions.fieldByName('region_name') == settings.region ){
-				Ti.API.info('Regions match! ');
-				Ti.API.info('Field label: '+unsorted_res[i].label);
-				Ti.API.info('Field type: '+unsorted_res[i].type);
-				Ti.API.info('Field name: '+unsorted_res[i].field_name);
-
-				
-				//Index the array by label
-				if (!field_arr[unsorted_res[i].label]){
-					 field_arr[unsorted_res[i].label] = new Array();
+		var reg_settings = JSON.parse(regions.fieldByName('settings'));
+		if (reg_settings != null && reg_settings.creation_disabled){
+			Ti.API.info('Region : '+regions.fieldByName('label')+' won\'t appear');
+		}
+		else{
+			//Display region title:
+			field_arr[regions.fieldByName('label')][field_arr[regions.fieldByName('label')].length] = {
+					label			: regions.fieldByName('label'),
+					type			: 'region_separator_mode', 
+					field_name		: regions.fieldByName('region_name'),
+					settings		: null,
+					widget			: null,
+					region_settings	: regions.fieldByName('settings')
+			};
+			
+			Ti.API.info(' Region_name: '+regions.fieldByName('region_name'));
+			Ti.API.info(' Weight: '+regions.fieldByName('weight'));
+	
+			//Organizing every field into regions:
+			//while (fields_result.isValidRow()){
+			for (var i in unsorted_res){
+				var settings = JSON.parse(unsorted_res[i].settings);
+				Ti.API.info('Field region = '+settings.region);
+				if (regions.fieldByName('region_name') == settings.region ){
+					Ti.API.info('Regions match! ');
+					Ti.API.info('Field label: '+unsorted_res[i].label);
+					Ti.API.info('Field type: '+unsorted_res[i].type);
+					Ti.API.info('Field name: '+unsorted_res[i].field_name);
+	
+					
+					//Index the array by label
+					if (!field_arr[unsorted_res[i].label]){
+						 field_arr[unsorted_res[i].label] = new Array();
+					}
+					
+					////
+					//Array of fields
+					// field_arr[label][length] 
+					// field_arr[address][0], field_arr[address][1], field_arr[address][2]
+					////
+					field_arr[unsorted_res[i].label][field_arr[unsorted_res[i].label].length] = {
+								label		: unsorted_res[i].label,
+								type		: unsorted_res[i].type, 
+								field_name	: unsorted_res[i].field_name,
+								settings	: unsorted_res[i].settings,
+								widget		: unsorted_res[i].widget
+					};
 				}
-				
-				////
-				//Array of fields
-				// field_arr[label][length] 
-				// field_arr[address][0], field_arr[address][1], field_arr[address][2]
-				////
-				field_arr[unsorted_res[i].label][field_arr[unsorted_res[i].label].length] = {
-							label		: unsorted_res[i].label,
-							type		: unsorted_res[i].type, 
-							field_name	: unsorted_res[i].field_name,
-							settings	: unsorted_res[i].settings,
-							widget		: unsorted_res[i].widget
-				};
-			}
-			else{
-				Ti.API.info(' Regions dont match! ');
+				else{
+					Ti.API.info(' Regions dont match! ');
+				}
 			}
 		}
 		regions.next();
@@ -817,12 +823,21 @@ setTimeout(function(e){
 						field_name			: field_arr[index_label][index_size].field_name,
 					}); 
 					
-					var users = db_display.execute("SELECT * FROM user");
+					var users = db_display.execute("SELECT * FROM user WHERE ((uid != 0) AND (uid != 1))");
 	
 					var data_terms = [];
 					data_terms.push({title: field_arr[index_label][index_size].label, tid: null });
 					while (users.isValidRow()){ 
-						data_terms.push({title: users.fieldByName('realname'), uid: users.fieldByName('uid') }); 
+						if (users.fieldByName('realname') == ''){
+							var name_ff = users.fieldByName('username');
+						}
+						else{
+							var name_ff = users.fieldByName('realname');
+						}
+						
+						data_terms.push({title: name_ff, uid: users.fieldByName('uid') });
+						
+						Ti.API.info('Username: \''+users.fieldByName('username')+'\' , Realname: \''+users.fieldByName('realname')+'\' , UID = '+users.fieldByName('uid')); 
 						users.next();
 					}
 					users.close();

@@ -39,8 +39,10 @@ unsetUse();
 //Geolocation module
 Ti.include('geolocation.js');
 
-function checkUpdate (evt){
-	if ( (!isUpdating()) && (Titanium.Network.online) ){
+function checkUpdate(evt){
+	Ti.API.info('******* Called checkupate => '+evt);
+	
+	if ( (isUpdating() === false) && (Titanium.Network.online) ){
 		//Sets status to 'updating'
 		setUse();
 		if (evt == 'from_menu'){
@@ -83,7 +85,7 @@ function checkUpdate (evt){
 		db_up.close();
 	}
 	else{
-		if (evt = 'from_menu'){
+		if (evt == 'from_menu'){
 			if ( !(Titanium.Network.online)) {
 				Ti.UI.createNotification({
 					message : 'You have no internet access, make sure you are online in order to update'
@@ -91,7 +93,7 @@ function checkUpdate (evt){
 				//If offline, set up database for use
 				unsetUse();
 			}
-			else{
+			else {
 				Ti.UI.createNotification({
 					message : 'Another updated is already running'
 				}).show();
@@ -319,4 +321,49 @@ activity.onCreateOptionsMenu = function(e) {
 db.close();
 
 //Check behind the courtins if there is a new version - 5 minutes
-setInterval(checkUpdate, 300000);
+//setInterval( checkUpdate('auto') , 10000);
+
+setInterval( function(){
+	Ti.API.info('========= Automated Update Check running ========= ');
+	
+	if ( (isUpdating() === false) && (Titanium.Network.online) ){
+		//Sets status to 'updating'
+		setUse();
+
+		//No progress bar
+		var pb = null;
+		
+		var pageIndex = 0;
+
+		var db_up = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+
+		var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');
+
+		var see = db_up.execute('SELECT * FROM bundles WHERE display_on_menu="true"');
+		var up_flag = db_up.execute('SELECT * FROM node WHERE flag_is_updated=1');
+		
+		if (up_flag.rowCount > 0){
+			Ti.API.info("Fired nodes update");
+			installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, null, 'POST');
+		}
+		else{
+			//Normal install
+			if ( see.rowCount > 0 ){
+				Ti.API.info("Fired normal database install");
+				//installMe(pageIndex, win, timeIndex, progress_bar, menu_list)
+				installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, null, 'GET');
+			}
+			//First install
+			else{
+				Ti.API.info("Fired first database install");
+				//installMe(pageIndex, win, timeIndex, progress, menu, img, type)
+				installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, img, 'GET');
+			}
+		}
+		updatedTime.close();
+		db_up.close();
+	}
+	else{
+		Ti.API.info('========= Database was opened, another update is running or you\'re offline ========= ');
+	}
+} , 300000);

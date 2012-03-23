@@ -65,7 +65,7 @@ var tf1 = Titanium.UI.createTextField({
 	returnKeyType:Titanium.UI.RETURNKEY_DEFAULT,
 	softKeyboardOnFocus : Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS,
 	borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-	autocapitalization: TEXT_AUTOCAPITALIZATION_NONE,
+	autocapitalization: Titanium.UI.TEXT_AUTOCAPITALIZATION_NONE,
 	autocorrect: false
 });
 
@@ -88,7 +88,7 @@ var tf2 = Titanium.UI.createTextField({
 	returnKeyType:Titanium.UI.RETURNKEY_DONE,
 	softKeyboardOnFocus : Ti.UI.Android.SOFT_KEYBOARD_SHOW_ON_FOCUS,
     borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-	autocapitalization: TEXT_AUTOCAPITALIZATION_NONE,
+	autocapitalization: Titanium.UI.TEXT_AUTOCAPITALIZATION_NONE,
 	autocorrect: false
 });
 

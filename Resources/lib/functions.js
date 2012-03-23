@@ -38,7 +38,7 @@ function showIndicator(show)
     // loading indicator
     actIndFun = Titanium.UI.createActivityIndicator({
         height:'7%',
-        message: "Logging you in",
+        message: show,
         width: '30%'
     });
     
@@ -1347,7 +1347,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 		//Opens address to retrieve contact list
 		if (timeIndex == 0 ){
 			if (pageIndex == 0)
-				objectsUp.open('GET', win.picked + '/js-sync/sync.json?reset=1&limit=250' );
+				objectsUp.open('GET', win.picked + '/js-sync/sync.json?reset=1&limit=250');
 			else
 				objectsUp.open('GET', win.picked + '/js-sync/sync.json?sync_timestamp='+ timeIndex+'&reset=1&limit=250&page='+pageIndex );
 		}

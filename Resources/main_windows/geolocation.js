@@ -209,7 +209,6 @@ if (Titanium.Platform.name == 'android')
 
 setInterval(function (){
 	if ( !isUpdating() ){
-	
 		setUse();
 		var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
