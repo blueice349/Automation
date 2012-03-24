@@ -17,6 +17,7 @@
  * 	actIndFun:  Activity indicator.  
  *  
  */
+
 function showIndicator(show)
 {
     indWin = Titanium.UI.createWindow({

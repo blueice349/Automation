@@ -115,21 +115,24 @@ setTimeout(function(e){
 	}
 	
 	while (regions.isValidRow()){
-		Ti.API.info('Label '+regions.fieldByName('label'));
-		field_arr[regions.fieldByName('label')] = new Array();
+		
 		var reg_settings = JSON.parse(regions.fieldByName('settings'));
+		
 		if (reg_settings != null && reg_settings.creation_disabled){
 			Ti.API.info('Region : '+regions.fieldByName('label')+' won\'t appear');
 		}
 		else{
+
 			//Display region title:
+			field_arr[regions.fieldByName('label')] = new Array();
 			field_arr[regions.fieldByName('label')][field_arr[regions.fieldByName('label')].length] = {
 					label			: regions.fieldByName('label'),
 					type			: 'region_separator_mode', 
 					field_name		: regions.fieldByName('region_name'),
 					settings		: null,
 					widget			: null,
-					region_settings	: regions.fieldByName('settings')
+					region_settings	: regions.fieldByName('settings'),
+					region_show		: false
 			};
 			
 			Ti.API.info(' Region_name: '+regions.fieldByName('region_name'));
@@ -139,35 +142,44 @@ setTimeout(function(e){
 			//while (fields_result.isValidRow()){
 			for (var i in unsorted_res){
 				var settings = JSON.parse(unsorted_res[i].settings);
-				Ti.API.info('Field region = '+settings.region);
-				if (regions.fieldByName('region_name') == settings.region ){
-					Ti.API.info('Regions match! ');
-					Ti.API.info('Field label: '+unsorted_res[i].label);
-					Ti.API.info('Field type: '+unsorted_res[i].type);
-					Ti.API.info('Field name: '+unsorted_res[i].field_name);
-	
-					
-					//Index the array by label
-					if (!field_arr[unsorted_res[i].label]){
-						 field_arr[unsorted_res[i].label] = new Array();
+
+				if (settings != null && settings.required_no_data_checkbox != 0){
+					if (regions.fieldByName('region_name') == settings.region ){
+						Ti.API.info('Regions match! ');
+						Ti.API.info('Field label: '+unsorted_res[i].label);
+						Ti.API.info('Field type: '+unsorted_res[i].type);
+						Ti.API.info('Field name: '+unsorted_res[i].field_name);
+						
+						field_arr[regions.fieldByName('label')][0].region_show = true;						
+						//Index the array by label
+						if (!field_arr[unsorted_res[i].label]){
+							 field_arr[unsorted_res[i].label] = new Array();
+						}
+						
+						////
+						//Array of fields
+						// field_arr[label][length] 
+						// field_arr[address][0], field_arr[address][1], field_arr[address][2]
+						////
+						field_arr[unsorted_res[i].label][field_arr[unsorted_res[i].label].length] = {
+									label		: unsorted_res[i].label,
+									type		: unsorted_res[i].type, 
+									field_name	: unsorted_res[i].field_name,
+									settings	: unsorted_res[i].settings,
+									widget		: unsorted_res[i].widget
+						};
 					}
-					
-					////
-					//Array of fields
-					// field_arr[label][length] 
-					// field_arr[address][0], field_arr[address][1], field_arr[address][2]
-					////
-					field_arr[unsorted_res[i].label][field_arr[unsorted_res[i].label].length] = {
-								label		: unsorted_res[i].label,
-								type		: unsorted_res[i].type, 
-								field_name	: unsorted_res[i].field_name,
-								settings	: unsorted_res[i].settings,
-								widget		: unsorted_res[i].widget
-					};
+					else{
+						if (field_arr[regions.fieldByName('label')][0].region_show === false){
+							//field_arr[regions.fieldByName('label')][0].region_show = false;							
+						}
+						Ti.API.info(' Regions dont match! ');
+					}
 				}
 				else{
-					Ti.API.info(' Regions dont match! ');
+					
 				}
+				
 			}
 		}
 		regions.next();
@@ -1054,7 +1066,12 @@ setTimeout(function(e){
 	
 				//Shows the on and off button?
 				case 'list_boolean':
+				
 					var settings = JSON.parse(field_arr[index_label][index_size].settings);
+					
+					for (var a in settings){
+						Ti.API.info(a+' ===== '+settings[a]);
+					}
 					var switch_value = settings.required_no_data_checkbox;
 					
 					if (switch_value == "1"){
@@ -1174,29 +1191,31 @@ setTimeout(function(e){
 				break;
 				
 				case 'region_separator_mode':
-					if (top == 0){
-						var regionTop = 0;
+					if (field_arr[index_label][index_size].region_show === true){
+						if (top == 0){
+							var regionTop = 0;
+						}
+						else{
+							var regionTop = top+10;
+						}
+						label[count] = Ti.UI.createLabel({
+							text			: field_arr[index_label][index_size].label+' :',
+							color			: '#000000',
+							font 			: {
+												fontSize: 18, fontWeight: 'bold'
+							},
+							textAlign		: 'center',
+							width			: '100%',
+							touchEnabled	: false,
+							height			: 40,
+							top				: regionTop,
+							backgroundColor	: '#FFFFFF'
+						});
+						top += 40;
+						
+						viewContent.add(label[count]);
+						count++;
 					}
-					else{
-						var regionTop = top+10;
-					}
-					label[count] = Ti.UI.createLabel({
-						text			: field_arr[index_label][index_size].label+' :',
-						color			: '#000000',
-						font 			: {
-											fontSize: 18, fontWeight: 'bold'
-						},
-						textAlign		: 'center',
-						width			: '100%',
-						touchEnabled	: false,
-						height			: 40,
-						top				: regionTop,
-						backgroundColor	: '#FFFFFF'
-					});
-					top += 40;
-					
-					viewContent.add(label[count]);
-					count++;
 				break;
 			}
 		}

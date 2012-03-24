@@ -108,39 +108,46 @@ while (fields_result.isValidRow()){
 
 while (regions.isValidRow()){
 
-	fields[regions.fieldByName('region_name')] = new Array();
-
-	//Display region title:
-	fields[regions.fieldByName('region_name')]['label']		= regions.fieldByName('label');
-	fields[regions.fieldByName('region_name')]['type']		= 'region_separator_mode'; 
-	fields[regions.fieldByName('region_name')]['settings'] 	= regions.fieldByName('settings');
+	var reg_settings = JSON.parse(regions.fieldByName('settings'));
 	
-	Ti.API.info(' Region_name: '+regions.fieldByName('region_name'));
-	Ti.API.info(' Weight: '+regions.fieldByName('weight'));
-
-	//Organizing every field into regions:
-	//while (fields_result.isValidRow()){
-	for (var i in unsorted_res){
+	if (reg_settings != null && reg_settings.creation_disabled){
+		Ti.API.info('Region : '+regions.fieldByName('label')+' won\'t appear');
+	}
+	else{
+		fields[regions.fieldByName('region_name')] = new Array();
+	
+		//Display region title:
+		fields[regions.fieldByName('region_name')]['label']		= regions.fieldByName('label');
+		fields[regions.fieldByName('region_name')]['type']		= 'region_separator_mode'; 
+		fields[regions.fieldByName('region_name')]['settings'] 	= regions.fieldByName('settings');
 		
-		var settings = JSON.parse(unsorted_res[i].settings);
-		Ti.API.info('Field region = '+settings.region);
-		if (regions.fieldByName('region_name') == settings.region ){
-			Ti.API.info('Regions match! ');
-			Ti.API.info('Field label: '+unsorted_res[i].label);
-			Ti.API.info('Field type: '+unsorted_res[i].type);
-			Ti.API.info('Field name: '+unsorted_res[i].field_name);
-			Ti.API.info('Field settings: '+unsorted_res[i].settings);
+		Ti.API.info(' Region_name: '+regions.fieldByName('region_name'));
+		Ti.API.info(' Weight: '+regions.fieldByName('weight'));
+	
+		//Organizing every field into regions:
+		//while (fields_result.isValidRow()){
+		for (var i in unsorted_res){
 			
-			fields[unsorted_res[i].field_name] = new Array();
-		
-			//Display region title:
-			fields[unsorted_res[i].field_name]['label']		= unsorted_res[i].label;
-			fields[unsorted_res[i].field_name]['type']		= unsorted_res[i].type; 
-			fields[unsorted_res[i].field_name]['settings'] 	= unsorted_res[i].settings;
-			fields[unsorted_res[i].field_name]['widget'] 	= unsorted_res[i].widget;
-		}
-		else{
-			Ti.API.info(' Regions dont match! ');
+			var settings = JSON.parse(unsorted_res[i].settings);
+			Ti.API.info('Field region = '+settings.region);
+			if (regions.fieldByName('region_name') == settings.region ){
+				Ti.API.info('Regions match! ');
+				Ti.API.info('Field label: '+unsorted_res[i].label);
+				Ti.API.info('Field type: '+unsorted_res[i].type);
+				Ti.API.info('Field name: '+unsorted_res[i].field_name);
+				Ti.API.info('Field settings: '+unsorted_res[i].settings);
+				
+				fields[unsorted_res[i].field_name] = new Array();
+			
+				//Display region title:
+				fields[unsorted_res[i].field_name]['label']		= unsorted_res[i].label;
+				fields[unsorted_res[i].field_name]['type']		= unsorted_res[i].type; 
+				fields[unsorted_res[i].field_name]['settings'] 	= unsorted_res[i].settings;
+				fields[unsorted_res[i].field_name]['widget'] 	= unsorted_res[i].widget;
+			}
+			else{
+				Ti.API.info(' Regions dont match! ');
+			}
 		}
 	}
 	regions.next();
@@ -228,6 +235,7 @@ if (c_index > 0){
 				 * 
 				 */
 				
+				//Treat regions
 				if ((c_settings[count] != null) && (c_settings[count] != 'null') && (c_settings[count] != undefined) && (c_settings[count] != 'undefined')&& (c_settings[count] != '')){
 					Ti.API.info('Settings: '+c_settings[count]);
 					var settings = JSON.parse(c_settings[count]); 
@@ -662,7 +670,6 @@ if (c_index > 0){
 					break;
 					
 					case 'region_separator_mode':
-						 
 						label[count] = Ti.UI.createLabel({
 							text			: c_label[count],
 							color			: '#FFFFFF',

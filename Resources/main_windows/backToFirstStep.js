@@ -211,7 +211,7 @@ b1.addEventListener('click', function(){
 		}
 		updatedTime.close();
 
-		showIndicator('full');
+		showIndicator('Logging you in...');
 		//Create internet connection
 		var xhr = Ti.Network.createHTTPClient();
 		

@@ -75,7 +75,7 @@ labelOut.addEventListener('click',function (){
 	indLog.log.setRequestHeader("Content-Type", "application/json");
 	
 	indLog.log.onload = function(e) {
-		Ti.App.Properties.setString('logStatus', "You have succefully logged out");
+		Ti.App.Properties.setString('logStatus', "You have successfully logged out");
 		Ti.API.info('From Functions ... Value is : '+ Ti.App.Properties.getString('logStatus'));
 		logWindow.open();
 		hideIndicator();
@@ -86,7 +86,7 @@ labelOut.addEventListener('click',function (){
 	indLog.log.onerror = function(e) {
 		hideIndicator();
 		Ti.API.info("Failed to log out");
-		alert("Failed to log out, try again in a few moments");
+		alert("Failed to log out, please try again");
 	}
 	indLog.log.send();
 });
