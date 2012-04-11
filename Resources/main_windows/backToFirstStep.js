@@ -228,7 +228,7 @@ b1.addEventListener('click', function(){
 		var parms = {
           username: tf1.value,
           password: tf2.value,
-          device_id: Titanium.Platform.macaddress,
+          device_id: Titanium.Platform.getId(),
           app_version: Titanium.App.version,
           //device_data: '{ "model": "'+Titanium.Platform.model+'", "version": "'+Titanium.Platform.version+'", "architecture": "'+Titanium.Platform.architecture+'", "platform": "'+Titanium.Platform.name+'", "os_type": "'+Titanium.Platform.ostype+'" }' 
           device_data: { "model": Titanium.Platform.model, "version": Titanium.Platform.version, "architecture": Titanium.Platform.architecture, "platform": Titanium.Platform.name, "os_type": Titanium.Platform.ostype, "screen_density":Titanium.Platform.DisplayCaps.density, "primary_language": Titanium.Platform.locale, "processor_count": Titanium.Platform.processorCount }
@@ -254,7 +254,7 @@ b1.addEventListener('click', function(){
 
 				//Creation of the main menu window
 				var win2 = Titanium.UI.createWindow({  
-					fullscreen: true,
+					fullscreen: false,
 					title:'Omadi CRM',
 					url:'main_windows/mainMenu.js',
 				});

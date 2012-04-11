@@ -6,14 +6,14 @@ Ti.include('../lib/functions.js');
 
 //Definition of the window before (opens when the user clicks on the back button)
 var goToWindow = Titanium.UI.createWindow({
-	fullscreen : true,
+	fullscreen : false,
 	title:'Omadi CRM',	
 	url : 'mainMenu.js',
 	notOpen: false
 });
 
 var logWindow = Titanium.UI.createWindow({  
-	fullscreen: true,
+	fullscreen: false,
 	title:'Omadi CRM',	
 	url : 'backToFirstStep.js'
 });
@@ -65,30 +65,36 @@ var labelIn = Titanium.UI.createButton({
 });    
 
 labelOut.addEventListener('click',function (){
-	showIndicator("Logging you out...");
-	indLog.log.open('POST', indLog.picked+'/js-sync/sync/logout.json');
+	if(!isUpdating()){
+		showIndicator("Logging you out...");
+		
+		indLog.log.open('POST', indLog.picked+'/js-sync/sync/logout.json');
+		
+		//Timeout until error:
+		indLog.log.setTimeout(10000);
+		
+		//Header parameters
+		indLog.log.setRequestHeader("Content-Type", "application/json");
+		
+		indLog.log.onload = function(e) {
+			Ti.App.Properties.setString('logStatus', "You have successfully logged out");
+			Ti.API.info('From Functions ... Value is : '+ Ti.App.Properties.getString('logStatus'));
+			logWindow.open();
+			hideIndicator();
+			indLog.log.abort();
+			indLog.close();
+		}
 	
-	//Timeout until error:
-	indLog.log.setTimeout(10000);
-	
-	//Header parameters
-	indLog.log.setRequestHeader("Content-Type", "application/json");
-	
-	indLog.log.onload = function(e) {
-		Ti.App.Properties.setString('logStatus', "You have successfully logged out");
-		Ti.API.info('From Functions ... Value is : '+ Ti.App.Properties.getString('logStatus'));
-		logWindow.open();
-		hideIndicator();
-		indLog.log.abort();
-		indLog.close();
+		indLog.log.onerror = function(e) {
+			hideIndicator();
+			Ti.API.info("Failed to log out");
+			alert("Failed to log out, please try again");
+		}
+		indLog.log.send();
 	}
-
-	indLog.log.onerror = function(e) {
-		hideIndicator();
-		Ti.API.info("Failed to log out");
-		alert("Failed to log out, please try again");
+	else{
+		alert("Connection was busy, please try again");
 	}
-	indLog.log.send();
 });
 
 labelIn.addEventListener('click',function (){

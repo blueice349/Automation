@@ -22,7 +22,7 @@ function showIndicator(show)
 {
     indWin = Titanium.UI.createWindow({
 		title:'Omadi CRM',
-        fullscreen: true
+        fullscreen: false
     });
  
     // black view
@@ -69,18 +69,16 @@ function showIndicator(show)
 //
 
 function Progress_install(current, max){
-	
 	this.current = current;
 	this.max = max;
 	
 	var a1 = Titanium.UI.createAnimation();
 	a1.bottom =  -1*Ti.Platform.displayCaps.platformHeight*0.14;
 	a1.duration = 1000;
-
+   	
    	var a2 = Titanium.UI.createAnimation();
 	a2.bottom = 0;
 	a2.duration = 1000;
-
 
     // black view
     var indView = Titanium.UI.createView({
@@ -90,9 +88,9 @@ function Progress_install(current, max){
         opacity:0.9,
         bottom: -1*Ti.Platform.displayCaps.platformHeight*0.14,
     });
-
-    Ti.UI.currentWindow.add(indView);
     
+    Ti.UI.currentWindow.add(indView);
+
     //If bar is not hiding change this to be incorporated at mainMenu.js
     databaseStatusView.animate(a1);
 	
@@ -1329,12 +1327,12 @@ function getJSON(){
 //Load existing data with pagination
 function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 {
-	var db_installMe = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+	var db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 	
 	var objectsUp = win.log;
 
 	//Timeout until error:
-	objectsUp.setTimeout(10000);
+	objectsUp.setTimeout(30000);
 
 	Ti.API.info("Current page: "+ pageIndex);
 	
@@ -1347,16 +1345,24 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 	else{
 		//Opens address to retrieve contact list
 		if (timeIndex == 0 ){
-			if (pageIndex == 0)
+			if (pageIndex == 0){
+				Ti.API.info('GET, '+win.picked+'/js-sync/sync.json?reset=1&limit=250');
 				objectsUp.open('GET', win.picked + '/js-sync/sync.json?reset=1&limit=250');
-			else
+			}
+			else{
+				Ti.API.info('GET, '+win.picked+'/js-sync/sync.json?sync_timestamp='+ timeIndex+'&reset=1&limit=250&page='+pageIndex);
 				objectsUp.open('GET', win.picked + '/js-sync/sync.json?sync_timestamp='+ timeIndex+'&reset=1&limit=250&page='+pageIndex );
+			}
 		}
 		else{
-			if (pageIndex == 0)
+			if (pageIndex == 0){
+				Ti.API.info('GET, '+win.picked + '/js-sync/sync.json?reset=0&limit=250');
 				objectsUp.open('GET', win.picked + '/js-sync/sync.json?reset=0&limit=250');
-			else
+			}
+			else{
+				Ti.API.info('GET, '+win.picked + '/js-sync/sync.json?sync_timestamp=' + timeIndex +'&reset=1&limit=250&page='+pageIndex);
 				objectsUp.open('GET', win.picked + '/js-sync/sync.json?sync_timestamp=' + timeIndex +'&reset=1&limit=250&page='+pageIndex );
+			}
 		}
 	}
 	//Header parameters
@@ -1652,7 +1658,12 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 								var required = json.fields.insert[i].required;
 							else
 								var required = null;
-							
+
+							if (json.fields.insert[i].disabled != null)
+								var disabled = json.fields.insert[i].disabled;
+							else
+								var disabled = 0;							
+
 							if (var_widget != null)
 								var widget = var_widget.replace(/'/gi, '"');
 							else
@@ -1666,13 +1677,12 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 							//Multiple parts
 							if (json.fields.insert[i].settings.parts){
 								for (var f_value_i in json.fields.insert[i].settings.parts ) {
-									//db_installMe.execute("INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, weight, required, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+f_value_i+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"','"+widget+"','"+settings+"' )");
-									perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, weight, required, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+f_value_i+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"','"+widget+"','"+settings+"' )";
+									perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+f_value_i+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"' ,  '"+disabled+"' , '"+widget+"','"+settings+"' )";
 								}
 							}
 							//Normal field
 							else {
-								perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, weight, required, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"','"+widget+"','"+settings+"' )";
+								perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"','"+label+"','"+description+"','"+bundle+"',"+weight+",'"+required+"','"+disabled+"','"+widget+"','"+settings+"' )";
 							}
 
 							var type = "";
@@ -1761,6 +1771,12 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 							var required = json.fields.insert.required;
 						else
 							var required = null;
+
+						if (json.fields.insert.disabled != null)
+							var disabled = json.fields.insert.disabled;
+						else
+							var disabled = null;
+
 						
 						if (var_widget != null)
 							var widget = var_widget.replace(/'/gi, '"');
@@ -1776,12 +1792,12 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 						if (json.fields.insert.settings.parts){
 							for (var f_value_i in json.fields.insert.settings.parts ) {
 								//db_installMe.execute("INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, weight, required, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+f_value_i+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"','"+widget+"','"+settings+"' )");
-								perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, weight, required, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+f_value_i+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"','"+widget+"','"+settings+"' )";
+								perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+f_value_i+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"', '"+disabled+"','"+widget+"','"+settings+"' )";
 							}
 						}
 						//Normal field
 						else {
-							perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, weight, required, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"','"+widget+"','"+settings+"' )";
+							perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"', '"+disabled+"','"+widget+"','"+settings+"' )";
 						}
 
 						var type = "";
@@ -1834,7 +1850,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 							}
 							var_widget = JSON.stringify(json.fields.update[i].widget);
 							var_settings = JSON.stringify(json.fields.update[i].settings); 
-							db_installMe.execute('UPDATE fields SET "type"=?, "field_name"=?, "label"=?, "description"=?, "bundle"=?, "weight"=?, "required"=?, "widget"=?, "settings"=? WHERE "fid"=?', json.fields.update[i].type , json.fields.update[i].field_name , json.fields.update[i].label , json.fields.update[i].description , json.fields.update[i].bundle , json.fields.update[i].weight, json.fields.update[i].required , var_widget , var_settings, json.fields.update[i].fid );
+							db_installMe.execute('UPDATE fields SET "type"=?, "field_name"=?, "label"=?, "description"=?, "bundle"=?, "weight"=?, "required"=?, "widget"=?, "settings"=?, "disabled"=? WHERE "fid"=?', json.fields.update[i].type , json.fields.update[i].field_name , json.fields.update[i].label , json.fields.update[i].description , json.fields.update[i].bundle , json.fields.update[i].weight, json.fields.update[i].required , var_widget , var_settings, json.fields.update[i].disabled ,json.fields.update[i].fid );
 						}
 					}
 					else{ 
@@ -1844,7 +1860,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 						}
 						var_widget = JSON.stringify(json.fields.update.widget);
 						var_settings = JSON.stringify(json.fields.update.settings); 
-						db_installMe.execute('UPDATE fields SET "type"=?, "field_name"=?, "label"=?, "description"=?, "bundle"=?, "weight"=?, "required"=?, "widget"=?, "settings"=? WHERE "fid"=?', json.fields.update.type , json.fields.update.field_name , json.fields.update.label , json.fields.update.description , json.fields.update.bundle , json.fields.update.weight, json.fields.update.required , var_widget, var_settings, json.fields.update.fid );
+						db_installMe.execute('UPDATE fields SET "type"=?, "field_name"=?, "label"=?, "description"=?, "bundle"=?, "weight"=?, "required"=?, "widget"=?, "settings"=?, "disabled"=? WHERE "fid"=?', json.fields.update.type , json.fields.update.field_name , json.fields.update.label , json.fields.update.description , json.fields.update.bundle , json.fields.update.weight, json.fields.update.required , var_widget, var_settings, json.fields.update.disabled, json.fields.update.fid );
 					}
 				}
 				
@@ -1869,26 +1885,26 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 					}
 				}
 				*/
-
-				var iPerform = 0;
-				var iStart = Math.round(new Date().getTime() / 1000);
-				Ti.API.info("Fields started at : "+iStart);
-
-
-				db_installMe.execute("BEGIN IMMEDIATE TRANSACTION");
-				while (iPerform <= perform.length - 1 ){
-					db_installMe.execute(perform[iPerform]);
-					iPerform++;
+				
+				if (perform){
+					var iPerform = 0;
+					var iStart = Math.round(new Date().getTime() / 1000);
+					Ti.API.info("Fields started at : "+iStart);
+	
+					db_installMe.execute("BEGIN IMMEDIATE TRANSACTION");
+					while (iPerform <= perform.length - 1 ){
+						db_installMe.execute(perform[iPerform]);
+						iPerform++;
+					}
+					db_installMe.execute("COMMIT TRANSACTION");
+					
+					var iEnd = Math.round(new Date().getTime() / 1000);
+					Ti.API.info("Fields finishes at : "+iEnd);
+					
+					var iResult = iEnd - iStart;
+					Ti.API.info('Fields seconds: '+ iResult);
+					Ti.API.info("Success for fields, it was inserted!");
 				}
-				db_installMe.execute("COMMIT TRANSACTION");
-				
-				var iEnd = Math.round(new Date().getTime() / 1000);
-				Ti.API.info("Fields finishes at : "+iEnd);
-				
-				var iResult = iEnd - iStart;
-				Ti.API.info('Fields seconds: '+ iResult);
-				Ti.API.info("Success for fields, it was inserted!");
-				
 			} 
 			
 			//
@@ -2506,9 +2522,11 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 			}
 		}
 	}
-	
+
 	//Connection error:
 	objectsUp.onerror = function(e) {
+		Ti.API.error('Code status: '+e.error);
+		
 		if (progress != null){
 			progress.close();
 		}
@@ -2523,8 +2541,8 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 		db_installMe.close();
 		unsetUse();
 		Ti.API.info("Services are down");
-		Ti.API.info('Called from value: '+calledFrom);
 	}
+
 	
 	//Get upload JSON
 	if ( type_request == 'POST'){

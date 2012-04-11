@@ -10,7 +10,7 @@
  * @author Joseandro
  */
 
-// this sets the background color of every window
+// this sets the background color of every 
 Titanium.UI.setBackgroundColor('#000000');
 
 //Common used functions
@@ -18,10 +18,10 @@ Ti.include('lib/functions.js');
 
 var win1 = Titanium.UI.createWindow({  
     title:'Omadi CRM',
-    fullscreen: true
+    fullscreen: false
 });
 
-Titanium.App.Properties.setString("databaseVersion", "omadiDb1192");
+Titanium.App.Properties.setString("databaseVersion", "omadiDb1212");
 
 var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
@@ -46,8 +46,8 @@ var picker = Titanium.UI.createPicker({
 
 //Array of addresses 
 var portals = [];
-portals[0]=Titanium.UI.createPickerRow({title:'Omadi.com', value:'http://omadi.com'});
-portals[1]=Titanium.UI.createPickerRow({title:'Lasvegasparkingsystems.com', value:'https://lasvegasparkingsystems.com'});
+portals[0]=Titanium.UI.createPickerRow({title:'Omadi.com', value:'https://test.omadi.com'});
+portals[1]=Titanium.UI.createPickerRow({title:'Lasvegasparkingsystems.com', value:'https://test.lasvegasparkingsystems.com'});
 
 //Adds array of addresses to the picker
 picker.add(portals);
@@ -199,6 +199,7 @@ b1.addEventListener('click', function(){
 			var url = db.execute('SELECT url FROM updated WHERE rowid=1');
 			if ( url.fieldByName('url') !=  picker.getSelectedRow(0).value){
 				showIndicatorDelete("Hold on, we are deleting the old database and creating a fresh one for you");
+				/*
 				db.execute('DELETE FROM account');
 				db.execute('DELETE FROM contact');
 				db.execute('DELETE FROM lead');			
@@ -209,7 +210,8 @@ b1.addEventListener('click', function(){
 				db.execute('DELETE FROM updated');
 				db.execute('DELETE FROM users');
 				db.execute('DELETE FROM vocabulary');
-				db.execute('INSERT INTO updated (timestamp, url) VALUES (?,?)', 0 , null);		
+				db.execute('INSERT INTO updated (timestamp, url) VALUES (?,?)', 0 , null);
+				*/		
 				hideIndicator();
 			}
 			url.close();	
@@ -233,7 +235,7 @@ b1.addEventListener('click', function(){
 		var parms = {
           username: tf1.value,
           password: tf2.value,
-          device_id: Titanium.Platform.macaddress,
+          device_id: Titanium.Platform.getId(),
           app_version: Titanium.App.version,
           //device_data: '{ "model": "'+Titanium.Platform.model+'", "version": "'+Titanium.Platform.version+'", "architecture": "'+Titanium.Platform.architecture+'", "platform": "'+Titanium.Platform.name+'", "os_type": "'+Titanium.Platform.ostype+'" }' 
           device_data: { "model": Titanium.Platform.model, "version": Titanium.Platform.version, "architecture": Titanium.Platform.architecture, "platform": Titanium.Platform.name, "os_type": Titanium.Platform.ostype, "screen_density":Titanium.Platform.DisplayCaps.density, "primary_language": Titanium.Platform.locale, "processor_count": Titanium.Platform.processorCount }
@@ -259,7 +261,7 @@ b1.addEventListener('click', function(){
 
 				//Creation of the main menu window
 				var win2 = Titanium.UI.createWindow({  
-					fullscreen: true,
+					fullscreen: false,
 					title:'Omadi CRM',
 					url:'main_windows/mainMenu.js',
 				});

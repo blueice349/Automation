@@ -25,10 +25,12 @@ Ti.Geolocation.preferredProvider = Titanium.Geolocation.PROVIDER_GPS;
 Ti.Geolocation.purpose = "User tracking";
 
 // state vars used by resume/pause
-var headingAdded = false;
-var locationAdded = false;
-var howManyInputs = 10;
-var currentInputs = 0;
+var db_coord_name	= "3";
+var headingAdded	= false;
+var locationAdded 	= false;
+var is_module_ready = false;
+var location_obj 	= {};
+var dist_filter		= 5;
 //
 //  SHOW CUSTOM ALERT IF DEVICE HAS GEO TURNED OFF
 //
@@ -70,7 +72,7 @@ else
 	//  SET DISTANCE FILTER.  THIS DICTATES HOW OFTEN AN EVENT FIRES BASED ON THE DISTANCE THE DEVICE MOVES
 	//  THIS VALUE IS IN METERS
 	//
-	Titanium.Geolocation.distanceFilter = 10;
+	Titanium.Geolocation.distanceFilter = dist_filter;
 
 	//
 	// GET CURRENT POSITION - THIS FIRES ONCE
@@ -95,21 +97,68 @@ else
 		var altitudeAccuracy = e.coords.altitudeAccuracy;
 		//Ti.API.info('speed ' + speed);
 		
-		if ( !isUpdating() ){		
-			var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
-
-			if ( (accuracy <= 50) && (currentInputs <= 5)){
-				currentInputs++;
-				try{
-					db.execute('INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES (?,?,?,?)', longitude, latitude, Math.round(timestamp/1000), "notUploaded");
-				}
-				catch(e){
-					Ti.API.info('Exception for geolocation insert');
-				}
-
+		//First run
+		if (is_module_ready === false){
+			//First run requires accuracy less than 50 meters, otherwise it keeps on trying
+			if ( accuracy <= 200){
+				is_module_ready = true;
+				location_obj = {
+					no_accurated_location	: false,
+					accurated_location		: 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+Math.round(timestamp/1000)+', "notUploaded")',
+					accuracy				: accuracy,
+					longitude				: longitude,
+					latitude				: latitude,
+					timestamp				: timestamp
+					
+				};
 			}
-			db.close();
+			else{
+				Ti.UI.createNotification({
+						message  : 'Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is '+accuracy+' meters',
+    					duration : Ti.UI.NOTIFICATION_DURATION_LONG
+				}).show();
+			}
+
 		}
+		else{
+			is_module_ready = true;
+			//Not first run anymore
+			if ( accuracy <= 200){
+				location_obj = {
+					no_accurated_location	: false,
+					accurated_location		: 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+Math.round(timestamp/1000)+', "notUploaded")',
+					accuracy				: accuracy,
+					longitude				: longitude,
+					latitude				: latitude,
+					timestamp				: timestamp
+				};
+			}
+			else{
+				Ti.UI.createNotification({
+						message  : 'Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is '+accuracy+' meters',
+    					duration : Ti.UI.NOTIFICATION_DURATION_LONG
+				}).show();
+
+				/*
+				if (location_obj.no_accurated_location === false){
+					var aux_long			= location_obj.longitude;
+					var aux_lati			= location_obj.latitude;
+					var cur_geo_timestamp 	= Math.round((new Date()).getTime() / 1000);
+					
+					location_obj = {
+						no_accurated_location	: 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+Math.round(timestamp/1000)+', "notUploaded")',
+						accurated_location		: 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+aux_long+','+aux_lati+','+cur_geo_timestamp+', "notUploaded")',
+						accuracy				: accuracy,
+						longitude				: aux_long,
+						latitude				: aux_lati,
+						timestamp				: cur_geo_timestamp
+					};
+				}
+				*/
+			}
+		}
+		
+
 	});
 
 	//
@@ -133,7 +182,7 @@ else
 		var timestamp = e.coords.timestamp;
 		var altitudeAccuracy = e.coords.altitudeAccuracy;
 
-		//Titanium.Geolocation.distanceFilter = 100; //changed after first location event
+		Titanium.Geolocation.distanceFilter = dist_filter; //changed after first location event
 
 		/*
 		// reverse geo
@@ -153,21 +202,67 @@ else
 			}
 		});
 		*/
-		if ( !isUpdating() ){
-			var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
-	
-			if ( (accuracy <= 50) && (currentInputs <= 5)){
-				currentInputs++;
-				try{
-					db.execute('INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES (?,?,?,?)', longitude, latitude, Math.round(timestamp/1000), "notUploaded");
-				}
-				catch(e){
-					Ti.API.info('Exception for geolocation insert');
-				}
+		//First run
+		if (is_module_ready === false){
+			//First run requires accuracy less than 50 meters, otherwise it keeps on trying
+			if ( accuracy <= 200){
+				is_module_ready = true;
+				location_obj = {
+					no_accurated_location	: false,
+					accurated_location		: 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+Math.round(timestamp/1000)+', "notUploaded")',
+					accuracy				: accuracy,
+					longitude				: longitude,
+					latitude				: latitude,
+					timestamp				: timestamp
+					
+				};
 			}
-			
-			db.close();
-		}		
+			else{
+				Ti.UI.createNotification({
+						message  : 'Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is '+accuracy+' meters',
+    					duration : Ti.UI.NOTIFICATION_DURATION_LONG
+				}).show();
+			}
+
+		}
+		else{
+			is_module_ready = true;
+			//Not first run anymore
+			if ( accuracy <= 200){
+				location_obj = {
+					no_accurated_location	: false,
+					accurated_location		: 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+Math.round(timestamp/1000)+', "notUploaded")',
+					accuracy				: accuracy,
+					longitude				: longitude,
+					latitude				: latitude,
+					timestamp				: timestamp
+				};
+			}
+			else{
+				Ti.UI.createNotification({
+						message  : 'Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is '+accuracy+' meters',
+    					duration : Ti.UI.NOTIFICATION_DURATION_LONG
+				}).show();
+
+				/*
+				if (location_obj.no_accurated_location === false){
+					var aux_long			= location_obj.longitude;
+					var aux_lati			= location_obj.latitude;
+					var cur_geo_timestamp 	= Math.round((new Date()).getTime() / 1000);
+					
+					location_obj = {
+						no_accurated_location	: 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+Math.round(timestamp/1000)+', "notUploaded")',
+						accurated_location		: 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+aux_long+','+aux_lati+','+cur_geo_timestamp+', "notUploaded")',
+						accuracy				: accuracy,
+						longitude				: aux_long,
+						latitude				: aux_lati,
+						timestamp				: cur_geo_timestamp
+					};
+				}
+				*/
+			}
+		}
+
 	};
 	
 	Titanium.Geolocation.addEventListener('location', locationCallback);
@@ -177,16 +272,17 @@ else
 if (Titanium.Platform.name == 'android')
 {
 	//  as the destroy handler will remove the listener, only set the pause handler to remove if you need battery savings
-	/*
+	
 	Ti.Android.currentActivity.addEventListener('pause', function(e) {
 		Ti.API.info("pause event received");
+		/*
 		if (locationAdded) {
 			Ti.API.info("removing location callback on pause");
 			Titanium.Geolocation.removeEventListener('location', locationCallback);
 			locationAdded = false;
 		}
+		*/
 	});
-	*/
 	
 	Ti.Android.currentActivity.addEventListener('destroy', function(e) {
 		Ti.API.info("destroy event received");
@@ -197,32 +293,38 @@ if (Titanium.Platform.name == 'android')
 		}
 	});
 
+	
 	Ti.Android.currentActivity.addEventListener('resume', function(e) {
 		Ti.API.info("resume event received");
+		/*
 		if (!locationAdded) {
 			Ti.API.info("adding location callback on resume");
 			Titanium.Geolocation.addEventListener('location', locationCallback);
 			locationAdded = true;
 		}
+		*/
 	});
+	
 }
 
 setInterval(function (){
 	if ( !isUpdating() ){
 		setUse();
-		var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+		Ti.API.info('GPS');
+		var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name );
+		var result = db_coord.execute("SELECT * FROM user_location WHERE status = 'notUploaded' ORDER BY timestamp DESC");
 
-		var result = db.execute("SELECT * FROM user_location WHERE status = 'notUploaded' ");
 		if (result.rowCount > 0){
 			//Build JSON structure
-			var json = "{ \"data\": [";
+			var json_coord = "{ \"data\": [";
 			for(var i = 0; i < result.rowCount ; i++) {
+				db_coord.execute("UPDATE user_location SET status =\"json\" WHERE ulid="+result.fieldByName('ulid'));
 			    (i == result.rowCount-1) ?  
-			    					json += " {\"lat\" : \""+ result.fieldByName('latitude') +"\", \"lng\" : \"" + result.fieldByName('longitude')  + "\" , \"time\" : \"" + result.fieldByName('timestamp') + "\"}" :
-			    					json += " {\"lat\" : \""+ result.fieldByName('latitude') +"\", \"lng\" : \"" + result.fieldByName('longitude')  + "\" , \"time\" : \"" + result.fieldByName('timestamp') + "\"}, ";	 
+			    					json_coord += " {\"lat\" : \""+ result.fieldByName('latitude') +"\", \"lng\" : \"" + result.fieldByName('longitude')  + "\" , \"time\" : \"" + result.fieldByName('timestamp') + "\"}" :
+			    					json_coord += " {\"lat\" : \""+ result.fieldByName('latitude') +"\", \"lng\" : \"" + result.fieldByName('longitude')  + "\" , \"time\" : \"" + result.fieldByName('timestamp') + "\"}, ";	 
 				result.next();		
 			}
-			json += "], \"current_time\": \" "+ Math.round(new Date().getTime() / 1000)+"\" }";
+			json_coord += "], \"current_time\": \" "+ Math.round(new Date().getTime() / 1000)+"\" }";
 	
 			result.close();
 			
@@ -249,28 +351,33 @@ setInterval(function (){
 					else
 		 				Ti.API.info("GPS coordinates not inserted, we had "+ resultReq.errors+" errors");
 				}
-				db.execute('DELETE FROM user_location WHERE status="notUploaded"');
-				db.close();
+				db_coord.execute('DELETE FROM user_location WHERE status="json"');
+				db_coord.close();
 				unsetUse();	
 			}
 			//Connection error:
 			objectsCheck.onerror = function(e) {
-				db.close();
+				db_coord.close();
 				unsetUse();
 			}
 			
 			//Sending information and try to connect
-			objectsCheck.send(json);
+			objectsCheck.send(json_coord);
 		}
 		else{
+			result.close();
+			db_coord.close();
 			unsetUse();
 		}
 	} 
 }, 120000);
 
 
-//Sets back to 0 the current number of gathered GPS coordinates
-//Time interval is one minute
+//Sets flag_accept to true each 5 seconds in order to get a new location every 5 seconds
 setInterval(function (){
-	currentInputs = 0;
-}, 60000);
+	if (is_module_ready === true){
+		var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name );
+		db_coord.execute(location_obj.accurated_location);
+		db_coord.close();
+	}
+}, 5000);

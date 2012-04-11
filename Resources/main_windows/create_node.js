@@ -13,6 +13,8 @@ toolActInd.message = 'Loading...';
 
 toolActInd.show();
 
+var months_set = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
 ///////////////////////////
 // Extra Functions
 //////////////////////////
@@ -32,7 +34,464 @@ function config_content(content){
 		content.height		= 40;
 }
 
+function form_min(min){
+	if (min < 10){
+		return '0'+min;
+	}
+	return min;
+}
 
+function verify_UTC(date_original){
+	//discover if is GMT+ or GMT-
+	if ((date_original.getFullYear() - date_original.getUTCFullYear()) < 0){
+		Ti.API.info('Timezone is negative');
+		return -1;
+	}
+	else if ((date_original.getFullYear() - date_original.getUTCFullYear()) < 0){
+		Ti.API.info('Timezone is positive');
+		return 1;
+	}
+	else {
+		if ((date_original.getMonth() - date_original.getUTCMonth()) < 0){
+			Ti.API.info('Timezone is negative');
+			return -1;
+		}
+		else if ((date_original.getMonth() - date_original.getUTCMonth()) < 0){
+			Ti.API.info('Timezone is positive');
+			return 1;
+		}
+		else {
+			if ((date_original.getDate() - date_original.getUTCDate()) < 0){
+				Ti.API.info('Timezone is negative');
+				return -1;
+			}
+			else if ((date_original.getDate() - date_original.getUTCDate()) < 0){
+				Ti.API.info('Timezone is positive');
+				return 1;
+			}
+			else {
+				if((date_original.getHours() - date_original.getUTCHours()) < 0){
+					Ti.API.info('Timezone is negative');
+					return -1;
+				}
+				else{
+					Ti.API.info('Timezone is positive');
+					return 1;
+				}
+			}
+		}
+	}
+	return 1;
+}
+
+function display_widget(obj){
+	
+	var win_wid = Ti.UI.createWindow({
+		modal: true,
+		backgroundColor: "#000",
+		opacity: 0.9
+	});
+
+	var widget = obj.widget;
+	var settings = obj.settings
+	Ti.API.info('====>> Widget settings = '+widget.settings['time']);
+	
+	var tit_picker	= Ti.UI.createLabel({
+		top				: 0,
+		width			: '100%',
+		height			: '10%',
+		backgroundColor	: '#FFF',
+		color			: '#000',
+		textAlign		: 'center',
+		font			: {
+						fontWeight: 'bold'
+		},
+		text			: obj.title_picker
+	});
+	win_wid.add(tit_picker);
+
+	// call function display_widget
+	if (widget.settings['time'] != "1"){
+
+		//Get current
+		var currentDate = obj.currentDate;
+		var day = currentDate.getDate();
+		var month = currentDate.getMonth();
+		var year = currentDate.getFullYear();
+
+		//Min
+		var minDate = new Date();
+		minDate.setFullYear(year-5);
+		minDate.setMonth(0);
+		minDate.setDate(1);
+		
+		//Max
+		var maxDate = new Date();
+		maxDate.setFullYear(year+5);
+		maxDate.setMonth(11);
+		maxDate.setDate(31);
+		
+		//Current
+		var value_date = new Date();
+		value_date.setFullYear(year);
+		value_date.setMonth(month);
+		value_date.setDate(day);
+
+		obj.update_it = true;
+
+		//Update timezone
+		obj.timezone  = obj.currentDate.getTimezoneOffset()*60*1000;
+	
+		//discover if is GMT+ or GMT-
+		obj.timezone = obj.timezone*verify_UTC(obj.currentDate);
+	
+		//Refresh GMT value
+		obj.value	= Math.round(obj.currentDate.getTime()) + obj.timezone;
+	
+		Ti.API.info('TIMEZONE : '+obj.timezone);
+		Ti.API.info('Date : '+obj.currentDate);
+	
+
+		var date_picker = Titanium.UI.createPicker({
+			borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+			value				: obj.currentDate,
+			font 				: {
+									fontSize: 18
+			},
+			type				: Ti.UI.PICKER_TYPE_DATE,
+			minDate				: minDate,
+			maxDate				: maxDate,
+			report				: obj.currentDate,
+			color				: '#000000'
+		});
+		date_picker.selectionIndicator = true;
+
+		Ti.API.info('Value: '+obj.value);
+	
+		date_picker.addEventListener('change', function(e){
+			e.source.report =  e.value;
+			//Update timezone
+			obj.timezone  = e.source.report.getTimezoneOffset()*60*1000;
+			//discover if is GMT+ or GMT-
+			obj.timezone = obj.timezone*verify_UTC(e.source.report);
+		});
+
+		//Add fields:
+		win_wid.add(date_picker);
+
+		var done = Ti.UI.createButton({
+			title: 'Done',
+			bottom: 10,
+			width: '35%',
+			left: '10%',
+			height: '10%'
+		});
+	
+		var cancel = Ti.UI.createButton({
+			title: 'Cancel',
+			bottom: 10,
+			width: '35%',
+			left: '55%',
+			height: '10%'	
+		});
+		
+		win_wid.add(done);
+		win_wid.add(cancel);
+	
+		done.addEventListener('click', function(){
+			obj.currentDate	= date_picker.report;
+			obj.value		= Math.round(obj.currentDate.getTime()) + obj.timezone;
+			
+			Ti.API.info('Date : '+obj.currentDate);
+			Ti.API.info('Value: '+obj.value);
+
+			var f_date	= 	obj.currentDate.getDate();
+			var f_month	=	months_set[obj.currentDate.getMonth()];
+			var f_year	=	obj.currentDate.getFullYear();
+		    
+			obj.text = f_month+" / "+f_date+" / "+f_year;
+			win_wid.close();
+		});
+	
+		cancel.addEventListener('click', function(){
+			if (obj.value == null){
+				obj.update_it = false;
+			}
+			win_wid.close();
+		});
+	}
+	else{
+		//Composed field 
+		// Date picker
+		// Time picker
+		// For current Titanium Studio version (1.8), Android doesn't supply such pre build API. Here we create it
+
+		obj.update_it = true;
+
+		//Update timezone
+		obj.timezone  = obj.currentDate.getTimezoneOffset()*60*1000;
+		Ti.API.info('Hours : '+obj.currentDate.getHours());
+		Ti.API.info('UTC Hour : '+obj.currentDate.getUTCHours());
+
+		//discover if is GMT+ or GMT-
+		obj.timezone = obj.timezone*verify_UTC(obj.currentDate);
+		//Refresh GMT value
+		obj.value	= Math.round(obj.currentDate.getTime()) + obj.timezone;
+	
+		Ti.API.info('TIMEZONE : '+obj.timezone);
+		Ti.API.info('Date : '+obj.currentDate);
+
+
+		//Get current
+		var currentDate = obj.currentDate;
+		var year = currentDate.getFullYear();
+
+		//Min
+		var minDate = new Date();
+		minDate.setFullYear(year-5);
+		minDate.setMonth(0);
+		minDate.setDate(1);
+		
+		//Max
+		var maxDate = new Date();
+		maxDate.setFullYear(year+5);
+		maxDate.setMonth(11);
+		maxDate.setDate(31);
+		
+		var date_picker = Titanium.UI.createPicker({
+			borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+			value				: obj.currentDate,
+			font 				: {
+									fontSize: 18
+			},
+			type				: Ti.UI.PICKER_TYPE_DATE,
+			minDate				: minDate,
+			maxDate				: maxDate,
+			report				: obj.currentDate,
+			color				: '#000000',
+			top					: '12%'
+		});
+		date_picker.selectionIndicator = true;
+
+		/*
+		 * Time picker
+		 */
+		var time_picker =  Titanium.UI.createPicker({
+				borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+				value				: obj.currentDate,
+				font 				: {
+										fontSize: 18
+				},
+				report				: obj.currentDate,
+				type				: Ti.UI.PICKER_TYPE_TIME,
+				color				: '#000000',
+				top					: '50%',
+				timezone			: null
+		});
+		time_picker.selectionIndicator = true;
+
+
+		Ti.API.info('Value: '+obj.value);
+	
+		date_picker.addEventListener('change', function(e){
+			e.source.report =  e.value;
+			//Update timezone
+			obj.timezone  = e.source.report.getTimezoneOffset()*60*1000;
+			//discover if is GMT+ or GMT-
+			obj.timezone = obj.timezone*verify_UTC(e.source.report);
+			Ti.API.info('New Timezone: '+obj.timezone);	
+		});
+		//Add field:
+		win_wid.add(date_picker);
+		
+		time_picker.addEventListener('change', function(e){
+			Ti.API.info('Time: '+e.value);
+			Ti.API.info('Report: '+e.source.report);
+			
+			e.source.report =  e.value;	
+			//Update timezone
+			e.source.timezone  = e.source.report.getTimezoneOffset()*60*1000;
+			//discover if is GMT+ or GMT-
+			e.source.timezone = e.source.timezone*verify_UTC(e.source.report);
+			Ti.API.info('Timezone for time_picker: '+e.source.timezone);		
+		});
+		
+		//Add field:
+		win_wid.add(time_picker);
+
+		var done = Ti.UI.createButton({
+			title: 'Done',
+			bottom: 10,
+			width: '35%',
+			left: '10%',
+			height: '10%'
+		});
+	
+		var cancel = Ti.UI.createButton({
+			title: 'Cancel',
+			bottom: 10,
+			width: '35%',
+			left: '55%',
+			height: '10%'	
+		});
+		
+		win_wid.add(done);
+		win_wid.add(cancel);
+	
+		done.addEventListener('click', function(){
+			var date_value	= date_picker.report;
+			var time_value	= time_picker.report;
+			
+			//Day with no second
+			var date_rest 		= date_value.getTime() % 86400000;
+
+			//Local and actual timezone
+			var local_timezone  = time_picker.report.getTimezoneOffset()*60*1000;
+			
+			//discover if is GMT+ or GMT-
+			local_timezone 		= local_timezone*verify_UTC(time_picker.report);
+			var timezone_diff 	= local_timezone - obj.timezone;
+
+			var time_rest	 	= (time_value.getTime()+timezone_diff) % 86400000;
+			date_value 	= (Math.round(date_value.getTime()) - date_rest);
+			time_value	= (time_rest);
+			
+			var composed_date	= date_value+time_value;
+			var new_date		= new Date(composed_date);
+
+			obj.currentDate		= new_date;
+			obj.value			= Math.round(obj.currentDate.getTime()) + obj.timezone;
+			
+			Ti.API.info('Date : '+obj.currentDate);
+			Ti.API.info('Value: '+obj.value);
+
+			var f_minute	=	obj.currentDate.getMinutes();
+			var f_hour		= 	obj.currentDate.getHours();
+			var f_date		= 	obj.currentDate.getDate();
+			var f_month		=	months_set[obj.currentDate.getMonth()];
+			var f_year		=	obj.currentDate.getFullYear();
+		    
+			obj.text = f_hour+":"+form_min(f_minute)+" - "+f_month+" / "+f_date+" / "+f_year;
+			win_wid.close();
+		});
+	
+		cancel.addEventListener('click', function(){
+			if (obj.value == null){
+				obj.update_it = false;
+			}
+			win_wid.close();
+		});
+	} 
+	
+	win_wid.open();
+	
+}
+
+function display_omadi_time(obj){
+	var win_wid = Ti.UI.createWindow({
+		modal: true,
+		backgroundColor: "#000",
+		opacity: 0.9
+	});
+
+	var widget = obj.widget;
+	var settings = obj.settings;
+
+	var tit_picker	= Ti.UI.createLabel({
+		top				: 0,
+		width			: '100%',
+		height			: '10%',
+		backgroundColor	: '#FFF',
+		color			: '#000',
+		textAlign		: 'center',
+		font			: {
+						fontWeight: 'bold'
+		},
+		text			: obj.title_picker
+	});
+	win_wid.add(tit_picker);
+	
+	obj.update_it = true;
+
+	//Update timezone
+	obj.timezone  = obj.currentDate.getTimezoneOffset()*60*1000;
+
+	//discover if is GMT+ or GMT-
+	obj.timezone = obj.timezone*verify_UTC(obj.currentDate);
+	
+	//Refresh GMT value
+	obj.value	= Math.round(obj.currentDate.getTime()) + obj.timezone;
+	
+	Ti.API.info('TIMEZONE : '+obj.timezone);
+	Ti.API.info('Date : '+obj.currentDate);
+	
+	var date_picker =  Titanium.UI.createPicker({
+			borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+			value				: obj.currentDate,
+			font 				: {
+									fontSize: 18
+			},
+			report				: obj.currentDate,
+			type				: Ti.UI.PICKER_TYPE_TIME,
+			color				: '#000000'
+	});
+	date_picker.selectionIndicator = true;
+
+	Ti.API.info('Value: '+obj.value);
+	
+	date_picker.addEventListener('change', function(e){
+		e.source.report =  e.value;
+		//Update timezone
+		obj.timezone  = e.source.report.getTimezoneOffset()*60*1000;
+		//discover if is GMT+ or GMT-
+		obj.timezone = obj.timezone*verify_UTC(e.source.report);
+	});
+
+	//Add fields:
+	win_wid.add(date_picker);
+
+	var done = Ti.UI.createButton({
+		title: 'Done',
+		bottom: 10,
+		width: '35%',
+		left: '10%',
+		height: '10%'
+	});
+	
+	var cancel = Ti.UI.createButton({
+		title: 'Cancel',
+		bottom: 10,
+		width: '35%',
+		left: '55%',
+		height: '10%'	
+	});
+	
+	win_wid.add(done);
+	win_wid.add(cancel);
+	
+	done.addEventListener('click', function(){
+		obj.currentDate	= date_picker.report;
+		obj.value		= Math.round(obj.currentDate.getTime()) + obj.timezone;
+		
+		Ti.API.info('Date : '+obj.currentDate);
+		Ti.API.info('Value: '+obj.value);
+
+		var hours = obj.currentDate.getHours();
+		var min	=	obj.currentDate.getMinutes();
+
+		obj.text = hours+":"+form_min(min);
+		win_wid.close();
+	});
+	
+	cancel.addEventListener('click', function(){
+		if (obj.value == null){
+			obj.update_it = false;
+		}
+		win_wid.close();
+	});
+	
+	win_wid.open();
+}
 
 ///////////////////////////
 // UI
@@ -89,7 +548,7 @@ var viewContent = Ti.UI.createScrollView({
 resultView.add(viewContent);
 
 var regions			 = db_display.execute('SELECT * FROM regions WHERE node_type = "'+win.type+'" ORDER BY weight ASC');
-var fields_result	 = db_display.execute('SELECT label, weight, type, field_name, settings, widget FROM fields WHERE bundle = "'+win.type+'" ORDER BY weight ASC');
+var fields_result	 = db_display.execute('SELECT * FROM fields WHERE bundle = "'+win.type+'" ORDER BY weight ASC');
 
 //Populate array with field name and configs
 var field_arr		=	new Array();
@@ -108,6 +567,8 @@ setTimeout(function(e){
 					label:fields_result.fieldByName('label'),
 					type:fields_result.fieldByName('type'), 
 					field_name: fields_result.fieldByName('field_name'),
+					disabled:fields_result.fieldByName('disabled'),
+					required:fields_result.fieldByName('required'),
 					settings: fields_result.fieldByName('settings'),
 					widget: fields_result.fieldByName('widget')
 		});
@@ -143,7 +604,7 @@ setTimeout(function(e){
 			for (var i in unsorted_res){
 				var settings = JSON.parse(unsorted_res[i].settings);
 
-				if (settings != null && settings.required_no_data_checkbox != 0){
+				if (unsorted_res[i].disabled == 0){
 					if (regions.fieldByName('region_name') == settings.region ){
 						Ti.API.info('Regions match! ');
 						Ti.API.info('Field label: '+unsorted_res[i].label);
@@ -163,7 +624,8 @@ setTimeout(function(e){
 						////
 						field_arr[unsorted_res[i].label][field_arr[unsorted_res[i].label].length] = {
 									label		: unsorted_res[i].label,
-									type		: unsorted_res[i].type, 
+									type		: unsorted_res[i].type,
+									required	: unsorted_res[i].required,
 									field_name	: unsorted_res[i].field_name,
 									settings	: unsorted_res[i].settings,
 									widget		: unsorted_res[i].widget
@@ -210,7 +672,7 @@ setTimeout(function(e){
 					});
 					top += heightValue;
 	
-					manager.last_text = count;				 
+					manager.last_text = count;
 					content[count] = Ti.UI.createTextField({
 						hintText		: field_arr[index_label][index_size].label,
 						borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
@@ -224,7 +686,8 @@ setTimeout(function(e){
 						color			: '#000000',
 						top				: top,
 						field_type		: field_arr[index_label][index_size].type,
-						field_name		: field_arr[index_label][index_size].field_name
+						field_name		: field_arr[index_label][index_size].field_name,
+						required		: field_arr[index_label][index_size].required
 					});
 					top += heightValue;
 					
@@ -281,8 +744,9 @@ setTimeout(function(e){
 						height			: 100,
 						color			: '#000000',
 						top				: top,
-						field_type			: field_arr[index_label][index_size].type,
-						field_name		: field_arr[index_label][index_size].field_name
+						field_type		: field_arr[index_label][index_size].type,
+						field_name		: field_arr[index_label][index_size].field_name,
+						required		: field_arr[index_label][index_size].required
 					});
 					top += 100;
 					
@@ -346,7 +810,8 @@ setTimeout(function(e){
 						color			: '#000000',
 						top				: top,
 						field_type		: field_arr[index_label][index_size].type,
-						field_name		: field_arr[index_label][index_size].field_name
+						field_name		: field_arr[index_label][index_size].field_name,
+						required		: field_arr[index_label][index_size].required
 					});
 					top += heightValue;
 					
@@ -390,7 +855,8 @@ setTimeout(function(e){
 						color			: '#000000',
 						top				: top,
 						field_type		: field_arr[index_label][index_size].type,
-						field_name		: field_arr[index_label][index_size].field_name
+						field_name		: field_arr[index_label][index_size].field_name,
+						required		: field_arr[index_label][index_size].required
 					});
 					top += heightValue;
 					
@@ -430,7 +896,8 @@ setTimeout(function(e){
 						color			: '#000000',
 						top				: top,
 						field_type		: field_arr[index_label][index_size].type,
-						field_name		: field_arr[index_label][index_size].field_name
+						field_name		: field_arr[index_label][index_size].field_name,
+						required		: field_arr[index_label][index_size].required
 					});
 					top += heightValue;
 					
@@ -476,7 +943,8 @@ setTimeout(function(e){
 							field_type			: field_arr[index_label][index_size].type,
 							field_name			: field_arr[index_label][index_size].field_name,
 							machine_name		: vocabulary.fieldByName('machine_name'),
-							widget				: 'options_select'
+							widget				: 'options_select',
+							required			: field_arr[index_label][index_size].required
 						}); 
 						
 						var terms = db_display.execute("SELECT * FROM term_data WHERE vid='"+vocabulary.fieldByName('vid')+"'GROUP BY name ORDER BY name ASC");
@@ -553,7 +1021,8 @@ setTimeout(function(e){
 							restrict_new_autocomplete_terms	: rest_up,
 							widget							: 'taxonomy_autocomplete',
 							vid								: vid,
-							fantasy_name					: field_arr[index_label][index_size].label
+							fantasy_name					: field_arr[index_label][index_size].label,
+							required						: field_arr[index_label][index_size].required
 						});
 						
 						//AUTOCOMPLETE TABLE
@@ -665,9 +1134,9 @@ setTimeout(function(e){
 							top				: top
 						});
 						top += heightValue;
-						
-						data_terms 	= new Array;
-						aux_nodes	= new Array;
+					 	
+						data_terms 	= new Array();
+						aux_nodes	= new Array();
 						
 						for (var i in settings.reference_types){
 							aux_nodes.push(settings.reference_types[i]);
@@ -685,7 +1154,7 @@ setTimeout(function(e){
 								}
 							}
 							Ti.API.info(secondary);
-							var db_bah = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+							var db_bah = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 							var nodes = db_bah.execute(secondary);
 							Ti.API.info("Num of rows: "+nodes.rowCount);
 							while(nodes.isValidRow()){
@@ -709,7 +1178,8 @@ setTimeout(function(e){
 							terms							: data_terms,
 							restrict_new_autocomplete_terms	: rest_up,
 							fantasy_name					: field_arr[index_label][index_size].label,
-							nid								: null
+							nid								: null,
+							required						: field_arr[index_label][index_size].required
 						});
 						
 						//AUTOCOMPLETE TABLE
@@ -769,7 +1239,6 @@ setTimeout(function(e){
 										//Check match
 						        		if (e.source.value == list[i].title){
 						        			e.source.nid	= list[i].nid;
-					
 						        		}
 						        		else{
 						        			e.source.nid	= null;
@@ -780,7 +1249,7 @@ setTimeout(function(e){
 										{
 											height				: getScreenHeight()*0.10,
 											title				: list[i].title,
-											tid					: list[i].tid,
+											nid					: list[i].nid,
 											color				: '#000000',
 											autocomplete_table	: e.source.autocomplete_table,
 											setValueF			: func
@@ -833,6 +1302,7 @@ setTimeout(function(e){
 						selectionIndicator	: true,
 						field_type			: field_arr[index_label][index_size].type,
 						field_name			: field_arr[index_label][index_size].field_name,
+						required			: field_arr[index_label][index_size].required
 					}); 
 					
 					var users = db_display.execute("SELECT * FROM user WHERE ((uid != 0) AND (uid != 1))");
@@ -868,11 +1338,9 @@ setTimeout(function(e){
 	
 				//Shows up date (check how it is exhibited):
 				case 'datestamp':
+				
 					var widget = JSON.parse(field_arr[index_label][index_size].widget);
 					var settings = JSON.parse(field_arr[index_label][index_size].settings); 
-					
-					Ti.API.info('SETTINGS FOR DATESTAMP: '+settings.default_value);
-					Ti.API.info('WIDGET FOR DATESTAMP: '+widget.settings['time']);
 					
 					label[count] = Ti.UI.createLabel({
 						text			: 'Select the '+field_arr[index_label][index_size].label,
@@ -887,64 +1355,44 @@ setTimeout(function(e){
 						top				: top
 					});
 					top += heightValue;
-	
+					
+					// call function display_widget
 					if (widget.settings['time'] != "1"){
-						//Min
-						var minDate = new Date();
-						minDate.setFullYear(2009);
-						minDate.setMonth(0);
-						minDate.setDate(1);
-						
-						//Max
-						var maxDate = new Date();
-						maxDate.setFullYear(2015);
-						maxDate.setMonth(11);
-						maxDate.setDate(31);
-						
+
 						//Get current
 						var currentDate = new Date();
 						var day = currentDate.getDate();
 						var month = currentDate.getMonth();
 						var year = currentDate.getFullYear();
 		
-						//Current
-						var value_date = new Date();
-						value_date.setFullYear(year);
-						value_date.setMonth(month);
-						value_date.setDate(day);
-
-						var cur_timestamp = Math.round(value_date.getTime()/1000);
-						var sec_timestamp = parseInt(cur_timestamp)%86400;
-						var day_timestamp = cur_timestamp - sec_timestamp;
-		
-						content[count] = Titanium.UI.createPicker({
+						content[count] = Titanium.UI.createLabel({
 							borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 							left				: '3%',
 							right				: '3%',
-							height				: 100,
+							title_picker		: field_arr[index_label][index_size].label,
+							height				: heightValue,
 							font 				: {
 													fontSize: 18
 							},
-							type				: Ti.UI.PICKER_TYPE_DATE,
-							minDate				: minDate,
-							maxDate				: maxDate,
-							value				: value_date,
+							text				: months_set[month]+" / "+day+" / "+year,
+							textAlign			: 'center',
 							color				: '#000000',
+							backgroundColor		: '#FFFFFF',
 							top					: top,
 							field_type			: field_arr[index_label][index_size].type,
 							field_name			: field_arr[index_label][index_size].field_name,
+							widget				: widget,
+							settings			: settings,
+							currentDate			: currentDate,
 							update_it			: false,
 							time_type			: 0,
-							day_timestamp		: day_timestamp
+							required			: field_arr[index_label][index_size].required,
+							value				: null
 						});
-						content[count].selectionIndicator = true;
-						top += 100;
+						top += heightValue;
 						
-						content[count].addEventListener('change', function(e){
-							manager.location_pure = false;
-							e.source.update_it = true;
-							e.source.day_timestamp = ((Math.round(e.value/1000)) - ( (Math.round(e.value/1000)) % 86400) );  
-							Ti.API.info('After day timestamp: '+e.source.day_timestamp);
+						content[count].addEventListener('click', function(e){
+							display_widget(e.source);
 						});
 					
 						//Add fields:
@@ -958,108 +1406,50 @@ setTimeout(function(e){
 						// Time picker
 						// For current Titanium Studio version (1.8), Android doesn't supply such pre build API. Here we create it
 						
-						//Min
-						var minDate = new Date();
-						minDate.setFullYear(2009);
-						minDate.setMonth(0);
-						minDate.setDate(1);
-						
-						//Max
-						var maxDate = new Date();
-						maxDate.setFullYear(2015);
-						maxDate.setMonth(11);
-						maxDate.setDate(31);
-						
 						//Get current
 						var currentDate = new Date();
-						var day = currentDate.getDate();
-						var month = currentDate.getMonth();
-						var year = currentDate.getFullYear();
+						
+						var day			= currentDate.getDate();
+						var month		= currentDate.getMonth();
+						var year 		= currentDate.getFullYear();
+						var min			= currentDate.getMinutes();
+						var hours		= currentDate.getHours();
+
 		
-						//Current
-						var value_date = new Date();
-						value_date.setFullYear(year);
-						value_date.setMonth(month);
-						value_date.setDate(day);
-
-						var cur_timestamp = Math.round(value_date.getTime()/1000);
-						var sec_timestamp = Math.round(value_date.getTime()/1000) % 86400;
-						var day_timestamp = cur_timestamp - sec_timestamp;
-
 						//Date picker
-						content[count] = Titanium.UI.createPicker({
+						content[count] = Titanium.UI.createLabel({
 							borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 							left				: '3%',
 							right				: '3%',
-							height				: 100,
+							height				: heightValue,
 							font 				: {
 													fontSize: 18
 							},
-							type				: Ti.UI.PICKER_TYPE_DATE,
-							minDate				: minDate,
-							maxDate				: maxDate,
-							value				: value_date,
+							text				: hours+":"+form_min(min)+" - "+months_set[month]+" / "+day+" / "+year,
+							textAlign			: 'center',
 							color				: '#000000',
+							backgroundColor		: '#FFFFFF',
 							top					: top,
 							field_type			: field_arr[index_label][index_size].type,
 							field_name			: field_arr[index_label][index_size].field_name,
+							title_picker		: field_arr[index_label][index_size].label,
+							widget				: widget,
+							settings			: settings,
+							currentDate			: currentDate,
 							update_it			: false,
 							time_type			: 1,
-							day_timestamp		: day_timestamp
+							required			: field_arr[index_label][index_size].required,
+							value				: null
 						});
-						top += 100;					
-						content[count].selectionIndicator = true;
+						top += heightValue;	
 						
-						var min			= currentDate.getMinutes();
-						var hours		= currentDate.getHours();
-						var	time_got	= ((hours*60*60)+(60*min));
-						//Time picker
-						var time_picker = Titanium.UI.createPicker({
-							borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-							left				: '3%',
-							right				: '3%',
-							height				: 100,
-							value				: value_date,
-							font 				: {
-													fontSize: 18
-							},
-							type				: Ti.UI.PICKER_TYPE_TIME,
-							color				: '#000000',
-							top					: top,
-							sec_timestamp		: time_got,
-							day_timestamp		: day_timestamp,
-							update_it			: false
+						content[count].addEventListener('click', function(e){
+							display_widget(e.source);
 						});
 						
-						//Becomes property of date_picker
-						content[count].time_picker = time_picker;
-						top += 100;
-						
-						content[count].addEventListener('change', function(e){
-							manager.location_pure = false;
-							e.source.update_it = true;
-							e.source.day_timestamp = ((Math.round(e.value/1000)) - ( (Math.round(e.value/1000)) % 86400) );  
-							e.source.time_picker.day_timestamp = e.source.day_timestamp;
-							Ti.API.info('After day timestamp: '+e.source.day_timestamp);
-						});
-						
-						content[count].time_picker.addEventListener('change', function(e){
-							manager.location_pure = false;
-							e.source.update_it = true;
-							var currentDate = new Date(e.value);
-							var min	=	currentDate.getMinutes();
-							var hours = currentDate.getHours();
-							var	time_got = ((hours*60*60)+(60*min));
-							
-							e.source.sec_timestamp =  time_got;
-							Ti.API.info('Day timestamp: '+e.source.day_timestamp);
-							Ti.API.info('Consider the real timestamp: '+(e.source.day_timestamp+e.source.sec_timestamp));
-						});
-					
 						//Add fields:
 						viewContent.add(label[count]);
 						viewContent.add(content[count]);
-						viewContent.add(content[count].time_picker);
 						count++;
 					} 
 				break;
@@ -1068,18 +1458,6 @@ setTimeout(function(e){
 				case 'list_boolean':
 				
 					var settings = JSON.parse(field_arr[index_label][index_size].settings);
-					
-					for (var a in settings){
-						Ti.API.info(a+' ===== '+settings[a]);
-					}
-					var switch_value = settings.required_no_data_checkbox;
-					
-					if (switch_value == "1"){
-						switch_value = true;
-					}
-					else{
-						switch_value = false;
-					}
 					
 					label[count] = Ti.UI.createLabel({
 						text			: field_arr[index_label][index_size].label,
@@ -1097,13 +1475,16 @@ setTimeout(function(e){
 		
 					content[count] = Titanium.UI.createSwitch({
 						top					: top,
-						height				: 45,
-						value				: switch_value, 
+						height				: getScreenHeight()*0.1,
+						titleOff			: "No",
+						titleOn				: "Yes",
+						value				: false, 
 						field_type			: field_arr[index_label][index_size].type,
 						field_name			: field_arr[index_label][index_size].field_name,
-						enabled				: false
+						enabled				: true,
+						required			: field_arr[index_label][index_size].required
 					}); 
-					top += 45;
+					top += getScreenHeight()*0.1;
 					
 					content[count].addEventListener('change',function(e){
 						Ti.API.info('Basic Switch value = ' + e.value);
@@ -1118,7 +1499,6 @@ setTimeout(function(e){
 				
 				//Shows up date (check how it is exhibited):
 				case 'omadi_time':
-	
 					label[count] = Ti.UI.createLabel({
 						text			: ''+field_arr[index_label][index_size].label,
 						color			: '#FFFFFF',
@@ -1133,54 +1513,49 @@ setTimeout(function(e){
 					});
 					top += heightValue;
 					
-					//Get current
+					var widget = JSON.parse(field_arr[index_label][index_size].widget);
+					var settings = JSON.parse(field_arr[index_label][index_size].settings); 
+					
+					Ti.API.info('SETTINGS FOR DATESTAMP: '+settings.default_value);
+					Ti.API.info('WIDGET FOR DATESTAMP: '+widget.settings['time']);
+					
+					// call function display_widget
 					var currentDate = new Date();
+					var min			= currentDate.getMinutes();
+					var hours		= currentDate.getHours();
 					var day = currentDate.getDate();
 					var month = currentDate.getMonth();
 					var year = currentDate.getFullYear();
 	
-					//Current
-					var value_date = new Date();
-					value_date.setFullYear(year);
-					value_date.setMonth(month);
-					value_date.setDate(day);
-					
-					var cur_timestamp = Math.round(value_date.getTime()/1000);
-					var sec_timestamp = parseInt(cur_timestamp)%86400;
-					var day_timestamp = cur_timestamp - sec_timestamp;
-	
-					content[count] = Titanium.UI.createPicker({
+					content[count] = Titanium.UI.createLabel({
 						borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 						left				: '3%',
 						right				: '3%',
-						height				: 100,
+						title_picker		: field_arr[index_label][index_size].label,
+						height				: heightValue,
 						font 				: {
 												fontSize: 18
 						},
-						type				: Ti.UI.PICKER_TYPE_TIME,
-						value				: value_date,
+						text				: hours+":"+form_min(min),
+						textAlign			: 'center',
 						color				: '#000000',
+						backgroundColor		: '#FFFFFF',
+						value				: null,
 						top					: top,
 						field_type			: field_arr[index_label][index_size].type,
 						field_name			: field_arr[index_label][index_size].field_name,
+						widget				: widget,
+						settings			: settings,
+						currentDate			: currentDate,
 						update_it			: false,
-						day_timestamp		: day_timestamp,
-						sec_timestamp		: sec_timestamp
+						timezone			: null,
+						required			: field_arr[index_label][index_size].required,
+						value				: null
 					});
-					content[count].selectionIndicator = true;
-					top += 100;
-	
-	
-					content[count].addEventListener('change', function(e){
-						manager.location_pure = false;
-						e.source.update_it = true;
-						
-						var currentDate = new Date(e.value);
-						var min	=	currentDate.getMinutes();
-						var hours = currentDate.getHours();
-						var	time_got = ((hours*60*60)+(60*min));
-						e.source.sec_timestamp =  time_got;
-						Ti.API.info('Consider this timestamp: '+(e.source.day_timestamp+e.source.sec_timestamp));
+					top += heightValue;
+					
+					content[count].addEventListener('click', function(e){
+						display_omadi_time(e.source);
 					});
 				
 					//Add fields:
@@ -1233,7 +1608,7 @@ setTimeout(function(e){
 	//======================================
 	// MENU
 	//======================================
-	if (Ti.Platform.name === 'android') {
+	if (Ti.Platform.name == 'android') {
 		var activity = win.activity;
 		activity.onCreateOptionsMenu = function(e){
 			//======================================
@@ -1253,24 +1628,38 @@ setTimeout(function(e){
 			//======================================
 			
 			menu_first.addEventListener("click", function(e) {	
-				if (content[title].value == ''){
-					a.message = 'Please, fill out the required field '+label[title].text;
+				var string_text = "";
+				var count_fields = 0;
+				
+				for (var x in content){
+					Ti.API.info(label[x].text+' is required: '+content[x].required);
+					if (((content[x].required == 'true') || (content[x].required == '1') ) && (content[x].value == '') ){
+					//if (((content[x].required == 'true') || (content[x].required == '1') ) && ((content[x].value == '') || (content[x].value == null)) ){
+						count_fields++;
+						string_text += label[x].text+"\n";
+					}
+				}
+				if (count_fields > 0){
+					if (count_fields == 1){
+						a.message = 'The field "'+string_text+'" is empty, please fill it out in order to save this node';
+					}
+					else{
+						a.message = 'The following fields are required and are empty:\n '+string_text;
+					}
 					a.show();
 				}
 				else{
-					var db_put = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );			
+					var db_put = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );			
 					//
 					//Retrieve objects that need quotes:
 					//
 					var need_at = db_put.execute("SELECT field_name FROM fields WHERE bundle = '"+win.type+"' AND ( type='number_integer' OR type='number_decimal' ) ");
 					var quotes = new Array(); 
-					
 					while (need_at.isValidRow()){
 						quotes[need_at.fieldByName('field_name')] = true;
 						need_at.next();
 					}
 					need_at.close();
-					
 					//Get smallest nid
 					var nid = db_put.execute("SELECT nid FROM node ORDER BY nid ASC ");
 					
@@ -1280,7 +1669,6 @@ setTimeout(function(e){
 					else{
 						var new_nid = nid.fieldByName('nid')-1;
 					}
-		
 					var query = "INSERT INTO "+win.type+" ( 'nid', ";
 					
 					//field names
@@ -1294,20 +1682,20 @@ setTimeout(function(e){
 					}
 					
 					query += ' VALUES ( '+new_nid+', ';
-					
 					//Values
 					for (var j in content){
+						Ti.API.info(content[j].field_type+' is the field');
 						if (quotes[content[j].field_name] === true){
 							var mark = "";
 						}
 						else{
 							var mark = "'";
 						}
-						
+
 						if (content[j].value === null){
 							mark = "";
 						}
-						
+
 						var value_to_insert = ''; 
 						
 						if ((content[j].field_type ==  'number_decimal') || (content[j].field_type ==  'number_integer')){
@@ -1391,29 +1779,12 @@ setTimeout(function(e){
 								value_to_insert = 'false';
 							}
 						}
-						else if (content[j].field_type == 'datestamp'){
-								if (content[j].time_type == 0){
-									if (content[j].update_it === true ){
-										value_to_insert = content[j].day_timestamp;
-									}
-									else{
-										value_to_insert = '';
-									}
-								}
-								else{
-									if ((content[j].update_it === true ) || (content[j].time_picker.update_it === true )){
-										value_to_insert = content[j].time_picker.day_timestamp+content[j].time_picker.sec_timestamp;
-									}
-									else{
-										value_to_insert = '';
-									}
-								}
-						}
-						else if (content[j].field_type == 'omadi_time'){
+						else if( (content[j].field_type == 'omadi_time') || (content[j].field_type == 'datestamp') ){
 							if (content[j].update_it === true ){
-								value_to_insert = content[j].day_timestamp+content[j].sec_timestamp;
+								value_to_insert = Math.round(content[j].value/1000);
 							}
 							else{
+								mark = "'";
 								value_to_insert = '';
 							}
 						}
@@ -1427,13 +1798,15 @@ setTimeout(function(e){
 						else{
 							query += mark+""+value_to_insert+""+mark+", ";
 						}
+						Ti.API.info(content[j].field_type+' has value to insert '+value_to_insert);
 					}
 					try{
 						//Insert into node table
 						var date_created = Math.round(+new Date()/1000);
-						Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ('+new_nid+', '+date_created+', 0, \''+content[title].value+'\' , '+win.uid+', 1 , "'+win.type+'")');
+						//Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ('+new_nid+', '+date_created+', 0, \''+content[title].value+'\' , '+win.uid+', 1 , "'+win.type+'")');
+						Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ('+new_nid+', '+date_created+', 0, \'Joseandro\' , '+win.uid+', 1 , "'+win.type+'")');
 		
-						db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ('+new_nid+', '+date_created+', 0, \''+content[title].value+'\' , '+win.uid+', 1 , "'+win.type+'")');
+						db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ('+new_nid+', '+date_created+', 0, \'Joseandro\' , '+win.uid+', 1 , "'+win.type+'")');
 						
 						//Insert into table
 						Ti.API.info(query);
@@ -1443,6 +1816,7 @@ setTimeout(function(e){
 							message : win.title+' has been sucefully saved !'
 						}).show();
 						
+						/*
 						//
 						//WORKAROUND FOR DATE CALENDAR WORK OUT
 						//
@@ -1455,7 +1829,7 @@ setTimeout(function(e){
 						else{
 							Ti.API.info('Pure !');
 						}
-	
+						*/
 						win.close();
 					}
 					catch(e){
@@ -1463,7 +1837,7 @@ setTimeout(function(e){
 							message : 'An error has occurred when we tried to create this new node, please try again'
 						}).show();
 						
-						
+						/*
 						//
 						//WORKAROUND FOR DATE CALENDAR WORK OUT
 						//
@@ -1476,7 +1850,7 @@ setTimeout(function(e){
 						else{
 							Ti.API.info('Pure !');
 						}
-	
+						*/
 						win.close();
 	
 					}
@@ -1490,6 +1864,7 @@ setTimeout(function(e){
 			message : win.title+' not saved !',
 			duration: Ti.UI.NOTIFICATION_DURATION_LONG
 		}).show();
+		/*
 		//
 		//WORKAROUND FOR DATE CALENDAR WORK OUT
 		//
@@ -1502,6 +1877,7 @@ setTimeout(function(e){
 		else{
 			Ti.API.info('Pure !');
 		}
+		*/
 		win.close();
 	});
 } , 1000);

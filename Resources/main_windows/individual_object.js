@@ -384,7 +384,7 @@ if (c_index > 0){
 								content[count].addEventListener('click', function(e){
 									highlightMe( e.source.id );
 									var newWin = Ti.UI.createWindow({
-										fullscreen: true,
+										fullscreen: false,
 										title:'Account',
 										url: "individual_object.js"
 									});

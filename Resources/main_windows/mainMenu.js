@@ -56,7 +56,7 @@ function checkUpdate(evt){
 		
 		var pageIndex = 0;
 
-		var db_up = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+		var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
 		var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');
 
@@ -65,6 +65,7 @@ function checkUpdate(evt){
 		
 		if (up_flag.rowCount > 0){
 			Ti.API.info("Fired nodes update");
+			Ti.API.info('installMe( '+pageIndex+' , '+win2+' , '+updatedTime.fieldByName('timestamp') +' , '+pb+' , '+listView+', '+null+' , POST  )');
 			installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, null, 'POST');
 		}
 		else{
@@ -72,11 +73,13 @@ function checkUpdate(evt){
 			if ( see.rowCount > 0 ){
 				Ti.API.info("Fired normal database install");
 				//installMe(pageIndex, win, timeIndex, progress_bar, menu_list)
+				Ti.API.info('installMe( '+pageIndex+' , '+win2+' , '+updatedTime.fieldByName('timestamp') +' , '+pb+' , '+listView+', '+null+' , GET  )');
 				installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, null, 'GET');
 			}
 			//First install
 			else{
 				Ti.API.info("Fired first database install");
+				Ti.API.info('installMe( '+pageIndex+' , '+win2+' , '+updatedTime.fieldByName('timestamp') +' , '+pb+' , '+listView+', '+img+' , GET  )');
 				//installMe(pageIndex, win, timeIndex, progress, menu, img, type)
 				installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, img, 'GET');
 			}
@@ -163,7 +166,7 @@ win2.add(listView);
 
 if (check == 0){
 	var img = Ti.UI.createImageView({
-		image: '../images/message.png',
+		image: '/images/message.png',
 		width: 'auto',
 		height: 'auto',
 		top: '25%',
@@ -182,7 +185,7 @@ listView.addEventListener('click',function(e){
 		toolActInd.show();
 		var win_new = Titanium.UI.createWindow({  
 			title: "New "+e.row.display,
-			fullscreen: true,
+			fullscreen: false,
 			url:'create_node.js',
 			type: e.row.name_table,
 			uid: jsonLogin.user.uid
@@ -195,7 +198,7 @@ listView.addEventListener('click',function(e){
 	else{
 		var win_new = Titanium.UI.createWindow({  
 			title: e.row.display,
-			fullscreen: true,
+			fullscreen: false,
 			url:'objects.js',
 			type: e.row.name_table,
 			uid: jsonLogin.user.uid
@@ -259,7 +262,7 @@ offImage.addEventListener('click',function(e)
 		indLog = Titanium.UI.createWindow({
 		    url: 'logDecision.js',
 			title:'Omadi CRM',		    
-		    fullscreen: true
+		    fullscreen: false
 		});
 
 		//Setting both windows with login values:
@@ -335,7 +338,7 @@ setInterval( function(){
 		
 		var pageIndex = 0;
 
-		var db_up = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+		var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
 		var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');
 

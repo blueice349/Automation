@@ -11,7 +11,7 @@
  */
 
 //Common used functions
-Ti.include('../lib/functions.js');
+Ti.include('/lib/functions.js');
 
 //Current window's instance
 var win3 = Ti.UI.currentWindow;
@@ -21,7 +21,7 @@ win3.orientationModes = [Titanium.UI.PORTRAIT];
 
 //Definition of the window before (opens when the user clicks on the back button)
 var goToWindow = Titanium.UI.createWindow({
-	fullscreen : true,
+	fullscreen : false,
 	title:'Omadi CRM',	
 	url : 'mainMenu.js',
 	notOpen: true
@@ -124,7 +124,7 @@ else {
 		firstClick = true;
 		//Next window to be opened
 		var win4 = Titanium.UI.createWindow({
-			fullscreen : true,
+			fullscreen : false,
 			title: win3.type.charAt(0).toUpperCase() + win3.type.slice(1),
 			type: win3.type,
 			url : 'individual_object.js'
