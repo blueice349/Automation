@@ -20,37 +20,25 @@ var win1 = Ti.UI.currentWindow;
 
 var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
-//Label Website:
-var label_website = Titanium.UI.createLabel({
-	color:'#FFFFFF',
-	text:'Website: ',
-	top: '4.4%',
-	textAlign:'center',
-	width:'auto'
-});
-
-//Adds label "website" to the interface
-win1.add(label_website);
+var credentials = db.execute('SELECT domain, username, password FROM updated WHERE "rowid"=1');
 
 //Web site picker 
-var picker = Titanium.UI.createPicker({
+var portal = Titanium.UI.createTextField({
 	width:'65%',
 	top: '10%',
 	height: '13%',
+	hintText:'Client Account',
+	color:'#000000',
+	value: credentials.fieldByName('domain'),
+	keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
+	returnKeyType:Titanium.UI.RETURNKEY_DEFAULT,
+	softKeyboardOnFocus : Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS,
+	borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+	autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_NONE,
+	autocorrect: false
 });
-
-//Array of addresses 
-var portals = [];
-portals[0]=Titanium.UI.createPickerRow({title:'Omadi.com', value:'http://omadi.com'});
-portals[1]=Titanium.UI.createPickerRow({title:'Lasvegasparkingsystems.com', value:'https://lasvegasparkingsystems.com'});
-
-//Adds array of addresses to the picker
-picker.add(portals);
-
 //Adds picker to root window
-win1.add(picker);
-
-var credentials = db.execute('SELECT username, password FROM updated WHERE "rowid"=1');
+win1.add(portal);
 
 
 //Text field for username
@@ -65,7 +53,7 @@ var tf1 = Titanium.UI.createTextField({
 	returnKeyType:Titanium.UI.RETURNKEY_DEFAULT,
 	softKeyboardOnFocus : Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS,
 	borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-	autocapitalization: Titanium.UI.TEXT_AUTOCAPITALIZATION_NONE,
+	autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_NONE,
 	autocorrect: false
 });
 
@@ -88,12 +76,11 @@ var tf2 = Titanium.UI.createTextField({
 	returnKeyType:Titanium.UI.RETURNKEY_DONE,
 	softKeyboardOnFocus : Ti.UI.Android.SOFT_KEYBOARD_SHOW_ON_FOCUS,
     borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-	autocapitalization: Titanium.UI.TEXT_AUTOCAPITALIZATION_NONE,
+	autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_NONE,
 	autocorrect: false
 });
 
 credentials.close();
-
 //No autocorrection for password
 tf2.autocorrect = false;
 
@@ -171,14 +158,15 @@ win1.add(b1);
  */
 b1.addEventListener('click', function(){
 	
-	var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+	var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
 	//Onblur the text fields, remove keyboard from screen
+	portal.blur();
 	tf2.blur();
 	tf1.blur();
 	
-	//Empty text fields
-	if ( tf1.value == "" || tf2.value == "" ){
+	//Empty text fields 
+	if ( tf1.value == "" || tf2.value == "" || portal.value == ""){
 		alert ("Please, in order to login, fill out the boxes.");
 	}
 	//No internet connection
@@ -188,12 +176,14 @@ b1.addEventListener('click', function(){
 	
 	//Everything ok, so let's login:
 	else{
+
 		//Check database:
 		var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
 		if (updatedTime.fieldByName('timestamp') != 0){
 			var url = db.execute('SELECT url FROM updated WHERE rowid=1');
-			if ( url.fieldByName('url') !=  picker.getSelectedRow(0).value){
+			if ( url.fieldByName('url') !=  'https://'+portal.value+'.omadi.com'){
 				showIndicatorDelete("Hold on, we are deleting the old database and creating a fresh one for you");
+				/*
 				db.execute('DELETE FROM account');
 				db.execute('DELETE FROM contact');
 				db.execute('DELETE FROM lead');			
@@ -204,7 +194,8 @@ b1.addEventListener('click', function(){
 				db.execute('DELETE FROM updated');
 				db.execute('DELETE FROM users');
 				db.execute('DELETE FROM vocabulary');
-				db.execute('INSERT INTO updated (timestamp, url) VALUES (?,?)', 0 , null);		
+				db.execute('INSERT INTO updated (timestamp, url) VALUES (?,?)', 0 , null);
+				*/		
 				hideIndicator();
 			}
 			url.close();	
@@ -218,8 +209,8 @@ b1.addEventListener('click', function(){
 		//10 seconds till die
 		xhr.setTimeout(10000);
 		
-		xhr.open('POST', picker.getSelectedRow(0).value+'/js-sync/sync/login.json');
-		Ti.API.info("URL : "+picker.getSelectedRow(0).value+'/js-sync/sync/login.json');
+		xhr.open('POST', 'https://'+portal.value+'.omadi.com/js-sync/sync/login.json');
+		Ti.API.info('URL : https://'+portal.value+'.omadi.com/js-sync/sync/login.json');
 		
 		//Header parameters
 		xhr.setRequestHeader("Content-Type", "application/json");
@@ -242,15 +233,15 @@ b1.addEventListener('click', function(){
 		xhr.onload = function(e) {
 				
 				//Update credentials
-				var db_n = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
-				db_n.execute('UPDATE updated SET username = "'+tf1.value+'", password = "'+tf2.value+'" WHERE "rowid"=1');
+				var db_n = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+				db_n.execute('UPDATE updated SET domain = "'+portal.value+'", username = "'+tf1.value+'", password = "'+tf2.value+'" WHERE "rowid"=1');
 				db_n.close();
 				
 				//Debug
 				Ti.API.info("You have just connected");
 				
 				// Receives the selected row's value
-				var picked = picker.getSelectedRow(0).value;
+				var picked = 'https://'+portal.value+'.omadi.com';
 
 				//Creation of the main menu window
 				var win2 = Titanium.UI.createWindow({  
@@ -269,6 +260,7 @@ b1.addEventListener('click', function(){
 				//Manages windows and connections closing or openning them. It avoids memory leaking
 				win2.open();
 				hideIndicator();	
+				//xhr.abort();
 				win1.close();
 		}
 			
@@ -306,9 +298,3 @@ Ti.App.Properties.removeProperty('logStatus');
 
 //Close database
 db.close();
-
-
-//Remove logStatus, so if the user opens the app again after some time
-// he is gonna see the standart "Inform your credentials" message
-// instead of something else that stands inside logStatus
-Ti.App.Properties.removeProperty('logStatus');

@@ -11,7 +11,7 @@
  */
 
 //Common used functions
-Ti.include('../lib/functions.js');
+Ti.include('/lib/functions.js');
 
 //Current window's instance
 var win4 = Ti.UI.currentWindow;
@@ -26,7 +26,7 @@ win4.addEventListener('android:back', function() {
 });
 
 
-var db_display = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+var db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 var results  = db_display.execute('SELECT * FROM '+win4.type+' WHERE  nid = '+win4.nid);
 
 //The view where the results are presented
@@ -110,7 +110,7 @@ while (regions.isValidRow()){
 
 	var reg_settings = JSON.parse(regions.fieldByName('settings'));
 	
-	if (reg_settings != null && reg_settings.creation_disabled){
+	if (reg_settings != null && reg_settings.display_disabled){
 		Ti.API.info('Region : '+regions.fieldByName('label')+' won\'t appear');
 	}
 	else{
@@ -774,6 +774,47 @@ function highlightMe(data) {
 	}, 100);
 };
 
+//MENU
+//======================================
+// MENU
+//======================================
+if (Ti.Platform.name == 'android') {
+	var activity = win4.activity;
+	activity.onCreateOptionsMenu = function(e){
+		//======================================
+		// MENU - UI
+		//======================================
+
+		var menu = e.menu; 
+		var menu_first = menu.add({ 			
+	  		title: 'Edit',
+			order: 0
+		});
+		
+		menu_first.setIcon("/images/edit.png");
+   
+		//======================================
+		// MENU - EVENTS
+		//======================================
+		
+		menu_first.addEventListener("click", function(e) {	
+			//Next window to be opened
+			var win_new = Titanium.UI.createWindow({
+				fullscreen : false,
+				title: win4.title,
+				type: win4.type,
+				url : 'edit_node.js'
+			});
+	
+			//Passing parameters
+			win_new.nid = win4.nid;
+			win_new.nameSelected = win4.nameSelected;
+
+			win_new.open();
+			win4.close();
+		});
+	}
+}
 
 results.close();
 fields_result.close();
