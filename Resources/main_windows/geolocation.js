@@ -25,7 +25,7 @@ Ti.Geolocation.preferredProvider = Titanium.Geolocation.PROVIDER_GPS;
 Ti.Geolocation.purpose = "User tracking";
 
 // state vars used by resume/pause
-var db_coord_name	= "3";
+var db_coord_name	= "4";
 var headingAdded	= false;
 var locationAdded 	= false;
 var is_module_ready = false;

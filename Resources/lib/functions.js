@@ -1304,7 +1304,7 @@ function getJSON(){
 	//Initial JSON values:
 	var current_timestamp = Math.round(+new Date()/1000);
 	var returning_json = '{ "timestamp" : "'+current_timestamp+'", "data" : { ';
-	var db_json = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+	var db_json = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 	
 	//=============================
 	//Builds JSON for new nodes and for nodes that were updated
@@ -1329,22 +1329,30 @@ function getJSON(){
 				Ti.API.info(returning_json);
 				while (node_fields.isValidRow()){
 					if ( (selected_node.fieldByName(node_fields.fieldByName('field_name')) != null) && (selected_node.fieldByName(node_fields.fieldByName('field_name')) != '')){
-						if(node_fields.fieldByName('field_name') == "boot_number"){
-							
-							var array_cont = db_json.execute('SELECT encoded_array FROM array_base WHERE node_id = '+new_nodes.fieldByName('nid')+' AND field_name = "boot_number"');
+						if(selected_node.fieldByName(node_fields.fieldByName('field_name')) == 7411317618171051229){
+							var array_cont = db_json.execute('SELECT encoded_array FROM array_base WHERE node_id = '+new_nodes.fieldByName('nid')+' AND field_name = \''+node_fields.fieldByName('field_name')+'\'');
 							if ((array_cont.rowCount > 0) || (array_cont.isValidRow())){
-								returning_json += ', "'+node_fields.fieldByName('field_name')+'": '+selected_node.fieldByName(node_fields.fieldByName('field_name'))+' ';
+								
+								//Decode the stored array:
+								var decoded = array_cont.fieldByName('encoded_array');
+								decoded = Titanium.Utils.base64decode(decoded);
+								Ti.API.info('Decoded array is equals to: '+decoded);
+								
+								decoded = decoded.toString();
+								
+								// Token that splits each element contained into the array: 'j8Oá2s)E'
+								var decoded_values = decoded.split("j8Oá2s)E");
+								
+								returning_json += ', "'+node_fields.fieldByName('field_name')+'": [ \"'+decoded_values.join("\" , \"")+'\" ] ';
 							}
 							else{
 								returning_json += ', "'+node_fields.fieldByName('field_name')+'": "'+selected_node.fieldByName(node_fields.fieldByName('field_name'))+'"';
 							}
 							array_cont.close();
-							
 						}
 						else{
 							returning_json += ', "'+node_fields.fieldByName('field_name')+'": "'+selected_node.fieldByName(node_fields.fieldByName('field_name'))+'" ';
 						}
-						
 					}				
 					node_fields.next();
 				}
@@ -1465,6 +1473,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 			Ti.API.info("######## CHECK ########  "+parseInt(json.total_item_count));
 			if (progress != null){
 				//Set max value for progress bar
+				Ti.API.info('************ PROGRESS BAR NOT NULL *************')
 				progress.set_max(parseInt(json.total_item_count));				
 			}
 			Ti.API.info("JSON update: "+json);

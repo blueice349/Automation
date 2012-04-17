@@ -657,29 +657,61 @@ setTimeout(function(e){
 					
 					i_name = i_name.charAt(0).toUpperCase() + i_name.slice(1);
 
-					content[count] = Ti.UI.createTextField({
-						hintText		: i_name,
-						borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-						textAlign		: 'left',
-						left			: '3%',
-						right			: '3%',
-						height			: heightValue,
-						font 			: {
-											fontSize: 18
-						},
-						color			: '#000000',
-						top				: top,
-						field_type		: field_arr[index_label][index_size].type,
-						field_name		: field_arr[index_label][index_size].field_name,
-						required		: field_arr[index_label][index_size].required,
-						is_title		: field_arr[index_label][index_size].is_title
-					});
-					top += heightValue;
-					
 					//Add fields:
 					viewContent.add(label[count]);
-					viewContent.add(content[count]);
-					count++;
+
+					if (settings.cardinality >= 1){
+						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
+							content[count] = Ti.UI.createTextField({
+								hintText		: i_name,
+								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+								textAlign		: 'left',
+								left			: '3%',
+								right			: '3%',
+								height			: heightValue,
+								font 			: {
+													fontSize: 18
+								},
+								color			: '#000000',
+								top				: top,
+								field_type		: field_arr[index_label][index_size].type,
+								field_name		: field_arr[index_label][index_size].field_name,
+								required		: field_arr[index_label][index_size].required,
+								is_title		: field_arr[index_label][index_size].is_title,
+								composed_obj	: true,
+								cardinality		: settings.cardinality
+							});
+							top += heightValue;
+							
+							viewContent.add(content[count]);
+							count++;
+						}
+					}
+					else{
+						content[count] = Ti.UI.createTextField({
+							hintText		: i_name,
+							borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+							textAlign		: 'left',
+							left			: '3%',
+							right			: '3%',
+							height			: heightValue,
+							font 			: {
+												fontSize: 18
+							},
+							color			: '#000000',
+							top				: top,
+							field_type		: field_arr[index_label][index_size].type,
+							field_name		: field_arr[index_label][index_size].field_name,
+							required		: field_arr[index_label][index_size].required,
+							is_title		: field_arr[index_label][index_size].is_title,
+							composed_obj	: false,
+							cardinality		: settings.cardinality
+						});
+						top += heightValue;
+
+						viewContent.add(content[count]);
+						count++;
+					}
 				break;
 				
 				case 'text':
@@ -697,30 +729,63 @@ setTimeout(function(e){
 						top				: top
 					});
 					top += heightValue;
-	
-					content[count] = Ti.UI.createTextField({
-						hintText		: field_arr[index_label][index_size].label,
-						borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-						textAlign		: 'left',
-						left			: '3%',
-						right			: '3%',
-						height			: heightValue,
-						font 			: {
-											fontSize: 18
-						},
-						color			: '#000000',
-						top				: top,
-						field_type		: field_arr[index_label][index_size].type,
-						field_name		: field_arr[index_label][index_size].field_name,
-						required		: field_arr[index_label][index_size].required,
-						is_title		: field_arr[index_label][index_size].is_title
-					});
-					top += heightValue;
-					
+
 					//Add fields:
 					viewContent.add(label[count]);
-					viewContent.add(content[count]);
-					count++;
+
+					if (settings.cardinality >= 1){
+						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
+							content[count] = Ti.UI.createTextField({
+								hintText		: field_arr[index_label][index_size].label,
+								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+								textAlign		: 'left',
+								left			: '3%',
+								right			: '3%',
+								height			: heightValue,
+								font 			: {
+													fontSize: 18
+								},
+								color			: '#000000',
+								top				: top,
+								field_type		: field_arr[index_label][index_size].type,
+								field_name		: field_arr[index_label][index_size].field_name,
+								required		: field_arr[index_label][index_size].required,
+								is_title		: field_arr[index_label][index_size].is_title,
+								composed_obj	: true,
+								cardinality		: settings.cardinality
+							});
+							top += heightValue;
+														
+							viewContent.add(content[count]);
+							count++;
+						}
+					}
+					else{
+						content[count] = Ti.UI.createTextField({
+							hintText		: field_arr[index_label][index_size].label,
+							borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+							textAlign		: 'left',
+							left			: '3%',
+							right			: '3%',
+							height			: heightValue,
+							font 			: {
+												fontSize: 18
+							},
+							color			: '#000000',
+							top				: top,
+							field_type		: field_arr[index_label][index_size].type,
+							field_name		: field_arr[index_label][index_size].field_name,
+							required		: field_arr[index_label][index_size].required,
+							is_title		: field_arr[index_label][index_size].is_title,
+							composed_obj	: false,
+							cardinality		: settings.cardinality
+						});
+						top += heightValue;
+
+						viewContent.add(content[count]);
+						count++;
+					}
+	
 				break;
 	
 				case 'text_long':
@@ -737,27 +802,56 @@ setTimeout(function(e){
 						top				: top
 					});
 					top += heightValue;
-									
-					content[count] = Ti.UI.createTextField({
-						hintText		: field_arr[index_label][index_size].label,
-						borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-						textAlign		: 'left',
-						left			: '3%',
-						right			: '3%',
-						height			: 100,
-						color			: '#000000',
-						top				: top,
-						field_type		: field_arr[index_label][index_size].type,
-						field_name		: field_arr[index_label][index_size].field_name,
-						required		: field_arr[index_label][index_size].required,
-						is_title		: field_arr[index_label][index_size].is_title
-					});
-					top += 100;
-					
+
 					//Add fields:
 					viewContent.add(label[count]);
-					viewContent.add(content[count]);
-					count++;
+
+					if (settings.cardinality >= 1){
+						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
+							content[count] = Ti.UI.createTextField({
+								hintText		: field_arr[index_label][index_size].label,
+								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+								textAlign		: 'left',
+								left			: '3%',
+								right			: '3%',
+								height			: 100,
+								color			: '#000000',
+								top				: top,
+								field_type		: field_arr[index_label][index_size].type,
+								field_name		: field_arr[index_label][index_size].field_name,
+								required		: field_arr[index_label][index_size].required,
+								is_title		: field_arr[index_label][index_size].is_title,
+								composed_obj	: true,
+								cardinality		: settings.cardinality
+							});
+							top += 100;
+							
+							viewContent.add(content[count]);
+							count++;
+						}
+					}
+					else{
+						content[count] = Ti.UI.createTextField({
+							hintText		: field_arr[index_label][index_size].label,
+							borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+							textAlign		: 'left',
+							left			: '3%',
+							right			: '3%',
+							height			: 100,
+							color			: '#000000',
+							top				: top,
+							field_type		: field_arr[index_label][index_size].type,
+							field_name		: field_arr[index_label][index_size].field_name,
+							required		: field_arr[index_label][index_size].required,
+							is_title		: field_arr[index_label][index_size].is_title,
+							composed_obj	: false,
+							cardinality		: settings.cardinality
+						});
+						top += 100;
+
+						viewContent.add(content[count]);
+						count++;
+					}
 				break;
 	
 				case 'location':
@@ -800,30 +894,61 @@ setTimeout(function(e){
 					});
 					top += heightValue;
 					 
-					manager.last_text = count;
-					content[count] = Ti.UI.createTextField({
-						hintText		: field_arr[index_label][index_size].label,
-						borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-						textAlign		: 'left',
-						left			: '3%',
-						right			: '3%',
-						height			: heightValue,
-						font 			: {
-											fontSize: 18
-						},
-						color			: '#000000',
-						top				: top,
-						field_type		: field_arr[index_label][index_size].type,
-						field_name		: field_arr[index_label][index_size].field_name,
-						required		: field_arr[index_label][index_size].required,
-						is_title		: field_arr[index_label][index_size].is_title
-					});
-					top += heightValue;
-					
 					//Add fields:
 					viewContent.add(label[count]);
-					viewContent.add(content[count]);
-					count++;
+
+					if (settings.cardinality >= 1){
+						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
+							content[count] = Ti.UI.createTextField({
+								hintText		: field_arr[index_label][index_size].label,
+								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+								textAlign		: 'left',
+								left			: '3%',
+								right			: '3%',
+								height			: heightValue,
+								font 			: {
+													fontSize: 18
+								},
+								color			: '#000000',
+								top				: top,
+								field_type		: field_arr[index_label][index_size].type,
+								field_name		: field_arr[index_label][index_size].field_name,
+								required		: field_arr[index_label][index_size].required,
+								is_title		: field_arr[index_label][index_size].is_title,
+								composed_obj	: true,
+								cardinality		: settings.cardinality
+							});
+							top += heightValue;
+							
+							viewContent.add(content[count]);
+							count++;
+						}
+					}
+					else{
+						content[count] = Ti.UI.createTextField({
+							hintText		: field_arr[index_label][index_size].label,
+							borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+							textAlign		: 'left',
+							left			: '3%',
+							right			: '3%',
+							height			: heightValue,
+							font 			: {
+												fontSize: 18
+							},
+							color			: '#000000',
+							top				: top,
+							field_type		: field_arr[index_label][index_size].type,
+							field_name		: field_arr[index_label][index_size].field_name,
+							required		: field_arr[index_label][index_size].required,
+							is_title		: field_arr[index_label][index_size].is_title,
+							composed_obj	: false,
+							cardinality		: settings.cardinality
+						});
+						top += heightValue;
+						
+						viewContent.add(content[count]);
+						count++;
+					}
 				break;
 	
 	
@@ -833,23 +958,25 @@ setTimeout(function(e){
 				case 'phone':
 					var settings = JSON.parse(field_arr[index_label][index_size].settings);
 					
-					if (settings.cardinality){
-						if (settings.cardinality <= 1){
-							label[count] = Ti.UI.createLabel({
-								text:  field_arr[index_label][index_size].label,
-								color			: '#FFFFFF',
-								font 			: {
-													fontSize: 18
-								},
-								textAlign		: 'left',
-								left			: '3%',
-								touchEnabled	: false,
-								height			: heightValue,
-								top				: top
-							});
-							top += heightValue;
-			 
-							content[count] = Ti.UI.createTextField({
+					label[count] = Ti.UI.createLabel({
+						text:  field_arr[index_label][index_size].label,
+						color			: '#FFFFFF',
+						font 			: {
+											fontSize: 18
+						},
+						textAlign		: 'left',
+						left			: '3%',
+						touchEnabled	: false,
+						height			: heightValue,
+						top				: top
+					});
+					top += heightValue;
+					//Add fields:
+					viewContent.add(label[count]);
+
+					if (settings.cardinality >= 1){
+						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
+			 				content[count] = Ti.UI.createTextField({
 								hintText		: field_arr[index_label][index_size].label,
 								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 								keyboardType	: Titanium.UI.KEYBOARD_NUMBER_PAD,
@@ -865,75 +992,17 @@ setTimeout(function(e){
 								field_type		: field_arr[index_label][index_size].type,
 								field_name		: field_arr[index_label][index_size].field_name,
 								required		: field_arr[index_label][index_size].required,
-								composed_obj	: false,
-								is_title		: field_arr[index_label][index_size].is_title
+								composed_obj	: true,
+								is_title		: field_arr[index_label][index_size].is_title,
+								cardinality		: settings.cardinality
 							});
 							top += heightValue;
 							
-							//Add fields:
-							viewContent.add(label[count]);
 							viewContent.add(content[count]);
 							count++;
 						}
-						else{
-							//Label
-							label[count] = Ti.UI.createLabel({
-								text:  field_arr[index_label][index_size].label,
-								color			: '#FFFFFF',
-								font 			: {
-													fontSize: 18
-								},
-								textAlign		: 'left',
-								left			: '3%',
-								touchEnabled	: false,
-								height			: heightValue,
-								top				: top
-							});
-							top += heightValue;
-							viewContent.add(label[count]);
-														
-							//Fields cardinality
-							for (var x_ind = 0; x_ind < settings.cardinality; x_ind++){				
-								content[count] = Ti.UI.createTextField({
-									hintText		: field_arr[index_label][index_size].label+' #'+(x_ind+1),
-									borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-									keyboardType	: Titanium.UI.KEYBOARD_NUMBER_PAD,
-									textAlign		: 'left',
-									left			: '3%',
-									right			: '3%',
-									height			: heightValue,
-									font 			: {
-														fontSize: 18
-									},
-									color			: '#000000',
-									top				: top,
-									field_type		: field_arr[index_label][index_size].type,
-									field_name		: field_arr[index_label][index_size].field_name,
-									required		: field_arr[index_label][index_size].required,
-									composed_obj	: true,
-									is_title		: field_arr[index_label][index_size].is_title
-								});
-								top += heightValue;
-								viewContent.add(content[count]);
-								count++;
-							}						
-						}
 					}
 					else{
-						label[count] = Ti.UI.createLabel({
-							text:  field_arr[index_label][index_size].label,
-							color			: '#FFFFFF',
-							font 			: {
-												fontSize: 18
-							},
-							textAlign		: 'left',
-							left			: '3%',
-							touchEnabled	: false,
-							height			: heightValue,
-							top				: top
-						});
-						top += heightValue;
-		 				
 						content[count] = Ti.UI.createTextField({
 							hintText		: field_arr[index_label][index_size].label,
 							borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
@@ -951,12 +1020,11 @@ setTimeout(function(e){
 							field_name		: field_arr[index_label][index_size].field_name,
 							required		: field_arr[index_label][index_size].required,
 							composed_obj	: false,
-							is_title		: field_arr[index_label][index_size].is_title
+							is_title		: field_arr[index_label][index_size].is_title,
+							cardinality		: settings.cardinality
 						});
 						top += heightValue;
 						
-						//Add fields:
-						viewContent.add(label[count]);
 						viewContent.add(content[count]);
 						count++;
 					}
@@ -977,31 +1045,63 @@ setTimeout(function(e){
 					});
 					top += heightValue;
 	
-					manager.last_text = count;				
-					content[count] = Ti.UI.createTextField({
-						hintText		: field_arr[index_label][index_size].label,
-						borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-						keyboardType	: Ti.UI.KEYBOARD_EMAIL,
-						textAlign		: 'left',
-						left			: '3%',
-						right			: '3%',
-						height			: heightValue,
-						font 			: {
-											fontSize: 18
-						},
-						color			: '#000000',
-						top				: top,
-						field_type		: field_arr[index_label][index_size].type,
-						field_name		: field_arr[index_label][index_size].field_name,
-						required		: field_arr[index_label][index_size].required,
-						is_title		: field_arr[index_label][index_size].is_title
-					});
-					top += heightValue;
-					
 					//Add fields:
 					viewContent.add(label[count]);
-					viewContent.add(content[count]);
-					count++;
+
+					if (settings.cardinality >= 1){
+						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
+							content[count] = Ti.UI.createTextField({
+								hintText		: field_arr[index_label][index_size].label,
+								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+								keyboardType	: Ti.UI.KEYBOARD_EMAIL,
+								textAlign		: 'left',
+								left			: '3%',
+								right			: '3%',
+								height			: heightValue,
+								font 			: {
+													fontSize: 18
+								},
+								color			: '#000000',
+								top				: top,
+								field_type		: field_arr[index_label][index_size].type,
+								field_name		: field_arr[index_label][index_size].field_name,
+								required		: field_arr[index_label][index_size].required,
+								is_title		: field_arr[index_label][index_size].is_title,
+								composed_obj	: true,
+								cardinality		: settings.cardinality
+							});
+							top += heightValue;
+							
+							viewContent.add(content[count]);
+							count++;
+						}
+					}
+					else{
+						content[count] = Ti.UI.createTextField({
+							hintText		: field_arr[index_label][index_size].label,
+							borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+							keyboardType	: Ti.UI.KEYBOARD_EMAIL,
+							textAlign		: 'left',
+							left			: '3%',
+							right			: '3%',
+							height			: heightValue,
+							font 			: {
+												fontSize: 18
+							},
+							color			: '#000000',
+							top				: top,
+							field_type		: field_arr[index_label][index_size].type,
+							field_name		: field_arr[index_label][index_size].field_name,
+							required		: field_arr[index_label][index_size].required,
+							is_title		: field_arr[index_label][index_size].is_title,
+							composed_obj	: false,
+							cardinality		: settings.cardinality
+						});
+						top += heightValue;
+
+						viewContent.add(content[count]);
+						count++;
+					}
 				break;
 	
 				case 'taxonomy_term_reference':
@@ -1025,27 +1125,6 @@ setTimeout(function(e){
 						top += heightValue;
 	
 						var vocabulary = db_display.execute("SELECT vid FROM vocabulary WHERE machine_name = '"+settings.vocabulary+"'");
-						
-						content[count] = Titanium.UI.createPicker({
-							borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-							left				: '3%',
-							right				: '3%',
-							height				: heightValue,
-							font 				: {
-													fontSize: 18
-							},
-							color				: '#000000',
-							top					: top,
-							selectionIndicator	: true,
-							field_type			: field_arr[index_label][index_size].type,
-							field_name			: field_arr[index_label][index_size].field_name,
-							machine_name		: vocabulary.fieldByName('machine_name'),
-							widget				: 'options_select',
-							required			: field_arr[index_label][index_size].required,
-							is_title			: field_arr[index_label][index_size].is_title,
-							value				: null
-						}); 
-						
 						var terms = db_display.execute("SELECT * FROM term_data WHERE vid='"+vocabulary.fieldByName('vid')+"'GROUP BY name ORDER BY name ASC");
 	
 						var data_terms = [];
@@ -1056,20 +1135,97 @@ setTimeout(function(e){
 						}
 						terms.close();
 						vocabulary.close();
-						for (var i_data_terms in data_terms){
-							content[count].add (Ti.UI.createPickerRow({title:data_terms[i_data_terms].title, tid:data_terms[i_data_terms].tid }));
-						}						
-						top += heightValue;
-						
-						content[count].addEventListener('change', function(e){
-							Ti.API.info('TID: '+e.row.tid);
-							e.source.value = e.row.tid; 
-						});
-						
+
 						//Add fields:
 						viewContent.add(label[count]);
-						viewContent.add(content[count]);
-						count++;
+						
+						var arr_picker = new Array();
+						
+						for (var i_data_terms in data_terms){
+							arr_picker.push(Ti.UI.createPickerRow({title:data_terms[i_data_terms].title, tid:data_terms[i_data_terms].tid }));
+						}
+
+						Ti.API.info('===> '+settings.cardinality);
+												
+						if (settings.cardinality >= 1){
+							for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
+								content[count] = Titanium.UI.createPicker({
+									borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+									left				: '3%',
+									right				: '3%',
+									height				: heightValue,
+									font 				: {
+															fontSize: 18
+									},
+									color				: '#000000',
+									top					: top,
+									selectionIndicator	: true,
+									field_type			: field_arr[index_label][index_size].type,
+									field_name			: field_arr[index_label][index_size].field_name,
+									machine_name		: vocabulary.fieldByName('machine_name'),
+									widget				: 'options_select',
+									required			: field_arr[index_label][index_size].required,
+									is_title			: field_arr[index_label][index_size].is_title,
+									value				: null,
+									composed_obj		: true,
+									cardinality		: settings.cardinality
+								}); 
+								
+								content[count].add(arr_picker);
+								
+								
+								/*
+								for (var i_data_terms in data_terms){
+									content[count].add (Ti.UI.createPickerRow({title:data_terms[i_data_terms].title, tid:data_terms[i_data_terms].tid }));
+								}						
+								*/
+								content[count].addEventListener('change', function(e){
+									Ti.API.info('TID: '+e.row.tid);
+									e.source.value = e.row.tid; 
+								});
+								top += heightValue;
+								
+								//Add fields:
+								viewContent.add(content[count]);
+								count++;
+							}
+						}
+						else{
+							Ti.API.info(field_arr[index_label][index_size].field_name+'  here we go  #################################################################################################### ');
+							content[count] = Titanium.UI.createPicker({
+								borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+								left				: '3%',
+								right				: '3%',
+								height				: heightValue,
+								font 				: {
+														fontSize: 18
+								},
+								color				: '#000000',
+								top					: top,
+								selectionIndicator	: true,
+								field_type			: field_arr[index_label][index_size].type,
+								field_name			: field_arr[index_label][index_size].field_name,
+								machine_name		: vocabulary.fieldByName('machine_name'),
+								widget				: 'options_select',
+								required			: field_arr[index_label][index_size].required,
+								is_title			: field_arr[index_label][index_size].is_title,
+								value				: null,
+								composed_obj		: false,
+								cardinality			: settings.cardinality
+							}); 
+							
+							content[count].add(arr_picker);
+							
+							content[count].addEventListener('change', function(e){
+								Ti.API.info('TID: '+e.row.tid);
+								e.source.value = e.row.tid; 
+							});
+							top += heightValue;
+							
+							//Add fields:
+							viewContent.add(content[count]);
+							count++;
+						}
 					}
 					//Create autofill field
 					else if(widget.type == 'taxonomy_autocomplete'){
@@ -1106,117 +1262,238 @@ setTimeout(function(e){
 						if (!rest_up){
 							rest_up = 0;
 						}
-						manager.last_text = count;
-						content[count] = Titanium.UI.createTextField({
-						    hintText						: field_arr[index_label][index_size].label+' ...',
-							height							: heightValue,
-							font				 			: {
-																fontSize: 18
-							},
-						    left							: '3%',
-						    right							: '3%',
-						    top								: top,
-	  						field_type						: field_arr[index_label][index_size].type,
-							field_name						: field_arr[index_label][index_size].field_name,
-							machine_name					: vocabulary.fieldByName('machine_name'),
-							terms							: data_terms,
-							tid								: null,
-							restrict_new_autocomplete_terms	: rest_up,
-							widget							: 'taxonomy_autocomplete',
-							vid								: vid,
-							fantasy_name					: field_arr[index_label][index_size].label,
-							required						: field_arr[index_label][index_size].required,
-							is_title		: field_arr[index_label][index_size].is_title
-						});
-						
-						//AUTOCOMPLETE TABLE
-						var autocomplete_table = Titanium.UI.createTableView({
-							top: top-getScreenHeight()*0.2,
-							searchHidden: true,
-							zIndex: 15,
-							height: getScreenHeight()*0.2,
-							backgroundColor: '#FFFFFF',
-							visible: false
-						});
-						content[count].autocomplete_table = autocomplete_table;
-						top += heightValue;
-	
-						viewContent.add(content[count].autocomplete_table);
-						
-						//
-						// TABLE EVENTS
-						//
-						content[count].autocomplete_table.addEventListener('click', function(e){
-							e.source.setValueF(e.rowData.title, e.rowData.tid);
-							setTimeout(function(){
-									e.source.autocomplete_table.visible = false;
-									Ti.API.info(e.rowData.title+' was selected!');
-							}, 80);
-						});
-						
-						content[count].addEventListener('blur', function(e){
-							e.source.autocomplete_table.visible = false;
-							if ((e.source.restrict_new_autocomplete_terms == 1) && (e.source.value != "") && (e.source.tid == null)){
-									Ti.UI.createNotification({
-										message : 'The field '+e.source.fantasy_name+' does not accept fields creation, select one of the list !',
-										duration: Ti.UI.NOTIFICATION_DURATION_LONG
-									}).show();
-							}
-						});
-						
-						//
-						// SEARCH EVENTS
-						//
-						content[count].addEventListener('change', function(e){
-							var list = e.source.terms;
-							var func = function setValueF(value_f, tid){
-								e.source.value 	= value_f;
-								e.source.tid	= tid;
-								Ti.API.info('Value: '+value_f+' TID: '+tid);
-							}
-							
-							e.source.tid = null;
-							if ((e.value != null) && (e.value != '')){
-							    table_data = [];
-						        for (var i = 0; i < list.length; i++)
-						        {
-						        	var rg = new RegExp(e.source.value,'i');
-						        	if (list[i].title.search(rg) != -1){
-										//Check match
-						        		if (e.source.value == list[i].title){
-						        			e.source.tid	= list[i].tid;
-						        		}
-						        		else{
-						        			e.source.tid	= null;
-						        		}
-	
-										var row = Ti.UI.createTableViewRow(
-										{
-											height				: getScreenHeight()*0.10,
-											title				: list[i].title,
-											tid					: list[i].tid,
-											color				: '#000000',
-											autocomplete_table	: e.source.autocomplete_table,
-											setValueF			: func
-										});
-										// apply rows to data array
-										table_data.push(row);
-						        	}
-						        }
-								e.source.autocomplete_table.setData(table_data);
-								e.source.autocomplete_table.visible = true;
-							}
-							else{
-								e.source.autocomplete_table.visible = false;
-								e.source.tid = null;
-							}
-	
-						});
-	
+
 						//Add fields:
 						viewContent.add(label[count]);
-						viewContent.add(content[count]);
-						count++;
+	
+						if (settings.cardinality >= 1){
+							for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
+								content[count] = Titanium.UI.createTextField({
+								    hintText						: field_arr[index_label][index_size].label+' ...',
+									height							: heightValue,
+									font				 			: {
+																		fontSize: 18
+									},
+								    left							: '3%',
+								    right							: '3%',
+								    top								: top,
+			  						field_type						: field_arr[index_label][index_size].type,
+									field_name						: field_arr[index_label][index_size].field_name,
+									machine_name					: vocabulary.fieldByName('machine_name'),
+									terms							: data_terms,
+									tid								: null,
+									restrict_new_autocomplete_terms	: rest_up,
+									widget							: 'taxonomy_autocomplete',
+									vid								: vid,
+									fantasy_name					: field_arr[index_label][index_size].label,
+									required						: field_arr[index_label][index_size].required,
+									is_title						: field_arr[index_label][index_size].is_title,
+									composed_obj					: true,
+									cardinality		: settings.cardinality
+								});
+								
+								//AUTOCOMPLETE TABLE
+								var autocomplete_table = Titanium.UI.createTableView({
+									top: top-getScreenHeight()*0.2,
+									searchHidden: true,
+									zIndex: 15,
+									height: getScreenHeight()*0.2,
+									backgroundColor: '#FFFFFF',
+									visible: false
+								});
+								content[count].autocomplete_table = autocomplete_table;
+								top += heightValue;
+			
+								viewContent.add(content[count].autocomplete_table);
+								
+								//
+								// TABLE EVENTS
+								//
+								content[count].autocomplete_table.addEventListener('click', function(e){
+									e.source.setValueF(e.rowData.title, e.rowData.tid);
+									setTimeout(function(){
+											e.source.autocomplete_table.visible = false;
+											Ti.API.info(e.rowData.title+' was selected!');
+									}, 80);
+								});
+								
+								content[count].addEventListener('blur', function(e){
+									e.source.autocomplete_table.visible = false;
+									if ((e.source.restrict_new_autocomplete_terms == 1) && (e.source.value != "") && (e.source.tid == null)){
+											Ti.UI.createNotification({
+												message : 'The field '+e.source.fantasy_name+' does not accept fields creation, select one of the list !',
+												duration: Ti.UI.NOTIFICATION_DURATION_LONG
+											}).show();
+									}
+								});
+								
+								//
+								// SEARCH EVENTS
+								//
+								content[count].addEventListener('change', function(e){
+									var list = e.source.terms;
+									var func = function setValueF(value_f, tid){
+										e.source.value 	= value_f;
+										e.source.tid	= tid;
+										Ti.API.info('Value: '+value_f+' TID: '+tid);
+									}
+									
+									e.source.tid = null;
+									if ((e.value != null) && (e.value != '')){
+									    table_data = [];
+								        for (var i = 0; i < list.length; i++)
+								        {
+								        	var rg = new RegExp(e.source.value,'i');
+								        	if (list[i].title.search(rg) != -1){
+												//Check match
+								        		if (e.source.value == list[i].title){
+								        			e.source.tid	= list[i].tid;
+								        		}
+								        		else{
+								        			e.source.tid	= null;
+								        		}
+			
+												var row = Ti.UI.createTableViewRow(
+												{
+													height				: getScreenHeight()*0.10,
+													title				: list[i].title,
+													tid					: list[i].tid,
+													color				: '#000000',
+													autocomplete_table	: e.source.autocomplete_table,
+													setValueF			: func
+												});
+												// apply rows to data array
+												table_data.push(row);
+								        	}
+								        }
+										e.source.autocomplete_table.setData(table_data);
+										e.source.autocomplete_table.visible = true;
+									}
+									else{
+										e.source.autocomplete_table.visible = false;
+										e.source.tid = null;
+									}
+			
+								});
+			
+								//Add fields:
+								viewContent.add(content[count]);
+								count++;
+							}
+						}
+						else{
+							content[count] = Titanium.UI.createTextField({
+							    hintText						: field_arr[index_label][index_size].label+' ...',
+								height							: heightValue,
+								font				 			: {
+																	fontSize: 18
+								},
+							    left							: '3%',
+							    right							: '3%',
+							    top								: top,
+		  						field_type						: field_arr[index_label][index_size].type,
+								field_name						: field_arr[index_label][index_size].field_name,
+								machine_name					: vocabulary.fieldByName('machine_name'),
+								terms							: data_terms,
+								tid								: null,
+								restrict_new_autocomplete_terms	: rest_up,
+								widget							: 'taxonomy_autocomplete',
+								vid								: vid,
+								fantasy_name					: field_arr[index_label][index_size].label,
+								required						: field_arr[index_label][index_size].required,
+								is_title						: field_arr[index_label][index_size].is_title,
+								composed_obj					: false,
+								cardinality						: settings.cardinality
+							});
+							
+							//AUTOCOMPLETE TABLE
+							var autocomplete_table = Titanium.UI.createTableView({
+								top: top-getScreenHeight()*0.2,
+								searchHidden: true,
+								zIndex: 15,
+								height: getScreenHeight()*0.2,
+								backgroundColor: '#FFFFFF',
+								visible: false
+							});
+							content[count].autocomplete_table = autocomplete_table;
+							top += heightValue;
+		
+							viewContent.add(content[count].autocomplete_table);
+							
+							//
+							// TABLE EVENTS
+							//
+							content[count].autocomplete_table.addEventListener('click', function(e){
+								e.source.setValueF(e.rowData.title, e.rowData.tid);
+								setTimeout(function(){
+										e.source.autocomplete_table.visible = false;
+										Ti.API.info(e.rowData.title+' was selected!');
+								}, 80);
+							});
+							
+							content[count].addEventListener('blur', function(e){
+								e.source.autocomplete_table.visible = false;
+								if ((e.source.restrict_new_autocomplete_terms == 1) && (e.source.value != "") && (e.source.tid == null)){
+										Ti.UI.createNotification({
+											message : 'The field '+e.source.fantasy_name+' does not accept fields creation, select one of the list !',
+											duration: Ti.UI.NOTIFICATION_DURATION_LONG
+										}).show();
+								}
+							});
+							
+							//
+							// SEARCH EVENTS
+							//
+							content[count].addEventListener('change', function(e){
+								var list = e.source.terms;
+								var func = function setValueF(value_f, tid){
+									e.source.value 	= value_f;
+									e.source.tid	= tid;
+									Ti.API.info('Value: '+value_f+' TID: '+tid);
+								}
+								
+								e.source.tid = null;
+								if ((e.value != null) && (e.value != '')){
+								    table_data = [];
+							        for (var i = 0; i < list.length; i++)
+							        {
+							        	var rg = new RegExp(e.source.value,'i');
+							        	if (list[i].title.search(rg) != -1){
+											//Check match
+							        		if (e.source.value == list[i].title){
+							        			e.source.tid	= list[i].tid;
+							        		}
+							        		else{
+							        			e.source.tid	= null;
+							        		}
+		
+											var row = Ti.UI.createTableViewRow(
+											{
+												height				: getScreenHeight()*0.10,
+												title				: list[i].title,
+												tid					: list[i].tid,
+												color				: '#000000',
+												autocomplete_table	: e.source.autocomplete_table,
+												setValueF			: func
+											});
+											// apply rows to data array
+											table_data.push(row);
+							        	}
+							        }
+									e.source.autocomplete_table.setData(table_data);
+									e.source.autocomplete_table.visible = true;
+								}
+								else{
+									e.source.autocomplete_table.visible = false;
+									e.source.tid = null;
+								}
+		
+							});
+		
+							//Add fields:
+							viewContent.add(content[count]);
+							count++;
+						}
 					}
 				break;
 	
@@ -1267,7 +1544,12 @@ setTimeout(function(e){
 								nodes.next();
 							}
 						}
-						manager.last_text = count;
+
+					//Add fields:
+					viewContent.add(label[count]);
+
+					if (settings.cardinality >= 1){
+						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
 						content[count] = Titanium.UI.createTextField({
 						    hintText						: field_arr[index_label][index_size].label+' ...',
 							height							: heightValue,
@@ -1284,7 +1566,9 @@ setTimeout(function(e){
 							fantasy_name					: field_arr[index_label][index_size].label,
 							nid								: null,
 							required						: field_arr[index_label][index_size].required,
-							is_title						: field_arr[index_label][index_size].is_title
+							is_title						: field_arr[index_label][index_size].is_title,
+							composed_obj					: true,
+							cardinality						: settings.cardinality
 						});
 						
 						//AUTOCOMPLETE TABLE
@@ -1374,9 +1658,121 @@ setTimeout(function(e){
 						});
 	
 						//Add fields:
-						viewContent.add(label[count]);
+						viewContent.add(content[count]);
+						count++;						}
+					}
+					else{
+						content[count] = Titanium.UI.createTextField({
+						    hintText						: field_arr[index_label][index_size].label+' ...',
+							height							: heightValue,
+							font				 			: {
+																fontSize: 18
+							},
+						    left							: '3%',
+						    right							: '3%',
+						    top								: top,
+	  						field_type						: field_arr[index_label][index_size].type,
+							field_name						: field_arr[index_label][index_size].field_name,
+							terms							: data_terms,
+							restrict_new_autocomplete_terms	: rest_up,
+							fantasy_name					: field_arr[index_label][index_size].label,
+							nid								: null,
+							required						: field_arr[index_label][index_size].required,
+							is_title						: field_arr[index_label][index_size].is_title,
+							composed_obj					: false,
+							cardinality		: settings.cardinality
+						});
+						
+						//AUTOCOMPLETE TABLE
+						var autocomplete_table = Titanium.UI.createTableView({
+							top: top-getScreenHeight()*0.2,
+							searchHidden: true,
+							zIndex: 15,
+							height: getScreenHeight()*0.2,
+							backgroundColor: '#FFFFFF',
+							visible: false
+						});
+						content[count].autocomplete_table = autocomplete_table;
+						top += heightValue;
+	
+						viewContent.add(content[count].autocomplete_table);
+						
+						//
+						// TABLE EVENTS
+						//
+						content[count].autocomplete_table.addEventListener('click', function(e){
+							e.source.setValueF(e.rowData.title, e.rowData.nid);
+							setTimeout(function(){
+									e.source.autocomplete_table.visible = false;
+									Ti.API.info(e.rowData.title+' was selected!');
+							}, 80);
+							
+						});
+						
+						content[count].addEventListener('blur', function(e){
+							e.source.autocomplete_table.visible = false;
+							if ((e.source.nid === null) && (e.source.value != "")){
+									Ti.UI.createNotification({
+										message : 'The field '+e.source.fantasy_name+' does not accept fields creation, select one of the list !',
+										duration: Ti.UI.NOTIFICATION_DURATION_LONG
+									}).show();
+							}
+						});
+						
+						//
+						// SEARCH EVENTS
+						//
+						content[count].addEventListener('change', function(e){
+							var list = e.source.terms;
+							var func = function setValueF(value_f, nid){
+								e.source.value	 	= value_f;
+								e.source.nid		= nid;
+								Ti.API.info('Value: '+value_f+' NID: '+nid);
+							}
+							
+							if ((e.value != null) && (e.value != '')){
+							    table_data = [];
+							    e.source.nid	= null;
+						        for (var i = 0; i < list.length; i++)
+						        {
+						        	var rg = new RegExp(e.source.value,'i');
+						        	if (list[i].title.search(rg) != -1){
+										//Check match
+						        		if (e.source.value == list[i].title){
+						        			e.source.nid	= list[i].nid;
+						        		}
+						        		else{
+						        			e.source.nid	= null;
+						        		}
+						        		
+						        		//Create partial matching row
+										var row = Ti.UI.createTableViewRow(
+										{
+											height				: getScreenHeight()*0.10,
+											title				: list[i].title,
+											nid					: list[i].nid,
+											color				: '#000000',
+											autocomplete_table	: e.source.autocomplete_table,
+											setValueF			: func
+										});
+										// apply rows to data array
+										table_data.push(row);
+						        	}
+						        }
+								e.source.autocomplete_table.setData(table_data);
+								e.source.autocomplete_table.visible = true;
+							}
+							else{
+								e.source.autocomplete_table.visible = false;
+								e.source.nid = null;
+							}
+	
+						});
+	
+						//Add fields:
 						viewContent.add(content[count]);
 						count++;
+					}
 				break;
 	
 				case 'user_reference':
@@ -1393,59 +1789,124 @@ setTimeout(function(e){
 						top				: top
 					});
 					top += heightValue;
-	
-					content[count] = Titanium.UI.createPicker({
-						borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-						left				: '3%',
-						right				: '3%',
-						height				: heightValue,
-						font 				: {
-												fontSize: 18
-						},
-						color				: '#000000',
-						top					: top,
-						selectionIndicator	: true,
-						field_type			: field_arr[index_label][index_size].type,
-						field_name			: field_arr[index_label][index_size].field_name,
-						required			: field_arr[index_label][index_size].required,
-						is_title			: field_arr[index_label][index_size].is_title,
-						value				: null
-					}); 
-					
-					var users = db_display.execute("SELECT * FROM user WHERE ((uid != 0) AND (uid != 1))");
-	
-					var data_terms = [];
-					data_terms.push({title: field_arr[index_label][index_size].label, tid: null });
-					while (users.isValidRow()){ 
-						if (users.fieldByName('realname') == ''){
-							var name_ff = users.fieldByName('username');
-						}
-						else{
-							var name_ff = users.fieldByName('realname');
-						}
-						
-						data_terms.push({title: name_ff, uid: users.fieldByName('uid') });
-						
-						Ti.API.info('Username: \''+users.fieldByName('username')+'\' , Realname: \''+users.fieldByName('realname')+'\' , UID = '+users.fieldByName('uid')); 
-						users.next();
-					}
-					users.close();
-					
-					for (var i_data_terms in data_terms){
-						content[count].add (Ti.UI.createPickerRow({title:data_terms[i_data_terms].title, uid:data_terms[i_data_terms].uid }));
-					}
-					
-					top += heightValue;
-					
-					content[count].addEventListener('change', function(e){
-							Ti.API.info('UID: '+e.row.uid);
-							e.source.value = e.row.uid; 
-					});
-					
+
 					//Add fields:
 					viewContent.add(label[count]);
-					viewContent.add(content[count]);
-					count++;
+					
+					if (settings.cardinality >= 1){
+						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
+							content[count] = Titanium.UI.createPicker({
+								borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+								left				: '3%',
+								right				: '3%',
+								height				: heightValue,
+								font 				: {
+														fontSize: 18
+								},
+								color				: '#000000',
+								top					: top,
+								selectionIndicator	: true,
+								field_type			: field_arr[index_label][index_size].type,
+								field_name			: field_arr[index_label][index_size].field_name,
+								required			: field_arr[index_label][index_size].required,
+								is_title			: field_arr[index_label][index_size].is_title,
+								value				: null,
+								composed_obj		: true,
+								cardinality			: settings.cardinality
+							}); 
+
+							var users = db_display.execute("SELECT * FROM user WHERE ((uid != 0) AND (uid != 1))");
+			
+							var data_terms = [];
+							data_terms.push({title: field_arr[index_label][index_size].label, tid: null });
+							while (users.isValidRow()){ 
+								if (users.fieldByName('realname') == ''){
+									var name_ff = users.fieldByName('username');
+								}
+								else{
+									var name_ff = users.fieldByName('realname');
+								}
+								
+								data_terms.push({title: name_ff, uid: users.fieldByName('uid') });
+								
+								Ti.API.info('Username: \''+users.fieldByName('username')+'\' , Realname: \''+users.fieldByName('realname')+'\' , UID = '+users.fieldByName('uid')); 
+								users.next();
+							}
+							users.close();
+							
+							for (var i_data_terms in data_terms){
+								content[count].add (Ti.UI.createPickerRow({title:data_terms[i_data_terms].title, uid:data_terms[i_data_terms].uid }));
+							}
+							
+							top += heightValue;
+							
+							content[count].addEventListener('change', function(e){
+									Ti.API.info('UID: '+e.row.uid);
+									e.source.value = e.row.uid; 
+							});
+							
+							//Add fields:
+							viewContent.add(content[count]);
+							count++;
+
+						}
+					}
+					else{
+						
+						content[count] = Titanium.UI.createPicker({
+							borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+							left				: '3%',
+							right				: '3%',
+							height				: heightValue,
+							font 				: {
+													fontSize: 18
+							},
+							color				: '#000000',
+							top					: top,
+							selectionIndicator	: true,
+							field_type			: field_arr[index_label][index_size].type,
+							field_name			: field_arr[index_label][index_size].field_name,
+							required			: field_arr[index_label][index_size].required,
+							is_title			: field_arr[index_label][index_size].is_title,
+							value				: null,
+							composed_obj		: false,
+							cardinality			: settings.cardinality
+						}); 
+						
+						var users = db_display.execute("SELECT * FROM user WHERE ((uid != 0) AND (uid != 1))");
+		
+						var data_terms = [];
+						data_terms.push({title: field_arr[index_label][index_size].label, tid: null });
+						while (users.isValidRow()){ 
+							if (users.fieldByName('realname') == ''){
+								var name_ff = users.fieldByName('username');
+							}
+							else{
+								var name_ff = users.fieldByName('realname');
+							}
+							
+							data_terms.push({title: name_ff, uid: users.fieldByName('uid') });
+							
+							Ti.API.info('Username: \''+users.fieldByName('username')+'\' , Realname: \''+users.fieldByName('realname')+'\' , UID = '+users.fieldByName('uid')); 
+							users.next();
+						}
+						users.close();
+						
+						for (var i_data_terms in data_terms){
+							content[count].add (Ti.UI.createPickerRow({title:data_terms[i_data_terms].title, uid:data_terms[i_data_terms].uid }));
+						}
+						
+						top += heightValue;
+						
+						content[count].addEventListener('change', function(e){
+								Ti.API.info('UID: '+e.row.uid);
+								e.source.value = e.row.uid; 
+						});
+						
+						//Add fields:
+						viewContent.add(content[count]);
+						count++;
+					}
 				break;
 	
 				//Shows up date (check how it is exhibited):
@@ -1467,51 +1928,94 @@ setTimeout(function(e){
 						top				: top
 					});
 					top += heightValue;
+					//Add fields:
+					viewContent.add(label[count]);
+
 					
 					// call function display_widget
 					if (widget.settings['time'] != "1"){
-
 						//Get current
 						var currentDate = new Date();
 						var day = currentDate.getDate();
 						var month = currentDate.getMonth();
 						var year = currentDate.getFullYear();
-		
-						content[count] = Titanium.UI.createLabel({
-							borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-							left				: '3%',
-							right				: '3%',
-							title_picker		: field_arr[index_label][index_size].label,
-							height				: heightValue,
-							font 				: {
-													fontSize: 18
-							},
-							text				: months_set[month]+" / "+day+" / "+year,
-							textAlign			: 'center',
-							color				: '#000000',
-							backgroundColor		: '#FFFFFF',
-							top					: top,
-							field_type			: field_arr[index_label][index_size].type,
-							field_name			: field_arr[index_label][index_size].field_name,
-							widget				: widget,
-							settings			: settings,
-							currentDate			: currentDate,
-							update_it			: false,
-							time_type			: 0,
-							required			: field_arr[index_label][index_size].required,
-							value				: null,
-							is_title			: field_arr[index_label][index_size].is_title
-						});
-						top += heightValue;
-						
-						content[count].addEventListener('click', function(e){
-							display_widget(e.source);
-						});
-					
-						//Add fields:
-						viewContent.add(label[count]);
-						viewContent.add(content[count]);
-						count++;
+
+						if (settings.cardinality >= 1){
+							for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
+								content[count] = Titanium.UI.createLabel({
+									borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+									left				: '3%',
+									right				: '3%',
+									title_picker		: field_arr[index_label][index_size].label,
+									height				: heightValue,
+									font 				: {
+															fontSize: 18
+									},
+									text				: months_set[month]+" / "+day+" / "+year,
+									textAlign			: 'center',
+									color				: '#000000',
+									backgroundColor		: '#FFFFFF',
+									top					: top,
+									field_type			: field_arr[index_label][index_size].type,
+									field_name			: field_arr[index_label][index_size].field_name,
+									widget				: widget,
+									settings			: settings,
+									currentDate			: currentDate,
+									update_it			: true,
+									time_type			: 0,
+									required			: field_arr[index_label][index_size].required,
+									value				: currentDate.getTime(),
+									is_title			: field_arr[index_label][index_size].is_title,
+									composed_obj		: true,
+									cardinality			: settings.cardinality
+								});
+								top += heightValue;
+								
+								content[count].addEventListener('click', function(e){
+									display_widget(e.source);
+								});
+	
+								viewContent.add(content[count]);
+								count++;
+							}
+						}
+						else{
+							content[count] = Titanium.UI.createLabel({
+								borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+								left				: '3%',
+								right				: '3%',
+								title_picker		: field_arr[index_label][index_size].label,
+								height				: heightValue,
+								font 				: {
+														fontSize: 18
+								},
+								text				: months_set[month]+" / "+day+" / "+year,
+								textAlign			: 'center',
+								color				: '#000000',
+								backgroundColor		: '#FFFFFF',
+								top					: top,
+								field_type			: field_arr[index_label][index_size].type,
+								field_name			: field_arr[index_label][index_size].field_name,
+								widget				: widget,
+								settings			: settings,
+								currentDate			: currentDate,
+								update_it			: true,
+								value				: currentDate.getTime(),
+								time_type			: 0,
+								required			: field_arr[index_label][index_size].required,
+								is_title			: field_arr[index_label][index_size].is_title,
+								composed_obj		: false,
+								cardinality			: settings.cardinality
+							});
+							top += heightValue;
+							
+							content[count].addEventListener('click', function(e){
+								display_widget(e.source);
+							});
+
+							viewContent.add(content[count]);
+							count++;
+						}
 					}
 					else{
 						//Composed field 
@@ -1528,43 +2032,85 @@ setTimeout(function(e){
 						var min			= currentDate.getMinutes();
 						var hours		= currentDate.getHours();
 
-		
-						//Date picker
-						content[count] = Titanium.UI.createLabel({
-							borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-							left				: '3%',
-							right				: '3%',
-							height				: heightValue,
-							font 				: {
-													fontSize: 18
-							},
-							text				: hours+":"+form_min(min)+" - "+months_set[month]+" / "+day+" / "+year,
-							textAlign			: 'center',
-							color				: '#000000',
-							backgroundColor		: '#FFFFFF',
-							top					: top,
-							field_type			: field_arr[index_label][index_size].type,
-							field_name			: field_arr[index_label][index_size].field_name,
-							title_picker		: field_arr[index_label][index_size].label,
-							widget				: widget,
-							settings			: settings,
-							currentDate			: currentDate,
-							update_it			: false,
-							time_type			: 1,
-							required			: field_arr[index_label][index_size].required,
-							value				: null,
-							is_title			: field_arr[index_label][index_size].is_title
-						});
-						top += heightValue;	
-						
-						content[count].addEventListener('click', function(e){
-							display_widget(e.source);
-						});
-						
-						//Add fields:
-						viewContent.add(label[count]);
-						viewContent.add(content[count]);
-						count++;
+
+						if (settings.cardinality >= 1){
+							for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
+								//Date picker
+								content[count] = Titanium.UI.createLabel({
+									borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+									left				: '3%',
+									right				: '3%',
+									height				: heightValue,
+									font 				: {
+															fontSize: 18
+									},
+									text				: hours+":"+form_min(min)+" - "+months_set[month]+" / "+day+" / "+year,
+									textAlign			: 'center',
+									color				: '#000000',
+									backgroundColor		: '#FFFFFF',
+									top					: top,
+									field_type			: field_arr[index_label][index_size].type,
+									field_name			: field_arr[index_label][index_size].field_name,
+									title_picker		: field_arr[index_label][index_size].label,
+									widget				: widget,
+									settings			: settings,
+									currentDate			: currentDate,
+									update_it			: true,
+									value				: currentDate.getTime(),
+									time_type			: 1,
+									required			: field_arr[index_label][index_size].required,
+									is_title			: field_arr[index_label][index_size].is_title,
+									composed_obj		: true,
+									cardinality			: settings.cardinality
+								});
+								top += heightValue;	
+								
+								content[count].addEventListener('click', function(e){
+									display_widget(e.source);
+								});
+	
+								viewContent.add(content[count]);
+								count++;
+							}
+						}
+						else{
+							//Date picker
+							content[count] = Titanium.UI.createLabel({
+								borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+								left				: '3%',
+								right				: '3%',
+								height				: heightValue,
+								font 				: {
+														fontSize: 18
+								},
+								text				: hours+":"+form_min(min)+" - "+months_set[month]+" / "+day+" / "+year,
+								textAlign			: 'center',
+								color				: '#000000',
+								backgroundColor		: '#FFFFFF',
+								top					: top,
+								field_type			: field_arr[index_label][index_size].type,
+								field_name			: field_arr[index_label][index_size].field_name,
+								title_picker		: field_arr[index_label][index_size].label,
+								widget				: widget,
+								settings			: settings,
+								currentDate			: currentDate,
+								update_it			: true,
+								time_type			: 1,
+								required			: field_arr[index_label][index_size].required,
+								value				: currentDate.getTime(),
+								is_title			: field_arr[index_label][index_size].is_title,
+								composed_obj		: false,
+								cardinality			: settings.cardinality
+							});
+							top += heightValue;	
+							
+							content[count].addEventListener('click', function(e){
+								display_widget(e.source);
+							});
+
+							viewContent.add(content[count]);
+							count++;
+						}
 					} 
 				break;
 	
@@ -1587,29 +2133,59 @@ setTimeout(function(e){
 					});
 					top += heightValue;
 		
-					content[count] = Titanium.UI.createSwitch({
-						top					: top,
-						height				: getScreenHeight()*0.1,
-						titleOff			: "No",
-						titleOn				: "Yes",
-						value				: false, 
-						field_type			: field_arr[index_label][index_size].type,
-						field_name			: field_arr[index_label][index_size].field_name,
-						enabled				: true,
-						required			: field_arr[index_label][index_size].required,
-						is_title			: field_arr[index_label][index_size].is_title
-					}); 
-					top += getScreenHeight()*0.1;
-					
-					content[count].addEventListener('change',function(e){
-						Ti.API.info('Basic Switch value = ' + e.value);
-					});
-					
 					//Add fields:
 					viewContent.add(label[count]);
-					viewContent.add(content[count]);
-					count++;
-				
+
+					if (settings.cardinality >= 1){
+						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
+							content[count] = Titanium.UI.createSwitch({
+								top					: top,
+								height				: getScreenHeight()*0.1,
+								titleOff			: "No",
+								titleOn				: "Yes",
+								value				: false, 
+								field_type			: field_arr[index_label][index_size].type,
+								field_name			: field_arr[index_label][index_size].field_name,
+								enabled				: true,
+								required			: field_arr[index_label][index_size].required,
+								is_title			: field_arr[index_label][index_size].is_title,
+								composed_obj		: true,
+								cardinality			: settings.cardinality
+							}); 
+							top += getScreenHeight()*0.1;
+							
+							content[count].addEventListener('change',function(e){
+								Ti.API.info('Basic Switch value = ' + e.value);
+							});
+	
+							viewContent.add(content[count]);
+							count++;
+						}
+					}
+					else{
+						content[count] = Titanium.UI.createSwitch({
+							top					: top,
+							height				: getScreenHeight()*0.1,
+							titleOff			: "No",
+							titleOn				: "Yes",
+							value				: false, 
+							field_type			: field_arr[index_label][index_size].type,
+							field_name			: field_arr[index_label][index_size].field_name,
+							enabled				: true,
+							required			: field_arr[index_label][index_size].required,
+							is_title			: field_arr[index_label][index_size].is_title,
+							composed_obj		: false,
+							cardinality			: settings.cardinality
+						}); 
+						top += getScreenHeight()*0.1;
+						
+						content[count].addEventListener('change',function(e){
+							Ti.API.info('Basic Switch value = ' + e.value);
+						});
+
+						viewContent.add(content[count]);
+						count++;
+					}
 				break;
 				
 				//Shows up date (check how it is exhibited):
@@ -1638,46 +2214,89 @@ setTimeout(function(e){
 					var currentDate = new Date();
 					var min			= currentDate.getMinutes();
 					var hours		= currentDate.getHours();
-					var day = currentDate.getDate();
-					var month = currentDate.getMonth();
-					var year = currentDate.getFullYear();
+					var day 		= currentDate.getDate();
+					var month 		= currentDate.getMonth();
+					var year 		= currentDate.getFullYear();
 	
-					content[count] = Titanium.UI.createLabel({
-						borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-						left				: '3%',
-						right				: '3%',
-						title_picker		: field_arr[index_label][index_size].label,
-						height				: heightValue,
-						font 				: {
-												fontSize: 18
-						},
-						text				: hours+":"+form_min(min),
-						textAlign			: 'center',
-						color				: '#000000',
-						backgroundColor		: '#FFFFFF',
-						value				: null,
-						top					: top,
-						field_type			: field_arr[index_label][index_size].type,
-						field_name			: field_arr[index_label][index_size].field_name,
-						widget				: widget,
-						settings			: settings,
-						currentDate			: currentDate,
-						update_it			: false,
-						timezone			: null,
-						required			: field_arr[index_label][index_size].required,
-						is_title			: field_arr[index_label][index_size].is_title
-					});
-					top += heightValue;
-					
-					content[count].addEventListener('click', function(e){
-						display_omadi_time(e.source);
-					});
-				
 					//Add fields:
 					viewContent.add(label[count]);
-					viewContent.add(content[count]);
-					count++;
+
+					if (settings.cardinality >= 1){
+						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
+							content[count] = Titanium.UI.createLabel({
+								borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+								left				: '3%',
+								right				: '3%',
+								title_picker		: field_arr[index_label][index_size].label,
+								height				: heightValue,
+								font 				: {
+														fontSize: 18
+								},
+								text				: hours+":"+form_min(min),
+								textAlign			: 'center',
+								color				: '#000000',
+								backgroundColor		: '#FFFFFF',
+								value				: currentDate.getTime(),
+								top					: top,
+								field_type			: field_arr[index_label][index_size].type,
+								field_name			: field_arr[index_label][index_size].field_name,
+								widget				: widget,
+								settings			: settings,
+								currentDate			: currentDate,
+								update_it			: true,
+								timezone			: null,
+								required			: field_arr[index_label][index_size].required,
+								is_title			: field_arr[index_label][index_size].is_title,
+								composed_obj		: true,
+								cardinality			: settings.cardinality
+							});
+							top += heightValue;
+							
+							content[count].addEventListener('click', function(e){
+								display_omadi_time(e.source);
+							});
 	
+							viewContent.add(content[count]);
+							count++;
+						}
+					}
+					else{
+						content[count] = Titanium.UI.createLabel({
+							borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+							left				: '3%',
+							right				: '3%',
+							title_picker		: field_arr[index_label][index_size].label,
+							height				: heightValue,
+							font 				: {
+													fontSize: 18
+							},
+							text				: hours+":"+form_min(min),
+							textAlign			: 'center',
+							color				: '#000000',
+							backgroundColor		: '#FFFFFF',
+							value				: null,
+							top					: top,
+							field_type			: field_arr[index_label][index_size].type,
+							field_name			: field_arr[index_label][index_size].field_name,
+							widget				: widget,
+							settings			: settings,
+							currentDate			: currentDate,
+							update_it			: true,
+							value				: currentDate.getTime(),
+							required			: field_arr[index_label][index_size].required,
+							is_title			: field_arr[index_label][index_size].is_title,
+							composed_obj		: false,
+							cardinality			: settings.cardinality
+						});
+						top += heightValue;
+						
+						content[count].addEventListener('click', function(e){
+							display_omadi_time(e.source);
+						});
+
+						viewContent.add(content[count]);
+						count++;
+					}
 				break;
 
 				case 'vehicle_fields':
@@ -1708,29 +2327,62 @@ setTimeout(function(e){
 					
 					i_name = i_name.charAt(0).toUpperCase() + i_name.slice(1);
 
-					content[count] = Ti.UI.createTextField({
-						hintText		: i_name,
-						borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-						textAlign		: 'left',
-						left			: '3%',
-						right			: '3%',
-						height			: heightValue,
-						font 			: {
-											fontSize: 18
-						},
-						color			: '#000000',
-						top				: top,
-						field_type		: field_arr[index_label][index_size].type,
-						field_name		: field_arr[index_label][index_size].field_name,
-						required		: field_arr[index_label][index_size].required,
-						is_title		: field_arr[index_label][index_size].is_title
-					});
-					top += heightValue;
-					
+
 					//Add fields:
 					viewContent.add(label[count]);
-					viewContent.add(content[count]);
-					count++;
+
+					if (settings.cardinality >= 1){
+						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
+							content[count] = Ti.UI.createTextField({
+								hintText		: i_name,
+								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+								textAlign		: 'left',
+								left			: '3%',
+								right			: '3%',
+								height			: heightValue,
+								font 			: {
+													fontSize: 18
+								},
+								color			: '#000000',
+								top				: top,
+								field_type		: field_arr[index_label][index_size].type,
+								field_name		: field_arr[index_label][index_size].field_name,
+								required		: field_arr[index_label][index_size].required,
+								is_title		: field_arr[index_label][index_size].is_title,
+								composed_obj	: true,
+								cardinality		: settings.cardinality
+							});
+							top += heightValue;
+		
+							viewContent.add(content[count]);
+							count++;
+						}
+					}
+					else{
+						content[count] = Ti.UI.createTextField({
+							hintText		: i_name,
+							borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+							textAlign		: 'left',
+							left			: '3%',
+							right			: '3%',
+							height			: heightValue,
+							font 			: {
+												fontSize: 18
+							},
+							color			: '#000000',
+							top				: top,
+							field_type		: field_arr[index_label][index_size].type,
+							field_name		: field_arr[index_label][index_size].field_name,
+							required		: field_arr[index_label][index_size].required,
+							is_title		: field_arr[index_label][index_size].is_title,
+							composed_obj	: false,
+							cardinality		: settings.cardinality
+						});
+						top += heightValue;
+						
+						viewContent.add(content[count]);
+						count++;
+					}
 				break;
 				
 				case 'region_separator_mode':
@@ -1800,7 +2452,12 @@ setTimeout(function(e){
 				var count_fields = 0;
 				
 				for (var x in content){
-					Ti.API.info(label[x].text+' is required: '+content[x].required);
+					try{
+						Ti.API.info(label[x].text+' is required: '+content[x].required);
+					}
+					catch(e){
+						
+					}
 					if (((content[x].is_title === true) || (content[x].required == 'true') || (content[x].required === true) || (content[x].required == '1') || (content[x].required == 1) ) && ((content[x].value == '') || (content[x].value == null)) ){
 						count_fields++;
 						if (content[x].field_type == 'vehicle_fields'){
@@ -1828,29 +2485,6 @@ setTimeout(function(e){
 				}
 				else{
 					var db_put = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );			
-					//Build cardinality for boot_numbers
-					
-					var boot_number_value 	 = new Array();
-					var boot_number_is_array = true;
-					for (var ind_boot in content){
-						if(content[ind_boot].field_name == 'boot_number'){
-							if (content[ind_boot].composed_obj === true){
-								boot_number_value.push(content[ind_boot].value);
-							}
-							else{
-								boot_number_is_array = false;
-								boot_number_value.push(content[ind_boot].value);
-							}
-						}
-					}
-					
-					if (boot_number_is_array === false){
-						var boot_number_to_insert = boot_number_value[0];
-					}
-					else{
-						var boot_number_to_insert	= '[ "'+boot_number_value.join("\" , \"")+'" ]';
-					}
-					
 					//
 					//Retrieve objects that need quotes:
 					//
@@ -1870,15 +2504,52 @@ setTimeout(function(e){
 					else{
 						var new_nid = nid.fieldByName('nid')-1;
 					}
+					
 					var query = "INSERT INTO "+win.type+" ( 'nid', ";
 					
+					var _array_value	= new Array();
+					for (var x_j in content){
+						if((content[x_j].composed_obj === true) && (content[x_j].cardinality > 1)){
+							if (_array_value[content[x_j].field_name]){
+								_array_value[content[x_j].field_name].push(content[x_j].value);
+								continue;
+							}
+							else{
+								_array_value[content[x_j].field_name] = new Array ();
+								_array_value[content[x_j].field_name].push(content[x_j].value);
+								continue;
+							}
+						}
+					}
+					
 					//field names
-					for (var j in content){
-						if (j == content.length-1){
-							query += "'"+content[j].field_name+"' ) ";
+					for (var j_y = 0; j_y < content.length ; j_y++){
+						Ti.API.info('INDEX: '+j_y);
+						
+						//Is different of a region
+						if(!content[j_y]){
+							continue;
+						}
+						
+						//Point the last field
+						if(content[j_y+1]){
+							while (content[j_y].field_name == content[j_y+1].field_name){
+								j_y++;
+								if (content[j_y+1]){
+									//Go on
+								}
+								else{
+									//Finish, we found the point
+									continue;
+								}
+							}
+						}
+						
+						if (j_y == content.length-1){
+							query += "'"+content[j_y].field_name+"' ) ";
 						}
 						else{
-							query += "'"+content[j].field_name+"', ";
+							query += "'"+content[j_y].field_name+"', ";
 						}
 					}
 					
@@ -1886,8 +2557,11 @@ setTimeout(function(e){
 					//Values
 					var title_to_node = "";
 					
-					for (var j in content){
-						Ti.API.info(content[j].field_name+' IS TITLE???? '+content[j].is_title);
+					for (var j = 0; j <= content.length ; j++){
+						if (!content[j]){
+							continue;
+						}
+						
 						if(content[j].is_title === true){
 							if (title_to_node.charAt(0) == ""){
 								title_to_node = content[j].value;
@@ -1896,9 +2570,11 @@ setTimeout(function(e){
 								title_to_node+= " - "+content[j].value;
 							}
 						}
+						
 						Ti.API.info('Title: '+title_to_node);
 						
 						Ti.API.info(content[j].field_type+' is the field');
+						
 						if (quotes[content[j].field_name] === true){
 							var mark = "";
 						}
@@ -1912,20 +2588,45 @@ setTimeout(function(e){
 
 						var value_to_insert = ''; 
 						
-						if ((content[j].field_type ==  'number_decimal') || (content[j].field_type ==  'number_integer')){
-							if (content[j].field_name == 'boot_number'){
-								value_to_insert = boot_number_to_insert;
-								mark			= "'";
+						//If it is a composed field, just insert the number
+						//Build cardinality for fields
+
+						if ((content[j].composed_obj === true) && (content[j].cardinality > 1)){
+							//Point the last field							
+							if(content[j+1]){
+								while (content[j].field_name == content[j+1].field_name){
+									j++;
+									if (content[j+1]){
+										//Go on
+									}
+									else{
+										//Finish, we found the point
+										continue;
+									}
+								}
+							}
+							
+							//Treat the array
+							content_s = treatArray(_array_value[content[j].field_name], 6);
+							
+							// table structure:
+							// incremental, node_id, field_name, value
+							var db_jub = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+							db_jub.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+new_nid+', \''+content[j].field_name+'\',  \''+content_s+'\' )');
+							db_jub.close();
+							
+							// Code must to be a number since this database field accepts only integers numbers
+							// Token to indentify array of numbers is 7411317618171051229 
+							value_to_insert = mark+7411317618171051229+mark;
+						}
+						else if ((content[j].field_type ==  'number_decimal') || (content[j].field_type ==  'number_integer')){
+							if (content[j].value == ''){
+								value_to_insert = '';
+								mark = "'";
 							}
 							else{
-								if (content[j].value == ''){
-									value_to_insert = '';
-									mark = "'";
-								}
-								else{
-									value_to_insert = content[j].value;
-									mark = '';
-								}
+								value_to_insert = content[j].value;
+								mark = '';
 							}
 						}
 						else if (content[j].field_type ==  'user_reference'){
@@ -2023,7 +2724,6 @@ setTimeout(function(e){
 					try{
 						//Insert into node table
 						var date_created = Math.round(+new Date()/1000);
-						//Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ('+new_nid+', '+date_created+', 0, \''+content[title].value+'\' , '+win.uid+', 1 , "'+win.type+'")');
 						Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ('+new_nid+', '+date_created+', 0, "'+title_to_node+'" , '+win.uid+', 1 , "'+win.type+'")');
 		
 						db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ('+new_nid+', '+date_created+', 0, "'+title_to_node+'" , '+win.uid+', 1 , "'+win.type+'")');
