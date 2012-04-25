@@ -1,17 +1,17 @@
 /**
- * Name: leads.js
+ * Name: objects.js
  * Function:
- * 		Show lead list retrieved from the database
+ * 		Show objects' list retrieved from the database
  * Provides:
- * 		the window called by mainMenu.js and individual_lead.js(Back button)
+ * 		the window called by mainMenu.js and individual_object.js(Back button)
  *		a way to close the current window and open mainMenu.js. This is achieved when the user clicks on
  * 			"back" on the phone or on the Back button at the app's bottom
- *		the lead's list.
+ *		the objects' list.
  * @author Joseandro
  */
 
 //Common used functions
-Ti.include('../lib/functions.js');
+Ti.include('/lib/functions.js');
 
 //Current window's instance
 var win3 = Ti.UI.currentWindow;
@@ -19,35 +19,27 @@ var win3 = Ti.UI.currentWindow;
 //Sets only portrait mode
 win3.orientationModes = [Titanium.UI.PORTRAIT];
 
-//
-// create base UI root window
-//
-var logWindow = Titanium.UI.createWindow({
-	fullscreen : true,
-	title:'Omadi CRM',
-	url : '../app.js'
-});
-
 //Definition of the window before (opens when the user clicks on the back button)
 var goToWindow = Titanium.UI.createWindow({
-	fullscreen : true,
-	title:'Omadi CRM',
+	fullscreen : false,
+	title:'Omadi CRM',	
 	url : 'mainMenu.js',
 	notOpen: true
 });
 
-
 //When back button on the phone is pressed, it opens mainMenu.js and close the current window
 win3.addEventListener('android:back', function() {
-	Ti.API.info("Back to the step before");
+	//Enable background updates
+	unsetUse();
+	
 	win3.close();
 });
 
-// showToolbar(name, actualWindow)
-//showToolbar(win3.name, win3);
+//Lock database for background updates
+setUse();
 
 var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
-var resultsNames  = db.execute('SELECT nid, first_name, last_name FROM lead');
+var resultsNames  = db.execute('SELECT node.nid, node.title FROM node INNER JOIN '+win3.type+' ON node.nid='+win3.type+'.nid ORDER BY node.title ASC ');
 
 var data = [];
 var i = 0;
@@ -55,15 +47,7 @@ var i = 0;
 i = 0;
 while (resultsNames.isValidRow())
 {
-
-	if ((resultsNames.fieldByName('first_name') != null) && (resultsNames.fieldByName('last_name') != null ))
-		var fullName = resultsNames.fieldByName('first_name') +" "+ resultsNames.fieldByName('last_name');	
-	else if (resultsNames.fieldByName('first_name') == null)  
-		var fullName = resultsNames.fieldByName('last_name');
-	else
-		var fullName = resultsNames.fieldByName('first_name');
-
-
+	var fullName = resultsNames.fieldByName('title');
 	var row = Ti.UI.createTableViewRow({
 		height : 'auto',
 		hasChild : false,
@@ -80,7 +64,6 @@ while (resultsNames.isValidRow())
 	resultsNames.next();
 }
 
-
 //Check if the list is empty or not
 if(data.length < 1) {
 	//Shows the empty list
@@ -88,11 +71,11 @@ if(data.length < 1) {
 		height : 'auto',
 		width : 'auto',
 		top : '50%',
-		text : 'Empty lead list!'
+		text : 'Empty '+win3.type+' list!'
 	});
 
 	//Debug
-	Ti.API.info("XXXXXXX ---- No leads ! ----- XXXXXX");
+	Ti.API.info("XXXXXXX ---- No "+win3.type+" ! ----- XXXXXX");
 
 	win3.add(empty);
 	//showBottom(actualWindow, goToWindow )
@@ -109,41 +92,52 @@ else {
 		autocorrect : false,
 		barColor : '#000'
 	});
-
+	
 	//Contat list container
 	var listTableView = Titanium.UI.createTableView({
 		data : data,
 		top : '3%',
 		search : search,
-		height : '91%' 
+		height : '91%'
 	});
+	
+	listTableView.addEventListener('focus', function(e) {
+		search.blur();
+		//hides the keyboard
+	});
+	
+	//Sort the array (A>B>C>...>Z):
+	data.sort(sortTableView);
 
 	// SEARCH BAR EVENTS
 	search.addEventListener('change', function(e) {
-		e.value // search string as user types
+		//e.value; // search string as user types
 	});
 
 	search.addEventListener('return', function(e) {
 		search.blur();
 		//hides the keyboard
 	});
+	
 	search.addEventListener('cancel', function(e) {
 		search.blur();
 		//hides the keyboard
 	});
-	
+
 	//When the user clicks on a certain contact, it opens individual_contact.js
 	listTableView.addEventListener('click', function(e) {
-
+		//Hide keyboard when returning 
+		firstClick = true;
 		//Next window to be opened
 		var win4 = Titanium.UI.createWindow({
-			fullscreen : true,
-			title:'Lead',
-			url : 'individual_lead.js'
+			fullscreen : false,
+			title: win3.type.charAt(0).toUpperCase() + win3.type.slice(1),
+			type: win3.type,
+			url : 'individual_object.js'
 		});
 
-		//hide keyboard
 		search.blur();
+		//hide keyboard
 
 		//Passing parameters
 		win4.nid = e.row.nid;
@@ -162,9 +156,11 @@ else {
 		}, 110 );
 	});
 
+
 }
-	
+
 resultsNames.close();
 db.close();
+
 //showBottom(actualWindow, goToWindow )
-showBottom(win3, goToWindow);
+bottomBack(win3, "Back" , "enable");

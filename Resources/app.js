@@ -10,53 +10,41 @@
  * @author Joseandro
  */
 
-// this sets the background color of every window
+// this sets the background color of every 
 Titanium.UI.setBackgroundColor('#000000');
 
 //Common used functions
 Ti.include('lib/functions.js');
 
-//
-// create base UI root window
-//
 var win1 = Titanium.UI.createWindow({  
     title:'Omadi CRM',
-    fullscreen: true
+    fullscreen: false
 });
 
-Titanium.App.Properties.setString("databaseVersion", "omadiDb544");
+Titanium.App.Properties.setString("databaseVersion", "omadiDb1274");
 
 var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
-//Label Website:
-var label_website = Titanium.UI.createLabel({
-	color:'#FFFFFF',
-	text:'Website: ',
-	top: '4.4%',
-	textAlign:'center',
-	width:'auto'
-});
-
-//Adds label "website" to the interface
-win1.add(label_website);
+var credentials = db.execute('SELECT domain, username, password FROM updated WHERE "rowid"=1');
 
 //Web site picker 
-var picker = Titanium.UI.createPicker({
+var portal = Titanium.UI.createTextField({
 	width:'65%',
 	top: '10%',
-	height: '13%'
+	height: '13%',
+	hintText:'Client Account',
+	color:'#000000',
+	value: credentials.fieldByName('domain'),
+	keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
+	returnKeyType:Titanium.UI.RETURNKEY_DEFAULT,
+	softKeyboardOnFocus : Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS,
+	borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+	autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_NONE,
+	autocorrect: false
 });
-
-//Array of addresses 
-var portals = [];
-portals[0]=Titanium.UI.createPickerRow({title:'Omadi.com', value:'http://omadi.com'});
-portals[1]=Titanium.UI.createPickerRow({title:'Lasvegasparkingsystems.com', value:'https://lasvegasparkingsystems.com'});
-
-//Adds array of addresses to the picker
-picker.add(portals);
-
 //Adds picker to root window
-win1.add(picker);
+win1.add(portal);
+
 
 //Text field for username
 var tf1 = Titanium.UI.createTextField({
@@ -65,11 +53,13 @@ var tf1 = Titanium.UI.createTextField({
 	top: '29.5%',
 	height: '13%',
 	color:'#000000',
-	value: 'test user',
+	value: credentials.fieldByName('username'),
 	keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
 	returnKeyType:Titanium.UI.RETURNKEY_DEFAULT,
 	softKeyboardOnFocus : Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS,
-	borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED
+	borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+	autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_NONE,
+	autocorrect: false
 });
 
 //No autocorrection for username
@@ -86,13 +76,16 @@ var tf2 = Titanium.UI.createTextField({
 	height: '13%',
 	top: '50.1%',	
     passwordMask:true,
-	value: 'testing',
+	value: credentials.fieldByName('password'),
     keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
 	returnKeyType:Titanium.UI.RETURNKEY_DONE,
 	softKeyboardOnFocus : Ti.UI.Android.SOFT_KEYBOARD_SHOW_ON_FOCUS,
-    borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED
+    borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+	autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_NONE,
+	autocorrect: false
 });
 
+credentials.close();
 //No autocorrection for password
 tf2.autocorrect = false;
 
@@ -105,7 +98,7 @@ win1.add(tf2);
 var messageView = Titanium.UI.createView({
 	bottom: '0px',	
 	backgroundColor:'#111',
-	height: '7%',
+	height: '10%',
 	width: '100%',
 	opacity: 0.99,
 	borderRadius:0
@@ -121,7 +114,7 @@ Ti.API.info('The value for logStatus we found in app.js is : '+Ti.App.Properties
 if ( ( Ti.App.Properties.getString('logStatus') == null) || (Ti.App.Properties.getString('logStatus') == "") ){
 	var label_error = Titanium.UI.createLabel({
 		color:'#FFFFFF',
-		text:'Inform your credentials',
+		text:'Please login',
 		height:'auto',
 		width:'auto',
 		textAlign:'center'
@@ -169,12 +162,16 @@ win1.add(b1);
  * 			 tf1.value and tf2.value as the user's credentials. 
  */
 b1.addEventListener('click', function(){
+	
+	var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+
 	//Onblur the text fields, remove keyboard from screen
+	portal.blur();
 	tf2.blur();
 	tf1.blur();
 	
-	//Empty text fields
-	if ( tf1.value == "" || tf2.value == "" ){
+	//Empty text fields 
+	if ( tf1.value == "" || tf2.value == "" || portal.value == ""){
 		alert ("Please, in order to login, fill out the boxes.");
 	}
 	//No internet connection
@@ -184,13 +181,14 @@ b1.addEventListener('click', function(){
 	
 	//Everything ok, so let's login:
 	else{
-		
+
 		//Check database:
 		var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
 		if (updatedTime.fieldByName('timestamp') != 0){
 			var url = db.execute('SELECT url FROM updated WHERE rowid=1');
-			if ( url.fieldByName('url') !=  picker.getSelectedRow(0).value){
+			if ( url.fieldByName('url') !=  'https://'+portal.value+'.omadi.com'){
 				showIndicatorDelete("Hold on, we are deleting the old database and creating a fresh one for you");
+				/*
 				db.execute('DELETE FROM account');
 				db.execute('DELETE FROM contact');
 				db.execute('DELETE FROM lead');			
@@ -201,105 +199,92 @@ b1.addEventListener('click', function(){
 				db.execute('DELETE FROM updated');
 				db.execute('DELETE FROM users');
 				db.execute('DELETE FROM vocabulary');
-				db.execute('INSERT INTO updated (timestamp, url) VALUES (?,?)', 0 , null);		
+				db.execute('INSERT INTO updated (timestamp, url) VALUES (?,?)', 0 , null);
+				*/		
 				hideIndicator();
 			}
 			url.close();	
 		}
 		updatedTime.close();
 
-		showIndicator('full');
+		showIndicator('Logging you in...');
 		//Create internet connection
 		var xhr = Ti.Network.createHTTPClient();
 		
-		//Define connection
-		xhr.open('POST', picker.getSelectedRow(0).value+'/js-login/system/connect.json');
+		//10 seconds till die
+		xhr.setTimeout(10000);
+		
+		xhr.open('POST', 'https://'+portal.value+'.omadi.com/js-sync/sync/login.json');
+		Ti.API.info('URL : https://'+portal.value+'.omadi.com/js-sync/sync/login.json');
+		
+		//Header parameters
+		xhr.setRequestHeader("Content-Type", "application/json");
 
 		//Parameters to send ()
 		var parms = {
           username: tf1.value,
-          password: tf2.value
+          password: tf2.value,
+          device_id: Titanium.Platform.getId(),
+          app_version: Titanium.App.version,
+          //device_data: '{ "model": "'+Titanium.Platform.model+'", "version": "'+Titanium.Platform.version+'", "architecture": "'+Titanium.Platform.architecture+'", "platform": "'+Titanium.Platform.name+'", "os_type": "'+Titanium.Platform.ostype+'" }' 
+          device_data: { "model": Titanium.Platform.model, "version": Titanium.Platform.version, "architecture": Titanium.Platform.architecture, "platform": Titanium.Platform.name, "os_type": Titanium.Platform.ostype, "screen_density":Titanium.Platform.DisplayCaps.density, "primary_language": Titanium.Platform.locale, "processor_count": Titanium.Platform.processorCount }
         };
         
-		xhr.setTimeout(10000);
+		//Send info
+		xhr.send('{"username":"'+parms["username"]+'","password":"'+parms["password"] +'","device_id":"'+parms["device_id"] +'","app_version":"'+parms["app_version"] +'","device_data":"'+parms["device_data"] +'" }');
+		Ti.API.info('{"username":"'+parms["username"]+'","password":"'+parms["password"] +'","device_id":"'+parms["device_id"] +'","app_version":"'+parms["app_version"] +'","device_data":"'+parms["device_data"] +'" }');
+		Ti.API.info('"model": '+Titanium.Platform.model+', "version": '+Titanium.Platform.version+', "architecture": '+Titanium.Platform.architecture+', "platform": '+Titanium.Platform.name+', "os_type": '+Titanium.Platform.ostype+', "screen_density": '+Titanium.Platform.DisplayCaps.density+', "primary_language": '+Titanium.Platform.locale+', "processor_count": '+Titanium.Platform.processorCount );
 		// When infos are retrieved:
 		xhr.onload = function(e) {
-			//XML document object
-			var doc = JSON.parse(this.responseText); 	
-
-   			//Retrieving Session ID
-			var value = doc.sessid;
-	        
-	        //Debugg code 
-	        Ti.API.info('Session ID: '+value);
-	        
-			//Create a new connection to log in
-			var log = Ti.Network.createHTTPClient();
-			//Timeout until error:
-			log.setTimeout(10000);
-			
-			log.open('POST', picker.getSelectedRow(0).value+'/js-login/user/login.json');
-			
-			//Header parameters
-			log.setRequestHeader("Content-Type", "application/json");
-			
-			//Information to send
-			var log_parms = {
-					sessid: value,
-					username: tf1.value,
-					password: tf2.value
-    		}
-    		//Ti.API.info("Parametros: Sessid = "+log_parms["sessid"]+" Username = "+log_parms["username"]+" Pass = "+log_parms["password"]);
-
-			//When sucefully connected
-			log.onload = function(e) {
+				
+				//Update credentials
+				var db_n = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+				db_n.execute('UPDATE updated SET domain = "'+portal.value+'", username = "'+tf1.value+'", password = "'+tf2.value+'" WHERE "rowid"=1');
+				db_n.close();
+				
 				//Debug
 				Ti.API.info("You have just connected");
 				
 				// Receives the selected row's value
-				var picked = picker.getSelectedRow(0).value;
+				var picked = 'https://'+portal.value+'.omadi.com';
 
 				//Creation of the main menu window
 				var win2 = Titanium.UI.createWindow({  
-					fullscreen: true,
+					fullscreen: false,
 					title:'Omadi CRM',
 					url:'main_windows/mainMenu.js',
 				});
 				
 				//Passes parameter to the second window:
-				win2.log	     = log;
+				win2.log 		 = xhr;
 				win2.picked 	 = picked;
 				win2.result 	 = this.responseText;
-
+				Ti.API.info(this.responseText);
+				
+				db.close();
 				//Manages windows and connections closing or openning them. It avoids memory leaking
 				win2.open();
 				hideIndicator();	
-				xhr.abort();
-				db.close();
+				//xhr.abort();
 				win1.close();
-			}
+		}
 			
-			//If username and pass wrong:
-			log.onerror = function(e) {
-					hideIndicator();
-					Ti.API.info("Check your username or password and try again ");
-					label_error.text = "Check your username or password and try again ";
-    		}
-			//Sending information and try to log in
-			//log.send(log_parms);
-			log.send('{"sessid":"'+log_parms["sessid"]+'","username":"'+log_parms["username"]+'","password":"'+log_parms["password"] +'"}');
-			Ti.API.info('{"sessid":"'+log_parms["sessid"]+'","username":"'+log_parms["username"]+'","password":"'+log_parms["password"] +'"}');				
-		}
-		//Connection refused, services are down
+		//If username and pass wrong:
 		xhr.onerror = function(e) {
+			Ti.API.info("status is: "+this.status);
+			db.close();
 			hideIndicator();
-			Ti.API.info("Services are not available at the moment, wait until we fix the problem");
-			label_error.text = "Services are not available at the moment, wait until we fix the problem";
-		}
-		//Sending information and try to retrieve session ID
-		xhr.send('{"username":"'+parms["username"]+'","password":"'+parms["password"] +'"}');
-		
-	} 
+			if (this.status == 406){
+				label_error.text = "The user '"+tf1.value+"' is already logged in another device";
+			}
+			else if (this.status == 401){
+				label_error.text = "Check your username or password and try again ";
+			}
+			else{
+				label_error.text = "An error has occurred, please try again";
+			}
+   		}
+   	}
 });
 // Always show the window in portrait orientation
 win1.orientationModes = [ Titanium.UI.PORTRAIT ];
@@ -316,6 +301,8 @@ win1.addEventListener('android:back', function() {
 // instead of something else that stands inside logStatus
 Ti.App.Properties.removeProperty('logStatus');
 
+//Close database
+db.close();
 
 //Make everthing happen:
 win1.open();
