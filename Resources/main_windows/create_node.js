@@ -646,7 +646,8 @@ setTimeout(function(e){
 
 					var settings 	= JSON.parse(field_arr[index_label][index_size].settings); 
 					var fi_name		= field_arr[index_label][index_size].field_name;
-					
+					var reffer_index	= count;
+										
 					fi_name = fi_name.split('___');
 					if (fi_name[1]){
 						var i_name = fi_name[1];
@@ -660,10 +661,12 @@ setTimeout(function(e){
 					//Add fields:
 					viewContent.add(label[count]);
 
-					if (settings.cardinality >= 1){
+					if (settings.cardinality > 1){
 						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
 							content[count] = Ti.UI.createTextField({
-								hintText		: i_name,
+								hintText		: "#"+o_index+" "+i_name,
+								private_index	: o_index,
+								reffer_index	: reffer_index,
 								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 								textAlign		: 'left',
 								left			: '3%',
@@ -732,11 +735,14 @@ setTimeout(function(e){
 
 					//Add fields:
 					viewContent.add(label[count]);
-
-					if (settings.cardinality >= 1){
+					var reffer_index	= count;
+					
+					if (settings.cardinality > 1){
 						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
 							content[count] = Ti.UI.createTextField({
-								hintText		: field_arr[index_label][index_size].label,
+								hintText		: "#"+o_index+" "+field_arr[index_label][index_size].label,
+								private_index	: o_index,
+								reffer_index	: reffer_index,
 								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 								textAlign		: 'left',
 								left			: '3%',
@@ -805,11 +811,14 @@ setTimeout(function(e){
 
 					//Add fields:
 					viewContent.add(label[count]);
-
-					if (settings.cardinality >= 1){
+					var reffer_index	= count;
+					
+					if (settings.cardinality > 1){
 						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
 							content[count] = Ti.UI.createTextField({
-								hintText		: field_arr[index_label][index_size].label,
+								hintText		: "#"+o_index+" "+field_arr[index_label][index_size].label,
+								private_index	: o_index,
+								reffer_index	: reffer_index,
 								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 								textAlign		: 'left',
 								left			: '3%',
@@ -893,14 +902,17 @@ setTimeout(function(e){
 						top				: top
 					});
 					top += heightValue;
-					 
+					var reffer_index	= count;
+										 
 					//Add fields:
 					viewContent.add(label[count]);
 
-					if (settings.cardinality >= 1){
+					if (settings.cardinality > 1){
 						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
 							content[count] = Ti.UI.createTextField({
-								hintText		: field_arr[index_label][index_size].label,
+								hintText		: "#"+o_index+" "+field_arr[index_label][index_size].label,
+								private_index	: o_index,
+								reffer_index	: reffer_index,
 								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 								textAlign		: 'left',
 								left			: '3%',
@@ -973,11 +985,14 @@ setTimeout(function(e){
 					top += heightValue;
 					//Add fields:
 					viewContent.add(label[count]);
-
-					if (settings.cardinality >= 1){
+					var reffer_index	= count;
+					
+					if (settings.cardinality > 1){
 						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
 			 				content[count] = Ti.UI.createTextField({
-								hintText		: field_arr[index_label][index_size].label,
+								hintText		: "#"+o_index+" "+field_arr[index_label][index_size].label,
+								private_index	: o_index,
+								reffer_index	: reffer_index,
 								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 								keyboardType	: Titanium.UI.KEYBOARD_NUMBER_PAD,
 								textAlign		: 'left',
@@ -1047,11 +1062,14 @@ setTimeout(function(e){
 	
 					//Add fields:
 					viewContent.add(label[count]);
-
-					if (settings.cardinality >= 1){
+					var reffer_index	= count;
+					
+					if (settings.cardinality > 1){
 						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
 							content[count] = Ti.UI.createTextField({
-								hintText		: field_arr[index_label][index_size].label,
+								hintText		: "#"+o_index+" "+field_arr[index_label][index_size].label,
+								private_index	: o_index,
+								reffer_index	: reffer_index,
 								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 								keyboardType	: Ti.UI.KEYBOARD_EMAIL,
 								textAlign		: 'left',
@@ -1123,7 +1141,8 @@ setTimeout(function(e){
 							top				: top
 						});
 						top += heightValue;
-	
+						var reffer_index	= count;
+						
 						var vocabulary = db_display.execute("SELECT vid FROM vocabulary WHERE machine_name = '"+settings.vocabulary+"'");
 						var terms = db_display.execute("SELECT * FROM term_data WHERE vid='"+vocabulary.fieldByName('vid')+"'GROUP BY name ORDER BY name ASC");
 	
@@ -1147,9 +1166,11 @@ setTimeout(function(e){
 
 						Ti.API.info('===> '+settings.cardinality);
 												
-						if (settings.cardinality >= 1){
+						if (settings.cardinality > 1){
 							for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
 								content[count] = Titanium.UI.createPicker({
+									private_index		: o_index,
+									reffer_index		: reffer_index,
 									borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									left				: '3%',
 									right				: '3%',
@@ -1173,12 +1194,6 @@ setTimeout(function(e){
 								
 								content[count].add(arr_picker);
 								
-								
-								/*
-								for (var i_data_terms in data_terms){
-									content[count].add (Ti.UI.createPickerRow({title:data_terms[i_data_terms].title, tid:data_terms[i_data_terms].tid }));
-								}						
-								*/
 								content[count].addEventListener('change', function(e){
 									Ti.API.info('TID: '+e.row.tid);
 									e.source.value = e.row.tid; 
@@ -1191,7 +1206,6 @@ setTimeout(function(e){
 							}
 						}
 						else{
-							Ti.API.info(field_arr[index_label][index_size].field_name+'  here we go  #################################################################################################### ');
 							content[count] = Titanium.UI.createPicker({
 								borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 								left				: '3%',
@@ -1242,6 +1256,8 @@ setTimeout(function(e){
 							top				: top
 						});
 						top += heightValue;
+						var reffer_index	= count;
+						
 						if (!settings.vocabulary){
 							settings.vocabulary = field_arr[index_label][index_size].field_name;
 						}
@@ -1266,10 +1282,12 @@ setTimeout(function(e){
 						//Add fields:
 						viewContent.add(label[count]);
 	
-						if (settings.cardinality >= 1){
+						if (settings.cardinality > 1){
 							for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
 								content[count] = Titanium.UI.createTextField({
-								    hintText						: field_arr[index_label][index_size].label+' ...',
+									hintText						: "#"+o_index+" "+field_arr[index_label][index_size].label+' ...',
+									private_index					: o_index,
+									reffer_index					: reffer_index,
 									height							: heightValue,
 									font				 			: {
 																		fontSize: 18
@@ -1289,7 +1307,7 @@ setTimeout(function(e){
 									required						: field_arr[index_label][index_size].required,
 									is_title						: field_arr[index_label][index_size].is_title,
 									composed_obj					: true,
-									cardinality		: settings.cardinality
+									cardinality						: settings.cardinality
 								});
 								
 								//AUTOCOMPLETE TABLE
@@ -1515,6 +1533,7 @@ setTimeout(function(e){
 							top				: top
 						});
 						top += heightValue;
+						var reffer_index	= count;
 					 	
 						data_terms 	= new Array();
 						aux_nodes	= new Array();
@@ -1548,10 +1567,12 @@ setTimeout(function(e){
 					//Add fields:
 					viewContent.add(label[count]);
 
-					if (settings.cardinality >= 1){
+					if (settings.cardinality > 1){
 						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
 						content[count] = Titanium.UI.createTextField({
-						    hintText						: field_arr[index_label][index_size].label+' ...',
+							hintText						: "#"+o_index+" "+field_arr[index_label][index_size].label+' ...',
+							private_index					: o_index,
+							reffer_index					: reffer_index,
 							height							: heightValue,
 							font				 			: {
 																fontSize: 18
@@ -1792,10 +1813,13 @@ setTimeout(function(e){
 
 					//Add fields:
 					viewContent.add(label[count]);
-					
-					if (settings.cardinality >= 1){
+					var reffer_index	= count;
+										
+					if (settings.cardinality > 1){
 						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
 							content[count] = Titanium.UI.createPicker({
+								private_index		: o_index,
+								reffer_index		: reffer_index,
 								borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 								left				: '3%',
 								right				: '3%',
@@ -1930,7 +1954,8 @@ setTimeout(function(e){
 					top += heightValue;
 					//Add fields:
 					viewContent.add(label[count]);
-
+					var reffer_index	= count;
+					
 					
 					// call function display_widget
 					if (widget.settings['time'] != "1"){
@@ -1940,9 +1965,11 @@ setTimeout(function(e){
 						var month = currentDate.getMonth();
 						var year = currentDate.getFullYear();
 
-						if (settings.cardinality >= 1){
+						if (settings.cardinality > 1){
 							for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
 								content[count] = Titanium.UI.createLabel({
+									private_index		: o_index,
+									reffer_index		: reffer_index,
 									borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									left				: '3%',
 									right				: '3%',
@@ -2033,10 +2060,12 @@ setTimeout(function(e){
 						var hours		= currentDate.getHours();
 
 
-						if (settings.cardinality >= 1){
+						if (settings.cardinality > 1){
 							for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
 								//Date picker
 								content[count] = Titanium.UI.createLabel({
+									private_index		: o_index,
+									reffer_index		: reffer_index,
 									borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									left				: '3%',
 									right				: '3%',
@@ -2135,10 +2164,13 @@ setTimeout(function(e){
 		
 					//Add fields:
 					viewContent.add(label[count]);
-
-					if (settings.cardinality >= 1){
+					var reffer_index	= count;
+					
+					if (settings.cardinality > 1){
 						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
 							content[count] = Titanium.UI.createSwitch({
+								private_index		: o_index,
+								reffer_index		: reffer_index,
 								top					: top,
 								height				: getScreenHeight()*0.1,
 								titleOff			: "No",
@@ -2206,7 +2238,8 @@ setTimeout(function(e){
 					
 					var widget = JSON.parse(field_arr[index_label][index_size].widget);
 					var settings = JSON.parse(field_arr[index_label][index_size].settings); 
-					
+					var reffer_index	= count;
+										
 					Ti.API.info('SETTINGS FOR DATESTAMP: '+settings.default_value);
 					Ti.API.info('WIDGET FOR DATESTAMP: '+widget.settings['time']);
 					
@@ -2221,9 +2254,11 @@ setTimeout(function(e){
 					//Add fields:
 					viewContent.add(label[count]);
 
-					if (settings.cardinality >= 1){
+					if (settings.cardinality > 1){
 						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
 							content[count] = Titanium.UI.createLabel({
+								private_index		: o_index,
+								reffer_index		: reffer_index,
 								borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 								left				: '3%',
 								right				: '3%',
@@ -2313,7 +2348,8 @@ setTimeout(function(e){
 						top				: top
 					});
 					top += heightValue;
-
+					
+					var reffer_index	= count;
 					var settings 	= JSON.parse(field_arr[index_label][index_size].settings); 
 					var fi_name		= field_arr[index_label][index_size].field_name;
 					
@@ -2327,14 +2363,15 @@ setTimeout(function(e){
 					
 					i_name = i_name.charAt(0).toUpperCase() + i_name.slice(1);
 
-
 					//Add fields:
 					viewContent.add(label[count]);
 
-					if (settings.cardinality >= 1){
+					if (settings.cardinality > 1){
 						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
 							content[count] = Ti.UI.createTextField({
-								hintText		: i_name,
+								hintText		: "#"+o_index+" "+i_name,
+								private_index	: o_index,
+								reffer_index	: reffer_index,
 								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 								textAlign		: 'left',
 								left			: '3%',
@@ -2458,16 +2495,11 @@ setTimeout(function(e){
 					catch(e){
 						
 					}
+
 					if (((content[x].is_title === true) || (content[x].required == 'true') || (content[x].required === true) || (content[x].required == '1') || (content[x].required == 1) ) && ((content[x].value == '') || (content[x].value == null)) ){
 						count_fields++;
-						if (content[x].field_type == 'vehicle_fields'){
-							string_text += label[x].text+" - "+content[x].hintText+"\n";
-						}
-						else if (content[x].field_type == 'license_plate'){
-							string_text += label[x].text+" - "+content[x].hintText+"\n";
-						}
-						else if (content[x].field_name == 'boot_number'){
-							string_text += content[x].hintText+"\n";
+						if (content[x].cardinality > 1){
+							string_text += "#"+content[x].private_index+" "+label[content[x].reffer_index].text+"\n";
 						}
 						else{
 							string_text += label[x].text+"\n";
@@ -2510,17 +2542,26 @@ setTimeout(function(e){
 					var _array_value	= new Array();
 					for (var x_j in content){
 						if((content[x_j].composed_obj === true) && (content[x_j].cardinality > 1)){
+							
+							if( (content[x_j].field_type == 'omadi_time') || (content[x_j].field_type == 'datestamp') ){
+								var _vlr = Math.round(content[x_j].value/1000);
+							}
+							else{
+								var _vlr = content[x_j].value;
+							}
+							
 							if (_array_value[content[x_j].field_name]){
-								_array_value[content[x_j].field_name].push(content[x_j].value);
+								_array_value[content[x_j].field_name].push(_vlr);
 								continue;
 							}
 							else{
 								_array_value[content[x_j].field_name] = new Array ();
-								_array_value[content[x_j].field_name].push(content[x_j].value);
+								_array_value[content[x_j].field_name].push(_vlr);
 								continue;
 							}
 						}
 					}
+
 					
 					//field names
 					for (var j_y = 0; j_y < content.length ; j_y++){
@@ -2540,7 +2581,7 @@ setTimeout(function(e){
 								}
 								else{
 									//Finish, we found the point
-									continue;
+									break;
 								}
 							}
 						}
@@ -2601,13 +2642,14 @@ setTimeout(function(e){
 									}
 									else{
 										//Finish, we found the point
-										continue;
+										break;
 									}
 								}
 							}
 							
 							//Treat the array
 							content_s = treatArray(_array_value[content[j].field_name], 6);
+							Ti.API.info('Vai inserir '+_array_value[content[j].field_name]);
 							
 							// table structure:
 							// incremental, node_id, field_name, value
@@ -2617,7 +2659,7 @@ setTimeout(function(e){
 							
 							// Code must to be a number since this database field accepts only integers numbers
 							// Token to indentify array of numbers is 7411317618171051229 
-							value_to_insert = mark+7411317618171051229+mark;
+							value_to_insert = 7411317618171051229;
 						}
 						else if ((content[j].field_type ==  'number_decimal') || (content[j].field_type ==  'number_integer')){
 							if (content[j].value == ''){
@@ -2631,7 +2673,8 @@ setTimeout(function(e){
 						}
 						else if (content[j].field_type ==  'user_reference'){
 							if (content[j].getSelectedRow(0).uid == null){
-								value_to_insert = ''
+								value_to_insert = '';
+								mark = "'";
 							}
 							else{
 								value_to_insert = content[j].getSelectedRow(0).uid;
@@ -2641,7 +2684,8 @@ setTimeout(function(e){
 						else if (content[j].field_type ==  'taxonomy_term_reference'){ 
 							if (content[j].widget == 'options_select'){
 								if (content[j].getSelectedRow(0).tid == null){
-									value_to_insert = ''
+									value_to_insert = '';
+									mark = "'";
 								}
 								else{
 									value_to_insert = content[j].getSelectedRow(0).tid;
@@ -2651,6 +2695,7 @@ setTimeout(function(e){
 							else if( content[j].widget == 'taxonomy_autocomplete' ){
 								if ((content[j].tid == null) && (content[j].value == "")){
 									value_to_insert = '';
+									mark = "'";
 								}
 								else if ((content[j].tid == null) && (content[j].value != "")){
 									
@@ -2685,7 +2730,8 @@ setTimeout(function(e){
 						}
 						else if (content[j].field_type ==  'omadi_reference'){
 							if(content[j].nid === null){
-								value_to_insert = '';	
+								value_to_insert = '';
+								mark = "'";	
 							}
 							else{
 								mark = '';
@@ -2711,6 +2757,10 @@ setTimeout(function(e){
 						}
 						else{
 							value_to_insert = content[j].value;
+						}
+
+						if (value_to_insert == ''){
+							mark			= '\'';
 						}
 						
 						if (j == content.length-1){

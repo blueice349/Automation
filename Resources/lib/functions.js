@@ -298,7 +298,7 @@ function showBottom(actualWindow, goToWindow ){
 };
 
 
-function bottomBack(actualWindow , text){
+function bottomBack(actualWindow , text, method){
 	var backView = Titanium.UI.createView({
 		top: '95%',	
 		backgroundColor:'#111',
@@ -327,6 +327,10 @@ function bottomBack(actualWindow , text){
 	backView.add(label_bottom);
 	
 	backView.addEventListener('click', function(){
+		if (method == "enable"){
+			//Enable background updates
+			unsetUse();
+		}
 		actualWindow.close();
 	});					
 	actualWindow.add(backView);
@@ -523,6 +527,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 										// table structure:
 										// incremental, node_id, field_name, value
 										process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+										Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
 										
 										// Code must to be a number since this database field accepts only integers numbers
 										// Token to indentify array of numbers is 7411176117105122
@@ -546,6 +551,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 										// table structure:
 										// incremental, node_id, field_name, value
 										process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+										Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
 										
 										// Code must to be a number since this database field accepts only integers numbers
 										// Token to indentify array of numbers is 7411176117105122
@@ -586,6 +592,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 										// table structure:
 										// incremental, node_id, field_name, value
 										process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+										Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
 										
 										// Code must to be a number since this database field accepts only integers numbers
 										// Token to indentify array of numbers is 7411176117105122
@@ -608,7 +615,8 @@ function process_object(json, obj, f_marks, progress, type_request){
 									
 										// table structure:
 										// incremental, node_id, field_name, value
-										process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+										process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+										Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
 										
 										// Code must to be a number since this database field accepts only integers numbers
 										// Token to indentify array of numbers is 7411176117105122
@@ -710,6 +718,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 									// table structure:
 									// incremental, node_id, field_name, value
 									process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+									Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
 									
 									// Code must to be a number since this database field accepts only integers numbers
 									// Token to indentify array of numbers is 7411176117105122
@@ -733,7 +742,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 									// table structure:
 									// incremental, node_id, field_name, value
 									process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
-									
+									Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
 									// Code must to be a number since this database field accepts only integers numbers
 									// Token to indentify array of numbers is 7411176117105122
 									query += ' '+mark+'7411317618171051229'+mark+' )';
@@ -772,6 +781,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 									// table structure:
 									// incremental, node_id, field_name, value
 									process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+									Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
 									
 									// Code must to be a number since this database field accepts only integers numbers
 									// Token to indentify array of numbers is 7411176117105122
@@ -795,6 +805,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 									// table structure:
 									// incremental, node_id, field_name, value
 									process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+									Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
 									
 									// Code must to be a number since this database field accepts only integers numbers
 									// Token to indentify array of numbers is 7411176117105122
@@ -899,11 +910,11 @@ function process_object(json, obj, f_marks, progress, type_request){
 									else{
 										content_s = treatArray(num_to_insert, 1);
 										
-										var array_cont = db_process_object.execute('SELECT * FROM array_base WHERE node_id = '+json[obj].update[i].nid+' AND field_name="'+col_titles[aux_column-1]+'"');
+										var array_cont = db_process_object.execute('SELECT * FROM array_base WHERE node_id = '+json[obj].update[i].nid+' AND field_name=\''+col_titles[aux_column-1]+'\'');
 										if ((array_cont.rowCount > 0) || (array_cont.isValidRow())){
 											// table structure:
 											// incremental, node_id, field_name, value
-											process_obj[process_obj.length] = 'UPDATE array_base SET encoded_array = \''+content_s+'\' WHERE id_inc='+array_cont.fieldByName('id_inc');
+											process_obj[process_obj.length] = 'UPDATE array_base SET encoded_array = \''+content_s+'\' WHERE node_id='+json[obj].update[i].nid+' AND field_name=\''+col_titles[aux_column-1]+'\' ';
 											
 											// Code must to be a number since this database field accepts only integers numbers
 											// Token to indentify array of numbers is 7411176117105122
@@ -941,7 +952,8 @@ function process_object(json, obj, f_marks, progress, type_request){
 										if ((array_cont.rowCount > 0) || (array_cont.isValidRow())){
 											// table structure:
 											// incremental, node_id, field_name, value
-											process_obj[process_obj.length] = 'UPDATE array_base SET encoded_array = \''+content_s+'\' WHERE id_inc='+array_cont.fieldByName('id_inc');
+											process_obj[process_obj.length] = 'UPDATE array_base SET encoded_array = \''+content_s+'\' WHERE node_id='+json[obj].update[i].nid+' AND field_name=\''+col_titles[aux_column-1]+'\' ';
+											
 											
 											// Code must to be a number since this database field accepts only integers numbers
 											// Token to indentify array of numbers is 7411176117105122
@@ -995,7 +1007,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 										if ((array_cont.rowCount > 0) || (array_cont.isValidRow())){
 											// table structure:
 											// incremental, node_id, field_name, value
-											process_obj[process_obj.length] = 'UPDATE array_base SET encoded_array = \''+content_s+'\' WHERE id_inc='+array_cont.fieldByName('id_inc');
+											process_obj[process_obj.length] = 'UPDATE array_base SET encoded_array = \''+content_s+'\' WHERE node_id='+json[obj].update[i].nid+' AND field_name=\''+col_titles[aux_column-1]+'\' ';
 											
 											// Code must to be a number since this database field accepts only integers numbers
 											// Token to indentify array of numbers is 7411176117105122
@@ -1032,7 +1044,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 
 											// table structure:
 											// incremental, node_id, field_name, value
-											process_obj[process_obj.length] = 'UPDATE array_base SET encoded_array = \''+content_s+'\' WHERE id_inc='+array_cont.fieldByName('id_inc');
+											process_obj[process_obj.length] = 'UPDATE array_base SET encoded_array = \''+content_s+'\' WHERE node_id='+json[obj].update[i].nid+' AND field_name=\''+col_titles[aux_column-1]+'\' ';
 											
 											// Code must to be a number since this database field accepts only integers numbers
 											// Token to indentify array of numbers is 7411176117105122
@@ -3228,20 +3240,9 @@ function verify_UTC(date_original){
 }
 
 
-function timeConverter(UNIX_timestamp){
+function timeConverter(UNIX_timestamp, type){
 	var a = new Date(UNIX_timestamp*1000);
-	Ti.API.info('Timestamp: '+a);
 
-	//Update timezone
- 	var timezone  = a.getTimezoneOffset()*60*1000;
-
-	//discover if is GMT+ or GMT-
-	timezone =  timezone*verify_UTC(a);
-
-	//Refresh GMT value, we need to add this time!
-	var timestamp	= a.getTime()+(timezone*(-1));
-
-	a = new Date(timestamp);
 	var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 	var year = a.getFullYear();
 	var month = months[a.getMonth()];
@@ -3252,9 +3253,16 @@ function timeConverter(UNIX_timestamp){
 	if(min < 10){
 		min = '0'+min;
 	}
+	
+	if (type != "1"){
+		var time = month+" / "+date+" / "+year;
+		return time;
+	}
+	else{
+		var time = hour+":"+min+" - "+month+" / "+date+" / "+year;
+		return time;
+	}
 	 
-	var time = hour+":"+min+" - "+month+" / "+date+" / "+year;
-	return time;
 }
 
 function setUse(){

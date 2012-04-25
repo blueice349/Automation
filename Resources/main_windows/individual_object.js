@@ -26,6 +26,20 @@ win4.addEventListener('android:back', function() {
 });
 
 
+//Functions:
+function display_omadi_time(timestamp){
+		var time =  timestamp*1000;
+		
+		var got_time = new Date(time); 
+		
+		var hours = got_time.getHours();
+		var min	=	got_time.getMinutes();
+
+		return hours+":"+form_min(min);
+}
+
+
+
 var db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 var results  = db_display.execute('SELECT * FROM '+win4.type+' WHERE  nid = '+win4.nid);
 
@@ -136,6 +150,7 @@ while (regions.isValidRow()){
 				Ti.API.info('Field type: '+unsorted_res[i].type);
 				Ti.API.info('Field name: '+unsorted_res[i].field_name);
 				Ti.API.info('Field settings: '+unsorted_res[i].settings);
+				Ti.API.info('Field widget: '+unsorted_res[i].widget);
 				
 				fields[unsorted_res[i].field_name] = new Array();
 			
@@ -159,17 +174,19 @@ if (c_index > 0){
 	var c_label = [];
 	var c_content = [];
 	var c_settings = [];
+	var c_widget = [];
 	var is_array = false;
 	var show_region = new Array();
 	
 	for (var f_name_f in fields ){
-		Ti.API.info(f_name_f+" => "+results.fieldByName(f_name_f)+" => "+fields[f_name_f]['type']);
+		//Ti.API.info(f_name_f+" => "+results.fieldByName(f_name_f)+" => "+fields[f_name_f]['type']);
 		if ( (results.fieldByName(f_name_f) != null && results.fieldByName(f_name_f) != "") ||  (fields[f_name_f]['type'] == 'region_separator_mode')) {
 		
 			//fields from Fields table that match with current object
 			c_type[count]   	= fields[f_name_f]['type'];
 			c_label[count]		= fields[f_name_f]['label'];
 			c_settings[count]	= fields[f_name_f]['settings'];
+			c_widget[count]		= fields[f_name_f]['widget'];
 			
 			//Content
 			c_content[count] = results.fieldByName(f_name_f);
@@ -178,12 +195,20 @@ if (c_index > 0){
 			is_array = false;
 			//Check if it is an array, token = 7411317618171051229
 			if ((c_content[count] == 7411317618171051229) || (c_content[count] == '7411317618171051229')){
-				var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = '+win4.nid+' AND field_name = \''+f_name_f+'\' ');
+				//var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = '+win4.nid+' AND field_name = \''+f_name_f+'\' ');
+				var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = '+win4.nid+' AND field_name = \''+f_name_f+'\'  ');
 				
-				//Decode the stored array:
-				var decoded = array_cont.fieldByName('encoded_array');
-				decoded = Titanium.Utils.base64decode(decoded);
-				Ti.API.info('Decoded array is equals to: '+decoded);
+				Ti.API.info(array_cont.rowCount);
+				Ti.API.info('SELECT encoded_array FROM array_base WHERE node_id = '+win4.nid+' AND field_name = \''+f_name_f+'\' ');
+				
+				while(array_cont.isValidRow()){
+					var decoded = array_cont.fieldByName('encoded_array');
+					//Decode the stored array:
+					decoded = Titanium.Utils.base64decode(decoded);
+					Ti.API.info('Decoded array is equals to: '+decoded);
+
+					array_cont.next();
+				}
 				
 				decoded = decoded.toString();
 				
@@ -196,6 +221,7 @@ if (c_index > 0){
 				keep_type	= c_type[count];
 				keep_label	= c_label[count];
 				keep_sett	= c_settings[count];
+				keep_widget	= c_widget[count];
 				
 				//Test echo	
 				for (var tili in decoded_values){
@@ -210,6 +236,7 @@ if (c_index > 0){
 					c_type[count]		= keep_type;
 					c_label[count]		= keep_label;
 					c_settings[count]	= keep_sett;
+					c_widget[count]		= keep_widget;
 					
 					Ti.API.info('For type: '+c_type[count]+' is associated '+c_content[count]);
 				}
@@ -232,6 +259,7 @@ if (c_index > 0){
 				 * case 'datestamp':
 				 * case 'list_boolean':
 				 * case 'license_plate':
+				 * case 'omadi_time':
 				 * 
 				 */
 				
@@ -591,7 +619,7 @@ if (c_index > 0){
 					break;
 									
 					//Shows up date (check how it is exhibited):
-					case 'datestamp':
+					case 'omadi_time':
 						label[count] = Ti.UI.createLabel({
 							text: c_label[count],
 							width:  "33%",
@@ -602,7 +630,34 @@ if (c_index > 0){
 						});
 						
 						content[count] = Ti.UI.createLabel({
-							text: ""+timeConverter(c_content[count]),
+							text: ""+display_omadi_time(c_content[count]),
+							width:  "60%",
+							height: "100%",
+							textAlign: 'left',
+							left: "40%",
+							id: count
+						});
+						
+						content[count].addEventListener('click', function(e){
+							highlightMe( e.source.id );
+						});
+						count++;
+					break;
+					
+					case 'datestamp':
+						label[count] = Ti.UI.createLabel({
+							text: c_label[count],
+							width:  "33%",
+							textAlign: 'left',
+							left: 5,
+							touchEnabled: false,
+							field: true
+						});
+						
+						var widget = JSON.parse(c_widget[count]);
+						
+						content[count] = Ti.UI.createLabel({
+							text: ""+timeConverter(c_content[count], widget.settings['time'] ),
 							width:  "60%",
 							height: "100%",
 							textAlign: 'left',

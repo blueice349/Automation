@@ -29,8 +29,14 @@ var goToWindow = Titanium.UI.createWindow({
 
 //When back button on the phone is pressed, it opens mainMenu.js and close the current window
 win3.addEventListener('android:back', function() {
+	//Enable background updates
+	unsetUse();
+	
 	win3.close();
 });
+
+//Lock database for background updates
+setUse();
 
 var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 var resultsNames  = db.execute('SELECT node.nid, node.title FROM node INNER JOIN '+win3.type+' ON node.nid='+win3.type+'.nid ORDER BY node.title ASC ');
@@ -157,4 +163,4 @@ resultsNames.close();
 db.close();
 
 //showBottom(actualWindow, goToWindow )
-showBottom(win3, goToWindow);
+bottomBack(win3, "Back" , "enable");
