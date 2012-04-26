@@ -1,7 +1,7 @@
 /** 
  * Name: individual_object.js
  * Function: 
- * 		Show object's informations retrieved from the database
+ * 		Show individual object's information retrieved from the database
  * Provides:
  * 		the window called by object.js
  *		a way to close the current window and open object.js. This is achieved when the user clicks on
@@ -858,13 +858,16 @@ if (Ti.Platform.name == 'android') {
 				fullscreen : false,
 				title: win4.title,
 				type: win4.type,
-				url : 'edit_node.js'
+				url : 'create_or_edit_node.js'
 			});
 	
 			//Passing parameters
 			win_new.nid = win4.nid;
 			win_new.nameSelected = win4.nameSelected;
-
+			
+			//Sets a mode to fields edition
+			win_new.mode = 1;
+			
 			win_new.open();
 			win4.close();
 		});

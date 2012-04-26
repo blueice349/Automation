@@ -1,28 +1,41 @@
 Logfile initialized
 [INFO] logfile = /home/jo/omadi/omadi_mobile/build.log
-[DEBUG] /home/jo/.titanium/mobilesdk/linux/1.8.1/android/builder.py install Omadi /home/jo/Apps/android-sdk /home/jo/omadi/omadi_mobile joseandro.omadi.com 8
+[DEBUG] /home/jo/.titanium/mobilesdk/linux/1.8.1/android/builder.py distribute Omadi /home/jo/Apps/android-sdk /home/jo/omadi/omadi_mobile joseandro.omadi.com /home/jo/keystores/android.keystore borsoi87 omadi /home/jo/Desktop/Sync/Dropbox/omadi/Android 8
 [INFO] Titanium SDK version: 1.8.1 (01/27/12 17:31 a24502a)
-[DEBUG] Waiting for device to be ready ...
-[TRACE] adb devices returned 1 devices/emulators
-[TRACE] adb devices returned 1 devices/emulators
-[TRACE] adb devices returned 2 devices/emulators
-[DEBUG] Device connected... (waited 10 seconds)
-[DEBUG] waited 10.034313 seconds on emulator to get ready
-[INFO] Waiting for the Android Emulator to become available
-[DEBUG] joseandro.omadi.com installed? False
 [INFO] Copying project resources..
-[INFO] Tiapp.xml unchanged, skipping class generation
+[TRACE] Generating Java Classes
 [DEBUG] Processing Android resource drawables
+[DEBUG] copying app icon: /home/jo/omadi/omadi_mobile/build/android/bin/assets/Resources/appicon.png
+[DEBUG] generating theme.xml
 [DEBUG] found drawable-long-port-hdpi splash screen at /home/jo/omadi/omadi_mobile/Resources/android/images/res-long-port-hdpi/default.png
+[DEBUG] copying /home/jo/omadi/omadi_mobile/Resources/android/images/res-long-port-hdpi/default.png splash screen to /home/jo/omadi/omadi_mobile/build/android/res/drawable-long-port-hdpi/background.png
 [DEBUG] found drawable-notlong-land-hdpi splash screen at /home/jo/omadi/omadi_mobile/Resources/android/images/res-notlong-land-hdpi/default.png
+[DEBUG] copying /home/jo/omadi/omadi_mobile/Resources/android/images/res-notlong-land-hdpi/default.png splash screen to /home/jo/omadi/omadi_mobile/build/android/res/drawable-notlong-land-hdpi/background.png
 [DEBUG] found drawable-long-land-hdpi splash screen at /home/jo/omadi/omadi_mobile/Resources/android/images/res-long-land-hdpi/default.png
+[DEBUG] copying /home/jo/omadi/omadi_mobile/Resources/android/images/res-long-land-hdpi/default.png splash screen to /home/jo/omadi/omadi_mobile/build/android/res/drawable-long-land-hdpi/background.png
 [DEBUG] found drawable-long-port-ldpi splash screen at /home/jo/omadi/omadi_mobile/Resources/android/images/res-long-port-ldpi/default.png
+[DEBUG] copying /home/jo/omadi/omadi_mobile/Resources/android/images/res-long-port-ldpi/default.png splash screen to /home/jo/omadi/omadi_mobile/build/android/res/drawable-long-port-ldpi/background.png
 [DEBUG] found drawable-notlong-port-ldpi splash screen at /home/jo/omadi/omadi_mobile/Resources/android/images/res-notlong-port-ldpi/default.png
+[DEBUG] copying /home/jo/omadi/omadi_mobile/Resources/android/images/res-notlong-port-ldpi/default.png splash screen to /home/jo/omadi/omadi_mobile/build/android/res/drawable-notlong-port-ldpi/background.png
 [DEBUG] found drawable-notlong-port-hdpi splash screen at /home/jo/omadi/omadi_mobile/Resources/android/images/res-notlong-port-hdpi/default.png
+[DEBUG] copying /home/jo/omadi/omadi_mobile/Resources/android/images/res-notlong-port-hdpi/default.png splash screen to /home/jo/omadi/omadi_mobile/build/android/res/drawable-notlong-port-hdpi/background.png
 [DEBUG] found drawable-notlong-port-mdpi splash screen at /home/jo/omadi/omadi_mobile/Resources/android/images/res-notlong-port-mdpi/default.png
+[DEBUG] copying /home/jo/omadi/omadi_mobile/Resources/android/images/res-notlong-port-mdpi/default.png splash screen to /home/jo/omadi/omadi_mobile/build/android/res/drawable-notlong-port-mdpi/background.png
 [DEBUG] found drawable-long-land-ldpi splash screen at /home/jo/omadi/omadi_mobile/Resources/android/images/res-long-land-ldpi/default.png
+[DEBUG] copying /home/jo/omadi/omadi_mobile/Resources/android/images/res-long-land-ldpi/default.png splash screen to /home/jo/omadi/omadi_mobile/build/android/res/drawable-long-land-ldpi/background.png
 [DEBUG] found drawable-notlong-land-ldpi splash screen at /home/jo/omadi/omadi_mobile/Resources/android/images/res-notlong-land-ldpi/default.png
+[DEBUG] copying /home/jo/omadi/omadi_mobile/Resources/android/images/res-notlong-land-ldpi/default.png splash screen to /home/jo/omadi/omadi_mobile/build/android/res/drawable-notlong-land-ldpi/background.png
 [DEBUG] found drawable-notlong-land-mdpi splash screen at /home/jo/omadi/omadi_mobile/Resources/android/images/res-notlong-land-mdpi/default.png
+[DEBUG] copying /home/jo/omadi/omadi_mobile/Resources/android/images/res-notlong-land-mdpi/default.png splash screen to /home/jo/omadi/omadi_mobile/build/android/res/drawable-notlong-land-mdpi/background.png
+[DEBUG] copying default splash screen
+[TRACE] Writing out AndroidManifest.xml
+[DEBUG] adding /home/jo/omadi/omadi_mobile/build/android/gen/joseandro/omadi/com/OmadiApplication.java to javac build list
+[DEBUG] adding /home/jo/omadi/omadi_mobile/build/android/gen/joseandro/omadi/com/OmadiAppInfo.java to javac build list
+[DEBUG] adding /home/jo/omadi/omadi_mobile/build/android/gen/joseandro/omadi/com/R.java to javac build list
+[DEBUG] adding /home/jo/omadi/omadi_mobile/build/android/gen/joseandro/omadi/com/OmadiActivity.java to javac build list
+[DEBUG] Building Java Sources: "/home/jo/omadi/omadi_mobile/build/android/gen/joseandro/omadi/com/OmadiApplication.java" "/home/jo/omadi/omadi_mobile/build/android/gen/joseandro/omadi/com/OmadiAppInfo.java" "/home/jo/omadi/omadi_mobile/build/android/gen/joseandro/omadi/com/R.java" "/home/jo/omadi/omadi_mobile/build/android/gen/joseandro/omadi/com/OmadiActivity.java"
+[INFO] Compiling Android Resources... This could take some time
+[DEBUG] Android classes.dex built
 [DEBUG] creating unsigned apk: /home/jo/omadi/omadi_mobile/build/android/bin/app-unsigned.apk
 [DEBUG] from resource zip => assets/Resources/database/db.sqlite
 [DEBUG] from resource zip => assets/Resources/database/gps_coordinates.sqlite
@@ -51,6 +64,7 @@ Logfile initialized
 [DEBUG] from resource zip => assets/Resources/lib/functions.js
 [DEBUG] from resource zip => assets/Resources/main_windows/backToFirstStep.js
 [DEBUG] from resource zip => assets/Resources/main_windows/create_node.js
+[DEBUG] from resource zip => assets/Resources/main_windows/create_or_edit_node.js
 [DEBUG] from resource zip => assets/Resources/main_windows/edit_node.js
 [DEBUG] from resource zip => assets/Resources/main_windows/geolocation.js
 [DEBUG] from resource zip => assets/Resources/main_windows/individual_object.js
@@ -99,10 +113,3 @@ Logfile initialized
 [DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.1/android/thirdparty.jar => org/apache/Commons-NOTICE.txt
 [DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.1/android/thirdparty.jar => org/apache/HttpComponents-NOTICE.txt
 [DEBUG] from JAR /home/jo/.titanium/mobilesdk/linux/1.8.1/android/thirdparty.jar => org/apache/mime4j-NOTICE.txt
-[DEBUG] Waiting for device to be ready ...
-[TRACE] adb devices returned 2 devices/emulators
-[DEBUG] Device connected... (waited 0 seconds)
-[DEBUG] waited 0.017732 seconds on emulator to get ready
-[INFO] Installing application on device
-[INFO] Application installed. Launch from drawer on Home Screen
-[DEBUG] signal caught: 15

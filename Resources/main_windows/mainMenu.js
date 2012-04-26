@@ -186,10 +186,11 @@ listView.addEventListener('click',function(e){
 		var win_new = Titanium.UI.createWindow({  
 			title: "New "+e.row.display,
 			fullscreen: false,
-			url:'create_node.js',
+			url : 'create_or_edit_node.js',
 			type: e.row.name_table,
 			uid: jsonLogin.user.uid
 		});
+		win_new.mode = 0;
 		win_new.open();
 		win_new.addEventListener('focus', function(e){
 			toolActInd.hide();

@@ -5,19 +5,6 @@
  * @author Joseandro
  */
 
-/* Function Name: showIndicator(show)
- * Purpouse: Show the loading screen
- * Parameters: 
- * 	show:   Used to decide if the loading screen should be modal or  
- * 			full screen.
- * Variables: 
- * 	indWin:  Window that is supposed to contain the loading screen
- * 			 modal or fullscreen.
- * 	indView: The view that contains actIndFun.
- * 	actIndFun:  Activity indicator.  
- *  
- */
-
 function showIndicator(show)
 {
     indWin = Titanium.UI.createWindow({
