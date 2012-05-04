@@ -3,6 +3,7 @@ Logfile initialized
 [DEBUG] /home/jo/.titanium/mobilesdk/linux/1.8.1/android/builder.py distribute Omadi /home/jo/Apps/android-sdk /home/jo/omadi/omadi_mobile joseandro.omadi.com /home/jo/keystores/android.keystore borsoi87 omadi /home/jo/Desktop/Sync/Dropbox/omadi/Android 8
 [INFO] Titanium SDK version: 1.8.1 (01/27/12 17:31 a24502a)
 [INFO] Copying project resources..
+[TRACE] COPYING MODIFIED FILE: /home/jo/omadi/omadi_mobile/Resources/main_windows/create_or_edit_node.js => /home/jo/omadi/omadi_mobile/build/android/bin/assets/Resources/main_windows/create_or_edit_node.js
 [TRACE] Generating Java Classes
 [DEBUG] Processing Android resource drawables
 [DEBUG] copying app icon: /home/jo/omadi/omadi_mobile/build/android/bin/assets/Resources/appicon.png

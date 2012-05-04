@@ -232,7 +232,7 @@ if (c_index > 0){
 
 			while ( loop_times >= 1 ){
 				if (is_array){
-					c_content[count] = decoded_values[loop_times - 1];
+					c_content[count] 	= decoded_values[loop_times - 1];
 					c_type[count]		= keep_type;
 					c_label[count]		= keep_label;
 					c_settings[count]	= keep_sett;
@@ -242,26 +242,10 @@ if (c_index > 0){
 				}
 				
 				loop_times--;
-				
-				/* 
-				 * So far the folowing cases are being treated:
-				 * 
-				 * case 'text':
-				 * case 'text_long':
-				 * case 'phone':
-				 * case 'omadi_reference':
-				 * case 'link_field':
-				 * case 'email':
-				 * case 'taxonomy_term_reference':
-				 * case 'user_reference':
-				 * case 'number_decimal':
-				 * case 'number_integer':
-				 * case 'datestamp':
-				 * case 'list_boolean':
-				 * case 'license_plate':
-				 * case 'omadi_time':
-				 * 
-				 */
+
+				if (c_content[count] == ""){
+					continue;
+				}	
 				
 				//Treat regions
 				if ((c_settings[count] != null) && (c_settings[count] != 'null') && (c_settings[count] != undefined) && (c_settings[count] != 'undefined')&& (c_settings[count] != '')){
@@ -275,7 +259,8 @@ if (c_index > 0){
 						show_region[settings.region] = new Array();
 					}
 				}
-				
+				Ti.API.info('**FIELD: '+c_type[count]+' VALUE: '+c_content[count]);
+
 				switch(c_type[count]){
 					//Treatment follows the same for text or text_long
 					case 'text':
@@ -858,7 +843,11 @@ if (Ti.Platform.name == 'android') {
 				fullscreen : false,
 				title: win4.title,
 				type: win4.type,
-				url : 'create_or_edit_node.js'
+				url : 'create_or_edit_node.js',
+				listView: win4.listView,
+				//log: win4.log,
+				up_node: win4.up_node,
+				uid: win4.uid,
 			});
 	
 			//Passing parameters

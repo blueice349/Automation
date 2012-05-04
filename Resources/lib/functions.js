@@ -120,7 +120,7 @@ function Progress_install(current, max){
 			else{
 				var perc = parseInt( ( this.current * 100 ) / this.max );
 				pb.value = perc;
-				Ti.API.info("Progress: "+ pb.value +" ... Index: "+this.current+" ... Max_Index : "+this.max);					
+				//Ti.API.info("Progress: "+ pb.value +" ... Index: "+this.current+" ... Max_Index : "+this.max);					
 			}
 		}
 	}
@@ -314,10 +314,6 @@ function bottomBack(actualWindow , text, method){
 	backView.add(label_bottom);
 	
 	backView.addEventListener('click', function(){
-		if (method == "enable"){
-			//Enable background updates
-			unsetUse();
-		}
 		actualWindow.close();
 	});					
 	actualWindow.add(backView);
@@ -514,7 +510,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 										// table structure:
 										// incremental, node_id, field_name, value
 										process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
-										Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
+										//Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
 										
 										// Code must to be a number since this database field accepts only integers numbers
 										// Token to indentify array of numbers is 7411176117105122
@@ -522,7 +518,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 									}
 								}
 								else{
-									Ti.API.info('Null ==> The value '+num_to_insert+' is a number? '+isNumber(num_to_insert) );
+									//Ti.API.info('Null ==> The value '+num_to_insert+' is a number? '+isNumber(num_to_insert) );
 									query += ' null )';
 								}
 							}
@@ -538,7 +534,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 										// table structure:
 										// incremental, node_id, field_name, value
 										process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
-										Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
+										//Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
 										
 										// Code must to be a number since this database field accepts only integers numbers
 										// Token to indentify array of numbers is 7411176117105122
@@ -579,7 +575,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 										// table structure:
 										// incremental, node_id, field_name, value
 										process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
-										Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
+										//Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
 										
 										// Code must to be a number since this database field accepts only integers numbers
 										// Token to indentify array of numbers is 7411176117105122
@@ -603,7 +599,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 										// table structure:
 										// incremental, node_id, field_name, value
 										process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
-										Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
+										//Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
 										
 										// Code must to be a number since this database field accepts only integers numbers
 										// Token to indentify array of numbers is 7411176117105122
@@ -705,7 +701,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 									// table structure:
 									// incremental, node_id, field_name, value
 									process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
-									Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
+									//Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
 									
 									// Code must to be a number since this database field accepts only integers numbers
 									// Token to indentify array of numbers is 7411176117105122
@@ -713,7 +709,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 								}
 							}
 							else{
-								Ti.API.info('Null ==> The value '+num_to_insert+' is a number? '+isNumber(num_to_insert) );
+								//Ti.API.info('Null ==> The value '+num_to_insert+' is a number? '+isNumber(num_to_insert) );
 								query += ' null )';
 							}
 						}
@@ -729,7 +725,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 									// table structure:
 									// incremental, node_id, field_name, value
 									process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
-									Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
+									//Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
 									// Code must to be a number since this database field accepts only integers numbers
 									// Token to indentify array of numbers is 7411176117105122
 									query += ' '+mark+'7411317618171051229'+mark+' )';
@@ -768,7 +764,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 									// table structure:
 									// incremental, node_id, field_name, value
 									process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
-									Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
+									//Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
 									
 									// Code must to be a number since this database field accepts only integers numbers
 									// Token to indentify array of numbers is 7411176117105122
@@ -792,7 +788,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 									// table structure:
 									// incremental, node_id, field_name, value
 									process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
-									Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
+									//Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
 									
 									// Code must to be a number since this database field accepts only integers numbers
 									// Token to indentify array of numbers is 7411176117105122
@@ -1404,17 +1400,19 @@ function getJSON(){
 
 //Install new updates using pagination
 //Load existing data with pagination
-function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
+function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent)
 {
 	var db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 	
 	var objectsUp = win.log;
-
+	Ti.API.info('Log type : '+objectsUp);
+	
 	//Timeout until error:
 	objectsUp.setTimeout(30000);
 
 	Ti.API.info("Current page: "+ pageIndex);
-	
+	Ti.API.info("Mode: "+ mode);
+	Ti.API.info("Menu: "+ menu);
 	Ti.API.info("TIME: "+timeIndex);
 	Ti.API.info("Type: "+type_request);
 	
@@ -1422,7 +1420,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 		objectsUp.open('POST', win.picked + '/js-sync/sync.json' );		
 	}
 	else{
-		//Opens address to retrieve contact list
+		//Opens address to retrieve list
 		if (timeIndex == 0 ){
 			if (pageIndex == 0){
 				Ti.API.info('GET, '+win.picked+'/js-sync/sync.json?reset=1&limit=250');
@@ -1450,9 +1448,11 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 	//When connected
 	objectsUp.onload = function(e) {
 		//Parses response into strings
-		Ti.API.info("Onload reached");
-		var json = JSON.parse(this.responseText);
+		Ti.API.info("Onload reached - Here follows the json: ");
+		Ti.API.info(this.responseText);
 		
+		var json = JSON.parse(this.responseText);
+
 		Ti.API.info('==========TYPE=========   '+type_request);
 		if (type_request == 'GET'){
 			var existsMorePages;
@@ -1567,7 +1567,9 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 				progress.set();
 				progress.close();
 			}
-			unsetUse();
+			if ((mode != 0 ) && (mode != 1)){
+				unsetUse();
+			}
 		}
 		else
 		{
@@ -1761,6 +1763,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 							else
 								var settings = null;
 							
+							
 							//Multiple parts
 							if (json.fields.insert[i].settings.parts){
 								for (var f_value_i in json.fields.insert[i].settings.parts ) {
@@ -1909,12 +1912,12 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 							if (json.fields.insert.settings.parts){
 								for (var f_value_i in json.fields.insert.settings.parts ) {
 									perform[perform.length] = 'ALTER TABLE \''+bundle+'\' ADD \''+field_name+'___'+f_value_i+'\' '+ type;
-									Ti.API.info("Inserted: "+field_name+"___"+f_value_i+" to be used in "+bundle);
+									//Ti.API.info("Inserted: "+field_name+"___"+f_value_i+" to be used in "+bundle);
 								}
 							}
 							else{
 								perform[perform.length] = 'ALTER TABLE \''+bundle+'\' ADD \''+field_name+'\' '+ type;
-								Ti.API.info("Inserted: "+field_name+" to be used in "+bundle);
+								//Ti.API.info("Inserted: "+field_name+" to be used in "+bundle);
 							}
 						}
 						else{
@@ -1993,7 +1996,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 							var tables = db_installMe.execute('SELECT * FROM fields WHERE fid = '+fid);
 							
 							var fi_array = {
-								//We might have various (of the same) fid for the same row
+								//We might have many (of the same) fid for the same row
 								fid			: tables.fieldByName('fid'),
 								//Settings never changes when there is duplicity 
 								settings	: tables.fieldByName('settings'),
@@ -2019,13 +2022,13 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 								if (json.fields.update[i].settings.parts){
 									for (var f_value_i in json.fields.update[i].settings.parts ) {
 										perform[perform.length] = "INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+f_value_i+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"' ,  '"+disabled+"' , '"+widget+"','"+settings+"' )";
-										Ti.API.info('Field not presented in the database, creating field_name = '+field_name+"___"+f_value_i);
+										//Ti.API.info('Field not presented in the database, creating field_name = '+field_name+"___"+f_value_i);
 									}
 								}
 								//Normal field
 								else {
 									perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"','"+label+"','"+description+"','"+bundle+"',"+weight+",'"+required+"','"+disabled+"','"+widget+"','"+settings+"' )";
-									Ti.API.info('Field not presented in the database, creating field_name = '+field_name);
+									//Ti.API.info('Field not presented in the database, creating field_name = '+field_name);
 								}
 	
 								var type = "";
@@ -2510,10 +2513,12 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 			Ti.API.info('Found in seconds: '+ iResult);
 			Ti.API.info("Success for finding!");
 			
+			/*
 			for (var index in quotes ){
 				for (var jndex in quotes[index])
 					Ti.API.info("For index "+index+" in "+jndex+" we got "+quotes[index][jndex]);
 			}
+			*/
 			
 			//Vocabulary:
 			if (json.vocabularies){
@@ -3098,18 +3103,44 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 					progress.close();
 				}
 				db_installMe.close();
-				unsetUse();
+				
+				if (type_request == 'POST'){
+					installMe(pageIndex, win, timeIndex , progress, menu, img, 'GET', mode, close_parent);
+				}
+				else if (mode == 1 ){
+					Ti.UI.createNotification({
+						message : 'The node has been successfully online and locally updated',
+						duration: Ti.UI.NOTIFICATION_DURATION_LONG
+					}).show();
+					//Just to make sure database keeps locked
+					//setUse();
+					close_parent();
+				}
+				else if (mode == 0 ){
+					Ti.UI.createNotification({
+						message : 'The node has been successfully online and locally created',
+						duration: Ti.UI.NOTIFICATION_DURATION_LONG
+					}).show();
+					//Just to make sure database keeps locked
+					//setUse();
+					close_parent();
+				}			
+				else{
+					unsetUse();
+				}	
+				
 			}
 		}
 	}
 
 	//Connection error:
 	objectsUp.onerror = function(e) {
+
 		Ti.API.error('Code status: '+e.error);
-		
 		if (progress != null){
 			progress.close();
 		}
+
 		Ti.API.info('Request type: '+type_request+' progress value: '+progress);
 		if ((type_request == 'POST') && (progress != null)){
 			Ti.UI.createNotification({
@@ -3117,12 +3148,28 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request)
 				duration: Ti.UI.NOTIFICATION_DURATION_LONG
 			}).show();
 		}
+		else if (mode == 0 ){
+			Ti.UI.createNotification({
+				message : 'An error happened while we tried to connect to the server in order to transfer the recently updated node, please make a manual update',
+				duration: Ti.UI.NOTIFICATION_DURATION_LONG
+			}).show();
+			close_parent();
+		}
+		else if (mode == 1 ){
+			Ti.UI.createNotification({
+				message : 'An error happened while we tried to connect to the server in order to transfer the recently saved node, please make a manual update',
+				duration: Ti.UI.NOTIFICATION_DURATION_LONG
+			}).show();
+			close_parent();
+		}
 		
 		db_installMe.close();
-		unsetUse();
+		if ((mode != 0) && (mode != 1)){
+			unsetUse();
+		}
+		
 		Ti.API.info("Services are down");
 	}
-
 	
 	//Get upload JSON
 	if ( type_request == 'POST'){

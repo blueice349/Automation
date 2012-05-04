@@ -14,6 +14,10 @@
 //Current window's instance
 var win2 = Ti.UI.currentWindow;
 
+win2.addEventListener('focus', function(){
+	unsetUse();
+});
+
 var toolActInd = Ti.UI.createActivityIndicator();
 toolActInd.font = {fontFamily:'Helvetica Neue', fontSize:15,fontWeight:'bold'};
 toolActInd.color = 'white';
@@ -30,10 +34,10 @@ var label_status = Titanium.UI.createLabel({
 	textAlign:'center'
 });
 
-var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
 //Common used functions
-Ti.include('../lib/functions.js');
+Ti.include('/lib/functions.js');
 
 unsetUse();
 //Geolocation module
@@ -66,7 +70,7 @@ function checkUpdate(evt){
 		if (up_flag.rowCount > 0){
 			Ti.API.info("Fired nodes update");
 			Ti.API.info('installMe( '+pageIndex+' , '+win2+' , '+updatedTime.fieldByName('timestamp') +' , '+pb+' , '+listView+', '+null+' , POST  )');
-			installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, null, 'POST');
+			installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, null, 'POST', null);
 		}
 		else{
 			//Normal install
@@ -74,14 +78,14 @@ function checkUpdate(evt){
 				Ti.API.info("Fired normal database install");
 				//installMe(pageIndex, win, timeIndex, progress_bar, menu_list)
 				Ti.API.info('installMe( '+pageIndex+' , '+win2+' , '+updatedTime.fieldByName('timestamp') +' , '+pb+' , '+listView+', '+null+' , GET  )');
-				installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, null, 'GET');
+				installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, null, 'GET', null);
 			}
 			//First install
 			else{
 				Ti.API.info("Fired first database install");
 				Ti.API.info('installMe( '+pageIndex+' , '+win2+' , '+updatedTime.fieldByName('timestamp') +' , '+pb+' , '+listView+', '+img+' , GET  )');
 				//installMe(pageIndex, win, timeIndex, progress, menu, img, type)
-				installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, img, 'GET');
+				installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, img, 'GET', null);
 			}
 		}
 		updatedTime.close();
@@ -104,6 +108,26 @@ function checkUpdate(evt){
 		}
 	}
 };
+
+function update_node(mode, close_parent){
+	//Sets status to 'updating'
+
+	var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+
+	var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');
+	var up_flag = db_up.execute('SELECT * FROM node WHERE flag_is_updated=1');
+	
+	Ti.API.info("Fired nodes update/creation ");
+	
+	//function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent)
+	installMe(0, win2, updatedTime.fieldByName('timestamp') , null, win2.listView, null, 'POST', mode, function (){
+		Ti.API.info('Closing create or edit node');
+		close_parent();
+	});
+	updatedTime.close();
+	up_flag.close();
+	db_up.close();
+}
 
 
 var listView = Titanium.UI.createTableView({
@@ -179,6 +203,7 @@ if (check == 0){
 //Go to contact.js when contact's button is clicked
 listView.addEventListener('click',function(e){
 	Ti.API.info("row click on table view. index = "+e.index+", row_desc = "+e.row.description+", section = "+e.section+", source_desc="+e.source.description);
+	setUse();
 	//Creates a new node_type
 	if (e.source.is_plus){
 		//alert('You clicked the '+e.row.display+' . His table\'s name is '+e.row.name_table);
@@ -188,7 +213,9 @@ listView.addEventListener('click',function(e){
 			fullscreen: false,
 			url : 'create_or_edit_node.js',
 			type: e.row.name_table,
-			uid: jsonLogin.user.uid
+			uid: jsonLogin.user.uid,
+			listView: listView,
+			up_node: update_node
 		});
 		win_new.mode = 0;
 		win_new.open();
@@ -202,7 +229,8 @@ listView.addEventListener('click',function(e){
 			fullscreen: false,
 			url:'objects.js',
 			type: e.row.name_table,
-			uid: jsonLogin.user.uid
+			uid: jsonLogin.user.uid,
+			up_node: update_node
 		});
 		win_new.open();
 	}	
@@ -296,6 +324,11 @@ if (updatedTime.fieldByName('timestamp') == 0){
 	isFirstTime = true;
 	checkUpdate('from_menu');
 }
+else{
+	isFirstTime = false;
+	checkUpdate();
+}
+
 updatedTime.close();
 
 //Sets only portrait mode
@@ -348,20 +381,20 @@ setInterval( function(){
 		
 		if (up_flag.rowCount > 0){
 			Ti.API.info("Fired nodes update");
-			installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, null, 'POST');
+			installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, null, 'POST', null);
 		}
 		else{
 			//Normal install
 			if ( see.rowCount > 0 ){
 				Ti.API.info("Fired normal database install");
 				//installMe(pageIndex, win, timeIndex, progress_bar, menu_list)
-				installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, null, 'GET');
+				installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, null, 'GET', null);
 			}
 			//First install
 			else{
 				Ti.API.info("Fired first database install");
 				//installMe(pageIndex, win, timeIndex, progress, menu, img, type)
-				installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, img, 'GET');
+				installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, img, 'GET', null);
 			}
 		}
 		updatedTime.close();

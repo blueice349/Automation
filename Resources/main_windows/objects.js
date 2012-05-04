@@ -133,7 +133,9 @@ else {
 			fullscreen : false,
 			title: win3.type.charAt(0).toUpperCase() + win3.type.slice(1),
 			type: win3.type,
-			url : 'individual_object.js'
+			url : 'individual_object.js',
+			up_node: win3.up_node,
+			uid: win3.uid,
 		});
 
 		search.blur();
