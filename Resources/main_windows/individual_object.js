@@ -242,10 +242,11 @@ if (c_index > 0){
 				}
 				
 				loop_times--;
-
-				if (c_content[count] == ""){
-					continue;
-				}	
+				if ( c_type[count] != 'region_separator_mode'){
+					if (( (c_content[count] == "") || (c_content[count] == "null")  || (c_content[count] == null) ) ) {
+						continue;
+					}
+				}
 				
 				//Treat regions
 				if ((c_settings[count] != null) && (c_settings[count] != 'null') && (c_settings[count] != undefined) && (c_settings[count] != 'undefined')&& (c_settings[count] != '')){

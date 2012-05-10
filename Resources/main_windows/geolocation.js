@@ -25,11 +25,11 @@ Ti.Geolocation.preferredProvider = Titanium.Geolocation.PROVIDER_GPS;
 Ti.Geolocation.purpose = "User tracking";
 
 // state vars used by resume/pause
-var db_coord_name	= "4";
+var db_coord_name	= "5";
 var headingAdded	= false;
 var locationAdded 	= false;
 var is_module_ready = false;
-var location_obj 	= {};
+var location_obj 	= [];
 var dist_filter		= 5;
 //
 //  SHOW CUSTOM ALERT IF DEVICE HAS GEO TURNED OFF
@@ -97,68 +97,24 @@ else
 		var altitudeAccuracy = e.coords.altitudeAccuracy;
 		//Ti.API.info('speed ' + speed);
 		
-		//First run
-		if (is_module_ready === false){
-			//First run requires accuracy less than 50 meters, otherwise it keeps on trying
-			if ( accuracy <= 200){
-				is_module_ready = true;
-				location_obj = {
-					no_accurated_location	: false,
-					accurated_location		: 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+Math.round(timestamp/1000)+', "notUploaded")',
-					accuracy				: accuracy,
-					longitude				: longitude,
-					latitude				: latitude,
-					timestamp				: timestamp
-					
-				};
-			}
-			else{
-				Ti.UI.createNotification({
-						message  : 'Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is '+accuracy+' meters',
-    					duration : Ti.UI.NOTIFICATION_DURATION_LONG
-				}).show();
-			}
-
+		Ti.API.info( 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+Math.round(timestamp/1000)+', "notUploaded")');
+		if ( accuracy <= 200){
+			location_obj.push({
+				no_accurated_location	: false,
+				accurated_location		: 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+Math.round(timestamp/1000)+', "notUploaded")',
+				accuracy				: accuracy,
+				longitude				: longitude,
+				latitude				: latitude,
+				timestamp				: timestamp
+				
+			});
 		}
 		else{
-			is_module_ready = true;
-			//Not first run anymore
-			if ( accuracy <= 200){
-				location_obj = {
-					no_accurated_location	: false,
-					accurated_location		: 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+Math.round(timestamp/1000)+', "notUploaded")',
-					accuracy				: accuracy,
-					longitude				: longitude,
-					latitude				: latitude,
-					timestamp				: timestamp
-				};
-			}
-			else{
-				Ti.UI.createNotification({
-						message  : 'Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is '+accuracy+' meters',
-    					duration : Ti.UI.NOTIFICATION_DURATION_LONG
-				}).show();
-
-				/*
-				if (location_obj.no_accurated_location === false){
-					var aux_long			= location_obj.longitude;
-					var aux_lati			= location_obj.latitude;
-					var cur_geo_timestamp 	= Math.round((new Date()).getTime() / 1000);
-					
-					location_obj = {
-						no_accurated_location	: 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+Math.round(timestamp/1000)+', "notUploaded")',
-						accurated_location		: 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+aux_long+','+aux_lati+','+cur_geo_timestamp+', "notUploaded")',
-						accuracy				: accuracy,
-						longitude				: aux_long,
-						latitude				: aux_lati,
-						timestamp				: cur_geo_timestamp
-					};
-				}
-				*/
-			}
+			Ti.UI.createNotification({
+					message  : 'Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is '+accuracy+' meters',
+					duration : Ti.UI.NOTIFICATION_DURATION_LONG
+			}).show();
 		}
-		
-
 	});
 
 	//
@@ -202,67 +158,26 @@ else
 			}
 		});
 		*/
-		//First run
-		if (is_module_ready === false){
-			//First run requires accuracy less than 50 meters, otherwise it keeps on trying
-			if ( accuracy <= 200){
-				is_module_ready = true;
-				location_obj = {
-					no_accurated_location	: false,
-					accurated_location		: 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+Math.round(timestamp/1000)+', "notUploaded")',
-					accuracy				: accuracy,
-					longitude				: longitude,
-					latitude				: latitude,
-					timestamp				: timestamp
-					
-				};
-			}
-			else{
-				Ti.UI.createNotification({
-						message  : 'Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is '+accuracy+' meters',
-    					duration : Ti.UI.NOTIFICATION_DURATION_LONG
-				}).show();
-			}
-
+		
+		Ti.API.info( 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+Math.round(timestamp/1000)+', "notUploaded")');
+		
+		if ( accuracy <= 200){
+			location_obj.push ({
+				no_accurated_location	: false,
+				accurated_location		: 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+Math.round(timestamp/1000)+', "notUploaded")',
+				accuracy				: accuracy,
+				longitude				: longitude,
+				latitude				: latitude,
+				timestamp				: timestamp
+				
+			});
 		}
 		else{
-			is_module_ready = true;
-			//Not first run anymore
-			if ( accuracy <= 200){
-				location_obj = {
-					no_accurated_location	: false,
-					accurated_location		: 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+Math.round(timestamp/1000)+', "notUploaded")',
-					accuracy				: accuracy,
-					longitude				: longitude,
-					latitude				: latitude,
-					timestamp				: timestamp
-				};
-			}
-			else{
-				Ti.UI.createNotification({
-						message  : 'Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is '+accuracy+' meters',
-    					duration : Ti.UI.NOTIFICATION_DURATION_LONG
-				}).show();
-
-				/*
-				if (location_obj.no_accurated_location === false){
-					var aux_long			= location_obj.longitude;
-					var aux_lati			= location_obj.latitude;
-					var cur_geo_timestamp 	= Math.round((new Date()).getTime() / 1000);
-					
-					location_obj = {
-						no_accurated_location	: 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+Math.round(timestamp/1000)+', "notUploaded")',
-						accurated_location		: 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+aux_long+','+aux_lati+','+cur_geo_timestamp+', "notUploaded")',
-						accuracy				: accuracy,
-						longitude				: aux_long,
-						latitude				: aux_lati,
-						timestamp				: cur_geo_timestamp
-					};
-				}
-				*/
-			}
+			Ti.UI.createNotification({
+					message  : 'Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is '+accuracy+' meters',
+					duration : Ti.UI.NOTIFICATION_DURATION_LONG
+			}).show();
 		}
-
 	};
 	
 	Titanium.Geolocation.addEventListener('location', locationCallback);
@@ -307,6 +222,20 @@ if (Titanium.Platform.name == 'android')
 	
 }
 
+//Sets flag_accept to true each 5 seconds in order to get a new location every 5 seconds
+setInterval(function (){
+		if (!isUpdating() ){
+			var aux_location = location_obj;
+			location_obj = [];
+			
+			var db_coord_pp = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name );
+			for (var ind_local in aux_location){
+				db_coord_pp.execute(aux_location[ind_local].accurated_location);	
+			}
+			db_coord_pp.close();
+		}
+}, 5000);
+
 setInterval(function (){
 	if ( !isUpdating() ){
 		setUse();
@@ -315,6 +244,7 @@ setInterval(function (){
 		var result = db_coord.execute("SELECT * FROM user_location WHERE status = 'notUploaded' ORDER BY timestamp DESC");
 
 		if (result.rowCount > 0){
+			Ti.API.info(result.rowCount+' gps locations were found ');
 			//Build JSON structure
 			var json_coord = "{ \"data\": [";
 			for(var i = 0; i < result.rowCount ; i++) {
@@ -342,14 +272,16 @@ setInterval(function (){
 			//When connected
 			objectsCheck.onload = function(e) {
 				//Parses response into strings
-
+				Ti.API.info('onLoad for GPS coordiates reached! Here is the reply: ');
+				Ti.API.info(this.responseText);
+				Ti.API.info('Requested: ');
+				Ti.API.info(json_coord);
+				
 				var resultReq = JSON.parse(this.responseText);
 				
 				if ( resultReq.inserted ){
 					if (resultReq.success)
-						Ti.API.info(resultReq.success+"GPS coordinates sucefully inserted: ");
-					else
-		 				Ti.API.info("GPS coordinates not inserted, we had "+ resultReq.errors+" errors");
+						Ti.API.info(resultReq.success+" GPS coordinates successfully inserted ");
 				}
 				db_coord.execute('DELETE FROM user_location WHERE status="json"');
 				db_coord.close();
@@ -357,6 +289,7 @@ setInterval(function (){
 			}
 			//Connection error:
 			objectsCheck.onerror = function(e) {
+				Ti.API.info("Error found for GPS uploading ");
 				db_coord.close();
 				unsetUse();
 			}
@@ -365,19 +298,10 @@ setInterval(function (){
 			objectsCheck.send(json_coord);
 		}
 		else{
+			Ti.API.info('No GPS coordinates found');
 			result.close();
 			db_coord.close();
 			unsetUse();
 		}
 	} 
 }, 120000);
-
-
-//Sets flag_accept to true each 5 seconds in order to get a new location every 5 seconds
-setInterval(function (){
-	if (is_module_ready === true){
-		var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name );
-		db_coord.execute(location_obj.accurated_location);
-		db_coord.close();
-	}
-}, 5000);

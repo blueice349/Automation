@@ -467,6 +467,173 @@ function display_omadi_time(obj){
 	win_wid.open();
 }
 
+
+function open_mult_selector( obj ){	
+	var win_wid = Ti.UI.createWindow({
+		modal: true,
+		opacity: 0
+	});
+	
+	var win_view = Ti.UI.createView({
+		backgroundColor		: '#FFFFFF',
+		top					: '6%',
+		left				: '6%',
+		right				: '6%',
+		bottom				: '6%',
+		borderRadius		: 10,
+		borderWidth			: 2,
+		borderColor			: '#FFFFFF',
+		opacity: 1
+	});
+	win_wid.add(win_view);
+	
+	var header_sel = Ti.UI.createView({
+		top: 0,
+		height: '15%',
+		backgroundColor: '#333'
+	});
+	win_view.add(header_sel);
+	
+	var ico_sel = Ti.UI.createImageView({
+		image: '/images/drop.png',
+		width: "31dp",
+		height: "31dp",
+		left: "10dp"
+	});
+	header_sel.add(ico_sel);
+	
+	var label_sel = Ti.UI.createLabel({
+		text: obj.view_title,
+		color: '#FFF',
+		font: {
+			fontSize: '18dp',
+			fontWeight: 'bold'
+		},
+		left: '51dp'
+	});
+	header_sel.add(label_sel);
+	
+	var listView = Titanium.UI.createTableView({
+		data : [],
+		top : '15%',
+		height : '73%',
+		scrollable: true
+	});
+	
+	var elements_to_insert = [];
+	for (var v_iten in obj.itens){
+		Ti.API.info(v_iten);
+		elements_to_insert.push({
+			title:  obj.itens[v_iten].title,
+			v_info: obj.itens[v_iten].v_info,
+			is_set: obj.itens[v_iten].is_set
+		});
+	}
+	var color_set	= "#A8A8A8";
+	var color_unset = "#FFFFFF";
+	
+	var count_sel = 0;
+	while ( count_sel < elements_to_insert.length ){
+		
+		var row_t = Ti.UI.createTableViewRow({
+			height			: 'auto',	
+			display 		: elements_to_insert[count_sel].title,
+			selected		: elements_to_insert[count_sel].is_set,
+			v_info			: elements_to_insert[count_sel].v_info,
+			backgroundColor : elements_to_insert[count_sel].is_set ? color_set : color_unset,
+			className		: 'menu_row' //optimize rendering
+		});
+		
+		var title = Titanium.UI.createLabel({
+			text: elements_to_insert[count_sel].title,
+			width:'83%',
+			textAlign:'left',
+			left:'0%',
+			color: '#000',
+			height:'auto'
+		});
+		row_t.add(title);
+		
+		listView.appendRow(row_t);
+		++count_sel;
+	}
+	win_view.add(listView);	
+	
+	listView.addEventListener('click',function(e){
+		if (listView.data[0].rows[e.index].selected === false){
+			listView.data[0].rows[e.index].selected = true;
+			listView.data[0].rows[e.index].backgroundColor = color_set;
+		}
+		else{
+			listView.data[0].rows[e.index].selected = false;
+			listView.data[0].rows[e.index].backgroundColor = color_unset;
+		}
+		Ti.API.info('Field set to '+listView.data[0].rows[e.index].selected);
+	});
+	
+	var bottom_sel = Ti.UI.createView({
+		bottom: 0,
+		height: '12%',
+		width: '100%',
+		backgroundColor: '#AAA'
+	});
+	win_view.add(bottom_sel);
+	
+	var selected_ok = Ti.UI.createButton({
+		title: 'OK',
+		width: '60%',
+		top: '3%',
+		bottom: '3%'
+	});
+	bottom_sel.add(selected_ok);
+	
+	selected_ok.addEventListener('click', function(){
+		var aux_ret = new Array();
+		var valid_return = new Array();
+		for (var i_sel = 0 ; i_sel < listView.data[0].rows.length ; i_sel++){
+			if (listView.data[0].rows[i_sel].selected == true){
+				aux_ret.push({
+					title	: listView.data[0].rows[i_sel].display,
+					v_info	: listView.data[0].rows[i_sel].v_info,
+					is_set	: true
+				});
+				
+				valid_return.push({
+					title	: listView.data[0].rows[i_sel].display,
+					v_info	: listView.data[0].rows[i_sel].v_info
+				});
+			}
+			else{
+				aux_ret.push({
+					title	: listView.data[0].rows[i_sel].display,
+					v_info	: listView.data[0].rows[i_sel].v_info,
+					is_set	: false
+				});
+			}
+		}
+
+
+		if (valid_return.length == 0){
+			obj.value = null
+			obj.text = "UNSET";
+		}
+		else{
+			obj.value = valid_return;
+			if (valid_return.length == 1){
+				obj.text = valid_return[0].title;
+			}
+			else{
+				obj.text = obj.view_title+" ["+valid_return.length+"]";
+			}
+		}
+		
+		obj.itens = aux_ret;
+		win_wid.close();
+				
+	});
+	win_wid.open();
+}
+
 ///////////////////////////
 // UI
 //////////////////////////
@@ -688,6 +855,11 @@ setTimeout(function(e){
 			
 			var widget = JSON.parse(field_arr[index_label][index_size].widget);
 			var settings = JSON.parse(field_arr[index_label][index_size].settings);
+
+			if ((settings) && (settings.cardinality == "-1")){
+				Ti.API.info(field_arr[index_label][index_size].settings);
+				Ti.API.info(field_arr[index_label][index_size].widget);
+			}
 			
 			switch(field_arr[index_label][index_size].type){
 
@@ -1418,7 +1590,7 @@ setTimeout(function(e){
 						
 						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
 							
-							if ((o_index < decoded_values.length) && ( (decoded_values[o_index] != "") && (decoded_values[o_index] != " ") ) ){
+							if ((o_index < decoded_values.length) && ( (decoded_values[o_index] != "") && (decoded_values[o_index] != " ") && (decoded_values[o_index] != "null")) ){
 								var vl_to_field = decoded_values[o_index];
 							}
 							else{
@@ -1721,7 +1893,10 @@ setTimeout(function(e){
 						var terms = db_display.execute("SELECT * FROM term_data WHERE vid='"+vocabulary.fieldByName('vid')+"'GROUP BY name ORDER BY name ASC");
 	
 						var data_terms = [];
-						data_terms.push({title: field_arr[index_label][index_size].label, tid: null });
+						if (settings.cardinality != -1){
+							data_terms.push({title: field_arr[index_label][index_size].label, tid: null });
+						}
+						
 						while (terms.isValidRow()){ 
 							data_terms.push({title: terms.fieldByName('name'), tid: terms.fieldByName('tid') }); 
 							terms.next();
@@ -1820,7 +1995,7 @@ setTimeout(function(e){
 								count++;
 							}
 						}
-						else{
+						else if (settings.cardinality == 1){
 							
 							var arr_picker 	= new Array();
 								
@@ -1870,6 +2045,110 @@ setTimeout(function(e){
 							content[count].addEventListener('change', function(e){
 								Ti.API.info('TID: '+e.row.tid);
 								e.source.value = e.row.tid; 
+							});
+							top += heightValue;
+							
+							//Add fields:
+							viewContent.add(content[count]);
+							count++;
+						}
+						else if (settings.cardinality == -1){
+							var sel_text = "UNSET";
+							var _val_itens = [];
+							var _itens = "";
+							var _exist = [];
+							
+							if ( (field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1) ){
+								var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = '+win.nid+' AND field_name = \''+field_arr[index_label][index_size].field_name+'\'');
+								
+								//Decode the stored array:
+								var decoded = array_cont.fieldByName('encoded_array');
+								decoded = Titanium.Utils.base64decode(decoded);
+								Ti.API.info('Decoded array is equals to: '+decoded);
+								
+								decoded = decoded.toString();
+								
+								// Token that splits each element contained into the array: 'j8Oá2s)E'
+								var decoded_values = decoded.split("j8Oá2s)E");
+							}
+							else{
+								var decoded_values = new Array();
+								decoded_values[0] = field_arr[index_label][index_size].actual_value;
+							}
+							
+							for (var j_ind in data_terms){
+								Ti.API.info(data_terms[j_ind].tid+' = '+decoded_values.indexOf(data_terms[j_ind].tid.toString()));
+
+								if( decoded_values.indexOf(data_terms[j_ind].tid.toString()) != -1){
+									sel_text	  = data_terms[j_ind].title;
+									_val_itens.push({
+										title 	: data_terms[j_ind].title,
+										v_info  : data_terms[j_ind].tid,
+										is_set	: true
+									});
+									
+									_exist.push({
+										title 	: data_terms[j_ind].title,
+										v_info  : data_terms[j_ind].tid
+									});
+									
+								}
+								else{
+									_val_itens.push({
+										title	: data_terms[j_ind].title,
+										v_info	: data_terms[j_ind].tid,
+										is_set	: false
+									});											
+								}
+
+
+							}
+							
+							if (_exist.length > 1){
+								sel_text = field_arr[index_label][index_size].label+" ["+_exist.length+"]"
+							}
+							
+							_itens = _exist;
+							
+							if (_exist.length == 0){
+								_itens = null;
+							}
+							
+							Ti.API.info("==>> "+_val_itens);
+							Ti.API.info("==>> "+_itens);
+							
+							content[count] = Titanium.UI.createLabel({
+								left				: '3%',
+								right				: '3%',
+								text				: sel_text,
+								backgroundColor     : "#FFF",
+								textAlign			: "center",
+								height				: heightValue,
+								font 				: {
+														fontSize: 18
+								},
+								color				: '#000000',
+								top					: top,
+								field_type			: field_arr[index_label][index_size].type,
+								field_name			: field_arr[index_label][index_size].field_name,
+								machine_name		: vocabulary.fieldByName('machine_name'),
+								widget				: 'options_select',
+								required			: field_arr[index_label][index_size].required,
+								is_title			: field_arr[index_label][index_size].is_title,
+								composed_obj		: false,
+								cardinality			: settings.cardinality,
+								value				: _itens,
+								itens				: _val_itens,
+								view_title			: field_arr[index_label][index_size].label,
+								reffer_index		: reffer_index
+							}); 
+							
+							
+							content[count].addEventListener('click', function(e){
+								for (var jsa in e.source.itens){
+									Ti.API.info(jsa+' = '+e.source.itens[jsa].title);
+								}
+								open_mult_selector(e.source); 
 							});
 							top += heightValue;
 							
@@ -2798,7 +3077,8 @@ setTimeout(function(e){
 				
 					var widget = JSON.parse(field_arr[index_label][index_size].widget);
 					var settings = JSON.parse(field_arr[index_label][index_size].settings); 
-					
+					Ti.API.info(field_arr[index_label][index_size].settings);
+
 					label[count] = Ti.UI.createLabel({
 						text			: 'Select the '+field_arr[index_label][index_size].label,
 						color			: '#FFFFFF',
@@ -2857,17 +3137,16 @@ setTimeout(function(e){
 									var day = currentDate.getDate();
 									var month = currentDate.getMonth();
 									var year = currentDate.getFullYear();
-									var vl_to_field = null;									
-									
-									text_in_field = "UNSET";
-									/*
-									 	//Old code
-										var currentDate = new Date();
-										var day = currentDate.getDate();
-										var month = currentDate.getMonth();
-										var year = currentDate.getFullYear();
+
+									if (settings.default_value == 'now'){
 										var vl_to_field = currentDate.getTime();
-									*/
+										text_in_field = months_set[month]+" / "+day+" / "+year;
+									}
+									else{
+										var vl_to_field = null;
+										text_in_field = "UNSET";
+									}
+
 								}
 
 								content[count] = Titanium.UI.createLabel({
@@ -2911,7 +3190,8 @@ setTimeout(function(e){
 								var clear = Ti.UI.createImageView({
 								  image:'/images/cancel.png',
 								  right: '4%',
-								  height: '100%',
+								  height: '35dp',
+								  width: '35dp',
 								  is_clear: true,
 								  its_parent: content[count]
 								});
@@ -2951,9 +3231,16 @@ setTimeout(function(e){
 								var day = currentDate.getDate();
 								var month = currentDate.getMonth();
 								var year = currentDate.getFullYear();
-								var vl_to_field = null;
-								
-								text_in_field = "UNSET";
+
+								if (settings.default_value == 'now'){
+									var vl_to_field = currentDate.getTime();
+									text_in_field = months_set[month]+" / "+day+" / "+year;
+								}
+								else{
+									var vl_to_field = null;
+									text_in_field = "UNSET";
+								}
+
 							}
 
 
@@ -2999,7 +3286,8 @@ setTimeout(function(e){
 							var clear = Ti.UI.createImageView({
 							  image:'/images/cancel.png',
 							  right: '4%',
-							  height: '100%',
+							  height: '35dp',
+							  width: '35dp',
 							  is_clear: true,
 							  its_parent: content[count]
 							});
@@ -3069,9 +3357,16 @@ setTimeout(function(e){
 									var year 		= currentDate.getFullYear();
 									var min			= currentDate.getMinutes();
 									var hours		= currentDate.getHours();
-									var vl_to_field = null;
-									
-									text_in_field = "UNSET";
+
+
+									if (settings.default_value == 'now'){
+										var vl_to_field = currentDate.getTime();
+										text_in_field = hours+":"+form_min(min)+" - "+months_set[month]+" / "+day+" / "+year;
+									}
+									else{
+										var vl_to_field = null;
+										text_in_field = "UNSET";
+									}
 								}
 
 								
@@ -3084,7 +3379,7 @@ setTimeout(function(e){
 									font 				: {
 															fontSize: 18
 									},
-									text				: hours+":"+form_min(min)+" - "+months_set[month]+" / "+day+" / "+year,
+									text				: text_in_field,
 									textAlign			: 'center',
 									color				: '#000000',
 									backgroundColor		: '#FFFFFF',
@@ -3118,7 +3413,8 @@ setTimeout(function(e){
 								var clear = Ti.UI.createImageView({
 								  image:'/images/cancel.png',
 								  right: '4%',
-								  height: '100%',
+								  height: '35dp',
+								  width: '35dp',
 								  is_clear: true,
 								  its_parent: content[count]
 								});
@@ -3164,8 +3460,14 @@ setTimeout(function(e){
 								var min			= currentDate.getMinutes();
 								var hours		= currentDate.getHours();
 								
-								var vl_to_field = null;
-								text_in_field = "UNSET";
+								if (settings.default_value == 'now'){
+									var vl_to_field = currentDate.getTime();
+									text_in_field = hours+":"+form_min(min)+" - "+months_set[month]+" / "+day+" / "+year;
+								}
+								else{
+									var vl_to_field = null;
+									text_in_field = "UNSET";
+								}
 							}
 
 							//Date picker
@@ -3177,7 +3479,7 @@ setTimeout(function(e){
 								font 				: {
 														fontSize: 18
 								},
-								text				: hours+":"+form_min(min)+" - "+months_set[month]+" / "+day+" / "+year,
+								text				: text_in_field,
 								textAlign			: 'center',
 								color				: '#000000',
 								backgroundColor		: '#FFFFFF',
@@ -3210,7 +3512,8 @@ setTimeout(function(e){
 							var clear = Ti.UI.createImageView({
 							  image:'/images/cancel.png',
 							  right: '4%',
-							  height: '100%',
+							  height: '35dp',
+							  width: '35dp',
 							  is_clear: true,
 							  its_parent: content[count]
 							});
@@ -3452,7 +3755,8 @@ setTimeout(function(e){
 							var clear = Ti.UI.createImageView({
 							  image:'/images/cancel.png',
 							  right: '4%',
-							  height: '100%',
+							  height: '35dp',
+							  width: '35dp',
 							  is_clear: true,
 							  its_parent: content[count]
 							});
@@ -3514,7 +3818,8 @@ setTimeout(function(e){
 						var clear = Ti.UI.createImageView({
 						  image:'/images/cancel.png',
 						  right: '4%',
-						  height: '100%',
+						  height: '35dp',
+						  width: '35dp',
 						  is_clear: true,
 						  its_parent: content[count]
 						});
@@ -3897,10 +4202,22 @@ setTimeout(function(e){
 
 						if(content[j].is_title === true){
 							if (title_to_node.charAt(0) == ""){
-								title_to_node = content[j].value;
+								if (content[j].cardinality == -1){
+									var tit_aux = content[j].value;
+									title_to_node = tit_aux[0].title;
+								}
+								else{
+									title_to_node = content[j].value;
+								}
 							}
 							else{
-								title_to_node+= " - "+content[j].value;
+								if (content[j].cardinality == -1){
+									var tit_aux = content[j].value;
+									title_to_node+= " - "+tit_aux[0].title;
+								}
+								else{
+									title_to_node+= " - "+content[j].value;
+								}
 							}
 						}
 						Ti.API.info('Title: '+title_to_node);
@@ -3953,7 +4270,6 @@ setTimeout(function(e){
 								db_jub.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+win.nid+', \''+content[j].field_name+'\',  \''+content_s+'\' )');
 							}
 							
-							
 							db_jub.close();
 							
 							// Code must to be a number since this database field accepts only integers numbers
@@ -3982,12 +4298,50 @@ setTimeout(function(e){
 						}
 						else if (content[j].field_type ==  'taxonomy_term_reference'){ 
 							if (content[j].widget == 'options_select'){
-								if (content[j].getSelectedRow(0).tid == null){
-									value_to_insert = ''
-									mark			= '\'';
+								if (content[j].cardinality != -1){
+									if (content[j].getSelectedRow(0).tid == null){
+										value_to_insert = ''
+										mark			= '\'';
+									}
+									else{
+										value_to_insert = content[j].getSelectedRow(0).tid;
+										mark = '';
+									}
 								}
 								else{
-									value_to_insert = content[j].getSelectedRow(0).tid;
+									
+									var vital_info = [];
+									
+									if (content[j].value == null){
+										vital_info.push("null");
+									}
+									else{
+										for (var v_info_tax in content[j].value ){
+											vital_info.push(content[j].value[v_info_tax].v_info.toString());
+										}
+									}
+									
+									//Treat the array
+									content_s = treatArray(vital_info, 6);
+									Ti.API.info('About to insert '+content[j].field_name);
+									// table structure:
+									// incremental, node_id, field_name, value
+									var db_jub = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+									
+									if (mode == 0) {
+										Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+new_nid+', \''+content[j].field_name+'\',  \''+content_s+'\' )');								
+										db_jub.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+new_nid+', \''+content[j].field_name+'\',  \''+content_s+'\' )');								
+									}
+									else{
+										Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+win.nid+', \''+content[j].field_name+'\',  \''+content_s+'\' )');
+										db_jub.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+win.nid+', \''+content[j].field_name+'\',  \''+content_s+'\' )');
+									}
+									
+									db_jub.close();
+									
+									// Code must to be a number since this database field accepts only integers numbers
+									// Token to indentify array of numbers is 7411317618171051229 
+									value_to_insert = 7411317618171051229;
 									mark = '';
 								}
 							}

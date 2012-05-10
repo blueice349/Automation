@@ -1,6 +1,6 @@
 Logfile initialized
 [INFO] logfile = /home/jo/omadi/omadi_mobile/build.log
-[DEBUG] /home/jo/.titanium/mobilesdk/linux/1.8.1/android/builder.py distribute Omadi /home/jo/Apps/android-sdk /home/jo/omadi/omadi_mobile joseandro.omadi.com /home/jo/keystores/android.keystore borsoi87 omadi /home/jo/Desktop/Sync/Dropbox/omadi/Android 8
+[DEBUG] /home/jo/.titanium/mobilesdk/linux/1.8.1/android/builder.py distribute Omadi /home/jo/Apps/android-sdk /home/jo/omadi/omadi_mobile joseandro.omadi.com /home/jo/keystores/android.keystore borsoi87 omadi /home/jo/Desktop/Sync/Dropbox/omadi/Android/Joseandro 8
 [INFO] Titanium SDK version: 1.8.1 (01/27/12 17:31 a24502a)
 [INFO] Copying project resources..
 [TRACE] COPYING MODIFIED FILE: /home/jo/omadi/omadi_mobile/Resources/main_windows/create_or_edit_node.js => /home/jo/omadi/omadi_mobile/build/android/bin/assets/Resources/main_windows/create_or_edit_node.js
@@ -52,6 +52,7 @@ Logfile initialized
 [DEBUG] from resource zip => assets/Resources/images/low/save.png
 [DEBUG] from resource zip => assets/Resources/images/medium/save.png
 [DEBUG] from resource zip => assets/Resources/images/cancel.png
+[DEBUG] from resource zip => assets/Resources/images/drop.png
 [DEBUG] from resource zip => assets/Resources/images/edit.png
 [DEBUG] from resource zip => assets/Resources/images/email.png
 [DEBUG] from resource zip => assets/Resources/images/item1.png
