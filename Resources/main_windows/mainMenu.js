@@ -105,7 +105,6 @@ function checkUpdate(evt){
 	}
 };
 
-
 var listView = Titanium.UI.createTableView({
 	data : [],
 	top : '10%',
@@ -191,6 +190,7 @@ listView.addEventListener('click',function(e){
 			uid: jsonLogin.user.uid
 		});
 		win_new.mode = 0;
+		win_new.picked 	 = win2.picked;
 		win_new.open();
 		win_new.addEventListener('focus', function(e){
 			toolActInd.hide();
@@ -204,6 +204,7 @@ listView.addEventListener('click',function(e){
 			type: e.row.name_table,
 			uid: jsonLogin.user.uid
 		});
+		win_new.picked 	 = win2.picked;
 		win_new.open();
 	}	
 });

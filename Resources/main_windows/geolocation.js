@@ -351,6 +351,7 @@ setInterval(function (){
 					else
 		 				Ti.API.info("GPS coordinates not inserted, we had "+ resultReq.errors+" errors");
 				}
+				var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name );
 				db_coord.execute('DELETE FROM user_location WHERE status="json"');
 				db_coord.close();
 				unsetUse();	

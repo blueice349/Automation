@@ -21,7 +21,7 @@ toolActInd.message = 'Loading...';
 toolActInd.show();
 
 var months_set = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-
+var ONE_MB = 1048576;
 ///////////////////////////
 // Extra Functions
 //////////////////////////
@@ -533,6 +533,7 @@ var border			=	new Array();
 var values_query	=	new Array();
 var count = 0;
 var title = 0;
+var defaultImageVal = '../images/default.png'
 
 setTimeout(function(e){
 	//Load an array containing fields_result 
@@ -581,10 +582,14 @@ setTimeout(function(e){
 		var evaluate_this = null; 
 		
 		if (mode == 0 ){
-			evaluate_this = reg_settings.creation_disabled;
+			if(reg_settings!=null){
+				evaluate_this = reg_settings.creation_disabled;
+			}
 		}
 		else{
-			evaluate_this = reg_settings.update_disabled;
+			if(reg_settings!=null){
+				evaluate_this = reg_settings.update_disabled;
+			}
 		}
 		
 		if (reg_settings != null && evaluate_this){
@@ -3150,13 +3155,237 @@ setTimeout(function(e){
 						count++;
 					}
 				break;
+				
+				//Stuff to add image field..
+				case 'image':
+					label[count] = Ti.UI.createLabel({
+						text:  field_arr[index_label][index_size].label,
+						color			: '#FFFFFF',
+						font 			: {
+											fontSize: 18
+						},
+						textAlign		: 'left',
+						left			: '3%',
+						touchEnabled	: false,
+						height			: 25,
+						top				: top
+					});
+					
+					
+					//Add fields:
+					var reserveTop = top;
+					viewContent.add(label[count]);
+					var settings 		= JSON.parse(field_arr[index_label][index_size].settings); 
+					var reffer_index	= count;
+					top += 30;
+					
+					if (settings.cardinality > 1 || settings.cardinality < 0 ){
+						isUpdated = [];
+						content[count] = Ti.UI.createScrollView({
+								right : 10,
+								left  :'3%',
+								top: top,
+								contentWidth : 'auto',
+								contentHeight : 100 ,
+								reffer_index	: reffer_index,
+								arrImages : null,
+								scrollType : "horizontal",
+								layout: 'horizontal',
+								field_type		: field_arr[index_label][index_size].type,
+								field_name		: field_arr[index_label][index_size].field_name,
+								required		: field_arr[index_label][index_size].required,
+								is_title		: field_arr[index_label][index_size].is_title,
+								label 			: field_arr[index_label][index_size].label,
+								composed_obj	: true,
+								addButton		: null,
+								cardinality		: settings.cardinality
+							});
+						viewContent.add(content[count]);
+						var decodedValues = [];
+						if(mode == 1){
+							var val = db_display.execute('SELECT * FROM ' + win.type + ' WHERE nid=' + win.nid +';');
+							if(val.fieldByName(field_arr[index_label][index_size].field_name+'___file_id') == '7411317618171051229' || val.fieldByName(field_arr[index_label][index_size].field_name+'___file_id') == 7411317618171051229){
+								array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = '+win.nid+' AND field_name = \''+field_arr[index_label][index_size].field_name+'___file_id\'');
+							} else{
+								 array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = '+win.nid+' AND field_name = \''+field_arr[index_label][index_size].field_name+'\'');
+							}
+							if(array_cont.rowCount>0){	
+								//Decode the stored array:
+								var decoded = array_cont.fieldByName('encoded_array');
+								decoded = Titanium.Utils.base64decode(decoded);
+								decoded = decoded.toString();
+								decodedValues = decoded.split("j8Oá2s)E");
+							}
+							val = db_display.execute('SELECT * FROM file_upload_queue WHERE nid=' + win.nid + ' AND field_name ="' +field_arr[index_label][index_size].field_name+ '";');
+							if(val.rowCount > 0){
+								while(val.isValidRow()){
+									isUpdated[val.fieldByName('delta')] = true;
+									decodedValues[val.fieldByName('delta')] = Ti.Utils.base64decode(val.fieldByName('file_data'));
+									val.next();
+								}
+							}
+						}	
+						var arrImages = [];
+						
+						if(settings.cardinality < 0){
+							o_index = 0;
+							for(img =0; img < decodedValues.length ; img++){
+								var updated = false
+								if ((img < decodedValues.length) && (decodedValues[img] != "") && (decodedValues[img] != null) 
+								 && decodedValues[img] != 'null' && decodedValues[img] != 'undefined'){
+									var vl_to_field = decodedValues[img];
+									if(isUpdated[img]== true){
+								 		updated = isUpdated[img];
+								 	}
+								}else{
+									continue;
+								}
+								arrImages = createImage(o_index, arrImages, vl_to_field, content[count], updated);	
+								o_index += 1;
+							}
+							if(decodedValues.length == 0){
+								arrImages = createImage(o_index, arrImages, defaultImageVal, content[count], false);	
+								o_index +=1;
+							}
+							
+							
+							//--------- Add Button
+							addButton = Ti.UI.createButton({
+									right			: '5',
+									title			: '+',
+									top				: reserveTop,
+									height			: 40,
+									width			: 40,
+									scrollView 		: content[count],
+									o_index			: o_index
+							});
+							viewContent.add(addButton);
+							addButton.addEventListener('click', function(e){
+								arrImages = createImage(e.source.o_index, arrImages, defaultImageVal, e.source.scrollView, false);
+								e.source.scrollView.arrImages = arrImages
+								e.source.o_index += 1;
+							});
+							content[count].addButton = addButton;
+						}else{
+							for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
+								var updated = false;
+								if ((o_index < decodedValues.length) && (decodedValues[o_index] != "") && (decodedValues[o_index] != null) 
+								 && decodedValues[o_index] != 'null' && decodedValues[o_index] != 'undefined'){
+								 	var vl_to_field = decodedValues[o_index];
+								 	if(isUpdated[o_index]== true){
+								 		updated = isUpdated[o_index];
+								 	}
+								}else{
+									var vl_to_field = defaultImageVal;
+								}
+								arrImages = createImage(o_index, arrImages, vl_to_field, content[count], updated);
+							}
+						}	
+						content[count].arrImages = arrImages;
+					}
+					else {
+						isUpdated = false;
+						if(mode==1){
+							var results = db_display.execute('SELECT * FROM ' + win.type + ' WHERE nid=' + win.nid +';');
+							if(results.rowCount>0){
+								val = results.fieldByName(field_arr[index_label][index_size].field_name+'___file_id');
+								if(val==null || val=='null' || val == 'undefined'){
+									val = results.fieldByName(field_arr[index_label][index_size].field_name);
+								}
+							}
+							
+							valUp = db_display.execute('SELECT * FROM file_upload_queue WHERE nid=' + win.nid + ' AND field_name ="' +field_arr[index_label][index_size].field_name+ '";');
+							
+							if(valUp.rowCount > 0){
+								isUpdated = true;
+								val = Ti.Utils.base64decode(valUp.fieldByName('file_data'));
+							}
+							if(val==null || val=='null'  || val == 'undefined' || val.rowCount == 0){
+								val = defaultImageVal;
+							}
+						}
+						content[count] = Ti.UI.createImageView({
+							label 			: field_arr[index_label][index_size].label,
+							left			: '3%',
+							height			: 80,
+							width			: 80,
+							size: {
+									height		: 'auto',
+									width		: 'auto'
+								},
+							top				: top+10,
+							private_index	: 0,
+							field_type		: field_arr[index_label][index_size].type,
+							field_name		: field_arr[index_label][index_size].field_name,
+							required		: field_arr[index_label][index_size].required,
+							is_title		: field_arr[index_label][index_size].is_title,
+							composed_obj	: false,
+							image			: defaultImageVal,
+							imageVal 		: val,
+							imageData		: null,
+							bigImg 			: null,
+							mimeType		: null,
+							cardinality		: settings.cardinality,
+							isUpdated		: isUpdated
+						});
+						
+						if(isUpdated == true){
+							content[count].image = val;
+							content[count].bigImg = val;
+							content[count].imageData = val;
+						}
+						content[count].addEventListener('click', function(e) {
+							//Following method will open camera to capture the image.
+								if(e.source.imageData !=null){
+									var postDialog = Titanium.UI.createOptionDialog();
+									postDialog.options = ['Capture Image', 'Show Image', 'cancel'];
+									postDialog.cancel = 2;
+									postDialog.show();
+									
+									postDialog.addEventListener('click', function(ev){
+										if(ev.index == 0){
+											openCamera(e);
+										}else if(ev.index==1){
+											downloadMainImage(e.source.imageVal, e.source, win);
+										}
+									});
+									return;
+								}
+							openCamera(e);
+						}); 
+						viewContent.add(content[count]);
+					}
+				top += 100;	
+				count++;
+				break;
+			}
+		}
+	}
+	fields_result.close();
+	db_display.close();
+	
+	if(mode==1){
+		for(var j = 0; j <= content.length; j++) {
+			if(!content[j]) {
+				continue;
+			}
+			if(content[j].field_type == 'image'){
+				if(content[j].cardinality >1 || content[j].cardinality < 0 ){
+					var arrImages = content[j].arrImages;
+					for(i_idx=0; i_idx< arrImages.length; i_idx++){
+						if(arrImages[i_idx].imageVal != defaultImageVal && arrImages[i_idx].isUpdated == false){
+							downloadThumnail(arrImages[i_idx].imageVal, arrImages[i_idx], win);
+						}
+					}
+				}else{
+					if(content[j].imageVal != defaultImageVal && content[j].isUpdated == false){
+						downloadThumnail(content[j].imageVal, content[j], win);
+					}
+				}
 			}
 		}
 	}
 	toolActInd.hide();
-	fields_result.close();
-	db_display.close();
-	
 	var a = Titanium.UI.createAlertDialog({
 		title:'Omadi',
 		buttonNames: ['OK']
@@ -3212,7 +3441,6 @@ setTimeout(function(e){
 			//======================================
 			
 			menu_second.addEventListener("click", function(e) {
-					
 				var string_text = "";
 				var count_fields = 0;
 				
@@ -3346,7 +3574,7 @@ setTimeout(function(e){
 						}
 
 						if(content[j].is_title === true){
-							if (title_to_node.charAt(0) == ""){
+							if (title_to_node == ""){
 								title_to_node = content[j].value;
 							}
 							else{
@@ -3371,7 +3599,6 @@ setTimeout(function(e){
 						
 						//If it is a composed field, just insert the number
 						//Build cardinality for fields
-
 						if ((content[j].composed_obj === true) && (content[j].cardinality > 1)){
 							//Point the last field							
 							if(content[j+1]){
@@ -3502,8 +3729,7 @@ setTimeout(function(e){
 								mark = "'";
 								value_to_insert = '';
 							}
-						}
-						else{
+						}else{
 							value_to_insert = content[j].value;
 						}
 						
@@ -3533,10 +3759,69 @@ setTimeout(function(e){
 						}
 						
 						//Insert into table
-						Ti.API.info(query);
+						Ti.API.info("=====Query==="+query);
+						if(mode==1){
+							var oldVal = db_put.execute('SELECT * FROM ' + win.type + ' WHERE nid='+win.nid);
+						}
 						db_put.execute(query);
-						db_put.close();
 						
+						
+						//If Images captured and not yet uploaded then store in file_uploaded_queue
+						for(var j = 0; j <= content.length; j++) {
+							if(!content[j]) {
+								continue;
+							}
+							var file_upload_nid; 
+							if(mode == 1){
+								file_upload_nid = win.nid;
+							}else{
+								file_upload_nid = new_nid;
+							}
+								if(content[j].field_type == 'image' && (content[j].cardinality > 1 || content[j].cardinality < 0)) {
+									var arrImages = content[j].arrImages;
+									for(k=0; k<arrImages.length; k++){
+											if(arrImages[k].imageData != null && arrImages[k].mimeType != null){
+											var encodeImage = Ti.Utils.base64encode(arrImages[k].imageData);
+											var mime = arrImages[k].mimeType;
+											var imageName = 'image.'+ mime.substring(mime.indexOf('/')+1, mime.length);
+											var is_exists = db_put.execute('SELECT delta, nid FROM file_upload_queue WHERE nid=' + file_upload_nid + 
+											' and delta='+ arrImages[k].private_index +' and field_name="' +content[j].field_name+ '";');
+											if(is_exists.rowCount> 0){
+												db_put.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '", file_data="' + encodeImage + 
+												'", field_name="' +  content[j].field_name + '", file_name="' + imageName + '", delta=' + arrImages[k].private_index + 
+												' WHERE nid=' + file_upload_nid + ' and delta='+ arrImages[k].private_index +' and field_name="' +content[j].field_name+ '";');
+												continue;
+											}
+											db_put.execute('INSERT INTO file_upload_queue (nid , file_data , field_name, file_name, delta) VALUES ('+
+											file_upload_nid+', "'+encodeImage+'", "'+content[j].field_name+'", "'+imageName+'", '+arrImages[k].private_index+')');
+										}
+									}
+								}else if(content[j].field_type == 'image') {
+								  if(content[j].imageData != null && content[j].mimeType != null){
+									var encodeImage = Ti.Utils.base64encode(content[j].imageData);
+									var mime = content[j].mimeType;
+									var imageName = 'image.'+ mime.substring(mime.indexOf('/')+1, mime.length);
+									
+									var is_exists = db_put.execute('SELECT delta, nid FROM file_upload_queue WHERE nid=' + file_upload_nid + ' and delta=' + content[j].private_index + ' and field_name="' + content[j].field_name + '";');
+									if(is_exists.rowCount > 0) {
+										db_put.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '", file_data="' + encodeImage + '", field_name="' + content[j].field_name + '", file_name="' + imageName + '", delta=' + content[j].private_index 
+										+ ' WHERE nid=' + file_upload_nid + ' and delta=' + content[j].private_index + ' and field_name="' + content[j].field_name + '";');
+										continue;
+									}
+									db_put.execute('INSERT INTO file_upload_queue (nid , file_data , field_name, file_name, delta) VALUES ('+
+									file_upload_nid+', "'+encodeImage+'", "'+content[j].field_name+'", "'+imageName+'","'+content[j].private_index+'")');
+								}								
+								}
+								if(content[j].field_type == 'image' && mode ==1){
+									db_put.execute('UPDATE ' + win.type + ' SET ' + content[j].field_name +'="'+ oldVal.fieldByName(content[j].field_name)+ '", ' + 
+									content[j].field_name +'___file_id="'+ oldVal.fieldByName(content[j].field_name +'___file_id') +'", ' +
+									content[j].field_name + '___status="'+ oldVal.fieldByName(content[j].field_name +'___status')+'" WHERE nid=' + file_upload_nid + ';' );
+								}	
+								
+								
+							}
+							
+						db_put.close();
 						if (mode == 1){
 							Ti.UI.createNotification({
 								message : win.title+' has been successfully updated !'
@@ -3551,6 +3836,7 @@ setTimeout(function(e){
 						win.close();
 					}
 					catch(e){
+						Ti.API.info("Error----------" + e);
 						if (mode == 1){
 							Ti.UI.createNotification({
 								message : 'An error has occurred when we tried to update this new node, please try again'
@@ -3561,7 +3847,7 @@ setTimeout(function(e){
 								message : 'An error has occurred when we tried to create this new node, please try again'
 							}).show();
 						}
-
+						
 						win.close();
 	
 					}
@@ -3587,3 +3873,120 @@ setTimeout(function(e){
 	});
 } , 1000);
 
+// To open camera
+function openCamera(e) {
+	try {
+		var alertBox = Ti.UI.createAlertDialog();
+		alertBox.title = 'Camera';
+		Ti.Media.showCamera({
+			
+			success : function(event) {
+				Ti.API.info("MIME TYPE: " + event.media.mimeType);
+				// If image size greater than 1MB we will reduce th image else take as it is.
+				if(event.media.length > ONE_MB) {
+					e.source.imageData = reduceImage(event.media, 1000, 1000);
+				}else{
+					e.source.imageData = event.media;
+				}
+				e.source.image = e.source.imageData;
+				e.source.bigImg = e.source.imageData;
+				e.source.mimeType = event.media.mimeType;
+				
+			if(e.source.cardinality > 1 || e.source.cardinality < 0){
+				var alertPh = Ti.UI.createAlertDialog({
+					message: 'Take another ' + e.source.label + ' photo?',
+					buttonNames: ['Yes', 'No'],
+					cancel: 1
+				});
+				alertPh.addEventListener('click', function(ev){
+					alertPh.hide();
+					if(ev.index == 0){
+						if(e.source.cardinality < 1){
+							arrImages = createImage(e.source.scrollView.addButton.o_index, e.source.scrollView.arrImages, defaultImageVal, e.source.scrollView, false);
+							e.source.scrollView.arrImages = arrImages;
+							e.source.scrollView.addButton.o_index +=1;
+							newSource = arrImages.length-1;
+						}else{
+							newSource = (e.source.private_index == e.source.cardinality-1)?0:e.source.private_index+1;
+						}
+						e.source = e.source.scrollView.arrImages[newSource];
+						openCamera(e)
+					}
+				});
+				if(e.source.cardinality > 1 && e.source.private_index == e.source.cardinality-1){
+					return;
+				}
+				alertPh.show();
+			}
+				
+			},
+
+			error : function(error) {
+				Ti.API.info('Captured Image - Error: ' + error.code +" :: "+ error.message);
+				if(error.code == Titanium.Media.NO_CAMERA) {
+					alertBox.setMessage('No Camera in device');
+					alertBox.show();
+				}
+			},
+			saveToPhotoGallery : false,
+			mediaTypes : [Ti.Media.MEDIA_TYPE_PHOTO]
+		});
+	} catch(ex) {
+
+	}
+}
+
+
+function createImage(o_index, arrImages, data, scrollView, updated){
+	contentImage = Ti.UI.createImageView({
+		private_index	: o_index,
+		left			: '5',
+		//right			: '5',
+		height			: 80,
+		width			: 80,
+		size: {
+			height		: 'auto',
+			width		: 'auto'
+		},
+		image			: defaultImageVal,
+		imageVal		: data,
+		imageData		: null,
+		bigImg 			: null,
+		mimeType		: null,
+		label			: scrollView.label,
+		isUpdated		: updated,
+		scrollView      : scrollView,  
+		cardinality	    : scrollView.cardinality
+	});
+	
+	if(updated == true){
+		contentImage.image = data;
+		contentImage.bigImg = data;
+		contentImage.imageData = data;
+	}
+	contentImage.addEventListener('click', function(e) {
+		//Following method will open camera to capture the image.
+		if(e.source.imageData !=null){
+			
+			
+			var postDialog = Titanium.UI.createOptionDialog();
+			postDialog.options = ['Capture Image', 'Show Image', 'cancel'];
+			postDialog.cancel = 2;
+			postDialog.show();
+			
+			postDialog.addEventListener('click', function(ev){
+				if(ev.index == 0){
+					openCamera(e);
+				}else if(ev.index==1){
+					downloadMainImage(e.source.imageVal, e.source, win);
+				}
+			});
+			return;
+		}
+		openCamera(e);
+	}); 
+	scrollView.add(contentImage);
+	arrImages.push(contentImage);
+	contentImage.scrollView.arrImages = arrImages;
+	return arrImages;
+}
