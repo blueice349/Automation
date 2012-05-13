@@ -38,6 +38,12 @@ function display_omadi_time(timestamp){
 		return hours+":"+form_min(min);
 }
 
+function form_min(min){
+	if (min < 10){
+		return '0'+min;
+	}
+	return min;
+}
 
 
 var db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
@@ -88,7 +94,8 @@ var viewContent = Ti.UI.createScrollView({
 	opacity: 1,
 	borderRadius: 7,
 	scrollType: "vertical",
-	zIndex: 10
+	zIndex: 10, 
+	layout: 'vertical'
 });
 
 resultView.add(viewContent);
@@ -159,6 +166,7 @@ while (regions.isValidRow()){
 				fields[unsorted_res[i].field_name]['type']		= unsorted_res[i].type; 
 				fields[unsorted_res[i].field_name]['settings'] 	= unsorted_res[i].settings;
 				fields[unsorted_res[i].field_name]['widget'] 	= unsorted_res[i].widget;
+				fields[unsorted_res[i].field_name]['field_name']= unsorted_res[i].field_name;
 			}
 			else{
 				Ti.API.info(' Regions dont match! ');
@@ -175,18 +183,20 @@ if (c_index > 0){
 	var c_content = [];
 	var c_settings = [];
 	var c_widget = [];
+	var c_field_name = [];
 	var is_array = false;
 	var show_region = new Array();
 	
 	for (var f_name_f in fields ){
 		//Ti.API.info(f_name_f+" => "+results.fieldByName(f_name_f)+" => "+fields[f_name_f]['type']);
-		if ( (results.fieldByName(f_name_f) != null && results.fieldByName(f_name_f) != "") ||  (fields[f_name_f]['type'] == 'region_separator_mode')) {
-		
+		if ( (results.fieldByName(f_name_f) != null && results.fieldByName(f_name_f) != "") ||  (fields[f_name_f]['type'] == 'region_separator_mode') 
+		|| (fields[f_name_f]['type'] == 'image')) {
 			//fields from Fields table that match with current object
 			c_type[count]   	= fields[f_name_f]['type'];
 			c_label[count]		= fields[f_name_f]['label'];
 			c_settings[count]	= fields[f_name_f]['settings'];
 			c_widget[count]		= fields[f_name_f]['widget'];
+			c_field_name[count] = fields[f_name_f]['field_name'];
 			
 			//Content
 			c_content[count] = results.fieldByName(f_name_f);
@@ -194,7 +204,7 @@ if (c_index > 0){
 			var loop_times = 1;
 			is_array = false;
 			//Check if it is an array, token = 7411317618171051229
-			if ((c_content[count] == 7411317618171051229) || (c_content[count] == '7411317618171051229')){
+			if (((c_content[count] == 7411317618171051229) || (c_content[count] == '7411317618171051229')) && c_type[count] != 'image'){
 				//var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = '+win4.nid+' AND field_name = \''+f_name_f+'\' ');
 				var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = '+win4.nid+' AND field_name = \''+f_name_f+'\'  ');
 				
@@ -484,10 +494,13 @@ if (c_index > 0){
 					//Link to taxonomy table:
 					case 'taxonomy_term_reference':
 						Ti.API.info('Contains: '+c_content[count]);
-						var auxRes  = db_display.execute('SELECT * FROM term_data WHERE tid = '+c_content[count]);
-						Ti.API.info('We got : '+ auxRes.rowCount +' lines');
-						var ref_name = auxRes.fieldByName("name");
-						auxRes.close();
+						var ref_name = ""; 
+						if(c_content[count]){
+							var auxRes  = db_display.execute('SELECT * FROM term_data WHERE tid='+c_content[count]);
+							Ti.API.info('We got : '+ auxRes.rowCount +' lines');
+							ref_name = auxRes.fieldByName("name");
+							auxRes.close();
+						}
 					
 						label[count] = Ti.UI.createLabel({
 							text: c_label[count],
@@ -727,7 +740,117 @@ if (c_index > 0){
 						});
 						count++;
 					break;
+					case 'image':	
+					var settings 		= JSON.parse(c_settings[count]);
+					if (settings.cardinality > 1 || settings.cardinality < 0 ){
+						isUpdated = [];
+						content[count] = Ti.UI.createScrollView({
+								field_name : c_label[count],
+								contentWidth : 'auto',
+								contentHeight : 100 ,
+								arrImages : null,
+								scrollType : "horizontal",
+								layout: 'horizontal',
+								left: '33%',
+								cardinality		: settings.cardinality
+						});
+						var decodedValues = [];
+						var array_cont;
+						if(results.fieldByName(c_field_name[count]+'___file_id') == '7411317618171051229' || results.fieldByName(c_field_name[count]+'___file_id') == 7411317618171051229){
+							array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = '+win4.nid+' AND field_name = \''+c_field_name[count]+'___file_id\'');
+						} else{
+							array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = '+win4.nid+' AND field_name = \''+c_field_name[count]+'\'');
+						}
+						if(array_cont.rowCount>0){	
+							//Decode the stored array:
+							var decoded = array_cont.fieldByName('encoded_array');
+							decoded = Titanium.Utils.base64decode(decoded);
+							decoded = decoded.toString();
+							decodedValues = decoded.split("j8Oá2s)E");
+						}
+						val = db_display.execute('SELECT * FROM file_upload_queue WHERE nid=' + win4.nid + ' AND field_name ="' +c_field_name[count]+ '";');
+						
+						if(val.rowCount > 0){
+							while(val.isValidRow()){
+								isUpdated[val.fieldByName('delta')] = true;
+								decodedValues[val.fieldByName('delta')] = Ti.Utils.base64decode(val.fieldByName('file_data'));
+								val.next();
+							}
+						}
+						var arrImages = [];
+						for(img =0; img < decodedValues.length ; img++){
+							var updated = false
+							if ((img < decodedValues.length) && (decodedValues[img] != "") && (decodedValues[img] != null) 
+							 && decodedValues[img] != 'null' && decodedValues[img] != 'undefined'){
+								var vl_to_field = decodedValues[img];
+								if(isUpdated[img]== true){
+							 		updated = isUpdated[img];
+							 	}
+							}else{
+								continue;
+							}
+							arrImages = createImage(arrImages, vl_to_field, content[count], updated);
+						}
+						content[count].arrImages = arrImages;
+					}
+					else {
+						isUpdated = false;
+							if(results.rowCount>0){
+								val = results.fieldByName(c_field_name[count]+'___file_id');
+								if(val=='null' || val==null || val == 'undefined' || val==''){
+									val = results.fieldByName(c_field_name[count]);
+								}
+							}
+							
+							valUp = db_display.execute('SELECT * FROM file_upload_queue WHERE nid=' + win4.nid + ' AND field_name ="' +c_field_name[count]+ '";');
+							
+							if(valUp.rowCount > 0){
+								isUpdated = true;
+								val = Ti.Utils.base64decode(valUp.fieldByName('file_data'));
+							}
+							if((val=='null' || val == 'undefined'|| val=='') && valUp.rowCount == 0){
+								break;
+							}
+							
+						content[count] = Ti.UI.createImageView({
+							label 			: c_label[count],
+							height			: 80,
+							width			: 80,
+							size: {
+									height		: 'auto',
+									width		: 'auto'
+								},
+							image			: '../images/default.png',
+							imageVal 		: val,
+							imageData		: null,
+							bigImg 			: null,
+							mimeType		: null,
+							cardinality		: settings.cardinality,
+							isUpdated		: isUpdated
+						});
+						
+						if(isUpdated == true){
+							content[count].image = val;
+							content[count].bigImg = val;
+							content[count].imageData = val;
+						}
+						content[count].addEventListener('click', function(e) {
+							downloadMainImage(e.source.imageVal, e.source, win4);
+						}); 
+				}	
+					
+					label[count] = Ti.UI.createLabel({
+								text : c_label[count],
+								width : "33%",
+								textAlign : 'left',
+								left : 5,
+								touchEnabled : false,
+								field : true
+						});
+						count++;
+					break;
 				}
+			
 			}
 		}
 	}
@@ -741,22 +864,32 @@ if (c_index > 0){
 				
 				cell[i] = Ti.UI.createView({
 					height: heightValue,
-					top : (heightValue+2)*index_fields,
+				//	top : (heightValue+2)*index_fields,
 					width: '100%'
 				});
+				
 
 				label[i].color = "#999999";
 				content[i].color = "#FFFFFF";
 				
 				cell[i].add(label[i]);
+				if(c_type[i]=='image'){
+					if(content[i].cardinality > 1 || content[i].cardinality < 0){
+						if(content[i].arrImages.length == 0){
+							continue;
+						}
+					}
+					cell[i].height = '100';
+				}
 				cell[i].add(content[i]);
 				
 				viewContent.add(cell[i]);
 			
 				border[i] = Ti.UI.createView({
 					backgroundColor:"#F16A0B",
+					//top:5,
 					height:2,
-					top: ((heightValue+2)*(index_fields+1))-2
+					//top: ((heightValue+2)*(index_fields+1))-2
 				});
 				viewContent.add(border[i]);
 				index_fields++;
@@ -770,7 +903,7 @@ if (c_index > 0){
 						
 						cell[i] = Ti.UI.createView({
 							height: heightValue,
-							top : (heightValue+2)*index_fields,
+							//top : (heightValue+2)*index_fields,
 							width: '100%'
 						});
 
@@ -780,7 +913,7 @@ if (c_index > 0){
 						border[i] = Ti.UI.createView({
 							backgroundColor:"#F16A0B",
 							height:2,
-							top: ((heightValue+2)*(index_fields+1))-2
+							//top: ((heightValue+2)*(index_fields+1))-2
 						});
 						viewContent.add(border[i]);
 						Ti.API.info('Added region: '+label[i].ref);
@@ -792,6 +925,25 @@ if (c_index > 0){
 				}
 			}
 		}
+	
+		for(var i=0; i<count;i++){
+			if(c_type[i] == 'image'){
+				if(content[i].cardinality >1 || content[i].cardinality < 0 ){
+					var arrImages = content[i].arrImages;
+					for(i_idx=0; i_idx< arrImages.length; i_idx++){
+						if(arrImages[i_idx].isUpdated == false){
+							downloadThumnail(arrImages[i_idx].imageVal, arrImages[i_idx], win4);
+						}
+					}
+				}else{
+					if(content[i].isUpdated == false){
+						downloadThumnail(content[i].imageVal, content[i], win4);
+					}
+				}
+				
+			}
+		}
+	
 	}
 	else{
 			var cell = Ti.UI.createLabel({
@@ -853,6 +1005,7 @@ if (Ti.Platform.name == 'android') {
 	
 			//Passing parameters
 			win_new.nid = win4.nid;
+			win_new.picked 	 = win4.picked;
 			win_new.nameSelected = win4.nameSelected;
 			
 			//Sets a mode to fields edition
@@ -869,3 +1022,36 @@ fields_result.close();
 db_display.close();
 
 bottomBack(win4);
+
+
+function createImage(arrImages, data, scrollView, updated){
+	contentImage = Ti.UI.createImageView({
+		height			: 80,
+		width			: 80,
+		left			: 5,
+		size: {
+			height		: 'auto',
+			width		: 'auto'
+		},
+		image			: '../images/default.png',
+		imageVal		: data,
+		imageData		: null,
+		bigImg 			: null,
+		mimeType		: null,
+		label			: scrollView.field_name,
+		isUpdated		: updated
+	});
+	
+	if(updated == true){
+		contentImage.image = data;
+		contentImage.bigImg = data;
+		contentImage.imageData = data;
+	}
+	contentImage.addEventListener('click', function(e) {
+		//Following method will open camera to capture the image.
+		downloadMainImage(e.source.imageVal, e.source, win4);
+	}); 
+	scrollView.add(contentImage);
+	arrImages.push(contentImage)
+	return arrImages;
+}

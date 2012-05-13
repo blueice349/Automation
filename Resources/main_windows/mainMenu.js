@@ -129,7 +129,6 @@ function update_node(mode, close_parent){
 	db_up.close();
 }
 
-
 var listView = Titanium.UI.createTableView({
 	data : [],
 	top : '10%',
@@ -218,6 +217,7 @@ listView.addEventListener('click',function(e){
 			up_node: update_node
 		});
 		win_new.mode = 0;
+		win_new.picked 	 = win2.picked;
 		win_new.open();
 		win_new.addEventListener('focus', function(e){
 			toolActInd.hide();
@@ -232,6 +232,7 @@ listView.addEventListener('click',function(e){
 			uid: jsonLogin.user.uid,
 			up_node: update_node
 		});
+		win_new.picked 	 = win2.picked;
 		win_new.open();
 	}	
 });

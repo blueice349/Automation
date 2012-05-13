@@ -5,6 +5,9 @@
  * @author Joseandro
  */
 
+var DOWNLOAD_URL_THUMBNAIL = '/sync/image/thumbnail/';
+var DOWNLOAD_URL_IMAGE_FILE = '/sync/file/';
+
 function showIndicator(show)
 {
     indWin = Titanium.UI.createWindow({
@@ -430,11 +433,13 @@ function process_object(json, obj, f_marks, progress, type_request){
 
 	var db_process_object = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 	
-	var deploy = db_process_object.execute('SELECT field_name FROM fields WHERE bundle = "'+obj+'"');
+	var deploy = db_process_object.execute('SELECT field_name, type FROM fields WHERE bundle = "'+obj+'"');
 	var col_titles = [];
+	var col_type = [];
 	var ind_column = 0;
 	while (deploy.isValidRow()){
 		col_titles[ind_column] = deploy.fieldByName('field_name'); 
+		col_type[ind_column] = deploy.fieldByName('type'); 
 		ind_column++;
 		deploy.next();
 	}
@@ -983,7 +988,6 @@ function process_object(json, obj, f_marks, progress, type_request){
 			// Original query
 			var aux_column = ind_column;
 			var query = "";
-			
 			//Insert into node table
 			if ((json[obj].update.title === null) || (json[obj].update.title == 'undefined') || (json[obj].update.title === false)) 
 				json[obj].update.title = "No Title";
@@ -1205,7 +1209,7 @@ function getJSON(){
 				}
 				Ti.API.info(returning_json);
 				while (node_fields.isValidRow()){
-					if ( (selected_node.fieldByName(node_fields.fieldByName('field_name')) != null) && (selected_node.fieldByName(node_fields.fieldByName('field_name')) != '')){
+					if ((selected_node.rowCount > 0) && (selected_node.fieldByName(node_fields.fieldByName('field_name')) != null) && (selected_node.fieldByName(node_fields.fieldByName('field_name')) != '')){
 						if(selected_node.fieldByName(node_fields.fieldByName('field_name')) == 7411317618171051229){
 							var array_cont = db_json.execute('SELECT encoded_array FROM array_base WHERE node_id = '+new_nodes.fieldByName('nid')+' AND field_name = \''+node_fields.fieldByName('field_name')+'\'');
 							if ((array_cont.rowCount > 0) || (array_cont.isValidRow())){
@@ -1685,6 +1689,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									}
 								}
 								else{
+									if(json.fields.insert[i].type=='image'){
+										perform[perform.length] = 'ALTER TABLE \''+bundle+'\' ADD \''+field_name+'___file_id'+'\' '+ type;
+										perform[perform.length] = 'ALTER TABLE \''+bundle+'\' ADD \''+field_name+'___status'+'\' '+ type;
+									}
 									perform[perform.length] = 'ALTER TABLE \''+bundle+'\' ADD \''+field_name+'\' '+ type;
 								}
 							}
@@ -1798,6 +1806,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								}
 							}
 							else{
+								if(json.fields.insert[i].type=='image'){
+										perform[perform.length] = 'ALTER TABLE \''+bundle+'\' ADD \''+field_name+'___file_id'+'\' '+ type;
+										perform[perform.length] = 'ALTER TABLE \''+bundle+'\' ADD \''+field_name+'___status'+'\' '+ type;
+								}
 								perform[perform.length] = 'ALTER TABLE \''+bundle+'\' ADD \''+field_name+'\' '+ type;
 								//Ti.API.info("Inserted: "+field_name+" to be used in "+bundle);
 							}
@@ -1942,6 +1954,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 										}
 									}
 									else{
+										if(json.fields.update[i].type=='image'){
+											perform[perform.length] = 'ALTER TABLE \''+bundle+'\' ADD \''+field_name+'___file_id'+'\' '+ type;
+											perform[perform.length] = 'ALTER TABLE \''+bundle+'\' ADD \''+field_name+'___status'+'\' '+ type;
+										}
 										perform[perform.length] = 'ALTER TABLE \''+bundle+'\' ADD \''+field_name+'\' '+ type;
 										Ti.API.info("Updated: "+field_name+" to be used in "+bundle);
 									}
@@ -2202,6 +2218,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									}
 								}
 								else{
+									if(json.fields.update[i].type=='image'){
+										perform[perform.length] = 'ALTER TABLE \''+bundle+'\' ADD \''+field_name+'___file_id'+'\' '+ type;
+										perform[perform.length] = 'ALTER TABLE \''+bundle+'\' ADD \''+field_name+'___status'+'\' '+ type;
+									}
 									perform[perform.length] = 'ALTER TABLE \''+bundle+'\' ADD \''+field_name+'\' '+ type;
 									Ti.API.info("Updated: "+field_name+" to be used in "+bundle);
 								}
@@ -3013,6 +3033,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				
 			}
 		}
+	updateFileUploadTable(win, json);
 	}
 
 	//Connection error:
@@ -3281,4 +3302,283 @@ function getScreenHeight(){
 			break;
 	}
 	return ret;
+}
+
+function uploadFile(win, type_request, database, fileUploadTable){
+try{
+	var fileUploadXHR = Ti.Network.createHTTPClient();;
+	fileUploadXHR.setTimeout(20000);
+	fileUploadXHR.open(type_request, win.picked + '/js-sync/upload.json');
+	// Upload images
+	if(fileUploadTable.isValidRow()) {
+		//Only upload those images that have positive nids
+		if(fileUploadTable.fieldByName('nid') > 0) {
+			fileUploadXHR.onload = function(e) {
+				Ti.API.info('=========== Success ========' + this.responseText);
+				var respnseJson = JSON.parse(this.responseText);
+				
+				// Updating status
+				var table = database.execute("SELECT table_name FROM node WHERE nid=" + respnseJson.nid + ";");
+				var fieldSettings = database.execute("SELECT settings FROM fields WHERE bundle='" + table.fieldByName('table_name') + "' and type='image' and field_name='"+ respnseJson.field_name+"';");
+				
+				var settings = JSON.parse(fieldSettings.fieldByName('settings'));
+				if(settings.cardinality > 1 || settings.cardinality < 0){
+					var array_cont = database.execute('SELECT encoded_array FROM array_base WHERE node_id = '+respnseJson.nid+' AND field_name = \''+respnseJson.field_name +'\'');
+					var decoded_values = [];
+					if(array_cont.rowCount>0){
+						var decoded = array_cont.fieldByName('encoded_array');
+						if(decoded != null || decoded != "" ){
+							decoded = Titanium.Utils.base64decode(decoded);
+							Ti.API.info('Decoded array is equals to: '+decoded);
+							decoded = decoded.toString();
+							decoded_values = decoded.split("j8Oá2s)E");
+						}
+					}
+					
+					if(respnseJson.delta < decoded_values.length){
+						decoded_values[respnseJson.delta] = respnseJson.file_id;
+					}else{
+						decoded_values.push(respnseJson.file_id);
+					}
+					var content = '';
+					for(i=0;i<decoded_values.length;i++){
+						if(i == decoded_values.length-1){
+							content += decoded_values[i];
+						}else{
+							content += decoded_values[i]+''+"j8Oá2s)E";
+						}
+					}
+					content = Titanium.Utils.base64encode(content);
+					database.execute("UPDATE "+ table.fieldByName('table_name') + " SET " + respnseJson.field_name +"='7411317618171051229', " + respnseJson.field_name +"___file_id='7411317618171051229', " + respnseJson.field_name +"___status='7411317618171051229' WHERE nid='"+respnseJson.nid+"';" );
+					database.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+respnseJson.nid+', \''+respnseJson.field_name +"___file_id"+'\',  \''+content+'\' )');
+					database.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+respnseJson.nid+', \''+respnseJson.field_name +'\',  \''+content+'\' )');
+				}else{
+					database.execute("UPDATE "+ table.fieldByName('table_name') + " SET " + respnseJson.field_name +"='" + 
+					respnseJson.file_id + "', " + respnseJson.field_name +"___file_id='" + respnseJson.file_id + "', " + respnseJson.field_name +"___status='uploaded' WHERE nid='"+respnseJson.nid+"';" );
+				}
+				//Deleting file after upload.
+				database.execute("DELETE FROM file_upload_queue WHERE nid=" + respnseJson.nid +" and delta=" + respnseJson.delta +" and field_name='" + respnseJson.field_name+ "';");
+				fileUploadTable = database.execute("SELECT * FROM file_upload_queue WHERE nid > 0;");
+				if(fileUploadTable.rowCount == 0){
+					fileUploadTable.close();
+					database.close();
+				}else{
+					uploadFile(win, type_request, database, fileUploadTable);
+				}
+			}
+			
+			fileUploadXHR.onerror = function(e) {
+				Ti.API.info('=========== Error in uploading ========' + e.error);
+				if(this.status == '406' && this.error =='Nid is not connected to a valid node.'){
+					database.execute("DELETE FROM file_upload_queue WHERE nid=" + fileUploadTable.fieldByName('nid') +" and id=" + fileUploadTable.fieldByName('id') + ";");
+					fileUploadTable = database.execute("SELECT * FROM file_upload_queue WHERE nid > 0;");
+					if(fileUploadTable.rowCount == 0){
+						fileUploadTable.close();
+						database.close();
+					}
+				}
+				Ti.UI.createNotification({
+					message : 'An error has occurred, please try again.'
+				}).show();
+			}
+			
+			fileUploadXHR.setRequestHeader("Content-Type", "application/json");
+			
+			fileUploadXHR.send('{"file_data"	:"'	+fileUploadTable.fieldByName('file_data')	+
+								'", "filename"	:"'	+fileUploadTable.fieldByName('file_name') 	+
+								'", "nid"		:"'	+fileUploadTable.fieldByName('nid')			+
+								'", "field_name":"'	+fileUploadTable.fieldByName('field_name')	+
+								'", "delta"		:'	+fileUploadTable.fieldByName('delta')+'}');
+		}
+			
+	}
+	
+}catch(e){
+	Ti.API.info("==== ERROR ===" + e);
+}
+}
+
+// To reduce image
+function reduceImageSize(blobImage, maxWidth, maxHeight){
+	var image1 = Titanium.UI.createImageView({
+		image: blobImage,
+		width: 'auto',
+		height: 'auto'
+	});
+	var multiple;
+	if(image1.height/image1.width>maxHeight/maxWidth) {
+		multiple=image1.height/maxHeight;
+	} else {
+		multiple=image1.width/maxWidth;
+	}
+
+	if(multiple >= 1) {
+		image1.height /= multiple;
+		image1.width /= multiple;
+	}else{
+		
+	}
+	return image1;
+}
+
+function updateFileUploadTable(win, json){
+	if(json.total_item_count == 0){
+		return;
+	}
+	var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion"));
+	
+	// To replace all negative nid to positive in file_upload_queue table
+	var bundles = db_fileUpload.execute('SELECT * FROM bundles;');
+	while (bundles.isValidRow() ){
+		var name_table = bundles.fieldByName("bundle_name");
+		if(json.node && json.node[name_table]) {
+			if(json.node[name_table].insert) {
+				for( i = 0; i < json.node[name_table].insert.length; i++) {
+					var insertedNode = json.node[name_table].insert[i];
+					if(insertedNode.__negative_nid){
+						db_fileUpload.execute("UPDATE file_upload_queue SET nid =" + insertedNode.nid + " WHERE nid=" + insertedNode.__negative_nid);
+					}
+				}
+			}
+		}
+		bundles.next();
+	}
+	bundles.close();
+	var imageForUpload = db_fileUpload.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
+	uploadFile(win, 'POST', db_fileUpload, imageForUpload);
+}
+
+// Download Image from the server
+function downloadThumnail(file_id, image, win) {
+	var URL = win.picked + DOWNLOAD_URL_THUMBNAIL + win.nid + '/' + file_id;
+	Ti.API.info("==== site:: " + URL);
+	try {
+		var downloadImage = Ti.Network.createHTTPClient();
+		downloadImage.setTimeout(30000);
+		downloadImage.open('GET', URL);
+
+		downloadImage.onload = function(e) {
+			var tempImg = Ti.UI.createImageView({
+				height	: 'auto',
+				width 	: 'auto',
+				image	: this.responseData
+			});
+			if(tempImg.toImage().height > 100 || tempImg.toImage().width > 100){
+				image.image = reduceImageSize(tempImg.toImage(), 100, 100);
+			}else{
+				image.image = this.responseData	
+			}
+			image.imageData = image.image;
+		}
+
+		downloadImage.onerror = function(e) {
+			image.image = '../images/default.png';
+		}
+
+		downloadImage.send();
+	} catch(e) {
+		Ti.API.info("==== ERROR ===" + e);
+	}
+}
+
+function downloadMainImage(file_id, content, win){
+	var actInd = Ti.UI.createActivityIndicator();
+	actInd.font = {
+		fontFamily : 'Helvetica Neue',
+		fontSize : 15,
+		fontWeight : 'bold'
+	};
+	actInd.color = 'white';
+	actInd.message = 'Loading...';
+	actInd.show();
+	if(content.bigImg != null){
+		actInd.hide();
+		showImage(content);
+		return;
+	}
+	
+	var URL = win.picked + DOWNLOAD_URL_IMAGE_FILE + win.nid + '/' + file_id;
+	Ti.API.info("==== site:: " + URL);
+	try {
+		var downloadImage = Ti.Network.createHTTPClient();
+		downloadImage.setTimeout(30000);
+		downloadImage.open('GET', URL);
+
+		downloadImage.onload = function(e) {
+			actInd.hide();
+			Ti.API.info('=========== Success ========');
+			content.bigImg = this.responseData;
+			showImage(content);
+		}
+
+		downloadImage.onerror = function(e) {
+			actInd.hide();
+		}
+		downloadImage.send();
+	} catch(e) {
+		actInd.hide();
+		Ti.API.info("==== ERROR ===" + e);
+	}
+}
+
+function showImage(source){
+	var imageWin = Ti.UI.createWindow({
+		backgroundColor : 'black',
+		layout: 'vertical'
+	});
+	
+	var title = Ti.UI.createLabel({
+		textAlign: 'center',
+		text: source.label,
+		font : {
+			fontSize: 18, fontWeight: 'bold'
+		},
+		height: 30,
+		left: 10,
+		right:10,
+		backgroundColor: '#585858'
+	});
+	imageWin.add(title);
+		
+	var border = Ti.UI.createView({
+		backgroundColor : "#F16A0B",
+		height : 2,
+		left : 10,
+		right : 10,
+	});
+	var imageFileView = Ti.UI.createImageView({
+		left : 10,
+		right : 10,
+		top : 10,
+		height: getScreenHeight()-170,
+		canScale : true,
+		image : source.bigImg
+	});
+	
+	var border01 = Ti.UI.createView({
+		backgroundColor : "#F16A0B",
+		height : 2,
+		left : 10,
+		right : 10,
+		top: 5,
+	});
+	var close = Ti.UI.createButton({
+		right : 10,
+		height:45,
+		left: 10,
+		top: 5,
+		title: 'Close',
+		font : {
+			fontSize: 24
+		},
+	});
+	close.addEventListener('click', function(e){
+		imageWin.close();
+	});
+	
+	imageWin.add(border);
+	imageWin.add(imageFileView);
+	imageWin.add(border01);
+	imageWin.add(close);
+	imageWin.open();	
 }

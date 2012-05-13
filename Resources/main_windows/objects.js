@@ -142,8 +142,9 @@ else {
 		//hide keyboard
 
 		//Passing parameters
-		win4.nid = e.row.nid;
-		win4.nameSelected = e.row.name;
+		win4.picked 		 = win3.picked;
+		win4.nid 			 = e.row.nid;
+		win4.nameSelected 	 = e.row.name;
 
 		//Avoiding memory leaking
 		win4.open();

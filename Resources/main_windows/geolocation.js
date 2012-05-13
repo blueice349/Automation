@@ -283,6 +283,7 @@ setInterval(function (){
 					if (resultReq.success)
 						Ti.API.info(resultReq.success+" GPS coordinates successfully inserted ");
 				}
+				var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name );
 				db_coord.execute('DELETE FROM user_location WHERE status="json"');
 				db_coord.close();
 				unsetUse();	
