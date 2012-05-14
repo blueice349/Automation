@@ -917,7 +917,6 @@ setTimeout(function(e){
 						else{
 							var decoded_values = new Array();
 							decoded_values[0] = field_arr[index_label][index_size].actual_value;
-							
 						}
 		   				
 						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
@@ -926,7 +925,7 @@ setTimeout(function(e){
 								var vl_to_field = decoded_values[o_index];
 							}
 							else{
-								var vl_to_field = "";
+								var vl_to_field = settings.state_default_value;
 							}
 							
 							if (field_arr[index_label][index_size].field_name == "license_plate___state"){
@@ -1081,7 +1080,12 @@ setTimeout(function(e){
 								usps: null,
 								title: " -- State -- "
 							}
-							
+							if (field_arr[index_label][index_size].actual_value != "" && field_arr[index_label][index_size].actual_value != "null" && field_arr[index_label][index_size].actual_value != null){
+							}
+							else{
+								field_arr[index_label][index_size].actual_value = settings.state_default_value;
+							}
+							Ti.API.info(settings.state_default_value);
 							//States
 							arr_picker.push({title:" -- State -- " , usps:null });
 							arr_picker.push({title:"Alabama" , usps:"AL" });

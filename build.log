@@ -6,11 +6,10 @@ Logfile initialized
 [DEBUG] Waiting for device to be ready ...
 [TRACE] adb devices returned 1 devices/emulators
 [DEBUG] Device connected... (waited 0 seconds)
-[DEBUG] waited 0.005334 seconds on emulator to get ready
+[DEBUG] waited 0.005999 seconds on emulator to get ready
 [DEBUG] joseandro.omadi.com installed? True
 [INFO] Fastdev server running, deploying in Fastdev mode
 [INFO] Copying project resources..
-[TRACE] COPYING MODIFIED FILE: /home/jo/omadi/omadi_mobile/Resources/app.js => /home/jo/omadi/omadi_mobile/build/android/bin/assets/Resources/app.js
 [INFO] Tiapp.xml unchanged, skipping class generation
 [DEBUG] Processing Android resource drawables
 [DEBUG] found drawable-long-port-hdpi splash screen at /home/jo/omadi/omadi_mobile/Resources/android/images/res-long-port-hdpi/default.png
