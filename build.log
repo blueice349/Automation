@@ -1,30 +1,9 @@
 Logfile initialized
 [INFO] logfile = /home/jo/omadi/omadi_mobile/build.log
-[DEBUG] /home/jo/.titanium/mobilesdk/linux/1.8.1/android/builder.py simulator Omadi /home/jo/Apps/android-sdk /home/jo/omadi/omadi_mobile joseandro.omadi.com 12 WVGA854 
-[INFO] Building Omadi for Android ... one moment
-[INFO] Titanium SDK version: 1.8.1 (01/27/12 17:31 a24502a)
-[DEBUG] Waiting for device to be ready ...
-[TRACE] adb devices returned 1 devices/emulators
-[DEBUG] Device connected... (waited 0 seconds)
-[DEBUG] waited 0.005999 seconds on emulator to get ready
-[DEBUG] joseandro.omadi.com installed? True
-[INFO] Fastdev server running, deploying in Fastdev mode
+[DEBUG] /home/jo/.titanium/mobilesdk/linux/2.0.1.GA2/android/builder.py distribute Omadi /home/jo/Apps/android-sdk /home/jo/omadi/omadi_mobile joseandro.omadi.com /home/jo/keystores/android.keystore borsoi87 omadi /home/jo/Desktop/Sync/Dropbox/omadi/Android/Joseandro 8
+[INFO] Titanium SDK version: 2.0.1 (04/12/12 16:33 999c68a)
+[INFO] Copying CommonJS modules...
 [INFO] Copying project resources..
-[INFO] Tiapp.xml unchanged, skipping class generation
-[DEBUG] Processing Android resource drawables
-[DEBUG] found drawable-long-port-hdpi splash screen at /home/jo/omadi/omadi_mobile/Resources/android/images/res-long-port-hdpi/default.png
-[DEBUG] found drawable-notlong-land-hdpi splash screen at /home/jo/omadi/omadi_mobile/Resources/android/images/res-notlong-land-hdpi/default.png
-[DEBUG] found drawable-long-land-hdpi splash screen at /home/jo/omadi/omadi_mobile/Resources/android/images/res-long-land-hdpi/default.png
-[DEBUG] found drawable-long-port-ldpi splash screen at /home/jo/omadi/omadi_mobile/Resources/android/images/res-long-port-ldpi/default.png
-[DEBUG] found drawable-notlong-port-ldpi splash screen at /home/jo/omadi/omadi_mobile/Resources/android/images/res-notlong-port-ldpi/default.png
-[DEBUG] found drawable-notlong-port-hdpi splash screen at /home/jo/omadi/omadi_mobile/Resources/android/images/res-notlong-port-hdpi/default.png
-[DEBUG] found drawable-notlong-port-mdpi splash screen at /home/jo/omadi/omadi_mobile/Resources/android/images/res-notlong-port-mdpi/default.png
-[DEBUG] found drawable-long-land-ldpi splash screen at /home/jo/omadi/omadi_mobile/Resources/android/images/res-long-land-ldpi/default.png
-[DEBUG] found drawable-notlong-land-ldpi splash screen at /home/jo/omadi/omadi_mobile/Resources/android/images/res-notlong-land-ldpi/default.png
-[DEBUG] found drawable-notlong-land-mdpi splash screen at /home/jo/omadi/omadi_mobile/Resources/android/images/res-notlong-land-mdpi/default.png
-[INFO] Waiting for SDCard to become available..
-[INFO] Re-launching application ... Omadi
-[INFO] Launching application ... Omadi
-[TRACE] Launch output: Starting: Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] cmp=joseandro.omadi.com/.OmadiActivity }
-Warning: Activity not started, its current task has been brought to the front
-
+[TRACE] COPYING MODIFIED FILE: /home/jo/omadi/omadi_mobile/Resources/main_windows/drafts.js => /home/jo/omadi/omadi_mobile/build/android/bin/assets/Resources/main_windows/drafts.js
+[TRACE] COPYING MODIFIED FILE: /home/jo/omadi/omadi_mobile/Resources/main_windows/create_or_edit_node.js => /home/jo/omadi/omadi_mobile/build/android/bin/assets/Resources/main_windows/create_or_edit_node.js
+[TRACE] Generating Java Classes

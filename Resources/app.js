@@ -20,12 +20,11 @@ var win1 = Titanium.UI.createWindow({
     title:'Omadi CRM',
     fullscreen: false
 });
+Titanium.App.Properties.setString("databaseVersion", "omadiDb1313");
 
-Titanium.App.Properties.setString("databaseVersion", "omadiDb1302");
+var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );
 
-var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
-
-var credentials = db.execute('SELECT domain, username, password FROM updated WHERE "rowid"=1');
+var credentials = db.execute('SELECT domain, username, password FROM history WHERE "id_hist"=1');
 
 //Web site picker 
 var portal = Titanium.UI.createTextField({
@@ -163,8 +162,6 @@ win1.add(b1);
  */
 b1.addEventListener('click', function(){
 	
-	var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
-
 	//Onblur the text fields, remove keyboard from screen
 	portal.blur();
 	tf2.blur();
@@ -181,31 +178,6 @@ b1.addEventListener('click', function(){
 	
 	//Everything ok, so let's login:
 	else{
-
-		//Check database:
-		var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
-		if (updatedTime.fieldByName('timestamp') != 0){
-			var url = db.execute('SELECT url FROM updated WHERE rowid=1');
-			if ( url.fieldByName('url') !=  'https://'+portal.value+'.omadi.com'){
-				showIndicatorDelete("Hold on, we are deleting the old database and creating a fresh one for you");
-				/*
-				db.execute('DELETE FROM account');
-				db.execute('DELETE FROM contact');
-				db.execute('DELETE FROM lead');			
-				db.execute('DELETE FROM node');
-				db.execute('DELETE FROM potential');
-				db.execute('DELETE FROM task');
-				db.execute('DELETE FROM term_data');
-				db.execute('DELETE FROM updated');
-				db.execute('DELETE FROM users');
-				db.execute('DELETE FROM vocabulary');
-				db.execute('INSERT INTO updated (timestamp, url) VALUES (?,?)', 0 , null);
-				*/		
-				hideIndicator();
-			}
-			url.close();	
-		}
-		updatedTime.close();
 
 		showIndicator('Logging you in...');
 		//Create internet connection
@@ -237,10 +209,21 @@ b1.addEventListener('click', function(){
 		// When infos are retrieved:
 		xhr.onload = function(e) {
 				
-				//Update credentials
-				var db_n = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
-				db_n.execute('UPDATE updated SET domain = "'+portal.value+'", username = "'+tf1.value+'", password = "'+tf2.value+'" WHERE "rowid"=1');
-				db_n.close();
+				var db_list = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );	
+	
+				var portal_base = db_list.execute('SELECT domain FROM domains WHERE domain=\''+portal.value+'\'');
+				
+				if ( portal_base.rowCount > 0){
+					//Exists
+					Ti.API.info('database exists');
+				}
+				else{
+					//Create another database
+					Ti.API.info('database does not exist, creating a new one');
+					db_list.execute('INSERT INTO domains (domain, db_name) VALUES (\''+portal.value+'\', \'db_'+portal.value+'\')');
+				}
+				db_list.execute('UPDATE history SET domain = "'+portal.value+'", username = "'+tf1.value+'", password = "'+tf2.value+'", db_name="db_'+portal.value+'" WHERE  "id_hist"=1');
+				db_list.close();
 				
 				//Debug
 				Ti.API.info("You have just connected");

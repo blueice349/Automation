@@ -34,11 +34,10 @@ var label_status = Titanium.UI.createLabel({
 	textAlign:'center'
 });
 
-var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
 
 //Common used functions
 Ti.include('/lib/functions.js');
-
+var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 unsetUse();
 //Geolocation module
 Ti.include('geolocation.js');
@@ -60,7 +59,7 @@ function checkUpdate(evt){
 		
 		var pageIndex = 0;
 
-		var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+		var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 
 		var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');
 
@@ -112,7 +111,7 @@ function checkUpdate(evt){
 function update_node(mode, close_parent){
 	//Sets status to 'updating'
 
-	var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+	var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 
 	var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');
 	var up_flag = db_up.execute('SELECT * FROM node WHERE flag_is_updated=1');
@@ -346,13 +345,40 @@ var activity = Ti.Android.currentActivity;
 
 activity.onCreateOptionsMenu = function(e) {
     var menu = e.menu;
-    var menuItem = menu.add({ title: "Update" });
-    menuItem.setIcon('/images/item1.png');
+
+	var menuItem = menu.add({ 			
+		title: 'Update',
+		order: 0
+	});
+	menuItem.setIcon('/images/item1.png');
+
     
+    var menu_draft = menu.add({ 			
+		title: 'Display drafts',
+		order: 1
+	});
+	menu_draft.setIcon("/images/draft.png");
+
     menuItem.addEventListener("click", function(e) {
 		Ti.API.info('Refresh event!');
 		checkUpdate('from_menu');
     });
+    
+    menu_draft.addEventListener('click', function(){
+    	setUse();
+    	Ti.API.info('Opening drafts');
+		var win_new = Titanium.UI.createWindow({  
+			title: 'Drafts',
+			fullscreen: false,
+			url:'drafts.js',
+			type: 'draft',
+			uid: jsonLogin.user.uid,
+			up_node: update_node
+		});
+		win_new.picked 	 = win2.picked;
+		win_new.open();
+    });
+    
 };
 
 //Close database
@@ -373,7 +399,7 @@ setInterval( function(){
 		
 		var pageIndex = 0;
 
-		var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+		var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 
 		var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');
 

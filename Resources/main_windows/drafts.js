@@ -39,29 +39,72 @@ win3.addEventListener('android:back', function() {
 setUse();
 
 var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
-var resultsNames  = db.execute('SELECT node.nid, node.title FROM node INNER JOIN '+win3.type+' ON node.nid='+win3.type+'.nid ORDER BY node.title ASC ');
-
+var resultsNames = "";
 var data = [];
 var i = 0;
+var _arr_tables = [];
+var resultsNames = db.execute('SELECT * FROM node WHERE flag_is_updated=3 ORDER BY table_name ASC ');
+if (resultsNames.rowCount == 0){
+	resultsNames = null;
+	Ti.API.info('0 drafts');
+}
+else{
+	Ti.API.info(resultsNames.rowCount+' drafts ..');
+	while (resultsNames.isValidRow()){
+		if (!_arr_tables[resultsNames.fieldByName('table_name')]){
+			
+			if (i != 0 ){
+				aux_data.sort(sortTableView);
+				for (var _i in aux_data ){
+					data.push(aux_data[_i]);
+				}
+			}
+			
+			aux_data = null;
+			aux_data = new Array();
+			
+			_arr_tables[resultsNames.fieldByName('table_name')] = true;
 
-i = 0;
-while (resultsNames.isValidRow())
-{
-	var fullName = resultsNames.fieldByName('title');
-	var row = Ti.UI.createTableViewRow({
-		height : 'auto',
-		hasChild : false,
-		title : fullName
-	});
+			var row = Ti.UI.createTableViewRow({
+				height : 'auto',
+				hasChild : false,
+				title : resultsNames.fieldByName('table_name').charAt(0).toUpperCase() + resultsNames.fieldByName('table_name').slice(1),
+				backgroundColor: '#FFF',
+				color: '#000'
+			});
 
-	//Parameters added to each row
-	row.nid = resultsNames.fieldByName('nid');
-	row.name = fullName;
-	
-	//Populates the array
-	data[i] = row;
-	i++;
-	resultsNames.next();
+			//Parameters added to each row
+			row.nid = false;
+			row.name = resultsNames.fieldByName('table_name');
+			//Populates the array
+			data.push(row);
+			i++;			
+		}
+		
+		var fullName = resultsNames.fieldByName('title');
+		var row = Ti.UI.createTableViewRow({
+			height : 'auto',
+			hasChild : false,
+			title : fullName,
+			_type: resultsNames.fieldByName('table_name')
+		});
+		
+		//Parameters added to each row
+		row.nid = resultsNames.fieldByName('nid');
+		row.name = fullName;
+		
+		//Populates the array
+		aux_data.push(row);
+		i++;
+		resultsNames.next();
+		
+		if (!resultsNames.isValidRow()){
+			aux_data.sort(sortTableView);
+			for (var _i in aux_data ){
+				data.push(aux_data[_i]);
+			}			
+		}
+	}
 }
 
 //Check if the list is empty or not
@@ -71,7 +114,7 @@ if(data.length < 1) {
 		height : 'auto',
 		width : 'auto',
 		top : '50%',
-		text : 'Empty '+win3.type+' list!'
+		text : 'There are no drafts available'
 	});
 
 	//Debug
@@ -83,8 +126,6 @@ if(data.length < 1) {
 }
 //Shows the contacts
 else {
-	//Sort the array (A>B>C>...>Z):
-	data.sort(sortTableView);
 
 	//Search bar definition
 	var search = Ti.UI.createSearchBar({
@@ -128,28 +169,32 @@ else {
 	listTableView.addEventListener('click', function(e) {
 		//Hide keyboard when returning 
 		firstClick = true;
-		//Next window to be opened
-		var win4 = Titanium.UI.createWindow({
-			fullscreen : false,
-			title: win3.type.charAt(0).toUpperCase() + win3.type.slice(1),
-			type: win3.type,
-			url : 'individual_object.js',
-			up_node: win3.up_node,
-			uid: win3.uid,
-		});
-
-		search.blur();
-		//hide keyboard
-
-		//Passing parameters
-		win4.picked 		 = win3.picked;
-		win4.nid 			 = e.row.nid;
-		win4.nameSelected 	 = e.row.name;
-
-		//Avoiding memory leaking
-		win4.open();
-		resultsNames.close();
+		if (e.row.nid != null){
+			//Next window to be opened
+			var win_new = Titanium.UI.createWindow({
+				fullscreen : false,
+				title: e.row.title,
+				type: e.row._type,
+				url : 'create_or_edit_node.js',
+				listView: win3.listView,
+				up_node: win3.up_node,
+				uid: win3.uid,
+			});
+	
+			//Passing parameters
+			win_new.nid = e.row.nid;
+			win_new.picked 	 = win3.picked;
+			win_new.nameSelected = e.row.name;
+			
+			//Sets a mode to fields edition
+			win_new.mode = 1;
+			
+			win_new.open();
+			win3.close();
+			resultsNames.close();
+		}
 	});
+
 	//Adds contact list container to the UI
 	win3.add(listTableView);
 	search.blur();
@@ -161,8 +206,9 @@ else {
 
 
 }
-
-resultsNames.close();
+if (resultsNames != null){
+	resultsNames.close();	
+}
 db.close();
 
 //showBottom(actualWindow, goToWindow )

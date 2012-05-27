@@ -46,7 +46,7 @@ function form_min(min){
 }
 
 
-var db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+var db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 var results  = db_display.execute('SELECT * FROM '+win4.type+' WHERE  nid = '+win4.nid);
 
 //The view where the results are presented
@@ -232,7 +232,7 @@ if (c_index > 0){
 				keep_label	= c_label[count];
 				keep_sett	= c_settings[count];
 				keep_widget	= c_widget[count];
-				
+				keep_name 	= c_field_name[count];
 				//Test echo	
 				for (var tili in decoded_values){
 					Ti.API.info(tili+' value is equals to: '+decoded_values[tili]);
@@ -247,7 +247,8 @@ if (c_index > 0){
 					c_label[count]		= keep_label;
 					c_settings[count]	= keep_sett;
 					c_widget[count]		= keep_widget;
-					
+					c_field_name[count] = keep_name;
+						
 					Ti.API.info('For type: '+c_type[count]+' is associated '+c_content[count]);
 				}
 				
@@ -722,6 +723,44 @@ if (c_index > 0){
 						});
 						count++;
 					break;
+
+					case 'vehicle_fields':
+						var fi_name		= c_field_name[count]
+						
+						fi_name = fi_name.split('___');
+						if (fi_name[1]){
+							var i_name = fi_name[1];
+						}
+						else{
+							var i_name = fi_name[0];
+						}
+						
+						i_name = i_name.charAt(0).toUpperCase() + i_name.slice(1);
+						
+						label[count] = Ti.UI.createLabel({
+							text: c_label[count]+" "+i_name,
+							width:  "33%",
+							textAlign: 'left',
+							left: 5,
+							touchEnabled: false,
+							field: true
+						});
+						
+						content[count] = Ti.UI.createLabel({
+							text: ""+c_content[count],
+							width:  "60%",
+							height: "100%",
+							textAlign: 'left',
+							left: "40%",
+							id: count
+						});
+						
+						content[count].addEventListener('click', function(e){
+							highlightMe( e.source.id );
+						});
+						count++;
+					break;
+
 					
 					case 'region_separator_mode':
 						label[count] = Ti.UI.createLabel({

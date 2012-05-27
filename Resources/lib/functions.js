@@ -8,6 +8,16 @@
 var DOWNLOAD_URL_THUMBNAIL = '/sync/image/thumbnail/';
 var DOWNLOAD_URL_IMAGE_FILE = '/sync/file/';
 
+function getDBName() {
+	var db_list = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );	
+	var portal_base = db_list.execute('SELECT db_name FROM history WHERE id_hist=1');
+	var recebe = portal_base.fieldByName('db_name');
+	portal_base.close();
+	db_list.close();
+	return recebe;
+}
+
+
 function showIndicator(show)
 {
     indWin = Titanium.UI.createWindow({
@@ -332,7 +342,7 @@ function bottomBack(actualWindow , text, method){
 //
 
 function check_type(name, object){
-	var db_type = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+	var db_type = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 	var qRes = db_type.execute("SELECT DISTINCT type FROM fields WHERE field_name=? AND bundle=?", name ,  object);
 	
 	if (qRes.isValidRow()){
@@ -431,7 +441,7 @@ function treatArray( num_to_insert , call_id ){
 
 function process_object(json, obj, f_marks, progress, type_request){
 
-	var db_process_object = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+	var db_process_object = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 	
 	var deploy = db_process_object.execute('SELECT field_name, type FROM fields WHERE bundle = "'+obj+'"');
 	var col_titles = [];
@@ -451,6 +461,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 	if (json[obj].insert){
 		//Multiple objects
 		if (json[obj].insert.length){
+
 			for (var i = 0; i < json[obj].insert.length; i++ ){
 				if (progress != null){
 					//Increments Progress Bar
@@ -1173,7 +1184,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 	
 	var iResult = iEnd - iStart;
 	Ti.API.info('Object seconds: '+ iResult);
-	
+	db_process_object.close();
 	return;
 }
 
@@ -1185,7 +1196,7 @@ function getJSON(){
 	//Initial JSON values:
 	var current_timestamp = Math.round(+new Date()/1000);
 	var returning_json = '{ "timestamp" : "'+current_timestamp+'", "data" : { ';
-	var db_json = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+	var db_json = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 	
 	//=============================
 	//Builds JSON for new nodes and for nodes that were updated
@@ -1250,45 +1261,46 @@ function getJSON(){
 		selected_node.close();
 		node_fields.close();
 		type.close();
-	}
-	//=============================
-	//Builds JSON for new terms
-	//=============================
-	var new_terms = db_json.execute('SELECT * FROM term_data WHERE tid < 0 ORDER BY tid DESC');
-	//Ti.API.info('Lets update the terms :'+new_terms.fieldByName('tid'));
-	
-	if (new_terms.rowCount > 0){
-		returning_json += ',"term":{ ';
-		while (new_terms.isValidRow()){
-				Ti.API.info('TERM '+new_terms.fieldByName('tid')+' -----JSON BEING CREATED-----');
-				var vocabulary	= db_json.execute('SELECT * FROM vocabulary WHERE vid = '+new_terms.fieldByName('vid'));
-				returning_json += '"'+new_terms.fieldByName('tid')+'":{ "created":"'+new_terms.fieldByName('created')+'", "tid":"'+new_terms.fieldByName('tid')+'", "machine_name":"'+vocabulary.fieldByName('machine_name')+'", "name":"'+new_terms.fieldByName('name')+'"  }';
-				//Next term
-				new_terms.next();
-				if (new_terms.isValidRow()){
-					returning_json += ', ';
-				}
+
+		//=============================
+		//Builds JSON for new terms
+		//=============================
+		var new_terms = db_json.execute('SELECT * FROM term_data WHERE tid < 0 ORDER BY tid DESC');
+		//Ti.API.info('Lets update the terms :'+new_terms.fieldByName('tid'));
+		
+		if (new_terms.rowCount > 0){
+			returning_json += ',"term":{ ';
+			while (new_terms.isValidRow()){
+					Ti.API.info('TERM '+new_terms.fieldByName('tid')+' -----JSON BEING CREATED-----');
+					var vocabulary	= db_json.execute('SELECT * FROM vocabulary WHERE vid = '+new_terms.fieldByName('vid'));
+					returning_json += '"'+new_terms.fieldByName('tid')+'":{ "created":"'+new_terms.fieldByName('created')+'", "tid":"'+new_terms.fieldByName('tid')+'", "machine_name":"'+vocabulary.fieldByName('machine_name')+'", "name":"'+new_terms.fieldByName('name')+'"  }';
+					//Next term
+					new_terms.next();
+					if (new_terms.isValidRow()){
+						returning_json += ', ';
+					}
+			}
+			//close 'term'
+			returning_json += '} ';
 		}
-		//close 'term'
-		returning_json += '} ';
+		// close data and timestamp:
+		returning_json += ' } }';
+		
+		Ti.API.info(returning_json);
+		
+		//Close db connections and result set
+		new_nodes.close();
+		new_terms.close();
+		db_json.close();
+		return returning_json;
 	}
-	// close data and timestamp:
-	returning_json += ' } }';
-	
-	Ti.API.info(returning_json);
-	
-	//Close db connections and result set
-	new_nodes.close();
-	new_terms.close();
-	db_json.close();
-	return returning_json;
 }
 
 //Install new updates using pagination
 //Load existing data with pagination
 function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent)
 {
-	var db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+	var db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 	
 	var objectsUp = win.log;
 	Ti.API.info('Log type : '+objectsUp);
@@ -1470,6 +1482,40 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					db_installMe.execute('UPDATE updated SET "timestamp"='+ json.sync_timestamp +' WHERE "rowid"=1');				
 				}   
 				Ti.API.info("COUNT: "+json.total_item_count);	
+			}
+			
+			//Vehicles:
+			if (json.vehicles){
+				var _veh = json.vehicles;
+				var  veh_db = new Array();
+				
+				if (_veh instanceof Array){
+					for (var _i_veh in _veh){
+						veh_db.push("INSERT OR REPLACE INTO _vehicles (make, model ) VALUES ('"+_veh[_i_veh][0]+"', '"+_veh[_i_veh][1]+"' )");
+					}
+				}
+				else{
+					veh_db.push("INSERT OR REPLACE INTO _vehicles (make, model ) VALUES ('"+_veh[0]+"', '"+_veh[1]+"' )");
+				}
+				
+				//DB operations
+				var iPerform = 0;
+				var iStart = Math.round(new Date().getTime() / 1000);
+				Ti.API.info("Vehicles started at : "+iStart);
+
+				db_installMe.execute("BEGIN IMMEDIATE TRANSACTION");
+				while (iPerform <= veh_db.length - 1 ){
+					db_installMe.execute(veh_db[iPerform]);
+					iPerform++;
+				}
+				db_installMe.execute("COMMIT TRANSACTION");
+				
+				var iEnd = Math.round(new Date().getTime() / 1000);
+				Ti.API.info("Vehicles finishes at : "+iEnd);
+				
+				var iResult = iEnd - iStart;
+				Ti.API.info('Vehicles seconds: '+ iResult);
+				Ti.API.info("Success for vehicles, db operations ran smoothly!");
 			}
 			
 			//Node types creation:
@@ -3033,7 +3079,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				
 			}
 		}
-	updateFileUploadTable(win, json);
+		updateFileUploadTable(win, json);
 	}
 
 	//Connection error:
@@ -3203,19 +3249,19 @@ function timeConverter(UNIX_timestamp, type){
 }
 
 function setUse(){
-	var db_su = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+	var db_su = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 	db_su.execute('UPDATE updated SET updating = 1 ');
 	db_su.close();
 }
 
 function unsetUse(){
-	var db_us = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+	var db_us = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 	db_us.execute('UPDATE updated SET updating = 0 ');
 	db_us.close();
 }
 
 function isUpdating(){
-	var db_gu = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+	var db_gu = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 	var res_set = db_gu.execute('SELECT updating FROM updated WHERE rowid=1');
 
 	if (res_set.fieldByName('updating') == 1){
@@ -3306,7 +3352,7 @@ function getScreenHeight(){
 
 function uploadFile(win, type_request, database, fileUploadTable){
 try{
-	var fileUploadXHR = Ti.Network.createHTTPClient();;
+	var fileUploadXHR = Ti.Network.createHTTPClient();
 	fileUploadXHR.setTimeout(20000);
 	fileUploadXHR.open(type_request, win.picked + '/js-sync/upload.json');
 	// Upload images
@@ -3425,7 +3471,7 @@ function updateFileUploadTable(win, json){
 	if(json.total_item_count == 0){
 		return;
 	}
-	var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion"));
+	var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName());
 	
 	// To replace all negative nid to positive in file_upload_queue table
 	var bundles = db_fileUpload.execute('SELECT * FROM bundles;');
