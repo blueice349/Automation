@@ -4,6 +4,4 @@ Logfile initialized
 [INFO] Titanium SDK version: 2.0.1 (04/12/12 16:33 999c68a)
 [INFO] Copying CommonJS modules...
 [INFO] Copying project resources..
-[TRACE] COPYING MODIFIED FILE: /home/jo/omadi/omadi_mobile/Resources/main_windows/drafts.js => /home/jo/omadi/omadi_mobile/build/android/bin/assets/Resources/main_windows/drafts.js
-[TRACE] COPYING MODIFIED FILE: /home/jo/omadi/omadi_mobile/Resources/main_windows/create_or_edit_node.js => /home/jo/omadi/omadi_mobile/build/android/bin/assets/Resources/main_windows/create_or_edit_node.js
 [TRACE] Generating Java Classes

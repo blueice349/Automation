@@ -446,21 +446,21 @@ function keep_info( _flag_info ){
 			var _now = Math.round(+new Date()/1000);
 			if (_flag_info == "draft"){
 				if (mode == 1){
-					Ti.API.info('UPDATE node SET changed="'+_now+'", title="'+title_to_node+'" , flag_is_updated=3, table_name="'+win.type+'" WHERE nid='+win.nid);
-					db_put.execute('UPDATE node SET changed="'+_now+'", title="'+title_to_node+'" , flag_is_updated=3, table_name="'+win.type+'" WHERE nid='+win.nid);
+					Ti.API.info('UPDATE node SET changed="'+_now+'", title="'+title_to_node+'" , flag_is_updated=3, table_name="'+win.type+'", form_part ='+win.region_form+' WHERE nid='+win.nid);
+					db_put.execute('UPDATE node SET changed="'+_now+'", title="'+title_to_node+'" , flag_is_updated=3, table_name="'+win.type+'", form_part ='+win.region_form+' WHERE nid='+win.nid);
 				}
 				else{
-					Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ('+new_nid+', '+_now+', 0, "'+title_to_node+'" , '+win.uid+', 3 , "'+win.type+'")');
-					db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ('+new_nid+', '+_now+', 0, "'+title_to_node+'" , '+win.uid+', 3 , "'+win.type+'")');
+					Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part ) VALUES ('+new_nid+', '+_now+', 0, "'+title_to_node+'" , '+win.uid+', 3 , "'+win.type+'" , '+win.region_form+' )');
+					db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name , form_part ) VALUES ('+new_nid+', '+_now+', 0, "'+title_to_node+'" , '+win.uid+', 3 , "'+win.type+'", '+win.region_form+' )');
 				}
 			}
 			else if (mode == 1){
-				Ti.API.info('UPDATE node SET changed="'+_now+'", title="'+title_to_node+'" , flag_is_updated=1, table_name="'+win.type+'" WHERE nid='+win.nid);
-				db_put.execute('UPDATE node SET changed="'+_now+'", title="'+title_to_node+'" , flag_is_updated=1, table_name="'+win.type+'" WHERE nid='+win.nid);
+				Ti.API.info('UPDATE node SET changed="'+_now+'", title="'+title_to_node+'" , flag_is_updated=1, table_name="'+win.type+'", form_part ='+win.region_form+' WHERE nid='+win.nid);
+				db_put.execute('UPDATE node SET changed="'+_now+'", title="'+title_to_node+'" , flag_is_updated=1, table_name="'+win.type+'", form_part ='+win.region_form+' WHERE nid='+win.nid);
 			}
 			else{
-				Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ('+new_nid+', '+_now+', 0, "'+title_to_node+'" , '+win.uid+', 1 , "'+win.type+'")');
-				db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ('+new_nid+', '+_now+', 0, "'+title_to_node+'" , '+win.uid+', 1 , "'+win.type+'")');
+				Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part ) VALUES ('+new_nid+', '+_now+', 0, "'+title_to_node+'" , '+win.uid+', 1 , "'+win.type+'", '+win.region_form+'  )');
+				db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part  ) VALUES ('+new_nid+', '+_now+', 0, "'+title_to_node+'" , '+win.uid+', 1 , "'+win.type+'"  , '+win.region_form+' )');
 			}
 			
 			//Insert into table
@@ -1277,6 +1277,7 @@ resultView.add(viewContent);
 var regions			 = db_display.execute('SELECT * FROM regions WHERE node_type = "'+win.type+'" ORDER BY weight ASC');
 var fields_result	 = db_display.execute('SELECT * FROM fields WHERE bundle = "'+win.type+'" ORDER BY weight ASC');
 var bundle_titles	 = db_display.execute('SELECT title_fields FROM bundles WHERE bundle_name = "'+win.type+'" ');
+
 //Contents for node edits
 if (mode == 1){
 	var content_fields	 = db_display.execute('SELECT * FROM '+win.type+' WHERE nid = "'+win.nid+'" ');	
@@ -1343,21 +1344,8 @@ setTimeout(function(e){
 	while (regions.isValidRow()){
 		
 		var reg_settings = JSON.parse(regions.fieldByName('settings'));
-		var evaluate_this = null; 
-
-		if (!reg_settings){
-			evaluate_this = null;
-		}
-		else if (mode == 0 ){
-			evaluate_this = reg_settings.creation_disabled;
-		}
-		else{
-			if(reg_settings!=null){
-				evaluate_this = reg_settings.update_disabled;
-			}
-		}
-		
-		if (reg_settings != null && evaluate_this){
+				
+		if (parseInt(reg_settings.form_part) > win.region_form ){
 			Ti.API.info('Region : '+regions.fieldByName('label')+' won\'t appear');
 		}
 		else{
@@ -2475,7 +2463,7 @@ setTimeout(function(e){
 					//Create picker list
 					if (widget.type == 'options_select'){
 						label[count] = Ti.UI.createLabel({
-							text			: 'Select one '+field_arr[index_label][index_size].label,
+							text			: ''+field_arr[index_label][index_size].label,
 							color			: '#FFFFFF',
 							font 			: {
 												fontSize: 18
@@ -3472,7 +3460,7 @@ setTimeout(function(e){
 	
 				case 'user_reference':
 					label[count] = Ti.UI.createLabel({
-						text			: 'Select one '+field_arr[index_label][index_size].label,
+						text			: ''+field_arr[index_label][index_size].label,
 						color			: '#FFFFFF',
 						font 			: {
 											fontSize: 18
@@ -4744,7 +4732,8 @@ setTimeout(function(e){
 								label 			: field_arr[index_label][index_size].label,
 								composed_obj	: true,
 								addButton		: null,
-								cardinality		: settings.cardinality
+								cardinality		: settings.cardinality,
+								value: null
 							});
 						viewContent.add(content[count]);
 						var decodedValues = [];
@@ -4872,7 +4861,8 @@ setTimeout(function(e){
 							bigImg 			: null,
 							mimeType		: null,
 							cardinality		: settings.cardinality,
-							isUpdated		: isUpdated
+							isUpdated		: isUpdated,
+							value: null
 						});
 						
 						if(isUpdated == true){

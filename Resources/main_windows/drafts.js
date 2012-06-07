@@ -19,6 +19,13 @@ var win3 = Ti.UI.currentWindow;
 //Sets only portrait mode
 win3.orientationModes = [Titanium.UI.PORTRAIT];
 
+//When back button on the phone is pressed, it opens mainMenu.js and close the current window
+win3.addEventListener('android:back', function() {
+	//Enable background updates
+	unsetUse();	
+	win3.close();
+});
+
 //Definition of the window before (opens when the user clicks on the back button)
 var goToWindow = Titanium.UI.createWindow({
 	fullscreen : false,
@@ -27,20 +34,13 @@ var goToWindow = Titanium.UI.createWindow({
 	notOpen: true
 });
 
-//When back button on the phone is pressed, it opens mainMenu.js and close the current window
-win3.addEventListener('android:back', function() {
-	//Enable background updates
-	unsetUse();
-	
-	win3.close();
-});
 
 //Lock database for background updates
 setUse();
 
 var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 var resultsNames = "";
-var data = [];
+var data = new Array();
 var i = 0;
 var _arr_tables = [];
 var resultsNames = db.execute('SELECT * FROM node WHERE flag_is_updated=3 ORDER BY table_name ASC ');
@@ -56,8 +56,9 @@ else{
 			if (i != 0 ){
 				aux_data.sort(sortTableView);
 				for (var _i in aux_data ){
-					data.push(aux_data[_i]);
+					section.add(aux_data[_i]);
 				}
+				data.push(section);
 			}
 			
 			aux_data = null;
@@ -65,20 +66,15 @@ else{
 			
 			_arr_tables[resultsNames.fieldByName('table_name')] = true;
 
-			var row = Ti.UI.createTableViewRow({
+			var section = Titanium.UI.createTableViewSection({
 				height : 'auto',
-				hasChild : false,
-				title : resultsNames.fieldByName('table_name').charAt(0).toUpperCase() + resultsNames.fieldByName('table_name').slice(1),
+				headerTitle : resultsNames.fieldByName('table_name').charAt(0).toUpperCase() + resultsNames.fieldByName('table_name').slice(1),
 				backgroundColor: '#FFF',
-				color: '#000'
+				color: '#000',
+				nid: false,
+				visible: true
 			});
 
-			//Parameters added to each row
-			row.nid = false;
-			row.name = resultsNames.fieldByName('table_name');
-			//Populates the array
-			data.push(row);
-			i++;			
 		}
 		
 		var fullName = resultsNames.fieldByName('title');
@@ -101,8 +97,9 @@ else{
 		if (!resultsNames.isValidRow()){
 			aux_data.sort(sortTableView);
 			for (var _i in aux_data ){
-				data.push(aux_data[_i]);
-			}			
+				section.add(aux_data[_i]);
+			}	
+			data.push(section);
 		}
 	}
 }
@@ -136,8 +133,8 @@ else {
 	
 	//Contat list container
 	var listTableView = Titanium.UI.createTableView({
-		data : data,
-		top : '3%',
+		data   : data,
+		top	   : '3%',
 		search : search,
 		height : '91%'
 	});
@@ -195,6 +192,40 @@ else {
 		}
 	});
 
+	listTableView.addEventListener('longclick', function(e) {
+		//Hide keyboard when returning 
+		firstClick = true;
+		Ti.API.info('Size : '+e.section.rowCount)
+
+		if (e.row.nid != null){
+			Ti.API.info('DELETE');
+			Titanium.Media.vibrate();
+			
+			var a_msg = Titanium.UI.createAlertDialog({
+				title:'Omadi',
+				buttonNames: ['Yes', 'No'],
+				cancel: 1,
+				click_index: e.index,
+				sec_obj: e.section,
+				row_obj: e.row
+			});
+			
+			a_msg.message = 'Are you sure you want to delete the draft "'+e.row.title+'" ?';
+			a_msg.show();
+			
+			a_msg.addEventListener('click', function(e){
+				if (e.cancel === false){
+					Ti.API.info('deleted');
+					Ti.API.info(e.source.click_index);
+					listTableView.deleteRow(listTableView.data[0][e.source.click_index]);
+					var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+					db.execute('UPDATE node SET flag_is_updated = 4 WHERE nid='+e.source.row_obj.nid);
+					db.close();
+				}
+			});
+		}
+	});
+
 	//Adds contact list container to the UI
 	win3.add(listTableView);
 	search.blur();
@@ -212,4 +243,4 @@ if (resultsNames != null){
 db.close();
 
 //showBottom(actualWindow, goToWindow )
-bottomBack(win3, "Back" , "enable");
+bottomBack_release(win3, "Back" , "enable");

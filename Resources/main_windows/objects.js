@@ -39,7 +39,7 @@ win3.addEventListener('android:back', function() {
 setUse();
 
 var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
-var resultsNames  = db.execute('SELECT node.nid, node.title FROM node INNER JOIN '+win3.type+' ON node.nid='+win3.type+'.nid ORDER BY node.title ASC ');
+var resultsNames  = db.execute('SELECT node.nid, node.title FROM node INNER JOIN '+win3.type+' ON node.nid='+win3.type+'.nid WHERE (node.flag_is_updated=0 OR node.flag_is_updated=1) ORDER BY node.title ASC ');
 
 var data = [];
 var i = 0;

@@ -26,14 +26,6 @@ toolActInd.message = 'Loading...';
 
 var version = 'Omadi Inc';
 var isFirstTime = false;
-var label_status = Titanium.UI.createLabel({
-	color:'#FFFFFF',
-	text: 'Omadi Inc',
-	height:'auto',
-	width:'auto',
-	textAlign:'center'
-});
-
 
 //Common used functions
 Ti.include('/lib/functions.js');
@@ -213,7 +205,8 @@ listView.addEventListener('click',function(e){
 			type: e.row.name_table,
 			uid: jsonLogin.user.uid,
 			listView: listView,
-			up_node: update_node
+			up_node: update_node,
+			region_form: 0
 		});
 		win_new.mode = 0;
 		win_new.picked 	 = win2.picked;
@@ -307,15 +300,125 @@ offImage.addEventListener('click',function(e)
 
 //View at the bottom to show user the database's status
 var databaseStatusView = Titanium.UI.createView({
-	backgroundColor:'#111',
-	height: '10%',
+	backgroundColor:'#000',
+	height: '12%',
 	width: '100%',
 	opacity: 0.99,
 	borderRadius:0,
 	bottom: 0
 });
 
-databaseStatusView.add(label_status);
+var drafts_lb = Ti.UI.createLabel({
+	text: 'Drafts',
+	color:'#FFFFFF',
+	height:'auto',
+	width:'auto',
+	right:'20dp',
+	bottom: '2dp',
+	textAlign:'right',
+	font: {
+		fontSize: '14dp'
+	}	
+});
+databaseStatusView.add(drafts_lb);
+
+var draft_img = Ti.UI.createImageView({
+	image: '/images/draft.png',
+	right: '25dp',
+	width: '20dp',
+	height: 'auto',
+	bottom: '22dp'
+});
+databaseStatusView.add(draft_img);
+
+draft_img.addEventListener('click', function(){
+	setUse();
+	Ti.API.info('Opening drafts');
+	var win_new = Titanium.UI.createWindow({  
+		title: 'Drafts',
+		fullscreen: false,
+		url:'drafts.js',
+		type: 'draft',
+		uid: jsonLogin.user.uid,
+		up_node: update_node
+	});
+	win_new.picked 	 = win2.picked;
+	win_new.open();
+});
+
+drafts_lb.addEventListener('click', function(){
+	setUse();
+	Ti.API.info('Opening drafts');
+	var win_new = Titanium.UI.createWindow({  
+		title: 'Drafts',
+		fullscreen: false,
+		url:'drafts.js',
+		type: 'draft',
+		uid: jsonLogin.user.uid,
+		up_node: update_node
+	});
+	win_new.picked 	 = win2.picked;
+	win_new.open();
+});
+
+
+var alerts_lb = Ti.UI.createLabel({
+	text: 'Alerts',
+	color:'#FFFFFF',
+	height:'auto',
+	width:'auto',
+	right:'142dp',
+	bottom: '2dp',
+	textAlign:'right',
+	font: {
+		fontSize: '14dp'
+	}	
+});
+databaseStatusView.add(alerts_lb);
+
+var alerts_img = Ti.UI.createImageView({
+	image: '/images/msg3.png',
+	right: '145dp',
+	width: '30dp',
+	height: 'auto',
+	bottom: '22dp'
+});
+databaseStatusView.add(alerts_img);
+
+alerts_img.addEventListener('click', function(){
+	a.message = 'Coming soon';
+	a.show();
+});
+
+alerts_lb.addEventListener('click', function(){
+	a.message = 'Coming soon';
+	a.show();
+});
+
+var home_lb = Ti.UI.createLabel({
+	text: 'Home',
+	color:'#FFFFFF',
+	height:'auto',
+	width:'auto',
+	left:'20dp',
+	bottom: '2dp',
+	textAlign:'right',
+	font: {
+		fontSize: '14dp'
+	}	
+});
+databaseStatusView.add(home_lb);
+
+var home_img = Ti.UI.createImageView({
+	image: '/images/home2.png',
+	left: '25dp',
+	width: '30dp',
+	height: 'auto',
+	bottom: '22dp'
+});
+databaseStatusView.add(home_img);
+
+
 win2.add(databaseStatusView);
 
 //First time install
