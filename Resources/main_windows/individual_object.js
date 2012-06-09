@@ -51,12 +51,12 @@ var results  = db_display.execute('SELECT * FROM '+win4.type+' WHERE  nid = '+wi
 
 //The view where the results are presented
 var resultView = Ti.UI.createView({
-	top: '5%',
-	height: '85%',
+	top: '0',
+	height: '100%',
 	width: '90%',
-	borderRadius: 5,
-	backgroundColor: '#A9A9A9',
-	opacity: 0.05
+	//borderRadius: 5,
+	backgroundColor: '#000',
+//	opacity: 0.05
 });
 win4.add(resultView);
 
@@ -64,11 +64,11 @@ win4.add(resultView);
 //Header where the selected name is presented
 var header = Ti.UI.createView({
 	top: '0',
-	height: '20%',
+	height: '35',
 	width: '100%',
-	borderRadius: 5,
-	backgroundColor: '#A9A9A9',
-	opacity: 0.23,
+	//borderRadius: 5,
+	backgroundColor: '#585858',
+	//opacity: 0.23,
 	zIndex: 11
 });
 resultView.add(header);
@@ -79,22 +79,27 @@ var labelNameContent = Ti.UI.createLabel({
 	height: 'auto',
 	width:  '90%',
 	font: {fontSize: 18,  fontWeight: "bold"},
+	color: '#fff',
 	textAlign: 'center',
-	touchEnabled: false
+	touchEnabled: false,
+	ellipsize: true,
+	wordWrap: false
 });
 
 header.add(labelNameContent);
 
 var viewContent = Ti.UI.createScrollView({
-    height:"auto",
-    top: "19%",
+    height:"100%",
+    top: "35",
+    //contentWidth: '100%',
+    contentHeight: 'auto',
     backgroundColor: '#111111',
 	showHorizontalScrollIndicator: false,
 	showVerticalScrollIndicator: true,
 	opacity: 1,
-	borderRadius: 7,
-	scrollType: "vertical",
-	zIndex: 10, 
+	//borderRadius: 7,
+	//scrollType: 'vertical',
+	//zIndex: 10, 
 	layout: 'vertical'
 });
 
@@ -128,7 +133,6 @@ while (fields_result.isValidRow()){
 }
 
 while (regions.isValidRow()){
-
 	var reg_settings = JSON.parse(regions.fieldByName('settings'));
 	
 	if (reg_settings != null && reg_settings.display_disabled){
@@ -189,8 +193,15 @@ if (c_index > 0){
 	
 	for (var f_name_f in fields ){
 		//Ti.API.info(f_name_f+" => "+results.fieldByName(f_name_f)+" => "+fields[f_name_f]['type']);
-		if ( (results.fieldByName(f_name_f) != null && results.fieldByName(f_name_f) != "") ||  (fields[f_name_f]['type'] == 'region_separator_mode') 
-		|| (fields[f_name_f]['type'] == 'image')) {
+		var fieldVal = null; 
+		try{
+			//Check is coloum exist in table or not
+			fieldVal = results.fieldByName(f_name_f);
+		}catch(e){
+		}
+		
+		if ( (fieldVal != null && fieldVal != "") ||  (fields[f_name_f]['type'] == 'region_separator_mode') 
+		|| (fields[f_name_f]['type'] == 'image') || (fields[f_name_f]['type'] == 'calculation_field')) {
 			//fields from Fields table that match with current object
 			c_type[count]   	= fields[f_name_f]['type'];
 			c_label[count]		= fields[f_name_f]['label'];
@@ -199,7 +210,7 @@ if (c_index > 0){
 			c_field_name[count] = fields[f_name_f]['field_name'];
 			
 			//Content
-			c_content[count] = results.fieldByName(f_name_f);
+			c_content[count] = fieldVal;
 			
 			var loop_times = 1;
 			is_array = false;
@@ -252,7 +263,7 @@ if (c_index > 0){
 				}
 				
 				loop_times--;
-				if ( c_type[count] != 'region_separator_mode'){
+				if ( c_type[count] != 'region_separator_mode' &&  c_type[count] != 'calculation_field'){
 					if (( (c_content[count] == "") || (c_content[count] == "null")  || (c_content[count] == null) ) ) {
 						continue;
 					}
@@ -271,7 +282,6 @@ if (c_index > 0){
 					}
 				}
 				Ti.API.info('**FIELD: '+c_type[count]+' VALUE: '+c_content[count]);
-
 				switch(c_type[count]){
 					//Treatment follows the same for text or text_long
 					case 'text':
@@ -814,11 +824,13 @@ if (c_index > 0){
 							
 						content[count] = Ti.UI.createImageView({
 							label 			: c_label[count],
-							height			: 80,
-							width			: 80,
+							height			: '100',
+							width			: '100',
+							top				:5,
+							bottom			:5,
 							size: {
-									height		: 'auto',
-									width		: 'auto'
+									height		: '100',
+									width		: '100'
 								},
 							image			: '../images/default.png',
 							imageVal 		: val,
@@ -848,6 +860,34 @@ if (c_index > 0){
 								field : true
 						});
 						count++;
+					break;
+					
+					case 'calculation_field':
+							label[count] = Ti.UI.createLabel({
+								text: c_label[count],
+								width:  "100%",
+								textAlign: 'left',
+								left: 5,
+								touchEnabled: false,
+								field: true,
+								top: 0,
+								height: 40,
+								wordWrap: false,
+								ellipsize: true
+							});
+							
+							var settings 		= JSON.parse(c_settings[count]); 					
+							content[count] = Ti.UI.createView({
+									left			: '3%',
+									right			: '3%',
+									field_type		: c_type[count],
+									field_name		: c_field_name[count],
+									cardinality		: settings.cardinality,
+									reffer_index	: count,
+									settings		: settings,
+									layout 			: 'vertical'
+							});
+							count++;
 					break;
 				}
 			
@@ -879,7 +919,11 @@ if (c_index > 0){
 							continue;
 						}
 					}
-					cell[i].height = '100';
+					cell[i].height = '110';
+				}else if(c_type[i]=='calculation_field'){
+					createCalculationTableFormat(content[i] , db_display, content);
+					cell[i].layout = 'vertical';
+					cell[i].height = content[i].height+ heightValue;
 				}
 				cell[i].add(content[i]);
 				
@@ -991,28 +1035,7 @@ if (Ti.Platform.name == 'android') {
 		//======================================
 		
 		menu_first.addEventListener("click", function(e) {	
-			//Next window to be opened
-			var win_new = Titanium.UI.createWindow({
-				fullscreen : false,
-				title: win4.title,
-				type: win4.type,
-				url : 'create_or_edit_node.js',
-				listView: win4.listView,
-				//log: win4.log,
-				up_node: win4.up_node,
-				uid: win4.uid,
-			});
-	
-			//Passing parameters
-			win_new.nid = win4.nid;
-			win_new.picked 	 = win4.picked;
-			win_new.nameSelected = win4.nameSelected;
-			
-			//Sets a mode to fields edition
-			win_new.mode = 1;
-			
-			win_new.open();
-			win4.close();
+			openEditScreen();
 		});
 	}
 }
@@ -1021,18 +1044,67 @@ results.close();
 fields_result.close();
 db_display.close();
 
-bottomBack(win4);
+if(PLATFORM != 'android'){
+	resultView.remove(header)
+	resultView.height = '95%';
+	resultView.top = 0;
+	bottomButtons(win4);
+}else{
+	viewContent.height = '90%'
+	bottomBack(win4);
+}
 
+function bottomButtons(actualWindow){
+	var back = Ti.UI.createButton({
+		title : 'Back',
+		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+	});
+	back.addEventListener('click', function() {
+		actualWindow.close();
+	});
+	
+	var space = Titanium.UI.createButton({
+		systemButton:Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+	});
+	var label = Titanium.UI.createButton({
+		title:win4.nameSelected,
+		color:'#fff',
+		ellipsize: true,
+		wordwrap: false,
+		width: 200,
+		style:Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+	});
+
+	
+	var edit = Ti.UI.createButton({
+		title : 'Edit',
+		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+	});
+	edit.addEventListener('click', function() {
+		openEditScreen();
+	});
+	
+	// create and add toolbar
+	var toolbar = Titanium.UI.createToolbar({
+		items:[back, space, label, space, edit],
+		top:0,
+		borderTop:false,
+		borderBottom:true
+	});
+	win4.add(toolbar);
+};
 
 function createImage(arrImages, data, scrollView, updated){
 	contentImage = Ti.UI.createImageView({
-		height			: 80,
-		width			: 80,
+		height			: '100',
+		width			: '100',
 		left			: 5,
 		size: {
-			height		: 'auto',
-			width		: 'auto'
+			height		: '100',
+			width		: '100'
 		},
+		top				:5,
+		bottom			:5,
 		image			: '../images/default.png',
 		imageVal		: data,
 		imageData		: null,
@@ -1054,4 +1126,185 @@ function createImage(arrImages, data, scrollView, updated){
 	scrollView.add(contentImage);
 	arrImages.push(contentImage)
 	return arrImages;
+}
+
+function openEditScreen(){
+		//Next window to be opened
+	var win_new = Titanium.UI.createWindow({
+		fullscreen : false,
+		title: win4.title,
+		type: win4.type,
+		url : 'create_or_edit_node.js',
+		listView: win4.listView,
+		//log: win4.log,
+	up_node: win4.up_node,
+		uid: win4.uid
+	});
+
+	//Passing parameters
+	win_new.nid = win4.nid;
+	win_new.picked 	 = win4.picked;
+	win_new.nameSelected = win4.nameSelected;
+	
+	//Sets a mode to fields edition
+	win_new.mode = 1;
+	
+	win_new.open();
+	(PLATFORM=='android')?win4.close():win4.hide();
+}
+
+function createEntity(){
+	
+	var entity = new Array();
+	
+	for( idx = 0; idx < content.length; idx++) {
+		if(!content[idx]) {
+			continue;
+		}
+		var private_index	 = 0;
+		if(entity[c_field_name[idx]]==null){
+			entity[c_field_name[idx]] = new Array();
+		}else{
+			private_index = entity[c_field_name[idx]].length; 
+		}
+		
+		entity[c_field_name[idx]][private_index] = new Array();
+		
+		entity[c_field_name[idx]][private_index]['value'] = c_content[idx];
+		entity[c_field_name[idx]][private_index]['nid'] = c_content[idx];
+		entity[c_field_name[idx]][private_index]['uid'] = c_content[idx];
+		entity[c_field_name[idx]][private_index]['tid'] = c_content[idx];
+		entity[c_field_name[idx]][private_index]['field_name'] = c_field_name[idx];
+		entity[c_field_name[idx]][private_index]['field_type'] = c_type[idx];
+		entity[c_field_name[idx]][private_index]['reffer_index'] = idx;
+	}
+
+	return entity; 
+}
+
+
+function createCalculationTableFormat(content , db_display, contentArr) {
+	var entity = createEntity();
+	var result = _calculation_field_get_values(win4, db_display, content, entity, contentArr);
+	var row_values = result[0].rows;
+	var heightView = 0;
+	if(row_values.length > 0) {
+		var heightCellView = 40;
+		var cal_value = 0;
+		var cal_value_str = "";
+		var isNegative = false;
+		for( idx = 0; idx < row_values.length; idx++) {
+			cal_value = row_values[idx].value;
+			typeof(cal_value) == 'number' ? null : typeof(cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null; //Check type of the data
+			isNegative = (cal_value < 0) ? true : false; // Is negative. And if it is -ve then write in this value in (brackets).
+			cal_value_str =  Math.abs(cal_value).toCurrency({
+                "thousands_separator":",",
+                "currency_symbol":"$",
+                "symbol_position":"front",
+                "use_fractions" : { "fractions":2, "fraction_separator":"." }
+            });
+            cal_value_str = (isNegative)?"(" + cal_value_str + ")":cal_value_str; // Adding brackets over -ve value.
+			
+			var row = Ti.UI.createView({
+				layout : 'horizontal',
+				height : heightCellView,
+				width : '100%',
+				top : 1,
+			});
+			var row_label = Ti.UI.createLabel({
+				text : row_values[idx].row_label + ":  ",
+				textAlign : 'right',
+				width : 140,
+				color : 'white',
+				font : {
+					fontFamily : 'Helvetica Neue',
+					fontSize : 14
+				},
+				color : '#000',
+				height : heightCellView,
+				wordWrap : false,
+				ellipsize : true,
+				backgroundColor : '#F2F2F2'
+
+			});
+			var value = Ti.UI.createLabel({
+				text : "  " + cal_value_str,
+				textAlign : 'left',
+				width : 120,
+				left : 1,
+				color : 'white',
+				font : {
+					fontFamily : 'Helvetica Neue',
+					fontSize : 14
+				},
+				color : '#000',
+				height : heightCellView,
+				wordWrap : false,
+				ellipsize : true,
+				backgroundColor : '#F2F2F2'
+			});
+			row.add(row_label);
+			row.add(value);
+			content.add(row);
+			heightView += heightCellView + 1;
+		}
+
+		cal_value = result[0].final_value;
+		typeof(cal_value) == 'number' ? null : typeof(cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
+		isNegative = (cal_value < 0) ? true : false; // Is negative. And if it is -ve then write in this value in (brackets).
+		cal_value_str =  Math.abs(cal_value).toCurrency({
+                "thousands_separator":",",
+                "currency_symbol":"$",
+                "symbol_position":"front",
+                "use_fractions" : { "fractions":2, "fraction_separator":"." }
+        });
+        cal_value_str = (isNegative)?"(" + cal_value_str + ")":cal_value_str; // Adding brackets over -ve value.
+			
+		var row = Ti.UI.createView({
+			layout : 'horizontal',
+			height : heightCellView,
+			width : '100%',
+			top : 1
+		});
+		var row_label = Ti.UI.createLabel({
+			text : "Newly Calculated Total: ",
+			textAlign : 'right',
+			width : 140,
+			top : 0,
+			color : 'white',
+			font : {
+				fontFamily : 'Helvetica Neue',
+				fontSize : 14,
+				fontWeight : 'bold'
+			},
+			color : '#B40404',
+			height : heightCellView,
+			backgroundColor : '#F2F2F2'
+		});
+		var value = Ti.UI.createLabel({
+			text : "  " + cal_value_str,
+			textAlign : 'left',
+			width : 120,
+			right : 0,
+			top : 0,
+			left : 1,
+			color : 'white',
+			font : {
+				fontFamily : 'Helvetica Neue',
+				fontSize : 14,
+				fontWeight : 'bold'
+			},
+			color : '#B40404',
+			height : heightCellView,
+			wordWrap : false,
+			ellipsize : true,
+			backgroundColor : '#F2F2F2'
+		});
+		row.add(row_label);
+		row.add(value);
+		content.add(row);
+		heightView += heightCellView + 1;
+
+	}
+	content.height = heightView;
 }

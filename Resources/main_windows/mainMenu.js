@@ -13,6 +13,7 @@
 
 //Current window's instance
 var win2 = Ti.UI.currentWindow;
+win2.backgroundColor = '#111';
 
 win2.addEventListener('focus', function(){
 	unsetUse();
@@ -94,16 +95,24 @@ function checkUpdate(evt){
 	else{
 		if (evt == 'from_menu'){
 			if ( !(Titanium.Network.online)) {
-				Ti.UI.createNotification({
-					message : 'You have no internet access, make sure you are online in order to update'
-				}).show();
+				if(PLATFORM == 'android'){
+					Ti.UI.createNotification({
+						message : 'You have no internet access, make sure you are online in order to update'
+					}).show();
+				}else{
+					alert('You have no internet access, make sure you are online in order to update');
+				}
 				//If offline, set up database for use
 				unsetUse();
 			}
 			else {
-				Ti.UI.createNotification({
-					message : 'Another updated is already running'
-				}).show();
+				if(PLATFORM == 'android'){
+					Ti.UI.createNotification({
+						message : 'Another updated is already running'
+					}).show();
+				}else{
+					alert('Another updated is already running');
+				}
 			}
 		}
 	}
@@ -132,7 +141,8 @@ function update_node(mode, close_parent){
 var listView = Titanium.UI.createTableView({
 	data : [],
 	top : '10%',
-	height : '80%',
+	//height : '80%',
+	bottom: '10%',
 	scrollable: true,
 	zIndex: 999
 });
@@ -214,10 +224,12 @@ listView.addEventListener('click',function(e){
 			type: e.row.name_table,
 			uid: jsonLogin.user.uid,
 			listView: listView,
-			up_node: update_node
+			up_node: update_node,
+			backgroundColor: '#000'
 		});
 		win_new.mode = 0;
 		win_new.picked 	 = win2.picked;
+		win_new.nameSelected = 'Fill Details...';
 		win_new.open();
 		win_new.addEventListener('focus', function(e){
 			toolActInd.hide();
@@ -230,7 +242,8 @@ listView.addEventListener('click',function(e){
 			url:'objects.js',
 			type: e.row.name_table,
 			uid: jsonLogin.user.uid,
-			up_node: update_node
+			up_node: update_node,
+			backgroundColor: '#000'
 		});
 		win_new.picked 	 = win2.picked;
 		win_new.open();
@@ -283,8 +296,9 @@ var a = Titanium.UI.createAlertDialog({
 
 offImage.addEventListener('click',function(e)
 {
+	
 	if ( isUpdating() ){
-		a.message = 'A data sync is in progress. Please wait a moment to log out.';
+		a.message = 'A data sync is in progress. Please wait a moment to logout.';
 		a.show();
 	}
 	else{
@@ -292,7 +306,8 @@ offImage.addEventListener('click',function(e)
 		indLog = Titanium.UI.createWindow({
 		    url: 'logDecision.js',
 			title:'Omadi CRM',		    
-		    fullscreen: false
+		    fullscreen: false,
+		    backgroundColor: '#000'
 		});
 
 		//Setting both windows with login values:
@@ -301,7 +316,7 @@ offImage.addEventListener('click',function(e)
 		indLog.picked 	 = win2.picked;
 	    
 	    indLog.open();
-	   	win2.close();    	
+	   	//win2.close();    	
 	}
 
 });
@@ -323,10 +338,13 @@ win2.add(databaseStatusView);
 var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
 if (updatedTime.fieldByName('timestamp') == 0){
 	isFirstTime = true;
+	db.execute('ALTER TABLE node ADD "changed_uid" INTEGER;');
+	db.close();
 	checkUpdate('from_menu');
 }
 else{
 	isFirstTime = false;
+	db.close();
 	checkUpdate();
 }
 
@@ -342,6 +360,8 @@ win2.addEventListener('android:back', function() {
 	a.show();
 });
 
+if(PLATFORM == 'android'){
+
 var activity = Ti.Android.currentActivity;
 
 activity.onCreateOptionsMenu = function(e) {
@@ -354,12 +374,16 @@ activity.onCreateOptionsMenu = function(e) {
 		checkUpdate('from_menu');
     });
 };
+}
 
 //Close database
 db.close();
 
 //Check behind the courtins if there is a new version - 5 minutes
 //setInterval( checkUpdate('auto') , 10000);
+if(PLATFORM != 'android'){
+	bottomButtons();
+}
 
 setInterval( function(){
 	Ti.API.info('========= Automated Update Check running ========= ');
@@ -405,3 +429,66 @@ setInterval( function(){
 		Ti.API.info('========= Database was opened, another update is running or you\'re offline ========= ');
 	}
 } , 300000);
+
+function bottomButtons(){
+	win2.remove(loggedView);
+	listView.top = '40';
+	//listView.height = '85%'
+	var update = Ti.UI.createButton({
+		title : 'Refresh',
+		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+	});
+	update.addEventListener('click', function() {
+		checkUpdate('from_menu');
+	});
+	
+	var space = Titanium.UI.createButton({
+		systemButton:Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+	});
+	var label = Titanium.UI.createButton({
+		title:name,
+		color:'#fff',
+		ellipsize: true,
+		wordwrap: false,
+		width: 200,
+		style:Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+	});
+
+	
+	var logout = Ti.UI.createButton({
+		title : 'Logout',
+		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+	});
+	logout.addEventListener('click', function() {
+		if ( isUpdating() ){
+		a.message = 'A data sync is in progress. Please wait a moment to logout.';
+		a.show();
+	}
+	else{
+		// window container
+		indLog = Titanium.UI.createWindow({
+		    url: 'logDecision.js',
+			title:'Omadi CRM',		    
+		    fullscreen: false,
+		    backgroundColor: '#000'
+		});
+
+		//Setting both windows with login values:
+		indLog.log		 = win2.log;
+		indLog.result	 = win2.result;
+		indLog.picked 	 = win2.picked;
+	    
+	    indLog.open();
+	   	//win2.close();    	
+	}
+	});
+	
+	// create and add toolbar
+	var toolbar = Titanium.UI.createToolbar({
+		items:[update, space, label, space, logout],
+		top:0,
+		borderTop:false,
+		borderBottom:true
+	});
+	win2.add(toolbar);
+};
