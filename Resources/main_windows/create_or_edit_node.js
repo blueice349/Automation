@@ -665,8 +665,10 @@ var title_head = Ti.UI.createLabel({
 	text: win.nameSelected,
 	color: '#FFFFFF',
 	font: {
-		fontSize: 24
-	}
+		fontSize: 22
+	},
+	ellipsize: true,
+	wordwrap: false 
 });
 header.add(title_head);
 
@@ -4078,7 +4080,7 @@ setTimeout(function(e){
 								arrImages = createImage(o_index, arrImages, vl_to_field, content[count], updated);	
 								o_index += 1;
 							}
-							if(decodedValues.length == 0){
+							if(decodedValues.length == 0 || o_index ==0){
 								arrImages = createImage(o_index, arrImages, defaultImageVal, content[count], false);	
 								o_index +=1;
 							}
@@ -4278,6 +4280,7 @@ setTimeout(function(e){
 			menu_second.addEventListener("click", function(e) {
 				var string_text = "";
 				var count_fields = 0;
+				var value_err = 0;
 				
 				for (var x in content){
 					try{
@@ -4286,6 +4289,23 @@ setTimeout(function(e){
 					catch(e){
 						
 					}
+					// Regular expression for phone
+					if(content[x].field_type=='phone'){
+						if(content[x].value != "" || content[x]!=null){
+							var str = content[x].value;
+							var regExp = /\D*(\d*)\D*[2-9][0-8]\d\D*[2-9]\d{2}\D*\d{4}\D*\d*\D*/g
+							var match = regExp.test(str);	
+							regExp.exec(str)
+							var matchVal = regExp.exec(str);	
+							if(match==false || (matchVal[1] != '' && matchVal[1] != null)){
+								value_err++;
+								string_text += content[x].value + ' is not a valid North American phone number.' + 
+								'\nPhone numbers should only contain numbers, +, -, (, ) and spaces and be like 999-999-9999. Please enter a valid ten-digit phone number.';	
+							}
+							break;
+						}
+					}
+					
 					if (((content[x].is_title === true) || (content[x].required == 'true') || (content[x].required === true) || (content[x].required == '1') || (content[x].required == 1) ) && ((content[x].value == '') || (content[x].value == null)) ){
 						count_fields++;
 						if (content[x].cardinality > 1){
@@ -4295,7 +4315,9 @@ setTimeout(function(e){
 							string_text += label[content[x].reffer_index].text+"\n";
 						}
 					}
+					
 				}
+				
 				if (count_fields > 0){
 					if (count_fields == 1){
 						if (mode == 0 ){
@@ -4309,8 +4331,10 @@ setTimeout(function(e){
 						a.message = 'The following fields are required and are empty:\n'+string_text;
 					}
 					a.show();
-				}
-				else{
+				}else if(value_err > 0){
+					a.message = string_text;
+					a.show();
+				}else{
 					var mode_msg = '';
 					if (mode == 0 ){
 						mode_msg = 'Saving node';
@@ -4466,7 +4490,7 @@ setTimeout(function(e){
 						
 						//If it is a composed field, just insert the number
 						//Build cardinality for fields
-						if ((content[j].composed_obj === true) && (content[j].cardinality > 1)){
+						if ((content[j].composed_obj === true) && (content[j].cardinality > 1) && (content[j].field_type !='image')){
 							//Point the last field							
 							if(content[j+1]){
 								while (content[j].field_name == content[j+1].field_name){
@@ -4809,7 +4833,7 @@ function openCamera(e) {
 	try {
 		var alertBox = Ti.UI.createAlertDialog();
 		alertBox.title = 'Camera';
-		Ti.Media.showCamera({
+		Ti.Media.openPhotoGallery({
 			
 			success : function(event) {
 				Ti.API.info("MIME TYPE: " + event.media.mimeType);
