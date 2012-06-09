@@ -31,6 +31,7 @@ var isFirstTime = false;
 Ti.include('/lib/functions.js');
 var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 unsetUse();
+
 //Geolocation module
 Ti.include('geolocation.js');
 
@@ -386,13 +387,29 @@ var alerts_img = Ti.UI.createImageView({
 databaseStatusView.add(alerts_img);
 
 alerts_img.addEventListener('click', function(){
-	a.message = 'Coming soon';
-	a.show();
+	setUse();
+	var win_new = Titanium.UI.createWindow({  
+		title: 'Message center',
+		fullscreen: false,
+		url:'message_center.js',
+		uid: jsonLogin.user.uid,
+		up_node: update_node
+	});
+	win_new.picked 	 = win2.picked;
+	win_new.open();
 });
 
 alerts_lb.addEventListener('click', function(){
-	a.message = 'Coming soon';
-	a.show();
+	setUse();
+	var win_new = Titanium.UI.createWindow({  
+		title: 'Message center',
+		fullscreen: false,
+		url:'message_center.js',
+		uid: jsonLogin.user.uid,
+		up_node: update_node
+	});
+	win_new.picked 	 = win2.picked;
+	win_new.open();
 });
 
 var home_lb = Ti.UI.createLabel({

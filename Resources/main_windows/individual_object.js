@@ -499,7 +499,12 @@ if (c_index > 0){
 						if(c_content[count]){
 							var auxRes  = db_display.execute('SELECT * FROM term_data WHERE tid='+c_content[count]);
 							Ti.API.info('We got : '+ auxRes.rowCount +' lines');
-							ref_name = auxRes.fieldByName("name");
+							if (auxRes.rowCount == 0){
+								ref_name = "Invalid term";
+							}
+							else{
+								ref_name = auxRes.fieldByName("name");
+							}
 							auxRes.close();
 						}
 					
@@ -1024,7 +1029,9 @@ if (Ti.Platform.name == 'android') {
 		
 		var node_form = db_act.execute('SELECT form_part FROM node WHERE nid='+win4.nid);
 		
-		Ti.API.info('Form part = '+node_form.fieldByName('form_part'));
+		Ti.API.info('Form node part = '+node_form.fieldByName('form_part'));
+		Ti.API.info('Form table part = '+_data.form_parts.parts.length);
+		
 		if(_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part'))+2 ){
 			Ti.API.info("Title = "+_data.form_parts.parts[node_form.fieldByName('form_part')+1].label);
 			
@@ -1033,7 +1040,7 @@ if (Ti.Platform.name == 'android') {
 				order: 0
 			});
 			
-			menu_zero.setIcon("/images/drop.png");
+			menu_zero.setIcon("/images/drop.png"); 
 	   
 			//======================================
 			// MENU - EVENTS

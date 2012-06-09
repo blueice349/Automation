@@ -136,6 +136,7 @@ else {
 			url : 'individual_object.js',
 			up_node: win3.up_node,
 			uid: win3.uid,
+			region_form: e.row.form_part
 		});
 
 		search.blur();

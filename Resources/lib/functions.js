@@ -518,7 +518,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 					json[obj].insert[i].title = "No Title";
 				
 				//'update' is a flag to decide whether the node needs to be synced to the server or not 
-				process_obj[process_obj.length] = 'INSERT OR IGNORE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ( '+json[obj].insert[i].nid+', '+json[obj].insert[i].created+' , '+json[obj].insert[i].changed+', "'+json[obj].insert[i].title.replace(/"/gi, "'")+'" , '+json[obj].insert[i].author_uid+' , 0 , "'+obj+'") ';
+				process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part ) VALUES ( '+json[obj].insert[i].nid+', '+json[obj].insert[i].created+' , '+json[obj].insert[i].changed+', "'+json[obj].insert[i].title.replace(/"/gi, "'")+'" , '+json[obj].insert[i].author_uid+' , 0 , "'+obj+'", '+json[obj].insert[i].form_part+'  ) ';
 				
 				if (aux_column > 0){
 					query = 'INSERT OR REPLACE  INTO '+obj+' (\'nid\', ';
@@ -678,7 +678,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 				json[obj].insert.title = "No Title";
 			
 			//'update' is a flag to decide whether the node needs to be synced to the server or not 
-			process_obj[process_obj.length] = 'INSERT OR IGNORE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ( '+json[obj].insert.nid+', '+json[obj].insert.created+' , '+json[obj].insert.changed+', "'+json[obj].insert.title.replace(/"/gi, "'")+'" , '+json[obj].insert.author_uid+' , 0 , "'+obj+'") ';
+			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part ) VALUES ( '+json[obj].insert.nid+', '+json[obj].insert.created+' , '+json[obj].insert.changed+', "'+json[obj].insert.title.replace(/"/gi, "'")+'" , '+json[obj].insert.author_uid+' , 0 , "'+obj+'", '+json[obj].insert.form_part+'  ) ';
 			
 			if (aux_column > 0){
 				query = 'INSERT OR REPLACE  INTO '+obj+' (\'nid\', ';
@@ -842,9 +842,9 @@ function process_object(json, obj, f_marks, progress, type_request){
 					json[obj].update[i].title = "No Title";
 				
 				//'update' is a flag to decide whether the node needs to be synced to the server or not 
-				//process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ( '+json[obj].update[i].nid+', '+json[obj].update[i].created+' , '+json[obj].update[i].changed+', "'+json[obj].update[i].title.replace(/"/gi, "'")+'" , '+json[obj].update[i].author_uid+' , 0 , "'+obj+'") ';
+				process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part ) VALUES ( '+json[obj].update[i].nid+', '+json[obj].update[i].created+' , '+json[obj].update[i].changed+', "'+json[obj].update[i].title.replace(/"/gi, "'")+'" , '+json[obj].update[i].author_uid+' , 0 , "'+obj+'", '+json[obj].update[i].form_part+'  ) ';
 				
-				process_obj[process_obj.length] = 'UPDATE node SET created="'+json[obj].update[i].created+'", changed="'+json[obj].update[i].changed+'", title="'+json[obj].update[i].title.replace(/"/gi, "'")+'" , author_uid='+json[obj].update[i].author_uid+' , flag_is_updated=0, table_name="'+obj+'" WHERE nid='+json[obj].update[i].nid;
+				//process_obj[process_obj.length] = 'UPDATE node SET created="'+json[obj].update[i].created+'", changed="'+json[obj].update[i].changed+'", title="'+json[obj].update[i].title.replace(/"/gi, "'")+'" , author_uid='+json[obj].update[i].author_uid+' , flag_is_updated=0, table_name="'+obj+'" WHERE nid='+json[obj].update[i].nid;
 				
 				if (aux_column > 0){
 					query = 'INSERT OR REPLACE  INTO '+obj+' (\'nid\', ';
@@ -1048,9 +1048,9 @@ function process_object(json, obj, f_marks, progress, type_request){
 				json[obj].update.title = "No Title";
 			
 			//'update' is a flag to decide whether the node needs to be synced to the server or not 
-			//process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ( '+json[obj].update.nid+', '+json[obj].update.created+' , '+json[obj].update.changed+', "'+json[obj].update.title.replace(/"/gi, "'")+'" , '+json[obj].update.author_uid+' , 0 , "'+obj+'") ';
+			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part ) VALUES ( '+json[obj].update.nid+', '+json[obj].update.created+' , '+json[obj].update.changed+', "'+json[obj].update.title.replace(/"/gi, "'")+'" , '+json[obj].update.author_uid+' , 0 , "'+obj+'", '+json[obj].update.form_part+'  ) ';
 			
-			process_obj[process_obj.length] = 'UPDATE node SET created="'+json[obj].update.created+'", changed="'+json[obj].update.changed+'", title="'+json[obj].update.title.replace(/"/gi, "'")+'" , author_uid='+json[obj].update.author_uid+' , flag_is_updated=0, table_name="'+obj+'" WHERE nid='+json[obj].update.nid;
+			//process_obj[process_obj.length] = 'UPDATE node SET created="'+json[obj].update.created+'", changed="'+json[obj].update.changed+'", title="'+json[obj].update.title.replace(/"/gi, "'")+'" , author_uid='+json[obj].update.author_uid+' , flag_is_updated=0, table_name="'+obj+'" WHERE nid='+json[obj].update.nid;
 			
 			if (aux_column > 0){
 				query = 'INSERT OR REPLACE  INTO '+obj+' (\'nid\', ';
@@ -1259,10 +1259,10 @@ function getJSON(){
 				var type_string		= type.fieldByName('display_name');
 
 				if (new_nodes.fieldByName('nid') < 0){
-					returning_json += '"'+new_nodes.fieldByName('nid')+'":{ "created":"'+new_nodes.fieldByName('created')+'", "nid":"'+new_nodes.fieldByName('nid')+'", "type":"'+type_string.toLowerCase()+'" ';
+					returning_json += '"'+new_nodes.fieldByName('nid')+'":{ "created":"'+new_nodes.fieldByName('created')+'", "nid":"'+new_nodes.fieldByName('nid')+'", "type":"'+type_string.toLowerCase()+'", "form_part":"'+new_nodes.fieldByName("form_part")+'" ';
 				}
 				else{
-					returning_json += '"'+new_nodes.fieldByName('nid')+'":{ "changed":"'+new_nodes.fieldByName('changed')+'", "nid":"'+new_nodes.fieldByName('nid')+'", "type":"'+type_string.toLowerCase()+'" ';					
+					returning_json += '"'+new_nodes.fieldByName('nid')+'":{ "changed":"'+new_nodes.fieldByName('changed')+'", "nid":"'+new_nodes.fieldByName('nid')+'", "type":"'+type_string.toLowerCase()+'", "form_part":"'+new_nodes.fieldByName("form_part")+'" ';					
 				}
 				Ti.API.info(returning_json);
 				while (node_fields.isValidRow()){
@@ -1447,11 +1447,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				db_installMe.execute('DROP TABLE IF EXISTS potential');
 				db_installMe.execute('CREATE TABLE "potential" ("nid" INTEGER PRIMARY KEY NOT NULL  UNIQUE )');
 	
-	
-				//Do not delete user_location, it is gonna always be in a small size
-				//db_installMe.execute('DROP TABLE IF EXISTS user_location');
-				//db_installMe.execute('CREATE TABLE "user_location" ("uid" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , "longitude" TEXT NOT NULL , "latitude" TEXT NOT NULL , "timestamp" INTEGER NOT NULL , "status" TEXT)');
-							
 				db_installMe.execute('DROP TABLE IF EXISTS user_roles');
 				db_installMe.execute('CREATE TABLE "user_roles" ("uid" INTEGER, "rid" INTEGER)');
 	
@@ -2511,13 +2506,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 			Ti.API.info('Found in seconds: '+ iResult);
 			Ti.API.info("Success for finding!");
 			
-			/*
-			for (var index in quotes ){
-				for (var jndex in quotes[index])
-					Ti.API.info("For index "+index+" in "+jndex+" we got "+quotes[index][jndex]);
-			}
-			*/
-			
 			//Vocabulary:
 			if (json.vocabularies){
 				Ti.API.info('Vocabularies');
@@ -2590,7 +2578,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								progress.set();
 							}
 
-							//Ti.API.info("About to delete vocabulary: "+json.vocabularies["delete"][i].vid);
 							//Deletes rows from terms
 							perform_vocabulary[perform_vocabulary.length] = 'DELETE FROM term_data WHERE "vid"='+json.vocabularies["delete"][i].vid;							
 							
@@ -2599,7 +2586,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 						}
 					}
 					else{
-						//Ti.API.info("About to delete vocabulary: "+json.vocabularies["delete"].vid);
 						if (progress != null){
 							//Increment Progress Bar
 							progress.set();
@@ -2657,7 +2643,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							if (weight_t == null)
 								weight_t = "";
 																
-							//Ti.API.info("About to insert term: "+tid_t);  	
 							perform_term [perform_term.length] = 'INSERT OR REPLACE  INTO term_data ( tid , vid, name, description, weight) VALUES ('+tid_t+','+vid_t+',"'+name_t+'","'+desc_t+'","'+weight_t+'")';
 							if (type_request == 'POST'){
 								perform_term [perform_term.length] = 'DELETE FROM term_data WHERE "tid"='+json.terms.insert[i].__negative_tid;
@@ -2684,7 +2669,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							if (weight_t == null)
 								weight_t = "";
 
-							//Ti.API.info("About to insert term: "+tid_t);
 							perform_term [perform_term.length] = 'INSERT OR REPLACE  INTO term_data ( tid , vid, name, description, weight) VALUES ('+tid_t+','+vid_t+',"'+name_t+'","'+desc_t+'","'+weight_t+'")';
 							if (type_request == 'POST'){
 								perform_term [perform_term.length] = 'DELETE FROM term_data WHERE "tid"='+json.terms.insert.__negative_tid;								
@@ -2700,7 +2684,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								//Increment Progress Bar
 								progress.set();
 							}
-							//Ti.API.info("About to update term: "+json.terms.update[i].tid);							
 							perform_term[perform_term.length] = 'UPDATE term_data SET "name"="'+json.terms.update[i].name+'", "description"="'+json.terms.update[i].description+'",  "weight"="'+json.terms.update[i].weight+'", "vid"='+json.terms.update[i].vid+'  WHERE "tid"='+json.terms.update[i].tid;
 						}
 					}
@@ -2710,7 +2693,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								progress.set();
 							}
 							
-							//Ti.API.info("About to update term: "+json.terms.update.tid);
 							perform_term[perform_term.length] = 'UPDATE term_data SET "name"="'+json.terms.update.name+'", "description"="'+json.terms.update.description+'",  "weight"="'+json.terms.update.weight+'", "vid"='+json.terms.update.vid+'  WHERE "tid"='+json.terms.update.tid;						
 					}
 				}
@@ -2721,7 +2703,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								//Increment Progress Bar
 								progress.set();
 							}
-							//Ti.API.info("About to delete term: "+json.terms["delete"][i].tid);
 							perform_term[perform_term.length] = 'DELETE FROM term_data WHERE "tid"='+json.terms["delete"][i].tid;
 						}
 					}
@@ -2730,7 +2711,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							//Increment Progress Bar
 							progress.set();
 						}
-						//Ti.API.info("About to delete term: "+json.terms["delete"].tid);
 						perform_term[perform_term.length] = 'DELETE FROM term_data WHERE "tid"='+json.terms["delete"].tid;
 					}
 				}
@@ -2950,11 +2930,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							progress.set();
 						}
 
-						//db_installMe.execute('DELETE FROM users WHERE "uid"=?', json.users["delete"].uid);
 						perform_user[perform_user.length] = 'DELETE FROM user WHERE "uid"='+json.users["delete"].uid;
 						perform_user[perform_user.length] = 'DELETE FROM user_roles WHERE "uid"='+json.users["delete"].uid;
 					}
-				Ti.API.info("Deleted Users sucefully!");
+					Ti.API.info("Deleted Users sucefully!");
 				}
 				
 				
@@ -2982,7 +2961,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 			
 			/*********** Regions *************/
 			if(json.regions){																		
-				Ti.API.info('>>>>>>>>>>>>>>>>####################### REGIONS #######################<<<<<<<<<<<<<<<<');
 				var perform_region = [];
 				
 				//Insert - Regions
@@ -3111,7 +3089,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 						duration: Ti.UI.NOTIFICATION_DURATION_LONG
 					}).show();
 					//Just to make sure database keeps locked
-					//setUse();
 					close_parent();
 				}
 				else if (mode == 0 ){
@@ -3120,13 +3097,11 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 						duration: Ti.UI.NOTIFICATION_DURATION_LONG
 					}).show();
 					//Just to make sure database keeps locked
-					//setUse();
 					close_parent();
 				}			
 				else{
 					unsetUse();
 				}	
-				
 			}
 		}
 		updateFileUploadTable(win, json);

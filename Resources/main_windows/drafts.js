@@ -82,6 +82,7 @@ else{
 			height : 'auto',
 			hasChild : false,
 			title : fullName,
+			form_part: resultsNames.fieldByName('form_part'),
 			_type: resultsNames.fieldByName('table_name')
 		});
 		
@@ -176,12 +177,13 @@ else {
 				listView: win3.listView,
 				up_node: win3.up_node,
 				uid: win3.uid,
+				region_form: e.row.form_part
 			});
 	
 			//Passing parameters
-			win_new.nid = e.row.nid;
-			win_new.picked 	 = win3.picked;
-			win_new.nameSelected = e.row.name;
+			win_new.nid 			= e.row.nid;
+			win_new.picked 	 		= win3.picked;
+			win_new.nameSelected 	= e.row.name;
 			
 			//Sets a mode to fields edition
 			win_new.mode = 1;
@@ -195,7 +197,7 @@ else {
 	listTableView.addEventListener('longclick', function(e) {
 		//Hide keyboard when returning 
 		firstClick = true;
-		Ti.API.info('Size : '+e.section.rowCount)
+		Ti.API.info('Size : '+e.section.rowCount);
 
 		if (e.row.nid != null){
 			Ti.API.info('DELETE');
