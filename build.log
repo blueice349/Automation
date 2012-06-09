@@ -1,17 +1,68 @@
 Logfile initialized
 [INFO] logfile = /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build.log
-[DEBUG] /Library/Application Support/Titanium/mobilesdk/osx/2.0.1.GA2/android/builder.py install Omadi /Volumes/data/android-sdk-mac_x86-1 /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile joseandro.omadi.com 8
+[DEBUG] /Library/Application Support/Titanium/mobilesdk/osx/2.0.1.GA2/android/builder.py simulator Omadi /Volumes/data/android-sdk-mac_x86-1 /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile joseandro.omadi.com 8 WVGA854 
+[INFO] Building Omadi for Android ... one moment
 [INFO] Titanium SDK version: 2.0.1 (04/12/12 16:33 999c68a)
 [DEBUG] Waiting for device to be ready ...
-[TRACE] adb devices returned 2 devices/emulators
+[TRACE] adb devices returned 1 devices/emulators
 [DEBUG] Device connected... (waited 0 seconds)
-[DEBUG] waited 0.014023 seconds on emulator to get ready
-[DEBUG] joseandro.omadi.com installed? False
+[DEBUG] waited 0.169038 seconds on emulator to get ready
+[DEBUG] joseandro.omadi.com installed? True
+[INFO] Fastdev server running, deploying in Fastdev mode
 [INFO] Copying CommonJS modules...
 [INFO] Copying project resources..
-[TRACE] COPYING MODIFIED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/database/db.sqlite => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/database/db.sqlite
+[INFO] Detected change in tiapp.xml, or assets deleted. Forcing full re-build...
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/android/appicon.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/appicon.png
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/android/icon.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/icon.png
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/app.js => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/app.js
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/database/db.sqlite => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/database/db.sqlite
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/database/gps_coordinates.sqlite => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/database/gps_coordinates.sqlite
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/fonts/AnnieUseYourTelescope.ttf => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/fonts/AnnieUseYourTelescope.ttf
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/fonts/Armata.ttf => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/fonts/Armata.ttf
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/fonts/BadScript.ttf => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/fonts/BadScript.ttf
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/fonts/FugazOne.ttf => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/fonts/FugazOne.ttf
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/fonts/Lobster.ttf => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/fonts/Lobster.ttf
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/fonts/Macondo.ttf => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/fonts/Macondo.ttf
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/fonts/Quicksand-Regular.ttf => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/fonts/Quicksand-Regular.ttf
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/fonts/Righteous-Regular.ttf => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/fonts/Righteous-Regular.ttf
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/images/cancel.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/images/cancel.png
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/images/default.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/images/default.png
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/images/drop.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/images/drop.png
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/images/edit.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/images/edit.png
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/images/email.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/images/email.png
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/images/high/save.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/images/high/save.png
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/images/item1.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/images/item1.png
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/images/low/save.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/images/low/save.png
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/images/medium/save.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/images/medium/save.png
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/images/message.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/images/message.png
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/images/minus.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/images/minus.png
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/images/phone.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/images/phone.png
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/images/plus.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/images/plus.png
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/images/plus_dark.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/images/plus_dark.png
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/images/plus_transparent.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/images/plus_transparent.png
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/images/save.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/images/save.png
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/lib/functions.js => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/lib/functions.js
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/main_windows/backToFirstStep.js => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/main_windows/backToFirstStep.js
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/main_windows/create_or_edit_node.js => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/main_windows/create_or_edit_node.js
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/main_windows/geolocation.js => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/main_windows/geolocation.js
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/main_windows/individual_object.js => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/main_windows/individual_object.js
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/main_windows/logDecision.js => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/main_windows/logDecision.js
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/main_windows/mainMenu.js => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/main_windows/mainMenu.js
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/main_windows/objects.js => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/main_windows/objects.js
+[TRACE] COPYING CREATED FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/main_windows/version.js => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/main_windows/version.js
 [TRACE] Generating Java Classes
 [DEBUG] Processing Android resource drawables
+[TRACE] COPYING FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/android/images/res-long-land-hdpi/default.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/res/drawable-long-land-hdpi/default_d44e27d97b.png
+[TRACE] COPYING FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/android/images/res-long-land-ldpi/default.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/res/drawable-long-land-ldpi/default_d44e27d97b.png
+[TRACE] COPYING FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/android/images/res-long-port-hdpi/default.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/res/drawable-long-port-hdpi/default_d44e27d97b.png
+[TRACE] COPYING FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/android/images/res-long-port-ldpi/default.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/res/drawable-long-port-ldpi/default_d44e27d97b.png
+[TRACE] COPYING FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/android/images/res-notlong-land-hdpi/default.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/res/drawable-notlong-land-hdpi/default_d44e27d97b.png
+[TRACE] COPYING FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/android/images/res-notlong-land-ldpi/default.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/res/drawable-notlong-land-ldpi/default_d44e27d97b.png
+[TRACE] COPYING FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/android/images/res-notlong-land-mdpi/default.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/res/drawable-notlong-land-mdpi/default_d44e27d97b.png
+[TRACE] COPYING FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/android/images/res-notlong-port-hdpi/default.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/res/drawable-notlong-port-hdpi/default_d44e27d97b.png
+[TRACE] COPYING FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/android/images/res-notlong-port-ldpi/default.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/res/drawable-notlong-port-ldpi/default_d44e27d97b.png
+[TRACE] COPYING FILE: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/android/images/res-notlong-port-mdpi/default.png => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/res/drawable-notlong-port-mdpi/default_d44e27d97b.png
+[DEBUG] app stylesheet => /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/gen/joseandro/omadi/com/ApplicationStylesheet.java
 [DEBUG] copying app icon: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/assets/Resources/appicon.png
 [DEBUG] generating theme.xml
 [DEBUG] found drawable-long-land-hdpi splash screen at /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/android/images/res-long-land-hdpi/default.png
@@ -36,11 +87,13 @@ Logfile initialized
 [DEBUG] copying /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/Resources/android/images/res-notlong-port-mdpi/default.png splash screen to /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/res/drawable-notlong-port-mdpi/background.png
 [DEBUG] copying default splash screen
 [TRACE] Writing out AndroidManifest.xml
+[DEBUG] adding /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/gen/joseandro/omadi/com/ApplicationStylesheet.java to javac build list
 [DEBUG] adding /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/gen/joseandro/omadi/com/OmadiActivity.java to javac build list
 [DEBUG] adding /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/gen/joseandro/omadi/com/OmadiAppInfo.java to javac build list
 [DEBUG] adding /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/gen/joseandro/omadi/com/OmadiApplication.java to javac build list
 [DEBUG] adding /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/gen/joseandro/omadi/com/R.java to javac build list
-[DEBUG] Building Java Sources: "/Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/gen/joseandro/omadi/com/OmadiActivity.java" "/Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/gen/joseandro/omadi/com/OmadiAppInfo.java" "/Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/gen/joseandro/omadi/com/OmadiApplication.java" "/Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/gen/joseandro/omadi/com/R.java"
+[DEBUG] Building Java Sources: "/Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/gen/joseandro/omadi/com/ApplicationStylesheet.java" "/Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/gen/joseandro/omadi/com/OmadiActivity.java" "/Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/gen/joseandro/omadi/com/OmadiAppInfo.java" "/Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/gen/joseandro/omadi/com/OmadiApplication.java" "/Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/gen/joseandro/omadi/com/R.java"
+[INFO] Waiting for SDCard to become available..
 [INFO] Compiling Android Resources... This could take some time
 [DEBUG] Android classes.dex built
 [DEBUG] creating unsigned apk: /Volumes/data/Vinay Bhavsar/Development/Omadi/Repository/omadi_mobile/build/android/bin/app-unsigned.apk
@@ -87,19 +140,41 @@ Logfile initialized
 [DEBUG] from resource zip => assets/tiapp.xml
 [DEBUG] from resource zip => res/drawable/appicon.png
 [DEBUG] from resource zip => res/drawable/background.png
+[DEBUG] from resource zip => res/drawable/close.png
+[DEBUG] from resource zip => res/drawable/facebook_login.png
+[DEBUG] from resource zip => res/drawable/facebook_login_down.png
+[DEBUG] from resource zip => res/drawable/facebook_login_wide.png
+[DEBUG] from resource zip => res/drawable/facebook_login_wide_down.png
+[DEBUG] from resource zip => res/drawable/facebook_logout.png
+[DEBUG] from resource zip => res/drawable/facebook_logout_down.png
 [DEBUG] from resource zip => res/layout/titanium_tabgroup.xml
 [DEBUG] from resource zip => AndroidManifest.xml
 [DEBUG] from resource zip => resources.arsc
+[DEBUG] from resource zip => res/drawable-hdpi/close.png
+[DEBUG] from resource zip => res/drawable-ldpi/close.png
 [DEBUG] from resource zip => res/drawable-long-land-hdpi/background.png
+[DEBUG] from resource zip => res/drawable-long-land-hdpi/default_d44e27d97b.png
 [DEBUG] from resource zip => res/drawable-long-land-ldpi/background.png
+[DEBUG] from resource zip => res/drawable-long-land-ldpi/default_d44e27d97b.png
 [DEBUG] from resource zip => res/drawable-long-port-hdpi/background.png
+[DEBUG] from resource zip => res/drawable-long-port-hdpi/default_d44e27d97b.png
 [DEBUG] from resource zip => res/drawable-long-port-ldpi/background.png
+[DEBUG] from resource zip => res/drawable-long-port-ldpi/default_d44e27d97b.png
 [DEBUG] from resource zip => res/drawable-notlong-land-hdpi/background.png
+[DEBUG] from resource zip => res/drawable-notlong-land-hdpi/default_d44e27d97b.png
 [DEBUG] from resource zip => res/drawable-notlong-land-ldpi/background.png
+[DEBUG] from resource zip => res/drawable-notlong-land-ldpi/default_d44e27d97b.png
 [DEBUG] from resource zip => res/drawable-notlong-land-mdpi/background.png
+[DEBUG] from resource zip => res/drawable-notlong-land-mdpi/default_d44e27d97b.png
 [DEBUG] from resource zip => res/drawable-notlong-port-hdpi/background.png
+[DEBUG] from resource zip => res/drawable-notlong-port-hdpi/default_d44e27d97b.png
 [DEBUG] from resource zip => res/drawable-notlong-port-ldpi/background.png
+[DEBUG] from resource zip => res/drawable-notlong-port-ldpi/default_d44e27d97b.png
 [DEBUG] from resource zip => res/drawable-notlong-port-mdpi/background.png
+[DEBUG] from resource zip => res/drawable-notlong-port-mdpi/default_d44e27d97b.png
+[DEBUG] from JAR /Library/Application Support/Titanium/mobilesdk/osx/2.0.1.GA2/android/modules/titanium-ui.jar => ti/modules/titanium/ui/widget/webview/binding.js
+[DEBUG] from JAR /Library/Application Support/Titanium/mobilesdk/osx/2.0.1.GA2/android/modules/titanium-ui.jar => ti/modules/titanium/ui/widget/webview/binding.min.js
+[DEBUG] from JAR /Library/Application Support/Titanium/mobilesdk/osx/2.0.1.GA2/android/modules/titanium-ui.jar => ti/modules/titanium/ui/widget/webview/json2.js
 [DEBUG] from JAR /Library/Application Support/Titanium/mobilesdk/osx/2.0.1.GA2/android/titanium.jar => org/appcelerator/titanium/build.properties
 [DEBUG] from JAR /Library/Application Support/Titanium/mobilesdk/osx/2.0.1.GA2/android/titanium.jar => org/appcelerator/titanium/res/drawable/background.png
 [DEBUG] from JAR /Library/Application Support/Titanium/mobilesdk/osx/2.0.1.GA2/android/titanium.jar => org/appcelerator/titanium/res/drawable/btn_check_buttonless_on.png
@@ -113,16 +188,17 @@ Logfile initialized
 [DEBUG] from JAR /Library/Application Support/Titanium/mobilesdk/osx/2.0.1.GA2/android/titanium.jar => org/appcelerator/titanium/res/drawable/btn_picker_selected.9.png
 [DEBUG] from JAR /Library/Application Support/Titanium/mobilesdk/osx/2.0.1.GA2/android/titanium.jar => org/appcelerator/titanium/res/drawable/default_icon.png
 [DEBUG] from JAR /Library/Application Support/Titanium/mobilesdk/osx/2.0.1.GA2/android/titanium.jar => org/appcelerator/titanium/res/drawable/photoDefault.png
-[DEBUG] from JAR /Library/Application Support/Titanium/mobilesdk/osx/2.0.1.GA2/android/modules/titanium-ui.jar => ti/modules/titanium/ui/widget/webview/binding.js
-[DEBUG] from JAR /Library/Application Support/Titanium/mobilesdk/osx/2.0.1.GA2/android/modules/titanium-ui.jar => ti/modules/titanium/ui/widget/webview/binding.min.js
-[DEBUG] from JAR /Library/Application Support/Titanium/mobilesdk/osx/2.0.1.GA2/android/modules/titanium-ui.jar => ti/modules/titanium/ui/widget/webview/json2.js
+[DEBUG] from JAR /Library/Application Support/Titanium/mobilesdk/osx/2.0.1.GA2/android/modules/titanium-facebook.jar => ti/modules/titanium/facebook/LICENSE
 [DEBUG] from JAR /Library/Application Support/Titanium/mobilesdk/osx/2.0.1.GA2/android/thirdparty.jar => org/apache/Commons-NOTICE.txt
 [DEBUG] from JAR /Library/Application Support/Titanium/mobilesdk/osx/2.0.1.GA2/android/thirdparty.jar => org/apache/HttpComponents-NOTICE.txt
 [DEBUG] from JAR /Library/Application Support/Titanium/mobilesdk/osx/2.0.1.GA2/android/thirdparty.jar => org/apache/mime4j-NOTICE.txt
 [DEBUG] installing native SDK libs
 [DEBUG] Waiting for device to be ready ...
-[TRACE] adb devices returned 2 devices/emulators
+[TRACE] adb devices returned 1 devices/emulators
 [DEBUG] Device connected... (waited 0 seconds)
-[DEBUG] waited 0.015072 seconds on emulator to get ready
-[INFO] Installing application on device
-[INFO] Application installed. Launch from drawer on Home Screen
+[DEBUG] waited 0.014674 seconds on emulator to get ready
+[INFO] Installing application on emulator
+[INFO] Launching application ... Omadi
+[TRACE] Launch output: Starting: Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] cmp=joseandro.omadi.com/.OmadiActivity }
+
+[INFO] Deployed Omadi ... Application should be running.
