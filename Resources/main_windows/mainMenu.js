@@ -11,6 +11,8 @@
  * @author Joseandro
  */
 
+Ti.include('/main_windows/create_or_edit_node.js');
+
 //Current window's instance
 var win2 = Ti.UI.currentWindow;
 
@@ -206,22 +208,20 @@ listView.addEventListener('click',function(e){
 	//Creates a new node_type
 	if (e.source.is_plus){
 		//alert('You clicked the '+e.row.display+' . His table\'s name is '+e.row.name_table);
-		toolActInd.show();
-		var win_new = Titanium.UI.createWindow({  
-			title: "New "+e.row.display,
-			fullscreen: false,
-			url : 'create_or_edit_node.js',
-			type: e.row.name_table,
-			uid: jsonLogin.user.uid,
-			listView: listView,
-			up_node: update_node
-		});
+		// toolActInd.show();
+		var win_new = create_or_edit_node.getWindow();
+		win_new.title = "New "+e.row.display;
+		win_new.type = e.row.name_table;
+		win_new.uid = jsonLogin.user.uid;
+		win_new.listView = listView;
+		win_new.up_node = update_node;
 		win_new.mode = 0;
-		win_new.picked 	 = win2.picked;
+		win_new.picked = win2.picked;
 		win_new.open();
-		win_new.addEventListener('focus', function(e){
-			toolActInd.hide();
-		});
+		setTimeout(function(){create_or_edit_node.loadUI();}, 100);
+		// win_new.addEventListener('focus', function(e){
+			// toolActInd.hide();
+		// });
 	}
 	else{
 		var win_new = Titanium.UI.createWindow({  
