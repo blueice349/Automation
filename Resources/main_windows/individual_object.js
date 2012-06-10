@@ -46,7 +46,7 @@ function form_min(min){
 }
 
 
-var db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+var db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 var results  = db_display.execute('SELECT * FROM '+win4.type+' WHERE  nid = '+win4.nid);
 
 //The view where the results are presented
@@ -232,7 +232,7 @@ if (c_index > 0){
 				keep_label	= c_label[count];
 				keep_sett	= c_settings[count];
 				keep_widget	= c_widget[count];
-				
+				keep_name 	= c_field_name[count];
 				//Test echo	
 				for (var tili in decoded_values){
 					Ti.API.info(tili+' value is equals to: '+decoded_values[tili]);
@@ -247,7 +247,8 @@ if (c_index > 0){
 					c_label[count]		= keep_label;
 					c_settings[count]	= keep_sett;
 					c_widget[count]		= keep_widget;
-					
+					c_field_name[count] = keep_name;
+						
 					Ti.API.info('For type: '+c_type[count]+' is associated '+c_content[count]);
 				}
 				
@@ -498,7 +499,12 @@ if (c_index > 0){
 						if(c_content[count]){
 							var auxRes  = db_display.execute('SELECT * FROM term_data WHERE tid='+c_content[count]);
 							Ti.API.info('We got : '+ auxRes.rowCount +' lines');
-							ref_name = auxRes.fieldByName("name");
+							if (auxRes.rowCount == 0){
+								ref_name = "Invalid term";
+							}
+							else{
+								ref_name = auxRes.fieldByName("name");
+							}
 							auxRes.close();
 						}
 					
@@ -722,6 +728,44 @@ if (c_index > 0){
 						});
 						count++;
 					break;
+
+					case 'vehicle_fields':
+						var fi_name		= c_field_name[count]
+						
+						fi_name = fi_name.split('___');
+						if (fi_name[1]){
+							var i_name = fi_name[1];
+						}
+						else{
+							var i_name = fi_name[0];
+						}
+						
+						i_name = i_name.charAt(0).toUpperCase() + i_name.slice(1);
+						
+						label[count] = Ti.UI.createLabel({
+							text: c_label[count]+" "+i_name,
+							width:  "33%",
+							textAlign: 'left',
+							left: 5,
+							touchEnabled: false,
+							field: true
+						});
+						
+						content[count] = Ti.UI.createLabel({
+							text: ""+c_content[count],
+							width:  "60%",
+							height: "100%",
+							textAlign: 'left',
+							left: "40%",
+							id: count
+						});
+						
+						content[count].addEventListener('click', function(e){
+							highlightMe( e.source.id );
+						});
+						count++;
+					break;
+
 					
 					case 'region_separator_mode':
 						label[count] = Ti.UI.createLabel({
@@ -978,19 +1022,73 @@ if (Ti.Platform.name == 'android') {
 		// MENU - UI
 		//======================================
 
-		var menu = e.menu; 
-		var menu_first = menu.add({ 			
+		var menu = e.menu;
+		var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() ); 
+		var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="'+win4.type+'"');
+		var _data = JSON.parse(json_data.fieldByName('_data'));
+		
+		var node_form = db_act.execute('SELECT form_part FROM node WHERE nid='+win4.nid);
+		
+		Ti.API.info('Form node part = '+node_form.fieldByName('form_part'));
+		Ti.API.info('Form table part = '+_data.form_parts.parts.length);
+		
+		if(_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part'))+2 ){
+			Ti.API.info("Title = "+_data.form_parts.parts[node_form.fieldByName('form_part')+1].label);
+			
+			var menu_zero = menu.add({ 			
+		  		title: _data.form_parts.parts[node_form.fieldByName('form_part')+1].label,
+				order: 0
+			});
+			
+			menu_zero.setIcon("/images/drop.png"); 
+	   
+			//======================================
+			// MENU - EVENTS
+			//======================================
+			
+			menu_zero.addEventListener("click", function(e) {	
+				
+				//Next window to be opened
+				var win_new = Titanium.UI.createWindow({
+					fullscreen : false,
+					title: win4.title,
+					type: win4.type,
+					url : 'create_or_edit_node.js',
+					listView: win4.listView,
+					up_node: win4.up_node,
+					uid: win4.uid,
+					region_form:node_form.fieldByName('form_part')+1 
+				});
+		
+				//Passing parameters
+				win_new.nid = win4.nid;
+				win_new.picked 	 = win4.picked;
+				win_new.nameSelected = win4.nameSelected;
+				
+				//Sets a mode to fields edition
+				win_new.mode = 1;
+				
+				win_new.open();
+				win4.close();
+			});
+			
+		}
+		
+		json_data.close();
+		db_act.close();
+		
+		var menu_edit = menu.add({ 			
 	  		title: 'Edit',
-			order: 0
+			order: 1
 		});
 		
-		menu_first.setIcon("/images/edit.png");
+		menu_edit.setIcon("/images/edit.png");
    
 		//======================================
 		// MENU - EVENTS
 		//======================================
 		
-		menu_first.addEventListener("click", function(e) {	
+		menu_edit.addEventListener("click", function(e) {	
 			//Next window to be opened
 			var win_new = Titanium.UI.createWindow({
 				fullscreen : false,
@@ -1001,6 +1099,7 @@ if (Ti.Platform.name == 'android') {
 				//log: win4.log,
 				up_node: win4.up_node,
 				uid: win4.uid,
+				region_form:node_form.fieldByName('form_part')
 			});
 	
 			//Passing parameters
@@ -1014,6 +1113,7 @@ if (Ti.Platform.name == 'android') {
 			win_new.open();
 			win4.close();
 		});
+		
 	}
 }
 

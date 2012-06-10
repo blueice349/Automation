@@ -26,16 +26,607 @@ var win = Ti.UI.currentWindow;
 //Sets only portrait mode
 win.orientationModes = [ Titanium.UI.PORTRAIT ];
 var mode = win.mode;
-var db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+var db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 
 var ONE_MB = 1048576;
 ///////////////////////////
 // Extra Functions
 //////////////////////////
 
+function keep_info( _flag_info ){
+	var a = Titanium.UI.createAlertDialog({
+		title:'Omadi',
+		buttonNames: ['OK']
+	});
+
+	var string_text = "";
+	var count_fields = 0;
+	
+	for (var x in content){
+		try{
+			Ti.API.info(label[x].text+' is required: '+content[x].required+' = '+content[x].value);
+		}
+		catch(e){
+			
+		}
+		if (((content[x].is_title === true) || (content[x].required == 'true') || (content[x].required === true) || (content[x].required == '1') || (content[x].required == 1) ) && ((content[x].value == '') || (content[x].value == null)) ){
+			count_fields++;
+			if (content[x].cardinality > 1){
+				string_text += "#"+content[x].private_index+" "+label[content[x].reffer_index].text+"\n";
+			}
+			else{
+				string_text += label[content[x].reffer_index].text+"\n";
+			}
+		}
+	}
+	if ((count_fields > 0) && (_flag_info != "draft")){
+		if (count_fields == 1){
+			if (mode == 0 ){
+				a.message = 'The field "'+string_text+'" is empty, please fill it out in order to save this node';
+			}
+			else{
+				a.message = 'The field "'+string_text+'" is empty, please fill it out in order to update this node';
+			}
+		}
+		else{
+			a.message = 'The following fields are required and are empty:\n'+string_text;
+		}
+		a.show();
+	}
+	else{
+		var mode_msg = '';
+		if (_flag_info == "draft"){
+			mode_msg = 'Saving draft';
+		}
+		else if (mode == 0 ){
+			mode_msg = 'Saving node';
+		}
+		else{
+			mode_msg = 'Updating node';
+		}
+		
+		showIndicator(mode_msg);
+		var db_put = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );			
+	
+		//
+		//Retrieve objects that need quotes:
+		//
+		var need_at = db_put.execute("SELECT field_name FROM fields WHERE bundle = '"+win.type+"' AND ( type='number_integer' OR type='number_decimal' ) ");
+		var quotes = new Array(); 
+		while (need_at.isValidRow()){
+			quotes[need_at.fieldByName('field_name')] = true;
+			need_at.next();
+		}
+		need_at.close();
+		
+		if ( mode == 0 ){
+			//Get smallest nid
+			var nid = db_put.execute("SELECT nid FROM node ORDER BY nid ASC ");
+			
+			if ( nid.fieldByName('nid') >= 0){
+				var new_nid = -1;
+			}
+			else{
+				var new_nid = nid.fieldByName('nid')-1;
+			}
+		}
+		
+		var query = "INSERT OR REPLACE INTO "+win.type+" ( 'nid', ";
+	
+		var _array_value	= new Array();
+		for (var x_j in content){ 
+			if((content[x_j].composed_obj === true) && (content[x_j].cardinality > 1)){
+				
+				if( (content[x_j].field_type == 'omadi_time') || (content[x_j].field_type == 'datestamp') ){
+					if (content[x_j].value != null)
+						var _vlr = Math.round(content[x_j].value/1000);
+					else
+						var _vlr = null;
+				}
+				else if( (content[x_j].field_type == 'number_integer') || (content[x_j].field_type == 'number_decimal') ){
+					if ((content[x_j].value == null) || (content[x_j].value == "") || (content[x_j].value == " ")){
+						var _vlr = null;
+					}
+					else{
+						var _vlr = content[x_j].value;
+					}
+				} 
+				else{
+					var _vlr = content[x_j].value;
+				}
+				
+				if (_array_value[content[x_j].field_name]){
+					_array_value[content[x_j].field_name].push(_vlr);
+					continue;
+				}
+				else{
+					_array_value[content[x_j].field_name] = new Array ();
+					_array_value[content[x_j].field_name].push(_vlr);
+					continue;
+				}
+			}
+		}
+		
+		//field names
+		for (var j_y = 0; j_y < content.length ; j_y++){
+			Ti.API.info('INDEX: '+j_y);
+			
+			//Is different of a region
+			if(!content[j_y]){
+				continue;
+			}
+	
+			//Point the last field
+			if(content[j_y+1]){
+				while (content[j_y].field_name == content[j_y+1].field_name){
+					j_y++;
+					if (content[j_y+1]){
+						//Go on
+					}
+					else{
+						//Finish, we found the point
+						break;
+					}
+				}
+			}
+			
+			if (j_y == content.length-1){
+				query += "'"+content[j_y].field_name+"' ) ";
+			}
+			else{
+				query += "'"+content[j_y].field_name+"', ";
+			}
+		}
+		
+		if (mode == 1){
+			query += ' VALUES ( '+win.nid+', ';
+		}
+		else{
+			query += ' VALUES ( '+new_nid+', ';
+		}
+	
+		//Values
+		var title_to_node = "";
+		
+		for (var j = 0; j <= content.length ; j++){
+			if (!content[j]){
+				continue;
+			}
+			
+			if(content[j].is_title === true){
+				if (title_to_node.charAt(0) == ""){
+					if (content[j].cardinality == -1){
+						var tit_aux = content[j].value;
+						if (tit_aux == null)
+							tit_aux = "";
+						else
+							tit_aux = tit_aux[0].title;
+
+						title_to_node = tit_aux;
+					}
+					else{
+						if (content[j].value == null){
+							title_to_node = "";
+						}
+						else{
+							title_to_node = content[j].value;
+						}
+					}
+				}
+				else{
+					if (content[j].cardinality == -1){
+						var tit_aux = content[j].value;
+						if (tit_aux == null)
+							tit_aux = "";
+						else
+							tit_aux = " - "+tit_aux[0].title;
+							
+						title_to_node += tit_aux;
+					}
+					else{
+						if (content[j].value == null){
+							title_to_node = "";
+						}
+						else{
+							title_to_node+= " - "+content[j].value;
+						}
+					}
+				}
+			}
+
+			Ti.API.info(content[j].field_type+' is the field');
+			
+			if (quotes[content[j].field_name] === true){
+				var mark = "";
+			}
+			else{
+				var mark = "'";
+			}
+	
+			if (content[j].value === null){
+				mark = "";
+			}
+	
+			var value_to_insert = ''; 
+			
+			//If it is a composed field, just insert the number
+			//Build cardinality for fields
+			if ((content[j].composed_obj === true) && (content[j].cardinality > 1)){
+				//Point the last field							
+				if(content[j+1]){
+					while (content[j].field_name == content[j+1].field_name){
+						j++;
+						if (content[j+1]){
+							//Go on
+						}
+						else{
+							//Finish, we found the point
+							break;
+						}
+					}
+				}
+				
+				//Treat the array
+				content_s = treatArray(_array_value[content[j].field_name], 6);
+				Ti.API.info('About to insert '+_array_value[content[j].field_name]);
+				// table structure:
+				// incremental, node_id, field_name, value
+				var db_jub = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+				
+				if (mode == 0) {
+					Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+new_nid+', \''+content[j].field_name+'\',  \''+content_s+'\' )');								
+					db_jub.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+new_nid+', \''+content[j].field_name+'\',  \''+content_s+'\' )');								
+				}
+				else{
+					Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+win.nid+', \''+content[j].field_name+'\',  \''+content_s+'\' )');
+					db_jub.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+win.nid+', \''+content[j].field_name+'\',  \''+content_s+'\' )');
+				}
+				
+				db_jub.close();
+				
+				// Code must to be a number since this database field accepts only integers numbers
+				// Token to indentify array of numbers is 7411317618171051229 
+				value_to_insert = 7411317618171051229;
+			}
+			else if ((content[j].field_type ==  'number_decimal') || (content[j].field_type ==  'number_integer')){
+				if ((content[j].value == '')|| (content[j].value == null)){
+					value_to_insert = 'null';
+					mark = "'";
+				}
+				else{
+					value_to_insert = content[j].value;
+					mark = '';
+				}
+			}
+			else if (content[j].field_type ==  'user_reference'){
+				if (content[j].getSelectedRow(0).uid == null){
+					value_to_insert = ''
+					mark			= '\'';
+				}
+				else{
+					value_to_insert = content[j].getSelectedRow(0).uid;
+					mark = '';
+				}
+			}
+			else if (content[j].field_type ==  'taxonomy_term_reference'){ 
+				if (content[j].widget == 'options_select'){
+					if (content[j].cardinality != -1){
+						if (content[j].getSelectedRow(0).tid == null){
+							value_to_insert = ''
+							mark			= '\'';
+						}
+						else{
+							value_to_insert = content[j].getSelectedRow(0).tid;
+							mark = '';
+						}
+					}
+					else{
+						
+						var vital_info = [];
+						
+						if (content[j].value == null){
+							vital_info.push("null");
+						}
+						else{
+							for (var v_info_tax in content[j].value ){
+								vital_info.push(content[j].value[v_info_tax].v_info.toString());
+							}
+						}
+						
+						//Treat the array
+						content_s = treatArray(vital_info, 6);
+						Ti.API.info('About to insert '+content[j].field_name);
+						// table structure:
+						// incremental, node_id, field_name, value
+						var db_jub = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+						
+						if (mode == 0) {
+							Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+new_nid+', \''+content[j].field_name+'\',  \''+content_s+'\' )');								
+							db_jub.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+new_nid+', \''+content[j].field_name+'\',  \''+content_s+'\' )');								
+						}
+						else{
+							Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+win.nid+', \''+content[j].field_name+'\',  \''+content_s+'\' )');
+							db_jub.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+win.nid+', \''+content[j].field_name+'\',  \''+content_s+'\' )');
+						}
+						
+						db_jub.close();
+						
+						// Code must to be a number since this database field accepts only integers numbers
+						// Token to indentify array of numbers is 7411317618171051229 
+						value_to_insert = 7411317618171051229;
+						mark = '';
+					}
+				}
+				else if( content[j].widget == 'taxonomy_autocomplete' ){
+					if ((content[j].tid == null) && (content[j].value == "")){
+						value_to_insert = '';
+						mark			= '\'';
+					}
+					else if ( (mode == 0) && (content[j].tid == null) && (content[j].value != "")){
+						if (content[j].restrict_new_autocomplete_terms != 1){
+							mark = '';
+							//Get smallest tid
+							var tid = db_put.execute("SELECT tid FROM term_data ORDER BY tid ASC ");
+							
+							if (tid.fieldByName('tid') >= 0){
+								var new_tid = -1;
+							}
+							else{
+								var new_tid = tid.fieldByName('tid')-1; 
+							}		
+							var date_created = Math.round(+new Date()/1000);
+							db_put.execute("INSERT INTO term_data (tid, vid, name, description, weight, created) VALUES ("+new_tid+", "+content[j].vid+", '"+content[j].value+"', '', '', '"+date_created+"'  )");
+							value_to_insert = new_tid;
+							
+							Ti.API.info('First tid is: '+new_tid+' and tid '+content[j].tid+' and value '+content[j].value);
+							tid.close();
+						}
+						else{
+							value_to_insert = '';
+						}
+						
+					}
+					else if ((content[j].tid != null)){
+						mark = '';
+						value_to_insert = content[j].tid;
+					}
+				}
+			}
+			else if (content[j].field_type ==  'omadi_reference'){
+				if(content[j].nid === null){
+					value_to_insert = '';	
+					mark			= '\'';
+				}
+				else{
+					mark = '';
+					value_to_insert = content[j].nid;
+				}
+			}
+			else if (content[j].field_type == 'list_boolean'){
+				if(content[j].value === true){
+					value_to_insert = 'true';	
+				}
+				else{
+					value_to_insert = 'false';
+				}
+			}
+			else if( (content[j].field_type == 'omadi_time') || (content[j].field_type == 'datestamp') ){
+				if (content[j].update_it === true ){
+					value_to_insert = Math.round(content[j].value/1000);
+				}
+				else{
+					mark = "'";
+					value_to_insert = '';
+				}
+			}
+			else{
+				value_to_insert = content[j].value;
+			}
+			
+			if (value_to_insert == ''){
+				mark			= '\'';
+			}
+			
+			if (j == content.length-1){
+				query += mark+""+value_to_insert+""+mark+" )";
+			}
+			else{
+				query += mark+""+value_to_insert+""+mark+", ";
+			}
+			Ti.API.info(content[j].field_type+' has value to insert '+value_to_insert);
+		}
+		
+		var has_bug = false;
+		try{
+			Ti.API.info('Title: '+title_to_node);
+			if (title_to_node == ""){
+				title_to_node = "No title";
+			}
+			//Insert into node table
+			var _now = Math.round(+new Date()/1000);
+			if (_flag_info == "draft"){
+				if (mode == 1){
+					Ti.API.info('UPDATE node SET changed="'+_now+'", title="'+title_to_node+'" , flag_is_updated=3, table_name="'+win.type+'", form_part ='+win.region_form+' WHERE nid='+win.nid);
+					db_put.execute('UPDATE node SET changed="'+_now+'", title="'+title_to_node+'" , flag_is_updated=3, table_name="'+win.type+'", form_part ='+win.region_form+' WHERE nid='+win.nid);
+				}
+				else{
+					Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part ) VALUES ('+new_nid+', '+_now+', 0, "'+title_to_node+'" , '+win.uid+', 3 , "'+win.type+'" , '+win.region_form+' )');
+					db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name , form_part ) VALUES ('+new_nid+', '+_now+', 0, "'+title_to_node+'" , '+win.uid+', 3 , "'+win.type+'", '+win.region_form+' )');
+				}
+			}
+			else if (mode == 1){
+				Ti.API.info('UPDATE node SET changed="'+_now+'", title="'+title_to_node+'" , flag_is_updated=1, table_name="'+win.type+'", form_part ='+win.region_form+' WHERE nid='+win.nid);
+				db_put.execute('UPDATE node SET changed="'+_now+'", title="'+title_to_node+'" , flag_is_updated=1, table_name="'+win.type+'", form_part ='+win.region_form+' WHERE nid='+win.nid);
+			}
+			else{
+				Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part ) VALUES ('+new_nid+', '+_now+', 0, "'+title_to_node+'" , '+win.uid+', 1 , "'+win.type+'", '+win.region_form+'  )');
+				db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part  ) VALUES ('+new_nid+', '+_now+', 0, "'+title_to_node+'" , '+win.uid+', 1 , "'+win.type+'"  , '+win.region_form+' )');
+			}
+			
+			//Insert into table
+			Ti.API.info("=====Query=== "+query);
+			if ( mode == 1 ){
+				var oldVal = db_put.execute('SELECT * FROM ' + win.type + ' WHERE nid='+win.nid);
+			}
+			db_put.execute(query);
+			
+			//If Images captured and not yet uploaded then store in file_uploaded_queue
+			for(var j = 0; j <= content.length; j++){
+				if(!content[j]) {
+					continue;
+				}
+				
+				var file_upload_nid; 
+				
+				if ( mode == 1 ){
+					file_upload_nid = win.nid;
+				}
+				else{
+					file_upload_nid = new_nid;
+				}
+					
+				if(content[j].field_type == 'image' && (content[j].cardinality > 1 || content[j].cardinality < 0)) {
+					var arrImages = content[j].arrImages;
+					for(k=0; k<arrImages.length; k++){
+						if(arrImages[k].imageData != null && arrImages[k].mimeType != null){
+						
+							var encodeImage = Ti.Utils.base64encode(arrImages[k].imageData);
+						
+							var mime = arrImages[k].mimeType;
+						
+							var imageName = 'image.'+ mime.substring(mime.indexOf('/')+1, mime.length);
+						
+							var is_exists = db_put.execute('SELECT delta, nid FROM file_upload_queue WHERE nid=' + file_upload_nid + 
+							' and delta='+ arrImages[k].private_index +' and field_name="' +content[j].field_name+ '";');
+						
+							if(is_exists.rowCount> 0){
+								db_put.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '", file_data="' + encodeImage + 
+								'", field_name="' +  content[j].field_name + '", file_name="' + imageName + '", delta=' + arrImages[k].private_index + 
+								' WHERE nid=' + file_upload_nid + ' and delta='+ arrImages[k].private_index +' and field_name="' +content[j].field_name+ '";');
+								continue;
+							}
+						
+							db_put.execute('INSERT INTO file_upload_queue (nid , file_data , field_name, file_name, delta) VALUES ('+
+						
+							file_upload_nid+', "'+encodeImage+'", "'+content[j].field_name+'", "'+imageName+'", '+arrImages[k].private_index+')');
+						}
+					}
+				}
+				else if ( content[j].field_type == 'image'){
+					if(content[j].imageData != null && content[j].mimeType != null){
+						var encodeImage = Ti.Utils.base64encode(content[j].imageData);
+						var mime = content[j].mimeType;
+						var imageName = 'image.'+ mime.substring(mime.indexOf('/')+1, mime.length);
+							
+						var is_exists = db_put.execute('SELECT delta, nid FROM file_upload_queue WHERE nid=' + file_upload_nid + ' and delta=' + content[j].private_index + ' and field_name="' + content[j].field_name + '";');
+						
+						if(is_exists.rowCount > 0) {
+							db_put.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '", file_data="' + encodeImage + '", field_name="' + content[j].field_name + '", file_name="' + imageName + '", delta=' + content[j].private_index 
+							+ ' WHERE nid=' + file_upload_nid + ' and delta=' + content[j].private_index + ' and field_name="' + content[j].field_name + '";');
+							continue;
+						}
+						db_put.execute('INSERT INTO file_upload_queue (nid , file_data , field_name, file_name, delta) VALUES ('+
+						file_upload_nid+', "'+encodeImage+'", "'+content[j].field_name+'", "'+imageName+'","'+content[j].private_index+'")');
+					}								
+				}
+				
+				if(content[j].field_type == 'image' && mode ==1){
+					db_put.execute('UPDATE ' + win.type + ' SET ' + content[j].field_name +'="'+ oldVal.fieldByName(content[j].field_name)+ '", ' + 
+					content[j].field_name +'___file_id="'+ oldVal.fieldByName(content[j].field_name +'___file_id') +'", ' +
+					content[j].field_name + '___status="'+ oldVal.fieldByName(content[j].field_name +'___status')+'" WHERE nid=' + file_upload_nid + ';' );
+				}	
+			}
+				
+			db_put.close();
+			has_bug = false;
+		}
+		catch(e){
+			Ti.API.info("Error----------" + e);
+	
+			if (_flag_info == 'draft'){
+				Ti.UI.createNotification({
+					message : 'An error has occurred when we tried to save this node as a draft, please try again'
+				}).show();
+			}
+			else if (mode == 1){
+				Ti.UI.createNotification({
+					message : 'An error has occurred when we tried to update this new node, please try again'
+				}).show();
+			}
+			else{
+				Ti.UI.createNotification({
+					message : 'An error has occurred when we tried to create this new node, please try again'
+				}).show();
+			}
+			has_bug = true;
+		}
+	
+		Ti.API.info('========= Updating new info running ========= '+_flag_info);
+		if  ((Titanium.Network.online) && (has_bug === false) && (_flag_info != 'draft') ) {
+			Ti.API.info('Submitting');
+			win.up_node(mode, close_me);
+		}
+		else if (has_bug === true){
+			Ti.API.info('Error');
+			close_me_delay();
+		}
+		else if ( !(Titanium.Network.online) || (_flag_info == 'draft') ){
+			if (_flag_info == 'draft'){
+				Ti.API.info('Draft creation');
+				Ti.UI.createNotification({
+					message : win.title+' has been successfully saved as a draft !'
+				}).show();
+			}
+			else if (mode == 1){
+				Ti.API.info('Off line update');
+				Ti.UI.createNotification({
+					message : win.title+' has been successfully updated, but you are now offline, node will be only local until you have a valid internet connection !'
+				}).show();
+			}
+			else{
+				Ti.API.info('Off line creation');
+				Ti.UI.createNotification({
+					message : win.title+' has been successfully created, but you are now offline, node will be only local until you have a valid internet connection !'
+				}).show();
+			}
+			close_me_delay();
+		}
+	}
+}
+
+function close_me_delay(){
+	setTimeout(function(){
+		hideIndicator();
+		win.close();
+	}, 3000);
+}
+
 function close_me(){
 	hideIndicator();
 	win.close();
+}
+
+//Return models based on a certain "make" if "make" is not present returns the whole database set
+function get_models(make){
+	var db_for_veh = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+	
+	var _aux_dt = db_for_veh.execute("SELECT DISTINCT model FROM _vehicles WHERE make LIKE '%"+make+"%'");
+	var _set_result = [];							
+	if (_aux_dt.rowCount > 0){
+		while(_aux_dt.isValidRow()){
+			_set_result.push(_aux_dt.fieldByName('model'));
+			_aux_dt.next();
+		}								
+	}
+	else{
+		var _aux_dt = db_display.execute("SELECT DISTINCT model FROM _vehicles");
+		while(_aux_dt.isValidRow()){
+			_set_result.push(_aux_dt.fieldByName('model'));
+			_aux_dt.next();
+		}
+	}
+	db_for_veh.close();
+	return _set_result;
 }
 
 function config_label(label){
@@ -617,7 +1208,7 @@ function open_mult_selector( obj ){
 
 		if (valid_return.length == 0){
 			obj.value = null
-			obj.text = "UNSET";
+			obj.text = "";
 		}
 		else{
 			obj.value = valid_return;
@@ -686,6 +1277,7 @@ resultView.add(viewContent);
 var regions			 = db_display.execute('SELECT * FROM regions WHERE node_type = "'+win.type+'" ORDER BY weight ASC');
 var fields_result	 = db_display.execute('SELECT * FROM fields WHERE bundle = "'+win.type+'" ORDER BY weight ASC');
 var bundle_titles	 = db_display.execute('SELECT title_fields FROM bundles WHERE bundle_name = "'+win.type+'" ');
+
 //Contents for node edits
 if (mode == 1){
 	var content_fields	 = db_display.execute('SELECT * FROM '+win.type+' WHERE nid = "'+win.nid+'" ');	
@@ -752,21 +1344,8 @@ setTimeout(function(e){
 	while (regions.isValidRow()){
 		
 		var reg_settings = JSON.parse(regions.fieldByName('settings'));
-		var evaluate_this = null; 
-
-		if (!reg_settings){
-			evaluate_this = null;
-		}
-		else if (mode == 0 ){
-			evaluate_this = reg_settings.creation_disabled;
-		}
-		else{
-			if(reg_settings!=null){
-				evaluate_this = reg_settings.update_disabled;
-			}
-		}
-		
-		if (reg_settings != null && evaluate_this){
+				
+		if (parseInt(reg_settings.form_part) > win.region_form ){
 			Ti.API.info('Region : '+regions.fieldByName('label')+' won\'t appear');
 		}
 		else{
@@ -899,7 +1478,7 @@ setTimeout(function(e){
 
 					//Add fields:
 					viewContent.add(label[count]);
-
+										
 					if (settings.cardinality > 1){
 						if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1) ){
 							var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = '+win.nid+' AND field_name = \''+field_arr[index_label][index_size].field_name+'\'');
@@ -917,7 +1496,6 @@ setTimeout(function(e){
 						else{
 							var decoded_values = new Array();
 							decoded_values[0] = field_arr[index_label][index_size].actual_value;
-							
 						}
 		   				
 						for (var o_index = 0 ; o_index < settings.cardinality ; o_index++){
@@ -926,7 +1504,7 @@ setTimeout(function(e){
 								var vl_to_field = decoded_values[o_index];
 							}
 							else{
-								var vl_to_field = "";
+								var vl_to_field = settings.state_default_value;
 							}
 							
 							if (field_arr[index_label][index_size].field_name == "license_plate___state"){
@@ -1081,7 +1659,12 @@ setTimeout(function(e){
 								usps: null,
 								title: " -- State -- "
 							}
-							
+							if (field_arr[index_label][index_size].actual_value != "" && field_arr[index_label][index_size].actual_value != "null" && field_arr[index_label][index_size].actual_value != null){
+							}
+							else{
+								field_arr[index_label][index_size].actual_value = settings.state_default_value;
+							}
+							Ti.API.info(settings.state_default_value);
 							//States
 							arr_picker.push({title:" -- State -- " , usps:null });
 							arr_picker.push({title:"Alabama" , usps:"AL" });
@@ -1880,7 +2463,7 @@ setTimeout(function(e){
 					//Create picker list
 					if (widget.type == 'options_select'){
 						label[count] = Ti.UI.createLabel({
-							text			: 'Select one '+field_arr[index_label][index_size].label,
+							text			: ''+field_arr[index_label][index_size].label,
 							color			: '#FFFFFF',
 							font 			: {
 												fontSize: 18
@@ -2058,7 +2641,7 @@ setTimeout(function(e){
 							count++;
 						}
 						else if (settings.cardinality == -1){
-							var sel_text = "UNSET";
+							var sel_text = "";
 							var _val_itens = [];
 							var _itens = "";
 							var _exist = [];
@@ -2565,7 +3148,7 @@ setTimeout(function(e){
 							}
 						}
 						Ti.API.info(secondary);
-						var db_bah = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
+						var db_bah = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 						var nodes = db_bah.execute(secondary);
 						Ti.API.info("Num of rows: "+nodes.rowCount);
 						while(nodes.isValidRow()){
@@ -2877,7 +3460,7 @@ setTimeout(function(e){
 	
 				case 'user_reference':
 					label[count] = Ti.UI.createLabel({
-						text			: 'Select one '+field_arr[index_label][index_size].label,
+						text			: ''+field_arr[index_label][index_size].label,
 						color			: '#FFFFFF',
 						font 			: {
 											fontSize: 18
@@ -3137,7 +3720,7 @@ setTimeout(function(e){
 									text_in_field = months_set[month]+" / "+day+" / "+year;
 								}
 								else{
-									//Let's show it as UNSET
+									//Let's show it as 
 									var currentDate = new Date();
 									var day = currentDate.getDate();
 									var month = currentDate.getMonth();
@@ -3149,7 +3732,7 @@ setTimeout(function(e){
 									}
 									else{
 										var vl_to_field = null;
-										text_in_field = "UNSET";
+										text_in_field = "";
 									}
 
 								}
@@ -3204,7 +3787,7 @@ setTimeout(function(e){
 								content[count].clear = clear;
 								mother_of_view.add(content[count].clear); 							
 								content[count].clear.addEventListener('click', function(e){
-									e.source.its_parent.text = "UNSET";
+									e.source.its_parent.text = "";
 									e.source.its_parent.value = null;
 								});
 								
@@ -3243,7 +3826,7 @@ setTimeout(function(e){
 								}
 								else{
 									var vl_to_field = null;
-									text_in_field = "UNSET";
+									text_in_field = "";
 								}
 
 							}
@@ -3300,7 +3883,7 @@ setTimeout(function(e){
 							content[count].clear = clear;
 							mother_of_view.add(content[count].clear); 							
 							content[count].clear.addEventListener('click', function(e){
-								e.source.its_parent.text = "UNSET";
+								e.source.its_parent.text = "";
 								e.source.its_parent.value = null;
 							});
 
@@ -3370,7 +3953,7 @@ setTimeout(function(e){
 									}
 									else{
 										var vl_to_field = null;
-										text_in_field = "UNSET";
+										text_in_field = "";
 									}
 								}
 
@@ -3427,7 +4010,7 @@ setTimeout(function(e){
 								content[count].clear = clear;
 								mother_of_view.add(content[count].clear); 							
 								content[count].clear.addEventListener('click', function(e){
-									e.source.its_parent.text = "UNSET";
+									e.source.its_parent.text = "";
 									e.source.its_parent.value = null;
 								});
 
@@ -3471,7 +4054,7 @@ setTimeout(function(e){
 								}
 								else{
 									var vl_to_field = null;
-									text_in_field = "UNSET";
+									text_in_field = "";
 								}
 							}
 
@@ -3526,7 +4109,7 @@ setTimeout(function(e){
 							content[count].clear = clear;
 							mother_of_view.add(content[count].clear); 							
 							content[count].clear.addEventListener('click', function(e){
-								e.source.its_parent.text = "UNSET";
+								e.source.its_parent.text = "";
 								e.source.its_parent.value = null;
 							});
 
@@ -3769,7 +4352,7 @@ setTimeout(function(e){
 							content[count].clear = clear;
 							mother_of_view.add(content[count].clear); 							
 							content[count].clear.addEventListener('click', function(e){
-								e.source.its_parent.text = "UNSET";
+								e.source.its_parent.text = "";
 								e.source.its_parent.value = null;
 							});
 
@@ -3832,7 +4415,7 @@ setTimeout(function(e){
 						content[count].clear = clear;
 						mother_of_view.add(content[count].clear); 							
 						content[count].clear.addEventListener('click', function(e){
-							e.source.its_parent.text = "UNSET";
+							e.source.its_parent.text = "";
 							e.source.its_parent.value = null;
 						});
 
@@ -3874,7 +4457,11 @@ setTimeout(function(e){
 					}
 					
 					i_name = i_name.charAt(0).toUpperCase() + i_name.slice(1);
-
+					
+					if(i_name == "Make"){
+						var _make_ref = reffer_index;
+					}
+					
 					//Add fields:
 					viewContent.add(label[count]);
 
@@ -3907,6 +4494,7 @@ setTimeout(function(e){
 							}
 							
 							content[count] = Ti.UI.createTextField({
+							
 								hintText		: "#"+o_index+" "+i_name,
 								private_index	: o_index,
 								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
@@ -3935,8 +4523,25 @@ setTimeout(function(e){
 						}
 					}
 					else{
+						var vl_to_field = field_arr[index_label][index_size].actual_value;
+						var data_terms = new Array();
+
+						if (i_name == "Make"){
+							var aux_dt = db_display.execute("SELECT DISTINCT make FROM _vehicles");
+							var keep_from_make = vl_to_field;
+							
+							while ( aux_dt.isValidRow() ){
+								data_terms.push(aux_dt.fieldByName("make"));
+								aux_dt.next();
+							} 
+						}
+						else{
+							data_terms = get_models(keep_from_make);
+						}
+						
 						content[count] = Ti.UI.createTextField({
-							hintText		: i_name,
+							hintText		: i_name+' ...',
+							fantasy_name	: i_name,
 							borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 							textAlign		: 'left',
 							left			: '3%',
@@ -3953,11 +4558,105 @@ setTimeout(function(e){
 							is_title		: field_arr[index_label][index_size].is_title,
 							composed_obj	: false,
 							cardinality		: settings.cardinality,
-							value			: field_arr[index_label][index_size].actual_value,
-							reffer_index	: reffer_index
+							value			: vl_to_field,
+							reffer_index	: reffer_index,
+							make_ind		: _make_ref, 
+							terms			: data_terms,
+							first_time		: true,
+							_make			: keep_from_make
 						});
+
+						//AUTOCOMPLETE TABLE
+						var autocomplete_table = Titanium.UI.createTableView({
+							top: top-getScreenHeight()*0.2,
+							searchHidden: true,
+							zIndex: 15,
+							height: getScreenHeight()*0.2,
+							backgroundColor: '#FFFFFF',
+							visible: false
+						});
+						content[count].autocomplete_table = autocomplete_table;
 						top += heightValue;
+	
+						viewContent.add(content[count].autocomplete_table);
 						
+						//
+						// TABLE EVENTS
+						//
+						content[count].autocomplete_table.addEventListener('click', function(e){
+							e.source.setValueF(e.rowData.title);
+							setTimeout(function(){
+									e.source.autocomplete_table.visible = false;
+									Ti.API.info(e.rowData.title+' was selected!');
+							}, 80);
+							
+						});
+						
+						content[count].addEventListener('blur', function(e){
+							e.source.autocomplete_table.visible = false;
+						});
+
+						content[count].addEventListener('focus', function(e){
+							if (e.source.fantasy_name == "Model"){
+								Ti.API.info(content[e.source.make_ind].value);
+								
+								if (content[e.source.make_ind].value == e.source._make){
+									Ti.API.info('User didn\'t change make');
+								}
+								else{
+									Ti.API.info('Make changed, reloading list')
+									e.source._make = content[e.source.make_ind].value;
+									e.source.terms = get_models(content[e.source.make_ind].value);
+									e.source.value = null;
+									e.source.first_time = true;
+								}
+							}
+						});
+						
+						//
+						// SEARCH EVENTS
+						//
+						content[count].addEventListener('change', function(e){
+							if (e.source.first_time === false){
+								var list = e.source.terms;
+								var func = function setValueF(value_f){
+									e.source.value	 	= value_f;
+									Ti.API.info('Value: '+value_f);
+								}
+								
+								if ((e.value != null) && (e.value != '')){
+								    table_data = [];
+							        for (var i = 0; i < list.length; i++)
+							        {
+							        	var rg = new RegExp(e.source.value,'i');
+							        	if (list[i].search(rg) != -1){
+							        		
+							        		//Create partial matching row
+											var row = Ti.UI.createTableViewRow(
+											{
+												height				: getScreenHeight()*0.10,
+												title				: list[i],
+												color				: '#000000',
+												autocomplete_table	: e.source.autocomplete_table,
+												setValueF			: func
+											});
+											// apply rows to data array
+											table_data.push(row);
+							        	}
+							        }
+									e.source.autocomplete_table.setData(table_data);
+									e.source.autocomplete_table.visible = true;
+								}
+								else{
+									e.source.autocomplete_table.visible = false;
+								}
+							}
+							else{
+								e.source.first_time = false;
+								}	
+						});
+	
+						//Add fields:
 						viewContent.add(content[count]);
 						count++;
 					}
@@ -4033,7 +4732,8 @@ setTimeout(function(e){
 								label 			: field_arr[index_label][index_size].label,
 								composed_obj	: true,
 								addButton		: null,
-								cardinality		: settings.cardinality
+								cardinality		: settings.cardinality,
+								value: null
 							});
 						viewContent.add(content[count]);
 						var decodedValues = [];
@@ -4161,7 +4861,8 @@ setTimeout(function(e){
 							bigImg 			: null,
 							mimeType		: null,
 							cardinality		: settings.cardinality,
-							isUpdated		: isUpdated
+							isUpdated		: isUpdated,
+							value: null
 						});
 						
 						if(isUpdated == true){
@@ -4221,10 +4922,6 @@ setTimeout(function(e){
 		}
 	}
 	toolActInd.hide();
-	var a = Titanium.UI.createAlertDialog({
-		title:'Omadi',
-		buttonNames: ['OK']
-	});
 	
 	//MENU
 	//======================================
@@ -4247,9 +4944,15 @@ setTimeout(function(e){
 			
 			var menu_second = menu.add({ 			
 		  		title: 'Save',
-				order: 1
+		  		order: 1
 			});
 			menu_second.setIcon("/images/save.png");
+	   
+		   	var menu_third = menu.add({ 			
+				title: 'Draft',
+				order: 3
+			});
+			menu_third.setIcon("/images/draft.png");
 	   
 			//======================================
 			// MENU - EVENTS
@@ -4274,515 +4977,12 @@ setTimeout(function(e){
 			//======================================
 			// MENU - EVENTS
 			//======================================
+			menu_third.addEventListener("click", function(e) {
+				keep_info('draft');
+			});
 			
 			menu_second.addEventListener("click", function(e) {
-				var string_text = "";
-				var count_fields = 0;
-				
-				for (var x in content){
-					try{
-						Ti.API.info(label[x].text+' is required: '+content[x].required+' = '+content[x].value);
-					}
-					catch(e){
-						
-					}
-					if (((content[x].is_title === true) || (content[x].required == 'true') || (content[x].required === true) || (content[x].required == '1') || (content[x].required == 1) ) && ((content[x].value == '') || (content[x].value == null)) ){
-						count_fields++;
-						if (content[x].cardinality > 1){
-							string_text += "#"+content[x].private_index+" "+label[content[x].reffer_index].text+"\n";
-						}
-						else{
-							string_text += label[content[x].reffer_index].text+"\n";
-						}
-					}
-				}
-				if (count_fields > 0){
-					if (count_fields == 1){
-						if (mode == 0 ){
-							a.message = 'The field "'+string_text+'" is empty, please fill it out in order to save this node';
-						}
-						else{
-							a.message = 'The field "'+string_text+'" is empty, please fill it out in order to update this node';
-						}
-					}
-					else{
-						a.message = 'The following fields are required and are empty:\n'+string_text;
-					}
-					a.show();
-				}
-				else{
-					var mode_msg = '';
-					if (mode == 0 ){
-						mode_msg = 'Saving node';
-					}
-					else{
-						mode_msg = 'Updating node';
-					}
-					
-					showIndicator(mode_msg);
-					var db_put = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );			
-
-					//
-					//Retrieve objects that need quotes:
-					//
-					var need_at = db_put.execute("SELECT field_name FROM fields WHERE bundle = '"+win.type+"' AND ( type='number_integer' OR type='number_decimal' ) ");
-					var quotes = new Array(); 
-					while (need_at.isValidRow()){
-						quotes[need_at.fieldByName('field_name')] = true;
-						need_at.next();
-					}
-					need_at.close();
-					
-					if ( mode == 0){
-						//Get smallest nid
-						var nid = db_put.execute("SELECT nid FROM node ORDER BY nid ASC ");
-						
-						if ( nid.fieldByName('nid') >= 0){
-							var new_nid = -1;
-						}
-						else{
-							var new_nid = nid.fieldByName('nid')-1;
-						}
-					}
-					
-					var query = "INSERT OR REPLACE INTO "+win.type+" ( 'nid', ";
-
-
-					var _array_value	= new Array();
-					for (var x_j in content){ 
-						if((content[x_j].composed_obj === true) && (content[x_j].cardinality > 1)){
-							
-							if( (content[x_j].field_type == 'omadi_time') || (content[x_j].field_type == 'datestamp') ){
-								if (content[x_j].value != null)
-									var _vlr = Math.round(content[x_j].value/1000);
-								else
-									var _vlr = null;
-							}
-							else if( (content[x_j].field_type == 'number_integer') || (content[x_j].field_type == 'number_decimal') ){
-								if ((content[x_j].value == null) || (content[x_j].value == "") || (content[x_j].value == " ")){
-									var _vlr = null;
-								}
-								else{
-									var _vlr = content[x_j].value;
-								}
-							} 
-							else{
-								var _vlr = content[x_j].value;
-							}
-							
-							if (_array_value[content[x_j].field_name]){
-								_array_value[content[x_j].field_name].push(_vlr);
-								continue;
-							}
-							else{
-								_array_value[content[x_j].field_name] = new Array ();
-								_array_value[content[x_j].field_name].push(_vlr);
-								continue;
-							}
-						}
-					}
-					
-					//field names
-					for (var j_y = 0; j_y < content.length ; j_y++){
-						Ti.API.info('INDEX: '+j_y);
-						
-						//Is different of a region
-						if(!content[j_y]){
-							continue;
-						}
-
-						//Point the last field
-						if(content[j_y+1]){
-							while (content[j_y].field_name == content[j_y+1].field_name){
-								j_y++;
-								if (content[j_y+1]){
-									//Go on
-								}
-								else{
-									//Finish, we found the point
-									break;
-								}
-							}
-						}
-						
-						if (j_y == content.length-1){
-							query += "'"+content[j_y].field_name+"' ) ";
-						}
-						else{
-							query += "'"+content[j_y].field_name+"', ";
-						}
-					}
-					
-					if (mode == 1){
-						query += ' VALUES ( '+win.nid+', ';
-					}
-					else{
-						query += ' VALUES ( '+new_nid+', ';
-					}
-
-					//Values
-					var title_to_node = "";
-					
-					for (var j = 0; j <= content.length ; j++){
-						if (!content[j]){
-							continue;
-						}
-						
-						if(content[j].is_title === true){
-							if (title_to_node.charAt(0) == ""){
-								if (content[j].cardinality == -1){
-									var tit_aux = content[j].value;
-									title_to_node = tit_aux[0].title;
-								}
-								else{
-									title_to_node = content[j].value;
-								}
-							}
-							else{
-								if (content[j].cardinality == -1){
-									var tit_aux = content[j].value;
-									title_to_node+= " - "+tit_aux[0].title;
-								}
-								else{
-									title_to_node+= " - "+content[j].value;
-								}
-							}
-						}
-						Ti.API.info('Title: '+title_to_node);
-						Ti.API.info(content[j].field_type+' is the field');
-						
-						if (quotes[content[j].field_name] === true){
-							var mark = "";
-						}
-						else{
-							var mark = "'";
-						}
-
-						if (content[j].value === null){
-							mark = "";
-						}
-
-						var value_to_insert = ''; 
-						
-						//If it is a composed field, just insert the number
-						//Build cardinality for fields
-						if ((content[j].composed_obj === true) && (content[j].cardinality > 1)){
-							//Point the last field							
-							if(content[j+1]){
-								while (content[j].field_name == content[j+1].field_name){
-									j++;
-									if (content[j+1]){
-										//Go on
-									}
-									else{
-										//Finish, we found the point
-										break;
-									}
-								}
-							}
-							
-							//Treat the array
-							content_s = treatArray(_array_value[content[j].field_name], 6);
-							Ti.API.info('About to insert '+_array_value[content[j].field_name]);
-							// table structure:
-							// incremental, node_id, field_name, value
-							var db_jub = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
-							
-							if (mode == 0) {
-								Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+new_nid+', \''+content[j].field_name+'\',  \''+content_s+'\' )');								
-								db_jub.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+new_nid+', \''+content[j].field_name+'\',  \''+content_s+'\' )');								
-							}
-							else{
-								Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+win.nid+', \''+content[j].field_name+'\',  \''+content_s+'\' )');
-								db_jub.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+win.nid+', \''+content[j].field_name+'\',  \''+content_s+'\' )');
-							}
-							
-							db_jub.close();
-							
-							// Code must to be a number since this database field accepts only integers numbers
-							// Token to indentify array of numbers is 7411317618171051229 
-							value_to_insert = 7411317618171051229;
-						}
-						else if ((content[j].field_type ==  'number_decimal') || (content[j].field_type ==  'number_integer')){
-							if ((content[j].value == '')|| (content[j].value == null)){
-								value_to_insert = 'null';
-								mark = "'";
-							}
-							else{
-								value_to_insert = content[j].value;
-								mark = '';
-							}
-						}
-						else if (content[j].field_type ==  'user_reference'){
-							if (content[j].getSelectedRow(0).uid == null){
-								value_to_insert = ''
-								mark			= '\'';
-							}
-							else{
-								value_to_insert = content[j].getSelectedRow(0).uid;
-								mark = '';
-							}
-						}
-						else if (content[j].field_type ==  'taxonomy_term_reference'){ 
-							if (content[j].widget == 'options_select'){
-								if (content[j].cardinality != -1){
-									if (content[j].getSelectedRow(0).tid == null){
-										value_to_insert = ''
-										mark			= '\'';
-									}
-									else{
-										value_to_insert = content[j].getSelectedRow(0).tid;
-										mark = '';
-									}
-								}
-								else{
-									
-									var vital_info = [];
-									
-									if (content[j].value == null){
-										vital_info.push("null");
-									}
-									else{
-										for (var v_info_tax in content[j].value ){
-											vital_info.push(content[j].value[v_info_tax].v_info.toString());
-										}
-									}
-									
-									//Treat the array
-									content_s = treatArray(vital_info, 6);
-									Ti.API.info('About to insert '+content[j].field_name);
-									// table structure:
-									// incremental, node_id, field_name, value
-									var db_jub = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
-									
-									if (mode == 0) {
-										Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+new_nid+', \''+content[j].field_name+'\',  \''+content_s+'\' )');								
-										db_jub.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+new_nid+', \''+content[j].field_name+'\',  \''+content_s+'\' )');								
-									}
-									else{
-										Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+win.nid+', \''+content[j].field_name+'\',  \''+content_s+'\' )');
-										db_jub.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+win.nid+', \''+content[j].field_name+'\',  \''+content_s+'\' )');
-									}
-									
-									db_jub.close();
-									
-									// Code must to be a number since this database field accepts only integers numbers
-									// Token to indentify array of numbers is 7411317618171051229 
-									value_to_insert = 7411317618171051229;
-									mark = '';
-								}
-							}
-							else if( content[j].widget == 'taxonomy_autocomplete' ){
-								if ((content[j].tid == null) && (content[j].value == "")){
-									value_to_insert = '';
-									mark			= '\'';
-								}
-								else if ( (mode == 0) && (content[j].tid == null) && (content[j].value != "")){
-									if (content[j].restrict_new_autocomplete_terms != 1){
-										mark = '';
-										//Get smallest tid
-										var tid = db_put.execute("SELECT tid FROM term_data ORDER BY tid ASC ");
-										
-										if (tid.fieldByName('tid') >= 0){
-											var new_tid = -1;
-										}
-										else{
-											var new_tid = tid.fieldByName('tid')-1; 
-										}		
-										var date_created = Math.round(+new Date()/1000);
-										db_put.execute("INSERT INTO term_data (tid, vid, name, description, weight, created) VALUES ("+new_tid+", "+content[j].vid+", '"+content[j].value+"', '', '', '"+date_created+"'  )");
-										value_to_insert = new_tid;
-										
-										Ti.API.info('First tid is: '+new_tid+' and tid '+content[j].tid+' and value '+content[j].value);
-										tid.close();
-									}
-									else{
-										value_to_insert = '';
-									}
-									
-								}
-								else if ((content[j].tid != null)){
-									mark = '';
-									value_to_insert = content[j].tid;
-								}
-							}
-						}
-						else if (content[j].field_type ==  'omadi_reference'){
-							if(content[j].nid === null){
-								value_to_insert = '';	
-								mark			= '\'';
-							}
-							else{
-								mark = '';
-								value_to_insert = content[j].nid;
-							}
-						}
-						else if (content[j].field_type == 'list_boolean'){
-							if(content[j].value === true){
-								value_to_insert = 'true';	
-							}
-							else{
-								value_to_insert = 'false';
-							}
-						}
-						else if( (content[j].field_type == 'omadi_time') || (content[j].field_type == 'datestamp') ){
-							if (content[j].update_it === true ){
-								value_to_insert = Math.round(content[j].value/1000);
-							}
-							else{
-								mark = "'";
-								value_to_insert = '';
-							}
-						}
-						else{
-							value_to_insert = content[j].value;
-						}
-						
-						if (value_to_insert == ''){
-							mark			= '\'';
-						}
-						
-						if (j == content.length-1){
-							query += mark+""+value_to_insert+""+mark+" )";
-						}
-						else{
-							query += mark+""+value_to_insert+""+mark+", ";
-						}
-						Ti.API.info(content[j].field_type+' has value to insert '+value_to_insert);
-					}
-					
-					var has_bug = false;
-					try{
-						//Insert into node table
-						var _now = Math.round(+new Date()/1000);
-						
-						if (mode == 1){
-							Ti.API.info('UPDATE node SET changed="'+_now+'", title="'+title_to_node+'" , flag_is_updated=1, table_name="'+win.type+'" WHERE nid='+win.nid);
-							db_put.execute('UPDATE node SET changed="'+_now+'", title="'+title_to_node+'" , flag_is_updated=1, table_name="'+win.type+'" WHERE nid='+win.nid);
-						}
-						else{
-							Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ('+new_nid+', '+_now+', 0, "'+title_to_node+'" , '+win.uid+', 1 , "'+win.type+'")');
-							db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name ) VALUES ('+new_nid+', '+_now+', 0, "'+title_to_node+'" , '+win.uid+', 1 , "'+win.type+'")');
-						}
-						
-						//Insert into table
-						Ti.API.info("=====Query=== "+query);
-						if ( mode == 1 ){
-							var oldVal = db_put.execute('SELECT * FROM ' + win.type + ' WHERE nid='+win.nid);
-						}
-						db_put.execute(query);
-						
-						//If Images captured and not yet uploaded then store in file_uploaded_queue
-						for(var j = 0; j <= content.length; j++){
-							if(!content[j]) {
-								continue;
-							}
-							
-							var file_upload_nid; 
-							
-							if ( mode == 1 ){
-								file_upload_nid = win.nid;
-							}
-							else{
-								file_upload_nid = new_nid;
-							}
-								
-							if(content[j].field_type == 'image' && (content[j].cardinality > 1 || content[j].cardinality < 0)) {
-								var arrImages = content[j].arrImages;
-								for(k=0; k<arrImages.length; k++){
-									if(arrImages[k].imageData != null && arrImages[k].mimeType != null){
-									
-										var encodeImage = Ti.Utils.base64encode(arrImages[k].imageData);
-									
-										var mime = arrImages[k].mimeType;
-									
-										var imageName = 'image.'+ mime.substring(mime.indexOf('/')+1, mime.length);
-									
-										var is_exists = db_put.execute('SELECT delta, nid FROM file_upload_queue WHERE nid=' + file_upload_nid + 
-										' and delta='+ arrImages[k].private_index +' and field_name="' +content[j].field_name+ '";');
-									
-										if(is_exists.rowCount> 0){
-											db_put.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '", file_data="' + encodeImage + 
-											'", field_name="' +  content[j].field_name + '", file_name="' + imageName + '", delta=' + arrImages[k].private_index + 
-											' WHERE nid=' + file_upload_nid + ' and delta='+ arrImages[k].private_index +' and field_name="' +content[j].field_name+ '";');
-											continue;
-										}
-									
-										db_put.execute('INSERT INTO file_upload_queue (nid , file_data , field_name, file_name, delta) VALUES ('+
-									
-										file_upload_nid+', "'+encodeImage+'", "'+content[j].field_name+'", "'+imageName+'", '+arrImages[k].private_index+')');
-									}
-								}
-							}
-							else if ( content[j].field_type == 'image'){
-								if(content[j].imageData != null && content[j].mimeType != null){
-									var encodeImage = Ti.Utils.base64encode(content[j].imageData);
-									var mime = content[j].mimeType;
-									var imageName = 'image.'+ mime.substring(mime.indexOf('/')+1, mime.length);
-										
-									var is_exists = db_put.execute('SELECT delta, nid FROM file_upload_queue WHERE nid=' + file_upload_nid + ' and delta=' + content[j].private_index + ' and field_name="' + content[j].field_name + '";');
-									
-									if(is_exists.rowCount > 0) {
-										db_put.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '", file_data="' + encodeImage + '", field_name="' + content[j].field_name + '", file_name="' + imageName + '", delta=' + content[j].private_index 
-										+ ' WHERE nid=' + file_upload_nid + ' and delta=' + content[j].private_index + ' and field_name="' + content[j].field_name + '";');
-										continue;
-									}
-									db_put.execute('INSERT INTO file_upload_queue (nid , file_data , field_name, file_name, delta) VALUES ('+
-									file_upload_nid+', "'+encodeImage+'", "'+content[j].field_name+'", "'+imageName+'","'+content[j].private_index+'")');
-								}								
-							}
-							
-							if(content[j].field_type == 'image' && mode ==1){
-								db_put.execute('UPDATE ' + win.type + ' SET ' + content[j].field_name +'="'+ oldVal.fieldByName(content[j].field_name)+ '", ' + 
-								content[j].field_name +'___file_id="'+ oldVal.fieldByName(content[j].field_name +'___file_id') +'", ' +
-								content[j].field_name + '___status="'+ oldVal.fieldByName(content[j].field_name +'___status')+'" WHERE nid=' + file_upload_nid + ';' );
-							}	
-						}
-							
-						db_put.close();
-						has_bug = false;
-					}
-					catch(e){
-						Ti.API.info("Error----------" + e);
-
-						if (mode == 1){
-							hideIndicator();
-							Ti.UI.createNotification({
-								message : 'An error has occurred when we tried to update this new node, please try again'
-							}).show();
-						}
-						else{
-							hideIndicator();
-							Ti.UI.createNotification({
-								message : 'An error has occurred when we tried to create this new node, please try again'
-							}).show();
-						}
-						has_bug = true;
-					}
-
-					Ti.API.info('========= Updating new info running ========= ');
-					if  ((Titanium.Network.online) && (has_bug === false)) {
-						win.up_node(mode, close_me);
-					}
-					else if (!(Titanium.Network.online)){
-						if (mode == 1){
-							hideIndicator();
-							Ti.UI.createNotification({
-								message : win.title+' has been successfully updated, but you are now offline, node will be only local until you have a valid internet connection !'
-							}).show();
-						}
-						else{
-							hideIndicator();
-							Ti.UI.createNotification({
-								message : win.title+' has been successfully created, but you are now offline, node will be only local until you have a valid internet connection !'
-							}).show();
-						}
-						win.close();
-					}
-					else if (has_bug === true){
-						win.close();
-					}
-				}
+				keep_info('normal');
 			});
 		};
 	}
@@ -4802,6 +5002,7 @@ setTimeout(function(e){
 		}
 		win.close();
 	});
+	
 } , 1000);
 
 // To open camera

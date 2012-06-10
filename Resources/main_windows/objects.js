@@ -38,8 +38,8 @@ win3.addEventListener('android:back', function() {
 //Lock database for background updates
 setUse();
 
-var db = Ti.Database.install('../database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
-var resultsNames  = db.execute('SELECT node.nid, node.title FROM node INNER JOIN '+win3.type+' ON node.nid='+win3.type+'.nid ORDER BY node.title ASC ');
+var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+var resultsNames  = db.execute('SELECT node.nid, node.title FROM node INNER JOIN '+win3.type+' ON node.nid='+win3.type+'.nid WHERE (node.flag_is_updated=0 OR node.flag_is_updated=1) ORDER BY node.title ASC ');
 
 var data = [];
 var i = 0;
@@ -136,6 +136,7 @@ else {
 			url : 'individual_object.js',
 			up_node: win3.up_node,
 			uid: win3.uid,
+			region_form: e.row.form_part
 		});
 
 		search.blur();
