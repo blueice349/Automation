@@ -3,3 +3,5 @@ tmp
 *.pyc
 *.pyo
 .pydevproject
+build.log
+build

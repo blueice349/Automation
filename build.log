@@ -29,3 +29,7 @@ Logfile initialized
 [TRACE] Launch output: Starting: Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] cmp=joseandro.omadi.com/.OmadiActivity }
 Warning: Activity not started, its current task has been brought to the front
 
+[INFO] Launching application ... Omadi
+[TRACE] Launch output: Starting: Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] cmp=joseandro.omadi.com/.OmadiActivity }
+
+[INFO] Deployed Omadi ... Application should be running.
