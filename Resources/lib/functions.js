@@ -1460,7 +1460,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				db_installMe.execute('CREATE TABLE "bundles" ("bid" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , "bundle_name" VARCHAR)');
 				
 				db_installMe.execute('DROP TABLE IF EXISTS fields');
-				db_installMe.execute('CREATE TABLE "fields" ("id" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE, "fid" INTEGER NOT NULL , "type" TEXT, "field_name" TEXT, "label" TEXT, "description" TEXT, "bundle" TEXT NOT NULL , "weight" INTEGER, "required" TEXT , "widget" TEXT, "settings" TEXT, "disabled" INTEGER DEFAULT 0)');
+				db_installMe.execute('CREATE TABLE "fields" ("id" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE, "fid" INTEGER NOT NULL , "type" TEXT, "field_name" TEXT, "label" TEXT, "description" TEXT, "bundle" TEXT NOT NULL , "region" TEXT, "weight" INTEGER, "required" TEXT , "widget" TEXT, "settings" TEXT, "disabled" INTEGER DEFAULT 0)');
 				
 				db_installMe.execute('DROP TABLE IF EXISTS term_data');
 				db_installMe.execute('CREATE TABLE "term_data" ("tid" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "vid" INTEGER, "name" VARCHAR, "description" VARCHAR, "weight" VARCHAR)');
@@ -1686,7 +1686,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							
 							//Encode:
 							var var_widget = JSON.stringify(json.fields.insert[i].widget);
-							var var_settings = JSON.stringify(json.fields.insert[i].settings); 
+							var var_settings = JSON.stringify(json.fields.insert[i].settings);
 							
 							var fid = json.fields.insert[i].fid;
 
@@ -1735,21 +1735,25 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							else
 								var widget = null;	
 							
-							if (var_settings != null)
+							if (var_settings != null){
 								var settings = var_settings.replace(/'/gi, '"');
-							else
+								var s = JSON.parse(settings);
+								var region = s.region;
+							}
+							else{
 								var settings = null;
-							
+								var region = null;
+							}
 							
 							//Multiple parts
 							if (json.fields.insert[i].settings.parts){
 								for (var f_value_i in json.fields.insert[i].settings.parts ) {
-									perform[perform.length] = "INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+f_value_i+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"' ,  '"+disabled+"' , '"+widget+"','"+settings+"' )";
+									perform[perform.length] = "INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+f_value_i+"','"+label+"','"+description+"','"+bundle+"','"+region+"',"+weight+", '"+required+"' ,  '"+disabled+"' , '"+widget+"','"+settings+"' )";
 								}
 							}
 							//Normal field
 							else {
-								perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"','"+label+"','"+description+"','"+bundle+"',"+weight+",'"+required+"','"+disabled+"','"+widget+"','"+settings+"' )";
+								perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"','"+label+"','"+description+"','"+bundle+"','"+region+"',"+weight+",'"+required+"','"+disabled+"','"+widget+"','"+settings+"' )";
 							}
 
 							var type = "";
@@ -1852,20 +1856,24 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 						else
 							var widget = null;	
 						
-						if (var_settings != null)
+						if (var_settings != null){
 							var settings = var_settings.replace(/'/gi, '"');
-						else
+							var s = JSON.parse(settings);
+							var region = s.region;
+						}else{
 							var settings = null;
+							var region = null;
+						}
 						
 						//Multiple parts
 						if (json.fields.insert.settings.parts){
 							for (var f_value_i in json.fields.insert.settings.parts ) {
-								perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+f_value_i+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"', '"+disabled+"','"+widget+"','"+settings+"' )";
+								perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+f_value_i+"','"+label+"','"+description+"','"+bundle+"','"+region+"',"+weight+", '"+required+"', '"+disabled+"','"+widget+"','"+settings+"' )";
 							}
 						}
 						//Normal field
 						else {
-							perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"', '"+disabled+"','"+widget+"','"+settings+"' )";
+							perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"','"+label+"','"+description+"','"+bundle+"','"+region+"',"+weight+", '"+required+"', '"+disabled+"','"+widget+"','"+settings+"' )";
 						}
 
 						var type = "";
@@ -1973,10 +1981,15 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							else
 								var widget = null;	
 							
-							if (var_settings != null)
+							if (var_settings != null){
 								var settings = var_settings.replace(/'/gi, '"');
-							else
+								var s = JSON.parse(settings);
+								var region = s.region;
+							}
+							else{
 								var settings = null;
+								var region = null;
+							}
 							
 							var tables = db_installMe.execute('SELECT * FROM fields WHERE fid = '+fid);
 							
@@ -2006,13 +2019,13 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								//Multiple parts
 								if (json.fields.update[i].settings.parts){
 									for (var f_value_i in json.fields.update[i].settings.parts ) {
-										perform[perform.length] = "INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+f_value_i+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"' ,  '"+disabled+"' , '"+widget+"','"+settings+"' )";
+										perform[perform.length] = "INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+f_value_i+"','"+label+"','"+description+"','"+bundle+"','"+region+"',"+weight+", '"+required+"' ,  '"+disabled+"' , '"+widget+"','"+settings+"' )";
 										//Ti.API.info('Field not presented in the database, creating field_name = '+field_name+"___"+f_value_i);
 									}
 								}
 								//Normal field
 								else {
-									perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"','"+label+"','"+description+"','"+bundle+"',"+weight+",'"+required+"','"+disabled+"','"+widget+"','"+settings+"' )";
+									perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"','"+label+"','"+description+"','"+bundle+"','"+region+"',"+weight+",'"+required+"','"+disabled+"','"+widget+"','"+settings+"' )";
 									//Ti.API.info('Field not presented in the database, creating field_name = '+field_name);
 								}
 	
@@ -2114,7 +2127,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 												//Run update script
 												Ti.API.info('Updated field_name = '+field_name+"___"+indField);
 												
-												perform[perform.length] = "UPDATE fields SET type='"+type+"', label='"+label+"', description='"+description+"', bundle='"+bundle+"', weight="+weight+", required='"+required+"', disabled='"+disabled+"', widget='"+widget+"', settings='"+settings+"'  WHERE id="+fi_array.fi_obj[f_base]['id'];
+												perform[perform.length] = "UPDATE fields SET type='"+type+"', label='"+label+"', description='"+description+"', bundle='"+bundle+"', region='"+region+"', weight="+weight+", required='"+required+"', disabled='"+disabled+"', widget='"+widget+"', settings='"+settings+"'  WHERE id="+fi_array.fi_obj[f_base]['id'];
 												
 												//Turn update flag off
 												missing_update[ indField ] = false;
@@ -2125,7 +2138,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									//Now we have the new properties, let's add them
 									for (var index in missing_update){
 										if (missing_update[index] === true){
-											perform[perform.length] = "INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+index+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"' ,  '"+disabled+"' , '"+widget+"','"+settings+"' )";
+											perform[perform.length] = "INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+index+"','"+label+"','"+description+"','"+bundle+"','"+region+"',"+weight+", '"+required+"' ,  '"+disabled+"' , '"+widget+"','"+settings+"' )";
 											Ti.API.info('Created a new field because of a new part, field_name = '+field_name+"___"+index);
 												
 											var type = "";
@@ -2170,7 +2183,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								else if (fi_array.fi_obj.length == 1){
 									//Run update script
 									Ti.API.info('Single updated for single part, fid = '+fid);
-									perform[perform.length] = "UPDATE fields SET type='"+type+"', label='"+label+"', description='"+description+"', bundle='"+bundle+"', weight="+weight+", required='"+required+"', disabled='"+disabled+"', widget='"+widget+"', settings='"+settings+"'  WHERE id="+fi_array.fi_obj[0]['id'];
+									perform[perform.length] = "UPDATE fields SET type='"+type+"', label='"+label+"', description='"+description+"', bundle='"+bundle+"', region='"+region+"', weight="+weight+", required='"+required+"', disabled='"+disabled+"', widget='"+widget+"', settings='"+settings+"'  WHERE id="+fi_array.fi_obj[0]['id'];
 								}
 								//Length == 0 has count_fi_database == 0, so it should not end here.
 								else{
@@ -2237,10 +2250,14 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 						else
 							var widget = null;	
 						
-						if (var_settings != null)
+						if (var_settings != null){
 							var settings = var_settings.replace(/'/gi, '"');
-						else
+							var s = JSON.parse(settings);
+							var region = s.region;
+						}else{
 							var settings = null;
+							var region = null;
+						}
 
 						var tables = db_installMe.execute('SELECT * FROM fields WHERE fid = '+fid);
 						
@@ -2270,13 +2287,13 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							//Multiple parts
 							if (json.fields.update.settings.parts){
 								for (var f_value_i in json.fields.update.settings.parts ) {
-									perform[perform.length] = "INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+f_value_i+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"' ,  '"+disabled+"' , '"+widget+"','"+settings+"' )";
+									perform[perform.length] = "INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+f_value_i+"','"+label+"','"+description+"','"+bundle+"','"+region+"',"+weight+", '"+required+"' ,  '"+disabled+"' , '"+widget+"','"+settings+"' )";
 									Ti.API.info('Field not presented in the database, creating field_name = '+field_name+"___"+f_value_i);
 								}
 							}
 							//Normal field
 							else {
-								perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"','"+label+"','"+description+"','"+bundle+"',"+weight+",'"+required+"','"+disabled+"','"+widget+"','"+settings+"' )";
+								perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"','"+label+"','"+description+"','"+bundle+"','"+region+"',"+weight+",'"+required+"','"+disabled+"','"+widget+"','"+settings+"' )";
 								Ti.API.info('Field not presented in the database, creating field_name = '+field_name);
 							}
 
@@ -2378,7 +2395,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 											//Run update script
 											Ti.API.info('Updated field_name = '+field_name+"___"+indField);
 											
-											perform[perform.length] = "UPDATE fields SET type='"+type+"', label='"+label+"', description='"+description+"', bundle='"+bundle+"', weight="+weight+", required='"+required+"', disabled='"+disabled+"', widget='"+widget+"', settings='"+settings+"'  WHERE id="+fi_array.fi_obj[f_base]['id'];
+											perform[perform.length] = "UPDATE fields SET type='"+type+"', label='"+label+"', description='"+description+"', bundle='"+bundle+"', region='"+region+"', weight="+weight+", required='"+required+"', disabled='"+disabled+"', widget='"+widget+"', settings='"+settings+"'  WHERE id="+fi_array.fi_obj[f_base]['id'];
 											
 											//Turn update flag off
 											missing_update[ indField ] = false;
@@ -2389,7 +2406,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								//Now we have the new properties, let's add them
 								for (var index in missing_update){
 									if (missing_update[index] === true){
-										perform[perform.length] = "INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+index+"','"+label+"','"+description+"','"+bundle+"',"+weight+", '"+required+"' ,  '"+disabled+"' , '"+widget+"','"+settings+"' )";
+										perform[perform.length] = "INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings) VALUES ("+fid+",'"+type+"','"+field_name+"___"+index+"','"+label+"','"+description+"','"+bundle+"','"+region+"',"+weight+", '"+required+"' ,  '"+disabled+"' , '"+widget+"','"+settings+"' )";
 										Ti.API.info('Created a new field because of a new part, field_name = '+field_name+"___"+index);
 											
 										var type = "";
@@ -2434,7 +2451,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							else if (fi_array.fi_obj.length == 1){
 								//Run update script
 								Ti.API.info('Single updated for single part, fid = '+fid);
-								perform[perform.length] = "UPDATE fields SET type='"+type+"', label='"+label+"', description='"+description+"', bundle='"+bundle+"', weight="+weight+", required='"+required+"', disabled='"+disabled+"', widget='"+widget+"', settings='"+settings+"'  WHERE id="+fi_array.fi_obj[0]['id'];
+								perform[perform.length] = "UPDATE fields SET type='"+type+"', label='"+label+"', description='"+description+"', bundle='"+bundle+"', region='"+region+"', weight="+weight+", required='"+required+"', disabled='"+disabled+"', widget='"+widget+"', settings='"+settings+"'  WHERE id="+fi_array.fi_obj[0]['id'];
 							}
 							//Length == 0 has count_fi_database == 0, so it should not end here.
 							else{

@@ -12,6 +12,7 @@
 
 //Common used functions
 Ti.include('/lib/functions.js');
+Ti.include('/main_windows/create_or_edit_node.js');
 
 //Current window's instance
 var win4 = Ti.UI.currentWindow;
@@ -833,7 +834,7 @@ if (c_index > 0){
 							}else{
 								continue;
 							}
-							arrImages = createImage(arrImages, vl_to_field, content[count], updated);
+							arrImages = createImage1(arrImages, vl_to_field, content[count], updated);
 						}
 						content[count].arrImages = arrImages;
 					}
@@ -1101,6 +1102,7 @@ if (Ti.Platform.name == 'android') {
 				uid: win4.uid,
 				region_form:node_form.fieldByName('form_part')
 			});
+
 	
 			//Passing parameters
 			win_new.nid = win4.nid;
@@ -1111,6 +1113,7 @@ if (Ti.Platform.name == 'android') {
 			win_new.mode = 1;
 			
 			win_new.open();
+			setTimeout(function(){create_or_edit_node.loadUI();}, 100);
 			win4.close();
 		});
 		
@@ -1124,7 +1127,7 @@ db_display.close();
 bottomBack(win4);
 
 
-function createImage(arrImages, data, scrollView, updated){
+function createImage1(arrImages, data, scrollView, updated){
 	contentImage = Ti.UI.createImageView({
 		height			: 80,
 		width			: 80,
