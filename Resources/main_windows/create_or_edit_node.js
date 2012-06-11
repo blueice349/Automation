@@ -1347,9 +1347,10 @@ create_or_edit_node.loadUI = function() {
 	while(regions.isValidRow()) {
 		var reg_settings = JSON.parse(regions.fieldByName('settings'));
 
-		if(reg_settings != null && evaluate_this) {
-			Ti.API.info('Region : ' + regions.fieldByName('label') + ' won\'t appear');
-		} else {
+		if (parseInt(reg_settings.form_part) > win.region_form ){
+			Ti.API.info('Region : '+regions.fieldByName('label')+' won\'t appear');
+		}
+		else {
 			var regionHeader = Ti.UI.createLabel({
 				text : regions.fieldByName('label') + ' :',
 				color : '#000000',
@@ -4924,9 +4925,12 @@ create_or_edit_node.loadUI = function() {
 				viewContent.add(regionView);
 			}
 		}
+			
+		}
 		regions.next();
 		regionCount++;
 	}
+	
 	regions.close();
 	if(content_fields != null) {
 		content_fields.close();
@@ -4956,6 +4960,7 @@ create_or_edit_node.loadUI = function() {
 			}
 		}
 	}, 100);
+	
 	var a = Titanium.UI.createAlertDialog({
 		title : 'Omadi',
 		buttonNames : ['OK']
@@ -5009,6 +5014,7 @@ create_or_edit_node.loadUI = function() {
 				win.close();
 
 			});
+			
 			//======================================
 			// MENU - EVENTS
 			//======================================
@@ -5028,7 +5034,8 @@ create_or_edit_node.loadUI = function() {
 				message : win.title + ' update was cancelled !',
 				duration : Ti.UI.NOTIFICATION_DURATION_LONG
 			}).show();
-		} else {
+		} 
+		else {
 			Ti.UI.createNotification({
 				message : win.title + ' creation was cancelled !',
 				duration : Ti.UI.NOTIFICATION_DURATION_LONG
