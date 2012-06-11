@@ -31,7 +31,7 @@ var resultView;
 
 var db_display;
 
-var mode = win.mode;
+var mode;
 var db_display;
 
 var ONE_MB = 1048576;
@@ -54,7 +54,9 @@ create_or_edit_node.getWindow = function() {
 			zIndex : 10
 		});
 		resultView.add(viewContent);
-	} else {
+		mode = win.mode;
+	} 
+	else {
 		win = Titanium.UI.createWindow({
 			fullscreen : false
 		});
@@ -1336,11 +1338,12 @@ create_or_edit_node.loadUI = function() {
 		var content_fields	 = db_display.execute('SELECT * FROM '+win.type+' WHERE nid = "'+win.nid+'" ');	
 	}
 	
+	/*
 	var titles_required = "";
 	if (bundle_titles.isValidRow()){
 		titles_required	= JSON.parse(bundle_titles.fieldByName('title_fields'));	
 	}
-
+	*/
 	var y = 0;
 	var regionCount = 0;
 	var expandedRegion = 0;
