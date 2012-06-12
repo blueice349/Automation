@@ -209,6 +209,7 @@ listView.addEventListener('click',function(e){
 		win_new.up_node = update_node;
 		win_new.mode = 0;
 		win_new.picked = win2.picked;
+		win_new.region_form = 0;
 		win_new.open();
 		setTimeout(function(){create_or_edit_node.loadUI();}, 100);
 		// win_new.addEventListener('focus', function(e){
