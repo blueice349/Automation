@@ -5,9 +5,21 @@ Logfile initialized
 [INFO] Titanium SDK version: 2.0.1 (04/12/12 16:33 999c68a)
 [DEBUG] Waiting for device to be ready ...
 [TRACE] adb devices returned 1 devices/emulators
-[DEBUG] Device connected... (waited 0 seconds)
-[DEBUG] waited 0.169038 seconds on emulator to get ready
-[DEBUG] joseandro.omadi.com installed? True
+[TRACE] adb devices returned 1 devices/emulators
+[TRACE] adb devices returned 1 devices/emulators
+[TRACE] adb devices returned 1 devices/emulators
+[TRACE] adb devices returned 1 devices/emulators
+[TRACE] adb devices returned 1 devices/emulators
+[TRACE] adb devices returned 1 devices/emulators
+[TRACE] adb devices returned 1 devices/emulators
+[TRACE] adb devices returned 1 devices/emulators
+[TRACE] adb devices returned 1 devices/emulators
+[TRACE] adb devices returned 1 devices/emulators
+[TRACE] adb devices returned 1 devices/emulators
+[DEBUG] Device connected... (waited 55 seconds)
+[DEBUG] waited 55.283758 seconds on emulator to get ready
+[INFO] Waiting for the Android Emulator to become available
+[DEBUG] joseandro.omadi.com installed? False
 [INFO] Fastdev server running, deploying in Fastdev mode
 [INFO] Copying CommonJS modules...
 [INFO] Copying project resources..
@@ -196,7 +208,7 @@ Logfile initialized
 [DEBUG] Waiting for device to be ready ...
 [TRACE] adb devices returned 1 devices/emulators
 [DEBUG] Device connected... (waited 0 seconds)
-[DEBUG] waited 0.014674 seconds on emulator to get ready
+[DEBUG] waited 0.013448 seconds on emulator to get ready
 [INFO] Installing application on emulator
 [INFO] Launching application ... Omadi
 [TRACE] Launch output: Starting: Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] cmp=joseandro.omadi.com/.OmadiActivity }
