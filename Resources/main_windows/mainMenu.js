@@ -200,7 +200,6 @@ listView.addEventListener('click',function(e){
 	//Creates a new node_type
 	if (e.source.is_plus){
 		//alert('You clicked the '+e.row.display+' . His table\'s name is '+e.row.name_table);
-
 		// toolActInd.show();
 		var win_new = create_or_edit_node.getWindow();
 		win_new.title = "New "+e.row.display;

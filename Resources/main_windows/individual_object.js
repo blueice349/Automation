@@ -1089,20 +1089,15 @@ if (Ti.Platform.name == 'android') {
 		// MENU - EVENTS
 		//======================================
 		
-		menu_edit.addEventListener("click", function(e) {	
+		menu_edit.addEventListener("click", function(e) {								
 			//Next window to be opened
-			var win_new = Titanium.UI.createWindow({
-				fullscreen : false,
-				title: win4.title,
-				type: win4.type,
-				url : 'create_or_edit_node.js',
-				listView: win4.listView,
-				//log: win4.log,
-				up_node: win4.up_node,
-				uid: win4.uid,
-				region_form:node_form.fieldByName('form_part')
-			});
-
+			var win_new = create_or_edit_node.getWindow();
+			win_new.title = win4.title;
+			win_new.type = win4.type;
+			win_new.listView = win4.listView;
+			win_new.up_node = win4.up_node;
+			win_new.uid = win4.uid;
+			win_new.region_form = node_form.fieldByName('form_part');
 	
 			//Passing parameters
 			win_new.nid = win4.nid;

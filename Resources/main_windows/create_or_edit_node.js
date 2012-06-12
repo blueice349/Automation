@@ -31,9 +31,6 @@ var resultView;
 
 var db_display;
 
-var mode;
-var db_display;
-
 var ONE_MB = 1048576;
 
 var create_or_edit_node = {};
@@ -54,9 +51,7 @@ create_or_edit_node.getWindow = function() {
 			zIndex : 10
 		});
 		resultView.add(viewContent);
-		mode = win.mode;
-	} 
-	else {
+	} else {
 		win = Titanium.UI.createWindow({
 			fullscreen : false
 		});
@@ -1333,24 +1328,13 @@ create_or_edit_node.loadUI = function() {
 	db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 	regions			 = db_display.execute('SELECT * FROM regions WHERE node_type = "'+win.type+'" ORDER BY weight ASC');
 	
-	//Contents for node edits
-	if (mode == 1){
-		var content_fields	 = db_display.execute('SELECT * FROM '+win.type+' WHERE nid = "'+win.nid+'" ');	
-	}
-	
-	/*
-	var titles_required = "";
-	if (bundle_titles.isValidRow()){
-		titles_required	= JSON.parse(bundle_titles.fieldByName('title_fields'));	
-	}
-	*/
 	var y = 0;
 	var regionCount = 0;
 	var expandedRegion = 0;
 	while(regions.isValidRow()) {
 		var reg_settings = JSON.parse(regions.fieldByName('settings'));
 
-		if (parseInt(reg_settings.form_part) > win.region_form ){
+		if (reg_settings != null && parseInt(reg_settings.form_part) > win.region_form ){
 			Ti.API.info('Region : '+regions.fieldByName('label')+' won\'t appear');
 		}
 		else {
