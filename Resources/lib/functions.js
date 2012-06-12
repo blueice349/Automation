@@ -4287,7 +4287,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 		var row_matches = [];
 		if(criteria.search_criteria != null && criteria.search_criteria != "") {
 			var instances = omadi_fields_get_fields(win, db_display);
-			 usort(criteria['search_criteria'], '_list_search_criteria_search_order');
+		    usort(criteria['search_criteria'], '_list_search_criteria_search_order');
 			for(var criteria_index in criteria.search_criteria) {
 				var criteria_row = criteria.search_criteria[criteria_index];
 				row_matches[criteria_index] = false;
@@ -4616,7 +4616,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 								if(!isArray(search_value)) {
 									for(var key in search_value) {
 										if(search_value.hasOwnProperty(key)) {
-											search_value_arr.push(key);
+											search_value_arr[key] = key;
 										}
 									}
 									search_value = search_value_arr;
@@ -4625,7 +4625,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 	
 								if(search_operator != null && search_operator == '!=') {
 									row_matches[criteria_index] = true;
-									if(search_value['__null'] == 0 && node_values[0] == null) {
+									if(search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
 										row_matches[criteria_index] = false;
 									} else {
 										for(idx in search_value) {
@@ -4636,7 +4636,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 										}
 									}
 								} else {
-									if(search_value['__null'] == 0 && node_values[0] == null) {
+									if(search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
 										row_matches[criteria_index] = true;
 									} else {
 										for(idx in search_value) {
@@ -4663,7 +4663,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 									if(!isArray(search_value)) {
 										for(var key in search_value) {
 											if(search_value.hasOwnProperty(key)) {
-												search_value_arr.push(key);
+												search_value_arr[key] = key;
 											}
 										}
 										search_value = search_value_arr;
@@ -4672,7 +4672,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 									if(search_operator != null && search_operator == '!=') {
 	
 										row_matches[criteria_index] = true;
-										if(search_value['__null'] == 0 && node_values[0] == null) {
+										if(search_value['__null'] == '_null' && (node_values == null || node_values[0] == null)) {
 											row_matches[criteria_index] = false;
 										} else {
 											for(idx in search_value) {
@@ -4684,7 +4684,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 	
 										}
 									} else {
-										if(search_value['__null'] == 0 && node_values[0] == null) {
+										if(search_value['__null'] == '_null' && (node_values == null || node_values[0] == null)) {
 											row_matches[criteria_index] = true;
 										} else {
 											for(idx in search_value) {

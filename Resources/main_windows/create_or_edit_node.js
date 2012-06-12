@@ -186,6 +186,7 @@ function display_widget(obj){
 			var f_year	=	obj.currentDate.getFullYear();
 		    
 			obj.text = f_month+" / "+f_date+" / "+f_year;
+			changedContentValue(obj);
 			win_wid.close();
 		});
 	
@@ -456,6 +457,7 @@ function display_omadi_time(obj){
 		var min	=	obj.currentDate.getMinutes();
 
 		obj.text = hours+":"+form_min(min);
+		changedContentValue(obj);
 		win_wid.close();
 	});
 	
@@ -944,7 +946,6 @@ setTimeout(function(e){
 			}
 			
 			var isRequired = false;
-			
 			if(field_arr[index_label][index_size].required == true || field_arr[index_label][index_size].required == 'true'){
 				isRequired = true;
 			}
@@ -952,7 +953,7 @@ setTimeout(function(e){
 
 				case 'license_plate':
 					label[count] = Ti.UI.createLabel({
-						text:  field_arr[index_label][index_size].label,
+						text			: (isRequired? '*':'') + field_arr[index_label][index_size].label,
 						color			: isRequired? 'red':'#FFFFFF',
 						font 			: {
 											fontSize: 18
@@ -1113,7 +1114,9 @@ setTimeout(function(e){
 									value				: aux_val.usps,
 									composed_obj		: true,
 									cardinality			: settings.cardinality,
-									reffer_index		: reffer_index
+									reffer_index		: reffer_index,
+									settings 			: settings,
+									changedFlag			: 0
 								}); 
 								
 								//content[count].add(to_row);
@@ -1133,6 +1136,7 @@ setTimeout(function(e){
 											e.source.title = e.source.arr_opt[ev.index];
 											e.source.value = e.source.arr_picker[ev.index].usps;
 										}
+										changedContentValue(e.source);
 									});   
 								});
 								top += heightValue;
@@ -1148,8 +1152,7 @@ setTimeout(function(e){
 									reffer_index	: reffer_index,
 									borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									textAlign		: 'left',
-									left			: '3%',
-									right			: '3%',
+									width			: Ti.Platform.displayCaps.platformWidth-20,
 									height			: heightValue,
 									font 			: {
 														fontSize: 18
@@ -1162,12 +1165,17 @@ setTimeout(function(e){
 									is_title		: field_arr[index_label][index_size].is_title,
 									composed_obj	: true,
 									cardinality		: settings.cardinality,
-									value			: vl_to_field
+									value			: vl_to_field,
+									settings 		: settings,
+									changedFlag		: 0
 								});
 							}
 							top += heightValue;
 							
 							viewContent.add(content[count]);
+							content[count].addEventListener('change', function(e) {
+								changedContentValue(e.source);
+							}); 
 							count++;
 						}
 					}
@@ -1274,7 +1282,9 @@ setTimeout(function(e){
 								value				: aux_val.usps,
 								composed_obj		: false,
 								cardinality			: settings.cardinality,
-								reffer_index		: reffer_index
+								reffer_index		: reffer_index,
+								settings 			: settings,
+								changedFlag			: 0
 							}); 
 							
 							//content[count].add(to_row);
@@ -1294,6 +1304,7 @@ setTimeout(function(e){
 											e.source.title = e.source.arr_opt[ev.index];
 											e.source.value = e.source.arr_picker[ev.index].usps;
 										}
+										changedContentValue(e.source);
 									});    
 							});
 							top += heightValue;
@@ -1307,8 +1318,7 @@ setTimeout(function(e){
 								hintText		: i_name,
 								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 								textAlign		: 'left',
-								left			: '3%',
-								right			: '3%',
+								width			: Ti.Platform.displayCaps.platformWidth-20,
 								height			: heightValue,
 								font 			: {
 													fontSize: 18
@@ -1322,11 +1332,16 @@ setTimeout(function(e){
 								composed_obj	: false,
 								cardinality		: settings.cardinality,
 								value			: field_arr[index_label][index_size].actual_value,
-								reffer_index	: reffer_index
+								reffer_index	: reffer_index,
+								settings 		: settings,
+								changedFlag		: 0
 							});
 							top += heightValue;
 	
 							viewContent.add(content[count]);
+							content[count].addEventListener('change', function(e) {
+								changedContentValue(e.source);
+							}); 
 							count++;
 						}
 					}
@@ -1336,7 +1351,7 @@ setTimeout(function(e){
 				case 'link_field':
 				//alert(field_arr[index_label][index_size].required);
 					label[count] = Ti.UI.createLabel({
-						text:  field_arr[index_label][index_size].label,
+						text            : (isRequired? '*':'') +  field_arr[index_label][index_size].label,
 						color			: isRequired? 'red':'#FFFFFF',
 						font 			: {
 											fontSize: 18
@@ -1352,6 +1367,7 @@ setTimeout(function(e){
 					//Add fields:
 					viewContent.add(label[count]);
 					var reffer_index	= count;
+					var settings 	= JSON.parse(field_arr[index_label][index_size].settings); 
 					
 					if (settings.cardinality > 1){
 						if ( (field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1) ){
@@ -1386,8 +1402,7 @@ setTimeout(function(e){
 								private_index	: o_index,
 								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 								textAlign		: 'left',
-								left			: '3%',
-								right			: '3%',
+								width			: Ti.Platform.displayCaps.platformWidth-20,
 								height			: heightValue,
 								font 			: {
 													fontSize: 18
@@ -1401,11 +1416,16 @@ setTimeout(function(e){
 								composed_obj	: true,
 								cardinality		: settings.cardinality,
 								value			: vl_to_field,
-								reffer_index	: reffer_index
+								reffer_index	: reffer_index,
+								settings 		: settings,
+								changedFlag		: 0
 							});
 							top += heightValue;
 														
 							viewContent.add(content[count]);
+							content[count].addEventListener('change', function(e) {
+								changedContentValue(e.source);
+							}); 
 							count++;
 						}
 					}
@@ -1414,8 +1434,7 @@ setTimeout(function(e){
 							hintText		: field_arr[index_label][index_size].label,
 							borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 							textAlign		: 'left',
-							left			: '3%',
-							right			: '3%',
+							width			: Ti.Platform.displayCaps.platformWidth-20,
 							height			: heightValue,
 							font 			: {
 												fontSize: 18
@@ -1429,11 +1448,16 @@ setTimeout(function(e){
 							composed_obj	: false,
 							cardinality		: settings.cardinality,
 							value			: field_arr[index_label][index_size].actual_value,
-							reffer_index	: reffer_index
+							reffer_index	: reffer_index,
+							settings 			: settings,
+							changedFlag			: 0
 						});
 						top += heightValue;
 
 						viewContent.add(content[count]);
+						content[count].addEventListener('change', function(e){
+							changedContentValue(e.source);
+						});
 						count++;
 					}
 	
@@ -1441,7 +1465,7 @@ setTimeout(function(e){
 	
 				case 'text_long':
 					label[count] = Ti.UI.createLabel({
-						text:  field_arr[index_label][index_size].label,
+						text			:  (isRequired? '*':'') + field_arr[index_label][index_size].label,
 						color			: isRequired? 'red':'#FFFFFF',
 						font 			: {
 											fontSize: 18
@@ -1457,6 +1481,7 @@ setTimeout(function(e){
 					//Add fields:
 					viewContent.add(label[count]);
 					var reffer_index	= count;
+					var settings 	= JSON.parse(field_arr[index_label][index_size].settings); 
 					
 					if (settings.cardinality > 1){
 						if ( (field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1) ){
@@ -1491,8 +1516,7 @@ setTimeout(function(e){
 								private_index	: o_index,
 								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 								textAlign		: 'left',
-								left			: '3%',
-								right			: '3%',
+								width			: Ti.Platform.displayCaps.platformWidth-20,
 								height			: 100,
 								color			: '#000000',
 								top				: top,
@@ -1503,11 +1527,16 @@ setTimeout(function(e){
 								composed_obj	: true,
 								cardinality		: settings.cardinality,
 								value			: vl_to_field,
-								reffer_index	: reffer_index
+								reffer_index	: reffer_index,
+								settings 			: settings,
+								changedFlag			: 0
 							});
 							top += 100;
 							
 							viewContent.add(content[count]);
+							content[count].addEventListener('change', function(e) {
+								changedContentValue(e.source);
+							});
 							count++;
 						}
 					}
@@ -1516,8 +1545,7 @@ setTimeout(function(e){
 							hintText		: field_arr[index_label][index_size].label,
 							borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 							textAlign		: 'left',
-							left			: '3%',
-							right			: '3%',
+							width			: Ti.Platform.displayCaps.platformWidth-20,
 							height			: 100,
 							color			: '#000000',
 							top				: top,
@@ -1528,11 +1556,16 @@ setTimeout(function(e){
 							composed_obj	: false,
 							cardinality		: settings.cardinality,
 							value			: field_arr[index_label][index_size].actual_value,
-							reffer_index	: reffer_index
+							reffer_index	: reffer_index,
+							settings 			: settings,
+							changedFlag			: 0
 						});
 						top += 100;
 
 						viewContent.add(content[count]);
+						content[count].addEventListener('change', function(e){
+							changedContentValue(e.source);
+						});
 						count++;
 					}
 				break;
@@ -1564,7 +1597,7 @@ setTimeout(function(e){
 					}
 	
 					label[count] = Ti.UI.createLabel({
-						text			: title_location ,
+						text			: (isRequired? '*':'') + title_location ,
 						color			: isRequired? 'red':'#FFFFFF',
 						font 			: {
 											fontSize: 18
@@ -1616,8 +1649,7 @@ setTimeout(function(e){
 								private_index	: o_index,
 								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 								textAlign		: 'left',
-								left			: '3%',
-								right			: '3%',
+								width			: Ti.Platform.displayCaps.platformWidth-20,
 								height			: heightValue,
 								font 			: {
 													fontSize: 18
@@ -1631,11 +1663,16 @@ setTimeout(function(e){
 								composed_obj	: true,
 								cardinality		: settings.cardinality,
 								value			: vl_to_field,
-								reffer_index	: reffer_index
+								reffer_index	: reffer_index,
+								settings 			: settings,
+								changedFlag			: 0
 							});
 							top += heightValue;
 							
 							viewContent.add(content[count]);
+							content[count].addEventListener('change', function(e) {
+								changedContentValue(e.source);
+							}); 
 							count++;
 						}
 					}
@@ -1644,8 +1681,7 @@ setTimeout(function(e){
 							hintText		: field_arr[index_label][index_size].label,
 							borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 							textAlign		: 'left',
-							left			: '3%',
-							right			: '3%',
+							width			: Ti.Platform.displayCaps.platformWidth-20,
 							height			: heightValue,
 							font 			: {
 												fontSize: 18
@@ -1659,11 +1695,16 @@ setTimeout(function(e){
 							composed_obj	: false,
 							cardinality		: settings.cardinality,
 							value			: field_arr[index_label][index_size].actual_value,
-							reffer_index	: reffer_index
+							reffer_index	: reffer_index,
+							settings 			: settings,
+							changedFlag			: 0
 						});
 						top += heightValue;
 						
 						viewContent.add(content[count]);
+						content[count].addEventListener('change', function(e){
+							changedContentValue(e.source);
+						});
 						count++;
 					}
 				break;
@@ -1675,7 +1716,7 @@ setTimeout(function(e){
 					var settings = JSON.parse(field_arr[index_label][index_size].settings);
 					
 					label[count] = Ti.UI.createLabel({
-						text:  field_arr[index_label][index_size].label,
+						text			:  (isRequired? '*':'') + field_arr[index_label][index_size].label,
 						color			: isRequired? 'red':'#FFFFFF',
 						font 			: {
 											fontSize: 18
@@ -1737,8 +1778,7 @@ setTimeout(function(e){
 								keyboardType	: Titanium.UI.KEYBOARD_NUMBER_PAD,
 								returnKeyType   : Titanium.UI.RETURNKEY_DONE,
 								textAlign		: 'left',
-								left			: '3%',
-								right			: '3%',
+								width			: Ti.Platform.displayCaps.platformWidth-20,
 								height			: heightValue,
 								font 			: {
 													fontSize: 18
@@ -1755,13 +1795,18 @@ setTimeout(function(e){
 								reffer_index	: reffer_index,
 								hasParent		: hasParent,
 								parent_name		: parent_name,
-								defaultField	: defaultField
+								defaultField	: defaultField,
+								settings 			: settings,
+								changedFlag			: 0
 							});
 							
 							addDoneButtonInKB(content[count]);
 							top += heightValue;
 							
 							viewContent.add(content[count]);
+							content[count].addEventListener('change', function(e) {
+								changedContentValue(e.source);
+							}); 
 							count++;
 						}
 					}
@@ -1770,10 +1815,9 @@ setTimeout(function(e){
 							hintText		: field_arr[index_label][index_size].label,
 							borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 							keyboardType	: Titanium.UI.KEYBOARD_NUMBER_PAD,
-								returnKeyType   : Titanium.UI.RETURNKEY_DONE,
+							returnKeyType   : Titanium.UI.RETURNKEY_DONE,
 							textAlign		: 'left',
-							left			: '3%',
-							right			: '3%',
+							width			: Ti.Platform.displayCaps.platformWidth-20,
 							height			: heightValue,
 							font 			: {
 												fontSize: 18
@@ -1788,14 +1832,19 @@ setTimeout(function(e){
 							cardinality		: settings.cardinality,
 							value			: field_arr[index_label][index_size].actual_value,
 							reffer_index	: reffer_index,
-								hasParent		: hasParent,
-								parent_name		: parent_name,
-								defaultField	: defaultField
+							hasParent		: hasParent,
+							parent_name		: parent_name,
+							defaultField	: defaultField,
+							settings 		: settings,
+							changedFlag		: 0
 						});
 						addDoneButtonInKB(content[count]);
 						top += heightValue;
 						
 						viewContent.add(content[count]);
+						content[count].addEventListener('change', function(e){
+							changedContentValue(e.source);
+						});
 						count++;
 					}
 				break;
@@ -1804,7 +1853,7 @@ setTimeout(function(e){
 					var settings = JSON.parse(field_arr[index_label][index_size].settings);
 					
 					label[count] = Ti.UI.createLabel({
-						text:  field_arr[index_label][index_size].label,
+						text			:  (isRequired? '*':'') + field_arr[index_label][index_size].label,
 						color			: isRequired? 'red':'#FFFFFF',
 						font 			: {
 											fontSize: 18
@@ -1855,8 +1904,7 @@ setTimeout(function(e){
 								keyboardType	: Titanium.UI.KEYBOARD_NUMBER_PAD,
 								returnKeyType   : Titanium.UI.RETURNKEY_DONE,
 								textAlign		: 'left',
-								left			: '3%',
-								right			: '3%',
+								width			: Ti.Platform.displayCaps.platformWidth-20,
 								height			: heightValue,
 								font 			: {
 													fontSize: 18
@@ -1870,11 +1918,16 @@ setTimeout(function(e){
 								is_title		: field_arr[index_label][index_size].is_title,
 								cardinality		: settings.cardinality,
 								value			: vl_to_field,
-								reffer_index	: reffer_index
+								reffer_index	: reffer_index,
+								settings 			: settings,
+								changedFlag			: 0
 							});
 							addDoneButtonInKB(content[count]);
 							top += heightValue;
 							viewContent.add(content[count]);
+							content[count].addEventListener('change', function(e) {
+								changedContentValue(e.source);
+							}); 
 							count++;
 						}
 					}
@@ -1885,8 +1938,7 @@ setTimeout(function(e){
 							keyboardType	: Titanium.UI.KEYBOARD_NUMBER_PAD,
 							returnKeyType   : Titanium.UI.RETURNKEY_DONE,
 							textAlign		: 'left',
-							left			: '3%',
-							right			: '3%',
+							width			: Ti.Platform.displayCaps.platformWidth-20,
 							height			: heightValue,
 							font 			: {
 												fontSize: 18
@@ -1900,18 +1952,23 @@ setTimeout(function(e){
 							is_title		: field_arr[index_label][index_size].is_title,
 							cardinality		: settings.cardinality,
 							value			: field_arr[index_label][index_size].actual_value,
-							reffer_index	: reffer_index
+							reffer_index	: reffer_index,
+							settings 			: settings,
+							changedFlag			: 0
 						});
 						top += heightValue;
 						addDoneButtonInKB(content[count]);
 						viewContent.add(content[count]);
+						content[count].addEventListener('change', function(e){
+							changedContentValue(e.source);
+						});
 						count++;
 					}
 				break;
 	
 				case 'email':
 					label[count] = Ti.UI.createLabel({
-						text:  field_arr[index_label][index_size].label,
+						text			:  (isRequired? '*':'') + field_arr[index_label][index_size].label,
 						color			: isRequired? 'red':'#FFFFFF',
 						font 			: {
 											fontSize: 18
@@ -1926,6 +1983,8 @@ setTimeout(function(e){
 	
 					//Add fields:
 					viewContent.add(label[count]);
+					var reffer_index	= count;
+					var settings 	= JSON.parse(field_arr[index_label][index_size].settings); 
 
 					if (settings.cardinality > 1){
 						if ( (field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1) ){
@@ -1961,8 +2020,7 @@ setTimeout(function(e){
 								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 								keyboardType	: Ti.UI.KEYBOARD_EMAIL,
 								textAlign		: 'left',
-								left			: '3%',
-								right			: '3%',
+								width			: Ti.Platform.displayCaps.platformWidth-20,
 								height			: heightValue,
 								font 			: {
 													fontSize: 18
@@ -1976,11 +2034,16 @@ setTimeout(function(e){
 								composed_obj	: true,
 								cardinality		: settings.cardinality,
 								value			: vl_to_field,
-								reffer_index	: reffer_index
+								reffer_index	: reffer_index,
+								settings 			: settings,
+								changedFlag			: 0
 							});
 							top += heightValue;
 							
 							viewContent.add(content[count]);
+							content[count].addEventListener('change', function(e) {
+								changedContentValue(e.source);
+							}); 
 							count++;
 						}
 					}
@@ -1990,8 +2053,7 @@ setTimeout(function(e){
 							borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 							keyboardType	: Ti.UI.KEYBOARD_EMAIL,
 							textAlign		: 'left',
-							left			: '3%',
-							right			: '3%',
+							width			: Ti.Platform.displayCaps.platformWidth-20,
 							height			: heightValue,
 							font 			: {
 												fontSize: 18
@@ -2005,11 +2067,15 @@ setTimeout(function(e){
 							composed_obj	: false,
 							cardinality		: settings.cardinality,
 							value			: field_arr[index_label][index_size].actual_value,
-							reffer_index	: reffer_index
+							reffer_index	: reffer_index,
+							settings 			: settings,
+							changedFlag			: 0
 						});
 						top += heightValue;
-
 						viewContent.add(content[count]);
+						content[count].addEventListener('change', function(e){
+							changedContentValue(e.source);
+						});
 						count++;
 					}
 				break;
@@ -2018,9 +2084,9 @@ setTimeout(function(e){
 					var widget = JSON.parse(field_arr[index_label][index_size].widget);
 					var settings = JSON.parse(field_arr[index_label][index_size].settings); 
 					var hasParent = false;
-						var parent_name = "";
-						var defaultField = "";
-						if(settings.parent_form_default_value){
+					var parent_name = "";
+					var defaultField = "";
+					if(settings.parent_form_default_value){
 							if(settings.parent_form_default_value.parent_field != null && settings.parent_form_default_value.parent_field != ""){
 								hasParent = true;
 								parent_name = settings.parent_form_default_value.parent_field;
@@ -2031,7 +2097,7 @@ setTimeout(function(e){
 					//Create picker list
 					if (widget.type == 'options_select'){
 						label[count] = Ti.UI.createLabel({
-							text			: 'Select one '+field_arr[index_label][index_size].label,
+							text			: (isRequired? '*':'') + 'Select one '+field_arr[index_label][index_size].label,
 							color			: isRequired? 'red':'#FFFFFF',
 							font 			: {
 												fontSize: 18
@@ -2145,7 +2211,9 @@ setTimeout(function(e){
 									reffer_index		: reffer_index,
 									hasParent		: hasParent,
 									parent_name		: parent_name,
-									defaultField	: defaultField
+									defaultField	: defaultField,
+									settings 			: settings,
+									changedFlag			: 0
 								}); 
 								
 								//content[count].add(arr_picker);
@@ -2165,6 +2233,7 @@ setTimeout(function(e){
 											e.source.title = e.source.arr_opt[ev.index];
 											e.source.value = e.source.arr_picker[ev.index].tid;
 										}
+										changedContentValue(e.source);
 									});  
 								});
 								top += heightValue;
@@ -2222,9 +2291,11 @@ setTimeout(function(e){
 								cardinality			: settings.cardinality,
 								value				: aux_val.vl,
 								reffer_index		: reffer_index,
-								hasParent		: hasParent,
-								parent_name		: parent_name,
-								defaultField	: defaultField
+								hasParent			: hasParent,
+								parent_name			: parent_name,
+								defaultField		: defaultField,
+								settings 			: settings,
+								changedFlag			: 0
 							}); 
 							
 							//content[count].add(arr_picker);
@@ -2243,6 +2314,7 @@ setTimeout(function(e){
 											e.source.title = e.source.arr_opt[ev.index];
 											e.source.value = e.source.arr_picker[ev.index].tid;
 										}
+										changedContentValue(e.source);
 									}); 
 							});
 							top += heightValue;
@@ -2339,7 +2411,9 @@ setTimeout(function(e){
 								value				: _itens,
 								itens				: _val_itens,
 								view_title			: field_arr[index_label][index_size].label,
-								reffer_index		: reffer_index
+								reffer_index		: reffer_index,
+								settings 			: settings,
+								changedFlag			: 0
 							}); 
 							
 							
@@ -2348,6 +2422,7 @@ setTimeout(function(e){
 									Ti.API.info(jsa+' = '+e.source.itens[jsa].title);
 								}
 								open_mult_selector(e.source); 
+								changedContentValue(e.source);
 							});
 							top += heightValue;
 							
@@ -2359,7 +2434,7 @@ setTimeout(function(e){
 					//Create autofill field
 					else if(widget.type == 'taxonomy_autocomplete'){
 						label[count] = Ti.UI.createLabel({
-							text			: field_arr[index_label][index_size].label,
+							text			: (isRequired? '*':'') +field_arr[index_label][index_size].label,
 							color			: isRequired? 'red':'#FFFFFF',
 							font 			: {
 												fontSize: 18
@@ -2446,8 +2521,7 @@ setTimeout(function(e){
 									font				 			: {
 																		fontSize: 18
 									},
-								    left							: '3%',
-								    right							: '3%',
+								    width							: Ti.Platform.displayCaps.platformWidth-20,
 								    top								: top,
 			  						field_type						: field_arr[index_label][index_size].type,
 									field_name						: field_arr[index_label][index_size].field_name,
@@ -2464,7 +2538,9 @@ setTimeout(function(e){
 									cardinality						: settings.cardinality,
 									value							: aux_val.title,
 									first_time						: true,
-									reffer_index					: reffer_index
+									reffer_index					: reffer_index,
+									settings 						: settings,
+									changedFlag						: 0
 								});
 								
 								//AUTOCOMPLETE TABLE
@@ -2518,6 +2594,7 @@ setTimeout(function(e){
 								// SEARCH EVENTS
 								//
 								content[count].addEventListener('change', function(e){
+									changedContentValue(e.source);
 									if (e.source.first_time === false){
 										var list = e.source.terms;
 										var func = function setValueF(value_f, tid){
@@ -2619,8 +2696,7 @@ setTimeout(function(e){
 								font				 			: {
 																	fontSize: 18
 								},
-							    left							: '3%',
-							    right							: '3%',
+							    width							: Ti.Platform.displayCaps.platformWidth-20,
 							    top								: top,
 		  						field_type						: field_arr[index_label][index_size].type,
 								field_name						: field_arr[index_label][index_size].field_name,
@@ -2638,9 +2714,11 @@ setTimeout(function(e){
 								value							: aux_val.title,
 								first_time						: true,
 								reffer_index					: reffer_index,
-								hasParent		: hasParent,
-								parent_name		: parent_name,
-								defaultField	: defaultField
+								hasParent						: hasParent,
+								parent_name						: parent_name,
+								defaultField					: defaultField,
+								settings 						: settings,
+								changedFlag						: 0
 							});
 							
 							//AUTOCOMPLETE TABLE
@@ -2692,6 +2770,7 @@ setTimeout(function(e){
 							// SEARCH EVENTS
 							//
 							content[count].addEventListener('change', function(e){
+								changedContentValue(e.source);
 								if (e.source.first_time === false){
 									var list = e.source.terms;
 									var func = function setValueF(value_f, tid){
@@ -2756,7 +2835,7 @@ setTimeout(function(e){
 					var settings = JSON.parse(field_arr[index_label][index_size].settings); 
 
 					label[count] = Ti.UI.createLabel({
-						text			: field_arr[index_label][index_size].label,
+						text			: (isRequired? '*':'') + field_arr[index_label][index_size].label,
 						color			: isRequired? 'red':'#FFFFFF',
 						font 			: {
 											fontSize: 18
@@ -2852,8 +2931,7 @@ setTimeout(function(e){
 								font				 			: {
 																	fontSize: 18
 								},
-							    left							: '3%',
-							    right							: '3%',
+							    width							: Ti.Platform.displayCaps.platformWidth-20,
 							    top								: top,
 		  						field_type						: field_arr[index_label][index_size].type,
 								field_name						: field_arr[index_label][index_size].field_name,
@@ -2867,7 +2945,9 @@ setTimeout(function(e){
 								cardinality						: settings.cardinality,
 								value							: aux_val.title,
 								first_time						: true,
-								reffer_index					: reffer_index
+								reffer_index					: reffer_index,
+								settings 						: settings,
+								changedFlag						: 0
 							});
 							
 							//AUTOCOMPLETE TABLE
@@ -2922,6 +3002,7 @@ setTimeout(function(e){
 							// SEARCH EVENTS
 							//
 							content[count].addEventListener('change', function(e){
+								changedContentValue(e.source);
 								if (e.source.first_time === false){
 									var list = e.source.terms;
 									var func = function setValueF(value_f, nid){
@@ -3002,8 +3083,7 @@ setTimeout(function(e){
 							font				 			: {
 																fontSize: 18
 							},
-						    left							: '3%',
-						    right							: '3%',
+						    width							: Ti.Platform.displayCaps.platformWidth-20,
 						    top								: top,
 	  						field_type						: field_arr[index_label][index_size].type,
 							field_name						: field_arr[index_label][index_size].field_name,
@@ -3018,6 +3098,8 @@ setTimeout(function(e){
 							value							: aux_val.title,
 							first_time						: true,
 							reffer_index					: reffer_index,
+							settings 						: settings,
+							changedFlag						: 0
 						});
 						
 						//AUTOCOMPLETE TABLE
@@ -3071,6 +3153,7 @@ setTimeout(function(e){
 						// SEARCH EVENTS
 						//
 						content[count].addEventListener('change', function(e){
+							changedContentValue(e.source);
 							if (e.source.first_time === false){
 								var list = e.source.terms;
 								var func = function setValueF(value_f, nid){
@@ -3131,7 +3214,7 @@ setTimeout(function(e){
 	
 				case 'user_reference':
 					label[count] = Ti.UI.createLabel({
-						text			: 'Select one '+field_arr[index_label][index_size].label,
+						text			: (isRequired? '*':'') +'Select one '+field_arr[index_label][index_size].label,
 						color			: isRequired? 'red':'#FFFFFF',
 						font 			: {
 											fontSize: 18
@@ -3144,7 +3227,7 @@ setTimeout(function(e){
 					});
 					top += heightValue;
 					var reffer_index	= count;
-					
+					var settings 	= JSON.parse(field_arr[index_label][index_size].settings); 
 					//Add fields:
 					viewContent.add(label[count]);
 					
@@ -3251,7 +3334,9 @@ setTimeout(function(e){
 								value				: aux_val.vl,
 								composed_obj		: true,
 								cardinality			: settings.cardinality,
-								reffer_index		: reffer_index
+								reffer_index		: reffer_index,
+								settings 			: settings,
+								changedFlag			: 0
 							}); 
 							top += heightValue;
 							
@@ -3271,6 +3356,7 @@ setTimeout(function(e){
 										e.source.title = e.source.arr_opt[ev.index];
 										e.source.value = e.source.arr_picker[ev.index].uid;
 									}
+									changedContentValue(e.source);
 								});  
 							});
 							
@@ -3337,7 +3423,9 @@ setTimeout(function(e){
 							composed_obj		: false,
 							cardinality			: settings.cardinality,
 							value				: aux_val.vl,
-							reffer_index		: reffer_index
+							reffer_index		: reffer_index,
+							settings 			: settings,
+							changedFlag			: 0
 						}); 
 						
 						top += heightValue;
@@ -3358,6 +3446,7 @@ setTimeout(function(e){
 										e.source.title = e.source.arr_opt[ev.index];
 										e.source.value = e.source.arr_picker[ev.index].uid;
 									}
+									changedContentValue(e.source);
 								});  
 							
 						});
@@ -3376,7 +3465,7 @@ setTimeout(function(e){
 					Ti.API.info(field_arr[index_label][index_size].settings);
 
 					label[count] = Ti.UI.createLabel({
-						text			: 'Select the '+field_arr[index_label][index_size].label,
+						text			: (isRequired? '*':'') +'Select the '+field_arr[index_label][index_size].label,
 						color			: isRequired? 'red':'#FFFFFF',
 						font 			: {
 											fontSize: 18
@@ -3472,7 +3561,9 @@ setTimeout(function(e){
 									cardinality			: settings.cardinality,
 									reffer_index		: reffer_index,
 									width				: '100%',
-									height				: '100%'
+									height				: '100%',
+									settings 			: settings,
+									changedFlag			: 0
 								});
 								
 								var mother_of_view = Ti.UI.createView({
@@ -3497,6 +3588,7 @@ setTimeout(function(e){
 								content[count].clear.addEventListener('click', function(e){
 									e.source.its_parent.text = "UNSET";
 									e.source.its_parent.value = null;
+									changedContentValue(e.source);
 								});
 								
 								
@@ -3566,7 +3658,9 @@ setTimeout(function(e){
 								cardinality			: settings.cardinality,
 								reffer_index		: reffer_index,
 								width				: '100%',
-								height				: '100%'
+								height				: '100%',
+								settings 			: settings,
+								changedFlag			: 0
 
 							});
 
@@ -3694,7 +3788,9 @@ setTimeout(function(e){
 									cardinality			: settings.cardinality,
 									reffer_index		: reffer_index,
 									width				: '100%',
-									height				: '100%'
+									height				: '100%',
+									settings 			: settings,
+									changedFlag			: 0
 
 								});	
 
@@ -3794,7 +3890,9 @@ setTimeout(function(e){
 								cardinality			: settings.cardinality,
 								reffer_index		: reffer_index,
 								width				: '100%',
-								height				: '100%'
+								height				: '100%',
+								settings 			: settings,
+								changedFlag			: 0
 							});
 
 							var mother_of_view = Ti.UI.createView({
@@ -3838,7 +3936,7 @@ setTimeout(function(e){
 					var settings = JSON.parse(field_arr[index_label][index_size].settings);
 					
 					label[count] = Ti.UI.createLabel({
-						text			: field_arr[index_label][index_size].label,
+						text			: (isRequired? '*':'') +field_arr[index_label][index_size].label,
 						color			: isRequired? 'red':'#FFFFFF',
 						font 			: {
 											fontSize: 18
@@ -3902,12 +4000,15 @@ setTimeout(function(e){
 								is_title			: field_arr[index_label][index_size].is_title,
 								composed_obj		: true,
 								cardinality			: settings.cardinality,
-								reffer_index		: reffer_index
+								reffer_index		: reffer_index,
+								settings 			: settings,
+								changedFlag			: 0
 							}); 
 							top += getScreenHeight()*0.1;
 							
 							content[count].addEventListener('change',function(e){
 								Ti.API.info('Basic Switch value = ' + e.value);
+								changedContentValue(e.source);
 							});
 	
 							viewContent.add(content[count]);
@@ -3934,12 +4035,15 @@ setTimeout(function(e){
 							is_title			: field_arr[index_label][index_size].is_title,
 							composed_obj		: false,
 							cardinality			: settings.cardinality,
-							reffer_index		: reffer_index
+							reffer_index		: reffer_index,
+							settings 			: settings,
+							changedFlag			: 0
 						}); 
 						top += getScreenHeight()*0.1;
 						
 						content[count].addEventListener('change',function(e){
 							Ti.API.info('Basic Switch value = ' + e.value);
+							changedContentValue(e.source);
 						});
 
 						viewContent.add(content[count]);
@@ -3950,7 +4054,7 @@ setTimeout(function(e){
 				//Shows up date (check how it is exhibited):
 				case 'omadi_time':
 					label[count] = Ti.UI.createLabel({
-						text			: ''+field_arr[index_label][index_size].label,
+						text			: (isRequired? '*':'') +''+field_arr[index_label][index_size].label,
 						color			: isRequired? 'red':'#FFFFFF',
 						font 			: {
 											fontSize: 18
@@ -4037,7 +4141,9 @@ setTimeout(function(e){
 								cardinality			: settings.cardinality,
 								reffer_index		: reffer_index,
 								width				: '100%',
-								height				: '100%'
+								height				: '100%',
+								settings 			: settings,
+								changedFlag			: 0
 							});
 
 							var mother_of_view = Ti.UI.createView({
@@ -4100,7 +4206,9 @@ setTimeout(function(e){
 							cardinality			: settings.cardinality,
 							reffer_index		: reffer_index,
 							width				: '100%',
-							height				: '100%'
+							height				: '100%',
+							settings 			: settings,
+							changedFlag			: 0
 						});
 
 						var mother_of_view = Ti.UI.createView({
@@ -4139,7 +4247,7 @@ setTimeout(function(e){
 
 				case 'vehicle_fields':
 					label[count] = Ti.UI.createLabel({
-						text:  field_arr[index_label][index_size].label,
+						text: (isRequired? '*':'') + field_arr[index_label][index_size].label,
 						color			: isRequired? 'red':'#FFFFFF',
 						font 			: {
 											fontSize: 18
@@ -4202,8 +4310,7 @@ setTimeout(function(e){
 								private_index	: o_index,
 								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 								textAlign		: 'left',
-								left			: '3%',
-								right			: '3%',
+								width			: Ti.Platform.displayCaps.platformWidth-20,
 								height			: heightValue,
 								font 			: {
 													fontSize: 18
@@ -4217,11 +4324,16 @@ setTimeout(function(e){
 								composed_obj	: true,
 								cardinality		: settings.cardinality,
 								value			: vl_to_field,
-								reffer_index	: reffer_index
+								reffer_index	: reffer_index,
+								settings 			: settings,
+								changedFlag			: 0
 							});
 							top += heightValue;
 		
 							viewContent.add(content[count]);
+							content[count].addEventListener('change', function(e) {
+								changedContentValue(e.source);
+							}); 
 							count++;
 						}
 					}
@@ -4230,8 +4342,7 @@ setTimeout(function(e){
 							hintText		: i_name,
 							borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 							textAlign		: 'left',
-							left			: '3%',
-							right			: '3%',
+							width			: Ti.Platform.displayCaps.platformWidth-20,
 							height			: heightValue,
 							font 			: {
 												fontSize: 18
@@ -4245,11 +4356,16 @@ setTimeout(function(e){
 							composed_obj	: false,
 							cardinality		: settings.cardinality,
 							value			: field_arr[index_label][index_size].actual_value,
-							reffer_index	: reffer_index
+							reffer_index	: reffer_index,
+							settings 			: settings,
+							changedFlag			: 0
 						});
 						top += heightValue;
 						
 						viewContent.add(content[count]);
+						content[count].addEventListener('change', function(e){
+							changedContentValue(e.source);
+						});
 						count++;
 					}
 				break;
@@ -4285,7 +4401,7 @@ setTimeout(function(e){
 				//Stuff to add image field..
 				case 'image':
 					label[count] = Ti.UI.createLabel({
-						text:  field_arr[index_label][index_size].label,
+						text			: (isRequired? '*':'') + field_arr[index_label][index_size].label,
 						color			: isRequired? 'red':'#FFFFFF',
 						font 			: {
 											fontSize: 18
@@ -4487,7 +4603,7 @@ setTimeout(function(e){
 					break;
 				case 'calculation_field':
 					label[count] = Ti.UI.createLabel({
-						text:  field_arr[index_label][index_size].label,
+						text:   field_arr[index_label][index_size].label,
 						color			: '#FFFFFF',
 						font 			: {
 											fontSize: 18
@@ -4516,7 +4632,9 @@ setTimeout(function(e){
 							value			: field_arr[index_label][index_size].actual_value,
 							reffer_index	: reffer_index,
 							settings		: settings,
-							layout 			: 'vertical'
+							layout 			: 'vertical',
+							settings 			: settings,
+							changedFlag			: 0
 					});
 					viewContent.add(content[count]);
 					createCalFieldTableFormat(content[count] , db_display, content);
@@ -4529,29 +4647,62 @@ setTimeout(function(e){
 	fields_result.close();
 	db_display.close();
 	
-	if(mode==1){
-		for(var j = 0; j <= content.length; j++) {
-			if(!content[j]) {
-				continue;
+
+		
+	var entityArr = createEntityMultiple();
+	for(var j = 0; j <= content.length; j++) {
+		if(!content[j]) {
+			continue;
+		}
+		// Call for Calculate 'Calculation field'
+		if(mode==1){
+			if(content[j].field_type == 'calculation_field') {
+				reCalculate(content[j]);
 			}
-			if(content[j].field_type == 'image'){
-				if(content[j].cardinality >1 || content[j].cardinality < 0 ){
+		}		
+
+		if(content[j].settings == null || content[j].settings == "") {
+			continue;
+		}
+		
+		// set conditional required field
+		if(content[j].settings['criteria'] != null && content[j].settings['criteria']['search_criteria'] != null) {
+			for(var row_idx in content[j].settings['criteria']['search_criteria']) {
+				var criteria_row = content[j].settings['criteria']['search_criteria'][row_idx];
+				var field_name = criteria_row.field_name;
+				if(content[entityArr[field_name][0]['reffer_index']].condDependedFields == null) {
+					content[entityArr[field_name][0]['reffer_index']].condDependedFields = [];
+				}
+				var depArr = content[entityArr[field_name][0]['reffer_index']].condDependedFields;
+				depArr.push(j);
+				content[entityArr[field_name][0]['reffer_index']].condDependedFields = depArr;
+			}
+			if(content[j]) {
+				conditionalSetRequiredField(j);
+			}
+
+		}
+		
+		// Download thumbnails from site
+		if(mode == 1) {
+			if(content[j].field_type == 'image') {
+				if(content[j].cardinality > 1 || content[j].cardinality < 0) {
 					var arrImages = content[j].arrImages;
-					for(i_idx=0; i_idx< arrImages.length; i_idx++){
-						if(arrImages[i_idx].imageVal != defaultImageVal && arrImages[i_idx].isUpdated == false){
+					for( i_idx = 0; i_idx < arrImages.length; i_idx++) {
+						if(arrImages[i_idx].imageVal != defaultImageVal && arrImages[i_idx].isUpdated == false) {
 							downloadThumnail(arrImages[i_idx].imageVal, arrImages[i_idx], win);
 						}
 					}
-				}else{
-					if(content[j].imageVal != defaultImageVal && content[j].isUpdated == false){
+				} else {
+					if(content[j].imageVal != defaultImageVal && content[j].isUpdated == false) {
 						downloadThumnail(content[j].imageVal, content[j], win);
 					}
 				}
-			}else if(content[j].field_type == 'calculation_field'){
-					reCalculate(content[j]);
-			}
+			} 
 		}
 	}
+
+	
 	toolActInd.hide();
 	
 	//MENU
@@ -5373,6 +5524,8 @@ function createEntityMultiple(){
 			private_index = content[idx].private_index;
 		}
 		entity[content[idx].field_name][private_index] = new Array();
+		
+		entity[content[idx].field_name][private_index]['value'] = content[idx].value;
 		if(content[idx].field_type == 'datestamp') {
 			entity[content[idx].field_name][private_index]['value'] = content[idx].value / 1000;
 		}else if(content[idx].field_type == 'list_boolean'){
@@ -5574,8 +5727,8 @@ function addDoneButtonInKB(content){
 		});
 		content.keyboardToolbar = [doneButton];
 		content.addEventListener('focus', function(e) {
-			e.source.keyboardToolbar = [doneButton];
-			doneButton.field = e.source;
+			//e.source.keyboardToolbar = [doneButton];
+			//doneButton.field = e.source;
 		});				
 	}
 }
@@ -5630,3 +5783,284 @@ function reCalculate(singel_content){
 				
 }
 
+function changedContentValue(changed_content){
+	if(changed_content['condDependedFields'] != null) {
+		var isTextField = false;
+		if(PLATFORM == 'android') {
+			if(changed_content instanceof Ti.UI.TextField){
+				isTextField = true;
+			}
+		}else{
+			if(changed_content == '[object TiUITextField]'){
+				isTextField = true;
+			}
+		}
+		
+		if(isTextField){
+			if((changed_content['changedFlag'] == 1) && (changed_content['value'] == null || changed_content['value'] == "")) {
+				changed_content['changedFlag'] = 0;
+			} else if((changed_content['changedFlag'] == 0) && (changed_content['value'] != null) && (changed_content['value'] != "")) {
+				changed_content['changedFlag'] = 1;
+			} else {
+				return;
+			}
+		}
+
+		for(idx in changed_content['condDependedFields']){
+			if(!content[changed_content['condDependedFields'][idx]]){
+				continue;
+			}
+			conditionalSetRequiredField(changed_content['condDependedFields'][idx]);
+		}
+		
+	}	
+	
+}
+
+function conditionalSetRequiredField(idx){
+	var entityArr = createEntityMultiple();
+	var row_matches = [];
+	if(content[idx].settings['criteria'] != null && content[idx].settings['criteria']['search_criteria'] != null){
+		usort(content[idx].settings['criteria']['search_criteria'], '_list_search_criteria_search_order');
+				
+		for(var row_idx in content[idx].settings['criteria']['search_criteria']){
+			var criteria_row 			= content[idx].settings['criteria']['search_criteria'][row_idx];
+			row_matches[row_idx] 		= false;
+			var field_name 				= criteria_row.field_name;
+			var search_operator 		= criteria_row.operator;
+			var search_value 			= criteria_row.value;
+			var node_values 			= [];
+			if(entityArr[field_name] != null) {
+
+				switch(entityArr[field_name][0]['field_type']) {
+					case 'text':
+					case 'text_long':
+					case 'link_field':
+					case 'phone':
+					case 'license_plate':
+					case 'location':
+					case 'vehicle_fields':
+					case 'number_integer':
+					case 'number_decimal':
+					case 'email':
+					case 'datestamp':
+					case 'omadi_reference':
+					case 'omadi_time':
+						for(idx1 in entityArr[field_name]) {
+							var elements = entityArr[field_name][idx1];
+							if(elements['value']!=null && elements['value']!=""){
+								node_values.push(elements['value']);
+							}
+						}
+						if(search_operator == '__filled') {
+							for(var value_index in node_values) {
+								node_value = node_values[value_index];
+								if(node_value!=null && node_value!=""){
+									row_matches[row_idx] = true;
+								}
+								
+							}
+						} else {
+							if(node_values == null && node_values == "") {
+								row_matches[row_idx] = true;
+							} else {
+								for(var value_index in node_values) {
+									node_value = node_values[value_index];
+									if(node_value == null || node_value == "") {
+										row_matches[row_idx] = true;
+									}
+
+								}
+							}
+						}
+						break;
+					case 'taxonomy_term_reference':
+					case 'user_reference':
+						for(idx1 in entityArr[field_name]) {
+							elements = entityArr[field_name][idx1];
+							if(elements['value']!=null && elements['value']!=""){
+								node_values.push(elements['value']);
+							}
+						}
+						
+							var search_value_arr = [];
+							if(!isArray(search_value)) {
+								for(var key in search_value) {
+									if(search_value.hasOwnProperty(key)) {
+										search_value_arr[key] = key;
+									}
+								}
+								search_value = search_value_arr;
+							}else{
+								 if(search_value.length == 0){
+									 row_matches[row_idx] = true;
+									 break;
+								 }
+							}
+							if(search_operator != null && search_operator == '!=') {
+								row_matches[row_idx] = true;
+								if(search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
+									row_matches[row_idx] = false;
+								} else {
+									for(idx1 in search_value) {
+										chosen_value = search_value[idx1];
+										if(in_array(chosen_value, node_values)) {
+											row_matches[row_idx] = false;
+										}
+									}
+
+								}
+							} else if(search_operator == '='){
+								if(search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
+									row_matches[row_idx] = true;
+								} else {
+									for(idx1 in search_value) {
+										
+										chosen_value = search_value[idx1];
+										if(in_array(chosen_value, node_values)) {
+											row_matches[row_idx] = true;
+										}
+									}
+								}
+							}
+							
+					break;
+												
+					case 'list_boolean':
+					
+						for(idx1 in entityArr[field_name]) {
+							var elements = entityArr[field_name][idx1];
+							node_values.push(elements['value']);
+						}
+
+						if(search_operator == '__filled') {
+							for(var value_index in node_values) {
+								node_value = node_values[value_index];
+								if(node_value != 0) {
+									row_matches[row_idx] = true;
+								}
+
+							}
+						} else {
+							if(node_values == null && node_values == "") {
+								row_matches[row_idx] = true;
+							} else {
+								for(var value_index in node_values) {
+									node_value = node_values[value_index];
+									if(node_value == 0) {
+										row_matches[row_idx] = true;
+									}
+
+								}
+							}
+						}
+					break;
+					
+					
+					case 'calculation_field':	
+						for(idx1 in entityArr[field_name]) {
+							var elements = entityArr[field_name][idx1];
+							node_values.push(elements['value']);
+						}
+						node_value = node_values[0];
+						switch(search_operator) {
+
+								case '>':
+									if(node_value > search_value) {
+										row_matches[row_idx] = true;
+									}
+									break;
+								case '>=':
+									if(node_value >= search_value) {
+										row_matches[row_idx] = true;
+									}
+									break;
+								case '!=':
+									if(node_value != search_value) {
+										row_matches[row_idx] = true;
+									}
+									break;
+								case '<':
+									if(node_value < search_value) {
+										row_matches[row_idx] = true;
+									}
+									break;
+								case '<=':
+									if(node_value <= search_value) {
+										row_matches[row_idx] = true;
+									}
+									break;
+
+								default:
+									if(node_value == search_value) {
+										row_matches[row_idx] = true;
+									}
+									break;
+							}
+
+					break;
+						
+				}
+			}
+		}
+				
+		var retval = true;
+		if(count_arr_obj(content[idx].settings['criteria']['search_criteria']) == 1) {
+			retval = row_matches[0];
+		} else {
+			// Group each criteria row into groups of ors with the matching result of each or
+			var and_groups = new Array();
+			var and_group_index = 0;
+			and_groups[and_group_index] = new Array();
+			//print_r($criteria['search_criteria']);
+			for(criteria_index in content[idx].settings['criteria']['search_criteria']) {
+				criteria_row = content[idx].settings['criteria']['search_criteria'][criteria_index];
+				if(criteria_index == 0) {
+					and_groups[and_group_index][0] = row_matches[criteria_index];
+				} else {
+					if(criteria_row['row_operator'] == null || criteria_row['row_operator'] != 'or') {
+						and_group_index++;
+						and_groups[and_group_index] = new Array();
+					}
+					and_groups[and_group_index][0] = row_matches[criteria_index];
+				}
+			}
+
+			// Get the final result, making sure each and group is TRUE
+			for(idx1 in and_groups) {
+				and_group = and_groups[idx1];
+				and_group_match = false;
+				for(idx1 in and_group) {
+					or_match = and_group[idx1];
+					// Make sure at least one item in an and group is true (or the only item is true)
+					if(or_match) {
+						and_group_match = true;
+						break;
+					}
+				}
+
+				// If one and group doesn't match the whole return value of this function is false
+				if(!and_group_match) {
+					retval = false;
+					break;
+				}
+			}
+
+		}
+		if(retval){
+			if(content[idx].required != 'true' && content[idx].required != true && content[idx].required != 1){
+				label[idx].text  	  = '*'+ label[idx].text;
+				label[idx].color 	  = 'red';
+				content[idx].required = true;
+			}
+		}else{
+			if(content[idx].required == 'true' || content[idx].required == true || content[idx].required == 1){
+				label[idx].text  	  = label[idx].text.substring(1, label[idx].text.length);
+				label[idx].color 	  = 'white';
+				content[idx].required = false;
+			}
+		}
+				
+	}
+		
+}

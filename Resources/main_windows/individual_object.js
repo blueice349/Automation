@@ -1206,41 +1206,41 @@ function createCalculationTableFormat(content , db_display, contentArr) {
             cal_value_str = (isNegative)?"(" + cal_value_str + ")":cal_value_str; // Adding brackets over -ve value.
 			
 			var row = Ti.UI.createView({
-				layout : 'horizontal',
-				height : heightCellView,
-				width : '100%',
-				top : 1,
+				layout 		: 'horizontal',
+				height 		: heightCellView,
+				width 		: '100%',
+				top 		: 1,
 			});
 			var row_label = Ti.UI.createLabel({
-				text : row_values[idx].row_label + ":  ",
-				textAlign : 'right',
-				width : 140,
-				color : 'white',
-				font : {
-					fontFamily : 'Helvetica Neue',
-					fontSize : 14
-				},
-				color : '#000',
-				height : heightCellView,
-				wordWrap : false,
-				ellipsize : true,
+				text 			: row_values[idx].row_label + ":  ",
+				textAlign 		: 'right',
+				width 			: 140,
+				color 			: 'white',
+				font 			: {
+									fontFamily 	: 'Helvetica Neue',
+									fontSize 	: 14
+							  	},
+				color 			: '#000',
+				height 			: heightCellView,
+				wordWrap 		: false,
+				ellipsize 		: true,
 				backgroundColor : '#F2F2F2'
 
 			});
 			var value = Ti.UI.createLabel({
-				text : "  " + cal_value_str,
-				textAlign : 'left',
-				width : 120,
-				left : 1,
-				color : 'white',
-				font : {
-					fontFamily : 'Helvetica Neue',
-					fontSize : 14
-				},
-				color : '#000',
-				height : heightCellView,
-				wordWrap : false,
-				ellipsize : true,
+				text 			: "  " + cal_value_str,
+				textAlign 		: 'left',
+				width 			: 120,
+				left 			: 1,
+				color 			: 'white',
+				font 			: {
+									fontFamily : 'Helvetica Neue',
+									fontSize : 14
+							  	},
+				color 			: '#000',
+				height 			: heightCellView,
+				wordWrap 		: false,
+				ellipsize 		: true,
 				backgroundColor : '#F2F2F2'
 			});
 			row.add(row_label);
@@ -1251,53 +1251,53 @@ function createCalculationTableFormat(content , db_display, contentArr) {
 
 		cal_value = result[0].final_value;
 		typeof(cal_value) == 'number' ? null : typeof(cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
-		isNegative = (cal_value < 0) ? true : false; // Is negative. And if it is -ve then write in this value in (brackets).
+		isNegative = (cal_value < 0) ? true  : false; // Is negative. And if it is -ve then write in this value in (brackets).
 		cal_value_str =  Math.abs(cal_value).toCurrency({
-                "thousands_separator":",",
-                "currency_symbol":"$",
-                "symbol_position":"front",
-                "use_fractions" : { "fractions":2, "fraction_separator":"." }
+                "thousands_separator"	:",",
+                "currency_symbol"		:"$",
+                "symbol_position"		:"front",
+                "use_fractions" 		: { "fractions":2, "fraction_separator":"." }
         });
         cal_value_str = (isNegative)?"(" + cal_value_str + ")":cal_value_str; // Adding brackets over -ve value.
 			
 		var row = Ti.UI.createView({
-			layout : 'horizontal',
-			height : heightCellView,
-			width : '100%',
-			top : 1
+			layout 	: 'horizontal',
+			height 	: heightCellView,
+			width 	: '100%',
+			top 	: 1
 		});
 		var row_label = Ti.UI.createLabel({
-			text : "Newly Calculated Total: ",
-			textAlign : 'right',
-			width : 140,
-			top : 0,
-			color : 'white',
-			font : {
-				fontFamily : 'Helvetica Neue',
-				fontSize : 14,
-				fontWeight : 'bold'
-			},
-			color : '#B40404',
-			height : heightCellView,
+			text 			: "Newly Calculated Total: ",
+			textAlign 		: 'right',
+			width 			: 140,
+			top 			: 0,
+			color 			: 'white',
+			font 			: {
+								fontFamily 	: 'Helvetica Neue',
+								fontSize 	: 14,
+								fontWeight 	: 'bold'
+						  	   },
+			color 			: '#B40404',
+			height 			: heightCellView,
 			backgroundColor : '#F2F2F2'
 		});
 		var value = Ti.UI.createLabel({
-			text : "  " + cal_value_str,
-			textAlign : 'left',
-			width : 120,
-			right : 0,
-			top : 0,
-			left : 1,
-			color : 'white',
-			font : {
-				fontFamily : 'Helvetica Neue',
-				fontSize : 14,
-				fontWeight : 'bold'
-			},
-			color : '#B40404',
-			height : heightCellView,
-			wordWrap : false,
-			ellipsize : true,
+			text 			: "  " + cal_value_str,
+			textAlign 		: 'left',
+			width 			: 120,
+			right 			: 0,
+			top 			: 0,
+			left 			: 1,
+			color 			: 'white',
+			font 			: {
+								fontFamily : 'Helvetica Neue',
+								fontSize : 14,
+								fontWeight : 'bold'
+							   },
+			color 			: '#B40404',
+			height 			: heightCellView,
+			wordWrap 		: false,
+			ellipsize 		: true,
 			backgroundColor : '#F2F2F2'
 		});
 		row.add(row_label);
