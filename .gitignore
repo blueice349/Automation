@@ -3,9 +3,13 @@ tmp
 *.pyc
 *.pyo
 <<<<<<< HEAD
+<<<<<<< HEAD
 .pydevproject
 build.log
 build
 =======
 build.log
 >>>>>>> 0aad1a3c2248585f42e3849187f9f9c9e3aec7eb
+=======
+.pydevproject
+>>>>>>> Vinay
