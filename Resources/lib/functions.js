@@ -7,6 +7,7 @@
 
 var DOWNLOAD_URL_THUMBNAIL = '/sync/image/thumbnail/';
 var DOWNLOAD_URL_IMAGE_FILE = '/sync/file/';
+var PLATFORM = Ti.Platform.name;
 
 function getDBName() {
 	var db_list = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );	
@@ -22,7 +23,8 @@ function showIndicator(show)
 {
     indWin = Titanium.UI.createWindow({
 		title:'Omadi CRM',
-        fullscreen: false
+        fullscreen: false,
+        backgroundColor: '#000'
     });
  
     // black view
@@ -39,8 +41,9 @@ function showIndicator(show)
     // loading indicator
     actIndFun = Titanium.UI.createActivityIndicator({
         height:'7%',
-        message: show,
-        width: '30%'
+        message: (PLATFORM=='android')?show:'',
+        width: '30%',
+        color: '#fff'
     });
     
     indWin.add(actIndFun);
@@ -85,8 +88,8 @@ function Progress_install(current, max){
         height: '10%',
         width: '100%',
         backgroundColor:'#111',
-        opacity:0.9,
-        top: -1*Ti.Platform.displayCaps.platformHeight*0.14,
+        opacity:1,
+        bottom: -1*Ti.Platform.displayCaps.platformHeight*0.14
     });
     
     Ti.UI.currentWindow.add(indView);
@@ -96,7 +99,7 @@ function Progress_install(current, max){
 	
 	setTimeout (function (){
 		indView.animate(a2);
-	}, 700);
+	}, 500);
    	
     var pb = Titanium.UI.createProgressBar({
 	    width:"70%",
@@ -107,10 +110,12 @@ function Progress_install(current, max){
 	    message:'Installing Updates ...',
 	   	font:{
 				fontFamily: 'Lobster'
-		}
+		},
+		style:(PLATFORM != 'android')?Titanium.UI.iPhone.ProgressBarStyle.PLAIN:'',
 	});
  	
  	indView.add(pb);
+ 	pb.show();
 
 	pb.value = this.current;
 	
@@ -481,10 +486,7 @@ function treatArray( num_to_insert , call_id ){
 // Returns: An empty return to callback the parent's action.
 // 
 
-function process_object(json, obj, f_marks, progress, type_request){
-
-	var db_process_object = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
-	
+function process_object(json, obj, f_marks, progress, type_request, db_process_object){
 	var deploy = db_process_object.execute('SELECT field_name, type FROM fields WHERE bundle = "'+obj+'"');
 	var col_titles = [];
 	var col_type = [];
@@ -518,7 +520,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 					json[obj].insert[i].title = "No Title";
 				
 				//'update' is a flag to decide whether the node needs to be synced to the server or not 
-				process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part ) VALUES ( '+json[obj].insert[i].nid+', '+json[obj].insert[i].created+' , '+json[obj].insert[i].changed+', "'+json[obj].insert[i].title.replace(/"/gi, "'")+'" , '+json[obj].insert[i].author_uid+' , 0 , "'+obj+'", '+json[obj].insert[i].form_part+'  ) ';
+				process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid ) VALUES ( '+json[obj].insert[i].nid+', '+json[obj].insert[i].created+' , '+json[obj].insert[i].changed+', "'+json[obj].insert[i].title.replace(/"/gi, "'")+'" , '+json[obj].insert[i].author_uid+' , 0 , "'+obj+'", '+json[obj].insert[i].form_part + ',' + json[obj].insert[i].changed_uid+') ';
 				
 				if (aux_column > 0){
 					query = 'INSERT OR REPLACE  INTO '+obj+' (\'nid\', ';
@@ -678,7 +680,7 @@ function process_object(json, obj, f_marks, progress, type_request){
 				json[obj].insert.title = "No Title";
 			
 			//'update' is a flag to decide whether the node needs to be synced to the server or not 
-			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part ) VALUES ( '+json[obj].insert.nid+', '+json[obj].insert.created+' , '+json[obj].insert.changed+', "'+json[obj].insert.title.replace(/"/gi, "'")+'" , '+json[obj].insert.author_uid+' , 0 , "'+obj+'", '+json[obj].insert.form_part+'  ) ';
+			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid  ) VALUES ( '+json[obj].insert.nid+', '+json[obj].insert.created+' , '+json[obj].insert.changed+', "'+json[obj].insert.title.replace(/"/gi, "'")+'" , '+json[obj].insert.author_uid+' , 0 , "'+obj+'", '+json[obj].insert.form_part+',' + json[obj].insert.changed_uid +') ';
 			
 			if (aux_column > 0){
 				query = 'INSERT OR REPLACE  INTO '+obj+' (\'nid\', ';
@@ -841,10 +843,8 @@ function process_object(json, obj, f_marks, progress, type_request){
 				if ((json[obj].update[i].title === null) || (json[obj].update[i].title == 'undefined') || (json[obj].update[i].title === false)) 
 					json[obj].update[i].title = "No Title";
 				
-				//'update' is a flag to decide whether the node needs to be synced to the server or not 
-				process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part ) VALUES ( '+json[obj].update[i].nid+', '+json[obj].update[i].created+' , '+json[obj].update[i].changed+', "'+json[obj].update[i].title.replace(/"/gi, "'")+'" , '+json[obj].update[i].author_uid+' , 0 , "'+obj+'", '+json[obj].update[i].form_part+'  ) ';
-				
-				//process_obj[process_obj.length] = 'UPDATE node SET created="'+json[obj].update[i].created+'", changed="'+json[obj].update[i].changed+'", title="'+json[obj].update[i].title.replace(/"/gi, "'")+'" , author_uid='+json[obj].update[i].author_uid+' , flag_is_updated=0, table_name="'+obj+'" WHERE nid='+json[obj].update[i].nid;
+				//'update' is a flag to decide whether the node needs to be synced to the server or not
+				process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid ) VALUES ( '+json[obj].update[i].nid+', '+json[obj].update[i].created+' , '+json[obj].update[i].changed+', "'+json[obj].update[i].title.replace(/"/gi, "'")+'" , '+json[obj].update[i].author_uid+' , 0 , "'+obj+'", '+json[obj].update[i].form_part+', '+json[obj].update[i].changed_uid+') ';
 				
 				if (aux_column > 0){
 					query = 'INSERT OR REPLACE  INTO '+obj+' (\'nid\', ';
@@ -1047,10 +1047,9 @@ function process_object(json, obj, f_marks, progress, type_request){
 			if ((json[obj].update.title === null) || (json[obj].update.title == 'undefined') || (json[obj].update.title === false)) 
 				json[obj].update.title = "No Title";
 			
-			//'update' is a flag to decide whether the node needs to be synced to the server or not 
-			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part ) VALUES ( '+json[obj].update.nid+', '+json[obj].update.created+' , '+json[obj].update.changed+', "'+json[obj].update.title.replace(/"/gi, "'")+'" , '+json[obj].update.author_uid+' , 0 , "'+obj+'", '+json[obj].update.form_part+'  ) ';
-			
-			//process_obj[process_obj.length] = 'UPDATE node SET created="'+json[obj].update.created+'", changed="'+json[obj].update.changed+'", title="'+json[obj].update.title.replace(/"/gi, "'")+'" , author_uid='+json[obj].update.author_uid+' , flag_is_updated=0, table_name="'+obj+'" WHERE nid='+json[obj].update.nid;
+			//'update' is a flag to decide whether the node needs to be synced to the server or not
+			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid ) VALUES ( '+json[obj].update.nid+', '+json[obj].update.created+' , '+json[obj].update.changed+', "'+json[obj].update.title.replace(/"/gi, "'")+'" , '+json[obj].update.author_uid+' , 0 , "'+obj+'", '+json[obj].update.form_part+', '+json[obj].update.changed_uid+') ';
+
 			
 			if (aux_column > 0){
 				query = 'INSERT OR REPLACE  INTO '+obj+' (\'nid\', ';
@@ -1391,6 +1390,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 
 	//When connected
 	objectsUp.onload = function(e) {
+		
 		//Parses response into strings
 		Ti.API.info("Onload reached - Here follows the json: ");
 		Ti.API.info(this.responseText);
@@ -1669,7 +1669,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				Ti.API.info('Node_type seconds: '+ iResult);
 				Ti.API.info("Success for node_types, db operations ran smoothly!");
 			}
-
+			
 			//Fields:
 			if (json.fields){
 				//SQL actions:
@@ -1763,7 +1763,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								case "term_reference":
 								case "datestamp":
 								case "number_integer":
-									type = "INTEGER"
+									(PLATFORM=='android')?type = "INTEGER":type='TEXT'
 								break;
 								
 								case "number_decimal":
@@ -1883,7 +1883,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							case "term_reference":
 							case "datestamp":
 							case "number_integer":
-								type = "INTEGER"
+								(PLATFORM=='android')?type = "INTEGER":type='TEXT'
 							break;
 							
 							case "number_decimal":
@@ -2036,7 +2036,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									case "term_reference":
 									case "datestamp":
 									case "number_integer":
-										type = "INTEGER"
+										(PLATFORM=='android')?type = "INTEGER":type='TEXT'
 									break;
 									
 									case "number_decimal":
@@ -2148,7 +2148,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 												case "term_reference":
 												case "datestamp":
 												case "number_integer":
-													type = "INTEGER"
+													(PLATFORM=='android')?type = "INTEGER":type='TEXT';
 												break;
 												
 												case "number_decimal":
@@ -2304,7 +2304,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								case "term_reference":
 								case "datestamp":
 								case "number_integer":
-									type = "INTEGER"
+									(PLATFORM=='android')?type = "INTEGER":type='TEXT'
 								break;
 								
 								case "number_decimal":
@@ -2416,7 +2416,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 											case "term_reference":
 											case "datestamp":
 											case "number_integer":
-												type = "INTEGER"
+												(PLATFORM=='android')?type = "INTEGER":type='TEXT'
 											break;
 											
 											case "number_decimal":
@@ -2499,7 +2499,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					Ti.API.info("Success for fields, it was inserted / updated!");
 				}
 			} 
-			
 			//
 			//Retrieve objects that need quotes:
 			//
@@ -2509,7 +2508,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 			var need_at = db_installMe.execute("SELECT field_name,bundle FROM fields WHERE type='number_integer' OR type='number_decimal' ");
 			
 			var quotes = new Array(); 
-			
 			while (need_at.isValidRow()){
 				quotes[need_at.fieldByName('field_name')] = new Array(); 
 				quotes[need_at.fieldByName('field_name')][need_at.fieldByName('bundle')] = true;
@@ -2635,6 +2633,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 
 				Ti.API.info("Vocabulary inserted!");
 			} 
+			
 			//Terms:
 			if (json.terms){
 				Ti.API.info('Terms');
@@ -2758,12 +2757,12 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 			var n_bund = db_installMe.execute('SELECT * FROM bundles');
 			var take = db_installMe.execute('SELECT * FROM bundles WHERE display_on_menu="true"');
 			var count_t = 0;
-			
 			while ( n_bund.isValidRow() ){
 				var name_table = n_bund.fieldByName("bundle_name");
+			try{	
 				if ( (json.node) && (json.node[name_table]) ){
 						Ti.API.info('##### Called '+name_table);
-						callback = process_object(json.node, name_table , quotes, progress, type_request );
+						callback = process_object(json.node, name_table , quotes, progress, type_request,db_installMe);
 
 						//Hides the image alert:
 						if ( (take.rowCount === 0 ) && (count_t === 0) ){
@@ -2825,9 +2824,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 						
 				}
 				n_bund.next();
+			}catch(evt){
+			}
 			}
 			n_bund.close();
-			
 			/*********** Users *************/
 			if(json.users){
 				
@@ -3088,6 +3088,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 
 			if ( existsMorePages ){
 				Ti.API.info('Another Call');
+				db_installMe.close();
 				installMe(pageIndex, win, json.sync_timestamp, progress, menu, img, 'GET');
 			}
 			else{
@@ -3098,35 +3099,54 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				db_installMe.close();
 				
 				if (type_request == 'POST'){
+					updateFileUploadTable(win, json);
 					installMe(pageIndex, win, timeIndex , progress, menu, img, 'GET', mode, close_parent);
 				}
 				else if (mode == 1 ){
-					Ti.UI.createNotification({
-						message : 'The node has been successfully online and locally updated',
-						duration: Ti.UI.NOTIFICATION_DURATION_LONG
-					}).show();
+					if(PLATFORM == 'android'){
+						Ti.UI.createNotification({
+							message : 'The node has been successfully online and locally updated',
+							duration: Ti.UI.NOTIFICATION_DURATION_LONG
+						}).show();
+					}else{
+						alert('The node has been successfully online and locally updated');
+					}
 					//Just to make sure database keeps locked
-					close_parent();
+
+					//setUse();
+					//close_parent();
+					//updateFileUploadTable(win, json, close_parent);
+					var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion"));
+					var imageForUpload = db_fileUpload.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
+					uploadFile(win, 'POST', db_fileUpload, imageForUpload, close_parent);
 				}
 				else if (mode == 0 ){
-					Ti.UI.createNotification({
-						message : 'The node has been successfully online and locally created',
-						duration: Ti.UI.NOTIFICATION_DURATION_LONG
-					}).show();
+					if(PLATFORM == 'android'){
+						Ti.UI.createNotification({
+							message : 'The node has been successfully online and locally created',
+							duration: Ti.UI.NOTIFICATION_DURATION_LONG
+						}).show();
+					}else{
+						alert('The node has been successfully online and locally created');
+					}
 					//Just to make sure database keeps locked
-					close_parent();
+
+					//setUse();
+					//close_parent();
+					//updateFileUploadTable(win, json, close_parent);
+					var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion"));
+					var imageForUpload = db_fileUpload.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
+					uploadFile(win, 'POST', db_fileUpload, imageForUpload, close_parent);
 				}			
 				else{
 					unsetUse();
 				}	
 			}
 		}
-		updateFileUploadTable(win, json);
 	}
 
 	//Connection error:
 	objectsUp.onerror = function(e) {
-
 		Ti.API.error('Code status: '+e.error);
 		if (progress != null){
 			progress.close();
@@ -3134,23 +3154,35 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 
 		Ti.API.info('Request type: '+type_request+' progress value: '+progress);
 		if ((type_request == 'POST') && (progress != null)){
-			Ti.UI.createNotification({
-				message : 'Connection timed out, please try again',
-				duration: Ti.UI.NOTIFICATION_DURATION_LONG
-			}).show();
+			if(PLATFORM == 'android'){
+				Ti.UI.createNotification({
+					message : 'Connection timed out, please try again',
+					duration: Ti.UI.NOTIFICATION_DURATION_LONG
+				}).show();
+			}else{
+				alert('Connection timed out, please try again');
+			}
 		}
 		else if (mode == 0 ){
-			Ti.UI.createNotification({
-				message : 'An error happened while we tried to connect to the server in order to transfer the recently updated node, please make a manual update',
-				duration: Ti.UI.NOTIFICATION_DURATION_LONG
-			}).show();
+			if(PLATFORM == 'android'){
+				Ti.UI.createNotification({
+					message : 'An error happened while we tried to connect to the server in order to transfer the recently updated node, please make a manual update',
+					duration: Ti.UI.NOTIFICATION_DURATION_LONG
+				}).show();
+			}else{
+				alert('An error happened while we tried to connect to the server in order to transfer the recently updated node, please make a manual update');
+			}
 			close_parent();
 		}
 		else if (mode == 1 ){
-			Ti.UI.createNotification({
-				message : 'An error happened while we tried to connect to the server in order to transfer the recently saved node, please make a manual update',
-				duration: Ti.UI.NOTIFICATION_DURATION_LONG
-			}).show();
+			if(PLATFORM == 'android'){
+				Ti.UI.createNotification({
+					message : 'An error happened while we tried to connect to the server in order to transfer the recently saved node, please make a manual update',
+					duration: Ti.UI.NOTIFICATION_DURATION_LONG
+				}).show();
+			}else{
+				alert('An error happened while we tried to connect to the server in order to transfer the recently saved node, please make a manual update');
+			}
 			close_parent();
 		}
 		
@@ -3392,16 +3424,16 @@ function getScreenHeight(){
 	return ret;
 }
 
-function uploadFile(win, type_request, database, fileUploadTable){
+function uploadFile(win, type_request, database, fileUploadTable, close_parent){
 try{
-	var fileUploadXHR = Ti.Network.createHTTPClient();
-	fileUploadXHR.setTimeout(20000);
-	fileUploadXHR.open(type_request, win.picked + '/js-sync/upload.json');
+	//var fileUploadXHR = win.log;
+	win.log.setTimeout(30000);
+	win.log.open(type_request, win.picked + '/js-sync/upload.json');
 	// Upload images
 	if(fileUploadTable.isValidRow()) {
 		//Only upload those images that have positive nids
 		if(fileUploadTable.fieldByName('nid') > 0) {
-			fileUploadXHR.onload = function(e) {
+			win.log.onload = function(e) {
 				Ti.API.info('=========== Success ========' + this.responseText);
 				var respnseJson = JSON.parse(this.responseText);
 				
@@ -3448,40 +3480,50 @@ try{
 				database.execute("DELETE FROM file_upload_queue WHERE nid=" + respnseJson.nid +" and delta=" + respnseJson.delta +" and field_name='" + respnseJson.field_name+ "';");
 				fileUploadTable = database.execute("SELECT * FROM file_upload_queue WHERE nid > 0;");
 				if(fileUploadTable.rowCount == 0){
+					close_parent();
 					fileUploadTable.close();
 					database.close();
 				}else{
-					uploadFile(win, type_request, database, fileUploadTable);
+					uploadFile(win, type_request, database, fileUploadTable, close_parent);
 				}
 			}
 			
-			fileUploadXHR.onerror = function(e) {
-				Ti.API.info('=========== Error in uploading ========' + e.error);
+			win.log.onerror = function(e) {
+				close_parent();
+				Ti.API.info('=========== Error in uploading ========' + e.error + this.status);
 				if(this.status == '406' && this.error =='Nid is not connected to a valid node.'){
 					database.execute("DELETE FROM file_upload_queue WHERE nid=" + fileUploadTable.fieldByName('nid') +" and id=" + fileUploadTable.fieldByName('id') + ";");
-					fileUploadTable = database.execute("SELECT * FROM file_upload_queue WHERE nid > 0;");
-					if(fileUploadTable.rowCount == 0){
-						fileUploadTable.close();
-						database.close();
-					}
 				}
-				Ti.UI.createNotification({
-					message : 'An error has occurred, please try again.'
-				}).show();
+				fileUploadTable.close();
+				database.close();
 			}
 			
-			fileUploadXHR.setRequestHeader("Content-Type", "application/json");
-			
-			fileUploadXHR.send('{"file_data"	:"'	+fileUploadTable.fieldByName('file_data')	+
-								'", "filename"	:"'	+fileUploadTable.fieldByName('file_name') 	+
-								'", "nid"		:"'	+fileUploadTable.fieldByName('nid')			+
-								'", "field_name":"'	+fileUploadTable.fieldByName('field_name')	+
-								'", "delta"		:'	+fileUploadTable.fieldByName('delta')+'}');
+			win.log.setRequestHeader("Content-Type", "application/json");
+		
+			if(PLATFORM == 'android'){
+				win.log.send('{"file_data"	:"'	+fileUploadTable.fieldByName('file_data')	+
+					'", "filename"	:"'	+fileUploadTable.fieldByName('file_name') 	+
+					'", "nid"		:"'	+fileUploadTable.fieldByName('nid')			+
+					'", "field_name":"'	+fileUploadTable.fieldByName('field_name')	+
+					'", "delta"		:'	+fileUploadTable.fieldByName('delta')+'}');
+				
+			}else{
+				win.log.send({file_data	: fileUploadTable.fieldByName('file_data'),
+						 filename	: fileUploadTable.fieldByName('file_name'),
+						 nid		: fileUploadTable.fieldByName('nid'),
+						 field_name : fileUploadTable.fieldByName('field_name'),
+						 delta		: fileUploadTable.fieldByName('delta')});
+			}	
+		}else{
+			close_parent();
 		}
 			
+	}else{
+		close_parent();
 	}
 	
 }catch(e){
+	close_parent();
 	Ti.API.info("==== ERROR ===" + e);
 }
 }
@@ -3510,30 +3552,35 @@ function reduceImageSize(blobImage, maxWidth, maxHeight){
 }
 
 function updateFileUploadTable(win, json){
-	if(json.total_item_count == 0){
-		return;
-	}
-	var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName());
-	
-	// To replace all negative nid to positive in file_upload_queue table
-	var bundles = db_fileUpload.execute('SELECT * FROM bundles;');
-	while (bundles.isValidRow() ){
-		var name_table = bundles.fieldByName("bundle_name");
-		if(json.node && json.node[name_table]) {
-			if(json.node[name_table].insert) {
-				for( i = 0; i < json.node[name_table].insert.length; i++) {
-					var insertedNode = json.node[name_table].insert[i];
-					if(insertedNode.__negative_nid){
-						db_fileUpload.execute("UPDATE file_upload_queue SET nid =" + insertedNode.nid + " WHERE nid=" + insertedNode.__negative_nid);
+	try{
+		if(json.total_item_count == 0){
+			close_parent();
+			return;
+		}
+		var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion"));
+		
+		// To replace all negative nid to positive in file_upload_queue table
+		var bundles = db_fileUpload.execute('SELECT * FROM bundles;');
+		while (bundles.isValidRow() ){
+			var name_table = bundles.fieldByName("bundle_name");
+			if(json.node && json.node[name_table]) {
+				if(json.node[name_table].insert) {
+					for( i = 0; i < json.node[name_table].insert.length; i++) {
+						var insertedNode = json.node[name_table].insert[i];
+						if(insertedNode.__negative_nid){
+							db_fileUpload.execute("UPDATE file_upload_queue SET nid =" + insertedNode.nid + " WHERE nid=" + insertedNode.__negative_nid);
+						}
 					}
 				}
 			}
+			bundles.next();
 		}
-		bundles.next();
+		bundles.close();
+		db_fileUpload.close();
+	//	var imageForUpload = db_fileUpload.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
+	//	uploadFile(win, 'POST', db_fileUpload, imageForUpload, close_parent);
+	}catch(evt){
 	}
-	bundles.close();
-	var imageForUpload = db_fileUpload.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
-	uploadFile(win, 'POST', db_fileUpload, imageForUpload);
 }
 
 // Download Image from the server
@@ -3614,7 +3661,7 @@ function showImage(source){
 		backgroundColor : 'black',
 		layout: 'vertical'
 	});
-	
+	imageWin.orientation = [Ti.UI.PORTRAIT];
 	var title = Ti.UI.createLabel({
 		textAlign: 'center',
 		text: source.label,
@@ -3624,6 +3671,7 @@ function showImage(source){
 		height: 30,
 		left: 10,
 		right:10,
+		color: '#fff',
 		backgroundColor: '#585858'
 	});
 	imageWin.add(title);
@@ -3638,7 +3686,7 @@ function showImage(source){
 		left : 10,
 		right : 10,
 		top : 10,
-		height: getScreenHeight()-170,
+		height: Ti.Platform.displayCaps.platformHeight - 150,
 		canScale : true,
 		image : source.bigImg
 	});
@@ -3669,4 +3717,1200 @@ function showImage(source){
 	imageWin.add(border01);
 	imageWin.add(close);
 	imageWin.open();	
+}
+
+function clearCache(){
+	var path = Ti.Filesystem.getFile(Titanium.Filesystem.applicationDirectory).getParent();
+	var cookies = Ti.Filesystem.getFile(path+'/Library/Cookies', 'Cookies.binarycookies');
+	if(cookies.exists()){
+		cookies.deleteFile();
+	}	
+	
+}
+
+function node_load(db_display, nid){
+	var parent_node = new Array();
+	var table = db_display.execute('SELECT table_name FROM node WHERE nid = ' + nid);
+	table = table.fieldByName('table_name');
+	var node_data = db_display.execute('SELECT * FROM ' + table + ' WHERE nid=' + nid);
+	return node_data;
+}
+
+function _calculation_field_sort_on_weight(a, b){
+   if(a['weight']!=null && a['weight']!="" && b['weight']!=null && b['weight']!=""){
+    return a['weight'] > b['weight'];
+  }
+  return 0;
+}
+function _calculation_field_get_values(win, db_display, instance, entity, content) {
+	var calculated_field_cache = [];
+	var final_value = 0;
+	if(instance.settings.calculation.items != null && !instance.disabled) {
+		var row_values = [];
+		if(instance.value != null && instance.value != "") {
+			cached_final_value = instance.value;
+		} else {
+			cached_final_value = 0;
+		}
+
+		usort(instance['settings']['calculation']['items'], '_calculation_field_sort_on_weight');
+
+		for(var idx in instance.settings.calculation.items) {
+			var calculation_row = instance.settings.calculation.items[idx];
+			var value = 0;
+			var field_1_multiplier = 0;
+			var field_2_multiplier = 0;
+			var numeric_multiplier = 0;
+			calculated_field_cache = new Array();
+			if(calculation_row.field_name_1 != null && entity[calculation_row.field_name_1] != null && entity[calculation_row.field_name_1][0]['field_type'] == 'calculation_field') {
+				// Make sure a dependency calculation is made first
+				// TODO: Statically cache these values for future use by other calculation fields
+				// TODO: Make sure an infinite loop doesn't occur
+				required_instance_final_values = _calculation_field_get_values(win, db_display, content[entity[calculation_row.field_name_1][0]['reffer_index']], entity, content);
+				calculated_field_cache[calculation_row.field_name_1] = required_instance_final_values[0].final_value;
+			}
+			
+			if(calculation_row.field_name_1 != null && calculation_row.field_name_1 != "") {
+				if(calculated_field_cache[calculation_row.field_name_1] != null && calculated_field_cache[calculation_row.field_name_1] != "") {
+					field_1_multiplier = calculated_field_cache[calculation_row.field_name_1];
+				} else if(calculation_row.type == 'parent_field_value') {
+					parent_field = calculation_row.parent_field;
+					if(entity[parent_field]!= null && entity[parent_field][0]['nid'] != null) {
+						parent_node = node_load(db_display, entity[parent_field][0]['nid']);
+						if(parent_node.rowCount > 0 && parent_node.fieldByName(calculation_row.field_name_1) != null) {
+							field_1_multiplier = parent_node.fieldByName(calculation_row.field_name_1);
+						}
+					}
+				} else if(entity[calculation_row.field_name_1]!= null && entity[calculation_row.field_name_1][0]['value'] != null) {
+					field_1_multiplier = entity[calculation_row.field_name_1][0]['value'];
+				}
+				if(calculation_row.datestamp_end_field != null && calculation_row.datestamp_end_field != "") {
+					start_timestamp = field_1_multiplier;
+					// Set this end value to 0 in case the terminating datestamp field is empty
+					field_1_multiplier = 0;
+					if(entity[calculation_row.datestamp_end_field]!= null && entity[calculation_row.datestamp_end_field][0]['value'] !=null) {
+						end_timestamp = entity[calculation_row.datestamp_end_field][0]['value'];
+						if(calculation_row.type == 'time-only') {
+							if(end_timestamp < start_timestamp) {
+								end_timestamp += (24 * 3600);
+							}
+						}
+
+						difference = end_timestamp - start_timestamp;
+
+						switch(calculation_row.datestamp_interval) {
+							case 'minute':
+								field_1_multiplier = difference / 60;
+								break;
+							case 'hour':
+								field_1_multiplier = difference / 3600;
+								break;
+							case 'day':
+								field_1_multiplier = difference / (3600 * 24);
+								break;
+							case 'week':
+								field_1_multiplier = difference / (3600 * 24 * 7);
+								break;
+						}
+						if(calculation_row.type == 'time') {
+							if(calculation_row.interval_rounding == 'up') {
+								field_1_multiplier = Math.ceil(field_1_multiplier);
+							} else if(calculation_row.interval_rounding == 'down') {
+								field_1_multiplier = Math.floor(field_1_multiplier);
+							} else if(calculation_row.interval_rounding == 'integer') {
+								field_1_multiplier = Math.round(field_1_multiplier);
+							} else if(calculation_row.interval_rounding == 'increment-at-time') {
+								at_time = calculation_row.increment_at_time;
+								relative_increment_time = mktime(date('H', at_time), date('i', at_time), 0, date('n', start_timestamp), date('j', start_timestamp), date('Y', start_timestamp));
+
+								day_count = 0;
+								if(relative_increment_time < start_timestamp) {
+									relative_increment_time += (3600 * 24);
+								}
+
+								while(relative_increment_time <= end_timestamp) {
+									day_count++;
+									relative_increment_time += (3600 * 24);
+								}
+
+								field_1_multiplier = day_count;
+							}
+						}
+					}
+				}
+
+			}
+		
+			
+			if(calculation_row.field_name_2 != null && calculation_row.field_name_2 != "") {
+				if(calculated_field_cache[calculation_row.field_name_1] != null) {
+					field_2_multiplier = calculated_field_cache[calculation_row.field_name_2];
+				} else if(calculation_row.type == 'parent_field_value') {
+					parent_field = calculation_row.parent_field;
+					if(entity[parent_field] != null && entity[parent_field][0]['nid'] != null) {
+						parent_node = node_load(db_display, entity[parent_field][0]['nid']);
+						if(parent_node.rowCount > 0 && parent_node.fieldByName(calculation_row.field_name_2) != null) {
+							field_2_multiplier = parent_node.fieldByName(calculation_row.field_name_2);
+						}
+					}
+				} else if(entity[calculation_row.field_name_2]!= null && entity[calculation_row.field_name_2][0]['value'] != null) {
+					field_2_multiplier = entity[calculation_row.field_name_2][0]['value'];
+				}
+			}
+			
+			
+			if(calculation_row.numeric_multiplier != null && calculation_row.numeric_multiplier != "") {
+				numeric_multiplier = Number(calculation_row.numeric_multiplier);
+			}
+
+			var zero = false;
+			
+			
+			 if(calculation_row.criteria != null && calculation_row.criteria.search_criteria != null) {
+				 if(!list_search_node_matches_search_criteria(win, db_display, entity, calculation_row.criteria, content)) {
+					 zero = true;
+				}
+			 } 
+			
+			
+			var value = 0;
+			if(field_1_multiplier == 0 && calculation_row.field_name_1 != null && calculation_row.field_name_1 != "") {
+				zero = true;
+			} else if(value == 0 && field_1_multiplier != 0) {
+				value = field_1_multiplier;
+			}
+						
+			if(field_2_multiplier== 0 && calculation_row.field_name_2 != null && calculation_row.field_name_2 != "") {
+				zero = true;
+			} else if(value == 0 && field_2_multiplier != 0) {
+				value = field_2_multiplier;
+			} else if(value != 0 && field_2_multiplier != 0) {
+				value *= field_2_multiplier;
+			}
+
+			if(value == 0 && numeric_multiplier != 0) {
+				value = numeric_multiplier;
+			} else if(value!= 0 && numeric_multiplier != 0) {
+				value *= numeric_multiplier;
+			}
+
+			if(zero) {
+				value = 0;
+			}
+			
+			row_values.push({
+				'row_label' : (calculation_row.row_label != null && calculation_row.row_label != "") ? calculation_row.row_label : '',
+				'value' : value
+			});
+			//alert('field_1_multiplier : ' + field_1_multiplier);
+			//alert('field_2_multiplier : ' + field_2_multiplier);
+			//alert('numeric_multiplier : ' + numeric_multiplier);
+			//alert('Value : ' + value);
+			final_value += value;
+		}
+	//	alert("final value: " + final_value);
+		return new Array({
+			'cached_final_value' : cached_final_value,
+			'final_value' : final_value,
+			'rows' : row_values,
+		});
+
+
+	}
+	return new Array();
+}
+
+function omadi_fields_get_fields(win, db_display) {
+	try {
+		var fields = new Array();
+		var unsorted_res = new Array();
+		var regions			 = db_display.execute('SELECT * FROM regions WHERE node_type = "'+win.type+'" ORDER BY weight ASC');
+		var fields_result	 = db_display.execute('SELECT * FROM fields WHERE bundle = "'+win.type+'" ORDER BY weight ASC');
+
+		while(fields_result.isValidRow()) {
+			unsorted_res.push({
+				label : fields_result.fieldByName('label'),
+				type : fields_result.fieldByName('type'),
+				field_name : fields_result.fieldByName('field_name'),
+				settings : fields_result.fieldByName('settings'),
+				widget : fields_result.fieldByName('widget')
+			});
+			fields_result.next();
+		}
+		
+		while(regions.isValidRow()) {
+			
+			var reg_settings = JSON.parse(regions.fieldByName('settings'));
+
+			if(reg_settings != null && reg_settings.display_disabled) {
+				Ti.API.info('Region : ' + regions.fieldByName('label') + ' won\'t appear');
+			} else {
+				fields[regions.fieldByName('region_name')] = new Array();
+				fields[regions.fieldByName('region_name')]['label'] = regions.fieldByName('label');
+				fields[regions.fieldByName('region_name')]['type'] = 'region_separator_mode';
+				fields[regions.fieldByName('region_name')]['settings'] = regions.fieldByName('settings');
+				for(var i in unsorted_res) {
+					var settings = JSON.parse(unsorted_res[i].settings);
+					if(regions.fieldByName('region_name') == settings.region) {
+						fields[unsorted_res[i].field_name] = new Array();
+						fields[unsorted_res[i].field_name]['label'] = unsorted_res[i].label;
+						fields[unsorted_res[i].field_name]['type'] = unsorted_res[i].type;
+						fields[unsorted_res[i].field_name]['settings'] = unsorted_res[i].settings;
+						fields[unsorted_res[i].field_name]['widget'] = unsorted_res[i].widget;
+						fields[unsorted_res[i].field_name]['field_name'] = unsorted_res[i].field_name;
+					}
+				}
+			}
+			regions.next();
+		}
+		return fields;
+	} catch(evt) {
+		return null;
+	}
+}
+
+
+// PHP equivelent function in javaScript----START
+function mktime() {
+	var no, ma = 0, mb = 0, i = 0, d = new Date(), argv = arguments, argc = argv.length;
+
+	if(argc > 0) {
+		d.setHours(0, 0, 0);
+		d.setDate(1);
+		d.setMonth(1);
+		d.setYear(1972);
+	}
+
+	var dateManip = {
+		0 : function(tt) {
+			return d.setHours(tt);
+		},
+		1 : function(tt) {
+			return d.setMinutes(tt);
+		},
+		2 : function(tt) {
+			var set = d.setSeconds(tt);
+			mb = d.getDate() - 1;
+			return set;
+		},
+		3 : function(tt) {
+			var set = d.setMonth(parseInt(tt) - 1);
+			ma = d.getFullYear() - 1972;
+			return set;
+		},
+		4 : function(tt) {
+			return d.setDate(tt + mb);
+		},
+		5 : function(tt) {
+			return d.setYear(tt + ma);
+		}
+	};
+
+	for( i = 0; i < argc; i++) {
+		no = parseInt(argv[i] * 1);
+		if(isNaN(no)) {
+			return false;
+		} else {
+			// arg is number, let's manipulate date object
+			if(!dateManip[i](no)) {
+				// failed
+				return false;
+			}
+		}
+	}
+
+	return Math.floor(d.getTime() / 1000);
+}
+  
+function date (format, timestamp) {  
+          
+        var a, jsdate=(  
+            (typeof(timestamp) == 'undefined') ? new Date() : 
+            (typeof(timestamp) == 'number') ? new Date(timestamp*1000) : 
+            new Date(timestamp) 
+        );  
+        var pad = function(n, c){  
+            if( (n = n + "").length < c ) {  
+                return new Array(++c - n.length).join("0") + n;  
+            } else {  
+                return n;  
+            }  
+        };  
+        var txt_weekdays = ["Sunday","Monday","Tuesday","Wednesday",  
+            "Thursday","Friday","Saturday"];  
+        var txt_ordin = {1:"st",2:"nd",3:"rd",21:"st",22:"nd",23:"rd",31:"st"};  
+        var txt_months =  ["", "January", "February", "March", "April",  
+            "May", "June", "July", "August", "September", "October", "November",  
+            "December"];  
+      
+        var f = {  
+            // Day  
+                d: function(){  
+                    return pad(f.j(), 2);  
+                },  
+                D: function(){  
+                    var t = f.l();  
+                    return t.substr(0,3);  
+                },  
+                j: function(){  
+                    return jsdate.getDate();  
+                },  
+                l: function(){  
+                    return txt_weekdays[f.w()];  
+                },  
+                N: function(){  
+                    return f.w() + 1;  
+                },  
+                S: function(){  
+                    return txt_ordin[f.j()] ? txt_ordin[f.j()] : 'th';  
+                },  
+                w: function(){  
+                    return jsdate.getDay();  
+                },  
+                z: function(){  
+                    return (jsdate - new Date(jsdate.getFullYear() + "/1/1")) / 864e5 >> 0;  
+                },  
+      
+            // Week  
+                W: function(){  
+                    var a = f.z(), b = 364 + f.L() - a;  
+                    var nd2, nd = (new Date(jsdate.getFullYear() + "/1/1").getDay() || 7) - 1;  
+      
+                    if(b <= 2 && ((jsdate.getDay() || 7) - 1) <= 2 - b){  
+                        return 1;  
+                    } else{  
+      
+                        if(a <= 2 && nd >= 4 && a >= (6 - nd)){  
+                            nd2 = new Date(jsdate.getFullYear() - 1 + "/12/31");  
+                            return date("W", Math.round(nd2.getTime()/1000));  
+                        } else{  
+                            return (1 + (nd <= 3 ? ((a + nd) / 7) : (a - (7 - nd)) / 7) >> 0);  
+                        }  
+                    }  
+                },  
+      
+            // Month  
+                F: function(){  
+                    return txt_months[f.n()];  
+                },  
+                m: function(){  
+                    return pad(f.n(), 2);  
+                },  
+                M: function(){  
+                    t = f.F(); return t.substr(0,3);  
+                },  
+                n: function(){  
+                    return jsdate.getMonth() + 1;  
+                },  
+                t: function(){  
+                    var n;  
+                    if( (n = jsdate.getMonth() + 1) == 2 ){  
+                        return 28 + f.L();  
+                    } else{  
+                        if( n & 1 && n < 8 || !(n & 1) && n > 7 ){  
+                            return 31;  
+                        } else{  
+                            return 30;  
+                        }  
+                    }  
+                },  
+      
+            // Year  
+                L: function(){  
+                    var y = f.Y();  
+                    return (!(y & 3) && (y % 1e2 || !(y % 4e2))) ? 1 : 0;  
+                },  
+                o: function(){  
+                    if (f.n() === 12 && f.W() === 1) {  
+                        return jsdate.getFullYear()+1;  
+                    }  
+                    if (f.n() === 1 && f.W() >= 52) {  
+                        return jsdate.getFullYear()-1;  
+                    }  
+                    return jsdate.getFullYear();  
+                },  
+                Y: function(){  
+                    return jsdate.getFullYear();  
+                },  
+                y: function(){  
+                    return (jsdate.getFullYear() + "").slice(2);  
+                },  
+      
+            // Time  
+                a: function(){  
+                    return jsdate.getHours() > 11 ? "pm" : "am";  
+                },  
+                A: function(){  
+                    return f.a().toUpperCase();  
+                },  
+                B: function(){  
+                    // peter paul koch:  
+                    var off = (jsdate.getTimezoneOffset() + 60)*60;  
+                    var theSeconds = (jsdate.getHours() * 3600) +  
+                                     (jsdate.getMinutes() * 60) +  
+                                      jsdate.getSeconds() + off;  
+                    var beat = Math.floor(theSeconds/86.4);  
+                    if (beat > 1000) beat -= 1000;  
+                    if (beat < 0) beat += 1000;  
+                    if ((String(beat)).length == 1) beat = "00"+beat;  
+                    if ((String(beat)).length == 2) beat = "0"+beat;  
+                    return beat;  
+                },  
+                g: function(){  
+                    return jsdate.getHours() % 12 || 12;  
+                },  
+                G: function(){  
+                    return jsdate.getHours();  
+                },  
+                h: function(){  
+                    return pad(f.g(), 2);  
+                },  
+                H: function(){  
+                    return pad(jsdate.getHours(), 2);  
+                },  
+                i: function(){  
+                    return pad(jsdate.getMinutes(), 2);  
+                },  
+                s: function(){  
+                    return pad(jsdate.getSeconds(), 2);  
+                },  
+                u: function(){  
+                    return pad(jsdate.getMilliseconds()*1000, 6);  
+                },  
+      
+            // Timezone  
+                //e not supported yet  
+                I: function(){  
+                    var DST = (new Date(jsdate.getFullYear(),6,1,0,0,0));  
+                    DST = DST.getHours()-DST.getUTCHours();  
+                    var ref = jsdate.getHours()-jsdate.getUTCHours();  
+                    return ref != DST ? 1 : 0;  
+                },  
+                O: function(){  
+                   var t = pad(Math.abs(jsdate.getTimezoneOffset()/60*100), 4);  
+                   if (jsdate.getTimezoneOffset() > 0) t = "-" + t; else t = "+" + t;  
+                   return t;  
+                },  
+                P: function(){  
+                    var O = f.O();  
+                    return (O.substr(0, 3) + ":" + O.substr(3, 2));  
+                },  
+                //T not supported yet  
+                Z: function(){  
+                   var t = -jsdate.getTimezoneOffset()*60;  
+                   return t;  
+                },  
+      
+            // Full Date/Time  
+                c: function(){  
+                    return f.Y() + "-" + f.m() + "-" + f.d() + "T" + f.h() + ":" + f.i() + ":" + f.s() + f.P();  
+                },  
+                r: function(){  
+                    return f.D()+', '+f.d()+' '+f.M()+' '+f.Y()+' '+f.H()+':'+f.i()+':'+f.s()+' '+f.O();  
+                },  
+                U: function(){  
+                    return Math.round(jsdate.getTime()/1000);  
+                }  
+        };  
+      
+        return format.replace(/[\\]?([a-zA-Z])/g, function(t, s){  
+            if( t!=s ){  
+                // escaped  
+                ret = s;  
+            } else if( f[s] ){  
+                // a date function exists  
+                ret = f[s]();  
+            } else{  
+                // nothing special  
+                ret = s;  
+            }  
+      
+            return ret;  
+        });  
+    }
+
+Number.prototype.toCurrency = function($O) { // extending Number prototype
+
+    String.prototype.separate_thousands = function() { // Thousands separation
+        $val = this;
+        var rx = new RegExp('(-?[0-9]+)([0-9]{3})');
+        while(rx.test($val)) { $val = $val.replace(rx, '$1'+$O.thousands_separator+'$2'); }
+        return $val;
+    }
+
+    Number.prototype.toFixed = function() { // Rounding
+        var m = Math.pow(10,$O.use_fractions.fractions);
+        return Math.round(this*m,0)/m;
+    }
+
+    String.prototype.times = function(by) { // String multiplication
+        by = (by >> 0);
+        var t = (by > 1? this.times(by / 2): '' );
+        return t + (by % 2? t + this: t);
+    }
+
+    var $A = this;
+
+    /* I like to keep all options, as the name would sugesst, **optional** :) so, let me make tham as such */
+    $O ? null : $O = new Object;
+    /* If no thousands_separator is present default to "," */
+    $O.thousands_separator ? null : $O.thousands_separator = ",";
+    /* If no currency_symbol is present default to "$" */
+    $O.currency_symbol ? null : $O.currency_symbol = "$";
+
+    // Fractions use is separated, just in case you don't want them
+    if ($O.use_fractions) {
+        $O.use_fractions.fractions ? null : $O.use_fractions.fractions = 2;
+        $O.use_fractions.fraction_separator ? null : $O.use_fractions.fraction_separator = ".";         
+    } else {
+        $O.use_fractions = new Object;
+        $O.use_fractions.fractions = 0;
+        $O.use_fractions.fraction_separator = " ";
+    }
+    // We round this number
+    $A.round = $A.toFixed();
+
+    // We convert rounded Number to String and split it to integrer and fractions
+    $A.arr = ($A.round+"").split(".");
+    // First part is an integrer
+    $A._int = $A.arr[0].separate_thousands();
+    // Second part, if exists, are rounded decimals
+    $A.arr[1] == undefined ? $A._dec = $O.use_fractions.fraction_separator+"0".times($O.use_fractions.fractions) : $A._dec = $O.use_fractions.fraction_separator+$A.arr[1];
+
+    /* If no symbol_position is present, default to "front" */
+    $O.symbol_position ? null : $O.symbol_position = "front";
+    $O.symbol_position == "front" ? $A.ret = $O.currency_symbol+$A._int+$A._dec : $A.ret = $A._int+$A._dec+" "+$O.currency_symbol;
+    return $A.ret;
+}
+
+var in_array = function(p_val, haystack) {
+	for(var i = 0, l = haystack.length; i < l; i++) {
+		if(haystack[i] == p_val) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function isArray(input){
+    return typeof(input)=='object'&&(input instanceof Array);
+}
+
+function strpos (haystack, needle, offset) {
+    var i = (haystack + '').indexOf(needle, (offset || 0));
+    return i === -1 ? false : i;
+}
+
+function count_arr_obj (mixed_var, mode) {
+	if (mixed_var === null || typeof mixed_var === 'undefined') {
+        return 0;
+    } else if (mixed_var.constructor !== Array && mixed_var.constructor !== Object) {        return 1;
+    }
+ 
+    if (mode === 'COUNT_RECURSIVE') {
+        mode = 1;    }
+    if (mode != 1) {
+        mode = 0;
+    }
+    var cnt = 0 ;
+     for (key in mixed_var) {
+        if (mixed_var.hasOwnProperty(key)) {
+            cnt++;
+            if (mode == 1 && mixed_var[key] && (mixed_var[key].constructor === Array || mixed_var[key].constructor === Object)) {
+                cnt += this.count(mixed_var[key], 1);            }
+        }
+    }
+ 
+    return cnt;}
+
+function usort (inputArr, sorter) {
+    var valArr = [],        k = '',
+        i = 0,
+        strictForIn = false,
+        populateArr = {};
+     if (typeof sorter === 'string') {
+        sorter = this[sorter];
+    } else if (Object.prototype.toString.call(sorter) === '[object Array]') {
+        sorter = this[sorter[0]][sorter[1]];
+    } 
+    // BEGIN REDUNDANT
+    this.php_js = this.php_js || {};
+    this.php_js.ini = this.php_js.ini || {};
+    // END REDUNDANT   
+    strictForIn = this.php_js.ini['phpjs.strictForIn'] && this.php_js.ini['phpjs.strictForIn'].local_value && this.php_js.ini['phpjs.strictForIn'].local_value !== 'off';
+    populateArr = strictForIn ? inputArr : populateArr;
+ 
+ 
+    for (k in inputArr) { // Get key and value arrays        
+    	if (inputArr.hasOwnProperty(k)) {
+            valArr.push(inputArr[k]);
+            if (strictForIn) {
+                delete inputArr[k];
+            }        }
+    }
+    try {
+        valArr.sort(sorter);
+    } catch (e) {        return false;
+    }
+    for (i = 0; i < valArr.length; i++) { // Repopulate the old array
+        populateArr[i] = valArr[i];
+    } 
+    return strictForIn || populateArr;
+}
+
+
+// PHP equivelent function in javaScript-----END
+
+
+function _list_search_criteria_search_order(a, b){
+  if(a['weight']!=null && a['weight']!="" && b['weight']!=null && b['weight']!=""){
+    return a['weight'] > b['weight'];
+  }
+  return 0;
+}
+
+function list_search_node_matches_search_criteria(win, db_display, entity, criteria, content) {
+	try{
+		var user;
+		var row_matches = [];
+		if(criteria.search_criteria != null && criteria.search_criteria != "") {
+			var instances = omadi_fields_get_fields(win, db_display);
+		    usort(criteria['search_criteria'], '_list_search_criteria_search_order');
+			for(var criteria_index in criteria.search_criteria) {
+				var criteria_row = criteria.search_criteria[criteria_index];
+				row_matches[criteria_index] = false;
+				var field_name = criteria_row.field_name;
+				if(instances[field_name] != null) {
+					var search_field = instances[field_name];
+					var node_values = [];
+					if(search_field['type'] == 'datestamp') {
+						if((field_name == 'uid' || field_name == 'created' || field_name=='changed_uid') && win.nid!=null & win.nid!="") {
+							var node = db_display.execute('SELECT '+ field_name +' from node WHERE nid="' + win.nid + '";');
+							if(field_name == 'uid'){
+								field_name = 'author_uid';
+							}
+							node_values.push(node.fieldByName(field_name));
+						} else {
+							if(entity[field_name] != null) {
+								for(idx in entity[field_name]) {
+									var elements = entity[field_name][idx];
+									if(elements['value'] != null && elements['value'] != "") {
+										node_values.push(elements['value']);
+									}
+								}
+							} else {
+								// No match, so move on
+								continue;
+							}
+						}
+						
+						var search_value = criteria_row.value;
+						var search_operator = criteria_row.operator;
+						
+						if(in_array(search_operator, Array('after-time', 'before-time', 'between-time'))) {
+							var search_time_value = search_value.time;
+							var compare_times = new Array();
+							for(var value_index in node_values) {
+								compare_times[value_index] = mktime(date('H', search_time_value), date('i', search_time_value), 0, date('n', node_values[value_index]), date('j', node_values[value_index]), date('Y', node_values[value_index]));
+							}
+	
+							if(search_operator == 'after-time') {
+								for(var value_index in node_values) {
+									if(node_values[value_index] > compare_times[value_index]) {
+										row_matches[criteria_index] = true;
+									}
+								}
+							} else if(search_operator == 'before-time') {
+								for(var value_index in node_values) {
+									if(node_values[value_index] < compare_times[value_index]) {
+										row_matches[criteria_index] = true;
+									}
+								}
+							} else if(search_operator == 'between-time') {
+								var search_time_value2 = search_value.time2;
+	
+								var compare_times2 = new Array();
+								for(var value_index in node_values) {
+									compare_times2[value_index] = mktime(date('H', search_time_value2), date('i', search_time_value2), 0, date('n', node_values[value_index]), date('j', node_values[value_index]), date('Y', node_values[value_index]));
+								}
+	
+								if(search_time_value < search_time_value2) {
+									// Like between 5:00PM - 8:00PM
+									for(var value_index in node_values) {
+										if(node_values[value_index] >= compare_times[value_index] && node_values[value_index] < compare_times2[value_index]) {
+											row_matches[criteria_index] = true;
+										}
+									}
+								} else {
+									// Like between 8:00PM - 4:00AM
+									for(var value_index in node_values) {
+										if(node_values[value_index] >= compare_times[value_index] || node_values[value_index] < compare_times2[value_index]) {
+											row_matches[criteria_index] = true;
+										}
+									}
+								}
+							}
+						} else if(search_operator == 'weekday') {
+							
+							var weekdays = search_value.weekday;
+							if(!isArray(search_value.weekday)) {
+								weekdays = [];
+								for(var key in search_value.weekday) {
+									if(search_value.weekday.hasOwnProperty(key)) {
+										weekdays.push(key);
+									}
+								}
+							}
+	
+							for(var value_index in node_values) {
+								if(in_array(date('w', node_values[value_index]), weekdays)) {
+									row_matches[criteria_index] = true;
+								}
+							}
+						}
+					} 
+					
+					/* TODO ---- In Future
+					else if(search_field['settings']['parts'] != null) {
+	
+						if(search_field['type'] == 'location') {
+							for(part in search_field['settings']['parts']) {
+								search_value = isset($form_state['values']['search'][$search_field['field_name']][$part]) ? $form_state['values']['search'][$search_field['field_name']][$part] : $form_state['values']['search']['more_fields'][$search_field['field_name']][$part];
+								$query->condition('l_' . $search_field['field_name'] . '.' . $part, '%' . $search_value . '%', 'LIKE');
+								$search_fields[$search_key][$part]['default_value'] = $search_value;
+							}
+							  object_lists_add_location_column($query, FALSE, $search_field, $id, $node_table);
+						} else {
+							for(part in search_field['settings']['parts']) {
+								 $search_value = isset($form_state['values']['search'][$search_field['field_name']][$part]) ? $form_state['values']['search'][$search_field['field_name']][$part] : $form_state['values']['search']['more_fields'][$search_field['field_name']][$part];
+								  $query->condition($search_field['field_name'] . '.' . $search_field['field_name'] . '_' . $part, '%' . $search_value . '%', 'LIKE');
+								  $search_fields[$search_key][$part]['default_value'] = $search_value;
+							}
+							  object_lists_add_parts_column($query, FALSE, $search_field, $id, $node_table);
+						}
+	
+					} 
+					*/
+					
+					else {
+						// if(entity[field_name] == null) {
+							// entity[field_name] = null;
+						// }
+						search_value = criteria_row.value != null && criteria_row.value != "" ? criteria_row.value : null;
+						search_operator = criteria_row.operator;
+						
+						switch(search_field['type']) {
+							case 'text':
+							case 'text_long':
+							case 'phone':
+								for(idx in entity[field_name]) {
+									var elements = entity[field_name][idx];
+									if(elements['value'] != null && elements['value'] != "") {
+										node_values.push(elements['value']);
+									}
+								}
+								
+								for(var value_index in node_values) {
+									node_value = node_values[value_index];
+									switch(search_operator) {
+										case 'not like':
+											if(strpos(node_value, search_value) === false) {
+												row_matches[criteria_index] = true;
+											}
+											break;
+	
+										case 'starts with':
+											if(strpos(node_value, search_value) === 0) {
+												row_matches[criteria_index] = true;
+											}
+											break;
+	
+										case 'ends with':
+											if(strpos(node_value, search_value) === node_value.length - search_value.length) {
+												row_matches[criteria_index] = true;
+											}
+											break;
+	
+										case 'not starts with':
+											if(strpos(node_value, search_value) !== 0) {
+												row_matches[criteria_index] = true;
+											}
+											break;
+	
+										case 'not ends with':
+											if(strpos(node_value, search_value) !== node_value.length - search_value.length) {
+												row_matches[criteria_index] = true;
+											}
+											break;
+	
+										default:
+											if(strpos(node_value, search_value) !== false) {
+												row_matches[criteria_index] = true;
+											}
+											break;
+									}
+								}
+	
+								break;
+							case 'list_boolean':
+								for(idx in entity[field_name]) {
+									var elements = entity[field_name][idx];
+									node_values.push(elements['value']);
+								}
+	
+								if(search_operator == '__filled') {
+									for(var value_index in node_values) {
+										node_value = node_values[value_index];
+										if(node_value!=0){
+											row_matches[criteria_index] = true;
+										}
+										
+									}
+								} else {
+									if(node_values == null && node_values == "") {
+										row_matches[criteria_index] = true;
+									} else {
+										for(var value_index in node_values) {
+											node_value = node_values[value_index];
+											if(node_value ==0) {
+												row_matches[criteria_index] = true;
+											}
+	
+										}
+									}
+								}
+								
+								break;
+							case 'calculation_field':
+								var calculation_values = _calculation_field_get_values(win, db_display, content[entity[field_name][0]['reffer_index']], entity);
+								node_values.push(calculation_values[0].final_value);
+	
+								for(var value_index in node_values) {
+									node_value = node_values[value_index];
+									switch(search_operator) {
+	
+										case '>':
+											if(node_value > search_value) {
+												row_matches[criteria_index] = true;
+											}
+											break;
+										case '>=':
+											if(node_value >= search_value) {
+												row_matches[criteria_index] = true;
+											}
+											break;
+										case '!=':
+											if(node_value != search_value) {
+												row_matches[criteria_index] = true;
+											}
+											break;
+										case '<':
+											if(node_value < search_value) {
+												row_matches[criteria_index] = true;
+											}
+											break;
+										case '<=':
+											if(node_value <= search_value) {
+												row_matches[criteria_index] = true;
+											}
+											break;
+										default:
+											if(node_value == search_value) {
+												row_matches[criteria_index] = true;
+											}
+											break;
+									}
+								}
+								break;
+							case 'number_integer':
+							case 'number_decimal':
+							case 'auto_increment':
+								for(idx in entity[field_name]) {
+									var elements = entity[field_name][idx];
+									if(elements['value'] != null && elements['value'] != "") {
+										node_values.push(elements['value']);
+									}
+								}
+	
+								for(var value_index in node_values) {
+									node_value = node_values[value_index];
+									switch(search_operator) {
+	
+										case '>':
+											if(node_value > search_value) {
+												row_matches[criteria_index] = true;
+											}
+											break;
+										case '>=':
+											if(node_value >= search_value) {
+												row_matches[criteria_index] = true;
+											}
+											break;
+										case '!=':
+											if(node_value != search_value) {
+												row_matches[criteria_index] = true;
+											}
+											break;
+										case '<':
+											if(node_value < search_value) {
+												row_matches[criteria_index] = true;
+											}
+											break;
+										case '<=':
+											if(node_value <= search_value) {
+												row_matches[criteria_index] = true;
+											}
+											break;
+	
+										default:
+											if(node_value == search_value) {
+												row_matches[criteria_index] = true;
+											}
+											break;
+									}
+								}
+	
+								break;
+								
+							/* TODO----- In Future
+							case 'omadi_reference':
+								  $query->condition('n_' . $search_field['field_name'] . '.title', '%' . $search_value . '%', 'LIKE');
+								  object_lists_add_omadi_reference_column($query, FALSE, $search_field, $id, $node_table);
+							break;
+							*/
+							case 'user_reference':
+								if((field_name == 'uid' || field_name == 'created' || field_name=='changed_uid') && win.nid!=null & win.nid!="") {
+									var node = db_display.execute('SELECT '+ field_name +' from node WHERE nid="' + win.nid + '";');
+									if(field_name == 'uid'){
+										field_name = 'author_uid';
+									}
+									node_values.push(node.fieldByName(field_name));
+								} else {
+									for(idx in entity[field_name]) {
+										var elements = entity[field_name][idx];
+										if(elements['uid'] != null && elements['uid'] != "") {
+											node_values.push(elements['value']);
+										}
+									}
+									
+								}
+							
+								if(search_value == 'current_user') {
+									search_value = win.uid;
+								}
+								
+								// Make sure the search value is an array
+								var search_value_arr = [];
+								if(!isArray(search_value)) {
+									for(var key in search_value) {
+										if(search_value.hasOwnProperty(key)) {
+											search_value_arr[key] = key;
+										}
+									}
+									search_value = search_value_arr;
+								}
+	
+	
+								if(search_operator != null && search_operator == '!=') {
+									row_matches[criteria_index] = true;
+									if(search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
+										row_matches[criteria_index] = false;
+									} else {
+										for(idx in search_value) {
+											chosen_value = search_value[idx];
+											if(in_array(chosen_value, node_values)) {
+												row_matches[criteria_index] = false;
+											}
+										}
+									}
+								} else {
+									if(search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
+										row_matches[criteria_index] = true;
+									} else {
+										for(idx in search_value) {
+											chosen_value = search_value[idx];
+											if(in_array(chosen_value, node_values)) {
+												row_matches[criteria_index] = true;
+											}
+										}
+									}
+								}
+								break;
+							case 'taxonomy_term_reference':
+	
+								for(idx in entity[field_name]) {
+									elements = entity[field_name][idx];
+									if(elements['tid'] == 0) {
+										node_values.push(elements['tid']);
+									}
+								}
+	
+								if(JSON.parse(search_field['widget']).type == 'options_select') {
+									// Make sure the search value is an array
+									var search_value_arr = [];
+									if(!isArray(search_value)) {
+										for(var key in search_value) {
+											if(search_value.hasOwnProperty(key)) {
+												search_value_arr[key] = key;
+											}
+										}
+										search_value = search_value_arr;
+									}
+	
+									if(search_operator != null && search_operator == '!=') {
+	
+										row_matches[criteria_index] = true;
+										if(search_value['__null'] == '_null' && (node_values == null || node_values[0] == null)) {
+											row_matches[criteria_index] = false;
+										} else {
+											for(idx in search_value) {
+												chosen_value = search_value[idx];
+												if(in_array(chosen_value, node_values)) {
+													row_matches[criteria_index] = false;
+												}
+											}
+	
+										}
+									} else {
+										if(search_value['__null'] == '_null' && (node_values == null || node_values[0] == null)) {
+											row_matches[criteria_index] = true;
+										} else {
+											for(idx in search_value) {
+												chosen_value = search_value[idx];
+												if(in_array(chosen_value, node_values)) {
+													row_matches[criteria_index] = true;
+												}
+											}
+										}
+									}
+								} else {
+									var machine_name = JSON.parse(search_field['settings']).vocabulary;
+									var vocabulary = db_display.execute('SELECT vid from vocabulary WHERE machine_name="' + machine_name + '";');
+									var query = 'SELECT tid from term_data WHERE vid=' + vocabulary.fieldByName('vid');
+									switch(search_operator) {
+										case 'starts with':
+										case 'not starts with':
+											query += ' AND name LIKE "' + search_value + '%";'
+											break;
+	
+										case 'ends with':
+										case 'not ends with':
+											query += ' AND name LIKE "%' + search_value + '";'
+											break;
+	
+										default:
+											query += ' AND name LIKE "%' + search_value + '%";'
+											break;
+									}
+									Ti.API.info(query);
+									var possible_tids = db_display.execute(query);
+									var possible_tids_arr = [];
+									while(possible_tids.isValidRow()){
+										possible_tids_arr.push(possible_tids.fieldByName('tid'));
+										possible_tids.next();
+									}
+									
+									switch(search_operator) {
+										case 'not starts with':
+										case 'not ends with':
+										case 'not like':
+											if(node_values[0] == 0) {
+												row_matches[criteria_index] = true;
+											} else {
+												row_matches[criteria_index] = true;
+												for(idx in node_values) {
+													node_value = node_values[idx];
+													if(in_array(node_value, possible_tids_arr)) {
+														row_matches[criteria_index] = false;
+													}
+												}
+											}
+											break;
+	
+										default:
+											for(idx in node_values) {
+												node_value = node_values[idx];
+												if(in_array(node_value, possible_tids_arr)) {
+													row_matches[criteria_index] = true;
+												}
+											}
+											break;
+									}
+								}
+	
+								break;
+	
+							case 'omadi_time':
+								// TODO: Add the omadi_time field here
+								break;
+	
+							case 'email':
+								// TODO: implement this field type
+								break;
+	
+							case 'link_field':
+								// TODO: implement this field type
+								break;
+	
+							case 'image':
+								// Do nothing
+								break;
+	
+						}
+	
+					}
+	
+				}
+			}
+			
+			if(count_arr_obj(criteria['search_criteria']) == 1) {
+				var retval = row_matches[0];
+			} else {
+				// Group each criteria row into groups of ors with the matching result of each or
+				var and_groups = new Array();
+				var and_group_index = 0;
+				and_groups[and_group_index] = new Array();
+				//print_r($criteria['search_criteria']);
+				for(criteria_index in criteria['search_criteria']) {
+					criteria_row = criteria['search_criteria'][criteria_index];
+					if(criteria_index == 0) {
+						and_groups[and_group_index][0] = row_matches[criteria_index];
+					} else {
+						if(criteria_row['row_operator'] == null || criteria_row['row_operator'] != 'or') {
+							and_group_index++;
+							and_groups[and_group_index] = new Array();
+						}
+						and_groups[and_group_index][0] = row_matches[criteria_index];
+					}
+				}
+	
+				// Get the final result, making sure each and group is TRUE
+				retval = true;
+				for(idx in and_groups) {
+					and_group = and_groups[idx];
+					and_group_match = false;
+					for( idx in and_group) {
+						or_match = and_group[idx];
+						// Make sure at least one item in an and group is true (or the only item is true)
+						if(or_match) {
+							and_group_match = true;
+							break;
+						}
+					}
+	
+					// If one and group doesn't match the whole return value of this function is false
+					if(!and_group_match) {
+						retval = false;
+						break;
+					}
+				}
+			}
+			return retval;
+		}
+	
+		// No conditions exist, so the row matches
+		
+	}catch(e){
+	}
+	return true;
 }
