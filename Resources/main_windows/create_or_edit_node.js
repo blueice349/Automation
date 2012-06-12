@@ -4726,6 +4726,7 @@ setTimeout(function(e){
 	});
 } , 1000);
 
+
 // To open camera
 function openCamera(e) {
 	try {
