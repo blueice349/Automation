@@ -49,59 +49,25 @@ var results = db_display.execute('SELECT * FROM ' + win4.type + ' WHERE  nid = '
 
 //The view where the results are presented
 var resultView = Ti.UI.createView({
-<<<<<<< HEAD
-	top : '5%',
-	height : '85%',
-	width : '90%',
-	borderRadius : 5,
-	backgroundColor : '#A9A9A9',
-	opacity : 0.05
-=======
 	top: '0',
 	height: '100%',
 	width: '90%',
-	//borderRadius: 5,
 	backgroundColor: '#000',
-//	opacity: 0.05
->>>>>>> origin/Pooja
 });
 win4.add(resultView);
 
 //Header where the selected name is presented
 var header = Ti.UI.createView({
-<<<<<<< HEAD
-	top : '0',
-	height : '20%',
-	width : '100%',
-	borderRadius : 5,
-	backgroundColor : '#A9A9A9',
-	opacity : 0.23,
-	zIndex : 11
-=======
 	top: '0',
 	height: '35',
 	width: '100%',
-	//borderRadius: 5,
 	backgroundColor: '#585858',
-	//opacity: 0.23,
 	zIndex: 11
->>>>>>> origin/Pooja
 });
 resultView.add(header);
 
 //Label containing the selected name
 var labelNameContent = Ti.UI.createLabel({
-<<<<<<< HEAD
-	text : win4.nameSelected,
-	height : 'auto',
-	width : '90%',
-	font : {
-		fontSize : 18,
-		fontWeight : "bold"
-	},
-	textAlign : 'center',
-	touchEnabled : false
-=======
 	text: win4.nameSelected,
 	height: 'auto',
 	width:  '90%',
@@ -111,24 +77,11 @@ var labelNameContent = Ti.UI.createLabel({
 	touchEnabled: false,
 	ellipsize: true,
 	wordWrap: false
->>>>>>> origin/Pooja
 });
 
 header.add(labelNameContent);
 
 var viewContent = Ti.UI.createScrollView({
-<<<<<<< HEAD
-	height : "auto",
-	top : "19%",
-	backgroundColor : '#111111',
-	showHorizontalScrollIndicator : false,
-	showVerticalScrollIndicator : true,
-	opacity : 1,
-	borderRadius : 7,
-	scrollType : "vertical",
-	zIndex : 10,
-	layout : 'vertical'
-=======
     height:"100%",
     top: "35",
     //contentWidth: '100%',
@@ -141,7 +94,6 @@ var viewContent = Ti.UI.createScrollView({
 	//scrollType: 'vertical',
 	//zIndex: 10, 
 	layout: 'vertical'
->>>>>>> origin/Pooja
 });
 
 resultView.add(viewContent);
@@ -173,12 +125,7 @@ while(fields_result.isValidRow()) {
 	fields_result.next();
 }
 
-<<<<<<< HEAD
-while(regions.isValidRow()) {
-
-=======
 while (regions.isValidRow()){
->>>>>>> origin/Pooja
 	var reg_settings = JSON.parse(regions.fieldByName('settings'));
 
 	if(reg_settings != null && reg_settings.display_disabled) {
@@ -236,19 +183,14 @@ if(c_index > 0) {
 
 	for(var f_name_f in fields ) {
 		//Ti.API.info(f_name_f+" => "+results.fieldByName(f_name_f)+" => "+fields[f_name_f]['type']);
-<<<<<<< HEAD
-		if((results.fieldByName(f_name_f) != null && results.fieldByName(f_name_f) != "") || (fields[f_name_f]['type'] == 'region_separator_mode') || (fields[f_name_f]['type'] == 'image')) {
-=======
 		var fieldVal = null; 
 		try{
 			//Check is coloum exist in table or not
 			fieldVal = results.fieldByName(f_name_f);
-		}catch(e){
-		}
+		}catch(e){}
 		
-		if ( (fieldVal != null && fieldVal != "") ||  (fields[f_name_f]['type'] == 'region_separator_mode') 
-		|| (fields[f_name_f]['type'] == 'image') || (fields[f_name_f]['type'] == 'calculation_field')) {
->>>>>>> origin/Pooja
+		if ( (fieldVal != null && fieldVal != "") ||  (fields[f_name_f]['type'] == 'region_separator_mode') || (fields[f_name_f]['type'] == 'image') || (fields[f_name_f]['type'] == 'calculation_field')) {
+
 			//fields from Fields table that match with current object
 			c_type[count] = fields[f_name_f]['type'];
 			c_label[count] = fields[f_name_f]['label'];
@@ -257,13 +199,7 @@ if(c_index > 0) {
 			c_field_name[count] = fields[f_name_f]['field_name'];
 
 			//Content
-<<<<<<< HEAD
-			c_content[count] = results.fieldByName(f_name_f);
-
-=======
 			c_content[count] = fieldVal;
-			
->>>>>>> origin/Pooja
 			var loop_times = 1;
 			is_array = false;
 			//Check if it is an array, token = 7411317618171051229
@@ -312,13 +248,9 @@ if(c_index > 0) {
 					Ti.API.info('For type: ' + c_type[count] + ' is associated ' + c_content[count]);
 				}
 				loop_times--;
-<<<<<<< HEAD
-				if(c_type[count] != 'region_separator_mode') {
-					if(((c_content[count] == "") || (c_content[count] == "null") || (c_content[count] == null) )) {
-=======
+
 				if ( c_type[count] != 'region_separator_mode' &&  c_type[count] != 'calculation_field'){
 					if (( (c_content[count] == "") || (c_content[count] == "null")  || (c_content[count] == null) ) ) {
->>>>>>> origin/Pooja
 						continue;
 					}
 				}
@@ -334,14 +266,9 @@ if(c_index > 0) {
 						show_region[settings.region] = new Array();
 					}
 				}
-<<<<<<< HEAD
-				Ti.API.info('**FIELD: ' + c_type[count] + ' VALUE: ' + c_content[count]);
 
-				switch(c_type[count]) {
-=======
 				Ti.API.info('**FIELD: '+c_type[count]+' VALUE: '+c_content[count]);
 				switch(c_type[count]){
->>>>>>> origin/Pooja
 					//Treatment follows the same for text or text_long
 					case 'text':
 					case 'text_long':
@@ -905,16 +832,6 @@ if(c_index > 0) {
 							if((val == 'null' || val == 'undefined' || val == '') && valUp.rowCount == 0) {
 								break;
 							}
-<<<<<<< HEAD
-
-							content[count] = Ti.UI.createImageView({
-								label : c_label[count],
-								height : 80,
-								width : 80,
-								size : {
-									height : 'auto',
-									width : 'auto'
-=======
 							
 						content[count] = Ti.UI.createImageView({
 							label 			: c_label[count],
@@ -925,7 +842,6 @@ if(c_index > 0) {
 							size: {
 									height		: '100',
 									width		: '100'
->>>>>>> origin/Pooja
 								},
 								image : '../images/default.png',
 								imageVal : val,
@@ -955,9 +871,6 @@ if(c_index > 0) {
 							field : true
 						});
 						count++;
-<<<<<<< HEAD
-						break;
-=======
 					break;
 					
 					case 'calculation_field':
@@ -987,9 +900,7 @@ if(c_index > 0) {
 							});
 							count++;
 					break;
->>>>>>> origin/Pooja
 				}
-
 			}
 		}
 	}
@@ -1182,10 +1093,64 @@ if(Ti.Platform.name == 'android') {
 		//======================================
 		// MENU - EVENTS
 		//======================================
-<<<<<<< HEAD
 
 		menu_edit.addEventListener("click", function(e) {
-			//Next window to be opened
+			openEditScreen();
+		});
+	}
+}
+
+results.close();
+fields_result.close();
+db_display.close();
+
+if(PLATFORM != 'android'){
+	resultView.remove(header)
+	resultView.height = '95%';
+	resultView.top = 0;
+	bottomButtons(win4);
+}else{
+	viewContent.height = '90%'
+	bottomBack(win4);
+}
+
+function createImage1(arrImages, data, scrollView, updated) {
+	contentImage = Ti.UI.createImageView({
+		height			: '100',
+		width			: '100',
+		left			: 5,
+		size: {
+			height		: '100',
+			width		: '100'
+		},
+		top				:5,
+		bottom			:5,
+		image			: '../images/default.png',
+		imageVal		: data,
+		imageData		: null,
+		bigImg 			: null,
+		mimeType		: null,
+		label			: scrollView.field_name,
+		isUpdated		: updated
+	});
+	
+
+	if(updated == true) {
+		contentImage.image = data;
+		contentImage.bigImg = data;
+		contentImage.imageData = data;
+	}
+	contentImage.addEventListener('click', function(e) {
+		//Following method will open camera to capture the image.
+		downloadMainImage(e.source.imageVal, e.source, win4);
+	});
+	scrollView.add(contentImage);
+	arrImages.push(contentImage)
+	return arrImages;
+}
+
+function openEditScreen(){
+//Next window to be opened
 			var win_new = create_or_edit_node.getWindow();
 			win_new.title = win4.title;
 			win_new.type = win4.type;
@@ -1206,149 +1171,7 @@ if(Ti.Platform.name == 'android') {
 			setTimeout(function() {
 				create_or_edit_node.loadUI();
 			}, 100);
-			win4.close();
-=======
-		
-		menu_first.addEventListener("click", function(e) {	
-			openEditScreen();
->>>>>>> origin/Pooja
-		});
-	}
-}
-
-results.close();
-fields_result.close();
-db_display.close();
-
-if(PLATFORM != 'android'){
-	resultView.remove(header)
-	resultView.height = '95%';
-	resultView.top = 0;
-	bottomButtons(win4);
-}else{
-	viewContent.height = '90%'
-	bottomBack(win4);
-}
-
-<<<<<<< HEAD
-function createImage1(arrImages, data, scrollView, updated) {
-	contentImage = Ti.UI.createImageView({
-		height : 80,
-		width : 80,
-		left : 5,
-		size : {
-			height : 'auto',
-			width : 'auto'
-		},
-		image : '../images/default.png',
-		imageVal : data,
-		imageData : null,
-		bigImg : null,
-		mimeType : null,
-		label : scrollView.field_name,
-		isUpdated : updated
-=======
-function bottomButtons(actualWindow){
-	var back = Ti.UI.createButton({
-		title : 'Back',
-		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-	});
-	back.addEventListener('click', function() {
-		actualWindow.close();
-	});
-	
-	var space = Titanium.UI.createButton({
-		systemButton:Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
-	});
-	var label = Titanium.UI.createButton({
-		title:win4.nameSelected,
-		color:'#fff',
-		ellipsize: true,
-		wordwrap: false,
-		width: 200,
-		style:Titanium.UI.iPhone.SystemButtonStyle.PLAIN
-	});
-
-	
-	var edit = Ti.UI.createButton({
-		title : 'Edit',
-		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-	});
-	edit.addEventListener('click', function() {
-		openEditScreen();
-	});
-	
-	// create and add toolbar
-	var toolbar = Titanium.UI.createToolbar({
-		items:[back, space, label, space, edit],
-		top:0,
-		borderTop:false,
-		borderBottom:true
-	});
-	win4.add(toolbar);
-};
-
-function createImage(arrImages, data, scrollView, updated){
-	contentImage = Ti.UI.createImageView({
-		height			: '100',
-		width			: '100',
-		left			: 5,
-		size: {
-			height		: '100',
-			width		: '100'
-		},
-		top				:5,
-		bottom			:5,
-		image			: '../images/default.png',
-		imageVal		: data,
-		imageData		: null,
-		bigImg 			: null,
-		mimeType		: null,
-		label			: scrollView.field_name,
-		isUpdated		: updated
->>>>>>> origin/Pooja
-	});
-
-	if(updated == true) {
-		contentImage.image = data;
-		contentImage.bigImg = data;
-		contentImage.imageData = data;
-	}
-	contentImage.addEventListener('click', function(e) {
-		//Following method will open camera to capture the image.
-		downloadMainImage(e.source.imageVal, e.source, win4);
-	});
-	scrollView.add(contentImage);
-	arrImages.push(contentImage)
-	return arrImages;
-<<<<<<< HEAD
-}
-=======
-}
-
-function openEditScreen(){
-		//Next window to be opened
-	var win_new = Titanium.UI.createWindow({
-		fullscreen : false,
-		title: win4.title,
-		type: win4.type,
-		url : 'create_or_edit_node.js',
-		listView: win4.listView,
-		//log: win4.log,
-	up_node: win4.up_node,
-		uid: win4.uid
-	});
-
-	//Passing parameters
-	win_new.nid = win4.nid;
-	win_new.picked 	 = win4.picked;
-	win_new.nameSelected = win4.nameSelected;
-	
-	//Sets a mode to fields edition
-	win_new.mode = 1;
-	
-	win_new.open();
-	(PLATFORM=='android')?win4.close():win4.hide();
+			(PLATFORM=='android')?win4.close():win4.hide();
 }
 
 function createEntity(){
@@ -1379,7 +1202,6 @@ function createEntity(){
 
 	return entity; 
 }
-
 
 function createCalculationTableFormat(content , db_display, contentArr) {
 	var entity = createEntity();
@@ -1506,4 +1328,43 @@ function createCalculationTableFormat(content , db_display, contentArr) {
 	}
 	content.height = heightView;
 }
->>>>>>> origin/Pooja
+
+function bottomButtons(actualWindow){
+	var back = Ti.UI.createButton({
+		title : 'Back',
+		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+	});
+	back.addEventListener('click', function() {
+		actualWindow.close();
+	});
+	
+	var space = Titanium.UI.createButton({
+		systemButton:Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+	});
+	var label = Titanium.UI.createButton({
+		title:win4.nameSelected,
+		color:'#fff',
+		ellipsize: true,
+		wordwrap: false,
+		width: 200,
+		style:Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+	});
+
+	
+	var edit = Ti.UI.createButton({
+		title : 'Edit',
+		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+	});
+	edit.addEventListener('click', function() {
+		openEditScreen();
+	});
+	
+	// create and add toolbar
+	var toolbar = Titanium.UI.createToolbar({
+		items:[back, space, label, space, edit],
+		top:0,
+		borderTop:false,
+		borderBottom:true
+	});
+	win4.add(toolbar);
+};
