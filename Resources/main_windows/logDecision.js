@@ -15,7 +15,8 @@ var goToWindow = Titanium.UI.createWindow({
 var logWindow = Titanium.UI.createWindow({  
 	fullscreen: false,
 	title:'Omadi CRM',	
-	url : 'backToFirstStep.js'
+	url : 'backToFirstStep.js',
+	backgroundColor: '#000'
 });
 
 goToWindow.log    = indLog.log;
@@ -47,21 +48,21 @@ indLog.add(message);
 // buttons/labels of decision
 var labelOut = Titanium.UI.createButton({
 	title: 'Yes',
-    color:'#000',
-    width:'25%',
-    height:'auto',
+    //color:'#000',
+    width:'70',
+    height:'50',
     top:'50%',
-    left: '15%'
+    left: '18%'
 }); 
 
 var labelIn = Titanium.UI.createButton({
 	title: 'No',
-    color:'#000',
-    width:'25%',
-    height:'auto',
-    textAlign:'center',
+    //color:'#000',
+    width:'70',
+    height:'50',
+    //textAlign:'center',
     top:'50%',
-    left: '58%'
+    right: '18%'
 });    
 
 labelOut.addEventListener('click',function (){
@@ -82,7 +83,7 @@ labelOut.addEventListener('click',function (){
 			logWindow.open();
 			hideIndicator();
 			indLog.log.abort();
-			indLog.close();
+		//	indLog.close();
 		}
 	
 		indLog.log.onerror = function(e) {
