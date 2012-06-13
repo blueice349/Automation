@@ -370,21 +370,21 @@ function keep_info(_flag_info) {
 					mark = '';
 				}
 			} else if(content[j].field_type == 'user_reference') {
-				if(content[j].getSelectedRow(0).uid == null) {
+				if(content[j].value == null) {
 					value_to_insert = ''
 					mark = '\'';
 				} else {
-					value_to_insert = content[j].getSelectedRow(0).uid;
+					value_to_insert = content[j].value;
 					mark = '';
 				}
 			} else if(content[j].field_type == 'taxonomy_term_reference') {
 				if(content[j].widget == 'options_select') {
 					if(content[j].cardinality != -1) {
-						if(content[j].getSelectedRow(0).tid == null) {
+						if(content[j].value == null) {
 							value_to_insert = ''
 							mark = '\'';
 						} else {
-							value_to_insert = content[j].getSelectedRow(0).tid;
+							value_to_insert = content[j].value;
 							mark = '';
 						}
 					} else {
@@ -4100,7 +4100,7 @@ create_or_edit_node.loadUI = function() {
 										counter_loop++;
 									}
 
-									content[count] = Titanium.UI.createButton({
+							content[count] = Titanium.UI.createButton({
 								borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 								private_index		: o_index,
 								left				: '3%',

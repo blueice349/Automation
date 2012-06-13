@@ -1229,7 +1229,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 	
 	var iResult = iEnd - iStart;
 	Ti.API.info('Object seconds: '+ iResult);
-	db_process_object.close();
+	//db_process_object.close();
 	return;
 }
 
@@ -3116,7 +3116,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					//setUse();
 					//close_parent();
 					//updateFileUploadTable(win, json, close_parent);
-					var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion"));
+					var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 					var imageForUpload = db_fileUpload.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
 					uploadFile(win, 'POST', db_fileUpload, imageForUpload, close_parent);
 				}
@@ -3134,7 +3134,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					//setUse();
 					//close_parent();
 					//updateFileUploadTable(win, json, close_parent);
-					var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion"));
+					var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName());
 					var imageForUpload = db_fileUpload.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
 					uploadFile(win, 'POST', db_fileUpload, imageForUpload, close_parent);
 				}			
@@ -3557,7 +3557,7 @@ function updateFileUploadTable(win, json){
 			close_parent();
 			return;
 		}
-		var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion"));
+		var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName());
 		
 		// To replace all negative nid to positive in file_upload_queue table
 		var bundles = db_fileUpload.execute('SELECT * FROM bundles;');

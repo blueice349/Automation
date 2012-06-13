@@ -12,6 +12,7 @@
 
 //Common used functions
 Ti.include('/lib/functions.js');
+Ti.include('/main_windows/create_or_edit_node.js');
 
 //Current window's instance
 var win3 = Ti.UI.currentWindow;
@@ -168,28 +169,30 @@ else {
 		//Hide keyboard when returning 
 		firstClick = true;
 		if (e.row.nid != null){
-			//Next window to be opened
-			var win_new = Titanium.UI.createWindow({
-				fullscreen : false,
-				title: e.row.title,
-				type: e.row._type,
-				url : 'create_or_edit_node.js',
-				listView: win3.listView,
-				up_node: win3.up_node,
-				uid: win3.uid,
-				region_form: e.row.form_part
-			});
-	
-			//Passing parameters
-			win_new.nid 			= e.row.nid;
-			win_new.picked 	 		= win3.picked;
-			win_new.nameSelected 	= e.row.name;
 			
+			var win_new = create_or_edit_node.getWindow();
+			win_new.title = e.row.title;
+			win_new.type = e.row._type;
+			win_new.listView = win3.listView;
+			win_new.up_node = win3.up_node;
+			win_new.uid = win3.uid;
+			win_new.region_form = e.row.form_part;
+
+			//Passing parameters
+			win_new.nid = e.row.nid;
+			win_new.picked = win3.picked;
+			win_new.nameSelected = e.row.name;
+
 			//Sets a mode to fields edition
 			win_new.mode = 1;
-			
+
 			win_new.open();
-			win3.close();
+			setTimeout(function() {
+				create_or_edit_node.loadUI();
+			}, 100);
+			(PLATFORM=='android')?win3.close():win3.hide();
+	
+			//win3.close();
 			resultsNames.close();
 		}
 	});

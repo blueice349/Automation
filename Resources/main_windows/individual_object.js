@@ -1040,7 +1040,7 @@ if(Ti.Platform.name == 'android') {
 		Ti.API.info('Form node part = ' + node_form.fieldByName('form_part'));
 		Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
 
-		if(_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2) {
+		if(_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2) { 
 			Ti.API.info("Title = " + _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
 
 			var menu_zero = menu.add({
@@ -1080,9 +1080,6 @@ if(Ti.Platform.name == 'android') {
 			});
 		}
 
-		json_data.close();
-		db_act.close();
-
 		var menu_edit = menu.add({
 			title : 'Edit',
 			order : 1
@@ -1093,10 +1090,15 @@ if(Ti.Platform.name == 'android') {
 		//======================================
 		// MENU - EVENTS
 		//======================================
-
+		
+		var _aux_node_part = node_form.fieldByName('form_part');
 		menu_edit.addEventListener("click", function(e) {
-			openEditScreen();
+			openEditScreen(_aux_node_part);
 		});
+		
+		json_data.close();
+		db_act.close();
+
 	}
 }
 
@@ -1149,7 +1151,7 @@ function createImage1(arrImages, data, scrollView, updated) {
 	return arrImages;
 }
 
-function openEditScreen(){
+function openEditScreen(part){
 //Next window to be opened
 			var win_new = create_or_edit_node.getWindow();
 			win_new.title = win4.title;
@@ -1157,7 +1159,7 @@ function openEditScreen(){
 			win_new.listView = win4.listView;
 			win_new.up_node = win4.up_node;
 			win_new.uid = win4.uid;
-			win_new.region_form = node_form.fieldByName('form_part');
+			win_new.region_form = part;
 
 			//Passing parameters
 			win_new.nid = win4.nid;
