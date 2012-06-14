@@ -41,13 +41,15 @@ create_or_edit_node.getWindow = function() {
 		resultView.remove(viewContent);
 		viewContent = null;
 		viewContent = Ti.UI.createScrollView({
-			height : "auto",
+			//height : "100%",
+			bottom: 0,
+			contentHeight: 'auto',
 			top : "11%",
 			backgroundColor : '#111111',
 			showHorizontalScrollIndicator : false,
 			showVerticalScrollIndicator : true,
 			opacity : 1,
-			borderRadius : 7,
+			//borderRadius : 7,
 			scrollType : "vertical",
 			zIndex : 10
 		});
@@ -65,8 +67,8 @@ create_or_edit_node.getWindow = function() {
 			top : '0',
 			height : '100%',
 			width : '100%',
-			backgroundColor : '#A9A9A9',
-			opacity : 0.05
+			backgroundColor : '#111111',
+			opacity : 1
 		});
 		win.add(resultView);
 
@@ -88,13 +90,15 @@ create_or_edit_node.getWindow = function() {
 		});
 		header.add(title_head);
 		viewContent = Ti.UI.createScrollView({
-			height : "auto",
+			//height : "100%",
+			bottom :0,
+			contentHeight: 'auto',
 			top : "11%",
 			backgroundColor : '#111111',
 			showHorizontalScrollIndicator : false,
 			showVerticalScrollIndicator : true,
 			opacity : 1,
-			borderRadius : 7,
+			//borderRadius : 7,
 			scrollType : "vertical",
 			zIndex : 10
 		});
@@ -1364,36 +1368,58 @@ create_or_edit_node.loadUI = function() {
 
 			var regionView = Ti.UI.createView({
 				width : '100%',
-				top : y
+				top : y,
+				backgroundColor: '#000',
+				zIndex: 0
 			});
 
-			regionHeader.view = regionView;
+			regionHeader.viewContainer = regionView;
 			regionHeader.addEventListener('click', function(e) {
-				e.source.view.expanded = !e.source.view.expanded;
-				if(e.source.view.expanded === true) {
-					e.source.view.height = e.source.view.calculatedHeight;
+				e.source.viewContainer.expanded = !e.source.viewContainer.expanded;
+				if(e.source.viewContainer.expanded === true) {
+					e.source.viewContainer.height = e.source.viewContainer.calculatedHeight;
 					var top = 0;
 					for(var i = 0; i < viewContent.getChildren().length; i++) {
 						var v = viewContent.getChildren()[i];
-
-						if( v instanceof Ti.UI.Label) {
+						var isLabel = false;
+						if(PLATFORM == 'android'){
+							if( v instanceof Ti.UI.Label) {
+								isLabel = true;
+							}
+						}else{
+							if(v == '[object TiUILabel]'){
+								isLabel = true;
+							}
+						}
+						if( isLabel ) {
 							v.top = top;
 							top = top + 40;
-							v.view.top = top;
-							top = top + v.view.height + 10;
+							v.viewContainer.top = top;
+							top = top + v.viewContainer.height + 10;
+							e.source.viewContainer.show();
 						}
 					}
 				} else {
-					e.source.view.height = 0;
+					e.source.viewContainer.height = 0;
+					e.source.viewContainer.hide();
 					var top = 0;
 					for(var i = 0; i < viewContent.getChildren().length; i++) {
 						var v = viewContent.getChildren()[i];
-
-						if( v instanceof Ti.UI.Label) {
+						var isLabel = false;
+						if(PLATFORM == 'android'){
+							if( v instanceof Ti.UI.Label) {
+								isLabel = true;
+							}
+						}else{
+							if(v == '[object TiUILabel]'){
+								isLabel = true;
+							}
+						}
+						if( isLabel ) {
 							v.top = top;
 							top = top + 40;
-							v.view.top = top;
-							top = top + v.view.height + 10;
+							v.viewContainer.top = top;
+							top = top + v.viewContainer.height + 10;
 						}
 					}
 				}
@@ -2601,32 +2627,32 @@ create_or_edit_node.loadUI = function() {
 								}
 							} else {
 								content[count] = Ti.UI.createTextField({
-                            hintText        : field_arr[index_label][index_size].label,
-                            borderStyle        : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                            keyboardType    : Titanium.UI.KEYBOARD_NUMBER_PAD,
-                            returnKeyType   : Titanium.UI.RETURNKEY_DONE,
-                            textAlign        : 'left',
-                            width            : Ti.Platform.displayCaps.platformWidth-20,
-                            height            : heightValue,
-                            font             : {
-                                                fontSize: 18
-                            },
-                            color            : '#000000',
-                            top                : top,
-                            field_type        : field_arr[index_label][index_size].type,
-                            field_name        : field_arr[index_label][index_size].field_name,
-                            required        : field_arr[index_label][index_size].required,
-                            composed_obj    : false,
-                            is_title        : field_arr[index_label][index_size].is_title,
-                            cardinality        : settings.cardinality,
-                            value            : field_arr[index_label][index_size].actual_value,
-                            reffer_index    : reffer_index,
-                            hasParent        : hasParent,
-                            parent_name        : parent_name,
-                            defaultField    : defaultField,
-                            settings         : settings,
-                            changedFlag        : 0
-                        });
+									hintText 		   	: field_arr[index_label][index_size].label,
+									borderStyle    		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+									keyboardType 		: Titanium.UI.KEYBOARD_NUMBER_PAD,
+									returnKeyType  		: Titanium.UI.RETURNKEY_DONE,
+									textAlign  			: 'left',
+									width   			: Ti.Platform.displayCaps.platformWidth-20,
+									height   			: heightValue,
+									font   				: {
+													     	fontSize: 18
+															},
+									color   			: '#000000',
+									top    				: top,
+									field_type  		: field_arr[index_label][index_size].type,
+									field_name  		: field_arr[index_label][index_size].field_name,
+									required  			: field_arr[index_label][index_size].required,
+									composed_obj 		: false,
+									is_title  			: field_arr[index_label][index_size].is_title,
+									cardinality  		: settings.cardinality,
+									value   			: field_arr[index_label][index_size].actual_value,
+									reffer_index 		: reffer_index,
+									hasParent  			: hasParent,
+									parent_name  		: parent_name,
+									defaultField 		: defaultField,
+									settings   			: settings,
+									changedFlag  		: 0
+    							});
  								addDoneButtonInKB(content[count]);
 								top += heightValue;
 
@@ -5513,10 +5539,12 @@ create_or_edit_node.loadUI = function() {
 				regionView.calculatedHeight = top;
 				regionView.height = top;
 				regionView.expanded = true;
+				regionView.show();
 			} else {
 				regionView.calculatedHeight = top;
 				regionView.height = 0;
 				regionView.expanded = false;
+				regionView.hide();
 			}
 			y = y + regionView.height + 10;
 
@@ -5654,6 +5682,8 @@ create_or_edit_node.loadUI = function() {
 				keep_info('normal');
 			});
 		};
+	}else{
+		bottomButtons(win);
 	}
 
 	win.addEventListener('android:back', function() {
@@ -5793,42 +5823,48 @@ function createImage(o_index, arrImages, data, scrollView, updated){
 }
 
 function bottomButtons(actualWindow){
-	var back = Ti.UI.createButton({
-		title : 'Back',
-		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-	});
-	back.addEventListener('click', function() {
-		cancelOpt();
-	});
+try{	
+	if(actualWindow!=null){
+		var back = Ti.UI.createButton({
+			title : 'Back',
+			style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+		});
+		back.addEventListener('click', function() {
+			cancelOpt();
+		});
+		
+		var space = Titanium.UI.createButton({
+			systemButton:Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+		});
+		var label = Titanium.UI.createButton({
+			title: actualWindow.title,
+			color:'#fff',
+			ellipsize: true,
+			wordwrap: false,
+			width: 200,
+			style:Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+		});
+		
+		var save = Ti.UI.createButton({
+			title : 'Save',
+			style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+		});
+		save.addEventListener('click', function() {
+			keep_info('normal');
+		});
 	
-	var space = Titanium.UI.createButton({
-		systemButton:Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
-	});
-	var label = Titanium.UI.createButton({
-		title: actualWindow.title,
-		color:'#fff',
-		ellipsize: true,
-		wordwrap: false,
-		width: 200,
-		style:Titanium.UI.iPhone.SystemButtonStyle.PLAIN
-	});
+		// create and add toolbar
+		var toolbar = Titanium.UI.createToolbar({
+			items:[back, space, label, space, save],
+			top:0,
+			borderTop:false,
+			borderBottom:true
+		});
+		actualWindow.add(toolbar);
+	}
+}catch(evt){
 	
-	var save = Ti.UI.createButton({
-		title : 'Save',
-		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-	});
-	save.addEventListener('click', function() {
-		keep_info('normal');
-	});
-
-	// create and add toolbar
-	var toolbar = Titanium.UI.createToolbar({
-		items:[back, space, label, space, save],
-		top:0,
-		borderTop:false,
-		borderBottom:true
-	});
-	actualWindow.add(toolbar);
+}	
 };
 
 function cancelOpt(){
@@ -5866,7 +5902,7 @@ function setDefaultValues(content, e){
 			}
 			if(content[counter].parent_name == e.source.field_name) {
 				
-				db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion"));
+				db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 				var table = db_display.execute('SELECT table_name FROM node WHERE nid = ' + e.source.nid);
 				table = table.fieldByName('table_name');
 
@@ -6133,7 +6169,7 @@ function addDoneButtonInKB(content){
 
 function reCalculate(singel_content){
 	try{
-		db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion"));
+		db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 		var entity = createEntityMultiple();
 		var result = _calculation_field_get_values(win, db_display, singel_content, entity, content);
 		var row_values = result[0].rows;
@@ -6214,7 +6250,6 @@ function changedContentValue(changed_content){
 	}	
 	
 }
-
 
 function conditionalSetRequiredField(idx) {
 	var entityArr = createEntityMultiple();

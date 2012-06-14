@@ -1110,7 +1110,7 @@ if(PLATFORM != 'android'){
 	resultView.remove(header)
 	resultView.height = '95%';
 	resultView.top = 0;
-	bottomButtons(win4);
+	bottomButtons1(win4);
 }else{
 	viewContent.height = '90%'
 	bottomBack(win4);
@@ -1331,7 +1331,7 @@ function createCalculationTableFormat(content , db_display, contentArr) {
 	content.height = heightView;
 }
 
-function bottomButtons(actualWindow){
+function bottomButtons1(actualWindow){
 	var back = Ti.UI.createButton({
 		title : 'Back',
 		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
