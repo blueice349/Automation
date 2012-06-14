@@ -1351,7 +1351,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 	Ti.API.info('Log type : '+objectsUp);
 	
 	//Timeout until error:
-	objectsUp.setTimeout(30000);
+	objectsUp.setTimeout(60000);
 
 	Ti.API.info("Current page: "+ pageIndex);
 	Ti.API.info("Mode: "+ mode);
@@ -1366,22 +1366,22 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 		//Opens address to retrieve list
 		if (timeIndex == 0 ){
 			if (pageIndex == 0){
-				Ti.API.info('GET, '+win.picked+'/js-sync/sync.json?reset=1&limit=250');
-				objectsUp.open('GET', win.picked + '/js-sync/sync.json?reset=1&limit=250');
+				Ti.API.info('GET, '+win.picked+'/js-sync/sync.json?reset=1&limit=200');
+				objectsUp.open('GET', win.picked + '/js-sync/sync.json?reset=1&limit=200');
 			}
 			else{
-				Ti.API.info('GET, '+win.picked+'/js-sync/sync.json?sync_timestamp='+ timeIndex+'&reset=1&limit=250&page='+pageIndex);
-				objectsUp.open('GET', win.picked + '/js-sync/sync.json?sync_timestamp='+ timeIndex+'&reset=1&limit=250&page='+pageIndex );
+				Ti.API.info('GET, '+win.picked+'/js-sync/sync.json?sync_timestamp='+ timeIndex+'&reset=1&limit=200&page='+pageIndex);
+				objectsUp.open('GET', win.picked + '/js-sync/sync.json?sync_timestamp='+ timeIndex+'&reset=1&limit=200&page='+pageIndex );
 			}
 		}
 		else{
 			if (pageIndex == 0){
-				Ti.API.info('GET, '+win.picked + '/js-sync/sync.json?reset=0&limit=250');
-				objectsUp.open('GET', win.picked + '/js-sync/sync.json?reset=0&limit=250');
+				Ti.API.info('GET, '+win.picked + '/js-sync/sync.json?reset=0&limit=200');
+				objectsUp.open('GET', win.picked + '/js-sync/sync.json?reset=0&limit=200');
 			}
 			else{
-				Ti.API.info('GET, '+win.picked + '/js-sync/sync.json?sync_timestamp=' + timeIndex +'&reset=1&limit=250&page='+pageIndex);
-				objectsUp.open('GET', win.picked + '/js-sync/sync.json?sync_timestamp=' + timeIndex +'&reset=1&limit=250&page='+pageIndex );
+				Ti.API.info('GET, '+win.picked + '/js-sync/sync.json?sync_timestamp=' + timeIndex +'&reset=1&limit=200&page='+pageIndex);
+				objectsUp.open('GET', win.picked + '/js-sync/sync.json?sync_timestamp=' + timeIndex +'&reset=1&limit=200&page='+pageIndex );
 			}
 		}
 	}
