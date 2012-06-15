@@ -110,6 +110,7 @@ create_or_edit_node.getWindow = function() {
 ///////////////////////////
 // Extra Functions
 //////////////////////////
+
 function keep_info(_flag_info) {
 	var a = Titanium.UI.createAlertDialog({
 		title : 'Omadi',
@@ -1536,10 +1537,10 @@ create_or_edit_node.loadUI = function() {
 									}
 
 									if(field_arr[index_label][index_size].field_name == "license_plate___state") {
+										label[count].text += ' State';
 										var arr_picker = [];
 										var arr_opt		=	new Array();
-										arr_picker.push({title: 'Cancel'});
-
+										
 										var aux_val = {
 											cnt : 0,
 											usps : null,
@@ -1547,10 +1548,10 @@ create_or_edit_node.loadUI = function() {
 										}
 
 										//States
-										// arr_picker.push({
-											// title : " -- State -- ",
-											// usps : null
-										// });
+										arr_picker.push({
+											 title : " -- State -- ",
+											 usps : null
+										 });
 										arr_picker.push({
 											title : "Alabama",
 											usps : "AL"
@@ -1811,7 +1812,7 @@ create_or_edit_node.loadUI = function() {
 									postDialog.show();
 			
 									postDialog.addEventListener('click', function(ev){
-										if(ev.index != 0 && ev.index>0){
+										if(ev.index>=0){
 											e.source.title = e.source.arr_opt[ev.index];
 											e.source.value = e.source.arr_picker[ev.index].usps;
 										}
@@ -1824,8 +1825,9 @@ create_or_edit_node.loadUI = function() {
 										count++;
 
 									} else {
+										label[count].text += ' #';
 										content[count] = Ti.UI.createTextField({
-									hintText		: "#"+o_index+" "+i_name,
+									hintText		: "#"+o_index+" "+label[count].text,
 									private_index	: o_index,
 									reffer_index	: reffer_index,
 									borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
@@ -1858,10 +1860,10 @@ create_or_edit_node.loadUI = function() {
 								}
 							} else {
 								if(field_arr[index_label][index_size].field_name == "license_plate___state") {
+									label[count].text += ' State';
 									var arr_picker = [];
 									var arr_opt		=	new Array();
-									arr_picker.push({title: 'Cancel'});
-
+									
 									var aux_val = {
 										cnt : 0,
 										usps : null,
@@ -1873,10 +1875,10 @@ create_or_edit_node.loadUI = function() {
 									}
 									Ti.API.info(settings.state_default_value);
 									//States
-									// arr_picker.push({
-										// title : " -- State -- ",
-										// usps : null
-									// });
+									 arr_picker.push({
+										 title : " -- State -- ",
+										 usps : null
+									 });
 									arr_picker.push({
 										title : "Alabama",
 										usps : "AL"
@@ -2137,7 +2139,7 @@ create_or_edit_node.loadUI = function() {
 									postDialog.show();
 			
 									postDialog.addEventListener('click', function(ev){
-										if(ev.index != 0 && ev.index>0){
+										if(ev.index>=0){
 											e.source.title = e.source.arr_opt[ev.index];
 											e.source.value = e.source.arr_picker[ev.index].usps;
 										}
@@ -2149,9 +2151,9 @@ create_or_edit_node.loadUI = function() {
 									regionView.add(content[count]);
 									count++;
 								} else {
-
+									label[count].text += ' #';
 									content[count] = Ti.UI.createTextField({
-								hintText		: i_name,
+								hintText		: label[count].text,
 								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 								textAlign		: 'left',
 								width			: Ti.Platform.displayCaps.platformWidth-20,
@@ -2423,7 +2425,7 @@ create_or_edit_node.loadUI = function() {
 							}
 
 							label[count] = Ti.UI.createLabel({
-								text			: (isRequired? '*':'') + title_location ,
+								text			: (isRequired? '*':'') + field_arr[index_label][index_size].label+" "+title_location ,
 								color			: isRequired? 'red':'#FFFFFF',
 								font : {
 									fontSize : 18
@@ -2467,7 +2469,7 @@ create_or_edit_node.loadUI = function() {
 									}
 
 									content[count] = Ti.UI.createTextField({
-								hintText		: "#"+o_index+" "+field_arr[index_label][index_size].label,
+								hintText		: "#"+o_index+" " + field_arr[index_label][index_size].label+" "+title_location,
 								private_index	: o_index,
 								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 								textAlign		: 'left',
@@ -2499,7 +2501,7 @@ create_or_edit_node.loadUI = function() {
 								}
 							} else {
 								content[count] = Ti.UI.createTextField({
-							hintText		: field_arr[index_label][index_size].label,
+							hintText		: field_arr[index_label][index_size].label+" "+title_location,
 							borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 							textAlign		: 'left',
 							width			: Ti.Platform.displayCaps.platformWidth-20,
@@ -2552,15 +2554,15 @@ create_or_edit_node.loadUI = function() {
 							regionView.add(label[count]);
 							var reffer_index = count;
 							var hasParent = false;
-					var parent_name = "";
-					var defaultField = "";
-					if(settings.parent_form_default_value){
-						if(settings.parent_form_default_value.parent_field != null && settings.parent_form_default_value.parent_field != ""){
-							hasParent = true;
-							parent_name = settings.parent_form_default_value.parent_field;
-							defaultField = settings.parent_form_default_value.default_value_field;
-						}
-					}
+							var parent_name = "";
+							var defaultField = "";
+							if(settings.parent_form_default_value){
+								if(settings.parent_form_default_value.parent_field != null && settings.parent_form_default_value.parent_field != ""){
+									hasParent = true;
+									parent_name = settings.parent_form_default_value.parent_field;
+									defaultField = settings.parent_form_default_value.default_value_field;
+								}
+							}
 
 							if(settings.cardinality > 1) {
 								if((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
@@ -2973,11 +2975,11 @@ create_or_edit_node.loadUI = function() {
 
 										var arr_picker = new Array();
 										var arr_opt		=	new Array();
-										arr_picker.push({title: 'Cancel'});
-										arr_opt.push('Cancel');	
+										arr_picker.push({title: '-- NONE --', uid: null});
+										arr_opt.push('-- NONE --');	
 
 										var aux_val = {
-											title : "",
+											title : '-- NONE --',
 											vl : null,
 											cnt : 0
 										};
@@ -3041,7 +3043,7 @@ create_or_edit_node.loadUI = function() {
 											postDialog.show();
 									
 											postDialog.addEventListener('click', function(ev) {
-												if(ev.index != 0 && ev.index > 0) {
+												if(ev.index >= 0) {
 													e.source.title = e.source.arr_opt[ev.index];
 													e.source.value = e.source.arr_picker[ev.index].tid;
 												}
@@ -3060,11 +3062,11 @@ create_or_edit_node.loadUI = function() {
 
 									var arr_picker = new Array();
 									var arr_opt		=	new Array();
-									arr_picker.push({title: 'Cancel'});
-									arr_opt.push('Cancel');	
+									arr_picker.push({title: '-- NONE --', uid: null});
+									arr_opt.push('-- NONE --');	
 
 									var aux_val = {
-										title : "",
+										title : '-- NONE --',
 										vl : null,
 										cnt : 0
 									};
@@ -3128,7 +3130,7 @@ create_or_edit_node.loadUI = function() {
 								postDialog.show();
 						
 								postDialog.addEventListener('click', function(ev) {
-									if(ev.index != 0 && ev.index > 0) {
+									if(ev.index >= 0) {
 										e.source.title = e.source.arr_opt[ev.index];
 										e.source.value = e.source.arr_picker[ev.index].tid;
 									}
@@ -4095,11 +4097,11 @@ create_or_edit_node.loadUI = function() {
 
 									var arr_picker = new Array();
 									var arr_opt		=	new Array();
-									arr_picker.push({title: 'Cancel'});
-									arr_opt.push('Cancel');	
+									arr_picker.push({title: '-- NONE --', uid: null});
+									arr_opt.push('-- NONE --');	
 									
 									var aux_val = {
-										title : "",
+										title : '-- NONE --',
 										vl : null,
 										cnt : 0
 									};
@@ -4125,32 +4127,32 @@ create_or_edit_node.loadUI = function() {
 										counter_loop++;
 									}
 
-							content[count] = Titanium.UI.createButton({
-								borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-								private_index		: o_index,
-								left				: '3%',
-								right				: '3%',
-								height				: heightValue,
-								arr_opt				: arr_opt,
-								arr_picker			: arr_picker,
-								title				: aux_val.title,
-								font 				: {
-														fontSize: 18
-								},
-								color				: '#000000',
-								top					: top,
-								selectionIndicator	: true,
-								field_type			: field_arr[index_label][index_size].type,
-								field_name			: field_arr[index_label][index_size].field_name,
-								required			: field_arr[index_label][index_size].required,
-								is_title			: field_arr[index_label][index_size].is_title,
-								value				: aux_val.vl,
-								composed_obj		: true,
-								cardinality			: settings.cardinality,
-								reffer_index		: reffer_index,
-								settings 			: settings,
-								changedFlag			: 0
-							}); 
+									content[count] = Titanium.UI.createButton({
+										borderStyle			: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+										private_index		: o_index,
+										left				: '3%',
+										right				: '3%',
+										height				: heightValue,
+										arr_opt				: arr_opt,
+										arr_picker			: arr_picker,
+										title				: aux_val.title,
+										font 				: {
+																fontSize: 18
+										},
+										color				: '#000000',
+										top					: top,
+										selectionIndicator	: true,
+										field_type			: field_arr[index_label][index_size].type,
+										field_name			: field_arr[index_label][index_size].field_name,
+										required			: field_arr[index_label][index_size].required,
+										is_title			: field_arr[index_label][index_size].is_title,
+										value				: aux_val.vl,
+										composed_obj		: true,
+										cardinality			: settings.cardinality,
+										reffer_index		: reffer_index,
+										settings 			: settings,
+										changedFlag			: 0
+									}); 
 									top += heightValue;
 
 								//	content[count].add(arr_picker);
@@ -4165,7 +4167,7 @@ create_or_edit_node.loadUI = function() {
 								postDialog.show();
 		
 								postDialog.addEventListener('click', function(ev){
-									if(ev.index != 0 && ev.index>0){
+									if(ev.index >= 0){
 										e.source.title = e.source.arr_opt[ev.index];
 										e.source.value = e.source.arr_picker[ev.index].uid;
 									}
@@ -4191,11 +4193,11 @@ create_or_edit_node.loadUI = function() {
 
 								var arr_picker = new Array();
 								var arr_opt		=	new Array();
-								arr_picker.push({title: 'Cancel'});
-								arr_opt.push('Cancel');	
+								arr_picker.push({title: '-- NONE --', uid: null});
+									arr_opt.push('-- NONE --');	
 
 								var aux_val = {
-									title : "",
+									title : '-- NONE --',
 									vl : null,
 									cnt : 0
 								};
@@ -4251,7 +4253,7 @@ create_or_edit_node.loadUI = function() {
 								postDialog.show();
 		
 								postDialog.addEventListener('click', function(ev){
-									if(ev.index != 0 && ev.index>0){
+									if(ev.index>=0){
 										e.source.title = e.source.arr_opt[ev.index];
 										e.source.value = e.source.arr_picker[ev.index].uid;
 									}
@@ -5052,7 +5054,7 @@ create_or_edit_node.loadUI = function() {
 							if(i_name == "Make") {
 								var _make_ref = reffer_index;
 							}
-
+							label[count].text += (' '+ i_name);
 							//Add fields:
 							regionView.add(label[count]);
 
@@ -5082,7 +5084,7 @@ create_or_edit_node.loadUI = function() {
 									}
 
 									content[count] = Ti.UI.createTextField({
-								hintText		: "#"+o_index+" "+i_name,
+								hintText		: "#"+o_index+" "+field_arr[index_label][index_size].label + " " +i_name,
 								private_index	: o_index,
 								borderStyle		: Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 								textAlign		: 'left',
@@ -5130,7 +5132,7 @@ create_or_edit_node.loadUI = function() {
 								}
 
 								content[count] = Ti.UI.createTextField({
-									hintText : i_name + ' ...',
+									hintText : field_arr[index_label][index_size].label + " " +i_name,
 									fantasy_name : i_name,
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									textAlign : 'left',
@@ -5485,46 +5487,46 @@ create_or_edit_node.loadUI = function() {
 							top += 100;
 							count++;
 							break;
-							case 'calculation_field':
-					label[count] = Ti.UI.createLabel({
-						text:   field_arr[index_label][index_size].label,
-						color			: '#FFFFFF',
-						font 			: {
-											fontSize: 18
-						},
-						textAlign		: 'left',
-						left			: '3%',
-						touchEnabled	: false,
-						height			: heightValue,
-						top				: top
-					});
-					regionView.add(label[count]);
-					top += heightValue;
-					var reffer_index	= count;
-					
-					var settings 		= JSON.parse(field_arr[index_label][index_size].settings); 					
-					content[count] = Ti.UI.createView({
-							left			: '3%',
-							right			: '3%',
-							top				: top,
-							field_type		: field_arr[index_label][index_size].type,
-							field_name		: field_arr[index_label][index_size].field_name,
-							required		: field_arr[index_label][index_size].required,
-							composed_obj	: false,
-							is_title		: field_arr[index_label][index_size].is_title,
-							cardinality		: settings.cardinality,
-							value			: field_arr[index_label][index_size].actual_value,
-							reffer_index	: reffer_index,
-							settings		: settings,
-							layout 			: 'vertical',
-							settings 			: settings,
-							changedFlag			: 0
-					});
-					regionView.add(content[count]);
-					createCalFieldTableFormat(content[count] , db_display, content);
-					top += content[count].height+10;
-					count++;
-					break;
+						case 'calculation_field':
+							label[count] = Ti.UI.createLabel({
+								text:   field_arr[index_label][index_size].label,
+								color			: '#FFFFFF',
+								font 			: {
+													fontSize: 18
+								},
+								textAlign		: 'left',
+								left			: '3%',
+								touchEnabled	: false,
+								height			: heightValue,
+								top				: top
+							});
+							regionView.add(label[count]);
+							top += heightValue;
+							var reffer_index	= count;
+							
+							var settings 		= JSON.parse(field_arr[index_label][index_size].settings); 					
+							content[count] = Ti.UI.createView({
+									left			: '3%',
+									right			: '3%',
+									top				: top,
+									field_type		: field_arr[index_label][index_size].type,
+									field_name		: field_arr[index_label][index_size].field_name,
+									required		: field_arr[index_label][index_size].required,
+									composed_obj	: false,
+									is_title		: field_arr[index_label][index_size].is_title,
+									cardinality		: settings.cardinality,
+									value			: field_arr[index_label][index_size].actual_value,
+									reffer_index	: reffer_index,
+									settings		: settings,
+									layout 			: 'vertical',
+									settings 			: settings,
+									changedFlag			: 0
+							});
+							regionView.add(content[count]);
+							createCalFieldTableFormat(content[count] , db_display, content);
+							top += content[count].height+10;
+							count++;
+						break;
 					}
 
 				}
@@ -5911,7 +5913,7 @@ function setDefaultValues(content, e){
 				var defaultFieldSetting = db_display.execute('SELECT settings FROM fields WHERE field_name="' + content[counter].defaultField + '" and bundle="' + table + '";');
 				defaultFieldSetting = JSON.parse(defaultFieldSetting.fieldByName('settings'));
 				if(content[counter].cardinality == defaultFieldSetting.cardinality && defaultFieldSetting.cardinality == 1) {
-					if(defaultFieldVal == null || defaultFieldVal == "" || defaultFieldVal == 7411317618171051229 || defaultFieldVal == "7411317618171051229" || defaultFieldVal == 7411317618171051000 || defaultFieldVal == "7411317618171051000") {
+					if(defaultFieldVal == null || defaultFieldVal == "null" || defaultFieldVal == "" || defaultFieldVal == 7411317618171051229 || defaultFieldVal == "7411317618171051229" || defaultFieldVal == 7411317618171051000 || defaultFieldVal == "7411317618171051000") {
 						continue;
 					}
 

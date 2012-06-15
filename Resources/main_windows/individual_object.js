@@ -1358,7 +1358,11 @@ function bottomButtons1(actualWindow){
 		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
 	});
 	edit.addEventListener('click', function() {
-		openEditScreen();
+		var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+		var node_form = db_act.execute('SELECT form_part FROM node WHERE nid=' + win4.nid);
+		var _aux_node_part = node_form.fieldByName('form_part');
+		db_act.close();
+		openEditScreen(_aux_node_part);
 	});
 	
 	// create and add toolbar
