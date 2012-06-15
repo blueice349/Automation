@@ -110,7 +110,6 @@ create_or_edit_node.getWindow = function() {
 ///////////////////////////
 // Extra Functions
 //////////////////////////
-
 function keep_info(_flag_info) {
 	var a = Titanium.UI.createAlertDialog({
 		title : 'Omadi',
