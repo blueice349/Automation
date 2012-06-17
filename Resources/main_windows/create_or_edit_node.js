@@ -194,10 +194,12 @@ function keep_info(_flag_info) {
 			a.message = 'The following fields are required and are empty:\n' + string_text;
 		}
 		a.show();
-	} else if(value_err > 0){
+	} 
+	else if(value_err > 0){
 		a.message = string_err;
 		a.show();
-	}else {
+	}
+	else {
 		var mode_msg = '';
 		if(_flag_info == "draft") {
 			mode_msg = 'Saving draft';
@@ -316,7 +318,8 @@ function keep_info(_flag_info) {
 					restricted_license_plate = restricted_license_plate.toLowerCase().replace(/o/g, '0');
 					
 					if(license_plate == restricted_license_plate){
-						close_me();
+						//close_me();
+						hideIndicator();
 						a.message = "The license plate " + license_plate + " is currently restricted for the selected account";
 						a.show();
 						return;
