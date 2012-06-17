@@ -4316,7 +4316,7 @@ create_or_edit_node.loadUI = function() {
 							Ti.API.info(field_arr[index_label][index_size].settings);
 
 							label[count] = Ti.UI.createLabel({
-								text : 'Select the ' + field_arr[index_label][index_size].label,
+								text : '' + field_arr[index_label][index_size].label,
 								color : '#FFFFFF',
 								font : {
 									fontSize : 18
