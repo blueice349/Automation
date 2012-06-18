@@ -112,6 +112,7 @@ create_or_edit_node.getWindow = function() {
 //////////////////////////
 
 function keep_info(_flag_info) {
+	Ti.API.info("--------------------Inside keep_info--------------------");
 	var a = Titanium.UI.createAlertDialog({
 		title : 'Omadi',
 		buttonNames : ['OK']
@@ -122,6 +123,11 @@ function keep_info(_flag_info) {
 	var count_fields = 0;
 	var value_err = 0;
 
+		//this is used for checking restrictions in db against all nid on this form
+		var db_check_restrictions = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+		var restrictions = new Array();
+
+		Ti.API.info("--------------------content array length : " + content.length + "--------------------");
 		for (var x in content){
 		try{
 			Ti.API.info(label[x].text+' is required: '+content[x].required+' = '+content[x].value);
@@ -144,6 +150,26 @@ function keep_info(_flag_info) {
 				}
 				break;
 			}
+		}else if(content[x].field_type=='omadi_reference'){ //for preparing the list of restrictions
+			Ti.API.info("--------------------content[x].nid : " + content[x].nid + "--------------------");
+			if(content[x].nid != null) {
+				var d = new Date();
+				var utcDate = Date.parse(d.toUTCString());
+				var result = db_check_restrictions.execute('SELECT restriction_license_plate___plate, restriction_start_date, restriction_end_date FROM restriction where restriction_account="' + content[x].nid + '" AND restriction_start_date <= ' + utcDate/1000 + ' AND restriction_end_date >= ' + utcDate/1000);
+				Ti.API.info('--------------------Query : SELECT restriction_license_plate___plate, restriction_start_date, restriction_end_date FROM restriction where restriction_account="' + content[x].nid + '" AND restriction_start_date <= ' + utcDate + ' AND restriction_end_date >= ' + utcDate + '--------------------');
+			
+				while(result.isValidRow()){
+					var restriction = {
+						license_plate: result.fieldByName('restriction_license_plate___plate'),
+						start_date: result.fieldByName('restriction_start_date'),
+						end_date: result.fieldByName('restriction_end_date')
+					};
+					restrictions.push(restriction);	
+					result.next();
+				}
+				result.close();
+			}
+			Ti.API.info("--------------------Restrictions array length : " + restrictions.length + "--------------------");
 		}
 		
 		if (((content[x].is_title === true) || (content[x].required == 'true') || (content[x].required === true) || (content[x].required == '1') || (content[x].required == 1) ) && ((content[x].value == '') || (content[x].value == null)) ){
@@ -156,6 +182,7 @@ function keep_info(_flag_info) {
 			}
 		}
 	}
+	db_check_restrictions.close();
 	
 	if((count_fields > 0) && (_flag_info != "draft")) {
 		if(count_fields == 1) {
@@ -168,10 +195,12 @@ function keep_info(_flag_info) {
 			a.message = 'The following fields are required and are empty:\n' + string_text;
 		}
 		a.show();
-	} else if(value_err > 0){
+	} 
+	else if(value_err > 0){
 		a.message = string_err;
 		a.show();
-	}else {
+	}
+	else {
 		var mode_msg = '';
 		if(_flag_info == "draft") {
 			mode_msg = 'Saving draft';
@@ -279,6 +308,24 @@ function keep_info(_flag_info) {
 		for(var j = 0; j <= content.length; j++) {
 			if(!content[j]) {
 				continue;
+			}
+
+			//validating license plate value entered by user against restritions
+			if(content[j].field_type == 'license_plate' && content[j].field_name == 'license_plate___plate'){
+				var license_plate = content[j].value;
+				license_plate = license_plate.toLowerCase().replace(/o/g, '0');
+				for(var r in restrictions){
+					var restricted_license_plate = restrictions[r].license_plate;
+					restricted_license_plate = restricted_license_plate.toLowerCase().replace(/o/g, '0');
+					
+					if(license_plate == restricted_license_plate){
+						//close_me();
+						hideIndicator();
+						a.message = "The license plate " + license_plate + " is currently restricted for the selected account";
+						a.show();
+						return;
+					}
+				}
 			}
 
 			if(content[j].is_title === true) {
@@ -4274,7 +4321,7 @@ create_or_edit_node.loadUI = function() {
 							Ti.API.info(field_arr[index_label][index_size].settings);
 
 							label[count] = Ti.UI.createLabel({
-								text : 'Select the ' + field_arr[index_label][index_size].label,
+								text : '' + field_arr[index_label][index_size].label,
 								color : '#FFFFFF',
 								font : {
 									fontSize : 18
