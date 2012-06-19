@@ -37,24 +37,6 @@ var ONE_MB = 1048576;
 var create_or_edit_node = {};
 
 create_or_edit_node.getWindow = function() {
-	if(win != null) {
-		resultView.remove(viewContent);
-		viewContent = null;
-		viewContent = Ti.UI.createScrollView({
-			//height : "100%",
-			bottom: 0,
-			contentHeight: 'auto',
-			top : "11%",
-			backgroundColor : '#111111',
-			showHorizontalScrollIndicator : false,
-			showVerticalScrollIndicator : true,
-			opacity : 1,
-			//borderRadius : 7,
-			scrollType : "vertical",
-			zIndex : 10
-		});
-		resultView.add(viewContent);
-	} else {
 		win = Titanium.UI.createWindow({
 			fullscreen : false,
 			backgroundColor: '#111'
@@ -104,7 +86,7 @@ create_or_edit_node.getWindow = function() {
 			zIndex : 10
 		});
 		resultView.add(viewContent);
-	}
+		
 	title_head.text = win.nameSelected;
 	return win;
 }

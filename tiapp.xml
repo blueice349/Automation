@@ -10,7 +10,7 @@
     </deployment-targets>
     <id>joseandro.omadi.com</id>
     <name>Omadi</name>
-    <version>1.3</version>
+    <version>1.1</version>
     <publisher>Joseandro</publisher>
     <url>http://www.omadi.com</url>
     <description>CRM from Omadi</description>
@@ -39,11 +39,9 @@
         </orientations>
     </android>
     <android xmlns:android="http://schemas.android.com/apk/res/android">
-	   <manifest android:installLocation="preferExternal">
-	      <uses-sdk android:minSdkVersion="7" />
-	   </manifest>
-	</android>
-
-
+        <manifest android:installLocation="preferExternal">
+            <uses-sdk android:minSdkVersion="7"/>
+        </manifest>
+    </android>
     <modules/>
 </ti:app>

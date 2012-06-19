@@ -21,7 +21,7 @@ var win1 = Titanium.UI.createWindow({
     title:'Omadi CRM',
     fullscreen: false
 });
-Titanium.App.Properties.setString("databaseVersion", "omadiDb1370");
+Titanium.App.Properties.setString("databaseVersion", "omadiDb1395");
 
 var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );
 
