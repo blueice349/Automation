@@ -85,7 +85,7 @@ function Progress_install(current, max){
 
     // black view
     var indView = Titanium.UI.createView({
-        height: '10%',
+        height: '24%',
         width: '100%',
         backgroundColor:'#111',
         opacity:1,
@@ -103,6 +103,8 @@ function Progress_install(current, max){
    	
     var pb = Titanium.UI.createProgressBar({
 	    width:"70%",
+	    top: '20%',
+	    height: '20%',
 	    min:0,
 	    max:100,
 	    value:0,
@@ -113,9 +115,26 @@ function Progress_install(current, max){
 		},
 		style:(PLATFORM != 'android')?Titanium.UI.iPhone.ProgressBarStyle.PLAIN:'',
 	});
- 	
+
+    var pb_download = Titanium.UI.createProgressBar({
+	    width:"70%",
+	    height: '20%',
+	    top: 0,
+	    min:0,
+	    max:100,
+	    value:0,
+	    color:'#fff',
+	    message:'Downloading ...',
+	   	font:{
+				fontFamily: 'Lobster'
+		},
+		style:(PLATFORM != 'android')?Titanium.UI.iPhone.ProgressBarStyle.PLAIN:'',
+	});
+
+ 	indView.add(pb_download);
  	indView.add(pb);
  	pb.show();
+ 	pb_download.show();
 
 	pb.value = this.current;
 	
@@ -140,6 +159,10 @@ function Progress_install(current, max){
 				pb.value = perc;					
 			}
 		}
+	}
+	
+	this.set_download = function(_value){
+		pb_download.value = _value;
 	}
 	
 	this.close = function () {
@@ -1374,29 +1397,17 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 	}
 	else{
 		//Opens address to retrieve list
-		if (timeIndex == 0 ){
-			if (pageIndex == 0){
-				Ti.API.info('GET, '+win.picked+'/js-sync/sync.json?reset=1&limit=200');
-				objectsUp.open('GET', win.picked + '/js-sync/sync.json?reset=1&limit=200');
-			}
-			else{
-				Ti.API.info('GET, '+win.picked+'/js-sync/sync.json?sync_timestamp='+ timeIndex+'&reset=1&limit=200&page='+pageIndex);
-				objectsUp.open('GET', win.picked + '/js-sync/sync.json?sync_timestamp='+ timeIndex+'&reset=1&limit=200&page='+pageIndex );
-			}
-		}
-		else{
-			if (pageIndex == 0){
-				Ti.API.info('GET, '+win.picked + '/js-sync/sync.json?reset=0&limit=200');
-				objectsUp.open('GET', win.picked + '/js-sync/sync.json?reset=0&limit=200');
-			}
-			else{
-				Ti.API.info('GET, '+win.picked + '/js-sync/sync.json?sync_timestamp=' + timeIndex +'&reset=1&limit=200&page='+pageIndex);
-				objectsUp.open('GET', win.picked + '/js-sync/sync.json?sync_timestamp=' + timeIndex +'&reset=1&limit=200&page='+pageIndex );
-			}
-		}
+		Ti.API.info('GET, '+win.picked+ '/js-sync/download.json?sync_timestamp='+timeIndex);
+		objectsUp.open('GET', win.picked + '/js-sync/download.json?sync_timestamp='+timeIndex);
 	}
 	//Header parameters
 	objectsUp.setRequestHeader("Content-Type", "application/json");
+
+	//While streamming
+	objectsUp.ondatastream = function(e){
+		//ind.value = e.progress ;
+		Ti.API.info(objectsUp.getResponseHeader('Content-Length')+' ONDATASTREAM1 - PROGRESS: ' + e.progress);
+	}
 
 	//When connected
 	objectsUp.onload = function(e) {
@@ -1410,18 +1421,13 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 	
 			Ti.API.info('==========TYPE=========   '+type_request);
 			if (type_request == 'GET'){
-				var existsMorePages;
 	
 				//Set our maximum 
-				if (pageIndex == 0){
-					Ti.API.info("######## CHECK ########  "+parseInt(json.total_item_count));
-					if (progress != null){
-						//Set max value for progress bar
-						progress.set_max(parseInt(json.total_item_count));				
-					}
-					
+				Ti.API.info("######## CHECK ########  "+parseInt(json.total_item_count));
+				if (progress != null){
+					//Set max value for progress bar
+					progress.set_max(parseInt(json.total_item_count));				
 				}
-				Ti.API.info("JSON: "+json);
 			}
 			else{
 				Ti.API.info("######## CHECK ########  "+parseInt(json.total_item_count));
@@ -1430,7 +1436,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					Ti.API.info('************ PROGRESS BAR NOT NULL *************')
 					progress.set_max(parseInt(json.total_item_count));				
 				}
-				Ti.API.info("JSON update: "+json);
 			}
 			
 			if (type_request == 'GET'){
@@ -1487,29 +1492,15 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								
 					db_installMe.execute('INSERT OR REPLACE INTO updated (timestamp, url) VALUES (?,?)', 0 , null);		
 				}
-				
-				pageIndex++;
-				
+								
 		
 				Ti.API.info("Max itens: "+parseInt(json.total_item_count));
-				Ti.API.info("Current page integer: "+parseInt(json.page));
-		
-				//If it is the end
-				if ( (json.page == json.max_page) || json.max_page == -1 )
-					existsMorePages = false;
-				else
-					existsMorePages = true;	
-				
-				Ti.API.info("Current page: "+json.page);
-				Ti.API.info("Maximum pages: "+json.max_page);
-				Ti.API.info("Exist more pages? "+existsMorePages);
-				Ti.API.info("Next page (no limit): "+pageIndex);
 			}
 			
 			//If Database is already last version
 			if ( (type_request == 'GET') && (json.total_item_count == 0 ) ){
-				Ti.API.info('######### Last request : '+json.sync_timestamp);
-				db_installMe.execute('UPDATE updated SET "timestamp"='+ json.sync_timestamp +' WHERE "rowid"=1');
+				Ti.API.info('######### Request time : '+json.sync_timestamp);
+				db_installMe.execute('UPDATE updated SET "timestamp"='+ json.request_time +' WHERE "rowid"=1');
 				db_installMe.close();
 				
 				Ti.API.info("SUCCESS -> No items ");
@@ -1524,15 +1515,14 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 			else
 			{
 				if (type_request == 'GET'){
-					if ((isFirstTime) && (pageIndex==1)){
+					if ((isFirstTime)){
 						db_installMe.execute('UPDATE updated SET "url"="'+ win.picked +'" WHERE "rowid"=1');						
 					}
 		
 					//pageIndex == 1 means first load, pageIndex is incremented some lines above
-					if (pageIndex == 1 ){
-						Ti.API.info('######### Last request : '+json.sync_timestamp);
-						db_installMe.execute('UPDATE updated SET "timestamp"='+ json.sync_timestamp +' WHERE "rowid"=1');				
-					}   
+					Ti.API.info('######### Request time : '+json.request_time);
+					db_installMe.execute('UPDATE updated SET "timestamp"='+ json.request_time +' WHERE "rowid"=1');				
+
 					Ti.API.info("COUNT: "+json.total_item_count);	
 				}
 				
@@ -2535,8 +2525,9 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				//Vocabulary:
 				if (json.vocabularies){
 					Ti.API.info('Vocabularies');
+					var perform_vocabulary = [];
+					
 					if (json.vocabularies.insert){
-						var perform_vocabulary = [];
 						if (json.vocabularies.insert.length){
 							for (var i = 0; i < json.vocabularies.insert.length; i++ ){
 								//Increment Progress Bar
@@ -2624,32 +2615,36 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 						}
 						Ti.API.info("Vocabulary deleted!");
 					}
-					var iVocabulary = 0;
+					
+					if (perform_vocabulary.length > 0){
+						var iVocabulary = 0;
+							
+						var iStart = Math.round(new Date().getTime() / 1000);
+						Ti.API.info("Vocabulary started at : "+iStart);
+		
+						db_installMe.execute("BEGIN IMMEDIATE TRANSACTION");
+						while (iVocabulary <= perform_vocabulary.length-1 ){
+							db_installMe.execute(perform_vocabulary[iVocabulary]);
+							iVocabulary++;
+						}
+						db_installMe.execute("COMMIT TRANSACTION");
 						
-					var iStart = Math.round(new Date().getTime() / 1000);
-					Ti.API.info("Vocabulary started at : "+iStart);
-	
-					db_installMe.execute("BEGIN IMMEDIATE TRANSACTION");
-					while (iVocabulary <= perform_vocabulary.length-1 ){
-						db_installMe.execute(perform_vocabulary[iVocabulary]);
-						iVocabulary++;
+						var iEnd = Math.round(new Date().getTime() / 1000);
+						Ti.API.info("Vocabulary finishes at : "+iEnd);
+						
+						var iResult = iEnd - iStart;
+						Ti.API.info('Vocabulary seconds: '+ iResult);
+		
+						Ti.API.info("Vocabulary inserted!");
 					}
-					db_installMe.execute("COMMIT TRANSACTION");
-					
-					var iEnd = Math.round(new Date().getTime() / 1000);
-					Ti.API.info("Vocabulary finishes at : "+iEnd);
-					
-					var iResult = iEnd - iStart;
-					Ti.API.info('Vocabulary seconds: '+ iResult);
-	
-					Ti.API.info("Vocabulary inserted!");
 				} 
 				
 				//Terms:
 				if (json.terms){
+					var perform_term = [];
+					
 					Ti.API.info('Terms');
 					if (json.terms.insert){
-						var perform_term = [];
 						if (json.terms.insert.length){
 							for (var i = 0; i < json.terms.insert.length; i++ ){
 								if (progress != null){
@@ -2742,24 +2737,26 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 						}
 					}
 	
-					var iTerm = 0;
-					
-					var iStart = Math.round(new Date().getTime() / 1000);
-					Ti.API.info("Term started at : "+iStart);
-	
-					db_installMe.execute("BEGIN IMMEDIATE TRANSACTION");
-					while (iTerm <= perform_term.length-1 ){
-						db_installMe.execute(perform_term[iTerm]);
-						iTerm++;
+					if (perform_term.length > 0){
+						var iTerm = 0;
+						
+						var iStart = Math.round(new Date().getTime() / 1000);
+						Ti.API.info("Term started at : "+iStart);
+		
+						db_installMe.execute("BEGIN IMMEDIATE TRANSACTION");
+						while (iTerm <= perform_term.length-1 ){
+							db_installMe.execute(perform_term[iTerm]);
+							iTerm++;
+						}
+						db_installMe.execute("COMMIT TRANSACTION");
+						
+						var iEnd = Math.round(new Date().getTime() / 1000);
+						Ti.API.info("Term finishes at : "+iEnd);
+						
+						var iResult = iEnd - iStart;
+						Ti.API.info('Term seconds: '+ iResult);
+						Ti.API.info('Terms were succefully installed');
 					}
-					db_installMe.execute("COMMIT TRANSACTION");
-					
-					var iEnd = Math.round(new Date().getTime() / 1000);
-					Ti.API.info("Term finishes at : "+iEnd);
-					
-					var iResult = iEnd - iStart;
-					Ti.API.info('Term seconds: '+ iResult);
-					Ti.API.info('Terms were succefully installed');
 					
 				}
 				
@@ -2835,7 +2832,8 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							
 					}
 					n_bund.next();
-				}catch(evt){
+				}
+				catch(evt){
 				}
 				}
 				n_bund.close();
@@ -2964,26 +2962,28 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 						Ti.API.info("Deleted Users sucefully!");
 					}
 					
-					
-					var iUser = 0;
-					
-					var iStart = Math.round(new Date().getTime() / 1000);
-					Ti.API.info("User started at : "+iStart);
-		
-					db_installMe.execute("BEGIN IMMEDIATE TRANSACTION");
-					while (iUser <= perform_user.length-1 ){
-						db_installMe.execute(perform_user[iUser]);
-						iUser++;
+					if (perform_user.length > 0) {
+						var iUser = 0;
+						
+						var iStart = Math.round(new Date().getTime() / 1000);
+						Ti.API.info("User started at : "+iStart);
+			
+						db_installMe.execute("BEGIN IMMEDIATE TRANSACTION");
+						while (iUser <= perform_user.length-1 ){
+							db_installMe.execute(perform_user[iUser]);
+							iUser++;
+						}
+						db_installMe.execute("COMMIT TRANSACTION");
+						
+						var iEnd = Math.round(new Date().getTime() / 1000);
+						Ti.API.info("User finishes at : "+iEnd);
+						
+						var iResult = iEnd - iStart;
+						Ti.API.info('User seconds: '+ iResult);
+			
+						Ti.API.info("User ended!");
 					}
-					db_installMe.execute("COMMIT TRANSACTION");
 					
-					var iEnd = Math.round(new Date().getTime() / 1000);
-					Ti.API.info("User finishes at : "+iEnd);
-					
-					var iResult = iEnd - iStart;
-					Ti.API.info('User seconds: '+ iResult);
-		
-					Ti.API.info("User ended!");
 					
 				}
 				
@@ -3078,81 +3078,75 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 						}
 					Ti.API.info("Deleted Regions sucefully!");
 					}
-					
-					Ti.API.info('####################### Regions install');
-					var iRegion = 0;
-					var iStart = Math.round(new Date().getTime() / 1000);
-					Ti.API.info("Regions started at : "+iStart);
-					db_installMe.execute("BEGIN IMMEDIATE TRANSACTION");
-					while (iRegion <= perform_region.length-1 ){
-						db_installMe.execute(perform_region[iRegion]);
-						iRegion++;
+
+					if(perform_region.length > 0){					
+						Ti.API.info('####################### Regions install');
+						var iRegion = 0;
+						var iStart = Math.round(new Date().getTime() / 1000);
+						Ti.API.info("Regions started at : "+iStart);
+						db_installMe.execute("BEGIN IMMEDIATE TRANSACTION");
+						while (iRegion <= perform_region.length-1 ){
+							db_installMe.execute(perform_region[iRegion]);
+							iRegion++;
+						}
+						db_installMe.execute("COMMIT TRANSACTION");
+						var iEnd = Math.round(new Date().getTime() / 1000);
+						Ti.API.info("Region finishes at : "+iEnd);
+						var iResult = iEnd - iStart;
+						Ti.API.info('Region seconds: '+ iResult);
+						Ti.API.info("Region ended!");
 					}
-					db_installMe.execute("COMMIT TRANSACTION");
-					var iEnd = Math.round(new Date().getTime() / 1000);
-					Ti.API.info("Region finishes at : "+iEnd);
-					var iResult = iEnd - iStart;
-					Ti.API.info('Region seconds: '+ iResult);
-					Ti.API.info("Region ended!");
-					
 				}
 	
-				if ( existsMorePages ){
-					Ti.API.info('Another Call');
-					db_installMe.close();
-					installMe(pageIndex, win, json.sync_timestamp, progress, menu, img, 'GET');
+				Ti.API.info("SUCCESS");
+				if (progress != null){
+					progress.close();
 				}
+				db_installMe.close();
+				
+				if (type_request == 'POST'){
+					updateFileUploadTable(win, json);
+					installMe(pageIndex, win, timeIndex , progress, menu, img, 'GET', mode, close_parent);
+				}
+				else if (mode == 1 ){
+					if(PLATFORM == 'android'){
+						Ti.UI.createNotification({
+							message : 'The node has been successfully online and locally updated',
+							duration: Ti.UI.NOTIFICATION_DURATION_LONG
+						}).show();
+					}else{
+						alert('The node has been successfully online and locally updated');
+					}
+					//Just to make sure database keeps locked
+
+					//setUse();
+					//close_parent();
+					//updateFileUploadTable(win, json, close_parent);
+					var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+					var imageForUpload = db_fileUpload.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
+					uploadFile(win, 'POST', db_fileUpload, imageForUpload, close_parent);
+				}
+				else if (mode == 0 ){
+					if(PLATFORM == 'android'){
+						Ti.UI.createNotification({
+							message : 'The node has been successfully online and locally created',
+							duration: Ti.UI.NOTIFICATION_DURATION_LONG
+						}).show();
+					}else{
+						alert('The node has been successfully online and locally created');
+					}
+					//Just to make sure database keeps locked
+
+					//setUse();
+					//close_parent();
+					//updateFileUploadTable(win, json, close_parent);
+					var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName());
+					var imageForUpload = db_fileUpload.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
+					uploadFile(win, 'POST', db_fileUpload, imageForUpload, close_parent);
+				}			
 				else{
-					Ti.API.info("SUCCESS");
-					if (progress != null){
-						progress.close();
-					}
-					db_installMe.close();
-					
-					if (type_request == 'POST'){
-						updateFileUploadTable(win, json);
-						installMe(pageIndex, win, timeIndex , progress, menu, img, 'GET', mode, close_parent);
-					}
-					else if (mode == 1 ){
-						if(PLATFORM == 'android'){
-							Ti.UI.createNotification({
-								message : 'The node has been successfully online and locally updated',
-								duration: Ti.UI.NOTIFICATION_DURATION_LONG
-							}).show();
-						}else{
-							alert('The node has been successfully online and locally updated');
-						}
-						//Just to make sure database keeps locked
-	
-						//setUse();
-						//close_parent();
-						//updateFileUploadTable(win, json, close_parent);
-						var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
-						var imageForUpload = db_fileUpload.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
-						uploadFile(win, 'POST', db_fileUpload, imageForUpload, close_parent);
-					}
-					else if (mode == 0 ){
-						if(PLATFORM == 'android'){
-							Ti.UI.createNotification({
-								message : 'The node has been successfully online and locally created',
-								duration: Ti.UI.NOTIFICATION_DURATION_LONG
-							}).show();
-						}else{
-							alert('The node has been successfully online and locally created');
-						}
-						//Just to make sure database keeps locked
-	
-						//setUse();
-						//close_parent();
-						//updateFileUploadTable(win, json, close_parent);
-						var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName());
-						var imageForUpload = db_fileUpload.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
-						uploadFile(win, 'POST', db_fileUpload, imageForUpload, close_parent);
-					}			
-					else{
-						unsetUse();
-					}	
-				}
+					unsetUse();
+				}	
 			}
 		}
 		else{

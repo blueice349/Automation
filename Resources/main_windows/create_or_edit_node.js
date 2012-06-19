@@ -37,28 +37,11 @@ var ONE_MB = 1048576;
 var create_or_edit_node = {};
 
 create_or_edit_node.getWindow = function() {
-	if(win != null) {
-		resultView.remove(viewContent);
-		viewContent = null;
-		viewContent = Ti.UI.createScrollView({
-			//height : "100%",
-			bottom: 0,
-			contentHeight: 'auto',
-			top : "11%",
-			backgroundColor : '#111111',
-			showHorizontalScrollIndicator : false,
-			showVerticalScrollIndicator : true,
-			opacity : 1,
-			//borderRadius : 7,
-			scrollType : "vertical",
-			zIndex : 10
-		});
-		resultView.add(viewContent);
-	} else {
 		win = Titanium.UI.createWindow({
 			fullscreen : false,
 			backgroundColor: '#111'
 		});
+		
 		//Sets only portrait mode
 		win.orientationModes = [Titanium.UI.PORTRAIT];
 
@@ -103,7 +86,7 @@ create_or_edit_node.getWindow = function() {
 			zIndex : 10
 		});
 		resultView.add(viewContent);
-	}
+		
 	title_head.text = win.nameSelected;
 	return win;
 }
@@ -5735,18 +5718,34 @@ create_or_edit_node.loadUI = function() {
 	}
 
 	win.addEventListener('android:back', function() {
-		if(win.mode == 1) {
-			Ti.UI.createNotification({
-				message : win.title + ' update was cancelled !',
-				duration : Ti.UI.NOTIFICATION_DURATION_LONG
-			}).show();
-		} else {
-			Ti.UI.createNotification({
-				message : win.title + ' creation was cancelled !',
-				duration : Ti.UI.NOTIFICATION_DURATION_LONG
-			}).show();
-		}
-		win.close();
+		
+		
+		var dialog = Ti.UI.createAlertDialog({
+			cancel : 1,
+			buttonNames : ['Yes', 'No'],
+			message : 'Are you sure you want to cancel and go back?',
+			title : 'Cancel'
+		});
+
+		
+		dialog.addEventListener('click', function(e) {
+			if(e.index == 0) {
+				if(win.mode == 1) {
+					Ti.UI.createNotification({
+						message : win.title + ' update was cancelled !',
+						duration : Ti.UI.NOTIFICATION_DURATION_LONG
+					}).show();
+				} else {
+					Ti.UI.createNotification({
+						message : win.title + ' creation was cancelled !',
+						duration : Ti.UI.NOTIFICATION_DURATION_LONG
+					}).show();
+				}
+				win.close();
+			}
+		});
+
+		dialog.show();
 	});
 
 	toolActInd.hide();
