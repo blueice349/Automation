@@ -457,7 +457,6 @@ win2.add(databaseStatusView);
 var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
 if (updatedTime.fieldByName('timestamp') == 0){
 	isFirstTime = true;
-	db.execute('ALTER TABLE node ADD "changed_uid" INTEGER;');
 	db.close();
 	checkUpdate('from_menu');
 }
