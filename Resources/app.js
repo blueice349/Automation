@@ -3,7 +3,7 @@
  * Function: 
  * 		Log into the system.
  * Provides:
- * 		internet connection checking.
+ * 		internet connection checking. 	
  *		no submitions with empty fields.
  * 		the first window the user sees when the app starts.
  *		the window the user sees when he logs out.
@@ -21,8 +21,8 @@ var win1 = Titanium.UI.createWindow({
     title:'Omadi CRM',
     fullscreen: false
 });
-Titanium.App.Properties.setString("databaseVersion", "omadiDb1395");
-
+var OMADI_VERSION = "omadiDb1421";
+Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION);
 var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );
 
 var credentials = db.execute('SELECT domain, username, password FROM history WHERE "id_hist"=1');
@@ -223,9 +223,11 @@ b1.addEventListener('click', function(){
 				else{
 					//Create another database
 					Ti.API.info('database does not exist, creating a new one');
-					db_list.execute('INSERT INTO domains (domain, db_name) VALUES (\''+portal.value+'\', \'db_'+portal.value+'\')');
+					db_list.execute('INSERT INTO domains (domain, db_name) VALUES (\''+portal.value+'\', \'db_'+portal.value+'_'+tf1.value+'\')');
 				}
-				db_list.execute('UPDATE history SET domain = "'+portal.value+'", username = "'+tf1.value+'", password = "'+tf2.value+'", db_name="db_'+portal.value+'" WHERE  "id_hist"=1');
+				db_list.execute('UPDATE history SET domain = "'+portal.value+'", username = "'+tf1.value+'", password = "'+tf2.value+'", db_name="db_'+portal.value+'_'+tf1.value+'" WHERE  "id_hist"=1');
+				//Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION+"_"+tf1.value);
+				
 				db_list.close();
 				
 				//Debug

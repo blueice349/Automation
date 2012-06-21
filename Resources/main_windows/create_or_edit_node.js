@@ -5565,18 +5565,36 @@ create_or_edit_node.loadUI = function() {
 			}
 			fields_result.close();
 
-			Ti.API.info("expandedRegion = " + expandedRegion + "\ni = " + regionCount);
-			if(expandedRegion == regionCount) {
-				regionView.calculatedHeight = top;
-				regionView.height = top;
-				regionView.expanded = true;
-				regionView.show();
-			} else {
-				regionView.calculatedHeight = top;
-				regionView.height = 0;
-				regionView.expanded = false;
-				regionView.hide();
+			if(reg_settings != null && reg_settings.form_part != null){
+				regionView.form_part = parseInt(reg_settings.form_part);
+			}else{
+				regionView.form_part = 0;
 			}
+			regionView.calculatedHeight = top;
+			regionView.height = 0;
+			regionView.expanded = false;
+			regionView.hide();
+			
+			if(viewContent.max_form_part != null){
+				if(regionView.form_part > viewContent.max_form_part){
+					viewContent.max_form_part = regionView.form_part;
+				}
+			}else{
+				viewContent.max_form_part = regionView.form_part;
+			}
+				
+			// Ti.API.info("expandedRegion = " + expandedRegion + "\ni = " + regionCount);
+			// if(expandedRegion == regionCount) {
+				// regionView.calculatedHeight = top;
+				// regionView.height = top;
+				// regionView.expanded = true;
+				// regionView.show();
+			// } else {
+				// regionView.calculatedHeight = top;
+				// regionView.height = 0;
+				// regionView.expanded = false;
+				// regionView.hide();
+			// }
 			y = y + regionView.height + 10;
 
 			if(isAnyEnabledField == true) {
@@ -5593,6 +5611,43 @@ create_or_edit_node.loadUI = function() {
 		content_fields.close();
 	}
 	db_display.close();
+
+	var top = 0;
+	for(var i = 0; i < viewContent.getChildren().length; i++) {
+		var v = viewContent.getChildren()[i];
+		var isLabel = false;
+		if(PLATFORM == 'android') {
+			if( v instanceof Ti.UI.Label) {
+				isLabel = true;
+			}
+		} else {
+			if(v == '[object TiUILabel]') {
+				isLabel = true;
+			}
+		}
+		
+		if(isLabel) {
+			if(v.viewContainer.form_part == viewContent.max_form_part) {
+				v.viewContainer.height = v.viewContainer.calculatedHeight;
+				v.viewContainer.expanded = true;
+				v.top = top;
+				top = top + 40;
+				v.viewContainer.top = top;
+				top = top + v.viewContainer.height + 10;
+				v.viewContainer.show();
+			}else{
+				v.viewContainer.height = 0;
+				v.viewContainer.expanded = false;
+				v.top = top;
+				top = top + 40;
+				v.viewContainer.top = top;
+				top = top + v.viewContainer.height + 10;
+				v.viewContainer.hide();
+			}
+		}
+
+	}
+
 
 	setTimeout(function() {
 		var entityArr = createEntityMultiple();

@@ -85,11 +85,11 @@ function Progress_install(current, max){
 
     // black view
     var indView = Titanium.UI.createView({
-        height: '24%',
+        height: '15%',
         width: '100%',
         backgroundColor:'#111',
         opacity:1,
-        bottom: -1*Ti.Platform.displayCaps.platformHeight*0.14
+        top: -1*Ti.Platform.displayCaps.platformHeight*0.14
     });
     
     Ti.UI.currentWindow.add(indView);
@@ -101,62 +101,56 @@ function Progress_install(current, max){
 		indView.animate(a2);
 	}, 500);
    	
-    var pb = Titanium.UI.createProgressBar({
-	    width:"70%",
-	    top: '20%',
-	    height: '20%',
-	    min:0,
-	    max:100,
-	    value:0,
-	    color:'#fff',
-	    message:'Installing Updates ...',
-	   	font:{
-				fontFamily: 'Lobster'
-		},
-		style:(PLATFORM != 'android')?Titanium.UI.iPhone.ProgressBarStyle.PLAIN:'',
-	});
-
     var pb_download = Titanium.UI.createProgressBar({
 	    width:"70%",
-	    height: '20%',
-	    top: 0,
 	    min:0,
-	    max:100,
+	    max:1,
+	    top: '5%',
 	    value:0,
 	    color:'#fff',
 	    message:'Downloading ...',
-	   	font:{
-				fontFamily: 'Lobster'
-		},
+		style:(PLATFORM != 'android')?Titanium.UI.iPhone.ProgressBarStyle.PLAIN:'',
+	});
+
+    var pb_install = Titanium.UI.createProgressBar({
+	    width:"70%",
+	    min:0,
+	    max:100,
+	    top: '5%',
+	    value:0,
+	    color:'#fff',
+	    message:'Installing ...',
 		style:(PLATFORM != 'android')?Titanium.UI.iPhone.ProgressBarStyle.PLAIN:'',
 	});
 
  	indView.add(pb_download);
- 	indView.add(pb);
- 	pb.show();
  	pb_download.show();
 
-	pb.value = this.current;
+	pb_download.value = 0;
+	pb_install.value = this.current;
 	
 	this.set_max = function (value){
+		indView.remove(pb_download);
+		indView.add(pb_install);
 		this.max = value;
+		Ti.API.info("Changed max");
 	}
 	
 	this.set = function (){
 		this.current++;
 		
 		if (this.max <= 0 ){
-			pb.value = 100;
+			pb_install.value = 100;
 		}
 		else
 		{
 			//Only one page case
 			if ( (this.current == 0) && (this.max == 1) ){
-				pb.value = 50;
+				pb_install.value = 50;
 			}
 			else{
 				var perc = parseInt( ( this.current * 100 ) / this.max );
-				pb.value = perc;					
+				pb_install.value = perc;					
 			}
 		}
 	}
@@ -1406,7 +1400,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 	//While streamming
 	objectsUp.ondatastream = function(e){
 		//ind.value = e.progress ;
-		Ti.API.info(objectsUp.getResponseHeader('Content-Length')+' ONDATASTREAM1 - PROGRESS: ' + e.progress);
+		if (progress!= null){
+			progress.set_download(e.progress);
+			Ti.API.info(objectsUp.getResponseHeader('Content-Length')+' ONDATASTREAM1 - PROGRESS: ' + e.progress);
+		}
 	}
 
 	//When connected
