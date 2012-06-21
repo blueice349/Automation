@@ -17,9 +17,11 @@ Ti.include('/main_windows/create_or_edit_node.js');
 var win2 = Ti.UI.currentWindow;
 win2.backgroundColor = '#111';
 
+/*
 win2.addEventListener('focus', function(){
 	unsetUse();
 });
+*/
 
 var toolActInd = Ti.UI.createActivityIndicator();
 toolActInd.font = {fontFamily:'Helvetica Neue', fontSize:15,fontWeight:'bold'};
@@ -33,10 +35,14 @@ var isFirstTime = false;
 //Common used functions
 Ti.include('/lib/functions.js');
 var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+setUse();
 unsetUse();
 
 //Geolocation module
-Ti.include('geolocation.js');
+setTimeout(function(){
+	Ti.include('geolocation.js');
+}, 10000)
+
 
 function checkUpdate(evt){
 	Ti.API.info('******* Called checkupate => '+evt);
@@ -44,6 +50,7 @@ function checkUpdate(evt){
 	if ( (isUpdating() === false) && (Titanium.Network.online) ){
 		//Sets status to 'updating'
 		setUse();
+		
 		if (evt == 'from_menu'){
 			//instance progress bar object:
 			var pb = new Progress_install(0, 100);	
@@ -457,7 +464,6 @@ win2.add(databaseStatusView);
 var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
 if (updatedTime.fieldByName('timestamp') == 0){
 	isFirstTime = true;
-	db.execute('ALTER TABLE node ADD "changed_uid" INTEGER;');
 	db.close();
 	checkUpdate('from_menu');
 }
@@ -486,7 +492,7 @@ var activity = Ti.Android.currentActivity;
 activity.onCreateOptionsMenu = function(e) {
     var menu = e.menu;
 
-	var menuItem = menu.add({ 			
+	var menuItem = menu.add({ 
 		title: 'Update',
 		order: 0
 	});

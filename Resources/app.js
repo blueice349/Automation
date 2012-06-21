@@ -21,7 +21,7 @@ var win1 = Titanium.UI.createWindow({
     title:'Omadi CRM',
     fullscreen: false
 });
-var OMADI_VERSION = "omadiDb1421";
+var OMADI_VERSION = "omadiDb1434";
 Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION);
 var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );
 
@@ -223,9 +223,12 @@ b1.addEventListener('click', function(){
 				else{
 					//Create another database
 					Ti.API.info('database does not exist, creating a new one');
-					db_list.execute('INSERT INTO domains (domain, db_name) VALUES (\''+portal.value+'\', \'db_'+portal.value+'_'+tf1.value+'\')');
+					db_list.execute('INSERT INTO domains (domain, db_name) VALUES ("'+portal.value+'", "db_'+portal.value+'_'+tf1.value+'" )');
 				}
-				db_list.execute('UPDATE history SET domain = "'+portal.value+'", username = "'+tf1.value+'", password = "'+tf2.value+'", db_name="db_'+portal.value+'_'+tf1.value+'" WHERE  "id_hist"=1');
+				Ti.API.info('DB NAME_APP: db_'+portal.value+'_'+tf1.value+' ');
+				
+				db_list.execute('UPDATE history SET domain = "'+portal.value+'", username = "'+tf1.value+'", password = "'+tf2.value+'", db_name="db_'+portal.value+'_'+tf1.value+'" WHERE "id_hist"=1');
+				
 				//Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION+"_"+tf1.value);
 				
 				db_list.close();

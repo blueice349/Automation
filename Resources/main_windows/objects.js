@@ -31,7 +31,6 @@ var goToWindow = Titanium.UI.createWindow({
 win3.addEventListener('android:back', function() {
 	//Enable background updates
 	unsetUse();
-	
 	win3.close();
 });
 
@@ -169,7 +168,7 @@ db.close();
 
 //showBottom(actualWindow, goToWindow )
 if(PLATFORM == 'android'){
-	bottomBack(win3, "Back" , "enable");
+	bottomBack(win3, "Back" , "enable", true);
 }else{
 	bottomButtons();
 }

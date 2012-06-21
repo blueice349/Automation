@@ -87,7 +87,13 @@ create_or_edit_node.getWindow = function() {
 		});
 		resultView.add(viewContent);
 		
-	title_head.text = win.nameSelected;
+		title_head.text = win.nameSelected;
+		win.addEventListener('close', function(){
+			if (win.mode == 0){
+				unsetUse();
+			}
+		});
+
 	return win;
 }
 ///////////////////////////
@@ -5806,7 +5812,6 @@ create_or_edit_node.loadUI = function() {
 	toolActInd.hide();
 }
 //setTimeout(function(e){} , 1000);
-
 
 // To open camera
 function openCamera(e) {

@@ -279,27 +279,30 @@ setInterval(function (){
 				
 				var resultReq = JSON.parse(this.responseText);
 				
-				if ( resultReq.inserted ){
-					if (resultReq.success)
-						Ti.API.info(resultReq.success+" GPS coordinates successfully inserted ");
-				}
-				var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name );
-				db_coord.execute('DELETE FROM user_location WHERE status="json"');
-				var _arr_content = new Array ();
-				if (resultReq.alert){
-					for(var _i in resultReq.alert){
-						for (var _j in resultReq.alert[_i]){
-							var tmstp = new Date();
-							_arr_content.push('INSERT OR REPLACE INTO alerts (ref_nid, alert_id, subject, message, timestamp) VALUES ( '+resultReq.alert[_i][_j].reference_nid+', '+resultReq.alert[_i][_j].alert_id+', "'+resultReq.alert[_i][_j].subject+'", "'+resultReq.alert[_i][_j].message+'" , "'+tmstp.getTime()+'" )');
+				if (isJsonString(resultReq) === true){
+					if ( resultReq.inserted ){
+						if (resultReq.success){
+							Ti.API.info(resultReq.success+" GPS coordinates successfully inserted ");
 						}
 					}
+					var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name );
+					db_coord.execute('DELETE FROM user_location WHERE status="json"');
+					var _arr_content = new Array ();
+					if (resultReq.alert){
+						for(var _i in resultReq.alert){
+							for (var _j in resultReq.alert[_i]){
+								var tmstp = new Date();
+								_arr_content.push('INSERT OR REPLACE INTO alerts (ref_nid, alert_id, subject, message, timestamp) VALUES ( '+resultReq.alert[_i][_j].reference_nid+', '+resultReq.alert[_i][_j].alert_id+', "'+resultReq.alert[_i][_j].subject+'", "'+resultReq.alert[_i][_j].message+'" , "'+tmstp.getTime()+'" )');
+							}
+						}
+					}
+					db_coord.execute("BEGIN IMMEDIATE TRANSACTION");
+					for (var _k in _arr_content){
+						db_coord.execute(_arr_content[_k]);
+					}
+					db_coord.execute("COMMIT TRANSACTION");
+					db_coord.close();
 				}
-				db_coord.execute("BEGIN IMMEDIATE TRANSACTION");
-				for (var _k in _arr_content){
-					db_coord.execute(_arr_content[_k]);
-				}
-				db_coord.execute("COMMIT TRANSACTION");
-				db_coord.close();
 				unsetUse();	
 			}
 			//Connection error:
