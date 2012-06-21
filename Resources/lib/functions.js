@@ -15,6 +15,7 @@ function getDBName() {
 	var recebe = portal_base.fieldByName('db_name');
 	portal_base.close();
 	db_list.close();
+	Ti.API.info("DB NAME: "+recebe);
 	return recebe;
 }
 
@@ -320,7 +321,7 @@ function showBottom(actualWindow, goToWindow ){
 };
 
 
-function bottomBack(actualWindow , text, method){
+function bottomBack(actualWindow , text, method, unset){
 	var backView = Titanium.UI.createView({
 		top: '95%',	
 		backgroundColor:'#111',
@@ -349,6 +350,9 @@ function bottomBack(actualWindow , text, method){
 	backView.add(label_bottom);
 	
 	backView.addEventListener('click', function(){
+		if (unset === true){
+			unsetUse();
+		}
 		actualWindow.close();
 	});					
 	actualWindow.add(backView);
@@ -1359,11 +1363,16 @@ function getJSON(){
 }
 
 function isJsonString(str) {
-    try {
-        JSON.parse(str);
-    } catch (e) {
-        return false;
-    }
+	if (str == "" || str == null){
+		return false;		
+	}
+	else{
+	    try {
+	        JSON.parse(str);
+	    } catch (e) {
+	        return false;
+	    }
+	}
     return true;
 }
 
@@ -1372,13 +1381,14 @@ function isJsonString(str) {
 //Load existing data with pagination
 function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent)
 {
+	setUse();
 	var db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
-	
+		
 	var objectsUp = win.log;
 	Ti.API.info('Log type : '+objectsUp);
 	
 	//Timeout until error:
-	objectsUp.setTimeout(240000);
+	objectsUp.setTimeout(30000);
 
 	Ti.API.info("Current page: "+ pageIndex);
 	Ti.API.info("Mode: "+ mode);
@@ -1402,13 +1412,12 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 		//ind.value = e.progress ;
 		if (progress!= null){
 			progress.set_download(e.progress);
-			Ti.API.info(objectsUp.getResponseHeader('Content-Length')+' ONDATASTREAM1 - PROGRESS: ' + e.progress);
+			Ti.API.info(' ONDATASTREAM1 - PROGRESS: ' + e.progress);
 		}
 	}
 
 	//When connected
 	objectsUp.onload = function(e) {
-		
 		//Parses response into strings
 		Ti.API.info("Onload reached - Here follows the json: ");
 		Ti.API.info(this.responseText);
@@ -3147,15 +3156,76 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 			}
 		}
 		else{
-			installMe(pageIndex, win, timeIndex , progress, menu, img, type_request, mode, close_parent);
+			if (progress != null){
+				progress.close();
+				
+				Titanium.Media.vibrate();
+				
+				var a_msg = Titanium.UI.createAlertDialog({
+					title:'Omadi',
+					buttonNames: ['Yes', 'No'],
+					cancel: 1,
+					click_index: e.index,
+					sec_obj: e.section,
+					row_obj: e.row
+				});
+				
+				a_msg.message = "There was a network error, and your data could not be synched. Do you want to retry now? Error description: null response";
+				a_msg.show();
+				
+				a_msg.addEventListener('click', function(e){
+					if (e.cancel === false){
+						setTimeout (function (){
+								progress = null;
+								progress = new Progress_install(0, 100);
+								installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
+						}, 800);
+					}
+					else{
+						db_installMe.close();
+						unsetUse();
+					}
+				});
+			}
+			else{
+				unsetUse();
+			}
 		}
 	}
 
 	//Connection error:
 	objectsUp.onerror = function(e) {
 		Ti.API.error('Code status: '+e.error);
+		Ti.API.info("Progress bar = "+progress);
 		if (progress != null){
 			progress.close();
+			
+			Titanium.Media.vibrate();
+			
+			var a_msg = Titanium.UI.createAlertDialog({
+				title:'Omadi',
+				buttonNames: ['Yes', 'No'],
+				cancel: 1,
+				click_index: e.index,
+				sec_obj: e.section,
+				row_obj: e.row
+			});
+			
+			a_msg.message = "There was a network error, and your data could not be synched. Do you want to retry now? Error description: "+e.error;
+			a_msg.show();
+			
+			a_msg.addEventListener('click', function(e){
+				if (e.cancel === false){
+					setTimeout (function (){
+							progress = null;
+							progress = new Progress_install(0, 100);
+							installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
+					}, 800);
+				}
+				else{
+					unsetUse();
+				}
+			});
 		}
 
 		Ti.API.info('Request type: '+type_request+' progress value: '+progress);
@@ -3193,9 +3263,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 		}
 		
 		db_installMe.close();
-		if ((mode != 0) && (mode != 1)){
-			unsetUse();
-		}
+		unsetUse();
 		
 		Ti.API.info("Services are down");
 	}
@@ -3333,12 +3401,14 @@ function timeConverter(UNIX_timestamp, type){
 function setUse(){
 	var db_su = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 	db_su.execute('UPDATE updated SET updating = 1 ');
+	Ti.API.info("DB WAS JUST SET");
 	db_su.close();
 }
 
 function unsetUse(){
 	var db_us = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 	db_us.execute('UPDATE updated SET updating = 0 ');
+	Ti.API.info("DB WAS JUST UNSET");
 	db_us.close();
 }
 
@@ -3349,11 +3419,13 @@ function isUpdating(){
 	if (res_set.fieldByName('updating') == 1){
 		res_set.close();
 		db_gu.close();
+		Ti.API.info("App is updating");
 		return true;
 	}
 	else{
 		res_set.close();
 		db_gu.close();
+		Ti.API.info("App is idle");
 		return false;
 	}
 

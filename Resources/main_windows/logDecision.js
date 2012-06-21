@@ -49,8 +49,8 @@ indLog.add(message);
 var labelOut = Titanium.UI.createButton({
 	title: 'Yes',
     //color:'#000',
-    width:'70',
-    height:'50',
+    width:'20%',
+    height:'7%',
     top:'50%',
     left: '18%'
 }); 
@@ -58,8 +58,8 @@ var labelOut = Titanium.UI.createButton({
 var labelIn = Titanium.UI.createButton({
 	title: 'No',
     //color:'#000',
-    width:'70',
-    height:'50',
+    width:'20%',
+    height:'7%',
     //textAlign:'center',
     top:'50%',
     right: '18%'

@@ -17,15 +17,11 @@ Ti.include('/main_windows/create_or_edit_node.js');
 var win2 = Ti.UI.currentWindow;
 win2.backgroundColor = '#111';
 
-win2.addEventListener('focus', function(){
-	unsetUse();
-});
 
 var toolActInd = Ti.UI.createActivityIndicator();
 toolActInd.font = {fontFamily:'Helvetica Neue', fontSize:15,fontWeight:'bold'};
 toolActInd.color = 'white';
 toolActInd.message = 'Loading...';
-
 
 var version = 'Omadi Inc';
 var isFirstTime = false;
@@ -33,10 +29,14 @@ var isFirstTime = false;
 //Common used functions
 Ti.include('/lib/functions.js');
 var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+setUse();
 unsetUse();
 
 //Geolocation module
-Ti.include('geolocation.js');
+setTimeout(function(){
+	Ti.include('geolocation.js');
+}, 10000)
+
 
 function checkUpdate(evt){
 	Ti.API.info('******* Called checkupate => '+evt);
@@ -44,6 +44,7 @@ function checkUpdate(evt){
 	if ( (isUpdating() === false) && (Titanium.Network.online) ){
 		//Sets status to 'updating'
 		setUse();
+		
 		if (evt == 'from_menu'){
 			//instance progress bar object:
 			var pb = new Progress_install(0, 100);	
@@ -206,41 +207,54 @@ if (check == 0){
 //Go to contact.js when contact's button is clicked
 listView.addEventListener('click',function(e){
 	Ti.API.info("row click on table view. index = "+e.index+", row_desc = "+e.row.description+", section = "+e.section+", source_desc="+e.source.description);
-	setUse();
-	//Creates a new node_type
-	if (e.source.is_plus){
-		//alert('You clicked the '+e.row.display+' . His table\'s name is '+e.row.name_table);
-		// toolActInd.show();
-		var win_new = create_or_edit_node.getWindow();
-		win_new.title = "New "+e.row.display;
-		win_new.type = e.row.name_table;
-		win_new.uid = jsonLogin.user.uid;
-		win_new.listView = listView;
-		win_new.up_node = update_node;
-		win_new.mode = 0;
-		win_new.picked = win2.picked;
-		win_new.region_form = 0;
-		win_new.backgroundColor = "#000";
-		win_new.nameSelected = 'Fill Details...';
-		win_new.open();
-		setTimeout(function(){create_or_edit_node.loadUI();}, 100);
-		// win_new.addEventListener('focus', function(e){
-			// toolActInd.hide();
-		// });
+	
+	if (isUpdating() === true){
+		if(PLATFORM == 'android'){
+			Ti.UI.createNotification({
+				message : 'An update is running, wait till it is finished'
+			}).show();
+		}
+		else{
+			alert('An update is running, wait till it is finished');
+		}		
 	}
 	else{
-		var win_new = Titanium.UI.createWindow({  
-			title: e.row.display,
-			fullscreen: false,
-			url:'objects.js',
-			type: e.row.name_table,
-			uid: jsonLogin.user.uid,
-			up_node: update_node,
-			backgroundColor: '#000'
-		});
-		win_new.picked 	 = win2.picked;
-		win_new.open();
-	}	
+		setUse();
+		//Creates a new node_type
+		if (e.source.is_plus){
+			//alert('You clicked the '+e.row.display+' . His table\'s name is '+e.row.name_table);
+			// toolActInd.show();
+			var win_new = create_or_edit_node.getWindow();
+			win_new.title = "New "+e.row.display;
+			win_new.type = e.row.name_table;
+			win_new.uid = jsonLogin.user.uid;
+			win_new.listView = listView;
+			win_new.up_node = update_node;
+			win_new.mode = 0;
+			win_new.picked = win2.picked;
+			win_new.region_form = 0;
+			win_new.backgroundColor = "#000";
+			win_new.nameSelected = 'Fill Details...';
+			win_new.open();
+			setTimeout(function(){create_or_edit_node.loadUI();}, 100);
+			// win_new.addEventListener('focus', function(e){
+				// toolActInd.hide();
+			// });
+		}
+		else{
+			var win_new = Titanium.UI.createWindow({  
+				title: e.row.display,
+				fullscreen: false,
+				url:'objects.js',
+				type: e.row.name_table,
+				uid: jsonLogin.user.uid,
+				up_node: update_node,
+				backgroundColor: '#000'
+			});
+			win_new.picked 	 = win2.picked;
+			win_new.open();
+		}	
+	}
 });
 
 //Parses result from user's login 
@@ -348,33 +362,58 @@ var draft_img = Ti.UI.createImageView({
 databaseStatusView.add(draft_img);
 
 draft_img.addEventListener('click', function(){
-	setUse();
-	Ti.API.info('Opening drafts');
-	var win_new = Titanium.UI.createWindow({  
-		title: 'Drafts',
-		fullscreen: false,
-		url:'drafts.js',
-		type: 'draft',
-		uid: jsonLogin.user.uid,
-		up_node: update_node
-	});
-	win_new.picked 	 = win2.picked;
-	win_new.open();
+	if (isUpdating() === true){
+		if(PLATFORM == 'android'){
+			Ti.UI.createNotification({
+				message : 'An update is running, wait till it is finished'
+			}).show();
+		}
+		else{
+			alert('An update is running, wait till it is finished');
+		}		
+	}
+	else{
+		setUse();
+		Ti.API.info('Opening drafts');
+		var win_new = Titanium.UI.createWindow({  
+			title: 'Drafts',
+			fullscreen: false,
+			url:'drafts.js',
+			type: 'draft',
+			uid: jsonLogin.user.uid,
+			up_node: update_node
+		});
+		win_new.picked 	 = win2.picked;
+		win_new.open();
+	}
 });
 
 drafts_lb.addEventListener('click', function(){
-	setUse();
-	Ti.API.info('Opening drafts');
-	var win_new = Titanium.UI.createWindow({  
-		title: 'Drafts',
-		fullscreen: false,
-		url:'drafts.js',
-		type: 'draft',
-		uid: jsonLogin.user.uid,
-		up_node: update_node
-	});
-	win_new.picked 	 = win2.picked;
-	win_new.open();
+	if (isUpdating() === true){
+		if(PLATFORM == 'android'){
+			Ti.UI.createNotification({
+				message : 'An update is running, wait till it is finished'
+			}).show();
+		}
+		else{
+			alert('An update is running, wait till it is finished');
+		}		
+	}
+	else{
+		
+		setUse();
+		Ti.API.info('Opening drafts');
+		var win_new = Titanium.UI.createWindow({  
+			title: 'Drafts',
+			fullscreen: false,
+			url:'drafts.js',
+			type: 'draft',
+			uid: jsonLogin.user.uid,
+			up_node: update_node
+		});
+		win_new.picked 	 = win2.picked;
+		win_new.open();
+	}
 });
 
 
@@ -402,29 +441,54 @@ var alerts_img = Ti.UI.createImageView({
 databaseStatusView.add(alerts_img);
 
 alerts_img.addEventListener('click', function(){
-	setUse();
-	var win_new = Titanium.UI.createWindow({  
-		title: 'Message center',
-		fullscreen: false,
-		url:'message_center.js',
-		uid: jsonLogin.user.uid,
-		up_node: update_node
-	});
-	win_new.picked 	 = win2.picked;
-	win_new.open();
+	if (isUpdating() === true){
+		if(PLATFORM == 'android'){
+			Ti.UI.createNotification({
+				message : 'An update is running, wait till it is finished'
+			}).show();
+		}
+		else{
+			alert('An update is running, wait till it is finished');
+		}		
+	}
+	else{
+		
+		setUse();
+		var win_new = Titanium.UI.createWindow({  
+			title: 'Message center',
+			fullscreen: false,
+			url:'message_center.js',
+			uid: jsonLogin.user.uid,
+			up_node: update_node
+		});
+		win_new.picked 	 = win2.picked;
+		win_new.open();
+	}
 });
 
 alerts_lb.addEventListener('click', function(){
-	setUse();
-	var win_new = Titanium.UI.createWindow({  
-		title: 'Message center',
-		fullscreen: false,
-		url:'message_center.js',
-		uid: jsonLogin.user.uid,
-		up_node: update_node
-	});
-	win_new.picked 	 = win2.picked;
-	win_new.open();
+	if (isUpdating() === true){
+		if(PLATFORM == 'android'){
+			Ti.UI.createNotification({
+				message : 'An update is running, wait till it is finished'
+			}).show();
+		}
+		else{
+			alert('An update is running, wait till it is finished');
+		}		
+	}
+	else{
+		setUse();
+		var win_new = Titanium.UI.createWindow({  
+			title: 'Message center',
+			fullscreen: false,
+			url:'message_center.js',
+			uid: jsonLogin.user.uid,
+			up_node: update_node
+		});
+		win_new.picked 	 = win2.picked;
+		win_new.open();
+	}
 });
 
 var home_lb = Ti.UI.createLabel({
@@ -485,7 +549,7 @@ var activity = Ti.Android.currentActivity;
 activity.onCreateOptionsMenu = function(e) {
     var menu = e.menu;
 
-	var menuItem = menu.add({ 			
+	var menuItem = menu.add({ 
 		title: 'Update',
 		order: 0
 	});
@@ -504,18 +568,30 @@ activity.onCreateOptionsMenu = function(e) {
     });
     
     menu_draft.addEventListener('click', function(){
-    	setUse();
-    	Ti.API.info('Opening drafts');
-		var win_new = Titanium.UI.createWindow({  
-			title: 'Drafts',
-			fullscreen: false,
-			url:'drafts.js',
-			type: 'draft',
-			uid: jsonLogin.user.uid,
-			up_node: update_node
-		});
-		win_new.picked 	 = win2.picked;
-		win_new.open();
+	   	if (isUpdating() === true){
+			if(PLATFORM == 'android'){
+				Ti.UI.createNotification({
+					message : 'An update is running, wait till it is finished'
+				}).show();
+			}
+			else{
+				alert('An update is running, wait till it is finished');
+			}		
+		}
+		else{
+	    	setUse();
+	    	Ti.API.info('Opening drafts');
+			var win_new = Titanium.UI.createWindow({  
+				title: 'Drafts',
+				fullscreen: false,
+				url:'drafts.js',
+				type: 'draft',
+				uid: jsonLogin.user.uid,
+				up_node: update_node
+			});
+			win_new.picked 	 = win2.picked;
+			win_new.open();
+		}
     });
     
 };
