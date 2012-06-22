@@ -155,4 +155,41 @@ else {
 }
 
 db.close();
-bottomBack_release(win, "Back" , "enable");
+if(PLATFORM == 'android'){
+	bottomBack_release(win, "Back" , "enable");
+}else{
+	alertNavButtons();
+}
+
+function alertNavButtons(){
+	listTableView.top = '40'
+	var back = Ti.UI.createButton({
+		title : 'Back',
+		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+	});
+	back.addEventListener('click', function() {
+		unsetUse();	
+		win.close();
+	});
+	
+	var space = Titanium.UI.createButton({
+		systemButton:Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+	});
+	var label = Titanium.UI.createButton({
+		title: 'Alert List',
+		color:'#fff',
+		ellipsize: true,
+		wordwrap: false,
+		width: 200,
+		style:Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+	});
+	
+	// create and add toolbar
+	var toolbar = Titanium.UI.createToolbar({
+		items:[back, label, space],
+		top:0,
+		borderTop:false,
+		borderBottom:true
+	});
+	win.add(toolbar);
+};

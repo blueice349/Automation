@@ -113,7 +113,8 @@ if(data.length < 1) {
 		height : 'auto',
 		width : 'auto',
 		top : '50%',
-		text : 'There are no drafts available'
+		text : 'There are no drafts available',
+		color: '#FFF'
 	});
 
 	//Debug
@@ -121,7 +122,7 @@ if(data.length < 1) {
 
 	win3.add(empty);
 	//showBottom(actualWindow, goToWindow )
-	showBottom(win3, goToWindow);
+	//showBottom(win3, goToWindow);
 }
 //Shows the contacts
 else {
@@ -190,6 +191,7 @@ else {
 			setTimeout(function() {
 				create_or_edit_node.loadUI();
 			}, 100);
+			unsetUse();	
 			(PLATFORM=='android')?win3.close():win3.hide();
 	
 			//win3.close();
@@ -248,4 +250,42 @@ if (resultsNames != null){
 db.close();
 
 //showBottom(actualWindow, goToWindow )
-bottomBack_release(win3, "Back" , "enable");
+if(PLATFORM == 'android'){
+	bottomBack_release(win3, "Back" , "enable");
+}else{
+	draftNavButtons();
+}
+
+function draftNavButtons(){
+	if(listTableView!=null){listTableView.top = '40'}
+	var back = Ti.UI.createButton({
+		title : 'Back',
+		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+	});
+	back.addEventListener('click', function() {
+		unsetUse();	
+		win3.close();
+	});
+	
+	var space = Titanium.UI.createButton({
+		systemButton:Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+	});
+	var label = Titanium.UI.createButton({
+		title: 'Drafts List',
+		color:'#fff',
+		ellipsize: true,
+		wordwrap: false,
+		width: 200,
+		style:Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+	});
+	
+	// create and add toolbar
+	var toolbar = Titanium.UI.createToolbar({
+		items:[back, label, space],
+		top:0,
+		borderTop:false,
+		borderBottom:true
+	});
+	win3.add(toolbar);
+};
+

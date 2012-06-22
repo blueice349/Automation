@@ -593,6 +593,7 @@ function keep_info(_flag_info) {
 							}
 
 							db_put.execute('INSERT INTO file_upload_queue (nid , file_data , field_name, file_name, delta) VALUES (' + file_upload_nid + ', "' + encodeImage + '", "' + content[j].field_name + '", "' + imageName + '", ' + arrImages[k].private_index + ')');
+							Ti.API.info('Filse Saved' + arrImages[k].private_index );
 						}
 					}
 				} else if(content[j].field_type == 'image') {
@@ -1512,9 +1513,11 @@ create_or_edit_node.loadUI = function() {
 					}
 
 					var isRequired = false;
-					if(field_arr[index_label][index_size].required == true || field_arr[index_label][index_size].required == 'true'){
+					if(field_arr[index_label][index_size].required == true || field_arr[index_label][index_size].required == 'true' ||
+					field_arr[index_label][index_size].required == 1 || field_arr[index_label][index_size].required=='1'){
 						isRequired = true;
 					}
+
 					switch(field_arr[index_label][index_size].type) {
 
 						case 'license_plate':
@@ -4310,8 +4313,8 @@ create_or_edit_node.loadUI = function() {
 							Ti.API.info(field_arr[index_label][index_size].settings);
 
 							label[count] = Ti.UI.createLabel({
-								text : '' + field_arr[index_label][index_size].label,
-								color : '#FFFFFF',
+								text			: (isRequired? '*':'') + field_arr[index_label][index_size].label,
+								color			: isRequired? 'red':'#FFFFFF',
 								font : {
 									fontSize : 18
 								},
@@ -5619,42 +5622,42 @@ create_or_edit_node.loadUI = function() {
 	db_display.close();
 
 	var top = 0;
-	for(var i = 0; i < viewContent.getChildren().length; i++) {
-		var v = viewContent.getChildren()[i];
-		var isLabel = false;
-		if(PLATFORM == 'android') {
-			if( v instanceof Ti.UI.Label) {
-				isLabel = true;
+	if(viewContent.getChildren()!=null){
+		for(var i = 0; i < viewContent.getChildren().length; i++) {
+			var v = viewContent.getChildren()[i];
+			var isLabel = false;
+			if(PLATFORM == 'android') {
+				if( v instanceof Ti.UI.Label) {
+					isLabel = true;
+				}
+			} else {
+				if(v == '[object TiUILabel]') {
+					isLabel = true;
+				}
 			}
-		} else {
-			if(v == '[object TiUILabel]') {
-				isLabel = true;
+			
+			if(isLabel) {
+				if(v.viewContainer.form_part == viewContent.max_form_part) {
+					v.viewContainer.height = v.viewContainer.calculatedHeight;
+					v.viewContainer.expanded = true;
+					v.top = top;
+					top = top + 40;
+					v.viewContainer.top = top;
+					top = top + v.viewContainer.height + 10;
+					v.viewContainer.show();
+				}else{
+					v.viewContainer.height = 0;
+					v.viewContainer.expanded = false;
+					v.top = top;
+					top = top + 40;
+					v.viewContainer.top = top;
+					top = top + v.viewContainer.height + 10;
+					v.viewContainer.hide();
+				}
 			}
+	
 		}
-		
-		if(isLabel) {
-			if(v.viewContainer.form_part == viewContent.max_form_part) {
-				v.viewContainer.height = v.viewContainer.calculatedHeight;
-				v.viewContainer.expanded = true;
-				v.top = top;
-				top = top + 40;
-				v.viewContainer.top = top;
-				top = top + v.viewContainer.height + 10;
-				v.viewContainer.show();
-			}else{
-				v.viewContainer.height = 0;
-				v.viewContainer.expanded = false;
-				v.top = top;
-				top = top + 40;
-				v.viewContainer.top = top;
-				top = top + v.viewContainer.height + 10;
-				v.viewContainer.hide();
-			}
-		}
-
 	}
-
-
 	setTimeout(function() {
 		var entityArr = createEntityMultiple();
 	for(var j = 0; j <= content.length; j++) {
@@ -5824,7 +5827,7 @@ function openCamera(e) {
 				Ti.API.info("MIME TYPE: " + event.media.mimeType);
 				// If image size greater than 1MB we will reduce th image else take as it is.
 				if(event.media.length > ONE_MB) {
-					e.source.imageData = reduceImage(event.media, 1000, 1000);
+					e.source.imageData = reduceImageSize(event.media, 1000, 1000);
 				} else {
 					e.source.imageData = event.media;
 				}
@@ -5952,17 +5955,29 @@ try{
 			style:Titanium.UI.iPhone.SystemButtonStyle.PLAIN
 		});
 		
-		var save = Ti.UI.createButton({
-			title : 'Save',
+		var actions = Ti.UI.createButton({
+			title : 'Actions',
 			style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
 		});
-		save.addEventListener('click', function() {
-			keep_info('normal');
+		actions.addEventListener('click', function() {
+			var postDialog = Titanium.UI.createOptionDialog();
+			postDialog.options = ['Save', 'Draft', 'cancel'];
+			postDialog.cancel = 2;
+			postDialog.show();
+
+			postDialog.addEventListener('click', function(ev) {
+				if(ev.index == 0) {
+					keep_info('normal');
+				} else if(ev.index == 1) {
+					keep_info('draft');
+				}
+			});
 		});
+
 	
 		// create and add toolbar
 		var toolbar = Titanium.UI.createToolbar({
-			items:[back, space, label, space, save],
+			items:[back, space, label, space, actions],
 			top:0,
 			borderTop:false,
 			borderBottom:true

@@ -3615,6 +3615,7 @@ function reduceImageSize(blobImage, maxWidth, maxHeight){
 		width: 'auto',
 		height: 'auto'
 	});
+	image1 = image1.toBlob();
 	var multiple;
 	if(image1.height/image1.width>maxHeight/maxWidth) {
 		multiple=image1.height/maxHeight;
