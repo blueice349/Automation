@@ -144,14 +144,16 @@ function keep_info(_flag_info) {
 			if(content[x].nid != null) {
 				var d = new Date();
 				var utcDate = Date.parse(d.toUTCString());
-				var result = db_check_restrictions.execute('SELECT restriction_license_plate___plate, restriction_start_date, restriction_end_date FROM restriction where restriction_account="' + content[x].nid + '" AND restriction_start_date <= ' + utcDate/1000 + ' AND restriction_end_date >= ' + utcDate/1000);
-				Ti.API.info('--------------------Query : SELECT restriction_license_plate___plate, restriction_start_date, restriction_end_date FROM restriction where restriction_account="' + content[x].nid + '" AND restriction_start_date <= ' + utcDate + ' AND restriction_end_date >= ' + utcDate + '--------------------');
+				var result = db_check_restrictions.execute('SELECT restriction_license_plate___plate, vin, restrict_entire_account, vehicle___make, vehicle___model, vehicle_color FROM restriction where restriction_account="' + content[x].nid + '" AND ((restriction_start_date < ' + utcDate/1000 + ' OR restriction_start_date IS NULL) AND (restriction_end_date > ' + utcDate/1000 + ' OR restriction_end_date IS NULL))');
 			
 				while(result.isValidRow()){
 					var restriction = {
 						license_plate: result.fieldByName('restriction_license_plate___plate'),
-						start_date: result.fieldByName('restriction_start_date'),
-						end_date: result.fieldByName('restriction_end_date')
+						vehicle_make: result.fieldByName('vehicle___make'),
+						vehicle_model: result.fieldByName('vehicle___model'),
+						vehicle_color: result.fieldByName('vehicle_color'),
+						restrict_entire_account: result.fieldByName('restrict_entire_account'),
+						vin: result.fieldByName('vin')
 					};
 					restrictions.push(restriction);	
 					result.next();
@@ -299,21 +301,52 @@ function keep_info(_flag_info) {
 				continue;
 			}
 
-			//validating license plate value entered by user against restritions
-			if(content[j].field_type == 'license_plate' && content[j].field_name == 'license_plate___plate'){
-				var license_plate = content[j].value;
-				license_plate = license_plate.toLowerCase().replace(/o/g, '0');
-				for(var r in restrictions){
-					var restricted_license_plate = restrictions[r].license_plate;
-					restricted_license_plate = restricted_license_plate.toLowerCase().replace(/o/g, '0');
-					
-					if(license_plate == restricted_license_plate){
-						//close_me();
+			//validating license plate and vin value entered by user against restritions
+			for(var r in restrictions) {
+				var accountRestricted = restrictions[r].restrict_entire_account;
+				if(content[j].field_name == 'license_plate___plate') {
+					if(accountRestricted != null && accountRestricted == "1") {
 						hideIndicator();
-						a.message = "The license plate " + license_plate + " is currently restricted for the selected account";
+						a.message = "The selected account is restricted from any parking enforcement activity.";
 						a.show();
 						return;
+					} else {
+						var license_plate = content[j].value;
+						var restricted_license_plate = restrictions[r].license_plate;
+						if(license_plate != null && restricted_license_plate != null) {
+							license_plate = license_plate.toLowerCase().replace(/o/g, '0');
+							restricted_license_plate = restricted_license_plate.toLowerCase().replace(/o/g, '0');
+
+							if(license_plate == restricted_license_plate) {
+								hideIndicator();
+								a.message = restrictions[r].vehicle_color + restrictions[r].vehicle_make + restrictions[r].vehicle_model + " - " + restrictions[r].license_plate + " is currently restricted for the account entered.";
+								a.show();
+								return;
+							}
+						}
 					}
+
+				} 
+				
+				if(content[j].field_name == 'vin') {
+					if(accountRestricted != null && accountRestricted == "1") {
+						hideIndicator();
+						a.message = "The selected account is restricted from any parking enforcement activity.";
+						a.show();
+						return;
+					} else {
+						var vin = content[j].value;
+						var restricted_vin = restrictions[r].vin;
+						if(vin != null && restricted_vin != null) {
+							if(vin == restricted_vin) {
+								hideIndicator();
+								a.message = restrictions[r].vehicle_color + restrictions[r].vehicle_make + restrictions[r].vehicle_model + " - " + restrictions[r].vin + " is currently restricted for the account entered.";
+								a.show();
+								return;
+							}
+						}
+					}
+
 				}
 			}
 

@@ -376,6 +376,22 @@ activity.onCreateOptionsMenu = function(e) {
 		order: 1
 	});
 	menu_draft.setIcon("/images/draft.png");
+	
+	var menu_about = menu.add({
+		title: 'About',
+		order: 2
+	});
+	menu_about.setIcon("/images/about.png");
+
+	menu_about.addEventListener("click", function(e) {
+		var about_win = Ti.UI.createWindow({
+			title: 'About',
+			fullscreen: false,
+			backgroundColor: 'black',
+			url:'about.js'
+		});
+		about_win.open();
+    });
 
     menuItem.addEventListener("click", function(e) {
 		Ti.API.info('Refresh event!');
