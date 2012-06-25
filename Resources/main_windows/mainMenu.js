@@ -9,7 +9,7 @@
  *		Menu with different buttons.
  *		Log out button.
  * @author Joseandro
- */
+ */ 
 
 Ti.include('/main_windows/create_or_edit_node.js');
 
@@ -206,57 +206,67 @@ if (check == 0){
 	win2.add(img);
 }
 
+if(PLATFORM == 'android'){
+	var notf = Ti.UI.createNotification({
+					message : 'Please, wait ...',
+					duration: Ti.UI.NOTIFICATION_DURATION_LONG
+	});
+}
+
 //Go to contact.js when contact's button is clicked
 listView.addEventListener('click',function(e){
 	Ti.API.info("row click on table view. index = "+e.index+", row_desc = "+e.row.description+", section = "+e.section+", source_desc="+e.source.description);
-	
-	if (isUpdating() === true){
-		if(PLATFORM == 'android'){
-			Ti.UI.createNotification({
-				message : 'An update is running, wait till it is finished'
-			}).show();
+	var timer_int_list  =  setInterval(function(){
+		if (isUpdating()){
+			if(PLATFORM == 'android'){
+				notf.show();
+			}
+			else{
+				alert('Please, wait ...');
+			}		
 		}
 		else{
-			alert('An update is running, wait till it is finished');
-		}		
-	}
-	else{
-		setUse();
-		//Creates a new node_type
-		if (e.source.is_plus){
-			//alert('You clicked the '+e.row.display+' . His table\'s name is '+e.row.name_table);
-			// toolActInd.show();
-			var win_new = create_or_edit_node.getWindow();
-			win_new.title = "New "+e.row.display;
-			win_new.type = e.row.name_table;
-			win_new.uid = jsonLogin.user.uid;
-			win_new.listView = listView;
-			win_new.up_node = update_node;
-			win_new.mode = 0;
-			win_new.picked = win2.picked;
-			win_new.region_form = 0;
-			win_new.backgroundColor = "#000";
-			win_new.nameSelected = 'Fill Details...';
-			win_new.open();
-			setTimeout(function(){create_or_edit_node.loadUI();}, 100);
-			// win_new.addEventListener('focus', function(e){
-				// toolActInd.hide();
-			// });
+			clearInterval(timer_int_list);
+			if (PLATFORM == "android"){
+				notf.hide();				
+			}
+			setUse();
+			//Creates a new node_type
+			if (e.source.is_plus){
+				//alert('You clicked the '+e.row.display+' . His table\'s name is '+e.row.name_table);
+				// toolActInd.show();
+				var win_new = create_or_edit_node.getWindow();
+				win_new.title = "New "+e.row.display;
+				win_new.type = e.row.name_table;
+				win_new.uid = jsonLogin.user.uid;
+				win_new.listView = listView;
+				win_new.up_node = update_node;
+				win_new.mode = 0;
+				win_new.picked = win2.picked;
+				win_new.region_form = 0;
+				win_new.backgroundColor = "#000";
+				win_new.nameSelected = 'Fill Details...';
+				win_new.open();
+				setTimeout(function(){create_or_edit_node.loadUI();}, 100);
+				// win_new.addEventListener('focus', function(e){
+					// toolActInd.hide();
+				// });
+			}
+			else{
+				var win_new = Titanium.UI.createWindow({  
+					title: e.row.display,
+					fullscreen: false,
+					url:'objects.js',
+					type: e.row.name_table,
+					uid: jsonLogin.user.uid,
+					up_node: update_node,
+					backgroundColor: '#000'
+				});
+				win_new.picked 	 = win2.picked;
+				win_new.open();
+			}				
 		}
-		else{
-			var win_new = Titanium.UI.createWindow({  
-				title: e.row.display,
-				fullscreen: false,
-				url:'objects.js',
-				type: e.row.name_table,
-				uid: jsonLogin.user.uid,
-				up_node: update_node,
-				backgroundColor: '#000'
-			});
-			win_new.picked 	 = win2.picked;
-			win_new.open();
-		}	
-	}
+	}, 1000);
 });
 
 //Parses result from user's login 
@@ -322,6 +332,7 @@ offImage.addEventListener('click',function(e)
 		indLog.log		 = win2.log;
 		indLog.result	 = win2.result;
 		indLog.picked 	 = win2.picked;
+		indLog._parent	 = win2;
 	    
 	    indLog.open();
 	   	//win2.close();    	
@@ -492,29 +503,32 @@ function createDatabaseStatusView(){
 	alerts_view.add(alerts_img);
 	alerts_view.add(alerts_lb);
 	alerts_view.addEventListener('click', function(){
-		
-		if(isUpdating() === true) {
-			if(PLATFORM == 'android') {
-				Ti.UI.createNotification({
-					message : 'An update is running, wait till it is finished'
-				}).show();
-			} else {
-				alert('An update is running, wait till it is finished');
+		var timer_int_msg  =  setInterval(function(){
+			if (isUpdating()){
+				if(PLATFORM == 'android'){
+					notf.show();
+				}
+				else{
+					alert('Please, wait ...');
+				}		
 			}
-		} else {
-			setUse();
-			var win_new = Titanium.UI.createWindow({
-				title : 'Message center',
-				fullscreen : false,
-				url : 'message_center.js',
-				uid : jsonLogin.user.uid,
-				up_node : update_node,
-				backgroundColor: '#000'
-			});
-			win_new.picked = win2.picked;
-			win_new.open();
-		}
-
+			else{
+				clearInterval(timer_int_msg);
+				notf.hide();
+				setUse();		
+			
+				var win_new = Titanium.UI.createWindow({
+					title : 'Message center',
+					fullscreen : false,
+					url : 'message_center.js',
+					uid : jsonLogin.user.uid,
+					up_node : update_node,
+					backgroundColor: '#000'
+				});
+				win_new.picked = win2.picked;
+				win_new.open();
+			}
+		}, 1000);	
 	});
 	
 	var drafts_view = Ti.UI.createView({top: 7})
@@ -604,19 +618,21 @@ function createDatabaseStatusView(){
 }
 
 function openDraftWindow(){
-		if (isUpdating() === true){
+
+	var timer_int_draft  =  setInterval(function(){
+		if (isUpdating()){
 			if(PLATFORM == 'android'){
-				Ti.UI.createNotification({
-					message : 'An update is running, wait till it is finished'
-				}).show();
+				notf.show();
 			}
 			else{
-				alert('An update is running, wait till it is finished');
+				alert('Please, wait ...');
 			}		
 		}
 		else{
+			clearInterval(timer_int_draft);
+			notf.hide();			
 			setUse();
-	    	Ti.API.info('Opening drafts');
+			Ti.API.info('Opening drafts');
 			var win_new = Titanium.UI.createWindow({  
 				title: 'Drafts',
 				fullscreen: false,
@@ -629,4 +645,5 @@ function openDraftWindow(){
 			win_new.picked 	 = win2.picked;
 			win_new.open();
 		}
+	}, 1000);	
 }

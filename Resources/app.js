@@ -14,18 +14,37 @@
 Titanium.UI.setBackgroundColor('#000000');
 
 //Common used functions
-Ti.include('lib/functions.js');
+Ti.include('lib/functions.js'); 
 if(PLATFORM!='android'){clearCache();}
 
 var win1 = Titanium.UI.createWindow({  
     title:'Omadi CRM',
     fullscreen: false
 });
-var OMADI_VERSION = "omadiDb1434";
+var OMADI_VERSION = "omadiDb1438";
 Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION);
 var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );
-
 var credentials = db.execute('SELECT domain, username, password FROM history WHERE "id_hist"=1');
+
+var locked_field = true;
+var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+var updatedTime = db_a.execute('SELECT timestamp FROM updated WHERE rowid=1');
+if (updatedTime.fieldByName('timestamp') != 0){
+	locked_field = false;
+}
+updatedTime.close();
+db_a.close();
+
+var i_scroll_page = Titanium.UI.createView({
+    contentWidth:'auto',
+    contentHeight:'auto',
+    showVerticalScrollIndicator:true,
+    showHorizontalScrollIndicator:true,
+	width: '100%',
+	top: 0,
+	left: 0,
+	height: '70%'
+});
 
 //Web site picker 
 var portal = Titanium.UI.createTextField({
@@ -40,7 +59,8 @@ var portal = Titanium.UI.createTextField({
 	softKeyboardOnFocus : (PLATFORM == 'android')?Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS:'',
 	borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 	autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_NONE,
-	autocorrect: false
+	autocorrect: false,
+	editable: locked_field
 });
 //Adds picker to root window
 win1.add(portal);
@@ -59,7 +79,8 @@ var tf1 = Titanium.UI.createTextField({
 	softKeyboardOnFocus : (PLATFORM == 'android')?Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS:'',
 	borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 	autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_NONE,
-	autocorrect: false
+	autocorrect: false,
+	editable: locked_field
 });
 
 //No autocorrection for username
@@ -91,6 +112,25 @@ tf2.autocorrect = false;
 
 //Adds text field "password" to the interface
 win1.add(tf2);
+
+win1.addEventListener('focus', function(){
+	var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+	var updatedTime = db_a.execute('SELECT timestamp FROM updated WHERE rowid=1');
+	var new_color = "#000000";
+	if (updatedTime.fieldByName('timestamp') != 0){
+		locked_field = false;
+		new_color = "#999999";
+	}
+	updatedTime.close();
+	db_a.close();
+
+	portal.editable = locked_field;
+	tf1.editable	= locked_field;
+	
+	portal.color = new_color;
+	tf1.color	 = new_color;
+	tf2.value	 = "";
+});
 
 //
 //  CREATE INFO MESSAGE
@@ -227,7 +267,7 @@ b1.addEventListener('click', function(){
 				}
 				Ti.API.info('DB NAME_APP: db_'+portal.value+'_'+tf1.value+' ');
 				
-				db_list.execute('UPDATE history SET domain = "'+portal.value+'", username = "'+tf1.value+'", password = "'+tf2.value+'", db_name="db_'+portal.value+'_'+tf1.value+'" WHERE "id_hist"=1');
+				db_list.execute('UPDATE history SET domain = "'+portal.value+'", username = "'+tf1.value+'", password = "", db_name="db_'+portal.value+'_'+tf1.value+'" WHERE "id_hist"=1');
 				
 				//Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION+"_"+tf1.value);
 				
@@ -257,7 +297,7 @@ b1.addEventListener('click', function(){
 				win2.open();
 				hideIndicator();	
 				//xhr.abort();
-				(PLATFORM == 'android')?win1.close():'';
+				//(PLATFORM == 'android')?win1.close():'';
 		}
 			
 		//If username and pass wrong:
@@ -283,7 +323,7 @@ win1.orientationModes = [ Titanium.UI.PORTRAIT ];
 //When back button on the phone is pressed, it informs the user (message at the bottom)
 // that he is already in the first menu
 win1.addEventListener('android:back', function() {
-	Ti.API.info("É pra sair!");
+	Ti.API.info("Shouldn't go back");
 	label_error.text = "You can't go back, this is the first menu";
 });
 

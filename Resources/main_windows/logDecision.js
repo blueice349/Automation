@@ -2,7 +2,7 @@
 var indLog = Ti.UI.currentWindow;
 
 //Common used functions
-Ti.include('../lib/functions.js');
+Ti.include('/lib/functions.js');
 
 //Definition of the window before (opens when the user clicks on the back button)
 var goToWindow = Titanium.UI.createWindow({
@@ -80,10 +80,14 @@ labelOut.addEventListener('click',function (){
 		indLog.log.onload = function(e) {
 			Ti.App.Properties.setString('logStatus', "You have successfully logged out");
 			Ti.API.info('From Functions ... Value is : '+ Ti.App.Properties.getString('logStatus'));
-			logWindow.open();
+			if( getDeviceTypeIndentifier() == "android"){
+				Ti.App.fireEvent('stop_gps');				
+			}
+			//logWindow.open();
+			indLog._parent.close();
 			hideIndicator();
 			indLog.log.abort();
-		//	indLog.close();
+			indLog.close();
 		}
 	
 		indLog.log.onerror = function(e) {
