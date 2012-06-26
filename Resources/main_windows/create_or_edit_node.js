@@ -170,6 +170,63 @@ function keep_info(_flag_info) {
 			}
 		}
 	}
+	
+	for(var k = 0; k <= content.length; k++) {
+		if(!content[k]) {
+			continue;
+		}
+
+		//validating license plate and vin value entered by user against restritions
+		for(var r in restrictions) {
+			var accountRestricted = restrictions[r].restrict_entire_account;
+			if(content[k].field_name == 'license_plate___plate') {
+				if(accountRestricted != null && accountRestricted == "1") {
+					a.message = "The selected account is restricted from any parking enforcement activity.";
+					a.show();
+					return;
+				} else {
+					var license_plate = content[k].value;
+					var restricted_license_plate = restrictions[r].license_plate;
+					if(license_plate != null && restricted_license_plate != null) {
+						license_plate = license_plate.toLowerCase().replace(/o/g, '0');
+						restricted_license_plate = restricted_license_plate.toLowerCase().replace(/o/g, '0');
+
+						if(license_plate == restricted_license_plate) {
+							var term_data = db_check_restrictions.execute("SELECT name FROM term_data WHERE tid = " + restrictions[r].vehicle_color);
+
+							a.message = term_data.getFieldByName('name') + " " + restrictions[r].vehicle_make + " " + restrictions[r].vehicle_model + " - " + restrictions[r].license_plate + " is currently restricted for the account entered.";
+							a.show();
+							term_data.close();
+							return;
+						}
+					}
+				}
+
+			}
+
+			if(content[k].field_name == 'vin') {
+				if(accountRestricted != null && accountRestricted == "1") {
+					a.message = "The selected account is restricted from any parking enforcement activity.";
+					a.show();
+					return;
+				} else {
+					var vin = content[k].value;
+					var restricted_vin = restrictions[r].vin;
+					if(vin != null && restricted_vin != null) {
+						if(vin == restricted_vin) {
+							var term_data = db_check_restrictions.execute("SELECT name FROM term_data WHERE tid = " + restrictions[r].vehicle_color);
+
+							a.message = term_data.getFieldByName('name') + " " + restrictions[r].vehicle_make + " " + restrictions[r].vehicle_model + " - " + restrictions[r].vin + " is currently restricted for the account entered.";
+							a.show();
+							term_data.close();
+							return;
+						}
+					}
+				}
+
+			}
+		}
+	}
 	db_check_restrictions.close();
 
 	if ((count_fields > 0) && (_flag_info != "draft")) {
