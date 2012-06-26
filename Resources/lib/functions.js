@@ -86,7 +86,7 @@ function Progress_install(current, max){
 
     // black view
     var indView = Titanium.UI.createView({
-        height: '15%',
+        height: '50',
         width: '100%',
         backgroundColor:'#111',
         opacity:1,

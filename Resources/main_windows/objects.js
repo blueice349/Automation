@@ -180,6 +180,7 @@ function bottomButtons(){
 		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
 	});
 	back.addEventListener('click', function() {
+		unsetUse();
 		win3.close();
 	});
 	
