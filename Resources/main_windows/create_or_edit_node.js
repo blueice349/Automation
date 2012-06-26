@@ -414,17 +414,17 @@ function keep_info(_flag_info) {
 				Ti.API.info('About to insert ' + _array_value[content[j].field_name]);
 				// table structure:
 				// incremental, node_id, field_name, value
-				var db_jub = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+				//var db_jub = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 
 				if (win.mode == 0) {
 					Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + new_nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
-					db_jub.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + new_nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
+					db_put.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + new_nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
 				} else {
 					Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + win.nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
-					db_jub.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + win.nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
+					db_put.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + win.nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
 				}
 
-				db_jub.close();
+				//db_jub.close();
 
 				// Code must to be a number since this database field accepts only integers numbers
 				// Token to indentify array of numbers is 7411317618171051229
