@@ -150,7 +150,7 @@ var check = 0;
 
 while ( elements.isValidRow() ){
 	var name_table   = elements.fieldByName("bundle_name");
-	var display      = elements.fieldByName("display_name");
+	var display      = elements.fieldByName("display_name").toUpperCase();
 	var description  = elements.fieldByName("description");
 	var flag_display = elements.fieldByName("display_on_menu");
 	
@@ -164,6 +164,14 @@ while ( elements.isValidRow() ){
 			className	: 'menu_row' // this is to optimize the rendering
 		});
 		
+		var icon = Titanium.UI.createImageView({
+			width: 48,
+			height: 48,
+			top: 6,
+			left: 5,
+			image: '/images/icons/' + display.toLowerCase() + '.png'
+		});
+		
 		var title = Titanium.UI.createLabel({
 			text: display,
 			font:{
@@ -171,18 +179,20 @@ while ( elements.isValidRow() ){
 			},
 			width:'83%',
 			textAlign:'left',
-			left:'0%',
+			left:58,
 			height:'auto'
 		});
 
 		var plus =  Titanium.UI.createButton({
-			title: '+',
-			width:'15%',
-			height:'100%',
-			right:0,
+			backgroundImage: '/images/plus_btn.png',
+			backgroundSelectedImage: '/images/plus_btn_selected.png',
+			width:40,
+			height:31,
+			right:5,
 			is_plus: true
 		});
 		
+		row_t.add(icon);
 		row_t.add(title);
 		row_t.add(plus);
 		
@@ -464,7 +474,10 @@ function createDatabaseStatusView(){
 		bottom: 0,
 		layout: 'horizontal'
 	});
-	var home_view = Ti.UI.createView()
+	var home_view = Ti.UI.createView({
+		backgroundSelectedColor: 'orange',
+		focusable: true
+	});
 	databaseStatusView.add(home_view);
 	var home_img = Ti.UI.createImageView({
 		image: '/images/home2.png'
@@ -478,7 +491,10 @@ function createDatabaseStatusView(){
 	home_view.add(home_img);
 	home_view.add(home_lb);
 	
-	var alerts_view = Ti.UI.createView()
+	var alerts_view = Ti.UI.createView({
+		backgroundSelectedColor: 'orange',
+		focusable: true
+	});
 	databaseStatusView.add(alerts_view);
 	var alerts_img = Ti.UI.createImageView({
 		image: '/images/msg3.png'
@@ -517,7 +533,12 @@ function createDatabaseStatusView(){
 
 	});
 	
-	var drafts_view = Ti.UI.createView({top: 7})
+	var drafts_view = Ti.UI.createView(
+	{
+		top: 7,
+		backgroundSelectedColor: 'orange',
+		focusable: true
+	});
 	databaseStatusView.add(drafts_view);
 	var draft_img = Ti.UI.createImageView({
 		image: '/images/draft.png',
@@ -614,19 +635,31 @@ function openDraftWindow(){
 				alert('An update is running, wait till it is finished');
 			}		
 		}
-		else{
-			setUse();
-	    	Ti.API.info('Opening drafts');
-			var win_new = Titanium.UI.createWindow({  
-				title: 'Drafts',
-				fullscreen: false,
-				url:'drafts.js',
-				type: 'draft',
-				uid: jsonLogin.user.uid,
-				up_node: update_node,
-				backgroundColor: '#000'
-			});
-			win_new.picked 	 = win2.picked;
-			win_new.open();
-		}
+		
+	else {
+		var toolActInd = Ti.UI.createActivityIndicator();
+		toolActInd.font = {
+			fontFamily : 'Helvetica Neue',
+			fontSize : 15,
+			fontWeight : 'bold'
+		};
+		toolActInd.color = 'white';
+		toolActInd.message = 'Loading...';
+		toolActInd.show();
+		setUse();
+		Ti.API.info('Opening drafts');
+		var win_new = Titanium.UI.createWindow({
+			title : 'Drafts',
+			fullscreen : false,
+			url : 'drafts.js',
+			type : 'draft',
+			uid : jsonLogin.user.uid,
+			up_node : update_node,
+			backgroundColor : '#000'
+		});
+		win_new.picked = win2.picked;
+		win_new.open();
+		toolActInd.hide();
+	}
+
 }

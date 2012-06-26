@@ -3109,6 +3109,8 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					progress.close();
 				}
 				db_installMe.close();
+				var d = new Date();
+				Titanium.App.Properties.setDouble("lastSynced", d.getTime());
 				
 				if (type_request == 'POST'){
 					updateFileUploadTable(win, json);
