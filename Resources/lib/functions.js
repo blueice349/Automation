@@ -2829,7 +2829,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									},
 									width:'83%',
 									textAlign:'left',
-									left:'0%',
+									left:58,
 									height:'auto'
 								});
 								

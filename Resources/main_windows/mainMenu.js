@@ -38,6 +38,10 @@ setTimeout(function(){
 }, 10000)
 
 
+var updateFromAboutPage = function(){
+	checkUpdate('from_menu');
+}
+
 function checkUpdate(evt){
 	Ti.API.info('******* Called checkupate => '+evt);
 	
@@ -173,7 +177,7 @@ while ( elements.isValidRow() ){
 			image: '/images/icons/' + display.toLowerCase() + '.png'
 		});
 		
-		if(icon.toBlob() == null){
+		if(icon.toBlob() == null || icon.toBlob().length == 0){
 			icon.image = '/images/icons/settings.png';
 		}
 		
@@ -410,13 +414,24 @@ activity.onCreateOptionsMenu = function(e) {
 	menu_about.setIcon("/images/about.png");
 
 	menu_about.addEventListener("click", function(e) {
-		var about_win = Ti.UI.createWindow({
-			title: 'About',
-			fullscreen: false,
-			backgroundColor: 'black',
-			url:'about.js'
-		});
-		about_win.open();
+		if (isUpdating()){
+			if(PLATFORM == 'android'){
+				notf.show();
+			}
+			else{
+				alert('Please, wait ...');
+			}		
+		}
+		else{
+			var about_win = Ti.UI.createWindow({
+				title: 'About',
+				fullscreen: false,
+				backgroundColor: 'black',
+				url:'about.js',
+				updateFunction: updateFromAboutPage
+			});
+			about_win.open();
+		}
     });
 
     menuItem.addEventListener("click", function(e) {
@@ -631,8 +646,8 @@ function createDatabaseStatusView(){
 		
 		actions_view.addEventListener('click', function(){
 			var postDialog = Titanium.UI.createOptionDialog();
-			postDialog.options = ['Update', 'Display Draft', 'cancel'];
-			postDialog.cancel = 2;
+			postDialog.options = ['Update', 'Display Draft', 'About', 'cancel'];
+			postDialog.cancel = 3;
 			postDialog.show();
 
 			postDialog.addEventListener('click', function(ev) {
@@ -640,6 +655,22 @@ function createDatabaseStatusView(){
 					checkUpdate('from_menu');
 				} else if(ev.index == 1) {
 					openDraftWindow();
+				} else if(ev.index == 2) {
+					if(isUpdating()) {
+						if(PLATFORM == 'android') {
+							notf.show();
+						} else {
+							alert('Please, wait ...');
+						}
+					} else {
+						var about_win = Ti.UI.createWindow({
+							title : 'About',
+							fullscreen : false,
+							backgroundColor : 'black',
+							url : 'about.js'
+						});
+						about_win.open();
+					}
 				}
 			});
 			return;
