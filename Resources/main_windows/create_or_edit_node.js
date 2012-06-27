@@ -30,6 +30,7 @@ var title_head;
 var resultView;
 
 var db_display;
+var no_data_fieldsArr = [];
 var doneButton = null;
 
 var ONE_MB = 1048576;
@@ -245,6 +246,7 @@ function keep_info(_flag_info) {
 		a.show();
 	} else {
 		var mode_msg = '';
+		var no_data_fields = [];
 		if (_flag_info == "draft") {
 			mode_msg = 'Saving draft';
 		} else if (win.mode == 0) {
@@ -449,6 +451,15 @@ function keep_info(_flag_info) {
 			}
 
 			var value_to_insert = '';
+			var is_no_data = false;
+			//INSERTING NO DATA FIEDLS IN ARRAY
+			if(content[j].no_data_checkbox!=null && content[j].no_data_checkbox != "" && content[j].no_data_checkbox){
+				is_no_data = true;
+				if(content[j].noDataView != null ){
+					no_data_fields.push(content[j].field_name);
+				}
+			}
+
 
 			//If it is a composed field, just insert the number
 			//Build cardinality for fields
@@ -465,6 +476,7 @@ function keep_info(_flag_info) {
 						}
 					}
 				}
+		if(!is_no_data ){
 
 				//Treat the array
 				content_s = treatArray(_array_value[content[j].field_name], 6);
@@ -486,7 +498,11 @@ function keep_info(_flag_info) {
 				// Code must to be a number since this database field accepts only integers numbers
 				// Token to indentify array of numbers is 7411317618171051229
 				value_to_insert = 7411317618171051229;
-			} else if ((content[j].field_type == 'number_decimal') || (content[j].field_type == 'number_integer')) {
+			} 
+		} else if(!is_no_data){
+ 
+			
+			if ((content[j].field_type == 'number_decimal') || (content[j].field_type == 'number_integer')) {
 				if ((content[j].value == '') || (content[j].value == null)) {
 					value_to_insert = 'null';
 					mark = "'";
@@ -600,7 +616,7 @@ function keep_info(_flag_info) {
 			} else {
 				value_to_insert = content[j].value;
 			}
-
+			}
 			if (value_to_insert == '') {
 				mark = '\'';
 			}
@@ -619,22 +635,36 @@ function keep_info(_flag_info) {
 			if (title_to_node == "") {
 				title_to_node = "No title";
 			}
+			
+			//No data fields JSON 
+			var no_data_fields_content = '';
+			for( idx_k = 0; idx_k < no_data_fields.length; idx_k++) {
+				if(idx_k == no_data_fields.length - 1) {
+					no_data_fields_content += '\"' + no_data_fields[idx_k] + '\" : \"' + no_data_fields[idx_k] + '\"';
+				} else {
+					no_data_fields_content += '\"' + no_data_fields[idx_k] + '\" : \"' + no_data_fields[idx_k] + '\",';
+				}
+			}
+			if(no_data_fields_content!=null && no_data_fields_content !=''){
+				no_data_fields_content = "{" + no_data_fields_content + "}" 
+			}
+
 			//Insert into node table
 			var _now = Math.round(+new Date() / 1000);
 			if (_flag_info == "draft") {
 				if (win.mode == 1) {
-					Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=3, table_name="' + win.type + '", form_part =' + win.region_form + ' WHERE nid=' + win.nid);
-					db_put.execute('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=3, table_name="' + win.type + '", form_part =' + win.region_form + ' WHERE nid=' + win.nid);
+					Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=3, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\''+no_data_fields_content +'\' WHERE nid=' + win.nid);
+					db_put.execute('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=3, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\''+no_data_fields_content +'\' WHERE nid=' + win.nid);
 				} else {
-					Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 3 , "' + win.type + '" , ' + win.region_form + ' )');
-					db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name , form_part ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 3 , "' + win.type + '", ' + win.region_form + ' )');
+					Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 3 , "' + win.type + '" , ' + win.region_form + ', \'' +no_data_fields_content +'\')');
+					db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name , form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 3 , "' + win.type + '", ' + win.region_form + ', \'' +no_data_fields_content +'\')');
 				}
 			} else if (win.mode == 1) {
-				Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form + ' WHERE nid=' + win.nid);
-				db_put.execute('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form + ' WHERE nid=' + win.nid);
+				Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\''+no_data_fields_content +'\' WHERE nid=' + win.nid);
+				db_put.execute('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\''+no_data_fields_content +'\' WHERE nid=' + win.nid);
 			} else {
-				Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '", ' + win.region_form + '  )');
-				db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part  ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '"  , ' + win.region_form + ' )');
+				Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '", ' + win.region_form + ', \'' +no_data_fields_content +'\')');
+				db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields  ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '"  , ' + win.region_form + ', \'' +no_data_fields_content +'\')');
 			}
 
 			//Insert into table
@@ -658,7 +688,7 @@ function keep_info(_flag_info) {
 					file_upload_nid = new_nid;
 				}
 
-				if (content[j].field_type == 'image' && (content[j].cardinality > 1 || content[j].cardinality < 0)) {
+				if (content[j].field_type == 'image' && (content[j].cardinality > 1 || content[j].cardinality < 0) && !content[j].no_data_checkbox) {
 					var arrImages = content[j].arrImages;
 					for ( k = 0; k < arrImages.length; k++) {
 						if (arrImages[k].imageData != null && arrImages[k].mimeType != null) {
@@ -680,7 +710,7 @@ function keep_info(_flag_info) {
 							Ti.API.info('Filse Saved' + arrImages[k].private_index);
 						}
 					}
-				} else if (content[j].field_type == 'image') {
+				} else if (content[j].field_type == 'image'  && !content[j].no_data_checkbox) {
 					if (content[j].imageData != null && content[j].mimeType != null) {
 						var encodeImage = Ti.Utils.base64encode(content[j].imageData);
 						var mime = content[j].mimeType;
@@ -952,6 +982,7 @@ function display_widget(obj) {
 
 			obj.text = f_month + " / " + f_date + " / " + f_year;
 			changedContentValue(obj);
+			noDataChecboxEnableDisable(obj, obj.reffer_index);
 			win_wid.close();
 		});
 
@@ -1218,6 +1249,7 @@ function display_omadi_time(obj) {
 
 		obj.text = hours + ":" + form_min(min);
 		changedContentValue(obj);
+		noDataChecboxEnableDisable(obj, obj.reffer_index);
 		win_wid.close();
 	});
 
@@ -1461,6 +1493,20 @@ create_or_edit_node.loadUI = function() {
 	title = 0;
 	db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 	regions = db_display.execute('SELECT * FROM regions WHERE node_type = "' + win.type + '" ORDER BY weight ASC');
+	if(win.mode == 1){
+		var node_table = db_display.execute('SELECT * FROM node WHERE nid='+win.nid);
+		if(node_table.rowCount>0){
+			var no_data_fields = node_table.fieldByName('no_data_fields');
+			if(no_data_fields!=null && no_data_fields != ""){
+				no_data_fields = JSON.parse(no_data_fields);
+				for(var key in no_data_fields) {
+					if(no_data_fields.hasOwnProperty(key)) {
+						no_data_fieldsArr.push(key);
+					}
+				}
+			}
+		}
+	}
 
 	var y = 0;
 	var regionCount = 0;
@@ -1553,6 +1599,7 @@ create_or_edit_node.loadUI = function() {
 			var top = 0;
 			var field_definer = 0;
 			var index_size = 0;
+			var partsArr = [];
 
 			//If there is no field enabled for this region, then remove the header for this region after the end of loop.
 			var isAnyEnabledField = false;
@@ -1938,6 +1985,8 @@ create_or_edit_node.loadUI = function() {
 													e.source.value = e.source.arr_picker[ev.index].usps;
 												}
 												changedContentValue(e.source);
+												noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+
 											});
 										});
 										top += heightValue;
@@ -1976,6 +2025,8 @@ create_or_edit_node.loadUI = function() {
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
 										changedContentValue(e.source);
+										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+
 									});
 									count++;
 								}
@@ -2265,6 +2316,8 @@ create_or_edit_node.loadUI = function() {
 												e.source.value = e.source.arr_picker[ev.index].usps;
 											}
 											changedContentValue(e.source);
+											noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+
 										});
 									});
 									top += heightValue;
@@ -2300,10 +2353,25 @@ create_or_edit_node.loadUI = function() {
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
 										changedContentValue(e.source);
+										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+
 									});
 									count++;
 								}
 							}
+							//No data checkbox functionality
+							if(settings.parts!=null && settings.parts !=""){
+								partsArr.push(reffer_index);
+								if(partsArr.length == 2){
+									content[reffer_index].partsArr = partsArr;
+									partsArr = [];
+									noDataCheckbox(reffer_index, regionView, top);
+									if(content[reffer_index]!=null){
+										top += 40; 
+									}	
+								}
+							}
+
 							break;
 
 						case 'text':
@@ -2380,6 +2448,7 @@ create_or_edit_node.loadUI = function() {
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
 										changedContentValue(e.source);
+										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 									});
 									count++;
 								}
@@ -2411,10 +2480,15 @@ create_or_edit_node.loadUI = function() {
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
 									changedContentValue(e.source);
+									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 								});
 								count++;
 							}
-
+							//No data checkbox functionality
+							noDataCheckbox(reffer_index, regionView, top);
+							if(content[reffer_index].noDataView!=null){
+								top += 40; 
+							}	
 							break;
 
 						case 'text_long':
@@ -2487,6 +2561,7 @@ create_or_edit_node.loadUI = function() {
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
 										changedContentValue(e.source);
+										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 									});
 									count++;
 								}
@@ -2515,9 +2590,15 @@ create_or_edit_node.loadUI = function() {
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
 									changedContentValue(e.source);
+									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 								});
 								count++;
 							}
+							//No data checkbox functionality
+							noDataCheckbox(reffer_index, regionView, top);
+							if(content[reffer_index].noDataView!=null){
+								top += 40; 
+							}	
 							break;
 
 						case 'location':
@@ -2617,6 +2698,8 @@ create_or_edit_node.loadUI = function() {
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
 										changedContentValue(e.source);
+										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+
 									});
 									count++;
 								}
@@ -2648,9 +2731,24 @@ create_or_edit_node.loadUI = function() {
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
 									changedContentValue(e.source);
+									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+
 								});
 								count++;
 							}
+							//No data checkbox functionality
+							if(settings.parts!=null && settings.parts !=""){
+								partsArr.push(reffer_index);
+								if(partsArr.length == 4){
+									content[reffer_index].partsArr = partsArr;
+									partsArr = [];
+									noDataCheckbox(reffer_index, regionView, top);
+									if(content[reffer_index]!=null){
+										top += 40; 
+									}	
+								}
+							}
+
 							break;
 
 						case 'number_decimal':
@@ -2744,6 +2842,8 @@ create_or_edit_node.loadUI = function() {
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
 										changedContentValue(e.source);
+										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+
 									});
 									count++;
 								}
@@ -2781,9 +2881,16 @@ create_or_edit_node.loadUI = function() {
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
 									changedContentValue(e.source);
+									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+
 								});
 								count++;
 							}
+							//No data checkbox functionality
+							noDataCheckbox(reffer_index, regionView, top);
+							if(content[reffer_index].noDataView!=null){
+								top += 40; 
+							}	
 							break;
 
 						case 'phone':
@@ -2862,6 +2969,8 @@ create_or_edit_node.loadUI = function() {
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
 										changedContentValue(e.source);
+										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+
 									});
 									count++;
 								}
@@ -2896,9 +3005,16 @@ create_or_edit_node.loadUI = function() {
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
 									changedContentValue(e.source);
+									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+
 								});
 								count++;
 							}
+							//No data checkbox functionality
+							noDataCheckbox(reffer_index, regionView, top);
+							if(content[reffer_index].noDataView!=null){
+								top += 40; 
+							}	
 							break;
 
 						case 'email':
@@ -2975,6 +3091,8 @@ create_or_edit_node.loadUI = function() {
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
 										changedContentValue(e.source);
+										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+
 									});
 									count++;
 								}
@@ -3007,9 +3125,16 @@ create_or_edit_node.loadUI = function() {
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
 									changedContentValue(e.source);
+									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+
 								});
 								count++;
 							}
+							//No data checkbox functionality
+							noDataCheckbox(reffer_index, regionView, top);
+							if(content[reffer_index].noDataView!=null){
+								top += 40; 
+							}	
 							break;
 
 						case 'taxonomy_term_reference':
@@ -3173,6 +3298,8 @@ create_or_edit_node.loadUI = function() {
 													e.source.value = e.source.arr_picker[ev.index].tid;
 												}
 												changedContentValue(e.source);
+												noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+
 											});
 										});
 
@@ -3261,6 +3388,8 @@ create_or_edit_node.loadUI = function() {
 												e.source.value = e.source.arr_picker[ev.index].tid;
 											}
 											changedContentValue(e.source);
+											noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+
 										});
 									});
 									top += heightValue;
@@ -3362,6 +3491,8 @@ create_or_edit_node.loadUI = function() {
 										}
 										open_mult_selector(e.source);
 										changedContentValue(e.source);
+										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+
 									});
 
 									top += heightValue;
@@ -3534,6 +3665,7 @@ create_or_edit_node.loadUI = function() {
 										//
 										content[count].addEventListener('change', function(e) {
 											changedContentValue(e.source);
+											noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 											if (e.source.first_time === false) {
 												var list = e.source.terms;
 												var func = function setValueF(value_f, tid) {
@@ -3704,6 +3836,8 @@ create_or_edit_node.loadUI = function() {
 									//
 									content[count].addEventListener('change', function(e) {
 										changedContentValue(e.source);
+										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+
 										if (e.source.first_time === false) {
 											var list = e.source.terms;
 											var func = function setValueF(value_f, tid) {
@@ -3754,6 +3888,11 @@ create_or_edit_node.loadUI = function() {
 									count++;
 								}
 							}
+							//No data checkbox functionality
+							noDataCheckbox(reffer_index, regionView, top);
+							if(content[reffer_index].noDataView!=null){
+								top += 40; 
+							}	
 							break;
 
 						//Refers to an object:
@@ -4281,6 +4420,8 @@ create_or_edit_node.loadUI = function() {
 												e.source.value = e.source.arr_picker[ev.index].uid;
 											}
 											changedContentValue(e.source);
+											noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+
 										});
 									});
 									//Add fields:
@@ -4373,6 +4514,8 @@ create_or_edit_node.loadUI = function() {
 											e.source.value = e.source.arr_picker[ev.index].uid;
 										}
 										changedContentValue(e.source);
+										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+
 									});
 
 								});
@@ -4380,6 +4523,11 @@ create_or_edit_node.loadUI = function() {
 								regionView.add(content[count]);
 								count++;
 							}
+							//No data checkbox functionality
+							noDataCheckbox(reffer_index, regionView, top);
+							if(content[reffer_index].noDataView!=null){
+								top += 40; 
+							}	
 							break;
 
 						//Shows up date (check how it is exhibited):
@@ -4830,6 +4978,11 @@ create_or_edit_node.loadUI = function() {
 								}
 
 							}
+							//No data checkbox functionality
+							noDataCheckbox(reffer_index, regionView, top);
+							if(content[reffer_index].noDataView!=null){
+								top += 40; 
+							}	
 							break;
 
 						//Shows the on and off button?
@@ -5137,6 +5290,11 @@ create_or_edit_node.loadUI = function() {
 								regionView.add(mother_of_view);
 								count++;
 							}
+							//No data checkbox functionality
+							noDataCheckbox(reffer_index, regionView, top);
+							if(content[reffer_index].noDataView!=null){
+								top += 40; 
+							}	
 							break;
 
 						case 'vehicle_fields':
@@ -5225,6 +5383,8 @@ create_or_edit_node.loadUI = function() {
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
 										changedContentValue(e.source);
+										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+
 									});
 									count++;
 								}
@@ -5327,6 +5487,7 @@ create_or_edit_node.loadUI = function() {
 								//
 								content[count].addEventListener('change', function(e) {
 									changedContentValue(e.source);
+									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 									if (e.source.first_time === false) {
 										var list = e.source.terms;
 										var func = function setValueF(value_f) {
@@ -5366,6 +5527,19 @@ create_or_edit_node.loadUI = function() {
 								count++;
 
 							}
+							//No data checkbox functionality
+							if(settings.parts!=null && settings.parts !=""){
+								partsArr.push(reffer_index);
+								if(partsArr.length == 2){
+									content[reffer_index].partsArr = partsArr;
+									partsArr = [];
+									noDataCheckbox(reffer_index, regionView, top);
+									if(content[reffer_index]!=null){
+										top += 40; 
+									}	
+								}
+							}
+
 							break;
 
 						case 'region_separator_mode':
@@ -5597,6 +5771,11 @@ create_or_edit_node.loadUI = function() {
 
 							top += 100;
 							count++;
+							//No data checkbox functionality
+							noDataCheckbox(reffer_index, regionView, top);
+							if(content[reffer_index].noDataView!=null){
+								top += 40; 
+							}	
 							break;
 						case 'calculation_field':
 							label[count] = Ti.UI.createLabel({
@@ -6703,3 +6882,170 @@ function conditionalSetRequiredField(idx) {
 		}
 	}
 }
+function noDataCheckbox(reffer_index, baseView, top){
+	if(content[reffer_index].settings!=null && content[reffer_index].settings!=""){
+		if(content[reffer_index].settings.required_no_data_checkbox!=null && content[reffer_index].settings.required_no_data_checkbox==1){
+			
+			var doCheck = in_array(content[reffer_index].field_name,no_data_fieldsArr);
+			var isRequired = false; //TODO
+			if(content[reffer_index].required == true || content[reffer_index].required == 'true' || content[reffer_index].required == 1 || content[reffer_index].required =='1'){
+				isRequired = true;
+			}
+			content[reffer_index].noDataView = Ti.UI.createView({
+				height: 40,
+				width : '100%',
+				layout: 'horizontal',
+				top: top + 2				
+			});
+			
+			content[reffer_index].noDataView.checkbox = Ti.UI.createButton({
+				height: 16,
+				width: 16,
+				backgroundImage: '../images/unchecked.png',
+				left : 10,
+				value: false
+			});
+			content[reffer_index].noDataView.text = Ti.UI.createLabel({
+				height: 16,
+				text: (isRequired)?'No Data Available':'Not Applicable',
+				left :5,
+				width: 200,
+				color: '#aaa',
+				font: {
+					fontSize: 10,
+					fontWeight: 'bold'
+				}
+			});
+			content[reffer_index].noDataView.checkbox.addEventListener('click', function(e){
+				e.source.value = (e.source.value) ? false : true;
+				e.source.backgroundImage = (e.source.value) ? '../images/checked.png' : '../images/unchecked.png';
+				
+				if(content[reffer_index].partsArr != null && content[reffer_index].partsArr.length > 0) {
+					for( idx_i = 0; idx_i < content[reffer_index].partsArr.length; idx_i++) {
+						var part_idx = content[reffer_index].partsArr[idx_i];
+						if(content[part_idx].settings.cardinality > 1) {
+							for( idx = 0; idx < content[part_idx].settings.cardinality; idx++) {
+								content[part_idx + idx].no_data_checkbox = (e.source.value) ? true : false;
+								content[part_idx + idx].required = !content[part_idx + idx].no_data_checkbox;
+							}
+						} else {
+							content[part_idx].no_data_checkbox = (e.source.value) ? true : false;
+							content[part_idx].required = !content[part_idx].no_data_checkbox;
+						}
+					}
+				} else {
+					if(content[reffer_index].settings.cardinality > 1) {
+						for( idx = 0; idx < content[reffer_index].settings.cardinality; idx++) {
+							content[reffer_index + idx].no_data_checkbox = (e.source.value) ? true : false;
+							content[reffer_index + idx].required = !content[reffer_index + idx].no_data_checkbox;
+						}
+					} else {
+						content[reffer_index].no_data_checkbox = (e.source.value) ? true : false;
+						content[reffer_index].required = !content[reffer_index].no_data_checkbox;
+					}
+				}
+
+				
+			})
+			
+			content[reffer_index].noDataView.add(content[reffer_index].noDataView.checkbox);
+			content[reffer_index].noDataView.add(content[reffer_index].noDataView.text);
+			baseView.add(content[reffer_index].noDataView);
+			if(doCheck){
+				content[reffer_index].noDataView.checkbox.backgroundImage = '../images/checked.png';
+				content[reffer_index].noDataView.checkbox.value = true;
+				
+				if(content[reffer_index].partsArr != null && content[reffer_index].partsArr.length > 0) {
+					for( idx_i = 0; idx_i < content[reffer_index].partsArr.length; idx_i++) {
+						var part_idx = content[reffer_index].partsArr[idx_i];
+						if(content[part_idx].settings.cardinality > 1) {
+							for( idx = 0; idx < content[part_idx].settings.cardinality; idx++) {
+								content[part_idx + idx].no_data_checkbox = true;
+								content[part_idx + idx].required = !content[part_idx + idx].no_data_checkbox;
+							}
+						} else {
+							content[part_idx].no_data_checkbox = true;
+							content[part_idx].required = !content[part_idx].no_data_checkbox;
+						}
+					}
+				} else {
+					if(content[reffer_index].settings.cardinality > 1) {
+						for( idx = 0; idx < content[reffer_index].settings.cardinality; idx++) {
+							content[reffer_index + idx].no_data_checkbox = true;
+							content[reffer_index + idx].required = !content[reffer_index + idx].no_data_checkbox;
+						}
+					} else {
+						content[reffer_index].no_data_checkbox = true;
+						content[reffer_index].required = !content[reffer_index].no_data_checkbox;
+					}
+				}
+
+			}else{
+				if(content[reffer_index]['value'] != null && content[reffer_index]['value'] != "") {
+					content[reffer_index].noDataView.checkbox.enabled = false;
+					content[reffer_index].noDataView.checkbox.backgroundImage = '../images/unchecked_disabled.png';
+				}
+			}
+		}
+	}
+}
+
+function noDataChecboxEnableDisable(changed_content, reffer_index){
+	var isTextField = false;
+	if(PLATFORM == 'android') {
+		if( changed_content instanceof Ti.UI.TextField) {
+			isTextField = true;
+		}
+	} else {
+		if(changed_content == '[object TiUITextField]') {
+			isTextField = true;
+		}
+	}
+
+	if(isTextField) {
+		if((changed_content['changedFlag'] == 1) && (changed_content['value'] == null || changed_content['value'] == "")) {
+			changed_content['changedFlag'] = 0;
+		} else if((changed_content['changedFlag'] == 0) && (changed_content['value'] != null) && (changed_content['value'] != "")) {
+			changed_content['changedFlag'] = 1;
+		} else {
+			return;
+		}
+	}
+	if(changed_content.noDataView != null){
+		if(changed_content['value'] != null && changed_content['value'] != ""){
+			changed_content.noDataView.checkbox.enabled = false;
+			changed_content.noDataView.checkbox.backgroundImage = '../images/unchecked_disabled.png';
+		}else{
+			changed_content.noDataView.checkbox.enabled = true;
+			changed_content.noDataView.checkbox.backgroundImage = '../images/unchecked.png';
+		}
+		changed_content.noDataView.checkbox.value = false;
+		
+		if(content[reffer_index].partsArr != null && content[reffer_index].partsArr.length > 0) {
+			for( idx_i = 0; idx_i < content[reffer_index].partsArr.length; idx_i++) {
+				var part_idx = content[reffer_index].partsArr[idx_i];
+				if(content[part_idx].settings.cardinality > 1) {
+					for( idx = 0; idx < content[part_idx].settings.cardinality; idx++) {
+						content[part_idx + idx].no_data_checkbox = false;
+						content[part_idx + idx].required = !content[part_idx + idx].no_data_checkbox;
+					}
+				} else {
+					content[part_idx].no_data_checkbox =false;
+					content[part_idx].required = !content[part_idx].no_data_checkbox;
+				}
+			}
+		} else {
+			if(content[reffer_index].settings.cardinality > 1) {
+				for( idx = 0; idx < content[reffer_index].settings.cardinality; idx++) {
+					content[reffer_index + idx].no_data_checkbox = false;
+					content[reffer_index + idx].required = !content[reffer_index + idx].no_data_checkbox;
+				}
+			} else {
+				content[reffer_index].no_data_checkbox = false;
+				content[reffer_index].required = !content[reffer_index].no_data_checkbox;
+			}
+		}	
+	}
+}
+
+

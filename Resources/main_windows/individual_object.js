@@ -98,7 +98,7 @@ var viewContent = Ti.UI.createScrollView({
 
 resultView.add(viewContent);
 
-var fields_result = db_display.execute('SELECT label, weight, type, field_name, widget, settings FROM fields WHERE bundle = "' + win4.type + '" ORDER BY weight ASC');
+var fields_result = db_display.execute('SELECT label, weight, type, field_name, widget, settings, required FROM fields WHERE bundle = "' + win4.type + '" ORDER BY weight ASC');
 var regions = db_display.execute('SELECT * FROM regions WHERE node_type = "' + win4.type + '" ORDER BY weight ASC');
 
 //Populate array with field name and configs
@@ -119,7 +119,8 @@ while(fields_result.isValidRow()) {
 		type : fields_result.fieldByName('type'),
 		field_name : fields_result.fieldByName('field_name'),
 		settings : fields_result.fieldByName('settings'),
-		widget : fields_result.fieldByName('widget')
+		widget : fields_result.fieldByName('widget'),
+		required : fields_result.fieldByName('required')
 	});
 	c_index++;
 	fields_result.next();
@@ -163,6 +164,7 @@ while (regions.isValidRow()){
 				fields[unsorted_res[i].field_name]['settings'] = unsorted_res[i].settings;
 				fields[unsorted_res[i].field_name]['widget'] = unsorted_res[i].widget;
 				fields[unsorted_res[i].field_name]['field_name'] = unsorted_res[i].field_name;
+				fields[unsorted_res[i].field_name]['required'] = unsorted_res[i].required;
 			} else {
 				Ti.API.info(' Regions dont match! ');
 			}
@@ -200,6 +202,25 @@ if(c_index > 0) {
 
 			//Content
 			c_content[count] = fieldVal;
+			var node_table = db_display.execute('SELECT * FROM node WHERE nid=' + win4.nid);
+			if(node_table.rowCount > 0) {
+				var no_data_fields = node_table.fieldByName('no_data_fields');
+				no_data_fields = JSON.parse(no_data_fields);
+				for(var key in no_data_fields) {
+					if(no_data_fields.hasOwnProperty(key)) {
+						no_data_fieldsArr.push(key);
+					}
+				}
+			}
+
+			if(in_array(c_field_name[count], no_data_fieldsArr) && c_settings[count].required_no_data_checkbox!=null && c_settings[count].required_no_data_checkbox==1){
+				if(fields[f_name_f]['required']){
+					c_content[count] = 'No Data'
+				}else{
+					c_content[count] = 'Not Applicable'
+				}
+				
+			}	
 			var loop_times = 1;
 			is_array = false;
 			//Check if it is an array, token = 7411317618171051229
