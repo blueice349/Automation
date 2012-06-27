@@ -2819,7 +2819,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								});
 								
 								if(icon.toBlob() == null){
-									icon.image = '/images/icons/account.png';
+									icon.image = '/images/icons/settings.png';
 								}
 								
 								var title_a = Titanium.UI.createLabel({

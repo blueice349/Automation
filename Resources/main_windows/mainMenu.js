@@ -174,7 +174,7 @@ while ( elements.isValidRow() ){
 		});
 		
 		if(icon.toBlob() == null){
-			icon.image = '/images/icons/account.png';
+			icon.image = '/images/icons/settings.png';
 		}
 		
 		var title = Titanium.UI.createLabel({
