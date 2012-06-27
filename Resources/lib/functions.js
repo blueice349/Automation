@@ -2795,7 +2795,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							}
 	
 							//Add it to the main screen
-							var display      = n_bund.fieldByName("display_name");
+							var display      = n_bund.fieldByName("display_name").toUpperCase();
 							var description  = n_bund.fieldByName("description");
 							var flag_display = n_bund.fieldByName("display_on_menu");
 							var id 			 = n_bund.fieldByName("bid");
@@ -2810,6 +2810,18 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									className	: 'menu_row' // this is to optimize the rendering
 								});
 								
+								var icon = Titanium.UI.createImageView({
+									width: 48,
+									height: 48,
+									top: 6,
+									left: 5,
+									image: '/images/icons/' + display.toLowerCase() + '.png'
+								});
+								
+								if(icon.toBlob() == null){
+									icon.image = '/images/icons/account.png';
+								}
+								
 								var title_a = Titanium.UI.createLabel({
 									text: display,
 									font:{
@@ -2822,13 +2834,15 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								});
 								
 								var plus_a =  Titanium.UI.createButton({
-									title: '+',
-									width:'15%',
-									height:'100%',
-									right:0,
+									backgroundImage: '/images/plus_btn.png',
+									backgroundSelectedImage: '/images/plus_btn_selected.png',
+									width:40,
+									height:31,
+									right:5,
 									is_plus: true
 								});
 								
+								row_a.add(icon);
 								row_a.add(title_a);
 								row_a.add(plus_a);
 	
