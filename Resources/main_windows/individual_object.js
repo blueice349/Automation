@@ -1357,13 +1357,43 @@ function bottomButtons1(actualWindow){
 		title : 'Edit',
 		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
 	});
+
 	edit.addEventListener('click', function() {
 		var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+		var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win4.type + '"');
+		var _data = JSON.parse(json_data.fieldByName('_data'));
+
 		var node_form = db_act.execute('SELECT form_part FROM node WHERE nid=' + win4.nid);
-		var _aux_node_part = node_form.fieldByName('form_part');
+
+		Ti.API.info('Form node part = ' + node_form.fieldByName('form_part'));
+		Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
+		var btn_tt = [];
+		var btn_id = [];
+		
+		if(_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2) { 
+			Ti.API.info("Title = " + _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
+			btn_tt.push(_data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
+			btn_id.push(node_form.fieldByName('form_part') + 1);
+		}
+		
+		btn_tt.push('Edit');
+		btn_id.push(node_form.fieldByName('form_part'));
+		json_data.close();
 		db_act.close();
-		openEditScreen(_aux_node_part);
+
+
+		var postDialog = Titanium.UI.createOptionDialog();
+		postDialog.options = btn_tt;
+		postDialog.show();
+
+		postDialog.addEventListener('click', function(ev) {
+				if (ev.index != -1){
+					openEditScreen(btn_id[ev.index]);	
+				}
+		});	
+
 	});
+	
 	
 	// create and add toolbar
 	var toolbar = Titanium.UI.createToolbar({
@@ -1373,4 +1403,5 @@ function bottomButtons1(actualWindow){
 		borderBottom:true
 	});
 	win4.add(toolbar);
+	
 };
