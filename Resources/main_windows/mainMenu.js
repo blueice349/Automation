@@ -173,6 +173,10 @@ while ( elements.isValidRow() ){
 			image: '/images/icons/' + display.toLowerCase() + '.png'
 		});
 		
+		if(icon.toBlob() == null){
+			icon.image = '/images/icons/settings.png';
+		}
+		
 		var title = Titanium.UI.createLabel({
 			text: display,
 			font:{
