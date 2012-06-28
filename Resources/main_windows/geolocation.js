@@ -100,7 +100,7 @@ else
 		if ( accuracy <= 200){
 			location_obj.push({
 				no_accurated_location	: false,
-				accurated_location		: 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+Math.round(timestamp/1000)+', "notUploaded")',
+				accurated_location		: "INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('"+longitude+"','"+latitude+"',"+Math.round(timestamp/1000)+", 'notUploaded')",
 				accuracy				: accuracy,
 				longitude				: longitude,
 				latitude				: latitude,
@@ -163,7 +163,7 @@ else
 		if ( accuracy <= 200){
 			location_obj.push ({
 				no_accurated_location	: false,
-				accurated_location		: 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+Math.round(timestamp/1000)+', "notUploaded")',
+				accurated_location		: "INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('"+longitude+"','"+latitude+"',"+Math.round(timestamp/1000)+", 'notUploaded')",
 				accuracy				: accuracy,
 				longitude				: longitude,
 				latitude				: latitude,

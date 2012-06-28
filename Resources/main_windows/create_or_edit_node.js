@@ -1517,6 +1517,14 @@ create_or_edit_node.loadUI = function() {
 		if (reg_settings != null && parseInt(reg_settings.form_part) > win.region_form) {
 			Ti.API.info('Region : ' + regions.fieldByName('label') + ' won\'t appear');
 		} else {
+			var arrow_img = Ti.UI.createImageView({
+				image: '/images/arrow_left.png',
+				width: 29,
+				height: 29,
+				top: y + 5,
+				right: 5	
+			});
+			
 			var regionHeader = Ti.UI.createLabel({
 				text : regions.fieldByName('label') + ' :',
 				color : '#000000',
@@ -1530,6 +1538,7 @@ create_or_edit_node.loadUI = function() {
 				top : y,
 				backgroundColor : '#FFFFFF'
 			});
+			
 			y = y + 40;
 
 			var regionView = Ti.UI.createView({
@@ -1539,6 +1548,7 @@ create_or_edit_node.loadUI = function() {
 				zIndex : 0
 			});
 
+			regionHeader.arrow = arrow_img;
 			regionHeader.viewContainer = regionView;
 			regionHeader.addEventListener('click', function(e) {
 				e.source.viewContainer.expanded = !e.source.viewContainer.expanded;
@@ -1559,6 +1569,12 @@ create_or_edit_node.loadUI = function() {
 						}
 						if (isLabel) {
 							v.top = top;
+							v.arrow.top = top + 5;
+							if (v.viewContainer.expanded === true) {
+								v.arrow.image = "/images/arrow_down.png";
+							}else{
+								v.arrow.image = "/images/arrow_left.png";
+							}
 							top = top + 40;
 							v.viewContainer.top = top;
 							top = top + v.viewContainer.height + 10;
@@ -1583,6 +1599,12 @@ create_or_edit_node.loadUI = function() {
 						}
 						if (isLabel) {
 							v.top = top;
+							v.arrow.top = top + 5;
+							if (v.viewContainer.expanded === true) {
+								v.arrow.image = "/images/arrow_down.png";
+							}else{
+								v.arrow.image = "/images/arrow_left.png";
+							}
 							top = top + 40;
 							v.viewContainer.top = top;
 							top = top + v.viewContainer.height + 10;
@@ -2009,6 +2031,7 @@ create_or_edit_node.loadUI = function() {
 											},
 											color : '#000000',
 											top : top,
+											autocapitalization: Titanium.UI.TEXT_AUTOCAPITALIZATION_ALL,
 											field_type : field_arr[index_label][index_size].type,
 											field_name : field_arr[index_label][index_size].field_name,
 											required : field_arr[index_label][index_size].required,
@@ -2337,6 +2360,7 @@ create_or_edit_node.loadUI = function() {
 										},
 										color : '#000000',
 										top : top,
+										autocapitalization: Titanium.UI.TEXT_AUTOCAPITALIZATION_ALL,
 										field_type : field_arr[index_label][index_size].type,
 										field_name : field_arr[index_label][index_size].field_name,
 										required : field_arr[index_label][index_size].required,
@@ -5376,12 +5400,22 @@ create_or_edit_node.loadUI = function() {
 										value : vl_to_field,
 										reffer_index : reffer_index,
 										settings : settings,
-										changedFlag : 0
+										changedFlag : 0,
+										i_name: i_name
 									});
 									top += heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
+										if(e.source.i_name == 'Make'){
+											if(e.source.value.length > 18){
+												e.source.value = e.source.value.substr(0, 18);
+											}
+										}else if(e.source.i_name == 'Model'){
+											if(e.source.value.length > 38){
+												e.source.value = e.source.value.substr(0, 38);
+											}
+										}
 										changedContentValue(e.source);
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 
@@ -5430,7 +5464,8 @@ create_or_edit_node.loadUI = function() {
 									first_time : true,
 									_make : keep_from_make,
 									settings : settings,
-									changedFlag : 0
+									changedFlag : 0,
+									i_name: i_name
 								});
 
 								//AUTOCOMPLETE TABLE
@@ -5486,6 +5521,15 @@ create_or_edit_node.loadUI = function() {
 								// SEARCH EVENTS
 								//
 								content[count].addEventListener('change', function(e) {
+									if(e.source.i_name == 'Make'){
+											if(e.source.value.length > 18){
+												e.source.value = e.source.value.substr(0, 18);
+											}
+										}else if(e.source.i_name == 'Model'){
+											if(e.source.value.length > 38){
+												e.source.value = e.source.value.substr(0, 38);
+											}
+										}
 									changedContentValue(e.source);
 									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 									if (e.source.first_time === false) {
@@ -5859,6 +5903,7 @@ create_or_edit_node.loadUI = function() {
 
 			if (isAnyEnabledField == true) {
 				viewContent.add(regionHeader);
+				viewContent.add(arrow_img);
 				viewContent.add(regionView);
 			}
 		}
@@ -5891,7 +5936,9 @@ create_or_edit_node.loadUI = function() {
 				if (v.viewContainer.form_part == viewContent.max_form_part) {
 					v.viewContainer.height = v.viewContainer.calculatedHeight;
 					v.viewContainer.expanded = true;
+					v.arrow.image = "/images/arrow_down.png";
 					v.top = top;
+					v.arrow.top = top + 5;
 					top = top + 40;
 					v.viewContainer.top = top;
 					top = top + v.viewContainer.height + 10;
@@ -5899,7 +5946,9 @@ create_or_edit_node.loadUI = function() {
 				} else {
 					v.viewContainer.height = 0;
 					v.viewContainer.expanded = false;
+					v.arrow.image = "/images/arrow_left.png";
 					v.top = top;
+					v.arrow.top = top + 5;
 					top = top + 40;
 					v.viewContainer.top = top;
 					top = top + v.viewContainer.height + 10;
@@ -6236,26 +6285,41 @@ function bottomButtons(actualWindow) {
 	}
 };
 
+
 function cancelOpt() {
-	if (win.mode == 0) {
-		if (PLATFORM == 'android') {
-			Ti.UI.createNotification({
-				message : win.title + ' creation was cancelled !'
-			}).show();
-		} else {
-			alert(win.title + ' creation was cancelled !');
+	var dialog = Ti.UI.createAlertDialog({
+		cancel : 1,
+		buttonNames : ['Yes', 'No'],
+		message : 'Are you sure you want to cancel and go back?',
+		title : 'Cancel'
+	});
+
+	dialog.addEventListener('click', function(e) {
+		if (e.index == 0) {
+			if (win.mode == 0) {
+				if (PLATFORM == 'android') {
+					Ti.UI.createNotification({
+						message : win.title + ' creation was cancelled !'
+					}).show();
+				} else {
+					alert(win.title + ' creation was cancelled !');
+				}
+			} else {
+				if (PLATFORM == 'android') {
+					Ti.UI.createNotification({
+						message : win.title + ' update was cancelled !'
+					}).show();
+				} else {
+					alert(win.title + ' update was cancelled !');
+				}
+			}
+			win.close();
 		}
-	} else {
-		if (PLATFORM == 'android') {
-			Ti.UI.createNotification({
-				message : win.title + ' update was cancelled !'
-			}).show();
-		} else {
-			alert(win.title + ' update was cancelled !');
-		}
-	}
-	win.close();
+	});
+
+	dialog.show();
 }
+
 
 function setDefaultValues(content, e) {
 	try {
