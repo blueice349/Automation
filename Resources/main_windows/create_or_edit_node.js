@@ -11,7 +11,7 @@
 
 //Common used functions
 Ti.include('/lib/functions.js');
-var heightValue = getScreenHeight() * 0.13;
+var heightValue = 50;
 var toolActInd = Ti.UI.createActivityIndicator();
 toolActInd.font = {
 	fontFamily : 'Helvetica Neue',
@@ -1517,15 +1517,14 @@ create_or_edit_node.loadUI = function() {
 		if (reg_settings != null && parseInt(reg_settings.form_part) > win.region_form) {
 			Ti.API.info('Region : ' + regions.fieldByName('label') + ' won\'t appear');
 		} else {
-			var arrow_img = Ti.UI.createImageView({
+			var arrow_img = Ti.UI.createImageView({					
 				image: '/images/arrow_left.png',
 				width: 29,
 				height: 29,
 				top: y + 5,
-				right: 5	
-			});
-			
-			var regionHeader = Ti.UI.createLabel({
+				right: 5
+			});			
+				var regionHeader = Ti.UI.createLabel({
 				text : regions.fieldByName('label') + ' :',
 				color : '#000000',
 				font : {
@@ -1538,7 +1537,6 @@ create_or_edit_node.loadUI = function() {
 				top : y,
 				backgroundColor : '#FFFFFF'
 			});
-			
 			y = y + 40;
 
 			var regionView = Ti.UI.createView({
@@ -1548,8 +1546,7 @@ create_or_edit_node.loadUI = function() {
 				zIndex : 0
 			});
 
-			regionHeader.arrow = arrow_img;
-			regionHeader.viewContainer = regionView;
+			regionHeader.arrow = arrow_img;			regionHeader.viewContainer = regionView;
 			regionHeader.addEventListener('click', function(e) {
 				e.source.viewContainer.expanded = !e.source.viewContainer.expanded;
 				if (e.source.viewContainer.expanded === true) {
@@ -1570,12 +1567,8 @@ create_or_edit_node.loadUI = function() {
 						if (isLabel) {
 							v.top = top;
 							v.arrow.top = top + 5;
-							if (v.viewContainer.expanded === true) {
-								v.arrow.image = "/images/arrow_down.png";
-							}else{
-								v.arrow.image = "/images/arrow_left.png";
-							}
-							top = top + 40;
+								if (v.viewContainer.expanded === true) {
+									v.arrow.image = "/images/arrow_down.png";								}else{									v.arrow.image = "/images/arrow_left.png";								}							top = top + 40;
 							v.viewContainer.top = top;
 							top = top + v.viewContainer.height + 10;
 							e.source.viewContainer.show();
@@ -1599,13 +1592,7 @@ create_or_edit_node.loadUI = function() {
 						}
 						if (isLabel) {
 							v.top = top;
-							v.arrow.top = top + 5;
-							if (v.viewContainer.expanded === true) {
-								v.arrow.image = "/images/arrow_down.png";
-							}else{
-								v.arrow.image = "/images/arrow_left.png";
-							}
-							top = top + 40;
+							v.arrow.top = top + 5;							if (v.viewContainer.expanded === true) {								v.arrow.image = "/images/arrow_down.png";							}else{								v.arrow.image = "/images/arrow_left.png";							}							top = top + 40;
 							v.viewContainer.top = top;
 							top = top + v.viewContainer.height + 10;
 						}
@@ -1679,7 +1666,7 @@ create_or_edit_node.loadUI = function() {
 									fontSize : 18
 								},
 								textAlign : 'left',
-								left : '3%',
+								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
 								top : top
@@ -1965,8 +1952,7 @@ create_or_edit_node.loadUI = function() {
 										content[count] = Titanium.UI.createButton({
 											borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 											private_index : o_index,
-											left : '3%',
-											right : '3%',
+											width : Ti.Platform.displayCaps.platformWidth - 30,
 											height : heightValue,
 											arr_opt : arr_opt,
 											arr_picker : arr_picker,
@@ -2024,15 +2010,15 @@ create_or_edit_node.loadUI = function() {
 											reffer_index : reffer_index,
 											borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 											textAlign : 'left',
-											width : Ti.Platform.displayCaps.platformWidth - 20,
+											width : Ti.Platform.displayCaps.platformWidth - 30,
 											height : heightValue,
+											maxLength: 10,
 											font : {
 												fontSize : 18
 											},
 											color : '#000000',
 											top : top,
-											autocapitalization: Titanium.UI.TEXT_AUTOCAPITALIZATION_ALL,
-											field_type : field_arr[index_label][index_size].type,
+											autocapitalization: Titanium.UI.TEXT_AUTOCAPITALIZATION_ALL,											field_type : field_arr[index_label][index_size].type,
 											field_name : field_arr[index_label][index_size].field_name,
 											required : field_arr[index_label][index_size].required,
 											is_title : field_arr[index_label][index_size].is_title,
@@ -2047,6 +2033,9 @@ create_or_edit_node.loadUI = function() {
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
+										if(e.source.value.length>10){
+											e.source.value = e.source.value.substr(0,10);
+										}
 										changedContentValue(e.source);
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 
@@ -2297,8 +2286,7 @@ create_or_edit_node.loadUI = function() {
 									content[count] = Titanium.UI.createButton({
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										private_index : o_index,
-										left : '3%',
-										right : '3%',
+										width : Ti.Platform.displayCaps.platformWidth - 30,
 										height : heightValue,
 										arr_opt : arr_opt,
 										arr_picker : arr_picker,
@@ -2353,15 +2341,15 @@ create_or_edit_node.loadUI = function() {
 										hintText : label[count].text,
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										textAlign : 'left',
-										width : Ti.Platform.displayCaps.platformWidth - 20,
+										width : Ti.Platform.displayCaps.platformWidth - 30,
 										height : heightValue,
+										maxLength: 10,
 										font : {
 											fontSize : 18
 										},
 										color : '#000000',
 										top : top,
-										autocapitalization: Titanium.UI.TEXT_AUTOCAPITALIZATION_ALL,
-										field_type : field_arr[index_label][index_size].type,
+										autocapitalization: Titanium.UI.TEXT_AUTOCAPITALIZATION_ALL,										field_type : field_arr[index_label][index_size].type,
 										field_name : field_arr[index_label][index_size].field_name,
 										required : field_arr[index_label][index_size].required,
 										is_title : field_arr[index_label][index_size].is_title,
@@ -2376,6 +2364,9 @@ create_or_edit_node.loadUI = function() {
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
+										if(e.source.value.length>10){
+											e.source.value = e.source.value.substr(0,10);
+										}
 										changedContentValue(e.source);
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 
@@ -2390,7 +2381,7 @@ create_or_edit_node.loadUI = function() {
 									content[reffer_index].partsArr = partsArr;
 									partsArr = [];
 									noDataCheckbox(reffer_index, regionView, top);
-									if(content[reffer_index]!=null){
+									if(content[reffer_index].noDataView != null){
 										top += 40; 
 									}	
 								}
@@ -2407,7 +2398,7 @@ create_or_edit_node.loadUI = function() {
 									fontSize : 18
 								},
 								textAlign : 'left',
-								left : '3%',
+								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
 								top : top
@@ -2449,7 +2440,7 @@ create_or_edit_node.loadUI = function() {
 										private_index : o_index,
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										textAlign : 'left',
-										width : Ti.Platform.displayCaps.platformWidth - 20,
+										width : Ti.Platform.displayCaps.platformWidth - 30,
 										height : heightValue,
 										font : {
 											fontSize : 18
@@ -2481,7 +2472,7 @@ create_or_edit_node.loadUI = function() {
 									hintText : field_arr[index_label][index_size].label,
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									textAlign : 'left',
-									width : Ti.Platform.displayCaps.platformWidth - 20,
+									width : Ti.Platform.displayCaps.platformWidth - 30,
 									height : heightValue,
 									font : {
 										fontSize : 18
@@ -2523,7 +2514,7 @@ create_or_edit_node.loadUI = function() {
 									fontSize : 18
 								},
 								textAlign : 'left',
-								left : '3%',
+								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
 								top : top
@@ -2565,7 +2556,7 @@ create_or_edit_node.loadUI = function() {
 										private_index : o_index,
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										textAlign : 'left',
-										width : Ti.Platform.displayCaps.platformWidth - 20,
+										width : Ti.Platform.displayCaps.platformWidth - 30,
 										height : 100,
 										color : '#000000',
 										top : top,
@@ -2594,7 +2585,7 @@ create_or_edit_node.loadUI = function() {
 									hintText : field_arr[index_label][index_size].label,
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									textAlign : 'left',
-									width : Ti.Platform.displayCaps.platformWidth - 20,
+									width : Ti.Platform.displayCaps.platformWidth - 30,
 									height : 100,
 									color : '#000000',
 									top : top,
@@ -2657,7 +2648,7 @@ create_or_edit_node.loadUI = function() {
 									fontSize : 18
 								},
 								textAlign : 'left',
-								left : '3%',
+								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
 								top : top
@@ -2699,7 +2690,7 @@ create_or_edit_node.loadUI = function() {
 										private_index : o_index,
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										textAlign : 'left',
-										width : Ti.Platform.displayCaps.platformWidth - 20,
+										width : Ti.Platform.displayCaps.platformWidth - 30,
 										height : heightValue,
 										font : {
 											fontSize : 18
@@ -2732,7 +2723,7 @@ create_or_edit_node.loadUI = function() {
 									hintText : field_arr[index_label][index_size].label + " " + title_location,
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									textAlign : 'left',
-									width : Ti.Platform.displayCaps.platformWidth - 20,
+									width : Ti.Platform.displayCaps.platformWidth - 30,
 									height : heightValue,
 									font : {
 										fontSize : 18
@@ -2767,8 +2758,8 @@ create_or_edit_node.loadUI = function() {
 									content[reffer_index].partsArr = partsArr;
 									partsArr = [];
 									noDataCheckbox(reffer_index, regionView, top);
-									if(content[reffer_index]!=null){
-										top += 40; 
+									if(content[reffer_index].noDataView != null){
+										top += 30; 
 									}	
 								}
 							}
@@ -2786,7 +2777,7 @@ create_or_edit_node.loadUI = function() {
 									fontSize : 18
 								},
 								textAlign : 'left',
-								left : '3%',
+								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
 								top : top
@@ -2839,7 +2830,7 @@ create_or_edit_node.loadUI = function() {
 										keyboardType : Titanium.UI.KEYBOARD_NUMBER_PAD,
 										returnKeyType : Titanium.UI.RETURNKEY_DONE,
 										textAlign : 'left',
-										width : Ti.Platform.displayCaps.platformWidth - 20,
+										width : Ti.Platform.displayCaps.platformWidth - 30,
 										height : heightValue,
 										font : {
 											fontSize : 18
@@ -2878,7 +2869,7 @@ create_or_edit_node.loadUI = function() {
 									keyboardType : Titanium.UI.KEYBOARD_NUMBER_PAD,
 									returnKeyType : Titanium.UI.RETURNKEY_DONE,
 									textAlign : 'left',
-									width : Ti.Platform.displayCaps.platformWidth - 20,
+									width : Ti.Platform.displayCaps.platformWidth - 30,
 									height : heightValue,
 									font : {
 										fontSize : 18
@@ -2927,7 +2918,7 @@ create_or_edit_node.loadUI = function() {
 									fontSize : 18
 								},
 								textAlign : 'left',
-								left : '3%',
+								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
 								top : top
@@ -2969,7 +2960,7 @@ create_or_edit_node.loadUI = function() {
 										keyboardType : Titanium.UI.KEYBOARD_NUMBER_PAD,
 										returnKeyType : Titanium.UI.RETURNKEY_DONE,
 										textAlign : 'left',
-										width : Ti.Platform.displayCaps.platformWidth - 20,
+										width : Ti.Platform.displayCaps.platformWidth - 30,
 										height : heightValue,
 										font : {
 											fontSize : 18
@@ -3005,7 +2996,7 @@ create_or_edit_node.loadUI = function() {
 									keyboardType : Titanium.UI.KEYBOARD_NUMBER_PAD,
 									returnKeyType : Titanium.UI.RETURNKEY_DONE,
 									textAlign : 'left',
-									width : Ti.Platform.displayCaps.platformWidth - 20,
+									width : Ti.Platform.displayCaps.platformWidth - 30,
 									height : heightValue,
 									font : {
 										fontSize : 18
@@ -3049,7 +3040,7 @@ create_or_edit_node.loadUI = function() {
 									fontSize : 18
 								},
 								textAlign : 'left',
-								left : '3%',
+								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
 								top : top
@@ -3092,7 +3083,7 @@ create_or_edit_node.loadUI = function() {
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										keyboardType : Ti.UI.KEYBOARD_EMAIL,
 										textAlign : 'left',
-										width : Ti.Platform.displayCaps.platformWidth - 20,
+										width : Ti.Platform.displayCaps.platformWidth - 30,
 										height : heightValue,
 										font : {
 											fontSize : 18
@@ -3126,7 +3117,7 @@ create_or_edit_node.loadUI = function() {
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									keyboardType : Ti.UI.KEYBOARD_EMAIL,
 									textAlign : 'left',
-									width : Ti.Platform.displayCaps.platformWidth - 20,
+									width : Ti.Platform.displayCaps.platformWidth - 30,
 									height : heightValue,
 									font : {
 										fontSize : 18
@@ -3184,7 +3175,7 @@ create_or_edit_node.loadUI = function() {
 										fontSize : 18
 									},
 									textAlign : 'left',
-									left : '3%',
+									width : Ti.Platform.displayCaps.platformWidth - 30,
 									touchEnabled : false,
 									height : heightValue,
 									top : top
@@ -3275,8 +3266,7 @@ create_or_edit_node.loadUI = function() {
 										content[count] = Titanium.UI.createButton({
 											borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 											private_index : o_index,
-											left : '3%',
-											right : '3%',
+											width : Ti.Platform.displayCaps.platformWidth - 30,
 											height : heightValue,
 											arr_opt : arr_opt,
 											arr_picker : arr_picker,
@@ -3366,8 +3356,7 @@ create_or_edit_node.loadUI = function() {
 
 									content[count] = Titanium.UI.createButton({
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-										left : '3%',
-										right : '3%',
+										width : Ti.Platform.displayCaps.platformWidth - 30,
 										height : heightValue,
 										arr_opt : arr_opt,
 										arr_picker : arr_picker,
@@ -3482,8 +3471,7 @@ create_or_edit_node.loadUI = function() {
 									Ti.API.info("==>> " + _itens);
 
 									content[count] = Titanium.UI.createLabel({
-										left : '3%',
-										right : '3%',
+										width : Ti.Platform.displayCaps.platformWidth - 30,
 										text : sel_text,
 										backgroundColor : "#FFF",
 										textAlign : "center",
@@ -3535,7 +3523,7 @@ create_or_edit_node.loadUI = function() {
 										fontSize : 18
 									},
 									textAlign : 'left',
-									left : '3%',
+									width : Ti.Platform.displayCaps.platformWidth - 30,
 									touchEnabled : false,
 									height : heightValue,
 									top : top
@@ -3615,7 +3603,7 @@ create_or_edit_node.loadUI = function() {
 											font : {
 												fontSize : 18
 											},
-											width : Ti.Platform.displayCaps.platformWidth - 20,
+											width : Ti.Platform.displayCaps.platformWidth - 30,
 											top : top,
 											field_type : field_arr[index_label][index_size].type,
 											field_name : field_arr[index_label][index_size].field_name,
@@ -3725,6 +3713,7 @@ create_or_edit_node.loadUI = function() {
 														}
 													}
 													e.source.autocomplete_table.setData(table_data);
+													e.source.autocomplete_table.scrollToTop(0, {animated: false});
 													e.source.autocomplete_table.visible = true;
 												} else {
 													e.source.autocomplete_table.visible = false;
@@ -3786,7 +3775,7 @@ create_or_edit_node.loadUI = function() {
 										font : {
 											fontSize : 18
 										},
-										width : Ti.Platform.displayCaps.platformWidth - 20,
+										width : Ti.Platform.displayCaps.platformWidth - 30,
 										top : top,
 										field_type : field_arr[index_label][index_size].type,
 										field_name : field_arr[index_label][index_size].field_name,
@@ -3897,6 +3886,7 @@ create_or_edit_node.loadUI = function() {
 													}
 												}
 												e.source.autocomplete_table.setData(table_data);
+												e.source.autocomplete_table.scrollToTop(0, {animated: false});
 												e.source.autocomplete_table.visible = true;
 											} else {
 												e.source.autocomplete_table.visible = false;
@@ -3931,7 +3921,7 @@ create_or_edit_node.loadUI = function() {
 									fontSize : 18
 								},
 								textAlign : 'left',
-								left : '3%',
+								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
 								top : top
@@ -4019,7 +4009,7 @@ create_or_edit_node.loadUI = function() {
 										font : {
 											fontSize : 18
 										},
-										width : Ti.Platform.displayCaps.platformWidth - 20,
+										width : Ti.Platform.displayCaps.platformWidth - 30,
 										top : top,
 										field_type : field_arr[index_label][index_size].type,
 										field_name : field_arr[index_label][index_size].field_name,
@@ -4126,6 +4116,7 @@ create_or_edit_node.loadUI = function() {
 													}
 												}
 												e.source.autocomplete_table.setData(table_data);
+												e.source.autocomplete_table.scrollToTop(0, {animated: false});
 												e.source.autocomplete_table.visible = true;
 											} else {
 												e.source.autocomplete_table.visible = false;
@@ -4164,7 +4155,7 @@ create_or_edit_node.loadUI = function() {
 									font : {
 										fontSize : 18
 									},
-									width : Ti.Platform.displayCaps.platformWidth - 20,
+									width : Ti.Platform.displayCaps.platformWidth - 30,
 									top : top,
 									field_type : field_arr[index_label][index_size].type,
 									field_name : field_arr[index_label][index_size].field_name,
@@ -4271,7 +4262,9 @@ create_or_edit_node.loadUI = function() {
 												}
 											}
 											e.source.autocomplete_table.setData(table_data);
+											e.source.autocomplete_table.scrollToTop(0, {animated: false});
 											e.source.autocomplete_table.visible = true;
+											
 										} else {
 											e.source.autocomplete_table.visible = false;
 											e.source.nid = null;
@@ -4296,7 +4289,7 @@ create_or_edit_node.loadUI = function() {
 									fontSize : 18
 								},
 								textAlign : 'left',
-								left : '3%',
+								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
 								top : top
@@ -4402,8 +4395,7 @@ create_or_edit_node.loadUI = function() {
 									content[count] = Titanium.UI.createButton({
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										private_index : o_index,
-										left : '3%',
-										right : '3%',
+										width : Ti.Platform.displayCaps.platformWidth - 30,
 										height : heightValue,
 										arr_opt : arr_opt,
 										arr_picker : arr_picker,
@@ -4496,8 +4488,7 @@ create_or_edit_node.loadUI = function() {
 
 								content[count] = Titanium.UI.createButton({
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-									left : '3%',
-									right : '3%',
+									width : Ti.Platform.displayCaps.platformWidth - 30,
 									height : heightValue,
 									arr_opt : arr_opt,
 									arr_picker : arr_picker,
@@ -4567,7 +4558,7 @@ create_or_edit_node.loadUI = function() {
 									fontSize : 18
 								},
 								textAlign : 'left',
-								left : '3%',
+								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
 								top : top
@@ -4630,8 +4621,7 @@ create_or_edit_node.loadUI = function() {
 										content[count] = Titanium.UI.createLabel({
 											borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 											private_index : o_index,
-											left : '3%',
-											right : '3%',
+											width : Ti.Platform.displayCaps.platformWidth - 30,
 											title_picker : field_arr[index_label][index_size].label,
 											font : {
 												fontSize : 18
@@ -4653,8 +4643,7 @@ create_or_edit_node.loadUI = function() {
 											composed_obj : true,
 											cardinality : settings.cardinality,
 											reffer_index : reffer_index,
-											width : '100%',
-											height : '100%',
+											height : heightValue,
 											settings : settings,
 											changedFlag : 0
 										});
@@ -4721,8 +4710,7 @@ create_or_edit_node.loadUI = function() {
 
 									content[count] = Titanium.UI.createLabel({
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-										left : '3%',
-										right : '3%',
+										width : Ti.Platform.displayCaps.platformWidth - 30,
 										title_picker : field_arr[index_label][index_size].label,
 										font : {
 											fontSize : 18
@@ -4744,8 +4732,7 @@ create_or_edit_node.loadUI = function() {
 										composed_obj : false,
 										cardinality : settings.cardinality,
 										reffer_index : reffer_index,
-										width : '100%',
-										height : '100%',
+										height : heightValue,
 										settings : settings,
 										changedFlag : 0
 
@@ -4843,8 +4830,7 @@ create_or_edit_node.loadUI = function() {
 										content[count] = Titanium.UI.createLabel({
 											borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 											private_index : o_index,
-											left : '3%',
-											right : '3%',
+											width : Ti.Platform.displayCaps.platformWidth - 30,
 											font : {
 												fontSize : 18
 											},
@@ -4866,8 +4852,7 @@ create_or_edit_node.loadUI = function() {
 											composed_obj : true,
 											cardinality : settings.cardinality,
 											reffer_index : reffer_index,
-											width : '100%',
-											height : '100%',
+											height : heightValue,
 											settings : settings,
 											changedFlag : 0
 
@@ -4940,8 +4925,7 @@ create_or_edit_node.loadUI = function() {
 
 									content[count] = Titanium.UI.createLabel({
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-										left : '3%',
-										right : '3%',
+										width : Ti.Platform.displayCaps.platformWidth - 30,
 										font : {
 											fontSize : 18
 										},
@@ -4963,8 +4947,7 @@ create_or_edit_node.loadUI = function() {
 										composed_obj : false,
 										cardinality : settings.cardinality,
 										reffer_index : reffer_index,
-										width : '100%',
-										height : '100%',
+										height : heightValue,
 										settings : settings,
 										changedFlag : 0
 									});
@@ -5021,7 +5004,7 @@ create_or_edit_node.loadUI = function() {
 									fontSize : 18
 								},
 								textAlign : 'left',
-								left : '3%',
+								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
 								top : top
@@ -5137,7 +5120,7 @@ create_or_edit_node.loadUI = function() {
 									fontSize : 18
 								},
 								textAlign : 'left',
-								left : '3%',
+								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
 								top : top
@@ -5191,8 +5174,7 @@ create_or_edit_node.loadUI = function() {
 									content[count] = Titanium.UI.createLabel({
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										private_index : o_index,
-										left : '3%',
-										right : '3%',
+										width : Ti.Platform.displayCaps.platformWidth - 30,
 										title_picker : field_arr[index_label][index_size].label,
 										font : {
 											fontSize : 18
@@ -5214,8 +5196,7 @@ create_or_edit_node.loadUI = function() {
 										composed_obj : true,
 										cardinality : settings.cardinality,
 										reffer_index : reffer_index,
-										width : '100%',
-										height : '100%',
+										height : heightValue,
 										settings : settings,
 										changedFlag : 0
 									});
@@ -5254,8 +5235,7 @@ create_or_edit_node.loadUI = function() {
 							} else {
 								content[count] = Titanium.UI.createLabel({
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-									left : '3%',
-									right : '3%',
+									width : Ti.Platform.displayCaps.platformWidth - 30,
 									title_picker : field_arr[index_label][index_size].label,
 									font : {
 										fontSize : 18
@@ -5277,8 +5257,7 @@ create_or_edit_node.loadUI = function() {
 									composed_obj : false,
 									cardinality : settings.cardinality,
 									reffer_index : reffer_index,
-									width : '100%',
-									height : '100%',
+									height : heightValue,
 									settings : settings,
 									changedFlag : 0
 								});
@@ -5329,7 +5308,7 @@ create_or_edit_node.loadUI = function() {
 									fontSize : 18
 								},
 								textAlign : 'left',
-								left : '3%',
+								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
 								top : top
@@ -5384,7 +5363,7 @@ create_or_edit_node.loadUI = function() {
 										private_index : o_index,
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										textAlign : 'left',
-										width : Ti.Platform.displayCaps.platformWidth - 20,
+										width : Ti.Platform.displayCaps.platformWidth - 30,
 										height : heightValue,
 										font : {
 											fontSize : 18
@@ -5400,23 +5379,13 @@ create_or_edit_node.loadUI = function() {
 										value : vl_to_field,
 										reffer_index : reffer_index,
 										settings : settings,
-										changedFlag : 0,
-										i_name: i_name
+										changedFlag : 0
 									});
 									top += heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
-										if(e.source.i_name == 'Make'){
-											if(e.source.value.length > 18){
-												e.source.value = e.source.value.substr(0, 18);
-											}
-										}else if(e.source.i_name == 'Model'){
-											if(e.source.value.length > 38){
-												e.source.value = e.source.value.substr(0, 38);
-											}
-										}
-										changedContentValue(e.source);
+										if(e.source.i_name == 'Make'){											if(e.source.value.length > 18){												e.source.value = e.source.value.substr(0, 18);											}										}else if(e.source.i_name == 'Model'){											if(e.source.value.length > 38){												e.source.value = e.source.value.substr(0, 38);											}										}										changedContentValue(e.source);
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 
 									});
@@ -5443,8 +5412,7 @@ create_or_edit_node.loadUI = function() {
 									fantasy_name : i_name,
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									textAlign : 'left',
-									left : '3%',
-									right : '3%',
+									width : Ti.Platform.displayCaps.platformWidth - 30,
 									height : heightValue,
 									font : {
 										fontSize : 18
@@ -5465,8 +5433,7 @@ create_or_edit_node.loadUI = function() {
 									_make : keep_from_make,
 									settings : settings,
 									changedFlag : 0,
-									i_name: i_name
-								});
+									i_name: i_name								});
 
 								//AUTOCOMPLETE TABLE
 								var autocomplete_table = Titanium.UI.createTableView({
@@ -5521,16 +5488,7 @@ create_or_edit_node.loadUI = function() {
 								// SEARCH EVENTS
 								//
 								content[count].addEventListener('change', function(e) {
-									if(e.source.i_name == 'Make'){
-											if(e.source.value.length > 18){
-												e.source.value = e.source.value.substr(0, 18);
-											}
-										}else if(e.source.i_name == 'Model'){
-											if(e.source.value.length > 38){
-												e.source.value = e.source.value.substr(0, 38);
-											}
-										}
-									changedContentValue(e.source);
+									if(e.source.i_name == 'Make'){											if(e.source.value.length > 18){												e.source.value = e.source.value.substr(0, 18);											}										}else if(e.source.i_name == 'Model'){											if(e.source.value.length > 38){												e.source.value = e.source.value.substr(0, 38);											}										}									changedContentValue(e.source);
 									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 									if (e.source.first_time === false) {
 										var list = e.source.terms;
@@ -5558,6 +5516,7 @@ create_or_edit_node.loadUI = function() {
 												}
 											}
 											e.source.autocomplete_table.setData(table_data);
+											e.source.autocomplete_table.scrollToTop(0, {animated: false});
 											e.source.autocomplete_table.visible = true;
 										} else {
 											e.source.autocomplete_table.visible = false;
@@ -5578,7 +5537,7 @@ create_or_edit_node.loadUI = function() {
 									content[reffer_index].partsArr = partsArr;
 									partsArr = [];
 									noDataCheckbox(reffer_index, regionView, top);
-									if(content[reffer_index]!=null){
+									if(content[reffer_index].noDataView!=null){
 										top += 40; 
 									}	
 								}
@@ -5624,7 +5583,7 @@ create_or_edit_node.loadUI = function() {
 									fontSize : 18
 								},
 								textAlign : 'left',
-								left : '3%',
+								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : 25,
 								top : top
@@ -5641,7 +5600,7 @@ create_or_edit_node.loadUI = function() {
 								isUpdated = [];
 								content[count] = Ti.UI.createScrollView({
 									right : 10,
-									left : '3%',
+									width : Ti.Platform.displayCaps.platformWidth - 30,
 									top : top,
 									contentWidth : 'auto',
 									contentHeight : 100,
@@ -5762,7 +5721,7 @@ create_or_edit_node.loadUI = function() {
 								}
 								content[count] = Ti.UI.createImageView({
 									label : field_arr[index_label][index_size].label,
-									left : '3%',
+									width : Ti.Platform.displayCaps.platformWidth - 30,
 									height : 80,
 									width : 80,
 									size : {
@@ -5829,7 +5788,7 @@ create_or_edit_node.loadUI = function() {
 									fontSize : 18
 								},
 								textAlign : 'left',
-								left : '3%',
+								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
 								top : top
@@ -5840,8 +5799,7 @@ create_or_edit_node.loadUI = function() {
 
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
 							content[count] = Ti.UI.createView({
-								left : '3%',
-								right : '3%',
+								width : Ti.Platform.displayCaps.platformWidth - 30,
 								top : top,
 								field_type : field_arr[index_label][index_size].type,
 								field_name : field_arr[index_label][index_size].field_name,
@@ -5903,8 +5861,7 @@ create_or_edit_node.loadUI = function() {
 
 			if (isAnyEnabledField == true) {
 				viewContent.add(regionHeader);
-				viewContent.add(arrow_img);
-				viewContent.add(regionView);
+				viewContent.add(arrow_img);				viewContent.add(regionView);
 			}
 		}
 		regions.next();
@@ -5936,20 +5893,16 @@ create_or_edit_node.loadUI = function() {
 				if (v.viewContainer.form_part == viewContent.max_form_part) {
 					v.viewContainer.height = v.viewContainer.calculatedHeight;
 					v.viewContainer.expanded = true;
-					v.arrow.image = "/images/arrow_down.png";
-					v.top = top;
-					v.arrow.top = top + 5;
-					top = top + 40;
+					v.arrow.image = "/images/arrow_down.png";					v.top = top;
+					v.arrow.top = top + 5;					top = top + 40;
 					v.viewContainer.top = top;
 					top = top + v.viewContainer.height + 10;
 					v.viewContainer.show();
 				} else {
 					v.viewContainer.height = 0;
 					v.viewContainer.expanded = false;
-					v.arrow.image = "/images/arrow_left.png";
-					v.top = top;
-					v.arrow.top = top + 5;
-					top = top + 40;
+					v.arrow.image = "/images/arrow_left.png";					v.top = top;
+					v.arrow.top = top + 5;					top = top + 40;
 					v.viewContainer.top = top;
 					top = top + v.viewContainer.height + 10;
 					v.viewContainer.hide();
@@ -6285,7 +6238,6 @@ function bottomButtons(actualWindow) {
 	}
 };
 
-
 function cancelOpt() {
 	var dialog = Ti.UI.createAlertDialog({
 		cancel : 1,
@@ -6319,7 +6271,6 @@ function cancelOpt() {
 
 	dialog.show();
 }
-
 
 function setDefaultValues(content, e) {
 	try {
@@ -6956,21 +6907,21 @@ function noDataCheckbox(reffer_index, baseView, top){
 				isRequired = true;
 			}
 			content[reffer_index].noDataView = Ti.UI.createView({
-				height: 40,
-				width : '100%',
+				height: 30,
+				width : Ti.Platform.displayCaps.platformWidth - 30,
 				layout: 'horizontal',
-				top: top + 2				
+				top: top + 2,		
 			});
 			
 			content[reffer_index].noDataView.checkbox = Ti.UI.createButton({
+				top: 7,
 				height: 16,
 				width: 16,
 				backgroundImage: '../images/unchecked.png',
-				left : 10,
 				value: false
 			});
 			content[reffer_index].noDataView.text = Ti.UI.createLabel({
-				height: 16,
+				height: 30,
 				text: (isRequired)?'No Data Available':'Not Applicable',
 				left :5,
 				width: 200,

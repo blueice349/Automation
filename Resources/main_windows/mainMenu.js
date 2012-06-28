@@ -557,9 +557,10 @@ function createDatabaseStatusView(){
 			}
 			else{
 				clearInterval(timer_int_msg);
-				notf.hide();
+				if(PLATFORM == 'android'){
+					notf.hide();
+				}
 				setUse();		
-			
 				var win_new = Titanium.UI.createWindow({
 					title : 'Message center',
 					fullscreen : false,
@@ -703,7 +704,9 @@ function openDraftWindow(){
 		toolActInd.message = 'Loading...';
 		toolActInd.show();
 			clearInterval(timer_int_draft);
-			notf.hide();			
+			if(PLATFORM == 'android'){
+				notf.hide();		
+			}
 			setUse();
 			Ti.API.info('Opening drafts');
 			var win_new = Titanium.UI.createWindow({  

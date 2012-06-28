@@ -21,6 +21,12 @@ var win1 = Titanium.UI.createWindow({
     title:'Omadi CRM',
     fullscreen: false
 });
+var baseLoginView = Ti.UI.createView({
+	height: 'auto',
+	layout: 'vertical',
+	top: '10',
+});
+win1.add(baseLoginView)
 var OMADI_VERSION = "omadiDb1452";
 Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION);
 var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );
@@ -45,12 +51,20 @@ var i_scroll_page = Titanium.UI.createView({
 	left: 0,
 	height: '70%'
 });
-
+//Web site picker 
+var logo = Titanium.UI.createImageView({
+	width:'auto',
+	top: '0',
+	height: 'auto',
+	image: 'images/logo.png'
+});
+//Adds picker to root window
+baseLoginView.add(logo);
 //Web site picker 
 var portal = Titanium.UI.createTextField({
 	width:'65%',
-	top: '10%',
-	height: '13%',
+	top: '20',
+	height: '53',
 	hintText:'Client Account',
 	color:'#000000',
 	value: credentials.fieldByName('domain'),
@@ -63,15 +77,15 @@ var portal = Titanium.UI.createTextField({
 	editable: locked_field
 });
 //Adds picker to root window
-win1.add(portal);
+baseLoginView.add(portal);
 
 
 //Text field for username
 var tf1 = Titanium.UI.createTextField({
 	hintText:'Username',
 	width:'65%',
-	top: '29.5%',
-	height: '13%',
+	top: '10',
+	height: '53',
 	color:'#000000',
 	value: credentials.fieldByName('username'),
 	keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
@@ -87,15 +101,15 @@ var tf1 = Titanium.UI.createTextField({
 tf1.autocorrect = false;
 
 //Adds text field "username" to the interface
-win1.add(tf1);
+baseLoginView.add(tf1);
 
 //Text field for password
 var tf2 = Titanium.UI.createTextField({
 	hintText:'Password',
 	color:'#000000',
 	width:'65%',
-	height: '13%',
-	top: '50.1%',	
+	height: '53',
+	top: '10',	
     passwordMask:true,
 	value: credentials.fieldByName('password'),
     keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
@@ -111,7 +125,7 @@ credentials.close();
 tf2.autocorrect = false;
 
 //Adds text field "password" to the interface
-win1.add(tf2);
+baseLoginView.add(tf2);
 
 win1.addEventListener('focus', function(){
 	var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
@@ -182,12 +196,12 @@ win1.add(messageView);
 var b1 = Titanium.UI.createButton({
    title: 'Log In',
    width: '80%',
-   height: '15%',
-   top: '70%' 
+   height: '55',
+   top: '13' 
 });
 
 //Adds button to the interface
-win1.add(b1);
+baseLoginView.add(b1);
 
 /* Function: Trigger for login button
  * Name: b1.addEventListener('click', function(){ ... });
@@ -337,3 +351,6 @@ db.close();
 
 //Make everthing happen:
 win1.open();
+if(Ti.Platform.displayCaps.platformHeight > 500){
+	baseLoginView.top = 'auto'
+}
