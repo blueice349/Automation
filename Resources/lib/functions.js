@@ -1703,7 +1703,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				if (json.fields){
 					//SQL actions:
 					var perform = [];
-	
+	 
 					if (json.fields.insert){
 						//Array of objects
 						if (json.fields.insert.length){
@@ -2796,7 +2796,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				var data_rows = new Array();
 				while ( n_bund.isValidRow() ){
 					var name_table = n_bund.fieldByName("bundle_name");
-				try{	
+				//try{	
 					if ( (json.node) && (json.node[name_table]) ){
 							Ti.API.info('##### Called '+name_table);
 							callback = process_object(json.node, name_table , quotes, progress, type_request,db_installMe);
@@ -2825,6 +2825,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							var _is_disabled = n_bund.fieldByName("disabled");
 							var _nd 		 = n_bund.fieldByName("_data");
 							var show_plus 	 = false;	
+							var node_type_json = JSON.parse(_nd);
 							
 							for (var _l in node_type_json.permissions){
 								for (_k in roles){
@@ -2836,6 +2837,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									}
 								}
 							}
+							
 							Ti.API.info(flag_display+" = "+_is_disabled);							
 							
 							if (flag_display == 'false' && ( _is_disabled != 1 && _is_disabled != "1" && _is_disabled != "true" && _is_disabled != true) ){
@@ -2881,7 +2883,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									is_plus: true
 								});
 								if (show_plus === false){
-									plus.hide();	
+									plus_a.hide();	
 								}
 								
 								row_a.add(icon);
@@ -2897,9 +2899,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							
 					}
 					n_bund.next();
-				}
-				catch(evt){
-				}
+			//	}
+				//catch(evt){
+				//}
+				
 				}
 				n_bund.close();
 
@@ -3174,9 +3177,9 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				
 				if (type_request == 'POST'){
 					updateFileUploadTable(win, json);
-					installMe(pageIndex, win, timeIndex , progress, menu, img, 'GET', mode, close_parent);
 				}
-				else if (mode == 1 ){
+				
+				if (mode == 1 ){
 					if(PLATFORM == 'android'){
 						Ti.UI.createNotification({
 							message : 'The node has been successfully online and locally updated',

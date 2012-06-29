@@ -6277,7 +6277,7 @@ function bottomButtons(actualWindow) {
 			});
 
 			// create and add toolbar
-			var toolbar = Titanium.UI.createToolbar({
+			var toolbar = Ti.UI.iOS.createToolbar({
 				items : [back, space, label, space, actions],
 				top : 0,
 				borderTop : false,
