@@ -21,7 +21,7 @@ var win1 = Titanium.UI.createWindow({
     title:'Omadi CRM',
     fullscreen: false
 });
-var OMADI_VERSION = "omadiDb1452";
+var OMADI_VERSION = "omadiDb1490";
 Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION);
 var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );
 var credentials = db.execute('SELECT domain, username, password FROM history WHERE "id_hist"=1');

@@ -1296,10 +1296,10 @@ function getJSON(){
 				var type_string		= type.fieldByName('display_name');
 
 				if (new_nodes.fieldByName('nid') < 0){
-					returning_json += '"'+new_nodes.fieldByName('nid')+'":{ "created":"'+new_nodes.fieldByName('created')+'", "nid":"'+new_nodes.fieldByName('nid')+'", "type":"'+type_string.toLowerCase()+'", "form_part":"'+new_nodes.fieldByName("form_part")+ '", "no_data_fields":'+new_nodes.fieldByName("no_data_fields");
+					returning_json += '"'+new_nodes.fieldByName('nid')+'":{ "created":"'+new_nodes.fieldByName('created')+'", "nid":"'+new_nodes.fieldByName('nid')+'", "type":"'+type_string.toLowerCase()+'", "form_part":"'+new_nodes.fieldByName("form_part")+ '", "no_data_fields":"'+new_nodes.fieldByName("no_data_fields")+'"';
 				}
 				else{
-					returning_json += '"'+new_nodes.fieldByName('nid')+'":{ "changed":"'+new_nodes.fieldByName('changed')+'", "nid":"'+new_nodes.fieldByName('nid')+'", "type":"'+type_string.toLowerCase()+'", "form_part":"'+new_nodes.fieldByName("form_part")+ '", "no_data_fields":'+new_nodes.fieldByName("no_data_fields");					
+					returning_json += '"'+new_nodes.fieldByName('nid')+'":{ "changed":"'+new_nodes.fieldByName('changed')+'", "nid":"'+new_nodes.fieldByName('nid')+'", "type":"'+type_string.toLowerCase()+'", "form_part":"'+new_nodes.fieldByName("form_part")+ '", "no_data_fields":"'+new_nodes.fieldByName("no_data_fields")+'"';					
 				}
 				Ti.API.info(returning_json);
 				while (node_fields.isValidRow()){
@@ -1418,7 +1418,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 	}
 	else{
 		//Opens address to retrieve list
-		Ti.API.info('GET, '+win.picked+ '/js-sync/download.json?sync_timestamp='+timeIndex);
+		Ti.API.info('GET, '+win.picked+ '/js-sync/download.json?sync_timestamp='+timeIndex);   
 		objectsUp.open('GET', win.picked + '/js-sync/download.json?sync_timestamp='+timeIndex);
 	}
 	//Header parameters
