@@ -2069,6 +2069,7 @@ create_or_edit_node.loadUI = function() {
 									content[count].addEventListener('change', function(e) {
 										if(e.source.value.length>10){
 											e.source.value = e.source.value.substr(0,10);
+											e.source.blur();
 										}
 										changedContentValue(e.source);
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
@@ -2400,6 +2401,7 @@ create_or_edit_node.loadUI = function() {
 									content[count].addEventListener('change', function(e) {
 										if(e.source.value.length>10){
 											e.source.value = e.source.value.substr(0,10);
+											e.source.blur();
 										}
 										changedContentValue(e.source);
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
@@ -4269,6 +4271,7 @@ create_or_edit_node.loadUI = function() {
 								// SEARCH EVENTS
 								//
 								content[count].addEventListener('change', function(e) {
+									e.source.nid = null;
 									changedContentValue(e.source);
 									if (e.source.first_time === false) {
 										var list = e.source.terms;
@@ -5992,7 +5995,7 @@ create_or_edit_node.loadUI = function() {
 					depArr.push(j);
 					content[entityArr[field_name][0]['reffer_index']].condDependedFields = depArr;
 				}
-				if (content[j]) {
+				if (content[j] != null) {
 					conditionalSetRequiredField(j);
 				}
 
@@ -6353,12 +6356,13 @@ function setDefaultValues(content, e) {
 						if ((content[counter].field_type == 'number_decimal' || content[counter].field_type == 'number_integer')) {
 							content[counter].value = defaultFieldVal + "";
 							content[counter].nid = e.source.nid;
-						} else {
+						}  else {
+							content[counter].value = defaultFieldVal;
 							defaultFieldVal = db_display.execute('SELECT name FROM term_data WHERE tid="' + defaultFieldVal + '";');
 							defaultFieldVal = defaultFieldVal.fieldByName('name');
-							content[counter].value = e.source.tid;
 							content[counter].title = defaultFieldVal;
 						}
+						changedContentValue(content[counter]);
 
 					} else if (content[counter].cardinality == defaultFieldSetting.cardinality && defaultFieldSetting.cardinality > 1) {
 
@@ -6426,8 +6430,9 @@ function createCalFieldTableFormat(single_content, db_display, contentArr) {
 	var result = _calculation_field_get_values(win, db_display, single_content, entity, contentArr);
 	var row_values = result[0].rows;
 	var heightView = 0;
+	var heightCellView = 40;
+	var widthCellView = Ti.Platform.displayCaps.platformWidth - 30;
 	if (row_values.length > 0) {
-		var heightCellView = 40;
 		var cal_value = 0;
 		var total_rows = [];
 		var cal_value_str = "";
@@ -6454,13 +6459,13 @@ function createCalFieldTableFormat(single_content, db_display, contentArr) {
 			var row = Ti.UI.createView({
 				layout : 'horizontal',
 				height : heightCellView,
-				width : '100%',
+				width : widthCellView,
 				top : 1,
 			});
 			row.row_label = Ti.UI.createLabel({
 				text : row_values[idx].row_label + ":  ",
 				textAlign : 'right',
-				width : 140,
+				width : widthCellView/2-1,
 				color : 'white',
 				font : {
 					fontFamily : 'Helvetica Neue',
@@ -6470,13 +6475,13 @@ function createCalFieldTableFormat(single_content, db_display, contentArr) {
 				height : heightCellView,
 				wordWrap : false,
 				ellipsize : true,
-				backgroundColor : '#F2F2F2'
+				backgroundColor : '#FFF'
 
 			});
 			row.value = Ti.UI.createLabel({
 				text : "  " + cal_value_str,
 				textAlign : 'left',
-				width : 150,
+				width : widthCellView/2,
 				left : 1,
 				color : 'white',
 				font : {
@@ -6487,7 +6492,7 @@ function createCalFieldTableFormat(single_content, db_display, contentArr) {
 				height : heightCellView,
 				wordWrap : false,
 				ellipsize : true,
-				backgroundColor : '#F2F2F2'
+				backgroundColor : '#FFF'
 			});
 			row.add(row.row_label);
 			row.add(row.value);
@@ -6516,13 +6521,13 @@ function createCalFieldTableFormat(single_content, db_display, contentArr) {
 		var row = Ti.UI.createView({
 			layout : 'horizontal',
 			height : heightCellView,
-			width : '100%',
+			width : widthCellView,
 			top : 1
 		});
 		row.row_label = Ti.UI.createLabel({
 			text : "Newly Calculated Total: ",
 			textAlign : 'right',
-			width : 140,
+			width : widthCellView/2-1,
 			top : 0,
 			color : 'white',
 			font : {
@@ -6532,13 +6537,12 @@ function createCalFieldTableFormat(single_content, db_display, contentArr) {
 			},
 			color : '#B40404',
 			height : heightCellView,
-			backgroundColor : '#F2F2F2'
+			backgroundColor : '#FFF'
 		});
 		row.value = Ti.UI.createLabel({
 			text : "  " + cal_value_str,
 			textAlign : 'left',
-			width : 150,
-			right : 0,
+			width : widthCellView/2,
 			top : 0,
 			left : 1,
 			color : 'white',
@@ -6551,7 +6555,7 @@ function createCalFieldTableFormat(single_content, db_display, contentArr) {
 			height : heightCellView,
 			wordWrap : false,
 			ellipsize : true,
-			backgroundColor : '#F2F2F2'
+			backgroundColor : '#FFF'
 		});
 
 		row.add(row.row_label);
@@ -6751,7 +6755,7 @@ function conditionalSetRequiredField(idx) {
 
 							}
 						} else {
-							if (node_values == null && node_values == "") {
+							if (node_values == null || node_values == "" || node_values.length==0) {
 								row_matches[row_idx] = true;
 							} else {
 								for (var value_index in node_values) {
@@ -6831,7 +6835,7 @@ function conditionalSetRequiredField(idx) {
 
 							}
 						} else {
-							if (node_values == null && node_values == "") {
+							if (node_values == null || node_values == "" || node_values.length==0) {
 								row_matches[row_idx] = true;
 							} else {
 								for (var value_index in node_values) {

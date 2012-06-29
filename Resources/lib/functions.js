@@ -476,7 +476,7 @@ function treatArray( num_to_insert , call_id ){
 				test1++;
 			}
 			else if (count_a == array_size){
-				content_s += num_to_insert[key]+'';
+				content_s += num_to_insert[key]+' ';
 				test2++;
 			}
 		}
@@ -1296,11 +1296,14 @@ function getJSON(){
 				var type			= db_json.execute('SELECT display_name FROM bundles WHERE bundle_name = "'+node_fields.fieldByName('bundle')+'"');
 				var type_string		= type.fieldByName('display_name');
 
-				if (new_nodes.fieldByName('nid') < 0){
-					returning_json += '"'+new_nodes.fieldByName('nid')+'":{ "created":"'+new_nodes.fieldByName('created')+'", "nid":"'+new_nodes.fieldByName('nid')+'", "type":"'+type_string.toLowerCase()+'", "form_part":"'+new_nodes.fieldByName("form_part")+ '", "no_data_fields":"'+new_nodes.fieldByName("no_data_fields")+'"';
+				var no_data_string = '""';
+				if(new_nodes.fieldByName("no_data_fields")!=null && new_nodes.fieldByName("no_data_fields")!=""){
+					no_data_string = new_nodes.fieldByName("no_data_fields");
 				}
-				else{
-					returning_json += '"'+new_nodes.fieldByName('nid')+'":{ "changed":"'+new_nodes.fieldByName('changed')+'", "nid":"'+new_nodes.fieldByName('nid')+'", "type":"'+type_string.toLowerCase()+'", "form_part":"'+new_nodes.fieldByName("form_part")+ '", "no_data_fields":"'+new_nodes.fieldByName("no_data_fields")+'"';					
+				if (new_nodes.fieldByName('nid') < 0){
+					returning_json += '"'+new_nodes.fieldByName('nid')+'":{ "created":"'+new_nodes.fieldByName('created')+'", "nid":"'+new_nodes.fieldByName('nid')+'", "type":"'+type_string.toLowerCase()+'", "form_part":"'+new_nodes.fieldByName("form_part")+ '", "no_data_fields":'+no_data_string;
+				}else{
+					returning_json += '"'+new_nodes.fieldByName('nid')+'":{ "changed":"'+new_nodes.fieldByName('changed')+'", "nid":"'+new_nodes.fieldByName('nid')+'", "type":"'+type_string.toLowerCase()+'", "form_part":"'+new_nodes.fieldByName("form_part")+ '", "no_data_fields":'+no_data_string;					
 				}
 				Ti.API.info(returning_json);
 				while (node_fields.isValidRow()){
@@ -3191,11 +3194,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					//Just to make sure database keeps locked
 
 					//setUse();
-					//close_parent();
-					//updateFileUploadTable(win, json, close_parent);
+					close_parent();
 					var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 					var imageForUpload = db_fileUpload.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
-					uploadFile(win, 'POST', db_fileUpload, imageForUpload, close_parent);
+					uploadFile(win, 'POST', db_fileUpload, imageForUpload);
 				}
 				else if (mode == 0 ){
 					if(PLATFORM == 'android'){
@@ -3209,11 +3211,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					//Just to make sure database keeps locked
 
 					//setUse();
-					//close_parent();
-					//updateFileUploadTable(win, json, close_parent);
+					close_parent();
 					var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName());
 					var imageForUpload = db_fileUpload.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
-					uploadFile(win, 'POST', db_fileUpload, imageForUpload, close_parent);
+					uploadFile(win, 'POST', db_fileUpload, imageForUpload);
 				}			
 				else{
 					unsetUse();
@@ -3577,7 +3578,7 @@ function getScreenHeight(){
 	return ret;
 }
 
-function uploadFile(win, type_request, database, fileUploadTable, close_parent){
+function uploadFile(win, type_request, database, fileUploadTable){
 try{
 	//var fileUploadXHR = win.log;
 	win.log.setTimeout(30000);
@@ -3633,16 +3634,14 @@ try{
 				database.execute("DELETE FROM file_upload_queue WHERE nid=" + respnseJson.nid +" and delta=" + respnseJson.delta +" and field_name='" + respnseJson.field_name+ "';");
 				fileUploadTable = database.execute("SELECT * FROM file_upload_queue WHERE nid > 0;");
 				if(fileUploadTable.rowCount == 0){
-					close_parent();
 					fileUploadTable.close();
 					database.close();
 				}else{
-					uploadFile(win, type_request, database, fileUploadTable, close_parent);
+					uploadFile(win, type_request, database, fileUploadTable);
 				}
 			}
 			
 			win.log.onerror = function(e) {
-				close_parent();
 				Ti.API.info('=========== Error in uploading ========' + e.error + this.status);
 				if(this.status == '406' && this.error =='Nid is not connected to a valid node.'){
 					database.execute("DELETE FROM file_upload_queue WHERE nid=" + fileUploadTable.fieldByName('nid') +" and id=" + fileUploadTable.fieldByName('id') + ";");
@@ -3667,16 +3666,9 @@ try{
 						 field_name : fileUploadTable.fieldByName('field_name'),
 						 delta		: fileUploadTable.fieldByName('delta')});
 			}	
-		}else{
-			close_parent();
 		}
-			
-	}else{
-		close_parent();
 	}
-	
 }catch(e){
-	close_parent();
 	Ti.API.info("==== ERROR ===" + e);
 }
 }
@@ -3731,8 +3723,6 @@ function updateFileUploadTable(win, json){
 		}
 		bundles.close();
 		db_fileUpload.close();
-	//	var imageForUpload = db_fileUpload.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
-	//	uploadFile(win, 'POST', db_fileUpload, imageForUpload, close_parent);
 	}catch(evt){
 	}
 }
@@ -4043,6 +4033,7 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 			}
 
 			if(value == 0 && numeric_multiplier != 0) {
+				zero = false;
 				value = numeric_multiplier;
 			} else if(value!= 0 && numeric_multiplier != 0) {
 				value *= numeric_multiplier;

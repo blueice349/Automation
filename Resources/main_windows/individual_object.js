@@ -1248,8 +1248,9 @@ function createCalculationTableFormat(content , db_display, contentArr) {
 	var result = _calculation_field_get_values(win4, db_display, content, entity, contentArr);
 	var row_values = result[0].rows;
 	var heightView = 0;
+	var heightCellView = 40;
+	var widthCellView = Ti.Platform.displayCaps.platformWidth - 30
 	if(row_values.length > 0) {
-		var heightCellView = 40;
 		var cal_value = 0;
 		var cal_value_str = "";
 		var isNegative = false;
@@ -1268,13 +1269,13 @@ function createCalculationTableFormat(content , db_display, contentArr) {
 			var row = Ti.UI.createView({
 				layout 		: 'horizontal',
 				height 		: heightCellView,
-				width 		: '100%',
+				width 		: widthCellView,
 				top 		: 1,
 			});
 			var row_label = Ti.UI.createLabel({
 				text 			: row_values[idx].row_label + ":  ",
 				textAlign 		: 'right',
-				width 			: 140,
+				width 			:  widthCellView/2-1,
 				color 			: 'white',
 				font 			: {
 									fontFamily 	: 'Helvetica Neue',
@@ -1284,13 +1285,13 @@ function createCalculationTableFormat(content , db_display, contentArr) {
 				height 			: heightCellView,
 				wordWrap 		: false,
 				ellipsize 		: true,
-				backgroundColor : '#F2F2F2'
+				backgroundColor : '#FFF'
 
 			});
 			var value = Ti.UI.createLabel({
 				text 			: "  " + cal_value_str,
 				textAlign 		: 'left',
-				width 			: 120,
+				width 			:  widthCellView/2,
 				left 			: 1,
 				color 			: 'white',
 				font 			: {
@@ -1301,7 +1302,7 @@ function createCalculationTableFormat(content , db_display, contentArr) {
 				height 			: heightCellView,
 				wordWrap 		: false,
 				ellipsize 		: true,
-				backgroundColor : '#F2F2F2'
+				backgroundColor : '#FFF'
 			});
 			row.add(row_label);
 			row.add(value);
@@ -1323,13 +1324,13 @@ function createCalculationTableFormat(content , db_display, contentArr) {
 		var row = Ti.UI.createView({
 			layout 	: 'horizontal',
 			height 	: heightCellView,
-			width 	: '100%',
+			width 	: widthCellView,
 			top 	: 1
 		});
 		var row_label = Ti.UI.createLabel({
 			text 			: "Newly Calculated Total: ",
 			textAlign 		: 'right',
-			width 			: 140,
+			width 			: widthCellView/2-1,
 			top 			: 0,
 			color 			: 'white',
 			font 			: {
@@ -1339,13 +1340,12 @@ function createCalculationTableFormat(content , db_display, contentArr) {
 						  	   },
 			color 			: '#B40404',
 			height 			: heightCellView,
-			backgroundColor : '#F2F2F2'
+			backgroundColor : '#FFF'
 		});
 		var value = Ti.UI.createLabel({
 			text 			: "  " + cal_value_str,
 			textAlign 		: 'left',
-			width 			: 120,
-			right 			: 0,
+			width 			: widthCellView/2,
 			top 			: 0,
 			left 			: 1,
 			color 			: 'white',
@@ -1358,7 +1358,7 @@ function createCalculationTableFormat(content , db_display, contentArr) {
 			height 			: heightCellView,
 			wordWrap 		: false,
 			ellipsize 		: true,
-			backgroundColor : '#F2F2F2'
+			backgroundColor : '#FFF'
 		});
 		row.add(row_label);
 		row.add(value);
