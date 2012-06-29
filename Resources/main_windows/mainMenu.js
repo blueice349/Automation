@@ -15,7 +15,7 @@ Ti.include('/main_windows/create_or_edit_node.js');
 
 //Current window's instance
 var win2 = Ti.UI.currentWindow;
-win2.backgroundColor = '#111';
+win2.backgroundColor = '#EEEEEE';
 
 
 var toolActInd = Ti.UI.createActivityIndicator();
@@ -152,7 +152,7 @@ var listView = Titanium.UI.createTableView({
 var elements = db.execute('SELECT * FROM bundles');
 var check = 0;
 
-
+var _data_rows = new Array();
 while ( elements.isValidRow() ){
 	var name_table   = elements.fieldByName("bundle_name");
 	var display      = elements.fieldByName("display_name").toUpperCase();
@@ -205,7 +205,9 @@ while ( elements.isValidRow() ){
 		row_t.add(title);
 		row_t.add(plus);
 		
-		listView.appendRow(row_t);
+		_data_rows.push(row_t);
+		_data_rows.sort(sortTableView);
+		listView.setData(_data_rows);
 	}
 	elements.next();
 }
@@ -263,7 +265,7 @@ listView.addEventListener('click',function(e){
 				win_new.mode = 0;
 				win_new.picked = win2.picked;
 				win_new.region_form = 0;
-				win_new.backgroundColor = "#000";
+				win_new.backgroundColor = "#EEEEEE";
 				win_new.nameSelected = 'Fill Details...';
 				win_new.open();
 				setTimeout(function(){create_or_edit_node.loadUI();}, 100);
@@ -279,7 +281,7 @@ listView.addEventListener('click',function(e){
 					type: e.row.name_table,
 					uid: jsonLogin.user.uid,
 					up_node: update_node,
-					backgroundColor: '#000'
+					backgroundColor: '#EEEEEE'
 				});
 				win_new.picked 	 = win2.picked;
 				win_new.open();
@@ -344,7 +346,7 @@ offImage.addEventListener('click',function(e)
 		    url: 'logDecision.js',
 			title:'Omadi CRM',		    
 		    fullscreen: false,
-		    backgroundColor: '#000'
+		    backgroundColor: '#EEEEEE'
 		});
 
 		//Setting both windows with login values:
@@ -426,7 +428,7 @@ activity.onCreateOptionsMenu = function(e) {
 			var about_win = Ti.UI.createWindow({
 				title: 'About',
 				fullscreen: false,
-				backgroundColor: 'black',
+				backgroundColor: '#EEEEEE',
 				url:'about.js',
 				updateFunction: updateFromAboutPage
 			});
@@ -567,7 +569,7 @@ function createDatabaseStatusView(){
 					url : 'message_center.js',
 					uid : jsonLogin.user.uid,
 					up_node : update_node,
-					backgroundColor: '#000'
+					backgroundColor: '#EEE'
 				});
 				win_new.picked = win2.picked;
 				win_new.open();
@@ -716,7 +718,7 @@ function openDraftWindow(){
 				type: 'draft',
 				uid: jsonLogin.user.uid,
 				up_node: update_node,
-				backgroundColor: '#000'
+				backgroundColor: '#EEE'
 			});
 			win_new.picked 	 = win2.picked;
 			win_new.open();

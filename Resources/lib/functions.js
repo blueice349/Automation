@@ -2838,7 +2838,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									image: '/images/icons/' + display.toLowerCase() + '.png'
 								});
 								
-								if(icon.toBlob() == null){
+								if(icon.toBlob() == null || icon.toBlob().length == 0){
 									icon.image = '/images/icons/settings.png';
 								}
 								

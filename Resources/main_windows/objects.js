@@ -96,7 +96,6 @@ else {
 	//Contat list container
 	var listTableView = Titanium.UI.createTableView({
 		data : data,
-		top : '3%',
 		search : search,
 		height : '91%'
 	});
@@ -171,6 +170,7 @@ db.close();
 if(PLATFORM == 'android'){
 	bottomBack(win3, "Back" , "enable", true);
 }else{
+	listTableView.height = "97%";
 	bottomButtons();
 }
 

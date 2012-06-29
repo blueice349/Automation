@@ -35,7 +35,7 @@ indLog.addEventListener('android:back', function() {
 // Alert message
 var message = Titanium.UI.createLabel({
     text:'Are you sure you want to log out?',
-    color:'#fff',
+    color:'#000',
     width:'auto',
     height:'auto',
     textAlign:'center',

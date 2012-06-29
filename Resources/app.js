@@ -11,7 +11,7 @@
  */
 
 // this sets the background color of every 
-Titanium.UI.setBackgroundColor('#000000');
+Titanium.UI.setBackgroundColor('#EEEEEE');
 
 //Common used functions
 Ti.include('lib/functions.js'); 
@@ -28,7 +28,7 @@ var baseLoginView = Ti.UI.createView({
 });
 win1.add(baseLoginView)
 
-var OMADI_VERSION = "omadiDb1495";
+var OMADI_VERSION = "omadiDb1497";
 
 Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION);
 var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );
@@ -153,7 +153,7 @@ win1.addEventListener('focus', function(){
 //
 var messageView = Titanium.UI.createView({
 	bottom: '0px',	
-	backgroundColor:'#111',
+	backgroundColor:'#EEE',
 	height: '10%',
 	width: '100%',
 	opacity: 0.99,
@@ -169,7 +169,7 @@ Ti.API.info('The value for logStatus we found in app.js is : '+Ti.App.Properties
 // Otherwise, print the content of logStatus
 if ( ( Ti.App.Properties.getString('logStatus') == null) || (Ti.App.Properties.getString('logStatus') == "") ){
 	var label_error = Titanium.UI.createLabel({
-		color:'#FFFFFF',
+		color:'#000',
 		text:'Please login',
 		height:'auto',
 		width:'auto',
@@ -178,13 +178,14 @@ if ( ( Ti.App.Properties.getString('logStatus') == null) || (Ti.App.Properties.g
 }
 else{
 	var label_error = Titanium.UI.createLabel({
-		color:'#FFFFFF',
+		color:'#000',
 		text: Ti.App.Properties.getString('logStatus'),
 		height:'auto',
 		width:'auto',
 		textAlign:'center'
 	});
 }
+label_error.backgroundColor = "#EEE";
 // Adds label_error to the messageView
 messageView.add(label_error);
 

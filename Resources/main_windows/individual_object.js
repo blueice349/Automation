@@ -16,7 +16,7 @@ Ti.include('/main_windows/create_or_edit_node.js');
 
 //Current window's instance
 var win4 = Ti.UI.currentWindow;
-
+win4.backgroundColor = "#EEEEEE";
 //Sets only portrait mode
 win4.orientationModes = [Titanium.UI.PORTRAIT];
 
@@ -51,8 +51,8 @@ var results = db_display.execute('SELECT * FROM ' + win4.type + ' WHERE  nid = '
 var resultView = Ti.UI.createView({
 	top: '0',
 	height: '100%',
-	width: '90%',
-	backgroundColor: '#000',
+	width: '100%',
+	backgroundColor: '#EEEEEE',
 });
 win4.add(resultView);
 
@@ -72,7 +72,7 @@ var labelNameContent = Ti.UI.createLabel({
 	height: 'auto',
 	width:  '90%',
 	font: {fontSize: 18,  fontWeight: "bold"},
-	color: '#fff',
+	color: '#000',
 	textAlign: 'center',
 	touchEnabled: false,
 	ellipsize: true,
@@ -81,20 +81,30 @@ var labelNameContent = Ti.UI.createLabel({
 
 header.add(labelNameContent);
 
-var viewContent = Ti.UI.createScrollView({
-    height:"100%",
-    top: "35",
-    //contentWidth: '100%',
-    contentHeight: 'auto',
-    backgroundColor: '#111111',
-	showHorizontalScrollIndicator: false,
-	showVerticalScrollIndicator: true,
-	opacity: 1,
-	//borderRadius: 7,
-	//scrollType: 'vertical',
-	//zIndex: 10, 
-	layout: 'vertical'
-});
+if (PLATFORM == 'android'){
+	var viewContent = Ti.UI.createScrollView({
+	    top: "35dp",
+	    contentHeight: 'auto',
+	    backgroundColor: '#EEEEEE',
+		showHorizontalScrollIndicator: false,
+		showVerticalScrollIndicator: true,
+		opacity: 1,
+		layout: 'vertical',
+	});
+}
+else{
+	var viewContent = Ti.UI.createScrollView({
+	    top: "35dp",
+	    contentHeight: 'auto',
+	    backgroundColor: '#EEEEEE',
+		showHorizontalScrollIndicator: false,
+		showVerticalScrollIndicator: true,
+		opacity: 1,
+		layout: 'vertical',
+		bottom: '0'
+	});
+}
+
 
 resultView.add(viewContent);
 
@@ -775,7 +785,7 @@ if(c_index > 0) {
 					case 'region_separator_mode':
 						label[count] = Ti.UI.createLabel({
 							text : c_label[count],
-							color : '#FFFFFF',
+							color : '#4F556C',
 							font : {
 								fontSize : 18,
 								fontWeight : 'bold'
@@ -944,8 +954,8 @@ if(c_index > 0) {
 					width : '100%'
 				});
 
-				label[i].color = "#999999";
-				content[i].color = "#FFFFFF";
+				label[i].color = "#4C5A88";
+				content[i].color = "#000";
 
 				cell[i].add(label[i]);
 				if(c_type[i] == 'image') {
@@ -965,10 +975,8 @@ if(c_index > 0) {
 				viewContent.add(cell[i]);
 
 				border[i] = Ti.UI.createView({
-					backgroundColor : "#F16A0B",
-					//top:5,
+					backgroundColor : "#C8C9C9",
 					height : 2,
-					//top: ((heightValue+2)*(index_fields+1))-2
 				});
 				viewContent.add(border[i]);
 				index_fields++;
@@ -990,10 +998,16 @@ if(c_index > 0) {
 						viewContent.add(cell[i]);
 
 						border[i] = Ti.UI.createView({
-							backgroundColor : "#F16A0B",
+							backgroundColor : "#000", 
 							height : 2,
-							//top: ((heightValue+2)*(index_fields+1))-2
 						});
+						
+						if( i > 1){
+							if (border[i-1]){
+								border[i-1].backgroundColor = "#000";
+							}
+						}
+						
 						viewContent.add(border[i]);
 						Ti.API.info('Added region: ' + label[i].ref);
 						index_fields++;
@@ -1041,7 +1055,7 @@ function highlightMe(data) {
 	Ti.API.info("DATA => " + data);
 	cell[data].backgroundColor = "#F16A0B";
 	setTimeout(function() {
-		cell[data].backgroundColor = '#111111';
+		cell[data].backgroundColor = '#EEEEEE';
 	}, 100);
 };
 
@@ -1133,8 +1147,7 @@ fields_result.close();
 db_display.close();
 
 if(PLATFORM != 'android'){
-	resultView.remove(header)
-	resultView.height = '95%';
+	resultView.remove(header);
 	resultView.top = 0;
 	bottomButtons1(win4);
 }else{

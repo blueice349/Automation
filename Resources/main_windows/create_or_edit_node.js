@@ -28,6 +28,7 @@ var win;
 var viewContent;
 var title_head;
 var resultView;
+var _lb_color = "#4C5A88";
 
 var db_display;
 var no_data_fieldsArr = [];
@@ -40,55 +41,83 @@ var create_or_edit_node = {};
 create_or_edit_node.getWindow = function() {
 	win = Titanium.UI.createWindow({
 		fullscreen : false,
-		backgroundColor : '#111'
+		backgroundColor : '#EEEEEE'
 	});
 
 	//Sets only portrait mode
 	win.orientationModes = [Titanium.UI.PORTRAIT];
 
-	//The view where the results are presented
-	resultView = Ti.UI.createView({
-		top : '0',
-		height : '100%',
-		width : '100%',
-		backgroundColor : '#111111',
-		opacity : 1
-	});
-	win.add(resultView);
+	if (PLATFORM == 'android'){
+		//The view where the results are presented
+		resultView = Ti.UI.createView({
+			top : 0,
+			height : '100%',
+			width : '100%',
+			backgroundColor : '#EEEEEE',
+			opacity : 1
+		});
+		win.add(resultView);
+		
+		//Header where the selected name is presented
+		var header = Ti.UI.createView({
+			top : '0',
+			height : '10%',
+			width : '100%',
+			backgroundColor : '#EEEEEE',
+			zIndex : 11
+		});
+		resultView.add(header);
+		title_head = Ti.UI.createLabel({
+			text : win.nameSelected,
+			color : '#4C5A88',
+			font : {
+				fontSize : 24
+			}
+		});
+		header.add(title_head);		
 
-	//Header where the selected name is presented
-	var header = Ti.UI.createView({
-		top : '0',
-		height : '10%',
-		width : '100%',
-		backgroundColor : '#000000',
-		zIndex : 11
-	});
-	resultView.add(header);
-	title_head = Ti.UI.createLabel({
-		text : win.nameSelected,
-		color : '#FFFFFF',
-		font : {
-			fontSize : 24
-		}
-	});
-	header.add(title_head);
-	viewContent = Ti.UI.createScrollView({
-		//height : "100%",
-		bottom : 0,
-		contentHeight : 'auto',
-		top : "11%",
-		backgroundColor : '#111111',
-		showHorizontalScrollIndicator : false,
-		showVerticalScrollIndicator : true,
-		opacity : 1,
-		//borderRadius : 7,
-		scrollType : "vertical",
-		zIndex : 10
-	});
+		viewContent = Ti.UI.createScrollView({
+			bottom : 0,
+			contentHeight : 'auto',
+			top : "11%",
+			backgroundColor : '#EEE',
+			showHorizontalScrollIndicator : false,
+			showVerticalScrollIndicator : true,
+			opacity : 1,
+			scrollType : "vertical",
+			zIndex : 10
+		});
+		
+		title_head.text = win.nameSelected;		
+	}
+	else{
+		
+		//The view where the results are presented
+		resultView = Ti.UI.createView({
+			top : "8%",
+			height : '92%',
+			width : '100%',
+			bottom: 0,
+			backgroundColor : '#EEEEEE',
+			opacity : 1
+		});
+		win.add(resultView);		
+		
+		viewContent = Ti.UI.createScrollView({
+			contentHeight : 'auto',
+			//height : "98%",
+			backgroundColor : '#EEE',
+			showHorizontalScrollIndicator : false,
+			showVerticalScrollIndicator : true,
+			opacity : 1,
+			scrollType : "vertical",
+			zIndex : 10
+		});		
+	}
+
 	resultView.add(viewContent);
 
-	title_head.text = win.nameSelected;
+
 	win.addEventListener('close', function() {
 		if (win.mode == 0) {
 			unsetUse();
@@ -861,7 +890,7 @@ function display_widget(obj) {
 
 	var win_wid = Ti.UI.createWindow({
 		//modal: true,
-		backgroundColor : "#000",
+		backgroundColor : "000",
 		opacity : 0.9
 	});
 
@@ -1468,7 +1497,7 @@ var content_fields;
 
 var count = 0;
 var title = 0;
-var defaultImageVal = '../images/default.png'
+var defaultImageVal = '/images/default.png'
 
 create_or_edit_node.loadUI = function() {
 	toolActInd.show();
@@ -1524,9 +1553,10 @@ create_or_edit_node.loadUI = function() {
 				top: y + 5,
 				right: 5
 			});			
-				var regionHeader = Ti.UI.createLabel({
+			
+			var regionHeader = Ti.UI.createLabel({
 				text : regions.fieldByName('label') + ' :',
-				color : '#000000',
+				color : '#4C5A88',
 				font : {
 					fontSize : 18,
 					fontWeight : 'bold'
@@ -1534,6 +1564,9 @@ create_or_edit_node.loadUI = function() {
 				textAlign : 'center',
 				width : '100%',
 				height : 40,
+				borderColor: "#C8C9C9",
+				borderWidth: 2,
+				borderRadius: 2,
 				top : y,
 				backgroundColor : '#FFFFFF'
 			});
@@ -1542,7 +1575,7 @@ create_or_edit_node.loadUI = function() {
 			var regionView = Ti.UI.createView({
 				width : '100%',
 				top : y,
-				backgroundColor : '#000',
+				backgroundColor : '#EEE',
 				zIndex : 0
 			});
 
@@ -1661,9 +1694,10 @@ create_or_edit_node.loadUI = function() {
 						case 'license_plate':
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-								color : isRequired ? 'red' : '#FFFFFF',
+								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18
+									fontSize : 18,
+									fontWeight: 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -2393,9 +2427,10 @@ create_or_edit_node.loadUI = function() {
 						case 'link_field':
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-								color : isRequired ? 'red' : '#FFFFFF',
+								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18
+									fontSize : 18,
+									fontWeight: 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -2509,9 +2544,10 @@ create_or_edit_node.loadUI = function() {
 						case 'text_long':
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-								color : isRequired ? 'red' : '#FFFFFF',
+								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18
+									fontSize : 18,
+									fontWeight: 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -2643,9 +2679,10 @@ create_or_edit_node.loadUI = function() {
 
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label + " " + title_location,
-								color : isRequired ? 'red' : '#FFFFFF',
+								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18
+									fontSize : 18,
+									fontWeight: 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -2772,9 +2809,10 @@ create_or_edit_node.loadUI = function() {
 
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-								color : isRequired ? 'red' : '#FFFFFF',
+								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18
+									fontSize : 18,
+									fontWeight: 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -2913,9 +2951,10 @@ create_or_edit_node.loadUI = function() {
 
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-								color : isRequired ? 'red' : '#FFFFFF',
+								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18
+									fontSize : 18,
+									fontWeight: 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -3035,9 +3074,10 @@ create_or_edit_node.loadUI = function() {
 						case 'email':
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-								color : isRequired ? 'red' : '#FFFFFF',
+								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18
+									fontSize : 18,
+									fontWeight: 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -3170,9 +3210,10 @@ create_or_edit_node.loadUI = function() {
 							if (widget.type == 'options_select') {
 								label[count] = Ti.UI.createLabel({
 									text : ( isRequired ? '*' : '') + '' + field_arr[index_label][index_size].label,
-									color : isRequired ? 'red' : '#FFFFFF',
+									color : isRequired ? 'red' : _lb_color,
 									font : {
-										fontSize : 18
+										fontSize : 18,
+									fontWeight: 'bold'
 									},
 									textAlign : 'left',
 									width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -3518,9 +3559,10 @@ create_or_edit_node.loadUI = function() {
 							else if (widget.type == 'taxonomy_autocomplete') {
 								label[count] = Ti.UI.createLabel({
 									text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-									color : isRequired ? 'red' : '#FFFFFF',
+									color : isRequired ? 'red' : _lb_color,
 									font : {
-										fontSize : 18
+										fontSize : 18,
+									fontWeight: 'bold'
 									},
 									textAlign : 'left',
 									width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -3916,9 +3958,10 @@ create_or_edit_node.loadUI = function() {
 
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-								color : isRequired ? 'red' : '#FFFFFF',
+								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18
+									fontSize : 18,
+									fontWeight: 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -4284,9 +4327,10 @@ create_or_edit_node.loadUI = function() {
 						case 'user_reference':
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + '' + field_arr[index_label][index_size].label,
-								color : isRequired ? 'red' : '#FFFFFF',
+								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18
+									fontSize : 18,
+									fontWeight: 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -4555,9 +4599,10 @@ create_or_edit_node.loadUI = function() {
 
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-								color : isRequired ? 'red' : '#FFFFFF',
+								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18
+									fontSize : 18,
+									fontWeight: 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -5001,9 +5046,10 @@ create_or_edit_node.loadUI = function() {
 
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-								color : isRequired ? 'red' : '#FFFFFF',
+								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18
+									fontSize : 18,
+									fontWeight: 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -5117,9 +5163,10 @@ create_or_edit_node.loadUI = function() {
 						case 'omadi_time':
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + '' + field_arr[index_label][index_size].label,
-								color : isRequired ? 'red' : '#FFFFFF',
+								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18
+									fontSize : 18,
+									fontWeight: 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -5305,9 +5352,10 @@ create_or_edit_node.loadUI = function() {
 						case 'vehicle_fields':
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-								color : isRequired ? 'red' : '#FFFFFF',
+								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18
+									fontSize : 18,
+									fontWeight: 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -5580,9 +5628,10 @@ create_or_edit_node.loadUI = function() {
 						case 'image':
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-								color : isRequired ? 'red' : '#FFFFFF',
+								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18
+									fontSize : 18,
+									fontWeight: 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -5785,9 +5834,10 @@ create_or_edit_node.loadUI = function() {
 						case 'calculation_field':
 							label[count] = Ti.UI.createLabel({
 								text : field_arr[index_label][index_size].label,
-								color : '#FFFFFF',
+								color : _lb_color,
 								font : {
-									fontSize : 18
+									fontSize : 18,
+									fontWeight: 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -6067,7 +6117,7 @@ create_or_edit_node.loadUI = function() {
 
 	toolActInd.hide();
 }
-//setTimeout(function(e){} , 1000);
+
 
 // To open camera
 function openCamera(e) {
@@ -6200,7 +6250,7 @@ function bottomButtons(actualWindow) {
 			});
 			var label = Titanium.UI.createButton({
 				title : actualWindow.title,
-				color : '#fff',
+				color : _lb_color,
 				ellipsize : true,
 				wordwrap : false,
 				width : 200,
@@ -6256,7 +6306,7 @@ function cancelOpt() {
 						message : win.title + ' creation was cancelled !'
 					}).show();
 				} else {
-					alert(win.title + ' creation was cancelled !');
+					//alert(win.title + ' creation was cancelled !');
 				}
 			} else {
 				if (PLATFORM == 'android') {
@@ -6264,7 +6314,7 @@ function cancelOpt() {
 						message : win.title + ' update was cancelled !'
 					}).show();
 				} else {
-					alert(win.title + ' update was cancelled !');
+					//alert(win.title + ' update was cancelled !');
 				}
 			}
 			win.close();
