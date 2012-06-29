@@ -70,7 +70,7 @@ else{
 			var section = Titanium.UI.createTableViewSection({
 				height : 'auto',
 				headerTitle : resultsNames.fieldByName('table_name').charAt(0).toUpperCase() + resultsNames.fieldByName('table_name').slice(1),
-				backgroundColor: '#FFF',
+				backgroundColor: '#000',
 				color: '#000',
 				nid: false,
 				visible: true
@@ -114,7 +114,7 @@ if(data.length < 1) {
 		width : 'auto',
 		top : '50%',
 		text : 'There are no drafts available',
-		color: '#FFF'
+		color: '#000'
 	});
 
 	//Debug

@@ -1555,10 +1555,10 @@ create_or_edit_node.loadUI = function() {
 			});			
 			
 			var regionHeader = Ti.UI.createLabel({
-				text : regions.fieldByName('label') + ' :',
+				text : regions.fieldByName('label'),
 				color : '#4C5A88',
 				font : {
-					fontSize : 18,
+					fontSize : 22,
 					fontWeight : 'bold'
 				},
 				textAlign : 'center',

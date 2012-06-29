@@ -170,7 +170,10 @@ db.close();
 if(PLATFORM == 'android'){
 	bottomBack(win3, "Back" , "enable", true);
 }else{
-	listTableView.height = "97%";
+	if (listTableView != null){
+		listTableView.height = "97%";	
+	}
+	
 	bottomButtons();
 }
 

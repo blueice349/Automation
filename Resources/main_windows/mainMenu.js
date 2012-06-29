@@ -151,6 +151,12 @@ var listView = Titanium.UI.createTableView({
 
 var elements = db.execute('SELECT * FROM bundles');
 var check = 0;
+//Parses result from user's login 
+var jsonLogin = JSON.parse(win2.result) ;
+//Retrieves username
+var name = jsonLogin.user.realname;
+var roles = jsonLogin.user.roles;
+
 
 var _data_rows = new Array();
 while ( elements.isValidRow() ){
@@ -158,12 +164,30 @@ while ( elements.isValidRow() ){
 	var display      = elements.fieldByName("display_name").toUpperCase();
 	var description  = elements.fieldByName("description");
 	var flag_display = elements.fieldByName("display_on_menu");
+	var _is_disabled = elements.fieldByName("disabled");
+	var _nd 		 = elements.fieldByName("_data");
+	var show_plus 	 = false;
+
+	var node_type_json = JSON.parse(_nd);
 	
-	if (flag_display){
+	for (var _l in node_type_json.permissions){
+		for (_k in roles){
+			if (_l == _k){
+				Ti.API.info("====>> "+_l);
+				if ( node_type_json.permissions[_l]["can create"] ||  node_type_json.permissions[_l]["all_permissions"]){
+					show_plus = true;
+				}
+			}
+		}
+	}
+	Ti.API.info(flag_display+" = "+_is_disabled);	
+	
+	if (flag_display == 'true' && ( _is_disabled != 1 && _is_disabled != "1" && _is_disabled != "true" && _is_disabled != true) ){
 		check++;
 		var row_t = Ti.UI.createTableViewRow({
 			height      : 60,	
 			display     : display,
+			name		: display,
 			description : description,
 			name_table  : name_table,
 			className	: 'menu_row' // this is to optimize the rendering
@@ -200,6 +224,9 @@ while ( elements.isValidRow() ){
 			right:5,
 			is_plus: true
 		});
+		if (show_plus === false){
+			plus.hide();	
+		}
 		
 		row_t.add(icon);
 		row_t.add(title);
@@ -229,13 +256,14 @@ if (check == 0){
 
 if(PLATFORM == 'android'){
 	var notf = Ti.UI.createNotification({
-					message : 'Please, wait ...',
-					duration: Ti.UI.NOTIFICATION_DURATION_LONG
+		message : 'Please, wait ...',
+		duration: Ti.UI.NOTIFICATION_DURATION_LONG
 	});
 }
 
 //Go to contact.js when contact's button is clicked
 listView.addEventListener('click',function(e){
+	lock_screen();
 	Ti.API.info("row click on table view. index = "+e.index+", row_desc = "+e.row.description+", section = "+e.section+", source_desc="+e.source.description);
 	var timer_int_list  =  setInterval(function(){
 		if (isUpdating()){
@@ -267,6 +295,7 @@ listView.addEventListener('click',function(e){
 				win_new.region_form = 0;
 				win_new.backgroundColor = "#EEEEEE";
 				win_new.nameSelected = 'Fill Details...';
+				unlock_screen();
 				win_new.open();
 				setTimeout(function(){create_or_edit_node.loadUI();}, 100);
 				// win_new.addEventListener('focus', function(e){
@@ -284,17 +313,12 @@ listView.addEventListener('click',function(e){
 					backgroundColor: '#EEEEEE'
 				});
 				win_new.picked 	 = win2.picked;
+				unlock_screen();
 				win_new.open();
 			}				
 		}
 	}, 1000);
 });
-
-//Parses result from user's login 
-var jsonLogin = JSON.parse(win2.result) ;
-
-//Retrieves username
-var name = jsonLogin.user.realname;
 
 // showToolbar(name, win2)					
 var loggedView = Titanium.UI.createView({
@@ -360,9 +384,6 @@ offImage.addEventListener('click',function(e)
 	}
 
 });
-
-//Will create bottom toolbar with Home/Draft/Alert/Action buttons
-createDatabaseStatusView();
 
 //First time install
 var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
@@ -505,187 +526,189 @@ setInterval( function(){
 	}
 } , 300000);
 
-function createDatabaseStatusView(){
-	//View at the bottom to show user the database's status
-	var databaseStatusView = Titanium.UI.createView({
-		backgroundColor:'#000',
-		height: '60',
-		width: '100%',
-		bottom: 0,
-		layout: 'horizontal'
-	});
-	var home_view = Ti.UI.createView({
-		backgroundSelectedColor: 'orange',
-		focusable: true
-	});
-	databaseStatusView.add(home_view);
-	var home_img = Ti.UI.createImageView({
-		image: '/images/home2.png'
-	});
-	var home_lb = Ti.UI.createLabel({
-		text: 'Home',
-		font: {
-			fontSize: '14dp'
-		}	
-	});
-	home_view.add(home_img);
-	home_view.add(home_lb);
-	
-	var alerts_view = Ti.UI.createView({
-		backgroundSelectedColor: 'orange',
-		focusable: true
-	});
-	databaseStatusView.add(alerts_view);
-	var alerts_img = Ti.UI.createImageView({
-		image: '/images/msg3.png'
-	});
-	var alerts_lb = Ti.UI.createLabel({
-		text: 'Alerts',
-		font: {
-			fontSize: '14dp'
-		}	
-	});
-	alerts_view.add(alerts_img);
-	alerts_view.add(alerts_lb);
-	alerts_view.addEventListener('click', function(){
-		var timer_int_msg  =  setInterval(function(){
-			if (isUpdating()){
-				if(PLATFORM == 'android'){
-					notf.show();
-				}
-				else{
-					alert('Please, wait ...');
-				}		
+var databaseStatusView = Titanium.UI.createView({
+	backgroundColor:'#000',
+	height: '60',
+	width: '100%',
+	bottom: 0,
+	layout: 'horizontal'
+});
+
+//View at the bottom to show user the database's status
+
+var home_view = Ti.UI.createView({
+	backgroundSelectedColor: 'orange',
+	focusable: true
+});
+databaseStatusView.add(home_view);
+var home_img = Ti.UI.createImageView({
+	image: '/images/home2.png'
+});
+var home_lb = Ti.UI.createLabel({
+	text: 'Home',
+	font: {
+		fontSize: '14dp'
+	}	
+});
+home_view.add(home_img);
+home_view.add(home_lb);
+
+var alerts_view = Ti.UI.createView({
+	backgroundSelectedColor: 'orange',
+	focusable: true
+});
+databaseStatusView.add(alerts_view);
+var alerts_img = Ti.UI.createImageView({
+	image: '/images/msg3.png'
+});
+var alerts_lb = Ti.UI.createLabel({
+	text: 'Alerts',
+	font: {
+		fontSize: '14dp'
+	}	
+});
+alerts_view.add(alerts_img);
+alerts_view.add(alerts_lb);
+alerts_view.addEventListener('click', function(){
+	lock_screen();
+	var timer_int_msg  =  setInterval(function(){
+		if (isUpdating()){
+			if(PLATFORM == 'android'){
+				notf.show();
 			}
 			else{
-				clearInterval(timer_int_msg);
-				if(PLATFORM == 'android'){
-					notf.hide();
-				}
-				setUse();		
-				var win_new = Titanium.UI.createWindow({
-					title : 'Message center',
-					fullscreen : false,
-					url : 'message_center.js',
-					uid : jsonLogin.user.uid,
-					up_node : update_node,
-					backgroundColor: '#EEE'
-				});
-				win_new.picked = win2.picked;
-				win_new.open();
+				alert('Please, wait ...');
+			}		
+		}
+		else{
+			clearInterval(timer_int_msg);
+			if(PLATFORM == 'android'){
+				notf.hide();
 			}
-		}, 1000);	
-	});
+			setUse();		
+			var win_new = Titanium.UI.createWindow({
+				title : 'Message center',
+				fullscreen : false,
+				url : 'message_center.js',
+				uid : jsonLogin.user.uid,
+				up_node : update_node,
+				backgroundColor: '#EEE'
+			});
+			win_new.picked = win2.picked;
+			unlock_screen();
+			win_new.open();
+		}
+	}, 1000);	
+});
+
+var drafts_view = Ti.UI.createView(
+{
+	top: 7,
+	backgroundSelectedColor: 'orange',
+	focusable: true
+});
+databaseStatusView.add(drafts_view);
+var draft_img = Ti.UI.createImageView({
+	image: '/images/draft.png',
+	height: '22',
+	width: '25'
+});
+var drafts_lb = Ti.UI.createLabel({
+	text: 'Drafts',
+	top: 3,
+	font: {
+		fontSize: '14dp'
+	}	
+});
+drafts_view.add(draft_img);
+drafts_view.add(drafts_lb);
+drafts_view.addEventListener('click', function(){
+	openDraftWindow();
+});
+
+//View settings (Draft/ Alert/ Home)
+drafts_view.height = alerts_view.height = home_view.height = 60;
+drafts_view.layout = alerts_view.layout = home_view.layout = 'vertical';
+
+//Label settings (Draft/ Alert/ Home)
+drafts_lb.color 	= alerts_lb.color 		= home_lb.color 	= '#FFFFFF';
+drafts_lb.height 	= alerts_lb.height 		= home_lb.height 	= '21dp';
+drafts_lb.width 	= alerts_lb.width 		= home_lb.width 	= 'auto';
+drafts_lb.textAlign = alerts_lb.textAlign 	= home_lb.textAlign = 'center';
+
+//Image view setting (Draft/ Alert/ Home)
+alerts_img.height 	= home_img.height 	= '30';
+alerts_img.width	= home_img.width 	= '30';
+draft_img.top 		= alerts_img.top 	= draft_img.top = '2';
+
+if(PLATFORM == 'android'){
+	drafts_view.width = alerts_view.width = home_view.width = Ti.Platform.displayCaps.platformWidth/3;
+}else{
+	drafts_view.width = alerts_view.width = home_view.width = Ti.Platform.displayCaps.platformWidth/4;
 	
-	var drafts_view = Ti.UI.createView(
-	{
-		top: 7,
-		backgroundSelectedColor: 'orange',
-		focusable: true
+	var actions_view = Ti.UI.createView({
+		height: '50',
+		width: Ti.Platform.displayCaps.platformWidth/4,
+		layout: 'vertical'
+	})
+	databaseStatusView.add(actions_view);
+	var actions_img = Ti.UI.createImageView({
+		image: '/images/action.png',
+		width: '30',
+		height: '30',
+		top: 5
 	});
-	databaseStatusView.add(drafts_view);
-	var draft_img = Ti.UI.createImageView({
-		image: '/images/draft.png',
-		height: '22',
-		width: '25'
-	});
-	var drafts_lb = Ti.UI.createLabel({
-		text: 'Drafts',
-		top: 3,
+	var actions_lb = Ti.UI.createLabel({
+		text: 'Actions',
+		color:'#FFFFFF',
+		height:'16',
+		width:'auto',
+		textAlign:'center',
 		font: {
 			fontSize: '14dp'
 		}	
 	});
-	drafts_view.add(draft_img);
-	drafts_view.add(drafts_lb);
-	drafts_view.addEventListener('click', function(){
-		openDraftWindow();
-	});
+	actions_view.add(actions_img);
+	actions_view.add(actions_lb);
 	
-	//View settings (Draft/ Alert/ Home)
-	drafts_view.height = alerts_view.height = home_view.height = 60;
-	drafts_view.layout = alerts_view.layout = home_view.layout = 'vertical';
-	
-	//Label settings (Draft/ Alert/ Home)
-	drafts_lb.color 	= alerts_lb.color 		= home_lb.color 	= '#FFFFFF';
-	drafts_lb.height 	= alerts_lb.height 		= home_lb.height 	= '21dp';
-	drafts_lb.width 	= alerts_lb.width 		= home_lb.width 	= 'auto';
-	drafts_lb.textAlign = alerts_lb.textAlign 	= home_lb.textAlign = 'center';
-	
-	//Image view setting (Draft/ Alert/ Home)
-	alerts_img.height 	= home_img.height 	= '30';
-	alerts_img.width	= home_img.width 	= '30';
-	draft_img.top 		= alerts_img.top 	= draft_img.top = '2';
-	
-	if(PLATFORM == 'android'){
-		drafts_view.width = alerts_view.width = home_view.width = Ti.Platform.displayCaps.platformWidth/3;
-	}else{
-		drafts_view.width = alerts_view.width = home_view.width = Ti.Platform.displayCaps.platformWidth/4;
-		
-		var actions_view = Ti.UI.createView({
-			height: '50',
-			width: Ti.Platform.displayCaps.platformWidth/4,
-			layout: 'vertical'
-		})
-		databaseStatusView.add(actions_view);
-		var actions_img = Ti.UI.createImageView({
-			image: '/images/action.png',
-			width: '30',
-			height: '30',
-			top: 5
-		});
-		var actions_lb = Ti.UI.createLabel({
-			text: 'Actions',
-			color:'#FFFFFF',
-			height:'16',
-			width:'auto',
-			textAlign:'center',
-			font: {
-				fontSize: '14dp'
-			}	
-		});
-		actions_view.add(actions_img);
-		actions_view.add(actions_lb);
-		
-		actions_view.addEventListener('click', function(){
-			var postDialog = Titanium.UI.createOptionDialog();
-			postDialog.options = ['Update', 'Display Draft', 'About', 'cancel'];
-			postDialog.cancel = 3;
-			postDialog.show();
+	actions_view.addEventListener('click', function(){
+		var postDialog = Titanium.UI.createOptionDialog();
+		postDialog.options = ['Update', 'Display Draft', 'About', 'cancel'];
+		postDialog.cancel = 3;
+		postDialog.show();
 
-			postDialog.addEventListener('click', function(ev) {
-				if(ev.index == 0) {
-					checkUpdate('from_menu');
-				} else if(ev.index == 1) {
-					openDraftWindow();
-				} else if(ev.index == 2) {
-					if(isUpdating()) {
-						if(PLATFORM == 'android') {
-							notf.show();
-						} else {
-							alert('Please, wait ...');
-						}
+		postDialog.addEventListener('click', function(ev) {
+			if(ev.index == 0) {
+				checkUpdate('from_menu');
+			} else if(ev.index == 1) {
+				openDraftWindow();
+			} else if(ev.index == 2) {
+				if(isUpdating()) {
+					if(PLATFORM == 'android') {
+						notf.show();
 					} else {
-						var about_win = Ti.UI.createWindow({
-							title : 'About',
-							fullscreen : false,
-							backgroundColor : 'black',
-							url : 'about.js'
-						});
-						about_win.open();
+						alert('Please, wait ...');
 					}
+				} else {
+					var about_win = Ti.UI.createWindow({
+						title : 'About',
+						fullscreen : false,
+						backgroundColor : 'black',
+						url : 'about.js'
+					});
+					about_win.open();
 				}
-			});
-			return;
-		
+			}
 		});
-	}
+		return;
 	
-	win2.add(databaseStatusView);
+	});
 }
 
-function openDraftWindow(){
+win2.add(databaseStatusView);
 
+function openDraftWindow(){
+	lock_screen();
 	var timer_int_draft  =  setInterval(function(){
 		if (isUpdating()){
 			if(PLATFORM == 'android'){
@@ -721,8 +744,19 @@ function openDraftWindow(){
 				backgroundColor: '#EEE'
 			});
 			win_new.picked 	 = win2.picked;
+			unlock_screen();
 			win_new.open();
 			toolActInd.hide();
 		}
 	}, 1000);	
+}
+
+function lock_screen(){
+	listView.allowsSelection = false;
+	databaseStatusView.touchEnabled = false;
+}
+
+function unlock_screen(){
+	listView.allowsSelection = true;
+	databaseStatusView.touchEnabled = true;
 }

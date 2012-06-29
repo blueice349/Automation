@@ -787,7 +787,7 @@ if(c_index > 0) {
 							text : c_label[count],
 							color : '#4F556C',
 							font : {
-								fontSize : 18,
+								fontSize : 22,
 								fontWeight : 'bold'
 							},
 							textAlign : 'center',
@@ -990,7 +990,6 @@ if(c_index > 0) {
 
 						cell[i] = Ti.UI.createView({
 							height : heightValue,
-							//top : (heightValue+2)*index_fields,
 							width : '100%'
 						});
 

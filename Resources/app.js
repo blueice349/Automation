@@ -28,7 +28,7 @@ var baseLoginView = Ti.UI.createView({
 });
 win1.add(baseLoginView)
 
-var OMADI_VERSION = "omadiDb1497";
+var OMADI_VERSION = "omadiDb1502";
 
 Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION);
 var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );

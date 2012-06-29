@@ -1602,9 +1602,9 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									var get_title = JSON.stringify(json.node_type.insert[i].data.title_fields);
 									
 									var _get_data =	JSON.stringify(json.node_type.insert[i].data);
-									
-									node_db[node_db.length] = "INSERT OR REPLACE INTO bundles (bundle_name, display_name, description, title_fields, _data) VALUES ('"+json.node_type.insert[i].type+"', '"+json.node_type.insert[i].name+"' , '"+json.node_type.insert[i].description+"', '"+get_title+"', '"+_get_data+"' )";
+									node_db[node_db.length] = "INSERT OR REPLACE INTO bundles (bundle_name, display_name, description, title_fields, _data , disabled) VALUES ('"+json.node_type.insert[i].type+"', '"+json.node_type.insert[i].name+"' , '"+json.node_type.insert[i].description+"', '"+get_title+"', '"+_get_data+"', '"+json.node_type.insert[i].disabled+"' )";
 									Ti.API.info('Node type : '+json.node_type.insert[i].type+' has been created');
+									Ti.API.info("DISABLED ? "+json.node_type.insert[i].disabled);
 								}
 							}
 						}
@@ -1620,8 +1620,9 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								var get_title = JSON.stringify(json.node_type.insert.data.title_fields);
 								var _get_data =	JSON.stringify(json.node_type.insert.data);
 								
-								node_db[node_db.length] = "INSERT OR REPLACE INTO bundles (bundle_name, display_name, description, title_fields, _data) VALUES ('"+json.node_type.insert.type+"', '"+json.node_type.insert.name+"' , '"+json.node_type.insert.description+"' , '"+get_title+"', '"+_get_data+"' )";
+								node_db[node_db.length] = "INSERT OR REPLACE INTO bundles (bundle_name, display_name, description, title_fields, _data  , disabled) VALUES ('"+json.node_type.insert.type+"', '"+json.node_type.insert.name+"' , '"+json.node_type.insert.description+"' , '"+get_title+"', '"+_get_data+"',  '"+json.node_type.insert.disabled+"' )";
 								Ti.API.info('Node type : '+json.node_type.insert.type+' has been created');
+								Ti.API.info("DISABLED ? "+json.node_type.insert.disabled);
 							}						
 						}
 					}
@@ -1661,6 +1662,8 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								}
 								node_db[node_db.length] = "DROP TABLE "+json.node_type.insert[i].type;
 								node_db[node_db.length] = "DELETE FROM bundles WHERE bundle_name = '"+json.node_type.insert[i].type+"'";
+								node_db[node_db.length] = "DELETE FROM node WHERE table_name = '"+json.node_type.insert[i].type+"'";
+								
 								Ti.API.info('@Developer: Deletions for node_type need to be created');
 							}
 						}
@@ -1671,6 +1674,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							}
 							node_db[node_db.length] = "DROP TABLE "+json.node_type.insert.type;
 							node_db[node_db.length] = "DELETE FROM bundles WHERE bundle_name = '"+json.node_type.insert.type+"'";
+							node_db[node_db.length] = "DELETE FROM node WHERE table_name = '"+json.node_type.insert.type+"'";
 							Ti.API.info('@Developer: Deletions for node_type need to be created');
 						}
 					}
@@ -2818,8 +2822,23 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							var description  = n_bund.fieldByName("description");
 							var flag_display = n_bund.fieldByName("display_on_menu");
 							var id 			 = n_bund.fieldByName("bid");
+							var _is_disabled = n_bund.fieldByName("disabled");
+							var _nd 		 = n_bund.fieldByName("_data");
+							var show_plus 	 = false;	
 							
-							if (flag_display == 'false'){
+							for (var _l in node_type_json.permissions){
+								for (_k in roles){
+									if (_l == _k){
+										Ti.API.info("====>> "+_l);
+										if ( node_type_json.permissions[_l]["can create"] ||  node_type_json.permissions[_l]["all_permissions"]){
+											show_plus = true;
+										}
+									}
+								}
+							}
+							Ti.API.info(flag_display+" = "+_is_disabled);							
+							
+							if (flag_display == 'false' && ( _is_disabled != 1 && _is_disabled != "1" && _is_disabled != "true" && _is_disabled != true) ){
 	
 								var row_a = Ti.UI.createTableViewRow({
 									height      : 60,
@@ -2861,6 +2880,9 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									right:5,
 									is_plus: true
 								});
+								if (show_plus === false){
+									plus.hide();	
+								}
 								
 								row_a.add(icon);
 								row_a.add(title_a);
@@ -3215,7 +3237,9 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				
 				a_msg.addEventListener('click', function(e){
 					if (e.cancel === false){
+						Ti.API.info("Before update");
 						setTimeout (function (){
+								Ti.API.info("Triggering update");
 								progress = null;
 								progress = new Progress_install(0, 100);
 								installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);

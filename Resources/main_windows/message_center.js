@@ -27,6 +27,7 @@ if(res_set.rowCount == 0) {
 		height : 'auto',
 		width : 'auto',
 		top : '50%',
+		color: '#000',
 		text : 'You have no messages'
 	});
 
