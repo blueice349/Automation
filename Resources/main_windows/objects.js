@@ -62,6 +62,7 @@ while (resultsNames.isValidRow())
 	i++;
 	resultsNames.next();
 }
+var listTableView = null;
 
 //Check if the list is empty or not
 if(data.length < 1) {
@@ -174,7 +175,10 @@ if(PLATFORM == 'android'){
 }
 
 function bottomButtons(){
-	listTableView.top = '40'
+	if (listTableView != null ){
+		listTableView.top = '40'		
+	}
+
 	var back = Ti.UI.createButton({
 		title : 'Back',
 		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED

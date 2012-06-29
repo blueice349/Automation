@@ -205,11 +205,16 @@ if(c_index > 0) {
 			var node_table = db_display.execute('SELECT * FROM node WHERE nid=' + win4.nid);
 			if(node_table.rowCount > 0) {
 				var no_data_fields = node_table.fieldByName('no_data_fields');
-				no_data_fields = JSON.parse(no_data_fields);
-				for(var key in no_data_fields) {
-					if(no_data_fields.hasOwnProperty(key)) {
-						no_data_fieldsArr.push(key);
+				if (isJsonString()){
+					no_data_fields = JSON.parse(no_data_fields);
+					for(var key in no_data_fields) {
+						if(no_data_fields.hasOwnProperty(key)) {
+							no_data_fieldsArr.push(key);
+						}
 					}
+				}
+				else{
+					no_data_fieldsArr.push(key);
 				}
 			}
 
