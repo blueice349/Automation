@@ -4367,13 +4367,14 @@ create_or_edit_node.loadUI = function() {
 										vl : null,
 										cnt : 0
 									};
-
+									
 									if (vl_to_field == "") {
 										if (settings.default_value == "current_user") {
 											vl_to_field = win.uid;
 										}
 
 									}
+									
 
 									Ti.API.info(vl_to_field + " ----------------- is the uid ------------------- " + settings.default_value);
 
@@ -4449,12 +4450,12 @@ create_or_edit_node.loadUI = function() {
 
 								var vl_to_field = field_arr[index_label][index_size].actual_value;
 
-								if (vl_to_field == "") {
+								if (vl_to_field == "" || vl_to_field == "null" || vl_to_field == null) {
 									if (settings.default_value == "current_user") {
 										vl_to_field = win.uid;
 									}
 								}
-
+								
 								Ti.API.info(vl_to_field + " ----------------- is the uid ------------------- " + settings.default_value);
 
 								var arr_picker = new Array();
@@ -4472,6 +4473,7 @@ create_or_edit_node.loadUI = function() {
 								};
 
 								var counter_loop = 0;
+
 								for (var i_data_terms in data_terms) {
 									if (vl_to_field == data_terms[i_data_terms].uid) {
 										aux_val.title = data_terms[i_data_terms].title;

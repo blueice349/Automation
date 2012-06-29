@@ -2789,6 +2789,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				var n_bund = db_installMe.execute('SELECT * FROM bundles');
 				var take = db_installMe.execute('SELECT * FROM bundles WHERE display_on_menu="true"');
 				var count_t = 0;
+				var data_rows = new Array();
 				while ( n_bund.isValidRow() ){
 					var name_table = n_bund.fieldByName("bundle_name");
 				try{	
@@ -2821,7 +2822,8 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							if (flag_display == 'false'){
 	
 								var row_a = Ti.UI.createTableViewRow({
-									height      : 60,	
+									height      : 60,
+									name		: display,
 									display     : display,
 									description : description,
 									name_table  : name_table,
@@ -2864,7 +2866,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								row_a.add(title_a);
 								row_a.add(plus_a);
 	
-								menu.appendRow(row_a);
+								//menu.appendRow(row_a);
+								data_rows.push(row_a);
+								data_rows.sort(sortTableView);
+								menu.setData(data_rows);
 								db_installMe.execute('UPDATE bundles SET display_on_menu =\'true\' WHERE bid='+id);
 							}
 							
@@ -2875,6 +2880,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				}
 				}
 				n_bund.close();
+
 				/*********** Users *************/
 				if(json.users){
 					

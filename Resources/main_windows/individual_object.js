@@ -1380,7 +1380,7 @@ function bottomButtons1(actualWindow){
 
 	
 	var edit = Ti.UI.createButton({
-		title : 'Edit',
+		title : 'Actions',
 		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
 	});
 

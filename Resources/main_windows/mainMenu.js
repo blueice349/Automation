@@ -34,7 +34,7 @@ var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getS
 
 //Geolocation module
 setTimeout(function(){
-	Ti.include('geolocation.js');
+	//Ti.include('geolocation.js');
 }, 10000)
 
 
