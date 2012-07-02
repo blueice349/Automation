@@ -2758,7 +2758,9 @@ create_or_edit_node.loadUI = function() {
 									value : field_arr[index_label][index_size].actual_value,
 									reffer_index : reffer_index,
 									settings : settings,
-									changedFlag : 0
+									changedFlag : 0,
+									my_min: _min,
+									my_max: _max
 								});
 								top += heightValue;
 
