@@ -792,7 +792,7 @@ function keep_info(_flag_info) {
 		Ti.API.info('========= Updating new info running ========= ' + _flag_info);
 		if ((Titanium.Network.online) && (has_bug === false) && (_flag_info != 'draft')) {
 			Ti.API.info('Submitting');
-			win.up_node(win.mode, close_me);
+			win.up_node(win.mode, close_me, win.type.toUpperCase());
 		} else if (has_bug === true) {
 			Ti.API.info('Error');
 			close_me_delay();
@@ -1688,7 +1688,9 @@ create_or_edit_node.loadUI = function() {
 					if (field_arr[index_label][index_size].required == true || field_arr[index_label][index_size].required == 'true' || field_arr[index_label][index_size].required == 1 || field_arr[index_label][index_size].required == '1') {
 						isRequired = true;
 					}
-
+					
+					field_arr[index_label][index_size].label = field_arr[index_label][index_size].label.replace(/"/gi,'\'');
+					
 					switch(field_arr[index_label][index_size].type) {
 
 						case 'license_plate':
@@ -2423,9 +2425,8 @@ create_or_edit_node.loadUI = function() {
 								}
 							}
 
-							break;
-
-						case 'text':
+						break;
+					
 						case 'link_field':
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
@@ -2446,7 +2447,10 @@ create_or_edit_node.loadUI = function() {
 							regionView.add(label[count]);
 							var reffer_index = count;
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
-
+							var _min = null; 
+							var _max = null;
+	
+							
 							if (settings.cardinality > 1) {
 								if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
 									var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
@@ -2502,6 +2506,7 @@ create_or_edit_node.loadUI = function() {
 										changedContentValue(e.source);
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 									});
+													
 									count++;
 								}
 							} else {
@@ -2541,6 +2546,335 @@ create_or_edit_node.loadUI = function() {
 							if(content[reffer_index].noDataView!=null){
 								top += 40; 
 							}	
+							break;
+						
+						case 'text':
+							label[count] = Ti.UI.createLabel({
+								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
+								color : isRequired ? 'red' : _lb_color,
+								font : {
+									fontSize : 18,
+									fontWeight: 'bold'
+								},
+								textAlign : 'left',
+								width : Ti.Platform.displayCaps.platformWidth - 30,
+								touchEnabled : false,
+								height : heightValue,
+								top : top
+							});
+							top += heightValue;
+
+							//Add fields:
+							regionView.add(label[count]);
+							var reffer_index = count;
+							var settings = JSON.parse(field_arr[index_label][index_size].settings);
+							var _min = null;
+							var _max = null;
+							
+							if (settings.min_length && settings.min_length != null && settings.min_length != "null"){
+								_min = settings.min_length
+							}
+							
+							if (settings.max_length && settings.max_length != null && settings.max_length != "null"){
+								_max = settings.max_length
+							}
+							
+							if (settings.cardinality > 1) {
+								if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
+									var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
+
+									//Decode the stored array:
+									var decoded = array_cont.fieldByName('encoded_array');
+									decoded = Titanium.Utils.base64decode(decoded);
+									Ti.API.info('Decoded array is equals to: ' + decoded);
+									decoded = decoded.toString();
+
+									// Token that splits each element contained into the array: 'j8Oá2s)E'
+									var decoded_values = decoded.split("j8Oá2s)E");
+								} else {
+									var decoded_values = new Array();
+									decoded_values[0] = field_arr[index_label][index_size].actual_value;
+								}
+
+								for (var o_index = 0; o_index < settings.cardinality; o_index++) {
+
+									if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
+										var vl_to_field = decoded_values[o_index];
+									} else {
+										var vl_to_field = "";
+									}
+
+									content[count] = Ti.UI.createTextField({
+										hintText : "#" + o_index + " " + field_arr[index_label][index_size].label,
+										private_index : o_index,
+										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+										textAlign : 'left',
+										width : Ti.Platform.displayCaps.platformWidth - 30,
+										height : heightValue,
+										font : {
+											fontSize : 18
+										},
+										color : '#000000',
+										top : top,
+										field_type : field_arr[index_label][index_size].type,
+										field_name : field_arr[index_label][index_size].field_name,
+										required : field_arr[index_label][index_size].required,
+										is_title : field_arr[index_label][index_size].is_title,
+										composed_obj : true,
+										cardinality : settings.cardinality,
+										value : vl_to_field,
+										reffer_index : reffer_index,
+										settings : settings,
+										changedFlag : 0,
+										my_min: _min,
+										my_max: _max
+									});
+									top += heightValue;
+
+									regionView.add(content[count]);
+									content[count].addEventListener('change', function(e) {
+										changedContentValue(e.source);
+										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+									});
+									
+									content[count].addEventListener('blur', function(e) {
+										Ti.API.info(e.source.value.length+' or '+e.value.length+' Field number ==> min: '+e.source.my_min+' max: '+e.source.my_max);
+										if (e.source.my_max != null && e.source.my_min != null){
+											if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
+												var _a = Titanium.UI.createAlertDialog({
+													title:'Omadi',
+													message: 'The minimum for this field is '+e.source.my_min,
+													buttonNames: ['Edit', 'Clear'],
+													cancel:1
+												});
+												
+												_a.show();
+												
+												_a.addEventListener('click', function(evt){
+													if (evt.index != evt.cancel){
+														e.focus();
+													}
+													else{
+														e.source.value = null;
+													}
+												});
+												
+											}
+											else if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max) ) {
+												var _a = Titanium.UI.createAlertDialog({
+													title:'Omadi',
+													message: "The maximum for this field is "+e.source.my_max,
+													buttonNames: ['Edit', 'Clear'],
+													cancel:1
+												});
+												
+												_a.show();
+												
+												_a.addEventListener('click', function(evt){
+													if (evt.index != evt.cancel){
+														e.focus();
+													}
+													else{
+														e.source.value = null;
+													}
+												});
+											}
+											else{
+												//value is ok
+											}
+										}
+										else if (e.source.my_max != null){
+											if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
+												var _a = Titanium.UI.createAlertDialog({
+													title:'Omadi',
+													message: "The maximum for this field is "+e.source.my_max,
+													buttonNames: ['Edit', 'Clear'],
+													cancel:1
+												});
+												
+												_a.show();
+												
+												_a.addEventListener('click', function(evt){
+													if (evt.index != evt.cancel){
+														e.focus();
+													}
+													else{
+														e.source.value = null;
+													}
+												});
+											}
+											else{
+												//value is ok
+											}
+										}
+										else if (e.source.my_min != null){
+											if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
+												var _a = Titanium.UI.createAlertDialog({
+													title:'Omadi',
+													message: 'The minimum for this field is '+e.source.my_min,
+													buttonNames: ['Edit', 'Clear'],
+													cancel:1
+												});
+												
+												_a.show();
+												
+												_a.addEventListener('click', function(evt){
+													if (evt.index != evt.cancel){
+														e.focus();
+													}
+													else{
+														e.source.value = null;
+													}
+												});
+											}
+											else{
+												//value is ok
+											}
+										}
+										else{
+											//No min or max sets
+										}
+									});						
+									count++;
+								}
+							} else {
+								content[count] = Ti.UI.createTextField({
+									hintText : field_arr[index_label][index_size].label,
+									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+									textAlign : 'left',
+									width : Ti.Platform.displayCaps.platformWidth - 30,
+									height : heightValue,
+									font : {
+										fontSize : 18
+									},
+									color : '#000000',
+									top : top,
+									field_type : field_arr[index_label][index_size].type,
+									field_name : field_arr[index_label][index_size].field_name,
+									required : field_arr[index_label][index_size].required,
+									is_title : field_arr[index_label][index_size].is_title,
+									composed_obj : false,
+									cardinality : settings.cardinality,
+									value : field_arr[index_label][index_size].actual_value,
+									reffer_index : reffer_index,
+									settings : settings,
+									changedFlag : 0
+								});
+								top += heightValue;
+
+								regionView.add(content[count]);
+								content[count].addEventListener('change', function(e) {
+									changedContentValue(e.source);
+									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+								});
+								
+									content[count].addEventListener('blur', function(e) {
+										Ti.API.info(e.source.value.length+' or '+e.value.length+' Field number ==> min: '+e.source.my_min+' max: '+e.source.my_max);
+										if (e.source.my_max != null && e.source.my_min != null){
+											if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
+												var _a = Titanium.UI.createAlertDialog({
+													title:'Omadi',
+													message: 'The minimum for this field is '+e.source.my_min,
+													buttonNames: ['Edit', 'Clear'],
+													cancel:1
+												});
+												
+												_a.show();
+												
+												_a.addEventListener('click', function(evt){
+													if (evt.index != evt.cancel){
+														e.focus();
+													}
+													else{
+														e.source.value = null;
+													}
+												});
+												
+											}
+											else if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max) ) {
+												var _a = Titanium.UI.createAlertDialog({
+													title:'Omadi',
+													message: "The maximum for this field is "+e.source.my_max,
+													buttonNames: ['Edit', 'Clear'],
+													cancel:1
+												});
+												
+												_a.show();
+												
+												_a.addEventListener('click', function(evt){
+													if (evt.index != evt.cancel){
+														e.focus();
+													}
+													else{
+														e.source.value = null;
+													}
+												});
+											}
+											else{
+												//value is ok
+											}
+										}
+										else if (e.source.my_max != null){
+											if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
+												var _a = Titanium.UI.createAlertDialog({
+													title:'Omadi',
+													message: "The maximum for this field is "+e.source.my_max,
+													buttonNames: ['Edit', 'Clear'],
+													cancel:1
+												});
+												
+												_a.show();
+												
+												_a.addEventListener('click', function(evt){
+													if (evt.index != evt.cancel){
+														e.focus();
+													}
+													else{
+														e.source.value = null;
+													}
+												});
+											}
+											else{
+												//value is ok
+											}
+										}
+										else if (e.source.my_min != null){
+											if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
+												var _a = Titanium.UI.createAlertDialog({
+													title:'Omadi',
+													message: 'The minimum for this field is '+e.source.my_min,
+													buttonNames: ['Edit', 'Clear'],
+													cancel:1
+												});
+												
+												_a.show();
+												
+												_a.addEventListener('click', function(evt){
+													if (evt.index != evt.cancel){
+														e.focus();
+													}
+													else{
+														e.source.value = null;
+													}
+												});
+											}
+											else{
+												//value is ok
+											}
+										}
+										else{
+											//No min or max sets
+										}
+									});										
+								count++;
+							}
+							//No data checkbox functionality
+							noDataCheckbox(reffer_index, regionView, top);
+							if(content[reffer_index].noDataView!=null){
+								top += 40; 
+							}	
+							
+							
 							break;
 
 						case 'text_long':
@@ -2837,7 +3171,17 @@ create_or_edit_node.loadUI = function() {
 									defaultField = settings.parent_form_default_value.default_value_field;
 								}
 							}
-
+							var _min = null;
+							var _max = null;
+							
+							if (settings.min && settings.min != null && settings.min != "null"){
+								_min = settings.min
+							}
+							
+							if (settings.max && settings.max != null && settings.max != "null"){
+								_max = settings.max
+							}
+							
 							if (settings.cardinality > 1) {
 								if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
 									var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
@@ -2889,7 +3233,9 @@ create_or_edit_node.loadUI = function() {
 										parent_name : parent_name,
 										defaultField : defaultField,
 										settings : settings,
-										changedFlag : 0
+										changedFlag : 0,
+										my_max: _max,
+										my_min: _min
 									});
 									addDoneButtonInKB(content[count]);
 									top += heightValue;
@@ -2900,6 +3246,44 @@ create_or_edit_node.loadUI = function() {
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 
 									});
+									
+									content[count].addEventListener('blur', function(e) {
+										Ti.API.info(e.source.value+' or '+e.value+' Field number ==> min: '+e.source.my_min+' max: '+e.source.my_max);
+										if (e.source.my_max != null && e.source.my_min != null){
+											if (parseFloat(e.source.value) < parseFloat(e.source.my_min)){
+												alert("The minimum for this field is "+e.source.my_min);
+												e.source.value = null;
+											}
+											else if ( parseFloat(e.source.value) > parseFloat(e.source.my_max) ) {
+												alert("The maximum for this field is "+e.source.my_max);
+												e.source.value = null;
+											}
+											else{
+												//value is ok
+											}
+										}
+										else if (e.source.my_max != null){
+											if ( parseFloat(e.source.value) > parseFloat(e.source.my_max)) {
+												alert("The maximum for this field is "+e.source.my_max);
+												e.source.value= null;
+											}
+											else{
+												//value is ok
+											}
+										}
+										else if (e.source.my_min != null){
+											if (parseFloat(e.source.value) < parseFloat(e.source.my_min)){
+												alert("The minimum for this field is "+e.source.my_min);
+												e.source.value = null;
+											}
+											else{
+												//value is ok
+											}
+										}
+										else{
+											//No min or max sets
+										}
+									});									
 									count++;
 								}
 							} else {
@@ -2928,7 +3312,9 @@ create_or_edit_node.loadUI = function() {
 									parent_name : parent_name,
 									defaultField : defaultField,
 									settings : settings,
-									changedFlag : 0
+									changedFlag : 0,
+									my_max: _max,
+									my_min: _min
 								});
 								addDoneButtonInKB(content[count]);
 								top += heightValue;
@@ -2939,6 +3325,45 @@ create_or_edit_node.loadUI = function() {
 									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 
 								});
+								
+								content[count].addEventListener('blur', function(e) {
+										Ti.API.info(e.source.value+' or '+e.value+' Field number ==> min: '+e.source.my_min+' max: '+e.source.my_max);
+										if (e.source.my_max != null && e.source.my_min != null){
+											if (parseFloat(e.source.value) < parseFloat(e.source.my_min)){
+												alert("The minimum for this field is "+e.source.my_min);
+												e.source.value = null;
+											}
+											else if ( parseFloat(e.source.value) > parseFloat(e.source.my_max) ) {
+												alert("The maximum for this field is "+e.source.my_max);
+												e.source.value = null;
+											}
+											else{
+												//value is ok
+											}
+										}
+										else if (e.source.my_max != null){
+											if ( parseFloat(e.source.value) > parseFloat(e.source.my_max)) {
+												alert("The maximum for this field is "+e.source.my_max);
+												e.source.value= null;
+											}
+											else{
+												//value is ok
+											}
+										}
+										else if (e.source.my_min != null){
+											if (parseFloat(e.source.value) < parseFloat(e.source.my_min)){
+												alert("The minimum for this field is "+e.source.my_min);
+												e.source.value = null;
+											}
+											else{
+												//value is ok
+											}
+										}
+										else{
+											//No min or max sets
+										}
+									});				
+								
 								count++;
 							}
 							//No data checkbox functionality
@@ -5098,12 +5523,16 @@ create_or_edit_node.loadUI = function() {
 										var vl_to_field = false;
 									}
 
-									content[count] = Titanium.UI.createSwitch({
+									content[count] = Titanium.UI.createButton({
 										top : top,
+										width : '30dp',
+									    height: '30dp',
+									    borderRadius: 4,
+									    borderColor: '#333',
+									    borderWidth: 0,
+									    backgroundColor: '#FFF',
 										private_index : o_index,
-										height : getScreenHeight() * 0.1,
-										titleOff : "No",
-										titleOn : "Yes",
+										//height : getScreenHeight() * 0.1,
 										value : vl_to_field,
 										field_type : field_arr[index_label][index_size].type,
 										field_name : field_arr[index_label][index_size].field_name,
@@ -5118,10 +5547,22 @@ create_or_edit_node.loadUI = function() {
 									});
 									top += getScreenHeight() * 0.1;
 
-									content[count].addEventListener('change', function(e) {
-										Ti.API.info('Basic Switch value = ' + e.value);
+									content[count].addEventListener('click', function(e) {
+										if (e.source.value === false){
+											e.source.backgroundImage = '/images/selected_test.png';
+											e.source.borderWidth = 2;	
+											e.source.value  = true;	
+										}
+										else{
+											e.source.backgroundImage = null;
+											e.source.borderWidth = 0;	
+											e.source.value  = false;		
+										}								
+									
+										Ti.API.info('Actual value = ' + e.source.value);
 										changedContentValue(e.source);
 									});
+									
 
 									regionView.add(content[count]);
 									count++;
@@ -5133,11 +5574,15 @@ create_or_edit_node.loadUI = function() {
 								else
 									var vl_to_field = false;
 
-								content[count] = Titanium.UI.createSwitch({
+								content[count] = Titanium.UI.createView({
 									top : top,
-									height : getScreenHeight() * 0.1,
-									titleOff : "No",
-									titleOn : "Yes",
+									width : '30dp',
+								    height: '30dp',
+								    borderRadius: 4,
+								    borderColor: '#333',
+								    borderWidth: 0,
+								    backgroundColor: '#FFF',
+									private_index : o_index,
 									value : vl_to_field,
 									field_type : field_arr[index_label][index_size].type,
 									field_name : field_arr[index_label][index_size].field_name,
@@ -5152,8 +5597,20 @@ create_or_edit_node.loadUI = function() {
 								});
 								top += getScreenHeight() * 0.1;
 
-								content[count].addEventListener('change', function(e) {
-									Ti.API.info('Basic Switch value = ' + e.value);
+								content[count].addEventListener('click', function(e) {
+									Ti.API.info("CLICK");
+									if (e.source.value === false){
+										e.source.backgroundImage = '/images/selected_test.png';
+										e.source.borderWidth = 2;	
+										e.source.value  = true;	
+									}
+									else{
+										e.source.backgroundImage = null;
+										e.source.borderWidth = 0;	
+										e.source.value  = false;		
+									}
+									
+									Ti.API.info('Actual value = ' + e.source.value);
 									changedContentValue(e.source);
 								});
 

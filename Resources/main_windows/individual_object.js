@@ -1418,14 +1418,17 @@ function bottomButtons1(actualWindow){
 		btn_id.push(node_form.fieldByName('form_part'));
 		json_data.close();
 		db_act.close();
-
-
+		btn_tt.push('Cancel');
+		
 		var postDialog = Titanium.UI.createOptionDialog();
 		postDialog.options = btn_tt;
 		postDialog.show();
 
 		postDialog.addEventListener('click', function(ev) {
-				if (ev.index != -1){
+				if (ev.index  == btn_tt.length-1){
+					
+				}
+				else if (ev.index != -1){
 					openEditScreen(btn_id[ev.index]);	
 				}
 		});	

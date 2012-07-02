@@ -33,10 +33,7 @@ unsetUse();
 var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 
 //Geolocation module
-setTimeout(function(){
-	//Ti.include('geolocation.js');
-}, 10000)
-
+Ti.include('geolocation.js');
 
 var updateFromAboutPage = function(){
 	checkUpdate('from_menu');
@@ -119,7 +116,7 @@ function checkUpdate(evt){
 	}
 };
 
-function update_node(mode, close_parent){
+function update_node(mode, close_parent, _node_name){
 	//Sets status to 'updating'
 
 	var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
@@ -137,7 +134,7 @@ function update_node(mode, close_parent){
 	installMe(0, win2, updatedTimeStamp  , null, win2.listView, null, 'POST', mode, function (){
 		Ti.API.info('Closing create or edit node');
 		close_parent();
-	});
+	}, _node_name);
 }
 
 var listView = Titanium.UI.createTableView({

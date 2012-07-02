@@ -19,7 +19,6 @@ function getDBName() {
 	return recebe;
 }
 
-
 function showIndicator(show)
 {
     indWin = Titanium.UI.createWindow({
@@ -1400,7 +1399,7 @@ function isJsonString(str) {
 
 //Install new updates using pagination
 //Load existing data with pagination
-function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent)
+function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent, _node_name)
 {
 	setUse();
 	var db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
@@ -3185,11 +3184,11 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				if (mode == 1 ){
 					if(PLATFORM == 'android'){
 						Ti.UI.createNotification({
-							message : 'The node has been successfully online and locally updated',
+							message : 'The '+_node_name+' was updated successfully',
 							duration: Ti.UI.NOTIFICATION_DURATION_LONG
 						}).show();
 					}else{
-						alert('The node has been successfully online and locally updated');
+						alert('The '+_node_name+' was updated successfully');
 					}
 					//Just to make sure database keeps locked
 
@@ -3202,11 +3201,11 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				else if (mode == 0 ){
 					if(PLATFORM == 'android'){
 						Ti.UI.createNotification({
-							message : 'The node has been successfully online and locally created',
+							message : 'The '+_node_name+' was created successfully.',
 							duration: Ti.UI.NOTIFICATION_DURATION_LONG
 						}).show();
 					}else{
-						alert('The node has been successfully online and locally created');
+						alert('The '+_node_name+' was created successfully.');
 					}
 					//Just to make sure database keeps locked
 

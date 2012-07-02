@@ -21,14 +21,8 @@ var win1 = Titanium.UI.createWindow({
     title:'Omadi CRM',
     fullscreen: false
 });
-var baseLoginView = Ti.UI.createView({
-	height: 'auto',
-	layout: 'vertical',
-	top: '10',
-});
-win1.add(baseLoginView)
 
-var OMADI_VERSION = "omadiDb1513";
+var OMADI_VERSION = "omadiDb1517";
 
 Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION);
 var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );
@@ -43,35 +37,39 @@ if (updatedTime.fieldByName('timestamp') != 0){
 updatedTime.close();
 db_a.close();
 
-var i_scroll_page = Titanium.UI.createView({
+var i_scroll_page = Titanium.UI.createScrollView({
     contentWidth:'auto',
     contentHeight:'auto',
     showVerticalScrollIndicator:true,
-    showHorizontalScrollIndicator:true,
+    showHorizontalScrollIndicator:false,
+    scrollType: 'vertical',
 	width: '100%',
 	top: 0,
 	left: 0,
-	height: '70%'
+	height: 'auto',
+	layout: 'vertical'
 });
+win1.add(i_scroll_page);
+
 //Web site picker 
 var logo = Titanium.UI.createImageView({
 	width:'auto',
-	top: '0',
-	height: 'auto',
+	top: '20dp',
+	height: '120dp',
 	image: 'images/logo.png'
 });
 //Adds picker to root window
-baseLoginView.add(logo);
+i_scroll_page.add(logo);
 //Web site picker 
 var portal = Titanium.UI.createTextField({
 	width:'65%',
 	top: '20',
-	height: '53',
+	height: '53dp',
 	hintText:'Client Account',
 	color:'#000000',
 	value: credentials.fieldByName('domain'),
 	keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
-	returnKeyType:Titanium.UI.RETURNKEY_DEFAULT,
+	returnKeyType: Ti.UI.RETURNKEY_NEXT,
 	softKeyboardOnFocus : (PLATFORM == 'android')?Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS:'',
 	borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 	autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_NONE,
@@ -79,19 +77,22 @@ var portal = Titanium.UI.createTextField({
 	editable: locked_field
 });
 //Adds picker to root window
-baseLoginView.add(portal);
+i_scroll_page.add(portal);
 
+portal.addEventListener('return', function(){
+	tf1.focus();
+});
 
 //Text field for username
 var tf1 = Titanium.UI.createTextField({
 	hintText:'Username',
 	width:'65%',
 	top: '10',
-	height: '53',
+	height: '53dp',
 	color:'#000000',
 	value: credentials.fieldByName('username'),
 	keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
-	returnKeyType:Titanium.UI.RETURNKEY_DEFAULT,
+	returnKeyType: Ti.UI.RETURNKEY_NEXT,
 	softKeyboardOnFocus : (PLATFORM == 'android')?Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS:'',
 	borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 	autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_NONE,
@@ -103,19 +104,20 @@ var tf1 = Titanium.UI.createTextField({
 tf1.autocorrect = false;
 
 //Adds text field "username" to the interface
-baseLoginView.add(tf1);
+i_scroll_page.add(tf1);
+
 
 //Text field for password
 var tf2 = Titanium.UI.createTextField({
 	hintText:'Password',
 	color:'#000000',
 	width:'65%',
-	height: '53',
+	height: '53dp',
 	top: '10',	
     passwordMask:true,
 	value: credentials.fieldByName('password'),
     keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
-	returnKeyType:Titanium.UI.RETURNKEY_DONE,
+	returnKeyType: Ti.UI.RETURNKEY_SEND,
 	softKeyboardOnFocus : (PLATFORM == 'android')?Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS:'',
     borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 	autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_NONE,
@@ -127,7 +129,16 @@ credentials.close();
 tf2.autocorrect = false;
 
 //Adds text field "password" to the interface
-baseLoginView.add(tf2);
+i_scroll_page.add(tf2);
+
+tf1.addEventListener('return', function(){
+	tf2.focus();
+});
+
+tf2.addEventListener('return', function(){
+	b1.fireEvent('click');
+});
+
 
 win1.addEventListener('focus', function(){
 	var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
@@ -153,10 +164,18 @@ win1.addEventListener('focus', function(){
 //
 var messageView = Titanium.UI.createView({
 	bottom: '0px',	
-	backgroundColor:'#EEE',
+	backgroundGradient: {
+        type: 'linear',
+        colors: [
+            {color: '#FFF', position: 0.0},
+			{color: '#AAA', position: 1.0}
+        ],
+        startPoint: {x: 0, y: 0},
+        endPoint: {x: 0, y: 100},
+        backFillStart: false
+	},
 	height: '10%',
 	width: '100%',
-	opacity: 0.99,
 	borderRadius:0
 });
 
@@ -169,23 +188,29 @@ Ti.API.info('The value for logStatus we found in app.js is : '+Ti.App.Properties
 // Otherwise, print the content of logStatus
 if ( ( Ti.App.Properties.getString('logStatus') == null) || (Ti.App.Properties.getString('logStatus') == "") ){
 	var label_error = Titanium.UI.createLabel({
-		color:'#000',
+		color:'#4B5C8C',
 		text:'Please login',
+		font : {
+			fontWeight: 'bold'
+		},
 		height:'auto',
 		width:'auto',
 		textAlign:'center'
 	});
 }
-else{
+else{    
 	var label_error = Titanium.UI.createLabel({
-		color:'#000',
+		color:'#4B5C8C',
+		font : {
+			fontWeight: 'bold'
+		},	
 		text: Ti.App.Properties.getString('logStatus'),
 		height:'auto',
 		width:'auto',
 		textAlign:'center'
 	});
 }
-label_error.backgroundColor = "#EEE";
+label_error.backgroundColor = "transparent";
 // Adds label_error to the messageView
 messageView.add(label_error);
 
@@ -200,11 +225,17 @@ var b1 = Titanium.UI.createButton({
    title: 'Log In',
    width: '80%',
    height: '55',
-   top: '13' 
+   top: '13dp' 
 });
 
 //Adds button to the interface
-baseLoginView.add(b1);
+i_scroll_page.add(b1);
+
+var block_i = Ti.UI.createView({
+	top: '20dp',
+	height: '50dp'
+});
+i_scroll_page.add(block_i);
 
 /* Function: Trigger for login button
  * Name: b1.addEventListener('click', function(){ ... });
@@ -355,5 +386,5 @@ db.close();
 //Make everthing happen:
 win1.open();
 if(Ti.Platform.displayCaps.platformHeight > 500){
-	baseLoginView.top = 'auto'
+	i_scroll_page.top = '200dp'
 }
