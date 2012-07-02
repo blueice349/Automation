@@ -2627,7 +2627,8 @@ create_or_edit_node.loadUI = function() {
 										settings : settings,
 										changedFlag : 0,
 										my_min: _min,
-										my_max: _max
+										my_max: _max,
+										real_ind: count
 									});
 									top += heightValue;
 
@@ -2652,7 +2653,7 @@ create_or_edit_node.loadUI = function() {
 												
 												_a.addEventListener('click', function(evt){
 													if (evt.index != evt.cancel){
-														e.focus();
+														content[e.source.real_ind].focus();
 													}
 													else{
 														e.source.value = null;
@@ -2672,7 +2673,7 @@ create_or_edit_node.loadUI = function() {
 												
 												_a.addEventListener('click', function(evt){
 													if (evt.index != evt.cancel){
-														e.focus();
+														content[e.source.real_ind].focus();
 													}
 													else{
 														e.source.value = null;
@@ -2696,7 +2697,7 @@ create_or_edit_node.loadUI = function() {
 												
 												_a.addEventListener('click', function(evt){
 													if (evt.index != evt.cancel){
-														e.focus();
+														content[e.source.real_ind].focus();
 													}
 													else{
 														e.source.value = null;
@@ -2720,7 +2721,7 @@ create_or_edit_node.loadUI = function() {
 												
 												_a.addEventListener('click', function(evt){
 													if (evt.index != evt.cancel){
-														e.focus();
+														content[e.source.real_ind].focus();
 													}
 													else{
 														e.source.value = null;
@@ -2760,7 +2761,8 @@ create_or_edit_node.loadUI = function() {
 									settings : settings,
 									changedFlag : 0,
 									my_min: _min,
-									my_max: _max
+									my_max: _max,
+									real_ind: count
 								});
 								top += heightValue;
 
@@ -2785,7 +2787,7 @@ create_or_edit_node.loadUI = function() {
 												
 												_a.addEventListener('click', function(evt){
 													if (evt.index != evt.cancel){
-														e.focus();
+														content[e.source.real_ind].focus();
 													}
 													else{
 														e.source.value = null;
@@ -2805,7 +2807,7 @@ create_or_edit_node.loadUI = function() {
 												
 												_a.addEventListener('click', function(evt){
 													if (evt.index != evt.cancel){
-														e.focus();
+														content[e.source.real_ind].focus();
 													}
 													else{
 														e.source.value = null;
@@ -2829,7 +2831,7 @@ create_or_edit_node.loadUI = function() {
 												
 												_a.addEventListener('click', function(evt){
 													if (evt.index != evt.cancel){
-														e.focus();
+														content[e.source.real_ind].focus();
 													}
 													else{
 														e.source.value = null;
@@ -2853,7 +2855,7 @@ create_or_edit_node.loadUI = function() {
 												
 												_a.addEventListener('click', function(evt){
 													if (evt.index != evt.cancel){
-														e.focus();
+														content[e.source.real_ind].focus();
 													}
 													else{
 														e.source.value = null;
@@ -2899,7 +2901,17 @@ create_or_edit_node.loadUI = function() {
 							regionView.add(label[count]);
 							var reffer_index = count;
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
-
+							var _min = null;
+							var _max = null;
+							
+							if (settings.min_length && settings.min_length != null && settings.min_length != "null"){
+								_min = settings.min_length
+							}
+							
+							if (settings.max_length && settings.max_length != null && settings.max_length != "null"){
+								_max = settings.max_length
+							}
+							
 							if (settings.cardinality > 1) {
 								if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
 									var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
@@ -2943,7 +2955,10 @@ create_or_edit_node.loadUI = function() {
 										value : vl_to_field,
 										reffer_index : reffer_index,
 										settings : settings,
-										changedFlag : 0
+										changedFlag : 0,
+										my_min: _min,
+										my_max: _max,
+										real_ind: count										
 									});
 									top += 100;
 
@@ -2952,6 +2967,105 @@ create_or_edit_node.loadUI = function() {
 										changedContentValue(e.source);
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 									});
+									
+									content[count].addEventListener('blur', function(e) {
+										Ti.API.info(e.source.value.length+' or '+e.value.length+' Field number ==> min: '+e.source.my_min+' max: '+e.source.my_max);
+										if (e.source.my_max != null && e.source.my_min != null){
+											if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
+												var _a = Titanium.UI.createAlertDialog({
+													title:'Omadi',
+													message: 'The minimum for this field is '+e.source.my_min,
+													buttonNames: ['Edit', 'Clear'],
+													cancel:1
+												});
+												
+												_a.show();
+												
+												_a.addEventListener('click', function(evt){
+													if (evt.index != evt.cancel){
+														content[e.source.real_ind].focus();
+													}
+													else{
+														e.source.value = null;
+													}
+												});
+												
+											}
+											else if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max) ) {
+												var _a = Titanium.UI.createAlertDialog({
+													title:'Omadi',
+													message: "The maximum for this field is "+e.source.my_max,
+													buttonNames: ['Edit', 'Clear'],
+													cancel:1
+												});
+												
+												_a.show();
+												
+												_a.addEventListener('click', function(evt){
+													if (evt.index != evt.cancel){
+														content[e.source.real_ind].focus();
+													}
+													else{
+														e.source.value = null;
+													}
+												});
+											}
+											else{
+												//value is ok
+											}
+										}
+										else if (e.source.my_max != null){
+											if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
+												var _a = Titanium.UI.createAlertDialog({
+													title:'Omadi',
+													message: "The maximum for this field is "+e.source.my_max,
+													buttonNames: ['Edit', 'Clear'],
+													cancel:1
+												});
+												
+												_a.show();
+												
+												_a.addEventListener('click', function(evt){
+													if (evt.index != evt.cancel){
+														content[e.source.real_ind].focus();
+													}
+													else{
+														e.source.value = null;
+													}
+												});
+											}
+											else{
+												//value is ok
+											}
+										}
+										else if (e.source.my_min != null){
+											if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
+												var _a = Titanium.UI.createAlertDialog({
+													title:'Omadi',
+													message: 'The minimum for this field is '+e.source.my_min,
+													buttonNames: ['Edit', 'Clear'],
+													cancel:1
+												});
+												
+												_a.show();
+												
+												_a.addEventListener('click', function(evt){
+													if (evt.index != evt.cancel){
+														content[e.source.real_ind].focus();
+													}
+													else{
+														e.source.value = null;
+													}
+												});
+											}
+											else{
+												//value is ok
+											}
+										}
+										else{
+											//No min or max sets
+										}
+									});									
 									count++;
 								}
 							} else {
@@ -2972,7 +3086,10 @@ create_or_edit_node.loadUI = function() {
 									value : field_arr[index_label][index_size].actual_value,
 									reffer_index : reffer_index,
 									settings : settings,
-									changedFlag : 0
+									changedFlag : 0,
+									my_min: _min,
+									my_max: _max,
+									real_ind: count
 								});
 								top += 100;
 
@@ -2981,6 +3098,105 @@ create_or_edit_node.loadUI = function() {
 									changedContentValue(e.source);
 									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 								});
+								
+								content[count].addEventListener('blur', function(e) {
+									Ti.API.info(e.source.value.length+' or '+e.value.length+' Field number ==> min: '+e.source.my_min+' max: '+e.source.my_max);
+									if (e.source.my_max != null && e.source.my_min != null){
+										if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
+											var _a = Titanium.UI.createAlertDialog({
+												title:'Omadi',
+												message: 'The minimum for this field is '+e.source.my_min,
+												buttonNames: ['Edit', 'Clear'],
+												cancel:1
+											});
+											
+											_a.show();
+											
+											_a.addEventListener('click', function(evt){
+												if (evt.index != evt.cancel){
+													content[e.source.real_ind].focus();
+												}
+												else{
+													e.source.value = null;
+												}
+											});
+											
+										}
+										else if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max) ) {
+											var _a = Titanium.UI.createAlertDialog({
+												title:'Omadi',
+												message: "The maximum for this field is "+e.source.my_max,
+												buttonNames: ['Edit', 'Clear'],
+												cancel:1
+											});
+											
+											_a.show();
+											
+											_a.addEventListener('click', function(evt){
+												if (evt.index != evt.cancel){
+													content[e.source.real_ind].focus();
+												}
+												else{
+													e.source.value = null;
+												}
+											});
+										}
+										else{
+											//value is ok
+										}
+									}
+									else if (e.source.my_max != null){
+										if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
+											var _a = Titanium.UI.createAlertDialog({
+												title:'Omadi',
+												message: "The maximum for this field is "+e.source.my_max,
+												buttonNames: ['Edit', 'Clear'],
+												cancel:1
+											});
+											
+											_a.show();
+											
+											_a.addEventListener('click', function(evt){
+												if (evt.index != evt.cancel){
+													content[e.source.real_ind].focus();
+												}
+												else{
+													e.source.value = null;
+												}
+											});
+										}
+										else{
+											//value is ok
+										}
+									}
+									else if (e.source.my_min != null){
+										if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
+											var _a = Titanium.UI.createAlertDialog({
+												title:'Omadi',
+												message: 'The minimum for this field is '+e.source.my_min,
+												buttonNames: ['Edit', 'Clear'],
+												cancel:1
+											});
+											
+											_a.show();
+											
+											_a.addEventListener('click', function(evt){
+												if (evt.index != evt.cancel){
+													content[e.source.real_ind].focus();
+												}
+												else{
+													e.source.value = null;
+												}
+											});
+										}
+										else{
+											//value is ok
+										}
+									}
+									else{
+										//No min or max sets
+									}
+								});								
 								count++;
 							}
 							//No data checkbox functionality
@@ -5531,7 +5747,7 @@ create_or_edit_node.loadUI = function() {
 									    height: '30dp',
 									    borderRadius: 4,
 									    borderColor: '#333',
-									    borderWidth: 0,
+									    borderWidth: 1,
 									    backgroundColor: '#FFF',
 										private_index : o_index,
 										//height : getScreenHeight() * 0.1,
@@ -5557,7 +5773,7 @@ create_or_edit_node.loadUI = function() {
 										}
 										else{
 											e.source.backgroundImage = null;
-											e.source.borderWidth = 0;	
+											e.source.borderWidth = 1;	
 											e.source.value  = false;		
 										}								
 									
@@ -5582,7 +5798,7 @@ create_or_edit_node.loadUI = function() {
 								    height: '30dp',
 								    borderRadius: 4,
 								    borderColor: '#333',
-								    borderWidth: 0,
+								    borderWidth: 1,
 								    backgroundColor: '#FFF',
 									private_index : o_index,
 									value : vl_to_field,
@@ -5608,7 +5824,7 @@ create_or_edit_node.loadUI = function() {
 									}
 									else{
 										e.source.backgroundImage = null;
-										e.source.borderWidth = 0;	
+										e.source.borderWidth = 1;	
 										e.source.value  = false;		
 									}
 									
