@@ -41,7 +41,7 @@ var create_or_edit_node = {};
 create_or_edit_node.getWindow = function() {
 	win = Titanium.UI.createWindow({
 		fullscreen : false,
-		backgroundColor : '#EEEEEE'
+		backgroundColor : '#DDDDDD'
 	});
 
 	//Sets only portrait mode
@@ -191,7 +191,8 @@ function keep_info(_flag_info) {
 			Ti.API.info("--------------------Restrictions array length : " + restrictions.length + "--------------------");
 		}
 
-		if (((content[x].is_title === true) || (content[x].required == 'true') || (content[x].required === true) || (content[x].required == '1') || (content[x].required == 1) ) && ((content[x].value == '') || (content[x].value == null))) {
+		if (((content[x].is_title === true) || (content[x].required == 'true') || (content[x].required === true) || (content[x].required == '1') || (content[x].required == 1) ) && ((content[x].value == '') || (content[x].value == null)) 
+		&& (content[x].no_data_checkbox==null || content[x].no_data_checkbox == "" || content[x].no_data_checkbox == false)) {
 			count_fields++;
 			if (content[x].cardinality > 1) {
 				string_text += "#" + content[x].private_index + " " + label[content[x].reffer_index].text + "\n";
@@ -485,7 +486,12 @@ function keep_info(_flag_info) {
 			if(content[j].no_data_checkbox!=null && content[j].no_data_checkbox != "" && content[j].no_data_checkbox){
 				is_no_data = true;
 				if(content[j].noDataView != null ){
-					no_data_fields.push(content[j].field_name);
+					var fieldName = content[j].field_name;
+					if(content[j].partsArr != null && content[j].partsArr.length>0){
+						fieldName = fieldName.split('___');
+						fieldName = fieldName[0];
+					}
+					no_data_fields.push(fieldName);
 				}
 			}
 
@@ -1568,7 +1574,8 @@ create_or_edit_node.loadUI = function() {
 				borderWidth: 2,
 				borderRadius: 2,
 				top : y,
-				backgroundColor : '#FFFFFF'
+				backgroundColor : '#FFFFFF',
+				zIndex : 0
 			});
 			y = y + 40;
 
@@ -4866,7 +4873,7 @@ create_or_edit_node.loadUI = function() {
 								var autocomplete_table = Titanium.UI.createTableView({
 									top : top - getScreenHeight() * 0.2,
 									searchHidden : true,
-									zIndex : 15,
+									zIndex : 999,
 									height : getScreenHeight() * 0.2,
 									backgroundColor : '#FFFFFF',
 									visible : false
@@ -4953,7 +4960,6 @@ create_or_edit_node.loadUI = function() {
 											e.source.autocomplete_table.setData(table_data);
 											e.source.autocomplete_table.scrollToTop(0, {animated: false});
 											e.source.autocomplete_table.visible = true;
-											
 										} else {
 											e.source.autocomplete_table.visible = false;
 											e.source.nid = null;
@@ -6523,11 +6529,12 @@ create_or_edit_node.loadUI = function() {
 								height : heightValue,
 								top : top
 							});
-							regionView.add(label[count]);
-							top += heightValue;
-							var reffer_index = count;
-
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
+							if(settings.hidden==null || settings.hidden!=1){
+								regionView.add(label[count]);
+								top += heightValue;
+							}
+							var reffer_index = count;
 							content[count] = Ti.UI.createView({
 								width : Ti.Platform.displayCaps.platformWidth - 30,
 								top : top,
@@ -6544,9 +6551,11 @@ create_or_edit_node.loadUI = function() {
 								settings : settings,
 								changedFlag : 0
 							});
-							regionView.add(content[count]);
 							createCalFieldTableFormat(content[count], db_display, content);
-							top += content[count].height + 10;
+							if(settings.hidden==null || settings.hidden!=1){
+								regionView.add(content[count]);
+								top += content[count].height + 10;
+							}
 							count++;
 							break;
 					}
@@ -6653,13 +6662,9 @@ create_or_edit_node.loadUI = function() {
 					reCalculate(content[j]);
 				}
 			}
-
-			if (content[j].settings == null || content[j].settings == "") {
-				continue;
-			}
-
+			
 			// set conditional required field
-			if (content[j].settings['criteria'] != null && content[j].settings['criteria']['search_criteria'] != null) {
+			if (content[j].settings == null && content[j].settings == "" && content[j].settings['criteria'] != null && content[j].settings['criteria']['search_criteria'] != null) {
 				for (var row_idx in content[j].settings['criteria']['search_criteria']) {
 					var criteria_row = content[j].settings['criteria']['search_criteria'][row_idx];
 					var field_name = criteria_row.field_name;
@@ -6675,7 +6680,6 @@ create_or_edit_node.loadUI = function() {
 				}
 
 			}
-
 			// Download thumbnails from site
 			if (win.mode == 1) {
 				if (content[j].field_type == 'image') {
@@ -7119,15 +7123,7 @@ function createCalFieldTableFormat(single_content, db_display, contentArr) {
 			//Check type of the data
 			isNegative = (cal_value < 0) ? true : false;
 			// Is negative. And if it is -ve then write in this value in (brackets).
-			cal_value_str = Math.abs(cal_value).toCurrency({
-				"thousands_separator" : ",",
-				"currency_symbol" : "$",
-				"symbol_position" : "front",
-				"use_fractions" : {
-					"fractions" : 2,
-					"fraction_separator" : "."
-				}
-			});
+			cal_value_str = applyNumberFormat(single_content, cal_value);
 			cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
 			// Adding brackets over -ve value.
 
@@ -7181,18 +7177,11 @@ function createCalFieldTableFormat(single_content, db_display, contentArr) {
 		//Check type of the data
 		isNegative = (cal_value < 0) ? true : false;
 		// Is negative. And if it is -ve then write in this value in (brackets).
-		cal_value_str = Math.abs(cal_value).toCurrency({
-			"thousands_separator" : ",",
-			"currency_symbol" : "$",
-			"symbol_position" : "front",
-			"use_fractions" : {
-				"fractions" : 2,
-				"fraction_separator" : "."
-			}
-		});
+		cal_value_str = applyNumberFormat(single_content, cal_value);
 		cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
 		// Adding brackets over -ve value.
-
+		
+		//FINAL ROW
 		var row = Ti.UI.createView({
 			layout : 'horizontal',
 			height : heightCellView,
@@ -7238,31 +7227,33 @@ function createCalFieldTableFormat(single_content, db_display, contentArr) {
 		single_content.add(row);
 		total_rows.push(row);
 		heightView += heightCellView + 1;
-
-		row = Ti.UI.createView({
-			layout : 'horizontal',
-			height : heightCellView,
-			width : '100%',
-			top : 5
-		});
-		row.calculateBtn = Ti.UI.createButton({
-			title : "Recalculate",
-			height : 35,
-			width : 100,
-			color : '#000',
-			font : {
-				fontFamily : 'Helvetica Neue',
-				fontSize : 14
-			},
-			idx : single_content.reffer_index
-		});
-		row.add(row.calculateBtn);
-		single_content.add(row);
-		heightView += heightCellView + 5;
-		row.calculateBtn.addEventListener('click', function(e) {
-			reCalculate(content[e.source.idx]);
-		});
-
+		
+		//RECALCLATE BUTTON
+		if(single_content.settings.include_recalculate_button!=null && single_content.settings.include_recalculate_button==1){
+			row = Ti.UI.createView({
+				layout : 'horizontal',
+				height : heightCellView,
+				width : '100%',
+				top : 5
+			});
+			row.calculateBtn = Ti.UI.createButton({
+				title : "Recalculate",
+				height : 35,
+				width : 100,
+				color : '#000',
+				font : {
+					fontFamily : 'Helvetica Neue',
+					fontSize : 14
+				},
+				idx : single_content.reffer_index
+			});
+			row.add(row.calculateBtn);
+			single_content.add(row);
+			heightView += heightCellView + 5;
+			row.calculateBtn.addEventListener('click', function(e) {
+				reCalculate(content[e.source.idx]);
+			}); 
+		}
 		single_content.total_rows = total_rows;
 		single_content.value = result[0].final_value;
 
@@ -7307,15 +7298,7 @@ function reCalculate(singel_content) {
 				//Check type of the data
 				isNegative = (cal_value < 0) ? true : false;
 				// Is negative. And if it is -ve then write in this value in (brackets).
-				cal_value_str = Math.abs(cal_value).toCurrency({
-					"thousands_separator" : ",",
-					"currency_symbol" : "$",
-					"symbol_position" : "front",
-					"use_fractions" : {
-						"fractions" : 2,
-						"fraction_separator" : "."
-					}
-				});
+				cal_value_str = applyNumberFormat(singel_content, cal_value);
 				cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
 				// Adding brackets over -ve value.
 
@@ -7329,15 +7312,7 @@ function reCalculate(singel_content) {
 			//Check type of the data
 			isNegative = (cal_value < 0) ? true : false;
 			// Is negative. And if it is -ve then write in this value in (brackets).
-			cal_value_str = Math.abs(cal_value).toCurrency({
-				"thousands_separator" : ",",
-				"currency_symbol" : "$",
-				"symbol_position" : "front",
-				"use_fractions" : {
-					"fractions" : 2,
-					"fraction_separator" : "."
-				}
-			});
+			cal_value_str = applyNumberFormat(singel_content, cal_value);
 			cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
 			// Adding brackets over -ve value.
 
@@ -7615,24 +7590,29 @@ function conditionalSetRequiredField(idx) {
 		}
 		if (retval) {
 			if (content[idx].required != 'true' && content[idx].required != true && content[idx].required != 1) {
-				label[idx].text = '*' + label[idx].text;
-				label[idx].color = 'red';
+				label[content[idx].reffer_index].text = '*' + label[content[idx].reffer_index].text;
+				label[content[idx].reffer_index].color = 'red';
 				content[idx].required = true;
 			}
 		} else {
 			if (content[idx].required == 'true' || content[idx].required == true || content[idx].required == 1) {
-				label[idx].text = label[idx].text.substring(1, label[idx].text.length);
-				label[idx].color = 'white';
+				label[content[idx].reffer_index].text = label[content[idx].reffer_index].text.substring(1, label[content[idx].reffer_index].text.length);
+				label[content[idx].reffer_index].color = _lb_color;
 				content[idx].required = false;
 			}
 		}
 	}
 }
+
 function noDataCheckbox(reffer_index, baseView, top){
 	if(content[reffer_index].settings!=null && content[reffer_index].settings!=""){
 		if(content[reffer_index].settings.required_no_data_checkbox!=null && content[reffer_index].settings.required_no_data_checkbox==1){
-			
-			var doCheck = in_array(content[reffer_index].field_name,no_data_fieldsArr);
+			var fieldName = content[reffer_index].field_name;
+			if(content[reffer_index].partsArr != null && content[reffer_index].partsArr.length > 0) {
+				fieldName = fieldName.split('___');
+				fieldName = fieldName[0];
+			}
+			var doCheck = in_array(fieldName,no_data_fieldsArr);
 			var isRequired = false; //TODO
 			if(content[reffer_index].required == true || content[reffer_index].required == 'true' || content[reffer_index].required == 1 || content[reffer_index].required =='1'){
 				isRequired = true;
@@ -7672,22 +7652,18 @@ function noDataCheckbox(reffer_index, baseView, top){
 						if(content[part_idx].settings.cardinality > 1) {
 							for( idx = 0; idx < content[part_idx].settings.cardinality; idx++) {
 								content[part_idx + idx].no_data_checkbox = (e.source.value) ? true : false;
-								content[part_idx + idx].required = !content[part_idx + idx].no_data_checkbox;
 							}
 						} else {
 							content[part_idx].no_data_checkbox = (e.source.value) ? true : false;
-							content[part_idx].required = !content[part_idx].no_data_checkbox;
 						}
 					}
 				} else {
 					if(content[reffer_index].settings.cardinality > 1) {
 						for( idx = 0; idx < content[reffer_index].settings.cardinality; idx++) {
 							content[reffer_index + idx].no_data_checkbox = (e.source.value) ? true : false;
-							content[reffer_index + idx].required = !content[reffer_index + idx].no_data_checkbox;
 						}
 					} else {
 						content[reffer_index].no_data_checkbox = (e.source.value) ? true : false;
-						content[reffer_index].required = !content[reffer_index].no_data_checkbox;
 					}
 				}
 
@@ -7697,7 +7673,7 @@ function noDataCheckbox(reffer_index, baseView, top){
 			content[reffer_index].noDataView.add(content[reffer_index].noDataView.checkbox);
 			content[reffer_index].noDataView.add(content[reffer_index].noDataView.text);
 			baseView.add(content[reffer_index].noDataView);
-			if(doCheck){
+			if(doCheck == true){
 				content[reffer_index].noDataView.checkbox.backgroundImage = '../images/checked.png';
 				content[reffer_index].noDataView.checkbox.value = true;
 				
@@ -7707,22 +7683,18 @@ function noDataCheckbox(reffer_index, baseView, top){
 						if(content[part_idx].settings.cardinality > 1) {
 							for( idx = 0; idx < content[part_idx].settings.cardinality; idx++) {
 								content[part_idx + idx].no_data_checkbox = true;
-								content[part_idx + idx].required = !content[part_idx + idx].no_data_checkbox;
 							}
 						} else {
 							content[part_idx].no_data_checkbox = true;
-							content[part_idx].required = !content[part_idx].no_data_checkbox;
 						}
 					}
 				} else {
 					if(content[reffer_index].settings.cardinality > 1) {
 						for( idx = 0; idx < content[reffer_index].settings.cardinality; idx++) {
 							content[reffer_index + idx].no_data_checkbox = true;
-							content[reffer_index + idx].required = !content[reffer_index + idx].no_data_checkbox;
 						}
 					} else {
 						content[reffer_index].no_data_checkbox = true;
-						content[reffer_index].required = !content[reffer_index].no_data_checkbox;
 					}
 				}
 
@@ -7773,25 +7745,85 @@ function noDataChecboxEnableDisable(changed_content, reffer_index){
 				if(content[part_idx].settings.cardinality > 1) {
 					for( idx = 0; idx < content[part_idx].settings.cardinality; idx++) {
 						content[part_idx + idx].no_data_checkbox = false;
-						content[part_idx + idx].required = !content[part_idx + idx].no_data_checkbox;
 					}
 				} else {
 					content[part_idx].no_data_checkbox =false;
-					content[part_idx].required = !content[part_idx].no_data_checkbox;
 				}
 			}
 		} else {
 			if(content[reffer_index].settings.cardinality > 1) {
 				for( idx = 0; idx < content[reffer_index].settings.cardinality; idx++) {
 					content[reffer_index + idx].no_data_checkbox = false;
-					content[reffer_index + idx].required = !content[reffer_index + idx].no_data_checkbox;
 				}
 			} else {
 				content[reffer_index].no_data_checkbox = false;
-				content[reffer_index].required = !content[reffer_index].no_data_checkbox;
 			}
 		}	
 	}
 }
 
+function applyNumberFormat(single_content, cal_value){
+	var cal_value_str = '';
+	if(single_content.settings!=null && single_content.settings.number_format!=null && single_content.settings.number_format!=""){
+		switch (single_content.settings.number_format){
+			case NUMBER_FORMAT_CURRENCY:
+				cal_value_str = Math.abs(cal_value).toCurrency({
+					"thousands_separator" : ",",
+					"currency_symbol" : "$",
+					"symbol_position" : "front",
+					"use_fractions" : {
+						"fractions" : 2,
+						"fraction_separator" : "."
+					}
+				}); 
+				break;
+			case NUMBER_FORMAT_INTEGER:
+				cal_value_str = Math.abs(cal_value).toCurrency({
+					"thousands_separator" : ",",
+					"currency_symbol" : "",
+					"symbol_position" : "front",
+					"use_fractions" : {
+						"fractions" : 0,
+						"fraction_separator" : "."
+					}
+				}); 
+				break;
+			case NUMBER_FORMAT_DECIMAL_0:
+				cal_value_str = Math.abs(cal_value).toCurrency({
+					"thousands_separator" : ",",
+					"currency_symbol" : "",
+					"symbol_position" : "front",
+					"use_fractions" : {
+						"fractions" : 1,
+						"fraction_separator" : "."
+					}
+				}); 
+				break;
+			case NUMBER_FORMAT_DECIMAL_00:
+				cal_value_str = Math.abs(cal_value).toCurrency({
+					"thousands_separator" : ",",
+					"currency_symbol" : "",
+					"symbol_position" : "front",
+					"use_fractions" : {
+						"fractions" : 2,
+						"fraction_separator" : "."
+					}
+				}); 
+				break;
+			case NUMBER_FORMAT_DECIMAL_000:	
+				cal_value_str = Math.abs(cal_value).toCurrency({
+					"thousands_separator" : ",",
+					"currency_symbol" : "",
+					"symbol_position" : "front",
+					"use_fractions" : {
+						"fractions" : 3,
+						"fraction_separator" : "."
+					}
+				}); 
+				break;
 
+		}
+	}
+	return cal_value_str;
+			
+}

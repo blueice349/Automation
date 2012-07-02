@@ -966,9 +966,19 @@ if(c_index > 0) {
 					}
 					cell[i].height = '110';
 				}else if(c_type[i]=='calculation_field'){
+					if(content[i].settings.hidden!=null && content[i].settings.hidden==1){
+						continue;
+					}
 					createCalculationTableFormat(content[i] , db_display, content);
-					cell[i].layout = 'vertical';
-					cell[i].height = content[i].height+ heightValue;
+					if (!(content[i].height < heightValue)){
+						cell[i].layout = 'vertical';
+						cell[i].height = content[i].height+ heightValue;
+					}else{
+						label[i].width = '33%';
+						content[i].left = '40%'
+					}
+					
+					
 				}
 				cell[i].add(content[i]);
 
@@ -1250,7 +1260,7 @@ function createCalculationTableFormat(content , db_display, contentArr) {
 	var heightView = 0;
 	var heightCellView = 40;
 	var widthCellView = Ti.Platform.displayCaps.platformWidth - 30
-	if(row_values.length > 0) {
+	if(row_values.length > 1 ) {
 		var cal_value = 0;
 		var cal_value_str = "";
 		var isNegative = false;
@@ -1258,12 +1268,7 @@ function createCalculationTableFormat(content , db_display, contentArr) {
 			cal_value = row_values[idx].value;
 			typeof(cal_value) == 'number' ? null : typeof(cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null; //Check type of the data
 			isNegative = (cal_value < 0) ? true : false; // Is negative. And if it is -ve then write in this value in (brackets).
-			cal_value_str =  Math.abs(cal_value).toCurrency({
-                "thousands_separator":",",
-                "currency_symbol":"$",
-                "symbol_position":"front",
-                "use_fractions" : { "fractions":2, "fraction_separator":"." }
-            });
+			cal_value_str =  applyNumberFormat(content, cal_value);
             cal_value_str = (isNegative)?"(" + cal_value_str + ")":cal_value_str; // Adding brackets over -ve value.
 			
 			var row = Ti.UI.createView({
@@ -1313,12 +1318,7 @@ function createCalculationTableFormat(content , db_display, contentArr) {
 		cal_value = result[0].final_value;
 		typeof(cal_value) == 'number' ? null : typeof(cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
 		isNegative = (cal_value < 0) ? true  : false; // Is negative. And if it is -ve then write in this value in (brackets).
-		cal_value_str =  Math.abs(cal_value).toCurrency({
-                "thousands_separator"	:",",
-                "currency_symbol"		:"$",
-                "symbol_position"		:"front",
-                "use_fractions" 		: { "fractions":2, "fraction_separator":"." }
-        });
+		cal_value_str =  applyNumberFormat(content, cal_value);
         cal_value_str = (isNegative)?"(" + cal_value_str + ")":cal_value_str; // Adding brackets over -ve value.
 			
 		var row = Ti.UI.createView({
@@ -1365,6 +1365,30 @@ function createCalculationTableFormat(content , db_display, contentArr) {
 		content.add(row);
 		heightView += heightCellView + 1;
 
+	}else if(row_values.length == 1){
+		cal_value = result[0].final_value;
+		typeof(cal_value) == 'number' ? null : typeof(cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
+		isNegative = (cal_value < 0) ? true  : false; // Is negative. And if it is -ve then write in this value in (brackets).
+		cal_value_str =  applyNumberFormat(content, cal_value);
+        cal_value_str = (isNegative)?"(" + cal_value_str + ")":cal_value_str; // Adding brackets over -ve value.
+		var value = Ti.UI.createLabel({
+			text 			: "  " + cal_value_str,
+			textAlign 		: 'left',
+			width 			: widthCellView/2,
+			top 			: 0,
+			left 			: 1,
+			color 			: 'white',
+			font 			: {
+								fontFamily : 'Helvetica Neue',
+								fontSize : 14,
+							   },
+			color 			: '#000',
+			height 			: heightCellView,
+			wordWrap 		: false,
+			ellipsize 		: true,
+		});
+		content.add(value);
+		heightView += heightCellView;
 	}
 	content.height = heightView;
 }

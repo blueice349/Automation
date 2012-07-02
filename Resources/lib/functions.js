@@ -8,6 +8,11 @@
 var DOWNLOAD_URL_THUMBNAIL = '/sync/image/thumbnail/';
 var DOWNLOAD_URL_IMAGE_FILE = '/sync/file/';
 var PLATFORM = Ti.Platform.name;
+var NUMBER_FORMAT_CURRENCY = 'currency';
+var NUMBER_FORMAT_INTEGER = 'integer';
+var NUMBER_FORMAT_DECIMAL_0 = 'one decimal';
+var NUMBER_FORMAT_DECIMAL_00 = 'two decimal';
+var NUMBER_FORMAT_DECIMAL_000 = 'three decimal';
 
 function getDBName() {
 	var db_list = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );	
@@ -3885,6 +3890,7 @@ function _calculation_field_sort_on_weight(a, b){
   }
   return 0;
 }
+
 function _calculation_field_get_values(win, db_display, instance, entity, content) {
 	var calculated_field_cache = [];
 	var final_value = 0;
@@ -4010,9 +4016,9 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 			
 			
 			 if(calculation_row.criteria != null && calculation_row.criteria.search_criteria != null) {
-				 if(!list_search_node_matches_search_criteria(win, db_display, entity, calculation_row.criteria, content)) {
+				if(!list_search_node_matches_search_criteria(win, db_display, entity, calculation_row.criteria, content)) {
 					 zero = true;
-				}
+				}	
 			 } 
 			
 			
@@ -4032,12 +4038,14 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 			}
 
 			if(value == 0 && numeric_multiplier != 0) {
-				zero = false;
 				value = numeric_multiplier;
 			} else if(value!= 0 && numeric_multiplier != 0) {
 				value *= numeric_multiplier;
 			}
 
+			if(calculation_row.type!=null && calculation_row.type=='static'){
+				zero = false;
+			}
 			if(zero) {
 				value = 0;
 			}
@@ -4400,7 +4408,7 @@ Number.prototype.toCurrency = function($O) { // extending Number prototype
     /* If no thousands_separator is present default to "," */
     $O.thousands_separator ? null : $O.thousands_separator = ",";
     /* If no currency_symbol is present default to "$" */
-    $O.currency_symbol ? null : $O.currency_symbol = "$";
+    $O.currency_symbol ? null : $O.currency_symbol = "";
 
     // Fractions use is separated, just in case you don't want them
     if ($O.use_fractions) {
@@ -4419,7 +4427,7 @@ Number.prototype.toCurrency = function($O) { // extending Number prototype
     // First part is an integrer
     $A._int = $A.arr[0].separate_thousands();
     // Second part, if exists, are rounded decimals
-    $A.arr[1] == undefined ? $A._dec = $O.use_fractions.fraction_separator+"0".times($O.use_fractions.fractions) : $A._dec = $O.use_fractions.fraction_separator+$A.arr[1];
+    $A.arr[1] == undefined ? $A._dec = $O.use_fractions.fraction_separator+"0".times($O.use_fractions.fractions) : $A._dec = $O.use_fractions.fraction_separator+$A.arr[1]+"0".times($O.use_fractions.fractions-($A.arr[1]+"").length);
 
     /* If no symbol_position is present, default to "front" */
     $O.symbol_position ? null : $O.symbol_position = "front";
@@ -4838,11 +4846,9 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 									}
 									
 								}
-							
 								if(search_value == 'current_user') {
 									search_value = win.uid;
 								}
-								
 								// Make sure the search value is an array
 								var search_value_arr = [];
 								if(!isArray(search_value)) {
@@ -4853,7 +4859,6 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 									}
 									search_value = search_value_arr;
 								}
-	
 	
 								if(search_operator != null && search_operator == '!=') {
 									row_matches[criteria_index] = true;
@@ -4904,7 +4909,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 									if(search_operator != null && search_operator == '!=') {
 	
 										row_matches[criteria_index] = true;
-										if(search_value['__null'] == '_null' && (node_values == null || node_values[0] == null)) {
+										if(search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
 											row_matches[criteria_index] = false;
 										} else {
 											for(idx in search_value) {
@@ -4916,7 +4921,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 	
 										}
 									} else {
-										if(search_value['__null'] == '_null' && (node_values == null || node_values[0] == null)) {
+										if(search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
 											row_matches[criteria_index] = true;
 										} else {
 											for(idx in search_value) {
