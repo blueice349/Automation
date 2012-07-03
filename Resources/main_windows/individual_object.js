@@ -26,7 +26,7 @@ win4.addEventListener('android:back', function() {
 	win4.close();
 });
 //Functions:
-function display_omadi_time(timestamp) {
+function display_omadi_time01(timestamp) {
 	var time = timestamp * 1000;
 
 	var got_time = new Date(time);
@@ -654,7 +654,7 @@ if(c_index > 0) {
 						});
 
 						content[count] = Ti.UI.createLabel({
-							text : "" + display_omadi_time(c_content[count]),
+							text : "" + display_omadi_time01(c_content[count]),
 							width : "60%",
 							height : "100%",
 							textAlign : 'left',
@@ -1087,9 +1087,9 @@ if(Ti.Platform.name == 'android') {
 		var node_form = db_act.execute('SELECT form_part FROM node WHERE nid=' + win4.nid);
 
 		Ti.API.info('Form node part = ' + node_form.fieldByName('form_part'));
-		Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
+		//Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
 
-		if(_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2) { 
+		if(_data.form_parts!=null && _data.form_parts!="" && (_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2)) { 
 			Ti.API.info("Title = " + _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
 
 			var menu_zero = menu.add({
@@ -1428,15 +1428,18 @@ function bottomButtons1(actualWindow){
 		var node_form = db_act.execute('SELECT form_part FROM node WHERE nid=' + win4.nid);
 
 		Ti.API.info('Form node part = ' + node_form.fieldByName('form_part'));
-		Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
+		
 		var btn_tt = [];
 		var btn_id = [];
-		
-		if(_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2) { 
-			Ti.API.info("Title = " + _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
-			btn_tt.push(_data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
-			btn_id.push(node_form.fieldByName('form_part') + 1);
+		if(_data.form_parts!=null && _data.form_parts!=""){
+			Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
+			if(_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2) { 
+				Ti.API.info("Title = " + _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
+				btn_tt.push(_data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
+				btn_id.push(node_form.fieldByName('form_part') + 1);
+			}
 		}
+		
 		
 		btn_tt.push('Edit');
 		btn_id.push(node_form.fieldByName('form_part'));

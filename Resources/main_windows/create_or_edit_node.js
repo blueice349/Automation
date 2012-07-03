@@ -6222,7 +6222,15 @@ create_or_edit_node.loadUI = function() {
 								// SEARCH EVENTS
 								//
 								content[count].addEventListener('change', function(e) {
-									if(e.source.i_name == 'Make'){											if(e.source.value.length > 18){												e.source.value = e.source.value.substr(0, 18);											}										}else if(e.source.i_name == 'Model'){											if(e.source.value.length > 38){												e.source.value = e.source.value.substr(0, 38);											}										}									changedContentValue(e.source);
+									if(e.source.i_name == 'Make'){											
+										if(e.source.value.length > 18){												
+											e.source.value = e.source.value.substr(0, 18);											
+											}										
+										}else if(e.source.i_name == 'Model'){											
+											if(e.source.value.length > 38){												
+												e.source.value = e.source.value.substr(0, 38);											
+										}										}									
+									changedContentValue(e.source);
 									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 									if (e.source.first_time === false) {
 										var list = e.source.terms;
@@ -6600,7 +6608,8 @@ create_or_edit_node.loadUI = function() {
 
 			if (isAnyEnabledField == true) {
 				viewContent.add(regionHeader);
-				viewContent.add(arrow_img);				viewContent.add(regionView);
+				viewContent.add(arrow_img);				
+				viewContent.add(regionView);
 			}
 		}
 		regions.next();
@@ -6659,12 +6668,13 @@ create_or_edit_node.loadUI = function() {
 			// Call for Calculate 'Calculation field'
 			if (win.mode == 1) {
 				if (content[j].field_type == 'calculation_field') {
+					Ti.API.info("RECALCULATE BUTTON" + content[j].field_name);
 					reCalculate(content[j]);
 				}
 			}
 			
 			// set conditional required field
-			if (content[j].settings == null && content[j].settings == "" && content[j].settings['criteria'] != null && content[j].settings['criteria']['search_criteria'] != null) {
+			if (content[j].settings != null && content[j].settings != "" && content[j].settings['criteria'] != null && content[j].settings['criteria']['search_criteria'] != null) {
 				for (var row_idx in content[j].settings['criteria']['search_criteria']) {
 					var criteria_row = content[j].settings['criteria']['search_criteria'][row_idx];
 					var field_name = criteria_row.field_name;

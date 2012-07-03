@@ -1,4 +1,8 @@
 eclipse.preferences.version=1
+provisioning_profiles/development/107A2D59-84FA-4A6D-A0D5-2E843FCD2C7A/appid=joseandro.omadi.com
+provisioning_profiles/development/107A2D59-84FA-4A6D-A0D5-2E843FCD2C7A/filepath=/Users/cdn93/Library/MobileDevice/Provisioning Profiles/107A2D59-84FA-4A6D-A0D5-2E843FCD2C7A.mobileprovision
+provisioning_profiles/development/107A2D59-84FA-4A6D-A0D5-2E843FCD2C7A/name=Omadi_Devloper_Profile_26062012
+provisioning_profiles/development/107A2D59-84FA-4A6D-A0D5-2E843FCD2C7A/uuid=107A2D59-84FA-4A6D-A0D5-2E843FCD2C7A
 provisioning_profiles/distribution/06EDFE69-AF69-40E7-AE82-F868A3F03F82/appid=joseandro.omadi.com
 provisioning_profiles/distribution/06EDFE69-AF69-40E7-AE82-F868A3F03F82/filepath=/Users/joseandro/Library/MobileDevice/Provisioning Profiles/06EDFE69-AF69-40E7-AE82-F868A3F03F82.mobileprovision
 provisioning_profiles/distribution/06EDFE69-AF69-40E7-AE82-F868A3F03F82/name=Omadi_Devloper_Profile_26062012
