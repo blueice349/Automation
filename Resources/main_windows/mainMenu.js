@@ -292,7 +292,10 @@ listView.addEventListener('click',function(e){
 				win_new.region_form = 0;
 				win_new.backgroundColor = "#EEEEEE";
 				win_new.nameSelected = 'Fill Details...';
-				unlock_screen();
+				win_new.addEventListener('focus', function(){
+					unlock_screen();
+				});
+				
 				win_new.open();
 				setTimeout(function(){create_or_edit_node.loadUI();}, 100);
 				// win_new.addEventListener('focus', function(e){
@@ -311,7 +314,10 @@ listView.addEventListener('click',function(e){
 					show_plus: e.row.show_plus
 				});
 				win_new.picked 	 = win2.picked;
-				unlock_screen();
+				win_new.addEventListener('focus', function(){
+					unlock_screen();
+				});
+				
 				win_new.open();
 			}				
 		}
@@ -593,7 +599,11 @@ alerts_view.addEventListener('click', function(){
 				backgroundColor: '#EEE'
 			});
 			win_new.picked = win2.picked;
-			unlock_screen();
+			
+			win_new.addEventListener('focus', function(){
+					unlock_screen();
+			});
+			
 			win_new.open();
 		}
 	}, 1000);	
@@ -742,7 +752,10 @@ function openDraftWindow(){
 				backgroundColor: '#EEE'
 			});
 			win_new.picked 	 = win2.picked;
-			unlock_screen();
+			win_new.addEventListener('focus', function(){
+				unlock_screen();
+			});
+			
 			win_new.open();
 			toolActInd.hide();
 		}
@@ -750,11 +763,11 @@ function openDraftWindow(){
 }
 
 function lock_screen(){
-	listView.allowsSelection = false;
+	win2.touchEnabled = false;
 	databaseStatusView.touchEnabled = false;
 }
 
 function unlock_screen(){
-	listView.allowsSelection = true;
+	win2.touchEnabled = true;
 	databaseStatusView.touchEnabled = true;
 }

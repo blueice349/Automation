@@ -19,7 +19,8 @@ if(PLATFORM!='android'){clearCache();}
 
 var win1 = Titanium.UI.createWindow({  
     title:'Omadi CRM',
-    fullscreen: false
+    fullscreen: false,
+    zIndex: -100
 });
 
 var OMADI_VERSION = "omadiDb1517";
@@ -332,6 +333,7 @@ b1.addEventListener('click', function(){
 					fullscreen: false,
 					title:'Omadi CRM',
 					url:'main_windows/mainMenu.js',
+					zIndex: 100
 				});
 				
 				//Passes parameter to the second window:
@@ -341,8 +343,10 @@ b1.addEventListener('click', function(){
 				Ti.API.info(this.responseText);
 				
 				db.close();
-				//Manages windows and connections closing or openning them. It avoids memory leaking
+
+				win1.touchEnabled = false;
 				win2.open();
+				
 				hideIndicator();	
 				//xhr.abort();
 				//(PLATFORM == 'android')?win1.close():'';
@@ -388,3 +392,7 @@ win1.open();
 if(Ti.Platform.displayCaps.platformHeight > 500){
 	i_scroll_page.top = '200dp'
 }
+
+Ti.App.addEventListener('free_login', function(){
+	win1.touchEnabled = true;	
+});

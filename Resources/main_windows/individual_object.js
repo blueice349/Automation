@@ -110,6 +110,7 @@ resultView.add(viewContent);
 
 var fields_result = db_display.execute('SELECT label, weight, type, field_name, widget, settings, required FROM fields WHERE bundle = "' + win4.type + '" ORDER BY weight ASC');
 var regions = db_display.execute('SELECT * FROM regions WHERE node_type = "' + win4.type + '" ORDER BY weight ASC');
+var node_form = db_display.execute('SELECT form_part FROM node WHERE nid=' + win4.nid);
 
 //Populate array with field name and configs
 var fields = new Array();
@@ -138,10 +139,11 @@ while(fields_result.isValidRow()) {
 
 while (regions.isValidRow()){
 	var reg_settings = JSON.parse(regions.fieldByName('settings'));
-
-	if(reg_settings != null && reg_settings.display_disabled) {
+		
+	if (reg_settings != null && parseInt(reg_settings.form_part) > node_form.fieldByName('form_part')) {
 		Ti.API.info('Region : ' + regions.fieldByName('label') + ' won\'t appear');
-	} else {
+	} 
+	else {
 		fields[regions.fieldByName('region_name')] = new Array();
 
 		//Display region title:
