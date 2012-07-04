@@ -13,6 +13,7 @@ var NUMBER_FORMAT_INTEGER = 'integer';
 var NUMBER_FORMAT_DECIMAL_0 = 'one decimal';
 var NUMBER_FORMAT_DECIMAL_00 = 'two decimal';
 var NUMBER_FORMAT_DECIMAL_000 = 'three decimal';
+var app_timestamp = 0;
 
 function getDBName() {
 	var db_list = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );	
@@ -1449,6 +1450,11 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 		
 		if (isJsonString(this.responseText) === true ){
 			var json = JSON.parse(this.responseText);
+			
+			if(json.sync_timestamp != null && json.sync_timestamp!=""){
+				var GMT_OFFSET = Number(json.sync_timestamp - app_timestamp);
+				Ti.App.Properties.setString("timestamp_offset", GMT_OFFSET); 
+			}
 	
 			Ti.API.info('==========TYPE=========   '+type_request);
 			if (type_request == 'GET'){
@@ -3346,6 +3352,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 		Ti.API.info("Services are down");
 	}
 	
+	app_timestamp = Math.round(+new Date()/1000);
 	//Get upload JSON
 	if ( type_request == 'POST'){
 		var insert_JSON = getJSON();

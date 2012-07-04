@@ -187,6 +187,7 @@ while ( elements.isValidRow() ){
 			name		: display,
 			description : description,
 			name_table  : name_table,
+			show_plus 	: show_plus,
 			className	: 'menu_row' // this is to optimize the rendering
 		});
 		
@@ -285,7 +286,6 @@ listView.addEventListener('click',function(e){
 				win_new.title = "New "+e.row.display;
 				win_new.type = e.row.name_table;
 				win_new.uid = jsonLogin.user.uid;
-				win_new.listView = listView;
 				win_new.up_node = update_node;
 				win_new.mode = 0;
 				win_new.picked = win2.picked;
@@ -307,7 +307,8 @@ listView.addEventListener('click',function(e){
 					type: e.row.name_table,
 					uid: jsonLogin.user.uid,
 					up_node: update_node,
-					backgroundColor: '#EEEEEE'
+					backgroundColor: '#EEEEEE',
+					show_plus: e.row.show_plus
 				});
 				win_new.picked 	 = win2.picked;
 				unlock_screen();

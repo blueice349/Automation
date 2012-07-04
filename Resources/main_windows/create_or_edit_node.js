@@ -896,7 +896,7 @@ function display_widget(obj) {
 
 	var win_wid = Ti.UI.createWindow({
 		//modal: true,
-		backgroundColor : "000",
+		backgroundColor : "#000",
 		opacity : 0.9
 	});
 
@@ -954,8 +954,7 @@ function display_widget(obj) {
 		obj.timezone = obj.timezone * verify_UTC(obj.currentDate);
 
 		//Refresh GMT value
-		obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone;
-
+		obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone + Number(Ti.App.Properties.getString("timestamp_offset",0));
 		Ti.API.info('TIMEZONE : ' + obj.timezone);
 		Ti.API.info('Date : ' + obj.currentDate);
 
@@ -1006,8 +1005,7 @@ function display_widget(obj) {
 
 		done.addEventListener('click', function() {
 			obj.currentDate = date_picker.report;
-			obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone;
-
+			obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone + Number(Ti.App.Properties.getString("timestamp_offset",0));
 			Ti.API.info('Date : ' + obj.currentDate);
 			Ti.API.info('Value: ' + obj.value);
 
@@ -1043,8 +1041,7 @@ function display_widget(obj) {
 		//discover if is GMT+ or GMT-
 		obj.timezone = obj.timezone * verify_UTC(obj.currentDate);
 		//Refresh GMT value
-		obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone;
-
+		obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone + Number(Ti.App.Properties.getString("timestamp_offset",0));
 		Ti.API.info('TIMEZONE : ' + obj.timezone);
 		Ti.API.info('Date : ' + obj.currentDate);
 
@@ -1164,8 +1161,7 @@ function display_widget(obj) {
 			var new_date = new Date(composed_date);
 
 			obj.currentDate = new_date;
-			obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone;
-
+			obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone + Number(Ti.App.Properties.getString("timestamp_offset",0));
 			Ti.API.info('Date : ' + obj.currentDate);
 			Ti.API.info('Value: ' + obj.value);
 
@@ -1224,8 +1220,7 @@ function display_omadi_time(obj) {
 	obj.timezone = obj.timezone * verify_UTC(obj.currentDate);
 
 	//Refresh GMT value
-	obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone;
-
+	obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone + Number(Ti.App.Properties.getString("timestamp_offset",0));
 	Ti.API.info('TIMEZONE : ' + obj.timezone);
 	Ti.API.info('Date : ' + obj.currentDate);
 
@@ -1274,8 +1269,8 @@ function display_omadi_time(obj) {
 
 	done.addEventListener('click', function() {
 		obj.currentDate = date_picker.report;
-		obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone;
-
+		obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone + Number(Ti.App.Properties.getString("timestamp_offset",0));
+		alert(obj.value);
 		Ti.API.info('Date : ' + obj.currentDate);
 		Ti.API.info('Value: ' + obj.value);
 
@@ -1727,7 +1722,6 @@ create_or_edit_node.loadUI = function() {
 							}
 
 							i_name = i_name.charAt(0).toUpperCase() + i_name.slice(1);
-
 							//Add fields:
 							regionView.add(label[count]);
 
@@ -1756,7 +1750,7 @@ create_or_edit_node.loadUI = function() {
 										var vl_to_field = settings.state_default_value;
 									}
 
-									if (field_arr[index_label][index_size].field_name == "license_plate___state") {
+									if (field_arr[index_label][index_size].field_name == "license_plate___state" || field_arr[index_label][index_size].field_name == "restriction_license_plate___state") {
 										label[count].text += ' State';
 										var arr_picker = [];
 										var arr_opt = new Array();
@@ -2087,7 +2081,7 @@ create_or_edit_node.loadUI = function() {
 									count++;
 								}
 							} else {
-								if (field_arr[index_label][index_size].field_name == "license_plate___state") {
+								if (field_arr[index_label][index_size].field_name == "license_plate___state" || field_arr[index_label][index_size].field_name == "restriction_license_plate___state") {
 									label[count].text += ' State';
 									var arr_picker = [];
 									var arr_opt = new Array();

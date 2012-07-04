@@ -12,6 +12,7 @@
 
 //Common used functions
 Ti.include('/lib/functions.js');
+Ti.include('/main_windows/create_or_edit_node.js');
 
 //Current window's instance
 var win3 = Ti.UI.currentWindow;
@@ -169,15 +170,28 @@ db.close();
 //showBottom(actualWindow, goToWindow )
 if(PLATFORM == 'android'){
 	bottomBack(win3, "Back" , "enable", true);
+	if(win3.show_plus == true){
+		var activity = win3.activity;
+		activity.onCreateOptionsMenu = function(e) {
+			var menu = e.menu;
+			var menu_edit = menu.add({
+				title : 'New',
+				order : 0
+			});
+			menu_edit.setIcon("/images/action.png");
+			menu_edit.addEventListener("click", function(e) {
+				openCreateNodeScreen();
+			});
+		}
+	}
 }else{
 	if (listTableView != null){
 		listTableView.height = "97%";	
 	}
-	
-	bottomButtons();
+	topToolBar_object();
 }
 
-function bottomButtons(){
+function topToolBar_object(){
 	if (listTableView != null ){
 		listTableView.top = '40'		
 	}
@@ -203,9 +217,24 @@ function bottomButtons(){
 		style:Titanium.UI.iPhone.SystemButtonStyle.PLAIN
 	});
 	
+	
+	var items = [];
+	if(win3.show_plus == true){
+		var newNode = Ti.UI.createButton({
+			title : 'New',
+			style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+		});
+		newNode.addEventListener('click', function() {
+			openCreateNodeScreen();
+		}); 
+		items = [back, label, space, newNode];
+	}else{
+		items = [back, label, space];
+	}
+	
 	// create and add toolbar
 	var toolbar = Titanium.UI.createToolbar({
-		items:[back, label, space],
+		items:items,
 		top:0,
 		borderTop:false,
 		borderBottom:true
@@ -213,4 +242,17 @@ function bottomButtons(){
 	win3.add(toolbar);
 };
 
-
+function openCreateNodeScreen(){
+	var win_new = create_or_edit_node.getWindow();
+	win_new.title = "New "+ win3.title;
+	win_new.type = win3.type;
+	win_new.uid = win3.uid;
+	win_new.up_node = win3.up_node;
+	win_new.mode = 0;
+	win_new.picked = win.picked;
+	win_new.region_form = 0;
+	win_new.backgroundColor = "#EEEEEE";
+	win_new.nameSelected = 'Fill Details...';
+	win_new.open();
+	setTimeout(function(){create_or_edit_node.loadUI();}, 100);
+}
