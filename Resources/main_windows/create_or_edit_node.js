@@ -5309,7 +5309,7 @@ create_or_edit_node.loadUI = function() {
 												timezone = timezone * verify_UTC(currentDate);
 										
 												//Refresh GMT value
-												var vl_to_field = Math.round(currentDate.getTime()) + timezone + Number(Ti.App.Properties.getString("timestamp_offset",0));
+												var vl_to_field =currentDate.getTime() + Number(Ti.App.Properties.getString("timestamp_offset",0));
 										
 												text_in_field = months_set[month] + " / " + day + " / " + year;
 											} else {
@@ -5407,7 +5407,7 @@ create_or_edit_node.loadUI = function() {
 											timezone = timezone * verify_UTC(currentDate);
 									
 											//Refresh GMT value
-											var vl_to_field = Math.round(currentDate.getTime()) + timezone + Number(Ti.App.Properties.getString("timestamp_offset",0));
+											var vl_to_field =currentDate.getTime() + Number(Ti.App.Properties.getString("timestamp_offset",0));
 										
 											text_in_field = months_set[month] + " / " + day + " / " + year;
 										} else {
@@ -5534,7 +5534,7 @@ create_or_edit_node.loadUI = function() {
 												timezone = timezone * verify_UTC(currentDate);
 										
 												//Refresh GMT value
-												var vl_to_field = Math.round(currentDate.getTime()) + timezone + Number(Ti.App.Properties.getString("timestamp_offset",0));
+												var vl_to_field =currentDate.getTime() + Number(Ti.App.Properties.getString("timestamp_offset",0));
 										
 												text_in_field = hours + ":" + form_min(min) + " - " + months_set[month] + " / " + day + " / " + year;
 											} else {
@@ -5637,7 +5637,7 @@ create_or_edit_node.loadUI = function() {
 											timezone = timezone * verify_UTC(currentDate);
 									
 											//Refresh GMT value
-											var vl_to_field = Math.round(currentDate.getTime()) + timezone + Number(Ti.App.Properties.getString("timestamp_offset",0));
+											var vl_to_field =currentDate.getTime() + Number(Ti.App.Properties.getString("timestamp_offset",0));
 											text_in_field = hours + ":" + form_min(min) + " - " + months_set[month] + " / " + day + " / " + year;
 										} else {
 											var vl_to_field = null;
