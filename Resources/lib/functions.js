@@ -4076,18 +4076,18 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 				zero = true;
 			} else if(value == 0 && field_2_multiplier != 0) {
 				Ti.API.info('here--------13' );
-				value = field_2_multiplier;
+				value = Number(field_2_multiplier);
 			} else if(value != 0 && field_2_multiplier != 0) {
 				Ti.API.info('here--------14' );
-				value *= field_2_multiplier;
+				value *= Number(field_2_multiplier);
 			}
 
 			if(value == 0 && numeric_multiplier != 0) {
 				Ti.API.info('here--------15' );
-				value = numeric_multiplier;
+				value = Number(numeric_multiplier);
 			} else if(value!= 0 && numeric_multiplier != 0) {
 				Ti.API.info('here--------16' );
-				value *= numeric_multiplier;
+				value *= Number(numeric_multiplier);
 			}
 
 			// if(calculation_row.type!=null && calculation_row.type=='static'){
@@ -4107,7 +4107,7 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 			//alert('field_2_multiplier : ' + field_2_multiplier);
 			//alert('numeric_multiplier : ' + numeric_multiplier);
 			//alert('Value : ' + value);
-			final_value += value;
+			final_value += Number(value);
 			Ti.API.info('here--------19' + final_value);
 		}
 	//	alert("final value: " + final_value);

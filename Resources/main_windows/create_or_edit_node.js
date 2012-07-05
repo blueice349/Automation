@@ -371,7 +371,7 @@ function keep_info(_flag_info) {
 					}
 				}
 			}
-
+			
 			if (j_y == content.length - 1) {
 				query += "'" + content[j_y].field_name + "' ) ";
 			} else {
@@ -5367,7 +5367,15 @@ create_or_edit_node.loadUI = function() {
 											var year = currentDate.getFullYear();
 
 											if (settings.default_value == 'now') {
-												var vl_to_field = currentDate.getTime();
+														//Update timezone
+												var timezone = currentDate.getTimezoneOffset() * 60 * 1000;
+	
+												//discover if is GMT+ or GMT-
+												timezone = timezone * verify_UTC(currentDate);
+										
+												//Refresh GMT value
+												var vl_to_field =currentDate.getTime() + Number(Ti.App.Properties.getString("timestamp_offset",0));
+										
 												text_in_field = months_set[month] + " / " + day + " / " + year;
 											} else {
 												var vl_to_field = null;
@@ -5457,7 +5465,15 @@ create_or_edit_node.loadUI = function() {
 										var year = currentDate.getFullYear();
 
 										if (settings.default_value == 'now') {
-											var vl_to_field = currentDate.getTime();
+												//Update timezone
+											var timezone = currentDate.getTimezoneOffset() * 60 * 1000;
+
+											//discover if is GMT+ or GMT-
+											timezone = timezone * verify_UTC(currentDate);
+									
+											//Refresh GMT value
+											var vl_to_field =currentDate.getTime() + Number(Ti.App.Properties.getString("timestamp_offset",0));
+										
 											text_in_field = months_set[month] + " / " + day + " / " + year;
 										} else {
 											var vl_to_field = null;
@@ -5576,7 +5592,15 @@ create_or_edit_node.loadUI = function() {
 											var hours = currentDate.getHours();
 
 											if (settings.default_value == 'now') {
-												var vl_to_field = currentDate.getTime();
+												//Update timezone
+												var timezone = currentDate.getTimezoneOffset() * 60 * 1000;
+	
+												//discover if is GMT+ or GMT-
+												timezone = timezone * verify_UTC(currentDate);
+										
+												//Refresh GMT value
+												var vl_to_field =currentDate.getTime() + Number(Ti.App.Properties.getString("timestamp_offset",0));
+										
 												text_in_field = hours + ":" + form_min(min) + " - " + months_set[month] + " / " + day + " / " + year;
 											} else {
 												var vl_to_field = null;
@@ -5671,7 +5695,14 @@ create_or_edit_node.loadUI = function() {
 										var hours = currentDate.getHours();
 
 										if (settings.default_value == 'now') {
-											var vl_to_field = currentDate.getTime();
+											//Update timezone
+											var timezone = currentDate.getTimezoneOffset() * 60 * 1000;
+
+											//discover if is GMT+ or GMT-
+											timezone = timezone * verify_UTC(currentDate);
+									
+											//Refresh GMT value
+											var vl_to_field =currentDate.getTime() + Number(Ti.App.Properties.getString("timestamp_offset",0));
 											text_in_field = hours + ":" + form_min(min) + " - " + months_set[month] + " / " + day + " / " + year;
 										} else {
 											var vl_to_field = null;
@@ -7183,122 +7214,46 @@ function createCalFieldTableFormat(single_content, db_display, contentArr) {
 	var heightView = 0;
 	var heightCellView = 40;
 	var widthCellView = Ti.Platform.displayCaps.platformWidth - 30;
+	
 	if (row_values.length > 0) {
 		var cal_value = 0;
 		var total_rows = [];
-		var cal_value_str = "";
-		var isNegative = false;
+		var row = "";
+		var data = {};
 		for ( idx = 0; idx < row_values.length; idx++) {
-			cal_value = row_values[idx].value;
-
-			typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
-			//Check type of the data
-			isNegative = (cal_value < 0) ? true : false;
-			// Is negative. And if it is -ve then write in this value in (brackets).
-			cal_value_str = applyNumberFormat(single_content, cal_value);
-			cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
-			// Adding brackets over -ve value.
-
-			var row = Ti.UI.createView({
-				layout : 'horizontal',
-				height : heightCellView,
-				width : widthCellView,
-				top : 1,
-			});
-			row.row_label = Ti.UI.createLabel({
-				text : row_values[idx].row_label + ":  ",
-				textAlign : 'right',
-				width : widthCellView/2-1,
-				color : 'white',
-				font : {
-					fontFamily : 'Helvetica Neue',
-					fontSize : 14
-				},
-				color : '#000',
-				height : heightCellView,
-				wordWrap : false,
-				ellipsize : true,
-				backgroundColor : '#FFF'
-
-			});
-			row.value = Ti.UI.createLabel({
-				text : "  " + cal_value_str,
-				textAlign : 'left',
-				width : widthCellView/2,
-				left : 1,
-				color : 'white',
-				font : {
-					fontFamily : 'Helvetica Neue',
-					fontSize : 14
-				},
-				color : '#000',
-				height : heightCellView,
-				wordWrap : false,
-				ellipsize : true,
-				backgroundColor : '#FFF'
-			});
-			row.add(row.row_label);
-			row.add(row.value);
+			data = {"value":row_values[idx].value, "label": row_values[idx].row_label, "weight_label" 	: "","weight_value" 	: "", "color_label": "#545454", "color_value": "#424242"}; 
+			row = createCalculationRow(single_content, heightCellView, widthCellView, data); 
 			single_content.add(row);
 			total_rows.push(row);
 			heightView += heightCellView + 1;
 		}
-
-		cal_value = result[0].final_value;
-		typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
-		//Check type of the data
-		isNegative = (cal_value < 0) ? true : false;
-		// Is negative. And if it is -ve then write in this value in (brackets).
-		cal_value_str = applyNumberFormat(single_content, cal_value);
-		cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
-		// Adding brackets over -ve value.
-		
-		//FINAL ROW
-		var row = Ti.UI.createView({
-			layout : 'horizontal',
-			height : heightCellView,
-			width : widthCellView,
-			top : 1
-		});
-		row.row_label = Ti.UI.createLabel({
-			text : "Newly Calculated Total: ",
-			textAlign : 'right',
-			width : widthCellView/2-1,
-			top : 0,
-			color : 'white',
-			font : {
-				fontFamily : 'Helvetica Neue',
-				fontSize : 14,
-				fontWeight : 'bold'
-			},
-			color : '#B40404',
-			height : heightCellView,
-			backgroundColor : '#FFF'
-		});
-		row.value = Ti.UI.createLabel({
-			text : "  " + cal_value_str,
-			textAlign : 'left',
-			width : widthCellView/2,
-			top : 0,
-			left : 1,
-			color : 'white',
-			font : {
-				fontFamily : 'Helvetica Neue',
-				fontSize : 14,
-				fontWeight : 'bold'
-			},
-			color : '#B40404',
-			height : heightCellView,
-			wordWrap : false,
-			ellipsize : true,
-			backgroundColor : '#FFF'
-		});
-
-		row.add(row.row_label);
-		row.add(row.value);
+		 
+		data = {
+				"value" 	: result[0].final_value,
+				"label" 	: "Total:",
+				"weight_label" 	: "",
+				"weight_value" 	: "bold",
+				"color_label": "#545454",
+				"color_value": "#424242"
+			};  
+		row = createCalculationRow(single_content, heightCellView, widthCellView, data); 
 		single_content.add(row);
 		total_rows.push(row);
 		heightView += heightCellView + 1;
+		
+		data = {
+				"value" 	: (single_content.actual_value==null || single_content.actual_value=="")?0:single_content.actual_value,
+				"label" 	: '*Currently Saved Total:',
+				"weight_label" 	: "bold",
+				"weight_value" 	: "bold",
+				"color_label": "#B40404",
+				"color_value": "#B40404"
+		}; 
+		row = createCalculationRow(single_content, heightCellView, widthCellView, data); 
+		single_content.add(row);
+		total_rows.push(row);
+		heightView += heightCellView + 1;
+	
 		
 		//RECALCLATE BUTTON
 		if(single_content.settings.include_recalculate_button!=null && single_content.settings.include_recalculate_button==1){
@@ -7381,17 +7336,29 @@ function reCalculate(singel_content) {
 
 			cal_value = result[0].final_value;
 			typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
-			//Check type of the data
 			isNegative = (cal_value < 0) ? true : false;
-			// Is negative. And if it is -ve then write in this value in (brackets).
 			cal_value_str = applyNumberFormat(singel_content, cal_value);
 			cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
-			// Adding brackets over -ve value.
-
+			
 			var row = total_rows[row_values.length];
-			row.row_label.text = "Newly Calculated Total: ";
+			row.row_label.text = "Total: ";
 			row.value.text = "  " + cal_value_str;
 			singel_content.value = result[0].final_value;
+			
+			var currently_saved_value = db_display.execute('SELECT '+singel_content.field_name +' FROM ' + win.type + ' WHERE nid = "' + win.nid + '" ');
+			if(currently_saved_value.rowCount > 0){
+				cal_value = currently_saved_value.fieldByName(singel_content.field_name);
+				cal_value = (cal_value==null || cal_value=="")?0:Number(cal_value);
+				typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
+				isNegative = (cal_value < 0) ? true : false;
+				cal_value_str = applyNumberFormat(singel_content, cal_value);
+				cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
+				
+				var row = total_rows[row_values.length+1];
+				row.row_label.text = "*Currently Saved Total: ";
+				row.value.text = "  " + cal_value_str;
+			}
+		
 		}
 	} catch(e) {
 	}
@@ -7898,4 +7865,58 @@ function applyNumberFormat(single_content, cal_value){
 	}
 	return cal_value_str;
 			
+}
+
+function createCalculationRow(single_content, heightCellView, widthCellView, data){
+	//alert(text);
+	var isNegative = false;
+	var cal_value = data.value;
+	typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null; //Check type of the data
+	isNegative = (cal_value < 0) ? true : false;// Is negative. And if it is -ve then write in this value in (brackets).
+	var cal_value_str = applyNumberFormat(single_content, cal_value);
+	cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str; // Adding brackets over -ve value.
+	
+	var row = Ti.UI.createView({
+		layout : 'horizontal',
+		height : heightCellView,
+		width : widthCellView,
+		top : 1
+	});
+	row.row_label = Ti.UI.createLabel({
+		text : data.label,
+		textAlign : 'right',
+		width : widthCellView/2-1,
+		top : 0,
+		color : 'white',
+		font : {
+			fontFamily : 'Helvetica Neue',
+			fontSize : 14,
+			fontWeight : data.weight_label
+		},
+		color : data.color_label,
+		height : heightCellView,
+		backgroundColor : '#FFF'
+	});
+	row.value = Ti.UI.createLabel({
+		text : "  " + cal_value_str,
+		textAlign : 'left',
+		width : widthCellView/2,
+		top : 0,
+		left : 1,
+		color : 'white',
+		font : {
+			fontFamily : 'Helvetica Neue',
+			fontSize : 14,
+			fontWeight : data.weight_value
+		},
+		color : data.color_value,
+		height : heightCellView,
+		wordWrap : false,
+		ellipsize : true,
+		backgroundColor : '#FFF'
+	});
+
+	row.add(row.row_label);
+	row.add(row.value);	
+	return row;
 }
