@@ -153,6 +153,12 @@ var jsonLogin = JSON.parse(win2.result) ;
 //Retrieves username
 var name = jsonLogin.user.realname;
 var roles = jsonLogin.user.roles;
+var app_permissions =  {
+	"can_create": false,
+	"can_update": false,
+	"all_permissions": false,
+	"can_view": false
+}
 
 
 var _data_rows = new Array();
@@ -173,7 +179,22 @@ while ( elements.isValidRow() ){
 				Ti.API.info("====>> "+_l);
 				if ( node_type_json.permissions[_l]["can create"] ||  node_type_json.permissions[_l]["all_permissions"]){
 					show_plus = true;
+					app_permissions.can_create = true;
 				}
+				
+				if(node_type_json.permissions[_l]["all_permissions"]){
+					app_permissions.all_permissions = true;
+				}
+				
+				if(node_type_json.permissions[_l]["can update"] ||  node_type_json.permissions[_l]["all_permissions"]){
+					app_permissions.can_update = true;
+				}
+				
+				if(node_type_json.permissions[_l]["can view"] ||  node_type_json.permissions[_l]["all_permissions"]){
+					app_permissions.can_view = true;
+				}
+				
+				
 			}
 		}
 	}
@@ -292,6 +313,7 @@ listView.addEventListener('click',function(e){
 				win_new.region_form = 0;
 				win_new.backgroundColor = "#EEEEEE";
 				win_new.nameSelected = 'Fill Details...';
+				win_new.app_permissions = app_permissions;
 				win_new.addEventListener('focus', function(){
 					unlock_screen();
 				});
@@ -303,22 +325,28 @@ listView.addEventListener('click',function(e){
 				// });
 			}
 			else{
-				var win_new = Titanium.UI.createWindow({  
-					title: e.row.display,
-					fullscreen: false,
-					url:'objects.js',
-					type: e.row.name_table,
-					uid: jsonLogin.user.uid,
-					up_node: update_node,
-					backgroundColor: '#EEEEEE',
-					show_plus: e.row.show_plus
-				});
-				win_new.picked 	 = win2.picked;
-				win_new.addEventListener('focus', function(){
-					unlock_screen();
-				});
+			//	if(app_permissions.can_view == true){
+					var win_new = Titanium.UI.createWindow({  
+						title: e.row.display,
+						fullscreen: false,
+						url:'objects.js',
+						type: e.row.name_table,
+						uid: jsonLogin.user.uid,
+						up_node: update_node,
+						backgroundColor: '#EEEEEE',
+						show_plus: e.row.show_plus
+					});
+					win_new.picked 	 = win2.picked;
+					win_new.app_permissions = app_permissions;
+					win_new.addEventListener('focus', function(){
+						unlock_screen();
+					});
 				
-				win_new.open();
+					win_new.open();
+				// }else{
+					// unlock_screen();
+					// unsetUse();
+				// }
 			}				
 		}
 	}, 1000);

@@ -3932,8 +3932,8 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 			}
 			
 			if(calculation_row.field_name_1 != null && calculation_row.field_name_1 != "") {
-				Ti.API.info('here--------0.4' + calculation_row.field_name_1);
-				if(calculated_field_cache[calculation_row.field_name_1] != null && calculated_field_cache[calculation_row.field_name_1] != "") {
+				Ti.API.info('here--------0.4' + calculation_row.field_name_1 + ","+ calculated_field_cache[calculation_row.field_name_1]);
+				if(calculated_field_cache[calculation_row.field_name_1] != null) {
 					Ti.API.info('here--------0.5' + calculated_field_cache[calculation_row.field_name_1]);
 					field_1_multiplier = calculated_field_cache[calculation_row.field_name_1];
 				} else if(calculation_row.type == 'parent_field_value') {

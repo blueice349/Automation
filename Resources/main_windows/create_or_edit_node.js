@@ -131,9 +131,19 @@ create_or_edit_node.getWindow = function() {
 //////////////////////////
 
 function adjustView(counter, top ){
-	Ti.API.info("Offset = "+viewContent.getContentOffset().y+" count = "+counter+" top = "+top);
-	viewContent.setContentOffset({x:viewContent.getContentOffset().x , y: top},{animated:true})
-	Ti.API.info("New offset: "+viewContent.getContentOffset().y);
+
+	try {
+		Ti.API.info("Offset = " + viewContent.getContentOffset().y + " count = " + counter + " top = " + top);
+		viewContent.setContentOffset({
+			x : viewContent.getContentOffset().x,
+			y : top
+		}, {
+			animated : true
+		})
+		Ti.API.info("New offset: " + viewContent.getContentOffset().y);
+	}catch(ev) {
+	}
+
 }
 
 
@@ -995,17 +1005,7 @@ function display_widget(obj) {
 		value_date.setDate(day);
 
 		obj.update_it = true;
-
-		//Update timezone
-		obj.timezone = obj.currentDate.getTimezoneOffset() * 60 * 1000;
-
-		//discover if is GMT+ or GMT-
-		obj.timezone = obj.timezone * verify_UTC(obj.currentDate);
-
-		//Refresh GMT value
-		obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone;
-		Ti.API.info('TIMEZONE : ' + obj.timezone);
-		Ti.API.info('Date : ' + obj.currentDate);
+		obj.value = Math.round(obj.currentDate.getTime());
 
 		var date_picker = Titanium.UI.createPicker({
 			borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
@@ -1025,10 +1025,6 @@ function display_widget(obj) {
 
 		date_picker.addEventListener('change', function(e) {
 			e.source.report = e.value;
-			//Update timezone
-			obj.timezone = e.source.report.getTimezoneOffset() * 60 * 1000;
-			//discover if is GMT+ or GMT-
-			obj.timezone = obj.timezone * verify_UTC(e.source.report);
 		});
 		//Add fields:
 		win_wid.add(date_picker);
@@ -1054,9 +1050,7 @@ function display_widget(obj) {
 
 		done.addEventListener('click', function() {
 			obj.currentDate = date_picker.report;
-			obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone ;
-			Ti.API.info('Date : ' + obj.currentDate);
-			Ti.API.info('Value: ' + obj.value);
+			obj.value = Math.round(obj.currentDate.getTime());
 
 			var f_date = obj.currentDate.getDate();
 			var f_month = months_set[obj.currentDate.getMonth()];
@@ -1081,23 +1075,13 @@ function display_widget(obj) {
 		// For current Titanium Studio version (1.8), Android doesn't supply such pre build API. Here we create it
 
 		obj.update_it = true;
-
-		//Update timezone
-		obj.timezone = obj.currentDate.getTimezoneOffset() * 60 * 1000;
-		Ti.API.info('Hours : ' + obj.currentDate.getHours());
-		Ti.API.info('UTC Hour : ' + obj.currentDate.getUTCHours());
-
-		//discover if is GMT+ or GMT-
-		obj.timezone = obj.timezone * verify_UTC(obj.currentDate);
-		//Refresh GMT value
-		obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone;
-		Ti.API.info('TIMEZONE : ' + obj.timezone);
-		Ti.API.info('Date : ' + obj.currentDate);
-
 		//Get current
 		var currentDate = obj.currentDate;
 		var year = currentDate.getFullYear();
-
+		var changedDate = obj.currentDate;
+		var changedTime = obj.currentDate;
+		var iOSDateCal = obj.currentDate;
+	
 		//Min
 		var minDate = new Date();
 		minDate.setFullYear(year - 5);
@@ -1110,8 +1094,9 @@ function display_widget(obj) {
 		maxDate.setMonth(11);
 		maxDate.setDate(31);
 
-		if (PLATFORM == 'android'){
+		//if (PLATFORM == 'android'){
 			var date_picker = Titanium.UI.createPicker({
+				useSpinner : true,
 				borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 				value : obj.currentDate,
 				font : {
@@ -1120,7 +1105,6 @@ function display_widget(obj) {
 				type : Ti.UI.PICKER_TYPE_DATE,
 				minDate : minDate,
 				maxDate : maxDate,
-				report : obj.currentDate,
 				color : '#000000',
 				top : '12%'
 			});
@@ -1130,42 +1114,34 @@ function display_widget(obj) {
 			 * Time picker
 			 */
 			var time_picker = Titanium.UI.createPicker({
+				useSpinner : true,
 				borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 				value : obj.currentDate,
 				font : {
 					fontSize : 18
 				},
-				report : obj.currentDate,
 				type : Ti.UI.PICKER_TYPE_TIME,
 				color : '#000000',
 				top : '50%',
 				timezone : null
 			});
 			time_picker.selectionIndicator = true;
-	
-			Ti.API.info('Value: ' + obj.value);
+			
+			time_picker.date_picker = date_picker;
+			date_picker.time_picker = time_picker;
 	
 			date_picker.addEventListener('change', function(e) {
-				e.source.report = e.value;
-				//Update timezone
-				obj.timezone = e.source.report.getTimezoneOffset() * 60 * 1000;
-				//discover if is GMT+ or GMT-
-				obj.timezone = obj.timezone * verify_UTC(e.source.report);
-				Ti.API.info('New Timezone: ' + obj.timezone);
+				e.source.time_picker.value = e.value;
+				changedDate = e.value;
+				iOSDateCal = e.value;
 			});
 			//Add field:
 			win_wid.add(date_picker);
 	
 			time_picker.addEventListener('change', function(e) {
-				Ti.API.info('Time: ' + e.value);
-				Ti.API.info('Report: ' + e.source.report);
-	
-				e.source.report = e.value;
-				//Update timezone
-				e.source.timezone = e.source.report.getTimezoneOffset() * 60 * 1000;
-				//discover if is GMT+ or GMT-
-				e.source.timezone = e.source.timezone * verify_UTC(e.source.report);
-				Ti.API.info('Timezone for time_picker: ' + e.source.timezone);
+				e.source.date_picker.value = e.value;
+				changedTime = e.value;
+				iOSDateCal = e.value;
 			});
 			//Add field:
 			win_wid.add(time_picker);
@@ -1190,112 +1166,26 @@ function display_widget(obj) {
 			win_wid.add(cancel);
 	
 			done.addEventListener('click', function() {
-				var date_value = date_picker.report;
-				var time_value = time_picker.report;
-	
-				//Day with no second
-				var date_rest = date_value.getTime() % 86400000;
-	
-				//Local and actual timezone
-				var local_timezone = time_picker.report.getTimezoneOffset() * 60 * 1000;
-	
-				//discover if is GMT+ or GMT-
-				local_timezone = local_timezone * verify_UTC(time_picker.report);
-				var timezone_diff = local_timezone - obj.timezone;
-	
-				var time_rest = (time_value.getTime() + timezone_diff) % 86400000;
-				date_value = (Math.round(date_value.getTime()) - date_rest);
-				time_value = (time_rest);
-	
-				var composed_date = date_value + time_value;
-				var new_date = new Date(composed_date);
-	
-				obj.currentDate = new_date;
-				obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone;
-				Ti.API.info('Date : ' + obj.currentDate);
-				Ti.API.info('Value: ' + obj.value);
-	
-				var f_minute = obj.currentDate.getMinutes();
-				var f_hour = obj.currentDate.getHours();
-				var f_date = obj.currentDate.getDate();
-				var f_month = months_set[obj.currentDate.getMonth()];
-				var f_year = obj.currentDate.getFullYear();
-	
-				obj.text = f_hour + ":" + form_min(f_minute) + " - " + f_month + " / " + f_date + " / " + f_year;
-				win_wid.close();
-			});
-	
-			cancel.addEventListener('click', function() {
-				if (obj.value == null) {
-					obj.update_it = false;
+				if(PLATFORM == "android"){
+					obj.currentDate.setDate(changedDate.getDate());
+					obj.currentDate.setMonth(changedDate.getMonth());
+					obj.currentDate.setFullYear(changedDate.getFullYear());
+					obj.currentDate.setHours(changedTime.getHours());
+					obj.currentDate.setMinutes(changedTime.getMinutes());
+					obj.currentDate.setSeconds(changedTime.getSeconds());
+				}else{
+					obj.currentDate = iOSDateCal;
 				}
-				win_wid.close();
-			});			
-		}
-		else{
-
-			var date_picker = Titanium.UI.createPicker({
-				borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-				value : obj.currentDate,
-				font : {
-					fontSize : 18
-				},
-				type : Ti.UI.PICKER_TYPE_DATE_AND_TIME,
-				minDate : minDate,
-				maxDate : maxDate,
-				report : obj.currentDate,
-				color : '#000000',
-				top : '12%'
-			});
-			date_picker.selectionIndicator = true;
-
-			Ti.API.info('Value: ' + obj.value);
-	
-			date_picker.addEventListener('change', function(e) {
-				e.source.report = e.value;
-				//Update timezone
-				obj.timezone = e.source.report.getTimezoneOffset() * 60 * 1000;
-				//discover if is GMT+ or GMT-
-				obj.timezone = obj.timezone * verify_UTC(e.source.report);
-			});
-			//Add fields:
-			win_wid.add(date_picker);
-	
-			var done = Ti.UI.createButton({
-				title : 'Done',
-				bottom : 10,
-				width : '35%',
-				left : '10%',
-				height : '10%'
-			});
-	
-			var cancel = Ti.UI.createButton({
-				title : 'Cancel',
-				bottom : 10,
-				width : '35%',
-				left : '55%',
-				height : '10%'
-			});
-	
-			win_wid.add(done);
-			win_wid.add(cancel);
-	
-			done.addEventListener('click', function() {
-				obj.currentDate = date_picker.report;
-				obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone;
-				Ti.API.info('Date : ' + obj.currentDate);
-				Ti.API.info('Value: ' + obj.value);
-	
+				
+				obj.value = obj.currentDate.getTime();
+				
+				var f_minute = obj.currentDate.getMinutes();
+				var f_hour = obj.currentDate.getHours();
 				var f_date = obj.currentDate.getDate();
 				var f_month = months_set[obj.currentDate.getMonth()];
 				var f_year = obj.currentDate.getFullYear();
-				var f_minute = obj.currentDate.getMinutes();
-				var f_hour = obj.currentDate.getHours();
 	
 				obj.text = f_hour + ":" + form_min(f_minute) + " - " + f_month + " / " + f_date + " / " + f_year;
-	
-				changedContentValue(obj);
-				noDataChecboxEnableDisable(obj, obj.reffer_index);
 				win_wid.close();
 			});
 	
@@ -1305,8 +1195,6 @@ function display_widget(obj) {
 				}
 				win_wid.close();
 			});	
-		}
-
 	}
 
 	win_wid.open();
@@ -1338,17 +1226,8 @@ function display_omadi_time(obj) {
 	win_wid.add(tit_picker);
 
 	obj.update_it = true;
-
-	//Update timezone
-	obj.timezone = obj.currentDate.getTimezoneOffset() * 60 * 1000;
-
-	//discover if is GMT+ or GMT-
-	obj.timezone = obj.timezone * verify_UTC(obj.currentDate);
-
 	//Refresh GMT value
-	obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone ;
-	Ti.API.info('TIMEZONE : ' + obj.timezone);
-	Ti.API.info('Date : ' + obj.currentDate);
+	obj.value = Math.round(obj.currentDate.getTime());
 
 	var date_picker = Titanium.UI.createPicker({
 		borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
@@ -1366,10 +1245,6 @@ function display_omadi_time(obj) {
 
 	date_picker.addEventListener('change', function(e) {
 		e.source.report = e.value;
-		//Update timezone
-		obj.timezone = e.source.report.getTimezoneOffset() * 60 * 1000;
-		//discover if is GMT+ or GMT-
-		obj.timezone = obj.timezone * verify_UTC(e.source.report);
 	});
 	//Add fields:
 	win_wid.add(date_picker);
@@ -1395,7 +1270,7 @@ function display_omadi_time(obj) {
 
 	done.addEventListener('click', function() {
 		obj.currentDate = date_picker.report;
-		obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone ;
+		obj.value = Math.round(obj.currentDate.getTime());
 		alert(obj.value);
 		Ti.API.info('Date : ' + obj.currentDate);
 		Ti.API.info('Value: ' + obj.value);
@@ -1418,6 +1293,485 @@ function display_omadi_time(obj) {
 
 	win_wid.open();
 }
+
+
+
+// function display_widget(obj) {
+// 
+	// var win_wid = Ti.UI.createWindow({
+		// backgroundColor : "#000",
+		// opacity : 0.9
+	// });
+// 
+	// var widget = obj.widget;
+	// var settings = obj.settings
+	// Ti.API.info('====>> Widget settings = ' + widget.settings['time']);
+// 
+	// var tit_picker = Ti.UI.createLabel({
+		// top : 0,
+		// width : '100%',
+		// height : '10%',
+		// backgroundColor : '#FFF',
+		// color : '#000',
+		// textAlign : 'center',
+		// font : {
+			// fontWeight : 'bold'
+		// },
+		// text : obj.title_picker
+	// });
+	// win_wid.add(tit_picker);
+// 
+	// // call function display_widget
+	// if (widget.settings['time'] != "1") {
+// 
+		// //Get current
+		// var currentDate = obj.currentDate;
+		// var day = currentDate.getDate();
+		// var month = currentDate.getMonth();
+		// var year = currentDate.getFullYear();
+// 
+		// //Min
+		// var minDate = new Date();
+		// minDate.setFullYear(year - 5);
+		// minDate.setMonth(0);
+		// minDate.setDate(1);
+// 
+		// //Max
+		// var maxDate = new Date();
+		// maxDate.setFullYear(year + 5);
+		// maxDate.setMonth(11);
+		// maxDate.setDate(31);
+// 
+		// //Current
+		// var value_date = new Date();
+		// value_date.setFullYear(year);
+		// value_date.setMonth(month);
+		// value_date.setDate(day);
+// 
+		// obj.update_it = true;
+// 
+		// //Update timezone
+		// obj.timezone = obj.currentDate.getTimezoneOffset() * 60 * 1000;
+// 
+		// //discover if is GMT+ or GMT-
+		// obj.timezone = obj.timezone * verify_UTC(obj.currentDate);
+// 
+		// //Refresh GMT value
+		// obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone;
+		// Ti.API.info('TIMEZONE : ' + obj.timezone);
+		// Ti.API.info('Date : ' + obj.currentDate);
+// 
+		// var date_picker = Titanium.UI.createPicker({
+			// borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+			// value : obj.currentDate,
+			// font : {
+				// fontSize : 18
+			// },
+			// type : Ti.UI.PICKER_TYPE_DATE,
+			// minDate : minDate,
+			// maxDate : maxDate,
+			// report : obj.currentDate,
+			// color : '#000000'
+		// });
+		// date_picker.selectionIndicator = true;
+// 
+		// Ti.API.info('Value: ' + obj.value);
+// 
+		// date_picker.addEventListener('change', function(e) {
+			// e.source.report = e.value;
+			// //Update timezone
+			// obj.timezone = e.source.report.getTimezoneOffset() * 60 * 1000;
+			// //discover if is GMT+ or GMT-
+			// obj.timezone = obj.timezone * verify_UTC(e.source.report);
+		// });
+		// //Add fields:
+		// win_wid.add(date_picker);
+// 
+		// var done = Ti.UI.createButton({
+			// title : 'Done',
+			// bottom : 10,
+			// width : '35%',
+			// left : '10%',
+			// height : '10%'
+		// });
+// 
+		// var cancel = Ti.UI.createButton({
+			// title : 'Cancel',
+			// bottom : 10,
+			// width : '35%',
+			// left : '55%',
+			// height : '10%'
+		// });
+// 
+		// win_wid.add(done);
+		// win_wid.add(cancel);
+// 
+		// done.addEventListener('click', function() {
+			// obj.currentDate = date_picker.report;
+			// obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone ;
+			// Ti.API.info('Date : ' + obj.currentDate);
+			// Ti.API.info('Value: ' + obj.value);
+// 
+			// var f_date = obj.currentDate.getDate();
+			// var f_month = months_set[obj.currentDate.getMonth()];
+			// var f_year = obj.currentDate.getFullYear();
+// 
+			// obj.text = f_month + " / " + f_date + " / " + f_year;
+			// changedContentValue(obj);
+			// noDataChecboxEnableDisable(obj, obj.reffer_index);
+			// win_wid.close();
+		// });
+// 
+		// cancel.addEventListener('click', function() {
+			// if (obj.value == null) {
+				// obj.update_it = false;
+			// }
+			// win_wid.close();
+		// });
+	// } else {
+		// //Composed field
+		// // Date picker
+		// // Time picker
+		// // For current Titanium Studio version (1.8), Android doesn't supply such pre build API. Here we create it
+// 
+		// obj.update_it = true;
+// 
+		// //Update timezone
+		// obj.timezone = obj.currentDate.getTimezoneOffset() * 60 * 1000;
+		// Ti.API.info('Hours : ' + obj.currentDate.getHours());
+		// Ti.API.info('UTC Hour : ' + obj.currentDate.getUTCHours());
+// 
+		// //discover if is GMT+ or GMT-
+		// obj.timezone = obj.timezone * verify_UTC(obj.currentDate);
+		// //Refresh GMT value
+		// obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone;
+		// Ti.API.info('TIMEZONE : ' + obj.timezone);
+		// Ti.API.info('Date : ' + obj.currentDate);
+// 
+		// //Get current
+		// var currentDate = obj.currentDate;
+		// var year = currentDate.getFullYear();
+// 
+		// //Min
+		// var minDate = new Date();
+		// minDate.setFullYear(year - 5);
+		// minDate.setMonth(0);
+		// minDate.setDate(1);
+// 
+		// //Max
+		// var maxDate = new Date();
+		// maxDate.setFullYear(year + 5);
+		// maxDate.setMonth(11);
+		// maxDate.setDate(31);
+// 
+		// if (PLATFORM == 'android'){
+			// var date_picker = Titanium.UI.createPicker({
+				// borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+				// value : obj.currentDate,
+				// font : {
+					// fontSize : 18
+				// },
+				// type : Ti.UI.PICKER_TYPE_DATE,
+				// minDate : minDate,
+				// maxDate : maxDate,
+				// report : obj.currentDate,
+				// color : '#000000',
+				// top : '12%'
+			// });
+			// date_picker.selectionIndicator = true;
+// 	
+			// /*
+			 // * Time picker
+			 // */
+			// var time_picker = Titanium.UI.createPicker({
+				// borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+				// value : obj.currentDate,
+				// font : {
+					// fontSize : 18
+				// },
+				// report : obj.currentDate,
+				// type : Ti.UI.PICKER_TYPE_TIME,
+				// color : '#000000',
+				// top : '50%',
+				// timezone : null
+			// });
+			// time_picker.selectionIndicator = true;
+// 	
+			// Ti.API.info('Value: ' + obj.value);
+// 	
+			// date_picker.addEventListener('change', function(e) {
+				// e.source.report = e.value;
+				// //Update timezone
+				// obj.timezone = e.source.report.getTimezoneOffset() * 60 * 1000;
+				// //discover if is GMT+ or GMT-
+				// obj.timezone = obj.timezone * verify_UTC(e.source.report);
+				// Ti.API.info('New Timezone: ' + obj.timezone);
+			// });
+			// //Add field:
+			// win_wid.add(date_picker);
+// 	
+			// time_picker.addEventListener('change', function(e) {
+				// Ti.API.info('Time: ' + e.value);
+				// Ti.API.info('Report: ' + e.source.report);
+// 	
+				// e.source.report = e.value;
+				// //Update timezone
+				// e.source.timezone = e.source.report.getTimezoneOffset() * 60 * 1000;
+				// //discover if is GMT+ or GMT-
+				// e.source.timezone = e.source.timezone * verify_UTC(e.source.report);
+				// Ti.API.info('Timezone for time_picker: ' + e.source.timezone);
+			// });
+			// //Add field:
+			// win_wid.add(time_picker);
+// 	
+			// var done = Ti.UI.createButton({
+				// title : 'Done',
+				// bottom : 10,
+				// width : '35%',
+				// left : '10%',
+				// height : '10%'
+			// });
+// 	
+			// var cancel = Ti.UI.createButton({
+				// title : 'Cancel',
+				// bottom : 10,
+				// width : '35%',
+				// left : '55%',
+				// height : '10%'
+			// });
+// 	
+			// win_wid.add(done);
+			// win_wid.add(cancel);
+// 	
+			// done.addEventListener('click', function() {
+				// var date_value = date_picker.report;
+				// var time_value = time_picker.report;
+// 	
+				// //Day with no second
+				// var date_rest = date_value.getTime() % 86400000;
+// 	
+				// //Local and actual timezone
+				// var local_timezone = time_picker.report.getTimezoneOffset() * 60 * 1000;
+// 	
+				// //discover if is GMT+ or GMT-
+				// local_timezone = local_timezone * verify_UTC(time_picker.report);
+				// var timezone_diff = local_timezone - obj.timezone;
+// 	
+				// var time_rest = (time_value.getTime() + timezone_diff) % 86400000;
+				// date_value = (Math.round(date_value.getTime()) - date_rest);
+				// time_value = (time_rest);
+// 	
+				// var composed_date = date_value + time_value;
+				// var new_date = new Date(composed_date);
+// 	
+				// obj.currentDate = new_date;
+				// obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone;
+				// Ti.API.info('Date : ' + obj.currentDate);
+				// Ti.API.info('Value: ' + obj.value);
+// 	
+				// var f_minute = obj.currentDate.getMinutes();
+				// var f_hour = obj.currentDate.getHours();
+				// var f_date = obj.currentDate.getDate();
+				// var f_month = months_set[obj.currentDate.getMonth()];
+				// var f_year = obj.currentDate.getFullYear();
+// 	
+				// obj.text = f_hour + ":" + form_min(f_minute) + " - " + f_month + " / " + f_date + " / " + f_year;
+				// win_wid.close();
+			// });
+// 	
+			// cancel.addEventListener('click', function() {
+				// if (obj.value == null) {
+					// obj.update_it = false;
+				// }
+				// win_wid.close();
+			// });			
+		// }
+		// else{
+// 
+			// var date_picker = Titanium.UI.createPicker({
+				// borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+				// value : obj.currentDate,
+				// font : {
+					// fontSize : 18
+				// },
+				// type : Ti.UI.PICKER_TYPE_DATE_AND_TIME,
+				// minDate : minDate,
+				// maxDate : maxDate,
+				// report : obj.currentDate,
+				// color : '#000000',
+				// top : '12%'
+			// });
+			// date_picker.selectionIndicator = true;
+// 
+			// Ti.API.info('Value: ' + obj.value);
+// 	
+			// date_picker.addEventListener('change', function(e) {
+				// e.source.report = e.value;
+				// //Update timezone
+				// obj.timezone = e.source.report.getTimezoneOffset() * 60 * 1000;
+				// //discover if is GMT+ or GMT-
+				// obj.timezone = obj.timezone * verify_UTC(e.source.report);
+			// });
+			// //Add fields:
+			// win_wid.add(date_picker);
+// 	
+			// var done = Ti.UI.createButton({
+				// title : 'Done',
+				// bottom : 10,
+				// width : '35%',
+				// left : '10%',
+				// height : '10%'
+			// });
+// 	
+			// var cancel = Ti.UI.createButton({
+				// title : 'Cancel',
+				// bottom : 10,
+				// width : '35%',
+				// left : '55%',
+				// height : '10%'
+			// });
+// 	
+			// win_wid.add(done);
+			// win_wid.add(cancel);
+// 	
+			// done.addEventListener('click', function() {
+				// obj.currentDate = date_picker.report;
+				// obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone;
+				// Ti.API.info('Date : ' + obj.currentDate);
+				// Ti.API.info('Value: ' + obj.value);
+// 	
+				// var f_date = obj.currentDate.getDate();
+				// var f_month = months_set[obj.currentDate.getMonth()];
+				// var f_year = obj.currentDate.getFullYear();
+				// var f_minute = obj.currentDate.getMinutes();
+				// var f_hour = obj.currentDate.getHours();
+// 	
+				// obj.text = f_hour + ":" + form_min(f_minute) + " - " + f_month + " / " + f_date + " / " + f_year;
+// 	
+				// changedContentValue(obj);
+				// noDataChecboxEnableDisable(obj, obj.reffer_index);
+				// win_wid.close();
+			// });
+// 	
+			// cancel.addEventListener('click', function() {
+				// if (obj.value == null) {
+					// obj.update_it = false;
+				// }
+				// win_wid.close();
+			// });	
+		// }
+// 
+	// }
+// 
+	// win_wid.open();
+// 
+// }
+
+// function display_omadi_time(obj) {
+	// var win_wid = Ti.UI.createWindow({
+		// //modal: true,
+		// backgroundColor : "#000",
+		// opacity : 0.9
+	// });
+// 
+	// var widget = obj.widget;
+	// var settings = obj.settings;
+// 
+	// var tit_picker = Ti.UI.createLabel({
+		// top : 0,
+		// width : '100%',
+		// height : '10%',
+		// backgroundColor : '#FFF',
+		// color : '#000',
+		// textAlign : 'center',
+		// font : {
+			// fontWeight : 'bold'
+		// },
+		// text : obj.title_picker
+	// });
+	// win_wid.add(tit_picker);
+// 
+	// obj.update_it = true;
+// 
+	// //Update timezone
+	// obj.timezone = obj.currentDate.getTimezoneOffset() * 60 * 1000;
+// 
+	// //discover if is GMT+ or GMT-
+	// obj.timezone = obj.timezone * verify_UTC(obj.currentDate);
+// 
+	// //Refresh GMT value
+	// obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone ;
+	// Ti.API.info('TIMEZONE : ' + obj.timezone);
+	// Ti.API.info('Date : ' + obj.currentDate);
+// 
+	// var date_picker = Titanium.UI.createPicker({
+		// borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+		// value : obj.currentDate,
+		// font : {
+			// fontSize : 18
+		// },
+		// report : obj.currentDate,
+		// type : Ti.UI.PICKER_TYPE_TIME,
+		// color : '#000000'
+	// });
+	// date_picker.selectionIndicator = true;
+// 
+	// Ti.API.info('Value: ' + obj.value);
+// 
+	// date_picker.addEventListener('change', function(e) {
+		// e.source.report = e.value;
+		// //Update timezone
+		// obj.timezone = e.source.report.getTimezoneOffset() * 60 * 1000;
+		// //discover if is GMT+ or GMT-
+		// obj.timezone = obj.timezone * verify_UTC(e.source.report);
+	// });
+	// //Add fields:
+	// win_wid.add(date_picker);
+// 
+	// var done = Ti.UI.createButton({
+		// title : 'Done',
+		// bottom : 10,
+		// width : '35%',
+		// left : '10%',
+		// height : '10%'
+	// });
+// 
+	// var cancel = Ti.UI.createButton({
+		// title : 'Cancel',
+		// bottom : 10,
+		// width : '35%',
+		// left : '55%',
+		// height : '10%'
+	// });
+// 
+	// win_wid.add(done);
+	// win_wid.add(cancel);
+// 
+	// done.addEventListener('click', function() {
+		// obj.currentDate = date_picker.report;
+		// obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone ;
+		// alert(obj.value);
+		// Ti.API.info('Date : ' + obj.currentDate);
+		// Ti.API.info('Value: ' + obj.value);
+// 
+		// var hours = obj.currentDate.getHours();
+		// var min = obj.currentDate.getMinutes();
+// 
+		// obj.text = hours + ":" + form_min(min);
+		// changedContentValue(obj);
+		// noDataChecboxEnableDisable(obj, obj.reffer_index);
+		// win_wid.close();
+	// });
+// 
+	// cancel.addEventListener('click', function() {
+		// if (obj.value == null) {
+			// obj.update_it = false;
+		// }
+		// win_wid.close();
+	// });
+// 
+	// win_wid.open();
+// }
 
 function open_mult_selector(obj) {
 	var win_wid = Ti.UI.createWindow({
@@ -5480,15 +5834,7 @@ create_or_edit_node.loadUI = function() {
 											var year = currentDate.getFullYear();
 
 											if (settings.default_value == 'now') {
-														//Update timezone
-												var timezone = currentDate.getTimezoneOffset() * 60 * 1000;
-	
-												//discover if is GMT+ or GMT-
-												timezone = timezone * verify_UTC(currentDate);
-										
-												//Refresh GMT value
 												var vl_to_field =currentDate.getTime() ;
-										
 												text_in_field = months_set[month] + " / " + day + " / " + year;
 											} else {
 												var vl_to_field = null;
@@ -5578,15 +5924,7 @@ create_or_edit_node.loadUI = function() {
 										var year = currentDate.getFullYear();
 
 										if (settings.default_value == 'now') {
-												//Update timezone
-											var timezone = currentDate.getTimezoneOffset() * 60 * 1000;
-
-											//discover if is GMT+ or GMT-
-											timezone = timezone * verify_UTC(currentDate);
-									
-											//Refresh GMT value
 											var vl_to_field =currentDate.getTime() ;
-										
 											text_in_field = months_set[month] + " / " + day + " / " + year;
 										} else {
 											var vl_to_field = null;
@@ -5705,15 +6043,7 @@ create_or_edit_node.loadUI = function() {
 											var hours = currentDate.getHours();
 
 											if (settings.default_value == 'now') {
-												//Update timezone
-												var timezone = currentDate.getTimezoneOffset() * 60 * 1000;
-	
-												//discover if is GMT+ or GMT-
-												timezone = timezone * verify_UTC(currentDate);
-										
-												//Refresh GMT value
 												var vl_to_field =currentDate.getTime() ;
-										
 												text_in_field = hours + ":" + form_min(min) + " - " + months_set[month] + " / " + day + " / " + year;
 											} else {
 												var vl_to_field = null;
@@ -5808,13 +6138,6 @@ create_or_edit_node.loadUI = function() {
 										var hours = currentDate.getHours();
 
 										if (settings.default_value == 'now') {
-											//Update timezone
-											var timezone = currentDate.getTimezoneOffset() * 60 * 1000;
-
-											//discover if is GMT+ or GMT-
-											timezone = timezone * verify_UTC(currentDate);
-									
-											//Refresh GMT value
 											var vl_to_field =currentDate.getTime() ;
 											text_in_field = hours + ":" + form_min(min) + " - " + months_set[month] + " / " + day + " / " + year;
 										} else {
