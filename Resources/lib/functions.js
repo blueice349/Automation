@@ -8,6 +8,12 @@
 var DOWNLOAD_URL_THUMBNAIL = '/sync/image/thumbnail/';
 var DOWNLOAD_URL_IMAGE_FILE = '/sync/file/';
 var PLATFORM = Ti.Platform.name;
+var NUMBER_FORMAT_CURRENCY = 'currency';
+var NUMBER_FORMAT_INTEGER = 'integer';
+var NUMBER_FORMAT_DECIMAL_0 = 'one decimal';
+var NUMBER_FORMAT_DECIMAL_00 = 'two decimal';
+var NUMBER_FORMAT_DECIMAL_000 = 'three decimal';
+var app_timestamp = 0;
 
 function getDBName() {
 	var db_list = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );	
@@ -18,7 +24,6 @@ function getDBName() {
 	Ti.API.info("DB NAME: "+recebe);
 	return recebe;
 }
-
 
 function showIndicator(show)
 {
@@ -86,7 +91,7 @@ function Progress_install(current, max){
 
     // black view
     var indView = Titanium.UI.createView({
-        height: '15%',
+        height: '50',
         width: '100%',
         backgroundColor:'#111',
         opacity:1,
@@ -133,6 +138,7 @@ function Progress_install(current, max){
 	this.set_max = function (value){
 		indView.remove(pb_download);
 		indView.add(pb_install);
+		pb_install.show();
 		this.max = value;
 		Ti.API.info("Changed max");
 	}
@@ -475,7 +481,7 @@ function treatArray( num_to_insert , call_id ){
 				test1++;
 			}
 			else if (count_a == array_size){
-				content_s += num_to_insert[key]+'';
+				content_s += num_to_insert[key]+' ';
 				test2++;
 			}
 		}
@@ -540,8 +546,13 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 				if ((json[obj].insert[i].title === null) || (json[obj].insert[i].title == 'undefined') || (json[obj].insert[i].title === false)) 
 					json[obj].insert[i].title = "No Title";
 				
+				
 				//'update' is a flag to decide whether the node needs to be synced to the server or not 
-				process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid ) VALUES ( '+json[obj].insert[i].nid+', '+json[obj].insert[i].created+' , '+json[obj].insert[i].changed+', "'+json[obj].insert[i].title.replace(/"/gi, "'")+'" , '+json[obj].insert[i].author_uid+' , 0 , "'+obj+'", '+json[obj].insert[i].form_part + ',' + json[obj].insert[i].changed_uid+') ';
+				 var no_data = '';
+				 if(!(json[obj].insert[i].no_data_fields instanceof Array)){
+					no_data = JSON.stringify(json[obj].insert[i].no_data_fields);
+				}
+				process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields ) VALUES ( '+json[obj].insert[i].nid+', '+json[obj].insert[i].created+' , '+json[obj].insert[i].changed+', "'+json[obj].insert[i].title.replace(/"/gi, "'")+'" , '+json[obj].insert[i].author_uid+' , 0 , "'+obj+'", '+json[obj].insert[i].form_part + ',' + json[obj].insert[i].changed_uid+ ',\'' + no_data +'\') ';
 				
 				if (aux_column > 0){
 					query = 'INSERT OR REPLACE  INTO '+obj+' (\'nid\', ';
@@ -701,7 +712,11 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 				json[obj].insert.title = "No Title";
 			
 			//'update' is a flag to decide whether the node needs to be synced to the server or not 
-			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid  ) VALUES ( '+json[obj].insert.nid+', '+json[obj].insert.created+' , '+json[obj].insert.changed+', "'+json[obj].insert.title.replace(/"/gi, "'")+'" , '+json[obj].insert.author_uid+' , 0 , "'+obj+'", '+json[obj].insert.form_part+',' + json[obj].insert.changed_uid +') ';
+			 var no_data = '';
+				 if(!(json[obj].insert.no_data_fields instanceof Array)){
+					no_data = JSON.stringify(json[obj].insert.no_data_fields);
+			}
+			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields  ) VALUES ( '+json[obj].insert.nid+', '+json[obj].insert.created+' , '+json[obj].insert.changed+', "'+json[obj].insert.title.replace(/"/gi, "'")+'" , '+json[obj].insert.author_uid+' , 0 , "'+obj+'", '+json[obj].insert.form_part+',' + json[obj].insert.changed_uid + ',\'' + no_data +'\') ';
 			
 			if (aux_column > 0){
 				query = 'INSERT OR REPLACE  INTO '+obj+' (\'nid\', ';
@@ -864,8 +879,12 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 				if ((json[obj].update[i].title === null) || (json[obj].update[i].title == 'undefined') || (json[obj].update[i].title === false)) 
 					json[obj].update[i].title = "No Title";
 				
+				var no_data = '';
+				 if(!(json[obj].update[i].no_data_fields instanceof Array)){
+					no_data = JSON.stringify(json[obj].update[i].no_data_fields);
+				}
 				//'update' is a flag to decide whether the node needs to be synced to the server or not
-				process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid ) VALUES ( '+json[obj].update[i].nid+', '+json[obj].update[i].created+' , '+json[obj].update[i].changed+', "'+json[obj].update[i].title.replace(/"/gi, "'")+'" , '+json[obj].update[i].author_uid+' , 0 , "'+obj+'", '+json[obj].update[i].form_part+', '+json[obj].update[i].changed_uid+') ';
+				process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields ) VALUES ( '+json[obj].update[i].nid+', '+json[obj].update[i].created+' , '+json[obj].update[i].changed+', "'+json[obj].update[i].title.replace(/"/gi, "'")+'" , '+json[obj].update[i].author_uid+' , 0 , "'+obj+'", '+json[obj].update[i].form_part+', '+json[obj].update[i].changed_uid+ ',\'' + no_data +'\') ';
 				
 				if (aux_column > 0){
 					query = 'INSERT OR REPLACE  INTO '+obj+' (\'nid\', ';
@@ -1068,8 +1087,12 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 			if ((json[obj].update.title === null) || (json[obj].update.title == 'undefined') || (json[obj].update.title === false)) 
 				json[obj].update.title = "No Title";
 			
+			var no_data = '';
+				 if(!(json[obj].update.no_data_fields instanceof Array)){
+					no_data = JSON.stringify(json[obj].update.no_data_fields);
+				}
 			//'update' is a flag to decide whether the node needs to be synced to the server or not
-			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid ) VALUES ( '+json[obj].update.nid+', '+json[obj].update.created+' , '+json[obj].update.changed+', "'+json[obj].update.title.replace(/"/gi, "'")+'" , '+json[obj].update.author_uid+' , 0 , "'+obj+'", '+json[obj].update.form_part+', '+json[obj].update.changed_uid+') ';
+			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields ) VALUES ( '+json[obj].update.nid+', '+json[obj].update.created+' , '+json[obj].update.changed+', "'+json[obj].update.title.replace(/"/gi, "'")+'" , '+json[obj].update.author_uid+' , 0 , "'+obj+'", '+json[obj].update.form_part+', '+json[obj].update.changed_uid+ ',\'' + no_data +'\') ';
 
 			
 			if (aux_column > 0){
@@ -1278,11 +1301,14 @@ function getJSON(){
 				var type			= db_json.execute('SELECT display_name FROM bundles WHERE bundle_name = "'+node_fields.fieldByName('bundle')+'"');
 				var type_string		= type.fieldByName('display_name');
 
-				if (new_nodes.fieldByName('nid') < 0){
-					returning_json += '"'+new_nodes.fieldByName('nid')+'":{ "created":"'+new_nodes.fieldByName('created')+'", "nid":"'+new_nodes.fieldByName('nid')+'", "type":"'+type_string.toLowerCase()+'", "form_part":"'+new_nodes.fieldByName("form_part")+'" ';
+				var no_data_string = '""';
+				if(new_nodes.fieldByName("no_data_fields")!=null && new_nodes.fieldByName("no_data_fields")!=""){
+					no_data_string = new_nodes.fieldByName("no_data_fields");
 				}
-				else{
-					returning_json += '"'+new_nodes.fieldByName('nid')+'":{ "changed":"'+new_nodes.fieldByName('changed')+'", "nid":"'+new_nodes.fieldByName('nid')+'", "type":"'+type_string.toLowerCase()+'", "form_part":"'+new_nodes.fieldByName("form_part")+'" ';					
+				if (new_nodes.fieldByName('nid') < 0){
+					returning_json += '"'+new_nodes.fieldByName('nid')+'":{ "created":"'+new_nodes.fieldByName('created')+'", "nid":"'+new_nodes.fieldByName('nid')+'", "type":"'+type_string.toLowerCase()+'", "form_part":"'+new_nodes.fieldByName("form_part")+ '", "no_data_fields":'+no_data_string;
+				}else{
+					returning_json += '"'+new_nodes.fieldByName('nid')+'":{ "changed":"'+new_nodes.fieldByName('changed')+'", "nid":"'+new_nodes.fieldByName('nid')+'", "type":"'+type_string.toLowerCase()+'", "form_part":"'+new_nodes.fieldByName("form_part")+ '", "no_data_fields":'+no_data_string;					
 				}
 				Ti.API.info(returning_json);
 				while (node_fields.isValidRow()){
@@ -1379,7 +1405,7 @@ function isJsonString(str) {
 
 //Install new updates using pagination
 //Load existing data with pagination
-function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent)
+function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent, _node_name)
 {
 	setUse();
 	var db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
@@ -1396,18 +1422,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 	Ti.API.info("TIME: "+timeIndex);
 	Ti.API.info("Type: "+type_request);
 	
-	if (type_request == 'POST'){
-		objectsUp.open('POST', win.picked + '/js-sync/sync.json' );		
-	}
-	else{
-		//Opens address to retrieve list
-		Ti.API.info('GET, '+win.picked+ '/js-sync/download.json?sync_timestamp='+timeIndex);
-		objectsUp.open('GET', win.picked + '/js-sync/download.json?sync_timestamp='+timeIndex);
-	}
-	//Header parameters
-	objectsUp.setRequestHeader("Content-Type", "application/json");
-
-	//While streamming
+	//While streamming - following method should be called b4 open URL
 	objectsUp.ondatastream = function(e){
 		//ind.value = e.progress ;
 		if (progress!= null){
@@ -1415,6 +1430,17 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 			Ti.API.info(' ONDATASTREAM1 - PROGRESS: ' + e.progress);
 		}
 	}
+	
+	if (type_request == 'POST'){
+		objectsUp.open('POST', win.picked + '/js-sync/sync.json' );		
+	}
+	else{
+		//Opens address to retrieve list
+		Ti.API.info('GET, '+win.picked+ '/js-sync/download.json?sync_timestamp='+timeIndex);   
+		objectsUp.open('GET', win.picked + '/js-sync/download.json?sync_timestamp='+timeIndex);
+	}
+	//Header parameters
+	objectsUp.setRequestHeader("Content-Type", "application/json");
 
 	//When connected
 	objectsUp.onload = function(e) {
@@ -1424,6 +1450,12 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 		
 		if (isJsonString(this.responseText) === true ){
 			var json = JSON.parse(this.responseText);
+
+			if( json.request_time && json.request_time != null && json.request_time != "" ){
+				var GMT_OFFSET = Number(json.request_time - app_timestamp);
+				Ti.API.info(GMT_OFFSET+"  === "+json.request_time+" === "+app_timestamp);
+				Ti.App.Properties.setString("timestamp_offset", GMT_OFFSET); 
+			}
 	
 			Ti.API.info('==========TYPE=========   '+type_request);
 			if (type_request == 'GET'){
@@ -1584,9 +1616,9 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									var get_title = JSON.stringify(json.node_type.insert[i].data.title_fields);
 									
 									var _get_data =	JSON.stringify(json.node_type.insert[i].data);
-									
-									node_db[node_db.length] = "INSERT OR REPLACE INTO bundles (bundle_name, display_name, description, title_fields, _data) VALUES ('"+json.node_type.insert[i].type+"', '"+json.node_type.insert[i].name+"' , '"+json.node_type.insert[i].description+"', '"+get_title+"', '"+_get_data+"' )";
+									node_db[node_db.length] = "INSERT OR REPLACE INTO bundles (bundle_name, display_name, description, title_fields, _data , disabled) VALUES ('"+json.node_type.insert[i].type+"', '"+json.node_type.insert[i].name+"' , '"+json.node_type.insert[i].description+"', '"+get_title+"', '"+_get_data+"', '"+json.node_type.insert[i].disabled+"' )";
 									Ti.API.info('Node type : '+json.node_type.insert[i].type+' has been created');
+									Ti.API.info("DISABLED ? "+json.node_type.insert[i].disabled);
 								}
 							}
 						}
@@ -1602,8 +1634,9 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								var get_title = JSON.stringify(json.node_type.insert.data.title_fields);
 								var _get_data =	JSON.stringify(json.node_type.insert.data);
 								
-								node_db[node_db.length] = "INSERT OR REPLACE INTO bundles (bundle_name, display_name, description, title_fields, _data) VALUES ('"+json.node_type.insert.type+"', '"+json.node_type.insert.name+"' , '"+json.node_type.insert.description+"' , '"+get_title+"', '"+_get_data+"' )";
+								node_db[node_db.length] = "INSERT OR REPLACE INTO bundles (bundle_name, display_name, description, title_fields, _data  , disabled) VALUES ('"+json.node_type.insert.type+"', '"+json.node_type.insert.name+"' , '"+json.node_type.insert.description+"' , '"+get_title+"', '"+_get_data+"',  '"+json.node_type.insert.disabled+"' )";
 								Ti.API.info('Node type : '+json.node_type.insert.type+' has been created');
+								Ti.API.info("DISABLED ? "+json.node_type.insert.disabled);
 							}						
 						}
 					}
@@ -1643,6 +1676,8 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								}
 								node_db[node_db.length] = "DROP TABLE "+json.node_type.insert[i].type;
 								node_db[node_db.length] = "DELETE FROM bundles WHERE bundle_name = '"+json.node_type.insert[i].type+"'";
+								node_db[node_db.length] = "DELETE FROM node WHERE table_name = '"+json.node_type.insert[i].type+"'";
+								
 								Ti.API.info('@Developer: Deletions for node_type need to be created');
 							}
 						}
@@ -1653,6 +1688,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							}
 							node_db[node_db.length] = "DROP TABLE "+json.node_type.insert.type;
 							node_db[node_db.length] = "DELETE FROM bundles WHERE bundle_name = '"+json.node_type.insert.type+"'";
+							node_db[node_db.length] = "DELETE FROM node WHERE table_name = '"+json.node_type.insert.type+"'";
 							Ti.API.info('@Developer: Deletions for node_type need to be created');
 						}
 					}
@@ -1681,7 +1717,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				if (json.fields){
 					//SQL actions:
 					var perform = [];
-	
+	 
 					if (json.fields.insert){
 						//Array of objects
 						if (json.fields.insert.length){
@@ -2771,9 +2807,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				var n_bund = db_installMe.execute('SELECT * FROM bundles');
 				var take = db_installMe.execute('SELECT * FROM bundles WHERE display_on_menu="true"');
 				var count_t = 0;
+				var data_rows = new Array();
 				while ( n_bund.isValidRow() ){
 					var name_table = n_bund.fieldByName("bundle_name");
-				try{	
+				//try{	
 					if ( (json.node) && (json.node[name_table]) ){
 							Ti.API.info('##### Called '+name_table);
 							callback = process_object(json.node, name_table , quotes, progress, type_request,db_installMe);
@@ -2795,20 +2832,50 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							}
 	
 							//Add it to the main screen
-							var display      = n_bund.fieldByName("display_name");
+							var display      = n_bund.fieldByName("display_name").toUpperCase();
 							var description  = n_bund.fieldByName("description");
 							var flag_display = n_bund.fieldByName("display_on_menu");
 							var id 			 = n_bund.fieldByName("bid");
+							var _is_disabled = n_bund.fieldByName("disabled");
+							var _nd 		 = n_bund.fieldByName("_data");
+							var show_plus 	 = false;	
+							var node_type_json = JSON.parse(_nd);
 							
-							if (flag_display == 'false'){
+							for (var _l in node_type_json.permissions){
+								for (_k in roles){
+									if (_l == _k){
+										Ti.API.info("====>> "+_l);
+										if ( node_type_json.permissions[_l]["can create"] ||  node_type_json.permissions[_l]["all_permissions"]){
+											show_plus = true;
+										}
+									}
+								}
+							}
+							
+							Ti.API.info(flag_display+" = "+_is_disabled);							
+							
+							if (flag_display == 'false' && ( _is_disabled != 1 && _is_disabled != "1" && _is_disabled != "true" && _is_disabled != true) ){
 	
 								var row_a = Ti.UI.createTableViewRow({
-									height      : 60,	
+									height      : 60,
+									name		: display,
 									display     : display,
 									description : description,
 									name_table  : name_table,
 									className	: 'menu_row' // this is to optimize the rendering
 								});
+								
+								var icon = Titanium.UI.createImageView({
+									width: 48,
+									height: 48,
+									top: 6,
+									left: 5,
+									image: '/images/icons/' + display.toLowerCase() + '.png'
+								});
+								
+								if(icon.toBlob() == null || icon.toBlob().length == 0){
+									icon.image = '/images/icons/settings.png';
+								}
 								
 								var title_a = Titanium.UI.createLabel({
 									text: display,
@@ -2817,32 +2884,42 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									},
 									width:'83%',
 									textAlign:'left',
-									left:'0%',
+									left:58,
 									height:'auto'
 								});
 								
 								var plus_a =  Titanium.UI.createButton({
-									title: '+',
-									width:'15%',
-									height:'100%',
-									right:0,
+									backgroundImage: '/images/plus_btn.png',
+									backgroundSelectedImage: '/images/plus_btn_selected.png',
+									width:40,
+									height:31,
+									right:5,
 									is_plus: true
 								});
+								if (show_plus === false){
+									plus_a.hide();	
+								}
 								
+								row_a.add(icon);
 								row_a.add(title_a);
 								row_a.add(plus_a);
 	
-								menu.appendRow(row_a);
+								//menu.appendRow(row_a);
+								data_rows.push(row_a);
+								data_rows.sort(sortTableView);
+								menu.setData(data_rows);
 								db_installMe.execute('UPDATE bundles SET display_on_menu =\'true\' WHERE bid='+id);
 							}
 							
 					}
 					n_bund.next();
-				}
-				catch(evt){
-				}
+			//	}
+				//catch(evt){
+				//}
+				
 				}
 				n_bund.close();
+
 				/*********** Users *************/
 				if(json.users){
 					
@@ -3109,46 +3186,46 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					progress.close();
 				}
 				db_installMe.close();
+				var d = new Date();
+				Titanium.App.Properties.setDouble("lastSynced", d.getTime());
 				
 				if (type_request == 'POST'){
 					updateFileUploadTable(win, json);
-					installMe(pageIndex, win, timeIndex , progress, menu, img, 'GET', mode, close_parent);
 				}
-				else if (mode == 1 ){
+				
+				if (mode == 1 ){
 					if(PLATFORM == 'android'){
 						Ti.UI.createNotification({
-							message : 'The node has been successfully online and locally updated',
+							message : 'The '+_node_name+' was updated successfully',
 							duration: Ti.UI.NOTIFICATION_DURATION_LONG
 						}).show();
 					}else{
-						alert('The node has been successfully online and locally updated');
+						alert('The '+_node_name+' was updated successfully');
 					}
 					//Just to make sure database keeps locked
 
 					//setUse();
-					//close_parent();
-					//updateFileUploadTable(win, json, close_parent);
+					close_parent();
 					var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 					var imageForUpload = db_fileUpload.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
-					uploadFile(win, 'POST', db_fileUpload, imageForUpload, close_parent);
+					uploadFile(win, 'POST', db_fileUpload, imageForUpload);
 				}
 				else if (mode == 0 ){
 					if(PLATFORM == 'android'){
 						Ti.UI.createNotification({
-							message : 'The node has been successfully online and locally created',
+							message : 'The '+_node_name+' was created successfully.',
 							duration: Ti.UI.NOTIFICATION_DURATION_LONG
 						}).show();
 					}else{
-						alert('The node has been successfully online and locally created');
+						alert('The '+_node_name+' was created successfully.');
 					}
 					//Just to make sure database keeps locked
 
 					//setUse();
-					//close_parent();
-					//updateFileUploadTable(win, json, close_parent);
+					close_parent();
 					var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName());
 					var imageForUpload = db_fileUpload.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
-					uploadFile(win, 'POST', db_fileUpload, imageForUpload, close_parent);
+					uploadFile(win, 'POST', db_fileUpload, imageForUpload);
 				}			
 				else{
 					unsetUse();
@@ -3175,7 +3252,9 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				
 				a_msg.addEventListener('click', function(e){
 					if (e.cancel === false){
+						Ti.API.info("Before update");
 						setTimeout (function (){
+								Ti.API.info("Triggering update");
 								progress = null;
 								progress = new Progress_install(0, 100);
 								installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
@@ -3232,32 +3311,38 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 		if ((type_request == 'POST') && (progress != null)){
 			if(PLATFORM == 'android'){
 				Ti.UI.createNotification({
-					message : 'Connection timed out, please try again',
+					//message : 'Connection timed out, please try again',
+					message: 'Error :: ' + e.error, //Change message for testing purpose
 					duration: Ti.UI.NOTIFICATION_DURATION_LONG
 				}).show();
 			}else{
-				alert('Connection timed out, please try again');
+				//alert('Connection timed out, please try again');
+				alert('Error :: ' + e.error);//Change message for testing purpose
 			}
 		}
 		else if (mode == 0 ){
 			if(PLATFORM == 'android'){
 				Ti.UI.createNotification({
-					message : 'An error happened while we tried to connect to the server in order to transfer the recently updated node, please make a manual update',
+					//message : 'An error happened while we tried to connect to the server in order to transfer the recently updated node, please make a manual update',
+					message: 'Error :: ' + e.error, //Change message for testing purpose
 					duration: Ti.UI.NOTIFICATION_DURATION_LONG
 				}).show();
 			}else{
-				alert('An error happened while we tried to connect to the server in order to transfer the recently updated node, please make a manual update');
+				//alert('An error happened while we tried to connect to the server in order to transfer the recently updated node, please make a manual update');
+				alert('Error :: ' + e.error);//Change message for testing purpose
 			}
 			close_parent();
 		}
 		else if (mode == 1 ){
 			if(PLATFORM == 'android'){
 				Ti.UI.createNotification({
-					message : 'An error happened while we tried to connect to the server in order to transfer the recently saved node, please make a manual update',
+					//message : 'An error happened while we tried to connect to the server in order to transfer the recently saved node, please make a manual update',
+					message: 'Error :: ' + e.error, //Change message for testing purpose
 					duration: Ti.UI.NOTIFICATION_DURATION_LONG
 				}).show();
 			}else{
-				alert('An error happened while we tried to connect to the server in order to transfer the recently saved node, please make a manual update');
+				//alert('An error happened while we tried to connect to the server in order to transfer the recently saved node, please make a manual update');
+				alert('Error :: ' + e.error);//Change message for testing purpose
 			}
 			close_parent();
 		}
@@ -3268,6 +3353,8 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 		Ti.API.info("Services are down");
 	}
 	
+	app_timestamp = Math.round(+new Date().getTime()/1000);
+	Ti.API.info('App Time: '+app_timestamp);
 	//Get upload JSON
 	if ( type_request == 'POST'){
 		var insert_JSON = getJSON();
@@ -3504,7 +3591,7 @@ function getScreenHeight(){
 	return ret;
 }
 
-function uploadFile(win, type_request, database, fileUploadTable, close_parent){
+function uploadFile(win, type_request, database, fileUploadTable){
 try{
 	//var fileUploadXHR = win.log;
 	win.log.setTimeout(30000);
@@ -3560,16 +3647,14 @@ try{
 				database.execute("DELETE FROM file_upload_queue WHERE nid=" + respnseJson.nid +" and delta=" + respnseJson.delta +" and field_name='" + respnseJson.field_name+ "';");
 				fileUploadTable = database.execute("SELECT * FROM file_upload_queue WHERE nid > 0;");
 				if(fileUploadTable.rowCount == 0){
-					close_parent();
 					fileUploadTable.close();
 					database.close();
 				}else{
-					uploadFile(win, type_request, database, fileUploadTable, close_parent);
+					uploadFile(win, type_request, database, fileUploadTable);
 				}
 			}
 			
 			win.log.onerror = function(e) {
-				close_parent();
 				Ti.API.info('=========== Error in uploading ========' + e.error + this.status);
 				if(this.status == '406' && this.error =='Nid is not connected to a valid node.'){
 					database.execute("DELETE FROM file_upload_queue WHERE nid=" + fileUploadTable.fieldByName('nid') +" and id=" + fileUploadTable.fieldByName('id') + ";");
@@ -3594,16 +3679,9 @@ try{
 						 field_name : fileUploadTable.fieldByName('field_name'),
 						 delta		: fileUploadTable.fieldByName('delta')});
 			}	
-		}else{
-			close_parent();
 		}
-			
-	}else{
-		close_parent();
 	}
-	
 }catch(e){
-	close_parent();
 	Ti.API.info("==== ERROR ===" + e);
 }
 }
@@ -3615,6 +3693,7 @@ function reduceImageSize(blobImage, maxWidth, maxHeight){
 		width: 'auto',
 		height: 'auto'
 	});
+	image1 = image1.toBlob();
 	var multiple;
 	if(image1.height/image1.width>maxHeight/maxWidth) {
 		multiple=image1.height/maxHeight;
@@ -3657,8 +3736,6 @@ function updateFileUploadTable(win, json){
 		}
 		bundles.close();
 		db_fileUpload.close();
-	//	var imageForUpload = db_fileUpload.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
-	//	uploadFile(win, 'POST', db_fileUpload, imageForUpload, close_parent);
 	}catch(evt){
 	}
 }
@@ -3822,7 +3899,9 @@ function _calculation_field_sort_on_weight(a, b){
   }
   return 0;
 }
+
 function _calculation_field_get_values(win, db_display, instance, entity, content) {
+	Ti.API.info('here--------0.1' + instance.field_name + ", mode: " + win.mode);
 	var calculated_field_cache = [];
 	var final_value = 0;
 	if(instance.settings.calculation.items != null && !instance.disabled) {
@@ -3846,32 +3925,43 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 				// Make sure a dependency calculation is made first
 				// TODO: Statically cache these values for future use by other calculation fields
 				// TODO: Make sure an infinite loop doesn't occur
+				Ti.API.info('here--------0.2');
 				required_instance_final_values = _calculation_field_get_values(win, db_display, content[entity[calculation_row.field_name_1][0]['reffer_index']], entity, content);
+				Ti.API.info('here--------0.3' + required_instance_final_values[0].final_value);
 				calculated_field_cache[calculation_row.field_name_1] = required_instance_final_values[0].final_value;
 			}
 			
 			if(calculation_row.field_name_1 != null && calculation_row.field_name_1 != "") {
-				if(calculated_field_cache[calculation_row.field_name_1] != null && calculated_field_cache[calculation_row.field_name_1] != "") {
+				Ti.API.info('here--------0.4' + calculation_row.field_name_1 + ","+ calculated_field_cache[calculation_row.field_name_1]);
+				if(calculated_field_cache[calculation_row.field_name_1] != null) {
+					Ti.API.info('here--------0.5' + calculated_field_cache[calculation_row.field_name_1]);
 					field_1_multiplier = calculated_field_cache[calculation_row.field_name_1];
 				} else if(calculation_row.type == 'parent_field_value') {
+					Ti.API.info('here--------0.6' + calculation_row.parent_field);
 					parent_field = calculation_row.parent_field;
 					if(entity[parent_field]!= null && entity[parent_field][0]['nid'] != null) {
 						parent_node = node_load(db_display, entity[parent_field][0]['nid']);
 						if(parent_node.rowCount > 0 && parent_node.fieldByName(calculation_row.field_name_1) != null) {
 							field_1_multiplier = parent_node.fieldByName(calculation_row.field_name_1);
+							Ti.API.info('here--------0.7' + field_1_multiplier);
 						}
 					}
 				} else if(entity[calculation_row.field_name_1]!= null && entity[calculation_row.field_name_1][0]['value'] != null) {
 					field_1_multiplier = entity[calculation_row.field_name_1][0]['value'];
+					Ti.API.info('here--------0.8' + field_1_multiplier);
 				}
 				if(calculation_row.datestamp_end_field != null && calculation_row.datestamp_end_field != "") {
+					Ti.API.info('here--------0.9' + field_1_multiplier);
 					start_timestamp = field_1_multiplier;
 					// Set this end value to 0 in case the terminating datestamp field is empty
 					field_1_multiplier = 0;
 					if(entity[calculation_row.datestamp_end_field]!= null && entity[calculation_row.datestamp_end_field][0]['value'] !=null) {
 						end_timestamp = entity[calculation_row.datestamp_end_field][0]['value'];
+						Ti.API.info('here--------0.10' + end_timestamp);
 						if(calculation_row.type == 'time-only') {
+							Ti.API.info('here--------0.11' + calculation_row.type );
 							if(end_timestamp < start_timestamp) {
+								Ti.API.info('here--------0.12' + start_timestamp );
 								end_timestamp += (24 * 3600);
 							}
 						}
@@ -3881,36 +3971,48 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 						switch(calculation_row.datestamp_interval) {
 							case 'minute':
 								field_1_multiplier = difference / 60;
+								Ti.API.info('here--------0.13' + field_1_multiplier );
 								break;
 							case 'hour':
 								field_1_multiplier = difference / 3600;
+								Ti.API.info('here--------0.14' + field_1_multiplier );
 								break;
 							case 'day':
 								field_1_multiplier = difference / (3600 * 24);
+								Ti.API.info('here--------0.15' + field_1_multiplier );
 								break;
 							case 'week':
 								field_1_multiplier = difference / (3600 * 24 * 7);
+								Ti.API.info('here--------0.16' + field_1_multiplier );
 								break;
 						}
 						if(calculation_row.type == 'time') {
+							Ti.API.info('here--------0.17' + calculation_row.type );
 							if(calculation_row.interval_rounding == 'up') {
 								field_1_multiplier = Math.ceil(field_1_multiplier);
+								Ti.API.info('here--------0.18' + field_1_multiplier );
 							} else if(calculation_row.interval_rounding == 'down') {
 								field_1_multiplier = Math.floor(field_1_multiplier);
+								Ti.API.info('here--------0.19' + field_1_multiplier );
 							} else if(calculation_row.interval_rounding == 'integer') {
 								field_1_multiplier = Math.round(field_1_multiplier);
+								Ti.API.info('here--------0.20' + field_1_multiplier );
 							} else if(calculation_row.interval_rounding == 'increment-at-time') {
+								Ti.API.info('here--------0.21' + calculation_row.increment_at_time );
 								at_time = calculation_row.increment_at_time;
-								relative_increment_time = mktime(date('H', at_time), date('i', at_time), 0, date('n', start_timestamp), date('j', start_timestamp), date('Y', start_timestamp));
-
+								start_timestamp = Number(start_timestamp);
+								relative_increment_time = at_time = mktime(0,0,0, date('n', start_timestamp), date('j', start_timestamp), date('Y', start_timestamp));
+								Ti.API.info('here--------0.22' + relative_increment_time + ","+ end_timestamp);
 								day_count = 0;
 								if(relative_increment_time < start_timestamp) {
 									relative_increment_time += (3600 * 24);
+									Ti.API.info('here--------0.23' + relative_increment_time );
 								}
 
 								while(relative_increment_time <= end_timestamp) {
 									day_count++;
 									relative_increment_time += (3600 * 24);
+								//	Ti.API.info('here--------0.24' + relative_increment_time );
 								}
 
 								field_1_multiplier = day_count;
@@ -3923,58 +4025,79 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 		
 			
 			if(calculation_row.field_name_2 != null && calculation_row.field_name_2 != "") {
+				Ti.API.info('here--------1' + calculation_row.field_name_2 );
 				if(calculated_field_cache[calculation_row.field_name_1] != null) {
 					field_2_multiplier = calculated_field_cache[calculation_row.field_name_2];
+					Ti.API.info('here--------2' + field_2_multiplier );
 				} else if(calculation_row.type == 'parent_field_value') {
 					parent_field = calculation_row.parent_field;
+					Ti.API.info('here--------3' + parent_field );
 					if(entity[parent_field] != null && entity[parent_field][0]['nid'] != null) {
 						parent_node = node_load(db_display, entity[parent_field][0]['nid']);
+						Ti.API.info('here--------4' + parent_field );
 						if(parent_node.rowCount > 0 && parent_node.fieldByName(calculation_row.field_name_2) != null) {
 							field_2_multiplier = parent_node.fieldByName(calculation_row.field_name_2);
+							Ti.API.info('here--------5' + field_2_multiplier );
 						}
 					}
 				} else if(entity[calculation_row.field_name_2]!= null && entity[calculation_row.field_name_2][0]['value'] != null) {
 					field_2_multiplier = entity[calculation_row.field_name_2][0]['value'];
+					Ti.API.info('here--------6' + field_2_multiplier );
 				}
 			}
 			
 			
 			if(calculation_row.numeric_multiplier != null && calculation_row.numeric_multiplier != "") {
 				numeric_multiplier = Number(calculation_row.numeric_multiplier);
+				Ti.API.info('here--------7' + numeric_multiplier );
 			}
 
 			var zero = false;
 			
 			
 			 if(calculation_row.criteria != null && calculation_row.criteria.search_criteria != null) {
-				 if(!list_search_node_matches_search_criteria(win, db_display, entity, calculation_row.criteria, content)) {
+			 	Ti.API.info('here--------8' + calculation_row.criteria );
+				if(!list_search_node_matches_search_criteria(win, db_display, entity, calculation_row.criteria, content)) {
+					Ti.API.info('here--------9' );
 					 zero = true;
-				}
+				}	
 			 } 
 			
 			
 			var value = 0;
 			if(field_1_multiplier == 0 && calculation_row.field_name_1 != null && calculation_row.field_name_1 != "") {
+				Ti.API.info('here--------10' );
 				zero = true;
 			} else if(value == 0 && field_1_multiplier != 0) {
+				Ti.API.info('here--------11' );
 				value = field_1_multiplier;
 			}
 						
 			if(field_2_multiplier== 0 && calculation_row.field_name_2 != null && calculation_row.field_name_2 != "") {
+				Ti.API.info('here--------12' );
 				zero = true;
 			} else if(value == 0 && field_2_multiplier != 0) {
-				value = field_2_multiplier;
+				Ti.API.info('here--------13' );
+				value = Number(field_2_multiplier);
 			} else if(value != 0 && field_2_multiplier != 0) {
-				value *= field_2_multiplier;
+				Ti.API.info('here--------14' );
+				value *= Number(field_2_multiplier);
 			}
 
 			if(value == 0 && numeric_multiplier != 0) {
-				value = numeric_multiplier;
+				Ti.API.info('here--------15' );
+				value = Number(numeric_multiplier);
 			} else if(value!= 0 && numeric_multiplier != 0) {
-				value *= numeric_multiplier;
+				Ti.API.info('here--------16' );
+				value *= Number(numeric_multiplier);
 			}
 
+			// if(calculation_row.type!=null && calculation_row.type=='static'){
+				// Ti.API.info('here--------17' );
+				// zero = false;
+			// }
 			if(zero) {
+				Ti.API.info('here--------18' );
 				value = 0;
 			}
 			
@@ -3986,7 +4109,8 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 			//alert('field_2_multiplier : ' + field_2_multiplier);
 			//alert('numeric_multiplier : ' + numeric_multiplier);
 			//alert('Value : ' + value);
-			final_value += value;
+			final_value += Number(value);
+			Ti.API.info('here--------19' + final_value);
 		}
 	//	alert("final value: " + final_value);
 		return new Array({
@@ -4336,7 +4460,7 @@ Number.prototype.toCurrency = function($O) { // extending Number prototype
     /* If no thousands_separator is present default to "," */
     $O.thousands_separator ? null : $O.thousands_separator = ",";
     /* If no currency_symbol is present default to "$" */
-    $O.currency_symbol ? null : $O.currency_symbol = "$";
+    $O.currency_symbol ? null : $O.currency_symbol = "";
 
     // Fractions use is separated, just in case you don't want them
     if ($O.use_fractions) {
@@ -4355,7 +4479,7 @@ Number.prototype.toCurrency = function($O) { // extending Number prototype
     // First part is an integrer
     $A._int = $A.arr[0].separate_thousands();
     // Second part, if exists, are rounded decimals
-    $A.arr[1] == undefined ? $A._dec = $O.use_fractions.fraction_separator+"0".times($O.use_fractions.fractions) : $A._dec = $O.use_fractions.fraction_separator+$A.arr[1];
+    $A.arr[1] == undefined ? $A._dec = $O.use_fractions.fraction_separator+"0".times($O.use_fractions.fractions) : $A._dec = $O.use_fractions.fraction_separator+$A.arr[1]+"0".times($O.use_fractions.fractions-($A.arr[1]+"").length);
 
     /* If no symbol_position is present, default to "front" */
     $O.symbol_position ? null : $O.symbol_position = "front";
@@ -4454,16 +4578,22 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 		var user;
 		var row_matches = [];
 		if(criteria.search_criteria != null && criteria.search_criteria != "") {
+			Ti.API.info('here--------A.1' );
 			var instances = omadi_fields_get_fields(win, db_display);
+			Ti.API.info('here--------A.2' );
 		    usort(criteria['search_criteria'], '_list_search_criteria_search_order');
 			for(var criteria_index in criteria.search_criteria) {
+				Ti.API.info('here--------A.3' + criteria.search_criteria[criteria_index]);
 				var criteria_row = criteria.search_criteria[criteria_index];
 				row_matches[criteria_index] = false;
 				var field_name = criteria_row.field_name;
+				Ti.API.info('here--------A.4' + field_name);
 				if(instances[field_name] != null) {
 					var search_field = instances[field_name];
+					Ti.API.info('here--------A.5' + search_field['type']);
 					var node_values = [];
 					if(search_field['type'] == 'datestamp') {
+						Ti.API.info('here--------A.6' + search_field['type']);
 						if((field_name == 'uid' || field_name == 'created' || field_name=='changed_uid') && win.nid!=null & win.nid!="") {
 							var node = db_display.execute('SELECT '+ field_name +' from node WHERE nid="' + win.nid + '";');
 							if(field_name == 'uid'){
@@ -4471,10 +4601,14 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 							}
 							node_values.push(node.fieldByName(field_name));
 						} else {
+							Ti.API.info('here--------A.7');
 							if(entity[field_name] != null) {
+								Ti.API.info('here--------A.8');
 								for(idx in entity[field_name]) {
+									Ti.API.info('here--------A.9' + entity[field_name][idx]);
 									var elements = entity[field_name][idx];
 									if(elements['value'] != null && elements['value'] != "") {
+										Ti.API.info('here--------A.10' + elements['value']);
 										node_values.push(elements['value']);
 									}
 								}
@@ -4486,64 +4620,88 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 						
 						var search_value = criteria_row.value;
 						var search_operator = criteria_row.operator;
+						Ti.API.info('here--------A.11' + search_value + "," + search_operator);
 						
 						if(in_array(search_operator, Array('after-time', 'before-time', 'between-time'))) {
-							var search_time_value = search_value.time;
+							Ti.API.info('here--------A.12' );
+							var search_time_value = Number(search_value.time);
+							Ti.API.info('here--------A.12' + search_time_value);
 							var compare_times = new Array();
 							for(var value_index in node_values) {
-								compare_times[value_index] = mktime(date('H', search_time_value), date('i', search_time_value), 0, date('n', node_values[value_index]), date('j', node_values[value_index]), date('Y', node_values[value_index]));
+								compare_times[value_index] = search_time_value + mktime(0,0,0, date('n', Number(node_values[value_index])), date('j',  Number(node_values[value_index])), date('Y',  Number(node_values[value_index])));
+								Ti.API.info('here--------A.13' + compare_times[value_index] + "," +node_values[value_index]);
 							}
 	
 							if(search_operator == 'after-time') {
+								Ti.API.info('here--------A.14' + search_operator);
 								for(var value_index in node_values) {
+									Ti.API.info('here--------A.15' + node_values[value_index] + "," + compare_times[value_index]);
 									if(node_values[value_index] > compare_times[value_index]) {
+										Ti.API.info('here--------A.16');
 										row_matches[criteria_index] = true;
 									}
 								}
 							} else if(search_operator == 'before-time') {
+								Ti.API.info('here--------A.17');
 								for(var value_index in node_values) {
+									Ti.API.info('here--------A.18');
 									if(node_values[value_index] < compare_times[value_index]) {
+										Ti.API.info('here--------A.19');
 										row_matches[criteria_index] = true;
 									}
 								}
 							} else if(search_operator == 'between-time') {
+								Ti.API.info('here--------A.20');
 								var search_time_value2 = search_value.time2;
-	
+								Ti.API.info('here--------A.21');
 								var compare_times2 = new Array();
 								for(var value_index in node_values) {
-									compare_times2[value_index] = mktime(date('H', search_time_value2), date('i', search_time_value2), 0, date('n', node_values[value_index]), date('j', node_values[value_index]), date('Y', node_values[value_index]));
+									
+									compare_times2[value_index] = search_time_value2 + mktime(0,0,0, date('n', Number(node_values[value_index])), date('j', Number(node_values[value_index])), date('Y', Number(node_values[value_index])));
+									Ti.API.info('here--------A.22'  +compare_times2[value_index] +"," + node_values[value_index]);
 								}
 	
 								if(search_time_value < search_time_value2) {
+									Ti.API.info('here--------A.23');
 									// Like between 5:00PM - 8:00PM
 									for(var value_index in node_values) {
+										Ti.API.info('here--------A.24');
 										if(node_values[value_index] >= compare_times[value_index] && node_values[value_index] < compare_times2[value_index]) {
+											Ti.API.info('here--------A.25');
 											row_matches[criteria_index] = true;
 										}
 									}
 								} else {
+									Ti.API.info('here--------A.25');
 									// Like between 8:00PM - 4:00AM
 									for(var value_index in node_values) {
+									Ti.API.info('here--------A.26');	
 										if(node_values[value_index] >= compare_times[value_index] || node_values[value_index] < compare_times2[value_index]) {
+											Ti.API.info('here--------A.27');
 											row_matches[criteria_index] = true;
 										}
 									}
 								}
 							}
 						} else if(search_operator == 'weekday') {
-							
+							Ti.API.info('here--------A.27' + search_value.weekday);
 							var weekdays = search_value.weekday;
 							if(!isArray(search_value.weekday)) {
+								Ti.API.info('here--------A.28' + search_value.weekday);
 								weekdays = [];
 								for(var key in search_value.weekday) {
+									Ti.API.info('here--------A.29' + search_value.weekday);
 									if(search_value.weekday.hasOwnProperty(key)) {
+										Ti.API.info('here--------A.30' + key);
 										weekdays.push(key);
 									}
 								}
 							}
 	
 							for(var value_index in node_values) {
+								Ti.API.info('here--------A.31' + node_values[value_index] + ", " + date('w', node_values[value_index]), weekdays);
 								if(in_array(date('w', node_values[value_index]), weekdays)) {
+									Ti.API.info('here--------A.32' + date('w', node_values[value_index]), weekdays);
 									row_matches[criteria_index] = true;
 								}
 							}
@@ -4573,12 +4731,13 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 					*/
 					
 					else {
+						Ti.API.info('here--------A.33');
 						// if(entity[field_name] == null) {
 							// entity[field_name] = null;
 						// }
 						search_value = criteria_row.value != null && criteria_row.value != "" ? criteria_row.value : null;
 						search_operator = criteria_row.operator;
-						
+						Ti.API.info('here--------A.34' + search_value + "," + search_operator);
 						switch(search_field['type']) {
 							case 'text':
 							case 'text_long':
@@ -4662,39 +4821,48 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 								
 								break;
 							case 'calculation_field':
+								Ti.API.info('here--------A.35---1');
 								var calculation_values = _calculation_field_get_values(win, db_display, content[entity[field_name][0]['reffer_index']], entity);
+								Ti.API.info('here--------A.35' + calculation_values);
 								node_values.push(calculation_values[0].final_value);
 	
 								for(var value_index in node_values) {
 									node_value = node_values[value_index];
+									Ti.API.info('here--------A.36' + node_value);
 									switch(search_operator) {
 	
 										case '>':
+										Ti.API.info('here--------A.37' + node_value +","+ search_value);
 											if(node_value > search_value) {
 												row_matches[criteria_index] = true;
 											}
 											break;
 										case '>=':
+										Ti.API.info('here--------A.38' + node_value +","+ search_value);
 											if(node_value >= search_value) {
 												row_matches[criteria_index] = true;
 											}
 											break;
 										case '!=':
+										Ti.API.info('here--------A.39' + node_value +","+ search_value);
 											if(node_value != search_value) {
 												row_matches[criteria_index] = true;
 											}
 											break;
 										case '<':
+										Ti.API.info('here--------A.40' + node_value +","+ search_value);
 											if(node_value < search_value) {
 												row_matches[criteria_index] = true;
 											}
 											break;
 										case '<=':
+										Ti.API.info('here--------A.41' + node_value +","+ search_value);
 											if(node_value <= search_value) {
 												row_matches[criteria_index] = true;
 											}
 											break;
 										default:
+										Ti.API.info('here--------A.42' + node_value +","+ search_value);
 											if(node_value == search_value) {
 												row_matches[criteria_index] = true;
 											}
@@ -4759,6 +4927,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 							break;
 							*/
 							case 'user_reference':
+								Ti.API.info('here--------A.43');
 								if((field_name == 'uid' || field_name == 'created' || field_name=='changed_uid') && win.nid!=null & win.nid!="") {
 									var node = db_display.execute('SELECT '+ field_name +' from node WHERE nid="' + win.nid + '";');
 									if(field_name == 'uid'){
@@ -4766,50 +4935,63 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 									}
 									node_values.push(node.fieldByName(field_name));
 								} else {
+									Ti.API.info('here--------A.44');
 									for(idx in entity[field_name]) {
 										var elements = entity[field_name][idx];
+										Ti.API.info('here--------A.45' + elements);
 										if(elements['uid'] != null && elements['uid'] != "") {
+											Ti.API.info('here--------A.43' + elements['uid']);
 											node_values.push(elements['value']);
 										}
 									}
 									
 								}
-							
 								if(search_value == 'current_user') {
 									search_value = win.uid;
 								}
-								
 								// Make sure the search value is an array
 								var search_value_arr = [];
 								if(!isArray(search_value)) {
+									Ti.API.info('here--------A.44' + search_value);
 									for(var key in search_value) {
+										Ti.API.info('here--------A.45'+ key );
 										if(search_value.hasOwnProperty(key)) {
+											Ti.API.info('here--------A.46'+ key );
 											search_value_arr[key] = key;
 										}
 									}
 									search_value = search_value_arr;
 								}
 	
-	
 								if(search_operator != null && search_operator == '!=') {
+									Ti.API.info('here--------A.47' + search_value['__null']);
 									row_matches[criteria_index] = true;
 									if(search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
+										Ti.API.info('here--------A.48' );
 										row_matches[criteria_index] = false;
 									} else {
+										Ti.API.info('here--------A.49' );
 										for(idx in search_value) {
+											Ti.API.info('here--------A.50' + search_value[idx] + row_matches[criteria_index] + criteria_index);
 											chosen_value = search_value[idx];
 											if(in_array(chosen_value, node_values)) {
+												Ti.API.info('here--------A.51' + chosen_value);
 												row_matches[criteria_index] = false;
 											}
 										}
 									}
 								} else {
+									Ti.API.info('here--------A.52');
 									if(search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
+										Ti.API.info('here--------A.53');
 										row_matches[criteria_index] = true;
 									} else {
+										Ti.API.info('here--------A.54');
 										for(idx in search_value) {
+											Ti.API.info('here--------A.55'+search_value[idx]);
 											chosen_value = search_value[idx];
 											if(in_array(chosen_value, node_values)) {
+												Ti.API.info('here--------A.56'+chosen_value);
 												row_matches[criteria_index] = true;
 											}
 										}
@@ -4840,7 +5022,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 									if(search_operator != null && search_operator == '!=') {
 	
 										row_matches[criteria_index] = true;
-										if(search_value['__null'] == '_null' && (node_values == null || node_values[0] == null)) {
+										if(search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
 											row_matches[criteria_index] = false;
 										} else {
 											for(idx in search_value) {
@@ -4852,7 +5034,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 	
 										}
 									} else {
-										if(search_value['__null'] == '_null' && (node_values == null || node_values[0] == null)) {
+										if(search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
 											row_matches[criteria_index] = true;
 										} else {
 											for(idx in search_value) {
@@ -4944,35 +5126,46 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 			}
 			
 			if(count_arr_obj(criteria['search_criteria']) == 1) {
-				var retval = row_matches[0];
+				Ti.API.info('here--------A.57'+row_matches[criteria_index]);
+				var retval = row_matches[criteria_index];
 			} else {
+				Ti.API.info('here--------A.58');
 				// Group each criteria row into groups of ors with the matching result of each or
 				var and_groups = new Array();
 				var and_group_index = 0;
 				and_groups[and_group_index] = new Array();
 				//print_r($criteria['search_criteria']);
 				for(criteria_index in criteria['search_criteria']) {
+					Ti.API.info('here--------A.59' + criteria_index);
 					criteria_row = criteria['search_criteria'][criteria_index];
 					if(criteria_index == 0) {
+						Ti.API.info('here--------A.60' + row_matches[criteria_index]);
 						and_groups[and_group_index][0] = row_matches[criteria_index];
 					} else {
+						Ti.API.info('here--------A.61');
 						if(criteria_row['row_operator'] == null || criteria_row['row_operator'] != 'or') {
+							Ti.API.info('here--------A.62');
 							and_group_index++;
 							and_groups[and_group_index] = new Array();
 						}
+						Ti.API.info('here--------A.63' + row_matches[criteria_index]);
 						and_groups[and_group_index][0] = row_matches[criteria_index];
 					}
 				}
 	
 				// Get the final result, making sure each and group is TRUE
 				retval = true;
+				Ti.API.info('here--------A.64' + and_groups.length);
 				for(idx in and_groups) {
+					Ti.API.info('here--------A.65');
 					and_group = and_groups[idx];
 					and_group_match = false;
 					for( idx in and_group) {
+						Ti.API.info('here--------A.66' + and_group[idx]);
 						or_match = and_group[idx];
 						// Make sure at least one item in an and group is true (or the only item is true)
 						if(or_match) {
+							Ti.API.info('here--------A.67');
 							and_group_match = true;
 							break;
 						}
@@ -4980,11 +5173,13 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 	
 					// If one and group doesn't match the whole return value of this function is false
 					if(!and_group_match) {
+						Ti.API.info('here--------A.68');
 						retval = false;
 						break;
 					}
 				}
 			}
+			Ti.API.info('here--------A.69' + retval);
 			return retval;
 		}
 	

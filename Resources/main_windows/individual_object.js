@@ -16,7 +16,7 @@ Ti.include('/main_windows/create_or_edit_node.js');
 
 //Current window's instance
 var win4 = Ti.UI.currentWindow;
-
+win4.backgroundColor = "#EEEEEE";
 //Sets only portrait mode
 win4.orientationModes = [Titanium.UI.PORTRAIT];
 
@@ -26,7 +26,7 @@ win4.addEventListener('android:back', function() {
 	win4.close();
 });
 //Functions:
-function display_omadi_time(timestamp) {
+function display_omadi_time01(timestamp) {
 	var time = timestamp * 1000;
 
 	var got_time = new Date(time);
@@ -51,8 +51,8 @@ var results = db_display.execute('SELECT * FROM ' + win4.type + ' WHERE  nid = '
 var resultView = Ti.UI.createView({
 	top: '0',
 	height: '100%',
-	width: '90%',
-	backgroundColor: '#000',
+	width: '100%',
+	backgroundColor: '#EEEEEE',
 });
 win4.add(resultView);
 
@@ -72,7 +72,7 @@ var labelNameContent = Ti.UI.createLabel({
 	height: 'auto',
 	width:  '90%',
 	font: {fontSize: 18,  fontWeight: "bold"},
-	color: '#fff',
+	color: '#000',
 	textAlign: 'center',
 	touchEnabled: false,
 	ellipsize: true,
@@ -81,25 +81,36 @@ var labelNameContent = Ti.UI.createLabel({
 
 header.add(labelNameContent);
 
-var viewContent = Ti.UI.createScrollView({
-    height:"100%",
-    top: "35",
-    //contentWidth: '100%',
-    contentHeight: 'auto',
-    backgroundColor: '#111111',
-	showHorizontalScrollIndicator: false,
-	showVerticalScrollIndicator: true,
-	opacity: 1,
-	//borderRadius: 7,
-	//scrollType: 'vertical',
-	//zIndex: 10, 
-	layout: 'vertical'
-});
+if (PLATFORM == 'android'){
+	var viewContent = Ti.UI.createScrollView({
+	    top: "35dp",
+	    contentHeight: 'auto',
+	    backgroundColor: '#EEEEEE',
+		showHorizontalScrollIndicator: false,
+		showVerticalScrollIndicator: true,
+		opacity: 1,
+		layout: 'vertical',
+	});
+}
+else{
+	var viewContent = Ti.UI.createScrollView({
+	    top: "35dp",
+	    contentHeight: 'auto',
+	    backgroundColor: '#EEEEEE',
+		showHorizontalScrollIndicator: false,
+		showVerticalScrollIndicator: true,
+		opacity: 1,
+		layout: 'vertical',
+		bottom: '0'
+	});
+}
+
 
 resultView.add(viewContent);
 
-var fields_result = db_display.execute('SELECT label, weight, type, field_name, widget, settings FROM fields WHERE bundle = "' + win4.type + '" ORDER BY weight ASC');
+var fields_result = db_display.execute('SELECT label, weight, type, field_name, widget, settings, required FROM fields WHERE bundle = "' + win4.type + '" ORDER BY weight ASC');
 var regions = db_display.execute('SELECT * FROM regions WHERE node_type = "' + win4.type + '" ORDER BY weight ASC');
+var node_form = db_display.execute('SELECT form_part FROM node WHERE nid=' + win4.nid);
 
 //Populate array with field name and configs
 var fields = new Array();
@@ -119,7 +130,8 @@ while(fields_result.isValidRow()) {
 		type : fields_result.fieldByName('type'),
 		field_name : fields_result.fieldByName('field_name'),
 		settings : fields_result.fieldByName('settings'),
-		widget : fields_result.fieldByName('widget')
+		widget : fields_result.fieldByName('widget'),
+		required : fields_result.fieldByName('required')
 	});
 	c_index++;
 	fields_result.next();
@@ -127,10 +139,11 @@ while(fields_result.isValidRow()) {
 
 while (regions.isValidRow()){
 	var reg_settings = JSON.parse(regions.fieldByName('settings'));
-
-	if(reg_settings != null && reg_settings.display_disabled) {
+		
+	if (reg_settings != null && parseInt(reg_settings.form_part) > node_form.fieldByName('form_part')) {
 		Ti.API.info('Region : ' + regions.fieldByName('label') + ' won\'t appear');
-	} else {
+	} 
+	else {
 		fields[regions.fieldByName('region_name')] = new Array();
 
 		//Display region title:
@@ -163,6 +176,7 @@ while (regions.isValidRow()){
 				fields[unsorted_res[i].field_name]['settings'] = unsorted_res[i].settings;
 				fields[unsorted_res[i].field_name]['widget'] = unsorted_res[i].widget;
 				fields[unsorted_res[i].field_name]['field_name'] = unsorted_res[i].field_name;
+				fields[unsorted_res[i].field_name]['required'] = unsorted_res[i].required;
 			} else {
 				Ti.API.info(' Regions dont match! ');
 			}
@@ -200,6 +214,30 @@ if(c_index > 0) {
 
 			//Content
 			c_content[count] = fieldVal;
+			var node_table = db_display.execute('SELECT * FROM node WHERE nid=' + win4.nid);
+			if(node_table.rowCount > 0) {
+				var no_data_fields = node_table.fieldByName('no_data_fields');
+				if (isJsonString()){
+					no_data_fields = JSON.parse(no_data_fields);
+					for(var key in no_data_fields) {
+						if(no_data_fields.hasOwnProperty(key)) {
+							no_data_fieldsArr.push(key);
+						}
+					}
+				}
+				else{
+					no_data_fieldsArr.push(key);
+				}
+			}
+
+			if(in_array(c_field_name[count], no_data_fieldsArr) && c_settings[count].required_no_data_checkbox!=null && c_settings[count].required_no_data_checkbox==1){
+				if(fields[f_name_f]['required']){
+					c_content[count] = 'No Data'
+				}else{
+					c_content[count] = 'Not Applicable'
+				}
+				
+			}	
 			var loop_times = 1;
 			is_array = false;
 			//Check if it is an array, token = 7411317618171051229
@@ -618,7 +656,7 @@ if(c_index > 0) {
 						});
 
 						content[count] = Ti.UI.createLabel({
-							text : "" + display_omadi_time(c_content[count]),
+							text : "" + display_omadi_time01(c_content[count]),
 							width : "60%",
 							height : "100%",
 							textAlign : 'left',
@@ -749,9 +787,9 @@ if(c_index > 0) {
 					case 'region_separator_mode':
 						label[count] = Ti.UI.createLabel({
 							text : c_label[count],
-							color : '#FFFFFF',
+							color : '#4F556C',
 							font : {
-								fontSize : 18,
+								fontSize : 22,
 								fontWeight : 'bold'
 							},
 							textAlign : 'center',
@@ -918,8 +956,8 @@ if(c_index > 0) {
 					width : '100%'
 				});
 
-				label[i].color = "#999999";
-				content[i].color = "#FFFFFF";
+				label[i].color = "#4C5A88";
+				content[i].color = "#000";
 
 				cell[i].add(label[i]);
 				if(c_type[i] == 'image') {
@@ -930,19 +968,28 @@ if(c_index > 0) {
 					}
 					cell[i].height = '110';
 				}else if(c_type[i]=='calculation_field'){
+					if(content[i].settings.hidden!=null && content[i].settings.hidden==1){
+						continue;
+					}
 					createCalculationTableFormat(content[i] , db_display, content);
-					cell[i].layout = 'vertical';
-					cell[i].height = content[i].height+ heightValue;
+					if (!(content[i].height < heightValue)){
+						cell[i].layout = 'vertical';
+						cell[i].height = content[i].height+ heightValue;
+					}else{
+						label[i].width = '33%';
+						label[i].height = '60'
+						content[i].left = '40%'
+					}
+					
+					
 				}
 				cell[i].add(content[i]);
 
 				viewContent.add(cell[i]);
 
 				border[i] = Ti.UI.createView({
-					backgroundColor : "#F16A0B",
-					//top:5,
+					backgroundColor : "#C8C9C9",
 					height : 2,
-					//top: ((heightValue+2)*(index_fields+1))-2
 				});
 				viewContent.add(border[i]);
 				index_fields++;
@@ -956,7 +1003,6 @@ if(c_index > 0) {
 
 						cell[i] = Ti.UI.createView({
 							height : heightValue,
-							//top : (heightValue+2)*index_fields,
 							width : '100%'
 						});
 
@@ -964,10 +1010,16 @@ if(c_index > 0) {
 						viewContent.add(cell[i]);
 
 						border[i] = Ti.UI.createView({
-							backgroundColor : "#F16A0B",
+							backgroundColor : "#000", 
 							height : 2,
-							//top: ((heightValue+2)*(index_fields+1))-2
 						});
+						
+						if( i > 1){
+							if (border[i-1]){
+								border[i-1].backgroundColor = "#000";
+							}
+						}
+						
 						viewContent.add(border[i]);
 						Ti.API.info('Added region: ' + label[i].ref);
 						index_fields++;
@@ -1015,7 +1067,7 @@ function highlightMe(data) {
 	Ti.API.info("DATA => " + data);
 	cell[data].backgroundColor = "#F16A0B";
 	setTimeout(function() {
-		cell[data].backgroundColor = '#111111';
+		cell[data].backgroundColor = '#EEEEEE';
 	}, 100);
 };
 
@@ -1038,9 +1090,9 @@ if(Ti.Platform.name == 'android') {
 		var node_form = db_act.execute('SELECT form_part FROM node WHERE nid=' + win4.nid);
 
 		Ti.API.info('Form node part = ' + node_form.fieldByName('form_part'));
-		Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
+		//Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
 
-		if(_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2) { 
+		if(_data.form_parts!=null && _data.form_parts!="" && (_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2)) { 
 			Ti.API.info("Title = " + _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
 
 			var menu_zero = menu.add({
@@ -1107,8 +1159,7 @@ fields_result.close();
 db_display.close();
 
 if(PLATFORM != 'android'){
-	resultView.remove(header)
-	resultView.height = '95%';
+	resultView.remove(header);
 	resultView.top = 0;
 	bottomButtons1(win4);
 }else{
@@ -1210,104 +1261,95 @@ function createCalculationTableFormat(content , db_display, contentArr) {
 	var result = _calculation_field_get_values(win4, db_display, content, entity, contentArr);
 	var row_values = result[0].rows;
 	var heightView = 0;
-	if(row_values.length > 0) {
-		var heightCellView = 40;
+	var heightCellView = 40;
+	var widthCellView = Ti.Platform.displayCaps.platformWidth - 30
+	if(row_values.length > 1 && result[0].final_value>0) {
 		var cal_value = 0;
 		var cal_value_str = "";
 		var isNegative = false;
 		for( idx = 0; idx < row_values.length; idx++) {
-			cal_value = row_values[idx].value;
-			typeof(cal_value) == 'number' ? null : typeof(cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null; //Check type of the data
-			isNegative = (cal_value < 0) ? true : false; // Is negative. And if it is -ve then write in this value in (brackets).
-			cal_value_str =  Math.abs(cal_value).toCurrency({
-                "thousands_separator":",",
-                "currency_symbol":"$",
-                "symbol_position":"front",
-                "use_fractions" : { "fractions":2, "fraction_separator":"." }
-            });
-            cal_value_str = (isNegative)?"(" + cal_value_str + ")":cal_value_str; // Adding brackets over -ve value.
-			
-			var row = Ti.UI.createView({
-				layout 		: 'horizontal',
-				height 		: heightCellView,
-				width 		: '100%',
-				top 		: 1,
-			});
-			var row_label = Ti.UI.createLabel({
-				text 			: row_values[idx].row_label + ":  ",
-				textAlign 		: 'right',
-				width 			: 140,
-				color 			: 'white',
-				font 			: {
-									fontFamily 	: 'Helvetica Neue',
-									fontSize 	: 14
-							  	},
-				color 			: '#000',
-				height 			: heightCellView,
-				wordWrap 		: false,
-				ellipsize 		: true,
-				backgroundColor : '#F2F2F2'
-
-			});
-			var value = Ti.UI.createLabel({
-				text 			: "  " + cal_value_str,
-				textAlign 		: 'left',
-				width 			: 120,
-				left 			: 1,
-				color 			: 'white',
-				font 			: {
-									fontFamily : 'Helvetica Neue',
-									fontSize : 14
-							  	},
-				color 			: '#000',
-				height 			: heightCellView,
-				wordWrap 		: false,
-				ellipsize 		: true,
-				backgroundColor : '#F2F2F2'
-			});
-			row.add(row_label);
-			row.add(value);
-			content.add(row);
-			heightView += heightCellView + 1;
+			if(row_values[idx].value != 0 && row_values[idx].value != "0"){
+				cal_value = row_values[idx].value;
+				typeof(cal_value) == 'number' ? null : typeof(cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null; //Check type of the data
+				isNegative = (cal_value < 0) ? true : false; // Is negative. And if it is -ve then write in this value in (brackets).
+				cal_value_str =  applyNumberFormat(content, cal_value);
+	            cal_value_str = (isNegative)?"(" + cal_value_str + ")":cal_value_str; // Adding brackets over -ve value.
+				
+				var row = Ti.UI.createView({
+					layout 		: 'horizontal',
+					height 		: heightCellView,
+					width 		: widthCellView,
+					top 		: 1,
+				});
+				var row_label = Ti.UI.createLabel({
+					text 			: row_values[idx].row_label + ":  ",
+					textAlign 		: 'right',
+					width 			:  widthCellView/2-1,
+					color 			: 'white',
+					font 			: {
+										fontFamily 	: 'Helvetica Neue',
+										fontSize 	: 14
+								  	},
+					color 			: '#545454',
+					height 			: heightCellView,
+					wordWrap 		: false,
+					ellipsize 		: true,
+					backgroundColor : '#FFF'
+	
+				});
+				var value = Ti.UI.createLabel({
+					text 			: "  " + cal_value_str,
+					textAlign 		: 'left',
+					width 			:  widthCellView/2,
+					left 			: 1,
+					color 			: 'white',
+					font 			: {
+										fontFamily : 'Helvetica Neue',
+										fontSize : 14
+								  	},
+					color 			: '#424242',
+					height 			: heightCellView,
+					wordWrap 		: false,
+					ellipsize 		: true,
+					backgroundColor : '#FFF'
+				});
+				row.add(row_label);
+				row.add(value);
+				content.add(row);
+				heightView += heightCellView + 1;
+			}
 		}
 
 		cal_value = result[0].final_value;
 		typeof(cal_value) == 'number' ? null : typeof(cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
 		isNegative = (cal_value < 0) ? true  : false; // Is negative. And if it is -ve then write in this value in (brackets).
-		cal_value_str =  Math.abs(cal_value).toCurrency({
-                "thousands_separator"	:",",
-                "currency_symbol"		:"$",
-                "symbol_position"		:"front",
-                "use_fractions" 		: { "fractions":2, "fraction_separator":"." }
-        });
+		cal_value_str =  applyNumberFormat(content, cal_value);
         cal_value_str = (isNegative)?"(" + cal_value_str + ")":cal_value_str; // Adding brackets over -ve value.
 			
 		var row = Ti.UI.createView({
 			layout 	: 'horizontal',
 			height 	: heightCellView,
-			width 	: '100%',
+			width 	: widthCellView,
 			top 	: 1
 		});
 		var row_label = Ti.UI.createLabel({
-			text 			: "Newly Calculated Total: ",
+			text 			: "Total: ",
 			textAlign 		: 'right',
-			width 			: 140,
+			width 			: widthCellView/2-1,
 			top 			: 0,
 			color 			: 'white',
 			font 			: {
 								fontFamily 	: 'Helvetica Neue',
-								fontSize 	: 14,
-								fontWeight 	: 'bold'
+								fontSize 	: 14
 						  	   },
-			color 			: '#B40404',
+			color 			: '#545454',
 			height 			: heightCellView,
-			backgroundColor : '#F2F2F2'
+			backgroundColor : '#FFF'
 		});
 		var value = Ti.UI.createLabel({
 			text 			: "  " + cal_value_str,
 			textAlign 		: 'left',
-			width 			: 120,
-			right 			: 0,
+			width 			: widthCellView/2,
 			top 			: 0,
 			left 			: 1,
 			color 			: 'white',
@@ -1316,17 +1358,41 @@ function createCalculationTableFormat(content , db_display, contentArr) {
 								fontSize : 14,
 								fontWeight : 'bold'
 							   },
-			color 			: '#B40404',
+			color 			: '#424242',
 			height 			: heightCellView,
 			wordWrap 		: false,
 			ellipsize 		: true,
-			backgroundColor : '#F2F2F2'
+			backgroundColor : '#FFF'
 		});
 		row.add(row_label);
 		row.add(value);
 		content.add(row);
 		heightView += heightCellView + 1;
 
+	}else{
+		cal_value = (row_values.length == 1)?result[0].final_value:0;
+		typeof(cal_value) == 'number' ? null : typeof(cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
+		isNegative = (cal_value < 0) ? true  : false; // Is negative. And if it is -ve then write in this value in (brackets).
+		cal_value_str =  applyNumberFormat(content, cal_value);
+        cal_value_str = (isNegative)?"(" + cal_value_str + ")":cal_value_str; // Adding brackets over -ve value.
+		var value = Ti.UI.createLabel({
+			text 			: "  " + cal_value_str,
+			textAlign 		: 'left',
+			width 			: widthCellView/2,
+			top 			: 0,
+			left 			: 1,
+			color 			: 'white',
+			font 			: {
+								fontFamily : 'Helvetica Neue',
+								fontSize : 14,
+							   },
+			color 			: '#000',
+			height 			: heightCellView,
+			wordWrap 		: false,
+			ellipsize 		: true,
+		});
+		content.add(value);
+		heightView += heightCellView;
 	}
 	content.height = heightView;
 }
@@ -1354,16 +1420,52 @@ function bottomButtons1(actualWindow){
 
 	
 	var edit = Ti.UI.createButton({
-		title : 'Edit',
+		title : 'Actions',
 		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
 	});
+
 	edit.addEventListener('click', function() {
 		var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+		var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win4.type + '"');
+		var _data = JSON.parse(json_data.fieldByName('_data'));
+
 		var node_form = db_act.execute('SELECT form_part FROM node WHERE nid=' + win4.nid);
-		var _aux_node_part = node_form.fieldByName('form_part');
+
+		Ti.API.info('Form node part = ' + node_form.fieldByName('form_part'));
+		
+		var btn_tt = [];
+		var btn_id = [];
+		if(_data.form_parts!=null && _data.form_parts!=""){
+			Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
+			if(_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2) { 
+				Ti.API.info("Title = " + _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
+				btn_tt.push(_data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
+				btn_id.push(node_form.fieldByName('form_part') + 1);
+			}
+		}
+		
+		
+		btn_tt.push('Edit');
+		btn_id.push(node_form.fieldByName('form_part'));
+		json_data.close();
 		db_act.close();
-		openEditScreen(_aux_node_part);
+		btn_tt.push('Cancel');
+		
+		var postDialog = Titanium.UI.createOptionDialog();
+		postDialog.options = btn_tt;
+		postDialog.show();
+
+		postDialog.addEventListener('click', function(ev) {
+				if (ev.index  == btn_tt.length-1){
+					
+				}
+				else if (ev.index != -1){
+					openEditScreen(btn_id[ev.index]);	
+				}
+		});	
+
 	});
+	
 	
 	// create and add toolbar
 	var toolbar = Titanium.UI.createToolbar({
@@ -1373,4 +1475,5 @@ function bottomButtons1(actualWindow){
 		borderBottom:true
 	});
 	win4.add(toolbar);
+	
 };

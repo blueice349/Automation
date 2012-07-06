@@ -1,4 +1,3 @@
-
 function translateErrorCode(code) {
 	if (code == null) {
 		return null;
@@ -22,10 +21,10 @@ function translateErrorCode(code) {
 }
 
 Ti.Geolocation.preferredProvider = Titanium.Geolocation.PROVIDER_GPS;
-Ti.Geolocation.purpose = "User tracking";
+Ti.Geolocation.purpose = "Omadi tracking module";
 
 // state vars used by resume/pause
-var db_coord_name	= "5";
+var db_coord_name	= "6";
 var headingAdded	= false;
 var locationAdded 	= false;
 var is_module_ready = false;
@@ -101,7 +100,7 @@ else
 		if ( accuracy <= 200){
 			location_obj.push({
 				no_accurated_location	: false,
-				accurated_location		: 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+Math.round(timestamp/1000)+', "notUploaded")',
+				accurated_location		: "INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('"+longitude+"','"+latitude+"',"+Math.round(timestamp/1000)+", 'notUploaded')",
 				accuracy				: accuracy,
 				longitude				: longitude,
 				latitude				: latitude,
@@ -164,7 +163,7 @@ else
 		if ( accuracy <= 200){
 			location_obj.push ({
 				no_accurated_location	: false,
-				accurated_location		: 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+Math.round(timestamp/1000)+', "notUploaded")',
+				accurated_location		: "INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('"+longitude+"','"+latitude+"',"+Math.round(timestamp/1000)+", 'notUploaded')",
 				accuracy				: accuracy,
 				longitude				: longitude,
 				latitude				: latitude,
@@ -218,6 +217,14 @@ if (Titanium.Platform.name == 'android')
 			locationAdded = true;
 		}
 		*/
+	});
+	
+	Ti.App.addEventListener('stop_gps', function(){
+		if (locationAdded) {
+			Ti.API.info("removing location callback on closing the app");
+			Titanium.Geolocation.removeEventListener('location', locationCallback);
+			locationAdded = false;
+		}		
 	});
 	
 }

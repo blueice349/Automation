@@ -9,13 +9,13 @@
  *		Menu with different buttons.
  *		Log out button.
  * @author Joseandro
- */
+ */ 
 
 Ti.include('/main_windows/create_or_edit_node.js');
 
 //Current window's instance
 var win2 = Ti.UI.currentWindow;
-win2.backgroundColor = '#111';
+win2.backgroundColor = '#EEEEEE';
 
 
 var toolActInd = Ti.UI.createActivityIndicator();
@@ -28,15 +28,16 @@ var isFirstTime = false;
 
 //Common used functions
 Ti.include('/lib/functions.js');
-var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 setUse();
 unsetUse();
+var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 
 //Geolocation module
-setTimeout(function(){
-	Ti.include('geolocation.js');
-}, 10000)
+Ti.include('geolocation.js');
 
+var updateFromAboutPage = function(){
+	checkUpdate('from_menu');
+}
 
 function checkUpdate(evt){
 	Ti.API.info('******* Called checkupate => '+evt);
@@ -44,7 +45,6 @@ function checkUpdate(evt){
 	if ( (isUpdating() === false) && (Titanium.Network.online) ){
 		//Sets status to 'updating'
 		setUse();
-		
 		if (evt == 'from_menu'){
 			//instance progress bar object:
 			var pb = new Progress_install(0, 100);	
@@ -62,30 +62,33 @@ function checkUpdate(evt){
 
 		var see = db_up.execute('SELECT * FROM bundles WHERE display_on_menu="true"');
 		var up_flag = db_up.execute('SELECT * FROM node WHERE flag_is_updated=1');
-		
+		updatedTime = updatedTime.fieldByName('timestamp');
 		if (up_flag.rowCount > 0){
 			Ti.API.info("Fired nodes update");
-			Ti.API.info('installMe( '+pageIndex+' , '+win2+' , '+updatedTime.fieldByName('timestamp') +' , '+pb+' , '+listView+', '+null+' , POST  )');
-			installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, null, 'POST', null);
+			Ti.API.info('installMe( '+pageIndex+' , '+win2+' , '+updatedTime +' , '+pb+' , '+listView+', '+null+' , POST  )');
+			db_up.close();
+			installMe(pageIndex, win2, updatedTime , pb, listView, null, 'POST', null);
 		}
 		else{
 			//Normal install
 			if ( see.rowCount > 0 ){
 				Ti.API.info("Fired normal database install");
 				//installMe(pageIndex, win, timeIndex, progress_bar, menu_list)
-				Ti.API.info('installMe( '+pageIndex+' , '+win2+' , '+updatedTime.fieldByName('timestamp') +' , '+pb+' , '+listView+', '+null+' , GET  )');
-				installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, null, 'GET', null);
+				Ti.API.info('installMe( '+pageIndex+' , '+win2+' , '+updatedTime +' , '+pb+' , '+listView+', '+null+' , GET  )');
+				db_up.close();
+				installMe(pageIndex, win2, updatedTime , pb, listView, null, 'GET', null);
 			}
 			//First install
 			else{
 				Ti.API.info("Fired first database install");
-				Ti.API.info('installMe( '+pageIndex+' , '+win2+' , '+updatedTime.fieldByName('timestamp') +' , '+pb+' , '+listView+', '+img+' , GET  )');
+				Ti.API.info('installMe( '+pageIndex+' , '+win2+' , '+updatedTime +' , '+pb+' , '+listView+', '+img+' , GET  )');
 				//installMe(pageIndex, win, timeIndex, progress, menu, img, type)
-				installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, img, 'GET', null);
+				db_up.close();
+				installMe(pageIndex, win2, updatedTime , pb, listView, img, 'GET', null);
 			}
 		}
-		updatedTime.close();
-		db_up.close();
+		//updatedTime.close();
+		//db_up.close();
 	}
 	else{
 		if (evt == 'from_menu'){
@@ -113,54 +116,113 @@ function checkUpdate(evt){
 	}
 };
 
-function update_node(mode, close_parent){
+function update_node(mode, close_parent, _node_name){
 	//Sets status to 'updating'
 
 	var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 
 	var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');
+	var updatedTimeStamp = updatedTime.fieldByName('timestamp');
 	var up_flag = db_up.execute('SELECT * FROM node WHERE flag_is_updated=1');
 	
 	Ti.API.info("Fired nodes update/creation ");
-	
-	//function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent)
-	installMe(0, win2, updatedTime.fieldByName('timestamp') , null, win2.listView, null, 'POST', mode, function (){
-		Ti.API.info('Closing create or edit node');
-		close_parent();
-	});
 	updatedTime.close();
 	up_flag.close();
 	db_up.close();
+
+	//function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent)
+	installMe(0, win2, updatedTimeStamp  , null, win2.listView, null, 'POST', mode, function (){
+		Ti.API.info('Closing create or edit node');
+		close_parent();
+	}, _node_name);
 }
 
 var listView = Titanium.UI.createTableView({
 	data : [],
-	top : '10%',
+	top : '50',
 	//height : '80%',
-	bottom: '10%',
+	bottom: '60',
 	scrollable: true,
 	zIndex: 999
 });
 
 var elements = db.execute('SELECT * FROM bundles');
 var check = 0;
+//Parses result from user's login 
+var jsonLogin = JSON.parse(win2.result) ;
+//Retrieves username
+var name = jsonLogin.user.realname;
+var roles = jsonLogin.user.roles;
+var app_permissions =  {
+	"can_create": false,
+	"can_update": false,
+	"all_permissions": false,
+	"can_view": false
+}
 
 
+var _data_rows = new Array();
 while ( elements.isValidRow() ){
 	var name_table   = elements.fieldByName("bundle_name");
-	var display      = elements.fieldByName("display_name");
+	var display      = elements.fieldByName("display_name").toUpperCase();
 	var description  = elements.fieldByName("description");
 	var flag_display = elements.fieldByName("display_on_menu");
+	var _is_disabled = elements.fieldByName("disabled");
+	var _nd 		 = elements.fieldByName("_data");
+	var show_plus 	 = false;
+
+	var node_type_json = JSON.parse(_nd);
 	
-	if (flag_display){
+	for (var _l in node_type_json.permissions){
+		for (_k in roles){
+			if (_l == _k){
+				Ti.API.info("====>> "+_l);
+				if ( node_type_json.permissions[_l]["can create"] ||  node_type_json.permissions[_l]["all_permissions"]){
+					show_plus = true;
+					app_permissions.can_create = true;
+				}
+				
+				if(node_type_json.permissions[_l]["all_permissions"]){
+					app_permissions.all_permissions = true;
+				}
+				
+				if(node_type_json.permissions[_l]["can update"] ||  node_type_json.permissions[_l]["all_permissions"]){
+					app_permissions.can_update = true;
+				}
+				
+				if(node_type_json.permissions[_l]["can view"] ||  node_type_json.permissions[_l]["all_permissions"]){
+					app_permissions.can_view = true;
+				}
+				
+				
+			}
+		}
+	}
+	Ti.API.info(flag_display+" = "+_is_disabled);	
+	
+	if (flag_display == 'true' && ( _is_disabled != 1 && _is_disabled != "1" && _is_disabled != "true" && _is_disabled != true) ){
 		check++;
 		var row_t = Ti.UI.createTableViewRow({
 			height      : 60,	
 			display     : display,
+			name		: display,
 			description : description,
 			name_table  : name_table,
+			show_plus 	: show_plus,
 			className	: 'menu_row' // this is to optimize the rendering
 		});
+		
+		var icon = Titanium.UI.createImageView({
+			width: 48,
+			height: 48,
+			top: 6,
+			left: 5,
+			image: '/images/icons/' + display.toLowerCase() + '.png'
+		});
+		
+		if(icon.toBlob() == null || icon.toBlob().length == 0){
+			icon.image = '/images/icons/settings.png';
+		}
 		
 		var title = Titanium.UI.createLabel({
 			text: display,
@@ -169,22 +231,29 @@ while ( elements.isValidRow() ){
 			},
 			width:'83%',
 			textAlign:'left',
-			left:'0%',
+			left:58,
 			height:'auto'
 		});
 
 		var plus =  Titanium.UI.createButton({
-			title: '+',
-			width:'15%',
-			height:'100%',
-			right:0,
+			backgroundImage: '/images/plus_btn.png',
+			backgroundSelectedImage: '/images/plus_btn_selected.png',
+			width:40,
+			height:31,
+			right:5,
 			is_plus: true
 		});
+		if (show_plus === false){
+			plus.hide();	
+		}
 		
+		row_t.add(icon);
 		row_t.add(title);
 		row_t.add(plus);
 		
-		listView.appendRow(row_t);
+		_data_rows.push(row_t);
+		_data_rows.sort(sortTableView);
+		listView.setData(_data_rows);
 	}
 	elements.next();
 }
@@ -204,73 +273,92 @@ if (check == 0){
 	win2.add(img);
 }
 
+if(PLATFORM == 'android'){
+	var notf = Ti.UI.createNotification({
+		message : 'Please, wait ...',
+		duration: Ti.UI.NOTIFICATION_DURATION_LONG
+	});
+}
+
 //Go to contact.js when contact's button is clicked
 listView.addEventListener('click',function(e){
+	lock_screen();
 	Ti.API.info("row click on table view. index = "+e.index+", row_desc = "+e.row.description+", section = "+e.section+", source_desc="+e.source.description);
-	
-	if (isUpdating() === true){
-		if(PLATFORM == 'android'){
-			Ti.UI.createNotification({
-				message : 'An update is running, wait till it is finished'
-			}).show();
+	var timer_int_list  =  setInterval(function(){
+		if (isUpdating()){
+			if(PLATFORM == 'android'){
+				notf.show();
+			}
+			else{
+				alert('Please, wait ...');
+			}		
 		}
 		else{
-			alert('An update is running, wait till it is finished');
-		}		
-	}
-	else{
-		setUse();
-		//Creates a new node_type
-		if (e.source.is_plus){
-			//alert('You clicked the '+e.row.display+' . His table\'s name is '+e.row.name_table);
-			// toolActInd.show();
-			var win_new = create_or_edit_node.getWindow();
-			win_new.title = "New "+e.row.display;
-			win_new.type = e.row.name_table;
-			win_new.uid = jsonLogin.user.uid;
-			win_new.listView = listView;
-			win_new.up_node = update_node;
-			win_new.mode = 0;
-			win_new.picked = win2.picked;
-			win_new.region_form = 0;
-			win_new.backgroundColor = "#000";
-			win_new.nameSelected = 'Fill Details...';
-			win_new.open();
-			setTimeout(function(){create_or_edit_node.loadUI();}, 100);
-			// win_new.addEventListener('focus', function(e){
-				// toolActInd.hide();
-			// });
+			clearInterval(timer_int_list);
+			if (PLATFORM == "android"){
+				notf.hide();				
+			}
+			setUse();
+			//Creates a new node_type
+			if (e.source.is_plus){
+				//alert('You clicked the '+e.row.display+' . His table\'s name is '+e.row.name_table);
+				// toolActInd.show();
+				var win_new = create_or_edit_node.getWindow();
+				win_new.title = "New "+e.row.display;
+				win_new.type = e.row.name_table;
+				win_new.uid = jsonLogin.user.uid;
+				win_new.up_node = update_node;
+				win_new.mode = 0;
+				win_new.picked = win2.picked;
+				win_new.region_form = 0;
+				win_new.backgroundColor = "#EEEEEE";
+				win_new.nameSelected = 'Fill Details...';
+				win_new.app_permissions = app_permissions;
+				win_new.addEventListener('focus', function(){
+					unlock_screen();
+				});
+				
+				win_new.open();
+				setTimeout(function(){create_or_edit_node.loadUI();}, 100);
+				// win_new.addEventListener('focus', function(e){
+					// toolActInd.hide();
+				// });
+			}
+			else{
+			//	if(app_permissions.can_view == true){
+					var win_new = Titanium.UI.createWindow({  
+						title: e.row.display,
+						fullscreen: false,
+						url:'objects.js',
+						type: e.row.name_table,
+						uid: jsonLogin.user.uid,
+						up_node: update_node,
+						backgroundColor: '#EEEEEE',
+						show_plus: e.row.show_plus
+					});
+					win_new.picked 	 = win2.picked;
+					win_new.app_permissions = app_permissions;
+					win_new.addEventListener('focus', function(){
+						unlock_screen();
+					});
+				
+					win_new.open();
+				// }else{
+					// unlock_screen();
+					// unsetUse();
+				// }
+			}				
 		}
-		else{
-			var win_new = Titanium.UI.createWindow({  
-				title: e.row.display,
-				fullscreen: false,
-				url:'objects.js',
-				type: e.row.name_table,
-				uid: jsonLogin.user.uid,
-				up_node: update_node,
-				backgroundColor: '#000'
-			});
-			win_new.picked 	 = win2.picked;
-			win_new.open();
-		}	
-	}
+	}, 1000);
 });
-
-//Parses result from user's login 
-var jsonLogin = JSON.parse(win2.result) ;
-
-//Retrieves username
-var name = jsonLogin.user.realname;
 
 // showToolbar(name, win2)					
 var loggedView = Titanium.UI.createView({
 	top: '0px',	
 	backgroundColor:'#111',
-	height: '10%',
+	height: '50',
 	width: '100%',
-	opacity: 0.99,
-	borderRadius:5
+	opacity: 0.99
 });
 
 var label_top = Titanium.UI.createLabel({
@@ -314,208 +402,20 @@ offImage.addEventListener('click',function(e)
 		    url: 'logDecision.js',
 			title:'Omadi CRM',		    
 		    fullscreen: false,
-		    backgroundColor: '#000'
+		    backgroundColor: '#EEEEEE'
 		});
 
 		//Setting both windows with login values:
 		indLog.log		 = win2.log;
 		indLog.result	 = win2.result;
 		indLog.picked 	 = win2.picked;
+		indLog._parent	 = win2;
 	    
 	    indLog.open();
 	   	//win2.close();    	
 	}
 
 });
-
-//View at the bottom to show user the database's status
-var databaseStatusView = Titanium.UI.createView({
-	backgroundColor:'#000',
-	height: '12%',
-	width: '100%',
-	opacity: 0.99,
-	borderRadius:0,
-	bottom: 0
-});
-
-var drafts_lb = Ti.UI.createLabel({
-	text: 'Drafts',
-	color:'#FFFFFF',
-	height:'auto',
-	width:'auto',
-	right:'20dp',
-	bottom: '2dp',
-	textAlign:'right',
-	font: {
-		fontSize: '14dp'
-	}	
-});
-databaseStatusView.add(drafts_lb);
-
-var draft_img = Ti.UI.createImageView({
-	image: '/images/draft.png',
-	right: '25dp',
-	width: '20dp',
-	height: 'auto',
-	bottom: '22dp'
-});
-databaseStatusView.add(draft_img);
-
-draft_img.addEventListener('click', function(){
-	if (isUpdating() === true){
-		if(PLATFORM == 'android'){
-			Ti.UI.createNotification({
-				message : 'An update is running, wait till it is finished'
-			}).show();
-		}
-		else{
-			alert('An update is running, wait till it is finished');
-		}		
-	}
-	else{
-		setUse();
-		Ti.API.info('Opening drafts');
-		var win_new = Titanium.UI.createWindow({  
-			title: 'Drafts',
-			fullscreen: false,
-			url:'drafts.js',
-			type: 'draft',
-			uid: jsonLogin.user.uid,
-			up_node: update_node
-		});
-		win_new.picked 	 = win2.picked;
-		win_new.open();
-	}
-});
-
-drafts_lb.addEventListener('click', function(){
-	if (isUpdating() === true){
-		if(PLATFORM == 'android'){
-			Ti.UI.createNotification({
-				message : 'An update is running, wait till it is finished'
-			}).show();
-		}
-		else{
-			alert('An update is running, wait till it is finished');
-		}		
-	}
-	else{
-		
-		setUse();
-		Ti.API.info('Opening drafts');
-		var win_new = Titanium.UI.createWindow({  
-			title: 'Drafts',
-			fullscreen: false,
-			url:'drafts.js',
-			type: 'draft',
-			uid: jsonLogin.user.uid,
-			up_node: update_node
-		});
-		win_new.picked 	 = win2.picked;
-		win_new.open();
-	}
-});
-
-
-var alerts_lb = Ti.UI.createLabel({
-	text: 'Alerts',
-	color:'#FFFFFF',
-	height:'auto',
-	width:'auto',
-	right:'142dp',
-	bottom: '2dp',
-	textAlign:'right',
-	font: {
-		fontSize: '14dp'
-	}	
-});
-databaseStatusView.add(alerts_lb);
-
-var alerts_img = Ti.UI.createImageView({
-	image: '/images/msg3.png',
-	right: '145dp',
-	width: '30dp',
-	height: 'auto',
-	bottom: '22dp'
-});
-databaseStatusView.add(alerts_img);
-
-alerts_img.addEventListener('click', function(){
-	if (isUpdating() === true){
-		if(PLATFORM == 'android'){
-			Ti.UI.createNotification({
-				message : 'An update is running, wait till it is finished'
-			}).show();
-		}
-		else{
-			alert('An update is running, wait till it is finished');
-		}		
-	}
-	else{
-		
-		setUse();
-		var win_new = Titanium.UI.createWindow({  
-			title: 'Message center',
-			fullscreen: false,
-			url:'message_center.js',
-			uid: jsonLogin.user.uid,
-			up_node: update_node
-		});
-		win_new.picked 	 = win2.picked;
-		win_new.open();
-	}
-});
-
-alerts_lb.addEventListener('click', function(){
-	if (isUpdating() === true){
-		if(PLATFORM == 'android'){
-			Ti.UI.createNotification({
-				message : 'An update is running, wait till it is finished'
-			}).show();
-		}
-		else{
-			alert('An update is running, wait till it is finished');
-		}		
-	}
-	else{
-		setUse();
-		var win_new = Titanium.UI.createWindow({  
-			title: 'Message center',
-			fullscreen: false,
-			url:'message_center.js',
-			uid: jsonLogin.user.uid,
-			up_node: update_node
-		});
-		win_new.picked 	 = win2.picked;
-		win_new.open();
-	}
-});
-
-var home_lb = Ti.UI.createLabel({
-	text: 'Home',
-	color:'#FFFFFF',
-	height:'auto',
-	width:'auto',
-	left:'20dp',
-	bottom: '2dp',
-	textAlign:'right',
-	font: {
-		fontSize: '14dp'
-	}	
-});
-databaseStatusView.add(home_lb);
-
-var home_img = Ti.UI.createImageView({
-	image: '/images/home2.png',
-	left: '25dp',
-	width: '30dp',
-	height: 'auto',
-	bottom: '22dp'
-});
-databaseStatusView.add(home_img);
-
-
-win2.add(databaseStatusView);
 
 //First time install
 var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
@@ -561,6 +461,33 @@ activity.onCreateOptionsMenu = function(e) {
 		order: 1
 	});
 	menu_draft.setIcon("/images/draft.png");
+	
+	var menu_about = menu.add({
+		title: 'About',
+		order: 2
+	});
+	menu_about.setIcon("/images/about.png");
+
+	menu_about.addEventListener("click", function(e) {
+		if (isUpdating()){
+			if(PLATFORM == 'android'){
+				notf.show();
+			}
+			else{
+				alert('Please, wait ...');
+			}		
+		}
+		else{
+			var about_win = Ti.UI.createWindow({
+				title: 'About',
+				fullscreen: false,
+				backgroundColor: '#EEEEEE',
+				url:'about.js',
+				updateFunction: updateFromAboutPage
+			});
+			about_win.open();
+		}
+    });
 
     menuItem.addEventListener("click", function(e) {
 		Ti.API.info('Refresh event!');
@@ -568,30 +495,7 @@ activity.onCreateOptionsMenu = function(e) {
     });
     
     menu_draft.addEventListener('click', function(){
-	   	if (isUpdating() === true){
-			if(PLATFORM == 'android'){
-				Ti.UI.createNotification({
-					message : 'An update is running, wait till it is finished'
-				}).show();
-			}
-			else{
-				alert('An update is running, wait till it is finished');
-			}		
-		}
-		else{
-	    	setUse();
-	    	Ti.API.info('Opening drafts');
-			var win_new = Titanium.UI.createWindow({  
-				title: 'Drafts',
-				fullscreen: false,
-				url:'drafts.js',
-				type: 'draft',
-				uid: jsonLogin.user.uid,
-				up_node: update_node
-			});
-			win_new.picked 	 = win2.picked;
-			win_new.open();
-		}
+    	openDraftWindow();
     });
     
 };
@@ -602,10 +506,6 @@ db.close();
 
 //Check behind the courtins if there is a new version - 5 minutes
 //setInterval( checkUpdate('auto') , 10000);
-if(PLATFORM != 'android'){
-	bottomButtons();
-}
-
 setInterval( function(){
 	Ti.API.info('========= Automated Update Check running ========= ');
 	
@@ -621,95 +521,281 @@ setInterval( function(){
 		var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 
 		var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');
+		var updatedTimeStamp = updatedTime.fieldByName('timestamp');
 
 		var see = db_up.execute('SELECT * FROM bundles WHERE display_on_menu="true"');
 		var up_flag = db_up.execute('SELECT * FROM node WHERE flag_is_updated=1');
 		
 		if (up_flag.rowCount > 0){
 			Ti.API.info("Fired nodes update");
-			installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, null, 'POST', null);
+			updatedTime.close();
+			db_up.close();
+			installMe(pageIndex, win2, updatedTimeStamp , pb, listView, null, 'POST', null);
 		}
 		else{
 			//Normal install
 			if ( see.rowCount > 0 ){
 				Ti.API.info("Fired normal database install");
 				//installMe(pageIndex, win, timeIndex, progress_bar, menu_list)
-				installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, null, 'GET', null);
+				updatedTime.close();
+				db_up.close();
+
+				installMe(pageIndex, win2, updatedTimeStamp , pb, listView, null, 'GET', null);
 			}
 			//First install
 			else{
 				Ti.API.info("Fired first database install");
 				//installMe(pageIndex, win, timeIndex, progress, menu, img, type)
-				installMe(pageIndex, win2, updatedTime.fieldByName('timestamp') , pb, listView, img, 'GET', null);
+				updatedTime.close();
+				db_up.close();
+
+				installMe(pageIndex, win2, updatedTimeStamp , pb, listView, img, 'GET', null);
 			}
 		}
-		updatedTime.close();
-		db_up.close();
 	}
 	else{
 		Ti.API.info('========= Database was opened, another update is running or you\'re offline ========= ');
 	}
 } , 300000);
 
-function bottomButtons(){
-	win2.remove(loggedView);
-	listView.top = '40';
-	//listView.height = '85%'
-	var update = Ti.UI.createButton({
-		title : 'Refresh',
-		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-	});
-	update.addEventListener('click', function() {
-		checkUpdate('from_menu');
-	});
-	
-	var space = Titanium.UI.createButton({
-		systemButton:Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
-	});
-	var label = Titanium.UI.createButton({
-		title:name,
-		color:'#fff',
-		ellipsize: true,
-		wordwrap: false,
-		width: 200,
-		style:Titanium.UI.iPhone.SystemButtonStyle.PLAIN
-	});
+var databaseStatusView = Titanium.UI.createView({
+	backgroundColor:'#000',
+	height: '60',
+	width: '100%',
+	bottom: 0,
+	layout: 'horizontal'
+});
 
+//View at the bottom to show user the database's status
+
+var home_view = Ti.UI.createView({
+	backgroundSelectedColor: 'orange',
+	focusable: true
+});
+databaseStatusView.add(home_view);
+var home_img = Ti.UI.createImageView({
+	image: '/images/home2.png'
+});
+var home_lb = Ti.UI.createLabel({
+	text: 'Home',
+	font: {
+		fontSize: '14dp'
+	}	
+});
+home_view.add(home_img);
+home_view.add(home_lb);
+
+var alerts_view = Ti.UI.createView({
+	backgroundSelectedColor: 'orange',
+	focusable: true
+});
+databaseStatusView.add(alerts_view);
+var alerts_img = Ti.UI.createImageView({
+	image: '/images/msg3.png'
+});
+var alerts_lb = Ti.UI.createLabel({
+	text: 'Alerts',
+	font: {
+		fontSize: '14dp'
+	}	
+});
+alerts_view.add(alerts_img);
+alerts_view.add(alerts_lb);
+alerts_view.addEventListener('click', function(){
+	lock_screen();
+	var timer_int_msg  =  setInterval(function(){
+		if (isUpdating()){
+			if(PLATFORM == 'android'){
+				notf.show();
+			}
+			else{
+				alert('Please, wait ...');
+			}		
+		}
+		else{
+			clearInterval(timer_int_msg);
+			if(PLATFORM == 'android'){
+				notf.hide();
+			}
+			setUse();		
+			var win_new = Titanium.UI.createWindow({
+				title : 'Message center',
+				fullscreen : false,
+				url : 'message_center.js',
+				uid : jsonLogin.user.uid,
+				up_node : update_node,
+				backgroundColor: '#EEE'
+			});
+			win_new.picked = win2.picked;
+			
+			win_new.addEventListener('focus', function(){
+					unlock_screen();
+			});
+			
+			win_new.open();
+		}
+	}, 1000);	
+});
+
+var drafts_view = Ti.UI.createView(
+{
+	top: 7,
+	backgroundSelectedColor: 'orange',
+	focusable: true
+});
+databaseStatusView.add(drafts_view);
+var draft_img = Ti.UI.createImageView({
+	image: '/images/draft.png',
+	height: '22',
+	width: '25'
+});
+var drafts_lb = Ti.UI.createLabel({
+	text: 'Drafts',
+	top: 3,
+	font: {
+		fontSize: '14dp'
+	}	
+});
+drafts_view.add(draft_img);
+drafts_view.add(drafts_lb);
+drafts_view.addEventListener('click', function(){
+	openDraftWindow();
+});
+
+//View settings (Draft/ Alert/ Home)
+drafts_view.height = alerts_view.height = home_view.height = 60;
+drafts_view.layout = alerts_view.layout = home_view.layout = 'vertical';
+
+//Label settings (Draft/ Alert/ Home)
+drafts_lb.color 	= alerts_lb.color 		= home_lb.color 	= '#FFFFFF';
+drafts_lb.height 	= alerts_lb.height 		= home_lb.height 	= '21dp';
+drafts_lb.width 	= alerts_lb.width 		= home_lb.width 	= 'auto';
+drafts_lb.textAlign = alerts_lb.textAlign 	= home_lb.textAlign = 'center';
+
+//Image view setting (Draft/ Alert/ Home)
+alerts_img.height 	= home_img.height 	= '30';
+alerts_img.width	= home_img.width 	= '30';
+draft_img.top 		= alerts_img.top 	= draft_img.top = '2';
+
+if(PLATFORM == 'android'){
+	drafts_view.width = alerts_view.width = home_view.width = Ti.Platform.displayCaps.platformWidth/3;
+}else{
+	drafts_view.width = alerts_view.width = home_view.width = Ti.Platform.displayCaps.platformWidth/4;
 	
-	var logout = Ti.UI.createButton({
-		title : 'Logout',
-		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+	var actions_view = Ti.UI.createView({
+		height: '50',
+		width: Ti.Platform.displayCaps.platformWidth/4,
+		layout: 'vertical'
+	})
+	databaseStatusView.add(actions_view);
+	var actions_img = Ti.UI.createImageView({
+		image: '/images/action.png',
+		width: '30',
+		height: '30',
+		top: 5
 	});
-	logout.addEventListener('click', function() {
-		if ( isUpdating() ){
-		a.message = 'A data sync is in progress. Please wait a moment to logout.';
-		a.show();
-	}
-	else{
-		// window container
-		indLog = Titanium.UI.createWindow({
-		    url: 'logDecision.js',
-			title:'Omadi CRM',		    
-		    fullscreen: false,
-		    backgroundColor: '#000'
+	var actions_lb = Ti.UI.createLabel({
+		text: 'Actions',
+		color:'#FFFFFF',
+		height:'16',
+		width:'auto',
+		textAlign:'center',
+		font: {
+			fontSize: '14dp'
+		}	
+	});
+	actions_view.add(actions_img);
+	actions_view.add(actions_lb);
+	
+	actions_view.addEventListener('click', function(){
+		var postDialog = Titanium.UI.createOptionDialog();
+		postDialog.options = ['Update', 'Display Draft', 'About', 'cancel'];
+		postDialog.cancel = 3;
+		postDialog.show();
+
+		postDialog.addEventListener('click', function(ev) {
+			if(ev.index == 0) {
+				checkUpdate('from_menu');
+			} else if(ev.index == 1) {
+				openDraftWindow();
+			} else if(ev.index == 2) {
+				if(isUpdating()) {
+					if(PLATFORM == 'android') {
+						notf.show();
+					} else {
+						alert('Please, wait ...');
+					}
+				} else {
+					var about_win = Ti.UI.createWindow({
+						title : 'About',
+						fullscreen : false,
+						backgroundColor : 'black',
+						url : 'about.js'
+					});
+					about_win.open();
+				}
+			}
 		});
-
-		//Setting both windows with login values:
-		indLog.log		 = win2.log;
-		indLog.result	 = win2.result;
-		indLog.picked 	 = win2.picked;
-	    
-	    indLog.open();
-	   	//win2.close();    	
-	}
-	});
+		return;
 	
-	// create and add toolbar
-	var toolbar = Titanium.UI.createToolbar({
-		items:[update, space, label, space, logout],
-		top:0,
-		borderTop:false,
-		borderBottom:true
 	});
-	win2.add(toolbar);
-};
+}
+
+win2.add(databaseStatusView);
+
+function openDraftWindow(){
+	lock_screen();
+	var timer_int_draft  =  setInterval(function(){
+		if (isUpdating()){
+			if(PLATFORM == 'android'){
+				notf.show();
+			}
+			else{
+				alert('Please, wait ...');
+			}		
+		}
+		else{
+			var toolActInd = Ti.UI.createActivityIndicator();
+		toolActInd.font = {
+			fontFamily : 'Helvetica Neue',
+			fontSize : 15,
+			fontWeight : 'bold'
+		};
+		toolActInd.color = 'white';
+		toolActInd.message = 'Loading...';
+		toolActInd.show();
+			clearInterval(timer_int_draft);
+			if(PLATFORM == 'android'){
+				notf.hide();		
+			}
+			setUse();
+			Ti.API.info('Opening drafts');
+			var win_new = Titanium.UI.createWindow({  
+				title: 'Drafts',
+				fullscreen: false,
+				url:'drafts.js',
+				type: 'draft',
+				uid: jsonLogin.user.uid,
+				up_node: update_node,
+				backgroundColor: '#EEE'
+			});
+			win_new.picked 	 = win2.picked;
+			win_new.addEventListener('focus', function(){
+				unlock_screen();
+			});
+			
+			win_new.open();
+			toolActInd.hide();
+		}
+	}, 1000);	
+}
+
+function lock_screen(){
+	win2.touchEnabled = false;
+	databaseStatusView.touchEnabled = false;
+}
+
+function unlock_screen(){
+	win2.touchEnabled = true;
+	databaseStatusView.touchEnabled = true;
+}
