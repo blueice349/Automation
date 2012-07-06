@@ -1450,9 +1450,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 		
 		if (isJsonString(this.responseText) === true ){
 			var json = JSON.parse(this.responseText);
-			
-			if(json.sync_timestamp != null && json.sync_timestamp!=""){
-				var GMT_OFFSET = Number(json.sync_timestamp - app_timestamp);
+
+			if( json.request_time && json.request_time != null && json.request_time != "" ){
+				var GMT_OFFSET = Number(json.request_time - app_timestamp);
+				Ti.API.info(GMT_OFFSET+"  === "+json.request_time+" === "+app_timestamp);
 				Ti.App.Properties.setString("timestamp_offset", GMT_OFFSET); 
 			}
 	
@@ -3352,7 +3353,8 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 		Ti.API.info("Services are down");
 	}
 	
-	app_timestamp = Math.round(+new Date()/1000);
+	app_timestamp = Math.round(+new Date().getTime()/1000);
+	Ti.API.info('App Time: '+app_timestamp);
 	//Get upload JSON
 	if ( type_request == 'POST'){
 		var insert_JSON = getJSON();

@@ -23,7 +23,7 @@ var win1 = Titanium.UI.createWindow({
     zIndex: -100
 });
 
-var OMADI_VERSION = "omadiDb1517";
+var OMADI_VERSION = "omadiDb1534";
 
 Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION);
 var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );
@@ -35,6 +35,10 @@ var updatedTime = db_a.execute('SELECT timestamp FROM updated WHERE rowid=1');
 if (updatedTime.fieldByName('timestamp') != 0){
 	locked_field = false;
 }
+else{
+	Ti.App.Properties.setString("timestamp_offset", 0); 
+}
+
 updatedTime.close();
 db_a.close();
 
