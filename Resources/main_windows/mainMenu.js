@@ -286,6 +286,9 @@ listView.addEventListener('click',function(e){
 	Ti.API.info("row click on table view. index = "+e.index+", row_desc = "+e.row.description+", section = "+e.section+", source_desc="+e.source.description);
 	var timer_int_list  =  setInterval(function(){
 		if (isUpdating()){
+			if(app_permissions.can_view == false && e.source.is_plus == false){
+				return; 
+			}
 			if(PLATFORM == 'android'){
 				notf.show();
 			}
@@ -325,7 +328,7 @@ listView.addEventListener('click',function(e){
 				// });
 			}
 			else{
-			//	if(app_permissions.can_view == true){
+				if(app_permissions.can_view == true){
 					var win_new = Titanium.UI.createWindow({  
 						title: e.row.display,
 						fullscreen: false,
@@ -343,10 +346,10 @@ listView.addEventListener('click',function(e){
 					});
 				
 					win_new.open();
-				// }else{
-					// unlock_screen();
-					// unsetUse();
-				// }
+				 }else{
+					 unlock_screen();
+					 unsetUse();
+				 }
 			}				
 		}
 	}, 1000);

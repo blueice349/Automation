@@ -147,6 +147,7 @@ else {
 		win4.picked 		 = win3.picked;
 		win4.nid 			 = e.row.nid;
 		win4.nameSelected 	 = e.row.name;
+		win4.app_permissions = win3.app_permissions;
 
 		//Avoiding memory leaking
 		win4.open();

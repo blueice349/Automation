@@ -1081,6 +1081,7 @@ function display_widget(obj) {
 		var changedDate = obj.currentDate;
 		var changedTime = obj.currentDate;
 		var iOSDateCal = obj.currentDate;
+		var date_picker;
 	
 		//Min
 		var minDate = new Date();
@@ -1094,7 +1095,7 @@ function display_widget(obj) {
 		maxDate.setMonth(11);
 		maxDate.setDate(31);
 
-		//if (PLATFORM == 'android'){
+		if (PLATFORM == 'android'){
 			var date_picker = Titanium.UI.createPicker({
 				useSpinner : true,
 				borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
@@ -1126,26 +1127,39 @@ function display_widget(obj) {
 				timezone : null
 			});
 			time_picker.selectionIndicator = true;
-			
-			time_picker.date_picker = date_picker;
-			date_picker.time_picker = time_picker;
-	
 			date_picker.addEventListener('change', function(e) {
-				e.source.time_picker.value = e.value;
 				changedDate = e.value;
-				iOSDateCal = e.value;
 			});
 			//Add field:
 			win_wid.add(date_picker);
 	
 			time_picker.addEventListener('change', function(e) {
-				e.source.date_picker.value = e.value;
 				changedTime = e.value;
-				iOSDateCal = e.value;
 			});
 			//Add field:
 			win_wid.add(time_picker);
-	
+	}else{
+		var date_picker = Titanium.UI.createPicker({
+				borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+				value : obj.currentDate,
+				font : {
+					fontSize : 18
+				},
+				type : Ti.UI.PICKER_TYPE_DATE_AND_TIME,
+				minDate : minDate,
+				maxDate : maxDate,
+				report : obj.currentDate,
+				color : '#000000',
+				top : '20%'
+			});
+			date_picker.selectionIndicator = true;
+			
+			date_picker.addEventListener('change', function(e) {
+				iOSDateCal = e.value;
+			});
+			//Add field:
+			win_wid.add(date_picker);
+	}
 			var done = Ti.UI.createButton({
 				title : 'Done',
 				bottom : 10,
@@ -2554,7 +2568,8 @@ create_or_edit_node.loadUI = function() {
 											value : vl_to_field,
 											settings : settings,
 											changedFlag : 0,
-											real_ind: count
+											real_ind: count,
+											autocorrect: false
 										});
 									}
 									top += heightValue;
@@ -2893,7 +2908,8 @@ create_or_edit_node.loadUI = function() {
 										reffer_index : reffer_index,
 										settings : settings,
 										changedFlag : 0,
-										real_ind: count
+										real_ind: count,
+										autocorrect: false
 									});
 									top += heightValue;
 
@@ -2997,7 +3013,8 @@ create_or_edit_node.loadUI = function() {
 										value : vl_to_field,
 										reffer_index : reffer_index,
 										settings : settings,
-										changedFlag : 0
+										changedFlag : 0,
+										autocorrect: false
 									});
 									top += heightValue;
 
@@ -3030,7 +3047,8 @@ create_or_edit_node.loadUI = function() {
 									value : field_arr[index_label][index_size].actual_value,
 									reffer_index : reffer_index,
 									settings : settings,
-									changedFlag : 0
+									changedFlag : 0,
+									autocorrect: false
 								});
 								top += heightValue;
 
@@ -3128,7 +3146,8 @@ create_or_edit_node.loadUI = function() {
 										changedFlag : 0,
 										my_min: _min,
 										my_max: _max,
-										real_ind: count
+										real_ind: count,
+										autocorrect: false
 									});
 									if (_max != null){
 										content[count].maxLength = _max;
@@ -3265,7 +3284,8 @@ create_or_edit_node.loadUI = function() {
 									changedFlag : 0,
 									my_min: _min,
 									my_max: _max,
-									real_ind: count
+									real_ind: count,
+									autocorrect: false
 								});
 								
 								if (_max != null){
@@ -3814,7 +3834,8 @@ create_or_edit_node.loadUI = function() {
 										value : vl_to_field,
 										reffer_index : reffer_index,
 										settings : settings,
-										changedFlag : 0
+										changedFlag : 0,
+										autocorrect: false
 									});
 									top += heightValue;
 
@@ -3847,7 +3868,8 @@ create_or_edit_node.loadUI = function() {
 									value : field_arr[index_label][index_size].actual_value,
 									reffer_index : reffer_index,
 									settings : settings,
-									changedFlag : 0
+									changedFlag : 0,
+									autocorrect: false
 								});
 								top += heightValue;
 
@@ -3970,7 +3992,8 @@ create_or_edit_node.loadUI = function() {
 										settings : settings,
 										changedFlag : 0,
 										my_max: _max,
-										my_min: _min
+										my_min: _min,
+										autocorrect: false
 									});
 									
 									addDoneButtonInKB(content[count]);
@@ -4050,7 +4073,8 @@ create_or_edit_node.loadUI = function() {
 									settings : settings,
 									changedFlag : 0,
 									my_max: _max,
-									my_min: _min
+									my_min: _min,
+									autocorrect: false
 								});
 								addDoneButtonInKB(content[count]);
 								top += heightValue;
@@ -4178,7 +4202,8 @@ create_or_edit_node.loadUI = function() {
 										value : vl_to_field,
 										reffer_index : reffer_index,
 										settings : settings,
-										changedFlag : 0
+										changedFlag : 0,
+										autocorrect: false
 									});
 									addDoneButtonInKB(content[count]);
 									top += heightValue;
@@ -4214,7 +4239,8 @@ create_or_edit_node.loadUI = function() {
 									value : field_arr[index_label][index_size].actual_value,
 									reffer_index : reffer_index,
 									settings : settings,
-									changedFlag : 0
+									changedFlag : 0,
+									autocorrect: false
 								});
 								addDoneButtonInKB(content[count]);
 								top += heightValue;
@@ -4302,7 +4328,8 @@ create_or_edit_node.loadUI = function() {
 										value : vl_to_field,
 										reffer_index : reffer_index,
 										settings : settings,
-										changedFlag : 0
+										changedFlag : 0,
+										autocorrect: false
 									});
 									top += heightValue;
 
@@ -4336,7 +4363,8 @@ create_or_edit_node.loadUI = function() {
 									value : field_arr[index_label][index_size].actual_value,
 									reffer_index : reffer_index,
 									settings : settings,
-									changedFlag : 0
+									changedFlag : 0,
+									autocorrect: false
 								});
 								top += heightValue;
 
@@ -5233,7 +5261,8 @@ create_or_edit_node.loadUI = function() {
 										reffer_index : reffer_index,
 										settings : settings,
 										changedFlag : 0,
-										my_index : count
+										my_index : count,
+										autocorrect: false
 									});
 
 									//AUTOCOMPLETE TABLE
@@ -5385,7 +5414,8 @@ create_or_edit_node.loadUI = function() {
 									reffer_index : reffer_index,
 									settings : settings,
 									changedFlag : 0,
-									my_index: count
+									my_index: count,
+									autocorrect: false
 								});
 
 								//AUTOCOMPLETE TABLE
@@ -6639,7 +6669,8 @@ create_or_edit_node.loadUI = function() {
 										value : vl_to_field,
 										reffer_index : reffer_index,
 										settings : settings,
-										changedFlag : 0
+										changedFlag : 0,
+										autocorrect: false
 									});
 									top += heightValue;
 
@@ -6694,7 +6725,8 @@ create_or_edit_node.loadUI = function() {
 									settings : settings,
 									changedFlag : 0,
 									i_name: i_name,
-									my_index: count
+									my_index: count,
+									autocorrect: false
 								});
 
 								//AUTOCOMPLETE TABLE
