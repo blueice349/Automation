@@ -123,35 +123,41 @@ else {
 		search.blur();
 		//hides the keyboard
 	});
-
+	win3.addEventListener('android:menu', function() {
+		alert('clicked');
+	});
+	
 	//When the user clicks on a certain contact, it opens individual_contact.js
 	listTableView.addEventListener('click', function(e) {
 		//Hide keyboard when returning 
 		firstClick = true;
-		//Next window to be opened
-		var win4 = Titanium.UI.createWindow({
-			fullscreen : false,
-			title: win3.type.charAt(0).toUpperCase() + win3.type.slice(1),
-			type: win3.type,
-			url : 'individual_object.js',
-			up_node: win3.up_node,
-			uid: win3.uid,
-			region_form: e.row.form_part,
-			backgroundColor: '#000'
-		});
-
-		search.blur();
-		//hide keyboard
-
-		//Passing parameters
-		win4.picked 		 = win3.picked;
-		win4.nid 			 = e.row.nid;
-		win4.nameSelected 	 = e.row.name;
-		win4.app_permissions = win3.app_permissions;
-
-		//Avoiding memory leaking
-		win4.open();
+		if (PLATFORM == "android"){
+				var win_new = Titanium.UI.createWindow({
+					fullscreen : false,
+					title: win3.type.charAt(0).toUpperCase() + win3.type.slice(1),
+					type: win3.type,
+					url : 'individual_object.js',
+					up_node: win3.up_node,
+					uid: win3.uid,
+					region_form: e.row.form_part,
+					backgroundColor: '#000'
+				});
+		
+				search.blur();
+				//hide keyboard
+		
+				//Passing parameters
+				win_new.picked 			 = win3.picked;
+				win_new.nid 			 = e.row.nid;
+				win_new.nameSelected 	 = e.row.name;
+		
+				win_new.open();
+		}
+		else{
+			bottomButtons1(e.row.nid, win3, e);
+		}
 		resultsNames.close();
+		
 	});
 	//Adds contact list container to the UI
 	win3.add(listTableView);
@@ -257,3 +263,101 @@ function openCreateNodeScreen(){
 	win_new.open();
 	setTimeout(function(){create_or_edit_node.loadUI();}, 100);
 }
+
+
+function openEditScreen(part, nid){
+//Next window to be opened
+	var win_new = create_or_edit_node.getWindow();
+	win_new.title = win3.title;
+	win_new.type = win3.type;
+	win_new.listView = win3.listView;
+	win_new.up_node = win3.up_node;
+	win_new.uid = win3.uid;
+	win_new.region_form = part;
+
+	//Passing parameters
+	win_new.nid = nid;
+	win_new.picked = win3.picked;
+	win_new.nameSelected = win3.nameSelected;
+
+	//Sets a mode to fields edition
+	win_new.mode = 1;
+
+	win_new.open();
+	setTimeout(function() {
+		create_or_edit_node.loadUI();
+	}, 100);
+}
+
+
+function bottomButtons1(_nid, win3, e){
+	var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win3.type + '"');
+	var _data = JSON.parse(json_data.fieldByName('_data'));
+
+	var node_form = db_act.execute('SELECT form_part FROM node WHERE nid=' + _nid);
+
+	Ti.API.info('Form node part = ' + node_form.fieldByName('form_part'));
+	
+	var btn_tt = [];
+	var btn_id = [];
+	btn_tt.push('View');
+	btn_id.push(0);
+	
+	if(_data.form_parts!=null && _data.form_parts!=""){
+		Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
+		if(_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2) { 
+			Ti.API.info("Title = " + _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
+			btn_tt.push(_data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
+			btn_id.push(node_form.fieldByName('form_part') + 1);
+			Ti.API.info(node_form.fieldByName('form_part') + 1);
+		}
+	}
+	
+
+	btn_tt.push('Edit');
+	btn_id.push(node_form.fieldByName('form_part'));
+	
+	json_data.close();
+	db_act.close();
+
+	btn_tt.push('Cancel');
+	btn_id.push(0);
+
+	var postDialog = Titanium.UI.createOptionDialog();
+	postDialog.options = btn_tt;
+	postDialog.show();
+
+	postDialog.addEventListener('click', function(ev) {
+			if (ev.index == 0 ){
+				//Next window to be opened 
+				var win_new = Titanium.UI.createWindow({
+					fullscreen : false,
+					title: win3.type.charAt(0).toUpperCase() + win3.type.slice(1),
+					type: win3.type,
+					url : 'individual_object.js',
+					up_node: win3.up_node,
+					uid: win3.uid,
+					region_form: e.row.form_part,
+					backgroundColor: '#000'
+				});
+		
+				search.blur();
+				//hide keyboard
+		
+				//Passing parameters
+				win_new.picked 		 = win3.picked;
+				win_new.nid 			 = e.row.nid;
+				win_new.nameSelected 	 = e.row.name;
+		
+				//Avoiding memory leaking
+				win_new.open();
+			}
+			else if (ev.index  == btn_tt.length-1){
+				Ti.API.info("Cancelled")
+			}
+			else if (ev.index != -1){
+				openEditScreen(btn_id[ev.index], _nid);
+			}
+	});	
+};

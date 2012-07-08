@@ -1410,7 +1410,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 	setUse();
 	var db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 		
-	var objectsUp = win.log;
+	var objectsUp = Ti.Network.createHTTPClient();
 	Ti.API.info('Log type : '+objectsUp);
 	
 	//Timeout until error:
@@ -3594,13 +3594,14 @@ function getScreenHeight(){
 function uploadFile(win, type_request, database, fileUploadTable){
 try{
 	//var fileUploadXHR = win.log;
-	win.log.setTimeout(30000);
-	win.log.open(type_request, win.picked + '/js-sync/upload.json');
+	var _file_xhr = Ti.Network.createHTTPClient();
+	_file_xhr.setTimeout(30000);
+	_file_xhr.open(type_request, win.picked + '/js-sync/upload.json');
 	// Upload images
 	if(fileUploadTable.isValidRow()) {
 		//Only upload those images that have positive nids
 		if(fileUploadTable.fieldByName('nid') > 0) {
-			win.log.onload = function(e) {
+			_file_xhr.onload = function(e) {
 				Ti.API.info('=========== Success ========' + this.responseText);
 				var respnseJson = JSON.parse(this.responseText);
 				
@@ -3654,7 +3655,7 @@ try{
 				}
 			}
 			
-			win.log.onerror = function(e) {
+			_file_xhr.onerror = function(e) {
 				Ti.API.info('=========== Error in uploading ========' + e.error + this.status);
 				if(this.status == '406' && this.error =='Nid is not connected to a valid node.'){
 					database.execute("DELETE FROM file_upload_queue WHERE nid=" + fileUploadTable.fieldByName('nid') +" and id=" + fileUploadTable.fieldByName('id') + ";");
@@ -3663,17 +3664,17 @@ try{
 				database.close();
 			}
 			
-			win.log.setRequestHeader("Content-Type", "application/json");
+			_file_xhr.setRequestHeader("Content-Type", "application/json");
 		
 			if(PLATFORM == 'android'){
-				win.log.send('{"file_data"	:"'	+fileUploadTable.fieldByName('file_data')	+
+				_file_xhr.send('{"file_data"	:"'	+fileUploadTable.fieldByName('file_data')	+
 					'", "filename"	:"'	+fileUploadTable.fieldByName('file_name') 	+
 					'", "nid"		:"'	+fileUploadTable.fieldByName('nid')			+
 					'", "field_name":"'	+fileUploadTable.fieldByName('field_name')	+
 					'", "delta"		:'	+fileUploadTable.fieldByName('delta')+'}');
 				
 			}else{
-				win.log.send({file_data	: fileUploadTable.fieldByName('file_data'),
+				_file_xhr.send({file_data	: fileUploadTable.fieldByName('file_data'),
 						 filename	: fileUploadTable.fieldByName('file_name'),
 						 nid		: fileUploadTable.fieldByName('nid'),
 						 field_name : fileUploadTable.fieldByName('field_name'),

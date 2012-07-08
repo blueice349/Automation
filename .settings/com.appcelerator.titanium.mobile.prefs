@@ -1,6 +1,7 @@
-#Thu Jun 21 00:56:10 BRT 2012
 MOBILE_PROJECT_SDK_VERSION=1.7.2
-android/alias=omadi
-android/keystore=/home/jo/keystores/android.keystore
-android/output_location=/home/jo/Desktop/Sync/Dropbox/omadi/Android/Joseandro
+android/alias=app_joseandro_version
+android/keystore=/Users/joseandro/Keys/my-release-key.keystore
+android/output_location=/Users/joseandro/Dropbox/omadi/Android/Stage
+android/recent_output=/Users/joseandro/Dropbox/omadi/Android/Stage,/Users/joseandro/Dropbox/omadi/Android/Joseandro,/home/jo/Desktop/Sync/Dropbox/omadi/Android/Joseandro
+android/sdk=Real3D Add-On Android 2.3.3
 eclipse.preferences.version=1

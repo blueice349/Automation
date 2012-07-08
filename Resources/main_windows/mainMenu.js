@@ -17,7 +17,6 @@ Ti.include('/main_windows/create_or_edit_node.js');
 var win2 = Ti.UI.currentWindow;
 win2.backgroundColor = '#EEEEEE';
 
-
 var toolActInd = Ti.UI.createActivityIndicator();
 toolActInd.font = {fontFamily:'Helvetica Neue', fontSize:15,fontWeight:'bold'};
 toolActInd.color = 'white';
@@ -418,6 +417,10 @@ offImage.addEventListener('click',function(e)
 	   	//win2.close();    	
 	}
 
+});
+
+win2.addEventListener('close', function(){
+	Ti.API.info('Closing main menu');
 });
 
 //First time install

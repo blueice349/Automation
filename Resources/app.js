@@ -304,7 +304,12 @@ b1.addEventListener('click', function(){
 				
 		// When infos are retrieved:
 		xhr.onload = function(e) {
-	
+			
+				var _txt =  this.responseText;
+				var user_json = JSON.parse(_txt);
+				Titanium.App.Properties.setString('session_name', user_json.session_name);
+				Titanium.App.Properties.setString('sessid', user_json.sessid);
+				
 				var db_list = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );	
 	
 				var portal_base = db_list.execute('SELECT domain FROM domains WHERE domain=\''+portal.value+'\'');
@@ -341,7 +346,6 @@ b1.addEventListener('click', function(){
 				});
 				
 				//Passes parameter to the second window:
-				win2.log 		 = xhr;
 				win2.picked 	 = picked;
 				win2.result 	 = this.responseText;
 				Ti.API.info(this.responseText);

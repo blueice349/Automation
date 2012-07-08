@@ -84,6 +84,8 @@ labelOut.addEventListener('click',function (){
 				Ti.App.fireEvent('stop_gps');				
 			}
 			Ti.App.fireEvent('free_login');
+			
+			
 			//logWindow.open();
 			indLog._parent.close();
 			hideIndicator();
