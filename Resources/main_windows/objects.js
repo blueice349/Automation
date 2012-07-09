@@ -51,7 +51,8 @@ while (resultsNames.isValidRow())
 	var row = Ti.UI.createTableViewRow({
 		height : 'auto',
 		hasChild : false,
-		title : fullName
+		title : fullName,
+		color: '#000'
 	});
 
 	//Parameters added to each row
@@ -98,7 +99,8 @@ else {
 	var listTableView = Titanium.UI.createTableView({
 		data : data,
 		search : search,
-		height : '91%'
+		height : '91%',
+		separatorColor: '#BDBDBD'
 	});
 	
 	listTableView.addEventListener('focus', function(e) {
@@ -258,7 +260,7 @@ function openCreateNodeScreen(){
 	win_new.mode = 0;
 	win_new.picked = win.picked;
 	win_new.region_form = 0;
-	win_new.backgroundColor = "#EEEEEE";
+	win_new.backgroundColor = "#CCCCCC";
 	win_new.nameSelected = 'Fill Details...';
 	win_new.open();
 	setTimeout(function(){create_or_edit_node.loadUI();}, 100);

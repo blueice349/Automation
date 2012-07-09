@@ -84,7 +84,8 @@ else{
 			hasChild : false,
 			title : fullName,
 			form_part: resultsNames.fieldByName('form_part'),
-			_type: resultsNames.fieldByName('table_name')
+			_type: resultsNames.fieldByName('table_name'),
+			color: '#000'
 		});
 		
 		//Parameters added to each row
@@ -139,7 +140,8 @@ else {
 		data   : data,
 		top	   : '3%',
 		search : search,
-		height : '91%'
+		height : '91%',
+		separatorColor: '#E6E6E6'
 	});
 	
 	listTableView.addEventListener('focus', function(e) {

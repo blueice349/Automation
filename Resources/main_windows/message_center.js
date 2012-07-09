@@ -46,7 +46,8 @@ else {
 			height : 'auto',
 			hasChild : false,
 			title : fullName,
-			message: res_set.fieldByName('message')
+			message: res_set.fieldByName('message'),
+			color: '#000'
 		});
 	
 		//Parameters added to each row
@@ -70,7 +71,8 @@ else {
 		data : data,
 		top : '3%',
 		search : search,
-		height : '91%'
+		height : '91%',
+		separatorColor: '#BDBDBD'
 	});
 	
 	listTableView.addEventListener('focus', function(e) {

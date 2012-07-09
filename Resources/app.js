@@ -348,6 +348,7 @@ b1.addEventListener('click', function(){
 				//Passes parameter to the second window:
 				win2.picked 	 = picked;
 				win2.result 	 = this.responseText;
+				win2.log		 = xhr;
 				Ti.API.info(this.responseText);
 				
 				db.close();

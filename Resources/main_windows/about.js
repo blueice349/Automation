@@ -56,8 +56,37 @@ win_about.add(versionLbl);
 var ls = Titanium.App.Properties.getDouble("lastSynced");
 var lastSyncText;
 if(ls != null) {
+	var timeStr = '';
 	var d = new Date(ls);
-	lastSyncText = 'Last synced on : ' + d.toString();
+	if(d.getHours()!=0){
+		timeStr += d.getHours() + ' hour';
+		if(d.getHours()>1){
+			timeStr += 's';
+		} 
+		timeStr += ' ';
+	}
+	
+	if(d.getMinutes()!=0){
+		timeStr += d.getMinutes() + ' minute';
+		if(d.getMinutes()>1){
+			timeStr += 's';
+		} 
+		timeStr += ' ';
+	}
+	
+	if(d.getSeconds()!=0 && d.getHours()==0){
+		timeStr += d.getSeconds() + ' second';
+		if(d.getSeconds()>1){
+			timeStr += 's';
+		} 
+		timeStr += ' ';
+	}
+	
+	if(timeStr != ''){
+		timeStr += 'ago';
+	}
+	
+	lastSyncText = 'Last synced on : ' + timeStr;
 } else {
 	lastSyncText = 'Last synced on : NA';
 }
@@ -82,7 +111,7 @@ var updateBtn = Ti.UI.createButton({
 	left : 0,
 	width : 100,
 	height : 50,
-	title : 'Update'
+	title : 'Sync Data'
 });
 updateBtn.addEventListener('click', function() {
 	win_about.close();

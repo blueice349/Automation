@@ -15,7 +15,7 @@ Ti.include('/main_windows/create_or_edit_node.js');
 
 //Current window's instance
 var win2 = Ti.UI.currentWindow;
-win2.backgroundColor = '#EEEEEE';
+win2.backgroundColor = '#FFFFFF';
 
 var toolActInd = Ti.UI.createActivityIndicator();
 toolActInd.font = {fontFamily:'Helvetica Neue', fontSize:15,fontWeight:'bold'};
@@ -142,7 +142,8 @@ var listView = Titanium.UI.createTableView({
 	//height : '80%',
 	bottom: '60',
 	scrollable: true,
-	zIndex: 999
+	zIndex: 999,
+	separatorColor: '#BDBDBD'
 });
 
 var elements = db.execute('SELECT * FROM bundles');
@@ -208,7 +209,9 @@ while ( elements.isValidRow() ){
 			description : description,
 			name_table  : name_table,
 			show_plus 	: show_plus,
-			className	: 'menu_row' // this is to optimize the rendering
+			className	: 'menu_row', // this is to optimize the rendering
+			selectionStyle : app_permissions.can_view?1:0,
+			backgroundSelectedColor: app_permissions.can_view?'#BDBDBD':'#00000000'
 		});
 		
 		var icon = Titanium.UI.createImageView({
@@ -231,7 +234,8 @@ while ( elements.isValidRow() ){
 			width:'83%',
 			textAlign:'left',
 			left:58,
-			height:'auto'
+			height:'auto',
+			color: '#000'
 		});
 
 		var plus =  Titanium.UI.createButton({
@@ -313,7 +317,7 @@ listView.addEventListener('click',function(e){
 				win_new.mode = 0;
 				win_new.picked = win2.picked;
 				win_new.region_form = 0;
-				win_new.backgroundColor = "#EEEEEE";
+				win_new.backgroundColor = "#CCCCCC";
 				win_new.nameSelected = 'Fill Details...';
 				win_new.app_permissions = app_permissions;
 				win_new.addEventListener('focus', function(){
@@ -456,7 +460,7 @@ activity.onCreateOptionsMenu = function(e) {
     var menu = e.menu;
 
 	var menuItem = menu.add({ 
-		title: 'Update',
+		title: 'Sync Data',
 		order: 0
 	});
 	menuItem.setIcon('/images/item1.png');
@@ -715,7 +719,7 @@ if(PLATFORM == 'android'){
 	
 	actions_view.addEventListener('click', function(){
 		var postDialog = Titanium.UI.createOptionDialog();
-		postDialog.options = ['Update', 'Display Draft', 'About', 'cancel'];
+		postDialog.options = ['Sync Data', 'Display Draft', 'About', 'cancel'];
 		postDialog.cancel = 3;
 		postDialog.show();
 
