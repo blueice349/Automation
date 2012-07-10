@@ -33,6 +33,7 @@ var OFF_BY = 5*60;
 var db_display;
 var no_data_fieldsArr = [];
 var doneButton = null;
+var saveCounter = 0;
 
 var ONE_MB = 1048576;
 
@@ -148,8 +149,8 @@ function adjustView(counter, top ){
 
 }
 
-
 function keep_info(_flag_info, pass_it, new_time) {
+	saveCounter += 1 ;
 	Ti.API.info("--------------------Inside keep_info--------------------");
 	var a = Titanium.UI.createAlertDialog({
 		title : 'Omadi',
@@ -239,58 +240,62 @@ function keep_info(_flag_info, pass_it, new_time) {
 		if(!content[k]) {
 			continue;
 		}
-
-		//validating license plate and vin value entered by user against restritions
-		for(var r in restrictions) {
-			var accountRestricted = restrictions[r].restrict_entire_account;
-			if(content[k].field_name == 'license_plate___plate') {
-				if(accountRestricted != null && accountRestricted == "1") {
-					a.message = "The selected account is restricted from any parking enforcement activity.";
-					a.show();
-					return;
-				} else {
-					var license_plate = content[k].value;
-					var restricted_license_plate = restrictions[r].license_plate;
-					if(license_plate != null && restricted_license_plate != null) {
-						license_plate = license_plate.toLowerCase().replace(/o/g, '0');
-						restricted_license_plate = restricted_license_plate.toLowerCase().replace(/o/g, '0');
-
-						if(license_plate == restricted_license_plate) {
-							var term_data = db_check_restrictions.execute("SELECT name FROM term_data WHERE tid = " + restrictions[r].vehicle_color);
-
-							a.message = term_data.getFieldByName('name') + " " + restrictions[r].vehicle_make + " " + restrictions[r].vehicle_model + " - " + restrictions[r].license_plate + " is currently restricted for the account entered.";
-							a.show();
-							term_data.close();
-							return;
+		if(saveCounter == 1 && (win.mode == 0 || _flag_info == 'draft')) {
+			//validating license plate and vin value entered by user against restritions
+			for(var r in restrictions) {
+				var accountRestricted = restrictions[r].restrict_entire_account;
+				if(content[k].field_name == 'license_plate___plate') {
+					if(accountRestricted != null && accountRestricted == "1") {
+						a.message = "The selected account is restricted from any parking enforcement activity.";
+						a.show();
+						return;
+					} else {
+						var license_plate = content[k].value;
+						var restricted_license_plate = restrictions[r].license_plate;
+						if(license_plate != null && restricted_license_plate != null) {
+							license_plate = license_plate.toLowerCase().replace(/o/g, '0');
+							restricted_license_plate = restricted_license_plate.toLowerCase().replace(/o/g, '0');
+	
+							if(license_plate == restricted_license_plate) {
+								var term_data = db_check_restrictions.execute("SELECT name FROM term_data WHERE tid = " + restrictions[r].vehicle_color);
+	
+								a.message = term_data.getFieldByName('name') + " " + restrictions[r].vehicle_make + " " + restrictions[r].vehicle_model + " - " + restrictions[r].license_plate + " is currently restricted for the account entered.";
+								a.show();
+								term_data.close();
+								return;
+							}
 						}
 					}
+	
 				}
-
-			}
-
-			if(content[k].field_name == 'vin') {
-				if(accountRestricted != null && accountRestricted == "1") {
-					a.message = "The selected account is restricted from any parking enforcement activity.";
-					a.show();
-					return;
-				} else {
-					var vin = content[k].value;
-					var restricted_vin = restrictions[r].vin;
-					if(vin != null && restricted_vin != null) {
-						if(vin == restricted_vin) {
-							var term_data = db_check_restrictions.execute("SELECT name FROM term_data WHERE tid = " + restrictions[r].vehicle_color);
-
-							a.message = term_data.getFieldByName('name') + " " + restrictions[r].vehicle_make + " " + restrictions[r].vehicle_model + " - " + restrictions[r].vin + " is currently restricted for the account entered.";
-							a.show();
-							term_data.close();
-							return;
+	
+				if(content[k].field_name == 'vin') {
+					if(accountRestricted != null && accountRestricted == "1") {
+						a.message = "The selected account is restricted from any parking enforcement activity.";
+						a.show();
+						return;
+					} else {
+						var vin = content[k].value;
+						var restricted_vin = restrictions[r].vin;
+						if(vin != null && restricted_vin != null) {
+							if(vin == restricted_vin) {
+								var term_data = db_check_restrictions.execute("SELECT name FROM term_data WHERE tid = " + restrictions[r].vehicle_color);
+	
+								a.message = term_data.getFieldByName('name') + " " + restrictions[r].vehicle_make + " " + restrictions[r].vehicle_model + " - " + restrictions[r].vin + " is currently restricted for the account entered.";
+								a.show();
+								term_data.close();
+								return;
+							}
 						}
 					}
+	
 				}
-
 			}
 		}
-	}
+	
+	}	
+
+	
 	db_check_restrictions.close();
 
 	if ((count_fields > 0) && (_flag_info != "draft")) {
@@ -456,53 +461,55 @@ function keep_info(_flag_info, pass_it, new_time) {
 			}
 
 			//validating license plate and vin value entered by user against restritions
-			for (var r in restrictions) {
-				var accountRestricted = restrictions[r].restrict_entire_account;
-				if (content[j].field_name == 'license_plate___plate') {
-					if (accountRestricted != null && accountRestricted == "1") {
-						hideIndicator();
-						a.message = "The selected account is restricted from any parking enforcement activity.";
-						a.show();
-						return;
-					} else {
-						var license_plate = content[j].value;
-						var restricted_license_plate = restrictions[r].license_plate;
-						if (license_plate != null && restricted_license_plate != null) {
-							license_plate = license_plate.toLowerCase().replace(/o/g, '0');
-							restricted_license_plate = restricted_license_plate.toLowerCase().replace(/o/g, '0');
-
-							if (license_plate == restricted_license_plate) {
-								hideIndicator();
-								a.message = restrictions[r].vehicle_color + restrictions[r].vehicle_make + restrictions[r].vehicle_model + " - " + restrictions[r].license_plate + " is currently restricted for the account entered.";
-								a.show();
-								return;
+			if(saveCounter==1 && (win.mode==0 || _flag_info=='draft')){	
+				for (var r in restrictions) {
+					var accountRestricted = restrictions[r].restrict_entire_account;
+					if (content[j].field_name == 'license_plate___plate') {
+						if (accountRestricted != null && accountRestricted == "1") {
+							hideIndicator();
+							a.message = "The selected account is restricted from any parking enforcement activity.";
+							a.show();
+							return;
+						} else {
+							var license_plate = content[j].value;
+							var restricted_license_plate = restrictions[r].license_plate;
+							if (license_plate != null && restricted_license_plate != null) {
+								license_plate = license_plate.toLowerCase().replace(/o/g, '0');
+								restricted_license_plate = restricted_license_plate.toLowerCase().replace(/o/g, '0');
+	
+								if (license_plate == restricted_license_plate) {
+									hideIndicator();
+									a.message = restrictions[r].vehicle_color + restrictions[r].vehicle_make + restrictions[r].vehicle_model + " - " + restrictions[r].license_plate + " is currently restricted for the account entered.";
+									a.show();
+									return;
+								}
 							}
 						}
+	
 					}
-
-				}
- 
-				if (content[j].field_name == 'vin') {
-					if (accountRestricted != null && accountRestricted == "1") {
-						hideIndicator();
-						a.message = "The selected account is restricted from any parking enforcement activity.";
-						a.show();
-						return;
-					} else {
-						var vin = content[j].value;
-						var restricted_vin = restrictions[r].vin;
-						if (vin != null && restricted_vin != null) {
-							if (vin == restricted_vin) {
-								hideIndicator();
-								a.message = restrictions[r].vehicle_color + restrictions[r].vehicle_make + restrictions[r].vehicle_model + " - " + restrictions[r].vin + " is currently restricted for the account entered.";
-								a.show();
-								return;
+	 
+					if (content[j].field_name == 'vin') {
+						if (accountRestricted != null && accountRestricted == "1") {
+							hideIndicator();
+							a.message = "The selected account is restricted from any parking enforcement activity.";
+							a.show();
+							return;
+						} else {
+							var vin = content[j].value;
+							var restricted_vin = restrictions[r].vin;
+							if (vin != null && restricted_vin != null) {
+								if (vin == restricted_vin) {
+									hideIndicator();
+									a.message = restrictions[r].vehicle_color + restrictions[r].vehicle_make + restrictions[r].vehicle_model + " - " + restrictions[r].vin + " is currently restricted for the account entered.";
+									a.show();
+									return;
+								}
 							}
 						}
+	
 					}
-
 				}
-			}
+			}	
 
 			if (content[j].is_title === true) {
 				if (title_to_node.charAt(0) == "") {
@@ -1317,485 +1324,6 @@ function display_omadi_time(obj) {
 	win_wid.open();
 }
 
-
-
-// function display_widget(obj) {
-// 
-	// var win_wid = Ti.UI.createWindow({
-		// backgroundColor : "#000",
-		// opacity : 0.9
-	// });
-// 
-	// var widget = obj.widget;
-	// var settings = obj.settings
-	// Ti.API.info('====>> Widget settings = ' + widget.settings['time']);
-// 
-	// var tit_picker = Ti.UI.createLabel({
-		// top : 0,
-		// width : '100%',
-		// height : '10%',
-		// backgroundColor : '#FFF',
-		// color : '#000',
-		// textAlign : 'center',
-		// font : {
-			// fontWeight : 'bold'
-		// },
-		// text : obj.title_picker
-	// });
-	// win_wid.add(tit_picker);
-// 
-	// // call function display_widget
-	// if (widget.settings['time'] != "1") {
-// 
-		// //Get current
-		// var currentDate = obj.currentDate;
-		// var day = currentDate.getDate();
-		// var month = currentDate.getMonth();
-		// var year = currentDate.getFullYear();
-// 
-		// //Min
-		// var minDate = new Date();
-		// minDate.setFullYear(year - 5);
-		// minDate.setMonth(0);
-		// minDate.setDate(1);
-// 
-		// //Max
-		// var maxDate = new Date();
-		// maxDate.setFullYear(year + 5);
-		// maxDate.setMonth(11);
-		// maxDate.setDate(31);
-// 
-		// //Current
-		// var value_date = new Date();
-		// value_date.setFullYear(year);
-		// value_date.setMonth(month);
-		// value_date.setDate(day);
-// 
-		// obj.update_it = true;
-// 
-		// //Update timezone
-		// obj.timezone = obj.currentDate.getTimezoneOffset() * 60 * 1000;
-// 
-		// //discover if is GMT+ or GMT-
-		// obj.timezone = obj.timezone * verify_UTC(obj.currentDate);
-// 
-		// //Refresh GMT value
-		// obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone;
-		// Ti.API.info('TIMEZONE : ' + obj.timezone);
-		// Ti.API.info('Date : ' + obj.currentDate);
-// 
-		// var date_picker = Titanium.UI.createPicker({
-			// borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-			// value : obj.currentDate,
-			// font : {
-				// fontSize : 18
-			// },
-			// type : Ti.UI.PICKER_TYPE_DATE,
-			// minDate : minDate,
-			// maxDate : maxDate,
-			// report : obj.currentDate,
-			// color : '#000000'
-		// });
-		// date_picker.selectionIndicator = true;
-// 
-		// Ti.API.info('Value: ' + obj.value);
-// 
-		// date_picker.addEventListener('change', function(e) {
-			// e.source.report = e.value;
-			// //Update timezone
-			// obj.timezone = e.source.report.getTimezoneOffset() * 60 * 1000;
-			// //discover if is GMT+ or GMT-
-			// obj.timezone = obj.timezone * verify_UTC(e.source.report);
-		// });
-		// //Add fields:
-		// win_wid.add(date_picker);
-// 
-		// var done = Ti.UI.createButton({
-			// title : 'Done',
-			// bottom : 10,
-			// width : '35%',
-			// left : '10%',
-			// height : '10%'
-		// });
-// 
-		// var cancel = Ti.UI.createButton({
-			// title : 'Cancel',
-			// bottom : 10,
-			// width : '35%',
-			// left : '55%',
-			// height : '10%'
-		// });
-// 
-		// win_wid.add(done);
-		// win_wid.add(cancel);
-// 
-		// done.addEventListener('click', function() {
-			// obj.currentDate = date_picker.report;
-			// obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone ;
-			// Ti.API.info('Date : ' + obj.currentDate);
-			// Ti.API.info('Value: ' + obj.value);
-// 
-			// var f_date = obj.currentDate.getDate();
-			// var f_month = months_set[obj.currentDate.getMonth()];
-			// var f_year = obj.currentDate.getFullYear();
-// 
-			// obj.text = f_month + " / " + f_date + " / " + f_year;
-			// changedContentValue(obj);
-			// noDataChecboxEnableDisable(obj, obj.reffer_index);
-			// win_wid.close();
-		// });
-// 
-		// cancel.addEventListener('click', function() {
-			// if (obj.value == null) {
-				// obj.update_it = false;
-			// }
-			// win_wid.close();
-		// });
-	// } else {
-		// //Composed field
-		// // Date picker
-		// // Time picker
-		// // For current Titanium Studio version (1.8), Android doesn't supply such pre build API. Here we create it
-// 
-		// obj.update_it = true;
-// 
-		// //Update timezone
-		// obj.timezone = obj.currentDate.getTimezoneOffset() * 60 * 1000;
-		// Ti.API.info('Hours : ' + obj.currentDate.getHours());
-		// Ti.API.info('UTC Hour : ' + obj.currentDate.getUTCHours());
-// 
-		// //discover if is GMT+ or GMT-
-		// obj.timezone = obj.timezone * verify_UTC(obj.currentDate);
-		// //Refresh GMT value
-		// obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone;
-		// Ti.API.info('TIMEZONE : ' + obj.timezone);
-		// Ti.API.info('Date : ' + obj.currentDate);
-// 
-		// //Get current
-		// var currentDate = obj.currentDate;
-		// var year = currentDate.getFullYear();
-// 
-		// //Min
-		// var minDate = new Date();
-		// minDate.setFullYear(year - 5);
-		// minDate.setMonth(0);
-		// minDate.setDate(1);
-// 
-		// //Max
-		// var maxDate = new Date();
-		// maxDate.setFullYear(year + 5);
-		// maxDate.setMonth(11);
-		// maxDate.setDate(31);
-// 
-		// if (PLATFORM == 'android'){
-			// var date_picker = Titanium.UI.createPicker({
-				// borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-				// value : obj.currentDate,
-				// font : {
-					// fontSize : 18
-				// },
-				// type : Ti.UI.PICKER_TYPE_DATE,
-				// minDate : minDate,
-				// maxDate : maxDate,
-				// report : obj.currentDate,
-				// color : '#000000',
-				// top : '12%'
-			// });
-			// date_picker.selectionIndicator = true;
-// 	
-			// /*
-			 // * Time picker
-			 // */
-			// var time_picker = Titanium.UI.createPicker({
-				// borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-				// value : obj.currentDate,
-				// font : {
-					// fontSize : 18
-				// },
-				// report : obj.currentDate,
-				// type : Ti.UI.PICKER_TYPE_TIME,
-				// color : '#000000',
-				// top : '50%',
-				// timezone : null
-			// });
-			// time_picker.selectionIndicator = true;
-// 	
-			// Ti.API.info('Value: ' + obj.value);
-// 	
-			// date_picker.addEventListener('change', function(e) {
-				// e.source.report = e.value;
-				// //Update timezone
-				// obj.timezone = e.source.report.getTimezoneOffset() * 60 * 1000;
-				// //discover if is GMT+ or GMT-
-				// obj.timezone = obj.timezone * verify_UTC(e.source.report);
-				// Ti.API.info('New Timezone: ' + obj.timezone);
-			// });
-			// //Add field:
-			// win_wid.add(date_picker);
-// 	
-			// time_picker.addEventListener('change', function(e) {
-				// Ti.API.info('Time: ' + e.value);
-				// Ti.API.info('Report: ' + e.source.report);
-// 	
-				// e.source.report = e.value;
-				// //Update timezone
-				// e.source.timezone = e.source.report.getTimezoneOffset() * 60 * 1000;
-				// //discover if is GMT+ or GMT-
-				// e.source.timezone = e.source.timezone * verify_UTC(e.source.report);
-				// Ti.API.info('Timezone for time_picker: ' + e.source.timezone);
-			// });
-			// //Add field:
-			// win_wid.add(time_picker);
-// 	
-			// var done = Ti.UI.createButton({
-				// title : 'Done',
-				// bottom : 10,
-				// width : '35%',
-				// left : '10%',
-				// height : '10%'
-			// });
-// 	
-			// var cancel = Ti.UI.createButton({
-				// title : 'Cancel',
-				// bottom : 10,
-				// width : '35%',
-				// left : '55%',
-				// height : '10%'
-			// });
-// 	
-			// win_wid.add(done);
-			// win_wid.add(cancel);
-// 	
-			// done.addEventListener('click', function() {
-				// var date_value = date_picker.report;
-				// var time_value = time_picker.report;
-// 	
-				// //Day with no second
-				// var date_rest = date_value.getTime() % 86400000;
-// 	
-				// //Local and actual timezone
-				// var local_timezone = time_picker.report.getTimezoneOffset() * 60 * 1000;
-// 	
-				// //discover if is GMT+ or GMT-
-				// local_timezone = local_timezone * verify_UTC(time_picker.report);
-				// var timezone_diff = local_timezone - obj.timezone;
-// 	
-				// var time_rest = (time_value.getTime() + timezone_diff) % 86400000;
-				// date_value = (Math.round(date_value.getTime()) - date_rest);
-				// time_value = (time_rest);
-// 	
-				// var composed_date = date_value + time_value;
-				// var new_date = new Date(composed_date);
-// 	
-				// obj.currentDate = new_date;
-				// obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone;
-				// Ti.API.info('Date : ' + obj.currentDate);
-				// Ti.API.info('Value: ' + obj.value);
-// 	
-				// var f_minute = obj.currentDate.getMinutes();
-				// var f_hour = obj.currentDate.getHours();
-				// var f_date = obj.currentDate.getDate();
-				// var f_month = months_set[obj.currentDate.getMonth()];
-				// var f_year = obj.currentDate.getFullYear();
-// 	
-				// obj.text = f_hour + ":" + form_min(f_minute) + " - " + f_month + " / " + f_date + " / " + f_year;
-				// win_wid.close();
-			// });
-// 	
-			// cancel.addEventListener('click', function() {
-				// if (obj.value == null) {
-					// obj.update_it = false;
-				// }
-				// win_wid.close();
-			// });			
-		// }
-		// else{
-// 
-			// var date_picker = Titanium.UI.createPicker({
-				// borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-				// value : obj.currentDate,
-				// font : {
-					// fontSize : 18
-				// },
-				// type : Ti.UI.PICKER_TYPE_DATE_AND_TIME,
-				// minDate : minDate,
-				// maxDate : maxDate,
-				// report : obj.currentDate,
-				// color : '#000000',
-				// top : '12%'
-			// });
-			// date_picker.selectionIndicator = true;
-// 
-			// Ti.API.info('Value: ' + obj.value);
-// 	
-			// date_picker.addEventListener('change', function(e) {
-				// e.source.report = e.value;
-				// //Update timezone
-				// obj.timezone = e.source.report.getTimezoneOffset() * 60 * 1000;
-				// //discover if is GMT+ or GMT-
-				// obj.timezone = obj.timezone * verify_UTC(e.source.report);
-			// });
-			// //Add fields:
-			// win_wid.add(date_picker);
-// 	
-			// var done = Ti.UI.createButton({
-				// title : 'Done',
-				// bottom : 10,
-				// width : '35%',
-				// left : '10%',
-				// height : '10%'
-			// });
-// 	
-			// var cancel = Ti.UI.createButton({
-				// title : 'Cancel',
-				// bottom : 10,
-				// width : '35%',
-				// left : '55%',
-				// height : '10%'
-			// });
-// 	
-			// win_wid.add(done);
-			// win_wid.add(cancel);
-// 	
-			// done.addEventListener('click', function() {
-				// obj.currentDate = date_picker.report;
-				// obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone;
-				// Ti.API.info('Date : ' + obj.currentDate);
-				// Ti.API.info('Value: ' + obj.value);
-// 	
-				// var f_date = obj.currentDate.getDate();
-				// var f_month = months_set[obj.currentDate.getMonth()];
-				// var f_year = obj.currentDate.getFullYear();
-				// var f_minute = obj.currentDate.getMinutes();
-				// var f_hour = obj.currentDate.getHours();
-// 	
-				// obj.text = f_hour + ":" + form_min(f_minute) + " - " + f_month + " / " + f_date + " / " + f_year;
-// 	
-				// changedContentValue(obj);
-				// noDataChecboxEnableDisable(obj, obj.reffer_index);
-				// win_wid.close();
-			// });
-// 	
-			// cancel.addEventListener('click', function() {
-				// if (obj.value == null) {
-					// obj.update_it = false;
-				// }
-				// win_wid.close();
-			// });	
-		// }
-// 
-	// }
-// 
-	// win_wid.open();
-// 
-// }
-
-// function display_omadi_time(obj) {
-	// var win_wid = Ti.UI.createWindow({
-		// //modal: true,
-		// backgroundColor : "#000",
-		// opacity : 0.9
-	// });
-// 
-	// var widget = obj.widget;
-	// var settings = obj.settings;
-// 
-	// var tit_picker = Ti.UI.createLabel({
-		// top : 0,
-		// width : '100%',
-		// height : '10%',
-		// backgroundColor : '#FFF',
-		// color : '#000',
-		// textAlign : 'center',
-		// font : {
-			// fontWeight : 'bold'
-		// },
-		// text : obj.title_picker
-	// });
-	// win_wid.add(tit_picker);
-// 
-	// obj.update_it = true;
-// 
-	// //Update timezone
-	// obj.timezone = obj.currentDate.getTimezoneOffset() * 60 * 1000;
-// 
-	// //discover if is GMT+ or GMT-
-	// obj.timezone = obj.timezone * verify_UTC(obj.currentDate);
-// 
-	// //Refresh GMT value
-	// obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone ;
-	// Ti.API.info('TIMEZONE : ' + obj.timezone);
-	// Ti.API.info('Date : ' + obj.currentDate);
-// 
-	// var date_picker = Titanium.UI.createPicker({
-		// borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-		// value : obj.currentDate,
-		// font : {
-			// fontSize : 18
-		// },
-		// report : obj.currentDate,
-		// type : Ti.UI.PICKER_TYPE_TIME,
-		// color : '#000000'
-	// });
-	// date_picker.selectionIndicator = true;
-// 
-	// Ti.API.info('Value: ' + obj.value);
-// 
-	// date_picker.addEventListener('change', function(e) {
-		// e.source.report = e.value;
-		// //Update timezone
-		// obj.timezone = e.source.report.getTimezoneOffset() * 60 * 1000;
-		// //discover if is GMT+ or GMT-
-		// obj.timezone = obj.timezone * verify_UTC(e.source.report);
-	// });
-	// //Add fields:
-	// win_wid.add(date_picker);
-// 
-	// var done = Ti.UI.createButton({
-		// title : 'Done',
-		// bottom : 10,
-		// width : '35%',
-		// left : '10%',
-		// height : '10%'
-	// });
-// 
-	// var cancel = Ti.UI.createButton({
-		// title : 'Cancel',
-		// bottom : 10,
-		// width : '35%',
-		// left : '55%',
-		// height : '10%'
-	// });
-// 
-	// win_wid.add(done);
-	// win_wid.add(cancel);
-// 
-	// done.addEventListener('click', function() {
-		// obj.currentDate = date_picker.report;
-		// obj.value = Math.round(obj.currentDate.getTime()) + obj.timezone ;
-		// alert(obj.value);
-		// Ti.API.info('Date : ' + obj.currentDate);
-		// Ti.API.info('Value: ' + obj.value);
-// 
-		// var hours = obj.currentDate.getHours();
-		// var min = obj.currentDate.getMinutes();
-// 
-		// obj.text = hours + ":" + form_min(min);
-		// changedContentValue(obj);
-		// noDataChecboxEnableDisable(obj, obj.reffer_index);
-		// win_wid.close();
-	// });
-// 
-	// cancel.addEventListener('click', function() {
-		// if (obj.value == null) {
-			// obj.update_it = false;
-		// }
-		// win_wid.close();
-	// });
-// 
-	// win_wid.open();
-// }
-
 function open_mult_selector(obj) {
 	var win_wid = Ti.UI.createWindow({
 		//	modal: true,
@@ -2579,7 +2107,8 @@ create_or_edit_node.loadUI = function() {
 											settings : settings,
 											changedFlag : 0,
 											real_ind: count,
-											autocorrect: false
+											autocorrect: false,
+											returnKeyType: Ti.UI.RETURNKEY_DONE
 										});
 									}
 									top += heightValue;
@@ -2919,7 +2448,8 @@ create_or_edit_node.loadUI = function() {
 										settings : settings,
 										changedFlag : 0,
 										real_ind: count,
-										autocorrect: false
+										autocorrect: false,
+										returnKeyType: Ti.UI.RETURNKEY_DONE
 									});
 									top += heightValue;
 
@@ -3024,7 +2554,8 @@ create_or_edit_node.loadUI = function() {
 										reffer_index : reffer_index,
 										settings : settings,
 										changedFlag : 0,
-										autocorrect: false
+										autocorrect: false,
+										returnKeyType: Ti.UI.RETURNKEY_DONE
 									});
 									top += heightValue;
 
@@ -3058,7 +2589,8 @@ create_or_edit_node.loadUI = function() {
 									reffer_index : reffer_index,
 									settings : settings,
 									changedFlag : 0,
-									autocorrect: false
+									autocorrect: false,
+									returnKeyType: Ti.UI.RETURNKEY_DONE
 								});
 								top += heightValue;
 
@@ -3157,7 +2689,8 @@ create_or_edit_node.loadUI = function() {
 										my_min: _min,
 										my_max: _max,
 										real_ind: count,
-										autocorrect: false
+										autocorrect: false,
+										returnKeyType: Ti.UI.RETURNKEY_DONE
 									});
 									if (_max != null){
 										content[count].maxLength = _max;
@@ -3177,19 +2710,13 @@ create_or_edit_node.loadUI = function() {
 												var _a = Titanium.UI.createAlertDialog({
 													title:'Omadi',
 													message: 'The minimum for this field is '+e.source.my_min,
-													buttonNames: ['Edit', 'Clear'],
-													cancel:1
+													buttonNames: ['OK']
 												});
 												
 												_a.show();
 												
 												_a.addEventListener('click', function(evt){
-													if (evt.index != evt.cancel){
-														content[e.source.real_ind].focus();
-													}
-													else{
-														e.source.value = null;
-													}
+													content[e.source.real_ind].focus();
 												});
 												
 											}
@@ -3197,19 +2724,13 @@ create_or_edit_node.loadUI = function() {
 												var _a = Titanium.UI.createAlertDialog({
 													title:'Omadi',
 													message: "The maximum for this field is "+e.source.my_max,
-													buttonNames: ['Edit', 'Clear'],
-													cancel:1
+													buttonNames: ['OK']
 												});
 												
 												_a.show();
 												
 												_a.addEventListener('click', function(evt){
-													if (evt.index != evt.cancel){
-														content[e.source.real_ind].focus();
-													}
-													else{
-														e.source.value = null;
-													}
+													content[e.source.real_ind].focus();
 												});
 											}
 											else{
@@ -3221,19 +2742,13 @@ create_or_edit_node.loadUI = function() {
 												var _a = Titanium.UI.createAlertDialog({
 													title:'Omadi',
 													message: "The maximum for this field is "+e.source.my_max,
-													buttonNames: ['Edit', 'Clear'],
-													cancel:1
+													buttonNames: ['OK']
 												});
 												
 												_a.show();
 												
 												_a.addEventListener('click', function(evt){
-													if (evt.index != evt.cancel){
-														content[e.source.real_ind].focus();
-													}
-													else{
-														e.source.value = null;
-													}
+													content[e.source.real_ind].focus();
 												});
 											}
 											else{
@@ -3245,19 +2760,13 @@ create_or_edit_node.loadUI = function() {
 												var _a = Titanium.UI.createAlertDialog({
 													title:'Omadi',
 													message: 'The minimum for this field is '+e.source.my_min,
-													buttonNames: ['Edit', 'Clear'],
-													cancel:1
+													buttonNames: ['OK']
 												});
 												
 												_a.show();
 												
 												_a.addEventListener('click', function(evt){
-													if (evt.index != evt.cancel){
-														content[e.source.real_ind].focus();
-													}
-													else{
-														e.source.value = null;
-													}
+													content[e.source.real_ind].focus();
 												});
 											}
 											else{
@@ -3295,7 +2804,8 @@ create_or_edit_node.loadUI = function() {
 									my_min: _min,
 									my_max: _max,
 									real_ind: count,
-									autocorrect: false
+									autocorrect: false,
+									returnKeyType: Ti.UI.RETURNKEY_DONE
 								});
 								
 								if (_max != null){
@@ -3317,19 +2827,13 @@ create_or_edit_node.loadUI = function() {
 												var _a = Titanium.UI.createAlertDialog({
 													title:'Omadi',
 													message: 'The minimum for this field is '+e.source.my_min,
-													buttonNames: ['Edit', 'Clear'],
-													cancel:1
+													buttonNames: ['OK']
 												});
 												
 												_a.show();
 												
 												_a.addEventListener('click', function(evt){
-													if (evt.index != evt.cancel){
-														content[e.source.real_ind].focus();
-													}
-													else{
-														e.source.value = null;
-													}
+													content[e.source.real_ind].focus();
 												});
 												
 											}
@@ -3337,19 +2841,13 @@ create_or_edit_node.loadUI = function() {
 												var _a = Titanium.UI.createAlertDialog({
 													title:'Omadi',
 													message: "The maximum for this field is "+e.source.my_max,
-													buttonNames: ['Edit', 'Clear'],
-													cancel:1
+													buttonNames: ['OK']
 												});
 												
 												_a.show();
 												
 												_a.addEventListener('click', function(evt){
-													if (evt.index != evt.cancel){
-														content[e.source.real_ind].focus();
-													}
-													else{
-														e.source.value = null;
-													}
+													content[e.source.real_ind].focus();
 												});
 											}
 											else{
@@ -3361,19 +2859,13 @@ create_or_edit_node.loadUI = function() {
 												var _a = Titanium.UI.createAlertDialog({
 													title:'Omadi',
 													message: "The maximum for this field is "+e.source.my_max,
-													buttonNames: ['Edit', 'Clear'],
-													cancel:1
+													buttonNames: ['OK']
 												});
 												
 												_a.show();
 												
 												_a.addEventListener('click', function(evt){
-													if (evt.index != evt.cancel){
-														content[e.source.real_ind].focus();
-													}
-													else{
-														e.source.value = null;
-													}
+													content[e.source.real_ind].focus();
 												});
 											}
 											else{
@@ -3385,19 +2877,13 @@ create_or_edit_node.loadUI = function() {
 												var _a = Titanium.UI.createAlertDialog({
 													title:'Omadi',
 													message: 'The minimum for this field is '+e.source.my_min,
-													buttonNames: ['Edit', 'Clear'],
-													cancel:1
+													buttonNames: ['OK']
 												});
 												
 												_a.show();
 												
 												_a.addEventListener('click', function(evt){
-													if (evt.index != evt.cancel){
-														content[e.source.real_ind].focus();
-													}
-													else{
-														e.source.value = null;
-													}
+													content[e.source.real_ind].focus();
 												});
 											}
 											else{
@@ -3496,7 +2982,8 @@ create_or_edit_node.loadUI = function() {
 										changedFlag : 0,
 										my_min: _min,
 										my_max: _max,
-										real_ind: count										
+										real_ind: count,
+										returnKeyType: Ti.UI.RETURNKEY_DONE										
 									});
 									
 									if (_max != null){
@@ -3517,19 +3004,13 @@ create_or_edit_node.loadUI = function() {
 												var _a = Titanium.UI.createAlertDialog({
 													title:'Omadi',
 													message: 'The minimum for this field is '+e.source.my_min,
-													buttonNames: ['Edit', 'Clear'],
-													cancel:1
+													buttonNames: ['OK']
 												});
 												
 												_a.show();
 												
 												_a.addEventListener('click', function(evt){
-													if (evt.index != evt.cancel){
-														content[e.source.real_ind].focus();
-													}
-													else{
-														e.source.value = null;
-													}
+													content[e.source.real_ind].focus();
 												});
 												
 											}
@@ -3537,19 +3018,13 @@ create_or_edit_node.loadUI = function() {
 												var _a = Titanium.UI.createAlertDialog({
 													title:'Omadi',
 													message: "The maximum for this field is "+e.source.my_max,
-													buttonNames: ['Edit', 'Clear'],
-													cancel:1
+													buttonNames: ['OK']
 												});
 												
 												_a.show();
 												
 												_a.addEventListener('click', function(evt){
-													if (evt.index != evt.cancel){
-														content[e.source.real_ind].focus();
-													}
-													else{
-														e.source.value = null;
-													}
+													content[e.source.real_ind].focus();
 												});
 											}
 											else{
@@ -3561,19 +3036,13 @@ create_or_edit_node.loadUI = function() {
 												var _a = Titanium.UI.createAlertDialog({
 													title:'Omadi',
 													message: "The maximum for this field is "+e.source.my_max,
-													buttonNames: ['Edit', 'Clear'],
-													cancel:1
+													buttonNames: ['OK']
 												});
 												
 												_a.show();
 												
 												_a.addEventListener('click', function(evt){
-													if (evt.index != evt.cancel){
-														content[e.source.real_ind].focus();
-													}
-													else{
-														e.source.value = null;
-													}
+													content[e.source.real_ind].focus();
 												});
 											}
 											else{
@@ -3585,19 +3054,13 @@ create_or_edit_node.loadUI = function() {
 												var _a = Titanium.UI.createAlertDialog({
 													title:'Omadi',
 													message: 'The minimum for this field is '+e.source.my_min,
-													buttonNames: ['Edit', 'Clear'],
-													cancel:1
+													buttonNames: ['OK']
 												});
 												
 												_a.show();
 												
 												_a.addEventListener('click', function(evt){
-													if (evt.index != evt.cancel){
-														content[e.source.real_ind].focus();
-													}
-													else{
-														e.source.value = null;
-													}
+													content[e.source.real_ind].focus();
 												});
 											}
 											else{
@@ -3631,7 +3094,8 @@ create_or_edit_node.loadUI = function() {
 									changedFlag : 0,
 									my_min: _min,
 									my_max: _max,
-									real_ind: count
+									real_ind: count,
+									returnKeyType: Ti.UI.RETURNKEY_DONE
 								});
 								
 								if (_max != null){
@@ -3653,19 +3117,13 @@ create_or_edit_node.loadUI = function() {
 											var _a = Titanium.UI.createAlertDialog({
 												title:'Omadi',
 												message: 'The minimum for this field is '+e.source.my_min,
-												buttonNames: ['Edit', 'Clear'],
-												cancel:1
+												buttonNames: ['OK']
 											});
 											
 											_a.show();
 											
 											_a.addEventListener('click', function(evt){
-												if (evt.index != evt.cancel){
-													content[e.source.real_ind].focus();
-												}
-												else{
-													e.source.value = null;
-												}
+												content[e.source.real_ind].focus();
 											});
 											
 										}
@@ -3673,19 +3131,13 @@ create_or_edit_node.loadUI = function() {
 											var _a = Titanium.UI.createAlertDialog({
 												title:'Omadi',
 												message: "The maximum for this field is "+e.source.my_max,
-												buttonNames: ['Edit', 'Clear'],
-												cancel:1
+												buttonNames: ['OK']
 											});
 											
 											_a.show();
 											
 											_a.addEventListener('click', function(evt){
-												if (evt.index != evt.cancel){
-													content[e.source.real_ind].focus();
-												}
-												else{
-													e.source.value = null;
-												}
+												content[e.source.real_ind].focus();
 											});
 										}
 										else{
@@ -3697,19 +3149,13 @@ create_or_edit_node.loadUI = function() {
 											var _a = Titanium.UI.createAlertDialog({
 												title:'Omadi',
 												message: "The maximum for this field is "+e.source.my_max,
-												buttonNames: ['Edit', 'Clear'],
-												cancel:1
+												buttonNames: ['OK']
 											});
 											
 											_a.show();
 											
 											_a.addEventListener('click', function(evt){
-												if (evt.index != evt.cancel){
-													content[e.source.real_ind].focus();
-												}
-												else{
-													e.source.value = null;
-												}
+												content[e.source.real_ind].focus();
 											});
 										}
 										else{
@@ -3721,19 +3167,13 @@ create_or_edit_node.loadUI = function() {
 											var _a = Titanium.UI.createAlertDialog({
 												title:'Omadi',
 												message: 'The minimum for this field is '+e.source.my_min,
-												buttonNames: ['Edit', 'Clear'],
-												cancel:1
+												buttonNames: ['OK']
 											});
 											
 											_a.show();
 											
 											_a.addEventListener('click', function(evt){
-												if (evt.index != evt.cancel){
-													content[e.source.real_ind].focus();
-												}
-												else{
-													e.source.value = null;
-												}
+												content[e.source.real_ind].focus();
 											});
 										}
 										else{
@@ -3845,7 +3285,8 @@ create_or_edit_node.loadUI = function() {
 										reffer_index : reffer_index,
 										settings : settings,
 										changedFlag : 0,
-										autocorrect: false
+										autocorrect: false,
+										returnKeyType: Ti.UI.RETURNKEY_DONE
 									});
 									top += heightValue;
 
@@ -3879,7 +3320,8 @@ create_or_edit_node.loadUI = function() {
 									reffer_index : reffer_index,
 									settings : settings,
 									changedFlag : 0,
-									autocorrect: false
+									autocorrect: false,
+									returnKeyType: Ti.UI.RETURNKEY_DONE
 								});
 								top += heightValue;
 
@@ -3887,7 +3329,6 @@ create_or_edit_node.loadUI = function() {
 								content[count].addEventListener('change', function(e) {
 									changedContentValue(e.source);
 									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
 								});
 								count++;
 							}
@@ -4339,7 +3780,8 @@ create_or_edit_node.loadUI = function() {
 										reffer_index : reffer_index,
 										settings : settings,
 										changedFlag : 0,
-										autocorrect: false
+										autocorrect: false,
+										returnKeyType: Ti.UI.RETURNKEY_DONE
 									});
 									top += heightValue;
 
@@ -4374,7 +3816,8 @@ create_or_edit_node.loadUI = function() {
 									reffer_index : reffer_index,
 									settings : settings,
 									changedFlag : 0,
-									autocorrect: false
+									autocorrect: false,
+									returnKeyType: Ti.UI.RETURNKEY_DONE
 								});
 								top += heightValue;
 
@@ -4865,7 +4308,8 @@ create_or_edit_node.loadUI = function() {
 											first_time : true,
 											reffer_index : reffer_index,
 											settings : settings,
-											changedFlag : 0
+											changedFlag : 0,
+											returnKeyType: Ti.UI.RETURNKEY_DONE
 										});
 
 										//AUTOCOMPLETE TABLE
@@ -5039,7 +4483,8 @@ create_or_edit_node.loadUI = function() {
 										parent_name : parent_name,
 										defaultField : defaultField,
 										settings : settings,
-										changedFlag : 0
+										changedFlag : 0,
+										returnKeyType: Ti.UI.RETURNKEY_DONE
 									});
 
 									//AUTOCOMPLETE TABLE
@@ -5272,7 +4717,8 @@ create_or_edit_node.loadUI = function() {
 										settings : settings,
 										changedFlag : 0,
 										my_index : count,
-										autocorrect: false
+										autocorrect: false,
+										returnKeyType: Ti.UI.RETURNKEY_DONE
 									});
 
 									//AUTOCOMPLETE TABLE
@@ -5425,7 +4871,8 @@ create_or_edit_node.loadUI = function() {
 									settings : settings,
 									changedFlag : 0,
 									my_index: count,
-									autocorrect: false
+									autocorrect: false,
+									returnKeyType: Ti.UI.RETURNKEY_DONE
 								});
 
 								//AUTOCOMPLETE TABLE
@@ -6680,7 +6127,8 @@ create_or_edit_node.loadUI = function() {
 										reffer_index : reffer_index,
 										settings : settings,
 										changedFlag : 0,
-										autocorrect: false
+										autocorrect: false,
+										returnKeyType: Ti.UI.RETURNKEY_DONE
 									});
 									top += heightValue;
 
@@ -6736,7 +6184,8 @@ create_or_edit_node.loadUI = function() {
 									changedFlag : 0,
 									i_name: i_name,
 									my_index: count,
-									autocorrect: false
+									autocorrect: false,
+									returnKeyType: Ti.UI.RETURNKEY_DONE
 								});
 
 								//AUTOCOMPLETE TABLE
@@ -7124,6 +6573,7 @@ create_or_edit_node.loadUI = function() {
 								is_title : field_arr[index_label][index_size].is_title,
 								cardinality : settings.cardinality,
 								value : field_arr[index_label][index_size].actual_value,
+								label : field_arr[index_label][index_size].label,
 								reffer_index : reffer_index,
 								settings : settings,
 								layout : 'vertical',
@@ -7693,7 +7143,7 @@ function createCalFieldTableFormat(single_content, db_display, contentArr) {
 	var heightCellView = 40;
 	var widthCellView = Ti.Platform.displayCaps.platformWidth - 30;
 	
-	if (row_values.length > 0) {
+	if (row_values.length > 1) {
 		var cal_value = 0;
 		var total_rows = [];
 		var row = "";
@@ -7731,7 +7181,6 @@ function createCalFieldTableFormat(single_content, db_display, contentArr) {
 		single_content.add(row);
 		total_rows.push(row);
 		heightView += heightCellView + 1;
-	
 		
 		//RECALCLATE BUTTON
 		if(single_content.settings.include_recalculate_button!=null && single_content.settings.include_recalculate_button==1){
@@ -7762,6 +7211,43 @@ function createCalFieldTableFormat(single_content, db_display, contentArr) {
 		single_content.total_rows = total_rows;
 		single_content.value = result[0].final_value;
 
+	}else if(row_values.length == 1){
+		cal_value = result[0].final_value;
+		typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
+		isNegative = (cal_value < 0) ? true : false;
+		var cal_value_str = applyNumberFormat(single_content, cal_value);
+		cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
+		label[single_content.reffer_index].text = single_content.label + ": " + cal_value_str;
+		
+		//RECALCLATE BUTTON
+		if(single_content.settings.include_recalculate_button!=null && single_content.settings.include_recalculate_button==1){
+			var row = Ti.UI.createView({
+				layout : 'horizontal',
+				height : heightCellView,
+				width : '100%',
+				top : 5
+			});
+			row.calculateBtn = Ti.UI.createButton({
+				title : "Recalculate",
+				height : 35,
+				width : 100,
+				color : '#000',
+				font : {
+					fontFamily : 'Helvetica Neue',
+					fontSize : 14
+				},
+				idx : single_content.reffer_index
+			});
+			row.add(row.calculateBtn);
+			single_content.add(row);
+			heightView += heightCellView + 5;
+			row.calculateBtn.addEventListener('click', function(e) {
+				reCalculate(content[e.source.idx]);
+			}); 
+		}
+		single_content.total_rows = total_rows;
+		single_content.value = result[0].final_value;
+		
 	}
 	single_content.height = heightView;
 }
@@ -7793,9 +7279,9 @@ function reCalculate(singel_content) {
 		var result = _calculation_field_get_values(win, db_display, singel_content, entity, content);
 		var row_values = result[0].rows;
 		var total_rows = singel_content.total_rows;
-		if (row_values.length > 0) {
-			var cal_value = 0;
-			var cal_value_str = "";
+		var cal_value = 0;
+		var cal_value_str = "";
+		if (row_values.length > 1) {
 			var isNegative = false;
 			for ( idx = 0; idx < row_values.length; idx++) {
 				cal_value = row_values[idx].value;
@@ -7837,6 +7323,30 @@ function reCalculate(singel_content) {
 				row.value.text = "  " + cal_value_str;
 			}
 		
+		}else if(row_values.length == 1){
+			cal_value = result[0].final_value;
+			typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
+			isNegative = (cal_value < 0) ? true : false;
+			var cal_value_str = applyNumberFormat(singel_content, cal_value);
+			cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
+			label[singel_content.reffer_index].text = singel_content.label + ": " + cal_value_str;;
+			
+			var currently_saved_value = db_display.execute('SELECT '+singel_content.field_name +' FROM ' + win.type + ' WHERE nid = "' + win.nid + '" ');
+			if(currently_saved_value.rowCount > 0){
+				if(Number(cal_value) != Number(currently_saved_value.fieldByName(singel_content.field_name))){
+					cal_value = currently_saved_value.fieldByName(singel_content.field_name);
+					cal_value = (cal_value==null || cal_value=="")?0:Number(cal_value);
+					typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
+					isNegative = (cal_value < 0) ? true : false;
+					cal_value_str = applyNumberFormat(singel_content, cal_value);
+					cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
+				
+					label[singel_content.reffer_index].text +=  "; Orig: " + cal_value_str;
+				}
+				
+			}
+			
+			
 		}
 	} catch(e) {
 	}
