@@ -153,13 +153,6 @@ var jsonLogin = JSON.parse(win2.result) ;
 //Retrieves username
 var name = jsonLogin.user.realname;
 var roles = jsonLogin.user.roles;
-var app_permissions =  {
-	"can_create": false,
-	"can_update": false,
-	"all_permissions": false,
-	"can_view": false
-}
-
 
 var _data_rows = new Array();
 while ( elements.isValidRow() ){
@@ -170,6 +163,13 @@ while ( elements.isValidRow() ){
 	var _is_disabled = elements.fieldByName("disabled");
 	var _nd 		 = elements.fieldByName("_data");
 	var show_plus 	 = false;
+	var app_permissions = {
+		"can_create" : false,
+		"can_update" : false,
+		"all_permissions" : false,
+		"can_view" : false
+	}
+
 
 	var node_type_json = JSON.parse(_nd);
 	
@@ -209,6 +209,7 @@ while ( elements.isValidRow() ){
 			description : description,
 			name_table  : name_table,
 			show_plus 	: show_plus,
+			app_permissions: app_permissions,
 			className	: 'menu_row', // this is to optimize the rendering
 			selectionStyle : app_permissions.can_view?1:0,
 			backgroundSelectedColor: app_permissions.can_view?'#BDBDBD':'#00000000'
@@ -289,7 +290,7 @@ listView.addEventListener('click',function(e){
 	Ti.API.info("row click on table view. index = "+e.index+", row_desc = "+e.row.description+", section = "+e.section+", source_desc="+e.source.description);
 	var timer_int_list  =  setInterval(function(){
 		if (isUpdating()){
-			if(app_permissions.can_view == false && e.source.is_plus == false){
+			if(e.row.app_permissions.can_view == false && e.source.is_plus != true){
 				return; 
 			}
 			if(PLATFORM == 'android'){
@@ -319,7 +320,7 @@ listView.addEventListener('click',function(e){
 				win_new.region_form = 0;
 				win_new.backgroundColor = "#CCCCCC";
 				win_new.nameSelected = 'Fill Details...';
-				win_new.app_permissions = app_permissions;
+				win_new.app_permissions = e.row.app_permissions;
 				win_new.addEventListener('focus', function(){
 					unlock_screen();
 				});
@@ -331,7 +332,7 @@ listView.addEventListener('click',function(e){
 				// });
 			}
 			else{
-				if(app_permissions.can_view == true){
+				if(e.row.app_permissions.can_view == true){
 					var win_new = Titanium.UI.createWindow({  
 						title: e.row.display,
 						fullscreen: false,
@@ -343,7 +344,7 @@ listView.addEventListener('click',function(e){
 						show_plus: e.row.show_plus
 					});
 					win_new.picked 	 = win2.picked;
-					win_new.app_permissions = app_permissions;
+					win_new.app_permissions = e.row.app_permissions;
 					win_new.addEventListener('focus', function(){
 						unlock_screen();
 					});

@@ -2839,6 +2839,14 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							var _is_disabled = n_bund.fieldByName("disabled");
 							var _nd 		 = n_bund.fieldByName("_data");
 							var show_plus 	 = false;	
+							var app_permissions = {
+								"can_create" : false,
+								"can_update" : false,
+								"all_permissions" : false,
+								"can_view" : false
+							}
+
+
 							var node_type_json = JSON.parse(_nd);
 							
 							for (var _l in node_type_json.permissions){
@@ -2847,6 +2855,19 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 										Ti.API.info("====>> "+_l);
 										if ( node_type_json.permissions[_l]["can create"] ||  node_type_json.permissions[_l]["all_permissions"]){
 											show_plus = true;
+											app_permissions.can_create = true;
+										}
+										
+										if(node_type_json.permissions[_l]["all_permissions"]){
+											app_permissions.all_permissions = true;
+										}
+										
+										if(node_type_json.permissions[_l]["can update"] ||  node_type_json.permissions[_l]["all_permissions"]){
+											app_permissions.can_update = true;
+										}
+										
+										if(node_type_json.permissions[_l]["can view"] ||  node_type_json.permissions[_l]["all_permissions"]){
+											app_permissions.can_view = true;
 										}
 									}
 								}
@@ -2862,6 +2883,8 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									display     : display,
 									description : description,
 									name_table  : name_table,
+									show_plus 	: show_plus,
+									app_permissions: app_permissions,
 									className	: 'menu_row' // this is to optimize the rendering
 								});
 								

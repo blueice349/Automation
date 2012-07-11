@@ -12,13 +12,6 @@ var goToWindow = Titanium.UI.createWindow({
 	notOpen: false
 });
 
-var logWindow = Titanium.UI.createWindow({  
-	fullscreen: false,
-	title:'Omadi CRM',	
-	url : 'backToFirstStep.js',
-	backgroundColor: '#000'
-});
-
 goToWindow.log    = indLog.log;
 goToWindow.picked = indLog.picked;
 goToWindow.result = indLog.result;
@@ -28,7 +21,7 @@ indLog.addEventListener('android:back', function() {
 	Ti.API.info("Back to the step before");
 
 	//Avoids memory leaking problems:
-	goToWindow.open();
+	//goToWindow.open();
 	indLog.close();
 });
 
@@ -85,8 +78,6 @@ labelOut.addEventListener('click',function (){
 			}
 			Ti.App.fireEvent('free_login');
 			
-			
-			//logWindow.open();
 			indLog._parent.close();
 			hideIndicator();
 			indLog.log.abort();
@@ -107,8 +98,8 @@ labelOut.addEventListener('click',function (){
 });
 
 labelIn.addEventListener('click',function (){
-	goToWindow.open();
-	indLog.close({opacity:0,duration:0});		
+	//goToWindow.open();
+	indLog.close();		
 });
 
 

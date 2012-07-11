@@ -340,11 +340,18 @@ function keep_info(_flag_info, pass_it, new_time) {
 						Ti.API.info(tp+'  =  '+content[_i].value);
 					}
 				}
-				
-				keep_info(_flag_info, true, actual_time);
+				try{
+					keep_info(_flag_info, true, actual_time);
+				}catch(e){
+					alert('Error Tracking: ' + e);//To catch error to resolve issue #916
+				}
 			}
 			else{
-				keep_info(_flag_info, true, null);
+				try {
+					keep_info(_flag_info, true, null);
+				} catch(e) {
+					alert('Error Tracking: ' + e);//To catch error to resolve issue #916
+				}
 			}
 		});
 
@@ -4400,6 +4407,7 @@ create_or_edit_node.loadUI = function() {
 													}
 													e.source.autocomplete_table.setData(table_data);
 													e.source.autocomplete_table.scrollToTop(0, {animated: false});
+													viewContent.scrollTo(0,e.source.top);
 													e.source.autocomplete_table.visible = true;
 												} else {
 													e.source.autocomplete_table.visible = false;
@@ -4576,6 +4584,7 @@ create_or_edit_node.loadUI = function() {
 												}
 												e.source.autocomplete_table.setData(table_data);
 												e.source.autocomplete_table.scrollToTop(0, {animated: false});
+												viewContent.scrollTo(0,e.source.top);
 												e.source.autocomplete_table.visible = true;
 											} else {
 												e.source.autocomplete_table.visible = false;
@@ -4815,6 +4824,7 @@ create_or_edit_node.loadUI = function() {
 												}
 												e.source.autocomplete_table.setData(table_data);
 												e.source.autocomplete_table.scrollToTop(0, {animated: false});
+												viewContent.scrollTo(0,e.source.top);
 												e.source.autocomplete_table.visible = true;
 											} else {
 												e.source.autocomplete_table.visible = false;
@@ -4972,6 +4982,7 @@ create_or_edit_node.loadUI = function() {
 											}
 											e.source.autocomplete_table.setData(table_data);
 											e.source.autocomplete_table.scrollToTop(0, {animated: false});
+											viewContent.scrollTo(0,e.source.top);
 											e.source.autocomplete_table.visible = true;
 										} else {
 											e.source.autocomplete_table.visible = false;
@@ -6279,6 +6290,7 @@ create_or_edit_node.loadUI = function() {
 											}
 											e.source.autocomplete_table.setData(table_data);
 											e.source.autocomplete_table.scrollToTop(0, {animated: false});
+											viewContent.scrollTo(0,e.source.top);
 											e.source.autocomplete_table.visible = true;
 										} else {
 											e.source.autocomplete_table.visible = false;
@@ -6788,11 +6800,19 @@ create_or_edit_node.loadUI = function() {
 			// MENU - EVENTS
 			//======================================
 			menu_third.addEventListener("click", function(e) {
-				keep_info('draft', false);
+				try{
+					keep_info('draft', false);
+				} catch(e) {
+					alert('Error Tracking: ' + e);//To catch error to resolve issue #916
+				}
 			});
 
 			menu_second.addEventListener("click", function(e) {
-				keep_info('normal', false);
+				try{
+					keep_info('normal', false);
+				} catch(e) {
+					alert('Error Tracking: ' + e);//To catch error to resolve issue #916
+				}
 			});
 		};
 	} else {
@@ -6982,9 +7002,19 @@ function bottomButtons(actualWindow) {
 
 				postDialog.addEventListener('click', function(ev) {
 					if (ev.index == 0) {
-						keep_info('normal', false);
+						try {
+							keep_info('normal', false);
+						} catch(e) {
+							alert('Error Tracking: ' + e);
+							//To catch error to resolve issue #916
+						}
 					} else if (ev.index == 1) {
-						keep_info('draft', false);
+						try {
+							keep_info('draft', false);
+						} catch(e) {
+							alert('Error Tracking: ' + e);
+							//To catch error to resolve issue #916
+						}
 					}
 				});
 			});

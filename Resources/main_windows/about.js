@@ -58,25 +58,47 @@ var lastSyncText;
 if(ls != null) {
 	var timeStr = '';
 	var d = new Date(ls);
-	if(d.getHours()!=0){
-		timeStr += d.getHours() + ' hour';
-		if(d.getHours()>1){
+	var cd = new Date();
+	
+	var timeDiff = cd - d;// time difference in ms
+	var days = parseInt(timeDiff/(1000*60*60*24));//get days
+	timeDiff = Math.round(timeDiff%(1000*60*60*24));
+	
+	var hours = parseInt(timeDiff/(1000*60*60))// get hours
+	timeDiff = Math.round(timeDiff%(1000*60*60));
+	
+	var minutes = parseInt(timeDiff/(1000*60))// get minutes
+	timeDiff = Math.round(timeDiff%(1000*60));
+	
+	var seconds = parseInt(timeDiff/1000) // get seconds
+	
+	if(days!=0){
+		timeStr += days + ' day';
+		if(days>1){
 			timeStr += 's';
 		} 
 		timeStr += ' ';
 	}
 	
-	if(d.getMinutes()!=0){
-		timeStr += d.getMinutes() + ' minute';
-		if(d.getMinutes()>1){
+	if(hours!=0){
+		timeStr += hours + ' hour';
+		if(hours>1){
 			timeStr += 's';
 		} 
 		timeStr += ' ';
 	}
 	
-	if(d.getSeconds()!=0 && d.getHours()==0){
-		timeStr += d.getSeconds() + ' second';
-		if(d.getSeconds()>1){
+	if(minutes!=0 && days==0){
+		timeStr += minutes + ' minute';
+		if(minutes>1){
+			timeStr += 's';
+		} 
+		timeStr += ' ';
+	}
+	
+	if(seconds!=0 && hours==0){
+		timeStr += seconds + ' second';
+		if(seconds>1){
 			timeStr += 's';
 		} 
 		timeStr += ' ';
@@ -111,7 +133,7 @@ var updateBtn = Ti.UI.createButton({
 	left : 0,
 	width : 100,
 	height : 50,
-	title : 'Sync Data'
+	title : 'Update'
 });
 updateBtn.addEventListener('click', function() {
 	win_about.close();
