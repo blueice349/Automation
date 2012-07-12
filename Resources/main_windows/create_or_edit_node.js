@@ -54,7 +54,7 @@ create_or_edit_node.getWindow = function() {
 			top : 0,
 			height : '100%',
 			width : '100%',
-			backgroundColor : '#BBBBBB',
+			backgroundColor : '#EEEEEE',
 			opacity : 1
 		});
 		win.add(resultView);
@@ -64,7 +64,7 @@ create_or_edit_node.getWindow = function() {
 			top : '0',
 			height : '10%',
 			width : '100%',
-			backgroundColor : '#BBBBBB',
+			backgroundColor : '#EEEEEE',
 			zIndex : 11
 		});
 		resultView.add(header);
@@ -83,7 +83,7 @@ create_or_edit_node.getWindow = function() {
 			bottom : 0,
 			contentHeight : 'auto',
 			top : "11%",
-			backgroundColor : '#BBBBBB',
+			backgroundColor : '#EEEEEE',
 			showHorizontalScrollIndicator : false,
 			showVerticalScrollIndicator : true,
 			opacity : 1,
@@ -101,7 +101,7 @@ create_or_edit_node.getWindow = function() {
 			height : '92%',
 			width : '100%',
 			bottom: 0,
-			backgroundColor : '#BBBBBB',
+			backgroundColor : '#EEEEEE',
 			opacity : 1
 		});
 		win.add(resultView);		
@@ -109,7 +109,7 @@ create_or_edit_node.getWindow = function() {
 		viewContent = Ti.UI.createScrollView({
 			contentHeight : 'auto',
 			//height : "98%",
-			backgroundColor : '#BBBBBB',
+			backgroundColor : '#EEEEEE',
 			showHorizontalScrollIndicator : false,
 			showVerticalScrollIndicator : true,
 			opacity : 1,
@@ -1118,7 +1118,6 @@ function display_widget(obj) {
 		maxDate.setMonth(11);
 		maxDate.setDate(31);
 
-		if (PLATFORM == 'android'){
 			var date_picker = Titanium.UI.createPicker({
 				useSpinner : true,
 				borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
@@ -1150,39 +1149,25 @@ function display_widget(obj) {
 				timezone : null
 			});
 			time_picker.selectionIndicator = true;
-			date_picker.addEventListener('change', function(e) {
+			 time_picker.date_picker = date_picker;
+          	 date_picker.time_picker = time_picker;
+       
+	    	 date_picker.addEventListener('change', function(e) {
+				e.source.time_picker.value = e.value;
 				changedDate = e.value;
-			});
-			//Add field:
-			win_wid.add(date_picker);
-	
-			time_picker.addEventListener('change', function(e) {
-				changedTime = e.value;
-			});
-			//Add field:
-			win_wid.add(time_picker);
-	}else{
-		var date_picker = Titanium.UI.createPicker({
-				borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-				value : obj.currentDate,
-				font : {
-					fontSize : 18
-				},
-				type : Ti.UI.PICKER_TYPE_DATE_AND_TIME,
-				minDate : minDate,
-				maxDate : maxDate,
-				report : obj.currentDate,
-				color : '#000000',
-				top : '20%'
-			});
-			date_picker.selectionIndicator = true;
-			
-			date_picker.addEventListener('change', function(e) {
 				iOSDateCal = e.value;
-			});
-			//Add field:
-			win_wid.add(date_picker);
-	}
+			 }); 
+
+             //Add field:
+             win_wid.add(date_picker);
+ 
+            time_picker.addEventListener('change', function(e) {
+	              e.source.date_picker.value = e.value;
+	              changedTime = e.value;
+	              iOSDateCal = e.value;
+            });
+            //Add field:
+            win_wid.add(time_picker);
 			var done = Ti.UI.createButton({
 				title : 'Done',
 				bottom : 10,
@@ -1308,7 +1293,6 @@ function display_omadi_time(obj) {
 	done.addEventListener('click', function() {
 		obj.currentDate = date_picker.report;
 		obj.value = Math.round(obj.currentDate.getTime());
-		alert(obj.value);
 		Ti.API.info('Date : ' + obj.currentDate);
 		Ti.API.info('Value: ' + obj.value);
 
@@ -1610,14 +1594,16 @@ create_or_edit_node.loadUI = function() {
 				borderRadius: 2,
 				top : y,
 				backgroundColor : '#FFFFFF',
-				zIndex : 0
+				zIndex : 0,
+				ellipsize: true,
+				wordWrap: false
 			});
 			y = y + 40;
 
 			var regionView = Ti.UI.createView({
 				width : '100%',
 				top : y,
-				backgroundColor : '#BBBBBB',
+				backgroundColor : '#EEEEEE',
 				zIndex : 0
 			});
 
@@ -2712,76 +2698,78 @@ create_or_edit_node.loadUI = function() {
 									
 									content[count].addEventListener('blur', function(e) {
 										Ti.API.info(e.source.value.length+' or '+e.value.length+' Field number ==> min: '+e.source.my_min+' max: '+e.source.my_max);
-										if (e.source.my_max != null && e.source.my_min != null){
-											if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
-												var _a = Titanium.UI.createAlertDialog({
-													title:'Omadi',
-													message: 'The minimum for this field is '+e.source.my_min,
-													buttonNames: ['OK']
-												});
-												
-												_a.show();
-												
-												_a.addEventListener('click', function(evt){
-													content[e.source.real_ind].focus();
-												});
-												
+										if(e.source.value != null && e.source.value!=""){	
+											if (e.source.my_max != null && e.source.my_min != null){
+												if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
+													var _a = Titanium.UI.createAlertDialog({
+														title:'Omadi',
+														message: 'The minimum for this field is '+e.source.my_min,
+														buttonNames: ['OK']
+													});
+													
+													_a.show();
+													
+													_a.addEventListener('click', function(evt){
+														content[e.source.real_ind].focus();
+													});
+													
+												}
+												else if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max) ) {
+													var _a = Titanium.UI.createAlertDialog({
+														title:'Omadi',
+														message: "The maximum for this field is "+e.source.my_max,
+														buttonNames: ['OK']
+													});
+													
+													_a.show();
+													
+													_a.addEventListener('click', function(evt){
+														content[e.source.real_ind].focus();
+													});
+												}
+												else{
+													//value is ok
+												}
 											}
-											else if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max) ) {
-												var _a = Titanium.UI.createAlertDialog({
-													title:'Omadi',
-													message: "The maximum for this field is "+e.source.my_max,
-													buttonNames: ['OK']
-												});
-												
-												_a.show();
-												
-												_a.addEventListener('click', function(evt){
-													content[e.source.real_ind].focus();
-												});
+											else if (e.source.my_max != null){
+												if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
+													var _a = Titanium.UI.createAlertDialog({
+														title:'Omadi',
+														message: "The maximum for this field is "+e.source.my_max,
+														buttonNames: ['OK']
+													});
+													
+													_a.show();
+													
+													_a.addEventListener('click', function(evt){
+														content[e.source.real_ind].focus();
+													});
+												}
+												else{
+													//value is ok
+												}
+											}
+											else if (e.source.my_min != null){
+												if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
+													var _a = Titanium.UI.createAlertDialog({
+														title:'Omadi',
+														message: 'The minimum for this field is '+e.source.my_min,
+														buttonNames: ['OK']
+													});
+													
+													_a.show();
+													
+													_a.addEventListener('click', function(evt){
+														content[e.source.real_ind].focus();
+													});
+												}
+												else{
+													//value is ok
+												}
 											}
 											else{
-												//value is ok
+												//No min or max sets
 											}
-										}
-										else if (e.source.my_max != null){
-											if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
-												var _a = Titanium.UI.createAlertDialog({
-													title:'Omadi',
-													message: "The maximum for this field is "+e.source.my_max,
-													buttonNames: ['OK']
-												});
-												
-												_a.show();
-												
-												_a.addEventListener('click', function(evt){
-													content[e.source.real_ind].focus();
-												});
-											}
-											else{
-												//value is ok
-											}
-										}
-										else if (e.source.my_min != null){
-											if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
-												var _a = Titanium.UI.createAlertDialog({
-													title:'Omadi',
-													message: 'The minimum for this field is '+e.source.my_min,
-													buttonNames: ['OK']
-												});
-												
-												_a.show();
-												
-												_a.addEventListener('click', function(evt){
-													content[e.source.real_ind].focus();
-												});
-											}
-											else{
-												//value is ok
-											}
-										}
-										else{
-											//No min or max sets
 										}
 									});						
 									count++;
@@ -2829,76 +2817,78 @@ create_or_edit_node.loadUI = function() {
 								
 									content[count].addEventListener('blur', function(e) {
 										Ti.API.info(e.source.value.length+' or '+e.value.length+' Field number ==> min: '+e.source.my_min+' max: '+e.source.my_max);
-										if (e.source.my_max != null && e.source.my_min != null){
-											if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
-												var _a = Titanium.UI.createAlertDialog({
-													title:'Omadi',
-													message: 'The minimum for this field is '+e.source.my_min,
-													buttonNames: ['OK']
-												});
-												
-												_a.show();
-												
-												_a.addEventListener('click', function(evt){
-													content[e.source.real_ind].focus();
-												});
-												
+										if(e.source.value != null && e.source.value!=""){
+											if (e.source.my_max != null && e.source.my_min != null){
+												if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
+													var _a = Titanium.UI.createAlertDialog({
+														title:'Omadi',
+														message: 'The minimum for this field is '+e.source.my_min,
+														buttonNames: ['OK']
+													});
+													
+													_a.show();
+													
+													_a.addEventListener('click', function(evt){
+														content[e.source.real_ind].focus();
+													});
+													
+												}
+												else if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max) ) {
+													var _a = Titanium.UI.createAlertDialog({
+														title:'Omadi',
+														message: "The maximum for this field is "+e.source.my_max,
+														buttonNames: ['OK']
+													});
+													
+													_a.show();
+													
+													_a.addEventListener('click', function(evt){
+														content[e.source.real_ind].focus();
+													});
+												}
+												else{
+													//value is ok
+												}
 											}
-											else if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max) ) {
-												var _a = Titanium.UI.createAlertDialog({
-													title:'Omadi',
-													message: "The maximum for this field is "+e.source.my_max,
-													buttonNames: ['OK']
-												});
-												
-												_a.show();
-												
-												_a.addEventListener('click', function(evt){
-													content[e.source.real_ind].focus();
-												});
+											else if (e.source.my_max != null){
+												if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
+													var _a = Titanium.UI.createAlertDialog({
+														title:'Omadi',
+														message: "The maximum for this field is "+e.source.my_max,
+														buttonNames: ['OK']
+													});
+													
+													_a.show();
+													
+													_a.addEventListener('click', function(evt){
+														content[e.source.real_ind].focus();
+													});
+												}
+												else{
+													//value is ok
+												}
+											}
+											else if (e.source.my_min != null){
+												if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
+													var _a = Titanium.UI.createAlertDialog({
+														title:'Omadi',
+														message: 'The minimum for this field is '+e.source.my_min,
+														buttonNames: ['OK']
+													});
+													
+													_a.show();
+													
+													_a.addEventListener('click', function(evt){
+														content[e.source.real_ind].focus();
+													});
+												}
+												else{
+													//value is ok
+												}
 											}
 											else{
-												//value is ok
-											}
-										}
-										else if (e.source.my_max != null){
-											if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
-												var _a = Titanium.UI.createAlertDialog({
-													title:'Omadi',
-													message: "The maximum for this field is "+e.source.my_max,
-													buttonNames: ['OK']
-												});
-												
-												_a.show();
-												
-												_a.addEventListener('click', function(evt){
-													content[e.source.real_ind].focus();
-												});
-											}
-											else{
-												//value is ok
-											}
-										}
-										else if (e.source.my_min != null){
-											if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
-												var _a = Titanium.UI.createAlertDialog({
-													title:'Omadi',
-													message: 'The minimum for this field is '+e.source.my_min,
-													buttonNames: ['OK']
-												});
-												
-												_a.show();
-												
-												_a.addEventListener('click', function(evt){
-													content[e.source.real_ind].focus();
-												});
-											}
-											else{
-												//value is ok
-											}
-										}
-										else{
 											//No min or max sets
+										}
 										}
 									});										
 								count++;
@@ -3006,6 +2996,122 @@ create_or_edit_node.loadUI = function() {
 									
 									content[count].addEventListener('blur', function(e) {
 										Ti.API.info(e.source.value.length+' or '+e.value.length+' Field number ==> min: '+e.source.my_min+' max: '+e.source.my_max);
+										if(e.source.value != null && e.source.value!=""){	
+											if (e.source.my_max != null && e.source.my_min != null){
+												if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
+													var _a = Titanium.UI.createAlertDialog({
+														title:'Omadi',
+														message: 'The minimum for this field is '+e.source.my_min,
+														buttonNames: ['OK']
+													});
+													
+													_a.show();
+													
+													_a.addEventListener('click', function(evt){
+														content[e.source.real_ind].focus();
+													});
+													
+												}
+												else if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max) ) {
+													var _a = Titanium.UI.createAlertDialog({
+														title:'Omadi',
+														message: "The maximum for this field is "+e.source.my_max,
+														buttonNames: ['OK']
+													});
+													
+													_a.show();
+													
+													_a.addEventListener('click', function(evt){
+														content[e.source.real_ind].focus();
+													});
+												}
+												else{
+													//value is ok
+												}
+											}
+											else if (e.source.my_max != null){
+												if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
+													var _a = Titanium.UI.createAlertDialog({
+														title:'Omadi',
+														message: "The maximum for this field is "+e.source.my_max,
+														buttonNames: ['OK']
+													});
+													
+													_a.show();
+													
+													_a.addEventListener('click', function(evt){
+														content[e.source.real_ind].focus();
+													});
+												}
+												else{
+													//value is ok
+												}
+											}
+											else if (e.source.my_min != null){
+												if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
+													var _a = Titanium.UI.createAlertDialog({
+														title:'Omadi',
+														message: 'The minimum for this field is '+e.source.my_min,
+														buttonNames: ['OK']
+													});
+													
+													_a.show();
+													
+													_a.addEventListener('click', function(evt){
+														content[e.source.real_ind].focus();
+													});
+												}
+												else{
+													//value is ok
+												}
+											}
+											else{
+												//No min or max sets
+											}
+										}
+									});									
+									count++;
+								}
+							} else {
+								content[count] = Ti.UI.createTextField({
+									hintText : field_arr[index_label][index_size].label,
+									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+									textAlign : 'left',
+									width : Ti.Platform.displayCaps.platformWidth - 30,
+									height : 100,
+									color : '#000000',
+									top : top,
+									field_type : field_arr[index_label][index_size].type,
+									field_name : field_arr[index_label][index_size].field_name,
+									required : field_arr[index_label][index_size].required,
+									is_title : field_arr[index_label][index_size].is_title,
+									composed_obj : false,
+									cardinality : settings.cardinality,
+									value : field_arr[index_label][index_size].actual_value,
+									reffer_index : reffer_index,
+									settings : settings,
+									changedFlag : 0,
+									my_min: _min,
+									my_max: _max,
+									real_ind: count,
+									returnKeyType: Ti.UI.RETURNKEY_DONE
+								});
+								
+								if (_max != null){
+									content[count].maxLength = _max;
+								}
+								
+								top += 100;
+
+								regionView.add(content[count]);
+								content[count].addEventListener('change', function(e) {
+									changedContentValue(e.source);
+									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+								});
+								
+								content[count].addEventListener('blur', function(e) {
+									Ti.API.info(e.source.value.length+' or '+e.value.length+' Field number ==> min: '+e.source.my_min+' max: '+e.source.my_max);
+									if(e.source.value != null && e.source.value!=""){
 										if (e.source.my_max != null && e.source.my_min != null){
 											if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
 												var _a = Titanium.UI.createAlertDialog({
@@ -3077,118 +3183,6 @@ create_or_edit_node.loadUI = function() {
 										else{
 											//No min or max sets
 										}
-									});									
-									count++;
-								}
-							} else {
-								content[count] = Ti.UI.createTextField({
-									hintText : field_arr[index_label][index_size].label,
-									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-									textAlign : 'left',
-									width : Ti.Platform.displayCaps.platformWidth - 30,
-									height : 100,
-									color : '#000000',
-									top : top,
-									field_type : field_arr[index_label][index_size].type,
-									field_name : field_arr[index_label][index_size].field_name,
-									required : field_arr[index_label][index_size].required,
-									is_title : field_arr[index_label][index_size].is_title,
-									composed_obj : false,
-									cardinality : settings.cardinality,
-									value : field_arr[index_label][index_size].actual_value,
-									reffer_index : reffer_index,
-									settings : settings,
-									changedFlag : 0,
-									my_min: _min,
-									my_max: _max,
-									real_ind: count,
-									returnKeyType: Ti.UI.RETURNKEY_DONE
-								});
-								
-								if (_max != null){
-									content[count].maxLength = _max;
-								}
-								
-								top += 100;
-
-								regionView.add(content[count]);
-								content[count].addEventListener('change', function(e) {
-									changedContentValue(e.source);
-									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-								});
-								
-								content[count].addEventListener('blur', function(e) {
-									Ti.API.info(e.source.value.length+' or '+e.value.length+' Field number ==> min: '+e.source.my_min+' max: '+e.source.my_max);
-									if (e.source.my_max != null && e.source.my_min != null){
-										if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
-											var _a = Titanium.UI.createAlertDialog({
-												title:'Omadi',
-												message: 'The minimum for this field is '+e.source.my_min,
-												buttonNames: ['OK']
-											});
-											
-											_a.show();
-											
-											_a.addEventListener('click', function(evt){
-												content[e.source.real_ind].focus();
-											});
-											
-										}
-										else if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max) ) {
-											var _a = Titanium.UI.createAlertDialog({
-												title:'Omadi',
-												message: "The maximum for this field is "+e.source.my_max,
-												buttonNames: ['OK']
-											});
-											
-											_a.show();
-											
-											_a.addEventListener('click', function(evt){
-												content[e.source.real_ind].focus();
-											});
-										}
-										else{
-											//value is ok
-										}
-									}
-									else if (e.source.my_max != null){
-										if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
-											var _a = Titanium.UI.createAlertDialog({
-												title:'Omadi',
-												message: "The maximum for this field is "+e.source.my_max,
-												buttonNames: ['OK']
-											});
-											
-											_a.show();
-											
-											_a.addEventListener('click', function(evt){
-												content[e.source.real_ind].focus();
-											});
-										}
-										else{
-											//value is ok
-										}
-									}
-									else if (e.source.my_min != null){
-										if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
-											var _a = Titanium.UI.createAlertDialog({
-												title:'Omadi',
-												message: 'The minimum for this field is '+e.source.my_min,
-												buttonNames: ['OK']
-											});
-											
-											_a.show();
-											
-											_a.addEventListener('click', function(evt){
-												content[e.source.real_ind].focus();
-											});
-										}
-										else{
-											//value is ok
-										}
-									}
-									else{
-										//No min or max sets
 									}
 								});								
 								count++;
@@ -3466,39 +3460,41 @@ create_or_edit_node.loadUI = function() {
 									
 									content[count].addEventListener('blur', function(e) {
 										Ti.API.info(e.source.value+' or '+e.value+' Field number ==> min: '+e.source.my_min+' max: '+e.source.my_max);
-										if (e.source.my_max != null && e.source.my_min != null){
-											if (parseFloat(e.source.value) < parseFloat(e.source.my_min)){
-												alert("The minimum for this field is "+e.source.my_min);
-												e.source.value = null;
+										if(e.source.value != null && e.source.value!=""){
+											if (e.source.my_max != null && e.source.my_min != null){
+												if (parseFloat(e.source.value) < parseFloat(e.source.my_min)){
+													alert("The minimum for this field is "+e.source.my_min);
+													e.source.value = null;
+												}
+												else if ( parseFloat(e.source.value) > parseFloat(e.source.my_max) ) {
+													alert("The maximum for this field is "+e.source.my_max);
+													e.source.value = null;
+												}
+												else{
+													//value is ok
+												}
 											}
-											else if ( parseFloat(e.source.value) > parseFloat(e.source.my_max) ) {
-												alert("The maximum for this field is "+e.source.my_max);
-												e.source.value = null;
+											else if (e.source.my_max != null){
+												if ( parseFloat(e.source.value) > parseFloat(e.source.my_max)) {
+													alert("The maximum for this field is "+e.source.my_max);
+													e.source.value= null;
+												}
+												else{
+													//value is ok
+												}
+											}
+											else if (e.source.my_min != null){
+												if (parseFloat(e.source.value) < parseFloat(e.source.my_min)){
+													alert("The minimum for this field is "+e.source.my_min);
+													e.source.value = null;
+												}
+												else{
+													//value is ok
+												}
 											}
 											else{
-												//value is ok
-											}
-										}
-										else if (e.source.my_max != null){
-											if ( parseFloat(e.source.value) > parseFloat(e.source.my_max)) {
-												alert("The maximum for this field is "+e.source.my_max);
-												e.source.value= null;
-											}
-											else{
-												//value is ok
-											}
-										}
-										else if (e.source.my_min != null){
-											if (parseFloat(e.source.value) < parseFloat(e.source.my_min)){
-												alert("The minimum for this field is "+e.source.my_min);
-												e.source.value = null;
-											}
-											else{
-												//value is ok
-											}
-										}
-										else{
 											//No min or max sets
+										}
 										}
 									});									
 									count++;
@@ -3546,39 +3542,41 @@ create_or_edit_node.loadUI = function() {
 								
 								content[count].addEventListener('blur', function(e) {
 										Ti.API.info(e.source.value+' or '+e.value+' Field number ==> min: '+e.source.my_min+' max: '+e.source.my_max);
-										if (e.source.my_max != null && e.source.my_min != null){
-											if (parseFloat(e.source.value) < parseFloat(e.source.my_min)){
-												alert("The minimum for this field is "+e.source.my_min);
-												e.source.value = null;
+										if(e.source.value != null && e.source.value!=""){		
+											if (e.source.my_max != null && e.source.my_min != null){
+												if (parseFloat(e.source.value) < parseFloat(e.source.my_min)){
+													alert("The minimum for this field is "+e.source.my_min);
+													e.source.value = null;
+												}
+												else if ( parseFloat(e.source.value) > parseFloat(e.source.my_max) ) {
+													alert("The maximum for this field is "+e.source.my_max);
+													e.source.value = null;
+												}
+												else{
+													//value is ok
+												}
 											}
-											else if ( parseFloat(e.source.value) > parseFloat(e.source.my_max) ) {
-												alert("The maximum for this field is "+e.source.my_max);
-												e.source.value = null;
+											else if (e.source.my_max != null){
+												if ( parseFloat(e.source.value) > parseFloat(e.source.my_max)) {
+													alert("The maximum for this field is "+e.source.my_max);
+													e.source.value= null;
+												}
+												else{
+													//value is ok
+												}
+											}
+											else if (e.source.my_min != null){
+												if (parseFloat(e.source.value) < parseFloat(e.source.my_min)){
+													alert("The minimum for this field is "+e.source.my_min);
+													e.source.value = null;
+												}
+												else{
+													//value is ok
+												}
 											}
 											else{
-												//value is ok
-											}
-										}
-										else if (e.source.my_max != null){
-											if ( parseFloat(e.source.value) > parseFloat(e.source.my_max)) {
-												alert("The maximum for this field is "+e.source.my_max);
-												e.source.value= null;
-											}
-											else{
-												//value is ok
-											}
-										}
-										else if (e.source.my_min != null){
-											if (parseFloat(e.source.value) < parseFloat(e.source.my_min)){
-												alert("The minimum for this field is "+e.source.my_min);
-												e.source.value = null;
-											}
-											else{
-												//value is ok
-											}
-										}
-										else{
 											//No min or max sets
+										}
 										}
 									});				
 								
@@ -7178,6 +7176,7 @@ function createCalFieldTableFormat(single_content, db_display, contentArr) {
 		var total_rows = [];
 		var row = "";
 		var data = {};
+		
 		for ( idx = 0; idx < row_values.length; idx++) {
 			data = {"value":row_values[idx].value, "label": row_values[idx].row_label, "weight_label" 	: "","weight_value" 	: "", "color_label": "#545454", "color_value": "#424242"}; 
 			row = createCalculationRow(single_content, heightCellView, widthCellView, data); 
@@ -7877,8 +7876,28 @@ function applyNumberFormat(single_content, cal_value){
 					}
 				}); 
 				break;
+			default:
+				cal_value_str = Math.abs(cal_value).toCurrency({
+						"thousands_separator" : ",",
+						"currency_symbol" : "",
+						"symbol_position" : "front",
+						"use_fractions" : {
+							"fractions" : 2,
+							"fraction_separator" : "."
+						}
+				}); 	
 
 		}
+	}else{
+		cal_value_str = Math.abs(cal_value).toCurrency({
+						"thousands_separator" : ",",
+						"currency_symbol" : "",
+						"symbol_position" : "front",
+						"use_fractions" : {
+							"fractions" : 2,
+							"fraction_separator" : "."
+						}
+				}); 	
 	}
 	return cal_value_str;
 			

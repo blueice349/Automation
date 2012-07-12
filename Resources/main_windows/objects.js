@@ -260,7 +260,7 @@ function openCreateNodeScreen(){
 	win_new.mode = 0;
 	win_new.picked = win.picked;
 	win_new.region_form = 0;
-	win_new.backgroundColor = "#CCCCCC";
+	win_new.backgroundColor = "#EEEEEE";
 	win_new.nameSelected = 'Fill Details...';
 	win_new.open();
 	setTimeout(function(){create_or_edit_node.loadUI();}, 100);

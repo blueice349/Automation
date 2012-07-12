@@ -1263,61 +1263,59 @@ function createCalculationTableFormat(content , db_display, contentArr) {
 	var heightView = 0;
 	var heightCellView = 40;
 	var widthCellView = Ti.Platform.displayCaps.platformWidth - 30
-	if(row_values.length > 1 && result[0].final_value>0) {
+	if(row_values.length > 1) {
 		var cal_value = 0;
 		var cal_value_str = "";
 		var isNegative = false;
 		for( idx = 0; idx < row_values.length; idx++) {
-			if(row_values[idx].value != 0 && row_values[idx].value != "0"){
-				cal_value = row_values[idx].value;
-				typeof(cal_value) == 'number' ? null : typeof(cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null; //Check type of the data
-				isNegative = (cal_value < 0) ? true : false; // Is negative. And if it is -ve then write in this value in (brackets).
-				cal_value_str =  applyNumberFormat(content, cal_value);
-	            cal_value_str = (isNegative)?"(" + cal_value_str + ")":cal_value_str; // Adding brackets over -ve value.
-				
-				var row = Ti.UI.createView({
-					layout 		: 'horizontal',
-					height 		: heightCellView,
-					width 		: widthCellView,
-					top 		: 1,
-				});
-				var row_label = Ti.UI.createLabel({
-					text 			: row_values[idx].row_label + ":  ",
-					textAlign 		: 'right',
-					width 			:  widthCellView/2-1,
-					color 			: 'white',
-					font 			: {
-										fontFamily 	: 'Helvetica Neue',
-										fontSize 	: 14
-								  	},
-					color 			: '#545454',
-					height 			: heightCellView,
-					wordWrap 		: false,
-					ellipsize 		: true,
-					backgroundColor : '#FFF'
-	
-				});
-				var value = Ti.UI.createLabel({
-					text 			: "  " + cal_value_str,
-					textAlign 		: 'left',
-					width 			:  widthCellView/2,
-					left 			: 1,
-					color 			: 'white',
-					font 			: {
-										fontFamily : 'Helvetica Neue',
-										fontSize : 14
-								  	},
-					color 			: '#424242',
-					height 			: heightCellView,
-					wordWrap 		: false,
-					ellipsize 		: true,
-					backgroundColor : '#FFF'
-				});
-				row.add(row_label);
-				row.add(value);
-				content.add(row);
-				heightView += heightCellView + 1;
-			}
+			cal_value = row_values[idx].value;
+			typeof(cal_value) == 'number' ? null : typeof(cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null; //Check type of the data
+			isNegative = (cal_value < 0) ? true : false; // Is negative. And if it is -ve then write in this value in (brackets).
+			cal_value_str =  applyNumberFormat(content, cal_value);
+            cal_value_str = (isNegative)?"(" + cal_value_str + ")":cal_value_str; // Adding brackets over -ve value.
+			
+			var row = Ti.UI.createView({
+				layout 		: 'horizontal',
+				height 		: heightCellView,
+				width 		: widthCellView,
+				top 		: 1,
+			});
+			var row_label = Ti.UI.createLabel({
+				text 			: row_values[idx].row_label + ":  ",
+				textAlign 		: 'right',
+				width 			:  widthCellView/2-1,
+				color 			: 'white',
+				font 			: {
+									fontFamily 	: 'Helvetica Neue',
+									fontSize 	: 14
+							  	},
+				color 			: '#545454',
+				height 			: heightCellView,
+				wordWrap 		: false,
+				ellipsize 		: true,
+				backgroundColor : '#FFF'
+
+			});
+			var value = Ti.UI.createLabel({
+				text 			: "  " + cal_value_str,
+				textAlign 		: 'left',
+				width 			:  widthCellView/2,
+				left 			: 1,
+				color 			: 'white',
+				font 			: {
+									fontFamily : 'Helvetica Neue',
+									fontSize : 14
+							  	},
+				color 			: '#424242',
+				height 			: heightCellView,
+				wordWrap 		: false,
+				ellipsize 		: true,
+				backgroundColor : '#FFF'
+			});
+			row.add(row_label);
+			row.add(value);
+			content.add(row);
+			heightView += heightCellView + 1;
 		}
 
 		cal_value = result[0].final_value;

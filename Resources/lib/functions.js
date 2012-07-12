@@ -2885,7 +2885,9 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									name_table  : name_table,
 									show_plus 	: show_plus,
 									app_permissions: app_permissions,
-									className	: 'menu_row' // this is to optimize the rendering
+									className	: 'menu_row', // this is to optimize the rendering
+									selectionStyle : app_permissions.can_view?1:0,
+									backgroundSelectedColor: app_permissions.can_view?'#BDBDBD':'#00000000'
 								});
 								
 								var icon = Titanium.UI.createImageView({
@@ -2908,7 +2910,8 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									width:'83%',
 									textAlign:'left',
 									left:58,
-									height:'auto'
+									height:'auto',
+									color: '#000'
 								});
 								
 								var plus_a =  Titanium.UI.createButton({
