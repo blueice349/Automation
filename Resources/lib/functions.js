@@ -4699,16 +4699,39 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 										}
 									}
 								} else {
-									Ti.API.info('here--------A.25');
+									Ti.API.info('here--------A.25----1');
 									// Like between 8:00PM - 4:00AM
 									for(var value_index in node_values) {
 									Ti.API.info('here--------A.26');	
 										if(node_values[value_index] >= compare_times[value_index] || node_values[value_index] < compare_times2[value_index]) {
-											Ti.API.info('here--------A.27');
+											Ti.API.info('here--------A.26---1');
 											row_matches[criteria_index] = true;
 										}
 									}
 								}
+							}
+						} else if(search_operator == '__blank'){
+							Ti.API.info('here--------A.26---2');
+							row_matches[criteria_index] = true;
+							for(var value_index in node_values) {
+								Ti.API.info('here--------A.26---3');
+								node_value = node_values[value_index];
+								if(node_value != null && node_value != "") {
+									Ti.API.info('here--------A.26---4');
+									row_matches[criteria_index] = false;
+								}
+
+							}
+						} else if(search_operator == '__filled'){
+							Ti.API.info('here--------A.26---5');
+							for(var value_index in node_values) {
+								Ti.API.info('here--------A.26---6');
+								node_value = node_values[value_index];
+								if(node_value != null && node_value != "") {
+									Ti.API.info('here--------A.26---7');
+									row_matches[criteria_index] = true;
+								}
+
 							}
 						} else if(search_operator == 'weekday') {
 							Ti.API.info('here--------A.27' + search_value.weekday);
@@ -4726,9 +4749,9 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 							}
 	
 							for(var value_index in node_values) {
-								Ti.API.info('here--------A.31' + node_values[value_index] + ", " + date('w', node_values[value_index]), weekdays);
-								if(in_array(date('w', node_values[value_index]), weekdays)) {
-									Ti.API.info('here--------A.32' + date('w', node_values[value_index]), weekdays);
+								Ti.API.info('here--------A.31' + node_values[value_index] + ", " + date('w', Number(node_values[value_index])), weekdays);
+								if(in_array(date('w', Number(node_values[value_index])), weekdays)) {
+									Ti.API.info('here--------A.32' + date('w', Number(node_values[value_index])), weekdays);
 									row_matches[criteria_index] = true;
 								}
 							}
@@ -5167,7 +5190,8 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 					criteria_row = criteria['search_criteria'][criteria_index];
 					if(criteria_index == 0) {
 						Ti.API.info('here--------A.60' + row_matches[criteria_index]);
-						and_groups[and_group_index][0] = row_matches[criteria_index];
+						//and_groups[and_group_index][0] = row_matches[criteria_index];
+						and_groups[and_group_index].push(row_matches[criteria_index]);
 					} else {
 						Ti.API.info('here--------A.61');
 						if(criteria_row['row_operator'] == null || criteria_row['row_operator'] != 'or') {
@@ -5176,7 +5200,8 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 							and_groups[and_group_index] = new Array();
 						}
 						Ti.API.info('here--------A.63' + row_matches[criteria_index]);
-						and_groups[and_group_index][0] = row_matches[criteria_index];
+						and_groups[and_group_index].push(row_matches[criteria_index]);
+						//and_groups[and_group_index][0] = row_matches[criteria_index];
 					}
 				}
 	
@@ -5187,9 +5212,9 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 					Ti.API.info('here--------A.65');
 					and_group = and_groups[idx];
 					and_group_match = false;
-					for( idx in and_group) {
-						Ti.API.info('here--------A.66' + and_group[idx]);
-						or_match = and_group[idx];
+					for( idx1 in and_group) {
+						Ti.API.info('here--------A.66' + and_group[idx1]);
+						or_match = and_group[idx1];
 						// Make sure at least one item in an and group is true (or the only item is true)
 						if(or_match) {
 							Ti.API.info('here--------A.67');

@@ -800,12 +800,12 @@ function openDraftWindow(){
 
 function lock_screen(){
 	win2.touchEnabled = false;
-	win2.focusable = false;
+	//win2.focusable = false;
 	databaseStatusView.touchEnabled = false;
 }
 
 function unlock_screen(){
 	win2.touchEnabled = true;
-	win2.focusable = true;
+	//win2.focusable = true;
 	databaseStatusView.touchEnabled = true;
 }

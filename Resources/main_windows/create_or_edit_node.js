@@ -899,19 +899,19 @@ function keep_info(_flag_info, pass_it, new_time) {
 				Ti.API.info('Off line update');
 				if (PLATFORM == 'android') {
 					Ti.UI.createNotification({
-						message : win.title + ' has been successfully updated, but you are now offline, node will be only local until you have a valid internet connection !'
+						message : 'Alert management of this updated '+ win.title + ' immediately. Your device failed to connect to the Internet.'
 					}).show();
 				} else {
-					alert(win.title + ' has been successfully updated, but you are now offline, node will be only local until you have a valid internet connection !');
+					alert('Alert management of this updated '+ win.title + ' immediately. Your device failed to connect to the Internet.');
 				}
 			} else {
 				Ti.API.info('Off line creation');
 				if (PLATFORM == 'android') {
 					Ti.UI.createNotification({
-						message : win.title + ' has been successfully created, but you are now offline, node will be only local until you have a valid internet connection !'
+						message :'Alert management of this new '+ win.title + ' immediately. Your device failed to connect to the Internet.'
 					}).show();
 				} else {
-					alert(win.title + ' has been successfully created, but you are now offline, node will be only local until you have a valid internet connection !');
+					alert('Alert management of this new '+ win.title + ' immediately. Your device failed to connect to the Internet.');
 				}
 			}
 			close_me_delay();
