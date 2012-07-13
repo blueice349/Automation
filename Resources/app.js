@@ -23,7 +23,7 @@ var win1 = Titanium.UI.createWindow({
     zIndex: -100
 });
 
-var OMADI_VERSION = "omadiDb1534";
+var OMADI_VERSION = "omadiDb1535";
 
 Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION);
 var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );
@@ -52,23 +52,25 @@ var i_scroll_page = Titanium.UI.createScrollView({
 	top: 0,
 	left: 0,
 	height: 'auto',
-	layout: 'vertical'
+	layout: 'vertical',
+	zIndex: 0
 });
 win1.add(i_scroll_page);
 
 //Web site picker 
 var logo = Titanium.UI.createImageView({
 	width:'auto',
-	top: '20dp',
+	top: '10dp',
 	height: '120dp',
-	image: 'images/logo.png'
+	image: '/images/logo.png'
 });
 //Adds picker to root window
 i_scroll_page.add(logo);
+
 //Web site picker 
 var portal = Titanium.UI.createTextField({
 	width:'65%',
-	top: '20',
+	top: '20dp',
 	height: '53dp',
 	hintText:'Client Account',
 	color:'#000000',
@@ -92,7 +94,7 @@ portal.addEventListener('return', function(){
 var tf1 = Titanium.UI.createTextField({
 	hintText:'Username',
 	width:'65%',
-	top: '10',
+	top: '10dp',
 	height: '53dp',
 	color:'#000000',
 	value: credentials.fieldByName('username'),
@@ -101,8 +103,7 @@ var tf1 = Titanium.UI.createTextField({
 	softKeyboardOnFocus : (PLATFORM == 'android')?Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS:'',
 	borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 	autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_NONE,
-	autocorrect: false,
-	editable: locked_field
+	autocorrect: false
 });
 
 //No autocorrection for username
@@ -118,7 +119,7 @@ var tf2 = Titanium.UI.createTextField({
 	color:'#000000',
 	width:'65%',
 	height: '53dp',
-	top: '10',	
+	top: '10dp',	
     passwordMask:true,
 	value: credentials.fieldByName('password'),
     keyboardType:Titanium.UI.KEYBOARD_DEFAULT,
@@ -296,10 +297,10 @@ b1.addEventListener('click', function(){
           //device_data: '{ "model": "'+Titanium.Platform.model+'", "version": "'+Titanium.Platform.version+'", "architecture": "'+Titanium.Platform.architecture+'", "platform": "'+Titanium.Platform.name+'", "os_type": "'+Titanium.Platform.ostype+'" }' 
           device_data: { "model": Titanium.Platform.model, "version": Titanium.Platform.version, "architecture": Titanium.Platform.architecture, "platform": Titanium.Platform.name, "os_type": Titanium.Platform.ostype, "screen_density":Titanium.Platform.displayCaps.density, "primary_language": Titanium.Platform.locale, "processor_count": Titanium.Platform.processorCount }
         };
-        
+                
 		//Send info
-		xhr.send('{"username":"'+parms["username"]+'","password":"'+parms["password"] +'","device_id":"'+parms["device_id"] +'","app_version":"'+parms["app_version"] +'","device_data":"'+parms["device_data"] +'" }');
-		Ti.API.info('{"username":"'+parms["username"]+'","password":"'+parms["password"] +'","device_id":"'+parms["device_id"] +'","app_version":"'+parms["app_version"] +'","device_data":"'+parms["device_data"] +'" }');
+		xhr.send('{"username":"'+parms["username"]+'","password":"'+parms["password"] +'","device_id":"'+parms["device_id"] +'","app_version":"'+parms["app_version"] +'","device_data": '+JSON.stringify(parms["device_data"]) +' }');
+		Ti.API.info('{"username":"'+parms["username"]+'","password":"'+parms["password"] +'","device_id":"'+parms["device_id"] +'","app_version":"'+parms["app_version"] +'","device_data":'+JSON.stringify(parms["device_data"]) +' }');
 		Ti.API.info('"model": '+ Titanium.Platform.model +', "version": '+Titanium.Platform.version+', "architecture": '+Titanium.Platform.architecture+', "platform": '+Titanium.Platform.name+', "os_type": '+Titanium.Platform.ostype+', "screen_density": '+Titanium.Platform.displayCaps.density+', "primary_language": '+Titanium.Platform.locale+', "processor_count": '+Titanium.Platform.processorCount );
 				
 		// When infos are retrieved:
@@ -398,7 +399,7 @@ db.close();
 
 //Make everthing happen:
 win1.open();
-if(Ti.Platform.displayCaps.platformHeight > 500){
+if ( (PLATFORM != 'android') && (Ti.Platform.displayCaps.platformHeight > 500)){
 	i_scroll_page.top = '200dp'
 }
 

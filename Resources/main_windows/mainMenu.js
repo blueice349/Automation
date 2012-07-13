@@ -309,7 +309,6 @@ listView.addEventListener('click',function(e){
 			//Creates a new node_type
 			if (e.source.is_plus){
 				//alert('You clicked the '+e.row.display+' . His table\'s name is '+e.row.name_table);
-				// toolActInd.show();
 				var win_new = create_or_edit_node.getWindow();
 				win_new.title = "New "+e.row.display;
 				win_new.type = e.row.name_table;
@@ -327,9 +326,6 @@ listView.addEventListener('click',function(e){
 				
 				win_new.open();
 				setTimeout(function(){create_or_edit_node.loadUI();}, 100);
-				// win_new.addEventListener('focus', function(e){
-					// toolActInd.hide();
-				// });
 			}
 			else{
 				if(e.row.app_permissions.can_view == true){
@@ -350,7 +346,8 @@ listView.addEventListener('click',function(e){
 					});
 				
 					win_new.open();
-				 }else{
+				 }
+				 else{
 					 unlock_screen();
 					 unsetUse();
 				 }
@@ -803,10 +800,12 @@ function openDraftWindow(){
 
 function lock_screen(){
 	win2.touchEnabled = false;
+	win2.focusable = false;
 	databaseStatusView.touchEnabled = false;
 }
 
 function unlock_screen(){
 	win2.touchEnabled = true;
+	win2.focusable = true;
 	databaseStatusView.touchEnabled = true;
 }

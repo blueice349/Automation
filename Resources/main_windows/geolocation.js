@@ -307,13 +307,11 @@ setInterval(function (){
 				db_coord.execute("COMMIT TRANSACTION");
 				db_coord.close();
 			}
-			unsetUse();	
 		}
 		//Connection error:
 		objectsCheck.onerror = function(e) {
 			Ti.API.info("Error found for GPS uploading ");
 			db_coord.close();
-			unsetUse();
 		}
 		
 		//Sending information and try to connect
@@ -323,6 +321,5 @@ setInterval(function (){
 		Ti.API.info('No GPS coordinates found');
 		result.close();
 		db_coord.close();
-		unsetUse();
 	}
 }, 120000);
