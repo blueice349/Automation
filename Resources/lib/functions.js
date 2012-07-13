@@ -1433,14 +1433,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 	//Header parameters
 	objectsUp.setRequestHeader("Content-Type", "application/json");
 
-	//While streamming - following method should be called b4 open URL
-	objectsUp.ondatastream = function(e){
-		//ind.value = e.progress ;
-		if (progress!= null){
-			progress.set_download(e.progress);
-			Ti.API.info(' ONDATASTREAM1 - PROGRESS: ' + e.progress);
-		}
-	}
+	
 	
 	//When connected
 	objectsUp.onload = function(e) {

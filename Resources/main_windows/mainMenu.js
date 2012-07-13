@@ -46,7 +46,8 @@ function checkUpdate(evt){
 		setUse();
 		if (evt == 'from_menu'){
 			//instance progress bar object:
-			var pb = new Progress_install(0, 100);	
+			var pb = new Progress_install(0, 100);
+			Ti.API.info(pb);
 		}
 		else{
 			//No progress bar
