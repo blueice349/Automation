@@ -2846,6 +2846,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								for (_k in roles){
 									if (_l == _k){
 										Ti.API.info("====>> "+_l);
+										var stringifyObj = JSON.stringify(node_type_json.permissions[_l]);
 										if ( node_type_json.permissions[_l]["can create"] ||  node_type_json.permissions[_l]["all_permissions"]){
 											show_plus = true;
 											app_permissions.can_create = true;
@@ -2853,15 +2854,19 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 										
 										if(node_type_json.permissions[_l]["all_permissions"]){
 											app_permissions.all_permissions = true;
+											app_permissions.can_update = true;
+											app_permissions.can_view = true;
+											continue;
 										}
 										
-										if(node_type_json.permissions[_l]["can update"] ||  node_type_json.permissions[_l]["all_permissions"]){
+										if(stringifyObj.indexOf('update')>=0 ||  node_type_json.permissions[_l]["all_permissions"]){
 											app_permissions.can_update = true;
 										}
 										
-										if(node_type_json.permissions[_l]["can view"] ||  node_type_json.permissions[_l]["all_permissions"]){
+										if(stringifyObj.indexOf('view')>=0 ||  node_type_json.permissions[_l]["all_permissions"]){
 											app_permissions.can_view = true;
 										}
+				
 									}
 								}
 							}
