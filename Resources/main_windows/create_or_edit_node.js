@@ -6853,8 +6853,40 @@ create_or_edit_node.loadUI = function() {
 // To open camera
 function openCamera(e) {
 	try {
-		var alertBox = Ti.UI.createAlertDialog();
-		alertBox.title = 'Camera';
+		var overlayView;
+		if(PLATFORM != 'android'){
+			 overlayView = Ti.UI.createView({
+				top 	: 0,
+				bottom  : 0,
+				left 	: 0,
+				right 	: 0
+			});
+			var captureBtn = Ti.UI.createButton({
+				systemButton: Ti.UI.iPhone.SystemButton.CAMERA,
+			});
+			var doneBtn = Ti.UI.createButton({
+				systemButton: Ti.UI.iPhone.SystemButton.DONE,
+			});
+			var flexible = Ti.UI.createButton({
+				systemButton: Ti.UI.iPhone.SystemButton.FLEXIBLE_SPACE,
+			});
+			var navbar = Ti.UI.createToolbar({
+				left	: 0,
+				right	: 0,
+				bottom	: 0,
+				items: 	[doneBtn, flexible, captureBtn, flexible]
+			});
+			overlayView.add(navbar);
+			
+			captureBtn.addEventListener('click', function(evt){
+				Ti.Media.takePicture();
+			});
+			doneBtn.addEventListener('click', function(evt){
+				Ti.Media.hideCamera();	
+			})
+		}
+		
+		
 		Ti.Media.showCamera({
 
 			success : function(event) {
@@ -6870,32 +6902,21 @@ function openCamera(e) {
 				e.source.mimeType = event.media.mimeType;
 
 				if (e.source.cardinality > 1 || e.source.cardinality < 0) {
-					var alertPh = Ti.UI.createAlertDialog({
-						message : 'Take another ' + e.source.label + ' photo?',
-						buttonNames : ['Yes', 'No'],
-						cancel : 1
-					});
-					alertPh.addEventListener('click', function(ev) {
-						alertPh.hide();
-						if (ev.index == 0) {
-							if (e.source.cardinality < 1) {
-								arrImages = createImage(e.source.scrollView.addButton.o_index, e.source.scrollView.arrImages, defaultImageVal, e.source.scrollView, false);
-								e.source.scrollView.arrImages = arrImages;
-								e.source.scrollView.addButton.o_index += 1;
-								newSource = arrImages.length - 1;
-							} else {
-								newSource = (e.source.private_index == e.source.cardinality - 1) ? 0 : e.source.private_index + 1;
-							}
-							e.source = e.source.scrollView.arrImages[newSource];
-							openCamera(e)
+					if(e.source.cardinality < 1) {
+						arrImages = createImage(e.source.scrollView.addButton.o_index, e.source.scrollView.arrImages, defaultImageVal, e.source.scrollView, false);
+						e.source.scrollView.arrImages = arrImages;
+						e.source.scrollView.addButton.o_index += 1;
+						newSource = arrImages.length - 1;
+					} else {
+						if(e.source.private_index == e.source.cardinality - 1){
+							return;
 						}
-					});
-					if (e.source.cardinality > 1 && e.source.private_index == e.source.cardinality - 1) {
-						return;
+						newSource = (e.source.private_index == e.source.cardinality - 1) ? 0 : e.source.private_index + 1;
 					}
-					alertPh.show();
+					
+					e.source = e.source.scrollView.arrImages[newSource];
+					openCamera(e);
 				}
-
 			},
 			error : function(error) {
 				Ti.API.info('Captured Image - Error: ' + error.code + " :: " + error.message);
@@ -6905,6 +6926,9 @@ function openCamera(e) {
 				}
 			},
 			saveToPhotoGallery : false,
+			showControls: false,
+			overlay: (PLATFORM1='android')?overlayView:'',
+			autohide: true,
 			mediaTypes : [Ti.Media.MEDIA_TYPE_PHOTO]
 		});
 	} catch(ex) {

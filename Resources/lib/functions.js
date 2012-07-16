@@ -1422,6 +1422,15 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 	Ti.API.info("TIME: "+timeIndex);
 	Ti.API.info("Type: "+type_request);
 	
+//While streamming - following method should be called b4 open URL
+   objectsUp.ondatastream = function(e){
+           //ind.value = e.progress ;
+           if (progress!= null){
+                   progress.set_download(e.progress);
+                   Ti.API.info(' ONDATASTREAM1 - PROGRESS: ' + e.progress);
+           }
+   }
+	
 	if (type_request == 'POST'){
 		objectsUp.open('POST', win.picked + '/js-sync/sync.json' );		
 	}
