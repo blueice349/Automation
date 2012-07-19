@@ -596,38 +596,39 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 
 								if ( isNumber(num_to_insert) ){
 									query += ' '+num_to_insert+' )';
-								}
-								else if (num_to_insert instanceof Array){
-									content_s = treatArray(num_to_insert, 1);
+								}else if (num_to_insert instanceof Array){
+										content_s = treatArray(num_to_insert, 1);
 									
-									// table structure:
-									// incremental, node_id, field_name, value
-									process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
-									//Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
-									
-									// Code must to be a number since this database field accepts only integers numbers
-									// Token to indentify array of numbers is 7411176117105122
-									query += ' 7411317618171051229 )';
-								}
-								else{
+										// table structure:
+										// incremental, node_id, field_name, value
+										process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+										//Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
+										
+										// Code must to be a number since this database field accepts only integers numbers
+										// Token to indentify array of numbers is 7411176117105122
+										query += ' 7411317618171051229 )';
+								}else{
 									//Ti.API.info('Null ==> The value '+num_to_insert+' is a number? '+isNumber(num_to_insert) );
 									query += ' null )';
 								}
 							}
 							else{
 								if (json[obj].insert[i][parse_api] instanceof Array){
-									
-									content_s = treatArray(json[obj].insert[i][parse_api] , 2);
-									
-									// table structure:
-									// incremental, node_id, field_name, value
-									process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
-									//Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
-									
-									// Code must to be a number since this database field accepts only integers numbers
-									// Token to indentify array of numbers is 7411176117105122
-									query += ' '+mark+'7411317618171051229'+mark+' )';
+									if(col_type[aux_column-1]=='rules_field'){
+										query += ' \''+JSON.stringify(json[obj].insert[i][parse_api]).replace(/'/gi, "\\\'")+'\' )';
+									}else{
+										content_s = treatArray(json[obj].insert[i][parse_api] , 2);
+										
+										// table structure:
+										// incremental, node_id, field_name, value
+										process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+										//Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
+										
+										// Code must to be a number since this database field accepts only integers numbers
+										// Token to indentify array of numbers is 7411176117105122
+										query += ' '+mark+'7411317618171051229'+mark+' )';
 								
+									}
 								}
 								else{
 									query += ' '+mark+''+json[obj].insert[i][parse_api].toString().replace(/"/gi, "'")+''+mark+' )';
@@ -645,9 +646,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 
 								if ( isNumber(num_to_insert) ){
 									query += ' '+num_to_insert+' ,';
-								}
-								else if (num_to_insert instanceof Array){
-
+								}else if (num_to_insert instanceof Array){
 									//If we have only one object in array we don't need another table to help us out
 									content_s = treatArray(num_to_insert , 3);
 								
@@ -658,26 +657,27 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 									
 									// Code must to be a number since this database field accepts only integers numbers
 									// Token to indentify array of numbers is 7411176117105122
-									query += ' 7411317618171051229 ,';	
-								}
-								else{
+									query += ' 7411317618171051229 ,';
+								}else{
 									query += ' null ,';
 								}
 							}
 							else{
 								if (json[obj].insert[i][parse_api] instanceof Array){
-									
-									content_s = treatArray(json[obj].insert[i][parse_api] , 4);
-									
-									// table structure:
-									// incremental, node_id, field_name, value
-									process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
-									//Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
-									
-									// Code must to be a number since this database field accepts only integers numbers
-									// Token to indentify array of numbers is 7411176117105122
-									query += ' '+mark+'7411317618171051229'+mark+' ,';	
-
+									if(col_type[aux_column-1]=='rules_field'){
+										query += ' \''+JSON.stringify(json[obj].insert[i][parse_api]).replace(/'/gi, "\\\'")+'\' ,';
+									}else{	
+										content_s = treatArray(json[obj].insert[i][parse_api] , 4);
+										
+										// table structure:
+										// incremental, node_id, field_name, value
+										process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+										//Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
+										
+										// Code must to be a number since this database field accepts only integers numbers
+										// Token to indentify array of numbers is 7411176117105122
+										query += ' '+mark+'7411317618171051229'+mark+' ,';	
+									}
 								}
 								else{
 									query += ' '+mark+''+json[obj].insert[i][parse_api].toString().replace(/"/gi, "'")+''+mark+' ,';								
@@ -760,9 +760,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 
 							if ( isNumber(num_to_insert) ){
 								query += ' '+num_to_insert+' )';
-							}
-							else if (num_to_insert instanceof Array){
-
+							}else if (num_to_insert instanceof Array){
 								content_s = treatArray(num_to_insert, 1);
 								
 								// table structure:
@@ -773,25 +771,25 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 								// Code must to be a number since this database field accepts only integers numbers
 								// Token to indentify array of numbers is 7411176117105122
 								query += ' 7411317618171051229 )';
-
-							}
-							else{
+							}else{
 								//Ti.API.info('Null ==> The value '+num_to_insert+' is a number? '+isNumber(num_to_insert) );
 								query += ' null )';
 							}
 						}
 						else{
 							if (json[obj].insert[parse_api] instanceof Array){
-
-								content_s = treatArray(json[obj].insert[parse_api] , 2);
-								
-								// table structure:
-								// incremental, node_id, field_name, value
-								process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
-								// Code must to be a number since this database field accepts only integers numbers
-								// Token to indentify array of numbers is 7411176117105122
-								query += ' '+mark+'7411317618171051229'+mark+' )';
-							
+								if(col_type[aux_column-1]=='rules_field'){
+									query += ' \''+JSON.stringify(json[obj].insert[parse_api]).replace(/'/gi, "\\\'")+'\' )';
+								}else{
+									content_s = treatArray(json[obj].insert[parse_api] , 2);
+									
+									// table structure:
+									// incremental, node_id, field_name, value
+									process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+									// Code must to be a number since this database field accepts only integers numbers
+									// Token to indentify array of numbers is 7411176117105122
+									query += ' '+mark+'7411317618171051229'+mark+' )';
+								}
 							}
 							else{
 								query += ' '+mark+''+json[obj].insert[parse_api].toString().replace(/"/gi, "'")+''+mark+' )';
@@ -809,37 +807,38 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 
 							if ( isNumber(num_to_insert) ){
 								query += ' '+num_to_insert+' ,';
-							}
-							else if (num_to_insert instanceof Array){
-								content_s = treatArray(num_to_insert , 3);
-							
-								// table structure:
-								// incremental, node_id, field_name, value
-								process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
-								//Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
+							}else if (num_to_insert instanceof Array){
+									content_s = treatArray(num_to_insert , 3);
 								
-								// Code must to be a number since this database field accepts only integers numbers
-								// Token to indentify array of numbers is 7411176117105122
-								query += ' 7411317618171051229 ,';	
-							}
-							else{
+									// table structure:
+									// incremental, node_id, field_name, value
+									process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+									//Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
+									
+									// Code must to be a number since this database field accepts only integers numbers
+									// Token to indentify array of numbers is 7411176117105122
+									query += ' 7411317618171051229 ,';
+							}else{
 								query += ' null ,';
 							}
 						}
 						else{
 							if (json[obj].insert[parse_api] instanceof Array){
+								if(col_type[aux_column-1]=='rules_field'){
+									query += ' \''+JSON.stringify(json[obj].insert[parse_api]).replace(/'/gi, "\\\'")+'\' ,';
+								}else{	
 							
-								content_s = treatArray(json[obj].insert[parse_api] , 4);
-							
-								// table structure:
-								// incremental, node_id, field_name, value
-								process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
-								//Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
+									content_s = treatArray(json[obj].insert[parse_api] , 4);
 								
-								// Code must to be a number since this database field accepts only integers numbers
-								// Token to indentify array of numbers is 7411176117105122
-								query += ' '+mark+'7411317618171051229'+mark+' ,';	
-
+									// table structure:
+									// incremental, node_id, field_name, value
+									process_obj[process_obj.length] = 'INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+									//Ti.API.info('INSERT OR REPLACE  INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].insert.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )');
+									
+									// Code must to be a number since this database field accepts only integers numbers
+									// Token to indentify array of numbers is 7411176117105122
+									query += ' '+mark+'7411317618171051229'+mark+' ,';	
+								}
 							}
 							else{
 								query += ' '+mark+''+json[obj].insert[parse_api].toString().replace(/"/gi, "'")+''+mark+' ,';								
@@ -928,9 +927,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 
 								if ( isNumber(num_to_insert) ){
 									query += ' '+num_to_insert+' )';
-								}
-								else if (num_to_insert instanceof Array){
-
+								}else if (num_to_insert instanceof Array){
 									content_s = treatArray(num_to_insert, 1);
 									
 									var array_cont = db_process_object.execute('SELECT * FROM array_base WHERE node_id = '+json[obj].update[i].nid+' AND field_name=\''+col_titles[aux_column-1]+'\'');
@@ -942,8 +939,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 										// Code must to be a number since this database field accepts only integers numbers
 										// Token to indentify array of numbers is 7411176117105122
 										query += ' 7411317618171051229 )';
-									}
-									else{
+									}else{
 										// table structure:
 										// incremental, node_id, field_name, value
 										process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].update[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
@@ -952,20 +948,19 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 										// Token to indentify array of numbers is 7411176117105122
 										query += ' 7411317618171051229 )';
 									}
+								
 									array_cont.close();
-
-								}
-								else{
+								}else{
 									Ti.API.info('Null ==> The value '+num_to_insert+' is a number? '+isNumber(num_to_insert) );
 									query += ' null )';
 								}
 							}
 							else{
 								if (json[obj].update[i][parse_api] instanceof Array){
-
+									if(col_type[aux_column-1]=='rules_field'){
+										query += ' \''+JSON.stringify(json[obj].update[i][parse_api]).replace(/'/gi, "\\\'")+'\' )';
+									}else{
 										content_s = treatArray(json[obj].update[i][parse_api] , 2);
-
-
 										var array_cont = db_process_object.execute('SELECT * FROM array_base WHERE node_id = '+json[obj].update[i].nid+' AND field_name="'+col_titles[aux_column-1]+'"');
 										if ((array_cont.rowCount > 0) || (array_cont.isValidRow())){
 											// table structure:
@@ -987,6 +982,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 											query += ' '+mark+'7411317618171051229'+mark+' )';
 										}
 										array_cont.close();
+									}
 								}
 								else{
 									query += ' '+mark+''+json[obj].update[i][parse_api].toString().replace(/"/gi, "'")+''+mark+' )';
@@ -1006,7 +1002,6 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 									query += ' '+num_to_insert+' ,';
 								}
 								else if (num_to_insert instanceof Array){
-
 									content_s = treatArray(num_to_insert , 3);
 
 									var array_cont = db_process_object.execute('SELECT * FROM array_base WHERE node_id = '+json[obj].update[i].nid+' AND field_name="'+col_titles[aux_column-1]+'"');
@@ -1029,38 +1024,39 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 										query += ' 7411317618171051229 ,';
 									}
 									array_cont.close();
-								
-								}
-								else{
+								}else{
 									query += ' null ,';
 								}
 							}
 							else{
 								if (json[obj].update[i][parse_api] instanceof Array){
-									
-										content_s = treatArray(json[obj].update[i][parse_api] , 4);
-										
-										var array_cont = db_process_object.execute('SELECT * FROM array_base WHERE node_id = '+json[obj].update[i].nid+' AND field_name="'+col_titles[aux_column-1]+'"');
-										if ((array_cont.rowCount > 0) || (array_cont.isValidRow())){
-
-											// table structure:
-											// incremental, node_id, field_name, value
-											process_obj[process_obj.length] = 'UPDATE array_base SET encoded_array = \''+content_s+'\' WHERE node_id='+json[obj].update[i].nid+' AND field_name=\''+col_titles[aux_column-1]+'\' ';
+									if(col_type[aux_column-1]=='rules_field'){
+										query += ' \''+JSON.stringify(json[obj].update[i][parse_api]).replace(/'/gi, "\\\'")+'\' ,';
+									}else{
+											content_s = treatArray(json[obj].update[i][parse_api] , 4);
 											
-											// Code must to be a number since this database field accepts only integers numbers
-											// Token to indentify array of numbers is 7411176117105122
-											query += ' '+mark+'7411317618171051229'+mark+' ,';
-										}
-										else{
-											// table structure:
-											// incremental, node_id, field_name, value
-											process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].update[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
-											
-											// Code must to be a number since this database field accepts only integers numbers
-											// Token to indentify array of numbers is 7411176117105122
-											query += ' '+mark+'7411317618171051229'+mark+' ,';
-										}
-										array_cont.close();
+											var array_cont = db_process_object.execute('SELECT * FROM array_base WHERE node_id = '+json[obj].update[i].nid+' AND field_name="'+col_titles[aux_column-1]+'"');
+											if ((array_cont.rowCount > 0) || (array_cont.isValidRow())){
+	
+												// table structure:
+												// incremental, node_id, field_name, value
+												process_obj[process_obj.length] = 'UPDATE array_base SET encoded_array = \''+content_s+'\' WHERE node_id='+json[obj].update[i].nid+' AND field_name=\''+col_titles[aux_column-1]+'\' ';
+												
+												// Code must to be a number since this database field accepts only integers numbers
+												// Token to indentify array of numbers is 7411176117105122
+												query += ' '+mark+'7411317618171051229'+mark+' ,';
+											}
+											else{
+												// table structure:
+												// incremental, node_id, field_name, value
+												process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].update[i].nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+												
+												// Code must to be a number since this database field accepts only integers numbers
+												// Token to indentify array of numbers is 7411176117105122
+												query += ' '+mark+'7411317618171051229'+mark+' ,';
+											}
+											array_cont.close();
+									}
 								}
 								else{
 									query += ' '+mark+''+json[obj].update[i][parse_api].toString().replace(/"/gi, "'")+''+mark+' ,';								
@@ -1137,26 +1133,26 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 
 							if ( isNumber(num_to_insert) ){
 								query += ' '+num_to_insert+' )';
-							}
-							else if (num_to_insert instanceof Array){
-
-									content_s = treatArray(num_to_insert, 1);
-									
-									// table structure:
-									// incremental, node_id, field_name, value
-									process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].update.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
-									
-									// Code must to be a number since this database field accepts only integers numbers
-									// Token to indentify array of numbers is 7411176117105122
-									query += ' 7411317618171051229 )';
-							}
-							else{
+							}else if (num_to_insert instanceof Array){
+								content_s = treatArray(num_to_insert, 1);
+								
+								// table structure:
+								// incremental, node_id, field_name, value
+								process_obj[process_obj.length] = 'INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( '+json[obj].update.nid+', \''+col_titles[aux_column-1] +'\',  \''+content_s+'\' )';
+								
+								// Code must to be a number since this database field accepts only integers numbers
+								// Token to indentify array of numbers is 7411176117105122
+								query += ' 7411317618171051229 )';
+								
+							}else{
 								Ti.API.info('Null ==> The value '+num_to_insert+' is a number? '+isNumber(num_to_insert) );
 								query += ' null )';
 							}
-						}
-						else{
+						}else{
 							if (json[obj].update[parse_api] instanceof Array){
+								if(col_type[aux_column-1]=='rules_field'){
+									query += ' \''+JSON.stringify(json[obj].update[parse_api]).replace(/'/gi, "\\\'")+'\' )';
+								}else{
 									content_s = treatArray(json[obj].update[parse_api] , 2);
 									
 									// table structure:
@@ -1166,8 +1162,8 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 									// Code must to be a number since this database field accepts only integers numbers
 									// Token to indentify array of numbers is 7411176117105122
 									query += ' '+mark+'7411317618171051229'+mark+' )';
-							}
-							else{
+								}
+							}else{
 								query += ' '+mark+''+json[obj].update[parse_api].toString().replace(/"/gi, "'")+''+mark+' )';
 							}
 						}
@@ -1183,9 +1179,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 
 							if ( isNumber(num_to_insert) ){
 								query += ' '+num_to_insert+' ,';
-							}
-							else if (num_to_insert instanceof Array){
-
+							}else if (num_to_insert instanceof Array){
 									content_s = treatArray(num_to_insert , 3);
 								
 									// table structure:
@@ -1195,14 +1189,15 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 									// Code must to be a number since this database field accepts only integers numbers
 									// Token to indentify array of numbers is 7411176117105122
 									query += ' 7411317618171051229 ,';	
-							}
-							else{
+							}else{
 								query += ' null ,';
 							}
 						}
 						else{
 							if (json[obj].update[parse_api] instanceof Array){
-								
+								if(col_type[aux_column-1]=='rules_field'){
+									query += ' \''+JSON.stringify(json[obj].update[parse_api]).replace(/'/gi, "\\\'")+'\' ,';
+								}else{
 									content_s = treatArray(json[obj].update[parse_api] , 4);
 								
 									// table structure:
@@ -1212,6 +1207,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 									// Code must to be a number since this database field accepts only integers numbers
 									// Token to indentify array of numbers is 7411176117105122
 									query += ' '+mark+'7411317618171051229'+mark+' ,';	
+								}
 							}
 							else{
 								query += ' '+mark+''+json[obj].update[parse_api].toString().replace(/"/gi, "'")+''+mark+' ,';								
@@ -1335,7 +1331,11 @@ function getJSON(){
 							array_cont.close();
 						}
 						else{
-							returning_json += ', "'+node_fields.fieldByName('field_name')+'": "'+selected_node.fieldByName(node_fields.fieldByName('field_name'))+'" ';
+							if(node_fields.fieldByName('type') == 'rules_field'){
+								returning_json += ', "'+node_fields.fieldByName('field_name')+'": '+selected_node.fieldByName(node_fields.fieldByName('field_name'));
+							}else{
+								returning_json += ', "'+node_fields.fieldByName('field_name')+'": "'+selected_node.fieldByName(node_fields.fieldByName('field_name'))+'" ';
+							}
 						}
 					}				
 					node_fields.next();
@@ -3689,7 +3689,7 @@ try{
 			}
 			
 			_file_xhr.onerror = function(e) {
-				Ti.API.info('=========== Error in uploading ========' + e.error + this.status);
+				Ti.API.info('=========== Error in uploading ========' + this.error + this.status);
 				if(this.status == '406' && this.error =='Nid is not connected to a valid node.'){
 					database.execute("DELETE FROM file_upload_queue WHERE nid=" + fileUploadTable.fieldByName('nid') +" and id=" + fileUploadTable.fieldByName('id') + ";");
 				}
@@ -5064,7 +5064,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 									}
 								}
 	
-								if(JSON.parse(search_field['widget']).type == 'options_select') {
+								if(JSON.parse(search_field['widget']).type == 'options_select' || JSON.parse(search_field['widget']).type=='violation_select') {
 									// Make sure the search value is an array
 									var search_value_arr = [];
 									if(!isArray(search_value)) {
@@ -5247,4 +5247,139 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 	}catch(e){
 	}
 	return true;
+}
+
+function rules_field_format_readable_time_rules(timeValue){
+  var timeStrings = [];
+          
+  var dayStrings = [];
+  dayStrings.push('Sun');
+  dayStrings.push('Mon');
+  dayStrings.push('Tue');
+  dayStrings.push('Wed');
+  dayStrings.push('Thu');
+  dayStrings.push('Fri');
+  dayStrings.push('Sat');
+  
+  var times = [];
+  
+  var returnVal = 'No Rules';
+  
+  if(timeValue > ''){
+    var rows = timeValue.split(';');
+    for(var idx in rows){
+    	var row = rows[idx];
+      var values = row.split('|');
+      if(values[0] == '1'){
+        if(values[1] == '1'){
+	        if(times['All Day'] == null){
+	    		times['All Day'] = new Array();
+	    	}
+          
+          	times['All Day'].push(idx);
+        }
+        else{
+    	if(times[omadi_time_seconds_to_string(values[2], 'h:iA') + '-' + omadi_time_seconds_to_string(values[3], 'h:iA')] == null){
+    		times[omadi_time_seconds_to_string(values[2], 'h:iA') + '-' + omadi_time_seconds_to_string(values[3], 'h:iA')]	= new Array();
+    	}
+          
+          times[omadi_time_seconds_to_string(values[2], 'h:iA') + '-' + omadi_time_seconds_to_string(values[3], 'h:iA')].push(idx);
+        }
+      }
+    }
+  
+    if(times['All Day']!=null && count_arr_obj(times['All Day']) == 7){
+      // This is equivalent to no rules, so fall through
+    }
+    else{
+    
+      for(var time_index in times){
+      	var time = times[time_index];
+        var timeString = '';
+        var startDay = -1;
+        var currentDay = -2;
+        var lastConsecutive = -1;
+        var dayPatrolStrings = [];
+        
+        for(var day_index in time){
+        	var day = time[day_index];
+          	currentDay = Number(day);
+            if(startDay == -1){
+	           startDay = currentDay;
+	        }else if(currentDay == (lastConsecutive + 1)){
+	            // Just continue to the next day
+	        }else{
+	            if(startDay != lastConsecutive){
+	              dayPatrolStrings.push(dayStrings[startDay] + '-' + dayStrings[lastConsecutive]);
+	            }
+	            else{
+	              dayPatrolStrings.push(dayStrings[startDay]);
+	            }
+	            startDay = currentDay;
+	          }
+	          lastConsecutive = currentDay;
+	        }
+        
+        if(lastConsecutive == currentDay){
+          if(startDay != lastConsecutive){
+            dayPatrolStrings.push(dayStrings[startDay] + '-' + dayStrings[lastConsecutive]);
+          }
+          else{
+            dayPatrolStrings.push(dayStrings[startDay]);
+          }
+        }
+        
+        timeString += dayPatrolStrings.join(',') + ' (' + time_index + ')';
+        
+        timeStrings.push(timeString);
+      }
+      
+      returnVal = timeStrings.join('; ');
+    }
+  }
+  
+  return returnVal;
+}
+
+
+function omadi_time_seconds_to_string(seconds, format){
+  var am_pm = (strpos(format, 'H') === false);
+        
+  var hours = Math.floor(seconds / 3600);
+  
+  var hours_str = hours;
+  if(hours_str < 10){
+    hours_str = '0' + hours_str;
+  }
+  
+  var minutes = Math.floor((seconds - (hours * 3600)) / 60);
+  if(minutes < 10){
+    minutes = '0' + minutes;
+  }
+  
+  var time_string = "";
+  if(am_pm){
+    if(hours == 0){
+      time_string = '12:' + minutes + 'AM';
+    }
+    else if(hours == 12){
+      time_string = '12:' + minutes + 'PM';
+    }
+    else if(hours > 12){
+      var new_hours = hours - 12;
+      hours_str = new_hours;
+      if(new_hours < 10){
+        hours_str = '0' + new_hours;
+      }
+      time_string = hours_str + ':' + minutes + 'PM';
+    }
+    else{
+      time_string = hours_str + ':' + minutes + 'AM';
+    }
+  }
+  else{
+    time_string = hours_str + ':' + minutes;
+  }
+  
+  return time_string;
 }

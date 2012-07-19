@@ -912,6 +912,35 @@ if(c_index > 0) {
 					break;
 					
 					case 'calculation_field':
+						label[count] = Ti.UI.createLabel({
+							text: c_label[count],
+							width:  "100%",
+							textAlign: 'left',
+							left: 5,
+							touchEnabled: false,
+							field: true,
+							top: 0,
+							height: 40,
+							wordWrap: false,
+							ellipsize: true
+						});
+						
+						var settings 		= JSON.parse(c_settings[count]); 					
+						content[count] = Ti.UI.createView({
+								left			: '3%',
+								right			: '3%',
+								field_type		: c_type[count],
+								field_name		: c_field_name[count],
+								cardinality		: settings.cardinality,
+								reffer_index	: count,
+								settings		: settings,
+								layout 			: 'vertical'
+						});
+						count++;
+					break;
+					case 'rules_field':
+					
+						if(c_content[count]!=false && c_content[count]!="false" && c_content[count]!=0 && JSON.parse(c_content[count]).length>0){
 							label[count] = Ti.UI.createLabel({
 								text: c_label[count],
 								width:  "100%",
@@ -924,20 +953,22 @@ if(c_index > 0) {
 								wordWrap: false,
 								ellipsize: true
 							});
-							
-							var settings 		= JSON.parse(c_settings[count]); 					
 							content[count] = Ti.UI.createView({
-									left			: '3%',
-									right			: '3%',
-									field_type		: c_type[count],
-									field_name		: c_field_name[count],
-									cardinality		: settings.cardinality,
-									reffer_index	: count,
-									settings		: settings,
-									layout 			: 'vertical'
+								left			: '3%',
+								right			: '3%',
+								field_type		: c_type[count],
+								field_name		: c_field_name[count],
+								cardinality		: settings.cardinality,
+								reffer_index	: count,
+								settings		: settings,
+								value			: JSON.parse(c_content[count]),
+								layout 			: 'vertical',
+								widget			: JSON.parse(c_widget[count])
 							});
 							count++;
+						}
 					break;
+					
 				}
 			}
 		}
@@ -980,8 +1011,10 @@ if(c_index > 0) {
 						label[i].height = '60'
 						content[i].left = '40%'
 					}
-					
-					
+				}else if(c_type[i]=='rules_field'){
+					cell[i].layout = 'vertical';
+					showRulesRow(content[i], db_display, win4);
+					cell[i].height = content[i].height+ heightValue;
 				}
 				cell[i].add(content[i]);
 
@@ -1475,3 +1508,4 @@ function bottomButtons1(actualWindow){
 	win4.add(toolbar);
 	
 };
+
