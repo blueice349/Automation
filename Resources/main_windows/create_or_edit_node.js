@@ -725,7 +725,13 @@ function keep_info(_flag_info, pass_it, new_time) {
 				} else {
 					value_to_insert = 0;
 				}
-			} else if ((content[j].field_type == 'omadi_time') || (content[j].field_type == 'datestamp')) {
+			} else if (content[j].field_type == 'rules_field') {
+				if (content[j].value === false || content[j].value === 0 || content[j].value === 'false') {
+					value_to_insert = 'false';
+				} else {
+					value_to_insert = JSON.stringify(content[j].value);
+				}
+			}else if ((content[j].field_type == 'omadi_time') || (content[j].field_type == 'datestamp')) {
 				if (content[j].update_it === true) {
 					value_to_insert = Math.round(content[j].value / 1000);
 				} else {
@@ -3856,7 +3862,7 @@ create_or_edit_node.loadUI = function() {
 							}
 
 							//Create picker list
-							if (widget.type == 'options_select') {
+							if (widget.type == 'options_select' || widget.type == 'violation_select') {
 								label[count] = Ti.UI.createLabel({
 									text : ( isRequired ? '*' : '') + '' + field_arr[index_label][index_size].label,
 									color : isRequired ? 'red' : _lb_color,
@@ -6597,6 +6603,52 @@ create_or_edit_node.loadUI = function() {
 							}
 							count++;
 							break;
+						case 'rules_field':
+							if(field_arr[index_label][index_size].actual_value!=false && field_arr[index_label][index_size].actual_value!="false" && field_arr[index_label][index_size].actual_value!=0 && JSON.parse(field_arr[index_label][index_size].actual_value).length>0){	
+								label[count] = Ti.UI.createLabel({
+									text : field_arr[index_label][index_size].label,
+									color : _lb_color,
+									font : {
+										fontSize : 18,
+										fontWeight: 'bold'
+									},
+									textAlign : 'left',
+									width : Ti.Platform.displayCaps.platformWidth - 30,
+									touchEnabled : false,
+									height : heightValue,
+									top : top
+								});
+								regionView.add(label[count]);
+								var reffer_index = count;
+								var settings = JSON.parse(field_arr[index_label][index_size].settings);
+								top += heightValue;
+								content[count] = Ti.UI.createView({
+									width : Ti.Platform.displayCaps.platformWidth - 30,
+									top : top,
+									field_type : field_arr[index_label][index_size].type,
+									field_name : field_arr[index_label][index_size].field_name,
+									required : field_arr[index_label][index_size].required,
+									composed_obj : false,
+									is_title : field_arr[index_label][index_size].is_title,
+									cardinality : settings.cardinality,
+									value : field_arr[index_label][index_size].actual_value,
+									label : field_arr[index_label][index_size].label,
+									reffer_index : reffer_index,
+									settings : settings,
+									value			: JSON.parse(field_arr[index_label][index_size].actual_value),
+									layout 			: 'vertical',
+									widget			: JSON.parse(field_arr[index_label][index_size].widget),
+									changedFlag 	: 0
+								});
+								
+								showRulesRow(content[count], db_display, win);
+								top += content[count].height + 10;
+								regionView.add(content[count]);
+								count++;
+							
+							}
+							break;
+							
 					}
 
 				}
@@ -7979,4 +8031,279 @@ function createCalculationRow(single_content, heightCellView, widthCellView, dat
 	row.add(row.row_label);
 	row.add(row.value);	
 	return row;
+}
+
+function showRulesRow(current_content, db_display, current_window){
+	
+	var widget = current_content.widget;
+	var settings = current_content.settings;
+	var contentVal = current_content.value;
+	var heightView = 0;
+	var heightCellView = 35; 
+	var widthCellView = Ti.Platform.displayCaps.platformWidth - 30
+	switch(widget.type){
+		case 'rules_field_violations':
+			if(contentVal instanceof Array){
+				if(contentVal.length > 0 ){
+					for(var idx=0; idx<contentVal.length; idx++ ){
+						var violation_name = db_display.execute('SELECT name FROM term_data WHERE tid='+ contentVal[idx].tid);
+						violation_name = violation_name.fieldByName('name');
+						if(!isArray(contentVal[idx].node_types)) {
+							formsArr = [];
+							for(var key in contentVal[idx].node_types) {
+								if(contentVal[idx].node_types.hasOwnProperty(key)) {
+									var display_name = db_display.execute('SELECT display_name FROM bundles WHERE bundle_name="' + key + '"');
+									display_name = display_name.fieldByName('display_name');
+									formsArr.push(display_name);
+								}
+							}
+						}
+						
+						var row = Ti.UI.createView({
+							layout	: 'horizontal',
+							height: heightCellView,
+							width: widthCellView
+						});
+						row.image = Ti.UI.createImageView({
+							image	: '../images/arrow.png',
+							height	: '23',
+							width	: '23',
+							details : contentVal[idx],
+							formsArr: formsArr,
+							text	: violation_name,
+							top		: 4
+						});
+						row.label = Ti.UI.createLabel({
+							text : violation_name,
+							height: 35,
+							width : widthCellView-30,
+							left : 5,
+							color: '#000',
+							font: {
+								fontSize: 15,
+								fontFamily : 'Helvetica Neue',
+							},
+							ellipsize: true,
+							wordWrap: false,
+							details : contentVal[idx],
+							formsArr: formsArr
+						});
+						
+						row.add(row.image);
+						row.add(row.label);
+						heightView += heightCellView + 1;
+						row.addEventListener('click', function(e){
+							var detail_popup = Ti.UI.createView({
+								backgroundColor: '#00000000'
+							});
+							detail_popup.left = detail_popup.right = detail_popup.top = detail_popup.bottom = 0;
+							
+							var translucent = Ti.UI.createView({
+								opacity: 0.5,
+								backgroundColor: '#000'
+							});
+							translucent.left = translucent.right = translucent.top = translucent.bottom = 0;
+							detail_popup.add(translucent);
+							
+							var table_format_bg = Ti.UI.createView({
+								backgroundColor: '#FFF',
+								borderColor: '#424242',
+								borderWidth: 1,
+								left: 4,
+								right: 4,
+								height: '250',
+								//layout: 'vertical'
+							});
+							detail_popup.add(table_format_bg);
+							
+							var headerRow0 = Ti.UI.createView({
+								top: 0,
+								height: 30,
+								width: Ti.Platform.displayCaps.platformWidth-8,
+								layout: 'horizontal',
+								backgroundImage: '../images/header.png',
+							});
+							var headerRowLabel = Ti.UI.createLabel({
+								text: e.source.text,
+								left: 5,
+								height: 30,
+								width: Ti.Platform.displayCaps.platformWidth-40,
+								color: '#fff',
+								font: {
+									fontFamily : 'Helvetica Neue',
+									fontSize : 15,
+									fontWeight: 'bold',
+									
+								},
+								ellipsize: true,
+								wordWrap: false
+							});
+							var close_btn = Ti.UI.createImageView({
+								height: 30,
+								width: 25,
+								top: 0,
+								image: '../images/close.png'
+							});
+							table_format_bg.add(headerRow0);
+							headerRow0.add(headerRowLabel);
+							headerRow0.add(close_btn);
+							close_btn.addEventListener('click', function(ent){
+								current_window.remove(detail_popup);
+							});
+							
+							
+							var headerRow = Ti.UI.createView({
+								top: 33,
+								height: 42,
+								width: Ti.Platform.displayCaps.platformWidth-16,
+								layout: 'horizontal'
+							});
+							table_format_bg.add(headerRow);
+							
+							var forms = Ti.UI.createLabel({
+								text: 'Forms',
+								height: 38,
+								width: (Ti.Platform.displayCaps.platformWidth-20)/3,
+								backgroundImage: '../images/header.png',
+								font: {
+									fontFamily : 'Helvetica Neue',
+									fontSize : 13,
+									fontWeight: 'bold'
+								},
+								color: '#fff',
+								textAlign: 'center'
+							});
+							headerRow.add(forms);
+							
+							var dttm = Ti.UI.createLabel({
+								text: 'Date/Time Rules',
+								height: 38,
+								width: (Ti.Platform.displayCaps.platformWidth-20)/3,
+								backgroundImage: '../images/header.png',
+								font: {
+									fontFamily : 'Helvetica Neue',
+									fontSize : 13,
+									fontWeight: 'bold'
+								},
+								left: 1,
+								color: '#fff',
+								textAlign: 'center'
+							});
+							headerRow.add(dttm);
+							
+							var desc = Ti.UI.createLabel({
+								text: 'Description',
+								height: 38,
+								width: (Ti.Platform.displayCaps.platformWidth-20)/3,
+								backgroundImage: '../images/header.png',
+								font: {
+									fontFamily : 'Helvetica Neue',
+									fontSize : 13,
+									fontWeight: 'bold'
+								},
+								left: 1.5,
+								color: '#fff',
+								textAlign: 'center'
+							});
+							headerRow.add(desc);
+							
+							var detail_row = Ti.UI.createView({
+								width: Ti.Platform.displayCaps.platformWidth-16,
+								top: 75,
+								height: '175',
+								layout: 'horizontal',
+							});
+							table_format_bg.add(detail_row);
+							
+							var formsView = Ti.UI.createScrollView({
+								height: '175',
+								contentHeight: 'auto',
+								scrollType: 'vertical',
+								showVerticalScrollIndicator: true,
+								width: (Ti.Platform.displayCaps.platformWidth-20)/3,
+							});
+							detail_row.add(formsView);
+							var formsViewLabel = Ti.UI.createLabel({
+								top: 0,
+								height: 'auto',
+								width: (Ti.Platform.displayCaps.platformWidth-20)/3,
+								color: '#1c1c1c',
+								font: {
+									fontFamily : 'Helvetica Neue',
+									fontSize: 13
+								},
+								textAlign: 'left'
+							});
+							formsView.add(formsViewLabel);
+							
+							var formsArr = e.source.formsArr;
+							var detailsVal = e.source.details
+							var forms_str = '- All -';
+							if(formsArr.length<4){
+								forms_str = '';
+								for(var form_idx=0; form_idx<formsArr.length; form_idx++){
+									forms_str += formsArr[form_idx] + ((form_idx==formsArr.length-1)?"":", ");
+								}
+							}
+							formsViewLabel.text = forms_str;
+							
+							var dttmView = Ti.UI.createScrollView({
+								height: '170',
+								contentHeight: 'auto',
+								scrollType: 'vertical',
+								showVerticalScrollIndicator: true,
+								width: (Ti.Platform.displayCaps.platformWidth-20)/3,
+								left: 1
+							});
+							detail_row.add(dttmView);
+							var dttmViewLabel = Ti.UI.createLabel({
+								top: 0,
+								text: rules_field_format_readable_time_rules(detailsVal.time_rules),
+								height: 'auto',
+								width: (Ti.Platform.displayCaps.platformWidth-20)/3,
+								color: '#1c1c1c',
+								font: {
+									fontFamily : 'Helvetica Neue',
+									fontSize: 13
+								},
+								textAlign: 'left'
+							});
+							dttmView.add(dttmViewLabel);
+							
+							var descView = Ti.UI.createScrollView({
+								height: '175',
+								contentHeight: 'auto',
+								scrollType: 'vertical',
+								showVerticalScrollIndicator: true,
+								left: 2,
+								width: (Ti.Platform.displayCaps.platformWidth-20)/3,
+							});
+							detail_row.add(descView);
+							var descViewLabel = Ti.UI.createLabel({
+								top: 0,
+								text: detailsVal.description,
+								height: 'auto',
+								width: (Ti.Platform.displayCaps.platformWidth-20)/3,
+								color: '#1c1c1c',
+								font: {
+									fontFamily : 'Helvetica Neue',
+									fontSize: 13
+								},
+								textAlign: 'left'
+							});
+							descView.add(descViewLabel);
+							
+							current_window.add(detail_popup);
+							translucent.addEventListener('click', function(ent){
+								current_window.remove(detail_popup);
+							});
+							
+						});
+						current_content.add(row);
+					}
+				}
+			}
+			current_content.height = heightView;
+		break;
+	}
 }
