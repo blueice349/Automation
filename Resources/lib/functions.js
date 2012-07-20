@@ -1441,8 +1441,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 	}
 	//Header parameters
 	objectsUp.setRequestHeader("Content-Type", "application/json");
-
-	
 	
 	//When connected
 	objectsUp.onload = function(e) {
@@ -1482,55 +1480,26 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				Ti.API.info("Delete all value: "+json.delete_all);
 				
 				//Check this function
-				if (json.delete_all == true){
+				if (json.delete_all === true || json.delete_all == "true"){
 					Ti.API.info("=================== ############ ===================");
 					Ti.API.info("Reseting database, delete_all is required");
 					Ti.API.info("=================== ############ ===================");
 		
 					//If delete_all is present, delete all contents:
-					db_installMe.execute('DROP TABLE IF EXISTS account');
-					db_installMe.execute('CREATE TABLE "account" ("nid" INTEGER PRIMARY KEY NOT NULL  UNIQUE )');
-					
-					db_installMe.execute('DROP TABLE IF EXISTS contact');
-					db_installMe.execute('CREATE TABLE "contact" ("nid" INTEGER PRIMARY KEY NOT NULL  UNIQUE )');
-		
-					db_installMe.execute('DROP TABLE IF EXISTS lead');
-					db_installMe.execute('CREATE TABLE "lead" ("nid" INTEGER PRIMARY KEY   NOT NULL  UNIQUE )');
-					
-					db_installMe.execute('DROP TABLE IF EXISTS node');
-					db_installMe.execute('CREATE TABLE "node" ("nid" INTEGER PRIMARY KEY NOT NULL  UNIQUE , "title" VARCHAR, "created" INTEGER, "changed" INTEGER, "author_uid" INTEGER)');
-								
-					db_installMe.execute('DROP TABLE IF EXISTS potential');
-					db_installMe.execute('CREATE TABLE "potential" ("nid" INTEGER PRIMARY KEY NOT NULL  UNIQUE )');
-		
-					db_installMe.execute('DROP TABLE IF EXISTS user_roles');
-					db_installMe.execute('CREATE TABLE "user_roles" ("uid" INTEGER, "rid" INTEGER)');
-		
-					db_installMe.execute('DROP TABLE IF EXISTS task');
-					db_installMe.execute('CREATE TABLE "task" ("nid" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE )');
-					
-					db_installMe.execute('DROP TABLE IF EXISTS boot');
-					db_installMe.execute('CREATE TABLE "boot" ("boot_id" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE )');
-		
-					db_installMe.execute('DROP TABLE IF EXISTS bundles');
-					db_installMe.execute('CREATE TABLE "bundles" ("bid" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , "bundle_name" VARCHAR)');
-					
-					db_installMe.execute('DROP TABLE IF EXISTS fields');
-					db_installMe.execute('CREATE TABLE "fields" ("id" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE, "fid" INTEGER NOT NULL , "type" TEXT, "field_name" TEXT, "label" TEXT, "description" TEXT, "bundle" TEXT NOT NULL , "region" TEXT, "weight" INTEGER, "required" TEXT , "widget" TEXT, "settings" TEXT, "disabled" INTEGER DEFAULT 0)');
-					
-					db_installMe.execute('DROP TABLE IF EXISTS term_data');
-					db_installMe.execute('CREATE TABLE "term_data" ("tid" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "vid" INTEGER, "name" VARCHAR, "description" VARCHAR, "weight" VARCHAR)');
-								
-					db_installMe.execute('DROP TABLE IF EXISTS updated');
-					db_installMe.execute('CREATE TABLE "updated" ("timestamp" INTEGER DEFAULT 0, "url" TEXT DEFAULT NULL)');
-					
-					db_installMe.execute('DROP TABLE IF EXISTS users');
-					db_installMe.execute('CREATE TABLE "users" ("uid" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "username" TEXT, "mail" TEXT, "realname" TEXT, "status" INTEGER)');
-								
-					db_installMe.execute('DROP TABLE IF EXISTS vocabulary');
-					db_installMe.execute('CREATE TABLE "vocabulary" ("vid" INTEGER PRIMARY KEY  NOT NULL  UNIQUE , "name" VARCHAR, "machine_name" TEXT)');
-								
-					db_installMe.execute('INSERT OR REPLACE INTO updated (timestamp, url) VALUES (?,?)', 0 , null);		
+
+					if (PLATFORM == "android"){
+						//Remove the database
+						db_installMe.remove();
+						db_installMe.close();
+					}
+					else{
+						var db_file = db_installMe.getFile();
+						db_installMe.close();
+						//phisically removes the file
+						db_file.deleteFile();
+					}
+					db_installMe = null;
+					db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 				}
 								
 		

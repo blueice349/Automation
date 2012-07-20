@@ -65,7 +65,13 @@ else
 	// Titanium.Geolocation.ACCURACY_KILOMETER
 	// Titanium.Geolocation.ACCURACY_THREE_KILOMETERS
 	//
-	Titanium.Geolocation.accuracy = Titanium.Geolocation.ACCURACY_BEST;
+	if (PLATFORM == 'android'){
+		Titanium.Geolocation.accuracy = Titanium.Geolocation.ACCURACY_BEST;
+	}
+	else{
+		Titanium.Geolocation.accuracy = Ti.Geolocation.ACCURACY_NEAREST_TEN_METERS;
+	}
+	
 
 	//
 	//  SET DISTANCE FILTER.  THIS DICTATES HOW OFTEN AN EVENT FIRES BASED ON THE DISTANCE THE DEVICE MOVES

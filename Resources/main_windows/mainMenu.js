@@ -140,7 +140,6 @@ function update_node(mode, close_parent, _node_name){
 var listView = Titanium.UI.createTableView({
 	data : [],
 	top : '50',
-	//height : '80%',
 	bottom: '60',
 	scrollable: true,
 	zIndex: 999,

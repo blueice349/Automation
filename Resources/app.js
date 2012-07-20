@@ -305,12 +305,7 @@ b1.addEventListener('click', function(){
 				
 		// When infos are retrieved:
 		xhr.onload = function(e) {
-			
-				var _txt =  this.responseText;
-				var user_json = JSON.parse(_txt);
-				Titanium.App.Properties.setString('session_name', user_json.session_name);
-				Titanium.App.Properties.setString('sessid', user_json.sessid);
-				
+							
 				var db_list = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );	
 	
 				var portal_base = db_list.execute('SELECT domain FROM domains WHERE domain=\''+portal.value+'\'');
@@ -327,9 +322,6 @@ b1.addEventListener('click', function(){
 				Ti.API.info('DB NAME_APP: db_'+portal.value+'_'+tf1.value+' ');
 				
 				db_list.execute('UPDATE history SET domain = "'+portal.value+'", username = "'+tf1.value+'", password = "", db_name="db_'+portal.value+'_'+tf1.value+'" WHERE "id_hist"=1');
-				
-				//Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION+"_"+tf1.value);
-				
 				db_list.close();
 				
 				//Debug
