@@ -25,6 +25,41 @@ function getDBName() {
 	return recebe;
 }
 
+function notifyIOS( msg ){
+	var win = Titanium.UI.createWindow({
+		height:30,
+		width:250,
+		bottom:110,
+		borderRadius:10
+	});
+
+	var view = Titanium.UI.createView({
+		backgroundColor:'#000',
+		opacity:0.7,
+		height:30,
+		width:250,
+		borderRadius:10
+	});
+
+	var label = Titanium.UI.createLabel({
+		color:'#fff',
+		font:{fontSize:13},
+		textAlign:'center',
+		width:'auto',
+		height:'auto'
+	});
+	win.add(view);
+	win.add(label);
+
+	label.text = msg;
+	win.open();
+	setTimeout(function()
+	{
+		win.close({opacity:0,duration:500});
+	},1000);
+}
+
+
 function showIndicator(show)
 {
     indWin = Titanium.UI.createWindow({
@@ -1414,7 +1449,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 	Ti.API.info('Log type : '+objectsUp);
 	
 	//Timeout until error:
-	objectsUp.setTimeout(30000);
+	objectsUp.setTimeout(90000);
 
 	Ti.API.info("Current page: "+ pageIndex);
 	Ti.API.info("Mode: "+ mode);
