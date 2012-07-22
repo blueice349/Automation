@@ -34,9 +34,6 @@ var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getS
 //Geolocation module
 Ti.include('geolocation.js');
 
-var updateFromAboutPage = function(){
-	checkUpdate('from_menu');
-}
 
 function checkUpdate(evt){
 	Ti.API.info('******* Called checkupate => '+evt);
@@ -494,8 +491,7 @@ activity.onCreateOptionsMenu = function(e) {
 				title: 'About',
 				fullscreen: false,
 				backgroundColor: '#EEEEEE',
-				url:'about.js',
-				updateFunction: updateFromAboutPage
+				url:'about.js'
 			});
 			about_win.open();
 		}
@@ -735,7 +731,7 @@ if(PLATFORM == 'android'){
 					if(PLATFORM == 'android') {
 						notf.show();
 					} else {
-						alert('Please, wait ...');
+						notifyIOS('Please, wait ...');
 					}
 				} else {
 					var about_win = Ti.UI.createWindow({
@@ -813,3 +809,7 @@ function unlock_screen(){
 	//win2.focusable = true;
 	databaseStatusView.touchEnabled = true;
 }
+
+Ti.App.addEventListener('update_from_menu', function(){
+	checkUpdate('from_menu');
+});
