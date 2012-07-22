@@ -98,7 +98,7 @@ function checkUpdate(evt){
 						message : 'You have no internet access, make sure you are online in order to update'
 					}).show();
 				}else{
-					alert('You have no internet access, make sure you are online in order to update');
+					notifyIOS('You have no internet access, make sure you are online in order to update');
 				}
 				//If offline, set up database for use
 				unsetUse();
@@ -109,7 +109,7 @@ function checkUpdate(evt){
 						message : 'Another updated is already running'
 					}).show();
 				}else{
-					alert('Another updated is already running');
+					notifyIOS('Another updated is already running');
 				}
 			}
 		}
@@ -301,7 +301,7 @@ listView.addEventListener('click',function(e){
 				notf.show();
 			}
 			else{
-				alert('Please, wait ...');
+				notifyIOS('Please, wait ...');
 			}		
 		}
 		else{
@@ -486,7 +486,7 @@ activity.onCreateOptionsMenu = function(e) {
 				notf.show();
 			}
 			else{
-				alert('Please, wait ...');
+				notifyIOS('Please, wait ...');
 			}		
 		}
 		else{
@@ -621,7 +621,7 @@ alerts_view.addEventListener('click', function(){
 				notf.show();
 			}
 			else{
-				alert('Please, wait ...');
+				notifyIOS('Please, wait ...');
 			}		
 		}
 		else{
@@ -763,7 +763,7 @@ function openDraftWindow(){
 				notf.show();
 			}
 			else{
-				alert('Please, wait ...');
+				notifyIOS('Please, wait ...');
 			}		
 		}
 		else{
