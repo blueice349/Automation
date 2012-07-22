@@ -484,7 +484,7 @@ function treatArray( num_to_insert , call_id ){
 	// Optimization matters!
 	// data separator
 	
-	var separator = 'j8Oá2s)E';
+	var separator = 'j8Oc2s1E';
 	var content_s = '';
 	var array_size = num_to_insert.length;
 	
@@ -498,7 +498,7 @@ function treatArray( num_to_insert , call_id ){
 		return content_s;
 	}
 	else if (array_size == 1){
-		//Pack everything
+		//Pack everything 
 		Ti.API.info(num_to_insert[0]);
 		if (num_to_insert[0] != null){
 			var content_s = Titanium.Utils.base64encode(num_to_insert[0]);
@@ -516,7 +516,7 @@ function treatArray( num_to_insert , call_id ){
 				test1++;
 			}
 			else if (count_a == array_size){
-				content_s += num_to_insert[key]+' ';
+				content_s += num_to_insert[key]+'';
 				test2++;
 			}
 		}
@@ -1343,40 +1343,55 @@ function getJSON(){
 				}
 				Ti.API.info(returning_json);
 				while (node_fields.isValidRow()){
+					Ti.API.info('1');
 					if ((selected_node.rowCount > 0) && (selected_node.fieldByName(node_fields.fieldByName('field_name')) != null) && (selected_node.fieldByName(node_fields.fieldByName('field_name')) != '')){
+					Ti.API.info('2');
 						if(selected_node.fieldByName(node_fields.fieldByName('field_name')) == 7411317618171051229){
+							Ti.API.info('3');
 							var array_cont = db_json.execute('SELECT encoded_array FROM array_base WHERE node_id = '+new_nodes.fieldByName('nid')+' AND field_name = \''+node_fields.fieldByName('field_name')+'\'');
+							Ti.API.info('4');
 							if ((array_cont.rowCount > 0) || (array_cont.isValidRow())){
-								
+								Ti.API.info('5');
 								//Decode the stored array:
 								var decoded = array_cont.fieldByName('encoded_array');
+								Ti.API.info('6');
 								decoded = Titanium.Utils.base64decode(decoded);
+								Ti.API.info('7');
 								Ti.API.info('Decoded array is equals to: '+decoded);
+								Ti.API.info('8');
 								
 								decoded = decoded.toString();
-								
-								// Token that splits each element contained into the array: 'j8Oá2s)E'
-								var decoded_values = decoded.split("j8Oá2s)E");
-								
+								Ti.API.info('9');
+								// Token that splits each element contained into the array: 'j8Oc2s1E'
+								var decoded_values = decoded.split("j8Oc2s1E");
+								Ti.API.info('10');
 								returning_json += ', "'+node_fields.fieldByName('field_name')+'": [ \"'+decoded_values.join("\" , \"")+'\" ] ';
+								Ti.API.info('11 PRE_JSON: '+returning_json);
 							}
 							else{
+								Ti.API.info('12');
 								returning_json += ', "'+node_fields.fieldByName('field_name')+'": "'+selected_node.fieldByName(node_fields.fieldByName('field_name'))+'"';
+								Ti.API.info('13 PRE_JSON: '+returning_json);
 							}
 							array_cont.close();
 						}
 						else{
+							Ti.API.info('14');
 							if(node_fields.fieldByName('type') == 'rules_field'){
+								Ti.API.info('15');
 								returning_json += ', "'+node_fields.fieldByName('field_name')+'": '+selected_node.fieldByName(node_fields.fieldByName('field_name'));
+								Ti.API.info('16 PRE_JSON: '+returning_json);
 							}else{
+								Ti.API.info('17');
 								returning_json += ', "'+node_fields.fieldByName('field_name')+'": "'+selected_node.fieldByName(node_fields.fieldByName('field_name'))+'" ';
+								Ti.API.info('18 PRE_JSON: '+returning_json);
 							}
 						}
 					}				
 					node_fields.next();
 				}
 				returning_json += ' } ';
-
+				Ti.API.info('19 PRE_JSON: '+returning_json);
 				//Next node
 				new_nodes.next();
 				if (new_nodes.isValidRow()){
@@ -1394,10 +1409,12 @@ function getJSON(){
 		//=============================
 		var new_terms = db_json.execute('SELECT * FROM term_data WHERE tid < 0 ORDER BY tid DESC');
 		//Ti.API.info('Lets update the terms :'+new_terms.fieldByName('tid'));
-		
+		Ti.API.info('20');
 		if (new_terms.rowCount > 0){
+			Ti.API.info('21');
 			returning_json += ',"term":{ ';
 			while (new_terms.isValidRow()){
+					Ti.API.info('22');
 					Ti.API.info('TERM '+new_terms.fieldByName('tid')+' -----JSON BEING CREATED-----');
 					var vocabulary	= db_json.execute('SELECT * FROM vocabulary WHERE vid = '+new_terms.fieldByName('vid'));
 					returning_json += '"'+new_terms.fieldByName('tid')+'":{ "created":"'+new_terms.fieldByName('created')+'", "tid":"'+new_terms.fieldByName('tid')+'", "machine_name":"'+vocabulary.fieldByName('machine_name')+'", "name":"'+new_terms.fieldByName('name')+'"  }';
@@ -3656,7 +3673,7 @@ try{
 							decoded = Titanium.Utils.base64decode(decoded);
 							Ti.API.info('Decoded array is equals to: '+decoded);
 							decoded = decoded.toString();
-							decoded_values = decoded.split("j8Oá2s)E");
+							decoded_values = decoded.split("j8Oc2s1E");
 						}
 					}
 					
@@ -3670,7 +3687,7 @@ try{
 						if(i == decoded_values.length-1){
 							content += decoded_values[i];
 						}else{
-							content += decoded_values[i]+''+"j8Oá2s)E";
+							content += decoded_values[i]+''+"j8Oc2s1E";
 						}
 					}
 					content = Titanium.Utils.base64encode(content);

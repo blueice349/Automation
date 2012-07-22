@@ -252,14 +252,14 @@ if(c_index > 0) {
 					var decoded = array_cont.fieldByName('encoded_array');
 					//Decode the stored array:
 					decoded = Titanium.Utils.base64decode(decoded);
-					Ti.API.info('Decoded array is equals to: ' + decoded);
+					Ti.API.info('------------->>>> Decoded array is equals to: ' + decoded);
 
 					array_cont.next();
 				}
 				decoded = decoded.toString();
 
-				// Token that splits each element contained into the array: 'j8Oá2s)E'
-				var decoded_values = decoded.split("j8Oá2s)E");
+				// Token that splits each element contained into the array: 'j8Oc2s1E'
+				var decoded_values = decoded.split("j8Oc2s1E");
 				loop_times = decoded_values.length;
 				is_array = true;
 				keep_type = c_type[count];
@@ -723,8 +723,8 @@ if(c_index > 0) {
 						count++;
 
 						break;
+						
 					//Prints out content
-
 					case 'license_plate':
 						label[count] = Ti.UI.createLabel({
 							text : c_label[count],
@@ -828,7 +828,7 @@ if(c_index > 0) {
 								var decoded = array_cont.fieldByName('encoded_array');
 								decoded = Titanium.Utils.base64decode(decoded);
 								decoded = decoded.toString();
-								decodedValues = decoded.split("j8Oá2s)E");
+								decodedValues = decoded.split("j8Oc2s1E");
 							}
 							val = db_display.execute('SELECT * FROM file_upload_queue WHERE nid=' + win4.nid + ' AND field_name ="' + c_field_name[count] + '";');
 

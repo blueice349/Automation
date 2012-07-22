@@ -1775,8 +1775,8 @@ create_or_edit_node.loadUI = function() {
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
-									// Token that splits each element contained into the array: 'j8Oá2s)E'
-									var decoded_values = decoded.split("j8Oá2s)E");
+									// Token that splits each element contained into the array: 'j8Oc2s1E'
+									var decoded_values = decoded.split("j8Oc2s1E");
 								} else {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
@@ -2516,8 +2516,8 @@ create_or_edit_node.loadUI = function() {
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
-									// Token that splits each element contained into the array: 'j8Oá2s)E'
-									var decoded_values = decoded.split("j8Oá2s)E");
+									// Token that splits each element contained into the array: 'j8Oc2s1E'
+									var decoded_values = decoded.split("j8Oc2s1E");
 								} else {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
@@ -2648,8 +2648,8 @@ create_or_edit_node.loadUI = function() {
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
-									// Token that splits each element contained into the array: 'j8Oá2s)E'
-									var decoded_values = decoded.split("j8Oá2s)E");
+									// Token that splits each element contained into the array: 'j8Oc2s1E'
+									var decoded_values = decoded.split("j8Oc2s1E");
 								} else {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
@@ -2949,8 +2949,8 @@ create_or_edit_node.loadUI = function() {
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
-									// Token that splits each element contained into the array: 'j8Oá2s)E'
-									var decoded_values = decoded.split("j8Oá2s)E");
+									// Token that splits each element contained into the array: 'j8Oc2s1E'
+									var decoded_values = decoded.split("j8Oc2s1E");
 								} else {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
@@ -3255,8 +3255,8 @@ create_or_edit_node.loadUI = function() {
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
-									// Token that splits each element contained into the array: 'j8Oá2s)E'
-									var decoded_values = decoded.split("j8Oá2s)E");
+									// Token that splits each element contained into the array: 'j8Oc2s1E'
+									var decoded_values = decoded.split("j8Oc2s1E");
 								} else {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
@@ -3397,18 +3397,25 @@ create_or_edit_node.loadUI = function() {
 								_max = settings.max
 							}
 							
+							Ti.API.info('********************** Field: '+field_arr[index_label][index_size].label+",  Cardinality: "+settings.cardinality);
 							if (settings.cardinality > 1) {
+								Ti.API.info('Value: '+field_arr[index_label][index_size].actual_value);
 								if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
 									var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
+									
+									Ti.API.info('#######################################################################');
+									Ti.API.info('Field: '+field_arr[index_label][index_size].label+" Cardinality: "+settings.cardinality);
 
 									//Decode the stored array:
 									var decoded = array_cont.fieldByName('encoded_array');
+									Ti.API.info('Encoded array is equals to: ' + decoded);
 									decoded = Titanium.Utils.base64decode(decoded);
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
-
-									// Token that splits each element contained into the array: 'j8Oá2s)E'
-									var decoded_values = decoded.split("j8Oá2s)E");
+									// Token that splits each element contained into the array: 'j8Oc2s1E'
+									var decoded_values = decoded.split("j8Oc2s1E");
+									Ti.API.info('Splited: '+decoded_values);
+									Ti.API.info('#######################################################################');
 								} else {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
@@ -3626,8 +3633,8 @@ create_or_edit_node.loadUI = function() {
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
-									// Token that splits each element contained into the array: 'j8Oá2s)E'
-									var decoded_values = decoded.split("j8Oá2s)E");
+									// Token that splits each element contained into the array: 'j8Oc2s1E'
+									var decoded_values = decoded.split("j8Oc2s1E");
 								} else {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
@@ -3753,8 +3760,8 @@ create_or_edit_node.loadUI = function() {
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
-									// Token that splits each element contained into the array: 'j8Oá2s)E'
-									var decoded_values = decoded.split("j8Oá2s)E");
+									// Token that splits each element contained into the array: 'j8Oc2s1E'
+									var decoded_values = decoded.split("j8Oc2s1E");
 								} else {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
@@ -3915,8 +3922,8 @@ create_or_edit_node.loadUI = function() {
 										Ti.API.info('Decoded array is equals to: ' + decoded);
 										decoded = decoded.toString();
 
-										// Token that splits each element contained into the array: 'j8Oá2s)E'
-										var decoded_values = decoded.split("j8Oá2s)E");
+										// Token that splits each element contained into the array: 'j8Oc2s1E'
+										var decoded_values = decoded.split("j8Oc2s1E");
 									} else {
 										var decoded_values = new Array();
 										decoded_values[0] = field_arr[index_label][index_size].actual_value;
@@ -4121,8 +4128,8 @@ create_or_edit_node.loadUI = function() {
 										Ti.API.info('Decoded array is equals to: ' + decoded);
 										decoded = decoded.toString();
 
-										// Token that splits each element contained into the array: 'j8Oá2s)E'
-										var decoded_values = decoded.split("j8Oá2s)E");
+										// Token that splits each element contained into the array: 'j8Oc2s1E'
+										var decoded_values = decoded.split("j8Oc2s1E");
 									} else {
 										var decoded_values = new Array();
 										decoded_values[0] = field_arr[index_label][index_size].actual_value;
@@ -4241,8 +4248,8 @@ create_or_edit_node.loadUI = function() {
 										Ti.API.info('Decoded array is equals to: ' + decoded);
 										decoded = decoded.toString();
 
-										// Token that splits each element contained into the array: 'j8Oá2s)E'
-										var decoded_values = decoded.split("j8Oá2s)E");
+										// Token that splits each element contained into the array: 'j8Oc2s1E'
+										var decoded_values = decoded.split("j8Oc2s1E");
 									} else {
 										var decoded_values = new Array();
 										decoded_values[0] = field_arr[index_label][index_size].actual_value;
@@ -4676,8 +4683,8 @@ create_or_edit_node.loadUI = function() {
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
-									// Token that splits each element contained into the array: 'j8Oá2s)E'
-									var decoded_values = decoded.split("j8Oá2s)E");
+									// Token that splits each element contained into the array: 'j8Oc2s1E'
+									var decoded_values = decoded.split("j8Oc2s1E");
 								} else {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
@@ -5063,8 +5070,8 @@ create_or_edit_node.loadUI = function() {
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
-									// Token that splits each element contained into the array: 'j8Oá2s)E'
-									var decoded_values = decoded.split("j8Oá2s)E");
+									// Token that splits each element contained into the array: 'j8Oc2s1E'
+									var decoded_values = decoded.split("j8Oc2s1E");
 								} else {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
@@ -5311,8 +5318,8 @@ create_or_edit_node.loadUI = function() {
 										Ti.API.info('Decoded array is equals to: ' + decoded);
 										decoded = decoded.toString();
 
-										// Token that splits each element contained into the array: 'j8Oá2s)E'
-										var decoded_values = decoded.split("j8Oá2s)E");
+										// Token that splits each element contained into the array: 'j8Oc2s1E'
+										var decoded_values = decoded.split("j8Oc2s1E");
 									} else {
 										var decoded_values = new Array();
 										decoded_values[0] = field_arr[index_label][index_size].actual_value;
@@ -5513,8 +5520,8 @@ create_or_edit_node.loadUI = function() {
 										Ti.API.info('Decoded array is equals to: ' + decoded);
 										decoded = decoded.toString();
 
-										// Token that splits each element contained into the array: 'j8Oá2s)E'
-										var decoded_values = decoded.split("j8Oá2s)E");
+										// Token that splits each element contained into the array: 'j8Oc2s1E'
+										var decoded_values = decoded.split("j8Oc2s1E");
 									} else {
 										var decoded_values = new Array();
 										decoded_values[0] = field_arr[index_label][index_size].actual_value;
@@ -5756,8 +5763,8 @@ create_or_edit_node.loadUI = function() {
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
-									// Token that splits each element contained into the array: 'j8Oá2s)E'
-									var decoded_values = decoded.split("j8Oá2s)E");
+									// Token that splits each element contained into the array: 'j8Oc2s1E'
+									var decoded_values = decoded.split("j8Oc2s1E");
 								} else {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
@@ -5917,8 +5924,8 @@ create_or_edit_node.loadUI = function() {
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
-									// Token that splits each element contained into the array: 'j8Oá2s)E'
-									var decoded_values = decoded.split("j8Oá2s)E");
+									// Token that splits each element contained into the array: 'j8Oc2s1E'
+									var decoded_values = decoded.split("j8Oc2s1E");
 								} else {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
@@ -6105,8 +6112,8 @@ create_or_edit_node.loadUI = function() {
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
-									// Token that splits each element contained into the array: 'j8Oá2s)E'
-									var decoded_values = decoded.split("j8Oá2s)E");
+									// Token that splits each element contained into the array: 'j8Oc2s1E'
+									var decoded_values = decoded.split("j8Oc2s1E");
 								} else {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
@@ -6412,7 +6419,7 @@ create_or_edit_node.loadUI = function() {
 										var decoded = array_cont.fieldByName('encoded_array');
 										decoded = Titanium.Utils.base64decode(decoded);
 										decoded = decoded.toString();
-										decodedValues = decoded.split("j8Oá2s)E");
+										decodedValues = decoded.split("j8Oc2s1E");
 									}
 									val = db_display.execute('SELECT * FROM file_upload_queue WHERE nid=' + win.nid + ' AND field_name ="' + field_arr[index_label][index_size].field_name + '";');
 									if (val.rowCount > 0) {
