@@ -5404,3 +5404,70 @@ function omadi_time_seconds_to_string(seconds, format){
   
   return time_string;
 }
+
+function rules_field_passed_time_check(time_rule, timestamp){
+  var retval = false;
+  timestamp = parseInt(timestamp/1000);
+  var timestamp_day = Number(date('w', Number(timestamp)));
+  
+  if(time_rule != '' && time_rule!=null){
+    
+    var timestamp_midnight = mktime(0,0,0, date('n', Number(timestamp)), date('j', Number(timestamp)), date('Y', Number(timestamp)));
+     
+    var days = time_rule.split(';');
+    
+    var day_rule = days[timestamp_day];
+   
+    var values = day_rule.split('|');
+   
+    if(values[0] == '1' || values[0] == 1){
+      if(values[1] == '1' || values[1] == 1){ 
+        retval = true;
+      }else{
+        var start_time = Number(timestamp_midnight) + Number(values[2]);
+        var end_time = Number(timestamp_midnight) + Number(values[3]) + Number(59);
+        
+        // For times like 8:00PM - 5:00AM
+        if(start_time > end_time){
+        	end_time = Number(end_time) + Number((3600 * 24));
+         }
+       
+        if(Number(timestamp) >= Number(start_time) && Number(timestamp) <= Number(end_time)){
+        	retval = true;
+        }
+      }
+    }
+    
+    if(retval==false){
+      if(timestamp_day == 0){
+        timestamp_day = 6;
+      }else{
+        timestamp_day --;
+      }
+      day_rule = days[timestamp_day];
+ 
+ 	  values = day_rule.split('|'); 
+       if(values[0] == '1' && values[0] == 1){
+        if(values[1] == '1' && values[1] == 1){  
+          // Do nothing, since we're not on this previous day
+          // Do not return true
+        }else{
+          start_time = Number(timestamp_midnight) + Number(values[2]);
+          end_time = Number(timestamp_midnight) + Number(values[3]) + Number(59);
+          // For times like 8:00PM - 5:00AM
+          if(start_time > end_time){
+            start_time = Number(start_time) - (3600 * 24);
+            // Only do the check if we're in a multi-day time span since we moved to the day before
+            if(Number(timestamp) >= Number(start_time) && Number(timestamp) <= Number(end_time)){
+              retval = true;
+            }
+          }
+        }
+      }
+    }
+  }
+  else{
+    retval = true;
+  }
+  return retval;
+}

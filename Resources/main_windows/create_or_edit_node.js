@@ -1087,6 +1087,7 @@ function display_widget(obj) {
 
 			obj.text = f_month + " / " + f_date + " / " + f_year;
 			changedContentValue(obj);
+			setRulesField(obj);
 			noDataChecboxEnableDisable(obj, obj.reffer_index);
 			win_wid.close();
 		});
@@ -1214,6 +1215,8 @@ function display_widget(obj) {
 				var f_year = obj.currentDate.getFullYear();
 	
 				obj.text = f_hour + ":" + form_min(f_minute) + " - " + f_month + " / " + f_date + " / " + f_year;
+				changedContentValue(obj);
+				setRulesField(obj);
 				win_wid.close();
 			});
 	
@@ -3984,6 +3987,7 @@ create_or_edit_node.loadUI = function() {
 											field_name : field_arr[index_label][index_size].field_name,
 											machine_name : vocabulary.fieldByName('machine_name'),
 											widget : 'options_select',
+											widgetObj: widget,
 											required : field_arr[index_label][index_size].required,
 											is_title : field_arr[index_label][index_size].is_title,
 											value : aux_val.vl,
@@ -4074,6 +4078,7 @@ create_or_edit_node.loadUI = function() {
 										field_name : field_arr[index_label][index_size].field_name,
 										machine_name : vocabulary.fieldByName('machine_name'),
 										widget : 'options_select',
+										widgetObj: widget,
 										required : field_arr[index_label][index_size].required,
 										is_title : field_arr[index_label][index_size].is_title,
 										composed_obj : false,
@@ -4188,6 +4193,7 @@ create_or_edit_node.loadUI = function() {
 										field_name : field_arr[index_label][index_size].field_name,
 										machine_name : vocabulary.fieldByName('machine_name'),
 										widget : 'options_select',
+										widgetObj: widget,
 										required : field_arr[index_label][index_size].required,
 										is_title : field_arr[index_label][index_size].is_title,
 										composed_obj : false,
@@ -4943,6 +4949,8 @@ create_or_edit_node.loadUI = function() {
 										}
 									} else {
 										setDefaultValues(content, e);
+										setRulesField(e.source);
+
 									}
 								});
 
@@ -6797,6 +6805,35 @@ create_or_edit_node.loadUI = function() {
 					}
 				}
 			}
+		
+			//For 'rules_field'
+			if(content[j].widgetObj!=null && content[j].widgetObj.type == 'violation_select'){
+				var content_widget = content[j].widgetObj; 
+				if(content_widget['rules_field_name']!=null && content_widget['rules_field_name']!=""){
+					var _reffer_index = entityArr[content_widget['rules_field_name']][0]['reffer_index'];
+					var _rulesFieldArr;
+					if(content[_reffer_index].rulesFieldArr == null){
+						_rulesFieldArr = [];
+						content[_reffer_index].rulesFieldArr = _rulesFieldArr;
+					}
+					_rulesFieldArr = content[_reffer_index].rulesFieldArr;
+					_rulesFieldArr.push(content[j].reffer_index);
+					content[_reffer_index].rulesFieldArr = _rulesFieldArr;
+				}
+				
+				if(content_widget['rules_violation_time_field_name']!=null && content_widget['rules_violation_time_field_name']!=""){
+					var _reffer_index = entityArr[content_widget['rules_violation_time_field_name']][0]['reffer_index'];
+					var _rulesFieldArr;
+					if(content[_reffer_index].rulesFieldArr == null){
+						_rulesFieldArr = [];
+						content[_reffer_index].rulesFieldArr = _rulesFieldArr;
+					}
+					_rulesFieldArr = content[_reffer_index].rulesFieldArr;
+					_rulesFieldArr.push(content[j].reffer_index);
+					content[_reffer_index].rulesFieldArr = _rulesFieldArr;
+				}
+			}
+
 		}
 	}, 100);
 
@@ -8314,3 +8351,156 @@ function showRulesRow(current_content, db_display, current_window){
 		break;
 	}
 }
+
+function setRulesField(select_content){
+	if(select_content.rulesFieldArr!=null && select_content.rulesFieldArr!=""){
+		var rulesFieldArr = select_content.rulesFieldArr;
+		if(rulesFieldArr.length>0){
+			for(var rulesFieldIdx in rulesFieldArr){
+				var rulesFieldContent = content[rulesFieldArr[rulesFieldIdx]];
+				var entityArr = createEntityMultiple();
+				var rules_field_name = content[entityArr[rulesFieldContent['widgetObj']['rules_field_name']][0].reffer_index];
+				var rules_violation_time_field_name = content[entityArr[rulesFieldContent['widgetObj']['rules_violation_time_field_name']][0].reffer_index];
+				
+				db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+				var table = db_display.execute('SELECT table_name FROM node WHERE nid = ' + rules_field_name.nid);
+				table = table.fieldByName('table_name');
+				
+				var data = db_display.execute('SELECT ' + rulesFieldContent['widgetObj']['rules_parent_field_name'] + ' FROM ' + table + ' WHERE nid=' + rules_field_name.nid);
+				data = data.fieldByName(rulesFieldContent['widgetObj']['rules_parent_field_name']);
+				data = JSON.parse(data);
+				var violation_timestamp  = rules_violation_time_field_name.value;
+				var node_type = win.type;
+				
+				var violations_terms = [];
+				var machine_name = rulesFieldContent['settings'].vocabulary;
+				var violations_vocabulary = db_display.execute('SELECT vid from vocabulary WHERE machine_name="' + machine_name + '";');
+				var violations_terms_rslt = db_display.execute('SELECT tid,name from term_data WHERE vid=' + violations_vocabulary.fieldByName('vid'));
+				while(violations_terms_rslt.isValidRow()) {
+					if(violations_terms[violations_terms_rslt.fieldByName('tid')] == null) {
+						violations_terms[violations_terms_rslt.fieldByName('tid')] = new Array();
+					}
+					violations_terms[violations_terms_rslt.fieldByName('tid')].push({
+						title : violations_terms_rslt.fieldByName('name'),
+						tid : violations_terms_rslt.fieldByName('tid')
+					});
+					violations_terms_rslt.next();
+				}
+				if(data!= false && data != null && data != "" && data.length>0) {
+					var tids = [];
+					var used_tids = [];
+					var all_others_row = [];
+
+					for(var data_idx in data) {
+						var data_row = data[data_idx];
+						if(!isNaN(data_row['tid'])) {
+							if(data_row['node_types'][node_type] != null && data_row['node_types'][node_type] != "") {
+								if(rules_field_passed_time_check(data_row['time_rules'], violation_timestamp)) {
+
+									if(tids[data_row['tid']] == null) {
+										tids[data_row['tid']] = new Array();
+									}
+									tids[data_row['tid']].push(violations_terms[data_row['tid']][0]);
+								}
+							}
+							if(used_tids[data_row['tid']] == null) {
+								used_tids[data_row['tid']] = new Array();
+							}
+							used_tids[data_row['tid']].push(data_row['tid']);
+						} else if(data_row['tid'] == 'ALL') {
+							all_others_row.push(data_row);
+						}
+					}
+
+					if(all_others_row.length > 0) {
+						if(all_others_row[0]['node_types'][node_type] != null && all_others_row[0]['node_types'][node_type] != "") {
+							if(rules_field_passed_time_check(all_others_row[0]['time_rules'], violation_timestamp)) {
+								for(var violations_terms_idx in violations_terms) {
+									var violation_term = violations_terms[violations_terms_idx][0].tid;
+									if(used_tids[violation_term] == null || used_tids[violation_term] == "") {
+										if(tids[violation_term] == null) {
+											tids[violation_term] = new Array();
+										}
+										tids[violation_term].push(violations_terms[violations_terms_idx][0]);
+									}
+								}
+							}
+						}
+					}
+					violations_terms = tids;
+				}
+					if(rulesFieldContent.settings.cardinality > 1) {
+					for(var o_index = 0; o_index < rulesFieldContent.settings.cardinality; o_index++) {
+						var arr_picker = new Array();
+						var arr_opt = new Array();
+						arr_picker.push({
+							title : '-- NONE --',
+							tid : null
+						});
+						arr_opt.push('-- NONE --');
+						var aux_val = {
+							title : '-- NONE --',
+							vl : null,
+							cnt : 0
+						};
+
+						for(var i_data_terms in violations_terms) {
+							arr_picker.push({
+								title : violations_terms[i_data_terms][0].title,
+								tid : violations_terms[i_data_terms][0].tid
+							});
+							arr_opt.push(violations_terms[i_data_terms][0].title);
+						}
+						content[rulesFieldContent.reffer_index+o_index].arr_picker = arr_picker;
+						content[rulesFieldContent.reffer_index+o_index].arr_opt = arr_opt;
+						content[rulesFieldContent.reffer_index+o_index].title = aux_val.title;
+						content[rulesFieldContent.reffer_index+o_index].value = aux_val.value;
+					}
+				} else if (rulesFieldContent.settings.cardinality == 1) {
+						var arr_picker = new Array();
+						var arr_opt = new Array();
+						arr_picker.push({
+							title : '-- NONE --',
+							tid : null
+						});
+						arr_opt.push('-- NONE --');
+						var aux_val = {
+							title : '-- NONE --',
+							vl : null,
+							cnt : 0
+						};
+
+						for(var i_data_terms in violations_terms) {
+							arr_picker.push({
+								title : violations_terms[i_data_terms][0].title,
+								tid : violations_terms[i_data_terms][0].tid
+							});
+							arr_opt.push(violations_terms[i_data_terms][0].title);
+						}
+						content[rulesFieldContent.reffer_index].arr_picker = arr_picker;
+						content[rulesFieldContent.reffer_index].arr_opt = arr_opt;
+						content[rulesFieldContent.reffer_index].title = aux_val.title;
+						content[rulesFieldContent.reffer_index].value = aux_val.value; 
+
+					} else if(rulesFieldContent.settings.cardinality == -1) {
+						var sel_text = "";
+						var _val_itens = [];
+						var _itens = null;
+						for(var j_ind in violations_terms) {
+							_val_itens.push({
+								title : violations_terms[j_ind][0].title,
+								tid : violations_terms[j_ind][0].tid,
+								is_set : false
+							});
+						}
+						content[rulesFieldContent.reffer_index].text = sel_text;
+						content[rulesFieldContent.reffer_index].value = _itens;
+						content[rulesFieldContent.reffer_index].itens = _val_itens;
+					}
+					db_display.close();			
+
+			}
+		}
+	}
+}
+
