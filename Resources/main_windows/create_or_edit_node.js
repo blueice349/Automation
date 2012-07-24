@@ -6832,6 +6832,47 @@ create_or_edit_node.loadUI = function() {
 					_rulesFieldArr.push(content[j].reffer_index);
 					content[_reffer_index].rulesFieldArr = _rulesFieldArr;
 				}
+				
+				if(win.mode == 1){
+					if(content_widget['rules_field_name']!=null && content_widget['rules_violation_time_field_name']!=null
+				  	  && content_widget['rules_field_name']!="" && content_widget['rules_violation_time_field_name']!=""){
+				  	  	var title = '';
+				  	  	var value = content[j].value;
+				  	  	if(content[j].settings.cardinality > 1 || content[j].settings.cardinality == 1) {
+				  	  		title = content[j].title;
+				  	  	}else if(content[j].settings.cardinality == -1){
+				  	  		title = content[j].text;
+				  	  	}
+				  	  	setParticularRulesField(content[j]);
+				  	  	content[j].value = value;
+				  	  	if(content[j].settings.cardinality > 1 || content[j].settings.cardinality == 1) {
+				  	  		content[j].title = title;
+				  	  	}else if(content[j].settings.cardinality == -1){
+				  	  		content[j].text = title;
+				  	  		//for(var itens_idx =0; itens_idx<content[j].itens.length; itens_idx++){
+				  	  			//for(var value_idx=0; value_idx < content[j].value.length ; value_idx++){
+				  	  				//alert(content[j].itens[itens_idx][0].v_into);
+				  	  				//alert(content[j].value[value_idx][0].v_into);
+				  	  				//if(content[j].itens[itens_idx].v_into == content[j].value[value_idx].v_into){
+				  	  					//content[j].itens[itens_idx].is_set = true;
+				  	  				//}
+				  	  			//}
+				  	  		//}
+				  	  		var itens = content[j].itens; 
+				  	  		var value = content[j].value;
+				  	  		for(var itens_idx in itens){
+				  	  			for(var value_idx in value){
+				  	  				if(itens[itens_idx].v_info == value[value_idx].v_info){
+				  	  					itens[itens_idx].is_set = true;
+				  	  				}
+				  	  			}
+				  	  		}
+				  	  		content[j].itens = itens;
+				  	  	}
+						
+					}
+				}
+				
 			}
 
 		}
@@ -8090,10 +8131,15 @@ function showRulesRow(current_content, db_display, current_window){
 			if(contentVal instanceof Array){
 				if(contentVal.length > 0 ){
 					for(var idx=0; idx<contentVal.length; idx++ ){
-						var violation_name = db_display.execute('SELECT name FROM term_data WHERE tid='+ contentVal[idx].tid);
-						violation_name = violation_name.fieldByName('name');
+						var violation_name = '- ALL OTHER VIOLATIONS -'; 
+						if(!isNaN(contentVal[idx].tid)){
+							var db_violation_name = db_display.execute('SELECT name FROM term_data WHERE tid=' + contentVal[idx].tid);
+							violation_name = db_violation_name.fieldByName('name');
+							db_violation_name.close();
+						}
+						
+						var formsArr = [];
 						if(!isArray(contentVal[idx].node_types)) {
-							formsArr = [];
 							for(var key in contentVal[idx].node_types) {
 								if(contentVal[idx].node_types.hasOwnProperty(key)) {
 									var display_name = db_display.execute('SELECT display_name FROM bundles WHERE bundle_name="' + key + '"');
@@ -8102,7 +8148,7 @@ function showRulesRow(current_content, db_display, current_window){
 								}
 							}
 						}
-						
+
 						var row = Ti.UI.createView({
 							layout	: 'horizontal',
 							height: heightCellView,
@@ -8283,11 +8329,14 @@ function showRulesRow(current_content, db_display, current_window){
 							var formsArr = e.source.formsArr;
 							var detailsVal = e.source.details
 							var forms_str = '- All -';
-							if(formsArr.length<4){
+							if(formsArr.length<4 && formsArr.length>0){
 								forms_str = '';
 								for(var form_idx=0; form_idx<formsArr.length; form_idx++){
 									forms_str += formsArr[form_idx] + ((form_idx==formsArr.length-1)?"":", ");
 								}
+							}else if(formsArr.length==0){
+								forms_str = '- NONE -';
+								
 							}
 							formsViewLabel.text = forms_str;
 							
@@ -8358,22 +8407,17 @@ function setRulesField(select_content){
 		if(rulesFieldArr.length>0){
 			for(var rulesFieldIdx in rulesFieldArr){
 				var rulesFieldContent = content[rulesFieldArr[rulesFieldIdx]];
-				var entityArr = createEntityMultiple();
-				var rules_field_name = content[entityArr[rulesFieldContent['widgetObj']['rules_field_name']][0].reffer_index];
-				var rules_violation_time_field_name = content[entityArr[rulesFieldContent['widgetObj']['rules_violation_time_field_name']][0].reffer_index];
-				
-				db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-				var table = db_display.execute('SELECT table_name FROM node WHERE nid = ' + rules_field_name.nid);
-				table = table.fieldByName('table_name');
-				
-				var data = db_display.execute('SELECT ' + rulesFieldContent['widgetObj']['rules_parent_field_name'] + ' FROM ' + table + ' WHERE nid=' + rules_field_name.nid);
-				data = data.fieldByName(rulesFieldContent['widgetObj']['rules_parent_field_name']);
-				data = JSON.parse(data);
-				var violation_timestamp  = rules_violation_time_field_name.value;
-				var node_type = win.type;
-				
+				setParticularRulesField(rulesFieldContent);	
+			}
+		}
+	}
+}
+
+function setParticularRulesField(rulesFieldContent){
+	// Fatch violation list from database...
 				var violations_terms = [];
 				var machine_name = rulesFieldContent['settings'].vocabulary;
+				db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 				var violations_vocabulary = db_display.execute('SELECT vid from vocabulary WHERE machine_name="' + machine_name + '";');
 				var violations_terms_rslt = db_display.execute('SELECT tid,name from term_data WHERE vid=' + violations_vocabulary.fieldByName('vid'));
 				while(violations_terms_rslt.isValidRow()) {
@@ -8386,50 +8430,70 @@ function setRulesField(select_content){
 					});
 					violations_terms_rslt.next();
 				}
-				if(data!= false && data != null && data != "" && data.length>0) {
-					var tids = [];
-					var used_tids = [];
-					var all_others_row = [];
-
-					for(var data_idx in data) {
-						var data_row = data[data_idx];
-						if(!isNaN(data_row['tid'])) {
-							if(data_row['node_types'][node_type] != null && data_row['node_types'][node_type] != "") {
-								if(rules_field_passed_time_check(data_row['time_rules'], violation_timestamp)) {
-
-									if(tids[data_row['tid']] == null) {
-										tids[data_row['tid']] = new Array();
-									}
-									tids[data_row['tid']].push(violations_terms[data_row['tid']][0]);
-								}
-							}
-							if(used_tids[data_row['tid']] == null) {
-								used_tids[data_row['tid']] = new Array();
-							}
-							used_tids[data_row['tid']].push(data_row['tid']);
-						} else if(data_row['tid'] == 'ALL') {
-							all_others_row.push(data_row);
-						}
-					}
-
-					if(all_others_row.length > 0) {
-						if(all_others_row[0]['node_types'][node_type] != null && all_others_row[0]['node_types'][node_type] != "") {
-							if(rules_field_passed_time_check(all_others_row[0]['time_rules'], violation_timestamp)) {
-								for(var violations_terms_idx in violations_terms) {
-									var violation_term = violations_terms[violations_terms_idx][0].tid;
-									if(used_tids[violation_term] == null || used_tids[violation_term] == "") {
-										if(tids[violation_term] == null) {
-											tids[violation_term] = new Array();
+				
+				if(rulesFieldContent['widgetObj']['rules_field_name']!=null && rulesFieldContent['widgetObj']['rules_violation_time_field_name']!=null
+				  && rulesFieldContent['widgetObj']['rules_field_name']!="" && rulesFieldContent['widgetObj']['rules_violation_time_field_name']!=""){
+					
+					//Fatch content object of rules_field_name & rules_violation_time_field_name
+					var entityArr = createEntityMultiple();
+					var rules_field_name = content[entityArr[rulesFieldContent['widgetObj']['rules_field_name']][0].reffer_index];
+					var rules_violation_time_field_name = content[entityArr[rulesFieldContent['widgetObj']['rules_violation_time_field_name']][0].reffer_index];
+					
+					var table = db_display.execute('SELECT table_name FROM node WHERE nid = ' + rules_field_name.nid);
+					table = table.fieldByName('table_name');
+					
+					var data = db_display.execute('SELECT ' + rulesFieldContent['widgetObj']['rules_parent_field_name'] + ' FROM ' + table + ' WHERE nid=' + rules_field_name.nid);
+					data = data.fieldByName(rulesFieldContent['widgetObj']['rules_parent_field_name']);
+					data = JSON.parse(data);
+					var violation_timestamp  = rules_violation_time_field_name.value;
+					var node_type = win.type;
+					
+					if(data!= false && data != null && data != "" && data.length>0) {
+						var tids = [];
+						var used_tids = [];
+						var all_others_row = [];
+	
+						for(var data_idx in data) {
+							var data_row = data[data_idx];
+							if(!isNaN(data_row['tid'])) {
+								if(data_row['node_types'][node_type] != null && data_row['node_types'][node_type] != "") {
+									if(rules_field_passed_time_check(data_row['time_rules'], violation_timestamp)) {
+	
+										if(tids[data_row['tid']] == null) {
+											tids[data_row['tid']] = new Array();
 										}
-										tids[violation_term].push(violations_terms[violations_terms_idx][0]);
+										tids[data_row['tid']].push(violations_terms[data_row['tid']][0]);
+									}
+								}
+								if(used_tids[data_row['tid']] == null) {
+									used_tids[data_row['tid']] = new Array();
+								}
+								used_tids[data_row['tid']].push(data_row['tid']);
+							} else if(data_row['tid'] == 'ALL') {
+								all_others_row.push(data_row);
+							}
+						}
+	
+						if(all_others_row.length > 0) {
+							if(all_others_row[0]['node_types'][node_type] != null && all_others_row[0]['node_types'][node_type] != "") {
+								if(rules_field_passed_time_check(all_others_row[0]['time_rules'], violation_timestamp)) {
+									for(var violations_terms_idx in violations_terms) {
+										var violation_term = violations_terms[violations_terms_idx][0].tid;
+										if(used_tids[violation_term] == null || used_tids[violation_term] == "") {
+											if(tids[violation_term] == null) {
+												tids[violation_term] = new Array();
+											}
+											tids[violation_term].push(violations_terms[violations_terms_idx][0]);
+										}
 									}
 								}
 							}
 						}
+						violations_terms = tids;
 					}
-					violations_terms = tids;
-				}
-					if(rulesFieldContent.settings.cardinality > 1) {
+						
+				}	
+				if(rulesFieldContent.settings.cardinality > 1) {
 					for(var o_index = 0; o_index < rulesFieldContent.settings.cardinality; o_index++) {
 						var arr_picker = new Array();
 						var arr_opt = new Array();
@@ -8482,14 +8546,14 @@ function setRulesField(select_content){
 						content[rulesFieldContent.reffer_index].title = aux_val.title;
 						content[rulesFieldContent.reffer_index].value = aux_val.value; 
 
-					} else if(rulesFieldContent.settings.cardinality == -1) {
+				} else if(rulesFieldContent.settings.cardinality == -1) {
 						var sel_text = "";
 						var _val_itens = [];
 						var _itens = null;
 						for(var j_ind in violations_terms) {
 							_val_itens.push({
 								title : violations_terms[j_ind][0].title,
-								tid : violations_terms[j_ind][0].tid,
+								v_info : violations_terms[j_ind][0].tid,
 								is_set : false
 							});
 						}
@@ -8497,10 +8561,5 @@ function setRulesField(select_content){
 						content[rulesFieldContent.reffer_index].value = _itens;
 						content[rulesFieldContent.reffer_index].itens = _val_itens;
 					}
-					db_display.close();			
-
-			}
-		}
-	}
+				db_display.close();	
 }
-
