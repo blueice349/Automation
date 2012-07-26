@@ -26,7 +26,7 @@ Ti.Geolocation.purpose = "Omadi tracking module";
 
 
 // state vars used by resume/pause
-var db_coord_name	=  Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName();
+var db_coord_name	=  Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName()+"_GPS";
 var headingAdded	= false;
 var locationAdded 	= false;
 var is_module_ready = false;
@@ -103,7 +103,7 @@ else
 		Titanium.Geolocation.distanceFilter = dist_filter; //changed after first location event
 
 		
-		Ti.API.info( 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+timestamp+', "notUploaded")');
+		//Ti.API.info( 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+timestamp+', "notUploaded")');
 		
 		if ( accuracy <= 200){
 			if (last_db_timestamp == timestamp){
@@ -154,7 +154,7 @@ setInterval(function(){
 		var aux_obj = {};
 		aux_obj.timestamp = _time;
 		aux_obj.accurated_location = "INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('"+aux_long+"','"+aux_lat+"',"+_time+", 'notUploaded')";
-		Ti.API.info("INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('"+aux_long+"','"+aux_lat+"',"+_time+", 'notUploaded')");
+		//Ti.API.info("INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('"+aux_long+"','"+aux_lat+"',"+_time+", 'notUploaded')");
 		if (_time > location_obj[location_obj.length - 1].timestamp){
 			location_obj.push(aux_obj);			
 		}
