@@ -52,7 +52,7 @@ function checkUpdate(evt){
 		}
 		
 		var pageIndex = 0;
-
+ 
 		var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 
 		var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');

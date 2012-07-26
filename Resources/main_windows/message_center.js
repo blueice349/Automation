@@ -117,7 +117,7 @@ else {
 		a_msg.addEventListener('click', function(e){
 			if (e.index != e.cancel){
 				Ti.API.info('Opening node if it exists');
-				var db_t = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+				var db_t = Ti.Database.install('/database/gps_coordinates.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 				var node_f = db_t.execute('SELECT * FROM node WHERE nid='+e.source.row_obj.nid);
 				var type_vl = node_f.fieldByName('table_name'); 
 				

@@ -1,5 +1,3 @@
-Ti.App.GeoApp = {};
-
 function translateErrorCode(code) {
 	if (code == null) {
 		return null;
@@ -22,16 +20,13 @@ function translateErrorCode(code) {
 	}
 }
 
-if (PLATFORM == 'android'){
-	Ti.Geolocation.preferredProvider = Titanium.Geolocation.PROVIDER_GPS;	
-}
-else{
-	Ti.Geolocation.purpose = "Omadi tracking module";
-}
+Ti.Geolocation.preferredProvider = Titanium.Geolocation.PROVIDER_GPS;	
+Ti.Geolocation.purpose = "Omadi tracking module";
+
 
 
 // state vars used by resume/pause
-var db_coord_name	= "6";
+var db_coord_name	=  Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName();
 var headingAdded	= false;
 var locationAdded 	= false;
 var is_module_ready = false;
@@ -39,6 +34,7 @@ var location_obj 	= [];
 var dist_filter		= 5;
 var longitude = "";
 var latitude = "";
+var last_db_timestamp = 0;
 
 //
 //  SHOW CUSTOM ALERT IF DEVICE HAS GEO TURNED OFF
@@ -83,10 +79,11 @@ else
 				str_err += sim+" = "+e.error[sim]+" \n ";
 			}
 			if (PLATFORM == 'android'){
-				Ti.UI.createNotification({
-						message  : ' Omadi GPS Tracking for Android has found an error: '+str_err,
-						duration : Ti.UI.NOTIFICATION_DURATION_LONG
-				}).show();
+				// Ti.UI.createNotification({
+				//		message  : ' Omadi GPS Tracking for Android has found an error: '+str_err,
+				//		duration : Ti.UI.NOTIFICATION_DURATION_LONG
+				// }).show();
+				Ti.API.info('Omadi GPS Tracking for Android has found an error: '+str_err);
 			}
 			else{
 				notifyIOS('Omadi GPS Tracking for Android has found an error: '+str_err);				
@@ -99,7 +96,6 @@ else
 		var altitude = e.coords.altitude;
 		var heading = e.coords.heading;
 		var accuracy = e.coords.accuracy;
-		//var speed = e.coords.speed;
 		var timestamp = new Date().getTime();
 		timestamp = Math.round(timestamp/1000);
 		var altitudeAccuracy = e.coords.altitudeAccuracy;
@@ -110,14 +106,22 @@ else
 		Ti.API.info( 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+timestamp+', "notUploaded")');
 		
 		if ( accuracy <= 200){
-			location_obj.push ({
-				no_accurated_location	: false,
-				accurated_location		: "INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('"+longitude+"','"+latitude+"',"+timestamp+", 'notUploaded')",
-				accuracy				: accuracy,
-				longitude				: longitude,
-				latitude				: latitude,
-				timestamp				: timestamp
-			});
+			if (last_db_timestamp == timestamp){
+				Ti.API.info("Last DB timestamp is already the same, no adding a new one. Value = "+timestamp);
+			}
+			else if (location_obj.length > 0 && location_obj[location_obj.length-1].timestamp == timestamp){
+				location_obj[location_obj.length-1].accurated_location = "INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('"+longitude+"','"+latitude+"',"+timestamp+", 'notUploaded') " ; 
+			}
+			else{
+				location_obj.push ({
+					no_accurated_location	: false,
+					accurated_location		: "INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('"+longitude+"','"+latitude+"',"+timestamp+", 'notUploaded')",
+					accuracy				: accuracy,
+					longitude				: longitude,
+					latitude				: latitude,
+					timestamp				: timestamp
+				});
+			}
 		}
 		else{
 			if (PLATFORM == 'android'){
@@ -189,7 +193,6 @@ if (Titanium.Platform.name == 'android')
 	
 }
 
-
 setInterval(function (){
 	Ti.API.info('GPS');
 	var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name );
@@ -202,79 +205,87 @@ setInterval(function (){
 		Ti.API.info(aux_location[ind_local].accurated_location);
 		db_coord.execute(aux_location[ind_local].accurated_location);	
 	}
+	last_db_timestamp = aux_location.pop().timestamp;
 	
+	Ti.API.info("Last timestamp = "+last_db_timestamp);
 	var result = db_coord.execute("SELECT * FROM user_location WHERE status = 'notUploaded' ORDER BY timestamp DESC");
 
 	if (result.rowCount > 0){
 		Ti.API.info(result.rowCount+' gps locations were found ');
-		//Build JSON structure
-		var json_coord = "{ \"data\": [";
-		for(var i = 0; i < result.rowCount ; i++) {
-			db_coord.execute("UPDATE user_location SET status =\"json\" WHERE ulid="+result.fieldByName('ulid'));
-
-		    (i == result.rowCount-1) ?  
-		    					json_coord += " {\"lat\" : \""+ result.fieldByName('latitude') +"\", \"lng\" : \"" + result.fieldByName('longitude')  + "\" , \"time\" : \"" + result.fieldByName('timestamp') + "\"}" :
-		    					json_coord += " {\"lat\" : \""+ result.fieldByName('latitude') +"\", \"lng\" : \"" + result.fieldByName('longitude')  + "\" , \"time\" : \"" + result.fieldByName('timestamp') + "\"}, ";	 
-			result.next();		
-		}
-		json_coord += "], \"current_time\": \" "+ Math.round(new Date().getTime() / 1000)+"\" }";
-
-		result.close();
-		
-		//alert ("Before open connection");
-		var objectsCheck = Ti.Network.createHTTPClient();
-		//Timeout until error:
-		objectsCheck.setTimeout(10000);
-		
-		//Opens address to retrieve contact list
-		objectsCheck.open('POST', win2.picked + '/js-location/mobile_location.json');
-		
-		//Header parameters
-		objectsCheck.setRequestHeader("Content-Type", "application/json");
-		
-		//When connected
-		objectsCheck.onload = function(e) {
-			//Parses response into strings
-			Ti.API.info('onLoad for GPS coordiates reached! Here is the reply: ');
-			Ti.API.info(this.responseText);
-			Ti.API.info('Requested: ');
-			Ti.API.info(json_coord);
+		if(Ti.Network.getOnline() === true){
 			
-			var resultReq = JSON.parse(this.responseText);
+			//Build JSON structure
+			var json_coord = "{ \"data\": [";
+			for(var i = 0; i < result.rowCount ; i++) {
+				db_coord.execute("UPDATE user_location SET status =\"json\" WHERE ulid="+result.fieldByName('ulid'));
+	
+			    (i == result.rowCount-1) ?  
+			    					json_coord += " {\"lat\" : \""+ result.fieldByName('latitude') +"\", \"lng\" : \"" + result.fieldByName('longitude')  + "\" , \"time\" : \"" + result.fieldByName('timestamp') + "\"}" :
+			    					json_coord += " {\"lat\" : \""+ result.fieldByName('latitude') +"\", \"lng\" : \"" + result.fieldByName('longitude')  + "\" , \"time\" : \"" + result.fieldByName('timestamp') + "\"}, ";	 
+				result.next();		
+			}
+			json_coord += "], \"current_time\": \" "+ Math.round(new Date().getTime() / 1000)+"\" }";
+	
+			result.close();
 			
-			if (isJsonString(resultReq) === true){
-				if ( resultReq.inserted ){
-					if (resultReq.success){
-						Ti.API.info(resultReq.success+" GPS coordinates successfully inserted ");
-					}
-				}
-				var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name );
-				db_coord.execute('DELETE FROM user_location WHERE status="json"');
-				var _arr_content = new Array ();
-				if (resultReq.alert){
-					for(var _i in resultReq.alert){
-						for (var _j in resultReq.alert[_i]){
-							var tmstp = new Date();
-							_arr_content.push('INSERT OR REPLACE INTO alerts (ref_nid, alert_id, subject, message, timestamp) VALUES ( '+resultReq.alert[_i][_j].reference_nid+', '+resultReq.alert[_i][_j].alert_id+', "'+resultReq.alert[_i][_j].subject+'", "'+resultReq.alert[_i][_j].message+'" , "'+tmstp.getTime()+'" )');
+			//alert ("Before open connection");
+			var objectsCheck = Ti.Network.createHTTPClient();
+			//Timeout until error:
+			objectsCheck.setTimeout(10000);
+			
+			//Opens address to retrieve contact list
+			objectsCheck.open('POST', win2.picked + '/js-location/mobile_location.json');
+			
+			//Header parameters
+			objectsCheck.setRequestHeader("Content-Type", "application/json");
+			
+			//When connected
+			objectsCheck.onload = function(e) {
+				//Parses response into strings
+				Ti.API.info('onLoad for GPS coordiates reached! Here is the reply: ');
+				Ti.API.info(this.responseText);
+				Ti.API.info('Requested: ');
+				Ti.API.info(json_coord);
+				
+				var resultReq = JSON.parse(this.responseText);
+				
+				if (isJsonString(resultReq) === true){
+					if ( resultReq.inserted ){
+						if (resultReq.success){
+							Ti.API.info(resultReq.success+" GPS coordinates successfully inserted ");
 						}
 					}
+					var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name );
+					db_coord.execute('DELETE FROM user_location WHERE status="json"');
+					var _arr_content = new Array ();
+					if (resultReq.alert){
+						for(var _i in resultReq.alert){
+							for (var _j in resultReq.alert[_i]){
+								var tmstp = new Date();
+								_arr_content.push('INSERT OR REPLACE INTO alerts (ref_nid, alert_id, location_nid, location_label, message, timestamp) VALUES ( '+resultReq.alert[_i][_j].reference_nid+', '+resultReq.alert[_i][_j].alert_id+', '+resultReq.alert[_i][_j].location_nid+', "'+resultReq.alert[_i][_j].location_label+'", "'+resultReq.alert[_i][_j].message+'" , "'+tmstp.getTime()+'" )');
+							}
+						}
+					}
+					db_coord.execute("BEGIN IMMEDIATE TRANSACTION");
+					for (var _k in _arr_content){
+						db_coord.execute(_arr_content[_k]);
+					}
+					db_coord.execute("COMMIT TRANSACTION");
+					db_coord.close();
 				}
-				db_coord.execute("BEGIN IMMEDIATE TRANSACTION");
-				for (var _k in _arr_content){
-					db_coord.execute(_arr_content[_k]);
-				}
-				db_coord.execute("COMMIT TRANSACTION");
+			}
+			//Connection error:
+			objectsCheck.onerror = function(e) {
+				Ti.API.info("Error found for GPS uploading ");
 				db_coord.close();
 			}
+			
+			//Sending information and try to connect
+			objectsCheck.send(json_coord);
 		}
-		//Connection error:
-		objectsCheck.onerror = function(e) {
-			Ti.API.info("Error found for GPS uploading ");
-			db_coord.close();
+		else{
+			Ti.API.info('We are offline');
 		}
-		
-		//Sending information and try to connect
-		objectsCheck.send(json_coord);
 	}
 	else{
 		Ti.API.info('No GPS coordinates found');

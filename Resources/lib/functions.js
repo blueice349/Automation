@@ -1343,30 +1343,19 @@ function getJSON(){
 				}
 				Ti.API.info(returning_json);
 				while (node_fields.isValidRow()){
-					Ti.API.info('1');
 					if ((selected_node.rowCount > 0) && (selected_node.fieldByName(node_fields.fieldByName('field_name')) != null) && (selected_node.fieldByName(node_fields.fieldByName('field_name')) != '')){
-					Ti.API.info('2');
 						if(selected_node.fieldByName(node_fields.fieldByName('field_name')) == 7411317618171051229){
-							Ti.API.info('3');
 							var array_cont = db_json.execute('SELECT encoded_array FROM array_base WHERE node_id = '+new_nodes.fieldByName('nid')+' AND field_name = \''+node_fields.fieldByName('field_name')+'\'');
-							Ti.API.info('4');
 							if ((array_cont.rowCount > 0) || (array_cont.isValidRow())){
-								Ti.API.info('5');
 								//Decode the stored array:
 								var decoded = array_cont.fieldByName('encoded_array');
-								Ti.API.info('6');
 								decoded = Titanium.Utils.base64decode(decoded);
-								Ti.API.info('7');
 								Ti.API.info('Decoded array is equals to: '+decoded);
-								Ti.API.info('8');
 								
 								decoded = decoded.toString();
-								Ti.API.info('9');
 								// Token that splits each element contained into the array: 'j8Oc2s1E'
 								var decoded_values = decoded.split("j8Oc2s1E");
-								Ti.API.info('10');
 								returning_json += ', "'+node_fields.fieldByName('field_name')+'": [ \"'+decoded_values.join("\" , \"")+'\" ] ';
-								Ti.API.info('11 PRE_JSON: '+returning_json);
 							}
 							else{
 								Ti.API.info('12');
