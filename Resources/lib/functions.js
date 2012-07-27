@@ -13,6 +13,7 @@ var NUMBER_FORMAT_INTEGER = 'integer';
 var NUMBER_FORMAT_DECIMAL_0 = 'one decimal';
 var NUMBER_FORMAT_DECIMAL_00 = 'two decimal';
 var NUMBER_FORMAT_DECIMAL_000 = 'three decimal';
+var ROLE_ID_ADMIN = 3;
 var app_timestamp = 0;
 
 function getDBName() {
@@ -2861,34 +2862,43 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 
 							var node_type_json = JSON.parse(_nd);
 							
-							for (var _l in node_type_json.permissions){
-								for (_k in roles){
-									if (_l == _k){
-										Ti.API.info("====>> "+_l);
+						if(roles.hasOwnProperty(ROLE_ID_ADMIN)) {
+							show_plus = true;
+							app_permissions.can_create = true;
+							app_permissions.all_permissions = true;
+							app_permissions.can_update = true;
+							app_permissions.can_view = true;
+						} else {
+							for(var _l in node_type_json.permissions) {
+								for(_k in roles) {
+									if(_l == _k) {
+										Ti.API.info("====>> " + _l);
 										var stringifyObj = JSON.stringify(node_type_json.permissions[_l]);
-										if ( node_type_json.permissions[_l]["can create"] ||  node_type_json.permissions[_l]["all_permissions"]){
+										if(node_type_json.permissions[_l]["can create"] || node_type_json.permissions[_l]["all_permissions"]) {
 											show_plus = true;
 											app_permissions.can_create = true;
 										}
-										
-										if(node_type_json.permissions[_l]["all_permissions"]){
+
+										if(node_type_json.permissions[_l]["all_permissions"]) {
 											app_permissions.all_permissions = true;
 											app_permissions.can_update = true;
 											app_permissions.can_view = true;
 											continue;
 										}
-										
-										if(stringifyObj.indexOf('update')>=0 ||  node_type_json.permissions[_l]["all_permissions"]){
+
+										if(stringifyObj.indexOf('update') >= 0 || node_type_json.permissions[_l]["all_permissions"]) {
 											app_permissions.can_update = true;
 										}
-										
-										if(stringifyObj.indexOf('view')>=0 ||  node_type_json.permissions[_l]["all_permissions"]){
+
+										if(stringifyObj.indexOf('view') >= 0 || node_type_json.permissions[_l]["all_permissions"]) {
 											app_permissions.can_view = true;
 										}
-				
+
 									}
 								}
 							}
+						}
+
 							
 							Ti.API.info(flag_display+" = "+_is_disabled);							
 							

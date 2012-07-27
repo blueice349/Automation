@@ -303,8 +303,7 @@ function bottomButtons1(_nid, win3, e){
 	
 	var btn_tt = [];
 	var btn_id = [];
-	btn_tt.push('View');
-	btn_id.push(0);
+	
 	
 	if(_data.form_parts!=null && _data.form_parts!=""){
 		Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
@@ -320,6 +319,9 @@ function bottomButtons1(_nid, win3, e){
 	btn_tt.push('Edit');
 	btn_id.push(node_form.fieldByName('form_part'));
 	
+	btn_tt.push('View');
+	btn_id.push(0);
+	
 	json_data.close();
 	db_act.close();
 
@@ -331,7 +333,7 @@ function bottomButtons1(_nid, win3, e){
 	postDialog.show();
 
 	postDialog.addEventListener('click', function(ev) {
-			if (ev.index == 0 ){
+			if (ev.index == btn_tt.length-2 ){
 				//Next window to be opened 
 				var win_new = Titanium.UI.createWindow({
 					fullscreen : false,

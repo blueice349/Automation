@@ -20,7 +20,8 @@ if(PLATFORM!='android'){clearCache();}
 var win1 = Titanium.UI.createWindow({  
     title:'Omadi CRM',
     fullscreen: false,
-    zIndex: -100
+    zIndex: -100,
+	backgroundColor: '#EEEEEE'
 });
 
 var OMADI_VERSION = "omadiDb1560";
@@ -61,7 +62,7 @@ win1.add(i_scroll_page);
 var logo = Titanium.UI.createImageView({
 	width:'auto',
 	top: '10dp',
-	height: '120dp',
+	height: '114dp',
 	image: '/images/logo.png'
 });
 //Adds picker to root window
@@ -69,7 +70,7 @@ i_scroll_page.add(logo);
 
 //Web site picker 
 var portal = Titanium.UI.createTextField({
-	width:'65%',
+	width:parseInt((Ti.Platform.displayCaps.platformWidth*65)/100),
 	top: '20dp',
 	height: '53dp',
 	hintText:'Client Account',
@@ -93,7 +94,7 @@ portal.addEventListener('return', function(){
 //Text field for username
 var tf1 = Titanium.UI.createTextField({
 	hintText:'Username',
-	width:'65%',
+	width:parseInt((Ti.Platform.displayCaps.platformWidth*65)/100),
 	top: '10dp',
 	height: '53dp',
 	color:'#000000',
@@ -117,7 +118,7 @@ i_scroll_page.add(tf1);
 var tf2 = Titanium.UI.createTextField({
 	hintText:'Password',
 	color:'#000000',
-	width:'65%',
+	width:parseInt((Ti.Platform.displayCaps.platformWidth*65)/100),
 	height: '53dp',
 	top: '10dp',	
     passwordMask:true,
@@ -388,6 +389,18 @@ Ti.App.Properties.removeProperty('logStatus');
 
 //Close database
 db.close();
+
+if(PLATFORM == 'android') {
+	portal.backgroundImage = tf1.backgroundImage = tf2.backgroundImage = 'images/textfield.png';
+	b1.backgroundImage = '',
+	b1.backgroundColor = 'white',
+	b1.backgroundSelectedColor = '#2E64FE',
+	b1.borderColor = 'gray',
+	b1.borderRadius = 10,
+	b1.color = 'black',
+	b1.height = '50',
+	b1.borderWidth = 1
+}
 
 //Make everthing happen:
 win1.open();
