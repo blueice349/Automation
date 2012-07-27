@@ -169,36 +169,43 @@ while ( elements.isValidRow() ){
 
 
 	var node_type_json = JSON.parse(_nd);
-	
-	for (var _l in node_type_json.permissions){
-		for (_k in roles){
-			if (_l == _k){
-				Ti.API.info("====>> "+_l);
-				var stringifyObj = JSON.stringify(node_type_json.permissions[_l]);
-				if ( node_type_json.permissions[_l]["can create"] ||  node_type_json.permissions[_l]["all_permissions"]){
-					show_plus = true;
-					app_permissions.can_create = true;
+	if(roles.hasOwnProperty(ROLE_ID_ADMIN)) {
+		show_plus = true;
+		app_permissions.can_create = true;
+		app_permissions.all_permissions = true;
+		app_permissions.can_update = true;
+		app_permissions.can_view = true;
+	} else {
+		for(var _l in node_type_json.permissions) {
+			for(_k in roles) {
+				if(_l == _k) {
+					Ti.API.info("====>> " + _l);
+					var stringifyObj = JSON.stringify(node_type_json.permissions[_l]);
+					if(node_type_json.permissions[_l]["can create"] || node_type_json.permissions[_l]["all_permissions"]) {
+						show_plus = true;
+						app_permissions.can_create = true;
+					}
+
+					if(node_type_json.permissions[_l]["all_permissions"]) {
+						app_permissions.all_permissions = true;
+						app_permissions.can_update = true;
+						app_permissions.can_view = true;
+						continue;
+					}
+
+					if(stringifyObj.indexOf('update') >= 0 || node_type_json.permissions[_l]["all_permissions"]) {
+						app_permissions.can_update = true;
+					}
+
+					if(stringifyObj.indexOf('view') >= 0 || node_type_json.permissions[_l]["all_permissions"]) {
+						app_permissions.can_view = true;
+					}
+
 				}
-				
-				if(node_type_json.permissions[_l]["all_permissions"]){
-					app_permissions.all_permissions = true;
-					app_permissions.can_update = true;
-					app_permissions.can_view = true;
-					continue;
-				}
-				
-				if(stringifyObj.indexOf('update')>=0 ||  node_type_json.permissions[_l]["all_permissions"]){
-					app_permissions.can_update = true;
-				}
-				
-				if(stringifyObj.indexOf('view')>=0 ||  node_type_json.permissions[_l]["all_permissions"]){
-					app_permissions.can_view = true;
-				}
-				
-				
 			}
 		}
 	}
+
 	Ti.API.info(flag_display+" = "+_is_disabled);	
 	
 	if (flag_display == 'true' && ( _is_disabled != 1 && _is_disabled != "1" && _is_disabled != "true" && _is_disabled != true) ){
@@ -348,7 +355,7 @@ listView.addEventListener('click',function(e){
 				
 					win_new.open();
 				 }else{
-				     alert("You don't have access to view the " + e.row.display + " list");
+				     alert("You don't have access to view the " + e.row.display + " list.");
 					 unlock_screen();
 					 unsetUse();
 				 }

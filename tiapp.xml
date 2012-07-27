@@ -10,7 +10,7 @@
     </deployment-targets>
     <id>joseandro.omadi.com</id>
     <name>Omadi</name>
-    <version>1.4.6</version>
+    <version>1.4.8</version>
     <publisher>Joseandro</publisher>
     <url>http://www.omadi.com</url>
     <description>CRM from Omadi</description>

@@ -1,4 +1,5 @@
 var win_about = Ti.UI.currentWindow;
+win_about.backgroundColor = '#EEEEEE';
 win_about.orientationModes = [Titanium.UI.PORTRAIT];
 Ti.include('/lib/functions.js');
 
@@ -49,7 +50,7 @@ var versionLbl = Ti.UI.createLabel({
 	top : 180,
 	left : 10,
 	text : 'Application version : ' + Ti.App.version,
-	color : 'white'
+	color : '#000'
 });
 
 win_about.add(versionLbl);
@@ -119,14 +120,14 @@ var syncLbl = Ti.UI.createLabel({
 	top : 220,
 	left : 10,
 	text : lastSyncText,
-	color : 'white'
+	color : '#000'
 });
 
 win_about.add(syncLbl);
 
 var buttonView = Ti.UI.createView({
 	top : 280,
-	width : 210,
+	width : 240,
 	height : 50
 });
 
@@ -134,7 +135,7 @@ var updateBtn = Ti.UI.createButton({
 	left : 0,
 	width : 100,
 	height : 50,
-	title : 'Update'
+	title : 'Sync Data'
 });
 updateBtn.addEventListener('click', function() {
 	Ti.App.fireEvent('update_from_menu');
@@ -145,28 +146,42 @@ buttonView.add(updateBtn);
 
 var reinitializeBtn = Ti.UI.createButton({
 	left : 110,
-	width : 100,
+	width : 130,
 	height : 50,
-	title : 'Re-Initialize'
+	title : 'Reset All Data'
 });
 reinitializeBtn.addEventListener('click', function() {
-	//If delete_all is present, delete all contents:
-	db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
-	if (PLATFORM == "android"){
-		//Remove the database
-		db_installMe.remove();
-		db_installMe.close();
-	}
-	else{
-		var db_file = db_installMe.getFile();
-		db_installMe.close();
-		//phisically removes the file
-		db_file.deleteFile();
-	}
-	db_installMe = null;
-	db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
-	Ti.App.fireEvent('update_from_menu');
-	win_about.close();		
+	var dialog = Ti.UI.createAlertDialog({
+		cancel : 1,
+		buttonNames : ['Yes', 'No'],
+		message : 'Are you sure you want to reset the database?',
+		title : 'Re-initialize Alert!'
+	});
+
+	dialog.addEventListener('click', function(e) {
+		if(e.index == 0) {
+			//If delete_all is present, delete all contents:
+			db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+			if(PLATFORM == "android") {
+				//Remove the database
+				db_installMe.remove();
+				db_installMe.close();
+			} else {
+				var db_file = db_installMe.getFile();
+				db_installMe.close();
+				//phisically removes the file
+				db_file.deleteFile();
+			}
+			db_installMe = null;
+			db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+			Ti.App.fireEvent('update_from_menu');
+			dialog.hide(); 
+			win_about.close(); 
+		}
+	});
+
+	dialog.show(); 	
+			
 });
 
 buttonView.add(reinitializeBtn);
