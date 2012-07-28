@@ -181,7 +181,7 @@ else {
 					buttonNames: ['Close', 'See Node'],
 					cancel: 0,
 					message: "What would you like to do ?"
-				});
+				}); 
 				a_msg.show();
 				a_msg.addEventListener('click', function(ev){
 					var clicked_false = false;
