@@ -205,9 +205,11 @@ setInterval(function (){
 		Ti.API.info(aux_location[ind_local].accurated_location);
 		db_coord.execute(aux_location[ind_local].accurated_location);	
 	}
-	last_db_timestamp = aux_location.pop().timestamp;
-	
-	Ti.API.info("Last timestamp = "+last_db_timestamp);
+	if (aux_location.length > 0){
+		last_db_timestamp = aux_location.pop().timestamp;
+		
+		Ti.API.info("Last timestamp = "+last_db_timestamp);
+	}
 	var result = db_coord.execute("SELECT * FROM user_location WHERE status = 'notUploaded' ORDER BY timestamp DESC");
 
 	if (result.rowCount > 0){
@@ -249,7 +251,7 @@ setInterval(function (){
 				
 				var resultReq = JSON.parse(this.responseText);
 				
-				if (isJsonString(resultReq) === true){
+				if (1){
 					if ( resultReq.inserted ){
 						if (resultReq.success){
 							Ti.API.info(resultReq.success+" GPS coordinates successfully inserted ");
@@ -258,12 +260,12 @@ setInterval(function (){
 					var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name );
 					db_coord.execute('DELETE FROM user_location WHERE status="json"');
 					var _arr_content = new Array ();
+					Ti.API.info("ALERTS: "+resultReq.alert);
 					if (resultReq.alert){
 						for(var _i in resultReq.alert){
-							for (var _j in resultReq.alert[_i]){
-								var tmstp = new Date();
-								_arr_content.push('INSERT OR REPLACE INTO alerts (ref_nid, alert_id, location_nid, location_label, message, timestamp) VALUES ( '+resultReq.alert[_i][_j].reference_nid+', '+resultReq.alert[_i][_j].alert_id+', '+resultReq.alert[_i][_j].location_nid+', "'+resultReq.alert[_i][_j].location_label+'", "'+resultReq.alert[_i][_j].message+'" , "'+tmstp.getTime()+'" )');
-							}
+							var tmstp = new Date();
+							Ti.API.info("Alert Message: "+resultReq.alert[_i].message);
+							_arr_content.push('INSERT OR REPLACE INTO alerts (ref_nid, alert_id, location_nid, location_label, message, timestamp) VALUES ( '+resultReq.alert[_i].reference_id+', '+resultReq.alert[_i].alert_id+', '+resultReq.alert[_i].location_nid+', "'+resultReq.alert[_i].location_label+'", "'+resultReq.alert[_i].message+'" , "'+tmstp.getTime()+'" )');
 						}
 					}
 					db_coord.execute("BEGIN IMMEDIATE TRANSACTION");
@@ -292,4 +294,4 @@ setInterval(function (){
 		result.close();
 		db_coord.close();
 	}
-}, 120000);
+}, 60000);

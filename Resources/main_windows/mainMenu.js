@@ -136,8 +136,8 @@ function update_node(mode, close_parent, _node_name){
 
 var listView = Titanium.UI.createTableView({
 	data : [],
-	top : '50',
-	bottom: '60',
+	top : '50dp',
+	bottom: '60dp',
 	scrollable: true,
 	zIndex: 999,
 	separatorColor: '#BDBDBD'
@@ -368,7 +368,7 @@ listView.addEventListener('click',function(e){
 var loggedView = Titanium.UI.createView({
 	top: '0px',	
 	backgroundColor:'#111',
-	height: '50',
+	height: '50dp',
 	width: '100%',
 	opacity: 0.99
 });
@@ -389,7 +389,7 @@ var offImage = Titanium.UI.createLabel({
 	width:'20%',
 	horizontalAlign: 'left',
 	right: '5%',
-	height: '30px'
+	height: 'auto'
 }); 
 
 loggedView.add(label_top);
@@ -575,7 +575,7 @@ setInterval( function(){
 
 var databaseStatusView = Titanium.UI.createView({
 	backgroundColor:'#000',
-	height: '60',
+	height: '60dp',
 	width: '100%',
 	bottom: 0,
 	layout: 'horizontal'
@@ -585,7 +585,8 @@ var databaseStatusView = Titanium.UI.createView({
 
 var home_view = Ti.UI.createView({
 	backgroundSelectedColor: 'orange',
-	focusable: true
+	focusable: true,
+	width: '33%'
 });
 databaseStatusView.add(home_view);
 var home_img = Ti.UI.createImageView({
@@ -595,14 +596,17 @@ var home_lb = Ti.UI.createLabel({
 	text: 'Home',
 	font: {
 		fontSize: '14dp'
-	}	
+	},
+	height: 'auto',
+	bottom: 0
 });
 home_view.add(home_img);
 home_view.add(home_lb);
 
 var alerts_view = Ti.UI.createView({
 	backgroundSelectedColor: 'orange',
-	focusable: true
+	focusable: true,
+	width: '33%'
 });
 databaseStatusView.add(alerts_view);
 var alerts_img = Ti.UI.createImageView({
@@ -612,7 +616,9 @@ var alerts_lb = Ti.UI.createLabel({
 	text: 'Alerts',
 	font: {
 		fontSize: '14dp'
-	}	
+	},
+	height: 'auto',
+	bottom: 0
 });
 alerts_view.add(alerts_img);
 alerts_view.add(alerts_lb);
@@ -654,22 +660,21 @@ alerts_view.addEventListener('click', function(){
 
 var drafts_view = Ti.UI.createView(
 {
-	top: 7,
 	backgroundSelectedColor: 'orange',
-	focusable: true
+	focusable: true,
+	width: '33%'
 });
 databaseStatusView.add(drafts_view);
 var draft_img = Ti.UI.createImageView({
-	image: '/images/draft.png',
-	height: '22',
-	width: '25'
+	image: '/images/draft.png'
 });
 var drafts_lb = Ti.UI.createLabel({
 	text: 'Drafts',
-	top: 3,
 	font: {
 		fontSize: '14dp'
-	}	
+	},
+	height: 'auto',
+	bottom: 0
 });
 drafts_view.add(draft_img);
 drafts_view.add(drafts_lb);
@@ -678,7 +683,7 @@ drafts_view.addEventListener('click', function(){
 });
 
 //View settings (Draft/ Alert/ Home)
-drafts_view.height = alerts_view.height = home_view.height = 60;
+drafts_view.height = alerts_view.height = home_view.height = '60dp';
 drafts_view.layout = alerts_view.layout = home_view.layout = 'vertical';
 
 //Label settings (Draft/ Alert/ Home)
@@ -688,13 +693,11 @@ drafts_lb.width 	= alerts_lb.width 		= home_lb.width 	= 'auto';
 drafts_lb.textAlign = alerts_lb.textAlign 	= home_lb.textAlign = 'center';
 
 //Image view setting (Draft/ Alert/ Home)
-alerts_img.height 	= home_img.height 	= '30';
-alerts_img.width	= home_img.width 	= '30';
-draft_img.top 		= alerts_img.top 	= draft_img.top = '2';
+alerts_img.height = draft_img.height = home_img.height 	= '30dp';
+alerts_img.width  = draft_img.width	= home_img.width 	= '30dp';
+draft_img.top 	  = alerts_img.top 	= draft_img.top = '2dp';
 
-if(PLATFORM == 'android'){
-	drafts_view.width = alerts_view.width = home_view.width = Ti.Platform.displayCaps.platformWidth/3;
-}else{
+if(PLATFORM != 'android'){
 	drafts_view.width = alerts_view.width = home_view.width = Ti.Platform.displayCaps.platformWidth/4;
 	
 	var actions_view = Ti.UI.createView({
@@ -705,14 +708,14 @@ if(PLATFORM == 'android'){
 	databaseStatusView.add(actions_view);
 	var actions_img = Ti.UI.createImageView({
 		image: '/images/action.png',
-		width: '30',
-		height: '30',
+		width: '30dp',
+		height: '30dp',
 		top: 5
 	});
 	var actions_lb = Ti.UI.createLabel({
 		text: 'Actions',
 		color:'#FFFFFF',
-		height:'16',
+		height:'16dp',
 		width:'auto',
 		textAlign:'center',
 		font: {
@@ -807,14 +810,14 @@ function openDraftWindow(){
 
 function lock_screen(){
 	win2.touchEnabled = false;
-	//win2.focusable = false;
 	databaseStatusView.touchEnabled = false;
+	databaseStatusView.focusable = false;
 }
 
 function unlock_screen(){
 	win2.touchEnabled = true;
-	//win2.focusable = true;
 	databaseStatusView.touchEnabled = true;
+	databaseStatusView.focusable = true;
 }
 
 Ti.App.addEventListener('update_from_menu', function(){

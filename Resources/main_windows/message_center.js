@@ -184,7 +184,18 @@ else {
 				});
 				a_msg.show();
 				a_msg.addEventListener('click', function(ev){
-					if (ev.index != ev.cancel){
+					var clicked_false = false;
+					if (PLATFORM == 'android'){
+						if (ev.cancel != false){
+							clicked_false = true; 
+						}
+					}
+					else{
+						if (ev.index == ev.cancel){
+							clicked_false = true
+						}
+					}
+					if (clicked_false == false){
 						Ti.API.info('Opening node if it exists');
 						//Next window to be opened
 						var win_new = Titanium.UI.createWindow({
