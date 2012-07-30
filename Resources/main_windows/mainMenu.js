@@ -166,9 +166,13 @@ while ( elements.isValidRow() ){
 		"all_permissions" : false,
 		"can_view" : false
 	}
-
-
+	
 	var node_type_json = JSON.parse(_nd);
+	if(node_type_json.no_mobile_display!=null && node_type_json.no_mobile_display == 1 && node_type_json.no_mobile_display == '1'){
+		elements.next();
+		continue;
+	}
+	
 	if(roles.hasOwnProperty(ROLE_ID_ADMIN)) {
 		show_plus = true;
 		app_permissions.can_create = true;
@@ -214,7 +218,7 @@ while ( elements.isValidRow() ){
 			height      : 60,	
 			display     : display,
 			name		: display,
-			description : description,
+			desc : description,
 			name_table  : name_table,
 			show_plus 	: show_plus,
 			app_permissions: app_permissions,
@@ -228,7 +232,8 @@ while ( elements.isValidRow() ){
 			height: 48,
 			top: 6,
 			left: 5,
-			image: '/images/icons/' + display.toLowerCase() + '.png'
+			image: '/images/icons/' + display.toLowerCase() + '.png',
+			desc : description,
 		});
 		
 		if(icon.toBlob() == null || icon.toBlob().length == 0){
@@ -240,19 +245,20 @@ while ( elements.isValidRow() ){
 			font:{
 				fontSize:28
 			},
-			width:'83%',
+			width:'80%',
 			textAlign:'left',
 			left:58,
-			height:'auto',
-			color: '#000'
+			height:'48',
+			color: '#000',
+			desc : description,
 		});
 
 		var plus =  Titanium.UI.createButton({
 			backgroundImage: '/images/plus_btn.png',
 			backgroundSelectedImage: '/images/plus_btn_selected.png',
-			width:40,
-			height:31,
-			right:5,
+			width:64,
+			height:48,
+			right: 1,
 			is_plus: true
 		});
 		if (show_plus === false){
@@ -266,6 +272,19 @@ while ( elements.isValidRow() ){
 		_data_rows.push(row_t);
 		_data_rows.sort(sortTableView);
 		listView.setData(_data_rows);
+		
+		
+		row_t.addEventListener('longpress', function(e) {
+			if(e.source.desc != null && e.source.desc != "") {
+				alert(e.source.desc)
+			}
+		}); 
+		row_t.addEventListener('longclick', function(e) {
+			if(e.source.desc != null && e.source.desc != "") {
+				alert(e.source.desc)
+			}
+		}); 
+
 	}
 	elements.next();
 }
@@ -363,6 +382,8 @@ listView.addEventListener('click',function(e){
 		}
 	}, 1000);
 });
+
+
 
 // showToolbar(name, win2)					
 var loggedView = Titanium.UI.createView({
