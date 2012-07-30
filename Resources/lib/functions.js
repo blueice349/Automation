@@ -2964,16 +2964,23 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								row_a.add(title_a);
 								row_a.add(plus_a);
 								
-								row_t.addEventListener('longpress', function(e) {
-									if(e.source.desc != null && e.source.desc != "") {
-										alert(e.source.desc)
-									}
-								}); 
-								row_t.addEventListener('longclick', function(e) {
-									if(e.source.desc != null && e.source.desc != "") {
-										alert(e.source.desc)
-									}
-								}); 
+								
+									
+								if(PLATFORM == 'android') {
+									row_a.addEventListener('longclick', function(e) {
+										if(e.source.desc != null && e.source.desc != "") {
+											alert(e.source.desc)
+										}
+									});
+								} else {
+									row_a.addEventListener('longpress', function(e) {
+										if(e.source.desc != null && e.source.desc != "") {
+											alert(e.source.desc)
+										}
+									});
+								}
+
+								
 								//menu.appendRow(row_a);
 								data_rows.push(row_a);
 								data_rows.sort(sortTableView);

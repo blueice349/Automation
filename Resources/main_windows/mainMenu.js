@@ -273,17 +273,19 @@ while ( elements.isValidRow() ){
 		_data_rows.sort(sortTableView);
 		listView.setData(_data_rows);
 		
-		
-		row_t.addEventListener('longpress', function(e) {
-			if(e.source.desc != null && e.source.desc != "") {
-				alert(e.source.desc)
-			}
-		}); 
-		row_t.addEventListener('longclick', function(e) {
-			if(e.source.desc != null && e.source.desc != "") {
-				alert(e.source.desc)
-			}
-		}); 
+		if(PLATFORM == 'android') {
+			row_t.addEventListener('longclick', function(e) {
+				if(e.source.desc != null && e.source.desc != "") {
+					alert(e.source.desc)
+				}
+			});
+		} else {
+			row_t.addEventListener('longpress', function(e) {
+				if(e.source.desc != null && e.source.desc != "") {
+					alert(e.source.desc)
+				}
+			});
+		}
 
 	}
 	elements.next();
