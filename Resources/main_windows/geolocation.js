@@ -193,7 +193,7 @@ if (Titanium.Platform.name == 'android')
 	
 }
 
-setInterval(function (){
+Ti.App.addEventListener('upload_gps_locations', function(){
 	Ti.API.info('GPS');
 	var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name );
 	Ti.API.info("Length before: "+location_obj.length);
@@ -249,9 +249,8 @@ setInterval(function (){
 				Ti.API.info('Requested: ');
 				Ti.API.info(json_coord);
 				
-				var resultReq = JSON.parse(this.responseText);
-				
-				if (1){
+				if (isJsonString(this.responseText) === true){
+					var resultReq = JSON.parse(this.responseText);
 					if ( resultReq.inserted ){
 						if (resultReq.success){
 							Ti.API.info(resultReq.success+" GPS coordinates successfully inserted ");
@@ -260,20 +259,43 @@ setInterval(function (){
 					var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name );
 					db_coord.execute('DELETE FROM user_location WHERE status="json"');
 					var _arr_content = new Array ();
-					Ti.API.info("ALERTS: "+resultReq.alert);
+					var nids = new Array();
 					if (resultReq.alert){
 						for(var _i in resultReq.alert){
 							var tmstp = new Date();
-							Ti.API.info("Alert Message: "+resultReq.alert[_i].message);
-							_arr_content.push('INSERT OR REPLACE INTO alerts (ref_nid, alert_id, location_nid, location_label, message, timestamp) VALUES ( '+resultReq.alert[_i].reference_id+', '+resultReq.alert[_i].alert_id+', '+resultReq.alert[_i].location_nid+', "'+resultReq.alert[_i].location_label+'", "'+resultReq.alert[_i].message+'" , "'+tmstp.getTime()+'" )');
+							for (var _y in resultReq.alert[_i].alerts){
+								if (resultReq.alert[_i].alerts[_y]){
+									if (nids.indexOf(resultReq.alert[_i].alerts[_y].location_nid) == -1){
+										nids.push( resultReq.alert[_i].alerts[_y].location_nid );
+									}	
+									Ti.API.info("Alert Message: "+resultReq.alert[_i].alerts[_y].message);
+									_arr_content.push('INSERT OR REPLACE INTO alerts (subject, ref_nid, alert_id, location_nid, location_label, message, timestamp) VALUES ( "'+resultReq.alert[_i].alerts[_y].subject+'", '+resultReq.alert[_i].alerts[_y].reference_id+', '+resultReq.alert[_i].alerts[_y].alert_id+', '+resultReq.alert[_i].alerts[_y].location_nid+', "'+resultReq.alert[_i].alerts[_y].location_label+'", "'+resultReq.alert[_i].alerts[_y].message+'" , '+tmstp.getTime()+' )');
+								}
+								else{
+									if (nids.indexOf(resultReq.alert[_i].alerts.location_nid) == -1){
+										nids.push( resultReq.alert[_i].alerts.location_nid );
+									}	
+									Ti.API.info("Alert Message: "+resultReq.alert[_i].alerts.message);
+									_arr_content.push('INSERT OR REPLACE INTO alerts (subject, ref_nid, alert_id, location_nid, location_label, message, timestamp) VALUES ( "'+resultReq.alert[_i].alerts.subject+'", '+resultReq.alert[_i].alerts.reference_id+', '+resultReq.alert[_i].alerts.alert_id+', '+resultReq.alert[_i].alerts.location_nid+', "'+resultReq.alert[_i].alerts.location_label+'", "'+resultReq.alert[_i].alerts.message+'" , '+tmstp.getTime()+' )');
+								}
+								
+							}
 						}
 					}
 					db_coord.execute("BEGIN IMMEDIATE TRANSACTION");
+					for(var _e in nids){
+						db_coord.execute('DELETE FROM alerts WHERE location_nid='+nids[_e]);
+						Ti.API.info('Deleted location nids: '+nids[_e]);
+					}
+					
 					for (var _k in _arr_content){
+						Ti.API.info(_arr_content[_k]);
 						db_coord.execute(_arr_content[_k]);
 					}
 					db_coord.execute("COMMIT TRANSACTION");
+					Ti.API.info('Finished inserting');
 					db_coord.close();
+					Ti.App.fireEvent('refresh_UI_Alerts');
 				}
 			}
 			//Connection error:
@@ -294,4 +316,8 @@ setInterval(function (){
 		result.close();
 		db_coord.close();
 	}
-}, 60000);
+});
+
+setInterval(function (){
+	Ti.App.fireEvent('upload_gps_locations');
+}, 120000);

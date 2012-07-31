@@ -12,6 +12,7 @@
  */ 
 
 Ti.include('/main_windows/create_or_edit_node.js');
+Ti.include('/main_windows/message_center.js');
 
 //Current window's instance
 var win2 = Ti.UI.currentWindow;
@@ -638,22 +639,17 @@ alerts_view.addEventListener('click', function(){
 			if(PLATFORM == 'android'){
 				notf.hide();
 			}
-			setUse();		
-			var win_new = Titanium.UI.createWindow({
-				title : 'Message center',
-				fullscreen : false,
-				url : 'message_center.js',
-				uid : jsonLogin.user.uid,
-				up_node : update_node,
-				backgroundColor: '#EEE'
-			});
+			var win_new = message_center.get_win();
 			win_new.picked = win2.picked;
 			
 			win_new.addEventListener('focus', function(){
-					unlock_screen();
+				unlock_screen();
 			});
 			
 			win_new.open();
+			setTimeout(function(){message_center.loadUI();}, 100);
+			//setInterval(function(){Ti.App.fireEvent('refresh_UI');}, 1000);
+			
 		}
 	}, 1000);	
 });
