@@ -42,6 +42,7 @@ var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getS
 var resultsNames  = db.execute('SELECT node.nid, node.title FROM node INNER JOIN '+win3.type+' ON node.nid='+win3.type+'.nid WHERE (node.flag_is_updated=0 OR node.flag_is_updated=1) ORDER BY node.title ASC ');
 
 var data = [];
+var filterData = [];
 var i = 0;
 
 i = 0;
@@ -92,14 +93,16 @@ else {
 	var search = Ti.UI.createSearchBar({
 		hintText : 'Search...',
 		autocorrect : false,
-		barColor : '#000'
+		barColor : '#000',
+		top: 0,
+		color: 'black',
+		height: 50
 	});
 	
 	//Contat list container
 	var listTableView = Titanium.UI.createTableView({
 		data : data,
-		search : search,
-		height : '91%',
+		//height : '91%',
 		separatorColor: '#BDBDBD'
 	});
 	
@@ -114,6 +117,16 @@ else {
 	// SEARCH BAR EVENTS
 	search.addEventListener('change', function(e) {
 		//e.value; // search string as user types
+		filterData = [];
+		for(var i = 0; i < data.length; i++) {
+			var rg = new RegExp(e.source.value, 'i');
+			if(data[i].title.search(rg) != -1) {
+				filterData.push(data[i]);
+			}
+		}
+		listTableView.setData(filterData);
+		
+		
 	});
 
 	search.addEventListener('return', function(e) {
@@ -122,9 +135,11 @@ else {
 	});
 	
 	search.addEventListener('cancel', function(e) {
+		e.source.value = "";
 		search.blur();
 		//hides the keyboard
 	});
+	
 	win3.addEventListener('android:menu', function() {
 		alert('clicked');
 	});
@@ -133,6 +148,7 @@ else {
 	listTableView.addEventListener('click', function(e) {
 		//Hide keyboard when returning 
 		firstClick = true;
+		search.blur();
 		if (PLATFORM == "android"){
 				var win_new = Titanium.UI.createWindow({
 					fullscreen : false,
@@ -144,9 +160,6 @@ else {
 					region_form: e.row.form_part,
 					backgroundColor: '#000'
 				});
-		
-				search.blur();
-				//hide keyboard
 		
 				//Passing parameters
 				win_new.picked 			 = win3.picked;
@@ -162,15 +175,14 @@ else {
 		
 	});
 	//Adds contact list container to the UI
+	win3.add(search);
 	win3.add(listTableView);
 	search.blur();
-	win3.addEventListener('focus', function(){
-		setTimeout(function (){
-			search.blur();
-		}, 110 );
-	});
-
-
+	// win3.addEventListener('focus', function(){
+		// setTimeout(function (){
+			// //search.blur();
+		// }, 110 );
+	// });
 }
 
 resultsNames.close();
@@ -179,6 +191,10 @@ db.close();
 //showBottom(actualWindow, goToWindow )
 if(PLATFORM == 'android'){
 	bottomBack(win3, "Back" , "enable", true);
+	if (listTableView != null ){
+		listTableView.bottom = '6%'	
+		listTableView.top = 50;
+	}
 	if(win3.show_plus == true){
 		var activity = win3.activity;
 		activity.onCreateOptionsMenu = function(e) {
@@ -194,15 +210,14 @@ if(PLATFORM == 'android'){
 		}
 	}
 }else{
-	if (listTableView != null){
-		listTableView.height = "97%";	
-	}
 	topToolBar_object();
 }
 
 function topToolBar_object(){
 	if (listTableView != null ){
-		listTableView.top = '40'		
+		listTableView.top = '90'	
+		search.top = '40';
+		listTableView.bottom = 0;			
 	}
 
 	var back = Ti.UI.createButton({
@@ -345,9 +360,6 @@ function bottomButtons1(_nid, win3, e){
 					region_form: e.row.form_part,
 					backgroundColor: '#000'
 				});
-		
-				search.blur();
-				//hide keyboard
 		
 				//Passing parameters
 				win_new.picked 		 = win3.picked;

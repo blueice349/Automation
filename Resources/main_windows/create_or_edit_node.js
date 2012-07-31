@@ -4504,7 +4504,12 @@ create_or_edit_node.loadUI = function() {
 													e.source.autocomplete_table.setData(table_data);
 													e.source.autocomplete_table.scrollToTop(0, {animated: false});
 													viewContent.scrollTo(0,e.source.top);
-													e.source.autocomplete_table.visible = true;
+													if(table_data.length > 0) {
+														e.source.autocomplete_table.visible = true;
+													} else {
+														e.source.autocomplete_table.visible = false;
+													}
+
 												} else {
 													e.source.autocomplete_table.visible = false;
 													e.source.tid = null;
@@ -4683,7 +4688,11 @@ create_or_edit_node.loadUI = function() {
 												e.source.autocomplete_table.setData(table_data);
 												e.source.autocomplete_table.scrollToTop(0, {animated: false});
 												viewContent.scrollTo(0,e.source.top);
-												e.source.autocomplete_table.visible = true;
+												if(table_data.length > 0) {
+													e.source.autocomplete_table.visible = true;
+												} else {
+													e.source.autocomplete_table.visible = false;
+												}
 											} else {
 												e.source.autocomplete_table.visible = false;
 												e.source.tid = null;
@@ -4925,7 +4934,11 @@ create_or_edit_node.loadUI = function() {
 												e.source.autocomplete_table.setData(table_data);
 												e.source.autocomplete_table.scrollToTop(0, {animated: false});
 												viewContent.scrollTo(0,e.source.top);
-												e.source.autocomplete_table.visible = true;
+												if(table_data.length > 0) {
+													e.source.autocomplete_table.visible = true;
+												} else {
+													e.source.autocomplete_table.visible = false;
+												}												
 											} else {
 												e.source.autocomplete_table.visible = false;
 												e.source.nid = null;
@@ -5087,7 +5100,11 @@ create_or_edit_node.loadUI = function() {
 											e.source.autocomplete_table.setData(table_data);
 											e.source.autocomplete_table.scrollToTop(0, {animated: false});
 											viewContent.scrollTo(0,e.source.top);
-											e.source.autocomplete_table.visible = true;
+											if(table_data.length>0){
+												e.source.autocomplete_table.visible = true;
+											}else{
+												e.source.autocomplete_table.visible = false;
+											}
 										} else {
 											e.source.autocomplete_table.visible = false;
 											e.source.nid = null;
@@ -6427,7 +6444,11 @@ create_or_edit_node.loadUI = function() {
 											e.source.autocomplete_table.setData(table_data);
 											e.source.autocomplete_table.scrollToTop(0, {animated: false});
 											viewContent.scrollTo(0,e.source.top);
-											e.source.autocomplete_table.visible = true;
+											if(table_data.length>0){
+												e.source.autocomplete_table.visible = true;
+											}else{
+												e.source.autocomplete_table.visible = false;
+											}
 										} else {
 											e.source.autocomplete_table.visible = false;
 										}
