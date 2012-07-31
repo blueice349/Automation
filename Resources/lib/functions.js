@@ -2861,6 +2861,11 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 
 
 							var node_type_json = JSON.parse(_nd);
+								
+							if(node_type_json.no_mobile_display != null && node_type_json.no_mobile_display == 1 && node_type_json.no_mobile_display == '1') {
+								n_bund.next();
+								continue;
+							}
 							
 						if(roles.hasOwnProperty(ROLE_ID_ADMIN)) {
 							show_plus = true;
@@ -2908,7 +2913,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									height      : 60,
 									name		: display,
 									display     : display,
-									description : description,
+									desc : description,
 									name_table  : name_table,
 									show_plus 	: show_plus,
 									app_permissions: app_permissions,
@@ -2922,6 +2927,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									height: 48,
 									top: 6,
 									left: 5,
+									desc : description,
 									image: '/images/icons/' + display.toLowerCase() + '.png'
 								});
 								
@@ -2934,19 +2940,20 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									font:{
 										fontSize:28
 									},
-									width:'83%',
+									width:'80%',
 									textAlign:'left',
 									left:58,
 									height:'auto',
+									desc : description,
 									color: '#000'
 								});
 								
 								var plus_a =  Titanium.UI.createButton({
 									backgroundImage: '/images/plus_btn.png',
 									backgroundSelectedImage: '/images/plus_btn_selected.png',
-									width:40,
-									height:31,
-									right:5,
+									width:64,
+									height:48,
+									right: 1,
 									is_plus: true
 								});
 								if (show_plus === false){
@@ -2956,7 +2963,24 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								row_a.add(icon);
 								row_a.add(title_a);
 								row_a.add(plus_a);
-	
+								
+								
+									
+								if(PLATFORM == 'android') {
+									row_a.addEventListener('longclick', function(e) {
+										if(e.source.desc != null && e.source.desc != "") {
+											alert(e.source.desc)
+										}
+									});
+								} else {
+									row_a.addEventListener('longpress', function(e) {
+										if(e.source.desc != null && e.source.desc != "") {
+											alert(e.source.desc)
+										}
+									});
+								}
+
+								
 								//menu.appendRow(row_a);
 								data_rows.push(row_a);
 								data_rows.sort(sortTableView);
@@ -3426,46 +3450,79 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 //The window closes when it receives a click event
 function openBigText(descAux){
 	var descWin = Ti.UI.createWindow({
-		modal: true,
-		opacity: 0.99
+		backgroundColor: '#00000000'
 	});
+	var tanslucent = Ti.UI.createView({
+		backgroundColor: 'black',
+		opacity: 0.5
+	});
+	tanslucent.top = tanslucent.bottom = tanslucent.right = tanslucent.left = 0;
+	var baseView = Ti.UI.createView({
+		backgroundColor: '#424242',
+		left: 5,
+		right: 5,
+		height: '250'
+	});
+	descWin.add(tanslucent);
+	descWin.add(baseView);
 	
 	//Header where the selected name is presented
 	var descHeader = Ti.UI.createView({
-		top: '0',
-		height: '20%',
-		width: '100%',
-		borderRadius: 5,
-		backgroundColor: '#A9A9A9',
-		opacity: 0.5
+		backgroundImage: '../images/header.png',
+		top: '1',
+		height: '38',
+		left: 1,
+		right: 1
 	});
-	descWin.add(descHeader);
-	
-	//Label containing the selected name
 	var labelDescContent = Ti.UI.createLabel({
-		text: "Description",
-		height: 'auto',
-		color: "#FFFFFF",
-		width:  '90%',
-		font: {fontSize: 18,  fontWeight: "bold"},
-		textAlign: 'center',
-		touchEnabled: false
+		text : 'Desciption',
+		left : 5,
+		height : 30,
+		width : Ti.Platform.displayCaps.platformWidth - 10,
+		color : '#fff',
+		font : {
+			fontFamily : 'Helvetica Neue',
+			fontSize : 18,
+			fontWeight : 'bold',
+
+		},
+		ellipsize : true,
+		wordWrap : false
 	});
-	
+	var close_btn = Ti.UI.createImageView({
+		height : 30,
+		width : 25,
+		top : 4,
+		right: 5,
+		image : '../images/close.png'
+	}); 
+	baseView.add(descHeader);
 	descHeader.add(labelDescContent);
+	descHeader.add(close_btn);
 		
 	var textDesc = Ti.UI.createTextArea({
+		top: 40,
+		bottom: 1,
+		left: 1,
+		right: 1,
 		value: descAux,
 		color: "blue",
 		editable: false,
-		top: "30%"
+		backgroundColor: '#fff',
+		backgroundImage: '',
+		font: {
+			fontSize: 12
+		}
 	});	
 	
-	descWin.add(textDesc);
+	baseView.add(textDesc);
 	
 	descWin.open();
 	
-	descWin.addEventListener('click', function(){
+	close_btn.addEventListener('click', function(){
+		descWin.close();
+	});
+	tanslucent.addEventListener('click', function(){
 		descWin.close();
 	});
 }
@@ -3747,21 +3804,23 @@ function reduceImageSize(blobImage, maxWidth, maxHeight){
 		width: 'auto',
 		height: 'auto'
 	});
-	image1 = image1.toBlob();
+	var imageBlob = image1.toBlob();
 	var multiple;
-	if(image1.height/image1.width>maxHeight/maxWidth) {
-		multiple=image1.height/maxHeight;
+	if(imageBlob.height/imageBlob.width>maxHeight/maxWidth) {
+		multiple=imageBlob.height/maxHeight;
+		alert(multiple);
 	} else {
-		multiple=image1.width/maxWidth;
+		multiple=imageBlob.width/maxWidth;
 	}
 
 	if(multiple >= 1) {
-		image1.height /= multiple;
-		image1.width /= multiple;
+		image1.height = parseInt(imageBlob.height/multiple);
+		image1.width =  parseInt(imageBlob.width/multiple);
 	}else{
 		
 	}
 	return image1;
+	
 }
 
 function updateFileUploadTable(win, json){
@@ -3869,64 +3928,66 @@ function downloadMainImage(file_id, content, win){
 
 function showImage(source){
 	var imageWin = Ti.UI.createWindow({
-		backgroundColor : 'black',
-		layout: 'vertical'
+		backgroundColor : '#00000000',
 	});
 	imageWin.orientation = [Ti.UI.PORTRAIT];
-	var title = Ti.UI.createLabel({
-		textAlign: 'center',
-		text: source.label,
-		font : {
-			fontSize: 18, fontWeight: 'bold'
-		},
-		height: 30,
-		left: 10,
-		right:10,
-		color: '#fff',
-		backgroundColor: '#585858'
-	});
-	imageWin.add(title);
-		
-	var border = Ti.UI.createView({
-		backgroundColor : "#F16A0B",
-		height : 2,
-		left : 10,
-		right : 10,
-	});
-	var imageFileView = Ti.UI.createImageView({
-		left : 10,
-		right : 10,
-		top : 10,
-		height: Ti.Platform.displayCaps.platformHeight - 150,
-		canScale : true,
-		image : source.bigImg
-	});
 	
-	var border01 = Ti.UI.createView({
-		backgroundColor : "#F16A0B",
-		height : 2,
-		left : 10,
-		right : 10,
-		top: 5,
+	var tanslucent = Ti.UI.createView({
+		backgroundColor: 'black',
+		opacity: 0.7,
+		top: 0,
+		bottom: 0,
+		right: 0,
+		left: 0
 	});
-	var close = Ti.UI.createButton({
-		right : 10,
-		height:45,
-		left: 10,
-		top: 5,
-		title: 'Close',
+	imageWin.add(tanslucent);
+	//Header part
+	var header = Ti.UI.createView({
+		backgroundImage: '../images/header.png',
+		height: '40',
+		top: 0
+	});
+	header.top = header.left = header.right = 0
+	var labelDesc = Ti.UI.createLabel({
+		text : source.label,
+		left : 5,
+		height : 30,
+		width : Ti.Platform.displayCaps.platformWidth - 10,
+		color : '#fff',
 		font : {
-			fontSize: 24
+			fontFamily : 'Helvetica Neue',
+			fontSize : 18,
+			fontWeight : 'bold',
+
 		},
+		ellipsize : true,
+		wordWrap : false
 	});
-	close.addEventListener('click', function(e){
+	var close_btn = Ti.UI.createImageView({
+		height : 30,
+		width : 25,
+		top : 4,
+		right: 5,
+		image : '../images/close.png'
+	}); 
+	imageWin.add(header);
+	header.add(labelDesc);
+	header.add(close_btn);
+	
+	
+	var fullImage = reduceImageSize(source.bigImg, Ti.Platform.displayCaps.platformWidth,Ti.Platform.displayCaps.platformHeight-50);
+	fullImage.canScale = true;
+	var imageBaseView = Ti.UI.createView({
+		top: 38,
+		right: 0,
+		left: 0,
+		bottom: 0
+	});
+	close_btn.addEventListener('click', function(e){
 		imageWin.close();
 	});
-	
-	imageWin.add(border);
-	imageWin.add(imageFileView);
-	imageWin.add(border01);
-	imageWin.add(close);
+	imageBaseView.add(fullImage);
+	imageWin.add(imageBaseView);
 	imageWin.open();	
 }
 
