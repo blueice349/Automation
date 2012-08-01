@@ -123,6 +123,8 @@ var cell = [];
 var count = 0;
 var heightValue = 60;
 var bug = [];
+omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
+roles = omadi_session_details.user.roles;
 
 while(fields_result.isValidRow()) {
 	unsorted_res.push({
@@ -211,6 +213,29 @@ if(c_index > 0) {
 			c_settings[count] = fields[f_name_f]['settings'];
 			c_widget[count] = fields[f_name_f]['widget'];
 			c_field_name[count] = fields[f_name_f]['field_name'];
+			
+			var can_view = false;
+
+			if(c_settings[count]['enforce_permissions'] != null && c_settings[count]['enforce_permissions'] == 1) {
+				for(var _l in c_settings[count].permissions) {
+					for(_k in roles) {
+						if(_l == _k) {
+							var stringifyObj = JSON.stringify(c_settings[count].permissions[_l]);
+							if(stringifyObj.indexOf('view') >= 0 || c_settings[count].permissions[_l]["all_permissions"]) {
+								can_view = true;
+							}
+
+						}
+					}
+				}
+			} else {
+				can_view = true;
+			}
+
+			if(!can_view) {
+				continue;
+			}
+							
 
 			//Content
 			c_content[count] = fieldVal;
@@ -380,34 +405,35 @@ if(c_index > 0) {
 
 					//Refers to some object:
 					case 'omadi_reference':
-						Ti.API.info("Contains: " + c_content[count] + " for nid " + win4.nid);
-						Ti.API.info('SETTINGS: ' + c_settings[count]);
-						var json = JSON.parse(c_settings[count]);
+						// Ti.API.info("Contains: " + c_content[count] + " for nid " + win4.nid);
+						// Ti.API.info('SETTINGS: ' + c_settings[count]);
+						// var json = JSON.parse(c_settings[count]);
 
 						//Define available tables:
-						var tables_array = new Array();
-						for(var i in json.reference_types) {
-							tables_array.push(json.reference_types[i]);
-						}
-
-						var count_tables = 0;
-						var tables_query = "";
-						for(var i in tables_array) {
-							if(tables_array.length - 1 == count_tables) {
-								tables_query += tables_array[i];
-							} else {
-								tables_query += tables_array[i] + ", ";
-							}
-						}
-						Ti.API.info('TABLES: ' + tables_query);
+						// var tables_array = new Array();
+						// for(var i in json.reference_types) {
+							// tables_array.push(json.reference_types[i]);
+						// }
+// 
+						// var count_tables = 0;
+						// var tables_query = "";
+						// for(var i in tables_array) {
+							// if(tables_array.length - 1 == count_tables) {
+								// tables_query += tables_array[i];
+							// } else {
+								// tables_query += tables_array[i] + ", ";
+							// }
+						// }
+						//Ti.API.info('TABLES: ' + tables_query);
 						try {
 
-							var auxA = db_display.execute('SELECT * FROM ' + tables_query + ' WHERE nid=' + c_content[count]);
-							if(auxA.rowCount === 0) {
-								bug[bug.length] = c_content[count];
-							} else {
-								var auxRes = db_display.execute('SELECT DISTINCT node.title FROM node INNER JOIN account ON node.nid=' + c_content[count]);
+							// var auxA = db_display.execute('SELECT * FROM ' + tables_query + ' WHERE nid=' + c_content[count]);
+							// if(auxA.rowCount === 0) {
+								// bug[bug.length] = c_content[count];
+							// } else {
+								var auxRes = db_display.execute('SELECT DISTINCT node.title, node.table_name FROM node INNER JOIN account ON node.nid=' + c_content[count]);
 								ref_name = auxRes.fieldByName("title");
+								var tableName = auxRes.fieldByName("table_name");
 								auxRes.close();
 
 								label[count] = Ti.UI.createLabel({
@@ -426,7 +452,8 @@ if(c_index > 0) {
 									textAlign : 'left',
 									left : "40%",
 									id : count,
-									nid : c_content[count]
+									nid : c_content[count],
+									type: tableName
 								});
 
 								// When account is clicked opens a modal window to show off the content of the specific touched
@@ -441,12 +468,12 @@ if(c_index > 0) {
 									});
 
 									newWin.nameSelected = e.source.text;
-									newWin.type = "account";
+									newWin.type = e.source.type;
 									newWin.nid = e.source.nid;
 									newWin.open();
 								});
 								count++;
-							}
+							//}
 						} catch(e) {
 							bug[bug.length] = c_content[count];
 						}
@@ -1238,7 +1265,7 @@ function createImage1(arrImages, data, scrollView, updated) {
 function openEditScreen(part){
 //Next window to be opened
 			var win_new = create_or_edit_node.getWindow();
-			win_new.title = win4.title;
+			win_new.title = (PLATFORM == 'android') ? win4.title + '-' + win4.nameSelected:win4.title;
 			win_new.type = win4.type;
 			win_new.listView = win4.listView;
 			win_new.up_node = win4.up_node;

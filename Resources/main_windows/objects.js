@@ -42,6 +42,7 @@ var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getS
 var resultsNames  = db.execute('SELECT node.nid, node.title FROM node INNER JOIN '+win3.type+' ON node.nid='+win3.type+'.nid WHERE (node.flag_is_updated=0 OR node.flag_is_updated=1) ORDER BY node.title ASC ');
 
 var data = [];
+var filterData = [];
 var i = 0;
 
 i = 0;
@@ -92,14 +93,16 @@ else {
 	var search = Ti.UI.createSearchBar({
 		hintText : 'Search...',
 		autocorrect : false,
-		barColor : '#000'
+		barColor : '#000',
+		top: 0,
+		color: 'black',
+		height: 50
 	});
 	
 	//Contat list container
 	var listTableView = Titanium.UI.createTableView({
 		data : data,
-		search : search,
-		height : '91%',
+		//height : '91%',
 		separatorColor: '#BDBDBD'
 	});
 	
@@ -114,6 +117,16 @@ else {
 	// SEARCH BAR EVENTS
 	search.addEventListener('change', function(e) {
 		//e.value; // search string as user types
+		filterData = [];
+		for(var i = 0; i < data.length; i++) {
+			var rg = new RegExp(e.source.value, 'i');
+			if(data[i].title.search(rg) != -1) {
+				filterData.push(data[i]);
+			}
+		}
+		listTableView.setData(filterData);
+		
+		
 	});
 
 	search.addEventListener('return', function(e) {
@@ -122,9 +135,11 @@ else {
 	});
 	
 	search.addEventListener('cancel', function(e) {
+		e.source.value = "";
 		search.blur();
 		//hides the keyboard
 	});
+	
 	win3.addEventListener('android:menu', function() {
 		alert('clicked');
 	});
@@ -132,45 +147,14 @@ else {
 	//When the user clicks on a certain contact, it opens individual_contact.js
 	listTableView.addEventListener('click', function(e) {
 		//Hide keyboard when returning 
-		firstClick = true;
-		if (PLATFORM == "android"){
-				var win_new = Titanium.UI.createWindow({
-					fullscreen : false,
-					title: win3.type.charAt(0).toUpperCase() + win3.type.slice(1),
-					type: win3.type,
-					url : 'individual_object.js',
-					up_node: win3.up_node,
-					uid: win3.uid,
-					region_form: e.row.form_part,
-					backgroundColor: '#000'
-				});
-		
-				search.blur();
-				//hide keyboard
-		
-				//Passing parameters
-				win_new.picked 			 = win3.picked;
-				win_new.nid 			 = e.row.nid;
-				win_new.nameSelected 	 = e.row.name;
-		
-				win_new.open();
-		}
-		else{
-			bottomButtons1(e.row.nid, win3, e);
-		}
+		search.blur();
+		bottomButtons1(e.row.nid, win3, e);
 		resultsNames.close();
-		
 	});
 	//Adds contact list container to the UI
+	win3.add(search);
 	win3.add(listTableView);
 	search.blur();
-	win3.addEventListener('focus', function(){
-		setTimeout(function (){
-			search.blur();
-		}, 110 );
-	});
-
-
 }
 
 resultsNames.close();
@@ -179,6 +163,10 @@ db.close();
 //showBottom(actualWindow, goToWindow )
 if(PLATFORM == 'android'){
 	bottomBack(win3, "Back" , "enable", true);
+	if (listTableView != null ){
+		listTableView.bottom = '6%'	
+		listTableView.top = 50;
+	}
 	if(win3.show_plus == true){
 		var activity = win3.activity;
 		activity.onCreateOptionsMenu = function(e) {
@@ -194,15 +182,14 @@ if(PLATFORM == 'android'){
 		}
 	}
 }else{
-	if (listTableView != null){
-		listTableView.height = "97%";	
-	}
 	topToolBar_object();
 }
 
 function topToolBar_object(){
 	if (listTableView != null ){
-		listTableView.top = '40'		
+		listTableView.top = '90'	
+		search.top = '40';
+		listTableView.bottom = 0;			
 	}
 
 	var back = Ti.UI.createButton({
@@ -267,10 +254,10 @@ function openCreateNodeScreen(){
 }
 
 
-function openEditScreen(part, nid){
+function openEditScreen(part, nid, e){
 //Next window to be opened
 	var win_new = create_or_edit_node.getWindow();
-	win_new.title = win3.title;
+	win_new.title = (PLATFORM == 'android') ? win3.title + '-' + e.row.name:win3.title;
 	win_new.type = win3.type;
 	win_new.listView = win3.listView;
 	win_new.up_node = win3.up_node;
@@ -280,7 +267,7 @@ function openEditScreen(part, nid){
 	//Passing parameters
 	win_new.nid = nid;
 	win_new.picked = win3.picked;
-	win_new.nameSelected = win3.nameSelected;
+	win_new.nameSelected =  e.row.name;
 
 	//Sets a mode to fields edition
 	win_new.mode = 1;
@@ -346,9 +333,6 @@ function bottomButtons1(_nid, win3, e){
 					backgroundColor: '#000'
 				});
 		
-				search.blur();
-				//hide keyboard
-		
 				//Passing parameters
 				win_new.picked 		 = win3.picked;
 				win_new.nid 			 = e.row.nid;
@@ -361,7 +345,7 @@ function bottomButtons1(_nid, win3, e){
 				Ti.API.info("Cancelled")
 			}
 			else if (ev.index != -1){
-				openEditScreen(btn_id[ev.index], _nid);
+				openEditScreen(btn_id[ev.index], _nid, e);
 			}
 	});	
 };

@@ -20,6 +20,8 @@ toolActInd.font = {
 };
 toolActInd.color = 'white';
 toolActInd.message = 'Loading...';
+var omadi_session_details;
+var roles;
 
 var months_set = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -59,30 +61,10 @@ create_or_edit_node.getWindow = function() {
 		});
 		win.add(resultView);
 		
-		//Header where the selected name is presented
-		var header = Ti.UI.createView({
-			top : '0',
-			height : '10%',
-			width : '100%',
-			backgroundColor : '#EEEEEE',
-			zIndex : 11
-		});
-		resultView.add(header);
-		title_head = Ti.UI.createLabel({
-			text : win.nameSelected,
-			color : '#000',
-			font : {
-				fontSize : 22
-			},
-			width : '100%',
-			height: 30
-		});
-		header.add(title_head);		
-
 		viewContent = Ti.UI.createScrollView({
 			bottom : 0,
 			contentHeight : 'auto',
-			top : "11%",
+			//top : "11%",
 			backgroundColor : '#EEEEEE',
 			showHorizontalScrollIndicator : false,
 			showVerticalScrollIndicator : true,
@@ -90,8 +72,6 @@ create_or_edit_node.getWindow = function() {
 			scrollType : "vertical",
 			zIndex : 10
 		});
-		
-		title_head.text = win.nameSelected;		
 	}
 	else{
 		
@@ -226,7 +206,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 		}
 
 		if (((content[x].is_title === true) || (content[x].required == 'true') || (content[x].required === true) || (content[x].required == '1') || (content[x].required == 1) ) && ((content[x].value == '') || (content[x].value == null)) 
-		&& (content[x].no_data_checkbox==null || content[x].no_data_checkbox == "" || content[x].no_data_checkbox == false)) {
+		&& (content[x].no_data_checkbox==null || content[x].no_data_checkbox == "" || content[x].no_data_checkbox == false) && content[x].enabled == true) {
 			count_fields++;
 			if (content[x].cardinality > 1) {
 				string_text += "#" + content[x].private_index + " " + label[content[x].reffer_index].text + "\n";
@@ -1548,9 +1528,10 @@ create_or_edit_node.loadUI = function() {
 	content = new Array();
 	border = new Array();
 	values_query = new Array();
-	if(PLATFORM == 'android'){title_head.text = win.nameSelected};	
 	count = 0;
 	title = 0;
+	omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
+	roles = omadi_session_details.user.roles;
 	db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 	regions = db_display.execute('SELECT * FROM regions WHERE node_type = "' + win.type + '" ORDER BY weight ASC');
 	if(win.mode == 1){
@@ -1624,7 +1605,6 @@ create_or_edit_node.loadUI = function() {
 					for (var i = 0; i < viewContent.getChildren().length; i++) {
 						var v = viewContent.getChildren()[i];
 						var isLabel = false;
-						//alert(v);
 						if (PLATFORM == 'android') {
 							if ( v instanceof Ti.UI.Label) {
 								isLabel = true;
@@ -1736,6 +1716,34 @@ create_or_edit_node.loadUI = function() {
 					switch(field_arr[index_label][index_size].type) {
 
 						case 'license_plate':
+							var settings = JSON.parse(field_arr[index_label][index_size].settings);
+							var can_view = false;
+							var can_edit = false;
+							
+							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
+								for(var _l in settings.permissions) {
+									for(_k in roles) {
+										if(_l == _k) {
+											var stringifyObj = JSON.stringify(settings.permissions[_l]);
+											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_edit = true;
+											}
+
+											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_view = true;
+											}
+
+										}
+									}
+								}
+							}else{
+								can_view = can_edit = true;
+							}
+							
+							if(!can_view){
+								break;
+							}
+												
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
@@ -1751,10 +1759,10 @@ create_or_edit_node.loadUI = function() {
 							});
 							top += heightValue;
 
-							var settings = JSON.parse(field_arr[index_label][index_size].settings);
+							
 							var fi_name = field_arr[index_label][index_size].field_name;
 							var reffer_index = count;
-							
+									
 							fi_name = fi_name.split('___');
 							if (fi_name[1]) {
 								var i_name = fi_name[1];
@@ -2050,7 +2058,8 @@ create_or_edit_node.loadUI = function() {
 											cardinality : settings.cardinality,
 											reffer_index : reffer_index,
 											settings : settings,
-											changedFlag : 0
+											changedFlag : 0,
+											enabled: can_edit
 										});
 										if(PLATFORM == 'android'){
 										content[count].backgroundImage = '',
@@ -2117,7 +2126,9 @@ create_or_edit_node.loadUI = function() {
 											changedFlag : 0,
 											real_ind: count,
 											autocorrect: false,
-											returnKeyType: Ti.UI.RETURNKEY_DONE
+											returnKeyType: Ti.UI.RETURNKEY_DONE,
+											enabled: can_edit,
+											editable: can_edit
 										});
 									}
 									if(PLATFORM == 'android'){
@@ -2404,7 +2415,8 @@ create_or_edit_node.loadUI = function() {
 										cardinality : settings.cardinality,
 										reffer_index : reffer_index,
 										settings : settings,
-										changedFlag : 0
+										changedFlag : 0,
+										enabled: can_edit
 									});
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '',
@@ -2467,7 +2479,9 @@ create_or_edit_node.loadUI = function() {
 										changedFlag : 0,
 										real_ind: count,
 										autocorrect: false,
-										returnKeyType: Ti.UI.RETURNKEY_DONE
+										returnKeyType: Ti.UI.RETURNKEY_DONE,
+										enabled: can_edit,
+										editable: can_edit
 									});
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
@@ -2505,6 +2519,34 @@ create_or_edit_node.loadUI = function() {
 						break;
 					
 						case 'link_field':
+							var settings = JSON.parse(field_arr[index_label][index_size].settings);
+							var can_view = false;
+							var can_edit = false;
+							
+							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
+								for(var _l in settings.permissions) {
+									for(_k in roles) {
+										if(_l == _k) {
+											var stringifyObj = JSON.stringify(settings.permissions[_l]);
+											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_edit = true;
+											}
+
+											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_view = true;
+											}
+
+										}
+									}
+								}
+							}else{
+								can_view = can_edit = true;
+							}
+							
+							if(!can_view){
+								break;
+							}
+							
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
@@ -2519,14 +2561,12 @@ create_or_edit_node.loadUI = function() {
 								top : top
 							});
 							top += heightValue;
-
 							//Add fields:
 							regionView.add(label[count]);
 							var reffer_index = count;
-							var settings = JSON.parse(field_arr[index_label][index_size].settings);
+							
 							var _min = null; 
 							var _max = null;
-	
 							
 							if (settings.cardinality > 1) {
 								if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
@@ -2576,7 +2616,8 @@ create_or_edit_node.loadUI = function() {
 										settings : settings,
 										changedFlag : 0,
 										autocorrect: false,
-										returnKeyType: Ti.UI.RETURNKEY_DONE
+										returnKeyType: Ti.UI.RETURNKEY_DONE,
+										enabled: can_edit
 									});
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
@@ -2614,7 +2655,8 @@ create_or_edit_node.loadUI = function() {
 									settings : settings,
 									changedFlag : 0,
 									autocorrect: false,
-									returnKeyType: Ti.UI.RETURNKEY_DONE
+									returnKeyType: Ti.UI.RETURNKEY_DONE,
+									enabled: can_edit
 								});
 								if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
@@ -2636,6 +2678,33 @@ create_or_edit_node.loadUI = function() {
 							break;
 						
 						case 'text':
+							var settings = JSON.parse(field_arr[index_label][index_size].settings);
+							var can_view = false;
+							var can_edit = false;
+							
+							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
+								for(var _l in settings.permissions) {
+									for(_k in roles) {
+										if(_l == _k) {
+											var stringifyObj = JSON.stringify(settings.permissions[_l]);
+											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_edit = true;
+											}
+
+											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_view = true;
+											}
+
+										}
+									}
+								}
+							}else{
+								can_view = can_edit = true;
+							}
+							
+							if(!can_view){
+								break;
+							}
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
@@ -2654,7 +2723,6 @@ create_or_edit_node.loadUI = function() {
 							//Add fields:
 							regionView.add(label[count]);
 							var reffer_index = count;
-							var settings = JSON.parse(field_arr[index_label][index_size].settings);
 							var _min = null;
 							var _max = null;
 							
@@ -2717,7 +2785,9 @@ create_or_edit_node.loadUI = function() {
 										my_max: _max,
 										real_ind: count,
 										autocorrect: false,
-										returnKeyType: Ti.UI.RETURNKEY_DONE
+										returnKeyType: Ti.UI.RETURNKEY_DONE,
+										enabled: can_edit,
+										editable: can_edit
 									});
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
@@ -2837,7 +2907,9 @@ create_or_edit_node.loadUI = function() {
 									my_max: _max,
 									real_ind: count,
 									autocorrect: false,
-									returnKeyType: Ti.UI.RETURNKEY_DONE
+									returnKeyType: Ti.UI.RETURNKEY_DONE,
+									enabled: can_edit,
+									editable: can_edit
 								});
 								if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
@@ -2943,6 +3015,34 @@ create_or_edit_node.loadUI = function() {
 							break;
 
 						case 'text_long':
+							var settings = JSON.parse(field_arr[index_label][index_size].settings);
+							var can_view = false;
+							var can_edit = false;
+							
+							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
+								for(var _l in settings.permissions) {
+									for(_k in roles) {
+										if(_l == _k) {
+											var stringifyObj = JSON.stringify(settings.permissions[_l]);
+											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_edit = true;
+											}
+
+											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_view = true;
+											}
+
+										}
+									}
+								}
+							}else{
+								can_view = can_edit = true;
+							}
+							
+							if(!can_view){
+								break;
+							}
+							
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
@@ -2961,7 +3061,6 @@ create_or_edit_node.loadUI = function() {
 							//Add fields:
 							regionView.add(label[count]);
 							var reffer_index = count;
-							var settings = JSON.parse(field_arr[index_label][index_size].settings);
 							var _min = null;
 							var _max = null;
 							
@@ -3020,7 +3119,9 @@ create_or_edit_node.loadUI = function() {
 										my_min: _min,
 										my_max: _max,
 										real_ind: count,
-										returnKeyType: Ti.UI.RETURNKEY_DONE										
+										returnKeyType: Ti.UI.RETURNKEY_DONE,
+										enabled: can_edit,
+										editable: can_edit										
 									});
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
@@ -3137,7 +3238,9 @@ create_or_edit_node.loadUI = function() {
 									my_min: _min,
 									my_max: _max,
 									real_ind: count,
-									returnKeyType: Ti.UI.RETURNKEY_DONE
+									returnKeyType: Ti.UI.RETURNKEY_DONE,
+									enabled: can_edit,
+									editable: can_edit
 								});
 								if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
@@ -3241,6 +3344,32 @@ create_or_edit_node.loadUI = function() {
 
 						case 'location':
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
+							var can_view = false;
+							var can_edit = false;
+							
+							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
+								for(var _l in settings.permissions) {
+									for(_k in roles) {
+										if(_l == _k) {
+											var stringifyObj = JSON.stringify(settings.permissions[_l]);
+											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_edit = true;
+											}
+
+											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_view = true;
+											}
+
+										}
+									}
+								}
+							}else{
+								can_view = can_edit = true;
+							}
+							
+							if(!can_view){
+								break;
+							}
 
 							//Set our auxiliar array
 							var aux_local = new Array;
@@ -3332,7 +3461,9 @@ create_or_edit_node.loadUI = function() {
 										settings : settings,
 										changedFlag : 0,
 										autocorrect: false,
-										returnKeyType: Ti.UI.RETURNKEY_DONE
+										returnKeyType: Ti.UI.RETURNKEY_DONE,
+										enabled: can_edit,
+										editable: can_edit
 									});
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
@@ -3370,7 +3501,9 @@ create_or_edit_node.loadUI = function() {
 									settings : settings,
 									changedFlag : 0,
 									autocorrect: false,
-									returnKeyType: Ti.UI.RETURNKEY_DONE
+									returnKeyType: Ti.UI.RETURNKEY_DONE,
+									enabled: can_edit,
+									editable: can_edit
 								});
 								if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
@@ -3402,6 +3535,32 @@ create_or_edit_node.loadUI = function() {
 						case 'number_decimal':
 						case 'number_integer':
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
+							var can_view = false;
+							var can_edit = false;
+							
+							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
+								for(var _l in settings.permissions) {
+									for(_k in roles) {
+										if(_l == _k) {
+											var stringifyObj = JSON.stringify(settings.permissions[_l]);
+											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_edit = true;
+											}
+
+											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_view = true;
+											}
+
+										}
+									}
+								}
+							}else{
+								can_view = can_edit = true;
+							}
+							
+							if(!can_view){
+								break;
+							}
 
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
@@ -3503,7 +3662,9 @@ create_or_edit_node.loadUI = function() {
 										changedFlag : 0,
 										my_max: _max,
 										my_min: _min,
-										autocorrect: false
+										autocorrect: false,
+										enabled: can_edit,
+										editable: can_edit
 									});
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
@@ -3588,7 +3749,9 @@ create_or_edit_node.loadUI = function() {
 									changedFlag : 0,
 									my_max: _max,
 									my_min: _min,
-									autocorrect: false
+									autocorrect: false,
+									enabled: can_edit,
+									editable: can_edit
 								});
 								if(PLATFORM == 'android'){
 									content[count].backgroundImage = '../images/textfield.png'
@@ -3654,6 +3817,32 @@ create_or_edit_node.loadUI = function() {
 
 						case 'phone':
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
+							var can_view = false;
+							var can_edit = false;
+							
+							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
+								for(var _l in settings.permissions) {
+									for(_k in roles) {
+										if(_l == _k) {
+											var stringifyObj = JSON.stringify(settings.permissions[_l]);
+											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_edit = true;
+											}
+
+											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_view = true;
+											}
+
+										}
+									}
+								}
+							}else{
+								can_view = can_edit = true;
+							}
+							
+							if(!can_view){
+								break;
+							}
 
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
@@ -3722,7 +3911,9 @@ create_or_edit_node.loadUI = function() {
 										reffer_index : reffer_index,
 										settings : settings,
 										changedFlag : 0,
-										autocorrect: false
+										autocorrect: false,
+										enabled: can_edit,
+										editable: can_edit
 									});
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
@@ -3762,7 +3953,9 @@ create_or_edit_node.loadUI = function() {
 									reffer_index : reffer_index,
 									settings : settings,
 									changedFlag : 0,
-									autocorrect: false
+									autocorrect: false,
+									enabled: can_edit,
+									editable: can_edit
 								});
 								if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
@@ -3786,6 +3979,33 @@ create_or_edit_node.loadUI = function() {
 							break;
 
 						case 'email':
+							var settings = JSON.parse(field_arr[index_label][index_size].settings);
+							var can_view = false;
+							var can_edit = false;
+							
+							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
+								for(var _l in settings.permissions) {
+									for(_k in roles) {
+										if(_l == _k) {
+											var stringifyObj = JSON.stringify(settings.permissions[_l]);
+											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_edit = true;
+											}
+
+											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_view = true;
+											}
+
+										}
+									}
+								}
+							}else{
+								can_view = can_edit = true;
+							}
+							
+							if(!can_view){
+								break;
+							}
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
@@ -3804,8 +4024,7 @@ create_or_edit_node.loadUI = function() {
 							//Add fields:
 							regionView.add(label[count]);
 							var reffer_index = count;
-							var settings = JSON.parse(field_arr[index_label][index_size].settings);
-
+							
 							if (settings.cardinality > 1) {
 								if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
 									var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
@@ -3855,7 +4074,9 @@ create_or_edit_node.loadUI = function() {
 										settings : settings,
 										changedFlag : 0,
 										autocorrect: false,
-										returnKeyType: Ti.UI.RETURNKEY_DONE
+										returnKeyType: Ti.UI.RETURNKEY_DONE,
+										enabled: can_edit,
+										editable: can_edit
 									});
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
@@ -3894,7 +4115,9 @@ create_or_edit_node.loadUI = function() {
 									settings : settings,
 									changedFlag : 0,
 									autocorrect: false,
-									returnKeyType: Ti.UI.RETURNKEY_DONE
+									returnKeyType: Ti.UI.RETURNKEY_DONE,
+									enabled: can_edit,
+									editable: can_edit
 								});
 								if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
@@ -3919,6 +4142,32 @@ create_or_edit_node.loadUI = function() {
 						case 'taxonomy_term_reference':
 							var widget = JSON.parse(field_arr[index_label][index_size].widget);
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
+							var can_view = false;
+							var can_edit = false;
+							
+							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
+								for(var _l in settings.permissions) {
+									for(_k in roles) {
+										if(_l == _k) {
+											var stringifyObj = JSON.stringify(settings.permissions[_l]);
+											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_edit = true;
+											}
+
+											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_view = true;
+											}
+
+										}
+									}
+								}
+							}else{
+								can_view = can_edit = true;
+							}
+							
+							if(!can_view){
+								break;
+							}
 							var hasParent = false;
 							var parent_name = "";
 							var defaultField = "";
@@ -4057,7 +4306,8 @@ create_or_edit_node.loadUI = function() {
 											parent_name : parent_name,
 											defaultField : defaultField,
 											settings : settings,
-											changedFlag : 0
+											changedFlag : 0,
+											enabled: can_edit
 										});
 										if(PLATFORM == 'android'){
 											content[count].backgroundImage = '',
@@ -4157,7 +4407,8 @@ create_or_edit_node.loadUI = function() {
 										parent_name : parent_name,
 										defaultField : defaultField,
 										settings : settings,
-										changedFlag : 0
+										changedFlag : 0,
+										enabled: can_edit
 									});
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '',
@@ -4280,17 +4531,20 @@ create_or_edit_node.loadUI = function() {
 										view_title : field_arr[index_label][index_size].label,
 										reffer_index : reffer_index,
 										settings : settings,
-										changedFlag : 0
+										changedFlag : 0,
+										can_edit: can_edit,
+										enabled: can_edit,
 									});
 
 									content[count].addEventListener('click', function(e) {
-										for (var jsa in e.source.itens) {
-											Ti.API.info(jsa + ' = ' + e.source.itens[jsa].title);
+										if(e.source.can_edit){
+											for (var jsa in e.source.itens) {
+												Ti.API.info(jsa + ' = ' + e.source.itens[jsa].title);
+											}
+											open_mult_selector(e.source);
+											changedContentValue(e.source);
+											noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 										}
-										open_mult_selector(e.source);
-										changedContentValue(e.source);
-										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
 									});
 
 									top += heightValue;
@@ -4410,7 +4664,9 @@ create_or_edit_node.loadUI = function() {
 											reffer_index : reffer_index,
 											settings : settings,
 											changedFlag : 0,
-											returnKeyType: Ti.UI.RETURNKEY_DONE
+											returnKeyType: Ti.UI.RETURNKEY_DONE,
+											enabled: can_edit,
+											editable: can_edit
 										});
 										if(PLATFORM == 'android'){
 											content[count].backgroundImage = '../images/textfield.png'
@@ -4504,7 +4760,12 @@ create_or_edit_node.loadUI = function() {
 													e.source.autocomplete_table.setData(table_data);
 													e.source.autocomplete_table.scrollToTop(0, {animated: false});
 													viewContent.scrollTo(0,e.source.top);
-													e.source.autocomplete_table.visible = true;
+													if(table_data.length > 0) {
+														e.source.autocomplete_table.visible = true;
+													} else {
+														e.source.autocomplete_table.visible = false;
+													}
+
 												} else {
 													e.source.autocomplete_table.visible = false;
 													e.source.tid = null;
@@ -4588,7 +4849,9 @@ create_or_edit_node.loadUI = function() {
 										defaultField : defaultField,
 										settings : settings,
 										changedFlag : 0,
-										returnKeyType: Ti.UI.RETURNKEY_DONE
+										returnKeyType: Ti.UI.RETURNKEY_DONE,
+										enabled: can_edit,
+										editable: can_edit
 									});
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
@@ -4683,7 +4946,11 @@ create_or_edit_node.loadUI = function() {
 												e.source.autocomplete_table.setData(table_data);
 												e.source.autocomplete_table.scrollToTop(0, {animated: false});
 												viewContent.scrollTo(0,e.source.top);
-												e.source.autocomplete_table.visible = true;
+												if(table_data.length > 0) {
+													e.source.autocomplete_table.visible = true;
+												} else {
+													e.source.autocomplete_table.visible = false;
+												}
 											} else {
 												e.source.autocomplete_table.visible = false;
 												e.source.tid = null;
@@ -4709,6 +4976,32 @@ create_or_edit_node.loadUI = function() {
 						case 'omadi_reference':
 							var widget = JSON.parse(field_arr[index_label][index_size].widget);
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
+							var can_view = false;
+							var can_edit = false;
+							
+							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
+								for(var _l in settings.permissions) {
+									for(_k in roles) {
+										if(_l == _k) {
+											var stringifyObj = JSON.stringify(settings.permissions[_l]);
+											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_edit = true;
+											}
+
+											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_view = true;
+											}
+
+										}
+									}
+								}
+							}else{
+								can_view = can_edit = true;
+							}
+							
+							if(!can_view){
+								break;
+							}
 
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
@@ -4825,7 +5118,9 @@ create_or_edit_node.loadUI = function() {
 										changedFlag : 0,
 										my_index : count,
 										autocorrect: false,
-										returnKeyType: Ti.UI.RETURNKEY_DONE
+										returnKeyType: Ti.UI.RETURNKEY_DONE,
+										enabled: can_edit,
+										editable: can_edit
 									});
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
@@ -4925,7 +5220,11 @@ create_or_edit_node.loadUI = function() {
 												e.source.autocomplete_table.setData(table_data);
 												e.source.autocomplete_table.scrollToTop(0, {animated: false});
 												viewContent.scrollTo(0,e.source.top);
-												e.source.autocomplete_table.visible = true;
+												if(table_data.length > 0) {
+													e.source.autocomplete_table.visible = true;
+												} else {
+													e.source.autocomplete_table.visible = false;
+												}												
 											} else {
 												e.source.autocomplete_table.visible = false;
 												e.source.nid = null;
@@ -4982,7 +5281,9 @@ create_or_edit_node.loadUI = function() {
 									changedFlag : 0,
 									my_index: count,
 									autocorrect: false,
-									returnKeyType: Ti.UI.RETURNKEY_DONE
+									returnKeyType: Ti.UI.RETURNKEY_DONE,
+									enabled: can_edit,
+									editable: can_edit
 								});
 								if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
@@ -5087,7 +5388,11 @@ create_or_edit_node.loadUI = function() {
 											e.source.autocomplete_table.setData(table_data);
 											e.source.autocomplete_table.scrollToTop(0, {animated: false});
 											viewContent.scrollTo(0,e.source.top);
-											e.source.autocomplete_table.visible = true;
+											if(table_data.length>0){
+												e.source.autocomplete_table.visible = true;
+											}else{
+												e.source.autocomplete_table.visible = false;
+											}
 										} else {
 											e.source.autocomplete_table.visible = false;
 											e.source.nid = null;
@@ -5105,6 +5410,33 @@ create_or_edit_node.loadUI = function() {
 							break;
 
 						case 'user_reference':
+							var settings = JSON.parse(field_arr[index_label][index_size].settings);
+							var can_view = false;
+							var can_edit = false;
+							
+							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
+								for(var _l in settings.permissions) {
+									for(_k in roles) {
+										if(_l == _k) {
+											var stringifyObj = JSON.stringify(settings.permissions[_l]);
+											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_edit = true;
+											}
+
+											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_view = true;
+											}
+
+										}
+									}
+								}
+							}else{
+								can_view = can_edit = true;
+							}
+							
+							if(!can_view){
+								break;
+							}
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + '' + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
@@ -5122,7 +5454,6 @@ create_or_edit_node.loadUI = function() {
 							top += heightValue;
 
 							var reffer_index = count;
-							var settings = JSON.parse(field_arr[index_label][index_size].settings);
 							//Add fields:
 							regionView.add(label[count]);
 
@@ -5240,7 +5571,8 @@ create_or_edit_node.loadUI = function() {
 										cardinality : settings.cardinality,
 										reffer_index : reffer_index,
 										settings : settings,
-										changedFlag : 0
+										changedFlag : 0,
+										enabled: can_edit
 									});
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '',
@@ -5343,7 +5675,8 @@ create_or_edit_node.loadUI = function() {
 									value : aux_val.vl,
 									reffer_index : reffer_index,
 									settings : settings,
-									changedFlag : 0
+									changedFlag : 0,
+									enabled: can_edit
 								});
 								if(PLATFORM == 'android'){
 										content[count].backgroundImage = '',
@@ -5393,6 +5726,32 @@ create_or_edit_node.loadUI = function() {
 						case 'datestamp':
 							var widget = JSON.parse(field_arr[index_label][index_size].widget);
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
+							var can_view = false;
+							var can_edit = false;
+							
+							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
+								for(var _l in settings.permissions) {
+									for(_k in roles) {
+										if(_l == _k) {
+											var stringifyObj = JSON.stringify(settings.permissions[_l]);
+											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_edit = true;
+											}
+
+											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_view = true;
+											}
+
+										}
+									}
+								}
+							}else{
+								can_view = can_edit = true;
+							}
+							
+							if(!can_view){
+								break;
+							}
 							Ti.API.info(field_arr[index_label][index_size].settings);
 
 							label[count] = Ti.UI.createLabel({
@@ -5490,7 +5849,9 @@ create_or_edit_node.loadUI = function() {
 											reffer_index : reffer_index,
 											height : heightValue,
 											settings : settings,
-											changedFlag : 0
+											changedFlag : 0,
+											can_edit: can_edit,
+											enabled: can_edit,
 										});
 
 										var mother_of_view = Ti.UI.createView({
@@ -5513,12 +5874,16 @@ create_or_edit_node.loadUI = function() {
 										content[count].clear = clear;
 										mother_of_view.add(content[count].clear);
 										content[count].clear.addEventListener('click', function(e) {
-											e.source.its_parent.text = "";
-											e.source.its_parent.value = null;
+											if(e.source.can_edit){
+												e.source.its_parent.text = "";
+												e.source.its_parent.value = null;
+											}	
 										});
 
 										content[count].addEventListener('click', function(e) {
-											display_widget(e.source);
+											if(e.source.can_edit){
+												display_widget(e.source);
+											}
 										});
 										//regionView.add(content[count]);
 										regionView.add(mother_of_view);
@@ -5579,7 +5944,9 @@ create_or_edit_node.loadUI = function() {
 										reffer_index : reffer_index,
 										height : heightValue,
 										settings : settings,
-										changedFlag : 0
+										changedFlag : 0,
+										can_edit: can_edit,
+										enabled: can_edit,
 
 									});
 
@@ -5603,12 +5970,16 @@ create_or_edit_node.loadUI = function() {
 									content[count].clear = clear;
 									mother_of_view.add(content[count].clear);
 									content[count].clear.addEventListener('click', function(e) {
-										e.source.its_parent.text = "";
-										e.source.its_parent.value = null;
+										if(e.source.can_edit){
+											e.source.its_parent.text = "";
+											e.source.its_parent.value = null;
+										}
 									});
 
 									content[count].addEventListener('click', function(e) {
-										display_widget(e.source);
+										if(e.source.can_edit){
+											display_widget(e.source);
+										}
 									});
 									//regionView.add(content[count]);
 									regionView.add(mother_of_view);
@@ -5699,7 +6070,9 @@ create_or_edit_node.loadUI = function() {
 											reffer_index : reffer_index,
 											height : heightValue,
 											settings : settings,
-											changedFlag : 0
+											changedFlag : 0,
+											can_edit: can_edit,
+											enabled: can_edit,
 
 										});
 
@@ -5723,12 +6096,16 @@ create_or_edit_node.loadUI = function() {
 										content[count].clear = clear;
 										mother_of_view.add(content[count].clear);
 										content[count].clear.addEventListener('click', function(e) {
-											e.source.its_parent.text = "";
-											e.source.its_parent.value = null;
+											if(e.source.can_edit){
+												e.source.its_parent.text = "";
+												e.source.its_parent.value = null;
+											}	
 										});
 
 										content[count].addEventListener('click', function(e) {
-											display_widget(e.source);
+											if(e.source.can_edit){
+												display_widget(e.source);
+											}	
 										});
 										//regionView.add(content[count]);
 										regionView.add(mother_of_view);
@@ -5794,7 +6171,9 @@ create_or_edit_node.loadUI = function() {
 										reffer_index : reffer_index,
 										height : heightValue,
 										settings : settings,
-										changedFlag : 0
+										changedFlag : 0,
+										can_edit: can_edit,
+										enabled: can_edit,
 									});
 
 									var mother_of_view = Ti.UI.createView({
@@ -5817,12 +6196,16 @@ create_or_edit_node.loadUI = function() {
 									content[count].clear = clear;
 									mother_of_view.add(content[count].clear);
 									content[count].clear.addEventListener('click', function(e) {
-										e.source.its_parent.text = "";
-										e.source.its_parent.value = null;
+										if(e.source.can_edit){
+											e.source.its_parent.text = "";
+											e.source.its_parent.value = null;
+										}	
 									});
 
 									content[count].addEventListener('click', function(e) {
-										display_widget(e.source);
+										if(e.source.can_edit){
+											display_widget(e.source);
+										}
 									});
 									//regionView.add(content[count]);
 									regionView.add(mother_of_view);
@@ -6000,6 +6383,33 @@ create_or_edit_node.loadUI = function() {
 
 						//Shows up date (check how it is exhibited):
 						case 'omadi_time':
+							var settings = JSON.parse(field_arr[index_label][index_size].settings);
+							var can_view = false;
+							var can_edit = false;
+							
+							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
+								for(var _l in settings.permissions) {
+									for(_k in roles) {
+										if(_l == _k) {
+											var stringifyObj = JSON.stringify(settings.permissions[_l]);
+											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_edit = true;
+											}
+
+											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_view = true;
+											}
+
+										}
+									}
+								}
+							}else{
+								can_view = can_edit = true;
+							}
+							
+							if(!can_view){
+								break;
+							}
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + '' + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
@@ -6017,8 +6427,7 @@ create_or_edit_node.loadUI = function() {
 							var reffer_index = count;
 
 							var widget = JSON.parse(field_arr[index_label][index_size].widget);
-							var settings = JSON.parse(field_arr[index_label][index_size].settings);
-
+							
 							Ti.API.info('SETTINGS FOR DATESTAMP: ' + settings.default_value);
 							Ti.API.info('WIDGET FOR DATESTAMP: ' + widget.settings['time']);
 
@@ -6086,7 +6495,9 @@ create_or_edit_node.loadUI = function() {
 										reffer_index : reffer_index,
 										height : heightValue,
 										settings : settings,
-										changedFlag : 0
+										changedFlag : 0,
+										can_edit: can_edit,
+										enabled: can_edit
 									});
 
 									var mother_of_view = Ti.UI.createView({
@@ -6109,12 +6520,16 @@ create_or_edit_node.loadUI = function() {
 									content[count].clear = clear;
 									mother_of_view.add(content[count].clear);
 									content[count].clear.addEventListener('click', function(e) {
-										e.source.its_parent.text = "";
-										e.source.its_parent.value = null;
+										if(e.source.can_edit){
+											e.source.its_parent.text = "";
+											e.source.its_parent.value = null;
+										}
 									});
 
 									content[count].addEventListener('click', function(e) {
-										display_omadi_time(e.source);
+										if(e.source.can_edit){
+											display_omadi_time(e.source);
+										}	
 									});
 									//regionView.add(content[count]);
 									regionView.add(mother_of_view);
@@ -6147,7 +6562,9 @@ create_or_edit_node.loadUI = function() {
 									reffer_index : reffer_index,
 									height : heightValue,
 									settings : settings,
-									changedFlag : 0
+									changedFlag : 0,
+									can_edit: can_edit,
+									enabled: can_edit
 								});
 
 								var mother_of_view = Ti.UI.createView({
@@ -6170,12 +6587,16 @@ create_or_edit_node.loadUI = function() {
 								content[count].clear = clear;
 								mother_of_view.add(content[count].clear);
 								content[count].clear.addEventListener('click', function(e) {
-									e.source.its_parent.text = "";
-									e.source.its_parent.value = null;
+									if(e.source.can_edit){
+										e.source.its_parent.text = "";
+										e.source.its_parent.value = null;
+									}
 								});
 
 								content[count].addEventListener('click', function(e) {
-									display_omadi_time(e.source);
+									if(e.source.can_edit){
+										display_omadi_time(e.source);
+									}
 								});
 								//regionView.add(content[count]);
 								regionView.add(mother_of_view);
@@ -6189,6 +6610,33 @@ create_or_edit_node.loadUI = function() {
 							break;
 
 						case 'vehicle_fields':
+							var settings = JSON.parse(field_arr[index_label][index_size].settings);
+							var can_view = false;
+							var can_edit = false;
+							
+							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
+								for(var _l in settings.permissions) {
+									for(_k in roles) {
+										if(_l == _k) {
+											var stringifyObj = JSON.stringify(settings.permissions[_l]);
+											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_edit = true;
+											}
+
+											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_view = true;
+											}
+
+										}
+									}
+								}
+							}else{
+								can_view = can_edit = true;
+							}
+							
+							if(!can_view){
+								break;
+							}
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
@@ -6205,7 +6653,6 @@ create_or_edit_node.loadUI = function() {
 							top += heightValue;
 
 							var reffer_index = count;
-							var settings = JSON.parse(field_arr[index_label][index_size].settings);
 							var fi_name = field_arr[index_label][index_size].field_name;
 							fi_name = fi_name.split('___');
 							if (fi_name[1]) {
@@ -6270,7 +6717,9 @@ create_or_edit_node.loadUI = function() {
 										settings : settings,
 										changedFlag : 0,
 										autocorrect: false,
-										returnKeyType: Ti.UI.RETURNKEY_DONE
+										returnKeyType: Ti.UI.RETURNKEY_DONE,
+										enabled: can_edit,
+										editable: can_edit
 									});
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
@@ -6330,7 +6779,9 @@ create_or_edit_node.loadUI = function() {
 									i_name: i_name,
 									my_index: count,
 									autocorrect: false,
-									returnKeyType: Ti.UI.RETURNKEY_DONE
+									returnKeyType: Ti.UI.RETURNKEY_DONE,
+									enabled: can_edit,
+									editable: can_edit
 								});
 								if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
@@ -6427,7 +6878,11 @@ create_or_edit_node.loadUI = function() {
 											e.source.autocomplete_table.setData(table_data);
 											e.source.autocomplete_table.scrollToTop(0, {animated: false});
 											viewContent.scrollTo(0,e.source.top);
-											e.source.autocomplete_table.visible = true;
+											if(table_data.length>0){
+												e.source.autocomplete_table.visible = true;
+											}else{
+												e.source.autocomplete_table.visible = false;
+											}
 										} else {
 											e.source.autocomplete_table.visible = false;
 										}
