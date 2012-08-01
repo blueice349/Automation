@@ -147,42 +147,14 @@ else {
 	//When the user clicks on a certain contact, it opens individual_contact.js
 	listTableView.addEventListener('click', function(e) {
 		//Hide keyboard when returning 
-		firstClick = true;
 		search.blur();
-		if (PLATFORM == "android"){
-				var win_new = Titanium.UI.createWindow({
-					fullscreen : false,
-					title: win3.type.charAt(0).toUpperCase() + win3.type.slice(1),
-					type: win3.type,
-					url : 'individual_object.js',
-					up_node: win3.up_node,
-					uid: win3.uid,
-					region_form: e.row.form_part,
-					backgroundColor: '#000'
-				});
-		
-				//Passing parameters
-				win_new.picked 			 = win3.picked;
-				win_new.nid 			 = e.row.nid;
-				win_new.nameSelected 	 = e.row.name;
-		
-				win_new.open();
-		}
-		else{
-			bottomButtons1(e.row.nid, win3, e);
-		}
+		bottomButtons1(e.row.nid, win3, e);
 		resultsNames.close();
-		
 	});
 	//Adds contact list container to the UI
 	win3.add(search);
 	win3.add(listTableView);
 	search.blur();
-	// win3.addEventListener('focus', function(){
-		// setTimeout(function (){
-			// //search.blur();
-		// }, 110 );
-	// });
 }
 
 resultsNames.close();
@@ -282,10 +254,10 @@ function openCreateNodeScreen(){
 }
 
 
-function openEditScreen(part, nid){
+function openEditScreen(part, nid, e){
 //Next window to be opened
 	var win_new = create_or_edit_node.getWindow();
-	win_new.title = win3.title;
+	win_new.title = (PLATFORM == 'android') ? win3.title + '-' + e.row.name:win3.title;
 	win_new.type = win3.type;
 	win_new.listView = win3.listView;
 	win_new.up_node = win3.up_node;
@@ -295,7 +267,7 @@ function openEditScreen(part, nid){
 	//Passing parameters
 	win_new.nid = nid;
 	win_new.picked = win3.picked;
-	win_new.nameSelected = win3.nameSelected;
+	win_new.nameSelected =  e.row.name;
 
 	//Sets a mode to fields edition
 	win_new.mode = 1;
@@ -373,7 +345,7 @@ function bottomButtons1(_nid, win3, e){
 				Ti.API.info("Cancelled")
 			}
 			else if (ev.index != -1){
-				openEditScreen(btn_id[ev.index], _nid);
+				openEditScreen(btn_id[ev.index], _nid, e);
 			}
 	});	
 };

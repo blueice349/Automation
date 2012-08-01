@@ -149,6 +149,7 @@ var check = 0;
 //Parses result from user's login 
 var jsonLogin = JSON.parse(win2.result) ;
 //Retrieves username
+Ti.App.Properties.setString('Omadi_session_details', win2.result);
 var name = jsonLogin.user.realname;
 var roles = jsonLogin.user.roles;
 
@@ -348,7 +349,6 @@ listView.addEventListener('click',function(e){
 				win_new.picked = win2.picked;
 				win_new.region_form = 0;
 				win_new.backgroundColor = "#EEEEEE";
-				win_new.nameSelected = 'Fill Details...';
 				win_new.app_permissions = e.row.app_permissions;
 				win_new.addEventListener('focus', function(){
 					unlock_screen();

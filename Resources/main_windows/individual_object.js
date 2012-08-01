@@ -123,6 +123,8 @@ var cell = [];
 var count = 0;
 var heightValue = 60;
 var bug = [];
+omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
+roles = omadi_session_details.user.roles;
 
 while(fields_result.isValidRow()) {
 	unsorted_res.push({
@@ -211,6 +213,29 @@ if(c_index > 0) {
 			c_settings[count] = fields[f_name_f]['settings'];
 			c_widget[count] = fields[f_name_f]['widget'];
 			c_field_name[count] = fields[f_name_f]['field_name'];
+			
+			var can_view = false;
+
+			if(c_settings[count]['enforce_permissions'] != null && c_settings[count]['enforce_permissions'] == 1) {
+				for(var _l in c_settings[count].permissions) {
+					for(_k in roles) {
+						if(_l == _k) {
+							var stringifyObj = JSON.stringify(c_settings[count].permissions[_l]);
+							if(stringifyObj.indexOf('view') >= 0 || c_settings[count].permissions[_l]["all_permissions"]) {
+								can_view = true;
+							}
+
+						}
+					}
+				}
+			} else {
+				can_view = true;
+			}
+
+			if(!can_view) {
+				continue;
+			}
+							
 
 			//Content
 			c_content[count] = fieldVal;
@@ -1240,7 +1265,7 @@ function createImage1(arrImages, data, scrollView, updated) {
 function openEditScreen(part){
 //Next window to be opened
 			var win_new = create_or_edit_node.getWindow();
-			win_new.title = win4.title;
+			win_new.title = (PLATFORM == 'android') ? win4.title + '-' + win4.nameSelected:win4.title;
 			win_new.type = win4.type;
 			win_new.listView = win4.listView;
 			win_new.up_node = win4.up_node;
