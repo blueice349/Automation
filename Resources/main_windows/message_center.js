@@ -42,14 +42,38 @@ var listTableView = null;
 
 message_center.loadUI = function() {
 	win.is_opened = true;
-	///*
 	var db = Ti.Database.install('/database/gps_coordinates.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName()+"_GPS" );
 	var res_set = db.execute('SELECT *, COUNT(*) term_count FROM alerts GROUP BY location_nid ORDER BY timestamp DESC');
-	//var n_db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
-	//var _names = n_db.execute('SELECT * FROM node  ');
+	var res_names = db.execute('SELECT * FROM alert_names');
+	
+	var obj_cnt = new Array();
+	
+	while (res_set.isValidRow()){
+		obj_cnt.push({});
+		obj_cnt[obj_cnt.length -1].label = res_set.fieldByName('location_label');
+		obj_cnt[obj_cnt.length -1].nid = res_set.fieldByName('location_nid');
+		obj_cnt[obj_cnt.length -1].count = res_set.fieldByName('term_count');
+		res_set.next();
+	}
+	
+	while (res_names.isValidRow()){
+		var insert_it = true;
+		for (var b in obj_cnt){
+			if (obj_cnt[b].nid == res_names.fieldByName('location_nid')){
+				insert_it = false;
+			}
+		}
+		if (insert_it === true){
+			obj_cnt.push({});
+			obj_cnt[obj_cnt.length -1].label = res_names.fieldByName('location_label');
+			obj_cnt[obj_cnt.length -1].nid = res_names.fieldByName('location_nid');
+			obj_cnt[obj_cnt.length -1].count = 0;
+		}
+		res_names.next();
+	}
 	
 	//Check if the list is empty or not
-	if(res_set.rowCount == 0) {
+	if(obj_cnt.length == 0) {
 		//Shows the empty list
 		var empty = Titanium.UI.createLabel({
 			height : 'auto',
@@ -58,7 +82,7 @@ message_center.loadUI = function() {
 			color: '#000',
 			text : 'You have no messages'
 		});
-	
+		
 		//Debug
 		Ti.API.info("XXXXXXX ---- No messages ----- XXXXXX");
 	
@@ -67,16 +91,17 @@ message_center.loadUI = function() {
 	//Shows the messages
 	else {
 		var data = new Array();
-		while (res_set.isValidRow())
+		//while (res_set.isValidRow())
+		for (var x in obj_cnt)
 		{
-			var fullName = res_set.fieldByName('location_label')+" ("+res_set.fieldByName('term_count')+")";
+			var fullName = obj_cnt[x].label+" ("+obj_cnt[x].count+")";
 			var row = Ti.UI.createTableViewRow({
 				height : 'auto',
 				hasChild : false,
 				title : fullName,
-				nid: res_set.fieldByName('location_nid'),
+				nid: obj_cnt[x].nid,
 				color: '#000',
-				counter: res_set.fieldByName('term_count')
+				counter: obj_cnt[x].count
 			});
 		
 			//Parameters added to each row
@@ -84,7 +109,6 @@ message_center.loadUI = function() {
 			
 			//Populates the array
 			data.push(row);
-			res_set.next();
 		}
 	
 		//Search bar definition
@@ -316,10 +340,36 @@ Ti.App.addEventListener('refresh_UI_Alerts', function(){
 		///*
 		var db = Ti.Database.install('/database/gps_coordinates.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName()+"_GPS" );
 		var res_set = db.execute('SELECT *, COUNT(*) term_count FROM alerts GROUP BY location_nid ORDER BY timestamp DESC');
+		var res_names = db.execute('SELECT * FROM alert_names');
+		
+		var obj_cnt = new Array();
+		
+		while (res_set.isValidRow()){
+			obj_cnt.push({});
+			obj_cnt[obj_cnt.length -1].label = res_set.fieldByName('location_label');
+			obj_cnt[obj_cnt.length -1].nid = res_set.fieldByName('location_nid');
+			obj_cnt[obj_cnt.length -1].count = res_set.fieldByName('term_count');
+			res_set.next();
+		}
+		
+		while (res_names.isValidRow()){
+			var insert_it = true;
+			for (var b in obj_cnt){
+				if (obj_cnt[b].nid == res_names.fieldByName('location_nid')){
+					insert_it = false;
+				}
+			}
+			if (insert_it === true){
+				obj_cnt.push({});
+				obj_cnt[obj_cnt.length -1].label = res_names.fieldByName('location_label');
+				obj_cnt[obj_cnt.length -1].nid = res_names.fieldByName('location_nid');
+				obj_cnt[obj_cnt.length -1].count = 0;
+			}
+			res_names.next();
+		}
 		
 		//Check if the list is empty or not
-		if(res_set.rowCount == 0) {
-			//Shows the empty list
+		if(obj_cnt.length == 0) {			//Shows the empty list
 			var empty = Titanium.UI.createLabel({
 				height : 'auto',
 				width : 'auto',
@@ -336,16 +386,16 @@ Ti.App.addEventListener('refresh_UI_Alerts', function(){
 		//Shows the messages
 		else {
 			var data = new Array();
-			while (res_set.isValidRow())
+			for (var x in obj_cnt)
 			{
-				var fullName = res_set.fieldByName('location_label')+" ("+res_set.fieldByName('term_count')+")";
+				var fullName = obj_cnt[x].label+" ("+obj_cnt[x].count+")";
 				var row = Ti.UI.createTableViewRow({
 					height : 'auto',
 					hasChild : false,
 					title : fullName,
-					nid: res_set.fieldByName('location_nid'),
+					nid: obj_cnt[x].nid,
 					color: '#000',
-					counter: res_set.fieldByName('term_count')
+					counter: obj_cnt[x].count
 				});
 			
 				//Parameters added to each row
@@ -353,9 +403,7 @@ Ti.App.addEventListener('refresh_UI_Alerts', function(){
 				
 				//Populates the array
 				data.push(row);
-				res_set.next();
 			}
-		 
 			//Search bar definition
 			var search = Ti.UI.createSearchBar({
 				hintText : 'Search...',

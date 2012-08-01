@@ -7124,7 +7124,7 @@ function openCamera(e) {
 			var flexible = Ti.UI.createButton({
 				systemButton: Ti.UI.iPhone.SystemButton.FLEXIBLE_SPACE,
 			});
-			var navbar = Ti.UI.createToolbar({
+			var navbar = Ti.UI.iOS.createToolbar({
 				left	: 0,
 				right	: 0,
 				bottom	: 0,
@@ -7175,8 +7175,7 @@ function openCamera(e) {
 			error : function(error) {
 				Ti.API.info('Captured Image - Error: ' + error.code + " :: " + error.message);
 				if (error.code == Titanium.Media.NO_CAMERA) {
-					alertBox.setMessage('No Camera in device');
-					alertBox.show();
+					alert('No Camera in device');
 				}
 			},
 			saveToPhotoGallery : false,

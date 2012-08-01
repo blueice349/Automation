@@ -102,9 +102,6 @@ else
 		
 		Titanium.Geolocation.distanceFilter = dist_filter; //changed after first location event
 
-		
-		//Ti.API.info( 'INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('+longitude+','+latitude+','+timestamp+', "notUploaded")');
-		
 		if ( accuracy <= 200){
 			if (last_db_timestamp == timestamp){
 				Ti.API.info("Last DB timestamp is already the same, no adding a new one. Value = "+timestamp);
@@ -263,28 +260,28 @@ Ti.App.addEventListener('upload_gps_locations', function(){
 					if (resultReq.alert){
 						for(var _i in resultReq.alert){
 							var tmstp = new Date();
+							Ti.API.info("====>>>>>>>>>>>> "+resultReq.alert[_i].location_nid);
+							if (nids.indexOf(resultReq.alert[_i].location_nid) == -1){
+								nids.push( resultReq.alert[_i].location_nid );
+							}
+							_arr_content.push('INSERT OR REPLACE INTO alert_names (location_nid, location_label) VALUES ( '+resultReq.alert[_i].location_nid+', "'+resultReq.alert[_i].location_label+'" )');
+							
 							for (var _y in resultReq.alert[_i].alerts){
 								if (resultReq.alert[_i].alerts[_y]){
-									if (nids.indexOf(resultReq.alert[_i].alerts[_y].location_nid) == -1){
-										nids.push( resultReq.alert[_i].alerts[_y].location_nid );
-									}	
 									Ti.API.info("Alert Message: "+resultReq.alert[_i].alerts[_y].message);
 									_arr_content.push('INSERT OR REPLACE INTO alerts (subject, ref_nid, alert_id, location_nid, location_label, message, timestamp) VALUES ( "'+resultReq.alert[_i].alerts[_y].subject+'", '+resultReq.alert[_i].alerts[_y].reference_id+', '+resultReq.alert[_i].alerts[_y].alert_id+', '+resultReq.alert[_i].alerts[_y].location_nid+', "'+resultReq.alert[_i].alerts[_y].location_label+'", "'+resultReq.alert[_i].alerts[_y].message+'" , '+tmstp.getTime()+' )');
 								}
 								else{
-									if (nids.indexOf(resultReq.alert[_i].alerts.location_nid) == -1){
-										nids.push( resultReq.alert[_i].alerts.location_nid );
-									}	
 									Ti.API.info("Alert Message: "+resultReq.alert[_i].alerts.message);
 									_arr_content.push('INSERT OR REPLACE INTO alerts (subject, ref_nid, alert_id, location_nid, location_label, message, timestamp) VALUES ( "'+resultReq.alert[_i].alerts.subject+'", '+resultReq.alert[_i].alerts.reference_id+', '+resultReq.alert[_i].alerts.alert_id+', '+resultReq.alert[_i].alerts.location_nid+', "'+resultReq.alert[_i].alerts.location_label+'", "'+resultReq.alert[_i].alerts.message+'" , '+tmstp.getTime()+' )');
 								}
-								
 							}
 						}
 					}
 					db_coord.execute("BEGIN IMMEDIATE TRANSACTION");
 					for(var _e in nids){
 						db_coord.execute('DELETE FROM alerts WHERE location_nid='+nids[_e]);
+						db_coord.execute('DELETE FROM alert_names WHERE location_nid='+nids[_e]);
 						Ti.API.info('Deleted location nids: '+nids[_e]);
 					}
 					
