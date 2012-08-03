@@ -2062,19 +2062,23 @@ create_or_edit_node.loadUI = function() {
 											enabled: can_edit
 										});
 										if(PLATFORM == 'android'){
-										content[count].backgroundImage = '',
-										content[count].backgroundColor = 'white',
-										content[count].backgroundSelectedColor = '#2E64FE',
-										content[count].borderColor = 'gray',
-										content[count].borderRadius = 10,
-										content[count].color = 'black',
-										content[count].borderWidth = 1
-									}
-
-										//content[count].add(to_row);
-
-										//content[count].setSelectedRow(0, aux_val.cnt, false);
-
+											content[count].backgroundImage = '';
+											content[count].backgroundColor = 'white';
+											content[count].backgroundSelectedColor = '#2E64FE';
+											content[count].borderColor = 'gray';
+											content[count].borderRadius = 10;
+											content[count].color = 'black';
+											content[count].borderWidth = 1
+										}
+										if(!can_edit){
+											content[count].backgroundImage = '';
+											content[count].backgroundColor = '#BDBDBD';
+											content[count].borderColor = 'gray';
+											content[count].borderRadius = 10;
+											content[count].color = '#848484';
+											content[count].borderWidth = 1
+										}
+									
 										content[count].addEventListener('click', function(e) {
 											//Ti.API.info('USPS: '+e.row.usps);
 											//e.source.value = e.row.usps;
@@ -2133,6 +2137,16 @@ create_or_edit_node.loadUI = function() {
 									}
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
+									}
+									if(!can_edit){
+											content[count].backgroundImage = '';
+											content[count].backgroundColor = '#BDBDBD';
+											content[count].borderColor = 'gray';
+											content[count].borderRadius = 10;
+											content[count].color = '#848484';
+											content[count].borderWidth = 1;
+											content[count].paddingLeft = 3;
+											content[count].paddingRight = 3;
 									}
 									top += heightValue;
 
@@ -2427,6 +2441,14 @@ create_or_edit_node.loadUI = function() {
 										content[count].color = 'black',
 										content[count].borderWidth = 1
 									}
+									if(!can_edit){
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = '#BDBDBD';
+										content[count].borderColor = 'gray';
+										content[count].borderRadius = 10;
+										content[count].color = '#848484';
+										content[count].borderWidth = 1
+									}
 
 									
 									content[count].addEventListener('click', function(e) {
@@ -2485,6 +2507,16 @@ create_or_edit_node.loadUI = function() {
 									});
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
+									}
+									if(!can_edit){
+											content[count].backgroundImage = '';
+											content[count].backgroundColor = '#BDBDBD';
+											content[count].borderColor = 'gray';
+											content[count].borderRadius = 10;
+											content[count].color = '#848484';
+											content[count].borderWidth = 1;
+											content[count].paddingLeft = 3;
+											content[count].paddingRight = 3;
 									}
 									top += heightValue;
 
@@ -2622,6 +2654,16 @@ create_or_edit_node.loadUI = function() {
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
 									}
+									if(!can_edit){
+											content[count].backgroundImage = '';
+											content[count].backgroundColor = '#BDBDBD';
+											content[count].borderColor = 'gray';
+											content[count].borderRadius = 10;
+											content[count].color = '#848484';
+											content[count].borderWidth = 1;
+											content[count].paddingLeft = 3;
+											content[count].paddingRight = 3;
+									}
 									top += heightValue;
 
 									regionView.add(content[count]);
@@ -2659,8 +2701,18 @@ create_or_edit_node.loadUI = function() {
 									enabled: can_edit
 								});
 								if(PLATFORM == 'android'){
-										content[count].backgroundImage = '../images/textfield.png'
-									}
+									content[count].backgroundImage = '../images/textfield.png'
+								}
+								if(!can_edit){
+									content[count].backgroundImage = '';
+									content[count].backgroundColor = '#BDBDBD';
+									content[count].borderColor = 'gray';
+									content[count].borderRadius = 10;
+									content[count].color = '#848484';
+									content[count].borderWidth = 1;
+									content[count].paddingLeft = 3;
+									content[count].paddingRight = 3;
+								}
 								top += heightValue;
 
 								regionView.add(content[count]);
@@ -2792,6 +2844,16 @@ create_or_edit_node.loadUI = function() {
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
 									}
+									if(!can_edit){
+											content[count].backgroundImage = '';
+											content[count].backgroundColor = '#BDBDBD';
+											content[count].borderColor = 'gray';
+											content[count].borderRadius = 10;
+											content[count].color = '#848484';
+											content[count].borderWidth = 1;
+											content[count].paddingLeft = 3;
+											content[count].paddingRight = 3;
+									}
 									if (_max != null){
 										content[count].maxLength = _max;
 									}
@@ -2912,7 +2974,17 @@ create_or_edit_node.loadUI = function() {
 									editable: can_edit
 								});
 								if(PLATFORM == 'android'){
-										content[count].backgroundImage = '../images/textfield.png'
+									content[count].backgroundImage = '../images/textfield.png'
+								}
+								if(!can_edit){
+									content[count].backgroundImage = '';
+									content[count].backgroundColor = '#BDBDBD';
+									content[count].borderColor = 'gray';
+									content[count].borderRadius = 10;
+									content[count].color = '#848484';
+									content[count].borderWidth = 1;
+									content[count].paddingLeft = 3;
+									content[count].paddingRight = 3;
 								}
 								
 								if (_max != null){
@@ -3126,6 +3198,16 @@ create_or_edit_node.loadUI = function() {
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
 									}
+									if(!can_edit){
+											content[count].backgroundImage = '';
+											content[count].backgroundColor = '#BDBDBD';
+											content[count].borderColor = 'gray';
+											content[count].borderRadius = 10;
+											content[count].color = '#848484';
+											content[count].borderWidth = 1;
+											content[count].paddingLeft = 3;
+											content[count].paddingRight = 3;
+									}
 									
 									if (_max != null){
 										content[count].maxLength = _max;
@@ -3243,7 +3325,16 @@ create_or_edit_node.loadUI = function() {
 									editable: can_edit
 								});
 								if(PLATFORM == 'android'){
-										content[count].backgroundImage = '../images/textfield.png'
+									content[count].backgroundImage = '../images/textfield.png'
+								}
+								if(!can_edit){
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = '#BDBDBD';
+										content[count].borderColor = 'gray';
+										content[count].borderRadius = 10;
+										content[count].color = '#848484';
+										content[count].paddingLeft = 3;
+										content[count].paddingRight = 3;
 								}
 								if (_max != null){
 									content[count].maxLength = _max;
@@ -3344,33 +3435,7 @@ create_or_edit_node.loadUI = function() {
 
 						case 'location':
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
-							var can_view = false;
-							var can_edit = false;
 							
-							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
-								for(var _l in settings.permissions) {
-									for(_k in roles) {
-										if(_l == _k) {
-											var stringifyObj = JSON.stringify(settings.permissions[_l]);
-											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
-												can_edit = true;
-											}
-
-											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
-												can_view = true;
-											}
-
-										}
-									}
-								}
-							}else{
-								can_view = can_edit = true;
-							}
-							
-							if(!can_view){
-								break;
-							}
-
 							//Set our auxiliar array
 							var aux_local = new Array;
 							for (var i in settings.parts) {
@@ -3462,8 +3527,7 @@ create_or_edit_node.loadUI = function() {
 										changedFlag : 0,
 										autocorrect: false,
 										returnKeyType: Ti.UI.RETURNKEY_DONE,
-										enabled: can_edit,
-										editable: can_edit
+										enabled: true
 									});
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
@@ -3502,8 +3566,7 @@ create_or_edit_node.loadUI = function() {
 									changedFlag : 0,
 									autocorrect: false,
 									returnKeyType: Ti.UI.RETURNKEY_DONE,
-									enabled: can_edit,
-									editable: can_edit
+									enabled: true
 								});
 								if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
@@ -3669,6 +3732,16 @@ create_or_edit_node.loadUI = function() {
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
 									}
+									if(!can_edit){
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = '#BDBDBD';
+										content[count].borderColor = 'gray';
+										content[count].borderRadius = 10;
+										content[count].color = '#848484';
+										content[count].borderWidth = 1;
+										content[count].paddingLeft = 3;
+										content[count].paddingRight = 3;
+									}
 									addDoneButtonInKB(content[count]);
 									top += heightValue;
 
@@ -3755,6 +3828,16 @@ create_or_edit_node.loadUI = function() {
 								});
 								if(PLATFORM == 'android'){
 									content[count].backgroundImage = '../images/textfield.png'
+								}
+								if(!can_edit){
+									content[count].backgroundImage = '';
+									content[count].backgroundColor = '#BDBDBD';
+									content[count].borderColor = 'gray';
+									content[count].borderRadius = 10;
+									content[count].color = '#848484';
+									content[count].borderWidth = 1;
+									content[count].paddingLeft = 3;
+									content[count].paddingRight = 3;
 								}
 								addDoneButtonInKB(content[count]);
 								top += heightValue;
@@ -3918,6 +4001,16 @@ create_or_edit_node.loadUI = function() {
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
 									}
+									if(!can_edit){
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = '#BDBDBD';
+										content[count].borderColor = 'gray';
+										content[count].borderRadius = 10;
+										content[count].color = '#848484';
+										content[count].borderWidth = 1;
+										content[count].paddingLeft = 3;
+										content[count].paddingRight = 3;
+									}
 									addDoneButtonInKB(content[count]);
 									top += heightValue;
 
@@ -3958,8 +4051,18 @@ create_or_edit_node.loadUI = function() {
 									editable: can_edit
 								});
 								if(PLATFORM == 'android'){
-										content[count].backgroundImage = '../images/textfield.png'
-									}
+									content[count].backgroundImage = '../images/textfield.png'
+								}
+								if(!can_edit){
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = '#BDBDBD';
+										content[count].borderColor = 'gray';
+										content[count].borderRadius = 10;
+										content[count].color = '#848484';
+										content[count].borderWidth = 1;
+										content[count].paddingLeft = 3;
+										content[count].paddingRight = 3;
+								}
 								addDoneButtonInKB(content[count]);
 								top += heightValue;
 
@@ -4081,6 +4184,16 @@ create_or_edit_node.loadUI = function() {
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
 									}
+									if(!can_edit){
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = '#BDBDBD';
+										content[count].borderColor = 'gray';
+										content[count].borderRadius = 10;
+										content[count].color = '#848484';
+										content[count].borderWidth = 1;
+										content[count].paddingLeft = 3;
+										content[count].paddingRight = 3;
+									}
 									top += heightValue;
 
 									regionView.add(content[count]);
@@ -4120,8 +4233,18 @@ create_or_edit_node.loadUI = function() {
 									editable: can_edit
 								});
 								if(PLATFORM == 'android'){
-										content[count].backgroundImage = '../images/textfield.png'
-									}
+									content[count].backgroundImage = '../images/textfield.png'
+								}
+								if(!can_edit){
+									content[count].backgroundImage = '';
+									content[count].backgroundColor = '#BDBDBD';
+									content[count].borderColor = 'gray';
+									content[count].borderRadius = 10;
+									content[count].color = '#848484';
+									content[count].borderWidth = 1;
+									content[count].paddingLeft = 3;
+									content[count].paddingRight = 3;
+								}
 								top += heightValue;
 
 								regionView.add(content[count]);
@@ -4318,11 +4441,14 @@ create_or_edit_node.loadUI = function() {
 											content[count].color = 'black',
 											content[count].borderWidth = 1
 										}
-
-										//content[count].add(arr_picker);
-
-										//content[count].setSelectedRow(0, aux_val.cnt, false);
-
+										if(!can_edit){
+												content[count].backgroundImage = '';
+												content[count].backgroundColor = '#BDBDBD';
+												content[count].borderColor = 'gray';
+												content[count].borderRadius = 10;
+												content[count].color = '#848484';
+												content[count].borderWidth = 1
+										}									
 										content[count].addEventListener('click', function(e) {
 											//Ti.API.info('TID: '+e.row.tid);
 											//e.source.value = e.row.tid;
@@ -4419,9 +4545,14 @@ create_or_edit_node.loadUI = function() {
 										content[count].color = 'black',
 										content[count].borderWidth = 1
 									}
-
-									//content[count].add(arr_picker);
-									//content[count].setSelectedRow(0, aux_val.cnt, false);
+									if(!can_edit){
+											content[count].backgroundImage = '';
+											content[count].backgroundColor = '#BDBDBD';
+											content[count].borderColor = 'gray';
+											content[count].borderRadius = 10;
+											content[count].color = '#848484';
+											content[count].borderWidth = 1
+									}
 
 									content[count].addEventListener('click', function(e) {
 										//Ti.API.info('TID: '+e.row.tid);
@@ -4535,7 +4666,14 @@ create_or_edit_node.loadUI = function() {
 										can_edit: can_edit,
 										enabled: can_edit,
 									});
-
+									if(!can_edit){
+											content[count].backgroundImage = '';
+											content[count].backgroundColor = '#BDBDBD';
+											content[count].borderColor = 'gray';
+											content[count].color = '#848484';
+											content[count].borderWidth = 1
+									}
+									
 									content[count].addEventListener('click', function(e) {
 										if(e.source.can_edit){
 											for (var jsa in e.source.itens) {
@@ -4670,6 +4808,16 @@ create_or_edit_node.loadUI = function() {
 										});
 										if(PLATFORM == 'android'){
 											content[count].backgroundImage = '../images/textfield.png'
+										}
+										if(!can_edit){
+											content[count].backgroundImage = '';
+											content[count].backgroundColor = '#BDBDBD';
+											content[count].borderColor = 'gray';
+											content[count].borderRadius = 10;
+											content[count].color = '#848484';
+											content[count].borderWidth = 1;
+											content[count].paddingLeft = 3;
+											content[count].paddingRight = 3;
 										}
 										//AUTOCOMPLETE TABLE
 										var autocomplete_table = Titanium.UI.createTableView({
@@ -4855,6 +5003,16 @@ create_or_edit_node.loadUI = function() {
 									});
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
+									}
+									if(!can_edit){
+											content[count].backgroundImage = '';
+											content[count].backgroundColor = '#BDBDBD';
+											content[count].borderColor = 'gray';
+											content[count].borderRadius = 10;
+											content[count].color = '#848484';
+											content[count].borderWidth = 1;
+											content[count].paddingLeft = 3;
+											content[count].paddingRight = 3;
 									}
 									//AUTOCOMPLETE TABLE
 									var autocomplete_table = Titanium.UI.createTableView({
@@ -5125,6 +5283,16 @@ create_or_edit_node.loadUI = function() {
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
 									}
+									if(!can_edit){
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = '#BDBDBD';
+										content[count].borderColor = 'gray';
+										content[count].borderRadius = 10;
+										content[count].color = '#848484';
+										content[count].borderWidth = 1;
+										content[count].paddingLeft = 3;
+										content[count].paddingRight = 3;
+									}
 									//AUTOCOMPLETE TABLE
 									var autocomplete_table = Titanium.UI.createTableView({
 										top : top + heightValue,
@@ -5286,8 +5454,18 @@ create_or_edit_node.loadUI = function() {
 									editable: can_edit
 								});
 								if(PLATFORM == 'android'){
-										content[count].backgroundImage = '../images/textfield.png'
-									}
+									content[count].backgroundImage = '../images/textfield.png'
+								}
+								if(!can_edit){
+									content[count].backgroundImage = '';
+									content[count].backgroundColor = '#BDBDBD';
+									content[count].borderColor = 'gray';
+									content[count].borderRadius = 10;
+									content[count].color = '#848484';
+									content[count].borderWidth = 1;
+									content[count].paddingLeft = 3;
+									content[count].paddingRight = 3;
+								}
 								//AUTOCOMPLETE TABLE
 								var autocomplete_table = Titanium.UI.createTableView({
 									top : top + heightValue,
@@ -5583,11 +5761,17 @@ create_or_edit_node.loadUI = function() {
 										content[count].color = 'black',
 										content[count].borderWidth = 1
 									}
+									if(!can_edit){
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = '#BDBDBD';
+										content[count].borderColor = 'gray';
+										content[count].borderRadius = 10;
+										content[count].color = '#848484';
+										content[count].borderWidth = 1
+									}
 									top += heightValue;
 
-									//	content[count].add(arr_picker);
-									//	content[count].setSelectedRow(0, aux_val.cnt, false);
-
+								
 									content[count].addEventListener('click', function(e) {
 										//Ti.API.info('UID: '+e.row.uid);
 										//e.source.value = e.row.uid;
@@ -5679,18 +5863,23 @@ create_or_edit_node.loadUI = function() {
 									enabled: can_edit
 								});
 								if(PLATFORM == 'android'){
-										content[count].backgroundImage = '',
-										content[count].backgroundColor = 'white',
-										content[count].backgroundSelectedColor = '#2E64FE',
-										content[count].borderColor = 'gray',
-										content[count].borderRadius = 10,
-										content[count].color = 'black',
-										content[count].borderWidth = 1
-									}
+									content[count].backgroundImage = '',
+									content[count].backgroundColor = 'white',
+									content[count].backgroundSelectedColor = '#2E64FE',
+									content[count].borderColor = 'gray',
+									content[count].borderRadius = 10,
+									content[count].color = 'black',
+									content[count].borderWidth = 1
+								}
+								if(!can_edit){
+									content[count].backgroundImage = '';
+									content[count].backgroundColor = '#BDBDBD';
+									content[count].borderColor = 'gray';
+									content[count].borderRadius = 10;
+									content[count].color = '#848484';
+									content[count].borderWidth = 1
+								}
 								top += heightValue;
-
-								//content[count].add(arr_picker);
-								//content[count].setSelectedRow(0, aux_val.cnt, false);
 
 								content[count].addEventListener('click', function(e) {
 									//Ti.API.info('UID: '+e.row.uid);
@@ -5853,6 +6042,13 @@ create_or_edit_node.loadUI = function() {
 											can_edit: can_edit,
 											enabled: can_edit,
 										});
+										if(!can_edit){
+											content[count].backgroundImage = '';
+											content[count].backgroundColor = '#BDBDBD';
+											content[count].borderColor = 'gray';
+											content[count].color = '#848484';
+											content[count].borderWidth = 1
+										}
 
 										var mother_of_view = Ti.UI.createView({
 											height : heightValue,
@@ -5949,6 +6145,13 @@ create_or_edit_node.loadUI = function() {
 										enabled: can_edit,
 
 									});
+									if(!can_edit){
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = '#BDBDBD';
+										content[count].borderColor = 'gray';
+										content[count].color = '#848484';
+										content[count].borderWidth = 1
+									}
 
 									var mother_of_view = Ti.UI.createView({
 										height : heightValue,
@@ -6075,6 +6278,14 @@ create_or_edit_node.loadUI = function() {
 											enabled: can_edit,
 
 										});
+										
+										if(!can_edit){
+												content[count].backgroundImage = '';
+												content[count].backgroundColor = '#BDBDBD';
+												content[count].borderColor = 'gray';
+												content[count].color = '#848484';
+												content[count].borderWidth = 1
+										}
 
 										var mother_of_view = Ti.UI.createView({
 											height : heightValue,
@@ -6175,6 +6386,13 @@ create_or_edit_node.loadUI = function() {
 										can_edit: can_edit,
 										enabled: can_edit,
 									});
+									if(!can_edit){
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = '#BDBDBD';
+										content[count].borderColor = 'gray';
+										content[count].color = '#848484';
+										content[count].borderWidth = 1
+									}
 
 									var mother_of_view = Ti.UI.createView({
 										height : heightValue,
@@ -6296,17 +6514,9 @@ create_or_edit_node.loadUI = function() {
 										cardinality : settings.cardinality,
 										reffer_index : reffer_index,
 										settings : settings,
-										changedFlag : 0
+										changedFlag : 0,
+										enabled: true
 									});
-									if(PLATFORM == 'android'){
-										content[count].backgroundImage = '',
-										content[count].backgroundColor = 'white',
-										content[count].backgroundSelectedColor = '#2E64FE',
-										content[count].borderColor = 'gray',
-										content[count].borderRadius = 10,
-										content[count].color = 'black',
-										content[count].borderWidth = 1
-									}
 									top += getScreenHeight() * 0.1;
 
 									content[count].addEventListener('click', function(e) {
@@ -6355,7 +6565,8 @@ create_or_edit_node.loadUI = function() {
 									cardinality : settings.cardinality,
 									reffer_index : reffer_index,
 									settings : settings,
-									changedFlag : 0
+									changedFlag : 0,
+									enabled: true
 								});
 								top += getScreenHeight() * 0.1;
 
@@ -6499,6 +6710,13 @@ create_or_edit_node.loadUI = function() {
 										can_edit: can_edit,
 										enabled: can_edit
 									});
+									if(!can_edit){
+											content[count].backgroundImage = '';
+											content[count].backgroundColor = '#BDBDBD';
+											content[count].borderColor = 'gray';
+											content[count].color = '#848484';
+											content[count].borderWidth = 1
+									}
 
 									var mother_of_view = Ti.UI.createView({
 										height : heightValue,
@@ -6566,6 +6784,13 @@ create_or_edit_node.loadUI = function() {
 									can_edit: can_edit,
 									enabled: can_edit
 								});
+									if(!can_edit){
+											content[count].backgroundImage = '';
+											content[count].backgroundColor = '#BDBDBD';
+											content[count].borderColor = 'gray';
+											content[count].color = '#848484';
+											content[count].borderWidth = 1
+									}
 
 								var mother_of_view = Ti.UI.createView({
 									height : heightValue,
@@ -6724,6 +6949,16 @@ create_or_edit_node.loadUI = function() {
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
 									}
+									if(!can_edit){
+											content[count].backgroundImage = '';
+											content[count].backgroundColor = '#BDBDBD';
+											content[count].borderColor = 'gray';
+											content[count].borderRadius = 10;
+											content[count].color = '#848484';
+											content[count].borderWidth = 1;
+											content[count].paddingLeft = 3;
+											content[count].paddingRight = 3;
+									}
 									top += heightValue;
 
 									regionView.add(content[count]);
@@ -6784,7 +7019,17 @@ create_or_edit_node.loadUI = function() {
 									editable: can_edit
 								});
 								if(PLATFORM == 'android'){
-										content[count].backgroundImage = '../images/textfield.png'
+									content[count].backgroundImage = '../images/textfield.png'
+								}
+								if(!can_edit){
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = '#BDBDBD';
+										content[count].borderColor = 'gray';
+										content[count].borderRadius = 10;
+										content[count].color = '#848484';
+										content[count].borderWidth = 1;
+										content[count].paddingLeft = 3;
+										content[count].paddingRight = 3;
 								}
 								//AUTOCOMPLETE TABLE
 								var autocomplete_table = Titanium.UI.createTableView({
@@ -6983,7 +7228,8 @@ create_or_edit_node.loadUI = function() {
 									composed_obj : true,
 									addButton : null,
 									cardinality : settings.cardinality,
-									value : null
+									value : null,
+									enabled: true
 								});
 								regionView.add(content[count]);
 								var decodedValues = [];
@@ -7108,7 +7354,8 @@ create_or_edit_node.loadUI = function() {
 									mimeType : null,
 									cardinality : settings.cardinality,
 									isUpdated : isUpdated,
-									value : null
+									value : null,
+									enabled: true
 								});
 
 								if (isUpdated == true) {
@@ -7181,7 +7428,8 @@ create_or_edit_node.loadUI = function() {
 								settings : settings,
 								layout : 'vertical',
 								settings : settings,
-								changedFlag : 0
+								changedFlag : 0,
+								enabled: true
 							});
 							createCalFieldTableFormat(content[count], db_display, content);
 							if(settings.hidden==null || settings.hidden!=1){
@@ -7225,7 +7473,8 @@ create_or_edit_node.loadUI = function() {
 									value			: JSON.parse(field_arr[index_label][index_size].actual_value),
 									layout 			: 'vertical',
 									widget			: JSON.parse(field_arr[index_label][index_size].widget),
-									changedFlag 	: 0
+									changedFlag 	: 0,
+									enabled: true
 								});
 								
 								showRulesRow(content[count], db_display, win);

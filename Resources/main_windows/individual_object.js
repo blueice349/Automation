@@ -214,28 +214,30 @@ if(c_index > 0) {
 			c_widget[count] = fields[f_name_f]['widget'];
 			c_field_name[count] = fields[f_name_f]['field_name'];
 			
-			var can_view = false;
+			
+			if(c_settings[count] != null  && c_settings[count]!="" && c_settings[count] != 'null' && c_type[count] != 'region_separator_mode'){
+				var can_view = false;
+				var per_settings = JSON.parse(c_settings[count]);
+				if(per_settings['enforce_permissions'] != null && per_settings['enforce_permissions'] == 1) {
+					for(var _l in per_settings.permissions) {
+						for(_k in roles) {
+							if(_l == _k) {
+								var stringifyObj = JSON.stringify(per_settings.permissions[_l]);
+								if(stringifyObj.indexOf('view') >= 0 || per_settings.permissions[_l]["all_permissions"]) {
+									can_view = true;
+								}
 
-			if(c_settings[count]['enforce_permissions'] != null && c_settings[count]['enforce_permissions'] == 1) {
-				for(var _l in c_settings[count].permissions) {
-					for(_k in roles) {
-						if(_l == _k) {
-							var stringifyObj = JSON.stringify(c_settings[count].permissions[_l]);
-							if(stringifyObj.indexOf('view') >= 0 || c_settings[count].permissions[_l]["all_permissions"]) {
-								can_view = true;
 							}
-
 						}
 					}
+				} else {
+					can_view = true;
 				}
-			} else {
-				can_view = true;
-			}
-
-			if(!can_view) {
-				continue;
-			}
-							
+				
+				if(!can_view) {
+					continue;
+				}
+			}				
 
 			//Content
 			c_content[count] = fieldVal;
