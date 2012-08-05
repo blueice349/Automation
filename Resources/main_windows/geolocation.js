@@ -207,7 +207,7 @@ Ti.App.addEventListener('upload_gps_locations', function(){
 		
 		Ti.API.info("Last timestamp = "+last_db_timestamp);
 	}
-	var result = db_coord.execute("SELECT * FROM user_location WHERE status = 'notUploaded' ORDER BY timestamp DESC");
+	var result = db_coord.execute("SELECT * FROM user_location WHERE status = 'notUploaded' ORDER BY timestamp ASC");
 
 	if (result.rowCount > 0){
 		Ti.API.info(result.rowCount+' gps locations were found ');
