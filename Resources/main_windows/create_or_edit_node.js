@@ -1318,7 +1318,7 @@ function open_mult_selector(obj) {
 		backgroundColor : '#000000',
 		opacity : 0.5
 	});
-
+	var coItemSelected = 0;
 	win_wid.add(opacView);
 
 	var win_view = Ti.UI.createView({
@@ -1368,6 +1368,19 @@ function open_mult_selector(obj) {
 		height : '73%',
 		scrollable : true
 	});
+	
+	var desLabel = Titanium.UI.createLabel({
+		bottom : '12.5%',
+		left : 5,
+		right: 5,
+		ellipsize: true,
+		wordWrap: false,
+		visible: false,
+		font: { fontsize:10
+		}, color: 'black',
+		height: '7%'
+	});
+	win_view.add(desLabel);
 
 	var elements_to_insert = [];
 	for (var v_iten in obj.itens) {
@@ -1416,10 +1429,41 @@ function open_mult_selector(obj) {
 		if (listView.data[0].rows[e.index].selected === false) {
 			listView.data[0].rows[e.index].selected = true;
 			listView.data[0].rows[e.index].backgroundColor = color_set;
+			coItemSelected++;
 		} else {
 			listView.data[0].rows[e.index].selected = false;
 			listView.data[0].rows[e.index].backgroundColor = color_unset;
+			coItemSelected--;
 		}
+		
+		if(coItemSelected == 1) {
+			if(obj.from_cond_vs != null && obj.from_cond_vs == true) {
+				listView.height = '66.5%';
+				desLabel.visible = true;
+				for(var i_sel = 0; i_sel < listView.data[0].rows.length; i_sel++) {
+					if(listView.data[0].rows[i_sel].selected == true) {
+						desLabel.text = (listView.data[0].rows[i_sel].desc != null && listView.data[0].rows[i_sel].desc != "") ? listView.data[0].rows[i_sel].desc : 'No Description'
+						break;
+					}
+				}
+			}
+		}else if(coItemSelected > 1) {
+			if(obj.from_cond_vs != null && obj.from_cond_vs == true) {
+				listView.height = '66.5%';
+				desLabel.visible = true;
+				desLabel.text = 'Multiple violations selected'
+			}
+		} else if(coItemSelected == 0) {
+			if(obj.from_cond_vs != null && obj.from_cond_vs == true) {
+				listView.height = '73%';
+				desLabel.visible = false;
+				desLabel.text = ''
+			}
+		}
+
+		i
+
+		
 		Ti.API.info('Field set to ' + listView.data[0].rows[e.index].selected);
 	});
 	var bottom_sel = Ti.UI.createView({
@@ -4895,7 +4939,9 @@ create_or_edit_node.loadUI = function() {
 											zIndex : 15,
 											height : getScreenHeight() * 0.2,
 											backgroundColor : '#FFFFFF',
-											visible : false
+											visible : false,
+											borderColor: '#000',
+											borderWidth: 1
 										});
 										content[count].autocomplete_table = autocomplete_table;
 										top += heightValue;
@@ -5090,7 +5136,9 @@ create_or_edit_node.loadUI = function() {
 										zIndex : 15,
 										height : getScreenHeight() * 0.2,
 										backgroundColor : '#FFFFFF',
-										visible : false
+										visible : false,
+										borderColor: '#000',
+										borderWidth: 1
 									});
 									content[count].autocomplete_table = autocomplete_table;
 									top += heightValue;
@@ -5369,7 +5417,9 @@ create_or_edit_node.loadUI = function() {
 										zIndex : 15,
 										height : getScreenHeight() * 0.2,
 										backgroundColor : '#FFFFFF',
-										visible : false
+										visible : false,
+										borderColor: '#000',
+										borderWidth: 1
 									});
 									content[count].autocomplete_table = autocomplete_table;
 									top += heightValue;
@@ -5542,7 +5592,9 @@ create_or_edit_node.loadUI = function() {
 									zIndex : 999,
 									height : getScreenHeight() * 0.2,
 									backgroundColor : '#FFFFFF',
-									visible : false
+									visible : false,
+									borderColor: '#000',
+									borderWidth: 1
 								});
 								content[count].autocomplete_table = autocomplete_table;
 								top += heightValue;
@@ -7107,7 +7159,9 @@ create_or_edit_node.loadUI = function() {
 									zIndex : 15,
 									height : getScreenHeight() * 0.2,
 									backgroundColor : '#FFFFFF',
-									visible : false
+									visible : false,
+									borderColor: '#000',
+									borderWidth: 1
 								});
 								content[count].autocomplete_table = autocomplete_table;
 								top += heightValue;
@@ -7882,10 +7936,7 @@ function openCamera(e) {
 	try {
 		var overlayView;
 		if(PLATFORM != 'android'){
-			 overlayView = Ti.UI.createView({
-				height: Ti.Platform.displayCaps.platformHeight,
-				widht: Ti.Platform.displayCaps.platformWidth
-			});
+			overlayView = Ti.UI.createView();
 			var captureBtn = Ti.UI.createButton({
 				systemButton: Ti.UI.iPhone.SystemButton.CAMERA,
 			});
@@ -7899,6 +7950,7 @@ function openCamera(e) {
 				left	: 0,
 				right	: 0,
 				bottom	: 0,
+				height	: 50,
 				items: 	[doneBtn, flexible, captureBtn, flexible]
 			});
 			overlayView.add(navbar);
@@ -7940,6 +7992,7 @@ function openCamera(e) {
 					}
 					
 					e.source = e.source.scrollView.arrImages[newSource];
+					if((PLATFORM1='android')){Ti.Media.hideCamera()};	
 					openCamera(e);
 				}
 			},
@@ -7953,7 +8006,6 @@ function openCamera(e) {
 			showControls: false,
 			overlay: (PLATFORM1='android')?overlayView:'',
 			autohide: true,
-			transform :Ti.UI.create2DMatrix().scale(1),
 			mediaTypes : [Ti.Media.MEDIA_TYPE_PHOTO]
 		});
 	} catch(ex) {
