@@ -15,6 +15,7 @@ Titanium.UI.setBackgroundColor('#EEEEEE');
 
 //Common used functions
 Ti.include('lib/functions.js'); 
+
 if(PLATFORM!='android'){clearCache();}
 
 var win1 = Titanium.UI.createWindow({  
@@ -24,7 +25,7 @@ var win1 = Titanium.UI.createWindow({
 	backgroundColor: '#EEEEEE'
 });
 
-var OMADI_VERSION = "omadiDb1572";
+var OMADI_VERSION = "omadiDb1573";
 
 Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION);
 var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );
@@ -33,6 +34,22 @@ var credentials = db.execute('SELECT domain, username, password FROM history WHE
 var locked_field = true;
 var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 var updatedTime = db_a.execute('SELECT timestamp FROM updated WHERE rowid=1');
+
+function is_first_time(){
+	var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+	var updatedTime = db_a.execute('SELECT timestamp FROM updated WHERE rowid=1');
+	if (updatedTime.fieldByName('timestamp') != 0){
+		updatedTime.close();	
+		db_a.close();
+		return false;
+	}
+	else{
+		updatedTime.close();	
+		db_a.close();
+		return true; 
+	}
+}
+
 if (updatedTime.fieldByName('timestamp') != 0){
 	locked_field = false;
 }
@@ -146,7 +163,6 @@ tf2.addEventListener('return', function(){
 	b1.fireEvent('click');
 });
 
-
 win1.addEventListener('focus', function(){
 	var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 	var updatedTime = db_a.execute('SELECT timestamp FROM updated WHERE rowid=1');
@@ -154,7 +170,14 @@ win1.addEventListener('focus', function(){
 	if (updatedTime.fieldByName('timestamp') != 0){
 		locked_field = false;
 		new_color = "#999999";
+		s_terms_services.selected = true;
+		s_terms_services.backgroundImage = '/images/selected_test.png';
 	}
+	else{
+		s_terms_services.selected = false;
+		s_terms_services.backgroundImage = null;
+	}
+	
 	updatedTime.close();
 	db_a.close();
 
@@ -227,12 +250,149 @@ win1.add(messageView);
 //Adds error to interface
 //win1.add(label_error);
 
+if (Ti.Platform.osname == 'ipad'){
+	var s_terms_services = Ti.UI.createView({
+		width: '24dp',
+		height: '24dp',
+		borderRadius: 5,
+		borderWidth: 1,
+		selected: false,
+		borderColor: '#495A8B',
+		backgroundColor: '#FFF'
+	});
+	
+	var t_terms_services_i = Ti.UI.createLabel({
+		text: 'I agree to the',
+		color: '#495A8B',
+		left: '5dp',
+		height: '30dp',
+		font: {
+			fontSize: '14dp'
+		},
+		width: '85dp'
+	});
+	
+	var t_terms_services_ii = Ti.UI.createLabel({
+		text: ' Terms of Service',
+		color: '#495A8B',
+		font: {
+			fontSize: '14dp'
+		},
+		height: '30dp',
+		width: '120dp'
+	});
+	
+	var t_row = Ti.UI.createView({
+		height: '1dp',
+		backgroundColor: '#495A8B',
+		width: '109dp',
+		left: '370dp'
+	});
+	
+	var v_terms_services = Ti.UI.createView({
+		layout: 'horizontal',
+		height: '30dp',
+		top: '17dp',
+		width: 'auto',
+		left: '33%',
+		right: '33%'
+	});
+
+}
+else{
+	var s_terms_services = Ti.UI.createView({
+		width: '24dp',
+		height: '24dp',
+		borderRadius: 5,
+		borderWidth: 1,
+		selected: false,
+		borderColor: '#495A8B',
+		backgroundColor: '#FFF'
+	});
+	
+	var t_terms_services_i = Ti.UI.createLabel({
+		text: 'I agree to the',
+		color: '#495A8B',
+		left: '5dp',
+		height: '30dp',
+		font: {
+			fontSize: '14dp'
+		},
+		width: '85dp'
+	});
+	
+	var t_terms_services_ii = Ti.UI.createLabel({
+		text: ' Terms of Service',
+		color: '#495A8B',
+		font: {
+			fontSize: '14dp'
+		},
+		height: '30dp',
+		width: '110dp'
+	});
+	
+	var t_row = Ti.UI.createView({
+		height: '1dp',
+		backgroundColor: '#495A8B',
+		width: '109dp',
+		left: '165dp'
+	});
+	
+	var v_terms_services = Ti.UI.createView({
+		layout: 'horizontal',
+		height: '30dp',
+		top: '15dp',
+		width: 'auto',
+		left: '15%',
+		right: '15%'
+	});
+	setTimeout(function(){
+		i_scroll_page.setContentOffset({
+				x : i_scroll_page.getContentOffset().x,
+				y : "25dp"
+		});
+	},500);
+}
+
+s_terms_services.addEventListener('click', function(e){
+	if (e.source.selected === false){
+		e.source.selected = true;
+		e.source.backgroundImage = '/images/selected_test.png';
+	} 
+	else{
+		e.source.selected = false;
+		e.source.backgroundImage = null;
+	}
+});
+
+t_terms_services_i.addEventListener('click', function(e){
+	if (s_terms_services.selected === false){
+		s_terms_services.selected = true;
+		s_terms_services.backgroundImage = '/images/selected_test.png';
+	} 
+	else{
+		s_terms_services.selected = false;
+		s_terms_services.backgroundImage = null;
+	}
+});
+
+t_terms_services_ii.addEventListener('click', function(){
+	Ti.Platform.openURL('https://omadi.com/terms');
+});
+
+v_terms_services.add(s_terms_services);
+v_terms_services.add(t_terms_services_i);
+v_terms_services.add(t_terms_services_ii);
+i_scroll_page.add(v_terms_services);
+i_scroll_page.add(t_row);
+
+
 //Login button definition:
 var b1 = Titanium.UI.createButton({
    title: 'Log In',
    width: '80%',
    height: '55',
-   top: '13dp' 
+   top: '10dp' 
 });
 
 //Adds button to the interface
@@ -243,6 +403,8 @@ var block_i = Ti.UI.createView({
 	height: '50dp'
 });
 i_scroll_page.add(block_i);
+
+
 
 /* Function: Trigger for login button
  * Name: b1.addEventListener('click', function(){ ... });
@@ -272,7 +434,9 @@ b1.addEventListener('click', function(){
 	else if ( !(Titanium.Network.online)) {
 		alert("Please, be sure you have a valid internet connection!");
 	}
-	
+	else if ( s_terms_services.selected === false){
+		alert("You must to agree to the Terms of Service before using the app");
+	}
 	//Everything ok, so let's login:
 	else{
 

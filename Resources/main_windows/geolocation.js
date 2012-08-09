@@ -24,14 +24,13 @@ Ti.Geolocation.preferredProvider = Titanium.Geolocation.PROVIDER_GPS;
 Ti.Geolocation.purpose = "Omadi tracking module";
 
 
-
 // state vars used by resume/pause
 var db_coord_name	=  Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName()+"_GPS";
 var headingAdded	= false;
 var locationAdded 	= false;
 var is_module_ready = false;
 var location_obj 	= [];
-var dist_filter		= 5;
+var dist_filter		= 50;
 var longitude = "";
 var latitude = "";
 var last_db_timestamp = 0;

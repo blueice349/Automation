@@ -27,7 +27,6 @@ var version = 'Omadi Inc';
 var isFirstTime = false;
 
 //Common used functions
-Ti.include('/lib/functions.js');
 setUse();
 unsetUse();
 var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
@@ -319,71 +318,56 @@ if(PLATFORM == 'android'){
 listView.addEventListener('click',function(e){
 	lock_screen();
 	Ti.API.info("row click on table view. index = "+e.index+", row_desc = "+e.row.description+", section = "+e.section+", source_desc="+e.source.description);
-	var timer_int_list  =  setInterval(function(){
-		if (isUpdating()){
-			if(e.row.app_permissions.can_view == false && e.source.is_plus != true){
-				return; 
-			}
-			if(PLATFORM == 'android'){
-				notf.show();
-			}
-			else{
-				notifyIOS('Please, wait ...');
-			}		
-		}
-		else{
-			clearInterval(timer_int_list);
-			if (PLATFORM == "android"){
-				notf.hide();				
-			}
-			setUse();
-			//Creates a new node_type
-			if (e.source.is_plus){
-				//alert('You clicked the '+e.row.display+' . His table\'s name is '+e.row.name_table);
-				var win_new = create_or_edit_node.getWindow();
-				win_new.title = "New "+e.row.display;
-				win_new.type = e.row.name_table;
-				win_new.uid = jsonLogin.user.uid;
-				win_new.up_node = update_node;
-				win_new.mode = 0;
-				win_new.picked = win2.picked;
-				win_new.region_form = 0;
-				win_new.backgroundColor = "#EEEEEE";
-				win_new.app_permissions = e.row.app_permissions;
-				win_new.addEventListener('focus', function(){
-					unlock_screen();
-				});
-				
-				win_new.open();
-				setTimeout(function(){create_or_edit_node.loadUI();}, 100);
-			}
-			else{
-				if(e.row.app_permissions.can_view == true){
-					var win_new = Titanium.UI.createWindow({  
-						title: e.row.display,
-						fullscreen: false,
-						url:'objects.js',
-						type: e.row.name_table,
-						uid: jsonLogin.user.uid,
-						up_node: update_node,
-						backgroundColor: '#EEEEEE',
-						show_plus: e.row.show_plus
-					});
-					win_new.picked 	 = win2.picked;
-					win_new.app_permissions = e.row.app_permissions;
-					win_new.addEventListener('focus', function(){
-						unlock_screen();
-					});
-				
-					win_new.open();
-				 }else{
-				     alert("You don't have access to view the " + e.row.display + " list.");
-					 unlock_screen();
-					 unsetUse();
-				 }
-			}				
-		}
-	}, 1000);
+	if(e.row.app_permissions.can_view == false && e.source.is_plus != true){
+		return; 
+	}
+
+	setUse();
+	//Creates a new node_type
+	if (e.source.is_plus){
+		//alert('You clicked the '+e.row.display+' . His table\'s name is '+e.row.name_table);
+		var win_new = create_or_edit_node.getWindow();
+		win_new.title = "New "+e.row.display;
+		win_new.type = e.row.name_table;
+		win_new.uid = jsonLogin.user.uid;
+		win_new.up_node = update_node;
+		win_new.mode = 0;
+		win_new.picked = win2.picked;
+		win_new.region_form = 0;
+		win_new.backgroundColor = "#EEEEEE";
+		win_new.app_permissions = e.row.app_permissions;
+		win_new.addEventListener('focus', function(){
+			unlock_screen();
+		});
+		
+		win_new.open();
+		setTimeout(function(){create_or_edit_node.loadUI();}, 100);
+	}
+	else{
+		if(e.row.app_permissions.can_view == true){
+			var win_new = Titanium.UI.createWindow({  
+				title: e.row.display,
+				fullscreen: false,
+				url:'objects.js',
+				type: e.row.name_table,
+				uid: jsonLogin.user.uid,
+				up_node: update_node,
+				backgroundColor: '#EEEEEE',
+				show_plus: e.row.show_plus
+			});
+			win_new.picked 	 = win2.picked;
+			win_new.app_permissions = e.row.app_permissions;
+			win_new.addEventListener('focus', function(){
+				unlock_screen();
+			});
+		
+			win_new.open();
+		 }else{
+		     alert("You don't have access to view the " + e.row.display + " list.");
+			 unlock_screen();
+			 unsetUse();
+		 }
+	}
 });
 
 
@@ -427,30 +411,21 @@ var a = Titanium.UI.createAlertDialog({
 
 offImage.addEventListener('click',function(e)
 {
-	
-	if ( isUpdating() ){
-		a.message = 'A data sync is in progress. Please wait a moment to logout.';
-		a.show();
-	}
-	else{
-		// window container
-		indLog = Titanium.UI.createWindow({
-		    url: 'logDecision.js',
-			title:'Omadi CRM',		    
-		    fullscreen: false,
-		    backgroundColor: '#EEEEEE'
-		});
+	// window container
+	indLog = Titanium.UI.createWindow({
+	    url: 'logDecision.js',
+		title:'Omadi CRM',		    
+	    fullscreen: false,
+	    backgroundColor: '#EEEEEE'
+	});
 
-		//Setting both windows with login values:
-		indLog.log		 = win2.log;
-		indLog.result	 = win2.result;
-		indLog.picked 	 = win2.picked;
-		indLog._parent	 = win2;
-	    
-	    indLog.open();
-	   	//win2.close();    	
-	}
-
+	//Setting both windows with login values:
+	indLog.log		 = win2.log;
+	indLog.result	 = win2.result;
+	indLog.picked 	 = win2.picked;
+	indLog._parent	 = win2;
+    
+    indLog.open();
 });
 
 win2.addEventListener('close', function(){
@@ -648,33 +623,16 @@ alerts_view.add(alerts_img);
 alerts_view.add(alerts_lb);
 alerts_view.addEventListener('click', function(){
 	lock_screen();
-	var timer_int_msg  =  setInterval(function(){
-		if (isUpdating()){
-			if(PLATFORM == 'android'){
-				notf.show();
-			}
-			else{
-				notifyIOS('Please, wait ...');
-			}		
-		}
-		else{
-			clearInterval(timer_int_msg);
-			if(PLATFORM == 'android'){
-				notf.hide();
-			}
-			var win_new = message_center.get_win();
-			win_new.picked = win2.picked;
-			
-			win_new.addEventListener('focus', function(){
-				unlock_screen();
-			});
-			
-			win_new.open();
-			setTimeout(function(){message_center.loadUI();}, 100);
-			//setInterval(function(){Ti.App.fireEvent('refresh_UI');}, 1000);
-			
-		}
-	}, 1000);	
+	var win_new = message_center.get_win();
+	win_new.picked = win2.picked;
+	
+	win_new.addEventListener('focus', function(){
+		unlock_screen();
+	});
+	
+	win_new.open();
+	setTimeout(function(){message_center.loadUI();}, 100);
+	//setInterval(function(){Ti.App.fireEvent('refresh_UI');}, 1000);
 });
 
 var drafts_view = Ti.UI.createView(
@@ -685,7 +643,7 @@ var drafts_view = Ti.UI.createView(
 });
 databaseStatusView.add(drafts_view);
 var draft_img = Ti.UI.createImageView({
-	image: '/images/draft.png'
+	image: '/images/drafts.png'
 });
 var drafts_lb = Ti.UI.createLabel({
 	text: 'Drafts',
@@ -756,21 +714,13 @@ if(PLATFORM != 'android'){
 			} else if(ev.index == 1) {
 				openDraftWindow();
 			} else if(ev.index == 2) {
-				if(isUpdating()) {
-					if(PLATFORM == 'android') {
-						notf.show();
-					} else {
-						notifyIOS('Please, wait ...');
-					}
-				} else {
-					var about_win = Ti.UI.createWindow({
-						title : 'About',
-						fullscreen : false,
-						backgroundColor : 'black',
-						url : 'about.js'
-					});
-					about_win.open();
-				}
+				var about_win = Ti.UI.createWindow({
+					title : 'About',
+					fullscreen : false,
+					backgroundColor : 'black',
+					url : 'about.js'
+				});
+				about_win.open();
 			}
 		});
 		return;
@@ -782,49 +732,34 @@ win2.add(databaseStatusView);
 
 function openDraftWindow(){
 	lock_screen();
-	var timer_int_draft  =  setInterval(function(){
-		if (isUpdating()){
-			if(PLATFORM == 'android'){
-				notf.show();
-			}
-			else{
-				notifyIOS('Please, wait ...');
-			}		
-		}
-		else{
-			var toolActInd = Ti.UI.createActivityIndicator();
-		toolActInd.font = {
-			fontFamily : 'Helvetica Neue',
-			fontSize : 15,
-			fontWeight : 'bold'
-		};
-		toolActInd.color = 'white';
-		toolActInd.message = 'Loading...';
-		toolActInd.show();
-			clearInterval(timer_int_draft);
-			if(PLATFORM == 'android'){
-				notf.hide();		
-			}
-			setUse();
-			Ti.API.info('Opening drafts');
-			var win_new = Titanium.UI.createWindow({  
-				title: 'Drafts',
-				fullscreen: false,
-				url:'drafts.js',
-				type: 'draft',
-				uid: jsonLogin.user.uid,
-				up_node: update_node,
-				backgroundColor: '#EEE'
-			});
-			win_new.picked 	 = win2.picked;
-			win_new.addEventListener('focus', function(){
-				unlock_screen();
-			});
-			
-			win_new.open();
-			toolActInd.hide();
-		}
-	}, 1000);	
+	var toolActInd = Ti.UI.createActivityIndicator();
+	toolActInd.font = {
+		fontFamily : 'Helvetica Neue',
+		fontSize : 15,
+		fontWeight : 'bold'
+	};
+
+	toolActInd.color = 'white';
+	toolActInd.message = 'Loading...';
+	toolActInd.show();
+	setUse();
+	Ti.API.info('Opening drafts');
+	var win_new = Titanium.UI.createWindow({  
+		title: 'Drafts',
+		fullscreen: false,
+		url:'drafts.js',
+		type: 'draft',
+		uid: jsonLogin.user.uid,
+		up_node: update_node,
+		backgroundColor: '#EEE'
+	});
+	win_new.picked 	 = win2.picked;
+	win_new.addEventListener('focus', function(){
+		unlock_screen();
+	});
+	
+	win_new.open();
+	toolActInd.hide();
 }
 
 function lock_screen(){
