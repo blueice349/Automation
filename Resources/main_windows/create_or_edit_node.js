@@ -37,7 +37,7 @@ var no_data_fieldsArr = [];
 var doneButton = null;
 var saveCounter = 0;
 
-var ONE_MB = 1048576;
+var ONE_MB = 524258;
 
 var create_or_edit_node = {};
 
@@ -1318,7 +1318,7 @@ function open_mult_selector(obj) {
 		backgroundColor : '#000000',
 		opacity : 0.5
 	});
-
+	var coItemSelected = 0;
 	win_wid.add(opacView);
 
 	var win_view = Ti.UI.createView({
@@ -1368,6 +1368,19 @@ function open_mult_selector(obj) {
 		height : '73%',
 		scrollable : true
 	});
+	
+	var desLabel = Titanium.UI.createLabel({
+		bottom : '12.5%',
+		left : 5,
+		right: 5,
+		ellipsize: true,
+		wordWrap: false,
+		visible: false,
+		font: { fontsize:10
+		}, color: 'black',
+		height: '7%'
+	});
+	win_view.add(desLabel);
 
 	var elements_to_insert = [];
 	for (var v_iten in obj.itens) {
@@ -1375,6 +1388,7 @@ function open_mult_selector(obj) {
 		elements_to_insert.push({
 			title : obj.itens[v_iten].title,
 			v_info : obj.itens[v_iten].v_info,
+			desc: obj.itens[v_iten].desc,
 			is_set : obj.itens[v_iten].is_set
 		});
 	}
@@ -1389,6 +1403,7 @@ function open_mult_selector(obj) {
 			display : elements_to_insert[count_sel].title,
 			selected : elements_to_insert[count_sel].is_set,
 			v_info : elements_to_insert[count_sel].v_info,
+			desc: elements_to_insert[count_sel].desc,
 			backgroundColor : elements_to_insert[count_sel].is_set ? color_set : color_unset,
 			className : 'menu_row' //optimize rendering
 		});
@@ -1414,10 +1429,41 @@ function open_mult_selector(obj) {
 		if (listView.data[0].rows[e.index].selected === false) {
 			listView.data[0].rows[e.index].selected = true;
 			listView.data[0].rows[e.index].backgroundColor = color_set;
+			coItemSelected++;
 		} else {
 			listView.data[0].rows[e.index].selected = false;
 			listView.data[0].rows[e.index].backgroundColor = color_unset;
+			coItemSelected--;
 		}
+		
+		if(coItemSelected == 1) {
+			if(obj.from_cond_vs != null && obj.from_cond_vs == true) {
+				listView.height = '66.5%';
+				desLabel.visible = true;
+				for(var i_sel = 0; i_sel < listView.data[0].rows.length; i_sel++) {
+					if(listView.data[0].rows[i_sel].selected == true) {
+						desLabel.text = (listView.data[0].rows[i_sel].desc != null && listView.data[0].rows[i_sel].desc != "") ? listView.data[0].rows[i_sel].desc : 'No Description'
+						break;
+					}
+				}
+			}
+		}else if(coItemSelected > 1) {
+			if(obj.from_cond_vs != null && obj.from_cond_vs == true) {
+				listView.height = '66.5%';
+				desLabel.visible = true;
+				desLabel.text = 'Multiple violations selected'
+			}
+		} else if(coItemSelected == 0) {
+			if(obj.from_cond_vs != null && obj.from_cond_vs == true) {
+				listView.height = '73%';
+				desLabel.visible = false;
+				desLabel.text = ''
+			}
+		}
+
+		i
+
+		
 		Ti.API.info('Field set to ' + listView.data[0].rows[e.index].selected);
 	});
 	var bottom_sel = Ti.UI.createView({
@@ -1444,17 +1490,20 @@ function open_mult_selector(obj) {
 				aux_ret.push({
 					title : listView.data[0].rows[i_sel].display,
 					v_info : listView.data[0].rows[i_sel].v_info,
+					desc: listView.data[0].rows[i_sel].desc,
 					is_set : true
 				});
 
 				valid_return.push({
 					title : listView.data[0].rows[i_sel].display,
-					v_info : listView.data[0].rows[i_sel].v_info
+					v_info : listView.data[0].rows[i_sel].v_info,
+					desc: listView.data[0].rows[i_sel].desc,
 				});
 			} else {
 				aux_ret.push({
 					title : listView.data[0].rows[i_sel].display,
 					v_info : listView.data[0].rows[i_sel].v_info,
+					desc: listView.data[0].rows[i_sel].desc,
 					is_set : false
 				});
 			}
@@ -1467,8 +1516,17 @@ function open_mult_selector(obj) {
 			obj.value = valid_return;
 			if (valid_return.length == 1) {
 				obj.text = valid_return[0].title;
+				if(obj.from_cond_vs!=null && obj.from_cond_vs==true){
+					obj.desLabel.visible = true;
+					obj.desLabel.text = (valid_return[0].desc!=null && valid_return[0].desc!="")?valid_return[0].desc:'No Description'
+				}
+				
 			} else {
 				obj.text = obj.view_title + " [" + valid_return.length + "]";
+				if(obj.from_cond_vs!=null && obj.from_cond_vs==true){
+					obj.desLabel.visible = true;
+					obj.desLabel.text = 'Multiple violations selected'
+				}
 			}
 		}
 
@@ -4432,6 +4490,23 @@ create_or_edit_node.loadUI = function() {
 											changedFlag : 0,
 											enabled: can_edit
 										});
+										var desLabel = Ti.UI.createLabel({
+											top : (top+heightValue),
+											width : Ti.Platform.displayCaps.platformWidth-30,
+											ellipsize: true,
+											wordWrap: false,
+											visible: false,
+											font:{
+												fontsize: 10
+											},
+											color: 'black',
+											height: 20
+											
+									});
+									content[count].desLabel = desLabel;
+									desLabel.addEventListener('click', function(e){
+										openBigText(e.source.text);
+									});
 										if(PLATFORM == 'android'){
 											content[count].backgroundImage = '',
 											content[count].backgroundColor = 'white',
@@ -4471,6 +4546,7 @@ create_or_edit_node.loadUI = function() {
 										top += heightValue;
 
 										//Add fields:
+										regionView.add(desLabel);
 										regionView.add(content[count]);
 										count++;
 									}
@@ -4536,6 +4612,23 @@ create_or_edit_node.loadUI = function() {
 										changedFlag : 0,
 										enabled: can_edit
 									});
+									var desLabel = Ti.UI.createLabel({
+											top : (top+heightValue),
+											width : Ti.Platform.displayCaps.platformWidth-30,
+											ellipsize: true,
+											wordWrap: false,
+											visible: false,
+											font:{
+												fontsize: 10
+											},
+											color: 'black',
+											height: 20
+											
+									});
+									content[count].desLabel = desLabel;
+									desLabel.addEventListener('click', function(e){
+										openBigText(e.source.text);
+									});
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '',
 										content[count].backgroundColor = 'white',
@@ -4575,6 +4668,7 @@ create_or_edit_node.loadUI = function() {
 									top += heightValue;
 
 									//Add fields:
+									regionView.add(desLabel);
 									regionView.add(content[count]);
 									count++;
 								} else if (settings.cardinality == -1) {
@@ -4666,6 +4760,24 @@ create_or_edit_node.loadUI = function() {
 										can_edit: can_edit,
 										enabled: can_edit,
 									});
+									
+									var desLabel = Ti.UI.createLabel({
+											top : (top+heightValue),
+											width : Ti.Platform.displayCaps.platformWidth-30,
+											ellipsize: true,
+											wordWrap: false,
+											visible: false,
+											font:{
+												fontsize: 10
+											},
+											color: 'black',
+											height: 20
+											
+									});
+									content[count].desLabel = desLabel;
+									desLabel.addEventListener('click', function(e){
+										openBigText(e.source.text);
+									});
 									if(!can_edit){
 											content[count].backgroundImage = '';
 											content[count].backgroundColor = '#BDBDBD';
@@ -4685,9 +4797,10 @@ create_or_edit_node.loadUI = function() {
 										}
 									});
 
-									top += heightValue;
+									top += heightValue+20;
 
 									//Add fields:
+									regionView.add(desLabel);
 									regionView.add(content[count]);
 									count++;
 								}
@@ -4826,7 +4939,9 @@ create_or_edit_node.loadUI = function() {
 											zIndex : 15,
 											height : getScreenHeight() * 0.2,
 											backgroundColor : '#FFFFFF',
-											visible : false
+											visible : false,
+											borderColor: '#000',
+											borderWidth: 1
 										});
 										content[count].autocomplete_table = autocomplete_table;
 										top += heightValue;
@@ -5021,7 +5136,9 @@ create_or_edit_node.loadUI = function() {
 										zIndex : 15,
 										height : getScreenHeight() * 0.2,
 										backgroundColor : '#FFFFFF',
-										visible : false
+										visible : false,
+										borderColor: '#000',
+										borderWidth: 1
 									});
 									content[count].autocomplete_table = autocomplete_table;
 									top += heightValue;
@@ -5300,7 +5417,9 @@ create_or_edit_node.loadUI = function() {
 										zIndex : 15,
 										height : getScreenHeight() * 0.2,
 										backgroundColor : '#FFFFFF',
-										visible : false
+										visible : false,
+										borderColor: '#000',
+										borderWidth: 1
 									});
 									content[count].autocomplete_table = autocomplete_table;
 									top += heightValue;
@@ -5473,7 +5592,9 @@ create_or_edit_node.loadUI = function() {
 									zIndex : 999,
 									height : getScreenHeight() * 0.2,
 									backgroundColor : '#FFFFFF',
-									visible : false
+									visible : false,
+									borderColor: '#000',
+									borderWidth: 1
 								});
 								content[count].autocomplete_table = autocomplete_table;
 								top += heightValue;
@@ -7038,7 +7159,9 @@ create_or_edit_node.loadUI = function() {
 									zIndex : 15,
 									height : getScreenHeight() * 0.2,
 									backgroundColor : '#FFFFFF',
-									visible : false
+									visible : false,
+									borderColor: '#000',
+									borderWidth: 1
 								});
 								content[count].autocomplete_table = autocomplete_table;
 								top += heightValue;
@@ -7813,12 +7936,7 @@ function openCamera(e) {
 	try {
 		var overlayView;
 		if(PLATFORM != 'android'){
-			 overlayView = Ti.UI.createView({
-				top 	: 0,
-				bottom  : 0,
-				left 	: 0,
-				right 	: 0
-			});
+			overlayView = Ti.UI.createView();
 			var captureBtn = Ti.UI.createButton({
 				systemButton: Ti.UI.iPhone.SystemButton.CAMERA,
 			});
@@ -7832,6 +7950,7 @@ function openCamera(e) {
 				left	: 0,
 				right	: 0,
 				bottom	: 0,
+				height	: 50,
 				items: 	[doneBtn, flexible, captureBtn, flexible]
 			});
 			overlayView.add(navbar);
@@ -7851,11 +7970,11 @@ function openCamera(e) {
 				Ti.API.info("MIME TYPE: " + event.media.mimeType);
 				// If image size greater than 1MB we will reduce th image else take as it is.
 				if (event.media.length > ONE_MB) {
-					e.source.imageData = reduceImageSize(event.media, 1000, 1000);
+					e.source.imageData = reduceImageSize(event.media, 500, 700).toBlob();
 				} else {
 					e.source.imageData = event.media;
 				}
-				e.source.image = e.source.imageData;
+				e.source.image = reduceImageSize(e.source.imageData, 100, 100).toBlob();
 				e.source.bigImg = e.source.imageData;
 				e.source.mimeType = event.media.mimeType;
 
@@ -7873,6 +7992,7 @@ function openCamera(e) {
 					}
 					
 					e.source = e.source.scrollView.arrImages[newSource];
+					if((PLATFORM1='android')){Ti.Media.hideCamera()};	
 					openCamera(e);
 				}
 			},
@@ -9236,6 +9356,8 @@ function setRulesField(select_content){
 function setParticularRulesField(rulesFieldContent) {
 	// Fatch violation list from database...
 	var violations_terms = [];
+	var descripitons= [];
+	var fromViolationRules = false;
 	var machine_name = rulesFieldContent['settings'].vocabulary;
 	db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 	var violations_vocabulary = db_display.execute('SELECT vid from vocabulary WHERE machine_name="' + machine_name + '";');
@@ -9267,11 +9389,13 @@ function setParticularRulesField(rulesFieldContent) {
 			data = JSON.parse(data);
 			var violation_timestamp = rules_violation_time_field_name.value;
 			var node_type = win.type;
+			
 
 			if(data != false && data != null && data != "" && data.length > 0) {
 				var tids = [];
 				var used_tids = [];
 				var all_others_row = [];
+				
 
 				for(var data_idx in data) {
 					var data_row = data[data_idx];
@@ -9292,6 +9416,10 @@ function setParticularRulesField(rulesFieldContent) {
 					} else if(data_row['tid'] == 'ALL') {
 						all_others_row.push(data_row);
 					}
+					if(descripitons[data_row['tid']] == null) {
+						descripitons[data_row['tid']] = new Array();
+					}
+					descripitons[data_row['tid']].push(data_row['description']);
 				}
 
 				if(all_others_row.length > 0) {
@@ -9310,6 +9438,7 @@ function setParticularRulesField(rulesFieldContent) {
 					}
 				}
 				violations_terms = tids;
+				fromViolationRules= true;
 			}
 		}
 
@@ -9332,7 +9461,8 @@ function setParticularRulesField(rulesFieldContent) {
 			for(var i_data_terms in violations_terms) {
 				arr_picker.push({
 					title : violations_terms[i_data_terms][0].title,
-					tid : violations_terms[i_data_terms][0].tid
+					tid : violations_terms[i_data_terms][0].tid,
+					desc: description[violations_terms[i_data_terms][0].tid],
 				});
 				arr_opt.push(violations_terms[i_data_terms][0].title);
 			}
@@ -9358,7 +9488,8 @@ function setParticularRulesField(rulesFieldContent) {
 		for(var i_data_terms in violations_terms) {
 			arr_picker.push({
 				title : violations_terms[i_data_terms][0].title,
-				tid : violations_terms[i_data_terms][0].tid
+				tid : violations_terms[i_data_terms][0].tid,
+				desc: description[violations_terms[i_data_terms][0].tid],
 			});
 			arr_opt.push(violations_terms[i_data_terms][0].title);
 		}
@@ -9375,12 +9506,15 @@ function setParticularRulesField(rulesFieldContent) {
 			_val_itens.push({
 				title : violations_terms[j_ind][0].title,
 				v_info : violations_terms[j_ind][0].tid,
+				desc: (descripitons[violations_terms[j_ind][0].tid]!=null)?descripitons[violations_terms[j_ind][0].tid][0]:null,
 				is_set : false
 			});
 		}
 		content[rulesFieldContent.reffer_index].text = sel_text;
 		content[rulesFieldContent.reffer_index].value = _itens;
 		content[rulesFieldContent.reffer_index].itens = _val_itens;
+		content[rulesFieldContent.reffer_index].desLabel.text = sel_text;
+		content[rulesFieldContent.reffer_index].from_cond_vs = fromViolationRules;
 	}
 	db_display.close();
 }

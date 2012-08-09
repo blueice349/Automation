@@ -193,17 +193,7 @@ win1.addEventListener('focus', function(){
 //  CREATE INFO MESSAGE
 //
 var messageView = Titanium.UI.createView({
-	bottom: '0px',	
-	backgroundGradient: {
-        type: 'linear',
-        colors: [
-            {color: '#FFF', position: 0.0},
-			{color: '#AAA', position: 1.0}
-        ],
-        startPoint: {x: 0, y: 0},
-        endPoint: {x: 0, y: 100},
-        backFillStart: false
-	},
+	bottom: '0px',
 	height: '10%',
 	width: '100%',
 	borderRadius:0
@@ -564,6 +554,17 @@ if(PLATFORM == 'android') {
 	b1.color = 'black',
 	b1.height = '50',
 	b1.borderWidth = 1
+}else{
+	messageView.backgroundGradient = {
+        type: 'linear',
+        colors: [
+            {color: '#FFF', position: 0.0},
+			{color: '#AAA', position: 1.0}
+        ],
+        startPoint: {x: 0, y: 0},
+        endPoint: {x: 0, y: 100},
+        backFillStart: false
+	};
 }
 
 //Make everthing happen:

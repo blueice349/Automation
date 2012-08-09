@@ -3658,7 +3658,6 @@ function reduceImageSize(blobImage, maxWidth, maxHeight) {
 	var multiple;
 	if (imageBlob.height / imageBlob.width > maxHeight / maxWidth) {
 		multiple = imageBlob.height / maxHeight;
-		//alert(multiple);
 	} else {
 		multiple = imageBlob.width / maxWidth;
 	}
@@ -3666,11 +3665,11 @@ function reduceImageSize(blobImage, maxWidth, maxHeight) {
 	if (multiple >= 1) {
 		image1.height = parseInt(imageBlob.height / multiple);
 		image1.width = parseInt(imageBlob.width / multiple);
+		image1.image = image1.toImage();
 	} else {
 
 	}
 	return image1;
-
 }
 
 function updateFileUploadTable(win, json) {
@@ -3719,7 +3718,7 @@ function downloadThumnail(file_id, image, win) {
 				image : this.responseData
 			});
 			if (tempImg.toImage().height > 100 || tempImg.toImage().width > 100) {
-				image.image = reduceImageSize(tempImg.toImage(), 100, 100);
+				image.image = reduceImageSize(tempImg.toImage(), 100, 100).toBlob();
 			} else {
 				image.image = this.responseData
 			}
