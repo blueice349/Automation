@@ -67,6 +67,10 @@ var i_scroll_page = Titanium.UI.createScrollView({
     showHorizontalScrollIndicator:false,
     scrollType: 'vertical',
 	width: '100%',
+	contentOffset:{
+		x: 0,
+		y: 0
+	},
 	top: 0,
 	left: 0,
 	height: 'auto',
@@ -337,10 +341,16 @@ else{
 		right: '15%'
 	});
 	setTimeout(function(){
-		i_scroll_page.setContentOffset({
+		if(PLATFORM != 'android'){
+			i_scroll_page.setContentOffset({
 				x : i_scroll_page.getContentOffset().x,
 				y : "25dp"
-		});
+			});
+		}else{
+			i_scroll_page.top = i_scroll_page.getContentOffset().x;
+			i_scroll_page.left = "0";
+		}
+		
 	},500);
 }
 

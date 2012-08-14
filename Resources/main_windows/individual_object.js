@@ -26,16 +26,7 @@ win4.addEventListener('android:back', function() {
 	win4.close();
 });
 //Functions:
-function display_omadi_time01(timestamp) {
-	var time = timestamp * 1000;
 
-	var got_time = new Date(time);
-
-	var hours = got_time.getHours();
-	var min = got_time.getMinutes();
-
-	return hours + ":" + form_min(min);
-}
 
 function form_min(min) {
 	if(min < 10) {
@@ -108,7 +99,7 @@ else{
 
 resultView.add(viewContent);
 
-var fields_result = db_display.execute('SELECT label, weight, type, field_name, widget, settings, required FROM fields WHERE bundle = "' + win4.type + '" ORDER BY weight ASC');
+var fields_result = db_display.execute('SELECT label, weight, type, field_name, widget, settings, required FROM fields WHERE bundle = "' + win4.type + '" ORDER BY weight, id ASC');
 var regions = db_display.execute('SELECT * FROM regions WHERE node_type = "' + win4.type + '" ORDER BY weight ASC');
 var node_form = db_display.execute('SELECT form_part FROM node WHERE nid=' + win4.nid);
 
@@ -195,6 +186,7 @@ if(c_index > 0) {
 	var c_widget = [];
 	var c_field_name = [];
 	var is_array = false;
+	var field_definer = 0;
 	var show_region = new Array();
 
 	for(var f_name_f in fields ) {
@@ -277,8 +269,10 @@ if(c_index > 0) {
 
 				while(array_cont.isValidRow()) {
 					var decoded = array_cont.fieldByName('encoded_array');
-					//Decode the stored array:
-					decoded = Titanium.Utils.base64decode(decoded);
+					if(decoded != null && decoded != 'undefined' && decoded != ''){
+						//Decode the stored array:
+						decoded = Titanium.Utils.base64decode(decoded);
+					}
 					Ti.API.info('------------->>>> Decoded array is equals to: ' + decoded);
 
 					array_cont.next();
@@ -336,6 +330,7 @@ if(c_index > 0) {
 				switch(c_type[count]){
 					//Treatment follows the same for text or text_long
 					case 'text':
+					case 'location':
 					case 'text_long':
 						label[count] = Ti.UI.createLabel({
 							text : c_label[count],
@@ -345,6 +340,12 @@ if(c_index > 0) {
 							touchEnabled : false,
 							field : true
 						});
+						if(c_type[count]=='location'){
+							var locVal = c_field_name[count];
+							locVal = (locVal.lastIndexOf('___')!=-1)?locVal.substr(locVal.lastIndexOf('___')+3,locVal.length):'';
+							locVal = (locVal!='')?locVal.charAt(0).toUpperCase() + locVal.slice(1):''
+							label[count].text = c_label[count] +" " + locVal;
+						}
 
 						var openDescWin = false;
 						var aux_text_desc = c_content[count];
@@ -547,6 +548,9 @@ if(c_index > 0) {
 					//Link to taxonomy table:
 					case 'taxonomy_term_reference':
 						Ti.API.info('Contains: ' + c_content[count]);
+						if(c_content[count] == null || c_content[count] == 'undefined' || c_content[count] == ''){
+							break;
+						}
 						var ref_name = "";
 						if(c_content[count]) {
 							var auxRes = db_display.execute('SELECT * FROM term_data WHERE tid=' + c_content[count]);
