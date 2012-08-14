@@ -34,7 +34,6 @@ win.addEventListener('open', function(){
 });
 
 
-
 message_center.get_win = function() {
 	return win;
 }
@@ -101,7 +100,8 @@ message_center.loadUI = function() {
 				title : fullName,
 				nid: obj_cnt[x].nid,
 				color: '#000',
-				counter: obj_cnt[x].count
+				counter: obj_cnt[x].count,
+				lbl: obj_cnt[x].label
 			});
 		
 			//Parameters added to each row
@@ -150,8 +150,10 @@ message_center.loadUI = function() {
 		//When the user clicks on a certain contact, it opens individual_contact.js
 		listTableView.addEventListener('click', function(e) {
 			var n_win = Ti.UI.createWindow({
-				fullscreen: true
+				fullscreen: true,
+				title: e.row.lbl+" - Alert List"
 			});
+			Ti.API.info(e.row.lbl+" - Alert List");
 			
 			var db_t = Ti.Database.install('/database/gps_coordinates.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName()+"_GPS" );
 			var msgs = db_t.execute('SELECT * FROM alerts WHERE location_nid='+e.row.nid+' ORDER BY timestamp DESC');
@@ -239,7 +241,7 @@ message_center.loadUI = function() {
 				if(PLATFORM == 'android'){
 					bottomBack_release(n_win, "Back" , "enable");
 				}else{
-					alertNavButtons(n_listTableView, n_win);
+					alertNavButtons(n_listTableView, n_win, n_win.title);
 				}
 				
 				n_listTableView.addEventListener('click', function(e){
@@ -395,7 +397,8 @@ Ti.App.addEventListener('refresh_UI_Alerts', function(){
 					title : fullName,
 					nid: obj_cnt[x].nid,
 					color: '#000',
-					counter: obj_cnt[x].count
+					counter: obj_cnt[x].count,
+					lbl: obj_cnt[x].label
 				});
 			
 				//Parameters added to each row
@@ -443,8 +446,10 @@ Ti.App.addEventListener('refresh_UI_Alerts', function(){
 			//When the user clicks on a certain contact, it opens individual_contact.js
 			listTableView.addEventListener('click', function(e) {
 				var n_win = Ti.UI.createWindow({
-					fullscreen: true
+					fullscreen: true,
+					title: e.row.lbl+" - Alert List"					
 				});
+				Ti.API.info(e.row.lbl+" - Alert List");
 				
 				var db_t = Ti.Database.install('/database/gps_coordinates.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName()+"_GPS" );
 				var msgs = db_t.execute('SELECT * FROM alerts WHERE location_nid='+e.row.nid+' ORDER BY timestamp DESC');
@@ -532,7 +537,7 @@ Ti.App.addEventListener('refresh_UI_Alerts', function(){
 					if(PLATFORM == 'android'){
 						bottomBack_release(n_win, "Back" , "enable");
 					}else{
-						alertNavButtons(n_listTableView, n_win);
+						alertNavButtons(n_listTableView, n_win, n_win.title);
 					}
 					
 					n_listTableView.addEventListener('click', function(e){
@@ -628,7 +633,7 @@ Ti.App.addEventListener('refresh_UI_Alerts', function(){
 	}
 });
 
-function alertNavButtons(listTableView, win){
+function alertNavButtons(listTableView, win, type){
 	if (listTableView){
 		listTableView.top = '40';
 		listTableView.height = '97%';
@@ -645,14 +650,30 @@ function alertNavButtons(listTableView, win){
 	var space = Titanium.UI.createButton({
 		systemButton:Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
 	});
-	var label = Titanium.UI.createButton({
-		title: 'Alert List',
-		color:'#fff',
-		ellipsize: true,
-		wordwrap: false,
-		width: 200,
-		style:Titanium.UI.iPhone.SystemButtonStyle.PLAIN
-	});
+	if (type != null ){
+		var label = Titanium.UI.createButton({
+			title: type,
+			color:'#fff',
+			ellipsize: true,
+			wordwrap: false,
+			width: 'auto',
+			focusable: false,
+			touchEnabled: false,
+			style:Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+		});
+	}
+	else{
+		var label = Titanium.UI.createButton({
+			title: 'Alert List',
+			color:'#fff',
+			ellipsize: true,
+			wordwrap: false,
+			width: 200,
+			focusable: false,
+			touchEnabled: false,
+			style:Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+		});
+	}
 	
 	// create and add toolbar
 	var toolbar = Ti.UI.iOS.createToolbar({

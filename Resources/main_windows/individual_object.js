@@ -12,6 +12,7 @@
 
 //Common used functions
 Ti.include('/lib/functions.js');
+Ti.include('/lib/encoder_base_64.js');
 Ti.include('/main_windows/create_or_edit_node.js');
 
 //Current window's instance
@@ -198,12 +199,17 @@ if(c_index > 0) {
 	var show_region = new Array();
 
 	for(var f_name_f in fields ) {
-		//Ti.API.info(f_name_f+" => "+results.fieldByName(f_name_f)+" => "+fields[f_name_f]['type']);
 		var fieldVal = null; 
 		try{
 			//Check is coloum exist in table or not
 			fieldVal = results.fieldByName(f_name_f);
-		}catch(e){}
+		}catch(e){
+			if (fields[f_name_f]['type'] != 'region_separator_mode'){
+				Ti.API.info(" !!!!!!!!!!   >>>>>>>>ERROR<<<<<<<<< !!!!!!!!!!! "+e+" - Error found, there is no such column "+f_name_f);
+				Ti.API.info(fields[f_name_f]['type']);
+				continue;
+			}
+		}
 		
 		if ( (fieldVal != null && fieldVal != "") ||  (fields[f_name_f]['type'] == 'region_separator_mode') || (fields[f_name_f]['type'] == 'image') || (fields[f_name_f]['type'] == 'calculation_field')) {
 
@@ -278,9 +284,8 @@ if(c_index > 0) {
 				while(array_cont.isValidRow()) {
 					var decoded = array_cont.fieldByName('encoded_array');
 					//Decode the stored array:
-					decoded = Titanium.Utils.base64decode(decoded);
-					Ti.API.info('------------->>>> Decoded array is equals to: ' + decoded);
-
+					decoded = Base64.decode(decoded);
+					//Ti.API.info('------------->>>> Decoded array is equals to: ' + decoded);
 					array_cont.next();
 				}
 				decoded = decoded.toString();
@@ -295,9 +300,9 @@ if(c_index > 0) {
 				keep_widget = c_widget[count];
 				keep_name = c_field_name[count];
 				//Test echo
-				for(var tili in decoded_values) {
-					Ti.API.info(tili + ' value is equals to: ' + decoded_values[tili]);
-				}
+				//for(var tili in decoded_values) {
+					//Ti.API.info(tili + ' value is equals to: ' + decoded_values[tili]);
+				//}
 
 			}
 
@@ -403,7 +408,7 @@ if(c_index > 0) {
 
 						content[count].text = "" + c_content[count];
 						count++;
-						break;
+					break;
 
 					//Refers to some object:
 					case 'omadi_reference':
@@ -621,6 +626,7 @@ if(c_index > 0) {
 						break;
 
 					//Formats as decimal
+					case 'location':
 					case 'number_decimal':
 						label[count] = Ti.UI.createLabel({
 							text : c_label[count],
@@ -855,7 +861,7 @@ if(c_index > 0) {
 							if(array_cont.rowCount > 0) {
 								//Decode the stored array:
 								var decoded = array_cont.fieldByName('encoded_array');
-								decoded = Titanium.Utils.base64decode(decoded);
+								decoded = Base64.decode(decoded);
 								decoded = decoded.toString();
 								decodedValues = decoded.split("j8Oc2s1E");
 							}
@@ -1528,7 +1534,7 @@ function bottomButtons1(actualWindow){
 	
 	
 	// create and add toolbar
-	var toolbar = Titanium.UI.createToolbar({
+	var toolbar = Ti.UI.iOS.createToolbar({
 		items:[back, space, label, space, edit],
 		top:0,
 		borderTop:false,

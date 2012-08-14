@@ -5,6 +5,8 @@
  * @author Joseandro
  */
 
+Ti.include('/lib/encoder_base_64.js');
+
 var DOWNLOAD_URL_THUMBNAIL = '/sync/image/thumbnail/';
 var DOWNLOAD_URL_IMAGE_FILE = '/sync/file/';
 var PLATFORM = Ti.Platform.name;
@@ -484,15 +486,15 @@ function treatArray(num_to_insert, call_id) {
 
 	if (array_size == 0) {
 		//Pack everything
-		var content_s = Titanium.Utils.base64encode("null");
+		var content_s = Base64.encode("null");
 		return content_s;
 	} else if (array_size == 1) {
 		//Pack everything
 		Ti.API.info(num_to_insert[0]);
 		if (num_to_insert[0] != null) {
-			var content_s = Titanium.Utils.base64encode(num_to_insert[0]);
+			var content_s = Base64.encode(num_to_insert[0]);
 		} else {
-			var content_s = Titanium.Utils.base64encode("null");
+			var content_s = Base64.encode("null");
 		}
 		return content_s;
 	} else {
@@ -518,7 +520,7 @@ function treatArray(num_to_insert, call_id) {
 		}
 
 		//Pack everything
-		content_s = Titanium.Utils.base64encode(content_s);
+		content_s = Base64.encode(content_s);
 
 		return content_s;
 	}
@@ -1289,20 +1291,33 @@ function getJSON() {
 				returning_json += '"' + new_nodes.fieldByName('nid') + '":{ "changed":"' + new_nodes.fieldByName('changed') + '", "nid":"' + new_nodes.fieldByName('nid') + '", "type":"' + type_string.toLowerCase() + '", "form_part":"' + new_nodes.fieldByName("form_part") + '", "no_data_fields":' + no_data_string;
 			}
 			Ti.API.info(returning_json);
+			Ti.API.info('1');
 			while (node_fields.isValidRow()) {
+				Ti.API.info('2');
 				if ((selected_node.rowCount > 0) && (selected_node.fieldByName(node_fields.fieldByName('field_name')) != null) && (selected_node.fieldByName(node_fields.fieldByName('field_name')) != '')) {
+					Ti.API.info('3');
 					if (selected_node.fieldByName(node_fields.fieldByName('field_name')) == 7411317618171051229) {
+						Ti.API.info('4');
 						var array_cont = db_json.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + new_nodes.fieldByName('nid') + ' AND field_name = \'' + node_fields.fieldByName('field_name') + '\'');
+						Ti.API.info('5');
 						if ((array_cont.rowCount > 0) || (array_cont.isValidRow())) {
 							//Decode the stored array:
-							var decoded = array_cont.fieldByName('encoded_array');
-							decoded = Titanium.Utils.base64decode(decoded);
+							Ti.API.info('6');
+							var a_decoded = array_cont.fieldByName('encoded_array');
+							Ti.API.info('7 '+a_decoded);
+							//TODO: Fix the decoded value:
+							//decoded = Titanium.Utils.base64decode(decoded);
+							var decoded = Base64.decode(a_decoded);
+							Ti.API.info('8 '+decoded);
 							Ti.API.info('Decoded array is equals to: ' + decoded);
-
+							Ti.API.info('9');
 							decoded = decoded.toString();
+							Ti.API.info('10');
 							// Token that splits each element contained into the array: 'j8Oc2s1E'
 							var decoded_values = decoded.split("j8Oc2s1E");
+							Ti.API.info('11 '+decoded_values);
 							returning_json += ', "' + node_fields.fieldByName('field_name') + '": [ \"' + decoded_values.join("\" , \"") + '\" ] ';
+							Ti.API.info('11.1 '+returning_json);
 						} else {
 							Ti.API.info('12');
 							returning_json += ', "' + node_fields.fieldByName('field_name') + '": "' + selected_node.fieldByName(node_fields.fieldByName('field_name')) + '"';
@@ -1479,8 +1494,12 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					}
 					db_installMe = null;
 					db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+					
+					var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName()+"_GPS");
+					db_coord.execute('DELETE FROM alerts');
+					db_coord.close();
 				}
-
+				
 				Ti.API.info("Max itens: " + parseInt(json.total_item_count));
 			}
 
@@ -1613,7 +1632,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 
 					//Node type deletion - Not implemented yet (API's side)
 					else if (json.node_type['delete']) {
-						//Multiple node deletions
+						//Multiple node type deletions
 						if (json.node_type['delete'].length) {
 							for (var i = 0; i < json.node_type['delete'].length; i++) {
 								//Increment the progress bar
@@ -2434,7 +2453,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					}
 					/*
 					 * Delete fields from fields table
-					 * Needs to be implemented from the server side
 					 */
 
 					if (json.fields["delete"]) {
@@ -3579,7 +3597,7 @@ function uploadFile(win, type_request, database, fileUploadTable) {
 						if (array_cont.rowCount > 0) {
 							var decoded = array_cont.fieldByName('encoded_array');
 							if (decoded != null || decoded != "") {
-								decoded = Titanium.Utils.base64decode(decoded);
+								decoded = Base64.decode(decoded);
 								Ti.API.info('Decoded array is equals to: ' + decoded);
 								decoded = decoded.toString();
 								decoded_values = decoded.split("j8Oc2s1E");
@@ -3599,7 +3617,7 @@ function uploadFile(win, type_request, database, fileUploadTable) {
 								content += decoded_values[i] + '' + "j8Oc2s1E";
 							}
 						}
-						content = Titanium.Utils.base64encode(content);
+						content = Base64.encode(content);
 						database.execute("UPDATE " + table.fieldByName('table_name') + " SET " + respnseJson.field_name + "='7411317618171051229', " + respnseJson.field_name + "___file_id='7411317618171051229', " + respnseJson.field_name + "___status='7411317618171051229' WHERE nid='" + respnseJson.nid + "';");
 						database.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + respnseJson.nid + ', \'' + respnseJson.field_name + "___file_id" + '\',  \'' + content + '\' )');
 						database.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + respnseJson.nid + ', \'' + respnseJson.field_name + '\',  \'' + content + '\' )');

@@ -203,7 +203,6 @@ Ti.App.addEventListener('upload_gps_locations', function(){
 	}
 	if (aux_location.length > 0){
 		last_db_timestamp = aux_location.pop().timestamp;
-		
 		Ti.API.info("Last timestamp = "+last_db_timestamp);
 	}
 	var result = db_coord.execute("SELECT * FROM user_location WHERE status = 'notUploaded' ORDER BY timestamp ASC");

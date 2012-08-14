@@ -229,7 +229,7 @@ function topToolBar_object(){
 	}
 	
 	// create and add toolbar
-	var toolbar = Titanium.UI.createToolbar({
+	var toolbar = Ti.UI.iOS.createToolbar({
 		items:items,
 		top:0,
 		borderTop:false,

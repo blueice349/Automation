@@ -174,6 +174,10 @@ reinitializeBtn.addEventListener('click', function() {
 			}
 			db_installMe = null;
 			db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+			
+			var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName()+"_GPS");
+			db_coord.execute('DELETE FROM alerts');
+			db_coord.close();
 			Ti.App.fireEvent('update_from_menu');
 			dialog.hide(); 
 			win_about.close(); 

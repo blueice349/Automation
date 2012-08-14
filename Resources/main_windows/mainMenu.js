@@ -13,6 +13,7 @@
 
 Ti.include('/main_windows/create_or_edit_node.js');
 Ti.include('/main_windows/message_center.js');
+Ti.include('/lib/functions.js'); 
 
 //Current window's instance
 var win2 = Ti.UI.currentWindow;
@@ -582,32 +583,13 @@ var databaseStatusView = Titanium.UI.createView({
 
 //View at the bottom to show user the database's status
 
-var home_view = Ti.UI.createView({
-	backgroundSelectedColor: 'orange',
-	focusable: true,
-	width: '33%'
-});
-databaseStatusView.add(home_view);
-var home_img = Ti.UI.createImageView({
-	image: '/images/home2.png'
-});
-var home_lb = Ti.UI.createLabel({
-	text: 'Home',
-	font: {
-		fontSize: '14dp'
-	},
-	height: 'auto',
-	bottom: 0
-});
-home_view.add(home_img);
-home_view.add(home_lb);
-
 var alerts_view = Ti.UI.createView({
 	backgroundSelectedColor: 'orange',
 	focusable: true,
-	width: '33%'
+	width: '50%'
 });
 databaseStatusView.add(alerts_view);
+
 var alerts_img = Ti.UI.createImageView({
 	image: '/images/msg3.png'
 });
@@ -639,7 +621,7 @@ var drafts_view = Ti.UI.createView(
 {
 	backgroundSelectedColor: 'orange',
 	focusable: true,
-	width: '33%'
+	width: '50%'
 });
 databaseStatusView.add(drafts_view);
 var draft_img = Ti.UI.createImageView({
@@ -660,26 +642,26 @@ drafts_view.addEventListener('click', function(){
 });
 
 //View settings (Draft/ Alert/ Home)
-drafts_view.height = alerts_view.height = home_view.height = '60dp';
-drafts_view.layout = alerts_view.layout = home_view.layout = 'vertical';
+drafts_view.height = alerts_view.height =  '60dp';
+drafts_view.layout = alerts_view.layout =  'vertical';
 
 //Label settings (Draft/ Alert/ Home)
-drafts_lb.color 	= alerts_lb.color 		= home_lb.color 	= '#FFFFFF';
-drafts_lb.height 	= alerts_lb.height 		= home_lb.height 	= '21dp';
-drafts_lb.width 	= alerts_lb.width 		= home_lb.width 	= 'auto';
-drafts_lb.textAlign = alerts_lb.textAlign 	= home_lb.textAlign = 'center';
+drafts_lb.color 	= alerts_lb.color  		= '#FFFFFF';
+drafts_lb.height 	= alerts_lb.height 		= '21dp';
+drafts_lb.width 	= alerts_lb.width  		= 'auto';
+drafts_lb.textAlign = alerts_lb.textAlign  	= 'center';
 
 //Image view setting (Draft/ Alert/ Home)
-alerts_img.height = draft_img.height = home_img.height 	= '30dp';
-alerts_img.width  = draft_img.width	= home_img.width 	= '30dp';
-draft_img.top 	  = alerts_img.top 	= draft_img.top = '2dp';
+alerts_img.height = draft_img.height	= '30dp';
+alerts_img.width  = draft_img.width	 	= '30dp';
+draft_img.top 	  = alerts_img.top 		= '2dp';
 
 if(PLATFORM != 'android'){
-	drafts_view.width = alerts_view.width = home_view.width = Ti.Platform.displayCaps.platformWidth/4;
+	drafts_view.width = alerts_view.width =  Ti.Platform.displayCaps.platformWidth/3;
 	
 	var actions_view = Ti.UI.createView({
 		height: '50',
-		width: Ti.Platform.displayCaps.platformWidth/4,
+		width: Ti.Platform.displayCaps.platformWidth/3,
 		layout: 'vertical'
 	})
 	databaseStatusView.add(actions_view);

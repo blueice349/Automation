@@ -11,6 +11,8 @@
 
 //Common used functions
 Ti.include('/lib/functions.js');
+Ti.include('/lib/encoder_base_64.js');
+
 var heightValue = 50;
 var toolActInd = Ti.UI.createActivityIndicator();
 toolActInd.font = {
@@ -1461,9 +1463,6 @@ function open_mult_selector(obj) {
 			}
 		}
 
-		i
-
-		
 		Ti.API.info('Field set to ' + listView.data[0].rows[e.index].selected);
 	});
 	var bottom_sel = Ti.UI.createView({
@@ -1838,7 +1837,7 @@ create_or_edit_node.loadUI = function() {
 
 									//Decode the stored array:
 									var decoded = array_cont.fieldByName('encoded_array');
-									decoded = Titanium.Utils.base64decode(decoded);
+									decoded = Base64.decode(decoded);
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
@@ -2664,7 +2663,7 @@ create_or_edit_node.loadUI = function() {
 
 									//Decode the stored array:
 									var decoded = array_cont.fieldByName('encoded_array');
-									decoded = Titanium.Utils.base64decode(decoded);
+									decoded = Base64.decode(decoded);
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
@@ -2850,7 +2849,7 @@ create_or_edit_node.loadUI = function() {
 
 									//Decode the stored array:
 									var decoded = array_cont.fieldByName('encoded_array');
-									decoded = Titanium.Utils.base64decode(decoded);
+									decoded = Base64.decode(decoded);
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
@@ -3208,7 +3207,7 @@ create_or_edit_node.loadUI = function() {
 
 									//Decode the stored array:
 									var decoded = array_cont.fieldByName('encoded_array');
-									decoded = Titanium.Utils.base64decode(decoded);
+									decoded = Base64.decode(decoded);
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
@@ -3542,7 +3541,7 @@ create_or_edit_node.loadUI = function() {
 
 									//Decode the stored array:
 									var decoded = array_cont.fieldByName('encoded_array');
-									decoded = Titanium.Utils.base64decode(decoded);
+									decoded = Base64.decode(decoded);
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
@@ -3734,7 +3733,7 @@ create_or_edit_node.loadUI = function() {
 									//Decode the stored array:
 									var decoded = array_cont.fieldByName('encoded_array');
 									Ti.API.info('Encoded array is equals to: ' + decoded);
-									decoded = Titanium.Utils.base64decode(decoded);
+									decoded = Base64.decode(decoded);
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 									// Token that splits each element contained into the array: 'j8Oc2s1E'
@@ -4009,7 +4008,7 @@ create_or_edit_node.loadUI = function() {
 
 									//Decode the stored array:
 									var decoded = array_cont.fieldByName('encoded_array');
-									decoded = Titanium.Utils.base64decode(decoded);
+									decoded = Base64.decode(decoded);
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
@@ -4192,7 +4191,7 @@ create_or_edit_node.loadUI = function() {
 
 									//Decode the stored array:
 									var decoded = array_cont.fieldByName('encoded_array');
-									decoded = Titanium.Utils.base64decode(decoded);
+									decoded = Base64.decode(decoded);
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
@@ -4410,7 +4409,7 @@ create_or_edit_node.loadUI = function() {
 
 										//Decode the stored array:
 										var decoded = array_cont.fieldByName('encoded_array');
-										decoded = Titanium.Utils.base64decode(decoded);
+										decoded = Base64.decode(decoded);
 										Ti.API.info('Decoded array is equals to: ' + decoded);
 										decoded = decoded.toString();
 
@@ -4682,7 +4681,7 @@ create_or_edit_node.loadUI = function() {
 
 										//Decode the stored array:
 										var decoded = array_cont.fieldByName('encoded_array');
-										decoded = Titanium.Utils.base64decode(decoded);
+										decoded = Base64.decode(decoded);
 										Ti.API.info('Decoded array is equals to: ' + decoded);
 										decoded = decoded.toString();
 
@@ -4832,7 +4831,7 @@ create_or_edit_node.loadUI = function() {
 
 										//Decode the stored array:
 										var decoded = array_cont.fieldByName('encoded_array');
-										decoded = Titanium.Utils.base64decode(decoded);
+										decoded = Base64.decode(decoded);
 										Ti.API.info('Decoded array is equals to: ' + decoded);
 										decoded = decoded.toString();
 
@@ -5334,7 +5333,7 @@ create_or_edit_node.loadUI = function() {
 
 									//Decode the stored array:
 									var decoded = array_cont.fieldByName('encoded_array');
-									decoded = Titanium.Utils.base64decode(decoded);
+									decoded = Base64.decode(decoded);
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
@@ -5789,7 +5788,7 @@ create_or_edit_node.loadUI = function() {
 
 									//Decode the stored array:
 									var decoded = array_cont.fieldByName('encoded_array');
-									decoded = Titanium.Utils.base64decode(decoded);
+									decoded = Base64.decode(decoded);
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
@@ -6094,7 +6093,7 @@ create_or_edit_node.loadUI = function() {
 
 										//Decode the stored array:
 										var decoded = array_cont.fieldByName('encoded_array');
-										decoded = Titanium.Utils.base64decode(decoded);
+										decoded = Base64.decode(decoded);
 										Ti.API.info('Decoded array is equals to: ' + decoded);
 										decoded = decoded.toString();
 
@@ -6322,7 +6321,7 @@ create_or_edit_node.loadUI = function() {
 
 										//Decode the stored array:
 										var decoded = array_cont.fieldByName('encoded_array');
-										decoded = Titanium.Utils.base64decode(decoded);
+										decoded = Base64.decode(decoded);
 										Ti.API.info('Decoded array is equals to: ' + decoded);
 										decoded = decoded.toString();
 
@@ -6592,7 +6591,7 @@ create_or_edit_node.loadUI = function() {
 
 									//Decode the stored array:
 									var decoded = array_cont.fieldByName('encoded_array');
-									decoded = Titanium.Utils.base64decode(decoded);
+									decoded = Base64.decode(decoded);
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
@@ -6781,7 +6780,7 @@ create_or_edit_node.loadUI = function() {
 
 									//Decode the stored array:
 									var decoded = array_cont.fieldByName('encoded_array');
-									decoded = Titanium.Utils.base64decode(decoded);
+									decoded = Base64.decode(decoded);
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
@@ -7021,7 +7020,7 @@ create_or_edit_node.loadUI = function() {
 
 									//Decode the stored array:
 									var decoded = array_cont.fieldByName('encoded_array');
-									decoded = Titanium.Utils.base64decode(decoded);
+									decoded = Base64.decode(decoded);
 									Ti.API.info('Decoded array is equals to: ' + decoded);
 									decoded = decoded.toString();
 
@@ -7366,7 +7365,7 @@ create_or_edit_node.loadUI = function() {
 									if (array_cont.rowCount > 0) {
 										//Decode the stored array:
 										var decoded = array_cont.fieldByName('encoded_array');
-										decoded = Titanium.Utils.base64decode(decoded);
+										decoded = Base64.decode(decoded);
 										decoded = decoded.toString();
 										decodedValues = decoded.split("j8Oc2s1E");
 									}

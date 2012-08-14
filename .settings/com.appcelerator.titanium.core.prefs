@@ -2,6 +2,14 @@
 <<<<<<<=HEAD
 >>>>>>>=Lots of immediate tasks solved
 eclipse.preferences.version=1
+provisioning_profiles/development/3D9B4D30-A5CF-47B1-A5FD-C099D31EC1B2/appid=joseandro.omadi.com
+provisioning_profiles/development/3D9B4D30-A5CF-47B1-A5FD-C099D31EC1B2/filepath=/Users/cdn93/Library/MobileDevice/Provisioning Profiles/3D9B4D30-A5CF-47B1-A5FD-C099D31EC1B2.mobileprovision
+provisioning_profiles/development/3D9B4D30-A5CF-47B1-A5FD-C099D31EC1B2/name=Omadi_Devloper_Profile_20120718
+provisioning_profiles/development/3D9B4D30-A5CF-47B1-A5FD-C099D31EC1B2/uuid=3D9B4D30-A5CF-47B1-A5FD-C099D31EC1B2
+provisioning_profiles/development/83CD7B94-D19C-4E28-9CBE-423A2E560484/appid=joseandro.omadi.com
+provisioning_profiles/development/83CD7B94-D19C-4E28-9CBE-423A2E560484/filepath=/Users/cdn93/Library/MobileDevice/Provisioning Profiles/83CD7B94-D19C-4E28-9CBE-423A2E560484.mobileprovision
+provisioning_profiles/development/83CD7B94-D19C-4E28-9CBE-423A2E560484/name=ad_hoc_profile
+provisioning_profiles/development/83CD7B94-D19C-4E28-9CBE-423A2E560484/uuid=83CD7B94-D19C-4E28-9CBE-423A2E560484
 provisioning_profiles/development/AA5BD4CE-9E0F-49EE-88F4-40B9414AE40E/appid=joseandro.omadi.com
 provisioning_profiles/development/AA5BD4CE-9E0F-49EE-88F4-40B9414AE40E/filepath=/Users/cdn93/Library/MobileDevice/Provisioning Profiles/AA5BD4CE-9E0F-49EE-88F4-40B9414AE40E.mobileprovision
 provisioning_profiles/development/AA5BD4CE-9E0F-49EE-88F4-40B9414AE40E/name=Omadi_Devloper_Profile_20120718

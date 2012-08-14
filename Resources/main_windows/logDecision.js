@@ -1,8 +1,7 @@
 //Current window's instance
 var indLog = Ti.UI.currentWindow;
 
-//Common used functions
-Ti.include('/lib/functions.js');
+Ti.include('/lib/functions.js'); 
 
 //Definition of the window before (opens when the user clicks on the back button)
 var goToWindow = Titanium.UI.createWindow({
@@ -60,6 +59,7 @@ var labelIn = Titanium.UI.createButton({
 
 labelOut.addEventListener('click',function (){
 	if(!isUpdating()){
+		Ti.App.fireEvent('upload_gps_locations');
 		showIndicator("Logging you out...");
 		
 		indLog.log.open('POST', indLog.picked+'/js-sync/sync/logout.json');
