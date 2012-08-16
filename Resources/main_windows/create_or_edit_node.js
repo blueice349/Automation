@@ -7986,14 +7986,25 @@ function openCamera(e) {
 		Ti.Media.showCamera({
 
 			success : function(event) {
+				var actInd = Ti.UI.createActivityIndicator();
+				actInd.font = {
+					fontFamily : 'Helvetica Neue',
+					fontSize : 15,
+					fontWeight : 'bold'
+				};
+				actInd.color = 'white';
+				actInd.message = 'Please wait...';
+				actInd.show();
+
 				Ti.API.info("MIME TYPE: " + event.media.mimeType);
 				// If image size greater than 1MB we will reduce th image else take as it is.
 				if (event.media.length > ONE_MB) {
-					e.source.imageData = reduceImageSize(event.media, 500, 700).toBlob();
+					e.source.imageData = reduceImageSize(event.media, 500, 700).image;
+					alert(e.source.imageData.height + "," + e.source.imageData.width);
 				} else {
 					e.source.imageData = event.media;
 				}
-				e.source.image = reduceImageSize(e.source.imageData, 100, 100).toBlob();
+				e.source.image = e.source.imageData;
 				e.source.bigImg = e.source.imageData;
 				e.source.mimeType = event.media.mimeType;
 
@@ -8011,11 +8022,13 @@ function openCamera(e) {
 					}
 					
 					e.source = e.source.scrollView.arrImages[newSource];
+					actInd.hide();
 					if((PLATFORM != 'android')){Ti.Media.hideCamera()};	
 					openCamera(e);
 				}
 			},
 			error : function(error) {
+				actInd.hide();
 				Ti.API.info('Captured Image - Error: ' + error.code + " :: " + error.message);
 				if (error.code == Titanium.Media.NO_CAMERA) {
 					alert('No Camera in device');
@@ -8023,7 +8036,7 @@ function openCamera(e) {
 			},
 			saveToPhotoGallery : false,
 			showControls: false,
-			overlay: (PLATFORM !='android')?overlayView:'',
+			overlay: (PLATFORM !='android')?overlayView:null,
 			autohide: true,
 			allowEditing: false,
 			mediaTypes : [Ti.Media.MEDIA_TYPE_PHOTO]

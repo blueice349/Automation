@@ -3832,27 +3832,30 @@ function uploadFile(win, type_request, database, fileUploadTable) {
 
 // To reduce image
 function reduceImageSize(blobImage, maxWidth, maxHeight) {
-	var image1 = Titanium.UI.createImageView({
-		image : blobImage,
-		width : 'auto',
-		height : 'auto'
-	});
-	var imageBlob = image1.toBlob();
-	var multiple;
-	if (imageBlob.height / imageBlob.width > maxHeight / maxWidth) {
-		multiple = imageBlob.height / maxHeight;
-	} else {
-		multiple = imageBlob.width / maxWidth;
-	}
+	try{
+		var image1 = Titanium.UI.createImageView({
+			image : blobImage,
+			width : 'auto',
+			height : 'auto'
+		});
+		var imageBlob = image1.toBlob();
+		var multiple;
+		if(imageBlob.height / imageBlob.width > maxHeight / maxWidth) {
+			multiple = imageBlob.height / maxHeight;
+		} else {
+			multiple = imageBlob.width / maxWidth;
+		}
 
-	if (multiple >= 1) {
-		image1.height = parseInt(imageBlob.height / multiple);
-		image1.width = parseInt(imageBlob.width / multiple);
-		image1.image = image1.toImage();
-	} else {
+		if(multiple >= 1) {
+			image1.height = parseInt(imageBlob.height / multiple);
+			image1.width = parseInt(imageBlob.width / multiple);
+			image1.image = image1.toImage();
+		} else {
 
-	}
-	return image1;
+		}
+		return image1;
+	}catch(evt){}
+	
 }
 
 function updateFileUploadTable(win, json) {
@@ -3929,8 +3932,7 @@ function downloadMainImage(file_id, content, win) {
 	actInd.message = 'Loading...';
 	actInd.show();
 	if (content.bigImg != null) {
-		actInd.hide();
-		showImage(content);
+		showImage(content, actInd);
 		return;
 	}
 
@@ -3942,10 +3944,9 @@ function downloadMainImage(file_id, content, win) {
 		downloadImage.open('GET', URL);
 
 		downloadImage.onload = function(e) {
-			actInd.hide();
 			Ti.API.info('=========== Success ========');
 			content.bigImg = this.responseData;
-			showImage(content);
+			showImage(content, actInd);
 		}
 
 		downloadImage.onerror = function(e) {
@@ -3958,7 +3959,7 @@ function downloadMainImage(file_id, content, win) {
 	}
 }
 
-function showImage(source) {
+function showImage(source, actInd) {
 	var imageWin = Ti.UI.createWindow({
 		backgroundColor : '#00000000',
 	});
@@ -4019,6 +4020,7 @@ function showImage(source) {
 	});
 	imageBaseView.add(fullImage);
 	imageWin.add(imageBaseView);
+	actInd.hide();
 	imageWin.open();
 }
 
