@@ -17,6 +17,7 @@ var NUMBER_FORMAT_DECIMAL_00 = 'two decimal';
 var NUMBER_FORMAT_DECIMAL_000 = 'three decimal';
 var ROLE_ID_ADMIN = 3;
 var app_timestamp = 0;
+var omadi_time_format = Ti.App.Properties.getString("Omadi_time_format", 'g:iA');
 
 function getDBName() {
 	var db_list = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_list");
@@ -1615,9 +1616,161 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								//Increment the progress bar
 								if (progress != null) {
 									progress.set();
+								}	
+
+								var get_title = JSON.stringify(json.node_type.update[i].data.title_fields);
+
+								var _get_data = JSON.stringify(json.node_type.update[i].data);
+								var node_type_json = json.node_type.update[i].data;
+								var no_mob_display = true;
+								
+								if((node_type_json.no_mobile_display != null && (node_type_json.no_mobile_display == 1 || 
+									node_type_json.no_mobile_display == '1')) || json.node_type.update[i].disabled == 1 ||
+									json.node_type.update[i].disabled == '1'  || json.node_type.update[i].disabled == 'true' ||
+									json.node_type.update[i].disabled == true) {
+									no_mob_display = false;
 								}
-								//Just in case it is working
-								Ti.API.info('@Developer: Updates for node_type need to be created');
+								
+								db_installMe.execute("UPDATE bundles SET bundle_name='" + json.node_type.update[i].type + "', display_on_menu='" + no_mob_display + "', display_name='" + json.node_type.update[i].name + "', description='" + json.node_type.update[i].description + "', title_fields='" + get_title + "', _data='" + _get_data + "', disabled='" + json.node_type.update[i].disabled + "' WHERE bundle_name='" + json.node_type.update[i].type + "'");
+							
+								var n_bund = db_installMe.execute('SELECT * FROM bundles');
+								var data_rows = new Array();
+								while(n_bund.isValidRow()) {
+									var name_table = n_bund.fieldByName("bundle_name");
+									var display = n_bund.fieldByName("display_name").toUpperCase();
+									var description = n_bund.fieldByName("description");
+									var flag_display = n_bund.fieldByName("display_on_menu");
+									var _is_disabled = n_bund.fieldByName("disabled");
+									var _nd = n_bund.fieldByName("_data");
+									var show_plus = false;
+									var app_permissions = {
+										"can_create" : false,
+										"can_update" : false,
+										"all_permissions" : false,
+										"can_view" : false
+									}
+
+									var node_type_json = JSON.parse(_nd);
+
+									if(node_type_json.no_mobile_display != null && node_type_json.no_mobile_display == 1 && node_type_json.no_mobile_display == '1') {
+										n_bund.next();
+										continue;
+									}
+
+									if(roles.hasOwnProperty(ROLE_ID_ADMIN)) {
+										show_plus = true;
+										app_permissions.can_create = true;
+										app_permissions.all_permissions = true;
+										app_permissions.can_update = true;
+										app_permissions.can_view = true;
+
+									} else {
+										for(var _l in node_type_json.permissions) {
+											for(_k in roles) {
+												if(_l == _k) {
+													var stringifyObj = JSON.stringify(node_type_json.permissions[_l]);
+													if(node_type_json.permissions[_l]["can create"] || node_type_json.permissions[_l]["all_permissions"]) {
+														show_plus = true;
+														app_permissions.can_create = true;
+													}
+
+													if(node_type_json.permissions[_l]["all_permissions"]) {
+														app_permissions.all_permissions = true;
+														app_permissions.can_update = true;
+														app_permissions.can_view = true;
+														continue;
+													}
+
+													if(stringifyObj.indexOf('update') >= 0 || node_type_json.permissions[_l]["all_permissions"]) {
+														app_permissions.can_update = true;
+													}
+
+													if(stringifyObj.indexOf('view') >= 0 || node_type_json.permissions[_l]["all_permissions"]) {
+														app_permissions.can_view = true;
+													}
+
+												}
+											}
+										}
+									}
+
+									if(flag_display == 'true' && (_is_disabled != 1 && _is_disabled != "1" && _is_disabled != "true" && _is_disabled != true)) {
+										var row_a = Ti.UI.createTableViewRow({
+											height : 60,
+											name : display,
+											display : display,
+											desc : description,
+											name_table : name_table,
+											show_plus : show_plus,
+											app_permissions : app_permissions,
+											className : 'menu_row', // this is to optimize the rendering
+											selectionStyle : app_permissions.can_view ? 1 : 0,
+											backgroundSelectedColor : app_permissions.can_view ? '#BDBDBD' : '#00000000'
+										});
+
+										var icon = Titanium.UI.createImageView({
+											width : 48,
+											height : 48,
+											top : 6,
+											left : 5,
+											desc : description,
+											image : '/images/icons/' + display.toLowerCase() + '.png'
+										});
+
+										if(icon.toBlob() == null || icon.toBlob().length == 0) {
+											icon.image = '/images/icons/settings.png';
+										}
+
+										var title_a = Titanium.UI.createLabel({
+											text : display,
+											font : {
+												fontSize : 28
+											},
+											width : '80%',
+											textAlign : 'left',
+											left : 58,
+											height : 'auto',
+											desc : description,
+											color : '#000'
+										});
+
+										var plus_a = Titanium.UI.createButton({
+											backgroundImage : '/images/plus_btn.png',
+											backgroundSelectedImage : '/images/plus_btn_selected.png',
+											width : 64,
+											height : 48,
+											right : 1,
+											is_plus : true
+										});
+										if(show_plus === false) {
+											plus_a.hide();
+										}
+
+										row_a.add(icon);
+										row_a.add(title_a);
+										row_a.add(plus_a);
+
+										if(PLATFORM == 'android') {
+											row_a.addEventListener('longclick', function(e) {
+												if(e.source.desc != null && e.source.desc != "") {
+													alert(e.source.desc)
+												}
+											});
+										} else {
+											row_a.addEventListener('longpress', function(e) {
+												if(e.source.desc != null && e.source.desc != "") {
+													alert(e.source.desc)
+												}
+											});
+										}
+										data_rows.push(row_a);
+										data_rows.sort(sortTableView);
+										menu.setData(data_rows);
+									}
+
+									n_bund.next();
+								}
+								n_bund.close(); 							
 							}
 						}
 						//Unique node update
@@ -3462,10 +3615,22 @@ function timeConverter(UNIX_timestamp, type) {
 		var time = month + " / " + date + " / " + year;
 		return time;
 	} else {
-		var time = hour + ":" + min + " - " + month + " / " + date + " / " + year;
+		var time = display_omadi_time01(UNIX_timestamp) + " - " + month + " / " + date + " / " + year;
 		return time;
 	}
 
+}
+
+function display_omadi_time01(timestamp) {
+	var time = timestamp * 1000;
+
+	var got_time = new Date(time);
+
+	var hours = got_time.getHours();
+	var min = got_time.getMinutes();
+
+	//return hours + ":" + form_min(min);
+	return date(omadi_time_format, got_time);
 }
 
 function setUse() {
@@ -3666,27 +3831,30 @@ function uploadFile(win, type_request, database, fileUploadTable) {
 
 // To reduce image
 function reduceImageSize(blobImage, maxWidth, maxHeight) {
-	var image1 = Titanium.UI.createImageView({
-		image : blobImage,
-		width : 'auto',
-		height : 'auto'
-	});
-	var imageBlob = image1.toBlob();
-	var multiple;
-	if (imageBlob.height / imageBlob.width > maxHeight / maxWidth) {
-		multiple = imageBlob.height / maxHeight;
-	} else {
-		multiple = imageBlob.width / maxWidth;
-	}
+	try{
+		var image1 = Titanium.UI.createImageView({
+			image : blobImage,
+			width : 'auto',
+			height : 'auto'
+		});
+		var imageBlob = image1.toBlob();
+		var multiple;
+		if(imageBlob.height / imageBlob.width > maxHeight / maxWidth) {
+			multiple = imageBlob.height / maxHeight;
+		} else {
+			multiple = imageBlob.width / maxWidth;
+		}
 
-	if (multiple >= 1) {
-		image1.height = parseInt(imageBlob.height / multiple);
-		image1.width = parseInt(imageBlob.width / multiple);
-		image1.image = image1.toImage();
-	} else {
+		if(multiple >= 1) {
+			image1.height = parseInt(imageBlob.height / multiple);
+			image1.width = parseInt(imageBlob.width / multiple);
+			image1.image = image1.toImage();
+		} else {
 
-	}
-	return image1;
+		}
+		return image1;
+	}catch(evt){}
+	
 }
 
 function updateFileUploadTable(win, json) {
@@ -3763,8 +3931,7 @@ function downloadMainImage(file_id, content, win) {
 	actInd.message = 'Loading...';
 	actInd.show();
 	if (content.bigImg != null) {
-		actInd.hide();
-		showImage(content);
+		showImage(content, actInd);
 		return;
 	}
 
@@ -3776,10 +3943,9 @@ function downloadMainImage(file_id, content, win) {
 		downloadImage.open('GET', URL);
 
 		downloadImage.onload = function(e) {
-			actInd.hide();
 			Ti.API.info('=========== Success ========');
 			content.bigImg = this.responseData;
-			showImage(content);
+			showImage(content, actInd);
 		}
 
 		downloadImage.onerror = function(e) {
@@ -3792,7 +3958,7 @@ function downloadMainImage(file_id, content, win) {
 	}
 }
 
-function showImage(source) {
+function showImage(source, actInd) {
 	var imageWin = Ti.UI.createWindow({
 		backgroundColor : '#00000000',
 	});
@@ -3853,6 +4019,7 @@ function showImage(source) {
 	});
 	imageBaseView.add(fullImage);
 	imageWin.add(imageBaseView);
+	actInd.hide();
 	imageWin.open();
 }
 
@@ -4745,6 +4912,8 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 						switch(search_field['type']) {
 							case 'text':
 							case 'text_long':
+							case 'email':
+							case 'link_field':
 							case 'phone':
 								for (idx in entity[field_name]) {
 									var elements = entity[field_name][idx];
@@ -4924,12 +5093,76 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 
 								break;
 
-							/* TODO----- In Future
-							 case 'omadi_reference':
-							 $query->condition('n_' . $search_field['field_name'] . '.title', '%' . $search_value . '%', 'LIKE');
-							 object_lists_add_omadi_reference_column($query, FALSE, $search_field, $id, $node_table);
-							 break;
-							 */
+							case 'omadi_reference':
+							 	for(idx in entity[field_name]) {
+									var elements = entity[field_name][idx];
+									if(elements['nid'] != null && elements['nid'] != "") {
+										node_values.push(elements['nid']);
+									}
+								}
+
+				              	var reference_types = instances[search_field['field_name']]['settings']['reference_types'];
+				               	var array_filter = '';
+				               	var reference_types_arr = [];
+				                for(var key in reference_types) {
+									reference_types_arr.push(reference_types[key]);
+								}
+								for (var reference_types_idx = 0; reference_types_idx < reference_types_arr.length; reference_types_idx++) {
+									if (reference_types_idx == reference_types_arr.length - 1) {
+										array_filter += '\'' + reference_types_arr[reference_types_idx] + '\'';
+									} else {
+										array_filter += '\'' + reference_types_arr[reference_types_idx] + '\',';
+									}
+								}
+				               	var query = 'SELECT nid from node WHERE table_name IN (' + array_filter+ ')';
+			                   switch(search_operator){                  
+				                case 'starts with':
+				                case 'not starts with':
+					                query += ' AND title LIKE "%' + search_value + '%";'
+									break;
+				                case 'ends with':
+				                case 'not ends with':
+				               	  	query += ' AND title LIKE "%' + search_value + '";'
+				                  	break;
+				                default: 
+				               		query += ' AND title LIKE "%' + search_value + '%";'
+									break;
+				              }
+				              
+				              var possible_nids = db_display.execute(query);
+							  var possible_nids_arr = [];
+							  while (possible_nids.isValidRow()) {
+									possible_nids_arr.push(possible_nids.fieldByName('tid'));
+									possible_nids.next();
+							  }
+				              
+				              switch($search_operator){                                    
+				                case 'not starts with':
+				                case 'not ends with':
+				                case 'not like':
+				               	if(node_values[0] == 0) {
+										row_matches[criteria_index] = true;
+									} else {
+										row_matches[criteria_index] = true;
+										for(idx in node_values) {
+											node_value = node_values[idx];
+											if(in_array(node_value, possible_nids_arr)) {
+												row_matches[criteria_index] = false;
+											}
+										}
+									}
+									break;
+								default:
+									for(idx in node_values) {
+										node_value = node_values[idx];
+										if(in_array(node_value, possible_nids_arr)) {
+											row_matches[criteria_index] = true;
+										}
+									}
+									break;
+				              }
+				              
+				              break;
 							case 'user_reference':
 								Ti.API.info('here--------A.43');
 								if ((field_name == 'uid' || field_name == 'created' || field_name == 'changed_uid') && win.nid != null & win.nid != "") {
@@ -5108,14 +5341,6 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 
 							case 'omadi_time':
 								// TODO: Add the omadi_time field here
-								break;
-
-							case 'email':
-								// TODO: implement this field type
-								break;
-
-							case 'link_field':
-								// TODO: implement this field type
 								break;
 
 							case 'image':

@@ -110,9 +110,9 @@ if(ls != null) {
 		timeStr += 'ago';
 	}
 	
-	lastSyncText = 'Last synced on : ' + timeStr;
+	lastSyncText = 'Last synched : ' + timeStr;
 } else {
-	lastSyncText = 'Last synced on : NA';
+	lastSyncText = 'Last synched : NA';
 }
 var syncLbl = Ti.UI.createLabel({
 	width : 'auto',
@@ -127,13 +127,13 @@ win_about.add(syncLbl);
 
 var buttonView = Ti.UI.createView({
 	top : 280,
-	width : 240,
+	width : 285,
 	height : 50
 });
 
 var updateBtn = Ti.UI.createButton({
 	left : 0,
-	width : 100,
+	width : 122,
 	height : 50,
 	title : 'Sync Data'
 });
@@ -145,8 +145,8 @@ updateBtn.addEventListener('click', function() {
 buttonView.add(updateBtn);
 
 var reinitializeBtn = Ti.UI.createButton({
-	left : 110,
-	width : 130,
+	left : 130,
+	width : 153,
 	height : 50,
 	title : 'Reset All Data'
 });

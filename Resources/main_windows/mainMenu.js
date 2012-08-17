@@ -155,6 +155,8 @@ var jsonLogin = JSON.parse(win2.result) ;
 
 //Retrieves username
 Ti.App.Properties.setString('Omadi_session_details', win2.result);
+var time_format = jsonLogin.user.time_format;
+Ti.App.Properties.setString('Omadi_time_format', (time_format!=null && time_format!="")?time_format:'g:iA' );
 var name = jsonLogin.user.realname;
 var roles = jsonLogin.user.roles;
 

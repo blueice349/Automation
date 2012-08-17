@@ -31,7 +31,7 @@ Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION);
 var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );
 var credentials = db.execute('SELECT domain, username, password FROM history WHERE "id_hist"=1');
 
-var locked_field = true;
+//var locked_field = true;
 var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 var updatedTime = db_a.execute('SELECT timestamp FROM updated WHERE rowid=1');
 
@@ -51,7 +51,7 @@ function is_first_time(){
 }
 
 if (updatedTime.fieldByName('timestamp') != 0){
-	locked_field = false;
+//	locked_field = false;
 }
 else{
 	Ti.App.Properties.setString("timestamp_offset", 0); 
@@ -67,6 +67,10 @@ var i_scroll_page = Titanium.UI.createScrollView({
     showHorizontalScrollIndicator:false,
     scrollType: 'vertical',
 	width: '100%',
+	contentOffset:{
+		x: 0,
+		y: 0
+	},
 	top: 0,
 	left: 0,
 	height: 'auto',
@@ -99,7 +103,7 @@ var portal = Titanium.UI.createTextField({
 	borderStyle:Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 	autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_NONE,
 	autocorrect: false,
-	editable: locked_field
+	//editable: locked_field
 });
 //Adds picker to root window
 i_scroll_page.add(portal);
@@ -168,7 +172,7 @@ win1.addEventListener('focus', function(){
 	var updatedTime = db_a.execute('SELECT timestamp FROM updated WHERE rowid=1');
 	var new_color = "#000000";
 	if (updatedTime.fieldByName('timestamp') != 0){
-		locked_field = false;
+	//	locked_field = false;
 		new_color = "#999999";
 		s_terms_services.selected = true;
 		s_terms_services.backgroundImage = '/images/selected_test.png';
@@ -181,8 +185,8 @@ win1.addEventListener('focus', function(){
 	updatedTime.close();
 	db_a.close();
 
-	portal.editable = locked_field;
-	tf1.editable	= locked_field;
+	//portal.editable = locked_field;
+	//tf1.editable	= locked_field;
 	
 	portal.color = new_color;
 	tf1.color	 = new_color;
@@ -196,7 +200,17 @@ var messageView = Titanium.UI.createView({
 	bottom: '0px',
 	height: '10%',
 	width: '100%',
-	borderRadius:0
+	borderRadius:0,
+	backgroundGradient:{
+        type: 'linear',
+        colors: [
+            {color: '#FFF', offset: 0.0},
+			{color: '#AAA', offset: 1.0}
+        ],
+        startPoint: {x: 0, y: 0},
+        endPoint: {x: 0, y: 100},
+        backFillStart: false
+	}
 });
 
 //Debug logStatus's value:
@@ -306,7 +320,7 @@ else{
 		left: '5dp',
 		height: '30dp',
 		font: {
-			fontSize: '14dp'
+			fontSize: '13dp'
 		},
 		width: '85dp'
 	});
@@ -315,7 +329,7 @@ else{
 		text: ' Terms of Service',
 		color: '#495A8B',
 		font: {
-			fontSize: '14dp'
+			fontSize: '13dp'
 		},
 		height: '30dp',
 		width: '110dp'
@@ -336,15 +350,20 @@ else{
 		left: '15%',
 		right: '15%'
 	});
-	
-	if (PLATFORM != 'android'){
-		setTimeout(function(){
+
+	setTimeout(function(){
+		if(PLATFORM != 'android'){
 			i_scroll_page.setContentOffset({
-					x : i_scroll_page.getContentOffset().x,
-					y : "25dp"
+				x : i_scroll_page.getContentOffset().x,
+				y : "25dp"
 			});
-		},500);
-	}
+		}else{
+			i_scroll_page.top = i_scroll_page.getContentOffset().x;
+			i_scroll_page.left = "0";
+		}
+		
+	},500);
+
 }
 
 s_terms_services.addEventListener('click', function(e){
@@ -557,17 +576,6 @@ if(PLATFORM == 'android') {
 	b1.color = 'black',
 	b1.height = '50',
 	b1.borderWidth = 1
-}else{
-	messageView.backgroundGradient = {
-        type: 'linear',
-        colors: [
-            {color: '#FFF', position: 0.0},
-			{color: '#AAA', position: 1.0}
-        ],
-        startPoint: {x: 0, y: 0},
-        endPoint: {x: 0, y: 100},
-        backFillStart: false
-	};
 }
 
 //Make everthing happen:

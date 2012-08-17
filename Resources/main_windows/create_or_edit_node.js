@@ -1280,7 +1280,7 @@ function display_widget(obj) {
 				var f_month = months_set[obj.currentDate.getMonth()];
 				var f_year = obj.currentDate.getFullYear();
 	
-				obj.text = f_hour + ":" + form_min(f_minute) + " - " + f_month + " / " + f_date + " / " + f_year;
+				obj.text = date(omadi_time_format, obj.currentDate) + " - " + f_month + " / " + f_date + " / " + f_year;
 				changedContentValue(obj);
 				setRulesField(obj);
 				win_wid.close();
@@ -1374,7 +1374,8 @@ function display_omadi_time(obj) {
 		var hours = obj.currentDate.getHours();
 		var min = obj.currentDate.getMinutes();
 
-		obj.text = hours + ":" + form_min(min);
+		//obj.text = hours + ":" + form_min(min);
+		obj.text = date(omadi_time_format,obj.currentDate);
 		changedContentValue(obj);
 		noDataChecboxEnableDisable(obj, obj.reffer_index);
 		win_wid.close();
@@ -1505,8 +1506,11 @@ function open_mult_selector(obj) {
 			ellipsize : true
 		});
 		row_t.add(title);
-
+		if(elements_to_insert[count_sel].is_set){
+			coItemSelected++;
+		}
 		listView.appendRow(row_t); ++count_sel;
+		
 	}
 	win_view.add(listView);
 
@@ -1795,8 +1799,8 @@ create_or_edit_node.loadUI = function() {
 				}
 			});
 			var regionName = regions.fieldByName('region_name');
-			fields_result = db_display.execute('SELECT * FROM fields WHERE bundle = "' + win.type + '" AND region = "' + regionName + '" ORDER BY weight ASC');
-			Ti.API.info(win.type+' AQUI ??? '+regionName);
+			fields_result = db_display.execute('SELECT * FROM fields WHERE bundle = "' + win.type + '" AND region = "' + regionName + '" ORDER BY weight, id ASC');
+
 			if (win.mode == 1) {
 				content_fields = db_display.execute('SELECT * FROM ' + win.type + ' WHERE nid = "' + win.nid + '" ');
 			}
@@ -6268,7 +6272,8 @@ create_or_edit_node.loadUI = function() {
 											height : '35dp',
 											width : '35dp',
 											is_clear : true,
-											its_parent : content[count]
+											its_parent : content[count],
+											can_edit: can_edit,
 										});
 
 										content[count].clear = clear;
@@ -6371,7 +6376,8 @@ create_or_edit_node.loadUI = function() {
 										height : '35dp',
 										width : '35dp',
 										is_clear : true,
-										its_parent : content[count]
+										its_parent : content[count],
+										can_edit: can_edit,
 									});
 
 									content[count].clear = clear;
@@ -6429,7 +6435,8 @@ create_or_edit_node.loadUI = function() {
 											var year = currentDate.getFullYear();
 											var min = currentDate.getMinutes();
 											var hours = currentDate.getHours();
-											text_in_field = hours + ":" + form_min(min) + " - " + months_set[month] + " / " + day + " / " + year;
+											//text_in_field = hours + ":" + form_min(min) + " - " + months_set[month] + " / " + day + " / " + year;
+											text_in_field = date(omadi_time_format, currentDate) + " - " + months_set[month] + " / " + day + " / " + year;
 										} else {
 											//Get current
 											var currentDate = new Date();
@@ -6442,7 +6449,8 @@ create_or_edit_node.loadUI = function() {
 
 											if (settings.default_value == 'now') {
 												var vl_to_field =currentDate.getTime() ;
-												text_in_field = hours + ":" + form_min(min) + " - " + months_set[month] + " / " + day + " / " + year;
+												//text_in_field = hours + ":" + form_min(min) + " - " + months_set[month] + " / " + day + " / " + year;
+												text_in_field = date(omadi_time_format, currentDate) + " - " + months_set[month] + " / " + day + " / " + year;
 											} else {
 												var vl_to_field = null;
 												text_in_field = "";
@@ -6505,7 +6513,8 @@ create_or_edit_node.loadUI = function() {
 											height : '35dp',
 											width : '35dp',
 											is_clear : true,
-											its_parent : content[count]
+											its_parent : content[count],
+											can_edit: can_edit,
 										});
 
 										content[count].clear = clear;
@@ -6538,7 +6547,8 @@ create_or_edit_node.loadUI = function() {
 										var year = currentDate.getFullYear();
 										var min = currentDate.getMinutes();
 										var hours = currentDate.getHours();
-										text_in_field = hours + ":" + form_min(min) + " - " + months_set[month] + " / " + day + " / " + year;
+										//text_in_field = hours + ":" + form_min(min) + " - " + months_set[month] + " / " + day + " / " + year;
+										text_in_field = date(omadi_time_format, currentDate) + " - " + months_set[month] + " / " + day + " / " + year;
 									} else {
 										//Get current
 										var currentDate = new Date();
@@ -6551,7 +6561,8 @@ create_or_edit_node.loadUI = function() {
 
 										if (settings.default_value == 'now') {
 											var vl_to_field =currentDate.getTime() ;
-											text_in_field = hours + ":" + form_min(min) + " - " + months_set[month] + " / " + day + " / " + year;
+											//text_in_field = hours + ":" + form_min(min) + " - " + months_set[month] + " / " + day + " / " + year;
+											text_in_field = date(omadi_time_format, currentDate) + " - " + months_set[month] + " / " + day + " / " + year;
 										} else {
 											var vl_to_field = null;
 											text_in_field = "";
@@ -6612,7 +6623,8 @@ create_or_edit_node.loadUI = function() {
 										height : '35dp',
 										width : '35dp',
 										is_clear : true,
-										its_parent : content[count]
+										its_parent : content[count],
+										can_edit: can_edit,
 									});
 
 									content[count].clear = clear;
@@ -6846,19 +6858,11 @@ create_or_edit_node.loadUI = function() {
 							Ti.API.info('SETTINGS FOR DATESTAMP: ' + settings.default_value);
 							Ti.API.info('WIDGET FOR DATESTAMP: ' + widget.settings['time']);
 
-							// call function display_widget
-							var currentDate = new Date();
-							var min = currentDate.getMinutes();
-							var hours = currentDate.getHours();
-							var day = currentDate.getDate();
-							var month = currentDate.getMonth();
-							var year = currentDate.getFullYear();
-
 							//Add fields:
 							regionView.add(label[count]);
 
 							if (settings.cardinality > 1) {
-
+								var currentDate;
 								if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
 									var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
 
@@ -6877,12 +6881,14 @@ create_or_edit_node.loadUI = function() {
 
 								for (var o_index = 0; o_index < settings.cardinality; o_index++) {
 
-									if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
-										var vl_to_field = decoded_values[o_index];
+									if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") && (decoded_values[o_index] != null) )) {
+										var vl_to_field = decoded_values[o_index]  * 1000;
+										currentDate = new Date(vl_to_field);
 									} else {
-										var vl_to_field = currentDate.getTime();
+										currentDate = new Date();
+										var vl_to_field =currentDate.getTime() ;
 									}
-
+									var text_in_field = date(omadi_time_format, currentDate);
 									content[count] = Titanium.UI.createLabel({
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										private_index : o_index,
@@ -6891,7 +6897,7 @@ create_or_edit_node.loadUI = function() {
 										font : {
 											fontSize : 18
 										},
-										text : hours + ":" + form_min(min),
+										text : text_in_field,
 										textAlign : 'center',
 										color : '#000000',
 										backgroundColor : '#FFFFFF',
@@ -6936,7 +6942,8 @@ create_or_edit_node.loadUI = function() {
 										height : '35dp',
 										width : '35dp',
 										is_clear : true,
-										its_parent : content[count]
+										its_parent : content[count],
+										can_edit: can_edit,
 									});
 
 									content[count].clear = clear;
@@ -6958,6 +6965,18 @@ create_or_edit_node.loadUI = function() {
 									count++;
 								}
 							} else {
+								var text_in_field = "";
+								var currentDate;	
+								var vl_to_field;
+								if ((field_arr[index_label][index_size].actual_value != null) && (field_arr[index_label][index_size].actual_value != "null") && (field_arr[index_label][index_size].actual_value != "") && (field_arr[index_label][index_size].actual_value != " ")) {
+									vl_to_field = field_arr[index_label][index_size].actual_value * 1000;
+									currentDate = new Date(vl_to_field);
+								} else {
+									currentDate = new Date();
+									vl_to_field =currentDate.getTime() ;
+								}
+								text_in_field = date(omadi_time_format, currentDate);
+								
 								content[count] = Titanium.UI.createLabel({
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -6965,11 +6984,11 @@ create_or_edit_node.loadUI = function() {
 									font : {
 										fontSize : 18
 									},
-									text : hours + ":" + form_min(min),
+									text : text_in_field,
 									textAlign : 'center',
 									color : '#000000',
 									backgroundColor : '#FFFFFF',
-									value : null,
+									value : vl_to_field,
 									field_type : field_arr[index_label][index_size].type,
 									field_name : field_arr[index_label][index_size].field_name,
 									widget : widget,
@@ -6988,7 +7007,7 @@ create_or_edit_node.loadUI = function() {
 									can_edit: can_edit,
 									enabled: can_edit
 								});
-									if(!can_edit){
+								if(!can_edit){
 											content[count].backgroundImage = '';
 											content[count].backgroundColor = '#BDBDBD';
 											content[count].borderColor = 'gray';
@@ -7010,7 +7029,8 @@ create_or_edit_node.loadUI = function() {
 									height : '35dp',
 									width : '35dp',
 									is_clear : true,
-									its_parent : content[count]
+									its_parent : content[count],
+									can_edit: can_edit,
 								});
 
 								content[count].clear = clear;
@@ -8081,14 +8101,25 @@ function openCamera(e) {
 		Ti.Media.showCamera({
 
 			success : function(event) {
+				var actInd = Ti.UI.createActivityIndicator();
+				actInd.font = {
+					fontFamily : 'Helvetica Neue',
+					fontSize : 15,
+					fontWeight : 'bold'
+				};
+				actInd.color = 'white';
+				actInd.message = 'Please wait...';
+				actInd.show();
+
 				Ti.API.info("MIME TYPE: " + event.media.mimeType);
 				// If image size greater than 1MB we will reduce th image else take as it is.
 				if (event.media.length > ONE_MB) {
-					e.source.imageData = reduceImageSize(event.media, 500, 700).toBlob();
+					e.source.imageData = reduceImageSize(event.media, 500, 700).image;
+					alert(e.source.imageData.height + "," + e.source.imageData.width);
 				} else {
 					e.source.imageData = event.media;
 				}
-				e.source.image = reduceImageSize(e.source.imageData, 100, 100).toBlob();
+				e.source.image = e.source.imageData;
 				e.source.bigImg = e.source.imageData;
 				e.source.mimeType = event.media.mimeType;
 
@@ -8106,11 +8137,13 @@ function openCamera(e) {
 					}
 					
 					e.source = e.source.scrollView.arrImages[newSource];
-					if((PLATFORM1='android')){Ti.Media.hideCamera()};	
+					actInd.hide();
+					if((PLATFORM != 'android')){Ti.Media.hideCamera()};	
 					openCamera(e);
 				}
 			},
 			error : function(error) {
+				actInd.hide();
 				Ti.API.info('Captured Image - Error: ' + error.code + " :: " + error.message);
 				if (error.code == Titanium.Media.NO_CAMERA) {
 					alert('No Camera in device');
@@ -8118,8 +8151,9 @@ function openCamera(e) {
 			},
 			saveToPhotoGallery : false,
 			showControls: false,
-			overlay: (PLATFORM1='android')?overlayView:'',
+			overlay: (PLATFORM !='android')?overlayView:null,
 			autohide: true,
+			allowEditing: false,
 			mediaTypes : [Ti.Media.MEDIA_TYPE_PHOTO]
 		});
 	} catch(ex) {
