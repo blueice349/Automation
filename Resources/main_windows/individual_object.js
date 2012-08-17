@@ -482,6 +482,7 @@ if(c_index > 0) {
 								count++;
 							//}
 						} catch(e) {
+							Ti.API.info('!! ERROR !! '+e);
 							bug[bug.length] = c_content[count];
 						}
 						break;

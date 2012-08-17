@@ -336,12 +336,15 @@ else{
 		left: '15%',
 		right: '15%'
 	});
-	setTimeout(function(){
-		i_scroll_page.setContentOffset({
-				x : i_scroll_page.getContentOffset().x,
-				y : "25dp"
-		});
-	},500);
+	
+	if (PLATFORM != 'android'){
+		setTimeout(function(){
+			i_scroll_page.setContentOffset({
+					x : i_scroll_page.getContentOffset().x,
+					y : "25dp"
+			});
+		},500);
+	}
 }
 
 s_terms_services.addEventListener('click', function(e){

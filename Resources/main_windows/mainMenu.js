@@ -28,13 +28,11 @@ var version = 'Omadi Inc';
 var isFirstTime = false;
 
 //Common used functions
-setUse();
 unsetUse();
 var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 
 //Geolocation module
 Ti.include('geolocation.js');
-
 
 function checkUpdate(evt){
 	Ti.API.info('******* Called checkupate => '+evt);
@@ -114,7 +112,7 @@ function checkUpdate(evt){
 	}
 };
 
-function update_node(mode, close_parent, _node_name){
+function update_node(mode, close_parent, _node_name, flag_next_part){
 	//Sets status to 'updating'
 
 	var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
@@ -131,7 +129,12 @@ function update_node(mode, close_parent, _node_name){
 	//function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent)
 	installMe(0, win2, updatedTimeStamp  , null, win2.listView, null, 'POST', mode, function (){
 		Ti.API.info('Closing create or edit node');
-		close_parent();
+		if (flag_next_part != null){
+			close_parent(flag_next_part);
+		}
+		else{
+			close_parent();
+		}
 	}, _node_name);
 }
 
@@ -146,8 +149,10 @@ var listView = Titanium.UI.createTableView({
 
 var elements = db.execute('SELECT * FROM bundles');
 var check = 0;
+
 //Parses result from user's login 
 var jsonLogin = JSON.parse(win2.result) ;
+
 //Retrieves username
 Ti.App.Properties.setString('Omadi_session_details', win2.result);
 var name = jsonLogin.user.realname;
@@ -660,21 +665,22 @@ if(PLATFORM != 'android'){
 	drafts_view.width = alerts_view.width =  Ti.Platform.displayCaps.platformWidth/3;
 	
 	var actions_view = Ti.UI.createView({
-		height: '50',
+		height: 'auto',
 		width: Ti.Platform.displayCaps.platformWidth/3,
 		layout: 'vertical'
-	})
+	});
 	databaseStatusView.add(actions_view);
+	
 	var actions_img = Ti.UI.createImageView({
-		image: '/images/action.png',
+		image: '/images/actions.png',
 		width: '30dp',
 		height: '30dp',
-		top: 5
+		top: '2dp'
 	});
 	var actions_lb = Ti.UI.createLabel({
 		text: 'Actions',
 		color:'#FFFFFF',
-		height:'16dp',
+		height:'21dp',
 		width:'auto',
 		textAlign:'center',
 		font: {

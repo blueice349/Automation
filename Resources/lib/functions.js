@@ -1587,7 +1587,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								}
 							}
 						}
-
 						//Unique node insert
 						else {
 							if (json.node_type.insert.type != 'user') {

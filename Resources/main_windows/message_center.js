@@ -33,13 +33,24 @@ win.addEventListener('open', function(){
 	Ti.App.fireEvent('upload_gps_locations');
 });
 
-
+function cleanWindow( winObj )
+{
+    if (winObj.children) {
+        Ti.API.info('Has children! Len: ' + winObj.children.length);
+        for (var i = winObj.children.length; i > 0; i--){
+            Ti.API.info( (i-1) + ") " + winObj.children[i-1]);
+            winObj.remove(winObj.children[i-1]);
+        }
+    }
+}
 message_center.get_win = function() {
 	return win;
 }
 var listTableView = null;
 
 message_center.loadUI = function() {
+	cleanWindow(win);
+	
 	win.is_opened = true;
 	var db = Ti.Database.install('/database/gps_coordinates.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName()+"_GPS" );
 	var res_set = db.execute('SELECT *, COUNT(*) term_count FROM alerts GROUP BY location_nid ORDER BY timestamp DESC');
@@ -338,6 +349,7 @@ message_center.loadUI = function() {
 Ti.App.addEventListener('refresh_UI_Alerts', function(){
 	Ti.API.info(win+' Check ===>>> '+win.is_opened);
 	if (win.is_opened == true){
+		cleanWindow(win);
 		Ti.API.info('ALERT CENTER is opened!');
 		///*
 		var db = Ti.Database.install('/database/gps_coordinates.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName()+"_GPS" );

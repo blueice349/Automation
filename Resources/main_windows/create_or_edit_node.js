@@ -767,11 +767,23 @@ function keep_info(_flag_info, pass_it, new_time) {
 					
 				}
 			} else if (win.mode == 1) {
-				Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\''+no_data_fields_content +'\' WHERE nid=' + win.nid);
-				db_put.execute('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\''+no_data_fields_content +'\' WHERE nid=' + win.nid);
+				if (_flag_info == 'normal'){
+					Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\''+no_data_fields_content +'\' WHERE nid=' + win.nid);
+					db_put.execute('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\''+no_data_fields_content +'\' WHERE nid=' + win.nid);
+				}
+				else{
+					Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form+1 + ', no_data_fields=\''+no_data_fields_content +'\' WHERE nid=' + win.nid);
+					db_put.execute('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form+1 + ', no_data_fields=\''+no_data_fields_content +'\' WHERE nid=' + win.nid);
+				}
 			} else {
-				Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '", ' + win.region_form + ', \'' +no_data_fields_content +'\')');
-				db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields  ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '"  , ' + win.region_form + ', \'' +no_data_fields_content +'\')');
+				if (_flag_info == 'normal'){
+					Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '", ' + win.region_form + ', \'' +no_data_fields_content +'\')');
+					db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields  ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '"  , ' + win.region_form + ', \'' +no_data_fields_content +'\')');
+				}
+				else{
+					Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '", ' + win.region_form+1 + ', \'' +no_data_fields_content +'\')');
+					db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields  ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '"  , ' + win.region_form+1 + ', \'' +no_data_fields_content +'\')');
+				}
 			}
 
 			//Insert into table
@@ -869,8 +881,14 @@ function keep_info(_flag_info, pass_it, new_time) {
 
 		Ti.API.info('========= Updating new info running ========= ' + _flag_info);
 		if ((Titanium.Network.online) && (has_bug === false) && (_flag_info != 'draft')) {
-			Ti.API.info('Submitting');
-			win.up_node(win.mode, close_me, win.type.toUpperCase());
+			if (_flag_info == "normal"){
+				Ti.API.info('Submitting');
+				win.up_node(win.mode, close_me, win.type.toUpperCase());
+			}
+			else{
+				Ti.API.info('Submitting and preparing next part reload');
+				win.up_node(win.mode, reload_me, win.type.toUpperCase(), _flag_info);
+			}
 		} else if (has_bug === true) {
 			Ti.API.info('Error');
 			close_me_delay();
@@ -918,6 +936,71 @@ function close_me_delay() {
 function close_me() {
 	hideIndicator();
 	win.close();
+}
+
+function reload_me(part) {
+	Ti.API.info('Part is: '+part);
+	Ti.API.info(win.title+' - '+win.type+' - '+win.uid+' - '+win.nameSelected+' - '+win.nid);
+	hideIndicator();
+    win.remove(resultView);
+    
+    if (PLATFORM == 'android'){
+		//The view where the results are presented
+		resultView = Ti.UI.createView({
+			top : 0,
+			height : '100%',
+			width : '100%',
+			backgroundColor : '#EEEEEE',
+			opacity : 1
+		});
+		win.add(resultView);
+		
+		viewContent = Ti.UI.createScrollView({
+			bottom : 0,
+			contentHeight : 'auto',
+			//top : "11%",
+			backgroundColor : '#EEEEEE',
+			showHorizontalScrollIndicator : false,
+			showVerticalScrollIndicator : true,
+			opacity : 1,
+			scrollType : "vertical",
+			zIndex : 10
+		});
+	}
+	else{
+		
+		//The view where the results are presented
+		resultView = Ti.UI.createView({
+			top : "8%",
+			height : '92%',
+			width : '100%',
+			bottom: 0,
+			backgroundColor : '#EEEEEE',
+			opacity : 1
+		});
+		win.add(resultView);		
+		
+		viewContent = Ti.UI.createScrollView({
+			contentHeight : 'auto',
+			//height : "98%",
+			backgroundColor : '#EEEEEE',
+			showHorizontalScrollIndicator : false,
+			showVerticalScrollIndicator : true,
+			opacity : 1,
+			scrollType : "vertical",
+			zIndex : 10
+		});		
+	}
+
+	resultView.add(viewContent);
+    
+    
+	win.mode = 1;
+	win.region_form = part;
+	setTimeout(function() {
+		create_or_edit_node.loadUI();
+	}, 100);
+
 }
 
 //Return models based on a certain "make" if "make" is not present returns the whole database set
@@ -1452,7 +1535,7 @@ function open_mult_selector(obj) {
 		}else if(coItemSelected > 1) {
 			if(obj.from_cond_vs != null && obj.from_cond_vs == true) {
 				listView.height = '66.5%';
-				desLabel.visible = true;
+				desLael.visible = true;
 				desLabel.text = 'Multiple violations selected'
 			}
 		} else if(coItemSelected == 0) {
@@ -1713,6 +1796,7 @@ create_or_edit_node.loadUI = function() {
 			});
 			var regionName = regions.fieldByName('region_name');
 			fields_result = db_display.execute('SELECT * FROM fields WHERE bundle = "' + win.type + '" AND region = "' + regionName + '" ORDER BY weight ASC');
+			Ti.API.info(win.type+' AQUI ??? '+regionName);
 			if (win.mode == 1) {
 				content_fields = db_display.execute('SELECT * FROM ' + win.type + ' WHERE nid = "' + win.nid + '" ');
 			}
@@ -7514,7 +7598,8 @@ create_or_edit_node.loadUI = function() {
 							if(content[reffer_index].noDataView!=null){
 								top += 40; 
 							}	
-							break;
+						break;
+						
 						case 'calculation_field':
 							label[count] = Ti.UI.createLabel({
 								text : field_arr[index_label][index_size].label,
@@ -7559,7 +7644,8 @@ create_or_edit_node.loadUI = function() {
 								top += content[count].height + 10;
 							}
 							count++;
-							break;
+						break;
+						
 						case 'rules_field':
 							if(field_arr[index_label][index_size].actual_value!=false && field_arr[index_label][index_size].actual_value!="false" && field_arr[index_label][index_size].actual_value!=0 && JSON.parse(field_arr[index_label][index_size].actual_value).length>0){	
 								label[count] = Ti.UI.createLabel({
@@ -7850,6 +7936,35 @@ create_or_edit_node.loadUI = function() {
 			});
 			menu_second.setIcon("/images/save.png");
 
+			var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+			var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
+			var _data = JSON.parse(json_data.fieldByName('_data'));
+	
+			var node_form = db_act.execute('SELECT form_part FROM node WHERE nid=' + win.nid);
+	
+			Ti.API.info('Form node part = ' + node_form.fieldByName('form_part'));
+			//Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
+	
+			if(_data.form_parts!=null && _data.form_parts!="" && (_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2)) { 
+				Ti.API.info("Title = " + _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
+	
+				var menu_zero = menu.add({
+					title : _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label,
+					order : 0
+				});
+	
+				menu_zero.setIcon("/images/drop.png");
+	
+				//======================================
+				// MENU - EVENTS
+				//======================================
+	
+				menu_zero.addEventListener("click", function(e) {
+					Ti.API.info('====>>')
+				});
+			}
+			db_act.close();
+			
 			var menu_third = menu.add({
 				title : 'Draft',
 				order : 3
@@ -8016,7 +8131,6 @@ function createImage(o_index, arrImages, data, scrollView, updated) {
 	contentImage = Ti.UI.createImageView({
 		private_index : o_index,
 		left : '5',
-		//right			: '5',
 		height : 80,
 		width : 80,
 		size : {
@@ -8092,29 +8206,110 @@ function bottomButtons(actualWindow) {
 				title : 'Actions',
 				style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
 			});
+			
 			actions.addEventListener('click', function() {
-				var postDialog = Titanium.UI.createOptionDialog();
-				postDialog.options = ['Save', 'Draft', 'cancel'];
-				postDialog.cancel = 2;
-				postDialog.show();
 
-				postDialog.addEventListener('click', function(ev) {
-					if (ev.index == 0) {
-						try {
-							keep_info('normal', false);
-						} catch(e) {
-							alert('Error Tracking: ' + e);
-							//To catch error to resolve issue #916
-						}
-					} else if (ev.index == 1) {
-						try {
-							keep_info('draft', false);
-						} catch(e) {
-							alert('Error Tracking: ' + e);
-							//To catch error to resolve issue #916
+				var btn_tt = [];
+				var btn_id = [];
+
+				
+				if (win.nid != null){
+					var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+					var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
+					var _data = JSON.parse(json_data.fieldByName('_data'));
+			
+					var node_form = db_act.execute('SELECT form_part FROM node WHERE nid=' + win.nid);
+			
+					Ti.API.info('Form node part = ' + node_form.fieldByName('form_part'));
+					
+					if(_data.form_parts!=null && _data.form_parts!=""){
+						Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
+						if(_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2) { 
+							Ti.API.info("<<<<<<<------->>>>>>> Title = " + _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
+							btn_tt.push(_data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
+							btn_id.push(node_form.fieldByName('form_part') + 1);
 						}
 					}
-				});
+					json_data.close();
+					db_act.close();
+				}
+				else{
+					var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+					var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
+					var _data = JSON.parse(json_data.fieldByName('_data'));
+					
+					var node_form = 0;
+			
+					Ti.API.info('Form node part = ' + node_form );
+					
+					if(_data.form_parts!=null && _data.form_parts!=""){
+						Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
+						if(_data.form_parts.parts.length >= parseInt(node_form) + 2) { 
+							Ti.API.info("<<<<<<<------->>>>>>> Title = " + _data.form_parts.parts[node_form + 1].label);
+							btn_tt.push(_data.form_parts.parts[node_form  + 1].label);
+							btn_id.push(node_form  + 1);
+						}
+					}
+					json_data.close();
+					db_act.close();
+				}
+
+				
+				btn_tt.push('Save');
+				btn_tt.push('Draft');
+				btn_tt.push('Cancel');
+				
+				var postDialog = Titanium.UI.createOptionDialog();
+				postDialog.options = btn_tt;
+				postDialog.cancel = btn_tt.length-1;
+				postDialog.show();
+		
+				postDialog.addEventListener('click', function(ev) {
+					if (btn_tt.length == 4){
+						if (ev.index  == 0){
+							//openEditScreen(btn_id[0]);
+							Ti.API.info('=======> '+btn_id[0]);	
+							try {
+								keep_info(btn_id[0], false);
+							} catch(e) {
+								alert('Error Tracking: ' + e);
+								//To catch error to resolve issue #916
+							}
+						}
+						else if (ev.index == 1) {
+								try {
+									keep_info('normal', false);
+								} catch(e) {
+									alert('Error Tracking: ' + e);
+									//To catch error to resolve issue #916
+								}
+						} else if (ev.index == 2) {
+							try {
+								keep_info('draft', false);
+							} catch(e) {
+								alert('Error Tracking: ' + e);
+								//To catch error to resolve issue #916
+							}
+						}						
+					}
+					else{
+						if (ev.index == 0) {
+							try {
+								keep_info('normal', false);
+							} catch(e) {
+								alert('Error Tracking: ' + e);
+								//To catch error to resolve issue #916
+							}
+						} else if (ev.index == 1) {
+							try {
+								keep_info('draft', false);
+							} catch(e) {
+								alert('Error Tracking: ' + e);
+								//To catch error to resolve issue #916
+							}
+						}						
+					}
+				});	
 			});
 
 			// create and add toolbar
