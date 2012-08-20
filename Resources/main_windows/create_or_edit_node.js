@@ -767,23 +767,11 @@ function keep_info(_flag_info, pass_it, new_time) {
 					
 				}
 			} else if (win.mode == 1) {
-				if (_flag_info == 'normal'){
 					Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\''+no_data_fields_content +'\' WHERE nid=' + win.nid);
 					db_put.execute('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\''+no_data_fields_content +'\' WHERE nid=' + win.nid);
-				}
-				else{
-					Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form+1 + ', no_data_fields=\''+no_data_fields_content +'\' WHERE nid=' + win.nid);
-					db_put.execute('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form+1 + ', no_data_fields=\''+no_data_fields_content +'\' WHERE nid=' + win.nid);
-				}
 			} else {
-				if (_flag_info == 'normal'){
 					Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '", ' + win.region_form + ', \'' +no_data_fields_content +'\')');
 					db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields  ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '"  , ' + win.region_form + ', \'' +no_data_fields_content +'\')');
-				}
-				else{
-					Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '", ' + win.region_form+1 + ', \'' +no_data_fields_content +'\')');
-					db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields  ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '"  , ' + win.region_form+1 + ', \'' +no_data_fields_content +'\')');
-				}
 			}
 
 			//Insert into table
@@ -939,6 +927,11 @@ function close_me() {
 }
 
 function reload_me(part) {
+	var new_node = Titanium.App.Properties.getString("new_node_id");
+	if ( new_node != null){
+		win.nid = new_node;
+	}
+	 
 	Ti.API.info('Part is: '+part);
 	Ti.API.info(win.title+' - '+win.type+' - '+win.uid+' - '+win.nameSelected+' - '+win.nid);
 	hideIndicator();
@@ -996,7 +989,15 @@ function reload_me(part) {
     
     
 	win.mode = 1;
-	win.region_form = part;
+	/*
+		Ti.API.info('###############>>>>>>>>      Before increment : '+win.region_form);
+		var db_nod_i = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+		db_nod_i.execute('UPDATE node SET form_part='+parseInt(part)+'  WHERE nid=' + win.nid);
+		db_nod_i.close();
+	*/
+	win.region_form = parseInt(part);
+	
+	Ti.API.info('###############>>>>>>>>      After increment : '+win.region_form);
 	setTimeout(function() {
 		create_or_edit_node.loadUI();
 	}, 100);
@@ -7937,65 +7938,134 @@ create_or_edit_node.loadUI = function() {
 	//======================================
 
 	if (Ti.Platform.name == 'android') {
+
 		var activity = win.activity;
 		activity.onCreateOptionsMenu = function(e) {
+				
 			//======================================
 			// MENU - UI
 			//======================================
+			
+			var btn_tt = [];
+			var btn_id = [];
 
 			var menu = e.menu;
-			var menu_first = menu.add({
-				title : 'Cancel',
-				order : 0
-			});
-			menu_first.setIcon("/images/cancel.png");
 
-			var menu_second = menu.add({
+			if (win.nid != null){
+				var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+				var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
+				var _data = JSON.parse(json_data.fieldByName('_data'));
+		
+				var node_form = win.region_form;
+		
+				if(_data.form_parts!=null && _data.form_parts!=""){
+					Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
+					if(_data.form_parts.parts.length >= parseInt(node_form) + 2) { 
+						var keep_node_form = node_form + 1;
+						
+						Ti.API.info("Title = " + _data.form_parts.parts[keep_node_form].label);
+	
+						var menu_zero = menu.add({
+							title : "Save "+_data.form_parts.parts[keep_node_form].label,
+							order : 0
+						});
+						menu_zero.setIcon("/images/drop.png");
+						menu_zero.addEventListener("click", function(ev) {
+							Ti.API.info('Form node part = ' + keep_node_form);
+							try {
+								keep_info(keep_node_form, false);
+							} catch(e) {
+								alert('Error Tracking: ' + ev);
+								//To catch error to resolve issue #916
+							}
+
+						});
+					}
+				}
+				json_data.close();
+				db_act.close();
+			}
+			else{
+				var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+				var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
+				var _data = JSON.parse(json_data.fieldByName('_data'));
+				
+				var node_form = 0;
+		
+				Ti.API.info('Form node part = ' + node_form );
+				
+				if(_data.form_parts!=null && _data.form_parts!=""){
+					Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
+					if(_data.form_parts.parts.length >= parseInt(node_form) + 2) { 
+						var keep_node_form = node_form + 1;
+						
+						Ti.API.info("<<<<<<<------->>>>>>> Title = " + _data.form_parts.parts[keep_node_form].label);
+						
+						var menu_zero = menu.add({
+							title : "Save "+_data.form_parts.parts[keep_node_form].label,
+							order : 0
+						});
+						menu_zero.setIcon("/images/drop.png");
+						menu_zero.addEventListener("click", function(ev) {
+							Ti.API.info('====>> '+keep_node_form);
+							try {
+								keep_info(keep_node_form, false);
+							} catch(e) {
+								alert('Error Tracking: ' + ev);
+								//To catch error to resolve issue #916
+							}
+
+						});
+					}
+				}
+				json_data.close();
+				db_act.close();
+			}
+				
+			btn_tt.push('Save');
+			btn_tt.push('Draft');
+			btn_tt.push('Cancel');
+
+			var menu_first = menu.add({
 				title : 'Save',
 				order : 1
 			});
-			menu_second.setIcon("/images/save.png");
+			menu_first.setIcon("/images/save.png");
 
-			var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-			var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
-			var _data = JSON.parse(json_data.fieldByName('_data'));
-	
-			var node_form = db_act.execute('SELECT form_part FROM node WHERE nid=' + win.nid);
-	
-			Ti.API.info('Form node part = ' + node_form.fieldByName('form_part'));
-			//Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
-	
-			if(_data.form_parts!=null && _data.form_parts!="" && (_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2)) { 
-				Ti.API.info("Title = " + _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
-	
-				var menu_zero = menu.add({
-					title : _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label,
-					order : 0
-				});
-	
-				menu_zero.setIcon("/images/drop.png");
-	
-				//======================================
-				// MENU - EVENTS
-				//======================================
-	
-				menu_zero.addEventListener("click", function(e) {
-					Ti.API.info('====>>')
-				});
-			}
-			db_act.close();
-			
-			var menu_third = menu.add({
+			var menu_second = menu.add({
 				title : 'Draft',
+				order : 2
+			});
+			menu_second.setIcon("/images/draft.png");
+
+
+			var menu_third = menu.add({
+				title : 'Cancel',
 				order : 3
 			});
-			menu_third.setIcon("/images/draft.png");
+			menu_third.setIcon("/images/cancel.png");
 
 			//======================================
 			// MENU - EVENTS
 			//======================================
-
 			menu_first.addEventListener("click", function(e) {
+				try{
+					keep_info('normal', false);
+				} catch(e) {
+					alert('Error Tracking: ' + e);//To catch error to resolve issue #916
+				}
+			});
+
+
+			menu_second.addEventListener("click", function(e) {
+				try{
+					keep_info('draft', false);
+				} catch(e) {
+					alert('Error Tracking: ' + e);//To catch error to resolve issue #916
+				}
+			});
+
+			menu_third.addEventListener("click", function(e) {
 				if (win.mode == 0) {
 					Ti.UI.createNotification({
 						message : win.title + ' creation was cancelled !'
@@ -8009,25 +8079,9 @@ create_or_edit_node.loadUI = function() {
 				win.close();
 
 			});
-			//======================================
-			// MENU - EVENTS
-			//======================================
-			menu_third.addEventListener("click", function(e) {
-				try{
-					keep_info('draft', false);
-				} catch(e) {
-					alert('Error Tracking: ' + e);//To catch error to resolve issue #916
-				}
-			});
-
-			menu_second.addEventListener("click", function(e) {
-				try{
-					keep_info('normal', false);
-				} catch(e) {
-					alert('Error Tracking: ' + e);//To catch error to resolve issue #916
-				}
-			});
+			
 		};
+
 	} else {
 		bottomButtons(win);
 	}
@@ -8252,16 +8306,16 @@ function bottomButtons(actualWindow) {
 					var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
 					var _data = JSON.parse(json_data.fieldByName('_data'));
 			
-					var node_form = db_act.execute('SELECT form_part FROM node WHERE nid=' + win.nid);
+					var node_form = win.region_form;
 			
-					Ti.API.info('Form node part = ' + node_form.fieldByName('form_part'));
+					Ti.API.info('Form node part = ' + node_form);
 					
 					if(_data.form_parts!=null && _data.form_parts!=""){
 						Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
-						if(_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2) { 
-							Ti.API.info("<<<<<<<------->>>>>>> Title = " + _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
-							btn_tt.push(_data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
-							btn_id.push(node_form.fieldByName('form_part') + 1);
+						if(_data.form_parts.parts.length >= parseInt(node_form) + 2) { 
+							Ti.API.info("<<<<<<<------->>>>>>> Title = " + _data.form_parts.parts[parseInt(node_form) + 1].label);
+							btn_tt.push("Save "+_data.form_parts.parts[node_form + 1].label);
+							btn_id.push(node_form + 1);
 						}
 					}
 					json_data.close();
@@ -8280,7 +8334,7 @@ function bottomButtons(actualWindow) {
 						Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
 						if(_data.form_parts.parts.length >= parseInt(node_form) + 2) { 
 							Ti.API.info("<<<<<<<------->>>>>>> Title = " + _data.form_parts.parts[node_form + 1].label);
-							btn_tt.push(_data.form_parts.parts[node_form  + 1].label);
+							btn_tt.push("Save "+_data.form_parts.parts[node_form  + 1].label);
 							btn_id.push(node_form  + 1);
 						}
 					}
@@ -8295,7 +8349,6 @@ function bottomButtons(actualWindow) {
 				
 				var postDialog = Titanium.UI.createOptionDialog();
 				postDialog.options = btn_tt;
-				postDialog.cancel = btn_tt.length-1;
 				postDialog.show();
 		
 				postDialog.addEventListener('click', function(ev) {

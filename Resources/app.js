@@ -25,7 +25,7 @@ var win1 = Titanium.UI.createWindow({
 	backgroundColor: '#EEEEEE'
 });
 
-var OMADI_VERSION = "omadiDb1582";
+var OMADI_VERSION = "omadiDb1583";
 
 Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION);
 var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );
@@ -59,6 +59,20 @@ else{
 
 updatedTime.close();
 db_a.close();
+var version_label = Titanium.UI.createLabel({
+	top: 0,
+	height: 'auto',
+	width: 'auto',
+	right: '10dp',
+	textAlign: 'right',
+	text: Titanium.App.version,
+	color: '#354350',
+	font : {
+			fontWeight: 'bold'
+		}
+});
+win1.add(version_label);
+
 
 var i_scroll_page = Titanium.UI.createScrollView({
     contentWidth:'auto',
@@ -78,6 +92,7 @@ var i_scroll_page = Titanium.UI.createScrollView({
 	zIndex: 0
 });
 win1.add(i_scroll_page);
+
 
 //Web site picker 
 var logo = Titanium.UI.createImageView({
@@ -223,6 +238,7 @@ Ti.API.info('The value for logStatus we found in app.js is : '+Ti.App.Properties
 if ( ( Ti.App.Properties.getString('logStatus') == null) || (Ti.App.Properties.getString('logStatus') == "") ){
 	var label_error = Titanium.UI.createLabel({
 		color:'#4B5C8C',
+		//text:'Please login - Version '+Titanium.App.version,
 		text:'Please login',
 		font : {
 			fontWeight: 'bold'

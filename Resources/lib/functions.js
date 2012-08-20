@@ -548,11 +548,20 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 		deploy.next();
 	}
 	deploy.close();
-
+	
 	var process_obj = [];
-
+	
 	//Insert
 	if (json[obj].insert) {
+		
+		if (type_request == 'POST'){
+			if (json[obj].insert.length){
+				Titanium.App.Properties.setString("new_node_id", json[obj].insert[0].nid);
+			}
+			else{
+				Titanium.App.Properties.setString("new_node_id", json[obj].insert.nid); 
+			}
+		}
 		//Multiple objects
 		if (json[obj].insert.length) {
 
@@ -1775,10 +1784,164 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 						}
 						//Unique node update
 						else {
+							//Increment the progress bar
 							if (progress != null) {
 								progress.set();
+							}	
+
+							var get_title = JSON.stringify(json.node_type.update.data.title_fields);
+
+							var _get_data = JSON.stringify(json.node_type.update.data);
+							var node_type_json = json.node_type.update.data;
+							var no_mob_display = true;
+							
+							if((node_type_json.no_mobile_display != null && (node_type_json.no_mobile_display == 1 || 
+								node_type_json.no_mobile_display == '1')) || json.node_type.update.disabled == 1 ||
+								json.node_type.update.disabled == '1'  || json.node_type.update.disabled == 'true' ||
+								json.node_type.update.disabled == true) {
+								no_mob_display = false;
 							}
-							Ti.API.info('@Developer: Updates for node_type need to be created');
+							
+							db_installMe.execute("UPDATE bundles SET bundle_name='" + json.node_type.update.type + "', display_on_menu='" + no_mob_display + "', display_name='" + json.node_type.update.name + "', description='" + json.node_type.update.description + "', title_fields='" + get_title + "', _data='" + _get_data + "', disabled='" + json.node_type.update.disabled + "' WHERE bundle_name='" + json.node_type.update.type + "'");
+						
+							var n_bund = db_installMe.execute('SELECT * FROM bundles');
+							var data_rows = new Array();
+							while(n_bund.isValidRow()) {
+								var name_table = n_bund.fieldByName("bundle_name");
+								var display = n_bund.fieldByName("display_name").toUpperCase();
+								var description = n_bund.fieldByName("description");
+								var flag_display = n_bund.fieldByName("display_on_menu");
+								var _is_disabled = n_bund.fieldByName("disabled");
+								var _nd = n_bund.fieldByName("_data");
+								var show_plus = false;
+								var app_permissions = {
+									"can_create" : false,
+									"can_update" : false,
+									"all_permissions" : false,
+									"can_view" : false
+								}
+
+								var node_type_json = JSON.parse(_nd);
+
+								if(node_type_json.no_mobile_display != null && node_type_json.no_mobile_display == 1 && node_type_json.no_mobile_display == '1') {
+									n_bund.next();
+									continue;
+								}
+
+								if(roles.hasOwnProperty(ROLE_ID_ADMIN)) {
+									show_plus = true;
+									app_permissions.can_create = true;
+									app_permissions.all_permissions = true;
+									app_permissions.can_update = true;
+									app_permissions.can_view = true;
+
+								} else {
+									for(var _l in node_type_json.permissions) {
+										for(_k in roles) {
+											if(_l == _k) {
+												var stringifyObj = JSON.stringify(node_type_json.permissions[_l]);
+												if(node_type_json.permissions[_l]["can create"] || node_type_json.permissions[_l]["all_permissions"]) {
+													show_plus = true;
+													app_permissions.can_create = true;
+												}
+
+												if(node_type_json.permissions[_l]["all_permissions"]) {
+													app_permissions.all_permissions = true;
+													app_permissions.can_update = true;
+													app_permissions.can_view = true;
+													continue;
+												}
+
+												if(stringifyObj.indexOf('update') >= 0 || node_type_json.permissions[_l]["all_permissions"]) {
+													app_permissions.can_update = true;
+												}
+
+												if(stringifyObj.indexOf('view') >= 0 || node_type_json.permissions[_l]["all_permissions"]) {
+													app_permissions.can_view = true;
+												}
+
+											}
+										}
+									}
+								}
+
+								if(flag_display == 'true' && (_is_disabled != 1 && _is_disabled != "1" && _is_disabled != "true" && _is_disabled != true)) {
+									var row_a = Ti.UI.createTableViewRow({
+										height : 60,
+										name : display,
+										display : display,
+										desc : description,
+										name_table : name_table,
+										show_plus : show_plus,
+										app_permissions : app_permissions,
+										className : 'menu_row', // this is to optimize the rendering
+										selectionStyle : app_permissions.can_view ? 1 : 0,
+										backgroundSelectedColor : app_permissions.can_view ? '#BDBDBD' : '#00000000'
+									});
+
+									var icon = Titanium.UI.createImageView({
+										width : 48,
+										height : 48,
+										top : 6,
+										left : 5,
+										desc : description,
+										image : '/images/icons/' + display.toLowerCase() + '.png'
+									});
+
+									if(icon.toBlob() == null || icon.toBlob().length == 0) {
+										icon.image = '/images/icons/settings.png';
+									}
+
+									var title_a = Titanium.UI.createLabel({
+										text : display,
+										font : {
+											fontSize : 28
+										},
+										width : '80%',
+										textAlign : 'left',
+										left : 58,
+										height : 'auto',
+										desc : description,
+										color : '#000'
+									});
+
+									var plus_a = Titanium.UI.createButton({
+										backgroundImage : '/images/plus_btn.png',
+										backgroundSelectedImage : '/images/plus_btn_selected.png',
+										width : 64,
+										height : 48,
+										right : 1,
+										is_plus : true
+									});
+									if(show_plus === false) {
+										plus_a.hide();
+									}
+
+									row_a.add(icon);
+									row_a.add(title_a);
+									row_a.add(plus_a);
+
+									if(PLATFORM == 'android') {
+										row_a.addEventListener('longclick', function(e) {
+											if(e.source.desc != null && e.source.desc != "") {
+												alert(e.source.desc)
+											}
+										});
+									} else {
+										row_a.addEventListener('longpress', function(e) {
+											if(e.source.desc != null && e.source.desc != "") {
+												alert(e.source.desc)
+											}
+										});
+									}
+									data_rows.push(row_a);
+									data_rows.sort(sortTableView);
+									menu.setData(data_rows);
+								}
+
+								n_bund.next();
+							}
+							n_bund.close(); 				
 						}
 					}
 
@@ -1795,7 +1958,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								node_db[node_db.length] = "DELETE FROM bundles WHERE bundle_name = '" + json.node_type.insert[i].type + "'";
 								node_db[node_db.length] = "DELETE FROM node WHERE table_name = '" + json.node_type.insert[i].type + "'";
 
-								Ti.API.info('@Developer: Deletions for node_type need to be created');
 							}
 						}
 						//Unique node deletion
@@ -1806,7 +1968,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							node_db[node_db.length] = "DROP TABLE " + json.node_type.insert.type;
 							node_db[node_db.length] = "DELETE FROM bundles WHERE bundle_name = '" + json.node_type.insert.type + "'";
 							node_db[node_db.length] = "DELETE FROM node WHERE table_name = '" + json.node_type.insert.type + "'";
-							Ti.API.info('@Developer: Deletions for node_type need to be created');
 						}
 					}
 
@@ -2900,6 +3061,8 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				var take = db_installMe.execute('SELECT * FROM bundles WHERE display_on_menu="true"');
 				var count_t = 0;
 				var data_rows = new Array();
+				Titanium.App.Properties.setString("new_node_id", null);
+				 
 				while (n_bund.isValidRow()) {
 					var name_table = n_bund.fieldByName("bundle_name");
 					//try{
@@ -4048,7 +4211,7 @@ function _calculation_field_sort_on_weight(a, b) {
 }
 
 function _calculation_field_get_values(win, db_display, instance, entity, content) {
-	Ti.API.info('here--------0.1' + instance.field_name + ", mode: " + win.mode);
+	//Ti.API.info('here--------0.1' + instance.field_name + ", mode: " + win.mode);
 	var calculated_field_cache = [];
 	var final_value = 0;
 	if (instance.settings.calculation.items != null && !instance.disabled) {
@@ -4072,43 +4235,43 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 				// Make sure a dependency calculation is made first
 				// TODO: Statically cache these values for future use by other calculation fields
 				// TODO: Make sure an infinite loop doesn't occur
-				Ti.API.info('here--------0.2');
+				//Ti.API.info('here--------0.2');
 				required_instance_final_values = _calculation_field_get_values(win, db_display, content[entity[calculation_row.field_name_1][0]['reffer_index']], entity, content);
-				Ti.API.info('here--------0.3' + required_instance_final_values[0].final_value);
+				//Ti.API.info('here--------0.3' + required_instance_final_values[0].final_value);
 				calculated_field_cache[calculation_row.field_name_1] = required_instance_final_values[0].final_value;
 			}
 
 			if (calculation_row.field_name_1 != null && calculation_row.field_name_1 != "") {
-				Ti.API.info('here--------0.4' + calculation_row.field_name_1 + "," + calculated_field_cache[calculation_row.field_name_1]);
+				//Ti.API.info('here--------0.4' + calculation_row.field_name_1 + "," + calculated_field_cache[calculation_row.field_name_1]);
 				if (calculated_field_cache[calculation_row.field_name_1] != null) {
-					Ti.API.info('here--------0.5' + calculated_field_cache[calculation_row.field_name_1]);
+					//Ti.API.info('here--------0.5' + calculated_field_cache[calculation_row.field_name_1]);
 					field_1_multiplier = calculated_field_cache[calculation_row.field_name_1];
 				} else if (calculation_row.type == 'parent_field_value') {
-					Ti.API.info('here--------0.6' + calculation_row.parent_field);
+					//Ti.API.info('here--------0.6' + calculation_row.parent_field);
 					parent_field = calculation_row.parent_field;
 					if (entity[parent_field] != null && entity[parent_field][0]['nid'] != null) {
 						parent_node = node_load(db_display, entity[parent_field][0]['nid']);
 						if (parent_node.rowCount > 0 && parent_node.fieldByName(calculation_row.field_name_1) != null) {
 							field_1_multiplier = parent_node.fieldByName(calculation_row.field_name_1);
-							Ti.API.info('here--------0.7' + field_1_multiplier);
+							//Ti.API.info('here--------0.7' + field_1_multiplier);
 						}
 					}
 				} else if (entity[calculation_row.field_name_1] != null && entity[calculation_row.field_name_1][0]['value'] != null) {
 					field_1_multiplier = entity[calculation_row.field_name_1][0]['value'];
-					Ti.API.info('here--------0.8' + field_1_multiplier);
+					//Ti.API.info('here--------0.8' + field_1_multiplier);
 				}
 				if (calculation_row.datestamp_end_field != null && calculation_row.datestamp_end_field != "") {
-					Ti.API.info('here--------0.9' + field_1_multiplier);
+					//Ti.API.info('here--------0.9' + field_1_multiplier);
 					start_timestamp = field_1_multiplier;
 					// Set this end value to 0 in case the terminating datestamp field is empty
 					field_1_multiplier = 0;
 					if (entity[calculation_row.datestamp_end_field] != null && entity[calculation_row.datestamp_end_field][0]['value'] != null) {
 						end_timestamp = entity[calculation_row.datestamp_end_field][0]['value'];
-						Ti.API.info('here--------0.10' + end_timestamp);
+						//Ti.API.info('here--------0.10' + end_timestamp);
 						if (calculation_row.type == 'time-only') {
-							Ti.API.info('here--------0.11' + calculation_row.type);
+							//Ti.API.info('here--------0.11' + calculation_row.type);
 							if (end_timestamp < start_timestamp) {
-								Ti.API.info('here--------0.12' + start_timestamp);
+								//Ti.API.info('here--------0.12' + start_timestamp);
 								end_timestamp += (24 * 3600);
 							}
 						}
@@ -4118,42 +4281,42 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 						switch(calculation_row.datestamp_interval) {
 							case 'minute':
 								field_1_multiplier = difference / 60;
-								Ti.API.info('here--------0.13' + field_1_multiplier);
+								//Ti.API.info('here--------0.13' + field_1_multiplier);
 								break;
 							case 'hour':
 								field_1_multiplier = difference / 3600;
-								Ti.API.info('here--------0.14' + field_1_multiplier);
+								//Ti.API.info('here--------0.14' + field_1_multiplier);
 								break;
 							case 'day':
 								field_1_multiplier = difference / (3600 * 24);
-								Ti.API.info('here--------0.15' + field_1_multiplier);
+								//Ti.API.info('here--------0.15' + field_1_multiplier);
 								break;
 							case 'week':
 								field_1_multiplier = difference / (3600 * 24 * 7);
-								Ti.API.info('here--------0.16' + field_1_multiplier);
+								//Ti.API.info('here--------0.16' + field_1_multiplier);
 								break;
 						}
 						if (calculation_row.type == 'time') {
-							Ti.API.info('here--------0.17' + calculation_row.type);
+							//Ti.API.info('here--------0.17' + calculation_row.type);
 							if (calculation_row.interval_rounding == 'up') {
 								field_1_multiplier = Math.ceil(field_1_multiplier);
-								Ti.API.info('here--------0.18' + field_1_multiplier);
+								//Ti.API.info('here--------0.18' + field_1_multiplier);
 							} else if (calculation_row.interval_rounding == 'down') {
 								field_1_multiplier = Math.floor(field_1_multiplier);
-								Ti.API.info('here--------0.19' + field_1_multiplier);
+								//Ti.API.info('here--------0.19' + field_1_multiplier);
 							} else if (calculation_row.interval_rounding == 'integer') {
 								field_1_multiplier = Math.round(field_1_multiplier);
-								Ti.API.info('here--------0.20' + field_1_multiplier);
+								//Ti.API.info('here--------0.20' + field_1_multiplier);
 							} else if (calculation_row.interval_rounding == 'increment-at-time') {
-								Ti.API.info('here--------0.21' + calculation_row.increment_at_time);
+								//Ti.API.info('here--------0.21' + calculation_row.increment_at_time);
 								at_time = calculation_row.increment_at_time;
 								start_timestamp = Number(start_timestamp);
 								relative_increment_time = at_time = mktime(0, 0, 0, date('n', start_timestamp), date('j', start_timestamp), date('Y', start_timestamp));
-								Ti.API.info('here--------0.22' + relative_increment_time + "," + end_timestamp);
+								//Ti.API.info('here--------0.22' + relative_increment_time + "," + end_timestamp);
 								day_count = 0;
 								if (relative_increment_time < start_timestamp) {
 									relative_increment_time += (3600 * 24);
-									Ti.API.info('here--------0.23' + relative_increment_time);
+									//Ti.API.info('here--------0.23' + relative_increment_time);
 								}
 
 								while (relative_increment_time <= end_timestamp) {
@@ -4171,67 +4334,67 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 			}
 
 			if (calculation_row.field_name_2 != null && calculation_row.field_name_2 != "") {
-				Ti.API.info('here--------1' + calculation_row.field_name_2);
+				//Ti.API.info('here--------1' + calculation_row.field_name_2);
 				if (calculated_field_cache[calculation_row.field_name_1] != null) {
 					field_2_multiplier = calculated_field_cache[calculation_row.field_name_2];
-					Ti.API.info('here--------2' + field_2_multiplier);
+					//Ti.API.info('here--------2' + field_2_multiplier);
 				} else if (calculation_row.type == 'parent_field_value') {
 					parent_field = calculation_row.parent_field;
-					Ti.API.info('here--------3' + parent_field);
+					//Ti.API.info('here--------3' + parent_field);
 					if (entity[parent_field] != null && entity[parent_field][0]['nid'] != null) {
 						parent_node = node_load(db_display, entity[parent_field][0]['nid']);
-						Ti.API.info('here--------4' + parent_field);
+						//Ti.API.info('here--------4' + parent_field);
 						if (parent_node.rowCount > 0 && parent_node.fieldByName(calculation_row.field_name_2) != null) {
 							field_2_multiplier = parent_node.fieldByName(calculation_row.field_name_2);
-							Ti.API.info('here--------5' + field_2_multiplier);
+							//Ti.API.info('here--------5' + field_2_multiplier);
 						}
 					}
 				} else if (entity[calculation_row.field_name_2] != null && entity[calculation_row.field_name_2][0]['value'] != null) {
 					field_2_multiplier = entity[calculation_row.field_name_2][0]['value'];
-					Ti.API.info('here--------6' + field_2_multiplier);
+					//Ti.API.info('here--------6' + field_2_multiplier);
 				}
 			}
 
 			if (calculation_row.numeric_multiplier != null && calculation_row.numeric_multiplier != "") {
 				numeric_multiplier = Number(calculation_row.numeric_multiplier);
-				Ti.API.info('here--------7' + numeric_multiplier);
+				//Ti.API.info('here--------7' + numeric_multiplier);
 			}
 
 			var zero = false;
 
 			if (calculation_row.criteria != null && calculation_row.criteria.search_criteria != null) {
-				Ti.API.info('here--------8' + calculation_row.criteria);
+				//Ti.API.info('here--------8' + calculation_row.criteria);
 				if (!list_search_node_matches_search_criteria(win, db_display, entity, calculation_row.criteria, content)) {
-					Ti.API.info('here--------9');
+					//Ti.API.info('here--------9');
 					zero = true;
 				}
 			}
 
 			var value = 0;
 			if (field_1_multiplier == 0 && calculation_row.field_name_1 != null && calculation_row.field_name_1 != "") {
-				Ti.API.info('here--------10');
+				//Ti.API.info('here--------10');
 				zero = true;
 			} else if (value == 0 && field_1_multiplier != 0) {
-				Ti.API.info('here--------11');
+				//Ti.API.info('here--------11');
 				value = field_1_multiplier;
 			}
 
 			if (field_2_multiplier == 0 && calculation_row.field_name_2 != null && calculation_row.field_name_2 != "") {
-				Ti.API.info('here--------12');
+				//Ti.API.info('here--------12');
 				zero = true;
 			} else if (value == 0 && field_2_multiplier != 0) {
-				Ti.API.info('here--------13');
+				//Ti.API.info('here--------13');
 				value = Number(field_2_multiplier);
 			} else if (value != 0 && field_2_multiplier != 0) {
-				Ti.API.info('here--------14');
+				//Ti.API.info('here--------14');
 				value *= Number(field_2_multiplier);
 			}
 
 			if (value == 0 && numeric_multiplier != 0) {
-				Ti.API.info('here--------15');
+				//Ti.API.info('here--------15');
 				value = Number(numeric_multiplier);
 			} else if (value != 0 && numeric_multiplier != 0) {
-				Ti.API.info('here--------16');
+				//Ti.API.info('here--------16');
 				value *= Number(numeric_multiplier);
 			}
 
@@ -4240,7 +4403,7 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 			// zero = false;
 			// }
 			if (zero) {
-				Ti.API.info('here--------18');
+				//Ti.API.info('here--------18');
 				value = 0;
 			}
 
@@ -4253,7 +4416,7 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 			//alert('numeric_multiplier : ' + numeric_multiplier);
 			//alert('Value : ' + value);
 			final_value += Number(value);
-			Ti.API.info('here--------19' + final_value);
+			//Ti.API.info('here--------19' + final_value);
 		}
 		//	alert("final value: " + final_value);
 		return new Array({
@@ -4726,22 +4889,22 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 		var user;
 		var row_matches = [];
 		if (criteria.search_criteria != null && criteria.search_criteria != "") {
-			Ti.API.info('here--------A.1');
+			//Ti.API.info('here--------A.1');
 			var instances = omadi_fields_get_fields(win, db_display);
-			Ti.API.info('here--------A.2');
+			//Ti.API.info('here--------A.2');
 			usort(criteria['search_criteria'], '_list_search_criteria_search_order');
 			for (var criteria_index in criteria.search_criteria) {
-				Ti.API.info('here--------A.3' + criteria.search_criteria[criteria_index]);
+				//Ti.API.info('here--------A.3' + criteria.search_criteria[criteria_index]);
 				var criteria_row = criteria.search_criteria[criteria_index];
 				row_matches[criteria_index] = false;
 				var field_name = criteria_row.field_name;
-				Ti.API.info('here--------A.4' + field_name);
+				//Ti.API.info('here--------A.4' + field_name);
 				if (instances[field_name] != null) {
 					var search_field = instances[field_name];
-					Ti.API.info('here--------A.5' + search_field['type']);
+					//Ti.API.info('here--------A.5' + search_field['type']);
 					var node_values = [];
 					if (search_field['type'] == 'datestamp') {
-						Ti.API.info('here--------A.6' + search_field['type']);
+						//Ti.API.info('here--------A.6' + search_field['type']);
 						if ((field_name == 'uid' || field_name == 'created' || field_name == 'changed_uid') && win.nid != null & win.nid != "") {
 							var node = db_display.execute('SELECT ' + field_name + ' from node WHERE nid="' + win.nid + '";');
 							if (field_name == 'uid') {
@@ -4749,14 +4912,14 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 							}
 							node_values.push(node.fieldByName(field_name));
 						} else {
-							Ti.API.info('here--------A.7');
+							//Ti.API.info('here--------A.7');
 							if (entity[field_name] != null) {
-								Ti.API.info('here--------A.8');
+								//Ti.API.info('here--------A.8');
 								for (idx in entity[field_name]) {
-									Ti.API.info('here--------A.9' + entity[field_name][idx]);
+									//Ti.API.info('here--------A.9' + entity[field_name][idx]);
 									var elements = entity[field_name][idx];
 									if (elements['value'] != null && elements['value'] != "") {
-										Ti.API.info('here--------A.10' + elements['value']);
+										//Ti.API.info('here--------A.10' + elements['value']);
 										node_values.push(elements['value']);
 									}
 								}
@@ -4768,111 +4931,111 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 
 						var search_value = criteria_row.value;
 						var search_operator = criteria_row.operator;
-						Ti.API.info('here--------A.11' + search_value + "," + search_operator);
+						//Ti.API.info('here--------A.11' + search_value + "," + search_operator);
 
 						if (in_array(search_operator, Array('after-time', 'before-time', 'between-time'))) {
-							Ti.API.info('here--------A.12');
+							//Ti.API.info('here--------A.12');
 							var search_time_value = Number(search_value.time);
-							Ti.API.info('here--------A.12' + search_time_value);
+							//Ti.API.info('here--------A.12' + search_time_value);
 							var compare_times = new Array();
 							for (var value_index in node_values) {
 								compare_times[value_index] = search_time_value + mktime(0, 0, 0, date('n', Number(node_values[value_index])), date('j', Number(node_values[value_index])), date('Y', Number(node_values[value_index])));
-								Ti.API.info('here--------A.13' + compare_times[value_index] + "," + node_values[value_index]);
+								//Ti.API.info('here--------A.13' + compare_times[value_index] + "," + node_values[value_index]);
 							}
 
 							if (search_operator == 'after-time') {
-								Ti.API.info('here--------A.14' + search_operator);
+								//Ti.API.info('here--------A.14' + search_operator);
 								for (var value_index in node_values) {
-									Ti.API.info('here--------A.15' + node_values[value_index] + "," + compare_times[value_index]);
+									//Ti.API.info('here--------A.15' + node_values[value_index] + "," + compare_times[value_index]);
 									if (node_values[value_index] > compare_times[value_index]) {
-										Ti.API.info('here--------A.16');
+										//Ti.API.info('here--------A.16');
 										row_matches[criteria_index] = true;
 									}
 								}
 							} else if (search_operator == 'before-time') {
-								Ti.API.info('here--------A.17');
+								//Ti.API.info('here--------A.17');
 								for (var value_index in node_values) {
-									Ti.API.info('here--------A.18');
+									//Ti.API.info('here--------A.18');
 									if (node_values[value_index] < compare_times[value_index]) {
-										Ti.API.info('here--------A.19');
+										//Ti.API.info('here--------A.19');
 										row_matches[criteria_index] = true;
 									}
 								}
 							} else if (search_operator == 'between-time') {
-								Ti.API.info('here--------A.20');
+								//Ti.API.info('here--------A.20');
 								var search_time_value2 = search_value.time2;
-								Ti.API.info('here--------A.21');
+								//Ti.API.info('here--------A.21');
 								var compare_times2 = new Array();
 								for (var value_index in node_values) {
 
 									compare_times2[value_index] = search_time_value2 + mktime(0, 0, 0, date('n', Number(node_values[value_index])), date('j', Number(node_values[value_index])), date('Y', Number(node_values[value_index])));
-									Ti.API.info('here--------A.22' + compare_times2[value_index] + "," + node_values[value_index]);
+									//Ti.API.info('here--------A.22' + compare_times2[value_index] + "," + node_values[value_index]);
 								}
 
 								if (search_time_value < search_time_value2) {
-									Ti.API.info('here--------A.23');
+									//Ti.API.info('here--------A.23');
 									// Like between 5:00PM - 8:00PM
 									for (var value_index in node_values) {
-										Ti.API.info('here--------A.24');
+										//Ti.API.info('here--------A.24');
 										if (node_values[value_index] >= compare_times[value_index] && node_values[value_index] < compare_times2[value_index]) {
-											Ti.API.info('here--------A.25');
+											//Ti.API.info('here--------A.25');
 											row_matches[criteria_index] = true;
 										}
 									}
 								} else {
-									Ti.API.info('here--------A.25----1');
+									//Ti.API.info('here--------A.25----1');
 									// Like between 8:00PM - 4:00AM
 									for (var value_index in node_values) {
-										Ti.API.info('here--------A.26');
+										//Ti.API.info('here--------A.26');
 										if (node_values[value_index] >= compare_times[value_index] || node_values[value_index] < compare_times2[value_index]) {
-											Ti.API.info('here--------A.26---1');
+											//Ti.API.info('here--------A.26---1');
 											row_matches[criteria_index] = true;
 										}
 									}
 								}
 							}
 						} else if (search_operator == '__blank') {
-							Ti.API.info('here--------A.26---2');
+							//Ti.API.info('here--------A.26---2');
 							row_matches[criteria_index] = true;
 							for (var value_index in node_values) {
-								Ti.API.info('here--------A.26---3');
+								//Ti.API.info('here--------A.26---3');
 								node_value = node_values[value_index];
 								if (node_value != null && node_value != "") {
-									Ti.API.info('here--------A.26---4');
+									//Ti.API.info('here--------A.26---4');
 									row_matches[criteria_index] = false;
 								}
 
 							}
 						} else if (search_operator == '__filled') {
-							Ti.API.info('here--------A.26---5');
+							//Ti.API.info('here--------A.26---5');
 							for (var value_index in node_values) {
-								Ti.API.info('here--------A.26---6');
+								//Ti.API.info('here--------A.26---6');
 								node_value = node_values[value_index];
 								if (node_value != null && node_value != "") {
-									Ti.API.info('here--------A.26---7');
+									//Ti.API.info('here--------A.26---7');
 									row_matches[criteria_index] = true;
 								}
 
 							}
 						} else if (search_operator == 'weekday') {
-							Ti.API.info('here--------A.27' + search_value.weekday);
+							//Ti.API.info('here--------A.27' + search_value.weekday);
 							var weekdays = search_value.weekday;
 							if (!isArray(search_value.weekday)) {
-								Ti.API.info('here--------A.28' + search_value.weekday);
+								//Ti.API.info('here--------A.28' + search_value.weekday);
 								weekdays = [];
 								for (var key in search_value.weekday) {
-									Ti.API.info('here--------A.29' + search_value.weekday);
+									//Ti.API.info('here--------A.29' + search_value.weekday);
 									if (search_value.weekday.hasOwnProperty(key)) {
-										Ti.API.info('here--------A.30' + key);
+										//Ti.API.info('here--------A.30' + key);
 										weekdays.push(key);
 									}
 								}
 							}
 
 							for (var value_index in node_values) {
-								Ti.API.info('here--------A.31' + node_values[value_index] + ", " + date('w', Number(node_values[value_index])), weekdays);
+								//Ti.API.info('here--------A.31' + node_values[value_index] + ", " + date('w', Number(node_values[value_index])), weekdays);
 								if (in_array(date('w', Number(node_values[value_index])), weekdays)) {
-									Ti.API.info('here--------A.32' + date('w', Number(node_values[value_index])), weekdays);
+									//Ti.API.info('here--------A.32' + date('w', Number(node_values[value_index])), weekdays);
 									row_matches[criteria_index] = true;
 								}
 							}
@@ -4902,13 +5065,13 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 					 */
 
 					else {
-						Ti.API.info('here--------A.33');
+						//Ti.API.info('here--------A.33');
 						// if(entity[field_name] == null) {
 						// entity[field_name] = null;
 						// }
 						search_value = criteria_row.value != null && criteria_row.value != "" ? criteria_row.value : null;
 						search_operator = criteria_row.operator;
-						Ti.API.info('here--------A.34' + search_value + "," + search_operator);
+						//Ti.API.info('here--------A.34' + search_value + "," + search_operator);
 						switch(search_field['type']) {
 							case 'text':
 							case 'text_long':
@@ -4994,48 +5157,48 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 
 								break;
 							case 'calculation_field':
-								Ti.API.info('here--------A.35---1');
+								//Ti.API.info('here--------A.35---1');
 								var calculation_values = _calculation_field_get_values(win, db_display, content[entity[field_name][0]['reffer_index']], entity);
-								Ti.API.info('here--------A.35' + calculation_values);
+								//Ti.API.info('here--------A.35' + calculation_values);
 								node_values.push(calculation_values[0].final_value);
 
 								for (var value_index in node_values) {
 									node_value = node_values[value_index];
-									Ti.API.info('here--------A.36' + node_value);
+									//Ti.API.info('here--------A.36' + node_value);
 									switch(search_operator) {
 
 										case '>':
-											Ti.API.info('here--------A.37' + node_value + "," + search_value);
+											//Ti.API.info('here--------A.37' + node_value + "," + search_value);
 											if (node_value > search_value) {
 												row_matches[criteria_index] = true;
 											}
 											break;
 										case '>=':
-											Ti.API.info('here--------A.38' + node_value + "," + search_value);
+											//Ti.API.info('here--------A.38' + node_value + "," + search_value);
 											if (node_value >= search_value) {
 												row_matches[criteria_index] = true;
 											}
 											break;
 										case '!=':
-											Ti.API.info('here--------A.39' + node_value + "," + search_value);
+											//Ti.API.info('here--------A.39' + node_value + "," + search_value);
 											if (node_value != search_value) {
 												row_matches[criteria_index] = true;
 											}
 											break;
 										case '<':
-											Ti.API.info('here--------A.40' + node_value + "," + search_value);
+											//Ti.API.info('here--------A.40' + node_value + "," + search_value);
 											if (node_value < search_value) {
 												row_matches[criteria_index] = true;
 											}
 											break;
 										case '<=':
-											Ti.API.info('here--------A.41' + node_value + "," + search_value);
+											//Ti.API.info('here--------A.41' + node_value + "," + search_value);
 											if (node_value <= search_value) {
 												row_matches[criteria_index] = true;
 											}
 											break;
 										default:
-											Ti.API.info('here--------A.42' + node_value + "," + search_value);
+											//Ti.API.info('here--------A.42' + node_value + "," + search_value);
 											if (node_value == search_value) {
 												row_matches[criteria_index] = true;
 											}
@@ -5164,7 +5327,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 				              
 				              break;
 							case 'user_reference':
-								Ti.API.info('here--------A.43');
+								//Ti.API.info('here--------A.43');
 								if ((field_name == 'uid' || field_name == 'created' || field_name == 'changed_uid') && win.nid != null & win.nid != "") {
 									var node = db_display.execute('SELECT ' + field_name + ' from node WHERE nid="' + win.nid + '";');
 									if (field_name == 'uid') {
@@ -5172,12 +5335,12 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 									}
 									node_values.push(node.fieldByName(field_name));
 								} else {
-									Ti.API.info('here--------A.44');
+									//Ti.API.info('here--------A.44');
 									for (idx in entity[field_name]) {
 										var elements = entity[field_name][idx];
-										Ti.API.info('here--------A.45' + elements);
+										//Ti.API.info('here--------A.45' + elements);
 										if (elements['uid'] != null && elements['uid'] != "") {
-											Ti.API.info('here--------A.43' + elements['uid']);
+											//Ti.API.info('here--------A.43' + elements['uid']);
 											node_values.push(elements['value']);
 										}
 									}
@@ -5189,11 +5352,11 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 								// Make sure the search value is an array
 								var search_value_arr = [];
 								if (!isArray(search_value)) {
-									Ti.API.info('here--------A.44' + search_value);
+									//Ti.API.info('here--------A.44' + search_value);
 									for (var key in search_value) {
-										Ti.API.info('here--------A.45' + key);
+										//Ti.API.info('here--------A.45' + key);
 										if (search_value.hasOwnProperty(key)) {
-											Ti.API.info('here--------A.46' + key);
+											//Ti.API.info('here--------A.46' + key);
 											search_value_arr[key] = key;
 										}
 									}
@@ -5201,34 +5364,34 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 								}
 
 								if (search_operator != null && search_operator == '!=') {
-									Ti.API.info('here--------A.47' + search_value['__null']);
+									//Ti.API.info('here--------A.47' + search_value['__null']);
 									row_matches[criteria_index] = true;
 									if (search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
-										Ti.API.info('here--------A.48');
+										//Ti.API.info('here--------A.48');
 										row_matches[criteria_index] = false;
 									} else {
-										Ti.API.info('here--------A.49');
+										//Ti.API.info('here--------A.49');
 										for (idx in search_value) {
-											Ti.API.info('here--------A.50' + search_value[idx] + row_matches[criteria_index] + criteria_index);
+											//Ti.API.info('here--------A.50' + search_value[idx] + row_matches[criteria_index] + criteria_index);
 											chosen_value = search_value[idx];
 											if (in_array(chosen_value, node_values)) {
-												Ti.API.info('here--------A.51' + chosen_value);
+												//Ti.API.info('here--------A.51' + chosen_value);
 												row_matches[criteria_index] = false;
 											}
 										}
 									}
 								} else {
-									Ti.API.info('here--------A.52');
+									//Ti.API.info('here--------A.52');
 									if (search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
-										Ti.API.info('here--------A.53');
+										//Ti.API.info('here--------A.53');
 										row_matches[criteria_index] = true;
 									} else {
-										Ti.API.info('here--------A.54');
+										//Ti.API.info('here--------A.54');
 										for (idx in search_value) {
-											Ti.API.info('here--------A.55' + search_value[idx]);
+											//Ti.API.info('here--------A.55' + search_value[idx]);
 											chosen_value = search_value[idx];
 											if (in_array(chosen_value, node_values)) {
-												Ti.API.info('here--------A.56' + chosen_value);
+												//Ti.API.info('here--------A.56' + chosen_value);
 												row_matches[criteria_index] = true;
 											}
 										}
@@ -5355,30 +5518,30 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 			}
 
 			if (count_arr_obj(criteria['search_criteria']) == 1) {
-				Ti.API.info('here--------A.57' + row_matches[criteria_index]);
+				//Ti.API.info('here--------A.57' + row_matches[criteria_index]);
 				var retval = row_matches[criteria_index];
 			} else {
-				Ti.API.info('here--------A.58');
+				//Ti.API.info('here--------A.58');
 				// Group each criteria row into groups of ors with the matching result of each or
 				var and_groups = new Array();
 				var and_group_index = 0;
 				and_groups[and_group_index] = new Array();
 				//print_r($criteria['search_criteria']);
 				for (criteria_index in criteria['search_criteria']) {
-					Ti.API.info('here--------A.59' + criteria_index);
+					//Ti.API.info('here--------A.59' + criteria_index);
 					criteria_row = criteria['search_criteria'][criteria_index];
 					if (criteria_index == 0) {
-						Ti.API.info('here--------A.60' + row_matches[criteria_index]);
+						//Ti.API.info('here--------A.60' + row_matches[criteria_index]);
 						//and_groups[and_group_index][0] = row_matches[criteria_index];
 						and_groups[and_group_index].push(row_matches[criteria_index]);
 					} else {
-						Ti.API.info('here--------A.61');
+						//Ti.API.info('here--------A.61');
 						if (criteria_row['row_operator'] == null || criteria_row['row_operator'] != 'or') {
-							Ti.API.info('here--------A.62');
+							//Ti.API.info('here--------A.62');
 							and_group_index++;
 							and_groups[and_group_index] = new Array();
 						}
-						Ti.API.info('here--------A.63' + row_matches[criteria_index]);
+						//Ti.API.info('here--------A.63' + row_matches[criteria_index]);
 						and_groups[and_group_index].push(row_matches[criteria_index]);
 						//and_groups[and_group_index][0] = row_matches[criteria_index];
 					}
@@ -5386,17 +5549,17 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 
 				// Get the final result, making sure each and group is TRUE
 				retval = true;
-				Ti.API.info('here--------A.64' + and_groups.length);
+				//Ti.API.info('here--------A.64' + and_groups.length);
 				for (idx in and_groups) {
-					Ti.API.info('here--------A.65');
+					//Ti.API.info('here--------A.65');
 					and_group = and_groups[idx];
 					and_group_match = false;
 					for (idx1 in and_group) {
-						Ti.API.info('here--------A.66' + and_group[idx1]);
+						//Ti.API.info('here--------A.66' + and_group[idx1]);
 						or_match = and_group[idx1];
 						// Make sure at least one item in an and group is true (or the only item is true)
 						if (or_match) {
-							Ti.API.info('here--------A.67');
+							//Ti.API.info('here--------A.67');
 							and_group_match = true;
 							break;
 						}
@@ -5404,13 +5567,13 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 
 					// If one and group doesn't match the whole return value of this function is false
 					if (!and_group_match) {
-						Ti.API.info('here--------A.68');
+						//Ti.API.info('here--------A.68');
 						retval = false;
 						break;
 					}
 				}
 			}
-			Ti.API.info('here--------A.69' + retval);
+			//Ti.API.info('here--------A.69' + retval);
 			return retval;
 		}
 

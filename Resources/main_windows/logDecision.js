@@ -58,43 +58,38 @@ var labelIn = Titanium.UI.createButton({
 });    
 
 labelOut.addEventListener('click',function (){
-	if(!isUpdating()){
-		Ti.App.fireEvent('upload_gps_locations');
-		showIndicator("Logging you out...");
-		
-		indLog.log.open('POST', indLog.picked+'/js-sync/sync/logout.json');
-		
-		//Timeout until error:
-		indLog.log.setTimeout(10000);
-		
-		//Header parameters
-		indLog.log.setRequestHeader("Content-Type", "application/json");
-		
-		indLog.log.onload = function(e) {
-			Ti.App.Properties.setString('logStatus', "You have successfully logged out");
-			Ti.API.info('From Functions ... Value is : '+ Ti.App.Properties.getString('logStatus'));
-			if( getDeviceTypeIndentifier() == "android"){
-				Ti.App.fireEvent('stop_gps');				
-			}
-			Ti.App.fireEvent('free_login');
-			
-			indLog._parent.close();
-			hideIndicator();
-			indLog.log.abort();
-			indLog.close();
-			
-		}
+	Ti.App.fireEvent('upload_gps_locations');
+	showIndicator("Logging you out...");
 	
-		indLog.log.onerror = function(e) {
-			hideIndicator();
-			Ti.API.info("Failed to log out");
-			alert("Failed to log out, please try again");
+	indLog.log.open('POST', indLog.picked+'/js-sync/sync/logout.json');
+	
+	//Timeout until error:
+	indLog.log.setTimeout(10000);
+	
+	//Header parameters
+	indLog.log.setRequestHeader("Content-Type", "application/json");
+	
+	indLog.log.onload = function(e) {
+		Ti.App.Properties.setString('logStatus', "You have successfully logged out");
+		Ti.API.info('From Functions ... Value is : '+ Ti.App.Properties.getString('logStatus'));
+		if( getDeviceTypeIndentifier() == "android"){
+			Ti.App.fireEvent('stop_gps');				
 		}
-		indLog.log.send();
+		Ti.App.fireEvent('free_login');
+		
+		indLog._parent.close();
+		hideIndicator();
+		indLog.log.abort();
+		indLog.close();
+		
 	}
-	else{
-		alert("Connection was busy, please try again");
+
+	indLog.log.onerror = function(e) {
+		hideIndicator();
+		Ti.API.info("Failed to log out");
+		alert("Failed to log out, please try again");
 	}
+	indLog.log.send();
 });
 
 labelIn.addEventListener('click',function (){
