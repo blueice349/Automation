@@ -25,7 +25,7 @@ var win1 = Titanium.UI.createWindow({
 	backgroundColor: '#EEEEEE'
 });
 
-var OMADI_VERSION = "omadiDb1583";
+var OMADI_VERSION = "omadiDb1587";
 
 Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION);
 var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );
@@ -206,6 +206,14 @@ win1.addEventListener('focus', function(){
 	portal.color = new_color;
 	tf1.color	 = new_color;
 	tf2.value	 = "";
+
+	//iOS only	
+	if(PLATFORM != 'android'){
+		i_scroll_page.setContentOffset({
+			x : i_scroll_page.getContentOffset().x,
+			y : "25dp"
+		}, {animated:true} );
+	}
 });
 
 //
@@ -367,6 +375,7 @@ else{
 		right: '15%'
 	});
 
+/*
 	setTimeout(function(){
 		if(PLATFORM != 'android'){
 			i_scroll_page.setContentOffset({
@@ -374,11 +383,11 @@ else{
 				y : "25dp"
 			});
 		}else{
-			i_scroll_page.top = i_scroll_page.getContentOffset().x;
-			i_scroll_page.left = "0";
+			i_scroll_page.setContentOffset({y : "25dp" }, {animated:false});
 		}
 		
 	},500);
+*/
 
 }
 

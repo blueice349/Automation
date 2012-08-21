@@ -1326,11 +1326,49 @@ function getJSON() {
 							// Token that splits each element contained into the array: 'j8Oc2s1E'
 							var decoded_values = decoded.split("j8Oc2s1E");
 							Ti.API.info('11 '+decoded_values);
-							returning_json += ', "' + node_fields.fieldByName('field_name') + '": [ \"' + decoded_values.join("\" , \"") + '\" ] ';
+							if (node_fields.fieldByName('field_name').indexOf('photo') != -1){
+								if (decoded_values.length){
+									if (decoded_values.length == 1){
+										if (decoded_values[0] == null || decoded_values[0] == "null" || decoded_values[0] == "" || isNumber(decoded_values[0]) === false){
+											Ti.API.info('Nothing to add, pictures not taken');
+										}
+										else{
+											returning_json += ', "' + node_fields.fieldByName('field_name') + '": [ \"' + decoded_values.join("\" , \"") + '\" ] ';
+										}
+									}
+									else{
+										var cp_decoded_values = decoded_values.slice();
+										for (var y in decoded_values){
+											if (decoded_values[y] == null || decoded_values[y] == "null" || decoded_values[y] == "" || isNumber(decoded_values[y]) === false){
+												cp_decoded_values.splice(y,1);
+											}
+										}
+										returning_json += ', "' + node_fields.fieldByName('field_name') + '": [ \"' + cp_decoded_values.join("\" , \"") + '\" ] ';
+									}
+								}
+								else{
+									Ti.API.info('Nothing to add, pictures do not exit');
+								}
+							}
+							else{
+								returning_json += ', "' + node_fields.fieldByName('field_name') + '": [ \"' + decoded_values.join("\" , \"") + '\" ] ';								
+							}
+
 							Ti.API.info('11.1 '+returning_json);
 						} else {
 							Ti.API.info('12');
-							returning_json += ', "' + node_fields.fieldByName('field_name') + '": "' + selected_node.fieldByName(node_fields.fieldByName('field_name')) + '"';
+							if (node_fields.fieldByName('field_name').indexOf('photo') != -1){
+								if ( selected_node.fieldByName(node_fields.fieldByName('field_name')) == null || selected_node.fieldByName(node_fields.fieldByName('field_name'))== "null" || selected_node.fieldByName(node_fields.fieldByName('field_name')) == "" || isNumber( selected_node.fieldByName(node_fields.fieldByName('field_name'))) === false){
+									Ti.API.info('Nothing to add, pictures not taken');
+								}
+								else{
+									returning_json += ', "' + node_fields.fieldByName('field_name') + '": "' + selected_node.fieldByName(node_fields.fieldByName('field_name')) + '"';
+								}
+							}
+							else{
+								returning_json += ', "' + node_fields.fieldByName('field_name') + '": "' + selected_node.fieldByName(node_fields.fieldByName('field_name')) + '"';
+							}
+							//returning_json += ', "' + node_fields.fieldByName('field_name') + '": "' + selected_node.fieldByName(node_fields.fieldByName('field_name')) + '"';
 							Ti.API.info('13 PRE_JSON: ' + returning_json);
 						}
 						array_cont.close();

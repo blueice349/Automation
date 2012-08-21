@@ -160,27 +160,33 @@ reinitializeBtn.addEventListener('click', function() {
 
 	dialog.addEventListener('click', function(e) {
 		if(e.index == 0) {
-			//If delete_all is present, delete all contents:
-			db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-			if(PLATFORM == "android") {
-				//Remove the database
-				db_installMe.remove();
-				db_installMe.close();
-			} else {
-				var db_file = db_installMe.getFile();
-				db_installMe.close();
-				//phisically removes the file
-				db_file.deleteFile();
+			if (isUpdating() === true){
+				
 			}
-			db_installMe = null;
-			db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-			
-			var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName()+"_GPS");
-			db_coord.execute('DELETE FROM alerts');
-			db_coord.close();
-			Ti.App.fireEvent('update_from_menu');
-			dialog.hide(); 
-			win_about.close(); 
+			else{
+				
+				//If delete_all is present, delete all contents:
+				db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+				if(PLATFORM == "android") {
+					//Remove the database
+					db_installMe.remove();
+					db_installMe.close();
+				} else {
+					var db_file = db_installMe.getFile();
+					db_installMe.close();
+					//phisically removes the file
+					db_file.deleteFile();
+				}
+				db_installMe = null;
+				db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+				
+				var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName()+"_GPS");
+				db_coord.execute('DELETE FROM alerts');
+				db_coord.close();
+				Ti.App.fireEvent('update_from_menu');
+				dialog.hide(); 
+				win_about.close();
+			} 
 		}
 	});
 
