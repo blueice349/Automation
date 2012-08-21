@@ -42,6 +42,7 @@ function cleanWindow( winObj )
             winObj.remove(winObj.children[i-1]);
         }
     }
+    Ti.API.info('------- Views got removed! ------');
 }
 message_center.get_win = function() {
 	return win;

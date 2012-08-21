@@ -3569,17 +3569,27 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				a_msg.show();
 
 				a_msg.addEventListener('click', function(e) {
-					if (e.cancel === false) {
-						Ti.API.info("Before update");
-						setTimeout(function() {
-							Ti.API.info("Triggering update");
-							progress = null;
-							progress = new Progress_install(0, 100);
-							installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
-						}, 800);
-					} else {
-						db_installMe.close();
-						unsetUse();
+					if (PLATFORM == "android"){
+						if (e.index != 1) {
+							setTimeout(function() {
+								progress = null;
+								progress = new Progress_install(0, 100);
+								installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
+							}, 800);
+						} else {
+							unsetUse();
+						}
+					}
+					else{
+						if (e.cancel === false) {
+							setTimeout(function() {
+								progress = null;
+								progress = new Progress_install(0, 100);
+								installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
+							}, 800);
+						} else {
+							unsetUse();
+						}
 					}
 				});
 			} else {
@@ -3609,14 +3619,27 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 			a_msg.show();
 
 			a_msg.addEventListener('click', function(e) {
-				if (e.cancel === false) {
-					setTimeout(function() {
-						progress = null;
-						progress = new Progress_install(0, 100);
-						installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
-					}, 800);
-				} else {
-					unsetUse();
+				if (PLATFORM == "android"){
+					if (e.index != 1) {
+						setTimeout(function() {
+							progress = null;
+							progress = new Progress_install(0, 100);
+							installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
+						}, 800);
+					} else {
+						unsetUse();
+					}
+				}
+				else{
+					if (e.cancel === false) {
+						setTimeout(function() {
+							progress = null;
+							progress = new Progress_install(0, 100);
+							installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
+						}, 800);
+					} else {
+						unsetUse();
+					}
 				}
 			});
 		}
