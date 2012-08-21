@@ -8294,13 +8294,13 @@ function bottomButtons(actualWindow) {
 				title : 'Actions',
 				style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
 			});
-			btn_tt.push('Save');			
 			
 			actions.addEventListener('click', function() {
 
 				var btn_tt = [];
 				var btn_id = [];
-
+				
+				btn_tt.push('Save');		
 				
 				if (win.nid != null){
 					var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
@@ -8408,7 +8408,7 @@ function bottomButtons(actualWindow) {
 			actualWindow.add(toolbar);
 		}
 	} catch(evt) {
-
+		Ti.API.info("TOP BAR ERROR = "+evt);
 	}
 };
 
