@@ -765,5 +765,8 @@ function unlock_screen(){
 }
 
 Ti.App.addEventListener('update_from_menu', function(){
+	listView.setData([]);
 	checkUpdate('from_menu');
 });
+
+

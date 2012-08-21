@@ -8294,6 +8294,7 @@ function bottomButtons(actualWindow) {
 				title : 'Actions',
 				style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
 			});
+			btn_tt.push('Save');			
 			
 			actions.addEventListener('click', function() {
 
@@ -8342,8 +8343,6 @@ function bottomButtons(actualWindow) {
 					db_act.close();
 				}
 
-				
-				btn_tt.push('Save');
 				btn_tt.push('Draft');
 				btn_tt.push('Cancel');
 				
@@ -8353,7 +8352,7 @@ function bottomButtons(actualWindow) {
 		
 				postDialog.addEventListener('click', function(ev) {
 					if (btn_tt.length == 4){
-						if (ev.index  == 0){
+						if (ev.index  == 1){
 							//openEditScreen(btn_id[0]);
 							Ti.API.info('=======> '+btn_id[0]);	
 							try {
@@ -8363,7 +8362,7 @@ function bottomButtons(actualWindow) {
 								//To catch error to resolve issue #916
 							}
 						}
-						else if (ev.index == 1) {
+						else if (ev.index == 0) {
 								try {
 									keep_info('normal', false);
 								} catch(e) {
