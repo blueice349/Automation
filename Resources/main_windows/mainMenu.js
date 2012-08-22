@@ -44,6 +44,8 @@ function checkUpdate(evt){
 		setUse();
 		if (evt == 'from_menu'){
 			//instance progress bar object:
+			var d = new Date();
+			Titanium.App.Properties.setDouble("lastSynced", d.getTime());
 			var pb = new Progress_install(0, 100);
 			Ti.API.info(pb);
 		}
