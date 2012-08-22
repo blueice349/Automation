@@ -11,6 +11,7 @@
  * @author Joseandro
  */ 
 
+
 Ti.include('/main_windows/create_or_edit_node.js');
 Ti.include('/main_windows/message_center.js');
 Ti.include('/lib/functions.js'); 
@@ -42,6 +43,8 @@ function checkUpdate(evt){
 		setUse();
 		if (evt == 'from_menu'){
 			//instance progress bar object:
+			var d = new Date();
+			Titanium.App.Properties.setDouble("lastSynced", d.getTime());
 			var pb = new Progress_install(0, 100);
 			Ti.API.info(pb);
 		}
