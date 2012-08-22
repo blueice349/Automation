@@ -39,5 +39,7 @@
             <uses-sdk android:minSdkVersion="7"/>
         </manifest>
     </android>
-    <modules/>
+    <modules>
+        <module platform="android" version="1.0">com.omadi.camera</module>
+    </modules>
 </ti:app>

@@ -41,6 +41,7 @@ var saveCounter = 0;
 
 var ONE_MB = 524258;
 
+var camera = require('com.omadi.camera');
 var create_or_edit_node = {};
 
 create_or_edit_node.getWindow = function() {
@@ -7949,9 +7950,59 @@ create_or_edit_node.loadUI = function() {
 	toolActInd.hide();
 }
 
+camera.addEventListener("successCameraCapture", function(e){
+setTimeout(function(evt){
+	var actInd = Ti.UI.createActivityIndicator();
+				actInd.font = {
+					fontFamily : 'Helvetica Neue',
+					fontSize : 15,
+					fontWeight : 'bold'
+				};
+				actInd.color = 'white';
+				actInd.message = 'Please wait...';
+				actInd.show();
+	 var imagescr = Ti.Utils.base64decode(e.media);
+	   var capImg = Ti.UI.createImageView({
+		  image: imagescr,
+		  height: 'auto',
+		  width: 'auto'
+	  });
+	 var capImgBlob = capImg.toBlob();
+	 Ti.API.info(capImgBlob.height + ", " + capImgBlob.width + "," + capImgBlob.length);
+	
+	 if(capImgBlob.length > ONE_MB) {
+		 e.source.imageData = reduceImageSize(capImgBlob, 500, 700).image;
+	 } else {
+		 e.source.imageData = capImgBlob;
+	 }
+	 e.source.image = e.source.imageData;
+	 e.source.bigImg = e.source.imageData;
+	 e.source.mimeType = "/jpeg";
+	 if(e.source.cardinality > 1 || e.source.cardinality < 0) {
+	 	 if(e.source.cardinality < 1) {
+			 arrImages = createImage(e.source.scrollView.addButton.o_index, e.source.scrollView.arrImages, defaultImageVal, e.source.scrollView, false);
+			 e.source.scrollView.arrImages = arrImages;
+			 e.source.scrollView.addButton.o_index += 1;
+			 newSource = arrImages.length - 1;
+		 } else {
+			 if(e.source.private_index == e.source.cardinality - 1) {
+				 return;
+			 }
+			 newSource = (e.source.private_index == e.source.cardinality - 1) ? 0 : e.source.private_index + 1;
+		 }
+ 		 e.source = e.source.scrollView.arrImages[newSource];
+ 		 actInd.hide();
+ 		 openCamera(e)
+ 	 }
+}, 200);	
+	 
+});
 
 // To open camera
 function openCamera(e) {
+if(PLATFORM == 'android'){
+	camera.openCamera({"event": e.source, "abc": function(e){}});
+}else{
 	try {
 		var overlayView;
 		if(PLATFORM != 'android'){
@@ -8000,7 +8051,6 @@ function openCamera(e) {
 				// If image size greater than 1MB we will reduce th image else take as it is.
 				if (event.media.length > ONE_MB) {
 					e.source.imageData = reduceImageSize(event.media, 500, 700).image;
-					alert(e.source.imageData.height + "," + e.source.imageData.width);
 				} else {
 					e.source.imageData = event.media;
 				}
@@ -8044,6 +8094,8 @@ function openCamera(e) {
 	} catch(ex) {
 
 	}
+
+}
 }
 
 function createImage(o_index, arrImages, data, scrollView, updated) {
