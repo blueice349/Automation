@@ -1,0 +1,18 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0
+apiversion: 2
+description: My module
+author: pooja laad
+license: Specify your license
+copyright: Copyright (c) 2012 by Your Company
+
+
+# these should not be edited
+name: customcamera
+moduleid: com.omadi.camera
+guid: 54a0fe65-13a7-4e51-9a19-b6c2212efb84
+platform: android
+minsdk: 2.1.1.GA
