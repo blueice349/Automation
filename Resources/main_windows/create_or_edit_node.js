@@ -3008,8 +3008,8 @@ create_or_edit_node.loadUI = function() {
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
-										if(e.source.value.length>10){
-											e.source.value = e.source.value.substr(0,10);
+										if(e.source.my_max!= null && e.source.my_max!= "" &&  e.source.value.length>e.source.my_max){
+											e.source.value = e.source.value.substr(0,e.source.my_max);
 											e.source.blur();
 										}
 										changedContentValue(e.source);
@@ -3146,8 +3146,8 @@ create_or_edit_node.loadUI = function() {
 
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
-									if(e.source.value.length>10){
-										e.source.value = e.source.value.substr(0,10);
+									if(e.source.my_max!= null && e.source.my_max!= "" &&  e.source.value.length>=e.source.my_max){
+										e.source.value = e.source.value.substr(0,e.source.my_max);
 										e.source.blur();
 									}
 									changedContentValue(e.source);
@@ -3371,8 +3371,8 @@ create_or_edit_node.loadUI = function() {
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
-										if(e.source.value.length>10){
-											e.source.value = e.source.value.substr(0,10);
+										if(e.source.my_max!= null && e.source.my_max!= "" &&  e.source.value.length>=e.source.my_max){
+											e.source.value = e.source.value.substr(0,e.source.my_max);
 											e.source.blur();
 										}
 										changedContentValue(e.source);
@@ -3503,10 +3503,10 @@ create_or_edit_node.loadUI = function() {
 
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
-									if(e.source.value.length>10){
-											e.source.value = e.source.value.substr(0,10);
-											e.source.blur();
-										}
+									if(e.source.my_max!= null && e.source.my_max!= "" &&  e.source.value.length>=e.source.my_max){
+										e.source.value = e.source.value.substr(0,e.source.my_max);
+										e.source.blur();
+									}
 									changedContentValue(e.source);
 									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 								});
