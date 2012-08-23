@@ -161,7 +161,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 		try {
 			Ti.API.info(label[x].text + ' is required: ' + content[x].required + ' = ' + content[x].value);
 		} catch(e) {
-
+			Ti.API.info('!!!!! ERROR !!!!! '+e);
 		}
 		//Regular expression for license Plate
 		if (content[x].field_type == 'license_plate') {
@@ -185,7 +185,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 				break;
 			}
 		} else if (content[x].field_type == 'omadi_reference') {//for preparing the list of restrictions
-			Ti.API.info("--------------------content[x].nid : " + content[x].nid + "--------------------");
+			Ti.API.info("-------------------- omadi_refrence = "+content[x].value+" ... NID:  " + content[x].nid + "--------------------");
 			if (content[x].nid != null) {
 				var d = new Date();
 				var utcDate = Date.parse(d.toUTCString());
@@ -5500,7 +5500,8 @@ create_or_edit_node.loadUI = function() {
 										autocorrect: false,
 										returnKeyType: Ti.UI.RETURNKEY_DONE,
 										enabled: can_edit,
-										editable: can_edit
+										editable: can_edit,
+										touched: false
 									});
 									if(PLATFORM == 'android'){
 										content[count].backgroundImage = '../images/textfield.png'
@@ -5566,6 +5567,7 @@ create_or_edit_node.loadUI = function() {
 									});
 
 									content[count].addEventListener('focus', function(e) {
+										e.source.touched = true;
 										adjustView(e.source.my_index,e.source.top ); 
 									});
 
@@ -5574,55 +5576,57 @@ create_or_edit_node.loadUI = function() {
 									// SEARCH EVENTS
 									//
 									content[count].addEventListener('change', function(e) {
-										changedContentValue(e.source);
-										if (e.source.first_time === false) {
-											var list = e.source.terms;
-											var func = function setValueF(value_f, nid) {
-												e.source.value = value_f;
-												e.source.nid = nid;
-												Ti.API.info('Value: ' + value_f + ' NID: ' + nid);
-											}
-											if ((e.value != null) && (e.value != '')) {
-												table_data = [];
-												e.source.nid = null;
-												for (var i = 0; i < list.length; i++) {
-													var rg = new RegExp(e.source.value, 'i');
-													if (list[i].title.search(rg) != -1) {
-														//Check match
-														if (e.source.value == list[i].title) {
-															e.source.nid = list[i].nid;
-														} else {
-															e.source.nid = null;
-														}
-
-														//Create partial matching row
-														var row = Ti.UI.createTableViewRow({
-															height : getScreenHeight() * 0.10,
-															title : list[i].title,
-															nid : list[i].nid,
-															color : '#000000',
-															autocomplete_table : e.source.autocomplete_table,
-															setValueF : func,
-															textField : e.source
-														});
-														// apply rows to data array
-														table_data.push(row);
-													}
+										if (e.source.touched === true){
+											changedContentValue(e.source);
+											if (e.source.first_time === false) {
+												var list = e.source.terms;
+												var func = function setValueF(value_f, nid) {
+													e.source.value = value_f;
+													e.source.nid = nid;
+													Ti.API.info('Value: ' + value_f + ' NID: ' + nid);
 												}
-												e.source.autocomplete_table.setData(table_data);
-												e.source.autocomplete_table.scrollToTop(0, {animated: false});
-												viewContent.scrollTo(0,e.source.top);
-												if(table_data.length > 0) {
-													e.source.autocomplete_table.visible = true;
+												if ((e.value != null) && (e.value != '')) {
+													table_data = [];
+													e.source.nid = null;
+													for (var i = 0; i < list.length; i++) {
+														var rg = new RegExp(e.source.value, 'i');
+														if (list[i].title.search(rg) != -1) {
+															//Check match
+															if (e.source.value == list[i].title) {
+																e.source.nid = list[i].nid;
+															} else {
+																e.source.nid = null;
+															}
+	
+															//Create partial matching row
+															var row = Ti.UI.createTableViewRow({
+																height : getScreenHeight() * 0.10,
+																title : list[i].title,
+																nid : list[i].nid,
+																color : '#000000',
+																autocomplete_table : e.source.autocomplete_table,
+																setValueF : func,
+																textField : e.source
+															});
+															// apply rows to data array
+															table_data.push(row);
+														}
+													}
+													e.source.autocomplete_table.setData(table_data);
+													e.source.autocomplete_table.scrollToTop(0, {animated: false});
+													viewContent.scrollTo(0,e.source.top);
+													if(table_data.length > 0) {
+														e.source.autocomplete_table.visible = true;
+													} else {
+														e.source.autocomplete_table.visible = false;
+													}												
 												} else {
 													e.source.autocomplete_table.visible = false;
-												}												
+													e.source.nid = null;
+												}
 											} else {
-												e.source.autocomplete_table.visible = false;
-												e.source.nid = null;
+												e.source.first_time = false;
 											}
-										} else {
-											e.source.first_time = false;
 										}
 
 									});
@@ -5646,6 +5650,9 @@ create_or_edit_node.loadUI = function() {
 									}
 								}
 
+
+								Ti.API.info("-----------------     OMADI REFERENCE : "+aux_val.title+" NID: "+aux_val.vl);
+								
 								content[count] = Titanium.UI.createTextField({
 									hintText : field_arr[index_label][index_size].label + ' ...',
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
@@ -5675,7 +5682,8 @@ create_or_edit_node.loadUI = function() {
 									autocorrect: false,
 									returnKeyType: Ti.UI.RETURNKEY_DONE,
 									enabled: can_edit,
-									editable: can_edit
+									editable: can_edit,
+									touched: false
 								});
 								if(PLATFORM == 'android'){
 									content[count].backgroundImage = '../images/textfield.png'
@@ -5709,7 +5717,6 @@ create_or_edit_node.loadUI = function() {
 								//
 								// TABLE EVENTS
 								//
-
 								content[count].autocomplete_table.addEventListener('click', function(e) {
 									if (PLATFORM != 'android') {
 										e.source.textField.value = e.rowData.title;
@@ -5717,6 +5724,7 @@ create_or_edit_node.loadUI = function() {
 									} else {
 										e.source.setValueF(e.rowData.title, e.rowData.nid);
 									}
+
 									setTimeout(function() {
 										e.source.autocomplete_table.visible = false;
 										Ti.API.info(e.rowData.title + ' was selected!');
@@ -5725,8 +5733,6 @@ create_or_edit_node.loadUI = function() {
 								});
 
 								content[count].addEventListener('blur', function(e) {
-									
-																
 									e.source.autocomplete_table.visible = false;
 									if ((e.source.nid === null) && (e.source.value != "")) {
 										if (PLATFORM == 'android') {
@@ -5740,12 +5746,12 @@ create_or_edit_node.loadUI = function() {
 									} else {
 										setDefaultValues(content, e);
 										setRulesField(e.source);
-
 									}
 								});
 
 
 								content[count].addEventListener('focus', function(e) {
+									e.source.touched = true;
 									adjustView(e.source.my_index,e.source.top ); 
 								});
 
@@ -5753,58 +5759,59 @@ create_or_edit_node.loadUI = function() {
 								// SEARCH EVENTS
 								//
 								content[count].addEventListener('change', function(e) {
-									e.source.nid = null;
-									changedContentValue(e.source);
-									if (e.source.first_time === false) {
-										var list = e.source.terms;
-										var func = function setValueF(value_f, nid) {
-											e.source.value = value_f;
-											e.source.nid = nid;
-											Ti.API.info('Value: ' + value_f + ' NID: ' + nid);
-										}
-										if ((e.value != null) && (e.value != '')) {
-											table_data = [];
-											e.source.nid = null;
-											for (var i = 0; i < list.length; i++) {
-												var rg = new RegExp(e.source.value, 'i');
-												if (list[i].title.search(rg) != -1) {
-													//Check match
-													if (e.source.value == list[i].title) {
-														e.source.nid = list[i].nid;
-													} else {
-														e.source.nid = null;
-													}
-
-													//Create partial matching row
-													var row = Ti.UI.createTableViewRow({
-														height : getScreenHeight() * 0.10,
-														title : list[i].title,
-														nid : list[i].nid,
-														color : '#000000',
-														autocomplete_table : e.source.autocomplete_table,
-														setValueF : func,
-														textField : e.source
-													});
-													// apply rows to data array
-													table_data.push(row);
-												}
+									if (e.source.touched === true){
+										e.source.nid = null;
+										changedContentValue(e.source);
+										if (e.source.first_time === false) {
+											var list = e.source.terms;
+											var func = function setValueF(value_f, nid) {
+												e.source.value = value_f;
+												e.source.nid = nid;
+												Ti.API.info('Value: ' + value_f + ' NID: ' + nid);
 											}
-											e.source.autocomplete_table.setData(table_data);
-											e.source.autocomplete_table.scrollToTop(0, {animated: false});
-											viewContent.scrollTo(0,e.source.top);
-											if(table_data.length>0){
-												e.source.autocomplete_table.visible = true;
-											}else{
+											if ((e.value != null) && (e.value != '')) {
+												table_data = [];
+												e.source.nid = null;
+												for (var i = 0; i < list.length; i++) {
+													var rg = new RegExp(e.source.value, 'i');
+													if (list[i].title.search(rg) != -1) {
+														//Check match
+														if (e.source.value == list[i].title) {
+															e.source.nid = list[i].nid;
+														} else {
+															e.source.nid = null;
+														}
+	
+														//Create partial matching row
+														var row = Ti.UI.createTableViewRow({
+															height : getScreenHeight() * 0.10,
+															title : list[i].title,
+															nid : list[i].nid,
+															color : '#000000',
+															autocomplete_table : e.source.autocomplete_table,
+															setValueF : func,
+															textField : e.source
+														});
+														// apply rows to data array
+														table_data.push(row);
+													}
+												}
+												e.source.autocomplete_table.setData(table_data);
+												e.source.autocomplete_table.scrollToTop(0, {animated: false});
+												viewContent.scrollTo(0,e.source.top);
+												if(table_data.length>0){
+													e.source.autocomplete_table.visible = true;
+												}else{
+													e.source.autocomplete_table.visible = false;
+												}
+											} else {
 												e.source.autocomplete_table.visible = false;
+												e.source.nid = null;
 											}
 										} else {
-											e.source.autocomplete_table.visible = false;
-											e.source.nid = null;
-										}
-									} else {
-										e.source.first_time = false;
+											e.source.first_time = false;
+										}										
 									}
-
 								});
 								//Add fields:
 								regionView.add(content[count]);
