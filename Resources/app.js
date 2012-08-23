@@ -356,7 +356,7 @@ else{
 			fontSize: '13dp'
 		},
 		height: '30dp',
-		width: '110dp'
+		width: '100dp'
 	});
 	
 	var t_row = Ti.UI.createView({
@@ -371,8 +371,8 @@ else{
 		height: '30dp',
 		top: '15dp',
 		width: 'auto',
-		left: '15%',
-		right: '15%'
+		left: parseInt((Ti.Platform.displayCaps.platformWidth*15)/100),
+		right: parseInt((Ti.Platform.displayCaps.platformWidth*15)/100)
 	});
 
 /*

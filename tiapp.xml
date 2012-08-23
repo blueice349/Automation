@@ -10,7 +10,7 @@
     </deployment-targets>
     <id>joseandro.omadi.com</id>
     <name>Omadi</name>
-    <version>1.4.27</version>
+    <version>1.4.28</version>
     <publisher>Joseandro</publisher>
     <url>http://www.omadi.com</url>
     <description>CRM from Omadi</description>
@@ -39,5 +39,7 @@
             <uses-sdk android:minSdkVersion="7"/>
         </manifest>
     </android>
-    <modules/>
+    <modules>
+        <module platform="android" version="1.0">com.omadi.camera</module>
+    </modules>
 </ti:app>

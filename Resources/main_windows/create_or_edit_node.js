@@ -41,6 +41,7 @@ var saveCounter = 0;
 
 var ONE_MB = 524258;
 
+
 var create_or_edit_node = {};
 
 create_or_edit_node.getWindow = function() {
@@ -3007,6 +3008,10 @@ create_or_edit_node.loadUI = function() {
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
+										if(e.source.my_max!= null && e.source.my_max!= "" &&  e.source.value.length>e.source.my_max){
+											e.source.value = e.source.value.substr(0,e.source.my_max);
+											e.source.blur();
+										}
 										changedContentValue(e.source);
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 									});
@@ -3141,6 +3146,10 @@ create_or_edit_node.loadUI = function() {
 
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
+									if(e.source.my_max!= null && e.source.my_max!= "" &&  e.source.value.length>=e.source.my_max){
+										e.source.value = e.source.value.substr(0,e.source.my_max);
+										e.source.blur();
+									}
 									changedContentValue(e.source);
 									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 								});
@@ -3362,6 +3371,10 @@ create_or_edit_node.loadUI = function() {
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
+										if(e.source.my_max!= null && e.source.my_max!= "" &&  e.source.value.length>=e.source.my_max){
+											e.source.value = e.source.value.substr(0,e.source.my_max);
+											e.source.blur();
+										}
 										changedContentValue(e.source);
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 									});
@@ -3490,6 +3503,10 @@ create_or_edit_node.loadUI = function() {
 
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
+									if(e.source.my_max!= null && e.source.my_max!= "" &&  e.source.value.length>=e.source.my_max){
+										e.source.value = e.source.value.substr(0,e.source.my_max);
+										e.source.blur();
+									}
 									changedContentValue(e.source);
 									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 								});
@@ -7188,7 +7205,16 @@ create_or_edit_node.loadUI = function() {
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
-										if(e.source.i_name == 'Make'){											if(e.source.value.length > 18){												e.source.value = e.source.value.substr(0, 18);											}										}else if(e.source.i_name == 'Model'){											if(e.source.value.length > 38){												e.source.value = e.source.value.substr(0, 38);											}										}										changedContentValue(e.source);
+										if(e.source.i_name == 'Make'){											
+											if(e.source.value.length > 18){												
+												e.source.value = e.source.value.substr(0, 18);											
+											}
+										}else if(e.source.i_name == 'Model'){											
+											if(e.source.value.length > 38){												
+												e.source.value = e.source.value.substr(0, 38);											
+											}										
+										}										
+										changedContentValue(e.source);
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 
 									});
@@ -8118,9 +8144,60 @@ create_or_edit_node.loadUI = function() {
 	toolActInd.hide();
 }
 
+var camera;
+if(PLATFORM == 'android') {
+	camera = require('com.omadi.camera');
+	camera.addEventListener("successCameraCapture", function(e) {
+		setTimeout(function(evt) {
+			var actInd = Ti.UI.createActivityIndicator();
+			try {
+				actInd.font = {
+					fontFamily : 'Helvetica Neue',
+					fontSize : 15,
+					fontWeight : 'bold'
+				};
+				actInd.color = 'white';
+				actInd.message = 'Please wait...';
+				actInd.show();
+				var imagescr = Ti.Utils.base64decode(e.media);
+				e.source.imageData = imagescr;
+				e.source.image = e.source.imageData;
+				e.source.bigImg = e.source.imageData;
+				e.source.mimeType = "/jpeg";
+				if(e.source.cardinality > 1 || e.source.cardinality < 0) {
+					if(e.source.cardinality < 1) {
+						arrImages = createImage(e.source.scrollView.addButton.o_index, e.source.scrollView.arrImages, defaultImageVal, e.source.scrollView, false);
+						e.source.scrollView.arrImages = arrImages;
+						e.source.scrollView.addButton.o_index += 1;
+						newSource = arrImages.length - 1;
+					} else {
+						if(e.source.private_index == e.source.cardinality - 1) {
+							return;
+						}
+						newSource = (e.source.private_index == e.source.cardinality - 1) ? 0 : e.source.private_index + 1;
+					}
+					e.source = e.source.scrollView.arrImages[newSource];
+					actInd.hide();
+					openCamera(e)
+				}
+			} catch(eve) {
+				actInd.hide();
+			}
+		}, 200);
+
+	});
+}
 
 // To open camera
 function openCamera(e) {
+if(PLATFORM == 'android'){
+	if(Ti.Media.isCameraSupported){
+		camera.openCamera({"event": e.source, "abc": function(e){}});
+	}else{
+		alert('No Camera in device');
+	}
+	
+}else{
 	try {
 		var overlayView;
 		if(PLATFORM != 'android'){
@@ -8169,7 +8246,6 @@ function openCamera(e) {
 				// If image size greater than 1MB we will reduce th image else take as it is.
 				if (event.media.length > ONE_MB) {
 					e.source.imageData = reduceImageSize(event.media, 500, 700).image;
-					alert(e.source.imageData.height + "," + e.source.imageData.width);
 				} else {
 					e.source.imageData = event.media;
 				}
@@ -8213,6 +8289,8 @@ function openCamera(e) {
 	} catch(ex) {
 
 	}
+
+}
 }
 
 function createImage(o_index, arrImages, data, scrollView, updated) {
