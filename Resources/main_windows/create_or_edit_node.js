@@ -8002,7 +8002,7 @@ create_or_edit_node.loadUI = function() {
 						Ti.API.info("<<<<<<<------->>>>>>> Title = " + _data.form_parts.parts[keep_node_form].label);
 						
 						var menu_zero = menu.add({
-							title : "Save "+_data.form_parts.parts[keep_node_form].label,
+							title : "Save + "+_data.form_parts.parts[keep_node_form].label,
 							order : 0
 						});
 						menu_zero.setIcon("/images/drop.png");
@@ -8335,7 +8335,7 @@ function bottomButtons(actualWindow) {
 						Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
 						if(_data.form_parts.parts.length >= parseInt(node_form) + 2) { 
 							Ti.API.info("<<<<<<<------->>>>>>> Title = " + _data.form_parts.parts[node_form + 1].label);
-							btn_tt.push("Save "+_data.form_parts.parts[node_form  + 1].label);
+							btn_tt.push("Save + "+_data.form_parts.parts[node_form  + 1].label);
 							btn_id.push(node_form  + 1);
 						}
 					}
