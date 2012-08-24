@@ -3526,10 +3526,9 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					//Just to make sure database keeps locked
 
 					//setUse();
+					unsetUse();
 					close_parent();
-					var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-					var imageForUpload = db_fileUpload.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
-					uploadFile(win, 'POST', db_fileUpload, imageForUpload);
+					uploadFile(win, 'POST');
 				} else if (mode == 0) {
 					if (PLATFORM == 'android') {
 						Ti.UI.createNotification({
@@ -3542,12 +3541,12 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					//Just to make sure database keeps locked
 
 					//setUse();
+					unsetUse();
 					close_parent();
-					var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-					var imageForUpload = db_fileUpload.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
-					uploadFile(win, 'POST', db_fileUpload, imageForUpload);
+					//uploadFile(win, 'POST');
 				} else {
 					unsetUse();
+					uploadFile(win, type_request)
 				}
 			}
 		} else {
@@ -3960,19 +3959,24 @@ function getScreenHeight() {
 	return ret;
 }
 
-function uploadFile(win, type_request, database, fileUploadTable) {
+function uploadFile(win, type_request) {
 	try {
 		//var fileUploadXHR = win.log;
 		var _file_xhr = Ti.Network.createHTTPClient();
 		_file_xhr.setTimeout(30000);
 		_file_xhr.open(type_request, win.picked + '/js-sync/upload.json');
 		// Upload images
+		var database = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+		var fileUploadTable = database.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
 		if (fileUploadTable.isValidRow()) {
 			//Only upload those images that have positive nids
 			if (fileUploadTable.fieldByName('nid') > 0) {
 				_file_xhr.onload = function(e) {
 					Ti.API.info('=========== Success ========' + this.responseText);
 					var respnseJson = JSON.parse(this.responseText);
+					
+					database = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+					fileUploadTable = database.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
 
 					// Updating status
 					var table = database.execute("SELECT table_name FROM node WHERE nid=" + respnseJson.nid + ";");
@@ -4015,21 +4019,24 @@ function uploadFile(win, type_request, database, fileUploadTable) {
 					//Deleting file after upload.
 					database.execute("DELETE FROM file_upload_queue WHERE nid=" + respnseJson.nid + " and delta=" + respnseJson.delta + " and field_name='" + respnseJson.field_name + "';");
 					fileUploadTable = database.execute("SELECT * FROM file_upload_queue WHERE nid > 0;");
-					if (fileUploadTable.rowCount == 0) {
-						fileUploadTable.close();
-						database.close();
-					} else {
-						uploadFile(win, type_request, database, fileUploadTable);
-					}
+					var remainingRow = fileUploadTable.rowCount;
+					table.close();
+					fieldSettings.close();
+					fileUploadTable.close();
+					database.close();
+					if (remainingRow != 0) {
+						uploadFile(win, type_request);
+					} 
 				}
 
 				_file_xhr.onerror = function(e) {
 					Ti.API.info('=========== Error in uploading ========' + this.error + this.status);
 					if (this.status == '406' && this.error == 'Nid is not connected to a valid node.') {
+						var database = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 						database.execute("DELETE FROM file_upload_queue WHERE nid=" + fileUploadTable.fieldByName('nid') + " and id=" + fileUploadTable.fieldByName('id') + ";");
+						database.close();
 					}
-					fileUploadTable.close();
-					database.close();
+					
 				}
 
 				_file_xhr.setRequestHeader("Content-Type", "application/json");
@@ -4046,6 +4053,9 @@ function uploadFile(win, type_request, database, fileUploadTable) {
 						delta : fileUploadTable.fieldByName('delta')
 					});
 				}
+				
+				fileUploadTable.close();
+				database.close();
 			}
 		}
 	} catch(e) {

@@ -1541,7 +1541,7 @@ function open_mult_selector(obj) {
 		}else if(coItemSelected > 1) {
 			if(obj.from_cond_vs != null && obj.from_cond_vs == true) {
 				listView.height = '66.5%';
-				desLael.visible = true;
+				desLabel.visible = true;
 				desLabel.text = 'Multiple violations selected'
 			}
 		} else if(coItemSelected == 0) {
@@ -8200,6 +8200,14 @@ if(PLATFORM == 'android'){
 }else{
 	try {
 		var overlayView;
+		var actInd = Ti.UI.createActivityIndicator();
+					actInd.font = {
+					fontFamily : 'Helvetica Neue',
+					fontSize : 15,
+					fontWeight : 'bold'
+				};
+				actInd.color = 'white';
+				actInd.message = 'Please wait...';
 		if(PLATFORM != 'android'){
 			overlayView = Ti.UI.createView();
 			var captureBtn = Ti.UI.createButton({
@@ -8230,16 +8238,8 @@ if(PLATFORM == 'android'){
 		
 		
 		Ti.Media.showCamera({
-
+			
 			success : function(event) {
-				var actInd = Ti.UI.createActivityIndicator();
-				actInd.font = {
-					fontFamily : 'Helvetica Neue',
-					fontSize : 15,
-					fontWeight : 'bold'
-				};
-				actInd.color = 'white';
-				actInd.message = 'Please wait...';
 				actInd.show();
 
 				Ti.API.info("MIME TYPE: " + event.media.mimeType);

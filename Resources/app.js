@@ -356,7 +356,7 @@ else{
 			fontSize: '13dp'
 		},
 		height: '30dp',
-		width: '100dp'
+		width: '110dp'
 	});
 	
 	var t_row = Ti.UI.createView({
