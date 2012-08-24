@@ -3529,6 +3529,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					unsetUse();
 					close_parent();
 					uploadFile(win, 'POST');
+					
 				} else if (mode == 0) {
 					if (PLATFORM == 'android') {
 						Ti.UI.createNotification({
