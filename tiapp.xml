@@ -8,7 +8,7 @@
         <target device="android">true</target>
         <target device="blackberry">false</target>
     </deployment-targets>
-    <id>joseandro.omadi.com</id>
+    <id>com.omadi.joseandro</id>
     <name>Omadi</name>
     <version>1.4.28</version>
     <publisher>Joseandro</publisher>
