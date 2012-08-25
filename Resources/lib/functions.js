@@ -3543,7 +3543,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					//setUse();
 					unsetUse();
 					close_parent();
-					//uploadFile(win, 'POST');
+					uploadFile(win, 'POST');
 				} else {
 					unsetUse();
 					uploadFile(win, type_request)
