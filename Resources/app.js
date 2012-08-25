@@ -199,9 +199,6 @@ win1.addEventListener('focus', function(){
 	
 	updatedTime.close();
 	db_a.close();
-
-	//portal.editable = locked_field;
-	//tf1.editable	= locked_field;
 	
 	portal.color = new_color;
 	tf1.color	 = new_color;
@@ -374,20 +371,6 @@ else{
 		left: parseInt((Ti.Platform.displayCaps.platformWidth*15)/100),
 		right: parseInt((Ti.Platform.displayCaps.platformWidth*15)/100)
 	});
-
-/*
-	setTimeout(function(){
-		if(PLATFORM != 'android'){
-			i_scroll_page.setContentOffset({
-				x : i_scroll_page.getContentOffset().x,
-				y : "25dp"
-			});
-		}else{
-			i_scroll_page.setContentOffset({y : "25dp" }, {animated:false});
-		}
-		
-	},500);
-*/
 
 }
 
