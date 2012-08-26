@@ -38,7 +38,7 @@ var db_display;
 var no_data_fieldsArr = [];
 var doneButton = null;
 var saveCounter = 0;
-
+var menu = null;
 var ONE_MB = 524258;
 
 
@@ -115,6 +115,295 @@ create_or_edit_node.getWindow = function() {
 ///////////////////////////
 // Extra Functions
 //////////////////////////
+
+function get_android_menu(menu_exists){
+	if (menu_exists === true){
+		//======================================
+		// MENU - UI
+		//======================================
+		
+		var btn_tt = [];
+		var btn_id = [];
+	
+		menu.clear();
+		
+		if (win.nid != null){
+			var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+			var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
+			var _data = JSON.parse(json_data.fieldByName('_data'));
+	
+			var node_form = win.region_form;
+	
+			if(_data.form_parts!=null && _data.form_parts!=""){
+				Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
+				if(_data.form_parts.parts.length >= parseInt(node_form) + 2) { 
+					var keep_node_form = node_form + 1;
+					
+					Ti.API.info("Title = " + _data.form_parts.parts[keep_node_form].label);
+					
+					var menu_zero = menu.add({
+						title : "Save + "+_data.form_parts.parts[keep_node_form].label,
+						order : 0
+					});
+					menu_zero.setIcon("/images/drop.png");
+					menu_zero.addEventListener("click", function(ev) {
+						Ti.API.info('Form node part = ' + keep_node_form);
+						try {
+							keep_info(keep_node_form, false);
+						} catch(e) {
+							alert('Error Tracking: ' + ev);
+							//To catch error to resolve issue #916
+						}
+	
+					});
+				}
+			}
+			json_data.close();
+			db_act.close();
+		}
+		else{
+			var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+			var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
+			var _data = JSON.parse(json_data.fieldByName('_data'));
+			
+			var node_form = 0;
+	
+			Ti.API.info('Form node part = ' + node_form );
+			
+			if(_data.form_parts!=null && _data.form_parts!=""){
+				Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
+				if(_data.form_parts.parts.length >= parseInt(node_form) + 2) { 
+					var keep_node_form = node_form + 1;
+					
+					Ti.API.info("<<<<<<<------->>>>>>> Title = " + _data.form_parts.parts[keep_node_form].label);
+					
+					var menu_zero = menu.add({
+						title : "Save + "+_data.form_parts.parts[keep_node_form].label,
+						order : 0
+					});
+					menu_zero.setIcon("/images/drop.png");
+					menu_zero.addEventListener("click", function(ev) {
+						Ti.API.info('====>> '+keep_node_form);
+						try {
+							keep_info(keep_node_form, false);
+						} catch(e) {
+							alert('Error Tracking: ' + ev);
+							//To catch error to resolve issue #916
+						}
+	
+					});
+				}
+			}
+			json_data.close();
+			db_act.close();
+		}
+			
+		btn_tt.push('Save');
+		btn_tt.push('Draft');
+		btn_tt.push('Cancel');
+	
+		var menu_first = menu.add({
+			title : 'Save',
+			order : 1
+		});
+		menu_first.setIcon("/images/save.png");
+	
+		var menu_second = menu.add({
+			title : 'Draft',
+			order : 2
+		});
+		menu_second.setIcon("/images/draft.png");
+	
+	
+		var menu_third = menu.add({
+			title : 'Cancel',
+			order : 3
+		});
+		menu_third.setIcon("/images/cancel.png");
+	
+		//======================================
+		// MENU - EVENTS
+		//======================================
+		menu_first.addEventListener("click", function(e) {
+			try{
+				keep_info('normal', false);
+			} catch(e) {
+				alert('Error Tracking: ' + e);//To catch error to resolve issue #916
+			}
+		});
+	
+	
+		menu_second.addEventListener("click", function(e) {
+			try{
+				keep_info('draft', false);
+			} catch(e) {
+				alert('Error Tracking: ' + e);//To catch error to resolve issue #916
+			}
+		});
+	
+		menu_third.addEventListener("click", function(e) {
+			if (win.mode == 0) {
+				Ti.UI.createNotification({
+					message : win.title + ' creation was cancelled !'
+				}).show();
+			} else {
+				Ti.UI.createNotification({
+					message : win.title + ' update was cancelled !'
+				}).show();
+			}
+	
+			win.close();
+	
+		});
+			
+	}
+	else{
+		var activity = win.activity;
+		activity.onCreateOptionsMenu = function(e) {
+				
+			//======================================
+			// MENU - UI
+			//======================================
+			
+			var btn_tt = [];
+			var btn_id = [];
+	
+			menu = e.menu;
+			menu.clear();
+			
+			if (win.nid != null){
+				var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+				var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
+				var _data = JSON.parse(json_data.fieldByName('_data'));
+		
+				var node_form = win.region_form;
+		
+				if(_data.form_parts!=null && _data.form_parts!=""){
+					Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
+					if(_data.form_parts.parts.length >= parseInt(node_form) + 2) { 
+						var keep_node_form = node_form + 1;
+						
+						Ti.API.info("Title = " + _data.form_parts.parts[keep_node_form].label);
+						
+						var menu_zero = menu.add({
+							title : "Save + "+_data.form_parts.parts[keep_node_form].label,
+							order : 0
+						});
+						menu_zero.setIcon("/images/drop.png");
+						menu_zero.addEventListener("click", function(ev) {
+							Ti.API.info('Form node part = ' + keep_node_form);
+							try {
+								keep_info(keep_node_form, false);
+							} catch(e) {
+								alert('Error Tracking: ' + ev);
+								//To catch error to resolve issue #916
+							}
+	
+						});
+					}
+				}
+				json_data.close();
+				db_act.close();
+			}
+			else{
+				var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+				var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
+				var _data = JSON.parse(json_data.fieldByName('_data'));
+				
+				var node_form = 0;
+		
+				Ti.API.info('Form node part = ' + node_form );
+				
+				if(_data.form_parts!=null && _data.form_parts!=""){
+					Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
+					if(_data.form_parts.parts.length >= parseInt(node_form) + 2) { 
+						var keep_node_form = node_form + 1;
+						
+						Ti.API.info("<<<<<<<------->>>>>>> Title = " + _data.form_parts.parts[keep_node_form].label);
+						
+						var menu_zero = menu.add({
+							title : "Save + "+_data.form_parts.parts[keep_node_form].label,
+							order : 0
+						});
+						menu_zero.setIcon("/images/drop.png");
+						menu_zero.addEventListener("click", function(ev) {
+							Ti.API.info('====>> '+keep_node_form);
+							try {
+								keep_info(keep_node_form, false);
+							} catch(e) {
+								alert('Error Tracking: ' + ev);
+								//To catch error to resolve issue #916
+							}
+	
+						});
+					}
+				}
+				json_data.close();
+				db_act.close();
+			}
+				
+			btn_tt.push('Save');
+			btn_tt.push('Draft');
+			btn_tt.push('Cancel');
+	
+			var menu_first = menu.add({
+				title : 'Save',
+				order : 1
+			});
+			menu_first.setIcon("/images/save.png");
+	
+			var menu_second = menu.add({
+				title : 'Draft',
+				order : 2
+			});
+			menu_second.setIcon("/images/draft.png");
+	
+	
+			var menu_third = menu.add({
+				title : 'Cancel',
+				order : 3
+			});
+			menu_third.setIcon("/images/cancel.png");
+	
+			//======================================
+			// MENU - EVENTS
+			//======================================
+			menu_first.addEventListener("click", function(e) {
+				try{
+					keep_info('normal', false);
+				} catch(e) {
+					alert('Error Tracking: ' + e);//To catch error to resolve issue #916
+				}
+			});
+	
+	
+			menu_second.addEventListener("click", function(e) {
+				try{
+					keep_info('draft', false);
+				} catch(e) {
+					alert('Error Tracking: ' + e);//To catch error to resolve issue #916
+				}
+			});
+	
+			menu_third.addEventListener("click", function(e) {
+				if (win.mode == 0) {
+					Ti.UI.createNotification({
+						message : win.title + ' creation was cancelled !'
+					}).show();
+				} else {
+					Ti.UI.createNotification({
+						message : win.title + ' update was cancelled !'
+					}).show();
+				}
+	
+				win.close();
+	
+			});
+			
+		};		
+	}
+}
+
 
 function adjustView(counter, top ){
 
@@ -1001,6 +1290,7 @@ function reload_me(part) {
 	Ti.API.info('###############>>>>>>>>      After increment : '+win.region_form);
 	setTimeout(function() {
 		create_or_edit_node.loadUI();
+		get_android_menu(true);
 	}, 100);
 
 }
@@ -7747,6 +8037,68 @@ create_or_edit_node.loadUI = function() {
 							}
 							break;
 							
+						case 'auto_increment':
+							if (field_arr[index_label][index_size].actual_value != "" && field_arr[index_label][index_size].actual_value != " " && field_arr[index_label][index_size].actual_value != null && field_arr[index_label][index_size].actual_value != "null"){
+								label[count] = Ti.UI.createLabel({
+									text : field_arr[index_label][index_size].label,
+									color : _lb_color,
+									font : {
+										fontSize : 18,
+										fontWeight: 'bold'
+									},
+									textAlign : 'left',
+									width : Ti.Platform.displayCaps.platformWidth - 30,
+									touchEnabled : false,
+									height : heightValue,
+									top : top						
+								});
+								regionView.add(label[count]);
+								
+								var reffer_index = count;
+								var settings = JSON.parse(field_arr[index_label][index_size].settings);
+								top += heightValue;
+	
+								//alert(c_settings[count]);
+								var prefix = "";
+								if (settings.prefix){
+									prefix = settings.prefix;
+								}
+								content[count] = Ti.UI.createTextField({
+									text : prefix+"" + field_arr[index_label][index_size].actual_value,
+									hintText : "No prefix for this node",
+									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+									color : '#000000',
+									backgroundColor: '#D6CED9',
+									height : heightValue,
+									font : {
+										fontSize : 18
+									},
+									width : Ti.Platform.displayCaps.platformWidth - 30,
+									top : top,
+									field_type : field_arr[index_label][index_size].type,
+									field_name : field_arr[index_label][index_size].field_name,
+									fantasy_name : field_arr[index_label][index_size].label,
+									composed_obj : false,
+									cardinality : 1,
+									value : field_arr[index_label][index_size].actual_value,
+									first_time : true,
+									reffer_index : reffer_index,
+									settings : settings,
+									changedFlag : 0,
+									my_index : count,
+									autocorrect: false,
+									enabled: false,
+									editable: false,
+									touched: false
+								});
+								regionView.add(content[count]);
+								
+								top += heightValue;
+								regionView.add(content[count]);
+								count++;								
+							}
+						break;
+							
 					}
 
 				}
@@ -7965,156 +8317,14 @@ create_or_edit_node.loadUI = function() {
 		title : 'Omadi',
 		buttonNames : ['OK']
 	});
+	
 	//MENU
 	//======================================
 	// MENU
 	//======================================
 
 	if (Ti.Platform.name == 'android') {
-
-		var activity = win.activity;
-		activity.onCreateOptionsMenu = function(e) {
-				
-			//======================================
-			// MENU - UI
-			//======================================
-			
-			var btn_tt = [];
-			var btn_id = [];
-
-			var menu = e.menu;
-
-			if (win.nid != null){
-				var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-				var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
-				var _data = JSON.parse(json_data.fieldByName('_data'));
-		
-				var node_form = win.region_form;
-		
-				if(_data.form_parts!=null && _data.form_parts!=""){
-					Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
-					if(_data.form_parts.parts.length >= parseInt(node_form) + 2) { 
-						var keep_node_form = node_form + 1;
-						
-						Ti.API.info("Title = " + _data.form_parts.parts[keep_node_form].label);
-	
-						var menu_zero = menu.add({
-							title : "Save "+_data.form_parts.parts[keep_node_form].label,
-							order : 0
-						});
-						menu_zero.setIcon("/images/drop.png");
-						menu_zero.addEventListener("click", function(ev) {
-							Ti.API.info('Form node part = ' + keep_node_form);
-							try {
-								keep_info(keep_node_form, false);
-							} catch(e) {
-								alert('Error Tracking: ' + ev);
-								//To catch error to resolve issue #916
-							}
-
-						});
-					}
-				}
-				json_data.close();
-				db_act.close();
-			}
-			else{
-				var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-				var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
-				var _data = JSON.parse(json_data.fieldByName('_data'));
-				
-				var node_form = 0;
-		
-				Ti.API.info('Form node part = ' + node_form );
-				
-				if(_data.form_parts!=null && _data.form_parts!=""){
-					Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
-					if(_data.form_parts.parts.length >= parseInt(node_form) + 2) { 
-						var keep_node_form = node_form + 1;
-						
-						Ti.API.info("<<<<<<<------->>>>>>> Title = " + _data.form_parts.parts[keep_node_form].label);
-						
-						var menu_zero = menu.add({
-							title : "Save + "+_data.form_parts.parts[keep_node_form].label,
-							order : 0
-						});
-						menu_zero.setIcon("/images/drop.png");
-						menu_zero.addEventListener("click", function(ev) {
-							Ti.API.info('====>> '+keep_node_form);
-							try {
-								keep_info(keep_node_form, false);
-							} catch(e) {
-								alert('Error Tracking: ' + ev);
-								//To catch error to resolve issue #916
-							}
-
-						});
-					}
-				}
-				json_data.close();
-				db_act.close();
-			}
-				
-			btn_tt.push('Save');
-			btn_tt.push('Draft');
-			btn_tt.push('Cancel');
-
-			var menu_first = menu.add({
-				title : 'Save',
-				order : 1
-			});
-			menu_first.setIcon("/images/save.png");
-
-			var menu_second = menu.add({
-				title : 'Draft',
-				order : 2
-			});
-			menu_second.setIcon("/images/draft.png");
-
-
-			var menu_third = menu.add({
-				title : 'Cancel',
-				order : 3
-			});
-			menu_third.setIcon("/images/cancel.png");
-
-			//======================================
-			// MENU - EVENTS
-			//======================================
-			menu_first.addEventListener("click", function(e) {
-				try{
-					keep_info('normal', false);
-				} catch(e) {
-					alert('Error Tracking: ' + e);//To catch error to resolve issue #916
-				}
-			});
-
-
-			menu_second.addEventListener("click", function(e) {
-				try{
-					keep_info('draft', false);
-				} catch(e) {
-					alert('Error Tracking: ' + e);//To catch error to resolve issue #916
-				}
-			});
-
-			menu_third.addEventListener("click", function(e) {
-				if (win.mode == 0) {
-					Ti.UI.createNotification({
-						message : win.title + ' creation was cancelled !'
-					}).show();
-				} else {
-					Ti.UI.createNotification({
-						message : win.title + ' update was cancelled !'
-					}).show();
-				}
-
-				win.close();
-
-			});
-			
-		};
-
+		get_android_menu();
 	} else {
 		bottomButtons(win);
 	}

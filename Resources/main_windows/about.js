@@ -138,7 +138,7 @@ var updateBtn = Ti.UI.createButton({
 	title : 'Sync Data'
 });
 updateBtn.addEventListener('click', function() {
-	Ti.App.fireEvent('update_from_menu');
+	Ti.App.fireEvent('normal_update_from_menu');
 	win_about.close();
 });
 

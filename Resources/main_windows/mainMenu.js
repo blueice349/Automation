@@ -623,8 +623,9 @@ alerts_view.addEventListener('click', function(){
 	});
 	
 	win_new.open();
+
+	Ti.API.info('!!!!!!!!!!!!!!!!!!!!!! VAI ABRIR !!!!!!!!!!!!!!!!!!!!!!');
 	setTimeout(function(){message_center.loadUI();}, 100);
-	//setInterval(function(){Ti.App.fireEvent('refresh_UI');}, 1000);
 });
 
 var drafts_view = Ti.UI.createView(
@@ -717,7 +718,6 @@ if(PLATFORM != 'android'){
 			}
 		});
 		return;
-	
 	});
 }
 
@@ -769,6 +769,10 @@ function unlock_screen(){
 
 Ti.App.addEventListener('update_from_menu', function(){
 	listView.setData([]);
+	checkUpdate('from_menu');
+});
+
+Ti.App.addEventListener('normal_update_from_menu', function(){
 	checkUpdate('from_menu');
 });
 

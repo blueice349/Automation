@@ -4,35 +4,6 @@ Ti.include('/lib/functions.js');
 var message_center = {};
 var win;
 
-win = Titanium.UI.createWindow({
-	fullscreen : false,
-	backgroundColor : '#DDDDDD',
-	is_opened: false
-});
-
-//Sets only portrait mode
-win.orientationModes = [Titanium.UI.PORTRAIT];
-
-//When back button on the phone is pressed, it opens mainMenu.js and close the current window
-win.addEventListener('android:back', function() {
-	//Enable background updates
-	win.is_opened = false;
-	unsetUse();	
-	win.close();
-});
-
-win.addEventListener('close', function(){
-	win.is_opened = false;
-});
-
-win.addEventListener('open', function(){
-	win.is_opened = true;
-});
-
-win.addEventListener('open', function(){
-	Ti.App.fireEvent('upload_gps_locations');
-});
-
 function cleanWindow( winObj )
 {
     if (winObj.children) {
@@ -45,6 +16,35 @@ function cleanWindow( winObj )
     Ti.API.info('------- Views got removed! ------');
 }
 message_center.get_win = function() {
+	win = Titanium.UI.createWindow({
+		fullscreen : false,
+		backgroundColor : '#DDDDDD',
+		is_opened: false
+	});
+	
+	//Sets only portrait mode
+	win.orientationModes = [Titanium.UI.PORTRAIT];
+
+	//When back button on the phone is pressed, it opens mainMenu.js and close the current window
+	win.addEventListener('android:back', function() {
+		//Enable background updates
+		win.is_opened = false;
+		unsetUse();	
+		win.close();
+	});
+	
+	win.addEventListener('close', function(){
+		win.is_opened = false;
+	});
+	
+	win.addEventListener('open', function(){
+		win.is_opened = true;
+	});
+	
+	win.addEventListener('open', function(){
+		Ti.App.fireEvent('upload_gps_locations');
+	});
+
 	return win;
 }
 var listTableView = null;
@@ -348,8 +348,8 @@ message_center.loadUI = function() {
 
 //message_center.loadUI = function() {
 Ti.App.addEventListener('refresh_UI_Alerts', function(){
-	Ti.API.info(win+' Check ===>>> '+win.is_opened);
 	if (win.is_opened == true){
+		Ti.API.info(win+' Check ===>>> '+win.is_opened);
 		cleanWindow(win);
 		Ti.API.info('ALERT CENTER is opened!');
 		///*
@@ -642,6 +642,7 @@ Ti.App.addEventListener('refresh_UI_Alerts', function(){
 		}
 	}
 	else{
+		Ti.API.info(win+' Check ===>>> '+win.is_opened);
 		Ti.API.info('ALERT CENTER is closed!');
 	}
 });

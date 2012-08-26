@@ -657,7 +657,40 @@ if(c_index > 0) {
 						});
 						count++;
 
-						break;
+					break;
+
+					case 'auto_increment':
+						label[count] = Ti.UI.createLabel({
+							text : c_label[count],
+							width : "33%",
+							textAlign : 'left',
+							left : 5,
+							touchEnabled : false,
+							field : true
+						});
+						
+						var settings 	= JSON.parse(c_settings[count]);
+						//alert(c_settings[count]);
+						var prefix = "";
+						if (settings.prefix){
+							prefix = settings.prefix;
+						}
+						
+						content[count] = Ti.UI.createLabel({
+							text : prefix+"" + c_content[count],
+							width : "60%",
+							height : "100%",
+							textAlign : 'left',
+							left : "40%",
+							id : count
+						});
+
+						content[count].addEventListener('click', function(e) {
+							highlightMe(e.source.id);
+						});
+						count++;
+					break;
+
 
 					//Formats as integer
 					case 'number_integer':

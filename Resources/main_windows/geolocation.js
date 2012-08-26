@@ -1,3 +1,6 @@
+Ti.App.Properties.setString("last_alert_popup", 0);
+var time_interval_for_alerts = 120; 
+
 function translateErrorCode(code) {
 	if (code == null) {
 		return null;
@@ -85,7 +88,14 @@ else
 				Ti.API.info('Omadi GPS Tracking for Android has found an error: '+str_err);
 			}
 			else{
-				notifyIOS('Omadi GPS Tracking for Android has found an error: '+str_err);				
+				var time_now = Math.round(new Date().getTime() / 1000);
+				var time_past = time_now - Ti.App.Properties.getString("last_alert_popup");
+				if (time_past > time_interval_for_alerts){
+					notifyIOS('Omadi GPS Tracking for iOS has found an error: '+str_err, true);
+				}
+				else{
+					Ti.API.info('Alert not shown');
+				}
 			}
 			return;
 		}
@@ -127,7 +137,14 @@ else
 				}).show();
 			}
 			else{
-				notifyIOS('Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is '+accuracy+' meters');				
+				var time_now = Math.round(new Date().getTime() / 1000);
+				var time_past = time_now - Ti.App.Properties.getString("last_alert_popup");
+				if (time_past > time_interval_for_alerts){
+					notifyIOS('Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is '+accuracy+' meters', true);
+				}
+				else{
+					Ti.API.info('Alert not shown');
+				}
 			}
 		}
 	};

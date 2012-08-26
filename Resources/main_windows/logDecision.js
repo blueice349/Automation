@@ -40,7 +40,6 @@ indLog.add(message);
 // buttons/labels of decision
 var labelOut = Titanium.UI.createButton({
 	title: 'Yes',
-    //color:'#000',
     width:'20%',
     height:'7%',
     top:'50%',
@@ -49,10 +48,8 @@ var labelOut = Titanium.UI.createButton({
 
 var labelIn = Titanium.UI.createButton({
 	title: 'No',
-    //color:'#000',
     width:'20%',
     height:'7%',
-    //textAlign:'center',
     top:'50%',
     right: '18%'
 });    
@@ -73,7 +70,7 @@ labelOut.addEventListener('click',function (){
 		Ti.App.Properties.setString('logStatus', "You have successfully logged out");
 		Ti.API.info('From Functions ... Value is : '+ Ti.App.Properties.getString('logStatus'));
 		if( getDeviceTypeIndentifier() == "android"){
-			Ti.App.fireEvent('stop_gps');				
+			Ti.App.fireEvent('stop_gps');
 		}
 		Ti.App.fireEvent('free_login');
 		

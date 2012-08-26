@@ -29,20 +29,27 @@ function getDBName() {
 	return recebe;
 }
 
-function notifyIOS(msg) {
+function notifyIOS(msg, update_time) {
+	if (update_time === true){
+		var time = Math.round(new Date().getTime() / 1000);
+		Ti.App.Properties.setString("last_alert_popup", time);
+	}
+	
+	var slide_it_top = Titanium.UI.createAnimation();
+	slide_it_top.top = 0; // to put it back to the left side of the window
+    slide_it_top.duration = 400;
 	var win = Titanium.UI.createWindow({
-		height : 30,
-		width : 250,
-		bottom : 110,
-		borderRadius : 10
+		height : "50dp",
+		width : "100%",
+		top : "-50dp",
+		zIndex: -1000
 	});
 
 	var view = Titanium.UI.createView({
 		backgroundColor : '#000',
-		opacity : 0.7,
-		height : 30,
-		width : 250,
-		borderRadius : 10
+		opacity : 0.8,
+		height : "100%",
+		zIndex: -1000
 	});
 
 	var label = Titanium.UI.createLabel({
@@ -51,20 +58,22 @@ function notifyIOS(msg) {
 			fontSize : 13
 		},
 		textAlign : 'center',
-		width : 'auto',
-		height : 'auto'
+		width : '100%',
+		height : '100%'
 	});
 	win.add(view);
 	win.add(label);
 
 	label.text = msg;
-	win.open();
+	win.open(slide_it_top);
+	
 	setTimeout(function() {
-		win.close({
-			opacity : 0,
-			duration : 500
-		});
-	}, 1000);
+		var slide_it_out = Titanium.UI.createAnimation();
+		slide_it_out.top = "-50dp"; // to put it back to the left side of the window
+    	slide_it_out.duration = 400;
+		win.close(slide_it_out);
+	}, 2500);
+	
 }
 
 function showIndicator(show) {
@@ -491,7 +500,7 @@ function treatArray(num_to_insert, call_id) {
 		return content_s;
 	} else if (array_size == 1) {
 		//Pack everything
-		Ti.API.info(num_to_insert[0]);
+		//Ti.API.info(num_to_insert[0]);
 		if (num_to_insert[0] != null) {
 			var content_s = Base64.encode(num_to_insert[0]);
 		} else {
@@ -870,7 +879,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 				process_obj[process_obj.length] = 'DELETE FROM node WHERE nid=' + json[obj].insert.__negative_nid;
 			}
 		}
-		Ti.API.info("Inserted object [" + obj + "] sucefully!");
+		//Ti.API.info("Inserted object [" + obj + "] sucefully!");
 	}
 
 	//Update Object
@@ -1215,7 +1224,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 			//Inserts into object table
 			process_obj[process_obj.length] = query;
 		}
-		Ti.API.info("Updated object [" + obj + "] sucefully!");
+		//Ti.API.info("Updated object [" + obj + "] sucefully!");
 	}
 
 	//Delete
@@ -1242,7 +1251,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 			//Deletes from node table
 			process_obj[process_obj.length] = 'DELETE FROM node WHERE "nid"=' + json[obj]["delete"].nid;
 		}
-		Ti.API.info("Deleted object [" + obj + "] sucefully!");
+		//Ti.API.info("Deleted object [" + obj + "] sucefully!");
 	}
 
 	Ti.API.info('########## CRITICAL STEP ##########');
@@ -1492,7 +1501,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 		Ti.API.info("Onload reached - Here follows the json: ");
 		Ti.API.info(this.responseText);
 
-		if (isJsonString(this.responseText) === true) {
+		if (this.responseText != null && this.responseText != "null" && this.responseText != "" && this.responseText != "" && isJsonString(this.responseText) === true) {
 			var json = JSON.parse(this.responseText);
 
 			if (json.request_time && json.request_time != null && json.request_time != "") {
@@ -2113,7 +2122,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								else {
 									perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings) VALUES (" + fid + ",'" + type + "','" + field_name + "','" + label + "','" + description + "','" + bundle + "','" + region + "'," + weight + ",'" + required + "','" + disabled + "','" + widget + "','" + settings + "' )";
 								}
-
+								if (type ==  "auto_increment"){
+									Ti.API.info(" --- "+perform[perform.length - 1]);
+								}
+								
 								var type = "";
 
 								switch(json.fields.insert[i].type) {
@@ -2826,6 +2838,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 
 						db_installMe.execute("BEGIN IMMEDIATE TRANSACTION");
 						while (iPerform <= perform.length - 1) {
+							//Ti.API.info("Field -------  "+perform[iPerform]);
 							db_installMe.execute(perform[iPerform]);
 							iPerform++;
 						}
@@ -3553,48 +3566,29 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 		} else {
 			if (progress != null) {
 				progress.close();
-
-				Titanium.Media.vibrate();
-
-				var a_msg = Titanium.UI.createAlertDialog({
-					title : 'Omadi',
-					buttonNames : ['Yes', 'No'],
-					cancel : 1,
-					click_index : e.index,
-					sec_obj : e.section,
-					row_obj : e.row
-				});
-
-				a_msg.message = "There was a network error, and your data could not be synched. Do you want to retry now? Error description: null response";
-				a_msg.show();
-
-				a_msg.addEventListener('click', function(e) {
-					if (PLATFORM == "android"){
-						if (e.index != 1) {
-							setTimeout(function() {
-								progress = null;
-								progress = new Progress_install(0, 100);
-								installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
-							}, 800);
-						} else {
-							unsetUse();
-						}
-					}
-					else{
-						if (e.cancel === false) {
-							setTimeout(function() {
-								progress = null;
-								progress = new Progress_install(0, 100);
-								installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
-							}, 800);
-						} else {
-							unsetUse();
-						}
-					}
-				});
-			} else {
-				unsetUse();
 			}
+
+			Titanium.Media.vibrate();
+
+			var a_msg = Titanium.UI.createAlertDialog({
+				title : 'Omadi',
+				buttonNames : ['OK']
+			});
+
+			a_msg.message = "We are sorry, but the server has diconnected you. Don't worry though, we will help you to get to the login window again";
+			a_msg.show();
+
+			a_msg.addEventListener('click', function(e) {
+				unsetUse();
+
+				Ti.App.Properties.setString('logStatus', "The server logged you out");
+				Ti.API.info('From Functions ... Value is : '+ Ti.App.Properties.getString('logStatus'));
+				if( getDeviceTypeIndentifier() == "android"){
+					Ti.App.fireEvent('stop_gps');
+				}
+				Ti.App.fireEvent('free_login');
+				win2.close();
+			});
 		}
 	}
 	//Connection error:
@@ -5536,7 +5530,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 											query += ' AND name LIKE "%' + search_value + '%";'
 											break;
 									}
-									Ti.API.info(query);
+									//Ti.API.info(query);
 									var possible_tids = db_display.execute(query);
 									var possible_tids_arr = [];
 									while (possible_tids.isValidRow()) {
