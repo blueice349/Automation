@@ -783,7 +783,7 @@ if(c_index > 0) {
 						});
 
 						content[count] = Ti.UI.createLabel({
-							text : "" + c_content[count],
+							text : (c_content[count]==0 || c_content[count]=="0" || c_content[count]==false || c_content[count]=="false")?"No":"Yes",
 							width : "60%",
 							height : "100%",
 							textAlign : 'left',

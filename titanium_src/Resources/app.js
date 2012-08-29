@@ -350,10 +350,11 @@ else{
 		text: ' Terms of Service',
 		color: '#495A8B',
 		font: {
-			fontSize: '13dp'
+			fontSize: '12dp'
 		},
 		height: '30dp',
-		width: '110dp'
+		textAlign: 'left',
+		width: (PLATFORM=='android')?'105dp':'110dp'
 	});
 	
 	var t_row = Ti.UI.createView({

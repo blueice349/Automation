@@ -119,7 +119,6 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 
 	}
 	
-	
 	private void createCamera() {
 		// Create an instance of Camera
 		mCamera = getCameraInstance();
@@ -196,6 +195,7 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 		public void onPictureTaken(byte[] data, Camera camera) {
 
 			// Replacing the button after a photho was taken.
+			rotatingImage.setEnabled(false);
 			System.gc();
 			Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
 			
@@ -243,8 +243,17 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 			stream = null;
 			System.gc();
 			finish();
-			BackgrounTask bgTask = new BackgrounTask();
-			bgTask.execute(ss);
+			//BackgrounTask bgTask = new BackgrounTask();
+			//bgTask.execute(ss);
+			Message msg = new Message();
+			msg.obj = ss;
+			h4.sendMessage(msg);
+			
+//			KrollDict eventData = new KrollDict();
+//			eventData.put("source", CustomcameraModule.eve);
+//			eventData.put("media", ss);
+//			CustomcameraModule.getInstance().fireEvent("successCameraCapture", eventData);
+			
 		}
 	};
 	
