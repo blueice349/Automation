@@ -37,7 +37,6 @@ var OFF_BY = 5*60;
 var db_display;
 var no_data_fieldsArr = [];
 var doneButton = null;
-var saveCounter = 0;
 var menu = null;
 var ONE_MB = 524258;
 
@@ -422,7 +421,6 @@ function adjustView(counter, top ){
 }
 
 function keep_info(_flag_info, pass_it, new_time) {
-	saveCounter += 1 ;
 	Ti.API.info("--------------------Inside keep_info--------------------");
 	var a = Titanium.UI.createAlertDialog({
 		title : 'Omadi',
@@ -512,7 +510,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 		if(!content[k]) {
 			continue;
 		}
-		if(saveCounter == 1 && (win.mode == 0 || _flag_info == 'draft')) {
+		if((win.mode == 0 || _flag_info == 'draft')) {
 			//validating license plate and vin value entered by user against restritions
 			for(var r in restrictions) {
 				var accountRestricted = restrictions[r].restrict_entire_account;
@@ -529,11 +527,19 @@ function keep_info(_flag_info, pass_it, new_time) {
 							restricted_license_plate = restricted_license_plate.toLowerCase().replace(/o/g, '0');
 	
 							if(license_plate == restricted_license_plate) {
-								var term_data = db_check_restrictions.execute("SELECT name FROM term_data WHERE tid = " + restrictions[r].vehicle_color);
-	
-								a.message = term_data.getFieldByName('name') + " " + restrictions[r].vehicle_make + " " + restrictions[r].vehicle_model + " - " + restrictions[r].license_plate + " is currently restricted for the account entered.";
+								var colorName = "";
+								var resMsg = "";
+								if(restrictions[r].vehicle_color!=null && restrictions[r].vehicle_color!=""){
+									var term_data = db_check_restrictions.execute("SELECT name FROM term_data WHERE tid = " + restrictions[r].vehicle_color);
+									colorName = term_data.getFieldByName('name');
+									term_data.close();
+								}
+								resMsg = colorName + " " + restrictions[r].vehicle_make + " " + restrictions[r].vehicle_model;
+								resMsg += ((resMsg.trim() != "")?" - ":"");
+								resMsg += restrictions[r].license_plate + " is currently restricted for the account entered.";
+								
+								a.message = resMsg;
 								a.show();
-								term_data.close();
 								return;
 							}
 						}
@@ -551,11 +557,19 @@ function keep_info(_flag_info, pass_it, new_time) {
 						var restricted_vin = restrictions[r].vin;
 						if(vin != null && restricted_vin != null) {
 							if(vin == restricted_vin) {
-								var term_data = db_check_restrictions.execute("SELECT name FROM term_data WHERE tid = " + restrictions[r].vehicle_color);
+								var colorName = "";
+								var resMsg = "";
+								if(restrictions[r].vehicle_color!=null && restrictions[r].vehicle_color!=""){
+									var term_data = db_check_restrictions.execute("SELECT name FROM term_data WHERE tid = " + restrictions[r].vehicle_color);
+									colorName = term_data.getFieldByName('name');
+									term_data.close();
+								}
+								resMsg = colorName + " " + restrictions[r].vehicle_make + " " + restrictions[r].vehicle_model;
+								resMsg += ((resMsg.trim() != "")?" - ":"");
+								resMsg += restrictions[r].vin + " is currently restricted for the account entered.";
 	
-								a.message = term_data.getFieldByName('name') + " " + restrictions[r].vehicle_make + " " + restrictions[r].vehicle_model + " - " + restrictions[r].vin + " is currently restricted for the account entered.";
+								a.message = resMsg;
 								a.show();
-								term_data.close();
 								return;
 							}
 						}
@@ -740,7 +754,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 			}
 
 			//validating license plate and vin value entered by user against restritions
-			if(saveCounter==1 && (win.mode==0 || _flag_info=='draft')){	
+			if((win.mode==0 || _flag_info=='draft')){	
 				for (var r in restrictions) {
 					var accountRestricted = restrictions[r].restrict_entire_account;
 					if (content[j].field_name == 'license_plate___plate') {
@@ -5332,7 +5346,7 @@ create_or_edit_node.loadUI = function() {
 											top : top + heightValue,
 											searchHidden : true,
 											zIndex : 15,
-											height : getScreenHeight() * 0.2,
+											height : getScreenHeight() * 0.3,
 											backgroundColor : '#FFFFFF',
 											visible : false,
 											borderColor: '#000',
@@ -5416,6 +5430,10 @@ create_or_edit_node.loadUI = function() {
 														}
 													}
 													e.source.autocomplete_table.setData(table_data);
+													e.source.autocomplete_table.height = getScreenHeight() * 0.3;
+													if(table_data.length < 3 && table_data.length > 0) {
+														e.source.autocomplete_table.height = (table_data.length == 1) ? getScreenHeight() * 0.1 : getScreenHeight() * 0.2;
+													}
 													e.source.autocomplete_table.scrollToTop(0, {animated: false});
 													viewContent.scrollTo(0,e.source.top);
 													if(table_data.length > 0) {
@@ -5529,7 +5547,7 @@ create_or_edit_node.loadUI = function() {
 										top : top + heightValue,
 										searchHidden : true,
 										zIndex : 15,
-										height : getScreenHeight() * 0.2,
+										height : getScreenHeight() * 0.3,
 										backgroundColor : '#FFFFFF',
 										visible : false,
 										borderColor: '#000',
@@ -5614,6 +5632,10 @@ create_or_edit_node.loadUI = function() {
 													}
 												}
 												e.source.autocomplete_table.setData(table_data);
+												e.source.autocomplete_table.height = getScreenHeight() * 0.3;
+												if(table_data.length<3 && table_data.length>0){
+													e.source.autocomplete_table.height = (table_data.length==1)?getScreenHeight() * 0.1: getScreenHeight() * 0.2;
+												}
 												e.source.autocomplete_table.scrollToTop(0, {animated: false});
 												viewContent.scrollTo(0,e.source.top);
 												if(table_data.length > 0) {
@@ -5811,7 +5833,7 @@ create_or_edit_node.loadUI = function() {
 										top : top + heightValue,
 										searchHidden : true,
 										zIndex : 15,
-										height : getScreenHeight() * 0.2,
+										height : getScreenHeight() * 0.3,
 										backgroundColor : '#FFFFFF',
 										visible : false,
 										borderColor: '#000',
@@ -5903,6 +5925,10 @@ create_or_edit_node.loadUI = function() {
 														}
 													}
 													e.source.autocomplete_table.setData(table_data);
+													e.source.autocomplete_table.height = getScreenHeight() * 0.3;
+													if(table_data.length<3 && table_data.length>0){
+														e.source.autocomplete_table.height = (table_data.length==1)?getScreenHeight() * 0.1: getScreenHeight() * 0.2;
+													}
 													e.source.autocomplete_table.scrollToTop(0, {animated: false});
 													viewContent.scrollTo(0,e.source.top);
 													if(table_data.length > 0) {
@@ -5993,7 +6019,7 @@ create_or_edit_node.loadUI = function() {
 									top : top + heightValue,
 									searchHidden : true,
 									zIndex : 999,
-									height : getScreenHeight() * 0.2,
+									height : getScreenHeight() * 0.3,
 									backgroundColor : '#FFFFFF',
 									visible : false,
 									borderColor: '#000',
@@ -6087,6 +6113,10 @@ create_or_edit_node.loadUI = function() {
 													}
 												}
 												e.source.autocomplete_table.setData(table_data);
+												e.source.autocomplete_table.height = getScreenHeight() * 0.3;
+												if(table_data.length<3 && table_data.length>0){
+													e.source.autocomplete_table.height = (table_data.length==1)?getScreenHeight() * 0.1: getScreenHeight() * 0.2;
+												}
 												e.source.autocomplete_table.scrollToTop(0, {animated: false});
 												viewContent.scrollTo(0,e.source.top);
 												if(table_data.length>0){
@@ -7584,7 +7614,7 @@ create_or_edit_node.loadUI = function() {
 									top : top + heightValue,
 									searchHidden : true,
 									zIndex : 15,
-									height : getScreenHeight() * 0.2,
+									height : getScreenHeight() * 0.3,
 									backgroundColor : '#FFFFFF',
 									visible : false,
 									borderColor: '#000',
@@ -7671,6 +7701,10 @@ create_or_edit_node.loadUI = function() {
 												}
 											}
 											e.source.autocomplete_table.setData(table_data);
+											e.source.autocomplete_table.height = getScreenHeight() * 0.3;
+											if(table_data.length<3 && table_data.length>0){
+												e.source.autocomplete_table.height = (table_data.length==1)?getScreenHeight() * 0.1: getScreenHeight() * 0.2;
+											}
 											e.source.autocomplete_table.scrollToTop(0, {animated: false});
 											viewContent.scrollTo(0,e.source.top);
 											if(table_data.length>0){

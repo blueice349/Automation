@@ -3610,6 +3610,18 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 			});
 
 			a_msg.message = "There was a network error, and your data could not be synched. Do you want to retry now? Error description: " + e.error;
+			if(this.status == 403 || elements.status == 403) {
+				a_msg.message = "You have been logged out. Please log back in."
+				a_msg.addEventListener('click', function(e) {
+					if(getDeviceTypeIndentifier() == "android") {
+						Ti.App.fireEvent('stop_gps');
+					}
+					Ti.App.fireEvent('free_login');
+					win.close();
+				});
+			}
+
+				
 			a_msg.show();
 
 			a_msg.addEventListener('click', function(e) {

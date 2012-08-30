@@ -9,5 +9,6 @@
 	<classpathentry kind="lib" path="/Users/cdn93/Library/Application Support/Titanium/mobilesdk/osx/2.1.1.GA/android/js.jar"/>
 	<classpathentry kind="lib" path="/Users/cdn93/Library/Application Support/Titanium/mobilesdk/osx/2.1.1.GA/android/kroll-common.jar"/>
 	<classpathentry kind="lib" path="/Users/cdn93/Library/Application Support/Titanium/mobilesdk/osx/2.1.1.GA/android/kroll-apt.jar"/>
+	<classpathentry kind="lib" path="/Volumes/UNTITLED 2/pooja_laad/Titanium/omadi/Repository_20120829/omadi_mobile/android_src/CustomCamera/lib/Acra.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
