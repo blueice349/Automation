@@ -2,7 +2,8 @@
 Ti.include('/lib/functions.js');
 
 var message_center = {};
-var win;
+var win = {};
+win.is_opened = false;
 
 function cleanWindow( winObj )
 {
@@ -39,9 +40,6 @@ message_center.get_win = function() {
 	
 	win.addEventListener('open', function(){
 		win.is_opened = true;
-	});
-	
-	win.addEventListener('open', function(){
 		Ti.App.fireEvent('upload_gps_locations');
 	});
 
@@ -348,7 +346,7 @@ message_center.loadUI = function() {
 
 //message_center.loadUI = function() {
 Ti.App.addEventListener('refresh_UI_Alerts', function(){
-	if (win.is_opened == true){
+	if (win && win.is_opened === true){
 		Ti.API.info(win+' Check ===>>> '+win.is_opened);
 		cleanWindow(win);
 		Ti.API.info('ALERT CENTER is opened!');
@@ -688,10 +686,20 @@ function alertNavButtons(listTableView, win, type){
 			style:Titanium.UI.iPhone.SystemButtonStyle.PLAIN
 		});
 	}
+	var refresh_image = Ti.UI.createImageView({
+		image: '/images/refresh.png',
+		right: '9dp',
+		width: '32dp',
+		height: 'auto'
+	});	
+	
+	refresh_image.addEventListener('click', function(e){
+		Ti.App.fireEvent('upload_gps_locations');
+	});
 	
 	// create and add toolbar
 	var toolbar = Ti.UI.iOS.createToolbar({
-		items:[back, label, space],
+		items:[back, label, space, refresh_image],
 		top:0,
 		borderTop:false,
 		borderBottom:true

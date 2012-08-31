@@ -33,14 +33,13 @@ var viewContent;
 var title_head;
 var resultView;
 var _lb_color = "#4C5A88";
-var OFF_BY = 5*60;
+var OFF_BY = 5 * 60;
 var db_display;
 var no_data_fieldsArr = [];
 var doneButton = null;
 var saveCounter = 0;
 var menu = null;
 var ONE_MB = 524258;
-
 
 var create_or_edit_node = {};
 
@@ -53,7 +52,7 @@ create_or_edit_node.getWindow = function() {
 	//Sets only portrait mode
 	win.orientationModes = [Titanium.UI.PORTRAIT];
 
-	if (PLATFORM == 'android'){
+	if (PLATFORM == 'android') {
 		//The view where the results are presented
 		resultView = Ti.UI.createView({
 			top : 0,
@@ -63,7 +62,7 @@ create_or_edit_node.getWindow = function() {
 			opacity : 1
 		});
 		win.add(resultView);
-		
+
 		viewContent = Ti.UI.createScrollView({
 			bottom : 0,
 			contentHeight : 'auto',
@@ -75,20 +74,19 @@ create_or_edit_node.getWindow = function() {
 			scrollType : "vertical",
 			zIndex : 10
 		});
-	}
-	else{
-		
+	} else {
+
 		//The view where the results are presented
 		resultView = Ti.UI.createView({
 			top : "8%",
 			height : '92%',
 			width : '100%',
-			bottom: 0,
+			bottom : 0,
 			backgroundColor : '#EEEEEE',
 			opacity : 1
 		});
-		win.add(resultView);		
-		
+		win.add(resultView);
+
 		viewContent = Ti.UI.createScrollView({
 			contentHeight : 'auto',
 			//height : "98%",
@@ -98,11 +96,10 @@ create_or_edit_node.getWindow = function() {
 			opacity : 1,
 			scrollType : "vertical",
 			zIndex : 10
-		});		
+		});
 	}
 
 	resultView.add(viewContent);
-
 
 	win.addEventListener('close', function() {
 		if (win.mode == 0) {
@@ -116,33 +113,33 @@ create_or_edit_node.getWindow = function() {
 // Extra Functions
 //////////////////////////
 
-function get_android_menu(menu_exists){
-	if (menu_exists === true){
+function get_android_menu(menu_exists) {
+	if (menu_exists === true) {
 		//======================================
 		// MENU - UI
 		//======================================
-		
+
 		var btn_tt = [];
 		var btn_id = [];
-	
+
 		menu.clear();
-		
-		if (win.nid != null){
+
+		if (win.nid != null) {
 			var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 			var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
 			var _data = JSON.parse(json_data.fieldByName('_data'));
-	
+
 			var node_form = win.region_form;
-	
-			if(_data.form_parts!=null && _data.form_parts!=""){
+
+			if (_data.form_parts != null && _data.form_parts != "") {
 				Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
-				if(_data.form_parts.parts.length >= parseInt(node_form) + 2) { 
+				if (_data.form_parts.parts.length >= parseInt(node_form) + 2) {
 					var keep_node_form = node_form + 1;
-					
+
 					Ti.API.info("Title = " + _data.form_parts.parts[keep_node_form].label);
-					
+
 					var menu_zero = menu.add({
-						title : "Save + "+_data.form_parts.parts[keep_node_form].label,
+						title : "Save + " + _data.form_parts.parts[keep_node_form].label,
 						order : 0
 					});
 					menu_zero.setIcon("/images/drop.png");
@@ -154,93 +151,92 @@ function get_android_menu(menu_exists){
 							alert('Error Tracking: ' + ev);
 							//To catch error to resolve issue #916
 						}
-	
+
 					});
 				}
 			}
 			json_data.close();
 			db_act.close();
-		}
-		else{
+		} else {
 			var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 			var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
 			var _data = JSON.parse(json_data.fieldByName('_data'));
-			
+
 			var node_form = 0;
-	
-			Ti.API.info('Form node part = ' + node_form );
-			
-			if(_data.form_parts!=null && _data.form_parts!=""){
+
+			Ti.API.info('Form node part = ' + node_form);
+
+			if (_data.form_parts != null && _data.form_parts != "") {
 				Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
-				if(_data.form_parts.parts.length >= parseInt(node_form) + 2) { 
+				if (_data.form_parts.parts.length >= parseInt(node_form) + 2) {
 					var keep_node_form = node_form + 1;
-					
+
 					Ti.API.info("<<<<<<<------->>>>>>> Title = " + _data.form_parts.parts[keep_node_form].label);
-					
+
 					var menu_zero = menu.add({
-						title : "Save + "+_data.form_parts.parts[keep_node_form].label,
+						title : "Save + " + _data.form_parts.parts[keep_node_form].label,
 						order : 0
 					});
 					menu_zero.setIcon("/images/drop.png");
 					menu_zero.addEventListener("click", function(ev) {
-						Ti.API.info('====>> '+keep_node_form);
+						Ti.API.info('====>> ' + keep_node_form);
 						try {
 							keep_info(keep_node_form, false);
 						} catch(e) {
 							alert('Error Tracking: ' + ev);
 							//To catch error to resolve issue #916
 						}
-	
+
 					});
 				}
 			}
 			json_data.close();
 			db_act.close();
 		}
-			
+
 		btn_tt.push('Save');
 		btn_tt.push('Draft');
 		btn_tt.push('Cancel');
-	
+
 		var menu_first = menu.add({
 			title : 'Save',
 			order : 1
 		});
 		menu_first.setIcon("/images/save.png");
-	
+
 		var menu_second = menu.add({
 			title : 'Draft',
 			order : 2
 		});
 		menu_second.setIcon("/images/draft.png");
-	
-	
+
 		var menu_third = menu.add({
 			title : 'Cancel',
 			order : 3
 		});
 		menu_third.setIcon("/images/cancel.png");
-	
+
 		//======================================
 		// MENU - EVENTS
 		//======================================
 		menu_first.addEventListener("click", function(e) {
-			try{
+			try {
 				keep_info('normal', false);
 			} catch(e) {
-				alert('Error Tracking: ' + e);//To catch error to resolve issue #916
+				alert('Error Tracking: ' + e);
+				//To catch error to resolve issue #916
 			}
 		});
-	
-	
+
 		menu_second.addEventListener("click", function(e) {
-			try{
+			try {
 				keep_info('draft', false);
 			} catch(e) {
-				alert('Error Tracking: ' + e);//To catch error to resolve issue #916
+				alert('Error Tracking: ' + e);
+				//To catch error to resolve issue #916
 			}
 		});
-	
+
 		menu_third.addEventListener("click", function(e) {
 			if (win.mode == 0) {
 				Ti.UI.createNotification({
@@ -251,42 +247,41 @@ function get_android_menu(menu_exists){
 					message : win.title + ' update was cancelled !'
 				}).show();
 			}
-	
+
 			win.close();
-	
+
 		});
-			
-	}
-	else{
+
+	} else {
 		var activity = win.activity;
 		activity.onCreateOptionsMenu = function(e) {
-				
+
 			//======================================
 			// MENU - UI
 			//======================================
-			
+
 			var btn_tt = [];
 			var btn_id = [];
-	
+
 			menu = e.menu;
 			menu.clear();
-			
-			if (win.nid != null){
+
+			if (win.nid != null) {
 				var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 				var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
 				var _data = JSON.parse(json_data.fieldByName('_data'));
-		
+
 				var node_form = win.region_form;
-		
-				if(_data.form_parts!=null && _data.form_parts!=""){
+
+				if (_data.form_parts != null && _data.form_parts != "") {
 					Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
-					if(_data.form_parts.parts.length >= parseInt(node_form) + 2) { 
+					if (_data.form_parts.parts.length >= parseInt(node_form) + 2) {
 						var keep_node_form = node_form + 1;
-						
+
 						Ti.API.info("Title = " + _data.form_parts.parts[keep_node_form].label);
-						
+
 						var menu_zero = menu.add({
-							title : "Save + "+_data.form_parts.parts[keep_node_form].label,
+							title : "Save + " + _data.form_parts.parts[keep_node_form].label,
 							order : 0
 						});
 						menu_zero.setIcon("/images/drop.png");
@@ -298,93 +293,92 @@ function get_android_menu(menu_exists){
 								alert('Error Tracking: ' + ev);
 								//To catch error to resolve issue #916
 							}
-	
+
 						});
 					}
 				}
 				json_data.close();
 				db_act.close();
-			}
-			else{
+			} else {
 				var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 				var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
 				var _data = JSON.parse(json_data.fieldByName('_data'));
-				
+
 				var node_form = 0;
-		
-				Ti.API.info('Form node part = ' + node_form );
-				
-				if(_data.form_parts!=null && _data.form_parts!=""){
+
+				Ti.API.info('Form node part = ' + node_form);
+
+				if (_data.form_parts != null && _data.form_parts != "") {
 					Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
-					if(_data.form_parts.parts.length >= parseInt(node_form) + 2) { 
+					if (_data.form_parts.parts.length >= parseInt(node_form) + 2) {
 						var keep_node_form = node_form + 1;
-						
+
 						Ti.API.info("<<<<<<<------->>>>>>> Title = " + _data.form_parts.parts[keep_node_form].label);
-						
+
 						var menu_zero = menu.add({
-							title : "Save + "+_data.form_parts.parts[keep_node_form].label,
+							title : "Save + " + _data.form_parts.parts[keep_node_form].label,
 							order : 0
 						});
 						menu_zero.setIcon("/images/drop.png");
 						menu_zero.addEventListener("click", function(ev) {
-							Ti.API.info('====>> '+keep_node_form);
+							Ti.API.info('====>> ' + keep_node_form);
 							try {
 								keep_info(keep_node_form, false);
 							} catch(e) {
 								alert('Error Tracking: ' + ev);
 								//To catch error to resolve issue #916
 							}
-	
+
 						});
 					}
 				}
 				json_data.close();
 				db_act.close();
 			}
-				
+
 			btn_tt.push('Save');
 			btn_tt.push('Draft');
 			btn_tt.push('Cancel');
-	
+
 			var menu_first = menu.add({
 				title : 'Save',
 				order : 1
 			});
 			menu_first.setIcon("/images/save.png");
-	
+
 			var menu_second = menu.add({
 				title : 'Draft',
 				order : 2
 			});
 			menu_second.setIcon("/images/draft.png");
-	
-	
+
 			var menu_third = menu.add({
 				title : 'Cancel',
 				order : 3
 			});
 			menu_third.setIcon("/images/cancel.png");
-	
+
 			//======================================
 			// MENU - EVENTS
 			//======================================
 			menu_first.addEventListener("click", function(e) {
-				try{
+				try {
 					keep_info('normal', false);
 				} catch(e) {
-					alert('Error Tracking: ' + e);//To catch error to resolve issue #916
+					alert('Error Tracking: ' + e);
+					//To catch error to resolve issue #916
 				}
 			});
-	
-	
+
 			menu_second.addEventListener("click", function(e) {
-				try{
+				try {
 					keep_info('draft', false);
 				} catch(e) {
-					alert('Error Tracking: ' + e);//To catch error to resolve issue #916
+					alert('Error Tracking: ' + e);
+					//To catch error to resolve issue #916
 				}
 			});
-	
+
 			menu_third.addEventListener("click", function(e) {
 				if (win.mode == 0) {
 					Ti.UI.createNotification({
@@ -395,17 +389,16 @@ function get_android_menu(menu_exists){
 						message : win.title + ' update was cancelled !'
 					}).show();
 				}
-	
+
 				win.close();
-	
+
 			});
-			
-		};		
+
+		};
 	}
 }
 
-
-function adjustView(counter, top ){
+function adjustView(counter, top) {
 
 	try {
 		Ti.API.info("Offset = " + viewContent.getContentOffset().y + " count = " + counter + " top = " + top);
@@ -416,13 +409,13 @@ function adjustView(counter, top ){
 			animated : true
 		})
 		Ti.API.info("New offset: " + viewContent.getContentOffset().y);
-	}catch(ev) {
+	} catch(ev) {
 	}
 
 }
 
 function keep_info(_flag_info, pass_it, new_time) {
-	saveCounter += 1 ;
+	saveCounter += 1;
 	Ti.API.info("--------------------Inside keep_info--------------------");
 	var a = Titanium.UI.createAlertDialog({
 		title : 'Omadi',
@@ -433,11 +426,10 @@ function keep_info(_flag_info, pass_it, new_time) {
 	var string_err = "";
 	var count_fields = 0;
 	var value_err = 0;
-	if (pass_it === false){
-		var _now = Math.round(new Date().getTime()/1000);
-	}
-	else{
-		if (new_time != null){
+	if (pass_it === false) {
+		var _now = Math.round(new Date().getTime() / 1000);
+	} else {
+		if (new_time != null) {
 			var _now = new_time;
 		}
 	}
@@ -450,15 +442,15 @@ function keep_info(_flag_info, pass_it, new_time) {
 		try {
 			Ti.API.info(label[x].text + ' is required: ' + content[x].required + ' = ' + content[x].value);
 		} catch(e) {
-			Ti.API.info('!!!!! ERROR !!!!! '+e);
+			Ti.API.info('!!!!! ERROR !!!!! ' + e);
 		}
 		//Regular expression for license Plate
 		if (content[x].field_type == 'license_plate') {
-			if(content[x].value !=null && content[x].value!=""){
+			if (content[x].value != null && content[x].value != "") {
 				content[x].value = content[x].value.replace(/[^[0-9A-Z]/g, '', content[x].value);
 			}
 		}
-		
+
 		// Regular expression for phone
 		if (content[x].field_type == 'phone') {
 			if (content[x].value != "" && content[x].value != null) {
@@ -474,7 +466,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 				break;
 			}
 		} else if (content[x].field_type == 'omadi_reference') {//for preparing the list of restrictions
-			Ti.API.info("-------------------- omadi_refrence = "+content[x].value+" ... NID:  " + content[x].nid + "--------------------");
+			Ti.API.info("-------------------- omadi_refrence = " + content[x].value + " ... NID:  " + content[x].nid + "--------------------");
 			if (content[x].nid != null) {
 				var d = new Date();
 				var utcDate = Date.parse(d.toUTCString());
@@ -497,8 +489,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 			Ti.API.info("--------------------Restrictions array length : " + restrictions.length + "--------------------");
 		}
 
-		if (((content[x].is_title === true) || (content[x].required == 'true') || (content[x].required === true) || (content[x].required == '1') || (content[x].required == 1) ) && ((content[x].value == '') || (content[x].value == null)) 
-		&& (content[x].no_data_checkbox==null || content[x].no_data_checkbox == "" || content[x].no_data_checkbox == false) && content[x].enabled == true) {
+		if (((content[x].is_title === true) || (content[x].required == 'true') || (content[x].required === true) || (content[x].required == '1') || (content[x].required == 1) ) && ((content[x].value == '') || (content[x].value == null)) && (content[x].no_data_checkbox == null || content[x].no_data_checkbox == "" || content[x].no_data_checkbox == false) && content[x].enabled == true) {
 			count_fields++;
 			if (content[x].cardinality > 1) {
 				string_text += "#" + content[x].private_index + " " + label[content[x].reffer_index].text + "\n";
@@ -507,30 +498,30 @@ function keep_info(_flag_info, pass_it, new_time) {
 			}
 		}
 	}
-	
-	for(var k = 0; k <= content.length; k++) {
-		if(!content[k]) {
+
+	for (var k = 0; k <= content.length; k++) {
+		if (!content[k]) {
 			continue;
 		}
-		if(saveCounter == 1 && (win.mode == 0 || _flag_info == 'draft')) {
+		if (saveCounter == 1 && (win.mode == 0 || _flag_info == 'draft')) {
 			//validating license plate and vin value entered by user against restritions
-			for(var r in restrictions) {
+			for (var r in restrictions) {
 				var accountRestricted = restrictions[r].restrict_entire_account;
-				if(content[k].field_name == 'license_plate___plate') {
-					if(accountRestricted != null && accountRestricted == "1") {
+				if (content[k].field_name == 'license_plate___plate') {
+					if (accountRestricted != null && accountRestricted == "1") {
 						a.message = "The selected account is restricted from any parking enforcement activity.";
 						a.show();
 						return;
 					} else {
 						var license_plate = content[k].value;
 						var restricted_license_plate = restrictions[r].license_plate;
-						if(license_plate != null && restricted_license_plate != null) {
+						if (license_plate != null && restricted_license_plate != null) {
 							license_plate = license_plate.toLowerCase().replace(/o/g, '0');
 							restricted_license_plate = restricted_license_plate.toLowerCase().replace(/o/g, '0');
-	
-							if(license_plate == restricted_license_plate) {
+
+							if (license_plate == restricted_license_plate) {
 								var term_data = db_check_restrictions.execute("SELECT name FROM term_data WHERE tid = " + restrictions[r].vehicle_color);
-	
+
 								a.message = term_data.getFieldByName('name') + " " + restrictions[r].vehicle_make + " " + restrictions[r].vehicle_model + " - " + restrictions[r].license_plate + " is currently restricted for the account entered.";
 								a.show();
 								term_data.close();
@@ -538,21 +529,21 @@ function keep_info(_flag_info, pass_it, new_time) {
 							}
 						}
 					}
-	
+
 				}
-	
-				if(content[k].field_name == 'vin') {
-					if(accountRestricted != null && accountRestricted == "1") {
+
+				if (content[k].field_name == 'vin') {
+					if (accountRestricted != null && accountRestricted == "1") {
 						a.message = "The selected account is restricted from any parking enforcement activity.";
 						a.show();
 						return;
 					} else {
 						var vin = content[k].value;
 						var restricted_vin = restrictions[r].vin;
-						if(vin != null && restricted_vin != null) {
-							if(vin == restricted_vin) {
+						if (vin != null && restricted_vin != null) {
+							if (vin == restricted_vin) {
 								var term_data = db_check_restrictions.execute("SELECT name FROM term_data WHERE tid = " + restrictions[r].vehicle_color);
-	
+
 								a.message = term_data.getFieldByName('name') + " " + restrictions[r].vehicle_make + " " + restrictions[r].vehicle_model + " - " + restrictions[r].vin + " is currently restricted for the account entered.";
 								a.show();
 								term_data.close();
@@ -560,14 +551,13 @@ function keep_info(_flag_info, pass_it, new_time) {
 							}
 						}
 					}
-	
+
 				}
 			}
 		}
-	
-	}	
 
-	
+	}
+
 	db_check_restrictions.close();
 
 	if ((count_fields > 0) && (_flag_info != "draft")) {
@@ -584,51 +574,50 @@ function keep_info(_flag_info, pass_it, new_time) {
 	} else if (value_err > 0) {
 		a.message = string_err;
 		a.show();
-	} 
-	else if (pass_it === false && Ti.App.Properties.getString("timestamp_offset") > OFF_BY){
+	} else if (pass_it === false && Ti.App.Properties.getString("timestamp_offset") > OFF_BY) {
 
-		var actual_time =  Math.round( new Date().getTime()/1000 );
-		actual_time = parseInt(actual_time) + parseInt(Ti.App.Properties.getString("timestamp_offset")) ;
-		
+		var actual_time = Math.round(new Date().getTime() / 1000);
+		actual_time = parseInt(actual_time) + parseInt(Ti.App.Properties.getString("timestamp_offset"));
+
 		var server_time = new Date(actual_time);
-		
+
 		var _a = Titanium.UI.createAlertDialog({
-			title:'Omadi',
-			buttonNames: ['Yes', 'No'],
-			message: 'Your device\'s clock is off a little bit. Please adjust your clock to '+timeConverter(server_time, "1")+'. Do you want to save this form now using the correct time?',
-			cancel: 1
+			title : 'Omadi',
+			buttonNames : ['Yes', 'No'],
+			message : 'Your device\'s clock is off a little bit. Please adjust your clock to ' + timeConverter(server_time, "1") + '. Do you want to save this form now using the correct time?',
+			cancel : 1
 		});
 		_a.show();
-		
-		_a.addEventListener('click', function(e){
-			if (e.index != e.cancel){
-				
-				for (var _i in content){
-					Ti.API.info("Field: "+content[_i].field_type);
-					if (content[_i].field_type == "datestamp" || content[_i].field_type == "omadi_time" ){
+
+		_a.addEventListener('click', function(e) {
+			if (e.index != e.cancel) {
+
+				for (var _i in content) {
+					Ti.API.info("Field: " + content[_i].field_type);
+					if (content[_i].field_type == "datestamp" || content[_i].field_type == "omadi_time") {
 						var tp = content[_i].value;
-						content[_i].value = parseInt(content[_i].value) + parseInt(Ti.App.Properties.getString("timestamp_offset")*1000);
-						alert(tp+'  =  '+content[_i].value);
-						Ti.API.info(tp+'  =  '+content[_i].value);
+						content[_i].value = parseInt(content[_i].value) + parseInt(Ti.App.Properties.getString("timestamp_offset") * 1000);
+						alert(tp + '  =  ' + content[_i].value);
+						Ti.API.info(tp + '  =  ' + content[_i].value);
 					}
 				}
-				try{
+				try {
 					keep_info(_flag_info, true, actual_time);
-				}catch(e){
-					alert('Error Tracking: ' + e);//To catch error to resolve issue #916
+				} catch(e) {
+					alert('Error Tracking: ' + e);
+					//To catch error to resolve issue #916
 				}
-			}
-			else{
+			} else {
 				try {
 					keep_info(_flag_info, true, null);
 				} catch(e) {
-					alert('Error Tracking: ' + e);//To catch error to resolve issue #916
+					alert('Error Tracking: ' + e);
+					//To catch error to resolve issue #916
 				}
 			}
 		});
 
-	}
-	else {
+	} else {
 		var mode_msg = '';
 		var no_data_fields = [];
 		if (_flag_info == "draft") {
@@ -717,7 +706,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 					}
 				}
 			}
-			
+
 			if (j_y == content.length - 1) {
 				query += "'" + content[j_y].field_name + "' ) ";
 			} else {
@@ -740,7 +729,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 			}
 
 			//validating license plate and vin value entered by user against restritions
-			if(saveCounter==1 && (win.mode==0 || _flag_info=='draft')){	
+			if (saveCounter == 1 && (win.mode == 0 || _flag_info == 'draft')) {
 				for (var r in restrictions) {
 					var accountRestricted = restrictions[r].restrict_entire_account;
 					if (content[j].field_name == 'license_plate___plate') {
@@ -755,7 +744,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 							if (license_plate != null && restricted_license_plate != null) {
 								license_plate = license_plate.toLowerCase().replace(/o/g, '0');
 								restricted_license_plate = restricted_license_plate.toLowerCase().replace(/o/g, '0');
-	
+
 								if (license_plate == restricted_license_plate) {
 									hideIndicator();
 									a.message = restrictions[r].vehicle_color + restrictions[r].vehicle_make + restrictions[r].vehicle_model + " - " + restrictions[r].license_plate + " is currently restricted for the account entered.";
@@ -764,9 +753,9 @@ function keep_info(_flag_info, pass_it, new_time) {
 								}
 							}
 						}
-	
+
 					}
-	 
+
 					if (content[j].field_name == 'vin') {
 						if (accountRestricted != null && accountRestricted == "1") {
 							hideIndicator();
@@ -785,10 +774,10 @@ function keep_info(_flag_info, pass_it, new_time) {
 								}
 							}
 						}
-	
+
 					}
 				}
-			}	
+			}
 
 			if (content[j].is_title === true) {
 				if (title_to_node.charAt(0) == "") {
@@ -839,18 +828,17 @@ function keep_info(_flag_info, pass_it, new_time) {
 			var value_to_insert = '';
 			var is_no_data = false;
 			//INSERTING NO DATA FIEDLS IN ARRAY
-			if(content[j].no_data_checkbox!=null && content[j].no_data_checkbox != "" && content[j].no_data_checkbox){
+			if (content[j].no_data_checkbox != null && content[j].no_data_checkbox != "" && content[j].no_data_checkbox) {
 				is_no_data = true;
-				if(content[j].noDataView != null ){
+				if (content[j].noDataView != null) {
 					var fieldName = content[j].field_name;
-					if(content[j].partsArr != null && content[j].partsArr.length>0){
+					if (content[j].partsArr != null && content[j].partsArr.length > 0) {
 						fieldName = fieldName.split('___');
 						fieldName = fieldName[0];
 					}
 					no_data_fields.push(fieldName);
 				}
 			}
-
 
 			//If it is a composed field, just insert the number
 			//Build cardinality for fields
@@ -867,152 +855,151 @@ function keep_info(_flag_info, pass_it, new_time) {
 						}
 					}
 				}
-		if(!is_no_data ){
+				if (!is_no_data) {
 
-				//Treat the array
-				content_s = treatArray(_array_value[content[j].field_name], 6);
-				Ti.API.info('About to insert ' + _array_value[content[j].field_name]);
-				// table structure:
-				// incremental, node_id, field_name, value
-				//var db_jub = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+					//Treat the array
+					content_s = treatArray(_array_value[content[j].field_name], 6);
+					Ti.API.info('About to insert ' + _array_value[content[j].field_name]);
+					// table structure:
+					// incremental, node_id, field_name, value
+					//var db_jub = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 
-				if (win.mode == 0) {
-					Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + new_nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
-					db_put.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + new_nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
-				} else {
-					Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + win.nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
-					db_put.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + win.nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
-				}
-
-				//db_jub.close();
-
-				// Code must to be a number since this database field accepts only integers numbers
-				// Token to indentify array of numbers is 7411317618171051229
-				value_to_insert = 7411317618171051229;
-			} 
-		} else if(!is_no_data){
- 
-			
-			if ((content[j].field_type == 'number_decimal') || (content[j].field_type == 'number_integer')) {
-				if ((content[j].value == '') || (content[j].value == null)) {
-					value_to_insert = 'null';
-					mark = "'";
-				} else {
-					value_to_insert = content[j].value;
-					mark = '';
-				}
-			} else if (content[j].field_type == 'user_reference') {
-				if (content[j].value == null) {
-					value_to_insert = ''
-					mark = '\'';
-				} else {
-					value_to_insert = content[j].value;
-					mark = '';
-				}
-			} else if (content[j].field_type == 'taxonomy_term_reference') {
-				if (content[j].widget == 'options_select') {
-					if (content[j].cardinality != -1) {
-						if (content[j].value == null) {
-							value_to_insert = ''
-							mark = '\'';
-						} else {
-							value_to_insert = content[j].value;
-							mark = '';
-						}
+					if (win.mode == 0) {
+						Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + new_nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
+						db_put.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + new_nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
 					} else {
+						Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + win.nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
+						db_put.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + win.nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
+					}
 
-						var vital_info = [];
+					//db_jub.close();
 
-						if (content[j].value == null) {
-							vital_info.push("null");
-						} else {
-							for (var v_info_tax in content[j].value ) {
-								vital_info.push(content[j].value[v_info_tax].v_info.toString());
-							}
-						}
+					// Code must to be a number since this database field accepts only integers numbers
+					// Token to indentify array of numbers is 7411317618171051229
+					value_to_insert = 7411317618171051229;
+				}
+			} else if (!is_no_data) {
 
-						//Treat the array
-						content_s = treatArray(vital_info, 6);
-						Ti.API.info('About to insert ' + content[j].field_name);
-						// table structure:
-						// incremental, node_id, field_name, value
-						//var db_jub = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-
-						if (win.mode == 0) {
-							Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + new_nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
-							db_put.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + new_nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
-						} else {
-							Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + win.nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
-							db_put.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + win.nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
-						}
-
-						//db_jub.close();
-
-						// Code must to be a number since this database field accepts only integers numbers
-						// Token to indentify array of numbers is 7411317618171051229
-						value_to_insert = 7411317618171051229;
+				if ((content[j].field_type == 'number_decimal') || (content[j].field_type == 'number_integer')) {
+					if ((content[j].value == '') || (content[j].value == null)) {
+						value_to_insert = 'null';
+						mark = "'";
+					} else {
+						value_to_insert = content[j].value;
 						mark = '';
 					}
-				} else if (content[j].widget == 'taxonomy_autocomplete') {
-					if ((content[j].tid == null) && (content[j].value == "")) {
+				} else if (content[j].field_type == 'user_reference') {
+					if (content[j].value == null) {
+						value_to_insert = ''
+						mark = '\'';
+					} else {
+						value_to_insert = content[j].value;
+						mark = '';
+					}
+				} else if (content[j].field_type == 'taxonomy_term_reference') {
+					if (content[j].widget == 'options_select') {
+						if (content[j].cardinality != -1) {
+							if (content[j].value == null) {
+								value_to_insert = ''
+								mark = '\'';
+							} else {
+								value_to_insert = content[j].value;
+								mark = '';
+							}
+						} else {
+
+							var vital_info = [];
+
+							if (content[j].value == null) {
+								vital_info.push("null");
+							} else {
+								for (var v_info_tax in content[j].value ) {
+									vital_info.push(content[j].value[v_info_tax].v_info.toString());
+								}
+							}
+
+							//Treat the array
+							content_s = treatArray(vital_info, 6);
+							Ti.API.info('About to insert ' + content[j].field_name);
+							// table structure:
+							// incremental, node_id, field_name, value
+							//var db_jub = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+
+							if (win.mode == 0) {
+								Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + new_nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
+								db_put.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + new_nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
+							} else {
+								Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + win.nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
+								db_put.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + win.nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
+							}
+
+							//db_jub.close();
+
+							// Code must to be a number since this database field accepts only integers numbers
+							// Token to indentify array of numbers is 7411317618171051229
+							value_to_insert = 7411317618171051229;
+							mark = '';
+						}
+					} else if (content[j].widget == 'taxonomy_autocomplete') {
+						if ((content[j].tid == null) && (content[j].value == "")) {
+							value_to_insert = '';
+							mark = '\'';
+						} else if ((win.mode == 0) && (content[j].tid == null) && (content[j].value != "")) {
+							if (content[j].restrict_new_autocomplete_terms != 1) {
+								mark = '';
+								//Get smallest tid
+								var tid = db_put.execute("SELECT tid FROM term_data ORDER BY tid ASC ");
+
+								if (tid.fieldByName('tid') >= 0) {
+									var new_tid = -1;
+								} else {
+									var new_tid = tid.fieldByName('tid') - 1;
+								}
+								var date_created = Math.round(+new Date() / 1000);
+								db_put.execute("INSERT INTO term_data (tid, vid, name, description, weight, created) VALUES (" + new_tid + ", " + content[j].vid + ", '" + content[j].value + "', '', '', '" + date_created + "'  )");
+								value_to_insert = new_tid;
+
+								Ti.API.info('First tid is: ' + new_tid + ' and tid ' + content[j].tid + ' and value ' + content[j].value);
+								tid.close();
+							} else {
+								value_to_insert = '';
+							}
+
+						} else if ((content[j].tid != null)) {
+							mark = '';
+							value_to_insert = content[j].tid;
+						}
+					}
+				} else if (content[j].field_type == 'omadi_reference') {
+					if (content[j].nid === null) {
 						value_to_insert = '';
 						mark = '\'';
-					} else if ((win.mode == 0) && (content[j].tid == null) && (content[j].value != "")) {
-						if (content[j].restrict_new_autocomplete_terms != 1) {
-							mark = '';
-							//Get smallest tid
-							var tid = db_put.execute("SELECT tid FROM term_data ORDER BY tid ASC ");
-
-							if (tid.fieldByName('tid') >= 0) {
-								var new_tid = -1;
-							} else {
-								var new_tid = tid.fieldByName('tid') - 1;
-							}
-							var date_created = Math.round(+new Date() / 1000);
-							db_put.execute("INSERT INTO term_data (tid, vid, name, description, weight, created) VALUES (" + new_tid + ", " + content[j].vid + ", '" + content[j].value + "', '', '', '" + date_created + "'  )");
-							value_to_insert = new_tid;
-
-							Ti.API.info('First tid is: ' + new_tid + ' and tid ' + content[j].tid + ' and value ' + content[j].value);
-							tid.close();
-						} else {
-							value_to_insert = '';
-						}
-
-					} else if ((content[j].tid != null)) {
+					} else {
 						mark = '';
-						value_to_insert = content[j].tid;
+						value_to_insert = content[j].nid;
 					}
-				}
-			} else if (content[j].field_type == 'omadi_reference') {
-				if (content[j].nid === null) {
-					value_to_insert = '';
-					mark = '\'';
+				} else if (content[j].field_type == 'list_boolean') {
+					if (content[j].value === true) {
+						value_to_insert = 1;
+					} else {
+						value_to_insert = 0;
+					}
+				} else if (content[j].field_type == 'rules_field') {
+					if (content[j].value === false || content[j].value === 0 || content[j].value === 'false') {
+						value_to_insert = 'false';
+					} else {
+						value_to_insert = JSON.stringify(content[j].value);
+					}
+				} else if ((content[j].field_type == 'omadi_time') || (content[j].field_type == 'datestamp')) {
+					if (content[j].update_it === true) {
+						value_to_insert = Math.round(content[j].value / 1000);
+					} else {
+						mark = "'";
+						value_to_insert = '';
+					}
 				} else {
-					mark = '';
-					value_to_insert = content[j].nid;
+					value_to_insert = content[j].value;
 				}
-			} else if (content[j].field_type == 'list_boolean') {
-				if (content[j].value === true) {
-					value_to_insert = 1;
-				} else {
-					value_to_insert = 0;
-				}
-			} else if (content[j].field_type == 'rules_field') {
-				if (content[j].value === false || content[j].value === 0 || content[j].value === 'false') {
-					value_to_insert = 'false';
-				} else {
-					value_to_insert = JSON.stringify(content[j].value);
-				}
-			}else if ((content[j].field_type == 'omadi_time') || (content[j].field_type == 'datestamp')) {
-				if (content[j].update_it === true) {
-					value_to_insert = Math.round(content[j].value / 1000);
-				} else {
-					mark = "'";
-					value_to_insert = '';
-				}
-			} else {
-				value_to_insert = content[j].value;
-			}
 			}
 			if (value_to_insert == '') {
 				mark = '\'';
@@ -1032,36 +1019,36 @@ function keep_info(_flag_info, pass_it, new_time) {
 			if (title_to_node == "") {
 				title_to_node = "No title";
 			}
-			
-			//No data fields JSON 
+
+			//No data fields JSON
 			var no_data_fields_content = '';
-			for( idx_k = 0; idx_k < no_data_fields.length; idx_k++) {
-				if(idx_k == no_data_fields.length - 1) {
+			for ( idx_k = 0; idx_k < no_data_fields.length; idx_k++) {
+				if (idx_k == no_data_fields.length - 1) {
 					no_data_fields_content += '\"' + no_data_fields[idx_k] + '\" : \"' + no_data_fields[idx_k] + '\"';
 				} else {
 					no_data_fields_content += '\"' + no_data_fields[idx_k] + '\" : \"' + no_data_fields[idx_k] + '\",';
 				}
 			}
-			if(no_data_fields_content!=null && no_data_fields_content !=''){
-				no_data_fields_content = "{" + no_data_fields_content + "}" 
+			if (no_data_fields_content != null && no_data_fields_content != '') {
+				no_data_fields_content = "{" + no_data_fields_content + "}"
 			}
 
 			//Insert into node table
 			if (_flag_info == "draft") {
 				if (win.mode == 1) {
-					Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=3, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\''+no_data_fields_content +'\' WHERE nid=' + win.nid);
-					db_put.execute('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=3, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\''+no_data_fields_content +'\' WHERE nid=' + win.nid);
+					Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=3, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\'' + no_data_fields_content + '\' WHERE nid=' + win.nid);
+					db_put.execute('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=3, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\'' + no_data_fields_content + '\' WHERE nid=' + win.nid);
 				} else {
-					Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 3 , "' + win.type + '" , ' + win.region_form + ', \'' +no_data_fields_content +'\')');
-					db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name , form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 3 , "' + win.type + '", ' + win.region_form + ', \'' +no_data_fields_content +'\')');
-					
+					Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 3 , "' + win.type + '" , ' + win.region_form + ', \'' + no_data_fields_content + '\')');
+					db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name , form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 3 , "' + win.type + '", ' + win.region_form + ', \'' + no_data_fields_content + '\')');
+
 				}
 			} else if (win.mode == 1) {
-					Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\''+no_data_fields_content +'\' WHERE nid=' + win.nid);
-					db_put.execute('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\''+no_data_fields_content +'\' WHERE nid=' + win.nid);
+				Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\'' + no_data_fields_content + '\' WHERE nid=' + win.nid);
+				db_put.execute('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\'' + no_data_fields_content + '\' WHERE nid=' + win.nid);
 			} else {
-					Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '", ' + win.region_form + ', \'' +no_data_fields_content +'\')');
-					db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields  ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '"  , ' + win.region_form + ', \'' +no_data_fields_content +'\')');
+				Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '", ' + win.region_form + ', \'' + no_data_fields_content + '\')');
+				db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields  ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '"  , ' + win.region_form + ', \'' + no_data_fields_content + '\')');
 			}
 
 			//Insert into table
@@ -1107,7 +1094,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 							Ti.API.info('Filse Saved' + arrImages[k].private_index);
 						}
 					}
-				} else if (content[j].field_type == 'image'  && !content[j].no_data_checkbox) {
+				} else if (content[j].field_type == 'image' && !content[j].no_data_checkbox) {
 					if (content[j].imageData != null && content[j].mimeType != null) {
 						var encodeImage = Ti.Utils.base64encode(content[j].imageData);
 						var mime = content[j].mimeType;
@@ -1159,11 +1146,10 @@ function keep_info(_flag_info, pass_it, new_time) {
 
 		Ti.API.info('========= Updating new info running ========= ' + _flag_info);
 		if ((Titanium.Network.online) && (has_bug === false) && (_flag_info != 'draft')) {
-			if (_flag_info == "normal"){
+			if (_flag_info == "normal") {
 				Ti.API.info('Submitting');
 				win.up_node(win.mode, close_me, win.type.toUpperCase());
-			}
-			else{
+			} else {
 				Ti.API.info('Submitting and preparing next part reload');
 				win.up_node(win.mode, reload_me, win.type.toUpperCase(), _flag_info);
 			}
@@ -1184,19 +1170,19 @@ function keep_info(_flag_info, pass_it, new_time) {
 				Ti.API.info('Off line update');
 				if (PLATFORM == 'android') {
 					Ti.UI.createNotification({
-						message : 'Alert management of this updated '+ win.title + ' immediately. Your device failed to connect to the Internet.'
+						message : 'Alert management of this updated ' + win.title + ' immediately. Your device failed to connect to the Internet.'
 					}).show();
 				} else {
-					alert('Alert management of this updated '+ win.title + ' immediately. Your device failed to connect to the Internet.');
+					alert('Alert management of this updated ' + win.title + ' immediately. Your device failed to connect to the Internet.');
 				}
 			} else {
 				Ti.API.info('Off line creation');
 				if (PLATFORM == 'android') {
 					Ti.UI.createNotification({
-						message :'Alert management of this new '+ win.title + ' immediately. Your device failed to connect to the Internet.'
+						message : 'Alert management of this new ' + win.title + ' immediately. Your device failed to connect to the Internet.'
 					}).show();
 				} else {
-					alert('Alert management of this new '+ win.title + ' immediately. Your device failed to connect to the Internet.');
+					alert('Alert management of this new ' + win.title + ' immediately. Your device failed to connect to the Internet.');
 				}
 			}
 			close_me_delay();
@@ -1218,16 +1204,16 @@ function close_me() {
 
 function reload_me(part) {
 	var new_node = Titanium.App.Properties.getString("new_node_id");
-	if ( new_node != null){
+	if (new_node != null) {
 		win.nid = new_node;
 	}
-	 
-	Ti.API.info('Part is: '+part);
-	Ti.API.info(win.title+' - '+win.type+' - '+win.uid+' - '+win.nameSelected+' - '+win.nid);
+
+	Ti.API.info('Part is: ' + part);
+	Ti.API.info(win.title + ' - ' + win.type + ' - ' + win.uid + ' - ' + win.nameSelected + ' - ' + win.nid);
 	hideIndicator();
-    win.remove(resultView);
-    
-    if (PLATFORM == 'android'){
+	win.remove(resultView);
+
+	if (PLATFORM == 'android') {
 		//The view where the results are presented
 		resultView = Ti.UI.createView({
 			top : 0,
@@ -1237,7 +1223,7 @@ function reload_me(part) {
 			opacity : 1
 		});
 		win.add(resultView);
-		
+
 		viewContent = Ti.UI.createScrollView({
 			bottom : 0,
 			contentHeight : 'auto',
@@ -1249,20 +1235,19 @@ function reload_me(part) {
 			scrollType : "vertical",
 			zIndex : 10
 		});
-	}
-	else{
-		
+	} else {
+
 		//The view where the results are presented
 		resultView = Ti.UI.createView({
 			top : "8%",
 			height : '92%',
 			width : '100%',
-			bottom: 0,
+			bottom : 0,
 			backgroundColor : '#EEEEEE',
 			opacity : 1
 		});
-		win.add(resultView);		
-		
+		win.add(resultView);
+
 		viewContent = Ti.UI.createScrollView({
 			contentHeight : 'auto',
 			//height : "98%",
@@ -1272,22 +1257,21 @@ function reload_me(part) {
 			opacity : 1,
 			scrollType : "vertical",
 			zIndex : 10
-		});		
+		});
 	}
 
 	resultView.add(viewContent);
-    
-    
+
 	win.mode = 1;
 	/*
-		Ti.API.info('###############>>>>>>>>      Before increment : '+win.region_form);
-		var db_nod_i = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-		db_nod_i.execute('UPDATE node SET form_part='+parseInt(part)+'  WHERE nid=' + win.nid);
-		db_nod_i.close();
-	*/
+	 Ti.API.info('###############>>>>>>>>      Before increment : '+win.region_form);
+	 var db_nod_i = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	 db_nod_i.execute('UPDATE node SET form_part='+parseInt(part)+'  WHERE nid=' + win.nid);
+	 db_nod_i.close();
+	 */
 	win.region_form = parseInt(part);
-	
-	Ti.API.info('###############>>>>>>>>      After increment : '+win.region_form);
+
+	Ti.API.info('###############>>>>>>>>      After increment : ' + win.region_form);
 	setTimeout(function() {
 		create_or_edit_node.loadUI();
 		get_android_menu(true);
@@ -1470,7 +1454,7 @@ function display_widget(obj) {
 		var changedTime = obj.currentDate;
 		var iOSDateCal = obj.currentDate;
 		var date_picker;
-	
+
 		//Min
 		var minDate = new Date();
 		minDate.setFullYear(year - 5);
@@ -1483,107 +1467,107 @@ function display_widget(obj) {
 		maxDate.setMonth(11);
 		maxDate.setDate(31);
 
-			var date_picker = Titanium.UI.createPicker({
-				useSpinner : true,
-				borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-				value : obj.currentDate,
-				font : {
-					fontSize : 18
-				},
-				type : Ti.UI.PICKER_TYPE_DATE,
-				minDate : minDate,
-				maxDate : maxDate,
-				color : '#000000',
-				top : '12%'
-			});
-			date_picker.selectionIndicator = true;
-	
-			/*
-			 * Time picker
-			 */
-			var time_picker = Titanium.UI.createPicker({
-				useSpinner : true,
-				borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-				value : obj.currentDate,
-				font : {
-					fontSize : 18
-				},
-				type : Ti.UI.PICKER_TYPE_TIME,
-				color : '#000000',
-				top : '50%',
-				timezone : null
-			});
-			time_picker.selectionIndicator = true;
-			 time_picker.date_picker = date_picker;
-          	 date_picker.time_picker = time_picker;
-       
-	    	 date_picker.addEventListener('change', function(e) {
-				e.source.time_picker.value = e.value;
-				changedDate = e.value;
-				iOSDateCal = e.value;
-			 }); 
+		var date_picker = Titanium.UI.createPicker({
+			useSpinner : true,
+			borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+			value : obj.currentDate,
+			font : {
+				fontSize : 18
+			},
+			type : Ti.UI.PICKER_TYPE_DATE,
+			minDate : minDate,
+			maxDate : maxDate,
+			color : '#000000',
+			top : '12%'
+		});
+		date_picker.selectionIndicator = true;
 
-             //Add field:
-             win_wid.add(date_picker);
- 
-            time_picker.addEventListener('change', function(e) {
-	              e.source.date_picker.value = e.value;
-	              changedTime = e.value;
-	              iOSDateCal = e.value;
-            });
-            //Add field:
-            win_wid.add(time_picker);
-			var done = Ti.UI.createButton({
-				title : 'Done',
-				bottom : 10,
-				width : '35%',
-				left : '10%',
-				height : '10%'
-			});
-	
-			var cancel = Ti.UI.createButton({
-				title : 'Cancel',
-				bottom : 10,
-				width : '35%',
-				left : '55%',
-				height : '10%'
-			});
-	
-			win_wid.add(done);
-			win_wid.add(cancel);
-	
-			done.addEventListener('click', function() {
-				if(PLATFORM == "android"){
-					obj.currentDate.setDate(changedDate.getDate());
-					obj.currentDate.setMonth(changedDate.getMonth());
-					obj.currentDate.setFullYear(changedDate.getFullYear());
-					obj.currentDate.setHours(changedTime.getHours());
-					obj.currentDate.setMinutes(changedTime.getMinutes());
-					obj.currentDate.setSeconds(changedTime.getSeconds());
-				}else{
-					obj.currentDate = iOSDateCal;
-				}
-				
-				obj.value = obj.currentDate.getTime();
-				
-				var f_minute = obj.currentDate.getMinutes();
-				var f_hour = obj.currentDate.getHours();
-				var f_date = obj.currentDate.getDate();
-				var f_month = months_set[obj.currentDate.getMonth()];
-				var f_year = obj.currentDate.getFullYear();
-	
-				obj.text = date(omadi_time_format, obj.currentDate) + " - " + f_month + " / " + f_date + " / " + f_year;
-				changedContentValue(obj);
-				setRulesField(obj);
-				win_wid.close();
-			});
-	
-			cancel.addEventListener('click', function() {
-				if (obj.value == null) {
-					obj.update_it = false;
-				}
-				win_wid.close();
-			});	
+		/*
+		 * Time picker
+		 */
+		var time_picker = Titanium.UI.createPicker({
+			useSpinner : true,
+			borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+			value : obj.currentDate,
+			font : {
+				fontSize : 18
+			},
+			type : Ti.UI.PICKER_TYPE_TIME,
+			color : '#000000',
+			top : '50%',
+			timezone : null
+		});
+		time_picker.selectionIndicator = true;
+		time_picker.date_picker = date_picker;
+		date_picker.time_picker = time_picker;
+
+		date_picker.addEventListener('change', function(e) {
+			e.source.time_picker.value = e.value;
+			changedDate = e.value;
+			iOSDateCal = e.value;
+		});
+
+		//Add field:
+		win_wid.add(date_picker);
+
+		time_picker.addEventListener('change', function(e) {
+			e.source.date_picker.value = e.value;
+			changedTime = e.value;
+			iOSDateCal = e.value;
+		});
+		//Add field:
+		win_wid.add(time_picker);
+		var done = Ti.UI.createButton({
+			title : 'Done',
+			bottom : 10,
+			width : '35%',
+			left : '10%',
+			height : '10%'
+		});
+
+		var cancel = Ti.UI.createButton({
+			title : 'Cancel',
+			bottom : 10,
+			width : '35%',
+			left : '55%',
+			height : '10%'
+		});
+
+		win_wid.add(done);
+		win_wid.add(cancel);
+
+		done.addEventListener('click', function() {
+			if (PLATFORM == "android") {
+				obj.currentDate.setDate(changedDate.getDate());
+				obj.currentDate.setMonth(changedDate.getMonth());
+				obj.currentDate.setFullYear(changedDate.getFullYear());
+				obj.currentDate.setHours(changedTime.getHours());
+				obj.currentDate.setMinutes(changedTime.getMinutes());
+				obj.currentDate.setSeconds(changedTime.getSeconds());
+			} else {
+				obj.currentDate = iOSDateCal;
+			}
+
+			obj.value = obj.currentDate.getTime();
+
+			var f_minute = obj.currentDate.getMinutes();
+			var f_hour = obj.currentDate.getHours();
+			var f_date = obj.currentDate.getDate();
+			var f_month = months_set[obj.currentDate.getMonth()];
+			var f_year = obj.currentDate.getFullYear();
+
+			obj.text = date(omadi_time_format, obj.currentDate) + " - " + f_month + " / " + f_date + " / " + f_year;
+			changedContentValue(obj);
+			setRulesField(obj);
+			win_wid.close();
+		});
+
+		cancel.addEventListener('click', function() {
+			if (obj.value == null) {
+				obj.update_it = false;
+			}
+			win_wid.close();
+		});
 	}
 
 	win_wid.open();
@@ -1667,7 +1651,7 @@ function display_omadi_time(obj) {
 		var min = obj.currentDate.getMinutes();
 
 		//obj.text = hours + ":" + form_min(min);
-		obj.text = date(omadi_time_format,obj.currentDate);
+		obj.text = date(omadi_time_format, obj.currentDate);
 		changedContentValue(obj);
 		noDataChecboxEnableDisable(obj, obj.reffer_index);
 		win_wid.close();
@@ -1746,17 +1730,19 @@ function open_mult_selector(obj) {
 		height : '73%',
 		scrollable : true
 	});
-	
+
 	var desLabel = Titanium.UI.createLabel({
 		bottom : '12.5%',
 		left : 5,
-		right: 5,
-		ellipsize: true,
-		wordWrap: false,
-		visible: false,
-		font: { fontsize:10
-		}, color: 'black',
-		height: '7%'
+		right : 5,
+		ellipsize : true,
+		wordWrap : false,
+		visible : false,
+		font : {
+			fontsize : 10
+		},
+		color : 'black',
+		height : '7%'
 	});
 	win_view.add(desLabel);
 
@@ -1766,7 +1752,7 @@ function open_mult_selector(obj) {
 		elements_to_insert.push({
 			title : obj.itens[v_iten].title,
 			v_info : obj.itens[v_iten].v_info,
-			desc: obj.itens[v_iten].desc,
+			desc : obj.itens[v_iten].desc,
 			is_set : obj.itens[v_iten].is_set
 		});
 	}
@@ -1781,7 +1767,7 @@ function open_mult_selector(obj) {
 			display : elements_to_insert[count_sel].title,
 			selected : elements_to_insert[count_sel].is_set,
 			v_info : elements_to_insert[count_sel].v_info,
-			desc: elements_to_insert[count_sel].desc,
+			desc : elements_to_insert[count_sel].desc,
 			backgroundColor : elements_to_insert[count_sel].is_set ? color_set : color_unset,
 			className : 'menu_row' //optimize rendering
 		});
@@ -1798,11 +1784,12 @@ function open_mult_selector(obj) {
 			ellipsize : true
 		});
 		row_t.add(title);
-		if(elements_to_insert[count_sel].is_set){
+		if (elements_to_insert[count_sel].is_set) {
 			coItemSelected++;
 		}
-		listView.appendRow(row_t); ++count_sel;
-		
+		listView.appendRow(row_t);
+		++count_sel;
+
 	}
 	win_view.add(listView);
 
@@ -1816,26 +1803,26 @@ function open_mult_selector(obj) {
 			listView.data[0].rows[e.index].backgroundColor = color_unset;
 			coItemSelected--;
 		}
-		
-		if(coItemSelected == 1) {
-			if(obj.from_cond_vs != null && obj.from_cond_vs == true) {
+
+		if (coItemSelected == 1) {
+			if (obj.from_cond_vs != null && obj.from_cond_vs == true) {
 				listView.height = '66.5%';
 				desLabel.visible = true;
-				for(var i_sel = 0; i_sel < listView.data[0].rows.length; i_sel++) {
-					if(listView.data[0].rows[i_sel].selected == true) {
+				for (var i_sel = 0; i_sel < listView.data[0].rows.length; i_sel++) {
+					if (listView.data[0].rows[i_sel].selected == true) {
 						desLabel.text = (listView.data[0].rows[i_sel].desc != null && listView.data[0].rows[i_sel].desc != "") ? listView.data[0].rows[i_sel].desc : 'No Description'
 						break;
 					}
 				}
 			}
-		}else if(coItemSelected > 1) {
-			if(obj.from_cond_vs != null && obj.from_cond_vs == true) {
+		} else if (coItemSelected > 1) {
+			if (obj.from_cond_vs != null && obj.from_cond_vs == true) {
 				listView.height = '66.5%';
 				desLabel.visible = true;
 				desLabel.text = 'Multiple violations selected'
 			}
-		} else if(coItemSelected == 0) {
-			if(obj.from_cond_vs != null && obj.from_cond_vs == true) {
+		} else if (coItemSelected == 0) {
+			if (obj.from_cond_vs != null && obj.from_cond_vs == true) {
 				listView.height = '73%';
 				desLabel.visible = false;
 				desLabel.text = ''
@@ -1857,7 +1844,7 @@ function open_mult_selector(obj) {
 		width : '40%',
 		top : '3',
 		bottom : '5',
-		left: '6%'
+		left : '6%'
 	});
 	bottom_sel.add(selected_ok);
 	selected_ok.addEventListener('click', function() {
@@ -1868,20 +1855,20 @@ function open_mult_selector(obj) {
 				aux_ret.push({
 					title : listView.data[0].rows[i_sel].display,
 					v_info : listView.data[0].rows[i_sel].v_info,
-					desc: listView.data[0].rows[i_sel].desc,
+					desc : listView.data[0].rows[i_sel].desc,
 					is_set : true
 				});
 
 				valid_return.push({
 					title : listView.data[0].rows[i_sel].display,
 					v_info : listView.data[0].rows[i_sel].v_info,
-					desc: listView.data[0].rows[i_sel].desc,
+					desc : listView.data[0].rows[i_sel].desc,
 				});
 			} else {
 				aux_ret.push({
 					title : listView.data[0].rows[i_sel].display,
 					v_info : listView.data[0].rows[i_sel].v_info,
-					desc: listView.data[0].rows[i_sel].desc,
+					desc : listView.data[0].rows[i_sel].desc,
 					is_set : false
 				});
 			}
@@ -1894,14 +1881,14 @@ function open_mult_selector(obj) {
 			obj.value = valid_return;
 			if (valid_return.length == 1) {
 				obj.text = valid_return[0].title;
-				if(obj.from_cond_vs!=null && obj.from_cond_vs==true){
+				if (obj.from_cond_vs != null && obj.from_cond_vs == true) {
 					obj.desLabel.visible = true;
-					obj.desLabel.text = (valid_return[0].desc!=null && valid_return[0].desc!="")?valid_return[0].desc:'No Description'
+					obj.desLabel.text = (valid_return[0].desc != null && valid_return[0].desc != "") ? valid_return[0].desc : 'No Description'
 				}
-				
+
 			} else {
 				obj.text = obj.view_title + " [" + valid_return.length + "]";
-				if(obj.from_cond_vs!=null && obj.from_cond_vs==true){
+				if (obj.from_cond_vs != null && obj.from_cond_vs == true) {
 					obj.desLabel.visible = true;
 					obj.desLabel.text = 'Multiple violations selected'
 				}
@@ -1912,19 +1899,19 @@ function open_mult_selector(obj) {
 		win_wid.close();
 
 	});
-	
+
 	var selected_cancel = Ti.UI.createButton({
 		title : 'Cancel',
 		width : '40%',
 		top : '3',
 		bottom : '5',
-		right: '6%'
+		right : '6%'
 	});
 	bottom_sel.add(selected_cancel);
 	selected_cancel.addEventListener('click', function() {
 		win_wid.close();
 	});
-	
+
 	win_wid.open();
 }
 
@@ -1970,14 +1957,14 @@ create_or_edit_node.loadUI = function() {
 	roles = omadi_session_details.user.roles;
 	db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 	regions = db_display.execute('SELECT * FROM regions WHERE node_type = "' + win.type + '" ORDER BY weight ASC');
-	if(win.mode == 1){
-		var node_table = db_display.execute('SELECT * FROM node WHERE nid='+win.nid);
-		if(node_table.rowCount>0){
+	if (win.mode == 1) {
+		var node_table = db_display.execute('SELECT * FROM node WHERE nid=' + win.nid);
+		if (node_table.rowCount > 0) {
 			var no_data_fields = node_table.fieldByName('no_data_fields');
-			if(no_data_fields!=null && no_data_fields != ""){
+			if (no_data_fields != null && no_data_fields != "") {
 				no_data_fields = JSON.parse(no_data_fields);
-				for(var key in no_data_fields) {
-					if(no_data_fields.hasOwnProperty(key)) {
+				for (var key in no_data_fields) {
+					if (no_data_fields.hasOwnProperty(key)) {
 						no_data_fieldsArr.push(key);
 					}
 				}
@@ -1994,15 +1981,15 @@ create_or_edit_node.loadUI = function() {
 		if (reg_settings != null && parseInt(reg_settings.form_part) > win.region_form) {
 			Ti.API.info('Region : ' + regions.fieldByName('label') + ' won\'t appear');
 		} else {
-			var arrow_img = Ti.UI.createImageView({					
-				image: '/images/arrow_left.png',
-				width: 29,
-				height: 29,
-				top: y + 5,
-				right: 5,
-				zIndex: 999
-			});			
-			
+			var arrow_img = Ti.UI.createImageView({
+				image : '/images/arrow_left.png',
+				width : 29,
+				height : 29,
+				top : y + 5,
+				right : 5,
+				zIndex : 999
+			});
+
 			var regionHeader = Ti.UI.createLabel({
 				text : regions.fieldByName('label'),
 				color : '#4C5A88',
@@ -2013,14 +2000,14 @@ create_or_edit_node.loadUI = function() {
 				textAlign : 'center',
 				width : '100%',
 				height : 40,
-				borderColor: "#C8C9C9",
-				borderWidth: 2,
-				borderRadius: 2,
+				borderColor : "#C8C9C9",
+				borderWidth : 2,
+				borderRadius : 2,
 				top : y,
 				backgroundColor : '#FFFFFF',
 				zIndex : 0,
-				ellipsize: true,
-				wordWrap: false
+				ellipsize : true,
+				wordWrap : false
 			});
 			y = y + 40;
 
@@ -2031,7 +2018,7 @@ create_or_edit_node.loadUI = function() {
 				zIndex : 0
 			});
 
-			regionHeader.arrow = arrow_img;			
+			regionHeader.arrow = arrow_img;
 			regionHeader.viewContainer = regionView;
 			regionHeader.addEventListener('click', function(e) {
 				e.source.viewContainer.expanded = !e.source.viewContainer.expanded;
@@ -2054,10 +2041,9 @@ create_or_edit_node.loadUI = function() {
 							v.top = top;
 							v.arrow.top = top + 5;
 							if (v.viewContainer.expanded === true) {
-								v.arrow.image = "/images/arrow_down.png";						
-							}else
-							{									
-								v.arrow.image = "/images/arrow_left.png";						
+								v.arrow.image = "/images/arrow_down.png";
+							} else {
+								v.arrow.image = "/images/arrow_left.png";
 							}
 							top = top + 40;
 							v.viewContainer.top = top;
@@ -2083,7 +2069,13 @@ create_or_edit_node.loadUI = function() {
 						}
 						if (isLabel) {
 							v.top = top;
-							v.arrow.top = top + 5;							if (v.viewContainer.expanded === true) {								v.arrow.image = "/images/arrow_down.png";							}else{								v.arrow.image = "/images/arrow_left.png";							}							top = top + 40;
+							v.arrow.top = top + 5;
+							if (v.viewContainer.expanded === true) {
+								v.arrow.image = "/images/arrow_down.png";
+							} else {
+								v.arrow.image = "/images/arrow_left.png";
+							}
+							top = top + 40;
 							v.viewContainer.top = top;
 							top = top + v.viewContainer.height + 10;
 						}
@@ -2147,46 +2139,46 @@ create_or_edit_node.loadUI = function() {
 					if (field_arr[index_label][index_size].required == true || field_arr[index_label][index_size].required == 'true' || field_arr[index_label][index_size].required == 1 || field_arr[index_label][index_size].required == '1') {
 						isRequired = true;
 					}
-					
-					field_arr[index_label][index_size].label = field_arr[index_label][index_size].label.replace(/"/gi,'\'');
-					
+
+					field_arr[index_label][index_size].label = field_arr[index_label][index_size].label.replace(/"/gi, '\'');
+
 					switch(field_arr[index_label][index_size].type) {
 
 						case 'license_plate':
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
 							var can_view = false;
 							var can_edit = false;
-							
-							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
-								for(var _l in settings.permissions) {
-									for(_k in roles) {
-										if(_l == _k) {
+
+							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
+								for (var _l in settings.permissions) {
+									for (_k in roles) {
+										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
-											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_edit = true;
 											}
 
-											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_view = true;
 											}
 
 										}
 									}
 								}
-							}else{
+							} else {
 								can_view = can_edit = true;
 							}
-							
-							if(!can_view){
+
+							if (!can_view) {
 								break;
 							}
-												
+
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
 								font : {
 									fontSize : 18,
-									fontWeight: 'bold'
+									fontWeight : 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -2196,10 +2188,9 @@ create_or_edit_node.loadUI = function() {
 							});
 							top += heightValue;
 
-							
 							var fi_name = field_arr[index_label][index_size].field_name;
 							var reffer_index = count;
-									
+
 							fi_name = fi_name.split('___');
 							if (fi_name[1]) {
 								var i_name = fi_name[1];
@@ -2496,9 +2487,9 @@ create_or_edit_node.loadUI = function() {
 											reffer_index : reffer_index,
 											settings : settings,
 											changedFlag : 0,
-											enabled: can_edit
+											enabled : can_edit
 										});
-										if(PLATFORM == 'android'){
+										if (PLATFORM == 'android') {
 											content[count].backgroundImage = '';
 											content[count].backgroundColor = 'white';
 											content[count].backgroundSelectedColor = '#2E64FE';
@@ -2507,7 +2498,7 @@ create_or_edit_node.loadUI = function() {
 											content[count].color = 'black';
 											content[count].borderWidth = 1
 										}
-										if(!can_edit){
+										if (!can_edit) {
 											content[count].backgroundImage = '';
 											content[count].backgroundColor = '#BDBDBD';
 											content[count].borderColor = 'gray';
@@ -2515,7 +2506,7 @@ create_or_edit_node.loadUI = function() {
 											content[count].color = '#848484';
 											content[count].borderWidth = 1
 										}
-									
+
 										content[count].addEventListener('click', function(e) {
 											//Ti.API.info('USPS: '+e.row.usps);
 											//e.source.value = e.row.usps;
@@ -2549,13 +2540,13 @@ create_or_edit_node.loadUI = function() {
 											textAlign : 'left',
 											width : Ti.Platform.displayCaps.platformWidth - 30,
 											height : heightValue,
-											maxLength: 10,
+											maxLength : 10,
 											font : {
 												fontSize : 18
 											},
 											color : '#000000',
 											top : top,
-											autocapitalization: Titanium.UI.TEXT_AUTOCAPITALIZATION_ALL,
+											autocapitalization : Titanium.UI.TEXT_AUTOCAPITALIZATION_ALL,
 											field_type : field_arr[index_label][index_size].type,
 											field_name : field_arr[index_label][index_size].field_name,
 											required : field_arr[index_label][index_size].required,
@@ -2565,40 +2556,39 @@ create_or_edit_node.loadUI = function() {
 											value : vl_to_field,
 											settings : settings,
 											changedFlag : 0,
-											real_ind: count,
-											autocorrect: false,
-											returnKeyType: Ti.UI.RETURNKEY_DONE,
-											enabled: can_edit,
-											editable: can_edit
+											real_ind : count,
+											autocorrect : false,
+											returnKeyType : Ti.UI.RETURNKEY_DONE,
+											enabled : can_edit,
+											editable : can_edit
 										});
 									}
-									if(PLATFORM == 'android'){
+									if (PLATFORM == 'android') {
 										content[count].backgroundImage = '../images/textfield.png'
 									}
-									if(!can_edit){
-											content[count].backgroundImage = '';
-											content[count].backgroundColor = '#BDBDBD';
-											content[count].borderColor = 'gray';
-											content[count].borderRadius = 10;
-											content[count].color = '#848484';
-											content[count].borderWidth = 1;
-											content[count].paddingLeft = 3;
-											content[count].paddingRight = 3;
+									if (!can_edit) {
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = '#BDBDBD';
+										content[count].borderColor = 'gray';
+										content[count].borderRadius = 10;
+										content[count].color = '#848484';
+										content[count].borderWidth = 1;
+										content[count].paddingLeft = 3;
+										content[count].paddingRight = 3;
 									}
 									top += heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
-										if(e.source.value.length>10){
-											e.source.value = e.source.value.substr(0,10);
+										if (e.source.value.length > 10) {
+											e.source.value = e.source.value.substr(0, 10);
 											e.source.blur();
 										}
 										changedContentValue(e.source);
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 
 									});
-									
-			
+
 									count++;
 								}
 							} else {
@@ -2867,18 +2857,12 @@ create_or_edit_node.loadUI = function() {
 										reffer_index : reffer_index,
 										settings : settings,
 										changedFlag : 0,
-										enabled: can_edit
+										enabled : can_edit
 									});
-									if(PLATFORM == 'android'){
-										content[count].backgroundImage = '',
-										content[count].backgroundColor = 'white',
-										content[count].backgroundSelectedColor = '#2E64FE',
-										content[count].borderColor = 'gray',
-										content[count].borderRadius = 10,
-										content[count].color = 'black',
-										content[count].borderWidth = 1
+									if (PLATFORM == 'android') {
+										content[count].backgroundImage = '', content[count].backgroundColor = 'white', content[count].backgroundSelectedColor = '#2E64FE', content[count].borderColor = 'gray', content[count].borderRadius = 10, content[count].color = 'black', content[count].borderWidth = 1
 									}
-									if(!can_edit){
+									if (!can_edit) {
 										content[count].backgroundImage = '';
 										content[count].backgroundColor = '#BDBDBD';
 										content[count].borderColor = 'gray';
@@ -2887,7 +2871,6 @@ create_or_edit_node.loadUI = function() {
 										content[count].borderWidth = 1
 									}
 
-									
 									content[count].addEventListener('click', function(e) {
 										//Ti.API.info('USPS: '+e.row.usps);
 										//e.source.value = e.row.usps;
@@ -2910,8 +2893,7 @@ create_or_edit_node.loadUI = function() {
 
 									regionView.add(content[count]);
 									count++;
-								} 
-								else {
+								} else {
 									label[count].text += ' #';
 									content[count] = Ti.UI.createTextField({
 										hintText : label[count].text,
@@ -2919,13 +2901,13 @@ create_or_edit_node.loadUI = function() {
 										textAlign : 'left',
 										width : Ti.Platform.displayCaps.platformWidth - 30,
 										height : heightValue,
-										maxLength: 10,
+										maxLength : 10,
 										font : {
 											fontSize : 18
 										},
 										color : '#000000',
 										top : top,
-										autocapitalization: Titanium.UI.TEXT_AUTOCAPITALIZATION_ALL,				
+										autocapitalization : Titanium.UI.TEXT_AUTOCAPITALIZATION_ALL,
 										field_type : field_arr[index_label][index_size].type,
 										field_name : field_arr[index_label][index_size].field_name,
 										required : field_arr[index_label][index_size].required,
@@ -2936,92 +2918,91 @@ create_or_edit_node.loadUI = function() {
 										reffer_index : reffer_index,
 										settings : settings,
 										changedFlag : 0,
-										real_ind: count,
-										autocorrect: false,
-										returnKeyType: Ti.UI.RETURNKEY_DONE,
-										enabled: can_edit,
-										editable: can_edit
+										real_ind : count,
+										autocorrect : false,
+										returnKeyType : Ti.UI.RETURNKEY_DONE,
+										enabled : can_edit,
+										editable : can_edit
 									});
-									if(PLATFORM == 'android'){
+									if (PLATFORM == 'android') {
 										content[count].backgroundImage = '../images/textfield.png'
 									}
-									if(!can_edit){
-											content[count].backgroundImage = '';
-											content[count].backgroundColor = '#BDBDBD';
-											content[count].borderColor = 'gray';
-											content[count].borderRadius = 10;
-											content[count].color = '#848484';
-											content[count].borderWidth = 1;
-											content[count].paddingLeft = 3;
-											content[count].paddingRight = 3;
+									if (!can_edit) {
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = '#BDBDBD';
+										content[count].borderColor = 'gray';
+										content[count].borderRadius = 10;
+										content[count].color = '#848484';
+										content[count].borderWidth = 1;
+										content[count].paddingLeft = 3;
+										content[count].paddingRight = 3;
 									}
 									top += heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
-										if(e.source.value.length>10){
-											e.source.value = e.source.value.substr(0,10);
+										if (e.source.value.length > 10) {
+											e.source.value = e.source.value.substr(0, 10);
 											e.source.blur();
 										}
 										changedContentValue(e.source);
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 
 									});
-									
-										
+
 									count++;
 								}
 							}
 							//No data checkbox functionality
-							if(settings.parts!=null && settings.parts !=""){
+							if (settings.parts != null && settings.parts != "") {
 								partsArr.push(reffer_index);
-								if(partsArr.length == 2){
+								if (partsArr.length == 2) {
 									content[reffer_index].partsArr = partsArr;
 									partsArr = [];
 									noDataCheckbox(reffer_index, regionView, top);
-									if(content[reffer_index].noDataView != null){
-										top += 40; 
-									}	
+									if (content[reffer_index].noDataView != null) {
+										top += 40;
+									}
 								}
 							}
 
-						break;
-					
+							break;
+
 						case 'link_field':
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
 							var can_view = false;
 							var can_edit = false;
-							
-							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
-								for(var _l in settings.permissions) {
-									for(_k in roles) {
-										if(_l == _k) {
+
+							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
+								for (var _l in settings.permissions) {
+									for (_k in roles) {
+										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
-											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_edit = true;
 											}
 
-											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_view = true;
 											}
 
 										}
 									}
 								}
-							}else{
+							} else {
 								can_view = can_edit = true;
 							}
-							
-							if(!can_view){
+
+							if (!can_view) {
 								break;
 							}
-							
+
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
 								font : {
 									fontSize : 18,
-									fontWeight: 'bold'
+									fontWeight : 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -3033,10 +3014,10 @@ create_or_edit_node.loadUI = function() {
 							//Add fields:
 							regionView.add(label[count]);
 							var reffer_index = count;
-							
-							var _min = null; 
+
+							var _min = null;
 							var _max = null;
-							
+
 							if (settings.cardinality > 1) {
 								if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
 									var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
@@ -3084,22 +3065,22 @@ create_or_edit_node.loadUI = function() {
 										reffer_index : reffer_index,
 										settings : settings,
 										changedFlag : 0,
-										autocorrect: false,
-										returnKeyType: Ti.UI.RETURNKEY_DONE,
-										enabled: can_edit
+										autocorrect : false,
+										returnKeyType : Ti.UI.RETURNKEY_DONE,
+										enabled : can_edit
 									});
-									if(PLATFORM == 'android'){
+									if (PLATFORM == 'android') {
 										content[count].backgroundImage = '../images/textfield.png'
 									}
-									if(!can_edit){
-											content[count].backgroundImage = '';
-											content[count].backgroundColor = '#BDBDBD';
-											content[count].borderColor = 'gray';
-											content[count].borderRadius = 10;
-											content[count].color = '#848484';
-											content[count].borderWidth = 1;
-											content[count].paddingLeft = 3;
-											content[count].paddingRight = 3;
+									if (!can_edit) {
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = '#BDBDBD';
+										content[count].borderColor = 'gray';
+										content[count].borderRadius = 10;
+										content[count].color = '#848484';
+										content[count].borderWidth = 1;
+										content[count].paddingLeft = 3;
+										content[count].paddingRight = 3;
 									}
 									top += heightValue;
 
@@ -3108,7 +3089,7 @@ create_or_edit_node.loadUI = function() {
 										changedContentValue(e.source);
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 									});
-													
+
 									count++;
 								}
 							} else {
@@ -3133,14 +3114,14 @@ create_or_edit_node.loadUI = function() {
 									reffer_index : reffer_index,
 									settings : settings,
 									changedFlag : 0,
-									autocorrect: false,
-									returnKeyType: Ti.UI.RETURNKEY_DONE,
-									enabled: can_edit
+									autocorrect : false,
+									returnKeyType : Ti.UI.RETURNKEY_DONE,
+									enabled : can_edit
 								});
-								if(PLATFORM == 'android'){
+								if (PLATFORM == 'android') {
 									content[count].backgroundImage = '../images/textfield.png'
 								}
-								if(!can_edit){
+								if (!can_edit) {
 									content[count].backgroundImage = '';
 									content[count].backgroundColor = '#BDBDBD';
 									content[count].borderColor = 'gray';
@@ -3161,37 +3142,37 @@ create_or_edit_node.loadUI = function() {
 							}
 							//No data checkbox functionality
 							noDataCheckbox(reffer_index, regionView, top);
-							if(content[reffer_index].noDataView!=null){
-								top += 40; 
-							}	
+							if (content[reffer_index].noDataView != null) {
+								top += 40;
+							}
 							break;
-						
+
 						case 'text':
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
 							var can_view = false;
 							var can_edit = false;
-							
-							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
-								for(var _l in settings.permissions) {
-									for(_k in roles) {
-										if(_l == _k) {
+
+							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
+								for (var _l in settings.permissions) {
+									for (_k in roles) {
+										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
-											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_edit = true;
 											}
 
-											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_view = true;
 											}
 
 										}
 									}
 								}
-							}else{
+							} else {
 								can_view = can_edit = true;
 							}
-							
-							if(!can_view){
+
+							if (!can_view) {
 								break;
 							}
 							label[count] = Ti.UI.createLabel({
@@ -3199,7 +3180,7 @@ create_or_edit_node.loadUI = function() {
 								color : isRequired ? 'red' : _lb_color,
 								font : {
 									fontSize : 18,
-									fontWeight: 'bold'
+									fontWeight : 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -3214,15 +3195,15 @@ create_or_edit_node.loadUI = function() {
 							var reffer_index = count;
 							var _min = null;
 							var _max = null;
-							
-							if (settings.min_length && settings.min_length != null && settings.min_length != "null"){
+
+							if (settings.min_length && settings.min_length != null && settings.min_length != "null") {
 								_min = settings.min_length
 							}
-							
-							if (settings.max_length && settings.max_length != null && settings.max_length != "null"){
+
+							if (settings.max_length && settings.max_length != null && settings.max_length != "null") {
 								_max = settings.max_length
 							}
-							
+
 							if (settings.cardinality > 1) {
 								if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
 									var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
@@ -3270,118 +3251,111 @@ create_or_edit_node.loadUI = function() {
 										reffer_index : reffer_index,
 										settings : settings,
 										changedFlag : 0,
-										my_min: _min,
-										my_max: _max,
-										real_ind: count,
-										autocorrect: false,
-										returnKeyType: Ti.UI.RETURNKEY_DONE,
-										enabled: can_edit,
-										editable: can_edit
+										my_min : _min,
+										my_max : _max,
+										real_ind : count,
+										autocorrect : false,
+										returnKeyType : Ti.UI.RETURNKEY_DONE,
+										enabled : can_edit,
+										editable : can_edit
 									});
-									if(PLATFORM == 'android'){
+									if (PLATFORM == 'android') {
 										content[count].backgroundImage = '../images/textfield.png'
 									}
-									if(!can_edit){
-											content[count].backgroundImage = '';
-											content[count].backgroundColor = '#BDBDBD';
-											content[count].borderColor = 'gray';
-											content[count].borderRadius = 10;
-											content[count].color = '#848484';
-											content[count].borderWidth = 1;
-											content[count].paddingLeft = 3;
-											content[count].paddingRight = 3;
+									if (!can_edit) {
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = '#BDBDBD';
+										content[count].borderColor = 'gray';
+										content[count].borderRadius = 10;
+										content[count].color = '#848484';
+										content[count].borderWidth = 1;
+										content[count].paddingLeft = 3;
+										content[count].paddingRight = 3;
 									}
-									if (_max != null){
+									if (_max != null) {
 										content[count].maxLength = _max;
 									}
 									top += heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
-										if(e.source.my_max!= null && e.source.my_max!= "" &&  e.source.value.length>e.source.my_max){
-											e.source.value = e.source.value.substr(0,e.source.my_max);
+										if (e.source.my_max != null && e.source.my_max != "" && e.source.value.length > e.source.my_max) {
+											e.source.value = e.source.value.substr(0, e.source.my_max);
 											e.source.blur();
 										}
 										changedContentValue(e.source);
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 									});
-									
+
 									content[count].addEventListener('blur', function(e) {
-										Ti.API.info(e.source.value.length+' or '+e.value.length+' Field number ==> min: '+e.source.my_min+' max: '+e.source.my_max);
-										if(e.source.value != null && e.source.value!=""){	
-											if (e.source.my_max != null && e.source.my_min != null){
-												if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
+										Ti.API.info(e.source.value.length + ' or ' + e.value.length + ' Field number ==> min: ' + e.source.my_min + ' max: ' + e.source.my_max);
+										if (e.source.value != null && e.source.value != "") {
+											if (e.source.my_max != null && e.source.my_min != null) {
+												if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)) {
 													var _a = Titanium.UI.createAlertDialog({
-														title:'Omadi',
-														message: 'The minimum for this field is '+e.source.my_min,
-														buttonNames: ['OK']
+														title : 'Omadi',
+														message : 'The minimum for this field is ' + e.source.my_min,
+														buttonNames : ['OK']
 													});
-													
+
 													_a.show();
-													
-													_a.addEventListener('click', function(evt){
+
+													_a.addEventListener('click', function(evt) {
 														content[e.source.real_ind].focus();
 													});
-													
-												}
-												else if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max) ) {
+
+												} else if (parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
 													var _a = Titanium.UI.createAlertDialog({
-														title:'Omadi',
-														message: "The maximum for this field is "+e.source.my_max,
-														buttonNames: ['OK']
+														title : 'Omadi',
+														message : "The maximum for this field is " + e.source.my_max,
+														buttonNames : ['OK']
 													});
-													
+
 													_a.show();
-													
-													_a.addEventListener('click', function(evt){
+
+													_a.addEventListener('click', function(evt) {
 														content[e.source.real_ind].focus();
 													});
-												}
-												else{
+												} else {
 													//value is ok
 												}
-											}
-											else if (e.source.my_max != null){
-												if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
+											} else if (e.source.my_max != null) {
+												if (parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
 													var _a = Titanium.UI.createAlertDialog({
-														title:'Omadi',
-														message: "The maximum for this field is "+e.source.my_max,
-														buttonNames: ['OK']
+														title : 'Omadi',
+														message : "The maximum for this field is " + e.source.my_max,
+														buttonNames : ['OK']
 													});
-													
+
 													_a.show();
-													
-													_a.addEventListener('click', function(evt){
+
+													_a.addEventListener('click', function(evt) {
 														content[e.source.real_ind].focus();
 													});
-												}
-												else{
+												} else {
 													//value is ok
 												}
-											}
-											else if (e.source.my_min != null){
-												if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
+											} else if (e.source.my_min != null) {
+												if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)) {
 													var _a = Titanium.UI.createAlertDialog({
-														title:'Omadi',
-														message: 'The minimum for this field is '+e.source.my_min,
-														buttonNames: ['OK']
+														title : 'Omadi',
+														message : 'The minimum for this field is ' + e.source.my_min,
+														buttonNames : ['OK']
 													});
-													
+
 													_a.show();
-													
-													_a.addEventListener('click', function(evt){
+
+													_a.addEventListener('click', function(evt) {
 														content[e.source.real_ind].focus();
 													});
-												}
-												else{
+												} else {
 													//value is ok
 												}
-											}
-											else{
+											} else {
 												//No min or max sets
 											}
 										}
-									});						
+									});
 									count++;
 								}
 							} else {
@@ -3406,18 +3380,18 @@ create_or_edit_node.loadUI = function() {
 									reffer_index : reffer_index,
 									settings : settings,
 									changedFlag : 0,
-									my_min: _min,
-									my_max: _max,
-									real_ind: count,
-									autocorrect: false,
-									returnKeyType: Ti.UI.RETURNKEY_DONE,
-									enabled: can_edit,
-									editable: can_edit
+									my_min : _min,
+									my_max : _max,
+									real_ind : count,
+									autocorrect : false,
+									returnKeyType : Ti.UI.RETURNKEY_DONE,
+									enabled : can_edit,
+									editable : can_edit
 								});
-								if(PLATFORM == 'android'){
+								if (PLATFORM == 'android') {
 									content[count].backgroundImage = '../images/textfield.png'
 								}
-								if(!can_edit){
+								if (!can_edit) {
 									content[count].backgroundImage = '';
 									content[count].backgroundColor = '#BDBDBD';
 									content[count].borderColor = 'gray';
@@ -3427,145 +3401,137 @@ create_or_edit_node.loadUI = function() {
 									content[count].paddingLeft = 3;
 									content[count].paddingRight = 3;
 								}
-								
-								if (_max != null){
+
+								if (_max != null) {
 									content[count].maxLength = _max;
 								}
-								
+
 								top += heightValue;
 
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
-									if(e.source.my_max!= null && e.source.my_max!= "" &&  e.source.value.length>=e.source.my_max){
-										e.source.value = e.source.value.substr(0,e.source.my_max);
+									if (e.source.my_max != null && e.source.my_max != "" && e.source.value.length >= e.source.my_max) {
+										e.source.value = e.source.value.substr(0, e.source.my_max);
 										e.source.blur();
 									}
 									changedContentValue(e.source);
 									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 								});
-								
-									content[count].addEventListener('blur', function(e) {
-										Ti.API.info(e.source.value.length+' or '+e.value.length+' Field number ==> min: '+e.source.my_min+' max: '+e.source.my_max);
-										if(e.source.value != null && e.source.value!=""){
-											if (e.source.my_max != null && e.source.my_min != null){
-												if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
-													var _a = Titanium.UI.createAlertDialog({
-														title:'Omadi',
-														message: 'The minimum for this field is '+e.source.my_min,
-														buttonNames: ['OK']
-													});
-													
-													_a.show();
-													
-													_a.addEventListener('click', function(evt){
-														content[e.source.real_ind].focus();
-													});
-													
-												}
-												else if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max) ) {
-													var _a = Titanium.UI.createAlertDialog({
-														title:'Omadi',
-														message: "The maximum for this field is "+e.source.my_max,
-														buttonNames: ['OK']
-													});
-													
-													_a.show();
-													
-													_a.addEventListener('click', function(evt){
-														content[e.source.real_ind].focus();
-													});
-												}
-												else{
-													//value is ok
-												}
+
+								content[count].addEventListener('blur', function(e) {
+									Ti.API.info(e.source.value.length + ' or ' + e.value.length + ' Field number ==> min: ' + e.source.my_min + ' max: ' + e.source.my_max);
+									if (e.source.value != null && e.source.value != "") {
+										if (e.source.my_max != null && e.source.my_min != null) {
+											if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)) {
+												var _a = Titanium.UI.createAlertDialog({
+													title : 'Omadi',
+													message : 'The minimum for this field is ' + e.source.my_min,
+													buttonNames : ['OK']
+												});
+
+												_a.show();
+
+												_a.addEventListener('click', function(evt) {
+													content[e.source.real_ind].focus();
+												});
+
+											} else if (parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
+												var _a = Titanium.UI.createAlertDialog({
+													title : 'Omadi',
+													message : "The maximum for this field is " + e.source.my_max,
+													buttonNames : ['OK']
+												});
+
+												_a.show();
+
+												_a.addEventListener('click', function(evt) {
+													content[e.source.real_ind].focus();
+												});
+											} else {
+												//value is ok
 											}
-											else if (e.source.my_max != null){
-												if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
-													var _a = Titanium.UI.createAlertDialog({
-														title:'Omadi',
-														message: "The maximum for this field is "+e.source.my_max,
-														buttonNames: ['OK']
-													});
-													
-													_a.show();
-													
-													_a.addEventListener('click', function(evt){
-														content[e.source.real_ind].focus();
-													});
-												}
-												else{
-													//value is ok
-												}
+										} else if (e.source.my_max != null) {
+											if (parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
+												var _a = Titanium.UI.createAlertDialog({
+													title : 'Omadi',
+													message : "The maximum for this field is " + e.source.my_max,
+													buttonNames : ['OK']
+												});
+
+												_a.show();
+
+												_a.addEventListener('click', function(evt) {
+													content[e.source.real_ind].focus();
+												});
+											} else {
+												//value is ok
 											}
-											else if (e.source.my_min != null){
-												if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
-													var _a = Titanium.UI.createAlertDialog({
-														title:'Omadi',
-														message: 'The minimum for this field is '+e.source.my_min,
-														buttonNames: ['OK']
-													});
-													
-													_a.show();
-													
-													_a.addEventListener('click', function(evt){
-														content[e.source.real_ind].focus();
-													});
-												}
-												else{
-													//value is ok
-												}
+										} else if (e.source.my_min != null) {
+											if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)) {
+												var _a = Titanium.UI.createAlertDialog({
+													title : 'Omadi',
+													message : 'The minimum for this field is ' + e.source.my_min,
+													buttonNames : ['OK']
+												});
+
+												_a.show();
+
+												_a.addEventListener('click', function(evt) {
+													content[e.source.real_ind].focus();
+												});
+											} else {
+												//value is ok
 											}
-											else{
+										} else {
 											//No min or max sets
 										}
-										}
-									});										
+									}
+								});
 								count++;
 							}
 							//No data checkbox functionality
 							noDataCheckbox(reffer_index, regionView, top);
-							if(content[reffer_index].noDataView!=null){
-								top += 40; 
-							}	
-							
-							
+							if (content[reffer_index].noDataView != null) {
+								top += 40;
+							}
+
 							break;
 
 						case 'text_long':
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
 							var can_view = false;
 							var can_edit = false;
-							
-							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
-								for(var _l in settings.permissions) {
-									for(_k in roles) {
-										if(_l == _k) {
+
+							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
+								for (var _l in settings.permissions) {
+									for (_k in roles) {
+										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
-											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_edit = true;
 											}
 
-											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_view = true;
 											}
 
 										}
 									}
 								}
-							}else{
+							} else {
 								can_view = can_edit = true;
 							}
-							
-							if(!can_view){
+
+							if (!can_view) {
 								break;
 							}
-							
+
 							label[count] = Ti.UI.createLabel({
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
 								font : {
 									fontSize : 18,
-									fontWeight: 'bold'
+									fontWeight : 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -3580,15 +3546,15 @@ create_or_edit_node.loadUI = function() {
 							var reffer_index = count;
 							var _min = null;
 							var _max = null;
-							
-							if (settings.min_length && settings.min_length != null && settings.min_length != "null"){
+
+							if (settings.min_length && settings.min_length != null && settings.min_length != "null") {
 								_min = settings.min_length
 							}
-							
-							if (settings.max_length && settings.max_length != null && settings.max_length != "null"){
+
+							if (settings.max_length && settings.max_length != null && settings.max_length != "null") {
 								_max = settings.max_length
 							}
-							
+
 							if (settings.cardinality > 1) {
 								if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
 									var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
@@ -3633,118 +3599,111 @@ create_or_edit_node.loadUI = function() {
 										reffer_index : reffer_index,
 										settings : settings,
 										changedFlag : 0,
-										my_min: _min,
-										my_max: _max,
-										real_ind: count,
-										returnKeyType: Ti.UI.RETURNKEY_DONE,
-										enabled: can_edit,
-										editable: can_edit										
+										my_min : _min,
+										my_max : _max,
+										real_ind : count,
+										returnKeyType : Ti.UI.RETURNKEY_DONE,
+										enabled : can_edit,
+										editable : can_edit
 									});
-									if(PLATFORM == 'android'){
+									if (PLATFORM == 'android') {
 										content[count].backgroundImage = '../images/textfield.png'
 									}
-									if(!can_edit){
-											content[count].backgroundImage = '';
-											content[count].backgroundColor = '#BDBDBD';
-											content[count].borderColor = 'gray';
-											content[count].borderRadius = 10;
-											content[count].color = '#848484';
-											content[count].borderWidth = 1;
-											content[count].paddingLeft = 3;
-											content[count].paddingRight = 3;
+									if (!can_edit) {
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = '#BDBDBD';
+										content[count].borderColor = 'gray';
+										content[count].borderRadius = 10;
+										content[count].color = '#848484';
+										content[count].borderWidth = 1;
+										content[count].paddingLeft = 3;
+										content[count].paddingRight = 3;
 									}
-									
-									if (_max != null){
+
+									if (_max != null) {
 										content[count].maxLength = _max;
 									}
 									top += 100;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
-										if(e.source.my_max!= null && e.source.my_max!= "" &&  e.source.value.length>=e.source.my_max){
-											e.source.value = e.source.value.substr(0,e.source.my_max);
+										if (e.source.my_max != null && e.source.my_max != "" && e.source.value.length >= e.source.my_max) {
+											e.source.value = e.source.value.substr(0, e.source.my_max);
 											e.source.blur();
 										}
 										changedContentValue(e.source);
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 									});
-									
+
 									content[count].addEventListener('blur', function(e) {
-										Ti.API.info(e.source.value.length+' or '+e.value.length+' Field number ==> min: '+e.source.my_min+' max: '+e.source.my_max);
-										if(e.source.value != null && e.source.value!=""){	
-											if (e.source.my_max != null && e.source.my_min != null){
-												if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
+										Ti.API.info(e.source.value.length + ' or ' + e.value.length + ' Field number ==> min: ' + e.source.my_min + ' max: ' + e.source.my_max);
+										if (e.source.value != null && e.source.value != "") {
+											if (e.source.my_max != null && e.source.my_min != null) {
+												if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)) {
 													var _a = Titanium.UI.createAlertDialog({
-														title:'Omadi',
-														message: 'The minimum for this field is '+e.source.my_min,
-														buttonNames: ['OK']
+														title : 'Omadi',
+														message : 'The minimum for this field is ' + e.source.my_min,
+														buttonNames : ['OK']
 													});
-													
+
 													_a.show();
-													
-													_a.addEventListener('click', function(evt){
+
+													_a.addEventListener('click', function(evt) {
 														content[e.source.real_ind].focus();
 													});
-													
-												}
-												else if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max) ) {
+
+												} else if (parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
 													var _a = Titanium.UI.createAlertDialog({
-														title:'Omadi',
-														message: "The maximum for this field is "+e.source.my_max,
-														buttonNames: ['OK']
+														title : 'Omadi',
+														message : "The maximum for this field is " + e.source.my_max,
+														buttonNames : ['OK']
 													});
-													
+
 													_a.show();
-													
-													_a.addEventListener('click', function(evt){
+
+													_a.addEventListener('click', function(evt) {
 														content[e.source.real_ind].focus();
 													});
-												}
-												else{
+												} else {
 													//value is ok
 												}
-											}
-											else if (e.source.my_max != null){
-												if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
+											} else if (e.source.my_max != null) {
+												if (parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
 													var _a = Titanium.UI.createAlertDialog({
-														title:'Omadi',
-														message: "The maximum for this field is "+e.source.my_max,
-														buttonNames: ['OK']
+														title : 'Omadi',
+														message : "The maximum for this field is " + e.source.my_max,
+														buttonNames : ['OK']
 													});
-													
+
 													_a.show();
-													
-													_a.addEventListener('click', function(evt){
+
+													_a.addEventListener('click', function(evt) {
 														content[e.source.real_ind].focus();
 													});
-												}
-												else{
+												} else {
 													//value is ok
 												}
-											}
-											else if (e.source.my_min != null){
-												if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
+											} else if (e.source.my_min != null) {
+												if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)) {
 													var _a = Titanium.UI.createAlertDialog({
-														title:'Omadi',
-														message: 'The minimum for this field is '+e.source.my_min,
-														buttonNames: ['OK']
+														title : 'Omadi',
+														message : 'The minimum for this field is ' + e.source.my_min,
+														buttonNames : ['OK']
 													});
-													
+
 													_a.show();
-													
-													_a.addEventListener('click', function(evt){
+
+													_a.addEventListener('click', function(evt) {
 														content[e.source.real_ind].focus();
 													});
-												}
-												else{
+												} else {
 													//value is ok
 												}
-											}
-											else{
+											} else {
 												//No min or max sets
 											}
 										}
-									});									
+									});
 									count++;
 								}
 							} else {
@@ -3766,129 +3725,122 @@ create_or_edit_node.loadUI = function() {
 									reffer_index : reffer_index,
 									settings : settings,
 									changedFlag : 0,
-									my_min: _min,
-									my_max: _max,
-									real_ind: count,
-									returnKeyType: Ti.UI.RETURNKEY_DONE,
-									enabled: can_edit,
-									editable: can_edit
+									my_min : _min,
+									my_max : _max,
+									real_ind : count,
+									returnKeyType : Ti.UI.RETURNKEY_DONE,
+									enabled : can_edit,
+									editable : can_edit
 								});
-								if(PLATFORM == 'android'){
+								if (PLATFORM == 'android') {
 									content[count].backgroundImage = '../images/textfield.png'
 								}
-								if(!can_edit){
-										content[count].backgroundImage = '';
-										content[count].backgroundColor = '#BDBDBD';
-										content[count].borderColor = 'gray';
-										content[count].borderRadius = 10;
-										content[count].color = '#848484';
-										content[count].paddingLeft = 3;
-										content[count].paddingRight = 3;
+								if (!can_edit) {
+									content[count].backgroundImage = '';
+									content[count].backgroundColor = '#BDBDBD';
+									content[count].borderColor = 'gray';
+									content[count].borderRadius = 10;
+									content[count].color = '#848484';
+									content[count].paddingLeft = 3;
+									content[count].paddingRight = 3;
 								}
-								if (_max != null){
+								if (_max != null) {
 									content[count].maxLength = _max;
 								}
-								
+
 								top += 100;
 
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
-									if(e.source.my_max!= null && e.source.my_max!= "" &&  e.source.value.length>=e.source.my_max){
-										e.source.value = e.source.value.substr(0,e.source.my_max);
+									if (e.source.my_max != null && e.source.my_max != "" && e.source.value.length >= e.source.my_max) {
+										e.source.value = e.source.value.substr(0, e.source.my_max);
 										e.source.blur();
 									}
 									changedContentValue(e.source);
 									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 								});
-								
+
 								content[count].addEventListener('blur', function(e) {
-									Ti.API.info(e.source.value.length+' or '+e.value.length+' Field number ==> min: '+e.source.my_min+' max: '+e.source.my_max);
-									if(e.source.value != null && e.source.value!=""){
-										if (e.source.my_max != null && e.source.my_min != null){
-											if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
+									Ti.API.info(e.source.value.length + ' or ' + e.value.length + ' Field number ==> min: ' + e.source.my_min + ' max: ' + e.source.my_max);
+									if (e.source.value != null && e.source.value != "") {
+										if (e.source.my_max != null && e.source.my_min != null) {
+											if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)) {
 												var _a = Titanium.UI.createAlertDialog({
-													title:'Omadi',
-													message: 'The minimum for this field is '+e.source.my_min,
-													buttonNames: ['OK']
+													title : 'Omadi',
+													message : 'The minimum for this field is ' + e.source.my_min,
+													buttonNames : ['OK']
 												});
-												
+
 												_a.show();
-												
-												_a.addEventListener('click', function(evt){
+
+												_a.addEventListener('click', function(evt) {
 													content[e.source.real_ind].focus();
 												});
-												
-											}
-											else if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max) ) {
+
+											} else if (parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
 												var _a = Titanium.UI.createAlertDialog({
-													title:'Omadi',
-													message: "The maximum for this field is "+e.source.my_max,
-													buttonNames: ['OK']
+													title : 'Omadi',
+													message : "The maximum for this field is " + e.source.my_max,
+													buttonNames : ['OK']
 												});
-												
+
 												_a.show();
-												
-												_a.addEventListener('click', function(evt){
+
+												_a.addEventListener('click', function(evt) {
 													content[e.source.real_ind].focus();
 												});
-											}
-											else{
+											} else {
 												//value is ok
 											}
-										}
-										else if (e.source.my_max != null){
-											if ( parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
+										} else if (e.source.my_max != null) {
+											if (parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
 												var _a = Titanium.UI.createAlertDialog({
-													title:'Omadi',
-													message: "The maximum for this field is "+e.source.my_max,
-													buttonNames: ['OK']
+													title : 'Omadi',
+													message : "The maximum for this field is " + e.source.my_max,
+													buttonNames : ['OK']
 												});
-												
+
 												_a.show();
-												
-												_a.addEventListener('click', function(evt){
+
+												_a.addEventListener('click', function(evt) {
 													content[e.source.real_ind].focus();
 												});
-											}
-											else{
+											} else {
 												//value is ok
 											}
-										}
-										else if (e.source.my_min != null){
-											if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)){
+										} else if (e.source.my_min != null) {
+											if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)) {
 												var _a = Titanium.UI.createAlertDialog({
-													title:'Omadi',
-													message: 'The minimum for this field is '+e.source.my_min,
-													buttonNames: ['OK']
+													title : 'Omadi',
+													message : 'The minimum for this field is ' + e.source.my_min,
+													buttonNames : ['OK']
 												});
-												
+
 												_a.show();
-												
-												_a.addEventListener('click', function(evt){
+
+												_a.addEventListener('click', function(evt) {
 													content[e.source.real_ind].focus();
 												});
-											}
-											else{
+											} else {
 												//value is ok
 											}
-										}
-										else{
+										} else {
 											//No min or max sets
 										}
 									}
-								});								
+								});
 								count++;
 							}
 							//No data checkbox functionality
 							noDataCheckbox(reffer_index, regionView, top);
-							if(content[reffer_index].noDataView!=null){
-								top += 40; 
-							}	
+							if (content[reffer_index].noDataView != null) {
+								top += 40;
+							}
 							break;
 
 						case 'location':
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
-							
+
 							//Set our auxiliar array
 							var aux_local = new Array;
 							for (var i in settings.parts) {
@@ -3916,7 +3868,7 @@ create_or_edit_node.loadUI = function() {
 								color : isRequired ? 'red' : _lb_color,
 								font : {
 									fontSize : 18,
-									fontWeight: 'bold'
+									fontWeight : 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -3978,11 +3930,11 @@ create_or_edit_node.loadUI = function() {
 										reffer_index : reffer_index,
 										settings : settings,
 										changedFlag : 0,
-										autocorrect: false,
-										returnKeyType: Ti.UI.RETURNKEY_DONE,
-										enabled: true
+										autocorrect : false,
+										returnKeyType : Ti.UI.RETURNKEY_DONE,
+										enabled : true
 									});
-									if(PLATFORM == 'android'){
+									if (PLATFORM == 'android') {
 										content[count].backgroundImage = '../images/textfield.png'
 									}
 									top += heightValue;
@@ -4017,13 +3969,13 @@ create_or_edit_node.loadUI = function() {
 									reffer_index : reffer_index,
 									settings : settings,
 									changedFlag : 0,
-									autocorrect: false,
-									returnKeyType: Ti.UI.RETURNKEY_DONE,
-									enabled: true
+									autocorrect : false,
+									returnKeyType : Ti.UI.RETURNKEY_DONE,
+									enabled : true
 								});
-								if(PLATFORM == 'android'){
-										content[count].backgroundImage = '../images/textfield.png'
-									}
+								if (PLATFORM == 'android') {
+									content[count].backgroundImage = '../images/textfield.png'
+								}
 								top += heightValue;
 
 								regionView.add(content[count]);
@@ -4034,15 +3986,15 @@ create_or_edit_node.loadUI = function() {
 								count++;
 							}
 							//No data checkbox functionality
-							if(settings.parts!=null && settings.parts !=""){
+							if (settings.parts != null && settings.parts != "") {
 								partsArr.push(reffer_index);
-								if(partsArr.length == 4){
+								if (partsArr.length == 4) {
 									content[reffer_index].partsArr = partsArr;
 									partsArr = [];
 									noDataCheckbox(reffer_index, regionView, top);
-									if(content[reffer_index].noDataView != null){
-										top += 30; 
-									}	
+									if (content[reffer_index].noDataView != null) {
+										top += 30;
+									}
 								}
 							}
 
@@ -4053,28 +4005,28 @@ create_or_edit_node.loadUI = function() {
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
 							var can_view = false;
 							var can_edit = false;
-							
-							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
-								for(var _l in settings.permissions) {
-									for(_k in roles) {
-										if(_l == _k) {
+
+							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
+								for (var _l in settings.permissions) {
+									for (_k in roles) {
+										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
-											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_edit = true;
 											}
 
-											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_view = true;
 											}
 
 										}
 									}
 								}
-							}else{
+							} else {
 								can_view = can_edit = true;
 							}
-							
-							if(!can_view){
+
+							if (!can_view) {
 								break;
 							}
 
@@ -4083,7 +4035,7 @@ create_or_edit_node.loadUI = function() {
 								color : isRequired ? 'red' : _lb_color,
 								font : {
 									fontSize : 18,
-									fontWeight: 'bold'
+									fontWeight : 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -4108,23 +4060,23 @@ create_or_edit_node.loadUI = function() {
 							}
 							var _min = null;
 							var _max = null;
-							
-							if (settings.min && settings.min != null && settings.min != "null"){
+
+							if (settings.min && settings.min != null && settings.min != "null") {
 								_min = settings.min
 							}
-							
-							if (settings.max && settings.max != null && settings.max != "null"){
+
+							if (settings.max && settings.max != null && settings.max != "null") {
 								_max = settings.max
 							}
-							
-							Ti.API.info('********************** Field: '+field_arr[index_label][index_size].label+",  Cardinality: "+settings.cardinality);
+
+							Ti.API.info('********************** Field: ' + field_arr[index_label][index_size].label + ",  Cardinality: " + settings.cardinality);
 							if (settings.cardinality > 1) {
-								Ti.API.info('Value: '+field_arr[index_label][index_size].actual_value);
+								Ti.API.info('Value: ' + field_arr[index_label][index_size].actual_value);
 								if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
 									var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
-									
+
 									Ti.API.info('#######################################################################');
-									Ti.API.info('Field: '+field_arr[index_label][index_size].label+" Cardinality: "+settings.cardinality);
+									Ti.API.info('Field: ' + field_arr[index_label][index_size].label + " Cardinality: " + settings.cardinality);
 
 									//Decode the stored array:
 									var decoded = array_cont.fieldByName('encoded_array');
@@ -4134,7 +4086,7 @@ create_or_edit_node.loadUI = function() {
 									decoded = decoded.toString();
 									// Token that splits each element contained into the array: 'j8Oc2s1E'
 									var decoded_values = decoded.split("j8Oc2s1E");
-									Ti.API.info('Splited: '+decoded_values);
+									Ti.API.info('Splited: ' + decoded_values);
 									Ti.API.info('#######################################################################');
 								} else {
 									var decoded_values = new Array();
@@ -4176,16 +4128,16 @@ create_or_edit_node.loadUI = function() {
 										defaultField : defaultField,
 										settings : settings,
 										changedFlag : 0,
-										my_max: _max,
-										my_min: _min,
-										autocorrect: false,
-										enabled: can_edit,
-										editable: can_edit
+										my_max : _max,
+										my_min : _min,
+										autocorrect : false,
+										enabled : can_edit,
+										editable : can_edit
 									});
-									if(PLATFORM == 'android'){
+									if (PLATFORM == 'android') {
 										content[count].backgroundImage = '../images/textfield.png'
 									}
-									if(!can_edit){
+									if (!can_edit) {
 										content[count].backgroundImage = '';
 										content[count].backgroundColor = '#BDBDBD';
 										content[count].borderColor = 'gray';
@@ -4204,46 +4156,39 @@ create_or_edit_node.loadUI = function() {
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 
 									});
-									
+
 									content[count].addEventListener('blur', function(e) {
-										Ti.API.info(e.source.value+' or '+e.value+' Field number ==> min: '+e.source.my_min+' max: '+e.source.my_max);
-										if(e.source.value != null && e.source.value!=""){
-											if (e.source.my_max != null && e.source.my_min != null){
-												if (parseFloat(e.source.value) < parseFloat(e.source.my_min)){
-													alert("The minimum for this field is "+e.source.my_min);
+										Ti.API.info(e.source.value + ' or ' + e.value + ' Field number ==> min: ' + e.source.my_min + ' max: ' + e.source.my_max);
+										if (e.source.value != null && e.source.value != "") {
+											if (e.source.my_max != null && e.source.my_min != null) {
+												if (parseFloat(e.source.value) < parseFloat(e.source.my_min)) {
+													alert("The minimum for this field is " + e.source.my_min);
 													e.source.value = null;
-												}
-												else if ( parseFloat(e.source.value) > parseFloat(e.source.my_max) ) {
-													alert("The maximum for this field is "+e.source.my_max);
+												} else if (parseFloat(e.source.value) > parseFloat(e.source.my_max)) {
+													alert("The maximum for this field is " + e.source.my_max);
 													e.source.value = null;
-												}
-												else{
+												} else {
 													//value is ok
 												}
-											}
-											else if (e.source.my_max != null){
-												if ( parseFloat(e.source.value) > parseFloat(e.source.my_max)) {
-													alert("The maximum for this field is "+e.source.my_max);
-													e.source.value= null;
-												}
-												else{
-													//value is ok
-												}
-											}
-											else if (e.source.my_min != null){
-												if (parseFloat(e.source.value) < parseFloat(e.source.my_min)){
-													alert("The minimum for this field is "+e.source.my_min);
+											} else if (e.source.my_max != null) {
+												if (parseFloat(e.source.value) > parseFloat(e.source.my_max)) {
+													alert("The maximum for this field is " + e.source.my_max);
 													e.source.value = null;
-												}
-												else{
+												} else {
 													//value is ok
 												}
+											} else if (e.source.my_min != null) {
+												if (parseFloat(e.source.value) < parseFloat(e.source.my_min)) {
+													alert("The minimum for this field is " + e.source.my_min);
+													e.source.value = null;
+												} else {
+													//value is ok
+												}
+											} else {
+												//No min or max sets
 											}
-											else{
-											//No min or max sets
 										}
-										}
-									});									
+									});
 									count++;
 								}
 							} else {
@@ -4273,16 +4218,16 @@ create_or_edit_node.loadUI = function() {
 									defaultField : defaultField,
 									settings : settings,
 									changedFlag : 0,
-									my_max: _max,
-									my_min: _min,
-									autocorrect: false,
-									enabled: can_edit,
-									editable: can_edit
+									my_max : _max,
+									my_min : _min,
+									autocorrect : false,
+									enabled : can_edit,
+									editable : can_edit
 								});
-								if(PLATFORM == 'android'){
+								if (PLATFORM == 'android') {
 									content[count].backgroundImage = '../images/textfield.png'
 								}
-								if(!can_edit){
+								if (!can_edit) {
 									content[count].backgroundImage = '';
 									content[count].backgroundColor = '#BDBDBD';
 									content[count].borderColor = 'gray';
@@ -4301,82 +4246,75 @@ create_or_edit_node.loadUI = function() {
 									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 
 								});
-								
+
 								content[count].addEventListener('blur', function(e) {
-										Ti.API.info(e.source.value+' or '+e.value+' Field number ==> min: '+e.source.my_min+' max: '+e.source.my_max);
-										if(e.source.value != null && e.source.value!=""){		
-											if (e.source.my_max != null && e.source.my_min != null){
-												if (parseFloat(e.source.value) < parseFloat(e.source.my_min)){
-													alert("The minimum for this field is "+e.source.my_min);
-													e.source.value = null;
-												}
-												else if ( parseFloat(e.source.value) > parseFloat(e.source.my_max) ) {
-													alert("The maximum for this field is "+e.source.my_max);
-													e.source.value = null;
-												}
-												else{
-													//value is ok
-												}
+									Ti.API.info(e.source.value + ' or ' + e.value + ' Field number ==> min: ' + e.source.my_min + ' max: ' + e.source.my_max);
+									if (e.source.value != null && e.source.value != "") {
+										if (e.source.my_max != null && e.source.my_min != null) {
+											if (parseFloat(e.source.value) < parseFloat(e.source.my_min)) {
+												alert("The minimum for this field is " + e.source.my_min);
+												e.source.value = null;
+											} else if (parseFloat(e.source.value) > parseFloat(e.source.my_max)) {
+												alert("The maximum for this field is " + e.source.my_max);
+												e.source.value = null;
+											} else {
+												//value is ok
 											}
-											else if (e.source.my_max != null){
-												if ( parseFloat(e.source.value) > parseFloat(e.source.my_max)) {
-													alert("The maximum for this field is "+e.source.my_max);
-													e.source.value= null;
-												}
-												else{
-													//value is ok
-												}
+										} else if (e.source.my_max != null) {
+											if (parseFloat(e.source.value) > parseFloat(e.source.my_max)) {
+												alert("The maximum for this field is " + e.source.my_max);
+												e.source.value = null;
+											} else {
+												//value is ok
 											}
-											else if (e.source.my_min != null){
-												if (parseFloat(e.source.value) < parseFloat(e.source.my_min)){
-													alert("The minimum for this field is "+e.source.my_min);
-													e.source.value = null;
-												}
-												else{
-													//value is ok
-												}
+										} else if (e.source.my_min != null) {
+											if (parseFloat(e.source.value) < parseFloat(e.source.my_min)) {
+												alert("The minimum for this field is " + e.source.my_min);
+												e.source.value = null;
+											} else {
+												//value is ok
 											}
-											else{
+										} else {
 											//No min or max sets
 										}
-										}
-									});				
-								
+									}
+								});
+
 								count++;
 							}
 							//No data checkbox functionality
 							noDataCheckbox(reffer_index, regionView, top);
-							if(content[reffer_index].noDataView!=null){
-								top += 40; 
-							}	
+							if (content[reffer_index].noDataView != null) {
+								top += 40;
+							}
 							break;
 
 						case 'phone':
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
 							var can_view = false;
 							var can_edit = false;
-							
-							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
-								for(var _l in settings.permissions) {
-									for(_k in roles) {
-										if(_l == _k) {
+
+							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
+								for (var _l in settings.permissions) {
+									for (_k in roles) {
+										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
-											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_edit = true;
 											}
 
-											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_view = true;
 											}
 
 										}
 									}
 								}
-							}else{
+							} else {
 								can_view = can_edit = true;
 							}
-							
-							if(!can_view){
+
+							if (!can_view) {
 								break;
 							}
 
@@ -4385,7 +4323,7 @@ create_or_edit_node.loadUI = function() {
 								color : isRequired ? 'red' : _lb_color,
 								font : {
 									fontSize : 18,
-									fontWeight: 'bold'
+									fontWeight : 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -4447,14 +4385,14 @@ create_or_edit_node.loadUI = function() {
 										reffer_index : reffer_index,
 										settings : settings,
 										changedFlag : 0,
-										autocorrect: false,
-										enabled: can_edit,
-										editable: can_edit
+										autocorrect : false,
+										enabled : can_edit,
+										editable : can_edit
 									});
-									if(PLATFORM == 'android'){
+									if (PLATFORM == 'android') {
 										content[count].backgroundImage = '../images/textfield.png'
 									}
-									if(!can_edit){
+									if (!can_edit) {
 										content[count].backgroundImage = '';
 										content[count].backgroundColor = '#BDBDBD';
 										content[count].borderColor = 'gray';
@@ -4499,22 +4437,22 @@ create_or_edit_node.loadUI = function() {
 									reffer_index : reffer_index,
 									settings : settings,
 									changedFlag : 0,
-									autocorrect: false,
-									enabled: can_edit,
-									editable: can_edit
+									autocorrect : false,
+									enabled : can_edit,
+									editable : can_edit
 								});
-								if(PLATFORM == 'android'){
+								if (PLATFORM == 'android') {
 									content[count].backgroundImage = '../images/textfield.png'
 								}
-								if(!can_edit){
-										content[count].backgroundImage = '';
-										content[count].backgroundColor = '#BDBDBD';
-										content[count].borderColor = 'gray';
-										content[count].borderRadius = 10;
-										content[count].color = '#848484';
-										content[count].borderWidth = 1;
-										content[count].paddingLeft = 3;
-										content[count].paddingRight = 3;
+								if (!can_edit) {
+									content[count].backgroundImage = '';
+									content[count].backgroundColor = '#BDBDBD';
+									content[count].borderColor = 'gray';
+									content[count].borderRadius = 10;
+									content[count].color = '#848484';
+									content[count].borderWidth = 1;
+									content[count].paddingLeft = 3;
+									content[count].paddingRight = 3;
 								}
 								addDoneButtonInKB(content[count]);
 								top += heightValue;
@@ -4529,37 +4467,37 @@ create_or_edit_node.loadUI = function() {
 							}
 							//No data checkbox functionality
 							noDataCheckbox(reffer_index, regionView, top);
-							if(content[reffer_index].noDataView!=null){
-								top += 40; 
-							}	
+							if (content[reffer_index].noDataView != null) {
+								top += 40;
+							}
 							break;
 
 						case 'email':
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
 							var can_view = false;
 							var can_edit = false;
-							
-							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
-								for(var _l in settings.permissions) {
-									for(_k in roles) {
-										if(_l == _k) {
+
+							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
+								for (var _l in settings.permissions) {
+									for (_k in roles) {
+										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
-											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_edit = true;
 											}
 
-											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_view = true;
 											}
 
 										}
 									}
 								}
-							}else{
+							} else {
 								can_view = can_edit = true;
 							}
-							
-							if(!can_view){
+
+							if (!can_view) {
 								break;
 							}
 							label[count] = Ti.UI.createLabel({
@@ -4567,7 +4505,7 @@ create_or_edit_node.loadUI = function() {
 								color : isRequired ? 'red' : _lb_color,
 								font : {
 									fontSize : 18,
-									fontWeight: 'bold'
+									fontWeight : 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -4580,7 +4518,7 @@ create_or_edit_node.loadUI = function() {
 							//Add fields:
 							regionView.add(label[count]);
 							var reffer_index = count;
-							
+
 							if (settings.cardinality > 1) {
 								if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
 									var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
@@ -4629,15 +4567,15 @@ create_or_edit_node.loadUI = function() {
 										reffer_index : reffer_index,
 										settings : settings,
 										changedFlag : 0,
-										autocorrect: false,
-										returnKeyType: Ti.UI.RETURNKEY_DONE,
-										enabled: can_edit,
-										editable: can_edit
+										autocorrect : false,
+										returnKeyType : Ti.UI.RETURNKEY_DONE,
+										enabled : can_edit,
+										editable : can_edit
 									});
-									if(PLATFORM == 'android'){
+									if (PLATFORM == 'android') {
 										content[count].backgroundImage = '../images/textfield.png'
 									}
-									if(!can_edit){
+									if (!can_edit) {
 										content[count].backgroundImage = '';
 										content[count].backgroundColor = '#BDBDBD';
 										content[count].borderColor = 'gray';
@@ -4680,15 +4618,15 @@ create_or_edit_node.loadUI = function() {
 									reffer_index : reffer_index,
 									settings : settings,
 									changedFlag : 0,
-									autocorrect: false,
-									returnKeyType: Ti.UI.RETURNKEY_DONE,
-									enabled: can_edit,
-									editable: can_edit
+									autocorrect : false,
+									returnKeyType : Ti.UI.RETURNKEY_DONE,
+									enabled : can_edit,
+									editable : can_edit
 								});
-								if(PLATFORM == 'android'){
+								if (PLATFORM == 'android') {
 									content[count].backgroundImage = '../images/textfield.png'
 								}
-								if(!can_edit){
+								if (!can_edit) {
 									content[count].backgroundImage = '';
 									content[count].backgroundColor = '#BDBDBD';
 									content[count].borderColor = 'gray';
@@ -4710,9 +4648,9 @@ create_or_edit_node.loadUI = function() {
 							}
 							//No data checkbox functionality
 							noDataCheckbox(reffer_index, regionView, top);
-							if(content[reffer_index].noDataView!=null){
-								top += 40; 
-							}	
+							if (content[reffer_index].noDataView != null) {
+								top += 40;
+							}
 							break;
 
 						case 'taxonomy_term_reference':
@@ -4720,28 +4658,28 @@ create_or_edit_node.loadUI = function() {
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
 							var can_view = false;
 							var can_edit = false;
-							
-							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
-								for(var _l in settings.permissions) {
-									for(_k in roles) {
-										if(_l == _k) {
+
+							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
+								for (var _l in settings.permissions) {
+									for (_k in roles) {
+										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
-											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_edit = true;
 											}
 
-											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_view = true;
 											}
 
 										}
 									}
 								}
-							}else{
+							} else {
 								can_view = can_edit = true;
 							}
-							
-							if(!can_view){
+
+							if (!can_view) {
 								break;
 							}
 							var hasParent = false;
@@ -4762,7 +4700,7 @@ create_or_edit_node.loadUI = function() {
 									color : isRequired ? 'red' : _lb_color,
 									font : {
 										fontSize : 18,
-									fontWeight: 'bold'
+										fontWeight : 'bold'
 									},
 									textAlign : 'left',
 									width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -4871,7 +4809,7 @@ create_or_edit_node.loadUI = function() {
 											field_name : field_arr[index_label][index_size].field_name,
 											machine_name : vocabulary.fieldByName('machine_name'),
 											widget : 'options_select',
-											widgetObj: widget,
+											widgetObj : widget,
 											required : field_arr[index_label][index_size].required,
 											is_title : field_arr[index_label][index_size].is_title,
 											value : aux_val.vl,
@@ -4883,42 +4821,36 @@ create_or_edit_node.loadUI = function() {
 											defaultField : defaultField,
 											settings : settings,
 											changedFlag : 0,
-											enabled: can_edit
+											enabled : can_edit
 										});
 										var desLabel = Ti.UI.createLabel({
-											top : (top+heightValue),
-											width : Ti.Platform.displayCaps.platformWidth-30,
-											ellipsize: true,
-											wordWrap: false,
-											visible: false,
-											font:{
-												fontsize: 10
+											top : (top + heightValue),
+											width : Ti.Platform.displayCaps.platformWidth - 30,
+											ellipsize : true,
+											wordWrap : false,
+											visible : false,
+											font : {
+												fontsize : 10
 											},
-											color: 'black',
-											height: 20
-											
-									});
-									content[count].desLabel = desLabel;
-									desLabel.addEventListener('click', function(e){
-										openBigText(e.source.text);
-									});
-										if(PLATFORM == 'android'){
-											content[count].backgroundImage = '',
-											content[count].backgroundColor = 'white',
-											content[count].backgroundSelectedColor = '#2E64FE',
-											content[count].borderColor = 'gray',
-											content[count].borderRadius = 10,
-											content[count].color = 'black',
+											color : 'black',
+											height : 20
+
+										});
+										content[count].desLabel = desLabel;
+										desLabel.addEventListener('click', function(e) {
+											openBigText(e.source.text);
+										});
+										if (PLATFORM == 'android') {
+											content[count].backgroundImage = '', content[count].backgroundColor = 'white', content[count].backgroundSelectedColor = '#2E64FE', content[count].borderColor = 'gray', content[count].borderRadius = 10, content[count].color = 'black', content[count].borderWidth = 1
+										}
+										if (!can_edit) {
+											content[count].backgroundImage = '';
+											content[count].backgroundColor = '#BDBDBD';
+											content[count].borderColor = 'gray';
+											content[count].borderRadius = 10;
+											content[count].color = '#848484';
 											content[count].borderWidth = 1
 										}
-										if(!can_edit){
-												content[count].backgroundImage = '';
-												content[count].backgroundColor = '#BDBDBD';
-												content[count].borderColor = 'gray';
-												content[count].borderRadius = 10;
-												content[count].color = '#848484';
-												content[count].borderWidth = 1
-										}									
 										content[count].addEventListener('click', function(e) {
 											//Ti.API.info('TID: '+e.row.tid);
 											//e.source.value = e.row.tid;
@@ -4993,7 +4925,7 @@ create_or_edit_node.loadUI = function() {
 										field_name : field_arr[index_label][index_size].field_name,
 										machine_name : vocabulary.fieldByName('machine_name'),
 										widget : 'options_select',
-										widgetObj: widget,
+										widgetObj : widget,
 										required : field_arr[index_label][index_size].required,
 										is_title : field_arr[index_label][index_size].is_title,
 										composed_obj : false,
@@ -5005,41 +4937,35 @@ create_or_edit_node.loadUI = function() {
 										defaultField : defaultField,
 										settings : settings,
 										changedFlag : 0,
-										enabled: can_edit
+										enabled : can_edit
 									});
 									var desLabel = Ti.UI.createLabel({
-											top : (top+heightValue),
-											width : Ti.Platform.displayCaps.platformWidth-30,
-											ellipsize: true,
-											wordWrap: false,
-											visible: false,
-											font:{
-												fontsize: 10
-											},
-											color: 'black',
-											height: 20
-											
+										top : (top + heightValue),
+										width : Ti.Platform.displayCaps.platformWidth - 30,
+										ellipsize : true,
+										wordWrap : false,
+										visible : false,
+										font : {
+											fontsize : 10
+										},
+										color : 'black',
+										height : 20
+
 									});
 									content[count].desLabel = desLabel;
-									desLabel.addEventListener('click', function(e){
+									desLabel.addEventListener('click', function(e) {
 										openBigText(e.source.text);
 									});
-									if(PLATFORM == 'android'){
-										content[count].backgroundImage = '',
-										content[count].backgroundColor = 'white',
-										content[count].backgroundSelectedColor = '#2E64FE',
-										content[count].borderColor = 'gray',
-										content[count].borderRadius = 10,
-										content[count].color = 'black',
-										content[count].borderWidth = 1
+									if (PLATFORM == 'android') {
+										content[count].backgroundImage = '', content[count].backgroundColor = 'white', content[count].backgroundSelectedColor = '#2E64FE', content[count].borderColor = 'gray', content[count].borderRadius = 10, content[count].color = 'black', content[count].borderWidth = 1
 									}
-									if(!can_edit){
-											content[count].backgroundImage = '';
-											content[count].backgroundColor = '#BDBDBD';
-											content[count].borderColor = 'gray';
-											content[count].borderRadius = 10;
-											content[count].color = '#848484';
-											content[count].borderWidth = 1
+									if (!can_edit) {
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = '#BDBDBD';
+										content[count].borderColor = 'gray';
+										content[count].borderRadius = 10;
+										content[count].color = '#848484';
+										content[count].borderWidth = 1
 									}
 
 									content[count].addEventListener('click', function(e) {
@@ -5141,7 +5067,7 @@ create_or_edit_node.loadUI = function() {
 										field_name : field_arr[index_label][index_size].field_name,
 										machine_name : vocabulary.fieldByName('machine_name'),
 										widget : 'options_select',
-										widgetObj: widget,
+										widgetObj : widget,
 										required : field_arr[index_label][index_size].required,
 										is_title : field_arr[index_label][index_size].is_title,
 										composed_obj : false,
@@ -5152,37 +5078,37 @@ create_or_edit_node.loadUI = function() {
 										reffer_index : reffer_index,
 										settings : settings,
 										changedFlag : 0,
-										can_edit: can_edit,
-										enabled: can_edit,
+										can_edit : can_edit,
+										enabled : can_edit,
 									});
-									
+
 									var desLabel = Ti.UI.createLabel({
-											top : (top+heightValue),
-											width : Ti.Platform.displayCaps.platformWidth-30,
-											ellipsize: true,
-											wordWrap: false,
-											visible: false,
-											font:{
-												fontsize: 10
-											},
-											color: 'black',
-											height: 20
-											
+										top : (top + heightValue),
+										width : Ti.Platform.displayCaps.platformWidth - 30,
+										ellipsize : true,
+										wordWrap : false,
+										visible : false,
+										font : {
+											fontsize : 10
+										},
+										color : 'black',
+										height : 20
+
 									});
 									content[count].desLabel = desLabel;
-									desLabel.addEventListener('click', function(e){
+									desLabel.addEventListener('click', function(e) {
 										openBigText(e.source.text);
 									});
-									if(!can_edit){
-											content[count].backgroundImage = '';
-											content[count].backgroundColor = '#BDBDBD';
-											content[count].borderColor = 'gray';
-											content[count].color = '#848484';
-											content[count].borderWidth = 1
+									if (!can_edit) {
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = '#BDBDBD';
+										content[count].borderColor = 'gray';
+										content[count].color = '#848484';
+										content[count].borderWidth = 1
 									}
-									
+
 									content[count].addEventListener('click', function(e) {
-										if(e.source.can_edit){
+										if (e.source.can_edit) {
 											for (var jsa in e.source.itens) {
 												Ti.API.info(jsa + ' = ' + e.source.itens[jsa].title);
 											}
@@ -5192,7 +5118,7 @@ create_or_edit_node.loadUI = function() {
 										}
 									});
 
-									top += heightValue+20;
+									top += heightValue + 20;
 
 									//Add fields:
 									regionView.add(desLabel);
@@ -5207,7 +5133,7 @@ create_or_edit_node.loadUI = function() {
 									color : isRequired ? 'red' : _lb_color,
 									font : {
 										fontSize : 18,
-									fontWeight: 'bold'
+										fontWeight : 'bold'
 									},
 									textAlign : 'left',
 									width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -5310,14 +5236,14 @@ create_or_edit_node.loadUI = function() {
 											reffer_index : reffer_index,
 											settings : settings,
 											changedFlag : 0,
-											returnKeyType: Ti.UI.RETURNKEY_DONE,
-											enabled: can_edit,
-											editable: can_edit
+											returnKeyType : Ti.UI.RETURNKEY_DONE,
+											enabled : can_edit,
+											editable : can_edit
 										});
-										if(PLATFORM == 'android'){
+										if (PLATFORM == 'android') {
 											content[count].backgroundImage = '../images/textfield.png'
 										}
-										if(!can_edit){
+										if (!can_edit) {
 											content[count].backgroundImage = '';
 											content[count].backgroundColor = '#BDBDBD';
 											content[count].borderColor = 'gray';
@@ -5335,8 +5261,8 @@ create_or_edit_node.loadUI = function() {
 											height : getScreenHeight() * 0.2,
 											backgroundColor : '#FFFFFF',
 											visible : false,
-											borderColor: '#000',
-											borderWidth: 1
+											borderColor : '#000',
+											borderWidth : 1
 										});
 										content[count].autocomplete_table = autocomplete_table;
 										top += heightValue;
@@ -5347,7 +5273,7 @@ create_or_edit_node.loadUI = function() {
 										// TABLE EVENTS
 										//
 										content[count].autocomplete_table.addEventListener('click', function(e) {
-											//e.source.setValueF(e.rowData.title, e.rowData.tid); 
+											//e.source.setValueF(e.rowData.title, e.rowData.tid);
 											if (PLATFORM != 'android') {
 												e.source.textField.value = e.rowData.title;
 												e.source.textField.tid = e.rowData.tid;
@@ -5361,7 +5287,7 @@ create_or_edit_node.loadUI = function() {
 											}, 80);
 										});
 
-										content[count].addEventListener('blur', function(e) {											
+										content[count].addEventListener('blur', function(e) {
 											e.source.autocomplete_table.visible = false;
 											if ((e.source.restrict_new_autocomplete_terms == 1) && (e.source.value != "") && (e.source.tid == null)) {
 												if (PLATFORM == 'android') {
@@ -5416,9 +5342,11 @@ create_or_edit_node.loadUI = function() {
 														}
 													}
 													e.source.autocomplete_table.setData(table_data);
-													e.source.autocomplete_table.scrollToTop(0, {animated: false});
-													viewContent.scrollTo(0,e.source.top);
-													if(table_data.length > 0) {
+													e.source.autocomplete_table.scrollToTop(0, {
+														animated : false
+													});
+													viewContent.scrollTo(0, e.source.top);
+													if (table_data.length > 0) {
 														e.source.autocomplete_table.visible = true;
 													} else {
 														e.source.autocomplete_table.visible = false;
@@ -5507,22 +5435,22 @@ create_or_edit_node.loadUI = function() {
 										defaultField : defaultField,
 										settings : settings,
 										changedFlag : 0,
-										returnKeyType: Ti.UI.RETURNKEY_DONE,
-										enabled: can_edit,
-										editable: can_edit
+										returnKeyType : Ti.UI.RETURNKEY_DONE,
+										enabled : can_edit,
+										editable : can_edit
 									});
-									if(PLATFORM == 'android'){
+									if (PLATFORM == 'android') {
 										content[count].backgroundImage = '../images/textfield.png'
 									}
-									if(!can_edit){
-											content[count].backgroundImage = '';
-											content[count].backgroundColor = '#BDBDBD';
-											content[count].borderColor = 'gray';
-											content[count].borderRadius = 10;
-											content[count].color = '#848484';
-											content[count].borderWidth = 1;
-											content[count].paddingLeft = 3;
-											content[count].paddingRight = 3;
+									if (!can_edit) {
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = '#BDBDBD';
+										content[count].borderColor = 'gray';
+										content[count].borderRadius = 10;
+										content[count].color = '#848484';
+										content[count].borderWidth = 1;
+										content[count].paddingLeft = 3;
+										content[count].paddingRight = 3;
 									}
 									//AUTOCOMPLETE TABLE
 									var autocomplete_table = Titanium.UI.createTableView({
@@ -5532,8 +5460,8 @@ create_or_edit_node.loadUI = function() {
 										height : getScreenHeight() * 0.2,
 										backgroundColor : '#FFFFFF',
 										visible : false,
-										borderColor: '#000',
-										borderWidth: 1
+										borderColor : '#000',
+										borderWidth : 1
 									});
 									content[count].autocomplete_table = autocomplete_table;
 									top += heightValue;
@@ -5544,7 +5472,7 @@ create_or_edit_node.loadUI = function() {
 									// TABLE EVENTS
 									//
 									content[count].autocomplete_table.addEventListener('click', function(e) {
-										
+
 										//e.source.setValueF(e.rowData.title, e.rowData.tid);
 										if (PLATFORM != 'android') {
 											e.source.textField.value = e.rowData.title;
@@ -5559,7 +5487,7 @@ create_or_edit_node.loadUI = function() {
 									});
 
 									content[count].addEventListener('blur', function(e) {
-																			
+
 										e.source.autocomplete_table.visible = false;
 										if ((e.source.restrict_new_autocomplete_terms == 1) && (e.source.value != "") && (e.source.tid == null)) {
 											if (PLATFORM == 'android') {
@@ -5614,9 +5542,11 @@ create_or_edit_node.loadUI = function() {
 													}
 												}
 												e.source.autocomplete_table.setData(table_data);
-												e.source.autocomplete_table.scrollToTop(0, {animated: false});
-												viewContent.scrollTo(0,e.source.top);
-												if(table_data.length > 0) {
+												e.source.autocomplete_table.scrollToTop(0, {
+													animated : false
+												});
+												viewContent.scrollTo(0, e.source.top);
+												if (table_data.length > 0) {
 													e.source.autocomplete_table.visible = true;
 												} else {
 													e.source.autocomplete_table.visible = false;
@@ -5637,9 +5567,9 @@ create_or_edit_node.loadUI = function() {
 							}
 							//No data checkbox functionality
 							noDataCheckbox(reffer_index, regionView, top);
-							if(content[reffer_index].noDataView!=null){
-								top += 40; 
-							}	
+							if (content[reffer_index].noDataView != null) {
+								top += 40;
+							}
 							break;
 
 						//Refers to an object:
@@ -5648,28 +5578,28 @@ create_or_edit_node.loadUI = function() {
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
 							var can_view = false;
 							var can_edit = false;
-							
-							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
-								for(var _l in settings.permissions) {
-									for(_k in roles) {
-										if(_l == _k) {
+
+							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
+								for (var _l in settings.permissions) {
+									for (_k in roles) {
+										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
-											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_edit = true;
 											}
 
-											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_view = true;
 											}
 
 										}
 									}
 								}
-							}else{
+							} else {
 								can_view = can_edit = true;
 							}
-							
-							if(!can_view){
+
+							if (!can_view) {
 								break;
 							}
 
@@ -5678,7 +5608,7 @@ create_or_edit_node.loadUI = function() {
 								color : isRequired ? 'red' : _lb_color,
 								font : {
 									fontSize : 18,
-									fontWeight: 'bold'
+									fontWeight : 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -5787,16 +5717,16 @@ create_or_edit_node.loadUI = function() {
 										settings : settings,
 										changedFlag : 0,
 										my_index : count,
-										autocorrect: false,
-										returnKeyType: Ti.UI.RETURNKEY_DONE,
-										enabled: can_edit,
-										editable: can_edit,
-										touched: false
+										autocorrect : false,
+										returnKeyType : Ti.UI.RETURNKEY_DONE,
+										enabled : can_edit,
+										editable : can_edit,
+										touched : false
 									});
-									if(PLATFORM == 'android'){
+									if (PLATFORM == 'android') {
 										content[count].backgroundImage = '../images/textfield.png'
 									}
-									if(!can_edit){
+									if (!can_edit) {
 										content[count].backgroundImage = '';
 										content[count].backgroundColor = '#BDBDBD';
 										content[count].borderColor = 'gray';
@@ -5814,8 +5744,8 @@ create_or_edit_node.loadUI = function() {
 										height : getScreenHeight() * 0.2,
 										backgroundColor : '#FFFFFF',
 										visible : false,
-										borderColor: '#000',
-										borderWidth: 1
+										borderColor : '#000',
+										borderWidth : 1
 									});
 									content[count].autocomplete_table = autocomplete_table;
 									top += heightValue;
@@ -5826,7 +5756,7 @@ create_or_edit_node.loadUI = function() {
 									// TABLE EVENTS
 									//
 									content[count].autocomplete_table.addEventListener('click', function(e) {
-										//e.source.textField.setValueF(e.rowData.title, e.rowData.nid); 
+										//e.source.textField.setValueF(e.rowData.title, e.rowData.nid);
 
 										if (PLATFORM != 'android') {
 											e.source.textField.value = e.rowData.title;
@@ -5858,15 +5788,14 @@ create_or_edit_node.loadUI = function() {
 
 									content[count].addEventListener('focus', function(e) {
 										e.source.touched = true;
-										adjustView(e.source.my_index,e.source.top ); 
+										adjustView(e.source.my_index, e.source.top);
 									});
 
-										
 									//
 									// SEARCH EVENTS
 									//
 									content[count].addEventListener('change', function(e) {
-										if (e.source.touched === true){
+										if (e.source.touched === true) {
 											changedContentValue(e.source);
 											if (e.source.first_time === false) {
 												var list = e.source.terms;
@@ -5887,7 +5816,7 @@ create_or_edit_node.loadUI = function() {
 															} else {
 																e.source.nid = null;
 															}
-	
+
 															//Create partial matching row
 															var row = Ti.UI.createTableViewRow({
 																height : getScreenHeight() * 0.10,
@@ -5903,13 +5832,15 @@ create_or_edit_node.loadUI = function() {
 														}
 													}
 													e.source.autocomplete_table.setData(table_data);
-													e.source.autocomplete_table.scrollToTop(0, {animated: false});
-													viewContent.scrollTo(0,e.source.top);
-													if(table_data.length > 0) {
+													e.source.autocomplete_table.scrollToTop(0, {
+														animated : false
+													});
+													viewContent.scrollTo(0, e.source.top);
+													if (table_data.length > 0) {
 														e.source.autocomplete_table.visible = true;
 													} else {
 														e.source.autocomplete_table.visible = false;
-													}												
+													}
 												} else {
 													e.source.autocomplete_table.visible = false;
 													e.source.nid = null;
@@ -5940,9 +5871,8 @@ create_or_edit_node.loadUI = function() {
 									}
 								}
 
+								Ti.API.info("-----------------     OMADI REFERENCE : " + aux_val.title + " NID: " + aux_val.vl);
 
-								Ti.API.info("-----------------     OMADI REFERENCE : "+aux_val.title+" NID: "+aux_val.vl);
-								
 								content[count] = Titanium.UI.createTextField({
 									hintText : field_arr[index_label][index_size].label + ' ...',
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
@@ -5968,17 +5898,17 @@ create_or_edit_node.loadUI = function() {
 									reffer_index : reffer_index,
 									settings : settings,
 									changedFlag : 0,
-									my_index: count,
-									autocorrect: false,
-									returnKeyType: Ti.UI.RETURNKEY_DONE,
-									enabled: can_edit,
-									editable: can_edit,
-									touched: false
+									my_index : count,
+									autocorrect : false,
+									returnKeyType : Ti.UI.RETURNKEY_DONE,
+									enabled : can_edit,
+									editable : can_edit,
+									touched : false
 								});
-								if(PLATFORM == 'android'){
+								if (PLATFORM == 'android') {
 									content[count].backgroundImage = '../images/textfield.png'
 								}
-								if(!can_edit){
+								if (!can_edit) {
 									content[count].backgroundImage = '';
 									content[count].backgroundColor = '#BDBDBD';
 									content[count].borderColor = 'gray';
@@ -5996,8 +5926,8 @@ create_or_edit_node.loadUI = function() {
 									height : getScreenHeight() * 0.2,
 									backgroundColor : '#FFFFFF',
 									visible : false,
-									borderColor: '#000',
-									borderWidth: 1
+									borderColor : '#000',
+									borderWidth : 1
 								});
 								content[count].autocomplete_table = autocomplete_table;
 								top += heightValue;
@@ -6039,17 +5969,16 @@ create_or_edit_node.loadUI = function() {
 									}
 								});
 
-
 								content[count].addEventListener('focus', function(e) {
 									e.source.touched = true;
-									adjustView(e.source.my_index,e.source.top ); 
+									adjustView(e.source.my_index, e.source.top);
 								});
 
 								//
 								// SEARCH EVENTS
 								//
 								content[count].addEventListener('change', function(e) {
-									if (e.source.touched === true){
+									if (e.source.touched === true) {
 										e.source.nid = null;
 										changedContentValue(e.source);
 										if (e.source.first_time === false) {
@@ -6071,7 +6000,7 @@ create_or_edit_node.loadUI = function() {
 														} else {
 															e.source.nid = null;
 														}
-	
+
 														//Create partial matching row
 														var row = Ti.UI.createTableViewRow({
 															height : getScreenHeight() * 0.10,
@@ -6087,11 +6016,13 @@ create_or_edit_node.loadUI = function() {
 													}
 												}
 												e.source.autocomplete_table.setData(table_data);
-												e.source.autocomplete_table.scrollToTop(0, {animated: false});
-												viewContent.scrollTo(0,e.source.top);
-												if(table_data.length>0){
+												e.source.autocomplete_table.scrollToTop(0, {
+													animated : false
+												});
+												viewContent.scrollTo(0, e.source.top);
+												if (table_data.length > 0) {
 													e.source.autocomplete_table.visible = true;
-												}else{
+												} else {
 													e.source.autocomplete_table.visible = false;
 												}
 											} else {
@@ -6100,7 +6031,7 @@ create_or_edit_node.loadUI = function() {
 											}
 										} else {
 											e.source.first_time = false;
-										}										
+										}
 									}
 								});
 								//Add fields:
@@ -6114,28 +6045,28 @@ create_or_edit_node.loadUI = function() {
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
 							var can_view = false;
 							var can_edit = false;
-							
-							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
-								for(var _l in settings.permissions) {
-									for(_k in roles) {
-										if(_l == _k) {
+
+							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
+								for (var _l in settings.permissions) {
+									for (_k in roles) {
+										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
-											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_edit = true;
 											}
 
-											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_view = true;
 											}
 
 										}
 									}
 								}
-							}else{
+							} else {
 								can_view = can_edit = true;
 							}
-							
-							if(!can_view){
+
+							if (!can_view) {
 								break;
 							}
 							label[count] = Ti.UI.createLabel({
@@ -6143,7 +6074,7 @@ create_or_edit_node.loadUI = function() {
 								color : isRequired ? 'red' : _lb_color,
 								font : {
 									fontSize : 18,
-									fontWeight: 'bold'
+									fontWeight : 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -6223,14 +6154,13 @@ create_or_edit_node.loadUI = function() {
 										vl : null,
 										cnt : 0
 									};
-									
+
 									if (vl_to_field == "") {
 										if (settings.default_value == "current_user") {
 											vl_to_field = win.uid;
 										}
 
 									}
-									
 
 									Ti.API.info(vl_to_field + " ----------------- is the uid ------------------- " + settings.default_value);
 
@@ -6273,18 +6203,12 @@ create_or_edit_node.loadUI = function() {
 										reffer_index : reffer_index,
 										settings : settings,
 										changedFlag : 0,
-										enabled: can_edit
+										enabled : can_edit
 									});
-									if(PLATFORM == 'android'){
-										content[count].backgroundImage = '',
-										content[count].backgroundColor = 'white',
-										content[count].backgroundSelectedColor = '#2E64FE',
-										content[count].borderColor = 'gray',
-										content[count].borderRadius = 10,
-										content[count].color = 'black',
-										content[count].borderWidth = 1
+									if (PLATFORM == 'android') {
+										content[count].backgroundImage = '', content[count].backgroundColor = 'white', content[count].backgroundSelectedColor = '#2E64FE', content[count].borderColor = 'gray', content[count].borderRadius = 10, content[count].color = 'black', content[count].borderWidth = 1
 									}
-									if(!can_edit){
+									if (!can_edit) {
 										content[count].backgroundImage = '';
 										content[count].backgroundColor = '#BDBDBD';
 										content[count].borderColor = 'gray';
@@ -6294,7 +6218,6 @@ create_or_edit_node.loadUI = function() {
 									}
 									top += heightValue;
 
-								
 									content[count].addEventListener('click', function(e) {
 										//Ti.API.info('UID: '+e.row.uid);
 										//e.source.value = e.row.uid;
@@ -6327,7 +6250,7 @@ create_or_edit_node.loadUI = function() {
 										vl_to_field = win.uid;
 									}
 								}
-								
+
 								Ti.API.info(vl_to_field + " ----------------- is the uid ------------------- " + settings.default_value);
 
 								var arr_picker = new Array();
@@ -6383,18 +6306,12 @@ create_or_edit_node.loadUI = function() {
 									reffer_index : reffer_index,
 									settings : settings,
 									changedFlag : 0,
-									enabled: can_edit
+									enabled : can_edit
 								});
-								if(PLATFORM == 'android'){
-									content[count].backgroundImage = '',
-									content[count].backgroundColor = 'white',
-									content[count].backgroundSelectedColor = '#2E64FE',
-									content[count].borderColor = 'gray',
-									content[count].borderRadius = 10,
-									content[count].color = 'black',
-									content[count].borderWidth = 1
+								if (PLATFORM == 'android') {
+									content[count].backgroundImage = '', content[count].backgroundColor = 'white', content[count].backgroundSelectedColor = '#2E64FE', content[count].borderColor = 'gray', content[count].borderRadius = 10, content[count].color = 'black', content[count].borderWidth = 1
 								}
-								if(!can_edit){
+								if (!can_edit) {
 									content[count].backgroundImage = '';
 									content[count].backgroundColor = '#BDBDBD';
 									content[count].borderColor = 'gray';
@@ -6429,9 +6346,9 @@ create_or_edit_node.loadUI = function() {
 							}
 							//No data checkbox functionality
 							noDataCheckbox(reffer_index, regionView, top);
-							if(content[reffer_index].noDataView!=null){
-								top += 40; 
-							}	
+							if (content[reffer_index].noDataView != null) {
+								top += 40;
+							}
 							break;
 
 						//Shows up date (check how it is exhibited):
@@ -6440,28 +6357,28 @@ create_or_edit_node.loadUI = function() {
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
 							var can_view = false;
 							var can_edit = false;
-							
-							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
-								for(var _l in settings.permissions) {
-									for(_k in roles) {
-										if(_l == _k) {
+
+							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
+								for (var _l in settings.permissions) {
+									for (_k in roles) {
+										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
-											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_edit = true;
 											}
 
-											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_view = true;
 											}
 
 										}
 									}
 								}
-							}else{
+							} else {
 								can_view = can_edit = true;
 							}
-							
-							if(!can_view){
+
+							if (!can_view) {
 								break;
 							}
 							Ti.API.info(field_arr[index_label][index_size].settings);
@@ -6471,7 +6388,7 @@ create_or_edit_node.loadUI = function() {
 								color : isRequired ? 'red' : _lb_color,
 								font : {
 									fontSize : 18,
-									fontWeight: 'bold'
+									fontWeight : 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -6525,7 +6442,7 @@ create_or_edit_node.loadUI = function() {
 											var year = currentDate.getFullYear();
 
 											if (settings.default_value == 'now') {
-												var vl_to_field =currentDate.getTime() ;
+												var vl_to_field = currentDate.getTime();
 												text_in_field = months_set[month] + " / " + day + " / " + year;
 											} else {
 												var vl_to_field = null;
@@ -6562,10 +6479,10 @@ create_or_edit_node.loadUI = function() {
 											height : heightValue,
 											settings : settings,
 											changedFlag : 0,
-											can_edit: can_edit,
-											enabled: can_edit,
+											can_edit : can_edit,
+											enabled : can_edit,
 										});
-										if(!can_edit){
+										if (!can_edit) {
 											content[count].backgroundImage = '';
 											content[count].backgroundColor = '#BDBDBD';
 											content[count].borderColor = 'gray';
@@ -6588,20 +6505,20 @@ create_or_edit_node.loadUI = function() {
 											width : '35dp',
 											is_clear : true,
 											its_parent : content[count],
-											can_edit: can_edit,
+											can_edit : can_edit,
 										});
 
 										content[count].clear = clear;
 										mother_of_view.add(content[count].clear);
 										content[count].clear.addEventListener('click', function(e) {
-											if(e.source.can_edit){
+											if (e.source.can_edit) {
 												e.source.its_parent.text = "";
 												e.source.its_parent.value = null;
-											}	
+											}
 										});
 
 										content[count].addEventListener('click', function(e) {
-											if(e.source.can_edit){
+											if (e.source.can_edit) {
 												display_widget(e.source);
 											}
 										});
@@ -6629,7 +6546,7 @@ create_or_edit_node.loadUI = function() {
 										var year = currentDate.getFullYear();
 
 										if (settings.default_value == 'now') {
-											var vl_to_field =currentDate.getTime() ;
+											var vl_to_field = currentDate.getTime();
 											text_in_field = months_set[month] + " / " + day + " / " + year;
 										} else {
 											var vl_to_field = null;
@@ -6665,11 +6582,11 @@ create_or_edit_node.loadUI = function() {
 										height : heightValue,
 										settings : settings,
 										changedFlag : 0,
-										can_edit: can_edit,
-										enabled: can_edit,
+										can_edit : can_edit,
+										enabled : can_edit,
 
 									});
-									if(!can_edit){
+									if (!can_edit) {
 										content[count].backgroundImage = '';
 										content[count].backgroundColor = '#BDBDBD';
 										content[count].borderColor = 'gray';
@@ -6692,20 +6609,20 @@ create_or_edit_node.loadUI = function() {
 										width : '35dp',
 										is_clear : true,
 										its_parent : content[count],
-										can_edit: can_edit,
+										can_edit : can_edit,
 									});
 
 									content[count].clear = clear;
 									mother_of_view.add(content[count].clear);
 									content[count].clear.addEventListener('click', function(e) {
-										if(e.source.can_edit){
+										if (e.source.can_edit) {
 											e.source.its_parent.text = "";
 											e.source.its_parent.value = null;
 										}
 									});
 
 									content[count].addEventListener('click', function(e) {
-										if(e.source.can_edit){
+										if (e.source.can_edit) {
 											display_widget(e.source);
 										}
 									});
@@ -6763,7 +6680,7 @@ create_or_edit_node.loadUI = function() {
 											var hours = currentDate.getHours();
 
 											if (settings.default_value == 'now') {
-												var vl_to_field =currentDate.getTime() ;
+												var vl_to_field = currentDate.getTime();
 												//text_in_field = hours + ":" + form_min(min) + " - " + months_set[month] + " / " + day + " / " + year;
 												text_in_field = date(omadi_time_format, currentDate) + " - " + months_set[month] + " / " + day + " / " + year;
 											} else {
@@ -6801,17 +6718,17 @@ create_or_edit_node.loadUI = function() {
 											height : heightValue,
 											settings : settings,
 											changedFlag : 0,
-											can_edit: can_edit,
-											enabled: can_edit,
+											can_edit : can_edit,
+											enabled : can_edit,
 
 										});
-										
-										if(!can_edit){
-												content[count].backgroundImage = '';
-												content[count].backgroundColor = '#BDBDBD';
-												content[count].borderColor = 'gray';
-												content[count].color = '#848484';
-												content[count].borderWidth = 1
+
+										if (!can_edit) {
+											content[count].backgroundImage = '';
+											content[count].backgroundColor = '#BDBDBD';
+											content[count].borderColor = 'gray';
+											content[count].color = '#848484';
+											content[count].borderWidth = 1
 										}
 
 										var mother_of_view = Ti.UI.createView({
@@ -6829,22 +6746,22 @@ create_or_edit_node.loadUI = function() {
 											width : '35dp',
 											is_clear : true,
 											its_parent : content[count],
-											can_edit: can_edit,
+											can_edit : can_edit,
 										});
 
 										content[count].clear = clear;
 										mother_of_view.add(content[count].clear);
 										content[count].clear.addEventListener('click', function(e) {
-											if(e.source.can_edit){
+											if (e.source.can_edit) {
 												e.source.its_parent.text = "";
 												e.source.its_parent.value = null;
-											}	
+											}
 										});
 
 										content[count].addEventListener('click', function(e) {
-											if(e.source.can_edit){
+											if (e.source.can_edit) {
 												display_widget(e.source);
-											}	
+											}
 										});
 										//regionView.add(content[count]);
 										regionView.add(mother_of_view);
@@ -6875,7 +6792,7 @@ create_or_edit_node.loadUI = function() {
 										var hours = currentDate.getHours();
 
 										if (settings.default_value == 'now') {
-											var vl_to_field =currentDate.getTime() ;
+											var vl_to_field = currentDate.getTime();
 											//text_in_field = hours + ":" + form_min(min) + " - " + months_set[month] + " / " + day + " / " + year;
 											text_in_field = date(omadi_time_format, currentDate) + " - " + months_set[month] + " / " + day + " / " + year;
 										} else {
@@ -6913,10 +6830,10 @@ create_or_edit_node.loadUI = function() {
 										height : heightValue,
 										settings : settings,
 										changedFlag : 0,
-										can_edit: can_edit,
-										enabled: can_edit,
+										can_edit : can_edit,
+										enabled : can_edit,
 									});
-									if(!can_edit){
+									if (!can_edit) {
 										content[count].backgroundImage = '';
 										content[count].backgroundColor = '#BDBDBD';
 										content[count].borderColor = 'gray';
@@ -6939,20 +6856,20 @@ create_or_edit_node.loadUI = function() {
 										width : '35dp',
 										is_clear : true,
 										its_parent : content[count],
-										can_edit: can_edit,
+										can_edit : can_edit,
 									});
 
 									content[count].clear = clear;
 									mother_of_view.add(content[count].clear);
 									content[count].clear.addEventListener('click', function(e) {
-										if(e.source.can_edit){
+										if (e.source.can_edit) {
 											e.source.its_parent.text = "";
 											e.source.its_parent.value = null;
-										}	
+										}
 									});
 
 									content[count].addEventListener('click', function(e) {
-										if(e.source.can_edit){
+										if (e.source.can_edit) {
 											display_widget(e.source);
 										}
 									});
@@ -6964,9 +6881,9 @@ create_or_edit_node.loadUI = function() {
 							}
 							//No data checkbox functionality
 							noDataCheckbox(reffer_index, regionView, top);
-							if(content[reffer_index].noDataView!=null){
-								top += 40; 
-							}	
+							if (content[reffer_index].noDataView != null) {
+								top += 40;
+							}
 							break;
 
 						//Shows the on and off button?
@@ -6979,7 +6896,7 @@ create_or_edit_node.loadUI = function() {
 								color : isRequired ? 'red' : _lb_color,
 								font : {
 									fontSize : 18,
-									fontWeight: 'bold'
+									fontWeight : 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -7028,11 +6945,11 @@ create_or_edit_node.loadUI = function() {
 									content[count] = Titanium.UI.createButton({
 										top : top,
 										width : '30dp',
-									    height: '30dp',
-									    borderRadius: 4,
-									    borderColor: '#333',
-									    borderWidth: 1,
-									    backgroundColor: '#FFF',
+										height : '30dp',
+										borderRadius : 4,
+										borderColor : '#333',
+										borderWidth : 1,
+										backgroundColor : '#FFF',
 										private_index : o_index,
 										//height : getScreenHeight() * 0.1,
 										value : vl_to_field,
@@ -7046,26 +6963,24 @@ create_or_edit_node.loadUI = function() {
 										reffer_index : reffer_index,
 										settings : settings,
 										changedFlag : 0,
-										enabled: true
+										enabled : true
 									});
 									top += getScreenHeight() * 0.1;
 
 									content[count].addEventListener('click', function(e) {
-										if (e.source.value === false){
+										if (e.source.value === false) {
 											e.source.backgroundImage = '/images/selected_test.png';
-											e.source.borderWidth = 2;	
-											e.source.value  = true;	
-										}
-										else{
+											e.source.borderWidth = 2;
+											e.source.value = true;
+										} else {
 											e.source.backgroundImage = null;
-											e.source.borderWidth = 1;	
-											e.source.value  = false;		
-										}								
-									
+											e.source.borderWidth = 1;
+											e.source.value = false;
+										}
+
 										Ti.API.info('Actual value = ' + e.source.value);
 										changedContentValue(e.source);
 									});
-									
 
 									regionView.add(content[count]);
 									count++;
@@ -7080,11 +6995,11 @@ create_or_edit_node.loadUI = function() {
 								content[count] = Titanium.UI.createView({
 									top : top,
 									width : '30dp',
-								    height: '30dp',
-								    borderRadius: 4,
-								    borderColor: '#333',
-								    borderWidth: 1,
-								    backgroundColor: '#FFF',
+									height : '30dp',
+									borderRadius : 4,
+									borderColor : '#333',
+									borderWidth : 1,
+									backgroundColor : '#FFF',
 									private_index : o_index,
 									value : vl_to_field,
 									field_type : field_arr[index_label][index_size].type,
@@ -7097,23 +7012,22 @@ create_or_edit_node.loadUI = function() {
 									reffer_index : reffer_index,
 									settings : settings,
 									changedFlag : 0,
-									enabled: true
+									enabled : true
 								});
 								top += getScreenHeight() * 0.1;
 
 								content[count].addEventListener('click', function(e) {
 									Ti.API.info("CLICK");
-									if (e.source.value === false){
+									if (e.source.value === false) {
 										e.source.backgroundImage = '/images/selected_test.png';
-										e.source.borderWidth = 2;	
-										e.source.value  = true;	
-									}
-									else{
+										e.source.borderWidth = 2;
+										e.source.value = true;
+									} else {
 										e.source.backgroundImage = null;
-										e.source.borderWidth = 1;	
-										e.source.value  = false;		
+										e.source.borderWidth = 1;
+										e.source.value = false;
 									}
-									
+
 									Ti.API.info('Actual value = ' + e.source.value);
 									changedContentValue(e.source);
 								});
@@ -7128,28 +7042,28 @@ create_or_edit_node.loadUI = function() {
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
 							var can_view = false;
 							var can_edit = false;
-							
-							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
-								for(var _l in settings.permissions) {
-									for(_k in roles) {
-										if(_l == _k) {
+
+							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
+								for (var _l in settings.permissions) {
+									for (_k in roles) {
+										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
-											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_edit = true;
 											}
 
-											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_view = true;
 											}
 
 										}
 									}
 								}
-							}else{
+							} else {
 								can_view = can_edit = true;
 							}
-							
-							if(!can_view){
+
+							if (!can_view) {
 								break;
 							}
 							label[count] = Ti.UI.createLabel({
@@ -7157,7 +7071,7 @@ create_or_edit_node.loadUI = function() {
 								color : isRequired ? 'red' : _lb_color,
 								font : {
 									fontSize : 18,
-									fontWeight: 'bold'
+									fontWeight : 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -7169,7 +7083,7 @@ create_or_edit_node.loadUI = function() {
 							var reffer_index = count;
 
 							var widget = JSON.parse(field_arr[index_label][index_size].widget);
-							
+
 							Ti.API.info('SETTINGS FOR DATESTAMP: ' + settings.default_value);
 							Ti.API.info('WIDGET FOR DATESTAMP: ' + widget.settings['time']);
 
@@ -7197,11 +7111,11 @@ create_or_edit_node.loadUI = function() {
 								for (var o_index = 0; o_index < settings.cardinality; o_index++) {
 
 									if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") && (decoded_values[o_index] != null) )) {
-										var vl_to_field = decoded_values[o_index]  * 1000;
+										var vl_to_field = decoded_values[o_index] * 1000;
 										currentDate = new Date(vl_to_field);
 									} else {
 										currentDate = new Date();
-										var vl_to_field =currentDate.getTime() ;
+										var vl_to_field = currentDate.getTime();
 									}
 									var text_in_field = date(omadi_time_format, currentDate);
 									content[count] = Titanium.UI.createLabel({
@@ -7232,15 +7146,15 @@ create_or_edit_node.loadUI = function() {
 										height : heightValue,
 										settings : settings,
 										changedFlag : 0,
-										can_edit: can_edit,
-										enabled: can_edit
+										can_edit : can_edit,
+										enabled : can_edit
 									});
-									if(!can_edit){
-											content[count].backgroundImage = '';
-											content[count].backgroundColor = '#BDBDBD';
-											content[count].borderColor = 'gray';
-											content[count].color = '#848484';
-											content[count].borderWidth = 1
+									if (!can_edit) {
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = '#BDBDBD';
+										content[count].borderColor = 'gray';
+										content[count].color = '#848484';
+										content[count].borderWidth = 1
 									}
 
 									var mother_of_view = Ti.UI.createView({
@@ -7258,22 +7172,22 @@ create_or_edit_node.loadUI = function() {
 										width : '35dp',
 										is_clear : true,
 										its_parent : content[count],
-										can_edit: can_edit,
+										can_edit : can_edit,
 									});
 
 									content[count].clear = clear;
 									mother_of_view.add(content[count].clear);
 									content[count].clear.addEventListener('click', function(e) {
-										if(e.source.can_edit){
+										if (e.source.can_edit) {
 											e.source.its_parent.text = "";
 											e.source.its_parent.value = null;
 										}
 									});
 
 									content[count].addEventListener('click', function(e) {
-										if(e.source.can_edit){
+										if (e.source.can_edit) {
 											display_omadi_time(e.source);
-										}	
+										}
 									});
 									//regionView.add(content[count]);
 									regionView.add(mother_of_view);
@@ -7281,17 +7195,17 @@ create_or_edit_node.loadUI = function() {
 								}
 							} else {
 								var text_in_field = "";
-								var currentDate;	
+								var currentDate;
 								var vl_to_field;
 								if ((field_arr[index_label][index_size].actual_value != null) && (field_arr[index_label][index_size].actual_value != "null") && (field_arr[index_label][index_size].actual_value != "") && (field_arr[index_label][index_size].actual_value != " ")) {
 									vl_to_field = field_arr[index_label][index_size].actual_value * 1000;
 									currentDate = new Date(vl_to_field);
 								} else {
 									currentDate = new Date();
-									vl_to_field =currentDate.getTime() ;
+									vl_to_field = currentDate.getTime();
 								}
 								text_in_field = date(omadi_time_format, currentDate);
-								
+
 								content[count] = Titanium.UI.createLabel({
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -7319,16 +7233,16 @@ create_or_edit_node.loadUI = function() {
 									height : heightValue,
 									settings : settings,
 									changedFlag : 0,
-									can_edit: can_edit,
-									enabled: can_edit
+									can_edit : can_edit,
+									enabled : can_edit
 								});
-								if(!can_edit){
-											content[count].backgroundImage = '';
-											content[count].backgroundColor = '#BDBDBD';
-											content[count].borderColor = 'gray';
-											content[count].color = '#848484';
-											content[count].borderWidth = 1
-									}
+								if (!can_edit) {
+									content[count].backgroundImage = '';
+									content[count].backgroundColor = '#BDBDBD';
+									content[count].borderColor = 'gray';
+									content[count].color = '#848484';
+									content[count].borderWidth = 1
+								}
 
 								var mother_of_view = Ti.UI.createView({
 									height : heightValue,
@@ -7345,20 +7259,20 @@ create_or_edit_node.loadUI = function() {
 									width : '35dp',
 									is_clear : true,
 									its_parent : content[count],
-									can_edit: can_edit,
+									can_edit : can_edit,
 								});
 
 								content[count].clear = clear;
 								mother_of_view.add(content[count].clear);
 								content[count].clear.addEventListener('click', function(e) {
-									if(e.source.can_edit){
+									if (e.source.can_edit) {
 										e.source.its_parent.text = "";
 										e.source.its_parent.value = null;
 									}
 								});
 
 								content[count].addEventListener('click', function(e) {
-									if(e.source.can_edit){
+									if (e.source.can_edit) {
 										display_omadi_time(e.source);
 									}
 								});
@@ -7368,37 +7282,37 @@ create_or_edit_node.loadUI = function() {
 							}
 							//No data checkbox functionality
 							noDataCheckbox(reffer_index, regionView, top);
-							if(content[reffer_index].noDataView!=null){
-								top += 40; 
-							}	
+							if (content[reffer_index].noDataView != null) {
+								top += 40;
+							}
 							break;
 
 						case 'vehicle_fields':
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
 							var can_view = false;
 							var can_edit = false;
-							
-							if(settings['enforce_permissions']!=null && settings['enforce_permissions']==1){
-								for(var _l in settings.permissions) {
-									for(_k in roles) {
-										if(_l == _k) {
+
+							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
+								for (var _l in settings.permissions) {
+									for (_k in roles) {
+										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
-											if(stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_edit = true;
 											}
 
-											if(stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+											if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
 												can_view = true;
 											}
 
 										}
 									}
 								}
-							}else{
+							} else {
 								can_view = can_edit = true;
 							}
-							
-							if(!can_view){
+
+							if (!can_view) {
 								break;
 							}
 							label[count] = Ti.UI.createLabel({
@@ -7406,7 +7320,7 @@ create_or_edit_node.loadUI = function() {
 								color : isRequired ? 'red' : _lb_color,
 								font : {
 									fontSize : 18,
-									fontWeight: 'bold'
+									fontWeight : 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -7480,37 +7394,37 @@ create_or_edit_node.loadUI = function() {
 										reffer_index : reffer_index,
 										settings : settings,
 										changedFlag : 0,
-										autocorrect: false,
-										returnKeyType: Ti.UI.RETURNKEY_DONE,
-										enabled: can_edit,
-										editable: can_edit
+										autocorrect : false,
+										returnKeyType : Ti.UI.RETURNKEY_DONE,
+										enabled : can_edit,
+										editable : can_edit
 									});
-									if(PLATFORM == 'android'){
+									if (PLATFORM == 'android') {
 										content[count].backgroundImage = '../images/textfield.png'
 									}
-									if(!can_edit){
-											content[count].backgroundImage = '';
-											content[count].backgroundColor = '#BDBDBD';
-											content[count].borderColor = 'gray';
-											content[count].borderRadius = 10;
-											content[count].color = '#848484';
-											content[count].borderWidth = 1;
-											content[count].paddingLeft = 3;
-											content[count].paddingRight = 3;
+									if (!can_edit) {
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = '#BDBDBD';
+										content[count].borderColor = 'gray';
+										content[count].borderRadius = 10;
+										content[count].color = '#848484';
+										content[count].borderWidth = 1;
+										content[count].paddingLeft = 3;
+										content[count].paddingRight = 3;
 									}
 									top += heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
-										if(e.source.i_name == 'Make'){											
-											if(e.source.value.length > 18){												
-												e.source.value = e.source.value.substr(0, 18);											
+										if (e.source.i_name == 'Make') {
+											if (e.source.value.length > 18) {
+												e.source.value = e.source.value.substr(0, 18);
 											}
-										}else if(e.source.i_name == 'Model'){											
-											if(e.source.value.length > 38){												
-												e.source.value = e.source.value.substr(0, 38);											
-											}										
-										}										
+										} else if (e.source.i_name == 'Model') {
+											if (e.source.value.length > 38) {
+												e.source.value = e.source.value.substr(0, 38);
+											}
+										}
 										changedContentValue(e.source);
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 
@@ -7559,25 +7473,25 @@ create_or_edit_node.loadUI = function() {
 									_make : keep_from_make,
 									settings : settings,
 									changedFlag : 0,
-									i_name: i_name,
-									my_index: count,
-									autocorrect: false,
-									returnKeyType: Ti.UI.RETURNKEY_DONE,
-									enabled: can_edit,
-									editable: can_edit
+									i_name : i_name,
+									my_index : count,
+									autocorrect : false,
+									returnKeyType : Ti.UI.RETURNKEY_DONE,
+									enabled : can_edit,
+									editable : can_edit
 								});
-								if(PLATFORM == 'android'){
+								if (PLATFORM == 'android') {
 									content[count].backgroundImage = '../images/textfield.png'
 								}
-								if(!can_edit){
-										content[count].backgroundImage = '';
-										content[count].backgroundColor = '#BDBDBD';
-										content[count].borderColor = 'gray';
-										content[count].borderRadius = 10;
-										content[count].color = '#848484';
-										content[count].borderWidth = 1;
-										content[count].paddingLeft = 3;
-										content[count].paddingRight = 3;
+								if (!can_edit) {
+									content[count].backgroundImage = '';
+									content[count].backgroundColor = '#BDBDBD';
+									content[count].borderColor = 'gray';
+									content[count].borderRadius = 10;
+									content[count].color = '#848484';
+									content[count].borderWidth = 1;
+									content[count].paddingLeft = 3;
+									content[count].paddingRight = 3;
 								}
 								//AUTOCOMPLETE TABLE
 								var autocomplete_table = Titanium.UI.createTableView({
@@ -7587,8 +7501,8 @@ create_or_edit_node.loadUI = function() {
 									height : getScreenHeight() * 0.2,
 									backgroundColor : '#FFFFFF',
 									visible : false,
-									borderColor: '#000',
-									borderWidth: 1
+									borderColor : '#000',
+									borderWidth : 1
 								});
 								content[count].autocomplete_table = autocomplete_table;
 								top += heightValue;
@@ -7616,7 +7530,7 @@ create_or_edit_node.loadUI = function() {
 								});
 
 								content[count].addEventListener('focus', function(e) {
-									adjustView(e.source.my_index,e.source.top ); 
+									adjustView(e.source.my_index, e.source.top);
 									if (e.source.fantasy_name == "Model") {
 										Ti.API.info(content[e.source.make_ind].value);
 
@@ -7635,14 +7549,15 @@ create_or_edit_node.loadUI = function() {
 								// SEARCH EVENTS
 								//
 								content[count].addEventListener('change', function(e) {
-									if(e.source.i_name == 'Make'){											
-										if(e.source.value.length > 18){												
-											e.source.value = e.source.value.substr(0, 18);											
-											}										
-										}else if(e.source.i_name == 'Model'){											
-											if(e.source.value.length > 38){												
-												e.source.value = e.source.value.substr(0, 38);											
-										}										}									
+									if (e.source.i_name == 'Make') {
+										if (e.source.value.length > 18) {
+											e.source.value = e.source.value.substr(0, 18);
+										}
+									} else if (e.source.i_name == 'Model') {
+										if (e.source.value.length > 38) {
+											e.source.value = e.source.value.substr(0, 38);
+										}
+									}
 									changedContentValue(e.source);
 									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 									if (e.source.first_time === false) {
@@ -7671,11 +7586,13 @@ create_or_edit_node.loadUI = function() {
 												}
 											}
 											e.source.autocomplete_table.setData(table_data);
-											e.source.autocomplete_table.scrollToTop(0, {animated: false});
-											viewContent.scrollTo(0,e.source.top);
-											if(table_data.length>0){
+											e.source.autocomplete_table.scrollToTop(0, {
+												animated : false
+											});
+											viewContent.scrollTo(0, e.source.top);
+											if (table_data.length > 0) {
 												e.source.autocomplete_table.visible = true;
-											}else{
+											} else {
 												e.source.autocomplete_table.visible = false;
 											}
 										} else {
@@ -7691,15 +7608,15 @@ create_or_edit_node.loadUI = function() {
 
 							}
 							//No data checkbox functionality
-							if(settings.parts!=null && settings.parts !=""){
+							if (settings.parts != null && settings.parts != "") {
 								partsArr.push(reffer_index);
-								if(partsArr.length == 2){
+								if (partsArr.length == 2) {
 									content[reffer_index].partsArr = partsArr;
 									partsArr = [];
 									noDataCheckbox(reffer_index, regionView, top);
-									if(content[reffer_index].noDataView!=null){
-										top += 40; 
-									}	
+									if (content[reffer_index].noDataView != null) {
+										top += 40;
+									}
 								}
 							}
 
@@ -7741,7 +7658,7 @@ create_or_edit_node.loadUI = function() {
 								color : isRequired ? 'red' : _lb_color,
 								font : {
 									fontSize : 18,
-									fontWeight: 'bold'
+									fontWeight : 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -7779,7 +7696,7 @@ create_or_edit_node.loadUI = function() {
 									addButton : null,
 									cardinality : settings.cardinality,
 									value : null,
-									enabled: true
+									enabled : true
 								});
 								regionView.add(content[count]);
 								var decodedValues = [];
@@ -7905,7 +7822,7 @@ create_or_edit_node.loadUI = function() {
 									cardinality : settings.cardinality,
 									isUpdated : isUpdated,
 									value : null,
-									enabled: true
+									enabled : true
 								});
 
 								if (isUpdated == true) {
@@ -7939,18 +7856,18 @@ create_or_edit_node.loadUI = function() {
 							count++;
 							//No data checkbox functionality
 							noDataCheckbox(reffer_index, regionView, top);
-							if(content[reffer_index].noDataView!=null){
-								top += 40; 
-							}	
-						break;
-						
+							if (content[reffer_index].noDataView != null) {
+								top += 40;
+							}
+							break;
+
 						case 'calculation_field':
 							label[count] = Ti.UI.createLabel({
 								text : field_arr[index_label][index_size].label,
 								color : _lb_color,
 								font : {
 									fontSize : 18,
-									fontWeight: 'bold'
+									fontWeight : 'bold'
 								},
 								textAlign : 'left',
 								width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -7959,7 +7876,7 @@ create_or_edit_node.loadUI = function() {
 								top : top
 							});
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
-							if(settings.hidden==null || settings.hidden!=1){
+							if (settings.hidden == null || settings.hidden != 1) {
 								regionView.add(label[count]);
 								top += heightValue;
 							}
@@ -7980,24 +7897,24 @@ create_or_edit_node.loadUI = function() {
 								layout : 'vertical',
 								settings : settings,
 								changedFlag : 0,
-								enabled: true
+								enabled : true
 							});
 							createCalFieldTableFormat(content[count], db_display, content);
-							if(settings.hidden==null || settings.hidden!=1){
+							if (settings.hidden == null || settings.hidden != 1) {
 								regionView.add(content[count]);
 								top += content[count].height + 10;
 							}
 							count++;
-						break;
-						
+							break;
+
 						case 'rules_field':
-							if(field_arr[index_label][index_size].actual_value!=false && field_arr[index_label][index_size].actual_value!="false" && field_arr[index_label][index_size].actual_value!=0 && JSON.parse(field_arr[index_label][index_size].actual_value).length>0){	
+							if (field_arr[index_label][index_size].actual_value != false && field_arr[index_label][index_size].actual_value != "false" && field_arr[index_label][index_size].actual_value != 0 && JSON.parse(field_arr[index_label][index_size].actual_value).length > 0) {
 								label[count] = Ti.UI.createLabel({
 									text : field_arr[index_label][index_size].label,
 									color : _lb_color,
 									font : {
 										fontSize : 18,
-										fontWeight: 'bold'
+										fontWeight : 'bold'
 									},
 									textAlign : 'left',
 									width : Ti.Platform.displayCaps.platformWidth - 30,
@@ -8022,53 +7939,53 @@ create_or_edit_node.loadUI = function() {
 									label : field_arr[index_label][index_size].label,
 									reffer_index : reffer_index,
 									settings : settings,
-									value			: JSON.parse(field_arr[index_label][index_size].actual_value),
-									layout 			: 'vertical',
-									widget			: JSON.parse(field_arr[index_label][index_size].widget),
-									changedFlag 	: 0,
-									enabled: true
+									value : JSON.parse(field_arr[index_label][index_size].actual_value),
+									layout : 'vertical',
+									widget : JSON.parse(field_arr[index_label][index_size].widget),
+									changedFlag : 0,
+									enabled : true
 								});
-								
+
 								showRulesRow(content[count], db_display, win);
 								top += content[count].height + 10;
 								regionView.add(content[count]);
 								count++;
-							
+
 							}
 							break;
-							
+
 						case 'auto_increment':
-							if (field_arr[index_label][index_size].actual_value != "" && field_arr[index_label][index_size].actual_value != " " && field_arr[index_label][index_size].actual_value != null && field_arr[index_label][index_size].actual_value != "null"){
+							if (field_arr[index_label][index_size].actual_value != "" && field_arr[index_label][index_size].actual_value != " " && field_arr[index_label][index_size].actual_value != null && field_arr[index_label][index_size].actual_value != "null") {
 								label[count] = Ti.UI.createLabel({
 									text : field_arr[index_label][index_size].label,
 									color : _lb_color,
 									font : {
 										fontSize : 18,
-										fontWeight: 'bold'
+										fontWeight : 'bold'
 									},
 									textAlign : 'left',
 									width : Ti.Platform.displayCaps.platformWidth - 30,
 									touchEnabled : false,
 									height : heightValue,
-									top : top						
+									top : top
 								});
 								regionView.add(label[count]);
-								
+
 								var reffer_index = count;
 								var settings = JSON.parse(field_arr[index_label][index_size].settings);
 								top += heightValue;
-	
+
 								//alert(c_settings[count]);
 								var prefix = "";
-								if (settings.prefix){
+								if (settings.prefix) {
 									prefix = settings.prefix;
 								}
 								content[count] = Ti.UI.createTextField({
-									text : prefix+"" + field_arr[index_label][index_size].actual_value,
+									text : prefix + "" + field_arr[index_label][index_size].actual_value,
 									hintText : "No prefix for this node",
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									color : '#000000',
-									backgroundColor: '#D6CED9',
+									backgroundColor : '#D6CED9',
 									height : heightValue,
 									font : {
 										fontSize : 18
@@ -8086,19 +8003,19 @@ create_or_edit_node.loadUI = function() {
 									settings : settings,
 									changedFlag : 0,
 									my_index : count,
-									autocorrect: false,
-									enabled: false,
-									editable: false,
-									touched: false
+									autocorrect : false,
+									enabled : false,
+									editable : false,
+									touched : false
 								});
 								regionView.add(content[count]);
-								
+
 								top += heightValue;
 								regionView.add(content[count]);
-								count++;								
+								count++;
 							}
-						break;
-							
+							break;
+
 					}
 
 				}
@@ -8141,7 +8058,7 @@ create_or_edit_node.loadUI = function() {
 
 			if (isAnyEnabledField == true) {
 				viewContent.add(regionHeader);
-				viewContent.add(arrow_img);				
+				viewContent.add(arrow_img);
 				viewContent.add(regionView);
 			}
 		}
@@ -8174,16 +8091,20 @@ create_or_edit_node.loadUI = function() {
 				if (v.viewContainer.form_part == viewContent.max_form_part) {
 					v.viewContainer.height = v.viewContainer.calculatedHeight;
 					v.viewContainer.expanded = true;
-					v.arrow.image = "/images/arrow_down.png";					v.top = top;
-					v.arrow.top = top + 5;					top = top + 40;
+					v.arrow.image = "/images/arrow_down.png";
+					v.top = top;
+					v.arrow.top = top + 5;
+					top = top + 40;
 					v.viewContainer.top = top;
 					top = top + v.viewContainer.height + 10;
 					v.viewContainer.show();
 				} else {
 					v.viewContainer.height = 0;
 					v.viewContainer.expanded = false;
-					v.arrow.image = "/images/arrow_left.png";					v.top = top;
-					v.arrow.top = top + 5;					top = top + 40;
+					v.arrow.image = "/images/arrow_left.png";
+					v.top = top;
+					v.arrow.top = top + 5;
+					top = top + 40;
 					v.viewContainer.top = top;
 					top = top + v.viewContainer.height + 10;
 					v.viewContainer.hide();
@@ -8205,7 +8126,7 @@ create_or_edit_node.loadUI = function() {
 					reCalculate(content[j]);
 				}
 			}
-			
+
 			// set conditional required field
 			if (content[j].settings != null && content[j].settings != "" && content[j].settings['criteria'] != null && content[j].settings['criteria']['search_criteria'] != null) {
 				for (var row_idx in content[j].settings['criteria']['search_criteria']) {
@@ -8240,14 +8161,14 @@ create_or_edit_node.loadUI = function() {
 					}
 				}
 			}
-		
+
 			//For 'rules_field'
-			if(content[j].widgetObj!=null && content[j].widgetObj.type == 'violation_select'){
-				var content_widget = content[j].widgetObj; 
-				if(content_widget['rules_field_name']!=null && content_widget['rules_field_name']!=""){
+			if (content[j].widgetObj != null && content[j].widgetObj.type == 'violation_select') {
+				var content_widget = content[j].widgetObj;
+				if (content_widget['rules_field_name'] != null && content_widget['rules_field_name'] != "") {
 					var _reffer_index = entityArr[content_widget['rules_field_name']][0]['reffer_index'];
 					var _rulesFieldArr;
-					if(content[_reffer_index].rulesFieldArr == null){
+					if (content[_reffer_index].rulesFieldArr == null) {
 						_rulesFieldArr = [];
 						content[_reffer_index].rulesFieldArr = _rulesFieldArr;
 					}
@@ -8255,11 +8176,11 @@ create_or_edit_node.loadUI = function() {
 					_rulesFieldArr.push(content[j].reffer_index);
 					content[_reffer_index].rulesFieldArr = _rulesFieldArr;
 				}
-				
-				if(content_widget['rules_violation_time_field_name']!=null && content_widget['rules_violation_time_field_name']!=""){
+
+				if (content_widget['rules_violation_time_field_name'] != null && content_widget['rules_violation_time_field_name'] != "") {
 					var _reffer_index = entityArr[content_widget['rules_violation_time_field_name']][0]['reffer_index'];
 					var _rulesFieldArr;
-					if(content[_reffer_index].rulesFieldArr == null){
+					if (content[_reffer_index].rulesFieldArr == null) {
 						_rulesFieldArr = [];
 						content[_reffer_index].rulesFieldArr = _rulesFieldArr;
 					}
@@ -8267,47 +8188,46 @@ create_or_edit_node.loadUI = function() {
 					_rulesFieldArr.push(content[j].reffer_index);
 					content[_reffer_index].rulesFieldArr = _rulesFieldArr;
 				}
-				
-				if(win.mode == 1){
-					if(content_widget['rules_field_name']!=null && content_widget['rules_violation_time_field_name']!=null
-				  	  && content_widget['rules_field_name']!="" && content_widget['rules_violation_time_field_name']!=""){
-				  	  	var title = '';
-				  	  	var value = content[j].value;
-				  	  	if(content[j].settings.cardinality > 1 || content[j].settings.cardinality == 1) {
-				  	  		title = content[j].title;
-				  	  	}else if(content[j].settings.cardinality == -1){
-				  	  		title = content[j].text;
-				  	  	}
-				  	  	setParticularRulesField(content[j]);
-				  	  	content[j].value = value;
-				  	  	if(content[j].settings.cardinality > 1 || content[j].settings.cardinality == 1) {
-				  	  		content[j].title = title;
-				  	  	}else if(content[j].settings.cardinality == -1){
-				  	  		content[j].text = title;
-				  	  		//for(var itens_idx =0; itens_idx<content[j].itens.length; itens_idx++){
-				  	  			//for(var value_idx=0; value_idx < content[j].value.length ; value_idx++){
-				  	  				//alert(content[j].itens[itens_idx][0].v_into);
-				  	  				//alert(content[j].value[value_idx][0].v_into);
-				  	  				//if(content[j].itens[itens_idx].v_into == content[j].value[value_idx].v_into){
-				  	  					//content[j].itens[itens_idx].is_set = true;
-				  	  				//}
-				  	  			//}
-				  	  		//}
-				  	  		var itens = content[j].itens; 
-				  	  		var value = content[j].value;
-				  	  		for(var itens_idx in itens){
-				  	  			for(var value_idx in value){
-				  	  				if(itens[itens_idx].v_info == value[value_idx].v_info){
-				  	  					itens[itens_idx].is_set = true;
-				  	  				}
-				  	  			}
-				  	  		}
-				  	  		content[j].itens = itens;
-				  	  	}
-						
+
+				if (win.mode == 1) {
+					if (content_widget['rules_field_name'] != null && content_widget['rules_violation_time_field_name'] != null && content_widget['rules_field_name'] != "" && content_widget['rules_violation_time_field_name'] != "") {
+						var title = '';
+						var value = content[j].value;
+						if (content[j].settings.cardinality > 1 || content[j].settings.cardinality == 1) {
+							title = content[j].title;
+						} else if (content[j].settings.cardinality == -1) {
+							title = content[j].text;
+						}
+						setParticularRulesField(content[j]);
+						content[j].value = value;
+						if (content[j].settings.cardinality > 1 || content[j].settings.cardinality == 1) {
+							content[j].title = title;
+						} else if (content[j].settings.cardinality == -1) {
+							content[j].text = title;
+							//for(var itens_idx =0; itens_idx<content[j].itens.length; itens_idx++){
+							//for(var value_idx=0; value_idx < content[j].value.length ; value_idx++){
+							//alert(content[j].itens[itens_idx][0].v_into);
+							//alert(content[j].value[value_idx][0].v_into);
+							//if(content[j].itens[itens_idx].v_into == content[j].value[value_idx].v_into){
+							//content[j].itens[itens_idx].is_set = true;
+							//}
+							//}
+							//}
+							var itens = content[j].itens;
+							var value = content[j].value;
+							for (var itens_idx in itens) {
+								for (var value_idx in value) {
+									if (itens[itens_idx].v_info == value[value_idx].v_info) {
+										itens[itens_idx].is_set = true;
+									}
+								}
+							}
+							content[j].itens = itens;
+						}
+
 					}
 				}
-				
+
 			}
 
 		}
@@ -8317,7 +8237,7 @@ create_or_edit_node.loadUI = function() {
 		title : 'Omadi',
 		buttonNames : ['OK']
 	});
-	
+
 	//MENU
 	//======================================
 	// MENU
@@ -8360,9 +8280,8 @@ create_or_edit_node.loadUI = function() {
 
 	toolActInd.hide();
 }
-
 var camera;
-if(PLATFORM == 'android') {
+if (PLATFORM == 'android') {
 	camera = require('com.omadi.camera');
 	camera.addEventListener("successCameraCapture", function(e) {
 		setTimeout(function(evt) {
@@ -8381,14 +8300,14 @@ if(PLATFORM == 'android') {
 				e.source.image = e.source.imageData;
 				e.source.bigImg = e.source.imageData;
 				e.source.mimeType = "/jpeg";
-				if(e.source.cardinality > 1 || e.source.cardinality < 0) {
-					if(e.source.cardinality < 1) {
+				if (e.source.cardinality > 1 || e.source.cardinality < 0) {
+					if (e.source.cardinality < 1) {
 						arrImages = createImage(e.source.scrollView.addButton.o_index, e.source.scrollView.arrImages, defaultImageVal, e.source.scrollView, false);
 						e.source.scrollView.arrImages = arrImages;
 						e.source.scrollView.addButton.o_index += 1;
 						newSource = arrImages.length - 1;
 					} else {
-						if(e.source.private_index == e.source.cardinality - 1) {
+						if (e.source.private_index == e.source.cardinality - 1) {
 							return;
 						}
 						newSource = (e.source.private_index == e.source.cardinality - 1) ? 0 : e.source.private_index + 1;
@@ -8407,107 +8326,112 @@ if(PLATFORM == 'android') {
 
 // To open camera
 function openCamera(e) {
-if(PLATFORM == 'android'){
-	if(Ti.Media.isCameraSupported){
-		camera.openCamera({"event": e.source, "abc": function(e){}});
-	}else{
-		alert('No Camera in device');
-	}
-	
-}else{
-	try {
-		var overlayView;
-		var actInd = Ti.UI.createActivityIndicator();
-					actInd.font = {
-					fontFamily : 'Helvetica Neue',
-					fontSize : 15,
-					fontWeight : 'bold'
-				};
-				actInd.color = 'white';
-				actInd.message = 'Please wait...';
-		if(PLATFORM != 'android'){
-			overlayView = Ti.UI.createView();
-			var captureBtn = Ti.UI.createButton({
-				systemButton: Ti.UI.iPhone.SystemButton.CAMERA,
+	if (PLATFORM == 'android') {
+		if (Ti.Media.isCameraSupported) {
+			camera.openCamera({
+				"event" : e.source,
+				"abc" : function(e) {
+				}
 			});
-			var doneBtn = Ti.UI.createButton({
-				systemButton: Ti.UI.iPhone.SystemButton.DONE,
-			});
-			var flexible = Ti.UI.createButton({
-				systemButton: Ti.UI.iPhone.SystemButton.FLEXIBLE_SPACE,
-			});
-			var navbar = Ti.UI.iOS.createToolbar({
-				left	: 0,
-				right	: 0,
-				bottom	: 0,
-				height	: 50,
-				items: 	[doneBtn, flexible, captureBtn, flexible]
-			});
-			overlayView.add(navbar);
-			
-			captureBtn.addEventListener('click', function(evt){
-				Ti.Media.takePicture();
-			});
-			doneBtn.addEventListener('click', function(evt){
-				Ti.Media.hideCamera();	
-			})
+		} else {
+			alert('No Camera in device');
 		}
-		
-		
-		Ti.Media.showCamera({
-			
-			success : function(event) {
-				actInd.show();
 
-				Ti.API.info("MIME TYPE: " + event.media.mimeType);
-				// If image size greater than 1MB we will reduce th image else take as it is.
-				if (event.media.length > ONE_MB) {
-					e.source.imageData = reduceImageSize(event.media, 500, 700).image;
-				} else {
-					e.source.imageData = event.media;
-				}
-				e.source.image = e.source.imageData;
-				e.source.bigImg = e.source.imageData;
-				e.source.mimeType = event.media.mimeType;
+	} else {
+		try {
+			var overlayView;
+			var actInd = Ti.UI.createActivityIndicator();
+			actInd.font = {
+				fontFamily : 'Helvetica Neue',
+				fontSize : 15,
+				fontWeight : 'bold'
+			};
+			actInd.color = 'white';
+			actInd.message = 'Please wait...';
+			if (PLATFORM != 'android') {
+				overlayView = Ti.UI.createView();
+				var captureBtn = Ti.UI.createButton({
+					systemButton : Ti.UI.iPhone.SystemButton.CAMERA,
+				});
+				var doneBtn = Ti.UI.createButton({
+					systemButton : Ti.UI.iPhone.SystemButton.DONE,
+				});
+				var flexible = Ti.UI.createButton({
+					systemButton : Ti.UI.iPhone.SystemButton.FLEXIBLE_SPACE,
+				});
+				var navbar = Ti.UI.iOS.createToolbar({
+					left : 0,
+					right : 0,
+					bottom : 0,
+					height : 50,
+					items : [doneBtn, flexible, captureBtn, flexible]
+				});
+				overlayView.add(navbar);
 
-				if (e.source.cardinality > 1 || e.source.cardinality < 0) {
-					if(e.source.cardinality < 1) {
-						arrImages = createImage(e.source.scrollView.addButton.o_index, e.source.scrollView.arrImages, defaultImageVal, e.source.scrollView, false);
-						e.source.scrollView.arrImages = arrImages;
-						e.source.scrollView.addButton.o_index += 1;
-						newSource = arrImages.length - 1;
+				captureBtn.addEventListener('click', function(evt) {
+					Ti.Media.takePicture();
+				});
+				doneBtn.addEventListener('click', function(evt) {
+					Ti.Media.hideCamera();
+				})
+			}
+
+			Ti.Media.showCamera({
+
+				success : function(event) {
+					actInd.show();
+
+					Ti.API.info("MIME TYPE: " + event.media.mimeType);
+					// If image size greater than 1MB we will reduce th image else take as it is.
+					if (event.media.length > ONE_MB) {
+						e.source.imageData = reduceImageSize(event.media, 500, 700).image;
 					} else {
-						if(e.source.private_index == e.source.cardinality - 1){
-							return;
-						}
-						newSource = (e.source.private_index == e.source.cardinality - 1) ? 0 : e.source.private_index + 1;
+						e.source.imageData = event.media;
 					}
-					
-					e.source = e.source.scrollView.arrImages[newSource];
+					e.source.image = e.source.imageData;
+					e.source.bigImg = e.source.imageData;
+					e.source.mimeType = event.media.mimeType;
+
+					if (e.source.cardinality > 1 || e.source.cardinality < 0) {
+						if (e.source.cardinality < 1) {
+							arrImages = createImage(e.source.scrollView.addButton.o_index, e.source.scrollView.arrImages, defaultImageVal, e.source.scrollView, false);
+							e.source.scrollView.arrImages = arrImages;
+							e.source.scrollView.addButton.o_index += 1;
+							newSource = arrImages.length - 1;
+						} else {
+							if (e.source.private_index == e.source.cardinality - 1) {
+								return;
+							}
+							newSource = (e.source.private_index == e.source.cardinality - 1) ? 0 : e.source.private_index + 1;
+						}
+
+						e.source = e.source.scrollView.arrImages[newSource];
+						actInd.hide();
+						if ((PLATFORM != 'android')) {
+							Ti.Media.hideCamera()
+						};
+						openCamera(e);
+					}
+				},
+				error : function(error) {
 					actInd.hide();
-					if((PLATFORM != 'android')){Ti.Media.hideCamera()};	
-					openCamera(e);
-				}
-			},
-			error : function(error) {
-				actInd.hide();
-				Ti.API.info('Captured Image - Error: ' + error.code + " :: " + error.message);
-				if (error.code == Titanium.Media.NO_CAMERA) {
-					alert('No Camera in device');
-				}
-			},
-			saveToPhotoGallery : false,
-			showControls: false,
-			overlay: (PLATFORM !='android')?overlayView:null,
-			autohide: true,
-			allowEditing: false,
-			mediaTypes : [Ti.Media.MEDIA_TYPE_PHOTO]
-		});
-	} catch(ex) {
+					Ti.API.info('Captured Image - Error: ' + error.code + " :: " + error.message);
+					if (error.code == Titanium.Media.NO_CAMERA) {
+						alert('No Camera in device');
+					}
+				},
+				saveToPhotoGallery : false,
+				showControls : false,
+				overlay : (PLATFORM != 'android') ? overlayView : null,
+				autohide : true,
+				allowEditing : false,
+				mediaTypes : [Ti.Media.MEDIA_TYPE_PHOTO]
+			});
+		} catch(ex) {
+
+		}
 
 	}
-
-}
 }
 
 function createImage(o_index, arrImages, data, scrollView, updated) {
@@ -8589,49 +8513,48 @@ function bottomButtons(actualWindow) {
 				title : 'Actions',
 				style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
 			});
-			
+
 			actions.addEventListener('click', function() {
 
 				var btn_tt = [];
 				var btn_id = [];
-				
-				btn_tt.push('Save');		
-				
-				if (win.nid != null){
+
+				btn_tt.push('Save');
+
+				if (win.nid != null) {
 					var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 					var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
 					var _data = JSON.parse(json_data.fieldByName('_data'));
-			
+
 					var node_form = win.region_form;
-			
+
 					Ti.API.info('Form node part = ' + node_form);
-					
-					if(_data.form_parts!=null && _data.form_parts!=""){
+
+					if (_data.form_parts != null && _data.form_parts != "") {
 						Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
-						if(_data.form_parts.parts.length >= parseInt(node_form) + 2) { 
+						if (_data.form_parts.parts.length >= parseInt(node_form) + 2) {
 							Ti.API.info("<<<<<<<------->>>>>>> Title = " + _data.form_parts.parts[parseInt(node_form) + 1].label);
-							btn_tt.push("Save "+_data.form_parts.parts[node_form + 1].label);
+							btn_tt.push("Save + " + _data.form_parts.parts[node_form + 1].label);
 							btn_id.push(node_form + 1);
 						}
 					}
 					json_data.close();
 					db_act.close();
-				}
-				else{
+				} else {
 					var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 					var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
 					var _data = JSON.parse(json_data.fieldByName('_data'));
-					
+
 					var node_form = 0;
-			
-					Ti.API.info('Form node part = ' + node_form );
-					
-					if(_data.form_parts!=null && _data.form_parts!=""){
+
+					Ti.API.info('Form node part = ' + node_form);
+
+					if (_data.form_parts != null && _data.form_parts != "") {
 						Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
-						if(_data.form_parts.parts.length >= parseInt(node_form) + 2) { 
+						if (_data.form_parts.parts.length >= parseInt(node_form) + 2) {
 							Ti.API.info("<<<<<<<------->>>>>>> Title = " + _data.form_parts.parts[node_form + 1].label);
-							btn_tt.push("Save + "+_data.form_parts.parts[node_form  + 1].label);
-							btn_id.push(node_form  + 1);
+							btn_tt.push("Save + " + _data.form_parts.parts[node_form + 1].label);
+							btn_id.push(node_form + 1);
 						}
 					}
 					json_data.close();
@@ -8640,30 +8563,29 @@ function bottomButtons(actualWindow) {
 
 				btn_tt.push('Draft');
 				btn_tt.push('Cancel');
-				
+
 				var postDialog = Titanium.UI.createOptionDialog();
 				postDialog.options = btn_tt;
 				postDialog.show();
-		
+
 				postDialog.addEventListener('click', function(ev) {
-					if (btn_tt.length == 4){
-						if (ev.index  == 1){
+					if (btn_tt.length == 4) {
+						if (ev.index == 1) {
 							//openEditScreen(btn_id[0]);
-							Ti.API.info('=======> '+btn_id[0]);	
+							Ti.API.info('=======> ' + btn_id[0]);
 							try {
 								keep_info(btn_id[0], false);
 							} catch(e) {
 								alert('Error Tracking: ' + e);
 								//To catch error to resolve issue #916
 							}
-						}
-						else if (ev.index == 0) {
-								try {
-									keep_info('normal', false);
-								} catch(e) {
-									alert('Error Tracking: ' + e);
-									//To catch error to resolve issue #916
-								}
+						} else if (ev.index == 0) {
+							try {
+								keep_info('normal', false);
+							} catch(e) {
+								alert('Error Tracking: ' + e);
+								//To catch error to resolve issue #916
+							}
 						} else if (ev.index == 2) {
 							try {
 								keep_info('draft', false);
@@ -8671,9 +8593,8 @@ function bottomButtons(actualWindow) {
 								alert('Error Tracking: ' + e);
 								//To catch error to resolve issue #916
 							}
-						}						
-					}
-					else{
+						}
+					} else {
 						if (ev.index == 0) {
 							try {
 								keep_info('normal', false);
@@ -8688,9 +8609,9 @@ function bottomButtons(actualWindow) {
 								alert('Error Tracking: ' + e);
 								//To catch error to resolve issue #916
 							}
-						}						
+						}
 					}
-				});	
+				});
 			});
 
 			// create and add toolbar
@@ -8703,7 +8624,7 @@ function bottomButtons(actualWindow) {
 			actualWindow.add(toolbar);
 		}
 	} catch(evt) {
-		Ti.API.info("TOP BAR ERROR = "+evt);
+		Ti.API.info("TOP BAR ERROR = " + evt);
 	}
 };
 
@@ -8770,7 +8691,7 @@ function setDefaultValues(content, e) {
 						if ((content[counter].field_type == 'number_decimal' || content[counter].field_type == 'number_integer')) {
 							content[counter].value = defaultFieldVal + "";
 							content[counter].nid = e.source.nid;
-						}  else {
+						} else {
 							content[counter].value = defaultFieldVal;
 							defaultFieldVal = db_display.execute('SELECT name FROM term_data WHERE tid="' + defaultFieldVal + '";');
 							defaultFieldVal = defaultFieldVal.fieldByName('name');
@@ -8846,49 +8767,56 @@ function createCalFieldTableFormat(single_content, db_display, contentArr) {
 	var heightView = 0;
 	var heightCellView = 40;
 	var widthCellView = Ti.Platform.displayCaps.platformWidth - 30;
-	
+
 	if (row_values.length > 1) {
 		var cal_value = 0;
 		var total_rows = [];
 		var row = "";
 		var data = {};
-		
+
 		for ( idx = 0; idx < row_values.length; idx++) {
-			data = {"value":row_values[idx].value, "label": row_values[idx].row_label, "weight_label" 	: "","weight_value" 	: "", "color_label": "#545454", "color_value": "#424242"}; 
-			row = createCalculationRow(single_content, heightCellView, widthCellView, data); 
+			data = {
+				"value" : row_values[idx].value,
+				"label" : row_values[idx].row_label,
+				"weight_label" : "",
+				"weight_value" : "",
+				"color_label" : "#545454",
+				"color_value" : "#424242"
+			};
+			row = createCalculationRow(single_content, heightCellView, widthCellView, data);
 			single_content.add(row);
 			total_rows.push(row);
 			heightView += heightCellView + 1;
 		}
-		 
+
 		data = {
-				"value" 	: result[0].final_value,
-				"label" 	: "Total:",
-				"weight_label" 	: "",
-				"weight_value" 	: "bold",
-				"color_label": "#545454",
-				"color_value": "#424242"
-			};  
-		row = createCalculationRow(single_content, heightCellView, widthCellView, data); 
+			"value" : result[0].final_value,
+			"label" : "Total:",
+			"weight_label" : "",
+			"weight_value" : "bold",
+			"color_label" : "#545454",
+			"color_value" : "#424242"
+		};
+		row = createCalculationRow(single_content, heightCellView, widthCellView, data);
 		single_content.add(row);
 		total_rows.push(row);
 		heightView += heightCellView + 1;
-		
+
 		data = {
-				"value" 	: (single_content.actual_value==null || single_content.actual_value=="")?0:single_content.actual_value,
-				"label" 	: '*Currently Saved Total:',
-				"weight_label" 	: "bold",
-				"weight_value" 	: "bold",
-				"color_label": "#B40404",
-				"color_value": "#B40404"
-		}; 
-		row = createCalculationRow(single_content, heightCellView, widthCellView, data); 
+			"value" : (single_content.actual_value == null || single_content.actual_value == "") ? 0 : single_content.actual_value,
+			"label" : '*Currently Saved Total:',
+			"weight_label" : "bold",
+			"weight_value" : "bold",
+			"color_label" : "#B40404",
+			"color_value" : "#B40404"
+		};
+		row = createCalculationRow(single_content, heightCellView, widthCellView, data);
 		single_content.add(row);
 		total_rows.push(row);
 		heightView += heightCellView + 1;
-		
+
 		//RECALCLATE BUTTON
-		if(single_content.settings.include_recalculate_button!=null && single_content.settings.include_recalculate_button==1){
+		if (single_content.settings.include_recalculate_button != null && single_content.settings.include_recalculate_button == 1) {
 			row = Ti.UI.createView({
 				layout : 'horizontal',
 				height : heightCellView,
@@ -8911,21 +8839,21 @@ function createCalFieldTableFormat(single_content, db_display, contentArr) {
 			heightView += heightCellView + 5;
 			row.calculateBtn.addEventListener('click', function(e) {
 				reCalculate(content[e.source.idx]);
-			}); 
+			});
 		}
 		single_content.total_rows = total_rows;
 		single_content.value = result[0].final_value;
 
-	}else if(row_values.length == 1){
+	} else if (row_values.length == 1) {
 		cal_value = result[0].final_value;
 		typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
 		isNegative = (cal_value < 0) ? true : false;
 		var cal_value_str = applyNumberFormat(single_content, cal_value);
 		cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
 		label[single_content.reffer_index].text = single_content.label + ": " + cal_value_str;
-		
+
 		//RECALCLATE BUTTON
-		if(single_content.settings.include_recalculate_button!=null && single_content.settings.include_recalculate_button==1){
+		if (single_content.settings.include_recalculate_button != null && single_content.settings.include_recalculate_button == 1) {
 			var row = Ti.UI.createView({
 				layout : 'horizontal',
 				height : heightCellView,
@@ -8948,11 +8876,11 @@ function createCalFieldTableFormat(single_content, db_display, contentArr) {
 			heightView += heightCellView + 5;
 			row.calculateBtn.addEventListener('click', function(e) {
 				reCalculate(content[e.source.idx]);
-			}); 
+			});
 		}
 		single_content.total_rows = total_rows;
 		single_content.value = result[0].final_value;
-		
+
 	}
 	single_content.height = heightView;
 }
@@ -9008,50 +8936,50 @@ function reCalculate(singel_content) {
 			isNegative = (cal_value < 0) ? true : false;
 			cal_value_str = applyNumberFormat(singel_content, cal_value);
 			cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
-			
+
 			var row = total_rows[row_values.length];
 			row.row_label.text = "Total: ";
 			row.value.text = "  " + cal_value_str;
 			singel_content.value = result[0].final_value;
-			
-			var currently_saved_value = db_display.execute('SELECT '+singel_content.field_name +' FROM ' + win.type + ' WHERE nid = "' + win.nid + '" ');
-			if(currently_saved_value.rowCount > 0){
+
+			var currently_saved_value = db_display.execute('SELECT ' + singel_content.field_name + ' FROM ' + win.type + ' WHERE nid = "' + win.nid + '" ');
+			if (currently_saved_value.rowCount > 0) {
 				cal_value = currently_saved_value.fieldByName(singel_content.field_name);
-				cal_value = (cal_value==null || cal_value=="")?0:Number(cal_value);
+				cal_value = (cal_value == null || cal_value == "") ? 0 : Number(cal_value);
 				typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
 				isNegative = (cal_value < 0) ? true : false;
 				cal_value_str = applyNumberFormat(singel_content, cal_value);
 				cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
-				
-				var row = total_rows[row_values.length+1];
+
+				var row = total_rows[row_values.length + 1];
 				row.row_label.text = "*Currently Saved Total: ";
 				row.value.text = "  " + cal_value_str;
 			}
-		
-		}else if(row_values.length == 1){
+
+		} else if (row_values.length == 1) {
 			cal_value = result[0].final_value;
 			typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
 			isNegative = (cal_value < 0) ? true : false;
 			var cal_value_str = applyNumberFormat(singel_content, cal_value);
 			cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
-			label[singel_content.reffer_index].text = singel_content.label + ": " + cal_value_str;;
-			
-			var currently_saved_value = db_display.execute('SELECT '+singel_content.field_name +' FROM ' + win.type + ' WHERE nid = "' + win.nid + '" ');
-			if(currently_saved_value.rowCount > 0){
-				if(Number(cal_value) != Number(currently_saved_value.fieldByName(singel_content.field_name))){
+			label[singel_content.reffer_index].text = singel_content.label + ": " + cal_value_str;
+			;
+
+			var currently_saved_value = db_display.execute('SELECT ' + singel_content.field_name + ' FROM ' + win.type + ' WHERE nid = "' + win.nid + '" ');
+			if (currently_saved_value.rowCount > 0) {
+				if (Number(cal_value) != Number(currently_saved_value.fieldByName(singel_content.field_name))) {
 					cal_value = currently_saved_value.fieldByName(singel_content.field_name);
-					cal_value = (cal_value==null || cal_value=="")?0:Number(cal_value);
+					cal_value = (cal_value == null || cal_value == "") ? 0 : Number(cal_value);
 					typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
 					isNegative = (cal_value < 0) ? true : false;
 					cal_value_str = applyNumberFormat(singel_content, cal_value);
 					cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
-				
-					label[singel_content.reffer_index].text +=  "; Orig: " + cal_value_str;
+
+					label[singel_content.reffer_index].text += "; Orig: " + cal_value_str;
 				}
-				
+
 			}
-			
-			
+
 		}
 	} catch(e) {
 	}
@@ -9137,7 +9065,7 @@ function conditionalSetRequiredField(idx) {
 
 							}
 						} else {
-							if (node_values == null || node_values == "" || node_values.length==0) {
+							if (node_values == null || node_values == "" || node_values.length == 0) {
 								row_matches[row_idx] = true;
 							} else {
 								for (var value_index in node_values) {
@@ -9217,7 +9145,7 @@ function conditionalSetRequiredField(idx) {
 
 							}
 						} else {
-							if (node_values == null || node_values == "" || node_values.length==0) {
+							if (node_values == null || node_values == "" || node_values.length == 0) {
 								row_matches[row_idx] = true;
 							} else {
 								for (var value_index in node_values) {
@@ -9336,52 +9264,53 @@ function conditionalSetRequiredField(idx) {
 	}
 }
 
-function noDataCheckbox(reffer_index, baseView, top){
-	if(content[reffer_index].settings!=null && content[reffer_index].settings!=""){
-		if(content[reffer_index].settings.required_no_data_checkbox!=null && content[reffer_index].settings.required_no_data_checkbox==1){
+function noDataCheckbox(reffer_index, baseView, top) {
+	if (content[reffer_index].settings != null && content[reffer_index].settings != "") {
+		if (content[reffer_index].settings.required_no_data_checkbox != null && content[reffer_index].settings.required_no_data_checkbox == 1) {
 			var fieldName = content[reffer_index].field_name;
-			if(content[reffer_index].partsArr != null && content[reffer_index].partsArr.length > 0) {
+			if (content[reffer_index].partsArr != null && content[reffer_index].partsArr.length > 0) {
 				fieldName = fieldName.split('___');
 				fieldName = fieldName[0];
 			}
-			var doCheck = in_array(fieldName,no_data_fieldsArr);
-			var isRequired = false; //TODO
-			if(content[reffer_index].required == true || content[reffer_index].required == 'true' || content[reffer_index].required == 1 || content[reffer_index].required =='1'){
+			var doCheck = in_array(fieldName, no_data_fieldsArr);
+			var isRequired = false;
+			//TODO
+			if (content[reffer_index].required == true || content[reffer_index].required == 'true' || content[reffer_index].required == 1 || content[reffer_index].required == '1') {
 				isRequired = true;
 			}
 			content[reffer_index].noDataView = Ti.UI.createView({
-				height: 30,
+				height : 30,
 				width : Ti.Platform.displayCaps.platformWidth - 30,
-				layout: 'horizontal',
-				top: top + 2,		
+				layout : 'horizontal',
+				top : top + 2,
 			});
-			
+
 			content[reffer_index].noDataView.checkbox = Ti.UI.createButton({
-				top: 7,
-				height: 16,
-				width: 16,
-				backgroundImage: '../images/unchecked.png',
-				value: false
+				top : 7,
+				height : 16,
+				width : 16,
+				backgroundImage : '../images/unchecked.png',
+				value : false
 			});
 			content[reffer_index].noDataView.text = Ti.UI.createLabel({
-				height: 30,
-				text: (isRequired)?'No Data Available':'Not Applicable',
-				left :5,
-				width: 200,
-				color: '#000',
-				font: {
-					fontSize: 10
+				height : 30,
+				text : (isRequired) ? 'No Data Available' : 'Not Applicable',
+				left : 5,
+				width : 200,
+				color : '#000',
+				font : {
+					fontSize : 10
 				}
 			});
-			content[reffer_index].noDataView.checkbox.addEventListener('click', function(e){
+			content[reffer_index].noDataView.checkbox.addEventListener('click', function(e) {
 				e.source.value = (e.source.value) ? false : true;
 				e.source.backgroundImage = (e.source.value) ? '../images/checked.png' : '../images/unchecked.png';
-				
-				if(content[reffer_index].partsArr != null && content[reffer_index].partsArr.length > 0) {
-					for( idx_i = 0; idx_i < content[reffer_index].partsArr.length; idx_i++) {
+
+				if (content[reffer_index].partsArr != null && content[reffer_index].partsArr.length > 0) {
+					for ( idx_i = 0; idx_i < content[reffer_index].partsArr.length; idx_i++) {
 						var part_idx = content[reffer_index].partsArr[idx_i];
-						if(content[part_idx].settings.cardinality > 1) {
-							for( idx = 0; idx < content[part_idx].settings.cardinality; idx++) {
+						if (content[part_idx].settings.cardinality > 1) {
+							for ( idx = 0; idx < content[part_idx].settings.cardinality; idx++) {
 								content[part_idx + idx].no_data_checkbox = (e.source.value) ? true : false;
 							}
 						} else {
@@ -9389,8 +9318,8 @@ function noDataCheckbox(reffer_index, baseView, top){
 						}
 					}
 				} else {
-					if(content[reffer_index].settings.cardinality > 1) {
-						for( idx = 0; idx < content[reffer_index].settings.cardinality; idx++) {
+					if (content[reffer_index].settings.cardinality > 1) {
+						for ( idx = 0; idx < content[reffer_index].settings.cardinality; idx++) {
 							content[reffer_index + idx].no_data_checkbox = (e.source.value) ? true : false;
 						}
 					} else {
@@ -9398,21 +9327,20 @@ function noDataCheckbox(reffer_index, baseView, top){
 					}
 				}
 
-				
 			})
-			
+
 			content[reffer_index].noDataView.add(content[reffer_index].noDataView.checkbox);
 			content[reffer_index].noDataView.add(content[reffer_index].noDataView.text);
 			baseView.add(content[reffer_index].noDataView);
-			if(doCheck == true){
+			if (doCheck == true) {
 				content[reffer_index].noDataView.checkbox.backgroundImage = '../images/checked.png';
 				content[reffer_index].noDataView.checkbox.value = true;
-				
-				if(content[reffer_index].partsArr != null && content[reffer_index].partsArr.length > 0) {
-					for( idx_i = 0; idx_i < content[reffer_index].partsArr.length; idx_i++) {
+
+				if (content[reffer_index].partsArr != null && content[reffer_index].partsArr.length > 0) {
+					for ( idx_i = 0; idx_i < content[reffer_index].partsArr.length; idx_i++) {
 						var part_idx = content[reffer_index].partsArr[idx_i];
-						if(content[part_idx].settings.cardinality > 1) {
-							for( idx = 0; idx < content[part_idx].settings.cardinality; idx++) {
+						if (content[part_idx].settings.cardinality > 1) {
+							for ( idx = 0; idx < content[part_idx].settings.cardinality; idx++) {
 								content[part_idx + idx].no_data_checkbox = true;
 							}
 						} else {
@@ -9420,8 +9348,8 @@ function noDataCheckbox(reffer_index, baseView, top){
 						}
 					}
 				} else {
-					if(content[reffer_index].settings.cardinality > 1) {
-						for( idx = 0; idx < content[reffer_index].settings.cardinality; idx++) {
+					if (content[reffer_index].settings.cardinality > 1) {
+						for ( idx = 0; idx < content[reffer_index].settings.cardinality; idx++) {
 							content[reffer_index + idx].no_data_checkbox = true;
 						}
 					} else {
@@ -9429,8 +9357,8 @@ function noDataCheckbox(reffer_index, baseView, top){
 					}
 				}
 
-			}else{
-				if(content[reffer_index]['value'] != null && content[reffer_index]['value'] != "") {
+			} else {
+				if (content[reffer_index]['value'] != null && content[reffer_index]['value'] != "") {
 					content[reffer_index].noDataView.checkbox.enabled = false;
 					content[reffer_index].noDataView.checkbox.backgroundImage = '../images/unchecked_disabled.png';
 				}
@@ -9439,64 +9367,64 @@ function noDataCheckbox(reffer_index, baseView, top){
 	}
 }
 
-function noDataChecboxEnableDisable(changed_content, reffer_index){
+function noDataChecboxEnableDisable(changed_content, reffer_index) {
 	var isTextField = false;
-	if(PLATFORM == 'android') {
-		if( changed_content instanceof Ti.UI.TextField) {
+	if (PLATFORM == 'android') {
+		if ( changed_content instanceof Ti.UI.TextField) {
 			isTextField = true;
 		}
 	} else {
-		if(changed_content == '[object TiUITextField]') {
+		if (changed_content == '[object TiUITextField]') {
 			isTextField = true;
 		}
 	}
 
-	if(isTextField) {
-		if((changed_content['changedFlag'] == 1) && (changed_content['value'] == null || changed_content['value'] == "")) {
+	if (isTextField) {
+		if ((changed_content['changedFlag'] == 1) && (changed_content['value'] == null || changed_content['value'] == "")) {
 			changed_content['changedFlag'] = 0;
-		} else if((changed_content['changedFlag'] == 0) && (changed_content['value'] != null) && (changed_content['value'] != "")) {
+		} else if ((changed_content['changedFlag'] == 0) && (changed_content['value'] != null) && (changed_content['value'] != "")) {
 			changed_content['changedFlag'] = 1;
 		} else {
 			return;
 		}
 	}
-	if(changed_content.noDataView != null){
-		if(changed_content['value'] != null && changed_content['value'] != ""){
+	if (changed_content.noDataView != null) {
+		if (changed_content['value'] != null && changed_content['value'] != "") {
 			changed_content.noDataView.checkbox.enabled = false;
 			changed_content.noDataView.checkbox.backgroundImage = '../images/unchecked_disabled.png';
-		}else{
+		} else {
 			changed_content.noDataView.checkbox.enabled = true;
 			changed_content.noDataView.checkbox.backgroundImage = '../images/unchecked.png';
 		}
 		changed_content.noDataView.checkbox.value = false;
-		
-		if(content[reffer_index].partsArr != null && content[reffer_index].partsArr.length > 0) {
-			for( idx_i = 0; idx_i < content[reffer_index].partsArr.length; idx_i++) {
+
+		if (content[reffer_index].partsArr != null && content[reffer_index].partsArr.length > 0) {
+			for ( idx_i = 0; idx_i < content[reffer_index].partsArr.length; idx_i++) {
 				var part_idx = content[reffer_index].partsArr[idx_i];
-				if(content[part_idx].settings.cardinality > 1) {
-					for( idx = 0; idx < content[part_idx].settings.cardinality; idx++) {
+				if (content[part_idx].settings.cardinality > 1) {
+					for ( idx = 0; idx < content[part_idx].settings.cardinality; idx++) {
 						content[part_idx + idx].no_data_checkbox = false;
 					}
 				} else {
-					content[part_idx].no_data_checkbox =false;
+					content[part_idx].no_data_checkbox = false;
 				}
 			}
 		} else {
-			if(content[reffer_index].settings.cardinality > 1) {
-				for( idx = 0; idx < content[reffer_index].settings.cardinality; idx++) {
+			if (content[reffer_index].settings.cardinality > 1) {
+				for ( idx = 0; idx < content[reffer_index].settings.cardinality; idx++) {
 					content[reffer_index + idx].no_data_checkbox = false;
 				}
 			} else {
 				content[reffer_index].no_data_checkbox = false;
 			}
-		}	
+		}
 	}
 }
 
-function applyNumberFormat(single_content, cal_value){
+function applyNumberFormat(single_content, cal_value) {
 	var cal_value_str = '';
-	if(single_content.settings!=null && single_content.settings.number_format!=null && single_content.settings.number_format!=""){
-		switch (single_content.settings.number_format){
+	if (single_content.settings != null && single_content.settings.number_format != null && single_content.settings.number_format != "") {
+		switch (single_content.settings.number_format) {
 			case NUMBER_FORMAT_CURRENCY:
 				cal_value_str = Math.abs(cal_value).toCurrency({
 					"thousands_separator" : ",",
@@ -9506,7 +9434,7 @@ function applyNumberFormat(single_content, cal_value){
 						"fractions" : 2,
 						"fraction_separator" : "."
 					}
-				}); 
+				});
 				break;
 			case NUMBER_FORMAT_INTEGER:
 				cal_value_str = Math.abs(cal_value).toCurrency({
@@ -9517,7 +9445,7 @@ function applyNumberFormat(single_content, cal_value){
 						"fractions" : 0,
 						"fraction_separator" : "."
 					}
-				}); 
+				});
 				break;
 			case NUMBER_FORMAT_DECIMAL_0:
 				cal_value_str = Math.abs(cal_value).toCurrency({
@@ -9528,7 +9456,7 @@ function applyNumberFormat(single_content, cal_value){
 						"fractions" : 1,
 						"fraction_separator" : "."
 					}
-				}); 
+				});
 				break;
 			case NUMBER_FORMAT_DECIMAL_00:
 				cal_value_str = Math.abs(cal_value).toCurrency({
@@ -9539,9 +9467,9 @@ function applyNumberFormat(single_content, cal_value){
 						"fractions" : 2,
 						"fraction_separator" : "."
 					}
-				}); 
+				});
 				break;
-			case NUMBER_FORMAT_DECIMAL_000:	
+			case NUMBER_FORMAT_DECIMAL_000:
 				cal_value_str = Math.abs(cal_value).toCurrency({
 					"thousands_separator" : ",",
 					"currency_symbol" : "",
@@ -9550,44 +9478,47 @@ function applyNumberFormat(single_content, cal_value){
 						"fractions" : 3,
 						"fraction_separator" : "."
 					}
-				}); 
+				});
 				break;
 			default:
 				cal_value_str = Math.abs(cal_value).toCurrency({
-						"thousands_separator" : ",",
-						"currency_symbol" : "",
-						"symbol_position" : "front",
-						"use_fractions" : {
-							"fractions" : 2,
-							"fraction_separator" : "."
-						}
-				}); 	
+					"thousands_separator" : ",",
+					"currency_symbol" : "",
+					"symbol_position" : "front",
+					"use_fractions" : {
+						"fractions" : 2,
+						"fraction_separator" : "."
+					}
+				});
 
 		}
-	}else{
+	} else {
 		cal_value_str = Math.abs(cal_value).toCurrency({
-						"thousands_separator" : ",",
-						"currency_symbol" : "",
-						"symbol_position" : "front",
-						"use_fractions" : {
-							"fractions" : 2,
-							"fraction_separator" : "."
-						}
-				}); 	
+			"thousands_separator" : ",",
+			"currency_symbol" : "",
+			"symbol_position" : "front",
+			"use_fractions" : {
+				"fractions" : 2,
+				"fraction_separator" : "."
+			}
+		});
 	}
 	return cal_value_str;
-			
+
 }
 
-function createCalculationRow(single_content, heightCellView, widthCellView, data){
+function createCalculationRow(single_content, heightCellView, widthCellView, data) {
 	//alert(text);
 	var isNegative = false;
 	var cal_value = data.value;
-	typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null; //Check type of the data
-	isNegative = (cal_value < 0) ? true : false;// Is negative. And if it is -ve then write in this value in (brackets).
+	typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
+	//Check type of the data
+	isNegative = (cal_value < 0) ? true : false;
+	// Is negative. And if it is -ve then write in this value in (brackets).
 	var cal_value_str = applyNumberFormat(single_content, cal_value);
-	cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str; // Adding brackets over -ve value.
-	
+	cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
+	// Adding brackets over -ve value.
+
 	var row = Ti.UI.createView({
 		layout : 'horizontal',
 		height : heightCellView,
@@ -9597,7 +9528,7 @@ function createCalculationRow(single_content, heightCellView, widthCellView, dat
 	row.row_label = Ti.UI.createLabel({
 		text : data.label,
 		textAlign : 'right',
-		width : widthCellView/2-1,
+		width : widthCellView / 2 - 1,
 		top : 0,
 		color : 'white',
 		font : {
@@ -9612,7 +9543,7 @@ function createCalculationRow(single_content, heightCellView, widthCellView, dat
 	row.value = Ti.UI.createLabel({
 		text : "  " + cal_value_str,
 		textAlign : 'left',
-		width : widthCellView/2,
+		width : widthCellView / 2,
 		top : 0,
 		left : 1,
 		color : 'white',
@@ -9629,34 +9560,34 @@ function createCalculationRow(single_content, heightCellView, widthCellView, dat
 	});
 
 	row.add(row.row_label);
-	row.add(row.value);	
+	row.add(row.value);
 	return row;
 }
 
-function showRulesRow(current_content, db_display, current_window){
-	
+function showRulesRow(current_content, db_display, current_window) {
+
 	var widget = current_content.widget;
 	var settings = current_content.settings;
 	var contentVal = current_content.value;
 	var heightView = 0;
-	var heightCellView = 35; 
+	var heightCellView = 35;
 	var widthCellView = Ti.Platform.displayCaps.platformWidth - 30
-	switch(widget.type){
+	switch(widget.type) {
 		case 'rules_field_violations':
-			if(contentVal instanceof Array){
-				if(contentVal.length > 0 ){
-					for(var idx=0; idx<contentVal.length; idx++ ){
-						var violation_name = '- ALL OTHER VIOLATIONS -'; 
-						if(!isNaN(contentVal[idx].tid)){
+			if ( contentVal instanceof Array) {
+				if (contentVal.length > 0) {
+					for (var idx = 0; idx < contentVal.length; idx++) {
+						var violation_name = '- ALL OTHER VIOLATIONS -';
+						if (!isNaN(contentVal[idx].tid)) {
 							var db_violation_name = db_display.execute('SELECT name FROM term_data WHERE tid=' + contentVal[idx].tid);
 							violation_name = db_violation_name.fieldByName('name');
 							db_violation_name.close();
 						}
-						
+
 						var formsArr = [];
-						if(!isArray(contentVal[idx].node_types)) {
-							for(var key in contentVal[idx].node_types) {
-								if(contentVal[idx].node_types.hasOwnProperty(key)) {
+						if (!isArray(contentVal[idx].node_types)) {
+							for (var key in contentVal[idx].node_types) {
+								if (contentVal[idx].node_types.hasOwnProperty(key)) {
 									var display_name = db_display.execute('SELECT display_name FROM bundles WHERE bundle_name="' + key + '"');
 									display_name = display_name.fieldByName('display_name');
 									formsArr.push(display_name);
@@ -9665,264 +9596,263 @@ function showRulesRow(current_content, db_display, current_window){
 						}
 
 						var row = Ti.UI.createView({
-							layout	: 'horizontal',
-							height: heightCellView,
-							width: widthCellView
+							layout : 'horizontal',
+							height : heightCellView,
+							width : widthCellView
 						});
 						row.image = Ti.UI.createImageView({
-							image	: '../images/arrow.png',
-							height	: '23',
-							width	: '23',
+							image : '../images/arrow.png',
+							height : '23',
+							width : '23',
 							details : contentVal[idx],
-							formsArr: formsArr,
-							text	: violation_name,
-							top		: 4
+							formsArr : formsArr,
+							text : violation_name,
+							top : 4
 						});
 						row.label = Ti.UI.createLabel({
 							text : violation_name,
-							height: 35,
-							width : widthCellView-30,
+							height : 35,
+							width : widthCellView - 30,
 							left : 5,
-							color: '#000',
-							font: {
-								fontSize: 15,
+							color : '#000',
+							font : {
+								fontSize : 15,
 								fontFamily : 'Helvetica Neue',
 							},
-							ellipsize: true,
-							wordWrap: false,
+							ellipsize : true,
+							wordWrap : false,
 							details : contentVal[idx],
-							formsArr: formsArr
+							formsArr : formsArr
 						});
-						
+
 						row.add(row.image);
 						row.add(row.label);
 						heightView += heightCellView + 1;
-						row.addEventListener('click', function(e){
+						row.addEventListener('click', function(e) {
 							var detail_popup = Ti.UI.createView({
-								backgroundColor: '#00000000'
+								backgroundColor : '#00000000'
 							});
 							detail_popup.left = detail_popup.right = detail_popup.top = detail_popup.bottom = 0;
-							
+
 							var translucent = Ti.UI.createView({
-								opacity: 0.5,
-								backgroundColor: '#000'
+								opacity : 0.5,
+								backgroundColor : '#000'
 							});
 							translucent.left = translucent.right = translucent.top = translucent.bottom = 0;
 							detail_popup.add(translucent);
-							
+
 							var table_format_bg = Ti.UI.createView({
-								backgroundColor: '#FFF',
-								borderColor: '#424242',
-								borderWidth: 1,
-								left: 4,
-								right: 4,
-								height: '250',
+								backgroundColor : '#FFF',
+								borderColor : '#424242',
+								borderWidth : 1,
+								left : 4,
+								right : 4,
+								height : '250',
 								//layout: 'vertical'
 							});
 							detail_popup.add(table_format_bg);
-							
+
 							var headerRow0 = Ti.UI.createView({
-								top: 0,
-								height: 30,
-								width: Ti.Platform.displayCaps.platformWidth-8,
-								layout: 'horizontal',
-								backgroundImage: '../images/header.png',
+								top : 0,
+								height : 30,
+								width : Ti.Platform.displayCaps.platformWidth - 8,
+								layout : 'horizontal',
+								backgroundImage : '../images/header.png',
 							});
 							var headerRowLabel = Ti.UI.createLabel({
-								text: e.source.text,
-								left: 5,
-								height: 30,
-								width: Ti.Platform.displayCaps.platformWidth-40,
-								color: '#fff',
-								font: {
+								text : e.source.text,
+								left : 5,
+								height : 30,
+								width : Ti.Platform.displayCaps.platformWidth - 40,
+								color : '#fff',
+								font : {
 									fontFamily : 'Helvetica Neue',
 									fontSize : 15,
-									fontWeight: 'bold',
-									
+									fontWeight : 'bold',
+
 								},
-								ellipsize: true,
-								wordWrap: false
+								ellipsize : true,
+								wordWrap : false
 							});
 							var close_btn = Ti.UI.createImageView({
-								height: 30,
-								width: 25,
-								top: 0,
-								image: '../images/close.png'
+								height : 30,
+								width : 25,
+								top : 0,
+								image : '../images/close.png'
 							});
 							table_format_bg.add(headerRow0);
 							headerRow0.add(headerRowLabel);
 							headerRow0.add(close_btn);
-							close_btn.addEventListener('click', function(ent){
+							close_btn.addEventListener('click', function(ent) {
 								current_window.remove(detail_popup);
 							});
-							
-							
+
 							var headerRow = Ti.UI.createView({
-								top: 33,
-								height: 42,
-								width: Ti.Platform.displayCaps.platformWidth-16,
-								layout: 'horizontal'
+								top : 33,
+								height : 42,
+								width : Ti.Platform.displayCaps.platformWidth - 16,
+								layout : 'horizontal'
 							});
 							table_format_bg.add(headerRow);
-							
+
 							var forms = Ti.UI.createLabel({
-								text: 'Forms',
-								height: 38,
-								width: (Ti.Platform.displayCaps.platformWidth-20)/3,
-								backgroundImage: '../images/header.png',
-								font: {
+								text : 'Forms',
+								height : 38,
+								width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
+								backgroundImage : '../images/header.png',
+								font : {
 									fontFamily : 'Helvetica Neue',
 									fontSize : 13,
-									fontWeight: 'bold'
+									fontWeight : 'bold'
 								},
-								color: '#fff',
-								textAlign: 'center'
+								color : '#fff',
+								textAlign : 'center'
 							});
 							headerRow.add(forms);
-							
+
 							var dttm = Ti.UI.createLabel({
-								text: 'Date/Time Rules',
-								height: 38,
-								width: (Ti.Platform.displayCaps.platformWidth-20)/3,
-								backgroundImage: '../images/header.png',
-								font: {
+								text : 'Date/Time Rules',
+								height : 38,
+								width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
+								backgroundImage : '../images/header.png',
+								font : {
 									fontFamily : 'Helvetica Neue',
 									fontSize : 13,
-									fontWeight: 'bold'
+									fontWeight : 'bold'
 								},
-								left: 1,
-								color: '#fff',
-								textAlign: 'center'
+								left : 1,
+								color : '#fff',
+								textAlign : 'center'
 							});
 							headerRow.add(dttm);
-							
+
 							var desc = Ti.UI.createLabel({
-								text: 'Description',
-								height: 38,
-								width: (Ti.Platform.displayCaps.platformWidth-20)/3,
-								backgroundImage: '../images/header.png',
-								font: {
+								text : 'Description',
+								height : 38,
+								width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
+								backgroundImage : '../images/header.png',
+								font : {
 									fontFamily : 'Helvetica Neue',
 									fontSize : 13,
-									fontWeight: 'bold'
+									fontWeight : 'bold'
 								},
-								left: 1.5,
-								color: '#fff',
-								textAlign: 'center'
+								left : 1.5,
+								color : '#fff',
+								textAlign : 'center'
 							});
 							headerRow.add(desc);
-							
+
 							var detail_row = Ti.UI.createView({
-								width: Ti.Platform.displayCaps.platformWidth-16,
-								top: 75,
-								height: '175',
-								layout: 'horizontal',
+								width : Ti.Platform.displayCaps.platformWidth - 16,
+								top : 75,
+								height : '175',
+								layout : 'horizontal',
 							});
 							table_format_bg.add(detail_row);
-							
+
 							var formsView = Ti.UI.createScrollView({
-								height: '175',
-								contentHeight: 'auto',
-								scrollType: 'vertical',
-								showVerticalScrollIndicator: true,
-								width: (Ti.Platform.displayCaps.platformWidth-20)/3,
+								height : '175',
+								contentHeight : 'auto',
+								scrollType : 'vertical',
+								showVerticalScrollIndicator : true,
+								width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
 							});
 							detail_row.add(formsView);
 							var formsViewLabel = Ti.UI.createLabel({
-								top: 0,
-								height: 'auto',
-								width: (Ti.Platform.displayCaps.platformWidth-20)/3,
-								color: '#1c1c1c',
-								font: {
+								top : 0,
+								height : 'auto',
+								width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
+								color : '#1c1c1c',
+								font : {
 									fontFamily : 'Helvetica Neue',
-									fontSize: 13
+									fontSize : 13
 								},
-								textAlign: 'left'
+								textAlign : 'left'
 							});
 							formsView.add(formsViewLabel);
-							
+
 							var formsArr = e.source.formsArr;
 							var detailsVal = e.source.details
 							var forms_str = '- All -';
-							if(formsArr.length<4 && formsArr.length>0){
+							if (formsArr.length < 4 && formsArr.length > 0) {
 								forms_str = '';
-								for(var form_idx=0; form_idx<formsArr.length; form_idx++){
-									forms_str += formsArr[form_idx] + ((form_idx==formsArr.length-1)?"":", ");
+								for (var form_idx = 0; form_idx < formsArr.length; form_idx++) {
+									forms_str += formsArr[form_idx] + ((form_idx == formsArr.length - 1) ? "" : ", ");
 								}
-							}else if(formsArr.length==0){
+							} else if (formsArr.length == 0) {
 								forms_str = '- NONE -';
-								
+
 							}
 							formsViewLabel.text = forms_str;
-							
+
 							var dttmView = Ti.UI.createScrollView({
-								height: '170',
-								contentHeight: 'auto',
-								scrollType: 'vertical',
-								showVerticalScrollIndicator: true,
-								width: (Ti.Platform.displayCaps.platformWidth-20)/3,
-								left: 1
+								height : '170',
+								contentHeight : 'auto',
+								scrollType : 'vertical',
+								showVerticalScrollIndicator : true,
+								width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
+								left : 1
 							});
 							detail_row.add(dttmView);
 							var dttmViewLabel = Ti.UI.createLabel({
-								top: 0,
-								text: rules_field_format_readable_time_rules(detailsVal.time_rules),
-								height: 'auto',
-								width: (Ti.Platform.displayCaps.platformWidth-20)/3,
-								color: '#1c1c1c',
-								font: {
+								top : 0,
+								text : rules_field_format_readable_time_rules(detailsVal.time_rules),
+								height : 'auto',
+								width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
+								color : '#1c1c1c',
+								font : {
 									fontFamily : 'Helvetica Neue',
-									fontSize: 13
+									fontSize : 13
 								},
-								textAlign: 'left'
+								textAlign : 'left'
 							});
 							dttmView.add(dttmViewLabel);
-							
+
 							var descView = Ti.UI.createScrollView({
-								height: '175',
-								contentHeight: 'auto',
-								scrollType: 'vertical',
-								showVerticalScrollIndicator: true,
-								left: 2,
-								width: (Ti.Platform.displayCaps.platformWidth-20)/3,
+								height : '175',
+								contentHeight : 'auto',
+								scrollType : 'vertical',
+								showVerticalScrollIndicator : true,
+								left : 2,
+								width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
 							});
 							detail_row.add(descView);
 							var descViewLabel = Ti.UI.createLabel({
-								top: 0,
-								text: detailsVal.description,
-								height: 'auto',
-								width: (Ti.Platform.displayCaps.platformWidth-20)/3,
-								color: '#1c1c1c',
-								font: {
+								top : 0,
+								text : detailsVal.description,
+								height : 'auto',
+								width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
+								color : '#1c1c1c',
+								font : {
 									fontFamily : 'Helvetica Neue',
-									fontSize: 13
+									fontSize : 13
 								},
-								textAlign: 'left'
+								textAlign : 'left'
 							});
 							descView.add(descViewLabel);
-							
+
 							current_window.add(detail_popup);
-							translucent.addEventListener('click', function(ent){
+							translucent.addEventListener('click', function(ent) {
 								current_window.remove(detail_popup);
 							});
-							
+
 						});
 						current_content.add(row);
 					}
 				}
 			}
 			current_content.height = heightView;
-		break;
+			break;
 	}
 }
 
-function setRulesField(select_content){
-	if(select_content.rulesFieldArr!=null && select_content.rulesFieldArr!=""){
+function setRulesField(select_content) {
+	if (select_content.rulesFieldArr != null && select_content.rulesFieldArr != "") {
 		var rulesFieldArr = select_content.rulesFieldArr;
-		if(rulesFieldArr.length>0){
-			for(var rulesFieldIdx in rulesFieldArr){
+		if (rulesFieldArr.length > 0) {
+			for (var rulesFieldIdx in rulesFieldArr) {
 				var rulesFieldContent = content[rulesFieldArr[rulesFieldIdx]];
-				setParticularRulesField(rulesFieldContent);	
+				setParticularRulesField(rulesFieldContent);
 			}
 		}
 	}
@@ -9931,14 +9861,14 @@ function setRulesField(select_content){
 function setParticularRulesField(rulesFieldContent) {
 	// Fatch violation list from database...
 	var violations_terms = [];
-	var descripitons= [];
+	var descripitons = [];
 	var fromViolationRules = false;
 	var machine_name = rulesFieldContent['settings'].vocabulary;
 	db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 	var violations_vocabulary = db_display.execute('SELECT vid from vocabulary WHERE machine_name="' + machine_name + '";');
 	var violations_terms_rslt = db_display.execute('SELECT tid,name from term_data WHERE vid=' + violations_vocabulary.fieldByName('vid'));
-	while(violations_terms_rslt.isValidRow()) {
-		if(violations_terms[violations_terms_rslt.fieldByName('tid')] == null) {
+	while (violations_terms_rslt.isValidRow()) {
+		if (violations_terms[violations_terms_rslt.fieldByName('tid')] == null) {
 			violations_terms[violations_terms_rslt.fieldByName('tid')] = new Array();
 		}
 		violations_terms[violations_terms_rslt.fieldByName('tid')].push({
@@ -9948,14 +9878,14 @@ function setParticularRulesField(rulesFieldContent) {
 		violations_terms_rslt.next();
 	}
 
-	if(rulesFieldContent['widgetObj']['rules_field_name'] != null && rulesFieldContent['widgetObj']['rules_violation_time_field_name'] != null && rulesFieldContent['widgetObj']['rules_field_name'] != "" && rulesFieldContent['widgetObj']['rules_violation_time_field_name'] != "") {
+	if (rulesFieldContent['widgetObj']['rules_field_name'] != null && rulesFieldContent['widgetObj']['rules_violation_time_field_name'] != null && rulesFieldContent['widgetObj']['rules_field_name'] != "" && rulesFieldContent['widgetObj']['rules_violation_time_field_name'] != "") {
 
 		//Fatch content object of rules_field_name & rules_violation_time_field_name
 		var entityArr = createEntityMultiple();
 		var rules_field_name = content[entityArr[rulesFieldContent['widgetObj']['rules_field_name']][0].reffer_index];
 		var rules_violation_time_field_name = content[entityArr[rulesFieldContent['widgetObj']['rules_violation_time_field_name']][0].reffer_index];
 
-		if(rules_field_name.nid != null && rules_violation_time_field_name.value != null) {
+		if (rules_field_name.nid != null && rules_violation_time_field_name.value != null) {
 			var table = db_display.execute('SELECT table_name FROM node WHERE nid = ' + rules_field_name.nid);
 			table = table.fieldByName('table_name');
 
@@ -9964,46 +9894,44 @@ function setParticularRulesField(rulesFieldContent) {
 			data = JSON.parse(data);
 			var violation_timestamp = rules_violation_time_field_name.value;
 			var node_type = win.type;
-			
 
-			if(data != false && data != null && data != "" && data.length > 0) {
+			if (data != false && data != null && data != "" && data.length > 0) {
 				var tids = [];
 				var used_tids = [];
 				var all_others_row = [];
-				
 
-				for(var data_idx in data) {
+				for (var data_idx in data) {
 					var data_row = data[data_idx];
-					if(!isNaN(data_row['tid'])) {
-						if(data_row['node_types'][node_type] != null && data_row['node_types'][node_type] != "") {
-							if(rules_field_passed_time_check(data_row['time_rules'], violation_timestamp)) {
+					if (!isNaN(data_row['tid'])) {
+						if (data_row['node_types'][node_type] != null && data_row['node_types'][node_type] != "") {
+							if (rules_field_passed_time_check(data_row['time_rules'], violation_timestamp)) {
 
-								if(tids[data_row['tid']] == null) {
+								if (tids[data_row['tid']] == null) {
 									tids[data_row['tid']] = new Array();
 								}
 								tids[data_row['tid']].push(violations_terms[data_row['tid']][0]);
 							}
 						}
-						if(used_tids[data_row['tid']] == null) {
+						if (used_tids[data_row['tid']] == null) {
 							used_tids[data_row['tid']] = new Array();
 						}
 						used_tids[data_row['tid']].push(data_row['tid']);
-					} else if(data_row['tid'] == 'ALL') {
+					} else if (data_row['tid'] == 'ALL') {
 						all_others_row.push(data_row);
 					}
-					if(descripitons[data_row['tid']] == null) {
+					if (descripitons[data_row['tid']] == null) {
 						descripitons[data_row['tid']] = new Array();
 					}
 					descripitons[data_row['tid']].push(data_row['description']);
 				}
 
-				if(all_others_row.length > 0) {
-					if(all_others_row[0]['node_types'][node_type] != null && all_others_row[0]['node_types'][node_type] != "") {
-						if(rules_field_passed_time_check(all_others_row[0]['time_rules'], violation_timestamp)) {
-							for(var violations_terms_idx in violations_terms) {
+				if (all_others_row.length > 0) {
+					if (all_others_row[0]['node_types'][node_type] != null && all_others_row[0]['node_types'][node_type] != "") {
+						if (rules_field_passed_time_check(all_others_row[0]['time_rules'], violation_timestamp)) {
+							for (var violations_terms_idx in violations_terms) {
 								var violation_term = violations_terms[violations_terms_idx][0].tid;
-								if(used_tids[violation_term] == null || used_tids[violation_term] == "") {
-									if(tids[violation_term] == null) {
+								if (used_tids[violation_term] == null || used_tids[violation_term] == "") {
+									if (tids[violation_term] == null) {
 										tids[violation_term] = new Array();
 									}
 									tids[violation_term].push(violations_terms[violations_terms_idx][0]);
@@ -10013,13 +9941,13 @@ function setParticularRulesField(rulesFieldContent) {
 					}
 				}
 				violations_terms = tids;
-				fromViolationRules= true;
+				fromViolationRules = true;
 			}
 		}
 
 	}
-	if(rulesFieldContent.settings.cardinality > 1) {
-		for(var o_index = 0; o_index < rulesFieldContent.settings.cardinality; o_index++) {
+	if (rulesFieldContent.settings.cardinality > 1) {
+		for (var o_index = 0; o_index < rulesFieldContent.settings.cardinality; o_index++) {
 			var arr_picker = new Array();
 			var arr_opt = new Array();
 			arr_picker.push({
@@ -10033,11 +9961,11 @@ function setParticularRulesField(rulesFieldContent) {
 				cnt : 0
 			};
 
-			for(var i_data_terms in violations_terms) {
+			for (var i_data_terms in violations_terms) {
 				arr_picker.push({
 					title : violations_terms[i_data_terms][0].title,
 					tid : violations_terms[i_data_terms][0].tid,
-					desc: description[violations_terms[i_data_terms][0].tid],
+					desc : description[violations_terms[i_data_terms][0].tid],
 				});
 				arr_opt.push(violations_terms[i_data_terms][0].title);
 			}
@@ -10046,7 +9974,7 @@ function setParticularRulesField(rulesFieldContent) {
 			content[rulesFieldContent.reffer_index + o_index].title = aux_val.title;
 			content[rulesFieldContent.reffer_index + o_index].value = aux_val.value;
 		}
-	} else if(rulesFieldContent.settings.cardinality == 1) {
+	} else if (rulesFieldContent.settings.cardinality == 1) {
 		var arr_picker = new Array();
 		var arr_opt = new Array();
 		arr_picker.push({
@@ -10060,11 +9988,11 @@ function setParticularRulesField(rulesFieldContent) {
 			cnt : 0
 		};
 
-		for(var i_data_terms in violations_terms) {
+		for (var i_data_terms in violations_terms) {
 			arr_picker.push({
 				title : violations_terms[i_data_terms][0].title,
 				tid : violations_terms[i_data_terms][0].tid,
-				desc: description[violations_terms[i_data_terms][0].tid],
+				desc : description[violations_terms[i_data_terms][0].tid],
 			});
 			arr_opt.push(violations_terms[i_data_terms][0].title);
 		}
@@ -10073,15 +10001,15 @@ function setParticularRulesField(rulesFieldContent) {
 		content[rulesFieldContent.reffer_index].title = aux_val.title;
 		content[rulesFieldContent.reffer_index].value = aux_val.value;
 
-	} else if(rulesFieldContent.settings.cardinality == -1) {
+	} else if (rulesFieldContent.settings.cardinality == -1) {
 		var sel_text = "";
 		var _val_itens = [];
 		var _itens = null;
-		for(var j_ind in violations_terms) {
+		for (var j_ind in violations_terms) {
 			_val_itens.push({
 				title : violations_terms[j_ind][0].title,
 				v_info : violations_terms[j_ind][0].tid,
-				desc: (descripitons[violations_terms[j_ind][0].tid]!=null)?descripitons[violations_terms[j_ind][0].tid][0]:null,
+				desc : (descripitons[violations_terms[j_ind][0].tid] != null) ? descripitons[violations_terms[j_ind][0].tid][0] : null,
 				is_set : false
 			});
 		}

@@ -94,7 +94,7 @@ else
 					notifyIOS('Omadi GPS Tracking for iOS has found an error: '+str_err, true);
 				}
 				else{
-					Ti.API.info('Alert not shown');
+					Ti.API.info('NOT SHOWN - Omadi GPS Tracking for iOS has found an error: '+str_err);
 				}
 			}
 			return;
@@ -143,7 +143,7 @@ else
 					notifyIOS('Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is '+accuracy+' meters', true);
 				}
 				else{
-					Ti.API.info('Alert not shown');
+					Ti.API.info('NOT SHOWN - Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is '+accuracy+' meters');
 				}
 			}
 		}
@@ -210,6 +210,7 @@ Ti.App.addEventListener('upload_gps_locations', function(){
 	Ti.API.info('GPS');
 	var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name );
 	Ti.API.info("Length before: "+location_obj.length);
+	var leng_before = location_obj.length;
 	var aux_location = location_obj.slice(0);
 	Ti.API.info(aux_location.length+" Length after: "+location_obj.length);
 	location_obj = new Array();
@@ -223,7 +224,7 @@ Ti.App.addEventListener('upload_gps_locations', function(){
 		Ti.API.info("Last timestamp = "+last_db_timestamp);
 	}
 	var result = db_coord.execute("SELECT * FROM user_location WHERE status = 'notUploaded' ORDER BY timestamp ASC");
-
+	
 	if (result.rowCount > 0){
 		Ti.API.info(result.rowCount+' gps locations were found ');
 		if(Ti.Network.getOnline() === true){
@@ -331,5 +332,5 @@ Ti.App.addEventListener('upload_gps_locations', function(){
 });
 
 setInterval(function (){
-	Ti.App.fireEvent('upload_gps_locations');
+	//Ti.App.fireEvent('upload_gps_locations');
 }, 120000);

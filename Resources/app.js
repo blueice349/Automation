@@ -25,7 +25,7 @@ var win1 = Titanium.UI.createWindow({
 	backgroundColor: '#EEEEEE'
 });
 
-var OMADI_VERSION = "omadiDb1595";
+var OMADI_VERSION = "omadiDb1596";
 
 Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION);
 var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );
@@ -241,7 +241,7 @@ Ti.API.info('The value for logStatus we found in app.js is : '+Ti.App.Properties
 // If it is set, print: Inform your credentials
 // Otherwise, print the content of logStatus
 if ( ( Ti.App.Properties.getString('logStatus') == null) || (Ti.App.Properties.getString('logStatus') == "") ){
-	var label_error = Titanium.UI.createLabel({
+	var label_error = Titanium.UI.createLabel({	
 		color:'#4B5C8C',
 		//text:'Please login - Version '+Titanium.App.version,
 		text:'Please login',
@@ -427,7 +427,7 @@ i_scroll_page.add(block_i);
 
 
 /* Function: Trigger for login button
- * Name: b1.addEventListener('click', function(){ ... });
+ * Name: b1.addEventListener('click', function(){ ... }); 
  * Parameters: none
  * Variables:
  * 	tf1:   Username text field

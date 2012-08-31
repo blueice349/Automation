@@ -11,7 +11,6 @@
  * @author Joseandro
  */ 
 
-
 Ti.include('/main_windows/create_or_edit_node.js');
 Ti.include('/main_windows/message_center.js');
 Ti.include('/lib/functions.js'); 
@@ -154,10 +153,11 @@ var elements = db.execute('SELECT * FROM bundles');
 var check = 0;
 
 //Parses result from user's login 
-var jsonLogin = JSON.parse(win2.result) ;
+var jsonLogin = JSON.parse(win2.result);
 
 //Retrieves username
 Ti.App.Properties.setString('Omadi_session_details', win2.result);
+
 var time_format = jsonLogin.user.time_format;
 Ti.App.Properties.setString('Omadi_time_format', (time_format!=null && time_format!="")?time_format:'g:iA' );
 var name = jsonLogin.user.realname;
@@ -381,9 +381,7 @@ listView.addEventListener('click',function(e){
 	}
 });
 
-
-
-// showToolbar(name, win2)					
+// showToolbar(name, win2)
 var loggedView = Titanium.UI.createView({
 	top: '0px',	
 	backgroundColor:'#111',
@@ -403,16 +401,27 @@ var label_top = Titanium.UI.createLabel({
 }); 
 
 var offImage = Titanium.UI.createLabel({
-	color:'#FFFFFF',
+	color:'#FFF',
 	text:'Log Out',
-	width:'20%',
-	horizontalAlign: 'left',
-	right: '5%',
+	backgroundColor: '#888',
+	borderRadius: '4dp',
+	width:'70dp',
+	horizontalAlign: 'right',
+	textAlign: 'center',
+	right: '50dp',
+	height: '30dp'
+});
+
+var refresh_image = Ti.UI.createImageView({
+	image: '/images/refresh.png',
+	right: '9dp',
+	width: '32dp',
 	height: 'auto'
-}); 
+});
+loggedView.add(refresh_image);
 
 loggedView.add(label_top);
-loggedView.add(offImage);					
+loggedView.add(offImage);
 win2.add(loggedView);
 
 var a = Titanium.UI.createAlertDialog({
@@ -420,12 +429,16 @@ var a = Titanium.UI.createAlertDialog({
 	buttonNames: ['OK']
 });
 
+refresh_image.addEventListener('click', function(e){
+	checkUpdate('from_menu');
+});
+
 offImage.addEventListener('click',function(e)
 {
 	// window container
 	indLog = Titanium.UI.createWindow({
 	    url: 'logDecision.js',
-		title:'Omadi CRM',		    
+		title:'Omadi CRM',
 	    fullscreen: false,
 	    backgroundColor: '#EEEEEE'
 	});
@@ -464,7 +477,7 @@ win2.orientationModes = [ Titanium.UI.PORTRAIT ];
 //When back button on the phone is pressed, it alerts the user (pop up box)
 // that he needs to log out in order to go back to the root window
 win2.addEventListener('android:back', function() {
-	a.message = 'In order to log off, please click on \'Log Out\' next to your username at the top ';
+	a.message = 'In order to log off, please click on \'Log Out\' next to your username at the top';
 	a.show();
 });
 
@@ -501,7 +514,7 @@ activity.onCreateOptionsMenu = function(e) {
 			}
 			else{
 				notifyIOS('Please, wait ...');
-			}		
+			}
 		}
 		else{
 			var about_win = Ti.UI.createWindow({
@@ -624,7 +637,6 @@ alerts_view.addEventListener('click', function(){
 	
 	win_new.open();
 
-	Ti.API.info('!!!!!!!!!!!!!!!!!!!!!! VAI ABRIR !!!!!!!!!!!!!!!!!!!!!!');
 	setTimeout(function(){message_center.loadUI();}, 100);
 });
 
@@ -775,5 +787,3 @@ Ti.App.addEventListener('update_from_menu', function(){
 Ti.App.addEventListener('normal_update_from_menu', function(){
 	checkUpdate('from_menu');
 });
-
-
