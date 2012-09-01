@@ -29,6 +29,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Base64;
 import android.view.Display;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
@@ -50,7 +51,9 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 	RelativeLayout enerlayout;
 	FrameLayout frameCameraViewContainer;
 	private ImageView rotatingImage;
+	private ImageView done;
 	private int degrees = 0;
+	Bitmap bitmap = null;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -80,22 +83,77 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 		enerlayout.setBackgroundDrawable(drawable);
 
 		rootlayout.addView(enerlayout);
-
+		
+		
+		//DONE BUTTON
+		done = new ImageView(mContext);
+		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(70, 100);
+		params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+		done.setLayoutParams(params);
+		try {
+			InputStream is = getAssets().open("done.png");
+			bitmap = BitmapFactory.decodeStream(is);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		done.setImageBitmap(bitmap);
+		done.setAnimation(getRotateAnimation(270));
+		enerlayout.addView(done);
+		
+		done.setOnClickListener(new View.OnClickListener(){
+			public void onClick(View v) {
+				finish();
+			}
+		});
+		
+		done.setOnTouchListener(new View.OnTouchListener(){
+			
+			public boolean onTouch(View arg0, MotionEvent arg1) {
+				switch (arg1.getAction() & MotionEvent.ACTION_MASK) {
+				case MotionEvent.ACTION_DOWN:
+					try {
+						InputStream is = getAssets().open("done_hover.png");
+						bitmap = BitmapFactory.decodeStream(is);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					done.setImageBitmap(bitmap);
+					break;
+				case MotionEvent.ACTION_UP:
+					try {
+						InputStream is = getAssets().open("done.png");
+						bitmap = BitmapFactory.decodeStream(is);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					done.setImageBitmap(bitmap);
+					break;
+				}
+				
+				
+				return false;
+			}
+		
+		});
+		
+		//ROTATE/CAPTURE BUTTON 
 		rotatingImage = new ImageView(mContext);
 		RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(
 				LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
 		params2.addRule(RelativeLayout.CENTER_IN_PARENT);
 		rotatingImage.setLayoutParams(params2);
-
-		Bitmap bitmap1 = null;
+		
 		try {
 			InputStream is = getAssets().open("ic_menu_camera.png");
-			 bitmap1 = BitmapFactory.decodeStream(is);
+			 bitmap = BitmapFactory.decodeStream(is);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		rotatingImage.setImageBitmap(bitmap1);
+		rotatingImage.setImageBitmap(bitmap);
 		enerlayout.addView(rotatingImage);
 		
 		setContentView(rootlayout);
@@ -124,10 +182,10 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 		mCamera = getCameraInstance();
 
 		// Setting the right parameters in the camera
-		Camera.Parameters params = mCamera.getParameters();
-		params.setPictureFormat(PixelFormat.JPEG);
-		params.setJpegQuality(95);
-		mCamera.setParameters(params);
+	//	Camera.Parameters params = mCamera.getParameters();
+	//	params.setPictureFormat(PixelFormat.JPEG);
+		//params.setJpegQuality(95);
+	//	mCamera.setParameters(params);
 
 		// Create our Preview view and set it as the content of our activity.
 		mPreview = new CameraPreview(this, mCamera);
@@ -218,12 +276,13 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 			} else {
 
 			}
-			
 			scaleWidth = newWidth / bitmap.getWidth();
 	        scaleHeight = newHeight / bitmap.getHeight();
 	       
 			Matrix mtx = new Matrix();
-			mtx.postScale(scaleWidth, scaleHeight);
+			if((scaleWidth>0 && scaleWidth<1) && (scaleHeight>0 && scaleHeight<1)){
+				mtx.postScale(scaleWidth, scaleHeight);
+			}
 			
 			// Rotating Bitmap
 			if(degrees==180 || degrees ==0){

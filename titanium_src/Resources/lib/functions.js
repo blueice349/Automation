@@ -1297,8 +1297,8 @@ function getJSON() {
 			Ti.API.info('NODE ' + new_nodes.fieldByName('nid') + ' -----JSON BEING CREATED-----');
 			var selected_node = db_json.execute('SELECT * FROM ' + new_nodes.fieldByName('table_name') + ' WHERE nid = ' + new_nodes.fieldByName('nid'));
 			var node_fields = db_json.execute('SELECT * FROM fields WHERE bundle = "' + new_nodes.fieldByName('table_name') + '"');
-			var type = db_json.execute('SELECT display_name FROM bundles WHERE bundle_name = "' + node_fields.fieldByName('bundle') + '"');
-			var type_string = type.fieldByName('display_name');
+			var type = db_json.execute('SELECT display_name, bundle_name FROM bundles WHERE bundle_name = "' + node_fields.fieldByName('bundle') + '"');
+			var type_string = type.fieldByName('bundle_name');
 
 			var no_data_string = '""';
 			if (new_nodes.fieldByName("no_data_fields") != null && new_nodes.fieldByName("no_data_fields") != "") {
@@ -1770,7 +1770,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 											top : 6,
 											left : 5,
 											desc : description,
-											image : '/images/icons/' + display.toLowerCase() + '.png'
+											image: '/images/icons/' + name_table.toLowerCase() + '.png',
 										});
 
 										if(icon.toBlob() == null || icon.toBlob().length == 0) {
@@ -1932,7 +1932,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 										top : 6,
 										left : 5,
 										desc : description,
-										image : '/images/icons/' + display.toLowerCase() + '.png'
+										image: '/images/icons/' + name_table.toLowerCase() + '.png',
 									});
 
 									if(icon.toBlob() == null || icon.toBlob().length == 0) {
@@ -3200,7 +3200,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								top : 6,
 								left : 5,
 								desc : description,
-								image : '/images/icons/' + display.toLowerCase() + '.png'
+								image: '/images/icons/' + name_table.toLowerCase() + '.png',
 							});
 
 							if (icon.toBlob() == null || icon.toBlob().length == 0) {
@@ -4148,7 +4148,7 @@ function downloadThumnail(file_id, image, win) {
 			} else {
 				image.image = this.responseData
 			}
-			image.imageData = image.image;
+			image.isImage = true;
 		}
 
 		downloadImage.onerror = function(e) {

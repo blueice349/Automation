@@ -957,7 +957,6 @@ if(c_index > 0) {
 								},
 								image : '../images/default.png',
 								imageVal : val,
-								imageData : null,
 								bigImg : null,
 								mimeType : null,
 								cardinality : settings.cardinality,
@@ -967,7 +966,7 @@ if(c_index > 0) {
 							if(isUpdated == true) {
 								content[count].image = val;
 								content[count].bigImg = val;
-								content[count].imageData = val;
+								contentImage.isImage = true;
 							}
 							content[count].addEventListener('click', function(e) {
 								downloadMainImage(e.source.imageVal, e.source, win4);
@@ -1287,7 +1286,6 @@ function createImage1(arrImages, data, scrollView, updated) {
 		bottom			:5,
 		image			: '../images/default.png',
 		imageVal		: data,
-		imageData		: null,
 		bigImg 			: null,
 		mimeType		: null,
 		label			: scrollView.field_name,
@@ -1298,7 +1296,7 @@ function createImage1(arrImages, data, scrollView, updated) {
 	if(updated == true) {
 		contentImage.image = data;
 		contentImage.bigImg = data;
-		contentImage.imageData = data;
+		contentImage.isImage = true;
 	}
 	contentImage.addEventListener('click', function(e) {
 		//Following method will open camera to capture the image.

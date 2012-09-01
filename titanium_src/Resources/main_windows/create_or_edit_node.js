@@ -1089,16 +1089,11 @@ function keep_info(_flag_info, pass_it, new_time) {
 				if (content[j].field_type == 'image' && (content[j].cardinality > 1 || content[j].cardinality < 0) && !content[j].no_data_checkbox) {
 					var arrImages = content[j].arrImages;
 					for ( k = 0; k < arrImages.length; k++) {
-						if (arrImages[k].imageData != null && arrImages[k].mimeType != null) {
-
-							var encodeImage = Ti.Utils.base64encode(arrImages[k].imageData);
-
+						if (arrImages[k].isImage != false && arrImages[k].mimeType != null) {
+							var encodeImage = Ti.Utils.base64encode(arrImages[k].bigImg);
 							var mime = arrImages[k].mimeType;
-
 							var imageName = 'image.' + mime.substring(mime.indexOf('/') + 1, mime.length);
-
 							var is_exists = db_put.execute('SELECT delta, nid FROM file_upload_queue WHERE nid=' + file_upload_nid + ' and delta=' + arrImages[k].private_index + ' and field_name="' + content[j].field_name + '";');
-
 							if (is_exists.rowCount > 0) {
 								db_put.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '", file_data="' + encodeImage + '", field_name="' + content[j].field_name + '", file_name="' + imageName + '", delta=' + arrImages[k].private_index + ' WHERE nid=' + file_upload_nid + ' and delta=' + arrImages[k].private_index + ' and field_name="' + content[j].field_name + '";');
 								continue;
@@ -1108,9 +1103,9 @@ function keep_info(_flag_info, pass_it, new_time) {
 							Ti.API.info('Filse Saved' + arrImages[k].private_index);
 						}
 					}
-				} else if (content[j].field_type == 'image' && !content[j].no_data_checkbox) {
-					if (content[j].imageData != null && content[j].mimeType != null) {
-						var encodeImage = Ti.Utils.base64encode(content[j].imageData);
+				} else if (content[j].field_type == 'image'  && !content[j].no_data_checkbox) {
+					if (content[j].isImage != false && content[j].mimeType != null) {
+						var encodeImage = Ti.Utils.base64encode(content[j].bigImg);
 						var mime = content[j].mimeType;
 						var imageName = 'image.' + mime.substring(mime.indexOf('/') + 1, mime.length);
 
@@ -7840,7 +7835,7 @@ create_or_edit_node.loadUI = function() {
 									composed_obj : false,
 									image : defaultImageVal,
 									imageVal : val,
-									imageData : null,
+									isImage: false,
 									bigImg : null,
 									mimeType : null,
 									cardinality : settings.cardinality,
@@ -7852,11 +7847,11 @@ create_or_edit_node.loadUI = function() {
 								if (isUpdated == true) {
 									content[count].image = val;
 									content[count].bigImg = val;
-									content[count].imageData = val;
+									content[count].isImage = true;
 								}
 								content[count].addEventListener('click', function(e) {
 									//Following method will open camera to capture the image.
-									if (e.source.imageData != null) {
+									if (e.source.isImage != false) {
 										var postDialog = Titanium.UI.createOptionDialog();
 										postDialog.options = ['Capture Image', 'Show Image', 'cancel'];
 										postDialog.cancel = 2;
@@ -8320,9 +8315,9 @@ if (PLATFORM == 'android') {
 				actInd.message = 'Please wait...';
 				actInd.show();
 				var imagescr = Ti.Utils.base64decode(e.media);
-				e.source.imageData = imagescr;
-				e.source.image = e.source.imageData;
-				e.source.bigImg = e.source.imageData;
+				e.source.image = imagescr;
+				e.source.isImage = true;
+				e.source.bigImg = imagescr;
 				e.source.mimeType = "/jpeg";
 				if (e.source.cardinality > 1 || e.source.cardinality < 0) {
 					if (e.source.cardinality < 1) {
@@ -8391,6 +8386,7 @@ function openCamera(e) {
 					items : [doneBtn, flexible, captureBtn, flexible]
 				});
 				overlayView.add(navbar);
+
 
 				captureBtn.addEventListener('click', function(evt) {
 					Ti.Media.takePicture();
@@ -8470,7 +8466,7 @@ function createImage(o_index, arrImages, data, scrollView, updated) {
 		},
 		image : defaultImageVal,
 		imageVal : data,
-		imageData : null,
+		isImage : false,
 		bigImg : null,
 		mimeType : null,
 		label : scrollView.label,
@@ -8482,11 +8478,11 @@ function createImage(o_index, arrImages, data, scrollView, updated) {
 	if (updated == true) {
 		contentImage.image = data;
 		contentImage.bigImg = data;
-		contentImage.imageData = data;
+		contentImage.isImage = true;
 	}
 	contentImage.addEventListener('click', function(e) {
 		//Following method will open camera to capture the image.
-		if (e.source.imageData != null) {
+		if (e.source.isImage != false) {
 
 			var postDialog = Titanium.UI.createOptionDialog();
 			postDialog.options = ['Capture Image', 'Show Image', 'cancel'];
