@@ -244,7 +244,7 @@ while ( elements.isValidRow() ){
 			height: 48,
 			top: 6,
 			left: 5,
-			image: '/images/icons/' + display.toLowerCase() + '.png',
+			image: '/images/icons/' + name_table.toLowerCase() + '.png',
 			desc : description,
 		});
 		
