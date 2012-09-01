@@ -30,9 +30,15 @@ var isFirstTime = false;
 //Common used functions
 unsetUse();
 var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+var movement;
 
 //Geolocation module
-Ti.include('geolocation.js');
+if (PLATFORM == 'android'){
+	Ti.include('geolocation.js');
+}
+else{
+	Ti.include('geolocation_for_ios.js');
+}
 
 function checkUpdate(evt){
 	Ti.API.info('******* Called checkupate => '+evt);

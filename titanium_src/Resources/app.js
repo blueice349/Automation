@@ -10,6 +10,7 @@
  * @author Joseandro
  */
 
+
 // this sets the background color of every 
 Titanium.UI.setBackgroundColor('#EEEEEE');
 

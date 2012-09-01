@@ -1469,7 +1469,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 	Ti.API.info('Log type : ' + objectsUp);
 
 	//Timeout until error:
-	objectsUp.setTimeout(90000);
+	objectsUp.setTimeout(15000);
 
 	Ti.API.info("Current page: " + pageIndex);
 	Ti.API.info("Mode: " + mode);
