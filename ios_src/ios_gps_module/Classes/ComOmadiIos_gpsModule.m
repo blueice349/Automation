@@ -30,15 +30,7 @@
     
     if(locationManager == nil) {
         locationManager = [[CLLocationManager alloc] init];
-        [locationManager setDelegate:self];
-        
-        // Update again when a user moves distance in meters
-        [locationManager setDistanceFilter:kCLDistanceFilterNone];
-        
-        // Configure permission dialog
-        [locationManager setPurpose:@"Omadi tracking module"];
     }
-    
     return locationManager;
 }
 
@@ -48,11 +40,8 @@
 {
 	// this method is called when the module is first loaded
 	// you *must* call the superclass
-	[super startup];
-    coords = [[NSMutableArray alloc] init];
-    
-    //NSTimer *currentTimer = [NSTimer scheduledTimerWithTimeInterval:5.0 target:self selector:@selector(theActionMethod) userInfo:nil repeats:YES];
-	NSLog(@"[INFO] %@ loaded",self);
+    [super startup];
+    NSLog(@"[INFO] %@ loaded",self);
 }
 
 -(void)shutdown:(id)sender
@@ -62,6 +51,7 @@
 	// much processing here or the app will be quit forceably
 	
 	// you *must* call the superclass
+    
 	[super shutdown:sender];
 }
 
@@ -101,6 +91,7 @@ MAKE_SYSTEM_PROP_DBL(LOCATION_ACCURACY_THREE_KILOMETERS, kCLLocationAccuracyThre
     
     if(startLocationUpdates) {
         
+        /*
         NSNumber *locationAccuracy = [args objectForKey : @"locationAccuracy"];
         
         if(locationAccuracy != NULL) {
@@ -108,6 +99,16 @@ MAKE_SYSTEM_PROP_DBL(LOCATION_ACCURACY_THREE_KILOMETERS, kCLLocationAccuracyThre
         } else {
             self.locationManager.desiredAccuracy = kCLLocationAccuracyThreeKilometers;
         }
+         */
+
+        self.locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation;
+        
+        // Update again when a user moves distance in meters
+        [self.locationManager setDistanceFilter:kCLDistanceFilterNone];
+        
+        // Configure permission dialog
+        [self.locationManager setPurpose:@"Omadi tracking module"];
+
         
         [self.locationManager startUpdatingLocation];
     }
@@ -129,7 +130,6 @@ MAKE_SYSTEM_PROP_DBL(LOCATION_ACCURACY_THREE_KILOMETERS, kCLLocationAccuracyThre
                               [NSNumber numberWithDouble:self.locationManager.location.coordinate.latitude], @"latitude",
                               [NSNumber numberWithDouble:self.locationManager.location.horizontalAccuracy], @"accuracy",
                               nil];
-    
     NSDictionary *movementData = [NSDictionary dictionaryWithObjectsAndKeys:
                                   location, @"location",
                                   nil];

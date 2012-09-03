@@ -1,5 +1,9 @@
 =\=\=\=\=\=\=
 eclipse.preferences.version=1
+provisioning_profiles/development/44662BE0-E4F3-41B5-837B-DA3FE68F54BA/appid=com.omadi.joseandro
+provisioning_profiles/development/44662BE0-E4F3-41B5-837B-DA3FE68F54BA/filepath=/Users/cdn93/Library/MobileDevice/Provisioning Profiles/44662BE0-E4F3-41B5-837B-DA3FE68F54BA.mobileprovision
+provisioning_profiles/development/44662BE0-E4F3-41B5-837B-DA3FE68F54BA/name=Omadi_Devloper_Profile_20120825
+provisioning_profiles/development/44662BE0-E4F3-41B5-837B-DA3FE68F54BA/uuid=44662BE0-E4F3-41B5-837B-DA3FE68F54BA
 provisioning_profiles/development/64572842-2A22-4D42-9E3E-2304095D68B5/appid=*
 provisioning_profiles/development/64572842-2A22-4D42-9E3E-2304095D68B5/filepath=/Users/joseandro/Library/MobileDevice/Provisioning Profiles/64572842-2A22-4D42-9E3E-2304095D68B5.mobileprovision
 provisioning_profiles/development/64572842-2A22-4D42-9E3E-2304095D68B5/name=iOS Team Provisioning Profile\: *

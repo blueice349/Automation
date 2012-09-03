@@ -332,5 +332,5 @@ Ti.App.addEventListener('upload_gps_locations', function(){
 });
 
 setInterval(function (){
-	//Ti.App.fireEvent('upload_gps_locations');
+	Ti.App.fireEvent('upload_gps_locations');
 }, 120000);
