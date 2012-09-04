@@ -508,7 +508,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 				var accountRestricted = restrictions[r].restrict_entire_account;
 				if (content[k].field_name == 'license_plate___plate') {
 					if (accountRestricted != null && accountRestricted == "1") {
-						a.message = "The selected account is restricted from any parking enforcement activity.";
+						a.message = "Do not enforce any violations on this property. It is restricted by management.";
 						a.show();
 						return;
 					} else {
@@ -540,7 +540,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 
 				if (content[k].field_name == 'vin') {
 					if (accountRestricted != null && accountRestricted == "1") {
-						a.message = "The selected account is restricted from any parking enforcement activity.";
+						a.message = "Do not enforce any violations on this property. It is restricted by management.";
 						a.show();
 						return;
 					} else {
@@ -637,9 +637,9 @@ function keep_info(_flag_info, pass_it, new_time) {
 		if (_flag_info == "draft") {
 			mode_msg = 'Saving draft';
 		} else if (win.mode == 0) {
-			mode_msg = 'Saving node';
+			mode_msg = 'Saving ' + win.title;
 		} else {
-			mode_msg = 'Updating node';
+			mode_msg = 'Updating ' + win.title;
 		}
 
 		showIndicator(mode_msg);
@@ -749,7 +749,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 					if (content[j].field_name == 'license_plate___plate') {
 						if (accountRestricted != null && accountRestricted == "1") {
 							hideIndicator();
-							a.message = "The selected account is restricted from any parking enforcement activity.";
+							a.message = "Do not enforce any violations on this property. It is restricted by management.";
 							a.show();
 							return;
 						} else {
@@ -773,7 +773,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 					if (content[j].field_name == 'vin') {
 						if (accountRestricted != null && accountRestricted == "1") {
 							hideIndicator();
-							a.message = "The selected account is restricted from any parking enforcement activity.";
+							a.message = "Do not enforce any violations on this property. It is restricted by management.";
 							a.show();
 							return;
 						} else {
