@@ -103,7 +103,7 @@ MAKE_SYSTEM_PROP_DBL(LOCATION_ACCURACY_THREE_KILOMETERS, kCLLocationAccuracyThre
 
         self.locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation;
         
-        // Update again when a user moves distance in meters
+        // Update again when a user moves distance in metersan 
         [self.locationManager setDistanceFilter:kCLDistanceFilterNone];
         
         // Configure permission dialog

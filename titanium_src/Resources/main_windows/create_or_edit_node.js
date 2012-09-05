@@ -507,17 +507,18 @@ function keep_info(_flag_info, pass_it, new_time) {
 			for (var r in restrictions) {
 				var accountRestricted = restrictions[r].restrict_entire_account;
 				if (content[k].field_name == 'license_plate___plate') {
-					if (accountRestricted != null && accountRestricted == "1") {
+					if (accountRestricted != null && accountRestricted == "1" && accountRestricted != "") {
 						a.message = "The selected account is restricted from any parking enforcement activity.";
 						a.show();
 						return;
 					} else {
 						var license_plate = content[k].value;
 						var restricted_license_plate = restrictions[r].license_plate;
-						if (license_plate != null && restricted_license_plate != null) {
+						if (license_plate != null && restricted_license_plate != null && license_plate != "" && restricted_license_plate != "") {
 							license_plate = license_plate.toLowerCase().replace(/o/g, '0');
 							restricted_license_plate = restricted_license_plate.toLowerCase().replace(/o/g, '0');
-							if(license_plate == restricted_license_plate) {
+							Ti.API.info('1 License Plate: '+license_plate+' ---- Restriction License Plate: '+restricted_license_plate);
+							if( license_plate.toString() ==  restricted_license_plate.toString()) {
 								var colorName = "";
 								var resMsg = "";
 								if(restrictions[r].vehicle_color!=null && restrictions[r].vehicle_color!=""){
@@ -540,13 +541,14 @@ function keep_info(_flag_info, pass_it, new_time) {
 
 				if (content[k].field_name == 'vin') {
 					if (accountRestricted != null && accountRestricted == "1") {
-						a.message = "The selected account is restricted from any parking enforcement activity.";
+						a.message = "Do not enforce any violations on this property. It is restricted by management.";
 						a.show();
 						return;
 					} else {
 						var vin = content[k].value;
 						var restricted_vin = restrictions[r].vin;
-						if(vin != null && restricted_vin != null) {
+						if(vin != null && vin != "" && restricted_vin != null && restricted_vin != "") {
+							Ti.API.info('VIN: '+vin+' RS_VIN: '+restricted_vin);
 							if(vin == restricted_vin) {
 								var colorName = "";
 								var resMsg = "";
@@ -637,9 +639,9 @@ function keep_info(_flag_info, pass_it, new_time) {
 		if (_flag_info == "draft") {
 			mode_msg = 'Saving draft';
 		} else if (win.mode == 0) {
-			mode_msg = 'Saving node';
+			mode_msg = 'Saving ' + win.title;
 		} else {
-			mode_msg = 'Updating node';
+			mode_msg = 'Updating ' + win.title;
 		}
 
 		showIndicator(mode_msg);
@@ -741,58 +743,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 			if (!content[j]) {
 				continue;
 			}
-
-			//validating license plate and vin value entered by user against restritions
-			if((win.mode==0 || _flag_info=='draft')){	
-				for (var r in restrictions) {
-					var accountRestricted = restrictions[r].restrict_entire_account;
-					if (content[j].field_name == 'license_plate___plate') {
-						if (accountRestricted != null && accountRestricted == "1") {
-							hideIndicator();
-							a.message = "The selected account is restricted from any parking enforcement activity.";
-							a.show();
-							return;
-						} else {
-							var license_plate = content[j].value;
-							var restricted_license_plate = restrictions[r].license_plate;
-							if (license_plate != null && restricted_license_plate != null) {
-								license_plate = license_plate.toLowerCase().replace(/o/g, '0');
-								restricted_license_plate = restricted_license_plate.toLowerCase().replace(/o/g, '0');
-
-								if (license_plate == restricted_license_plate) {
-									hideIndicator();
-									a.message = restrictions[r].vehicle_color + restrictions[r].vehicle_make + restrictions[r].vehicle_model + " - " + restrictions[r].license_plate + " is currently restricted for the account entered.";
-									a.show();
-									return;
-								}
-							}
-						}
-
-					}
-
-					if (content[j].field_name == 'vin') {
-						if (accountRestricted != null && accountRestricted == "1") {
-							hideIndicator();
-							a.message = "The selected account is restricted from any parking enforcement activity.";
-							a.show();
-							return;
-						} else {
-							var vin = content[j].value;
-							var restricted_vin = restrictions[r].vin;
-							if (vin != null && restricted_vin != null) {
-								if (vin == restricted_vin) {
-									hideIndicator();
-									a.message = restrictions[r].vehicle_color + restrictions[r].vehicle_make + restrictions[r].vehicle_model + " - " + restrictions[r].vin + " is currently restricted for the account entered.";
-									a.show();
-									return;
-								}
-							}
-						}
-
-					}
-				}
-			}
-
+			
 			if (content[j].is_title === true) {
 				if (title_to_node.charAt(0) == "") {
 					if (content[j].cardinality == -1) {
@@ -8404,12 +8355,12 @@ function openCamera(e) {
 					Ti.API.info("MIME TYPE: " + event.media.mimeType);
 					// If image size greater than 1MB we will reduce th image else take as it is.
 					if (event.media.length > ONE_MB) {
-						e.source.imageData = reduceImageSize(event.media, 500, 700).image;
+						e.source.isImage = reduceImageSize(event.media, 500, 700).image;
 					} else {
-						e.source.imageData = event.media;
+						e.source.isImage = event.media;
 					}
-					e.source.image = e.source.imageData;
-					e.source.bigImg = e.source.imageData;
+					e.source.image = e.source.isImage;
+					e.source.bigImg = e.source.isImage;
 					e.source.mimeType = event.media.mimeType;
 
 					if (e.source.cardinality > 1 || e.source.cardinality < 0) {

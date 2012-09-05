@@ -98,7 +98,7 @@ win1.add(i_scroll_page);
 //Web site picker 
 var logo = Titanium.UI.createImageView({
 	width:'auto',
-	top: '10dp',
+	top: '25dp',
 	height: '114dp',
 	image: '/images/logo.png'
 });
