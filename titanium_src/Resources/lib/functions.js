@@ -5351,7 +5351,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 									}
 								}
 
-				              	var reference_types = instances[search_field['field_name']]['settings']['reference_types'];
+				              	var reference_types = JSON.parse(search_field['settings'])['reference_types'];
 				               	var array_filter = '';
 				               	var reference_types_arr = [];
 				                for(var key in reference_types) {
@@ -5382,11 +5382,11 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 				              var possible_nids = db_display.execute(query);
 							  var possible_nids_arr = [];
 							  while (possible_nids.isValidRow()) {
-									possible_nids_arr.push(possible_nids.fieldByName('tid'));
+									possible_nids_arr.push(possible_nids.fieldByName('nid'));
 									possible_nids.next();
 							  }
 				              
-				              switch($search_operator){                                    
+				              switch(search_operator){                                    
 				                case 'not starts with':
 				                case 'not ends with':
 				                case 'not like':
