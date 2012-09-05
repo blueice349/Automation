@@ -2,19 +2,26 @@ package com.omadi.camera;
 
 import java.io.IOException;
 
+
 import android.content.Context;
 import android.hardware.Camera;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
+import android.widget.SeekBar;
 
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
 	private SurfaceHolder mHolder;
 	private Camera mCamera;
+	Camera.Parameters params;
+	VerticalSeekBar zoomControls;
+	int maxZoomLevel = 0;
 
-	public CameraPreview(Context context, Camera camera) {
+	public CameraPreview(Context context, Camera camera, VerticalSeekBar zoomControls) {
 		super(context);
 		mCamera = camera;
+		this.zoomControls = zoomControls;
 
 		// Install a SurfaceHolder.Callback so we get notified when the
 		// underlying surface is created and destroyed.
@@ -64,6 +71,32 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 		} catch (Exception e) {
 			Log.d("DG_DEBUG", "Error starting camera preview: " + e.getMessage());
 		}
+		
+		//ZOOM CONTROL SLIDER
+		params = mCamera.getParameters();
+		maxZoomLevel = params.getMaxZoom();
+
+		if (maxZoomLevel == 0) {
+			zoomControls.setEnabled(false);
+		} else {
+			zoomControls.setMax(maxZoomLevel);
+		}
+
+		zoomControls
+				.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+					public void onProgressChanged(SeekBar seekBar,
+							int progress, boolean fromUser) {
+						params.setZoom(progress);
+						mCamera.setParameters(params);
+					}
+
+					public void onStartTrackingTouch(SeekBar seekBar) {
+					}
+
+					public void onStopTrackingTouch(SeekBar seekBar) {
+					}
+				});
+		
 	}
 
 	public void surfaceDestroyed(SurfaceHolder holder) {

@@ -19,6 +19,15 @@ var ROLE_ID_ADMIN = 3;
 var app_timestamp = 0;
 var omadi_time_format = Ti.App.Properties.getString("Omadi_time_format", 'g:iA');
 
+var weekday=new Array(7);
+weekday[0]="Sunday";
+weekday[1]="Monday";
+weekday[2]="Tuesday";
+weekday[3]="Wednesday";
+weekday[4]="Thursday";
+weekday[5]="Friday";
+weekday[6]="Saturday";
+
 function getDBName() {
 	var db_list = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_list");
 	var portal_base = db_list.execute('SELECT db_name FROM history WHERE id_hist=1');
