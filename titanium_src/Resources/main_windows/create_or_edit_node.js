@@ -4814,6 +4814,11 @@ create_or_edit_node.loadUI = function() {
 										content[count].addEventListener('click', function(e) {
 											//Ti.API.info('TID: '+e.row.tid);
 											//e.source.value = e.row.tid;
+											if(e.source.arr_opt.length==1){
+												var dt = new Date(e.source.violation_time);
+												alert("No violations should be enforced at " + e.source.omadi_reference_title + " at " + date(omadi_time_format,dt) + " on " + weekday[dt.getDay()]);
+												return;
+										}
 											var postDialog = Titanium.UI.createOptionDialog();
 											postDialog.options = e.source.arr_opt;
 											postDialog.cancel = -1;
@@ -4931,6 +4936,12 @@ create_or_edit_node.loadUI = function() {
 									content[count].addEventListener('click', function(e) {
 										//Ti.API.info('TID: '+e.row.tid);
 										//e.source.value = e.row.tid;
+										if(e.source.arr_opt.length==1){
+												var dt = new Date(e.source.violation_time);
+												alert("No violations should be enforced at " + e.source.omadi_reference_title + " at " + date(omadi_time_format,dt) + " on " + weekday[dt.getDay()]);
+												return;
+										}
+										
 										var postDialog = Titanium.UI.createOptionDialog();
 										postDialog.options = e.source.arr_opt;
 										postDialog.cancel = -1;
@@ -5072,6 +5083,11 @@ create_or_edit_node.loadUI = function() {
 											for (var jsa in e.source.itens) {
 												Ti.API.info(jsa + ' = ' + e.source.itens[jsa].title);
 											}
+											if(e.source.itens.length==0){
+												var dt = new Date(e.source.violation_time);
+												alert("No violations should be enforced at " + e.source.omadi_reference_title + " at " + date(omadi_time_format,dt) + " on " + weekday[dt.getDay()]);
+												return;
+											}
 											open_mult_selector(e.source);
 											changedContentValue(e.source);
 											noDataChecboxEnableDisable(e.source, e.source.reffer_index);
@@ -5196,9 +5212,10 @@ create_or_edit_node.loadUI = function() {
 											reffer_index : reffer_index,
 											settings : settings,
 											changedFlag : 0,
-											returnKeyType : Ti.UI.RETURNKEY_DONE,
-											enabled : can_edit,
-											editable : can_edit
+											returnKeyType: Ti.UI.RETURNKEY_DONE,
+											enabled: can_edit,
+											editable: can_edit,
+											regionView: regionView
 										});
 										if (PLATFORM == 'android') {
 											content[count].backgroundImage = '../images/textfield.png'
@@ -5307,7 +5324,7 @@ create_or_edit_node.loadUI = function() {
 														e.source.autocomplete_table.height = (table_data.length == 1) ? getScreenHeight() * 0.1 : getScreenHeight() * 0.2;
 													}
 													e.source.autocomplete_table.scrollToTop(0, {animated: false});
-													viewContent.scrollTo(0,e.source.top);
+													viewContent.scrollTo(0,e.source.regionView.top+e.source.top-heightValue);
 													if(table_data.length > 0) {
 														e.source.autocomplete_table.visible = true;
 													} else {
@@ -5397,9 +5414,10 @@ create_or_edit_node.loadUI = function() {
 										defaultField : defaultField,
 										settings : settings,
 										changedFlag : 0,
-										returnKeyType : Ti.UI.RETURNKEY_DONE,
-										enabled : can_edit,
-										editable : can_edit
+										returnKeyType: Ti.UI.RETURNKEY_DONE,
+										enabled: can_edit,
+										editable: can_edit,
+										regionView: regionView
 									});
 									if (PLATFORM == 'android') {
 										content[count].backgroundImage = '../images/textfield.png'
@@ -5509,7 +5527,7 @@ create_or_edit_node.loadUI = function() {
 													e.source.autocomplete_table.height = (table_data.length==1)?getScreenHeight() * 0.1: getScreenHeight() * 0.2;
 												}
 												e.source.autocomplete_table.scrollToTop(0, {animated: false});
-												viewContent.scrollTo(0,e.source.top);
+												viewContent.scrollTo(0,e.source.regionView.top+e.source.top-heightValue);
 												if(table_data.length > 0) {
 													e.source.autocomplete_table.visible = true;
 												} else {
@@ -5681,11 +5699,12 @@ create_or_edit_node.loadUI = function() {
 										settings : settings,
 										changedFlag : 0,
 										my_index : count,
-										autocorrect : false,
-										returnKeyType : Ti.UI.RETURNKEY_DONE,
-										enabled : can_edit,
-										editable : can_edit,
-										touched : false
+										autocorrect: false,
+										returnKeyType: Ti.UI.RETURNKEY_DONE,
+										enabled: can_edit,
+										editable: can_edit,
+										touched: false,
+										regionView: regionView
 									});
 									if (PLATFORM == 'android') {
 										content[count].backgroundImage = '../images/textfield.png'
@@ -5752,7 +5771,7 @@ create_or_edit_node.loadUI = function() {
 
 									content[count].addEventListener('focus', function(e) {
 										e.source.touched = true;
-										adjustView(e.source.my_index, e.source.top);
+										adjustView(e.source.my_index,e.source.regionView.top+e.source.top-heightValue ); 
 									});
 
 									//
@@ -5801,7 +5820,7 @@ create_or_edit_node.loadUI = function() {
 														e.source.autocomplete_table.height = (table_data.length==1)?getScreenHeight() * 0.1: getScreenHeight() * 0.2;
 													}
 													e.source.autocomplete_table.scrollToTop(0, {animated: false});
-													viewContent.scrollTo(0,e.source.top);
+													viewContent.scrollTo(0,e.source.regionView.top+e.source.top-heightValue);
 													if(table_data.length > 0) {
 														e.source.autocomplete_table.visible = true;
 													} else {
@@ -5864,12 +5883,13 @@ create_or_edit_node.loadUI = function() {
 									reffer_index : reffer_index,
 									settings : settings,
 									changedFlag : 0,
-									my_index : count,
-									autocorrect : false,
-									returnKeyType : Ti.UI.RETURNKEY_DONE,
-									enabled : can_edit,
-									editable : can_edit,
-									touched : false
+									my_index: count,
+									autocorrect: false,
+									returnKeyType: Ti.UI.RETURNKEY_DONE,
+									enabled: can_edit,
+									editable: can_edit,
+									touched: false,
+									regionView: regionView
 								});
 								if (PLATFORM == 'android') {
 									content[count].backgroundImage = '../images/textfield.png'
@@ -5937,7 +5957,7 @@ create_or_edit_node.loadUI = function() {
 
 								content[count].addEventListener('focus', function(e) {
 									e.source.touched = true;
-									adjustView(e.source.my_index, e.source.top);
+									adjustView(e.source.my_index,e.source.regionView.top+e.source.top-heightValue ); 
 								});
 
 								//
@@ -5987,7 +6007,7 @@ create_or_edit_node.loadUI = function() {
 													e.source.autocomplete_table.height = (table_data.length==1)?getScreenHeight() * 0.1: getScreenHeight() * 0.2;
 												}
 												e.source.autocomplete_table.scrollToTop(0, {animated: false});
-												viewContent.scrollTo(0,e.source.top);
+												viewContent.scrollTo(0,e.source.regionView.top+e.source.top-heightValue);
 												if(table_data.length>0){
 													e.source.autocomplete_table.visible = true;
 												} else {
@@ -7441,12 +7461,13 @@ create_or_edit_node.loadUI = function() {
 									_make : keep_from_make,
 									settings : settings,
 									changedFlag : 0,
-									i_name : i_name,
-									my_index : count,
-									autocorrect : false,
-									returnKeyType : Ti.UI.RETURNKEY_DONE,
-									enabled : can_edit,
-									editable : can_edit
+									i_name: i_name,
+									my_index: count,
+									autocorrect: false,
+									returnKeyType: Ti.UI.RETURNKEY_DONE,
+									enabled: can_edit,
+									editable: can_edit,
+									regionView: regionView
 								});
 								if (PLATFORM == 'android') {
 									content[count].backgroundImage = '../images/textfield.png'
@@ -7498,7 +7519,7 @@ create_or_edit_node.loadUI = function() {
 								});
 
 								content[count].addEventListener('focus', function(e) {
-									adjustView(e.source.my_index, e.source.top);
+									adjustView(e.source.my_index,e.source.regionView.top+e.source.top-heightValue ); 
 									if (e.source.fantasy_name == "Model") {
 										Ti.API.info(content[e.source.make_ind].value);
 
@@ -7559,7 +7580,7 @@ create_or_edit_node.loadUI = function() {
 												e.source.autocomplete_table.height = (table_data.length==1)?getScreenHeight() * 0.1: getScreenHeight() * 0.2;
 											}
 											e.source.autocomplete_table.scrollToTop(0, {animated: false});
-											viewContent.scrollTo(0,e.source.top);
+											viewContent.scrollTo(0,(e.source.regionView.top+e.source.top-heightValue));
 											if(table_data.length>0){
 												e.source.autocomplete_table.visible = true;
 											} else {
@@ -9835,6 +9856,8 @@ function setParticularRulesField(rulesFieldContent) {
 	var descripitons = [];
 	var fromViolationRules = false;
 	var machine_name = rulesFieldContent['settings'].vocabulary;
+	var omadi_reference_title = "";
+	var violation_time = "";
 	db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 	var violations_vocabulary = db_display.execute('SELECT vid from vocabulary WHERE machine_name="' + machine_name + '";');
 	var violations_terms_rslt = db_display.execute('SELECT tid,name from term_data WHERE vid=' + violations_vocabulary.fieldByName('vid'));
@@ -9856,7 +9879,9 @@ function setParticularRulesField(rulesFieldContent) {
 		var rules_field_name = content[entityArr[rulesFieldContent['widgetObj']['rules_field_name']][0].reffer_index];
 		var rules_violation_time_field_name = content[entityArr[rulesFieldContent['widgetObj']['rules_violation_time_field_name']][0].reffer_index];
 
-		if (rules_field_name.nid != null && rules_violation_time_field_name.value != null) {
+
+		if(rules_field_name.nid != null && rules_violation_time_field_name.value != null) {
+			omadi_reference_title = rules_field_name.value;
 			var table = db_display.execute('SELECT table_name FROM node WHERE nid = ' + rules_field_name.nid);
 			table = table.fieldByName('table_name');
 
@@ -9864,6 +9889,7 @@ function setParticularRulesField(rulesFieldContent) {
 			data = data.fieldByName(rulesFieldContent['widgetObj']['rules_parent_field_name']);
 			data = JSON.parse(data);
 			var violation_timestamp = rules_violation_time_field_name.value;
+			violation_time = violation_timestamp;
 			var node_type = win.type;
 
 			if (data != false && data != null && data != "" && data.length > 0) {
@@ -9944,6 +9970,8 @@ function setParticularRulesField(rulesFieldContent) {
 			content[rulesFieldContent.reffer_index + o_index].arr_opt = arr_opt;
 			content[rulesFieldContent.reffer_index + o_index].title = aux_val.title;
 			content[rulesFieldContent.reffer_index + o_index].value = aux_val.value;
+			content[rulesFieldContent.reffer_index + o_index].omadi_reference_title = (arr_opt.length==1)?omadi_reference_title:"";
+			content[rulesFieldContent.reffer_index + o_index].violation_time = (arr_opt.length==1)?violation_time:"";
 		}
 	} else if (rulesFieldContent.settings.cardinality == 1) {
 		var arr_picker = new Array();
@@ -9971,6 +9999,8 @@ function setParticularRulesField(rulesFieldContent) {
 		content[rulesFieldContent.reffer_index].arr_opt = arr_opt;
 		content[rulesFieldContent.reffer_index].title = aux_val.title;
 		content[rulesFieldContent.reffer_index].value = aux_val.value;
+		content[rulesFieldContent.reffer_index].omadi_reference_title = (arr_opt.length==1)?omadi_reference_title:"";
+		content[rulesFieldContent.reffer_index].violation_time = (arr_opt.length==1)?violation_time:"";
 
 	} else if (rulesFieldContent.settings.cardinality == -1) {
 		var sel_text = "";
@@ -9989,6 +10019,8 @@ function setParticularRulesField(rulesFieldContent) {
 		content[rulesFieldContent.reffer_index].itens = _val_itens;
 		content[rulesFieldContent.reffer_index].desLabel.text = sel_text;
 		content[rulesFieldContent.reffer_index].from_cond_vs = fromViolationRules;
+		content[rulesFieldContent.reffer_index].omadi_reference_title = (_itens==null)?omadi_reference_title:"";
+		content[rulesFieldContent.reffer_index].violation_time = (_itens==null)?violation_time:"";
 	}
 	db_display.close();
 }

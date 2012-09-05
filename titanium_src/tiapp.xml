@@ -10,7 +10,7 @@
     </deployment-targets>
     <id>joseandro.omadi.com</id>
     <name>Omadi</name>
-    <version>1.4.44</version>
+    <version>1.4.45</version>
     <publisher>Joseandro</publisher>
     <url>http://www.omadi.com</url>
     <description>CRM from Omadi</description>
@@ -37,6 +37,8 @@
     <android xmlns:android="http://schemas.android.com/apk/res/android">
         <manifest android:installLocation="preferExternal">
             <uses-sdk android:minSdkVersion="7"/>
+            <uses-permission android:name="android.permission.READ_LOGS"/>
+            <uses-permission android:name="android.permission.INTERNET"/>
         </manifest>
     </android>
     <modules>
