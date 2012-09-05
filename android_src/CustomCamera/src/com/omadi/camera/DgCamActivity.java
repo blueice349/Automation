@@ -25,7 +25,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Base64;
-import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
@@ -33,6 +32,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
@@ -46,7 +46,7 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 	private int deviceWidth;
 	RelativeLayout rootlayout;
 	RelativeLayout enerlayout;
-	RelativeLayout frameCameraViewContainer;
+	FrameLayout frameCameraViewContainer;
 	private ImageView rotatingImage;
 	private ImageView done;
 	private int degrees = 0;
@@ -72,7 +72,7 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 				LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
 
 		// SURFACE LAYOUT
-		frameCameraViewContainer = new RelativeLayout(mContext);
+		frameCameraViewContainer = new FrameLayout(mContext);
 		frameCameraViewContainer
 				.setLayoutParams(new RelativeLayout.LayoutParams(412,
 						LayoutParams.FILL_PARENT));
@@ -240,7 +240,7 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 		super.onPause();
 		// release the camera immediately on pause event
 		releaseCamera();
-
+		finish();
 		// removing the inserted view - so when we come back to the app we
 		// won't have the views on top of each other.
 		frameCameraViewContainer.removeViewAt(0);
@@ -284,7 +284,7 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 				BitmapFactory.decodeByteArray(data, 0, data.length, options);
 				int imageHeight = options.outHeight;
 				int imageWidth = options.outWidth;
-				int targetHeight = 700, targetWidth = 500;
+				int targetHeight = 1024, targetWidth = 768;
 				//String imageType = options.outMimeType;
 				int inSampleSize = 1;
 
@@ -332,62 +332,7 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 				// bgTask.execute(ss);
 				Message msg = new Message();
 				msg.obj = ss;
-				h4.sendMessage(msg);			    
-				
-//				Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-//
-//				float scaleHeight = bitmap.getHeight();
-//				float scaleWidth = bitmap.getWidth();
-//				float newHeight = 0f;
-//				float newWidth = 0f;
-//
-//				float multiple = 0.0f;
-//				if (bitmap.getHeight() / bitmap.getWidth() > 700 / 500) {
-//					multiple = bitmap.getHeight() / 700;
-//				} else {
-//					multiple = bitmap.getWidth() / 500;
-//				}
-//
-//				if (multiple >= 1) {
-//					newHeight = bitmap.getHeight() / multiple;
-//					newWidth = bitmap.getWidth() / multiple;
-//				} else {
-//
-//				}
-//				scaleWidth = newWidth / bitmap.getWidth();
-//				scaleHeight = newHeight / bitmap.getHeight();
-//
-//				Matrix mtx = new Matrix();
-//				if ((scaleWidth > 0 && scaleWidth < 1)
-//						&& (scaleHeight > 0 && scaleHeight < 1)) {
-//					mtx.postScale(scaleWidth, scaleHeight);
-//				}
-//
-//				// Rotating Bitmap
-//				if (degrees == 180 || degrees == 0) {
-//					mtx.postRotate(degrees);
-//				} else if (degrees == 270) {
-//					mtx.postRotate(90);
-//				} else {
-//					mtx.postRotate(270);
-//				}
-//
-//				bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
-//						bitmap.getHeight(), mtx, true);
-//				ByteArrayOutputStream stream = new ByteArrayOutputStream();
-//				bitmap.compress(Bitmap.CompressFormat.JPEG, 95, stream);
-//				String ss = Base64.encodeToString(stream.toByteArray(), 0);
-//
-//				bitmap = null;
-//				stream = null;
-//				System.gc();
-//				finish();
-//				// BackgrounTask bgTask = new BackgrounTask();
-//				// bgTask.execute(ss);
-//				Message msg = new Message();
-//				msg.obj = ss;
-//				h4.sendMessage(msg);
-
+				h4.sendMessage(msg);
 				// KrollDict eventData = new KrollDict();
 				// eventData.put("source", CustomcameraModule.eve);
 				// eventData.put("media", ss);
