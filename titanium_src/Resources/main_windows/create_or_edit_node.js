@@ -1284,7 +1284,7 @@ function form_min(min) {
 }
 
 function display_widget(obj) {
-
+	if(PLATFORM == 'android'){Ti.UI.Android.hideSoftKeyboard()};
 	var win_wid = Ti.UI.createWindow({
 		backgroundColor : "#000",
 		opacity : 0.9
@@ -1455,7 +1455,8 @@ function display_widget(obj) {
 			type : Ti.UI.PICKER_TYPE_TIME,
 			color : '#000000',
 			top : '50%',
-			timezone : null
+			timezone : null,
+			format24: (omadi_time_format=='g:iA'?false:true)
 		});
 		time_picker.selectionIndicator = true;
 		time_picker.date_picker = date_picker;
@@ -1535,6 +1536,7 @@ function display_widget(obj) {
 }
 
 function display_omadi_time(obj) {
+	if(PLATFORM == 'android'){Ti.UI.Android.hideSoftKeyboard()};
 	var win_wid = Ti.UI.createWindow({
 		//modal: true,
 		backgroundColor : "#000",
@@ -1570,7 +1572,8 @@ function display_omadi_time(obj) {
 		},
 		report : obj.currentDate,
 		type : Ti.UI.PICKER_TYPE_TIME,
-		color : '#000000'
+		color : '#000000',
+		format24: (omadi_time_format=='g:iA'?false:true)
 	});
 	date_picker.selectionIndicator = true;
 
@@ -1628,6 +1631,7 @@ function display_omadi_time(obj) {
 }
 
 function open_mult_selector(obj) {
+	if(PLATFORM == 'android'){Ti.UI.Android.hideSoftKeyboard()};
 	var win_wid = Ti.UI.createWindow({
 		//	modal: true,
 		opacity : 1
@@ -2038,6 +2042,29 @@ create_or_edit_node.loadUI = function() {
 							top = top + 40;
 							v.viewContainer.top = top;
 							top = top + v.viewContainer.height + 10;
+						}
+					}
+				}
+			
+				if(viewContent.getChildren() != null) {
+					for(var i = viewContent.getChildren().length - 1; i >= 0; i--) {
+						var v = viewContent.getChildren()[i];
+						var isLabel = false;
+						if(PLATFORM == 'android') {
+							if( v instanceof Ti.UI.Label) {
+								isLabel = true;
+							}
+						} else {
+							if(v == '[object TiUILabel]') {
+								isLabel = true;
+							}
+						}
+
+						if(isLabel == true && v.viewContainer.expanded == true) {
+							v.viewContainer.height = v.viewContainer.height + (getScreenHeight() * 0.3);
+							break;
+						}else if(isLabel == true && v.viewContainer.expanded == false){
+							break;
 						}
 					}
 				}
@@ -8104,6 +8131,28 @@ create_or_edit_node.loadUI = function() {
 
 		}
 	}
+	
+	if(viewContent.getChildren() != null) {
+		for(var i = viewContent.getChildren().length; i >= 0; i--) {
+			var v = viewContent.getChildren()[i];
+			var isLabel = false;
+			if(PLATFORM == 'android') {
+				if( v instanceof Ti.UI.Label) {
+					isLabel = true;
+				}
+			} else {
+				if(v == '[object TiUILabel]') {
+					isLabel = true;
+				}
+			}
+
+			if(isLabel == true && v.viewContainer.expanded == true) {
+				v.viewContainer.height = v.viewContainer.height + (getScreenHeight() * 0.3);
+				break;
+			}
+		}
+	}
+
 	setTimeout(function() {
 		var entityArr = createEntityMultiple();
 		for (var j = 0; j <= content.length; j++) {
@@ -9621,6 +9670,7 @@ function showRulesRow(current_content, db_display, current_window) {
 						row.add(row.label);
 						heightView += heightCellView + 1;
 						row.addEventListener('click', function(e) {
+							if(PLATFORM == 'android'){Ti.UI.Android.hideSoftKeyboard()};
 							var detail_popup = Ti.UI.createView({
 								backgroundColor : '#00000000'
 							});

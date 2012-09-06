@@ -25,6 +25,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Base64;
+import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
@@ -239,11 +240,13 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 	protected void onPause() {
 		super.onPause();
 		// release the camera immediately on pause event
+		mCamera.stopPreview();
 		releaseCamera();
-		finish();
+		//finish();
 		// removing the inserted view - so when we come back to the app we
 		// won't have the views on top of each other.
-		frameCameraViewContainer.removeViewAt(0);
+		frameCameraViewContainer.removeView(mPreview);
+		frameCameraViewContainer.removeView(zoomBase);
 	}
 
 	private void releaseCamera() {
@@ -296,12 +299,13 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 			        }
 			    }
 			    
-			    if(inSampleSize>=2){
-			    	inSampleSize = (int)Math.pow(2, inSampleSize);
-			    }else if(inSampleSize<2 && inSampleSize>=1){
-			    	inSampleSize = 2;
-			    }
+//			    if(inSampleSize>=2){
+//			    	inSampleSize = (int)Math.pow(2, inSampleSize);
+//			    }else if(inSampleSize<2 && inSampleSize>=1){
+//			    	inSampleSize = 2;
+//			    }
 			    
+			    Log.d("Pooja", inSampleSize+"");
 			    options.inSampleSize = inSampleSize;
 			    options.inJustDecodeBounds = false;
 			    options.inPurgeable = true;
