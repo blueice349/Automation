@@ -1,15 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>Omadi</name>
+	<name>customcamera</name>
 	<comment></comment>
 	<projects>
 	</projects>
 	<buildSpec>
-		<buildCommand>
-			<name>org.python.pydev.PyDevBuilder</name>
-			<arguments>
-			</arguments>
-		</buildCommand>
 		<buildCommand>
 			<name>com.appcelerator.titanium.core.builder</name>
 			<arguments>
@@ -20,9 +15,15 @@
 			<arguments>
 			</arguments>
 		</buildCommand>
+		<buildCommand>
+			<name>org.eclipse.jdt.core.javabuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
 	</buildSpec>
 	<natures>
-		<nature>com.appcelerator.titanium.mobile.nature</nature>
+		<nature>org.eclipse.jdt.core.javanature</nature>
+		<nature>com.appcelerator.titanium.mobile.module.nature</nature>
 		<nature>com.aptana.projects.webnature</nature>
 	</natures>
 </projectDescription>
