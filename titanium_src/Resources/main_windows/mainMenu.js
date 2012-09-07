@@ -337,6 +337,9 @@ listView.addEventListener('click',function(e){
 	lock_screen();
 	Ti.API.info("row click on table view. index = "+e.index+", row_desc = "+e.row.description+", section = "+e.section+", source_desc="+e.source.description);
 	if(e.row.app_permissions.can_view == false && e.source.is_plus != true){
+		alert("You don't have access to view the " + e.row.display + " list.");
+		unlock_screen();
+		unsetUse();
 		return; 
 	}
 
