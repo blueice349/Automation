@@ -3129,7 +3129,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					if ((json.node) && (json.node[name_table])) {
 						Ti.API.info('##### Called ' + name_table);
 						callback = process_object(json.node, name_table, quotes, progress, type_request, db_installMe);
-
+					}
 						//Add it to the main screen
 						var display = n_bund.fieldByName("display_name").toUpperCase();
 						var description = n_bund.fieldByName("description");
@@ -3265,8 +3265,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							menu.setData(data_rows);
 							db_installMe.execute('UPDATE bundles SET display_on_menu =\'true\' WHERE bid=' + id);
 						}
-
-					}
 					n_bund.next();
 					//	}
 					//catch(evt){
