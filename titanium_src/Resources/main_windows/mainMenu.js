@@ -26,6 +26,7 @@ toolActInd.message = 'Loading...';
 
 var version = 'Omadi Inc';
 var isFirstTime = false;
+var movement;
 
 //Common used functions
 unsetUse();
@@ -37,6 +38,7 @@ if (PLATFORM == 'android'){
 	Ti.include('geolocation.js');
 }
 else{
+	movement = win2.movement;
 	Ti.include('geolocation_for_ios.js');
 }
 
