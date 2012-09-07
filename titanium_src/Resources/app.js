@@ -15,8 +15,10 @@ Titanium.UI.setBackgroundColor('#EEEEEE');
 
 //Common used functions
 Ti.include('lib/functions.js'); 
-
-if(PLATFORM!='android'){clearCache();}
+var movement;
+if(PLATFORM!='android'){clearCache();
+ movement =  require('com.omadi.ios_gps');
+}
 
 var win1 = Titanium.UI.createWindow({  
     title:'Omadi CRM',
@@ -97,7 +99,7 @@ win1.add(i_scroll_page);
 //Web site picker 
 var logo = Titanium.UI.createImageView({
 	width:'auto',
-	top: '10dp',
+	top: '25dp',
 	height: '114dp',
 	image: '/images/logo.png'
 });
@@ -528,6 +530,7 @@ b1.addEventListener('click', function(){
 				win2.picked 	 = picked;
 				win2.result 	 = this.responseText;
 				win2.log		 = xhr;
+				win2.movement	 = movement;
 				Ti.API.info(this.responseText);
 				
 				db.close();

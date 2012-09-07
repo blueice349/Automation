@@ -4,6 +4,16 @@
 		Similar to tiapp.xml, but contains module/platform specific
 		configuration in <iphone>, <android>, and <mobileweb> sections
 	-->
+    <ios>
+        <plist>
+            <dict>
+                <key>UIBackgroundModes</key>
+                <array>
+                    <string>location</string>
+                </array>
+            </dict>
+        </plist>
+    </ios>
 	<iphone>
 	</iphone>
 	<android xmlns:android="http://schemas.android.com/apk/res/android">

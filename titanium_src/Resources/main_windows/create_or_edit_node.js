@@ -507,17 +507,18 @@ function keep_info(_flag_info, pass_it, new_time) {
 			for (var r in restrictions) {
 				var accountRestricted = restrictions[r].restrict_entire_account;
 				if (content[k].field_name == 'license_plate___plate') {
-					if (accountRestricted != null && accountRestricted == "1") {
+					if (accountRestricted != null && accountRestricted == "1" && accountRestricted != "") {
 						a.message = "The selected account is restricted from any parking enforcement activity.";
 						a.show();
 						return;
 					} else {
 						var license_plate = content[k].value;
 						var restricted_license_plate = restrictions[r].license_plate;
-						if (license_plate != null && restricted_license_plate != null) {
+						if (license_plate != null && restricted_license_plate != null && license_plate != "" && restricted_license_plate != "") {
 							license_plate = license_plate.toLowerCase().replace(/o/g, '0');
 							restricted_license_plate = restricted_license_plate.toLowerCase().replace(/o/g, '0');
-							if(license_plate == restricted_license_plate) {
+							Ti.API.info('1 License Plate: '+license_plate+' ---- Restriction License Plate: '+restricted_license_plate);
+							if( license_plate.toString() ==  restricted_license_plate.toString()) {
 								var colorName = "";
 								var resMsg = "";
 								if(restrictions[r].vehicle_color!=null && restrictions[r].vehicle_color!=""){
@@ -540,13 +541,14 @@ function keep_info(_flag_info, pass_it, new_time) {
 
 				if (content[k].field_name == 'vin') {
 					if (accountRestricted != null && accountRestricted == "1") {
-						a.message = "The selected account is restricted from any parking enforcement activity.";
+						a.message = "Do not enforce any violations on this property. It is restricted by management.";
 						a.show();
 						return;
 					} else {
 						var vin = content[k].value;
 						var restricted_vin = restrictions[r].vin;
-						if(vin != null && restricted_vin != null) {
+						if(vin != null && vin != "" && restricted_vin != null && restricted_vin != "") {
+							Ti.API.info('VIN: '+vin+' RS_VIN: '+restricted_vin);
 							if(vin == restricted_vin) {
 								var colorName = "";
 								var resMsg = "";
@@ -637,9 +639,9 @@ function keep_info(_flag_info, pass_it, new_time) {
 		if (_flag_info == "draft") {
 			mode_msg = 'Saving draft';
 		} else if (win.mode == 0) {
-			mode_msg = 'Saving node';
+			mode_msg = 'Saving ' + win.title;
 		} else {
-			mode_msg = 'Updating node';
+			mode_msg = 'Updating ' + win.title;
 		}
 
 		showIndicator(mode_msg);
@@ -741,58 +743,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 			if (!content[j]) {
 				continue;
 			}
-
-			//validating license plate and vin value entered by user against restritions
-			if((win.mode==0 || _flag_info=='draft')){	
-				for (var r in restrictions) {
-					var accountRestricted = restrictions[r].restrict_entire_account;
-					if (content[j].field_name == 'license_plate___plate') {
-						if (accountRestricted != null && accountRestricted == "1") {
-							hideIndicator();
-							a.message = "The selected account is restricted from any parking enforcement activity.";
-							a.show();
-							return;
-						} else {
-							var license_plate = content[j].value;
-							var restricted_license_plate = restrictions[r].license_plate;
-							if (license_plate != null && restricted_license_plate != null) {
-								license_plate = license_plate.toLowerCase().replace(/o/g, '0');
-								restricted_license_plate = restricted_license_plate.toLowerCase().replace(/o/g, '0');
-
-								if (license_plate == restricted_license_plate) {
-									hideIndicator();
-									a.message = restrictions[r].vehicle_color + restrictions[r].vehicle_make + restrictions[r].vehicle_model + " - " + restrictions[r].license_plate + " is currently restricted for the account entered.";
-									a.show();
-									return;
-								}
-							}
-						}
-
-					}
-
-					if (content[j].field_name == 'vin') {
-						if (accountRestricted != null && accountRestricted == "1") {
-							hideIndicator();
-							a.message = "The selected account is restricted from any parking enforcement activity.";
-							a.show();
-							return;
-						} else {
-							var vin = content[j].value;
-							var restricted_vin = restrictions[r].vin;
-							if (vin != null && restricted_vin != null) {
-								if (vin == restricted_vin) {
-									hideIndicator();
-									a.message = restrictions[r].vehicle_color + restrictions[r].vehicle_make + restrictions[r].vehicle_model + " - " + restrictions[r].vin + " is currently restricted for the account entered.";
-									a.show();
-									return;
-								}
-							}
-						}
-
-					}
-				}
-			}
-
+			
 			if (content[j].is_title === true) {
 				if (title_to_node.charAt(0) == "") {
 					if (content[j].cardinality == -1) {
@@ -1333,7 +1284,7 @@ function form_min(min) {
 }
 
 function display_widget(obj) {
-
+	if(PLATFORM == 'android'){Ti.UI.Android.hideSoftKeyboard()};
 	var win_wid = Ti.UI.createWindow({
 		backgroundColor : "#000",
 		opacity : 0.9
@@ -1504,7 +1455,8 @@ function display_widget(obj) {
 			type : Ti.UI.PICKER_TYPE_TIME,
 			color : '#000000',
 			top : '50%',
-			timezone : null
+			timezone : null,
+			format24: (omadi_time_format=='g:iA'?false:true)
 		});
 		time_picker.selectionIndicator = true;
 		time_picker.date_picker = date_picker;
@@ -1584,6 +1536,7 @@ function display_widget(obj) {
 }
 
 function display_omadi_time(obj) {
+	if(PLATFORM == 'android'){Ti.UI.Android.hideSoftKeyboard()};
 	var win_wid = Ti.UI.createWindow({
 		//modal: true,
 		backgroundColor : "#000",
@@ -1619,7 +1572,8 @@ function display_omadi_time(obj) {
 		},
 		report : obj.currentDate,
 		type : Ti.UI.PICKER_TYPE_TIME,
-		color : '#000000'
+		color : '#000000',
+		format24: (omadi_time_format=='g:iA'?false:true)
 	});
 	date_picker.selectionIndicator = true;
 
@@ -1677,6 +1631,7 @@ function display_omadi_time(obj) {
 }
 
 function open_mult_selector(obj) {
+	if(PLATFORM == 'android'){Ti.UI.Android.hideSoftKeyboard()};
 	var win_wid = Ti.UI.createWindow({
 		//	modal: true,
 		opacity : 1
@@ -2087,6 +2042,29 @@ create_or_edit_node.loadUI = function() {
 							top = top + 40;
 							v.viewContainer.top = top;
 							top = top + v.viewContainer.height + 10;
+						}
+					}
+				}
+			
+				if(viewContent.getChildren() != null) {
+					for(var i = viewContent.getChildren().length - 1; i >= 0; i--) {
+						var v = viewContent.getChildren()[i];
+						var isLabel = false;
+						if(PLATFORM == 'android') {
+							if( v instanceof Ti.UI.Label) {
+								isLabel = true;
+							}
+						} else {
+							if(v == '[object TiUILabel]') {
+								isLabel = true;
+							}
+						}
+
+						if(isLabel == true && v.viewContainer.expanded == true) {
+							v.viewContainer.height = v.viewContainer.height + (getScreenHeight() * 0.3);
+							break;
+						}else if(isLabel == true && v.viewContainer.expanded == false){
+							break;
 						}
 					}
 				}
@@ -4863,6 +4841,11 @@ create_or_edit_node.loadUI = function() {
 										content[count].addEventListener('click', function(e) {
 											//Ti.API.info('TID: '+e.row.tid);
 											//e.source.value = e.row.tid;
+											if(e.source.arr_opt.length==1){
+												var dt = new Date(e.source.violation_time);
+												alert("No violations should be enforced at " + e.source.omadi_reference_title + " at " + date(omadi_time_format,dt) + " on " + weekday[dt.getDay()]);
+												return;
+										}
 											var postDialog = Titanium.UI.createOptionDialog();
 											postDialog.options = e.source.arr_opt;
 											postDialog.cancel = -1;
@@ -4980,6 +4963,12 @@ create_or_edit_node.loadUI = function() {
 									content[count].addEventListener('click', function(e) {
 										//Ti.API.info('TID: '+e.row.tid);
 										//e.source.value = e.row.tid;
+										if(e.source.arr_opt.length==1){
+												var dt = new Date(e.source.violation_time);
+												alert("No violations should be enforced at " + e.source.omadi_reference_title + " at " + date(omadi_time_format,dt) + " on " + weekday[dt.getDay()]);
+												return;
+										}
+										
 										var postDialog = Titanium.UI.createOptionDialog();
 										postDialog.options = e.source.arr_opt;
 										postDialog.cancel = -1;
@@ -5121,6 +5110,11 @@ create_or_edit_node.loadUI = function() {
 											for (var jsa in e.source.itens) {
 												Ti.API.info(jsa + ' = ' + e.source.itens[jsa].title);
 											}
+											if(e.source.itens.length==0){
+												var dt = new Date(e.source.violation_time);
+												alert("No violations should be enforced at " + e.source.omadi_reference_title + " at " + date(omadi_time_format,dt) + " on " + weekday[dt.getDay()]);
+												return;
+											}
 											open_mult_selector(e.source);
 											changedContentValue(e.source);
 											noDataChecboxEnableDisable(e.source, e.source.reffer_index);
@@ -5245,9 +5239,10 @@ create_or_edit_node.loadUI = function() {
 											reffer_index : reffer_index,
 											settings : settings,
 											changedFlag : 0,
-											returnKeyType : Ti.UI.RETURNKEY_DONE,
-											enabled : can_edit,
-											editable : can_edit
+											returnKeyType: Ti.UI.RETURNKEY_DONE,
+											enabled: can_edit,
+											editable: can_edit,
+											regionView: regionView
 										});
 										if (PLATFORM == 'android') {
 											content[count].backgroundImage = '../images/textfield.png'
@@ -5356,7 +5351,7 @@ create_or_edit_node.loadUI = function() {
 														e.source.autocomplete_table.height = (table_data.length == 1) ? getScreenHeight() * 0.1 : getScreenHeight() * 0.2;
 													}
 													e.source.autocomplete_table.scrollToTop(0, {animated: false});
-													viewContent.scrollTo(0,e.source.top);
+													viewContent.scrollTo(0,e.source.regionView.top+e.source.top-heightValue);
 													if(table_data.length > 0) {
 														e.source.autocomplete_table.visible = true;
 													} else {
@@ -5446,9 +5441,10 @@ create_or_edit_node.loadUI = function() {
 										defaultField : defaultField,
 										settings : settings,
 										changedFlag : 0,
-										returnKeyType : Ti.UI.RETURNKEY_DONE,
-										enabled : can_edit,
-										editable : can_edit
+										returnKeyType: Ti.UI.RETURNKEY_DONE,
+										enabled: can_edit,
+										editable: can_edit,
+										regionView: regionView
 									});
 									if (PLATFORM == 'android') {
 										content[count].backgroundImage = '../images/textfield.png'
@@ -5558,7 +5554,7 @@ create_or_edit_node.loadUI = function() {
 													e.source.autocomplete_table.height = (table_data.length==1)?getScreenHeight() * 0.1: getScreenHeight() * 0.2;
 												}
 												e.source.autocomplete_table.scrollToTop(0, {animated: false});
-												viewContent.scrollTo(0,e.source.top);
+												viewContent.scrollTo(0,e.source.regionView.top+e.source.top-heightValue);
 												if(table_data.length > 0) {
 													e.source.autocomplete_table.visible = true;
 												} else {
@@ -5730,11 +5726,12 @@ create_or_edit_node.loadUI = function() {
 										settings : settings,
 										changedFlag : 0,
 										my_index : count,
-										autocorrect : false,
-										returnKeyType : Ti.UI.RETURNKEY_DONE,
-										enabled : can_edit,
-										editable : can_edit,
-										touched : false
+										autocorrect: false,
+										returnKeyType: Ti.UI.RETURNKEY_DONE,
+										enabled: can_edit,
+										editable: can_edit,
+										touched: false,
+										regionView: regionView
 									});
 									if (PLATFORM == 'android') {
 										content[count].backgroundImage = '../images/textfield.png'
@@ -5801,7 +5798,7 @@ create_or_edit_node.loadUI = function() {
 
 									content[count].addEventListener('focus', function(e) {
 										e.source.touched = true;
-										adjustView(e.source.my_index, e.source.top);
+										adjustView(e.source.my_index,e.source.regionView.top+e.source.top-heightValue ); 
 									});
 
 									//
@@ -5850,7 +5847,7 @@ create_or_edit_node.loadUI = function() {
 														e.source.autocomplete_table.height = (table_data.length==1)?getScreenHeight() * 0.1: getScreenHeight() * 0.2;
 													}
 													e.source.autocomplete_table.scrollToTop(0, {animated: false});
-													viewContent.scrollTo(0,e.source.top);
+													viewContent.scrollTo(0,e.source.regionView.top+e.source.top-heightValue);
 													if(table_data.length > 0) {
 														e.source.autocomplete_table.visible = true;
 													} else {
@@ -5913,12 +5910,13 @@ create_or_edit_node.loadUI = function() {
 									reffer_index : reffer_index,
 									settings : settings,
 									changedFlag : 0,
-									my_index : count,
-									autocorrect : false,
-									returnKeyType : Ti.UI.RETURNKEY_DONE,
-									enabled : can_edit,
-									editable : can_edit,
-									touched : false
+									my_index: count,
+									autocorrect: false,
+									returnKeyType: Ti.UI.RETURNKEY_DONE,
+									enabled: can_edit,
+									editable: can_edit,
+									touched: false,
+									regionView: regionView
 								});
 								if (PLATFORM == 'android') {
 									content[count].backgroundImage = '../images/textfield.png'
@@ -5986,7 +5984,7 @@ create_or_edit_node.loadUI = function() {
 
 								content[count].addEventListener('focus', function(e) {
 									e.source.touched = true;
-									adjustView(e.source.my_index, e.source.top);
+									adjustView(e.source.my_index,e.source.regionView.top+e.source.top-heightValue ); 
 								});
 
 								//
@@ -6036,7 +6034,7 @@ create_or_edit_node.loadUI = function() {
 													e.source.autocomplete_table.height = (table_data.length==1)?getScreenHeight() * 0.1: getScreenHeight() * 0.2;
 												}
 												e.source.autocomplete_table.scrollToTop(0, {animated: false});
-												viewContent.scrollTo(0,e.source.top);
+												viewContent.scrollTo(0,e.source.regionView.top+e.source.top-heightValue);
 												if(table_data.length>0){
 													e.source.autocomplete_table.visible = true;
 												} else {
@@ -7490,12 +7488,13 @@ create_or_edit_node.loadUI = function() {
 									_make : keep_from_make,
 									settings : settings,
 									changedFlag : 0,
-									i_name : i_name,
-									my_index : count,
-									autocorrect : false,
-									returnKeyType : Ti.UI.RETURNKEY_DONE,
-									enabled : can_edit,
-									editable : can_edit
+									i_name: i_name,
+									my_index: count,
+									autocorrect: false,
+									returnKeyType: Ti.UI.RETURNKEY_DONE,
+									enabled: can_edit,
+									editable: can_edit,
+									regionView: regionView
 								});
 								if (PLATFORM == 'android') {
 									content[count].backgroundImage = '../images/textfield.png'
@@ -7547,7 +7546,7 @@ create_or_edit_node.loadUI = function() {
 								});
 
 								content[count].addEventListener('focus', function(e) {
-									adjustView(e.source.my_index, e.source.top);
+									adjustView(e.source.my_index,e.source.regionView.top+e.source.top-heightValue ); 
 									if (e.source.fantasy_name == "Model") {
 										Ti.API.info(content[e.source.make_ind].value);
 
@@ -7608,7 +7607,7 @@ create_or_edit_node.loadUI = function() {
 												e.source.autocomplete_table.height = (table_data.length==1)?getScreenHeight() * 0.1: getScreenHeight() * 0.2;
 											}
 											e.source.autocomplete_table.scrollToTop(0, {animated: false});
-											viewContent.scrollTo(0,e.source.top);
+											viewContent.scrollTo(0,(e.source.regionView.top+e.source.top-heightValue));
 											if(table_data.length>0){
 												e.source.autocomplete_table.visible = true;
 											} else {
@@ -8132,6 +8131,28 @@ create_or_edit_node.loadUI = function() {
 
 		}
 	}
+	
+	if(viewContent.getChildren() != null) {
+		for(var i = viewContent.getChildren().length; i >= 0; i--) {
+			var v = viewContent.getChildren()[i];
+			var isLabel = false;
+			if(PLATFORM == 'android') {
+				if( v instanceof Ti.UI.Label) {
+					isLabel = true;
+				}
+			} else {
+				if(v == '[object TiUILabel]') {
+					isLabel = true;
+				}
+			}
+
+			if(isLabel == true && v.viewContainer.expanded == true) {
+				v.viewContainer.height = v.viewContainer.height + (getScreenHeight() * 0.3);
+				break;
+			}
+		}
+	}
+
 	setTimeout(function() {
 		var entityArr = createEntityMultiple();
 		for (var j = 0; j <= content.length; j++) {
@@ -8404,12 +8425,12 @@ function openCamera(e) {
 					Ti.API.info("MIME TYPE: " + event.media.mimeType);
 					// If image size greater than 1MB we will reduce th image else take as it is.
 					if (event.media.length > ONE_MB) {
-						e.source.imageData = reduceImageSize(event.media, 500, 700).image;
+						e.source.isImage = reduceImageSize(event.media, 500, 700).image;
 					} else {
-						e.source.imageData = event.media;
+						e.source.isImage = event.media;
 					}
-					e.source.image = e.source.imageData;
-					e.source.bigImg = e.source.imageData;
+					e.source.image = e.source.isImage;
+					e.source.bigImg = e.source.isImage;
 					e.source.mimeType = event.media.mimeType;
 
 					if (e.source.cardinality > 1 || e.source.cardinality < 0) {
@@ -9649,6 +9670,7 @@ function showRulesRow(current_content, db_display, current_window) {
 						row.add(row.label);
 						heightView += heightCellView + 1;
 						row.addEventListener('click', function(e) {
+							if(PLATFORM == 'android'){Ti.UI.Android.hideSoftKeyboard()};
 							var detail_popup = Ti.UI.createView({
 								backgroundColor : '#00000000'
 							});
@@ -9884,6 +9906,8 @@ function setParticularRulesField(rulesFieldContent) {
 	var descripitons = [];
 	var fromViolationRules = false;
 	var machine_name = rulesFieldContent['settings'].vocabulary;
+	var omadi_reference_title = "";
+	var violation_time = "";
 	db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 	var violations_vocabulary = db_display.execute('SELECT vid from vocabulary WHERE machine_name="' + machine_name + '";');
 	var violations_terms_rslt = db_display.execute('SELECT tid,name from term_data WHERE vid=' + violations_vocabulary.fieldByName('vid'));
@@ -9905,7 +9929,9 @@ function setParticularRulesField(rulesFieldContent) {
 		var rules_field_name = content[entityArr[rulesFieldContent['widgetObj']['rules_field_name']][0].reffer_index];
 		var rules_violation_time_field_name = content[entityArr[rulesFieldContent['widgetObj']['rules_violation_time_field_name']][0].reffer_index];
 
-		if (rules_field_name.nid != null && rules_violation_time_field_name.value != null) {
+
+		if(rules_field_name.nid != null && rules_violation_time_field_name.value != null) {
+			omadi_reference_title = rules_field_name.value;
 			var table = db_display.execute('SELECT table_name FROM node WHERE nid = ' + rules_field_name.nid);
 			table = table.fieldByName('table_name');
 
@@ -9913,6 +9939,7 @@ function setParticularRulesField(rulesFieldContent) {
 			data = data.fieldByName(rulesFieldContent['widgetObj']['rules_parent_field_name']);
 			data = JSON.parse(data);
 			var violation_timestamp = rules_violation_time_field_name.value;
+			violation_time = violation_timestamp;
 			var node_type = win.type;
 
 			if (data != false && data != null && data != "" && data.length > 0) {
@@ -9993,6 +10020,8 @@ function setParticularRulesField(rulesFieldContent) {
 			content[rulesFieldContent.reffer_index + o_index].arr_opt = arr_opt;
 			content[rulesFieldContent.reffer_index + o_index].title = aux_val.title;
 			content[rulesFieldContent.reffer_index + o_index].value = aux_val.value;
+			content[rulesFieldContent.reffer_index + o_index].omadi_reference_title = (arr_opt.length==1)?omadi_reference_title:"";
+			content[rulesFieldContent.reffer_index + o_index].violation_time = (arr_opt.length==1)?violation_time:"";
 		}
 	} else if (rulesFieldContent.settings.cardinality == 1) {
 		var arr_picker = new Array();
@@ -10020,6 +10049,8 @@ function setParticularRulesField(rulesFieldContent) {
 		content[rulesFieldContent.reffer_index].arr_opt = arr_opt;
 		content[rulesFieldContent.reffer_index].title = aux_val.title;
 		content[rulesFieldContent.reffer_index].value = aux_val.value;
+		content[rulesFieldContent.reffer_index].omadi_reference_title = (arr_opt.length==1)?omadi_reference_title:"";
+		content[rulesFieldContent.reffer_index].violation_time = (arr_opt.length==1)?violation_time:"";
 
 	} else if (rulesFieldContent.settings.cardinality == -1) {
 		var sel_text = "";
@@ -10038,6 +10069,8 @@ function setParticularRulesField(rulesFieldContent) {
 		content[rulesFieldContent.reffer_index].itens = _val_itens;
 		content[rulesFieldContent.reffer_index].desLabel.text = sel_text;
 		content[rulesFieldContent.reffer_index].from_cond_vs = fromViolationRules;
+		content[rulesFieldContent.reffer_index].omadi_reference_title = (_itens==null)?omadi_reference_title:"";
+		content[rulesFieldContent.reffer_index].violation_time = (_itens==null)?violation_time:"";
 	}
 	db_display.close();
 }

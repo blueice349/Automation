@@ -19,6 +19,15 @@ var ROLE_ID_ADMIN = 3;
 var app_timestamp = 0;
 var omadi_time_format = Ti.App.Properties.getString("Omadi_time_format", 'g:iA');
 
+var weekday=new Array(7);
+weekday[0]="Sunday";
+weekday[1]="Monday";
+weekday[2]="Tuesday";
+weekday[3]="Wednesday";
+weekday[4]="Thursday";
+weekday[5]="Friday";
+weekday[6]="Saturday";
+
 function getDBName() {
 	var db_list = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_list");
 	var portal_base = db_list.execute('SELECT db_name FROM history WHERE id_hist=1');
@@ -3120,7 +3129,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					if ((json.node) && (json.node[name_table])) {
 						Ti.API.info('##### Called ' + name_table);
 						callback = process_object(json.node, name_table, quotes, progress, type_request, db_installMe);
-
+					}
 						//Add it to the main screen
 						var display = n_bund.fieldByName("display_name").toUpperCase();
 						var description = n_bund.fieldByName("description");
@@ -3256,8 +3265,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							menu.setData(data_rows);
 							db_installMe.execute('UPDATE bundles SET display_on_menu =\'true\' WHERE bid=' + id);
 						}
-
-					}
 					n_bund.next();
 					//	}
 					//catch(evt){
@@ -5342,7 +5349,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 									}
 								}
 
-				              	var reference_types = instances[search_field['field_name']]['settings']['reference_types'];
+				              	var reference_types = JSON.parse(search_field['settings'])['reference_types'];
 				               	var array_filter = '';
 				               	var reference_types_arr = [];
 				                for(var key in reference_types) {
@@ -5373,11 +5380,11 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 				              var possible_nids = db_display.execute(query);
 							  var possible_nids_arr = [];
 							  while (possible_nids.isValidRow()) {
-									possible_nids_arr.push(possible_nids.fieldByName('tid'));
+									possible_nids_arr.push(possible_nids.fieldByName('nid'));
 									possible_nids.next();
 							  }
 				              
-				              switch($search_operator){                                    
+				              switch(search_operator){                                    
 				                case 'not starts with':
 				                case 'not ends with':
 				                case 'not like':

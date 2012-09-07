@@ -10,9 +10,5 @@
 #import <CoreLocation/CoreLocation.h>
 
 @interface ComOmadiIos_gpsModule  : TiModule <CLLocationManagerDelegate>
-{
-    NSMutableArray *coords;
-}
-
 @property (nonatomic, retain) CLLocationManager *locationManager;
 @end
