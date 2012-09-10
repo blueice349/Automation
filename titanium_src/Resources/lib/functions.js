@@ -1511,7 +1511,8 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 		Ti.API.info(this.responseText);
 
 		if (this.responseText != null && this.responseText != "null" && this.responseText != "" && this.responseText != "" && isJsonString(this.responseText) === true) {
-			var json = JSON.parse(this.responseText);
+			var tmp_json = this.responseText.replace(/'/gi, '\'');
+			var json = JSON.parse(tmp_json);
 
 			if (json.request_time && json.request_time != null && json.request_time != "") {
 				var GMT_OFFSET = Number(json.request_time - app_timestamp);

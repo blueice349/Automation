@@ -27,7 +27,7 @@ var win1 = Titanium.UI.createWindow({
 	backgroundColor: '#EEEEEE'
 });
 
-var OMADI_VERSION = "omadiDb1597";
+var OMADI_VERSION = "omadiDb1599";
 
 Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION);
 var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );
