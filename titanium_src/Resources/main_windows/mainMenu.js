@@ -234,6 +234,11 @@ while ( elements.isValidRow() ){
 	Ti.API.info(flag_display+" = "+_is_disabled);	
 	
 	if (flag_display == 'true' && ( _is_disabled != 1 && _is_disabled != "1" && _is_disabled != "true" && _is_disabled != true) ){
+		
+		if(app_permissions.can_view == false && app_permissions.can_create == false){
+			elements.next();
+			continue;
+		}
 		check++;
 		var row_t = Ti.UI.createTableViewRow({
 			height      : 60,	

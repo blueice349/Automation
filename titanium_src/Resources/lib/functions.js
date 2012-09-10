@@ -1761,6 +1761,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									}
 
 									if(flag_display == 'true' && (_is_disabled != 1 && _is_disabled != "1" && _is_disabled != "true" && _is_disabled != true)) {
+										if(app_permissions.can_view == false && app_permissions.can_create == false){
+											n_bund.next();
+											continue;
+										}
 										var row_a = Ti.UI.createTableViewRow({
 											height : 60,
 											name : display,
@@ -1923,6 +1927,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								}
 
 								if(flag_display == 'true' && (_is_disabled != 1 && _is_disabled != "1" && _is_disabled != "true" && _is_disabled != true)) {
+									if(app_permissions.can_view == false && app_permissions.can_create == false){
+											n_bund.next();
+											continue;
+										}
 									var row_a = Ti.UI.createTableViewRow({
 										height : 60,
 										name : display,
@@ -3191,6 +3199,12 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 						}
 
 						if (flag_display == 'false' && (_is_disabled != 1 && _is_disabled != "1" && _is_disabled != "true" && _is_disabled != true)) {
+								
+							if(app_permissions.can_view == false && app_permissions.can_create == false) {
+								n_bund.next();
+								continue;
+							}
+
 							var row_a = Ti.UI.createTableViewRow({
 								height : 60,
 								name : display,
