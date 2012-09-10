@@ -3736,6 +3736,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 //Function Opens a new window to display descAux [Description?].
 //The window closes when it receives a click event
 function openBigText(descAux) {
+	if(PLATFORM == 'android'){Ti.UI.Android.hideSoftKeyboard()};
 	var descWin = Ti.UI.createWindow({
 		backgroundColor : '#00000000'
 	});

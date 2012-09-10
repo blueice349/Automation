@@ -288,7 +288,11 @@ while ( elements.isValidRow() ){
 			is_plus: true
 		});
 		if (show_plus === false){
-			plus.hide();	
+			if(PLATFORM=='android'){
+				plus.visible = false;
+			}else{
+				plus.hide();	
+			}
 		}
 		
 		row_t.add(icon);
