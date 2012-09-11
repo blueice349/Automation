@@ -757,7 +757,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 			if (!(json[obj].insert.no_data_fields instanceof Array)) {
 				no_data = JSON.stringify(json[obj].insert.no_data_fields);
 			}
-			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields  ) VALUES ( ' + json[obj].insert.nid + ', ' + json[obj].insert.created + ' , ' + json[obj].insert.changed + ', "' + json[obj].insert.title.replace(/"/gi, "'") + '" , ' + json[obj].insert.author_uid + ' , 0 , "' + obj + '", ' + json[obj].insert.form_part + ',' + json[obj].insert.changed_uid + ',\'' + no_data + '\') ';
+			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , perm_edit, perm_delete, created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields  ) VALUES ( ' + json[obj].insert.nid + ', ' + json[obj].insert.perm_edit + ', '+ json[obj].insert.perm_delete + ', '+ json[obj].insert.created + ' , ' + json[obj].insert.changed + ', "' + json[obj].insert.title.replace(/"/gi, "'") + '" , ' + json[obj].insert.author_uid + ' , 0 , "' + obj + '", ' + json[obj].insert.form_part + ',' + json[obj].insert.changed_uid + ',\'' + no_data + '\') ';
 
 			if (aux_column > 0) {
 				query = 'INSERT OR REPLACE  INTO ' + obj + ' (\'nid\', ';
@@ -916,7 +916,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 					no_data = JSON.stringify(json[obj].update[i].no_data_fields);
 				}
 				//'update' is a flag to decide whether the node needs to be synced to the server or not
-				process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields ) VALUES ( ' + json[obj].update[i].nid + ', ' + json[obj].update[i].created + ' , ' + json[obj].update[i].changed + ', "' + json[obj].update[i].title.replace(/"/gi, "'") + '" , ' + json[obj].update[i].author_uid + ' , 0 , "' + obj + '", ' + json[obj].update[i].form_part + ', ' + json[obj].update[i].changed_uid + ',\'' + no_data + '\') ';
+				process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , perm_edit, perm_delete, created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields ) VALUES ( ' + json[obj].update[i].nid + ', ' + json[obj].update[i].perm_edit + ', '+ json[obj].update[i].perm_delete + ', '+ json[obj].update[i].created + ' , ' + json[obj].update[i].changed + ', "' + json[obj].update[i].title.replace(/"/gi, "'") + '" , ' + json[obj].update[i].author_uid + ' , 0 , "' + obj + '", ' + json[obj].update[i].form_part + ', ' + json[obj].update[i].changed_uid + ',\'' + no_data + '\') ';
 
 				if (aux_column > 0) {
 					query = 'INSERT OR REPLACE  INTO ' + obj + ' (\'nid\', ';
@@ -1108,7 +1108,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 				no_data = JSON.stringify(json[obj].update.no_data_fields);
 			}
 			//'update' is a flag to decide whether the node needs to be synced to the server or not
-			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields ) VALUES ( ' + json[obj].update.nid + ', ' + json[obj].update.created + ' , ' + json[obj].update.changed + ', "' + json[obj].update.title.replace(/"/gi, "'") + '" , ' + json[obj].update.author_uid + ' , 0 , "' + obj + '", ' + json[obj].update.form_part + ', ' + json[obj].update.changed_uid + ',\'' + no_data + '\') ';
+			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , perm_edit, perm_delete, created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields ) VALUES ( ' + json[obj].update.nid + ', ' + json[obj].update.perm_edit + ', '+ json[obj].update.perm_delete + ', '+ json[obj].update.created + ' , ' + json[obj].update.changed + ', "' + json[obj].update.title.replace(/"/gi, "'") + '" , ' + json[obj].update.author_uid + ' , 0 , "' + obj + '", ' + json[obj].update.form_part + ', ' + json[obj].update.changed_uid + ',\'' + no_data + '\') ';
 
 			if (aux_column > 0) {
 				query = 'INSERT OR REPLACE  INTO ' + obj + ' (\'nid\', ';
