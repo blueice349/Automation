@@ -435,8 +435,22 @@ function keep_info(_flag_info, pass_it, new_time) {
 	var db_check_restrictions = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 	var restrictions = new Array();
 
-	Ti.API.info("--------------------content array length : " + content.length + "--------------------");
+	Ti.API.info("--------------------content array length : " + content.length + " --------------------");
+	
+	/*
+	for (var k = 0; k < content.length; k++) {
+		Ti.API.info(k+" <<<===>>> "+content[k].value);
+		if (content[k].value && content[k].value != null ){
+			var __tmp = content[k].value.toString();
+			__tmp = __tmp.replace(/'/gi, '\'');
+			content[k].value = __tmp;
+			Ti.API.info(__tmp+' - '+content[k].value);
+		}
+	}
+	*/
+
 	for (var x in content) {
+		
 		try {
 			Ti.API.info(label[x].text + ' is required: ' + content[x].required + ' = ' + content[x].value);
 		} catch(e) {
@@ -496,7 +510,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 			}
 		}
 	}
-
+	
 	for (var k = 0; k <= content.length; k++) {
 		if (!content[k]) {
 			continue;
@@ -783,7 +797,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 			if (quotes[content[j].field_name] === true) {
 				var mark = "";
 			} else {
-				var mark = "'";
+				var mark = '"';
 			}
 
 			if (content[j].value === null) {
@@ -831,10 +845,10 @@ function keep_info(_flag_info, pass_it, new_time) {
 
 					if (win.mode == 0) {
 						Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + new_nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
-						db_put.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + new_nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
+						db_put.execute("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + new_nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");   
 					} else {
-						Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + win.nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
-						db_put.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + win.nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
+						Ti.API.info("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + win.nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
+						db_put.execute("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + win.nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
 					}
 
 					//db_jub.close();
@@ -848,7 +862,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 				if ((content[j].field_type == 'number_decimal') || (content[j].field_type == 'number_integer')) {
 					if ((content[j].value == '') || (content[j].value == null)) {
 						value_to_insert = 'null';
-						mark = "'";
+						mark = '"';
 					} else {
 						value_to_insert = content[j].value;
 						mark = '';
@@ -856,7 +870,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 				} else if (content[j].field_type == 'user_reference') {
 					if (content[j].value == null) {
 						value_to_insert = ''
-						mark = '\'';
+						mark = '\"';
 					} else {
 						value_to_insert = content[j].value;
 						mark = '';
@@ -866,7 +880,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 						if (content[j].cardinality != -1) {
 							if (content[j].value == null) {
 								value_to_insert = ''
-								mark = '\'';
+								mark = '\"';
 							} else {
 								value_to_insert = content[j].value;
 								mark = '';
@@ -891,11 +905,11 @@ function keep_info(_flag_info, pass_it, new_time) {
 							//var db_jub = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 
 							if (win.mode == 0) {
-								Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + new_nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
-								db_put.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + new_nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
+								Ti.API.info("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + new_nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
+								db_put.execute("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + new_nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
 							} else {
-								Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + win.nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
-								db_put.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + win.nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
+								Ti.API.info("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + win.nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
+								db_put.execute("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + win.nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
 							}
 
 							//db_jub.close();
@@ -908,7 +922,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 					} else if (content[j].widget == 'taxonomy_autocomplete') {
 						if ((content[j].tid == null) && (content[j].value == "")) {
 							value_to_insert = '';
-							mark = '\'';
+							mark = '\"';
 						} else if ((win.mode == 0) && (content[j].tid == null) && (content[j].value != "")) {
 							if (content[j].restrict_new_autocomplete_terms != 1) {
 								mark = '';
@@ -938,7 +952,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 				} else if (content[j].field_type == 'omadi_reference') {
 					if (content[j].nid === null) {
 						value_to_insert = '';
-						mark = '\'';
+						mark = '\"';
 					} else {
 						mark = '';
 						value_to_insert = content[j].nid;
@@ -959,7 +973,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 					if (content[j].update_it === true) {
 						value_to_insert = Math.round(content[j].value / 1000);
 					} else {
-						mark = "'";
+						mark = "\"";
 						value_to_insert = '';
 					}
 				} else {
@@ -967,7 +981,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 				}
 			}
 			if (value_to_insert == '') {
-				mark = '\'';
+				mark = '\"';
 			}
 
 			if (j == content.length - 1) {
@@ -1001,7 +1015,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 			//Insert into node table
 			if (_flag_info == "draft") {
 				if (win.mode == 1) {
-					Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=3, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\'' + no_data_fields_content + '\' WHERE nid=' + win.nid);
+					Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=3, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\'' + no_data_fields_content + '\' WHERE nid=' + win.nid);			
 					db_put.execute('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=3, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\'' + no_data_fields_content + '\' WHERE nid=' + win.nid);
 				} else {
 					Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 3 , "' + win.type + '" , ' + win.region_form + ', \'' + no_data_fields_content + '\')');

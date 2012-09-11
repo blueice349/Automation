@@ -102,7 +102,7 @@ resultView.add(viewContent);
 
 var fields_result = db_display.execute('SELECT label, weight, type, field_name, widget, settings, required FROM fields WHERE bundle = "' + win4.type + '" ORDER BY weight, id ASC');
 var regions = db_display.execute('SELECT * FROM regions WHERE node_type = "' + win4.type + '" ORDER BY weight ASC');
-var node_form = db_display.execute('SELECT form_part FROM node WHERE nid=' + win4.nid);
+var node_form = db_display.execute('SELECT form_part, perm_edit FROM node WHERE nid=' + win4.nid);
 
 //Populate array with field name and configs
 var fields = new Array();
@@ -115,6 +115,7 @@ var cell = [];
 var count = 0;
 var heightValue = 60;
 var bug = [];
+var isEditEnabled = (node_form.fieldByName('perm_edit')==1)?true:false;
 omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
 roles = omadi_session_details.user.roles;
 
@@ -1027,8 +1028,7 @@ if(c_index > 0) {
 								ellipsize: true
 							});
 							content[count] = Ti.UI.createView({
-								left			: '3%',
-								right			: '3%',
+								width			: Ti.Platform.displayCaps.platformWidth - 30,
 								field_type		: c_type[count],
 								field_name		: c_field_name[count],
 								cardinality		: settings.cardinality,
@@ -1181,7 +1181,7 @@ function highlightMe(data) {
 //======================================
 // MENU
 //======================================
-if(Ti.Platform.name == 'android') {
+if(Ti.Platform.name == 'android' && isEditEnabled==true) {
 	var activity = win4.activity;
 	activity.onCreateOptionsMenu = function(e) {
 		//======================================
@@ -1569,10 +1569,12 @@ function bottomButtons1(actualWindow){
 
 	});
 	
+	//Check is node editable or not
+	var arr = (isEditEnabled==true)?[back, space, label, space, edit]:[back, space, label, space]
 	
 	// create and add toolbar
 	var toolbar = Ti.UI.iOS.createToolbar({
-		items:[back, space, label, space, edit],
+		items:arr,
 		top:0,
 		borderTop:false,
 		borderBottom:true

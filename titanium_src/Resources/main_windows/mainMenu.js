@@ -26,6 +26,7 @@ toolActInd.message = 'Loading...';
 
 var version = 'Omadi Inc';
 var isFirstTime = false;
+var movement;
 
 //Common used functions
 unsetUse();
@@ -37,6 +38,7 @@ if (PLATFORM == 'android'){
 	Ti.include('geolocation.js');
 }
 else{
+	movement = win2.movement;
 	Ti.include('geolocation_for_ios.js');
 }
 
@@ -232,6 +234,11 @@ while ( elements.isValidRow() ){
 	Ti.API.info(flag_display+" = "+_is_disabled);	
 	
 	if (flag_display == 'true' && ( _is_disabled != 1 && _is_disabled != "1" && _is_disabled != "true" && _is_disabled != true) ){
+		
+		if(app_permissions.can_view == false && app_permissions.can_create == false){
+			elements.next();
+			continue;
+		}
 		check++;
 		var row_t = Ti.UI.createTableViewRow({
 			height      : 60,	
@@ -337,6 +344,9 @@ listView.addEventListener('click',function(e){
 	lock_screen();
 	Ti.API.info("row click on table view. index = "+e.index+", row_desc = "+e.row.description+", section = "+e.section+", source_desc="+e.source.description);
 	if(e.row.app_permissions.can_view == false && e.source.is_plus != true){
+		alert("You don't have access to view the " + e.row.display + " list.");
+		unlock_screen();
+		unsetUse();
 		return; 
 	}
 

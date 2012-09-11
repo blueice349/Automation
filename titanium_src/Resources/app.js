@@ -10,14 +10,15 @@
  * @author Joseandro
  */
 
-
 // this sets the background color of every 
 Titanium.UI.setBackgroundColor('#EEEEEE');
 
 //Common used functions
 Ti.include('lib/functions.js'); 
-
-if(PLATFORM!='android'){clearCache();}
+var movement;
+if(PLATFORM!='android'){clearCache();
+ movement =  require('com.omadi.ios_gps');
+}
 
 var win1 = Titanium.UI.createWindow({  
     title:'Omadi CRM',
@@ -26,7 +27,7 @@ var win1 = Titanium.UI.createWindow({
 	backgroundColor: '#EEEEEE'
 });
 
-var OMADI_VERSION = "omadiDb1597";
+var OMADI_VERSION = "omadiDb1599";
 
 Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION);
 var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );
@@ -529,6 +530,7 @@ b1.addEventListener('click', function(){
 				win2.picked 	 = picked;
 				win2.result 	 = this.responseText;
 				win2.log		 = xhr;
+				win2.movement	 = movement;
 				Ti.API.info(this.responseText);
 				
 				db.close();

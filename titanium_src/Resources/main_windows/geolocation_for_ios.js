@@ -7,7 +7,6 @@ var location_obj = [];
 var dist_filter = 50;
 var last_db_timestamp = 0;
 var curr;
-var movement = require('com.omadi.ios_gps');
 var stop = false;
 var uploading = false;
 
