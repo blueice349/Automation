@@ -223,9 +223,9 @@ function topToolBar_object(){
 		newNode.addEventListener('click', function() {
 			openCreateNodeScreen();
 		}); 
-		items = [back, label, space, newNode];
+		items = [back, space, label, space, newNode];
 	}else{
-		items = [back, label, space];
+		items = [back, space, label, space];
 	}
 	
 	// create and add toolbar
@@ -291,17 +291,16 @@ function bottomButtons1(_nid, win3, e){
 	var btn_tt = [];
 	var btn_id = [];
 	var isEditEnabled = false;
-	
-	if(_data.form_parts!=null && _data.form_parts!=""){
-		Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
-		if(_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2) { 
-			Ti.API.info("Title = " + _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
-			btn_tt.push(_data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
-			btn_id.push(node_form.fieldByName('form_part') + 1);
-			Ti.API.info(node_form.fieldByName('form_part') + 1);
-		}
-	}
 	if(node_form.fieldByName('perm_edit')==1){
+		if(_data.form_parts!=null && _data.form_parts!=""){
+			Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
+			if(_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2) { 
+				Ti.API.info("Title = " + _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
+				btn_tt.push(_data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
+				btn_id.push(node_form.fieldByName('form_part') + 1);
+				Ti.API.info(node_form.fieldByName('form_part') + 1);
+			}
+		}
 		isEditEnabled = true;
 		btn_tt.push('Edit');
 		btn_id.push(node_form.fieldByName('form_part'));

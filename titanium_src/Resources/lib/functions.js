@@ -661,7 +661,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 							} else {
 								if (json[obj].insert[i][parse_api] instanceof Array) {
 									if (col_type[aux_column - 1] == 'rules_field') {
-										query += ' \'' + JSON.stringify(json[obj].insert[i][parse_api]).replace(/'/gi, "\\\'") + '\' )';
+										query += ' "' + JSON.stringify(json[obj].insert[i][parse_api]).replace(/"/gi, "\"\"") + '" )';
 									} else {
 										content_s = treatArray(json[obj].insert[i][parse_api], 2);
 
@@ -707,7 +707,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 							} else {
 								if (json[obj].insert[i][parse_api] instanceof Array) {
 									if (col_type[aux_column - 1] == 'rules_field') {
-										query += ' \'' + JSON.stringify(json[obj].insert[i][parse_api]).replace(/'/gi, "\\\'") + '\' ,';
+										query += ' "' + JSON.stringify(json[obj].insert[i][parse_api]).replace(/"/gi, "\"\"") + '" ,';
 									} else {
 										content_s = treatArray(json[obj].insert[i][parse_api], 4);
 
@@ -817,7 +817,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 						} else {
 							if (json[obj].insert[parse_api] instanceof Array) {
 								if (col_type[aux_column - 1] == 'rules_field') {
-									query += ' \'' + JSON.stringify(json[obj].insert[parse_api]).replace(/'/gi, "\\\'") + '\' )';
+									query += ' "' + JSON.stringify(json[obj].insert[parse_api]).replace(/"/gi, "\"\"") + '" )';
 								} else {
 									content_s = treatArray(json[obj].insert[parse_api], 2);
 
@@ -859,7 +859,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 						} else {
 							if (json[obj].insert[parse_api] instanceof Array) {
 								if (col_type[aux_column - 1] == 'rules_field') {
-									query += ' \'' + JSON.stringify(json[obj].insert[parse_api]).replace(/'/gi, "\\\'") + '\' ,';
+									query += ' "' + JSON.stringify(json[obj].insert[parse_api]).replace(/"/gi, "\"\"") + '" ,';
 								} else {
 
 									content_s = treatArray(json[obj].insert[parse_api], 4);
@@ -988,7 +988,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 							} else {
 								if (json[obj].update[i][parse_api] instanceof Array) {
 									if (col_type[aux_column - 1] == 'rules_field') {
-										query += ' \'' + JSON.stringify(json[obj].update[i][parse_api]).replace(/'/gi, "\\\'") + '\' )';
+										query += ' "' + JSON.stringify(json[obj].update[i][parse_api]).replace(/"/gi, "\"\"") + '" )';
 									} else {
 										content_s = treatArray(json[obj].update[i][parse_api], 2);
 										var array_cont = db_process_object.execute('SELECT * FROM array_base WHERE node_id = ' + json[obj].update[i].nid + ' AND field_name="' + col_titles[aux_column - 1] + '"');
@@ -1053,7 +1053,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 							} else {
 								if (json[obj].update[i][parse_api] instanceof Array) {
 									if (col_type[aux_column - 1] == 'rules_field') {
-										query += ' \'' + JSON.stringify(json[obj].update[i][parse_api]).replace(/'/gi, "\\\'") + '\' ,';
+										query += ' "' + JSON.stringify(json[obj].update[i][parse_api]).replace(/"/gi, "\"\"") + '" ,';
 									} else {
 										content_s = treatArray(json[obj].update[i][parse_api], 4);
 
@@ -1168,7 +1168,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 						} else {
 							if (json[obj].update[parse_api] instanceof Array) {
 								if (col_type[aux_column - 1] == 'rules_field') {
-									query += ' \'' + JSON.stringify(json[obj].update[parse_api]).replace(/'/gi, "\\\'") + '\' )';
+									query += ' "' + JSON.stringify(json[obj].update[parse_api]).replace(/"/gi, "\"\"") + '" )';
 								} else {
 									content_s = treatArray(json[obj].update[parse_api], 2);
 
@@ -1210,7 +1210,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 						} else {
 							if (json[obj].update[parse_api] instanceof Array) {
 								if (col_type[aux_column - 1] == 'rules_field') {
-									query += ' \'' + JSON.stringify(json[obj].update[parse_api]).replace(/'/gi, "\\\'") + '\' ,';
+									query += ' "' + JSON.stringify(json[obj].update[parse_api]).replace(/"/gi, "\"\"") + '" ,';
 								} else {
 									content_s = treatArray(json[obj].update[parse_api], 4);
 
