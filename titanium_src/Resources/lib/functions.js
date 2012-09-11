@@ -19,6 +19,15 @@ var ROLE_ID_ADMIN = 3;
 var app_timestamp = 0;
 var omadi_time_format = Ti.App.Properties.getString("Omadi_time_format", 'g:iA');
 
+var weekday=new Array(7);
+weekday[0]="Sunday";
+weekday[1]="Monday";
+weekday[2]="Tuesday";
+weekday[3]="Wednesday";
+weekday[4]="Thursday";
+weekday[5]="Friday";
+weekday[6]="Saturday";
+
 function getDBName() {
 	var db_list = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_list");
 	var portal_base = db_list.execute('SELECT db_name FROM history WHERE id_hist=1');
@@ -592,7 +601,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 				if (!(json[obj].insert[i].no_data_fields instanceof Array)) {
 					no_data = JSON.stringify(json[obj].insert[i].no_data_fields);
 				}
-				process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields ) VALUES ( ' + json[obj].insert[i].nid + ', ' + json[obj].insert[i].created + ' , ' + json[obj].insert[i].changed + ', "' + json[obj].insert[i].title.replace(/"/gi, "'") + '" , ' + json[obj].insert[i].author_uid + ' , 0 , "' + obj + '", ' + json[obj].insert[i].form_part + ',' + json[obj].insert[i].changed_uid + ',\'' + no_data + '\') ';
+				process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , perm_edit, perm_delete, created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields ) VALUES ( ' + json[obj].insert[i].nid + ', '+ json[obj].insert[i].perm_edit + ', '+ json[obj].insert[i].perm_delete + ', ' + json[obj].insert[i].created + ' , ' + json[obj].insert[i].changed + ', "' + json[obj].insert[i].title.replace(/"/gi, "'") + '" , ' + json[obj].insert[i].author_uid + ' , 0 , "' + obj + '", ' + json[obj].insert[i].form_part + ',' + json[obj].insert[i].changed_uid + ',\'' + no_data + '\') ';
 
 				if (aux_column > 0) {
 					query = 'INSERT OR REPLACE  INTO ' + obj + ' (\'nid\', ';
@@ -652,7 +661,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 							} else {
 								if (json[obj].insert[i][parse_api] instanceof Array) {
 									if (col_type[aux_column - 1] == 'rules_field') {
-										query += ' \'' + JSON.stringify(json[obj].insert[i][parse_api]).replace(/'/gi, "\\\'") + '\' )';
+										query += ' "' + JSON.stringify(json[obj].insert[i][parse_api]).replace(/"/gi, "\"\"") + '" )';
 									} else {
 										content_s = treatArray(json[obj].insert[i][parse_api], 2);
 
@@ -698,7 +707,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 							} else {
 								if (json[obj].insert[i][parse_api] instanceof Array) {
 									if (col_type[aux_column - 1] == 'rules_field') {
-										query += ' \'' + JSON.stringify(json[obj].insert[i][parse_api]).replace(/'/gi, "\\\'") + '\' ,';
+										query += ' "' + JSON.stringify(json[obj].insert[i][parse_api]).replace(/"/gi, "\"\"") + '" ,';
 									} else {
 										content_s = treatArray(json[obj].insert[i][parse_api], 4);
 
@@ -748,7 +757,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 			if (!(json[obj].insert.no_data_fields instanceof Array)) {
 				no_data = JSON.stringify(json[obj].insert.no_data_fields);
 			}
-			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields  ) VALUES ( ' + json[obj].insert.nid + ', ' + json[obj].insert.created + ' , ' + json[obj].insert.changed + ', "' + json[obj].insert.title.replace(/"/gi, "'") + '" , ' + json[obj].insert.author_uid + ' , 0 , "' + obj + '", ' + json[obj].insert.form_part + ',' + json[obj].insert.changed_uid + ',\'' + no_data + '\') ';
+			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , perm_edit, perm_delete, created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields  ) VALUES ( ' + json[obj].insert.nid + ', ' + json[obj].insert.perm_edit + ', '+ json[obj].insert.perm_delete + ', '+ json[obj].insert.created + ' , ' + json[obj].insert.changed + ', "' + json[obj].insert.title.replace(/"/gi, "'") + '" , ' + json[obj].insert.author_uid + ' , 0 , "' + obj + '", ' + json[obj].insert.form_part + ',' + json[obj].insert.changed_uid + ',\'' + no_data + '\') ';
 
 			if (aux_column > 0) {
 				query = 'INSERT OR REPLACE  INTO ' + obj + ' (\'nid\', ';
@@ -808,7 +817,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 						} else {
 							if (json[obj].insert[parse_api] instanceof Array) {
 								if (col_type[aux_column - 1] == 'rules_field') {
-									query += ' \'' + JSON.stringify(json[obj].insert[parse_api]).replace(/'/gi, "\\\'") + '\' )';
+									query += ' "' + JSON.stringify(json[obj].insert[parse_api]).replace(/"/gi, "\"\"") + '" )';
 								} else {
 									content_s = treatArray(json[obj].insert[parse_api], 2);
 
@@ -850,7 +859,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 						} else {
 							if (json[obj].insert[parse_api] instanceof Array) {
 								if (col_type[aux_column - 1] == 'rules_field') {
-									query += ' \'' + JSON.stringify(json[obj].insert[parse_api]).replace(/'/gi, "\\\'") + '\' ,';
+									query += ' "' + JSON.stringify(json[obj].insert[parse_api]).replace(/"/gi, "\"\"") + '" ,';
 								} else {
 
 									content_s = treatArray(json[obj].insert[parse_api], 4);
@@ -907,7 +916,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 					no_data = JSON.stringify(json[obj].update[i].no_data_fields);
 				}
 				//'update' is a flag to decide whether the node needs to be synced to the server or not
-				process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields ) VALUES ( ' + json[obj].update[i].nid + ', ' + json[obj].update[i].created + ' , ' + json[obj].update[i].changed + ', "' + json[obj].update[i].title.replace(/"/gi, "'") + '" , ' + json[obj].update[i].author_uid + ' , 0 , "' + obj + '", ' + json[obj].update[i].form_part + ', ' + json[obj].update[i].changed_uid + ',\'' + no_data + '\') ';
+				process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , perm_edit, perm_delete, created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields ) VALUES ( ' + json[obj].update[i].nid + ', ' + json[obj].update[i].perm_edit + ', '+ json[obj].update[i].perm_delete + ', '+ json[obj].update[i].created + ' , ' + json[obj].update[i].changed + ', "' + json[obj].update[i].title.replace(/"/gi, "'") + '" , ' + json[obj].update[i].author_uid + ' , 0 , "' + obj + '", ' + json[obj].update[i].form_part + ', ' + json[obj].update[i].changed_uid + ',\'' + no_data + '\') ';
 
 				if (aux_column > 0) {
 					query = 'INSERT OR REPLACE  INTO ' + obj + ' (\'nid\', ';
@@ -979,7 +988,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 							} else {
 								if (json[obj].update[i][parse_api] instanceof Array) {
 									if (col_type[aux_column - 1] == 'rules_field') {
-										query += ' \'' + JSON.stringify(json[obj].update[i][parse_api]).replace(/'/gi, "\\\'") + '\' )';
+										query += ' "' + JSON.stringify(json[obj].update[i][parse_api]).replace(/"/gi, "\"\"") + '" )';
 									} else {
 										content_s = treatArray(json[obj].update[i][parse_api], 2);
 										var array_cont = db_process_object.execute('SELECT * FROM array_base WHERE node_id = ' + json[obj].update[i].nid + ' AND field_name="' + col_titles[aux_column - 1] + '"');
@@ -1044,7 +1053,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 							} else {
 								if (json[obj].update[i][parse_api] instanceof Array) {
 									if (col_type[aux_column - 1] == 'rules_field') {
-										query += ' \'' + JSON.stringify(json[obj].update[i][parse_api]).replace(/'/gi, "\\\'") + '\' ,';
+										query += ' "' + JSON.stringify(json[obj].update[i][parse_api]).replace(/"/gi, "\"\"") + '" ,';
 									} else {
 										content_s = treatArray(json[obj].update[i][parse_api], 4);
 
@@ -1099,7 +1108,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 				no_data = JSON.stringify(json[obj].update.no_data_fields);
 			}
 			//'update' is a flag to decide whether the node needs to be synced to the server or not
-			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields ) VALUES ( ' + json[obj].update.nid + ', ' + json[obj].update.created + ' , ' + json[obj].update.changed + ', "' + json[obj].update.title.replace(/"/gi, "'") + '" , ' + json[obj].update.author_uid + ' , 0 , "' + obj + '", ' + json[obj].update.form_part + ', ' + json[obj].update.changed_uid + ',\'' + no_data + '\') ';
+			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , perm_edit, perm_delete, created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields ) VALUES ( ' + json[obj].update.nid + ', ' + json[obj].update.perm_edit + ', '+ json[obj].update.perm_delete + ', '+ json[obj].update.created + ' , ' + json[obj].update.changed + ', "' + json[obj].update.title.replace(/"/gi, "'") + '" , ' + json[obj].update.author_uid + ' , 0 , "' + obj + '", ' + json[obj].update.form_part + ', ' + json[obj].update.changed_uid + ',\'' + no_data + '\') ';
 
 			if (aux_column > 0) {
 				query = 'INSERT OR REPLACE  INTO ' + obj + ' (\'nid\', ';
@@ -1159,7 +1168,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 						} else {
 							if (json[obj].update[parse_api] instanceof Array) {
 								if (col_type[aux_column - 1] == 'rules_field') {
-									query += ' \'' + JSON.stringify(json[obj].update[parse_api]).replace(/'/gi, "\\\'") + '\' )';
+									query += ' "' + JSON.stringify(json[obj].update[parse_api]).replace(/"/gi, "\"\"") + '" )';
 								} else {
 									content_s = treatArray(json[obj].update[parse_api], 2);
 
@@ -1201,7 +1210,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 						} else {
 							if (json[obj].update[parse_api] instanceof Array) {
 								if (col_type[aux_column - 1] == 'rules_field') {
-									query += ' \'' + JSON.stringify(json[obj].update[parse_api]).replace(/'/gi, "\\\'") + '\' ,';
+									query += ' "' + JSON.stringify(json[obj].update[parse_api]).replace(/"/gi, "\"\"") + '" ,';
 								} else {
 									content_s = treatArray(json[obj].update[parse_api], 4);
 
@@ -1502,7 +1511,8 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 		Ti.API.info(this.responseText);
 
 		if (this.responseText != null && this.responseText != "null" && this.responseText != "" && this.responseText != "" && isJsonString(this.responseText) === true) {
-			var json = JSON.parse(this.responseText);
+			var tmp_json = this.responseText.replace(/'/gi, '\'');
+			var json = JSON.parse(tmp_json);
 
 			if (json.request_time && json.request_time != null && json.request_time != "") {
 				var GMT_OFFSET = Number(json.request_time - app_timestamp);
@@ -1751,6 +1761,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									}
 
 									if(flag_display == 'true' && (_is_disabled != 1 && _is_disabled != "1" && _is_disabled != "true" && _is_disabled != true)) {
+										if(app_permissions.can_view == false && app_permissions.can_create == false){
+											n_bund.next();
+											continue;
+										}
 										var row_a = Ti.UI.createTableViewRow({
 											height : 60,
 											name : display,
@@ -1913,6 +1927,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								}
 
 								if(flag_display == 'true' && (_is_disabled != 1 && _is_disabled != "1" && _is_disabled != "true" && _is_disabled != true)) {
+									if(app_permissions.can_view == false && app_permissions.can_create == false){
+											n_bund.next();
+											continue;
+										}
 									var row_a = Ti.UI.createTableViewRow({
 										height : 60,
 										name : display,
@@ -3120,7 +3138,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					if ((json.node) && (json.node[name_table])) {
 						Ti.API.info('##### Called ' + name_table);
 						callback = process_object(json.node, name_table, quotes, progress, type_request, db_installMe);
-
+					}
 						//Add it to the main screen
 						var display = n_bund.fieldByName("display_name").toUpperCase();
 						var description = n_bund.fieldByName("description");
@@ -3181,6 +3199,12 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 						}
 
 						if (flag_display == 'false' && (_is_disabled != 1 && _is_disabled != "1" && _is_disabled != "true" && _is_disabled != true)) {
+								
+							if(app_permissions.can_view == false && app_permissions.can_create == false) {
+								n_bund.next();
+								continue;
+							}
+
 							var row_a = Ti.UI.createTableViewRow({
 								height : 60,
 								name : display,
@@ -3256,8 +3280,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							menu.setData(data_rows);
 							db_installMe.execute('UPDATE bundles SET display_on_menu =\'true\' WHERE bid=' + id);
 						}
-
-					}
 					n_bund.next();
 					//	}
 					//catch(evt){
@@ -5342,7 +5364,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 									}
 								}
 
-				              	var reference_types = instances[search_field['field_name']]['settings']['reference_types'];
+				              	var reference_types = JSON.parse(search_field['settings'])['reference_types'];
 				               	var array_filter = '';
 				               	var reference_types_arr = [];
 				                for(var key in reference_types) {
@@ -5373,11 +5395,11 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 				              var possible_nids = db_display.execute(query);
 							  var possible_nids_arr = [];
 							  while (possible_nids.isValidRow()) {
-									possible_nids_arr.push(possible_nids.fieldByName('tid'));
+									possible_nids_arr.push(possible_nids.fieldByName('nid'));
 									possible_nids.next();
 							  }
 				              
-				              switch($search_operator){                                    
+				              switch(search_operator){                                    
 				                case 'not starts with':
 				                case 'not ends with':
 				                case 'not like':

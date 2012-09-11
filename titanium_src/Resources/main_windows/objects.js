@@ -223,9 +223,9 @@ function topToolBar_object(){
 		newNode.addEventListener('click', function() {
 			openCreateNodeScreen();
 		}); 
-		items = [back, label, space, newNode];
+		items = [back, space, label, space, newNode];
 	}else{
-		items = [back, label, space];
+		items = [back, space, label, space];
 	}
 	
 	// create and add toolbar
@@ -284,27 +284,27 @@ function bottomButtons1(_nid, win3, e){
 	var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win3.type + '"');
 	var _data = JSON.parse(json_data.fieldByName('_data'));
 
-	var node_form = db_act.execute('SELECT form_part FROM node WHERE nid=' + _nid);
+	var node_form = db_act.execute('SELECT form_part, perm_edit FROM node WHERE nid=' + _nid);
 
 	Ti.API.info('Form node part = ' + node_form.fieldByName('form_part'));
 	
 	var btn_tt = [];
 	var btn_id = [];
-	
-	
-	if(_data.form_parts!=null && _data.form_parts!=""){
-		Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
-		if(_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2) { 
-			Ti.API.info("Title = " + _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
-			btn_tt.push(_data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
-			btn_id.push(node_form.fieldByName('form_part') + 1);
-			Ti.API.info(node_form.fieldByName('form_part') + 1);
+	var isEditEnabled = false;
+	if(node_form.fieldByName('perm_edit')==1){
+		if(_data.form_parts!=null && _data.form_parts!=""){
+			Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
+			if(_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2) { 
+				Ti.API.info("Title = " + _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
+				btn_tt.push(_data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
+				btn_id.push(node_form.fieldByName('form_part') + 1);
+				Ti.API.info(node_form.fieldByName('form_part') + 1);
+			}
 		}
+		isEditEnabled = true;
+		btn_tt.push('Edit');
+		btn_id.push(node_form.fieldByName('form_part'));
 	}
-	
-
-	btn_tt.push('Edit');
-	btn_id.push(node_form.fieldByName('form_part'));
 	
 	btn_tt.push('View');
 	btn_id.push(0);
@@ -344,7 +344,7 @@ function bottomButtons1(_nid, win3, e){
 			else if (ev.index  == btn_tt.length-1){
 				Ti.API.info("Cancelled")
 			}
-			else if (ev.index != -1){
+			else if (ev.index != -1 && isEditEnabled==true){
 				openEditScreen(btn_id[ev.index], _nid, e);
 			}
 	});	
