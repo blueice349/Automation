@@ -284,13 +284,13 @@ function bottomButtons1(_nid, win3, e){
 	var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win3.type + '"');
 	var _data = JSON.parse(json_data.fieldByName('_data'));
 
-	var node_form = db_act.execute('SELECT form_part FROM node WHERE nid=' + _nid);
+	var node_form = db_act.execute('SELECT form_part, perm_edit FROM node WHERE nid=' + _nid);
 
 	Ti.API.info('Form node part = ' + node_form.fieldByName('form_part'));
 	
 	var btn_tt = [];
 	var btn_id = [];
-	
+	var isEditEnabled = false;
 	
 	if(_data.form_parts!=null && _data.form_parts!=""){
 		Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
@@ -301,10 +301,11 @@ function bottomButtons1(_nid, win3, e){
 			Ti.API.info(node_form.fieldByName('form_part') + 1);
 		}
 	}
-	
-
-	btn_tt.push('Edit');
-	btn_id.push(node_form.fieldByName('form_part'));
+	if(node_form.fieldByName('perm_edit')==1){
+		isEditEnabled = true;
+		btn_tt.push('Edit');
+		btn_id.push(node_form.fieldByName('form_part'));
+	}
 	
 	btn_tt.push('View');
 	btn_id.push(0);
@@ -344,7 +345,7 @@ function bottomButtons1(_nid, win3, e){
 			else if (ev.index  == btn_tt.length-1){
 				Ti.API.info("Cancelled")
 			}
-			else if (ev.index != -1){
+			else if (ev.index != -1 && isEditEnabled==true){
 				openEditScreen(btn_id[ev.index], _nid, e);
 			}
 	});	
