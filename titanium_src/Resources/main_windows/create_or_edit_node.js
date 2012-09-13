@@ -13,7 +13,7 @@
 Ti.include('/lib/functions.js');
 Ti.include('/lib/encoder_base_64.js');
 
-var heightValue = 50;
+var heightValue = (PLATFORM=='android')?55:50;
 var toolActInd = Ti.UI.createActivityIndicator();
 toolActInd.font = {
 	fontFamily : 'Helvetica Neue',
@@ -1038,7 +1038,24 @@ function keep_info(_flag_info, pass_it, new_time) {
 			db_put.execute(query);
 
 			//If Images captured and not yet uploaded then store in file_uploaded_queue
+			if(win.mode == 1) {
+				file_upload_nid = win.nid;
+			} else {
+				file_upload_nid = new_nid;
+			}
+			db_put.execute('UPDATE file_upload_queue SET nid=' + file_upload_nid + ' WHERE nid=0;');
+				 
+			//If Images captured and not yet uploaded then store in file_uploaded_queue
 			for (var j = 0; j <= content.length; j++) {
+				if (!content[j]) {
+					continue;
+				}
+				if (content[j].field_type == 'image' && win.mode == 1) {
+					db_put.execute('UPDATE ' + win.type + ' SET ' + content[j].field_name + '="' + oldVal.fieldByName(content[j].field_name) + '", ' + content[j].field_name + '___file_id="' + oldVal.fieldByName(content[j].field_name + '___file_id') + '", ' + content[j].field_name + '___status="' + oldVal.fieldByName(content[j].field_name + '___status') + '" WHERE nid=' + file_upload_nid + ';');
+				}
+			}
+
+			/*for (var j = 0; j <= content.length; j++) {
 				if (!content[j]) {
 					continue;
 				}
@@ -1087,7 +1104,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 				if (content[j].field_type == 'image' && win.mode == 1) {
 					db_put.execute('UPDATE ' + win.type + ' SET ' + content[j].field_name + '="' + oldVal.fieldByName(content[j].field_name) + '", ' + content[j].field_name + '___file_id="' + oldVal.fieldByName(content[j].field_name + '___file_id') + '", ' + content[j].field_name + '___status="' + oldVal.fieldByName(content[j].field_name + '___status') + '" WHERE nid=' + file_upload_nid + ';');
 				}
-			}
+			}*/
 
 			db_put.close();
 			has_bug = false;
@@ -8325,6 +8342,9 @@ create_or_edit_node.loadUI = function() {
 						duration : Ti.UI.NOTIFICATION_DURATION_LONG
 					}).show();
 				}
+				var db_toDeleteImage = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+				db_toDeleteImage.execute("DELETE FROM file_upload_queue WHERE nid=0;");
+				db_toDeleteImage.close();
 				win.close();
 			}
 		});
@@ -8337,55 +8357,77 @@ create_or_edit_node.loadUI = function() {
 var camera;
 if (PLATFORM == 'android') {
 	camera = require('com.omadi.camera');
-	camera.addEventListener("successCameraCapture", function(e) {
-		setTimeout(function(evt) {
-			var actInd = Ti.UI.createActivityIndicator();
-			try {
-				actInd.font = {
-					fontFamily : 'Helvetica Neue',
-					fontSize : 15,
-					fontWeight : 'bold'
-				};
-				actInd.color = 'white';
-				actInd.message = 'Please wait...';
-				actInd.show();
-				var imagescr = Ti.Utils.base64decode(e.media);
-				e.source.image = imagescr;
-				e.source.isImage = true;
-				e.source.bigImg = imagescr;
-				e.source.mimeType = "/jpeg";
-				if (e.source.cardinality > 1 || e.source.cardinality < 0) {
-					if (e.source.cardinality < 1) {
-						arrImages = createImage(e.source.scrollView.addButton.o_index, e.source.scrollView.arrImages, defaultImageVal, e.source.scrollView, false);
-						e.source.scrollView.arrImages = arrImages;
-						e.source.scrollView.addButton.o_index += 1;
-						newSource = arrImages.length - 1;
-					} else {
-						if (e.source.private_index == e.source.cardinality - 1) {
-							return;
-						}
-						newSource = (e.source.private_index == e.source.cardinality - 1) ? 0 : e.source.private_index + 1;
-					}
-					e.source = e.source.scrollView.arrImages[newSource];
-					actInd.hide();
-					openCamera(e)
-				}
-			} catch(eve) {
-				actInd.hide();
-			}
-		}, 200);
-
-	});
+	//camera.addEventListener("successCameraCapture", function(e){openAndroidCamera(e);});
 }
+
+function saveImageInDb(currentImageView, field_name){
+	var file_upload_nid = 0 ;
+	var db_toSaveImage = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	var encodeImage = Ti.Utils.base64encode(currentImageView.bigImg);
+	var mime = currentImageView.mimeType;
+	var imageName = 'image.' + mime.substring(mime.indexOf('/') + 1, mime.length);
+	var is_exists = db_toSaveImage.execute('SELECT delta, nid FROM file_upload_queue WHERE nid=' + file_upload_nid + ' and delta=' + currentImageView.private_index + ' and field_name="' + field_name + '";');
+	if(is_exists.rowCount > 0) {
+		db_toSaveImage.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '", file_data="' + encodeImage + '", field_name="' + field_name + '", file_name="' + imageName + '", delta=' + currentImageView.private_index + ' WHERE nid=' + file_upload_nid + ' and delta=' + currentImageView.private_index + ' and field_name="' + field_name + '";');
+	}else{
+		db_toSaveImage.execute('INSERT INTO file_upload_queue (nid , file_data , field_name, file_name, delta) VALUES (' + file_upload_nid + ', "' + encodeImage + '", "' + field_name + '", "' + imageName + '", ' + currentImageView.private_index + ')');
+	}
+	db_toSaveImage.close();
+}
+
+
+function openAndroidCamera(e) {
+	setTimeout(function(evt) {
+		var actInd = Ti.UI.createActivityIndicator();
+		try {
+			actInd.font = {
+				fontFamily : 'Helvetica Neue',
+				fontSize : 15,
+				fontWeight : 'bold'
+			};
+			actInd.color = 'white';
+			actInd.message = 'Please wait...';
+			actInd.show();
+			var imagescr = Ti.Utils.base64decode(e.media);
+			e.source.image = imagescr;
+			e.source.isImage = true;
+			e.source.bigImg = imagescr;
+			e.source.mimeType = "/jpeg";
+			if(e.source.cardinality > 1 || e.source.cardinality < 0) {
+				if(e.source.cardinality < 1) {
+					arrImages = createImage(e.source.scrollView.addButton.o_index, e.source.scrollView.arrImages, defaultImageVal, e.source.scrollView, false);
+					e.source.scrollView.arrImages = arrImages;
+					e.source.scrollView.addButton.o_index += 1;
+					newSource = arrImages.length - 1;
+				} else {
+					if(e.source.private_index == e.source.cardinality - 1) {
+						return;
+					}
+					newSource = (e.source.private_index == e.source.cardinality - 1) ? 0 : e.source.private_index + 1;
+				}
+				saveImageInDb(e.source, e.source.scrollView.field_name);
+				e.source = e.source.scrollView.arrImages[newSource];
+				actInd.hide();
+				openCamera(e)
+			} else {
+				actInd.hide();
+				saveImageInDb(e.source, e.source.field_name);
+			}
+
+		} catch(eve) {
+			actInd.hide();
+		}
+	}, 200);
+}
+
 
 // To open camera
 function openCamera(e) {
 	if (PLATFORM == 'android') {
-		if (Ti.Media.isCameraSupported) {
+		if(Ti.Media.isCameraSupported) {
 			camera.openCamera({
 				"event" : e.source,
-				"abc" : function(e) {
-				}
+				"callbackFnc" : function(e){openAndroidCamera(e);}
 			});
 		} else {
 			alert('No Camera in device');
@@ -8402,34 +8444,31 @@ function openCamera(e) {
 			};
 			actInd.color = 'white';
 			actInd.message = 'Please wait...';
-			if (PLATFORM != 'android') {
-				overlayView = Ti.UI.createView();
-				var captureBtn = Ti.UI.createButton({
-					systemButton : Ti.UI.iPhone.SystemButton.CAMERA,
-				});
-				var doneBtn = Ti.UI.createButton({
-					systemButton : Ti.UI.iPhone.SystemButton.DONE,
-				});
-				var flexible = Ti.UI.createButton({
-					systemButton : Ti.UI.iPhone.SystemButton.FLEXIBLE_SPACE,
-				});
-				var navbar = Ti.UI.iOS.createToolbar({
-					left : 0,
-					right : 0,
-					bottom : 0,
-					height : 50,
-					items : [doneBtn, flexible, captureBtn, flexible]
-				});
-				overlayView.add(navbar);
-
-
-				captureBtn.addEventListener('click', function(evt) {
-					Ti.Media.takePicture();
-				});
-				doneBtn.addEventListener('click', function(evt) {
-					Ti.Media.hideCamera();
-				})
-			}
+			
+			overlayView = Ti.UI.createView();
+			var captureBtn = Ti.UI.createButton({
+				systemButton : Ti.UI.iPhone.SystemButton.CAMERA,
+			});
+			var doneBtn = Ti.UI.createButton({
+				systemButton : Ti.UI.iPhone.SystemButton.DONE,
+			});
+			var flexible = Ti.UI.createButton({
+				systemButton : Ti.UI.iPhone.SystemButton.FLEXIBLE_SPACE,
+			});
+			var navbar = Ti.UI.iOS.createToolbar({
+				left : 0,
+				right : 0,
+				bottom : 0,
+				height : 50,
+				items : [doneBtn, flexible, captureBtn, flexible]
+			});
+			overlayView.add(navbar);
+			captureBtn.addEventListener('click', function(evt) {
+				Ti.Media.takePicture();
+			});
+			doneBtn.addEventListener('click', function(evt) {
+				Ti.Media.hideCamera();
+			});
 
 			Ti.Media.showCamera({
 
@@ -8459,13 +8498,15 @@ function openCamera(e) {
 							}
 							newSource = (e.source.private_index == e.source.cardinality - 1) ? 0 : e.source.private_index + 1;
 						}
-
+						saveImageInDb(e.source, e.source.scrollView.field_name);
 						e.source = e.source.scrollView.arrImages[newSource];
 						actInd.hide();
-						if ((PLATFORM != 'android')) {
-							Ti.Media.hideCamera()
-						};
+						Ti.Media.hideCamera();
 						openCamera(e);
+					}else {
+						actInd.hide();
+						Ti.Media.hideCamera();
+						saveImageInDb(e.source, e.source.field_name);
 					}
 				},
 				error : function(error) {
@@ -8477,7 +8518,7 @@ function openCamera(e) {
 				},
 				saveToPhotoGallery : false,
 				showControls : false,
-				overlay : (PLATFORM != 'android') ? overlayView : null,
+				overlay : overlayView,
 				autohide : true,
 				allowEditing : false,
 				mediaTypes : [Ti.Media.MEDIA_TYPE_PHOTO]
@@ -8710,6 +8751,9 @@ function cancelOpt() {
 					//alert(win.title + ' update was cancelled !');
 				}
 			}
+			var db_toDeleteImage = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+			db_toDeleteImage.execute("DELETE FROM file_upload_queue WHERE nid=0;");
+			db_toDeleteImage.close();
 			win.close();
 		}
 	});

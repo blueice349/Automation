@@ -6,7 +6,7 @@
  * Please see the LICENSE included with this distribution for details.
  *
  */
-package com.omadi.android_gps_tracker;
+package com.omadi.gps;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
@@ -23,8 +23,8 @@ import org.appcelerator.titanium.view.TiUIView;
 import android.app.Activity;
 
 
-// This proxy can be created by calling GpsTracker.createExample({message: "hello world"})
-@Kroll.proxy(creatableInModule=GpsTrackerModule.class)
+// This proxy can be created by calling Gpstracker.createExample({message: "hello world"})
+@Kroll.proxy(creatableInModule=GpstrackerModule.class)
 public class ExampleProxy extends TiViewProxy
 {
 	// Standard Debugging variables

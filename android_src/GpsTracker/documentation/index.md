@@ -1,16 +1,16 @@
-# gps_tracker Module
+# gpstracker Module
 
 ## Description
 
 TODO: Enter your module description here
 
-## Accessing the gps_tracker Module
+## Accessing the gpstracker Module
 
 To access this module from JavaScript, you would do the following:
 
-	var gps_tracker = require("com.omadi.android_gps_tracker");
+	var gpstracker = require("com.omadi.gps");
 
-The gps_tracker variable is a reference to the Module object.	
+The gpstracker variable is a reference to the Module object.	
 
 ## Reference
 

@@ -13,16 +13,16 @@ win.add(label);
 win.open();
 
 // TODO: write your module tests here
-var gps_tracker = require('com.omadi.android_gps_tracker');
-Ti.API.info("module is => " + gps_tracker);
+var gpstracker = require('com.omadi.gps');
+Ti.API.info("module is => " + gpstracker);
 
-label.text = gps_tracker.example();
+label.text = gpstracker.example();
 
-Ti.API.info("module exampleProp is => " + gps_tracker.exampleProp);
-gps_tracker.exampleProp = "This is a test value";
+Ti.API.info("module exampleProp is => " + gpstracker.exampleProp);
+gpstracker.exampleProp = "This is a test value";
 
 if (Ti.Platform.name == "android") {
-	var proxy = gps_tracker.createExample({
+	var proxy = gpstracker.createExample({
 		message: "Creating an example Proxy",
 		backgroundColor: "red",
 		width: 100,

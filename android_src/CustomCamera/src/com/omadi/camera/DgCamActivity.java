@@ -3,6 +3,7 @@ package com.omadi.camera;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 
 import org.appcelerator.kroll.KrollDict;
 
@@ -337,11 +338,6 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 				Message msg = new Message();
 				msg.obj = ss;
 				h4.sendMessage(msg);
-				// KrollDict eventData = new KrollDict();
-				// eventData.put("source", CustomcameraModule.eve);
-				// eventData.put("media", ss);
-				// CustomcameraModule.getInstance().fireEvent("successCameraCapture",
-				// eventData);
 			} catch (Exception ex) {
 
 			}
@@ -352,11 +348,18 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 	public Handler h4 = new Handler() {
 		@Override
 		public void dispatchMessage(Message msg) {
-			KrollDict eventData = new KrollDict();
-			eventData.put("source", CustomcameraModule.eve);
-			eventData.put("media", msg.obj);
-			CustomcameraModule.getInstance().fireEvent("successCameraCapture",
-					eventData);
+//			KrollDict eventData = new KrollDict();
+//			eventData.put("source", CustomcameraModule.eve);
+//			eventData.put("media", msg.obj);
+//			CustomcameraModule.getInstance().fireEvent("successCameraCapture",
+//					eventData);
+			
+			
+			HashMap<String, Object> hm = new HashMap<String, Object>();
+			hm.put("source", CustomcameraModule.eve);
+			hm.put("media", msg.obj);
+			
+			CustomcameraModule.imageCallback.callAsync(CustomcameraModule.getInstance().getKrollObject(), hm);
 		}
 	};
 

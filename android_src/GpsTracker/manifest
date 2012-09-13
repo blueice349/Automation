@@ -1,0 +1,18 @@
+#
+# this is your module manifest and used by Titanium
+# during compilation, packaging, distribution, etc.
+#
+version: 1.0
+apiversion: 2
+description: My module
+author: Pooja
+license: Specify your license
+copyright: Copyright (c) 2012 by Your Company
+
+
+# these should not be edited
+name: gpstracker
+moduleid: com.omadi.gps
+guid: f0e0b75e-644a-4341-88e8-179b0237d9e6
+platform: android
+minsdk: 2.1.1.GA

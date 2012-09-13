@@ -10,7 +10,7 @@
     </deployment-targets>
     <id>joseandro.omadi.com</id>
     <name>Omadi</name>
-    <version>1.5.4</version>
+    <version>1.5.5</version>
     <publisher>Joseandro</publisher>
     <url>http://www.omadi.com</url>
     <description>CRM from Omadi</description>
@@ -39,10 +39,12 @@
             <uses-sdk android:minSdkVersion="7"/>
             <uses-permission android:name="android.permission.READ_LOGS"/>
             <uses-permission android:name="android.permission.INTERNET"/>
+            <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
         </manifest>
     </android>
     <modules>
         <module platform="android" version="1.0">com.omadi.camera</module>
+        <module platform="android" version="1.0">com.omadi.gps</module>
         <module platform="iphone" version="2">com.omadi.ios_gps</module>
     </modules>
 </ti:app>

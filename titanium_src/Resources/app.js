@@ -17,7 +17,9 @@ Titanium.UI.setBackgroundColor('#EEEEEE');
 Ti.include('lib/functions.js'); 
 var movement;
 if(PLATFORM!='android'){clearCache();
- movement =  require('com.omadi.ios_gps');
+ 	movement =  require('com.omadi.ios_gps');
+}else{
+	movement =  require('com.omadi.gps');
 }
 
 var win1 = Titanium.UI.createWindow({  

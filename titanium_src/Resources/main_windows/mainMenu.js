@@ -34,13 +34,8 @@ var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getS
 var movement;
 
 //Geolocation module
-if (PLATFORM == 'android'){
-	Ti.include('geolocation.js');
-}
-else{
-	movement = win2.movement;
-	Ti.include('geolocation_for_ios.js');
-}
+movement = win2.movement;
+Ti.include('geolocation.js');
 
 function checkUpdate(evt){
 	Ti.API.info('******* Called checkupate => '+evt);
@@ -288,7 +283,11 @@ while ( elements.isValidRow() ){
 			is_plus: true
 		});
 		if (show_plus === false){
-			plus.hide();	
+			if(PLATFORM=='android'){
+				plus.visible = false;
+			}else{
+				plus.hide();	
+			}
 		}
 		
 		row_t.add(icon);
