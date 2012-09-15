@@ -65,11 +65,12 @@ public class GpstrackerModule extends KrollModule
 	public void stopGPSTracking(){
 		gps.stopUsingGPS();
 	}
+	
 	@Kroll.method
 	public void currentMovement(KrollDict options){
-		
 		updateLocation =(KrollFunction) options.get("updateLatLng");
 		HashMap<String, Object> locationDetails = new HashMap<String, Object>();
+		try{
 		 if(gps.canGetLocation()){
 			locationDetails.put("longitude", gps.getLongitude());
 			locationDetails.put("latitude", gps.getLatitude());
@@ -79,6 +80,11 @@ public class GpstrackerModule extends KrollModule
 			locationDetails.put("latitude", 0);
 			locationDetails.put("accuracy", 0); 
 		 }
+		}catch(Exception e){
+			locationDetails.put("longitude", 0);
+			locationDetails.put("latitude", 0);
+			locationDetails.put("accuracy", 0); 
+		}
 		updateLocation.callAsync(getKrollObject(), locationDetails);
 	}
 

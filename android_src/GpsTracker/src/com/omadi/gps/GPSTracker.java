@@ -1,11 +1,10 @@
 package com.omadi.gps;
-import java.util.HashMap;
-
 import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -15,7 +14,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.provider.Settings;
 import android.util.Log;
-import android.widget.Toast;
  
 public class GPSTracker extends Service implements LocationListener {
  
@@ -30,9 +28,10 @@ public class GPSTracker extends Service implements LocationListener {
     // flag for GPS status
     boolean canGetLocation = false;
  
-    Location location; // location
+    Location location = null; // location
     static double latitude = 0.0; // latitude
     static double longitude = 0.0; // longitude
+    static double accuracy = 0.0;
  
     // The minimum distance to change Updates in meters
     private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10; // 10 meters
@@ -122,9 +121,8 @@ public class GPSTracker extends Service implements LocationListener {
      * */
     public double getLatitude(){
         if(location != null){
-            latitude = location.getLatitude();
+        	latitude = location.getLatitude();
         }
- 
         // return latitude
         return latitude;
     }
@@ -136,7 +134,6 @@ public class GPSTracker extends Service implements LocationListener {
         if(location != null){
             longitude = location.getLongitude();
         }
- 
         // return longitude
         return longitude;
     }
@@ -185,25 +182,34 @@ public class GPSTracker extends Service implements LocationListener {
     public void onLocationChanged(Location arg0) {
 		if (arg0 != null) {
 			location = arg0;
-            latitude = arg0.getLatitude();
-            longitude = arg0.getLongitude();
-            Toast.makeText(mContext, "Your Location is - \nLat: " + latitude + "\nLong: " + longitude, Toast.LENGTH_LONG).show();
-        }
+            latitude = getLatitude();
+            longitude = getLongitude();
+            accuracy = getAccuracy();
+       }
 		
 	}
 	
-	public float getAccuracy(){
-		return location.getAccuracy();
+	public double getAccuracy(){
+		if (location != null) {
+			accuracy = location.getAccuracy();
+		}
+		// return accuracy
+	    return accuracy;
 	}
 
 	public void onProviderDisabled(String arg0) {
-		// TODO Auto-generated method stub
-		
+		latitude =  0.0;
+		longitude = 0.0;
+		accuracy  = 0.0;
 	}
 
 	public void onProviderEnabled(String arg0) {
-		// TODO Auto-generated method stub
-		
+		Criteria criteria = new Criteria();
+		String bestProvider = locationManager.getBestProvider(criteria, false);
+		location = locationManager.getLastKnownLocation(bestProvider);
+		latitude = getLatitude();
+		longitude = getLongitude();
+		accuracy  = getAccuracy();
 	}
 
 	public void onStatusChanged(String arg0, int arg1, Bundle arg2) {

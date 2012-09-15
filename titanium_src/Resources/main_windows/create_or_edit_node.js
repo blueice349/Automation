@@ -502,6 +502,47 @@ function keep_info(_flag_info, pass_it, new_time) {
 		}
 
 		if (((content[x].is_title === true) || (content[x].required == 'true') || (content[x].required === true) || (content[x].required == '1') || (content[x].required == 1) ) && ((content[x].value == '') || (content[x].value == null)) && (content[x].no_data_checkbox == null || content[x].no_data_checkbox == "" || content[x].no_data_checkbox == false) && content[x].enabled == true) {
+			//Check for image field
+			if(content[x].field_type == 'image'){
+				var is_images_query = 'SELECT id FROM file_upload_queue WHERE nid=0 ';
+				if(win.nid != null && win.nid != ""){
+					is_images_query += ' OR nid='+win.nid+' ';
+				}
+				is_images_query += ' AND field_name="'+content[x].field_name+'";';
+				Ti.API.info(is_images_query);
+				
+				var is_images = db_check_restrictions.execute(is_images_query);
+				var crdnlty = content[x].cardinality;
+				//if cardinality is unlimited or one than only one image can be work for required 
+				//But if cardinality is greater than 1 then required that number of images 
+				if(win.mode == 1) {
+					if(crdnlty > 1 || crdnlty < 0) {
+						var arrImages = content[x].arrImages;
+						var imageOdometer = 0;
+						for( i_idx = 0; i_idx < arrImages.length; i_idx++) {
+							if(arrImages[i_idx].imageVal != defaultImageVal || arrImages[i_idx].bigImg != null || arrImages[i_idx].bigImg != "") {
+								imageOdometer ++;
+							}
+						}
+						if((crdnlty < 1 && imageOdometer ==0) || (crdnlty > 1 && imageOdometer != is_images.rowCount)){
+							string_text += label[content[x].reffer_index].text + "\n";
+							count_fields++;
+						}
+					} else {
+						if(content[x].imageVal == defaultImageVal && is_images.rowCount == 0) {
+							string_text += label[content[x].reffer_index].text + "\n";
+							count_fields++;
+						}
+					}
+				}else{
+					if((crdnlty <= 1 && is_images.rowCount == 0) || (crdnlty > 1 && crdnlty != is_images.rowCount)) {
+						string_text += label[content[x].reffer_index].text + "\n";
+						count_fields++;
+					}
+				}
+				is_images.close();
+				continue;
+			}
 			count_fields++;
 			if (content[x].cardinality > 1) {
 				string_text += "#" + content[x].private_index + " " + label[content[x].reffer_index].text + "\n";
@@ -7852,6 +7893,7 @@ create_or_edit_node.loadUI = function() {
 									width : Ti.Platform.displayCaps.platformWidth - 30,
 									height : 80,
 									width : 80,
+									reffer_index : reffer_index,
 									size : {
 										height : '80',
 										width : '80'

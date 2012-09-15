@@ -1677,7 +1677,9 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					//Node type updates - Not implemented yet (API's side)
 					else if (json.node_type.update) {
 						//Multiple nodes updates
+						
 						if (json.node_type.update.length) {
+							var data_rows = [];
 							for (var i = 0; i < json.node_type.update.length; i++) {
 								//Increment the progress bar
 								if (progress != null) {
@@ -1700,7 +1702,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 								db_installMe.execute("UPDATE bundles SET bundle_name='" + json.node_type.update[i].type + "', display_on_menu='" + no_mob_display + "', display_name='" + json.node_type.update[i].name + "', description='" + json.node_type.update[i].description + "', title_fields='" + get_title + "', _data='" + _get_data + "', disabled='" + json.node_type.update[i].disabled + "' WHERE bundle_name='" + json.node_type.update[i].type + "'");
 							
 								var n_bund = db_installMe.execute('SELECT * FROM bundles');
-								var data_rows = new Array();
+								data_rows = new Array();
 								while(n_bund.isValidRow()) {
 									var name_table = n_bund.fieldByName("bundle_name");
 									var display = n_bund.fieldByName("display_name").toUpperCase();
@@ -1835,13 +1837,16 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 										}
 										data_rows.push(row_a);
 										data_rows.sort(sortTableView);
-										menu.setData(data_rows);
 									}
 
 									n_bund.next();
 								}
 								n_bund.close(); 							
 							}
+							if(data_rows.length > 0){
+								menu.setData(data_rows);
+							}
+							
 						}
 						//Unique node update
 						else {
