@@ -96,7 +96,7 @@ else {
 		barColor : '#000',
 		top: 0,
 		color: 'black',
-		height: 50
+		height: '50dp'
 	});
 	
 	//Contat list container
@@ -165,7 +165,7 @@ if(PLATFORM == 'android'){
 	bottomBack(win3, "Back" , "enable", true);
 	if (listTableView != null ){
 		listTableView.bottom = '6%'	
-		listTableView.top = 50;
+		listTableView.top = '50dp';
 	}
 	if(win3.show_plus == true){
 		var activity = win3.activity;
@@ -225,7 +225,7 @@ function topToolBar_object(){
 		}); 
 		items = [back, space, label, space, newNode];
 	}else{
-		items = [back, space, label, space];
+		items = (Ti.Platform.osname == 'ipad')? [back, space, label, space]:[back, label, space]
 	}
 	
 	// create and add toolbar

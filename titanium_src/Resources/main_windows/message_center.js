@@ -160,7 +160,7 @@ message_center.loadUI = function() {
 		//When the user clicks on a certain contact, it opens individual_contact.js
 		listTableView.addEventListener('click', function(e) {
 			var n_win = Ti.UI.createWindow({
-				fullscreen: true,
+				fullscreen: false,
 				title: e.row.lbl+" - Alert List"
 			});
 			Ti.API.info(e.row.lbl+" - Alert List");
@@ -457,7 +457,7 @@ Ti.App.addEventListener('refresh_UI_Alerts', function(){
 			//When the user clicks on a certain contact, it opens individual_contact.js
 			listTableView.addEventListener('click', function(e) {
 				var n_win = Ti.UI.createWindow({
-					fullscreen: true,
+					fullscreen: false,
 					title: e.row.lbl+" - Alert List"					
 				});
 				Ti.API.info(e.row.lbl+" - Alert List");
@@ -699,7 +699,7 @@ function alertNavButtons(listTableView, win, type){
 	
 	// create and add toolbar
 	var toolbar = Ti.UI.iOS.createToolbar({
-		items:[back, label, space, refresh_image],
+		items:[back, space, label, space, refresh_image],
 		top:0,
 		borderTop:false,
 		borderBottom:true

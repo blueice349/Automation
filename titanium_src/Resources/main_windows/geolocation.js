@@ -42,9 +42,9 @@ function updateCurrentLocation(e) {
 	var timestamp = new Date().getTime();
 	timestamp = Math.round(timestamp / 1000);
 	
-	Ti.API.info('=====>>> Longitude ' + curr.longitude);
-	Ti.API.info('=====>>> Latitude ' + curr.latitude);
-	Ti.API.info('=====>>> Accuracy ' + curr.accuracy);
+	Ti.API.info('=====>>> Longitude ' + longitude);
+	Ti.API.info('=====>>> Latitude ' + latitude);
+	Ti.API.info('=====>>> Accuracy ' + accuracy);
 	Ti.API.info('=====>>> Timestamp ' + timestamp);
 
 	if(latitude != 0 && longitude != 0) {
@@ -67,7 +67,7 @@ function updateCurrentLocation(e) {
 			timestamp : timestamp
 		});
 	}
-	setTimeout(s, 5000);
+	//setTimeout(s, 5000);
 	return;
 }
 
@@ -94,10 +94,12 @@ function s() {
 	}
 }
 
-setTimeout(s, 5000);
+//setTimeout(s, 5000);
+var gpsInterval = setInterval(s, 5000);
 
 Ti.App.fireEvent('stop_gps', function(e){
 	stop = true;
+	clearInterval(gpsInterval);
 });
 
 

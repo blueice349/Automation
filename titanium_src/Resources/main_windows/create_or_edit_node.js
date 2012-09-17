@@ -14,6 +14,7 @@ Ti.include('/lib/functions.js');
 Ti.include('/lib/encoder_base_64.js');
 
 var heightValue = (PLATFORM=='android')?55:50;
+var heightTextField = 74;
 var toolActInd = Ti.UI.createActivityIndicator();
 toolActInd.font = {
 	fontFamily : 'Helvetica Neue',
@@ -24,6 +25,7 @@ toolActInd.color = 'white';
 toolActInd.message = 'Loading...';
 var omadi_session_details;
 var roles;
+var fieldFontSize = (PLATFORM == 'android')?'16sp':'18'
 
 var months_set = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -2236,7 +2238,7 @@ create_or_edit_node.loadUI = function() {
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18,
+									fontSize : fieldFontSize,
 									fontWeight : 'bold'
 								},
 								textAlign : 'left',
@@ -2531,7 +2533,7 @@ create_or_edit_node.loadUI = function() {
 											arr_picker : arr_picker,
 											title : aux_val.title,
 											font : {
-												fontSize : 18
+												fontSize : fieldFontSize
 											},
 											color : '#000000',
 											top : top,
@@ -2598,10 +2600,10 @@ create_or_edit_node.loadUI = function() {
 											borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 											textAlign : 'left',
 											width : Ti.Platform.displayCaps.platformWidth - 30,
-											height : heightValue,
+											height : (PLATFORM=='android')?heightTextField:heightValue,
 											maxLength : 10,
 											font : {
-												fontSize : 18
+												fontSize : fieldFontSize
 											},
 											color : '#000000',
 											top : top,
@@ -2635,7 +2637,7 @@ create_or_edit_node.loadUI = function() {
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
 									}
-									top += heightValue;
+									top += (PLATFORM=='android')?heightTextField:heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
@@ -2901,7 +2903,7 @@ create_or_edit_node.loadUI = function() {
 										arr_picker : arr_picker,
 										title : aux_val.title,
 										font : {
-											fontSize : 18
+											fontSize : fieldFontSize
 										},
 										color : '#000000',
 										top : top,
@@ -2959,10 +2961,10 @@ create_or_edit_node.loadUI = function() {
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										textAlign : 'left',
 										width : Ti.Platform.displayCaps.platformWidth - 30,
-										height : heightValue,
+										height : (PLATFORM=='android')?heightTextField:heightValue,
 										maxLength : 10,
 										font : {
-											fontSize : 18
+											fontSize : fieldFontSize
 										},
 										color : '#000000',
 										top : top,
@@ -2996,7 +2998,7 @@ create_or_edit_node.loadUI = function() {
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
 									}
-									top += heightValue;
+									top += (PLATFORM=='android')?heightTextField:heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
@@ -3060,7 +3062,7 @@ create_or_edit_node.loadUI = function() {
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18,
+									fontSize : fieldFontSize,
 									fontWeight : 'bold'
 								},
 								textAlign : 'left',
@@ -3108,9 +3110,9 @@ create_or_edit_node.loadUI = function() {
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										textAlign : 'left',
 										width : Ti.Platform.displayCaps.platformWidth - 30,
-										height : heightValue,
+										height : (PLATFORM=='android')?heightTextField:heightValue,
 										font : {
-											fontSize : 18
+											fontSize : fieldFontSize
 										},
 										color : '#000000',
 										top : top,
@@ -3141,7 +3143,7 @@ create_or_edit_node.loadUI = function() {
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
 									}
-									top += heightValue;
+									top += (PLATFORM=='android')?heightTextField:heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
@@ -3157,9 +3159,9 @@ create_or_edit_node.loadUI = function() {
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									textAlign : 'left',
 									width : Ti.Platform.displayCaps.platformWidth - 30,
-									height : heightValue,
+									height : (PLATFORM=='android')?heightTextField:heightValue,
 									font : {
-										fontSize : 18
+										fontSize : fieldFontSize
 									},
 									color : '#000000',
 									top : top,
@@ -3190,7 +3192,7 @@ create_or_edit_node.loadUI = function() {
 									content[count].paddingLeft = 3;
 									content[count].paddingRight = 3;
 								}
-								top += heightValue;
+								top += (PLATFORM=='android')?heightTextField:heightValue;
 
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
@@ -3238,7 +3240,7 @@ create_or_edit_node.loadUI = function() {
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18,
+									fontSize : fieldFontSize,
 									fontWeight : 'bold'
 								},
 								textAlign : 'left',
@@ -3294,9 +3296,9 @@ create_or_edit_node.loadUI = function() {
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										textAlign : 'left',
 										width : Ti.Platform.displayCaps.platformWidth - 30,
-										height : heightValue,
+										height : (PLATFORM=='android')?heightTextField:heightValue,
 										font : {
-											fontSize : 18
+											fontSize : fieldFontSize
 										},
 										color : '#000000',
 										top : top,
@@ -3334,7 +3336,7 @@ create_or_edit_node.loadUI = function() {
 									if (_max != null) {
 										content[count].maxLength = _max;
 									}
-									top += heightValue;
+									top += (PLATFORM=='android')?heightTextField:heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
@@ -3423,9 +3425,9 @@ create_or_edit_node.loadUI = function() {
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									textAlign : 'left',
 									width : Ti.Platform.displayCaps.platformWidth - 30,
-									height : heightValue,
+									height : (PLATFORM=='android')?heightTextField:heightValue,
 									font : {
-										fontSize : 18
+										fontSize : fieldFontSize
 									},
 									color : '#000000',
 									top : top,
@@ -3465,7 +3467,7 @@ create_or_edit_node.loadUI = function() {
 									content[count].maxLength = _max;
 								}
 
-								top += heightValue;
+								top += (PLATFORM=='android')?heightTextField:heightValue;
 
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
@@ -3589,7 +3591,7 @@ create_or_edit_node.loadUI = function() {
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18,
+									fontSize : fieldFontSize,
 									fontWeight : 'bold'
 								},
 								textAlign : 'left',
@@ -3645,7 +3647,7 @@ create_or_edit_node.loadUI = function() {
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										textAlign : 'left',
 										width : Ti.Platform.displayCaps.platformWidth - 30,
-										height : 100,
+										height : (PLATFORM=='android')?2*heightTextField:100,
 										color : '#000000',
 										top : top,
 										field_type : field_arr[index_label][index_size].type,
@@ -3682,7 +3684,7 @@ create_or_edit_node.loadUI = function() {
 									if (_max != null) {
 										content[count].maxLength = _max;
 									}
-									top += 100;
+									top += (PLATFORM=='android')?2*heightTextField:100;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
@@ -3771,7 +3773,7 @@ create_or_edit_node.loadUI = function() {
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									textAlign : 'left',
 									width : Ti.Platform.displayCaps.platformWidth - 30,
-									height : 100,
+									height : (PLATFORM=='android')?2*heightTextField:100,
 									color : '#000000',
 									top : top,
 									field_type : field_arr[index_label][index_size].type,
@@ -3807,7 +3809,7 @@ create_or_edit_node.loadUI = function() {
 									content[count].maxLength = _max;
 								}
 
-								top += 100;
+								top += (PLATFORM=='android')?2*heightTextField:100;
 
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
@@ -3926,7 +3928,7 @@ create_or_edit_node.loadUI = function() {
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label + " " + title_location,
 								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18,
+									fontSize : fieldFontSize,
 									fontWeight : 'bold'
 								},
 								textAlign : 'left',
@@ -3973,9 +3975,9 @@ create_or_edit_node.loadUI = function() {
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										textAlign : 'left',
 										width : Ti.Platform.displayCaps.platformWidth - 30,
-										height : heightValue,
+										height : (PLATFORM=='android')?heightTextField:heightValue,
 										font : {
-											fontSize : 18
+											fontSize : fieldFontSize
 										},
 										color : '#000000',
 										top : top,
@@ -3996,7 +3998,7 @@ create_or_edit_node.loadUI = function() {
 									if (PLATFORM == 'android') {
 										content[count].backgroundImage = '../images/textfield.png'
 									}
-									top += heightValue;
+									top += (PLATFORM=='android')?heightTextField:heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
@@ -4012,9 +4014,9 @@ create_or_edit_node.loadUI = function() {
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									textAlign : 'left',
 									width : Ti.Platform.displayCaps.platformWidth - 30,
-									height : heightValue,
+									height : (PLATFORM=='android')?heightTextField:heightValue,
 									font : {
-										fontSize : 18
+										fontSize : fieldFontSize
 									},
 									color : '#000000',
 									top : top,
@@ -4035,7 +4037,7 @@ create_or_edit_node.loadUI = function() {
 								if (PLATFORM == 'android') {
 									content[count].backgroundImage = '../images/textfield.png'
 								}
-								top += heightValue;
+								top += (PLATFORM=='android')?heightTextField:heightValue;
 
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
@@ -4093,7 +4095,7 @@ create_or_edit_node.loadUI = function() {
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18,
+									fontSize : fieldFontSize,
 									fontWeight : 'bold'
 								},
 								textAlign : 'left',
@@ -4168,9 +4170,9 @@ create_or_edit_node.loadUI = function() {
 										returnKeyType : Titanium.UI.RETURNKEY_DONE,
 										textAlign : 'left',
 										width : Ti.Platform.displayCaps.platformWidth - 30,
-										height : heightValue,
+										height : (PLATFORM=='android')?heightTextField:heightValue,
 										font : {
-											fontSize : 18
+											fontSize : fieldFontSize
 										},
 										color : '#000000',
 										top : top,
@@ -4207,7 +4209,7 @@ create_or_edit_node.loadUI = function() {
 										content[count].paddingRight = 3;
 									}
 									addDoneButtonInKB(content[count]);
-									top += heightValue;
+									top += (PLATFORM=='android')?heightTextField:heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
@@ -4258,9 +4260,9 @@ create_or_edit_node.loadUI = function() {
 									returnKeyType : Titanium.UI.RETURNKEY_DONE,
 									textAlign : 'left',
 									width : Ti.Platform.displayCaps.platformWidth - 30,
-									height : heightValue,
+									height : (PLATFORM=='android')?heightTextField:heightValue,
 									font : {
-										fontSize : 18
+										fontSize : fieldFontSize
 									},
 									color : '#000000',
 									top : top,
@@ -4297,7 +4299,7 @@ create_or_edit_node.loadUI = function() {
 									content[count].paddingRight = 3;
 								}
 								addDoneButtonInKB(content[count]);
-								top += heightValue;
+								top += (PLATFORM=='android')?heightTextField:heightValue;
 
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
@@ -4381,7 +4383,7 @@ create_or_edit_node.loadUI = function() {
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18,
+									fontSize : fieldFontSize,
 									fontWeight : 'bold'
 								},
 								textAlign : 'left',
@@ -4428,9 +4430,9 @@ create_or_edit_node.loadUI = function() {
 										returnKeyType : Titanium.UI.RETURNKEY_DONE,
 										textAlign : 'left',
 										width : Ti.Platform.displayCaps.platformWidth - 30,
-										height : heightValue,
+										height : (PLATFORM=='android')?heightTextField:heightValue,
 										font : {
-											fontSize : 18
+											fontSize : fieldFontSize
 										},
 										color : '#000000',
 										top : top,
@@ -4462,7 +4464,7 @@ create_or_edit_node.loadUI = function() {
 										content[count].paddingRight = 3;
 									}
 									addDoneButtonInKB(content[count]);
-									top += heightValue;
+									top += (PLATFORM=='android')?heightTextField:heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
@@ -4480,9 +4482,9 @@ create_or_edit_node.loadUI = function() {
 									returnKeyType : Titanium.UI.RETURNKEY_DONE,
 									textAlign : 'left',
 									width : Ti.Platform.displayCaps.platformWidth - 30,
-									height : heightValue,
+									height : (PLATFORM=='android')?heightTextField:heightValue,
 									font : {
-										fontSize : 18
+										fontSize : fieldFontSize
 									},
 									color : '#000000',
 									top : top,
@@ -4514,7 +4516,7 @@ create_or_edit_node.loadUI = function() {
 									content[count].paddingRight = 3;
 								}
 								addDoneButtonInKB(content[count]);
-								top += heightValue;
+								top += (PLATFORM=='android')?heightTextField:heightValue;
 
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
@@ -4563,7 +4565,7 @@ create_or_edit_node.loadUI = function() {
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18,
+									fontSize : fieldFontSize,
 									fontWeight : 'bold'
 								},
 								textAlign : 'left',
@@ -4610,9 +4612,9 @@ create_or_edit_node.loadUI = function() {
 										keyboardType : Ti.UI.KEYBOARD_EMAIL,
 										textAlign : 'left',
 										width : Ti.Platform.displayCaps.platformWidth - 30,
-										height : heightValue,
+										height : (PLATFORM=='android')?heightTextField:heightValue,
 										font : {
-											fontSize : 18
+											fontSize : fieldFontSize
 										},
 										color : '#000000',
 										top : top,
@@ -4644,7 +4646,7 @@ create_or_edit_node.loadUI = function() {
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
 									}
-									top += heightValue;
+									top += (PLATFORM=='android')?heightTextField:heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
@@ -4661,9 +4663,9 @@ create_or_edit_node.loadUI = function() {
 									keyboardType : Ti.UI.KEYBOARD_EMAIL,
 									textAlign : 'left',
 									width : Ti.Platform.displayCaps.platformWidth - 30,
-									height : heightValue,
+									height : (PLATFORM=='android')?heightTextField:heightValue,
 									font : {
-										fontSize : 18
+										fontSize : fieldFontSize
 									},
 									color : '#000000',
 									top : top,
@@ -4695,7 +4697,7 @@ create_or_edit_node.loadUI = function() {
 									content[count].paddingLeft = 3;
 									content[count].paddingRight = 3;
 								}
-								top += heightValue;
+								top += (PLATFORM=='android')?heightTextField:heightValue;
 
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
@@ -4758,7 +4760,7 @@ create_or_edit_node.loadUI = function() {
 									text : ( isRequired ? '*' : '') + '' + field_arr[index_label][index_size].label,
 									color : isRequired ? 'red' : _lb_color,
 									font : {
-										fontSize : 18,
+										fontSize : fieldFontSize,
 										fontWeight : 'bold'
 									},
 									textAlign : 'left',
@@ -4859,7 +4861,7 @@ create_or_edit_node.loadUI = function() {
 											arr_picker : arr_picker,
 											title : aux_val.title,
 											font : {
-												fontSize : 18
+												fontSize : fieldFontSize
 											},
 											color : '#000000',
 											top : top,
@@ -4980,7 +4982,7 @@ create_or_edit_node.loadUI = function() {
 										arr_picker : arr_picker,
 										title : aux_val.title,
 										font : {
-											fontSize : 18
+											fontSize : fieldFontSize
 										},
 										color : '#000000',
 										top : top,
@@ -5129,7 +5131,7 @@ create_or_edit_node.loadUI = function() {
 										textAlign : "center",
 										height : heightValue,
 										font : {
-											fontSize : 18
+											fontSize : fieldFontSize
 										},
 										color : '#000000',
 										top : top,
@@ -5207,7 +5209,7 @@ create_or_edit_node.loadUI = function() {
 									text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 									color : isRequired ? 'red' : _lb_color,
 									font : {
-										fontSize : 18,
+										fontSize : fieldFontSize,
 										fontWeight : 'bold'
 									},
 									textAlign : 'left',
@@ -5287,9 +5289,9 @@ create_or_edit_node.loadUI = function() {
 											borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 											color : '#000000',
 											private_index : o_index,
-											height : heightValue,
+											height : (PLATFORM=='android')?heightTextField:heightValue,
 											font : {
-												fontSize : 18
+												fontSize : fieldFontSize
 											},
 											width : Ti.Platform.displayCaps.platformWidth - 30,
 											top : top,
@@ -5331,7 +5333,7 @@ create_or_edit_node.loadUI = function() {
 										}
 										//AUTOCOMPLETE TABLE
 										var autocomplete_table = Titanium.UI.createTableView({
-											top : top + heightValue,
+											top : top + ((PLATFORM=='android')?heightTextField-10:heightValue),
 											searchHidden : true,
 											zIndex : 15,
 											height : getScreenHeight() * 0.3,
@@ -5341,7 +5343,7 @@ create_or_edit_node.loadUI = function() {
 											borderWidth : 1
 										});
 										content[count].autocomplete_table = autocomplete_table;
-										top += heightValue;
+										top += (PLATFORM=='android')?heightTextField:heightValue;
 
 										regionView.add(content[count].autocomplete_table);
 
@@ -5423,7 +5425,7 @@ create_or_edit_node.loadUI = function() {
 														e.source.autocomplete_table.height = (table_data.length == 1) ? getScreenHeight() * 0.1 : getScreenHeight() * 0.2;
 													}
 													e.source.autocomplete_table.scrollToTop(0, {animated: false});
-													viewContent.scrollTo(0,e.source.regionView.top+e.source.top-heightValue);
+													viewContent.scrollTo(0,e.source.regionView.top+e.source.top-((PLATFORM=='android')?heightTextField:heightValue));
 													if(table_data.length > 0) {
 														e.source.autocomplete_table.visible = true;
 													} else {
@@ -5486,9 +5488,9 @@ create_or_edit_node.loadUI = function() {
 										hintText : field_arr[index_label][index_size].label + ' ...',
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										color : '#000000',
-										height : heightValue,
+										height : (PLATFORM=='android')?heightTextField:heightValue,
 										font : {
-											fontSize : 18
+											fontSize : fieldFontSize
 										},
 										width : Ti.Platform.displayCaps.platformWidth - 30,
 										top : top,
@@ -5533,7 +5535,7 @@ create_or_edit_node.loadUI = function() {
 									}
 									//AUTOCOMPLETE TABLE
 									var autocomplete_table = Titanium.UI.createTableView({
-										top : top + heightValue,
+										top : top + ((PLATFORM=='android')?heightTextField-10:heightValue),
 										searchHidden : true,
 										zIndex : 15,
 										height : getScreenHeight() * 0.3,
@@ -5543,7 +5545,7 @@ create_or_edit_node.loadUI = function() {
 										borderWidth : 1
 									});
 									content[count].autocomplete_table = autocomplete_table;
-									top += heightValue;
+									top += (PLATFORM=='android')?heightTextField:heightValue;
 
 									regionView.add(content[count].autocomplete_table);
 
@@ -5626,7 +5628,7 @@ create_or_edit_node.loadUI = function() {
 													e.source.autocomplete_table.height = (table_data.length==1)?getScreenHeight() * 0.1: getScreenHeight() * 0.2;
 												}
 												e.source.autocomplete_table.scrollToTop(0, {animated: false});
-												viewContent.scrollTo(0,e.source.regionView.top+e.source.top-heightValue);
+												viewContent.scrollTo(0,e.source.regionView.top+e.source.top-((PLATFORM=='android')?heightTextField:heightValue));
 												if(table_data.length > 0) {
 													e.source.autocomplete_table.visible = true;
 												} else {
@@ -5688,7 +5690,7 @@ create_or_edit_node.loadUI = function() {
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18,
+									fontSize : fieldFontSize,
 									fontWeight : 'bold'
 								},
 								textAlign : 'left',
@@ -5776,9 +5778,9 @@ create_or_edit_node.loadUI = function() {
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										color : '#000000',
 										private_index : o_index,
-										height : heightValue,
+										height : (PLATFORM=='android')?heightTextField:heightValue,
 										font : {
-											fontSize : 18
+											fontSize : fieldFontSize
 										},
 										width : Ti.Platform.displayCaps.platformWidth - 30,
 										top : top,
@@ -5820,7 +5822,7 @@ create_or_edit_node.loadUI = function() {
 									}
 									//AUTOCOMPLETE TABLE
 									var autocomplete_table = Titanium.UI.createTableView({
-										top : top + heightValue,
+										top : top + ((PLATFORM=='android')?heightTextField-10:heightValue),
 										searchHidden : true,
 										zIndex : 15,
 										height : getScreenHeight() * 0.3,
@@ -5830,7 +5832,7 @@ create_or_edit_node.loadUI = function() {
 										borderWidth : 1
 									});
 									content[count].autocomplete_table = autocomplete_table;
-									top += heightValue;
+									top += (PLATFORM=='android')?heightTextField:heightValue;
 
 									regionView.add(content[count].autocomplete_table);
 
@@ -5870,7 +5872,7 @@ create_or_edit_node.loadUI = function() {
 
 									content[count].addEventListener('focus', function(e) {
 										e.source.touched = true;
-										adjustView(e.source.my_index,e.source.regionView.top+e.source.top-heightValue ); 
+										adjustView(e.source.my_index,e.source.regionView.top+e.source.top-((PLATFORM=='android')?heightTextField:heightValue) ); 
 									});
 
 									//
@@ -5919,7 +5921,7 @@ create_or_edit_node.loadUI = function() {
 														e.source.autocomplete_table.height = (table_data.length==1)?getScreenHeight() * 0.1: getScreenHeight() * 0.2;
 													}
 													e.source.autocomplete_table.scrollToTop(0, {animated: false});
-													viewContent.scrollTo(0,e.source.regionView.top+e.source.top-heightValue);
+													viewContent.scrollTo(0,e.source.regionView.top+e.source.top-((PLATFORM=='android')?heightTextField:heightValue));
 													if(table_data.length > 0) {
 														e.source.autocomplete_table.visible = true;
 													} else {
@@ -5961,9 +5963,9 @@ create_or_edit_node.loadUI = function() {
 									hintText : field_arr[index_label][index_size].label + ' ...',
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									color : '#000000',
-									height : heightValue,
+									height : (PLATFORM=='android')?heightTextField:heightValue,
 									font : {
-										fontSize : 18
+										fontSize : fieldFontSize
 									},
 									width : Ti.Platform.displayCaps.platformWidth - 30,
 									top : top,
@@ -6005,7 +6007,7 @@ create_or_edit_node.loadUI = function() {
 								}
 								//AUTOCOMPLETE TABLE
 								var autocomplete_table = Titanium.UI.createTableView({
-									top : top + heightValue,
+									top : top + ((PLATFORM=='android')?heightTextField-10:heightValue),
 									searchHidden : true,
 									zIndex : 999,
 									height : getScreenHeight() * 0.3,
@@ -6015,7 +6017,7 @@ create_or_edit_node.loadUI = function() {
 									borderWidth : 1
 								});
 								content[count].autocomplete_table = autocomplete_table;
-								top += heightValue;
+								top += (PLATFORM=='android')?heightTextField:heightValue;
 
 								regionView.add(content[count].autocomplete_table);
 
@@ -6056,7 +6058,7 @@ create_or_edit_node.loadUI = function() {
 
 								content[count].addEventListener('focus', function(e) {
 									e.source.touched = true;
-									adjustView(e.source.my_index,e.source.regionView.top+e.source.top-heightValue ); 
+									adjustView(e.source.my_index,e.source.regionView.top+e.source.top-((PLATFORM=='android')?heightTextField:heightValue) ); 
 								});
 
 								//
@@ -6106,7 +6108,7 @@ create_or_edit_node.loadUI = function() {
 													e.source.autocomplete_table.height = (table_data.length==1)?getScreenHeight() * 0.1: getScreenHeight() * 0.2;
 												}
 												e.source.autocomplete_table.scrollToTop(0, {animated: false});
-												viewContent.scrollTo(0,e.source.regionView.top+e.source.top-heightValue);
+												viewContent.scrollTo(0,e.source.regionView.top+e.source.top-((PLATFORM=='android')?heightTextField:heightValue));
 												if(table_data.length>0){
 													e.source.autocomplete_table.visible = true;
 												} else {
@@ -6160,7 +6162,7 @@ create_or_edit_node.loadUI = function() {
 								text : ( isRequired ? '*' : '') + '' + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18,
+									fontSize : fieldFontSize,
 									fontWeight : 'bold'
 								},
 								textAlign : 'left',
@@ -6275,7 +6277,7 @@ create_or_edit_node.loadUI = function() {
 										arr_picker : arr_picker,
 										title : aux_val.title,
 										font : {
-											fontSize : 18
+											fontSize : fieldFontSize
 										},
 										color : '#000000',
 										top : top,
@@ -6378,7 +6380,7 @@ create_or_edit_node.loadUI = function() {
 									arr_picker : arr_picker,
 									title : aux_val.title,
 									font : {
-										fontSize : 18
+										fontSize : fieldFontSize
 									},
 									color : '#000000',
 									top : top,
@@ -6474,7 +6476,7 @@ create_or_edit_node.loadUI = function() {
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18,
+									fontSize : fieldFontSize,
 									fontWeight : 'bold'
 								},
 								textAlign : 'left',
@@ -6544,7 +6546,7 @@ create_or_edit_node.loadUI = function() {
 											width : Ti.Platform.displayCaps.platformWidth - 30,
 											title_picker : field_arr[index_label][index_size].label,
 											font : {
-												fontSize : 18
+												fontSize : fieldFontSize
 											},
 											text : text_in_field,
 											textAlign : 'center',
@@ -6647,7 +6649,7 @@ create_or_edit_node.loadUI = function() {
 										width : Ti.Platform.displayCaps.platformWidth - 30,
 										title_picker : field_arr[index_label][index_size].label,
 										font : {
-											fontSize : 18
+											fontSize : fieldFontSize
 										},
 										text : text_in_field,
 										textAlign : 'center',
@@ -6782,7 +6784,7 @@ create_or_edit_node.loadUI = function() {
 											private_index : o_index,
 											width : Ti.Platform.displayCaps.platformWidth - 30,
 											font : {
-												fontSize : 18
+												fontSize : fieldFontSize
 											},
 											text : text_in_field,
 											textAlign : 'center',
@@ -6894,7 +6896,7 @@ create_or_edit_node.loadUI = function() {
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										width : Ti.Platform.displayCaps.platformWidth - 30,
 										font : {
-											fontSize : 18
+											fontSize : fieldFontSize
 										},
 										text : text_in_field,
 										textAlign : 'center',
@@ -6982,7 +6984,7 @@ create_or_edit_node.loadUI = function() {
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18,
+									fontSize : fieldFontSize,
 									fontWeight : 'bold'
 								},
 								textAlign : 'left',
@@ -7157,7 +7159,7 @@ create_or_edit_node.loadUI = function() {
 								text : ( isRequired ? '*' : '') + '' + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18,
+									fontSize : fieldFontSize,
 									fontWeight : 'bold'
 								},
 								textAlign : 'left',
@@ -7211,7 +7213,7 @@ create_or_edit_node.loadUI = function() {
 										width : Ti.Platform.displayCaps.platformWidth - 30,
 										title_picker : field_arr[index_label][index_size].label,
 										font : {
-											fontSize : 18
+											fontSize : fieldFontSize
 										},
 										text : text_in_field,
 										textAlign : 'center',
@@ -7298,7 +7300,7 @@ create_or_edit_node.loadUI = function() {
 									width : Ti.Platform.displayCaps.platformWidth - 30,
 									title_picker : field_arr[index_label][index_size].label,
 									font : {
-										fontSize : 18
+										fontSize : fieldFontSize
 									},
 									text : text_in_field,
 									textAlign : 'center',
@@ -7406,7 +7408,7 @@ create_or_edit_node.loadUI = function() {
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18,
+									fontSize : fieldFontSize,
 									fontWeight : 'bold'
 								},
 								textAlign : 'left',
@@ -7465,9 +7467,9 @@ create_or_edit_node.loadUI = function() {
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										textAlign : 'left',
 										width : Ti.Platform.displayCaps.platformWidth - 30,
-										height : heightValue,
+										height : (PLATFORM=='android')?heightTextField:heightValue,
 										font : {
-											fontSize : 18
+											fontSize : fieldFontSize
 										},
 										color : '#000000',
 										top : top,
@@ -7499,7 +7501,7 @@ create_or_edit_node.loadUI = function() {
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
 									}
-									top += heightValue;
+									top += (PLATFORM=='android')?heightTextField:heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
@@ -7540,9 +7542,9 @@ create_or_edit_node.loadUI = function() {
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									textAlign : 'left',
 									width : Ti.Platform.displayCaps.platformWidth - 30,
-									height : heightValue,
+									height : (PLATFORM=='android')?heightTextField:heightValue,
 									font : {
-										fontSize : 18
+										fontSize : fieldFontSize
 									},
 									color : '#000000',
 									top : top,
@@ -7583,7 +7585,7 @@ create_or_edit_node.loadUI = function() {
 								}
 								//AUTOCOMPLETE TABLE
 								var autocomplete_table = Titanium.UI.createTableView({
-									top : top + heightValue,
+									top : top + ((PLATFORM=='android')?heightTextField-10:heightValue),
 									searchHidden : true,
 									zIndex : 15,
 									height : getScreenHeight() * 0.3,
@@ -7593,7 +7595,7 @@ create_or_edit_node.loadUI = function() {
 									borderWidth : 1
 								});
 								content[count].autocomplete_table = autocomplete_table;
-								top += heightValue;
+								top += (PLATFORM=='android')?heightTextField:heightValue;
 
 								regionView.add(content[count].autocomplete_table);
 
@@ -7618,7 +7620,7 @@ create_or_edit_node.loadUI = function() {
 								});
 
 								content[count].addEventListener('focus', function(e) {
-									adjustView(e.source.my_index,e.source.regionView.top+e.source.top-heightValue ); 
+									adjustView(e.source.my_index,e.source.regionView.top+e.source.top-((PLATFORM=='android')?heightTextField:heightValue) ); 
 									if (e.source.fantasy_name == "Model") {
 										Ti.API.info(content[e.source.make_ind].value);
 
@@ -7679,7 +7681,7 @@ create_or_edit_node.loadUI = function() {
 												e.source.autocomplete_table.height = (table_data.length==1)?getScreenHeight() * 0.1: getScreenHeight() * 0.2;
 											}
 											e.source.autocomplete_table.scrollToTop(0, {animated: false});
-											viewContent.scrollTo(0,(e.source.regionView.top+e.source.top-heightValue));
+											viewContent.scrollTo(0,(e.source.regionView.top+e.source.top-((PLATFORM=='android')?heightTextField:heightValue)));
 											if(table_data.length>0){
 												e.source.autocomplete_table.visible = true;
 											} else {
@@ -7723,7 +7725,7 @@ create_or_edit_node.loadUI = function() {
 									text : field_arr[index_label][index_size].label + ' :',
 									color : '#000000',
 									font : {
-										fontSize : 18,
+										fontSize : fieldFontSize,
 										fontWeight : 'bold'
 									},
 									textAlign : 'center',
@@ -7747,7 +7749,7 @@ create_or_edit_node.loadUI = function() {
 								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
 								font : {
-									fontSize : 18,
+									fontSize : fieldFontSize,
 									fontWeight : 'bold'
 								},
 								textAlign : 'left',
@@ -7957,7 +7959,7 @@ create_or_edit_node.loadUI = function() {
 								text : field_arr[index_label][index_size].label,
 								color : _lb_color,
 								font : {
-									fontSize : 18,
+									fontSize : fieldFontSize,
 									fontWeight : 'bold'
 								},
 								textAlign : 'left',
@@ -8004,7 +8006,7 @@ create_or_edit_node.loadUI = function() {
 									text : field_arr[index_label][index_size].label,
 									color : _lb_color,
 									font : {
-										fontSize : 18,
+										fontSize : fieldFontSize,
 										fontWeight : 'bold'
 									},
 									textAlign : 'left',
@@ -8051,7 +8053,7 @@ create_or_edit_node.loadUI = function() {
 									text : field_arr[index_label][index_size].label,
 									color : _lb_color,
 									font : {
-										fontSize : 18,
+										fontSize : fieldFontSize,
 										fontWeight : 'bold'
 									},
 									textAlign : 'left',
@@ -8077,9 +8079,9 @@ create_or_edit_node.loadUI = function() {
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									color : '#000000',
 									backgroundColor : '#D6CED9',
-									height : heightValue,
+									height : (PLATFORM=='android')?heightTextField:heightValue,
 									font : {
-										fontSize : 18
+										fontSize : fieldFontSize
 									},
 									width : Ti.Platform.displayCaps.platformWidth - 30,
 									top : top,
@@ -8101,7 +8103,7 @@ create_or_edit_node.loadUI = function() {
 								});
 								regionView.add(content[count]);
 
-								top += heightValue;
+								top += (PLATFORM=='android')?heightTextField:heightValue;
 								regionView.add(content[count]);
 								count++;
 							}

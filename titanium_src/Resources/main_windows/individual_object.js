@@ -1570,7 +1570,7 @@ function bottomButtons1(actualWindow){
 	});
 	
 	//Check is node editable or not
-	var arr = (isEditEnabled==true)?[back, space, label, space, edit]:[back, space, label, space]
+	var arr = (isEditEnabled==true)?[back, space, label, space, edit]:((Ti.Platform.osname == 'ipad')? [back, space, label, space]:[back, label, space])
 	
 	// create and add toolbar
 	var toolbar = Ti.UI.iOS.createToolbar({

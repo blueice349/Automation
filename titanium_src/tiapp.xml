@@ -10,12 +10,10 @@
     </deployment-targets>
     <id>com.omadi.crm</id>
     <name>Omadi</name>
-    <version>1.5.7</version>
+    <version>1.5.8</version>
     <publisher>Omadi</publisher>
     <url>http://www.omadi.com</url>
-    <description>We heart small business. Our vision is to couple the best mobile technology with every small business owner on the planet. We seek out underserved markets (like parking enforcement) and bring our passion of technology and gluttonous capitalistic approach to solving your problems – all of them.
-
-Our main goal is to make you rich. Filthy rich. We will give you the technology you need to bring about disgustingly high profits – and the rest is up to you. Seriously, that is our passion, our vision, and our goal. All we ask is that you remember who helped you reach the top. (Answer: Omadi) </description>
+    <description>CRM from omadi</description>
     <copyright>2012 by Omadi</copyright>
     <icon>appicon.png</icon>
     <persistent-wifi>false</persistent-wifi>
