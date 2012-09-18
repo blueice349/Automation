@@ -67,7 +67,7 @@ function updateCurrentLocation(e) {
 			timestamp : timestamp
 		});
 	}
-	//setTimeout(s, 5000);
+	setTimeout(s, 5000);
 	return;
 }
 
@@ -94,12 +94,12 @@ function s() {
 	}
 }
 
-//setTimeout(s, 5000);
-var gpsInterval = setInterval(s, 5000);
+setTimeout(s, 5000);
+//var gpsInterval = setInterval(s, 5000);
 
 Ti.App.fireEvent('stop_gps', function(e){
 	stop = true;
-	clearInterval(gpsInterval);
+	//clearInterval(gpsInterval);
 });
 
 
