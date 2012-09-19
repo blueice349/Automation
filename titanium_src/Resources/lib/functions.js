@@ -3610,9 +3610,9 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 
 				Ti.App.Properties.setString('logStatus', "The server logged you out");
 				Ti.API.info('From Functions ... Value is : '+ Ti.App.Properties.getString('logStatus'));
-				if( getDeviceTypeIndentifier() == "android"){
+				//if( getDeviceTypeIndentifier() == "android"){
 					Ti.App.fireEvent('stop_gps');
-				}
+				//}
 				Ti.App.fireEvent('free_login');
 				win2.close();
 			});
@@ -3640,9 +3640,9 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 			if(this.status == 403 || elements.status == 403) {
 				a_msg.message = "You have been logged out. Please log back in."
 				a_msg.addEventListener('click', function(e) {
-					if(getDeviceTypeIndentifier() == "android") {
+					//if(getDeviceTypeIndentifier() == "android") {
 						Ti.App.fireEvent('stop_gps');
-					}
+					//}
 					Ti.App.fireEvent('free_login');
 					win.close();
 				});

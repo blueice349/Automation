@@ -97,7 +97,7 @@ function s() {
 setTimeout(s, 5000);
 //var gpsInterval = setInterval(s, 5000);
 
-Ti.App.fireEvent('stop_gps', function(e){
+Ti.App.addEventListener('stop_gps', function(e){
 	stop = true;
 	//clearInterval(gpsInterval);
 });
@@ -213,7 +213,7 @@ Ti.App.addEventListener('upload_gps_locations', function() {
 						db_coord.execute("COMMIT TRANSACTION");
 						Ti.API.info('Finished inserting');
 						db_coord.close();
-						Ti.App.fireEvent('refresh_UI_Alerts');
+						Ti.App.fireEvent('refresh_UI_Alerts', {status: 'success'});
 						uploading = false;
 					}
 				}
@@ -223,6 +223,7 @@ Ti.App.addEventListener('upload_gps_locations', function() {
 					db_coord.execute("UPDATE user_location SET status =\"notUploaded\"");
 					Ti.API.info("Error found for GPS uploading ");
 					db_coord.close();
+					Ti.App.fireEvent('refresh_UI_Alerts', {status: 'fail'});
 					uploading = false;
 				}
 				//Sending information and try to connect

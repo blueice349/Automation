@@ -6,10 +6,13 @@ var win = {};
 win.is_opened = false;
 var listTableView;
 var search;
+var empty;
 var accountMessage = {};
-accountMessage.win = null;
+accountMessage.win = {};
 accountMessage.search = null;
 accountMessage.listView = null;
+accountMessage.win.isOpened = false;
+var actIndAlert;
 
 
 message_center.get_win = function() {
@@ -38,6 +41,21 @@ message_center.get_win = function() {
 		backgroundColor: '#fff'
 	});
 	win.add(listTableView);
+	
+	empty = Titanium.UI.createLabel({
+				height : 'auto',
+				width : 'auto',
+				top : '50%',
+				color: '#000',
+				text : 'You have no messages'
+			});
+	win.add(empty);
+	
+	actIndAlert = Ti.UI.createActivityIndicator({
+		message: 'Please wait..',
+		color: '#fff'
+	});
+	win.add(actIndAlert);
 		
 	//When back button on the phone is pressed, it opens mainMenu.js and close the current window
 	win.addEventListener('android:back', function() {
@@ -73,9 +91,13 @@ message_center.loadUI = function() {
 }
 
 //message_center.loadUI = function() {
-Ti.App.addEventListener('refresh_UI_Alerts', function(){
+Ti.App.addEventListener('refresh_UI_Alerts', function(e){
 	if (win && win.is_opened === true){
-		if(accountMessage.win!=null){
+		actIndAlert.hide();
+		if(e.status == 'fail') {
+			return;
+		}
+		if(accountMessage.win.isOpened==true){
 			loadAccAlertData();
 		}else{
 			loadData();
@@ -178,6 +200,7 @@ function alertNavButtons_android(listTableView, win, type){
 		height: 'auto'
 	});	
 	refresh_image.addEventListener('click', function(e){
+		actIndAlert.show();
 		Ti.App.fireEvent('upload_gps_locations');
 	});
 	
@@ -219,17 +242,9 @@ function loadData(){
 		var data = new Array();
 		//Check if the list is empty or not
 		if(obj_cnt.length == 0) {
-			win.remove(listTableView);
+			listTableView.hide();
+			empty.show();
 			
-			//Shows the empty list
-			var empty = Titanium.UI.createLabel({
-				height : 'auto',
-				width : 'auto',
-				top : '50%',
-				color: '#000',
-				text : 'You have no messages'
-			});
-			win.add(empty);
 		}else { //Shows the messages
 			for (var x in obj_cnt){
 				var fullName = obj_cnt[x].label+" ("+obj_cnt[x].count+")";
@@ -247,7 +262,8 @@ function loadData(){
 				//Populates the array
 				data.push(row);
 			}
-			
+			listTableView.show();
+			empty.hide();
 			listTableView.addEventListener('focus', function(e) {
 				search.blur();
 			});
@@ -283,9 +299,11 @@ function loadData(){
 function opnAccountAlertsList(e) {
 	accountMessage.win = Ti.UI.createWindow({
 		fullscreen : false,
-		title : e.row.lbl + " - Alert List",
-		nid: e.row.nid
+		//title : e.row.lbl + " - Alert List",
+		nid: e.row.nid,
+		isOpened: false
 	});
+	accountMessage.win.isOpened = true;
 	accountMessage.search = Ti.UI.createSearchBar({
 		hintText : 'Search...',
 		autocorrect : false,
@@ -302,6 +320,7 @@ function opnAccountAlertsList(e) {
 	});
 	accountMessage.win.add(accountMessage.listView);
 	accountMessage.listView.addEventListener('click', function(e) {
+			accountMessage.search.blur();
 			var a_db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 			var a_res = a_db.execute("SELECT * FROM node WHERE nid=" + e.row.nid);
 			var n_nid = e.row.nid;
@@ -354,9 +373,20 @@ function opnAccountAlertsList(e) {
 					win_new.open();
 				}
 			});
-
-		});
+	});
 	
+	accountMessage.listView.addEventListener('focus', function(e) {
+		accountMessage.search.blur();
+	});
+
+	accountMessage.search.addEventListener('return', function(e) {
+		accountMessage.search.blur();
+	});
+
+	accountMessage.search.addEventListener('cancel', function(e) {
+		accountMessage.search.blur();
+	}); 
+
 	if(PLATFORM == 'android') {
 		alertNavButtons_android(accountMessage.listView, accountMessage.win, accountMessage.win.title);
 		bottomBack_release(accountMessage.win, "Back", "enable");
@@ -365,12 +395,23 @@ function opnAccountAlertsList(e) {
 	}
 	accountMessage.win.addEventListener('android:back', function() {
 		accountMessage.win.close();
+		accountMessage.win.isOpened = false;
 	});
 	
 	accountMessage.win.addEventListener('close', function(e){
-		accountMessage.win = null;
+		aaccountMessage.win.isOpened = false;
 	});
+	
+	accountMessage.win.addEventListener('focus', function() {
+		setTimeout(function() {
+			accountMessage.search.blur();
+		}, 110);
+	}); 
+
 	accountMessage.win.open();
+	if(PLATFORM == 'android'){
+		Ti.UI.Android.hideSoftKeyboard();
+	}
 	loadAccAlertData();
 }
 

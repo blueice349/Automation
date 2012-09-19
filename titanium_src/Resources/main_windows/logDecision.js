@@ -69,9 +69,9 @@ labelOut.addEventListener('click',function (){
 	indLog.log.onload = function(e) {
 		Ti.App.Properties.setString('logStatus', "You have successfully logged out");
 		Ti.API.info('From Functions ... Value is : '+ Ti.App.Properties.getString('logStatus'));
-		if( getDeviceTypeIndentifier() == "android"){
+		//if( getDeviceTypeIndentifier() == "android"){
 			Ti.App.fireEvent('stop_gps');
-		}
+		//}
 		Ti.App.fireEvent('free_login');
 		
 		indLog._parent.close();
