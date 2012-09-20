@@ -33,15 +33,20 @@ var OMADI_VERSION = "omadiDb1599";
 
 Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION);
 var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );
+if(PLATFORM != 'android'){db.file.setRemoteBackup(false);}
 var credentials = db.execute('SELECT domain, username, password FROM history WHERE "id_hist"=1');
 
 //var locked_field = true;
 var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+if(PLATFORM != 'android'){db_a.file.setRemoteBackup(false);}
 var updatedTime = db_a.execute('SELECT timestamp FROM updated WHERE rowid=1');
+
 
 function is_first_time(){
 	var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+	if(PLATFORM != 'android'){db_a.file.setRemoteBackup(false);}
 	var updatedTime = db_a.execute('SELECT timestamp FROM updated WHERE rowid=1');
+	
 	if (updatedTime.fieldByName('timestamp') != 0){
 		updatedTime.close();	
 		db_a.close();
@@ -188,7 +193,9 @@ tf2.addEventListener('return', function(){
 
 win1.addEventListener('focus', function(){
 	var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+	if(PLATFORM != 'android'){db_a.file.setRemoteBackup(false);}
 	var updatedTime = db_a.execute('SELECT timestamp FROM updated WHERE rowid=1');
+	
 	var new_color = "#000000";
 	if (updatedTime.fieldByName('timestamp') != 0){
 	//	locked_field = false;
@@ -445,7 +452,7 @@ i_scroll_page.add(block_i);
  */
 b1.addEventListener('click', function(){
 	var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
-	
+	if(PLATFORM != 'android'){db.file.setRemoteBackup(false);}
 	//Onblur the text fields, remove keyboard from screen
 	portal.blur();
 	tf2.blur();
@@ -497,7 +504,7 @@ b1.addEventListener('click', function(){
 		xhr.onload = function(e) {
 							
 				var db_list = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );	
-	
+				if(PLATFORM != 'android'){db_list.file.setRemoteBackup(false);}
 				var portal_base = db_list.execute('SELECT domain FROM domains WHERE domain=\''+portal.value+'\'');
 				
 				if ( portal_base.rowCount > 0){

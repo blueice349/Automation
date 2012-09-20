@@ -167,6 +167,7 @@ reinitializeBtn.addEventListener('click', function() {
 				
 				//If delete_all is present, delete all contents:
 				db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+				if(PLATFORM != 'android'){db_installMe.file.setRemoteBackup(false);}
 				if(PLATFORM == "android") {
 					//Remove the database
 					db_installMe.remove();
@@ -179,8 +180,10 @@ reinitializeBtn.addEventListener('click', function() {
 				}
 				db_installMe = null;
 				db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+				if(PLATFORM != 'android'){db_installMe.file.setRemoteBackup(false);}
 				
 				var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName()+"_GPS");
+				if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
 				db_coord.execute('DELETE FROM alerts');
 				db_coord.close();
 				Ti.App.fireEvent('update_from_menu');

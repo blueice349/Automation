@@ -127,6 +127,7 @@ function get_android_menu(menu_exists) {
 
 		if (win.nid != null) {
 			var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+			if(PLATFORM != 'android'){db_act.file.setRemoteBackup(false);}
 			var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
 			var _data = JSON.parse(json_data.fieldByName('_data'));
 
@@ -160,6 +161,7 @@ function get_android_menu(menu_exists) {
 			db_act.close();
 		} else {
 			var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+			if(PLATFORM != 'android'){db_act.file.setRemoteBackup(false);}
 			var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
 			var _data = JSON.parse(json_data.fieldByName('_data'));
 
@@ -269,6 +271,7 @@ function get_android_menu(menu_exists) {
 
 			if (win.nid != null) {
 				var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+				if(PLATFORM != 'android'){db_act.file.setRemoteBackup(false);}
 				var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
 				var _data = JSON.parse(json_data.fieldByName('_data'));
 
@@ -302,6 +305,7 @@ function get_android_menu(menu_exists) {
 				db_act.close();
 			} else {
 				var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+				if(PLATFORM != 'android'){db_act.file.setRemoteBackup(false);}
 				var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
 				var _data = JSON.parse(json_data.fieldByName('_data'));
 
@@ -435,6 +439,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 	}
 	//this is used for checking restrictions in db against all nid on this form
 	var db_check_restrictions = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	if(PLATFORM != 'android'){db_check_restrictions.file.setRemoteBackup(false);}
 	var restrictions = new Array();
 
 	Ti.API.info("--------------------content array length : " + content.length + " --------------------");
@@ -703,7 +708,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 
 		showIndicator(mode_msg);
 		var db_put = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-
+		if(PLATFORM != 'android'){db_put.file.setRemoteBackup(false);}
 		//
 		//Retrieve objects that need quotes:
 		//
@@ -884,8 +889,6 @@ function keep_info(_flag_info, pass_it, new_time) {
 					Ti.API.info('About to insert ' + _array_value[content[j].field_name]);
 					// table structure:
 					// incremental, node_id, field_name, value
-					//var db_jub = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-
 					if (win.mode == 0) {
 						Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + new_nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
 						db_put.execute("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + new_nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");   
@@ -893,8 +896,6 @@ function keep_info(_flag_info, pass_it, new_time) {
 						Ti.API.info("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + win.nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
 						db_put.execute("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + win.nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
 					}
-
-					//db_jub.close();
 
 					// Code must to be a number since this database field accepts only integers numbers
 					// Token to indentify array of numbers is 7411317618171051229
@@ -945,8 +946,6 @@ function keep_info(_flag_info, pass_it, new_time) {
 							Ti.API.info('About to insert ' + content[j].field_name);
 							// table structure:
 							// incremental, node_id, field_name, value
-							//var db_jub = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-
 							if (win.mode == 0) {
 								Ti.API.info("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + new_nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
 								db_put.execute("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + new_nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
@@ -954,9 +953,6 @@ function keep_info(_flag_info, pass_it, new_time) {
 								Ti.API.info("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + win.nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
 								db_put.execute("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + win.nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
 							}
-
-							//db_jub.close();
-
 							// Code must to be a number since this database field accepts only integers numbers
 							// Token to indentify array of numbers is 7411317618171051229
 							value_to_insert = 7411317618171051229;
@@ -1316,7 +1312,7 @@ function reload_me(part) {
 //Return models based on a certain "make" if "make" is not present returns the whole database set
 function get_models(make) {
 	var db_for_veh = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-
+	if(PLATFORM != 'android'){db_for_veh.file.setRemoteBackup(false);}
 	var _aux_dt = db_for_veh.execute("SELECT DISTINCT model FROM _vehicles WHERE make LIKE '%" + make + "%'");
 	var _set_result = [];
 	if (_aux_dt.rowCount > 0) {
@@ -1994,6 +1990,7 @@ create_or_edit_node.loadUI = function() {
 	omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
 	roles = omadi_session_details.user.roles;
 	db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	if(PLATFORM != 'android'){db_display.file.setRemoteBackup(false);}
 	regions = db_display.execute('SELECT * FROM regions WHERE node_type = "' + win.type + '" ORDER BY weight ASC');
 	if (win.mode == 1) {
 		var node_table = db_display.execute('SELECT * FROM node WHERE nid=' + win.nid);
@@ -5721,6 +5718,7 @@ create_or_edit_node.loadUI = function() {
 								}
 								Ti.API.info(secondary);
 								var db_bah = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+								if(PLATFORM != 'android'){db_bah.file.setRemoteBackup(false);}
 								var nodes = db_bah.execute(secondary);
 								Ti.API.info("Num of rows: " + nodes.rowCount);
 								while (nodes.isValidRow()) {
@@ -8387,6 +8385,7 @@ create_or_edit_node.loadUI = function() {
 					}).show();
 				}
 				var db_toDeleteImage = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+				if(PLATFORM != 'android'){db_toDeleteImage.file.setRemoteBackup(false);}
 				db_toDeleteImage.execute("DELETE FROM file_upload_queue WHERE nid=0;");
 				db_toDeleteImage.close();
 				win.close();
@@ -8407,6 +8406,7 @@ if (PLATFORM == 'android') {
 function saveImageInDb(currentImageView, field_name){
 	var file_upload_nid = 0 ;
 	var db_toSaveImage = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	if(PLATFORM != 'android'){db_toSaveImage.file.setRemoteBackup(false);}
 	var encodeImage = Ti.Utils.base64encode(currentImageView.bigImg);
 	var mime = currentImageView.mimeType;
 	var imageName = 'image.' + mime.substring(mime.indexOf('/') + 1, mime.length);
@@ -8663,6 +8663,7 @@ function bottomButtons(actualWindow) {
 
 				if (win.nid != null) {
 					var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+					if(PLATFORM != 'android'){db_act.file.setRemoteBackup(false);}
 					var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
 					var _data = JSON.parse(json_data.fieldByName('_data'));
 
@@ -8682,6 +8683,7 @@ function bottomButtons(actualWindow) {
 					db_act.close();
 				} else {
 					var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+					if(PLATFORM != 'android'){db_act.file.setRemoteBackup(false);}
 					var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
 					var _data = JSON.parse(json_data.fieldByName('_data'));
 
@@ -8796,6 +8798,7 @@ function cancelOpt() {
 				}
 			}
 			var db_toDeleteImage = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+			if(PLATFORM != 'android'){db_toDeleteImage.file.setRemoteBackup(false);}
 			db_toDeleteImage.execute("DELETE FROM file_upload_queue WHERE nid=0;");
 			db_toDeleteImage.close();
 			win.close();
@@ -8818,6 +8821,7 @@ function setDefaultValues(content, e) {
 				if (content[counter].parent_name == e.source.field_name) {
 
 					db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+					if(PLATFORM != 'android'){db_display.file.setRemoteBackup(false);}
 					var table = db_display.execute('SELECT table_name FROM node WHERE nid = ' + e.source.nid);
 					table = table.fieldByName('table_name');
 
@@ -9051,6 +9055,7 @@ function addDoneButtonInKB(content) {
 function reCalculate(singel_content) {
 	try {
 		db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+		if(PLATFORM != 'android'){db_display.file.setRemoteBackup(false);}
 		var entity = createEntityMultiple();
 		var result = _calculation_field_get_values(win, db_display, singel_content, entity, content);
 		var row_values = result[0].rows;
@@ -10011,6 +10016,7 @@ function setParticularRulesField(rulesFieldContent) {
 	var omadi_reference_title = "";
 	var violation_time = "";
 	db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	if(PLATFORM != 'android'){db_display.file.setRemoteBackup(false);}
 	var violations_vocabulary = db_display.execute('SELECT vid from vocabulary WHERE machine_name="' + machine_name + '";');
 	var violations_terms_rslt = db_display.execute('SELECT tid,name from term_data WHERE vid=' + violations_vocabulary.fieldByName('vid'));
 	while (violations_terms_rslt.isValidRow()) {

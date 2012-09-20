@@ -31,6 +31,7 @@ var movement;
 //Common used functions
 unsetUse();
 var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+if(PLATFORM != 'android'){db.file.setRemoteBackup(false);}
 var movement;
 
 //Geolocation module
@@ -58,7 +59,7 @@ function checkUpdate(evt){
 		var pageIndex = 0;
  
 		var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
-
+		if(PLATFORM != 'android'){db_up.file.setRemoteBackup(false);}
 		var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');
 
 		var see = db_up.execute('SELECT * FROM bundles WHERE display_on_menu="true"');
@@ -121,7 +122,7 @@ function update_node(mode, close_parent, _node_name, flag_next_part){
 	//Sets status to 'updating'
 
 	var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
-
+	if(PLATFORM != 'android'){db_up.file.setRemoteBackup(false);}
 	var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');
 	var updatedTimeStamp = updatedTime.fieldByName('timestamp');
 	var up_flag = db_up.execute('SELECT * FROM node WHERE flag_is_updated=1');
@@ -573,7 +574,7 @@ setInterval( function(){
 		var pageIndex = 0;
 
 		var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
-
+		if(PLATFORM != 'android'){db_up.file.setRemoteBackup(false);}
 		var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');
 		var updatedTimeStamp = updatedTime.fieldByName('timestamp');
 

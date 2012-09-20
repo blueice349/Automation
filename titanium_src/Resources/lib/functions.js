@@ -30,6 +30,7 @@ weekday[6]="Saturday";
 
 function getDBName() {
 	var db_list = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_list");
+	if(PLATFORM != 'android'){db_list.file.setRemoteBackup(false);}
 	var portal_base = db_list.execute('SELECT db_name FROM history WHERE id_hist=1');
 	var recebe = portal_base.fieldByName('db_name');
 	portal_base.close();
@@ -458,6 +459,7 @@ function bottomBack_release(actualWindow, text, method) {
 
 function check_type(name, object) {
 	var db_type = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	if(PLATFORM != 'android'){db_type.file.setRemoteBackup(false);}
 	var qRes = db_type.execute("SELECT DISTINCT type FROM fields WHERE field_name=? AND bundle=?", name, object);
 
 	if (qRes.isValidRow()) {
@@ -1294,7 +1296,7 @@ function getJSON() {
 	var current_timestamp = Math.round(+new Date() / 1000);
 	var returning_json = '{ "timestamp" : "' + current_timestamp + '", "data" : { ';
 	var db_json = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-
+	if(PLATFORM != 'android'){db_json.file.setRemoteBackup(false);}
 	//=============================
 	//Builds JSON for new nodes and for nodes that were updated
 	//=============================
@@ -1473,7 +1475,7 @@ function isJsonString(str) {
 function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent, _node_name) {
 	setUse();
 	var db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-
+	if(PLATFORM != 'android'){db_installMe.file.setRemoteBackup(false);}
 	var objectsUp = Ti.Network.createHTTPClient();
 	Ti.API.info('Log type : ' + objectsUp);
 
@@ -1561,8 +1563,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					}
 					db_installMe = null;
 					db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+					if(PLATFORM != 'android'){db_installMe.file.setRemoteBackup(false);}
 					
 					var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName()+"_GPS");
+					if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
 					db_coord.execute('DELETE FROM alerts');
 					db_coord.close();
 				}
@@ -3893,6 +3897,7 @@ function display_omadi_time01(timestamp) {
 
 function setUse() {
 	var db_su = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	if(PLATFORM != 'android'){db_su.file.setRemoteBackup(false);}
 	db_su.execute('UPDATE updated SET updating = 1 ');
 	Ti.API.info("DB WAS JUST SET");
 	db_su.close();
@@ -3900,6 +3905,7 @@ function setUse() {
 
 function unsetUse() {
 	var db_us = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	if(PLATFORM != 'android'){db_us.file.setRemoteBackup(false);}
 	db_us.execute('UPDATE updated SET updating = 0 ');
 	Ti.API.info("DB WAS JUST UNSET");
 	db_us.close();
@@ -3907,6 +3913,7 @@ function unsetUse() {
 
 function isUpdating() {
 	var db_gu = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	if(PLATFORM != 'android'){db_gu.file.setRemoteBackup(false);}
 	var res_set = db_gu.execute('SELECT updating FROM updated WHERE rowid=1');
 
 	if (res_set.fieldByName('updating') == 1) {
@@ -4002,6 +4009,7 @@ function uploadFile(win, type_request) {
 		_file_xhr.open(type_request, win.picked + '/js-sync/upload.json');
 		// Upload images
 		var database = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+		if(PLATFORM != 'android'){database.file.setRemoteBackup(false);}
 		var fileUploadTable = database.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
 		if (fileUploadTable.isValidRow()) {
 			//Only upload those images that have positive nids
@@ -4011,6 +4019,7 @@ function uploadFile(win, type_request) {
 					var respnseJson = JSON.parse(this.responseText);
 					
 					database = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+					if(PLATFORM != 'android'){database.file.setRemoteBackup(false);}
 					fileUploadTable = database.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
 
 					// Updating status
@@ -4068,6 +4077,7 @@ function uploadFile(win, type_request) {
 					Ti.API.info('=========== Error in uploading ========' + this.error + this.status);
 					if (this.status == '406' && this.error == 'Nid is not connected to a valid node.') {
 						var database = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+						if(PLATFORM != 'android'){database.file.setRemoteBackup(false);}
 						database.execute("DELETE FROM file_upload_queue WHERE nid=" + fileUploadTable.fieldByName('nid') + " and id=" + fileUploadTable.fieldByName('id') + ";");
 						database.close();
 					}
@@ -4133,7 +4143,7 @@ function updateFileUploadTable(win, json) {
 			return;
 		}
 		var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-
+		if(PLATFORM != 'android'){db_fileUpload.file.setRemoteBackup(false);}
 		// To replace all negative nid to positive in file_upload_queue table
 		var bundles = db_fileUpload.execute('SELECT * FROM bundles;');
 		while (bundles.isValidRow()) {

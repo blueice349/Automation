@@ -37,6 +37,7 @@ function form_min(min) {
 }
 
 var db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+if(PLATFORM != 'android'){db_display.file.setRemoteBackup(false);}
 var results = db_display.execute('SELECT * FROM ' + win4.type + ' WHERE  nid = ' + win4.nid);
 
 //The view where the results are presented
@@ -1190,6 +1191,7 @@ if(Ti.Platform.name == 'android' && isEditEnabled==true) {
 
 		var menu = e.menu;
 		var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+		if(PLATFORM != 'android'){db_act.file.setRemoteBackup(false);}
 		var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win4.type + '"');
 		var _data = JSON.parse(json_data.fieldByName('_data'));
 
@@ -1529,6 +1531,7 @@ function bottomButtons1(actualWindow){
 
 	edit.addEventListener('click', function() {
 		var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+		if(PLATFORM != 'android'){db_act.file.setRemoteBackup(false);}
 		var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win4.type + '"');
 		var _data = JSON.parse(json_data.fieldByName('_data'));
 

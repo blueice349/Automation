@@ -71,7 +71,26 @@ message_center.get_win = function() {
 	
 	win.addEventListener('open', function(){
 		win.is_opened = true;
-		//Ti.App.fireEvent('upload_gps_locations');
+		Ti.App.fireEvent('upload_gps_locations');
+	});
+
+	listTableView.addEventListener('focus', function(e) {
+				search.blur();
+			});
+			
+	search.addEventListener('return', function(e) {
+		search.blur();
+	});
+	
+	search.addEventListener('cancel', function(e) {
+		search.blur();
+	});
+
+	//When the user clicks on a certain contact, it opens individual_contact.js
+	listTableView.addEventListener('click', function(e) {
+		if(e.row!=null){
+			opnAccountAlertsList(e);
+		}
 	});
 
 	if(PLATFORM == 'android') {
@@ -108,10 +127,10 @@ Ti.App.addEventListener('refresh_UI_Alerts', function(e){
 	}
 });
 
-function alertNavButtons(listTableView, currentWin, type){
-	if (listTableView){
-		listTableView.top = '40';
-		listTableView.height = '97%';
+function alertNavButtons(lv_listTableView, currentWin, type){
+	if (lv_listTableView){
+		lv_listTableView.top = '40';
+		lv_listTableView.height = '97%';
 	}
 	var back = Ti.UI.createButton({
 		title : 'Back',
@@ -163,10 +182,10 @@ function alertNavButtons(listTableView, currentWin, type){
 	currentWin.add(toolbar);
 };
 
-function alertNavButtons_android(listTableView, win, type){
-	if (listTableView){
-		listTableView.top = '50';
-		listTableView.bottom = '6%';
+function alertNavButtons_android(lv_listTableView, win, type){
+	if (lv_listTableView){
+		lv_listTableView.top = '50';
+		lv_listTableView.bottom = '6%';
 	}
 	var baseHeader = Ti.UI.createView({
 		top: 0,
@@ -211,6 +230,7 @@ function alertNavButtons_android(listTableView, win, type){
 
 function loadData(){
 		var db = Ti.Database.install('/database/gps_coordinates.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName()+"_GPS" );
+		if(PLATFORM != 'android'){db.file.setRemoteBackup(false);}
 		var res_set = db.execute('SELECT *, COUNT(*) term_count FROM alerts GROUP BY location_nid ORDER BY timestamp DESC');
 		var res_names = db.execute('SELECT * FROM alert_names');
 		
@@ -264,24 +284,7 @@ function loadData(){
 			}
 			listTableView.show();
 			empty.hide();
-			listTableView.addEventListener('focus', function(e) {
-				search.blur();
-			});
 			
-			search.addEventListener('return', function(e) {
-				search.blur();
-			});
-			
-			search.addEventListener('cancel', function(e) {
-				search.blur();
-			});
-		
-			//When the user clicks on a certain contact, it opens individual_contact.js
-			listTableView.addEventListener('click', function(e) {
-				if(e.row!=null){
-					opnAccountAlertsList(e);
-				}
-			});
 			
 			//Adds contact list container to the UI
 			search.blur();
@@ -322,6 +325,7 @@ function opnAccountAlertsList(e) {
 	accountMessage.listView.addEventListener('click', function(e) {
 			accountMessage.search.blur();
 			var a_db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+			if(PLATFORM != 'android'){a_db.file.setRemoteBackup(false);}
 			var a_res = a_db.execute("SELECT * FROM node WHERE nid=" + e.row.nid);
 			var n_nid = e.row.nid;
 			var type_vl = a_res.fieldByName('table_name');
@@ -395,11 +399,10 @@ function opnAccountAlertsList(e) {
 	}
 	accountMessage.win.addEventListener('android:back', function() {
 		accountMessage.win.close();
-		accountMessage.win.isOpened = false;
 	});
 	
 	accountMessage.win.addEventListener('close', function(e){
-		aaccountMessage.win.isOpened = false;
+		accountMessage.win.isOpened = false;
 	});
 	
 	accountMessage.win.addEventListener('focus', function() {
@@ -417,6 +420,7 @@ function opnAccountAlertsList(e) {
 
 function loadAccAlertData(){
 	var db_t = Ti.Database.install('/database/gps_coordinates.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName() + "_GPS");
+	if(PLATFORM != 'android'){db_t.file.setRemoteBackup(false);}
 	var msgs = db_t.execute('SELECT * FROM alerts WHERE location_nid=' + accountMessage.win.nid + ' ORDER BY timestamp DESC');
 	if(msgs.rowCount > 0) {
 		var n_data = new Array();

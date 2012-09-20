@@ -108,6 +108,7 @@ Ti.App.addEventListener('upload_gps_locations', function() {
 		uploading = true;
 		Ti.API.info('GPS');
 		var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
+		if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
 		Ti.API.info("Length before: " + location_obj.length);
 		var leng_before = location_obj.length;
 		var aux_location = location_obj.slice(0);
@@ -176,6 +177,7 @@ Ti.App.addEventListener('upload_gps_locations', function() {
 							}
 						}
 						var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
+						if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
 						db_coord.execute('DELETE FROM user_location WHERE status="json"');
 						var _arr_content = new Array();
 						var nids = new Array();
@@ -220,6 +222,7 @@ Ti.App.addEventListener('upload_gps_locations', function() {
 				//Connection error:
 				objectsCheck.onerror = function(e) {
 					var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
+					if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
 					db_coord.execute("UPDATE user_location SET status =\"notUploaded\"");
 					Ti.API.info("Error found for GPS uploading ");
 					db_coord.close();
