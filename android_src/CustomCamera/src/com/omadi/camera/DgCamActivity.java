@@ -9,6 +9,7 @@ import org.appcelerator.kroll.KrollDict;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -51,10 +52,12 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 	FrameLayout frameCameraViewContainer;
 	private ImageView rotatingImage;
 	private ImageView done;
+	private ImageView flash;
 	private int degrees = 0;
 	Bitmap bitmap = null;
 	RelativeLayout zoomBase;
 	VerticalSeekBar zoomControls;
+	Camera.Parameters cParams;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -167,6 +170,40 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 
 		});
 
+		// FLASH BUTTON
+		if(mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH))
+		{
+		flash = new ImageView(mContext);
+		RelativeLayout.LayoutParams flashParams = new RelativeLayout.LayoutParams(
+				40, 50);
+		flashParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+		flashParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+		flash.setLayoutParams(flashParams);
+		flash.setAnimation(getRotateAnimation(270));
+		enerlayout.addView(flash);
+
+		flash.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				InputStream is;
+				try {
+					if(cParams.getFlashMode().equals(cParams.FLASH_MODE_ON)){
+						is = mContext.getAssets().open("flashOff.png");
+						cParams.setFlashMode(cParams.FLASH_MODE_OFF);
+					}else{
+						is = mContext.getAssets().open("flashOn.png");
+						cParams.setFlashMode(cParams.FLASH_MODE_ON);
+					}
+					bitmap = BitmapFactory.decodeStream(is);
+					flash.setImageBitmap(bitmap);
+					mCamera.setParameters(cParams);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		});
+		}
+		
 		// ROTATE/CAPTURE BUTTON
 		rotatingImage = new ImageView(mContext);
 		RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(
@@ -203,10 +240,26 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 		mCamera = getCameraInstance();
 
 		// Setting the right parameters in the camera
-		Camera.Parameters params = mCamera.getParameters();
-		params.setPictureFormat(PixelFormat.JPEG);
-		params.setJpegQuality(95);
-		mCamera.setParameters(params);
+		cParams = mCamera.getParameters();
+		cParams.setPictureFormat(PixelFormat.JPEG);
+		cParams.setJpegQuality(95);
+		mCamera.setParameters(cParams);
+		InputStream is;
+		if(mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH))
+		{
+		try {
+			if(cParams.getFlashMode().equals(cParams.FLASH_MODE_ON)){
+				is = mContext.getAssets().open("flashOff.png");
+				cParams.setFlashMode(cParams.FLASH_MODE_OFF);
+			}else{
+				is = mContext.getAssets().open("flashOn.png");
+				cParams.setFlashMode(cParams.FLASH_MODE_ON);
+			}
+			bitmap = BitmapFactory.decodeStream(is);
+			flash.setImageBitmap(bitmap);
+			mCamera.setParameters(cParams);
+		} catch (IOException e) {}
+		}
 
 		// Create our Preview view and set it as the content of our activity.
 		mPreview = new CameraPreview(this, mCamera, zoomControls);

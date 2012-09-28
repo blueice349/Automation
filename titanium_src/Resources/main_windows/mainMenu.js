@@ -361,6 +361,7 @@ listView.addEventListener('click',function(e){
 		win_new.up_node = update_node;
 		win_new.mode = 0;
 		win_new.picked = win2.picked;
+		win_new.movement = movement;
 		win_new.region_form = 0;
 		win_new.backgroundColor = "#EEEEEE";
 		win_new.app_permissions = e.row.app_permissions;
@@ -384,6 +385,7 @@ listView.addEventListener('click',function(e){
 				show_plus: e.row.show_plus
 			});
 			win_new.picked 	 = win2.picked;
+			win_new.movement = movement;
 			win_new.app_permissions = e.row.app_permissions;
 			win_new.addEventListener('focus', function(){
 				unlock_screen();

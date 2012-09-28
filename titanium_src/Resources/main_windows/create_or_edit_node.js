@@ -13,7 +13,7 @@
 Ti.include('/lib/functions.js');
 Ti.include('/lib/encoder_base_64.js');
 
-var heightValue = (PLATFORM=='android')?55:50;
+var heightValue = (PLATFORM == 'android') ? 55 : 50;
 var heightTextField = 74;
 var toolActInd = Ti.UI.createActivityIndicator();
 toolActInd.font = {
@@ -25,7 +25,7 @@ toolActInd.color = 'white';
 toolActInd.message = 'Loading...';
 var omadi_session_details;
 var roles;
-var fieldFontSize = (PLATFORM == 'android')?'16sp':'18'
+var fieldFontSize = (PLATFORM == 'android') ? '16sp' : '18'
 
 var months_set = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -41,7 +41,7 @@ var no_data_fieldsArr = [];
 var doneButton = null;
 var menu = null;
 var ONE_MB = 524258;
-
+var movement;
 var create_or_edit_node = {};
 
 create_or_edit_node.getWindow = function() {
@@ -127,7 +127,9 @@ function get_android_menu(menu_exists) {
 
 		if (win.nid != null) {
 			var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-			if(PLATFORM != 'android'){db_act.file.setRemoteBackup(false);}
+			if (PLATFORM != 'android') {
+				db_act.file.setRemoteBackup(false);
+			}
 			var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
 			var _data = JSON.parse(json_data.fieldByName('_data'));
 
@@ -161,7 +163,9 @@ function get_android_menu(menu_exists) {
 			db_act.close();
 		} else {
 			var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-			if(PLATFORM != 'android'){db_act.file.setRemoteBackup(false);}
+			if (PLATFORM != 'android') {
+				db_act.file.setRemoteBackup(false);
+			}
 			var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
 			var _data = JSON.parse(json_data.fieldByName('_data'));
 
@@ -271,7 +275,9 @@ function get_android_menu(menu_exists) {
 
 			if (win.nid != null) {
 				var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-				if(PLATFORM != 'android'){db_act.file.setRemoteBackup(false);}
+				if (PLATFORM != 'android') {
+					db_act.file.setRemoteBackup(false);
+				}
 				var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
 				var _data = JSON.parse(json_data.fieldByName('_data'));
 
@@ -305,7 +311,9 @@ function get_android_menu(menu_exists) {
 				db_act.close();
 			} else {
 				var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-				if(PLATFORM != 'android'){db_act.file.setRemoteBackup(false);}
+				if (PLATFORM != 'android') {
+					db_act.file.setRemoteBackup(false);
+				}
 				var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
 				var _data = JSON.parse(json_data.fieldByName('_data'));
 
@@ -439,25 +447,27 @@ function keep_info(_flag_info, pass_it, new_time) {
 	}
 	//this is used for checking restrictions in db against all nid on this form
 	var db_check_restrictions = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-	if(PLATFORM != 'android'){db_check_restrictions.file.setRemoteBackup(false);}
+	if (PLATFORM != 'android') {
+		db_check_restrictions.file.setRemoteBackup(false);
+	}
 	var restrictions = new Array();
 
 	Ti.API.info("--------------------content array length : " + content.length + " --------------------");
-	
+
 	/*
-	for (var k = 0; k < content.length; k++) {
-		Ti.API.info(k+" <<<===>>> "+content[k].value);
-		if (content[k].value && content[k].value != null ){
-			var __tmp = content[k].value.toString();
-			__tmp = __tmp.replace(/'/gi, '\'');
-			content[k].value = __tmp;
-			Ti.API.info(__tmp+' - '+content[k].value);
-		}
-	}
-	*/
+	 for (var k = 0; k < content.length; k++) {
+	 Ti.API.info(k+" <<<===>>> "+content[k].value);
+	 if (content[k].value && content[k].value != null ){
+	 var __tmp = content[k].value.toString();
+	 __tmp = __tmp.replace(/'/gi, '\'');
+	 content[k].value = __tmp;
+	 Ti.API.info(__tmp+' - '+content[k].value);
+	 }
+	 }
+	 */
 
 	for (var x in content) {
-		
+
 		try {
 			Ti.API.info(label[x].text + ' is required: ' + content[x].required + ' = ' + content[x].value);
 		} catch(e) {
@@ -510,39 +520,39 @@ function keep_info(_flag_info, pass_it, new_time) {
 
 		if (((content[x].is_title === true) || (content[x].required == 'true') || (content[x].required === true) || (content[x].required == '1') || (content[x].required == 1) ) && ((content[x].value == '') || (content[x].value == null)) && (content[x].no_data_checkbox == null || content[x].no_data_checkbox == "" || content[x].no_data_checkbox == false) && content[x].enabled == true) {
 			//Check for image field
-			if(content[x].field_type == 'image'){
+			if (content[x].field_type == 'image') {
 				var is_images_query = 'SELECT id FROM file_upload_queue WHERE nid=0 ';
-				if(win.nid != null && win.nid != ""){
-					is_images_query += ' OR nid='+win.nid+' ';
+				if (win.nid != null && win.nid != "") {
+					is_images_query += ' OR nid=' + win.nid + ' ';
 				}
-				is_images_query += ' AND field_name="'+content[x].field_name+'";';
+				is_images_query += ' AND field_name="' + content[x].field_name + '";';
 				Ti.API.info(is_images_query);
-				
+
 				var is_images = db_check_restrictions.execute(is_images_query);
 				var crdnlty = content[x].cardinality;
-				//if cardinality is unlimited or one than only one image can be work for required 
-				//But if cardinality is greater than 1 then required that number of images 
-				if(win.mode == 1) {
-					if(crdnlty > 1 || crdnlty < 0) {
+				//if cardinality is unlimited or one than only one image can be work for required
+				//But if cardinality is greater than 1 then required that number of images
+				if (win.mode == 1) {
+					if (crdnlty > 1 || crdnlty < 0) {
 						var arrImages = content[x].arrImages;
 						var imageOdometer = 0;
-						for( i_idx = 0; i_idx < arrImages.length; i_idx++) {
-							if(arrImages[i_idx].imageVal != defaultImageVal || arrImages[i_idx].bigImg != null || arrImages[i_idx].bigImg != "") {
-								imageOdometer ++;
+						for ( i_idx = 0; i_idx < arrImages.length; i_idx++) {
+							if (arrImages[i_idx].imageVal != defaultImageVal || arrImages[i_idx].bigImg != null || arrImages[i_idx].bigImg != "") {
+								imageOdometer++;
 							}
 						}
-						if((crdnlty < 1 && imageOdometer ==0) || (crdnlty > 1 && imageOdometer != is_images.rowCount)){
+						if ((crdnlty < 1 && imageOdometer == 0) || (crdnlty > 1 && imageOdometer != is_images.rowCount)) {
 							string_text += label[content[x].reffer_index].text + "\n";
 							count_fields++;
 						}
 					} else {
-						if(content[x].imageVal == defaultImageVal && is_images.rowCount == 0) {
+						if (content[x].imageVal == defaultImageVal && is_images.rowCount == 0) {
 							string_text += label[content[x].reffer_index].text + "\n";
 							count_fields++;
 						}
 					}
-				}else{
-					if((crdnlty <= 1 && is_images.rowCount == 0) || (crdnlty > 1 && crdnlty != is_images.rowCount)) {
+				} else {
+					if ((crdnlty <= 1 && is_images.rowCount == 0) || (crdnlty > 1 && crdnlty != is_images.rowCount)) {
 						string_text += label[content[x].reffer_index].text + "\n";
 						count_fields++;
 					}
@@ -558,13 +568,13 @@ function keep_info(_flag_info, pass_it, new_time) {
 			}
 		}
 	}
-	
+
 	for (var k = 0; k <= content.length; k++) {
 		if (!content[k]) {
 			continue;
 		}
 
-		if((win.mode == 0 || _flag_info == 'draft')) {
+		if ((win.mode == 0 || _flag_info == 'draft')) {
 			//validating license plate and vin value entered by user against restritions
 			for (var r in restrictions) {
 				var accountRestricted = restrictions[r].restrict_entire_account;
@@ -579,19 +589,19 @@ function keep_info(_flag_info, pass_it, new_time) {
 						if (license_plate != null && restricted_license_plate != null && license_plate != "" && restricted_license_plate != "") {
 							license_plate = license_plate.toLowerCase().replace(/o/g, '0');
 							restricted_license_plate = restricted_license_plate.toLowerCase().replace(/o/g, '0');
-							Ti.API.info('1 License Plate: '+license_plate+' ---- Restriction License Plate: '+restricted_license_plate);
-							if( license_plate.toString() ==  restricted_license_plate.toString()) {
+							Ti.API.info('1 License Plate: ' + license_plate + ' ---- Restriction License Plate: ' + restricted_license_plate);
+							if (license_plate.toString() == restricted_license_plate.toString()) {
 								var colorName = "";
 								var resMsg = "";
-								if(restrictions[r].vehicle_color!=null && restrictions[r].vehicle_color!=""){
+								if (restrictions[r].vehicle_color != null && restrictions[r].vehicle_color != "") {
 									var term_data = db_check_restrictions.execute("SELECT name FROM term_data WHERE tid = " + restrictions[r].vehicle_color);
 									colorName = term_data.getFieldByName('name');
 									term_data.close();
 								}
 								resMsg = colorName + " " + restrictions[r].vehicle_make + " " + restrictions[r].vehicle_model;
-								resMsg += ((resMsg.trim() != "")?" - ":"");
+								resMsg += ((resMsg.trim() != "") ? " - " : "");
 								resMsg += restrictions[r].license_plate + " is currently restricted for the account entered.";
-								
+
 								a.message = resMsg;
 								a.show();
 								return;
@@ -609,20 +619,20 @@ function keep_info(_flag_info, pass_it, new_time) {
 					} else {
 						var vin = content[k].value;
 						var restricted_vin = restrictions[r].vin;
-						if(vin != null && vin != "" && restricted_vin != null && restricted_vin != "") {
-							Ti.API.info('VIN: '+vin+' RS_VIN: '+restricted_vin);
-							if(vin == restricted_vin) {
+						if (vin != null && vin != "" && restricted_vin != null && restricted_vin != "") {
+							Ti.API.info('VIN: ' + vin + ' RS_VIN: ' + restricted_vin);
+							if (vin == restricted_vin) {
 								var colorName = "";
 								var resMsg = "";
-								if(restrictions[r].vehicle_color!=null && restrictions[r].vehicle_color!=""){
+								if (restrictions[r].vehicle_color != null && restrictions[r].vehicle_color != "") {
 									var term_data = db_check_restrictions.execute("SELECT name FROM term_data WHERE tid = " + restrictions[r].vehicle_color);
 									colorName = term_data.getFieldByName('name');
 									term_data.close();
 								}
 								resMsg = colorName + " " + restrictions[r].vehicle_make + " " + restrictions[r].vehicle_model;
-								resMsg += ((resMsg.trim() != "")?" - ":"");
+								resMsg += ((resMsg.trim() != "") ? " - " : "");
 								resMsg += restrictions[r].vin + " is currently restricted for the account entered.";
-	
+
 								a.message = resMsg;
 								a.show();
 								return;
@@ -708,7 +718,9 @@ function keep_info(_flag_info, pass_it, new_time) {
 
 		showIndicator(mode_msg);
 		var db_put = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-		if(PLATFORM != 'android'){db_put.file.setRemoteBackup(false);}
+		if (PLATFORM != 'android') {
+			db_put.file.setRemoteBackup(false);
+		}
 		//
 		//Retrieve objects that need quotes:
 		//
@@ -805,7 +817,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 			if (!content[j]) {
 				continue;
 			}
-			
+
 			if (content[j].is_title === true) {
 				if (title_to_node.charAt(0) == "") {
 					if (content[j].cardinality == -1) {
@@ -891,7 +903,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 					// incremental, node_id, field_name, value
 					if (win.mode == 0) {
 						Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + new_nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
-						db_put.execute("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + new_nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");   
+						db_put.execute("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + new_nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
 					} else {
 						Ti.API.info("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + win.nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
 						db_put.execute("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + win.nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
@@ -1054,7 +1066,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 			//Insert into node table
 			if (_flag_info == "draft") {
 				if (win.mode == 1) {
-					Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=3, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\'' + no_data_fields_content + '\' WHERE nid=' + win.nid);			
+					Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=3, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\'' + no_data_fields_content + '\' WHERE nid=' + win.nid);
 					db_put.execute('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=3, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\'' + no_data_fields_content + '\' WHERE nid=' + win.nid);
 				} else {
 					Ti.API.info('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 3 , "' + win.type + '" , ' + win.region_form + ', \'' + no_data_fields_content + '\')');
@@ -1077,13 +1089,13 @@ function keep_info(_flag_info, pass_it, new_time) {
 			db_put.execute(query);
 
 			//If Images captured and not yet uploaded then store in file_uploaded_queue
-			if(win.mode == 1) {
+			if (win.mode == 1) {
 				file_upload_nid = win.nid;
 			} else {
 				file_upload_nid = new_nid;
 			}
 			db_put.execute('UPDATE file_upload_queue SET nid=' + file_upload_nid + ' WHERE nid=0;');
-				 
+
 			//If Images captured and not yet uploaded then store in file_uploaded_queue
 			for (var j = 0; j <= content.length; j++) {
 				if (!content[j]) {
@@ -1095,55 +1107,55 @@ function keep_info(_flag_info, pass_it, new_time) {
 			}
 
 			/*for (var j = 0; j <= content.length; j++) {
-				if (!content[j]) {
-					continue;
-				}
+			 if (!content[j]) {
+			 continue;
+			 }
 
-				var file_upload_nid;
+			 var file_upload_nid;
 
-				if (win.mode == 1) {
-					file_upload_nid = win.nid;
-				} else {
-					file_upload_nid = new_nid;
-				}
+			 if (win.mode == 1) {
+			 file_upload_nid = win.nid;
+			 } else {
+			 file_upload_nid = new_nid;
+			 }
 
-				if (content[j].field_type == 'image' && (content[j].cardinality > 1 || content[j].cardinality < 0) && !content[j].no_data_checkbox) {
-					var arrImages = content[j].arrImages;
-					for ( k = 0; k < arrImages.length; k++) {
-						if (arrImages[k].isImage != false && arrImages[k].mimeType != null) {
-							var encodeImage = Ti.Utils.base64encode(arrImages[k].bigImg);
-							var mime = arrImages[k].mimeType;
-							var imageName = 'image.' + mime.substring(mime.indexOf('/') + 1, mime.length);
-							var is_exists = db_put.execute('SELECT delta, nid FROM file_upload_queue WHERE nid=' + file_upload_nid + ' and delta=' + arrImages[k].private_index + ' and field_name="' + content[j].field_name + '";');
-							if (is_exists.rowCount > 0) {
-								db_put.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '", file_data="' + encodeImage + '", field_name="' + content[j].field_name + '", file_name="' + imageName + '", delta=' + arrImages[k].private_index + ' WHERE nid=' + file_upload_nid + ' and delta=' + arrImages[k].private_index + ' and field_name="' + content[j].field_name + '";');
-								continue;
-							}
+			 if (content[j].field_type == 'image' && (content[j].cardinality > 1 || content[j].cardinality < 0) && !content[j].no_data_checkbox) {
+			 var arrImages = content[j].arrImages;
+			 for ( k = 0; k < arrImages.length; k++) {
+			 if (arrImages[k].isImage != false && arrImages[k].mimeType != null) {
+			 var encodeImage = Ti.Utils.base64encode(arrImages[k].bigImg);
+			 var mime = arrImages[k].mimeType;
+			 var imageName = 'image.' + mime.substring(mime.indexOf('/') + 1, mime.length);
+			 var is_exists = db_put.execute('SELECT delta, nid FROM file_upload_queue WHERE nid=' + file_upload_nid + ' and delta=' + arrImages[k].private_index + ' and field_name="' + content[j].field_name + '";');
+			 if (is_exists.rowCount > 0) {
+			 db_put.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '", file_data="' + encodeImage + '", field_name="' + content[j].field_name + '", file_name="' + imageName + '", delta=' + arrImages[k].private_index + ' WHERE nid=' + file_upload_nid + ' and delta=' + arrImages[k].private_index + ' and field_name="' + content[j].field_name + '";');
+			 continue;
+			 }
 
-							db_put.execute('INSERT INTO file_upload_queue (nid , file_data , field_name, file_name, delta) VALUES (' + file_upload_nid + ', "' + encodeImage + '", "' + content[j].field_name + '", "' + imageName + '", ' + arrImages[k].private_index + ')');
-							Ti.API.info('Filse Saved' + arrImages[k].private_index);
-						}
-					}
-				} else if (content[j].field_type == 'image'  && !content[j].no_data_checkbox) {
-					if (content[j].isImage != false && content[j].mimeType != null) {
-						var encodeImage = Ti.Utils.base64encode(content[j].bigImg);
-						var mime = content[j].mimeType;
-						var imageName = 'image.' + mime.substring(mime.indexOf('/') + 1, mime.length);
+			 db_put.execute('INSERT INTO file_upload_queue (nid , file_data , field_name, file_name, delta) VALUES (' + file_upload_nid + ', "' + encodeImage + '", "' + content[j].field_name + '", "' + imageName + '", ' + arrImages[k].private_index + ')');
+			 Ti.API.info('Filse Saved' + arrImages[k].private_index);
+			 }
+			 }
+			 } else if (content[j].field_type == 'image'  && !content[j].no_data_checkbox) {
+			 if (content[j].isImage != false && content[j].mimeType != null) {
+			 var encodeImage = Ti.Utils.base64encode(content[j].bigImg);
+			 var mime = content[j].mimeType;
+			 var imageName = 'image.' + mime.substring(mime.indexOf('/') + 1, mime.length);
 
-						var is_exists = db_put.execute('SELECT delta, nid FROM file_upload_queue WHERE nid=' + file_upload_nid + ' and delta=' + content[j].private_index + ' and field_name="' + content[j].field_name + '";');
+			 var is_exists = db_put.execute('SELECT delta, nid FROM file_upload_queue WHERE nid=' + file_upload_nid + ' and delta=' + content[j].private_index + ' and field_name="' + content[j].field_name + '";');
 
-						if (is_exists.rowCount > 0) {
-							db_put.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '", file_data="' + encodeImage + '", field_name="' + content[j].field_name + '", file_name="' + imageName + '", delta=' + content[j].private_index + ' WHERE nid=' + file_upload_nid + ' and delta=' + content[j].private_index + ' and field_name="' + content[j].field_name + '";');
-							continue;
-						}
-						db_put.execute('INSERT INTO file_upload_queue (nid , file_data , field_name, file_name, delta) VALUES (' + file_upload_nid + ', "' + encodeImage + '", "' + content[j].field_name + '", "' + imageName + '","' + content[j].private_index + '")');
-					}
-				}
+			 if (is_exists.rowCount > 0) {
+			 db_put.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '", file_data="' + encodeImage + '", field_name="' + content[j].field_name + '", file_name="' + imageName + '", delta=' + content[j].private_index + ' WHERE nid=' + file_upload_nid + ' and delta=' + content[j].private_index + ' and field_name="' + content[j].field_name + '";');
+			 continue;
+			 }
+			 db_put.execute('INSERT INTO file_upload_queue (nid , file_data , field_name, file_name, delta) VALUES (' + file_upload_nid + ', "' + encodeImage + '", "' + content[j].field_name + '", "' + imageName + '","' + content[j].private_index + '")');
+			 }
+			 }
 
-				if (content[j].field_type == 'image' && win.mode == 1) {
-					db_put.execute('UPDATE ' + win.type + ' SET ' + content[j].field_name + '="' + oldVal.fieldByName(content[j].field_name) + '", ' + content[j].field_name + '___file_id="' + oldVal.fieldByName(content[j].field_name + '___file_id') + '", ' + content[j].field_name + '___status="' + oldVal.fieldByName(content[j].field_name + '___status') + '" WHERE nid=' + file_upload_nid + ';');
-				}
-			}*/
+			 if (content[j].field_type == 'image' && win.mode == 1) {
+			 db_put.execute('UPDATE ' + win.type + ' SET ' + content[j].field_name + '="' + oldVal.fieldByName(content[j].field_name) + '", ' + content[j].field_name + '___file_id="' + oldVal.fieldByName(content[j].field_name + '___file_id') + '", ' + content[j].field_name + '___status="' + oldVal.fieldByName(content[j].field_name + '___status') + '" WHERE nid=' + file_upload_nid + ';');
+			 }
+			 }*/
 
 			db_put.close();
 			has_bug = false;
@@ -1178,7 +1190,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 		if ((Titanium.Network.online) && (has_bug === false) && (_flag_info != 'draft')) {
 			if (_flag_info == "normal") {
 				Ti.API.info('Submitting');
-				win.up_node(win.mode, close_me, win.type.toUpperCase());
+				win.up_node(win.mode, close_me,win.type.toUpperCase());
 			} else {
 				Ti.API.info('Submitting and preparing next part reload');
 				win.up_node(win.mode, reload_me, win.type.toUpperCase(), _flag_info);
@@ -1223,12 +1235,12 @@ function keep_info(_flag_info, pass_it, new_time) {
 function close_me_delay() {
 	setTimeout(function() {
 		hideIndicator();
-		win.close();
+		//win.close();
 	}, 3000);
 }
 
 function close_me() {
-	hideIndicator();
+	//hideIndicator();
 	win.close();
 }
 
@@ -1312,7 +1324,9 @@ function reload_me(part) {
 //Return models based on a certain "make" if "make" is not present returns the whole database set
 function get_models(make) {
 	var db_for_veh = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-	if(PLATFORM != 'android'){db_for_veh.file.setRemoteBackup(false);}
+	if (PLATFORM != 'android') {
+		db_for_veh.file.setRemoteBackup(false);
+	}
 	var _aux_dt = db_for_veh.execute("SELECT DISTINCT model FROM _vehicles WHERE make LIKE '%" + make + "%'");
 	var _set_result = [];
 	if (_aux_dt.rowCount > 0) {
@@ -1354,7 +1368,9 @@ function form_min(min) {
 }
 
 function display_widget(obj) {
-	if(PLATFORM == 'android'){Ti.UI.Android.hideSoftKeyboard()};
+	if (PLATFORM == 'android') {
+		Ti.UI.Android.hideSoftKeyboard()
+	};
 	var win_wid = Ti.UI.createWindow({
 		backgroundColor : "#000",
 		opacity : 0.9
@@ -1526,7 +1542,7 @@ function display_widget(obj) {
 			color : '#000000',
 			top : '50%',
 			timezone : null,
-			format24: (omadi_time_format=='g:iA'?false:true)
+			format24 : (omadi_time_format == 'g:iA' ? false : true)
 		});
 		time_picker.selectionIndicator = true;
 		time_picker.date_picker = date_picker;
@@ -1606,7 +1622,9 @@ function display_widget(obj) {
 }
 
 function display_omadi_time(obj) {
-	if(PLATFORM == 'android'){Ti.UI.Android.hideSoftKeyboard()};
+	if (PLATFORM == 'android') {
+		Ti.UI.Android.hideSoftKeyboard()
+	};
 	var win_wid = Ti.UI.createWindow({
 		//modal: true,
 		backgroundColor : "#000",
@@ -1643,7 +1661,7 @@ function display_omadi_time(obj) {
 		report : obj.currentDate,
 		type : Ti.UI.PICKER_TYPE_TIME,
 		color : '#000000',
-		format24: (omadi_time_format=='g:iA'?false:true)
+		format24 : (omadi_time_format == 'g:iA' ? false : true)
 	});
 	date_picker.selectionIndicator = true;
 
@@ -1701,7 +1719,9 @@ function display_omadi_time(obj) {
 }
 
 function open_mult_selector(obj) {
-	if(PLATFORM == 'android'){Ti.UI.Android.hideSoftKeyboard()};
+	if (PLATFORM == 'android') {
+		Ti.UI.Android.hideSoftKeyboard()
+	};
 	var win_wid = Ti.UI.createWindow({
 		//	modal: true,
 		opacity : 1
@@ -1821,8 +1841,7 @@ function open_mult_selector(obj) {
 		if (elements_to_insert[count_sel].is_set) {
 			coItemSelected++;
 		}
-		listView.appendRow(row_t);
-		++count_sel;
+		listView.appendRow(row_t); ++count_sel;
 
 	}
 	win_view.add(listView);
@@ -1987,10 +2006,13 @@ create_or_edit_node.loadUI = function() {
 	values_query = new Array();
 	count = 0;
 	title = 0;
+	movement = win.movement;
 	omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
 	roles = omadi_session_details.user.roles;
 	db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-	if(PLATFORM != 'android'){db_display.file.setRemoteBackup(false);}
+	if (PLATFORM != 'android') {
+		db_display.file.setRemoteBackup(false);
+	}
 	regions = db_display.execute('SELECT * FROM regions WHERE node_type = "' + win.type + '" ORDER BY weight ASC');
 	if (win.mode == 1) {
 		var node_table = db_display.execute('SELECT * FROM node WHERE nid=' + win.nid);
@@ -2116,25 +2138,25 @@ create_or_edit_node.loadUI = function() {
 						}
 					}
 				}
-			
-				if(viewContent.getChildren() != null) {
-					for(var i = viewContent.getChildren().length - 1; i >= 0; i--) {
+
+				if (viewContent.getChildren() != null) {
+					for (var i = viewContent.getChildren().length - 1; i >= 0; i--) {
 						var v = viewContent.getChildren()[i];
 						var isLabel = false;
-						if(PLATFORM == 'android') {
-							if( v instanceof Ti.UI.Label) {
+						if (PLATFORM == 'android') {
+							if ( v instanceof Ti.UI.Label) {
 								isLabel = true;
 							}
 						} else {
-							if(v == '[object TiUILabel]') {
+							if (v == '[object TiUILabel]') {
 								isLabel = true;
 							}
 						}
 
-						if(isLabel == true && v.viewContainer.expanded == true) {
+						if (isLabel == true && v.viewContainer.expanded == true) {
 							v.viewContainer.height = v.viewContainer.height + (getScreenHeight() * 0.3);
 							break;
-						}else if(isLabel == true && v.viewContainer.expanded == false){
+						} else if (isLabel == true && v.viewContainer.expanded == false) {
 							break;
 						}
 					}
@@ -2597,7 +2619,7 @@ create_or_edit_node.loadUI = function() {
 											borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 											textAlign : 'left',
 											width : Ti.Platform.displayCaps.platformWidth - 30,
-											height : (PLATFORM=='android')?heightTextField:heightValue,
+											height : (PLATFORM == 'android') ? heightTextField : heightValue,
 											maxLength : 10,
 											font : {
 												fontSize : fieldFontSize
@@ -2634,7 +2656,7 @@ create_or_edit_node.loadUI = function() {
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
 									}
-									top += (PLATFORM=='android')?heightTextField:heightValue;
+									top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
@@ -2958,7 +2980,7 @@ create_or_edit_node.loadUI = function() {
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										textAlign : 'left',
 										width : Ti.Platform.displayCaps.platformWidth - 30,
-										height : (PLATFORM=='android')?heightTextField:heightValue,
+										height : (PLATFORM == 'android') ? heightTextField : heightValue,
 										maxLength : 10,
 										font : {
 											fontSize : fieldFontSize
@@ -2995,7 +3017,7 @@ create_or_edit_node.loadUI = function() {
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
 									}
-									top += (PLATFORM=='android')?heightTextField:heightValue;
+									top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
@@ -3107,7 +3129,7 @@ create_or_edit_node.loadUI = function() {
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										textAlign : 'left',
 										width : Ti.Platform.displayCaps.platformWidth - 30,
-										height : (PLATFORM=='android')?heightTextField:heightValue,
+										height : (PLATFORM == 'android') ? heightTextField : heightValue,
 										font : {
 											fontSize : fieldFontSize
 										},
@@ -3140,7 +3162,7 @@ create_or_edit_node.loadUI = function() {
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
 									}
-									top += (PLATFORM=='android')?heightTextField:heightValue;
+									top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
@@ -3156,7 +3178,7 @@ create_or_edit_node.loadUI = function() {
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									textAlign : 'left',
 									width : Ti.Platform.displayCaps.platformWidth - 30,
-									height : (PLATFORM=='android')?heightTextField:heightValue,
+									height : (PLATFORM == 'android') ? heightTextField : heightValue,
 									font : {
 										fontSize : fieldFontSize
 									},
@@ -3189,7 +3211,7 @@ create_or_edit_node.loadUI = function() {
 									content[count].paddingLeft = 3;
 									content[count].paddingRight = 3;
 								}
-								top += (PLATFORM=='android')?heightTextField:heightValue;
+								top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
@@ -3293,7 +3315,7 @@ create_or_edit_node.loadUI = function() {
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										textAlign : 'left',
 										width : Ti.Platform.displayCaps.platformWidth - 30,
-										height : (PLATFORM=='android')?heightTextField:heightValue,
+										height : (PLATFORM == 'android') ? heightTextField : heightValue,
 										font : {
 											fontSize : fieldFontSize
 										},
@@ -3333,7 +3355,7 @@ create_or_edit_node.loadUI = function() {
 									if (_max != null) {
 										content[count].maxLength = _max;
 									}
-									top += (PLATFORM=='android')?heightTextField:heightValue;
+									top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
@@ -3422,7 +3444,7 @@ create_or_edit_node.loadUI = function() {
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									textAlign : 'left',
 									width : Ti.Platform.displayCaps.platformWidth - 30,
-									height : (PLATFORM=='android')?heightTextField:heightValue,
+									height : (PLATFORM == 'android') ? heightTextField : heightValue,
 									font : {
 										fontSize : fieldFontSize
 									},
@@ -3464,7 +3486,7 @@ create_or_edit_node.loadUI = function() {
 									content[count].maxLength = _max;
 								}
 
-								top += (PLATFORM=='android')?heightTextField:heightValue;
+								top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
@@ -3644,7 +3666,7 @@ create_or_edit_node.loadUI = function() {
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										textAlign : 'left',
 										width : Ti.Platform.displayCaps.platformWidth - 30,
-										height : (PLATFORM=='android')?2*heightTextField:100,
+										height : (PLATFORM == 'android') ? 2 * heightTextField : 100,
 										color : '#000000',
 										top : top,
 										field_type : field_arr[index_label][index_size].type,
@@ -3681,7 +3703,7 @@ create_or_edit_node.loadUI = function() {
 									if (_max != null) {
 										content[count].maxLength = _max;
 									}
-									top += (PLATFORM=='android')?2*heightTextField:100;
+									top += (PLATFORM == 'android') ? 2 * heightTextField : 100;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
@@ -3770,7 +3792,7 @@ create_or_edit_node.loadUI = function() {
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									textAlign : 'left',
 									width : Ti.Platform.displayCaps.platformWidth - 30,
-									height : (PLATFORM=='android')?2*heightTextField:100,
+									height : (PLATFORM == 'android') ? 2 * heightTextField : 100,
 									color : '#000000',
 									top : top,
 									field_type : field_arr[index_label][index_size].type,
@@ -3806,7 +3828,7 @@ create_or_edit_node.loadUI = function() {
 									content[count].maxLength = _max;
 								}
 
-								top += (PLATFORM=='android')?2*heightTextField:100;
+								top += (PLATFORM == 'android') ? 2 * heightTextField : 100;
 
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
@@ -3972,7 +3994,7 @@ create_or_edit_node.loadUI = function() {
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										textAlign : 'left',
 										width : Ti.Platform.displayCaps.platformWidth - 30,
-										height : (PLATFORM=='android')?heightTextField:heightValue,
+										height : (PLATFORM == 'android') ? heightTextField : heightValue,
 										font : {
 											fontSize : fieldFontSize
 										},
@@ -3995,7 +4017,7 @@ create_or_edit_node.loadUI = function() {
 									if (PLATFORM == 'android') {
 										content[count].backgroundImage = '../images/textfield.png'
 									}
-									top += (PLATFORM=='android')?heightTextField:heightValue;
+									top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
@@ -4011,7 +4033,7 @@ create_or_edit_node.loadUI = function() {
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									textAlign : 'left',
 									width : Ti.Platform.displayCaps.platformWidth - 30,
-									height : (PLATFORM=='android')?heightTextField:heightValue,
+									height : (PLATFORM == 'android') ? heightTextField : heightValue,
 									font : {
 										fontSize : fieldFontSize
 									},
@@ -4034,7 +4056,7 @@ create_or_edit_node.loadUI = function() {
 								if (PLATFORM == 'android') {
 									content[count].backgroundImage = '../images/textfield.png'
 								}
-								top += (PLATFORM=='android')?heightTextField:heightValue;
+								top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
@@ -4167,7 +4189,7 @@ create_or_edit_node.loadUI = function() {
 										returnKeyType : Titanium.UI.RETURNKEY_DONE,
 										textAlign : 'left',
 										width : Ti.Platform.displayCaps.platformWidth - 30,
-										height : (PLATFORM=='android')?heightTextField:heightValue,
+										height : (PLATFORM == 'android') ? heightTextField : heightValue,
 										font : {
 											fontSize : fieldFontSize
 										},
@@ -4206,7 +4228,7 @@ create_or_edit_node.loadUI = function() {
 										content[count].paddingRight = 3;
 									}
 									addDoneButtonInKB(content[count]);
-									top += (PLATFORM=='android')?heightTextField:heightValue;
+									top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
@@ -4257,7 +4279,7 @@ create_or_edit_node.loadUI = function() {
 									returnKeyType : Titanium.UI.RETURNKEY_DONE,
 									textAlign : 'left',
 									width : Ti.Platform.displayCaps.platformWidth - 30,
-									height : (PLATFORM=='android')?heightTextField:heightValue,
+									height : (PLATFORM == 'android') ? heightTextField : heightValue,
 									font : {
 										fontSize : fieldFontSize
 									},
@@ -4296,7 +4318,7 @@ create_or_edit_node.loadUI = function() {
 									content[count].paddingRight = 3;
 								}
 								addDoneButtonInKB(content[count]);
-								top += (PLATFORM=='android')?heightTextField:heightValue;
+								top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
@@ -4427,7 +4449,7 @@ create_or_edit_node.loadUI = function() {
 										returnKeyType : Titanium.UI.RETURNKEY_DONE,
 										textAlign : 'left',
 										width : Ti.Platform.displayCaps.platformWidth - 30,
-										height : (PLATFORM=='android')?heightTextField:heightValue,
+										height : (PLATFORM == 'android') ? heightTextField : heightValue,
 										font : {
 											fontSize : fieldFontSize
 										},
@@ -4461,7 +4483,7 @@ create_or_edit_node.loadUI = function() {
 										content[count].paddingRight = 3;
 									}
 									addDoneButtonInKB(content[count]);
-									top += (PLATFORM=='android')?heightTextField:heightValue;
+									top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
@@ -4479,7 +4501,7 @@ create_or_edit_node.loadUI = function() {
 									returnKeyType : Titanium.UI.RETURNKEY_DONE,
 									textAlign : 'left',
 									width : Ti.Platform.displayCaps.platformWidth - 30,
-									height : (PLATFORM=='android')?heightTextField:heightValue,
+									height : (PLATFORM == 'android') ? heightTextField : heightValue,
 									font : {
 										fontSize : fieldFontSize
 									},
@@ -4513,7 +4535,7 @@ create_or_edit_node.loadUI = function() {
 									content[count].paddingRight = 3;
 								}
 								addDoneButtonInKB(content[count]);
-								top += (PLATFORM=='android')?heightTextField:heightValue;
+								top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
@@ -4609,7 +4631,7 @@ create_or_edit_node.loadUI = function() {
 										keyboardType : Ti.UI.KEYBOARD_EMAIL,
 										textAlign : 'left',
 										width : Ti.Platform.displayCaps.platformWidth - 30,
-										height : (PLATFORM=='android')?heightTextField:heightValue,
+										height : (PLATFORM == 'android') ? heightTextField : heightValue,
 										font : {
 											fontSize : fieldFontSize
 										},
@@ -4643,7 +4665,7 @@ create_or_edit_node.loadUI = function() {
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
 									}
-									top += (PLATFORM=='android')?heightTextField:heightValue;
+									top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
@@ -4660,7 +4682,7 @@ create_or_edit_node.loadUI = function() {
 									keyboardType : Ti.UI.KEYBOARD_EMAIL,
 									textAlign : 'left',
 									width : Ti.Platform.displayCaps.platformWidth - 30,
-									height : (PLATFORM=='android')?heightTextField:heightValue,
+									height : (PLATFORM == 'android') ? heightTextField : heightValue,
 									font : {
 										fontSize : fieldFontSize
 									},
@@ -4694,7 +4716,7 @@ create_or_edit_node.loadUI = function() {
 									content[count].paddingLeft = 3;
 									content[count].paddingRight = 3;
 								}
-								top += (PLATFORM=='android')?heightTextField:heightValue;
+								top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
@@ -4912,11 +4934,11 @@ create_or_edit_node.loadUI = function() {
 										content[count].addEventListener('click', function(e) {
 											//Ti.API.info('TID: '+e.row.tid);
 											//e.source.value = e.row.tid;
-											if(e.source.arr_opt.length==1){
+											if (e.source.arr_opt.length == 1) {
 												var dt = new Date(e.source.violation_time);
-												alert("No violations should be enforced at " + e.source.omadi_reference_title + " at " + date(omadi_time_format,dt) + " on " + weekday[dt.getDay()]);
+												alert("No violations should be enforced at " + e.source.omadi_reference_title + " at " + date(omadi_time_format, dt) + " on " + weekday[dt.getDay()]);
 												return;
-										}
+											}
 											var postDialog = Titanium.UI.createOptionDialog();
 											postDialog.options = e.source.arr_opt;
 											postDialog.cancel = -1;
@@ -5034,12 +5056,12 @@ create_or_edit_node.loadUI = function() {
 									content[count].addEventListener('click', function(e) {
 										//Ti.API.info('TID: '+e.row.tid);
 										//e.source.value = e.row.tid;
-										if(e.source.arr_opt.length==1){
-												var dt = new Date(e.source.violation_time);
-												alert("No violations should be enforced at " + e.source.omadi_reference_title + " at " + date(omadi_time_format,dt) + " on " + weekday[dt.getDay()]);
-												return;
+										if (e.source.arr_opt.length == 1) {
+											var dt = new Date(e.source.violation_time);
+											alert("No violations should be enforced at " + e.source.omadi_reference_title + " at " + date(omadi_time_format, dt) + " on " + weekday[dt.getDay()]);
+											return;
 										}
-										
+
 										var postDialog = Titanium.UI.createOptionDialog();
 										postDialog.options = e.source.arr_opt;
 										postDialog.cancel = -1;
@@ -5181,9 +5203,9 @@ create_or_edit_node.loadUI = function() {
 											for (var jsa in e.source.itens) {
 												Ti.API.info(jsa + ' = ' + e.source.itens[jsa].title);
 											}
-											if(e.source.itens.length==0){
+											if (e.source.itens.length == 0) {
 												var dt = new Date(e.source.violation_time);
-												alert("No violations should be enforced at " + e.source.omadi_reference_title + " at " + date(omadi_time_format,dt) + " on " + weekday[dt.getDay()]);
+												alert("No violations should be enforced at " + e.source.omadi_reference_title + " at " + date(omadi_time_format, dt) + " on " + weekday[dt.getDay()]);
 												return;
 											}
 											open_mult_selector(e.source);
@@ -5286,7 +5308,7 @@ create_or_edit_node.loadUI = function() {
 											borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 											color : '#000000',
 											private_index : o_index,
-											height : (PLATFORM=='android')?heightTextField:heightValue,
+											height : (PLATFORM == 'android') ? heightTextField : heightValue,
 											font : {
 												fontSize : fieldFontSize
 											},
@@ -5310,10 +5332,10 @@ create_or_edit_node.loadUI = function() {
 											reffer_index : reffer_index,
 											settings : settings,
 											changedFlag : 0,
-											returnKeyType: Ti.UI.RETURNKEY_DONE,
-											enabled: can_edit,
-											editable: can_edit,
-											regionView: regionView
+											returnKeyType : Ti.UI.RETURNKEY_DONE,
+											enabled : can_edit,
+											editable : can_edit,
+											regionView : regionView
 										});
 										if (PLATFORM == 'android') {
 											content[count].backgroundImage = '../images/textfield.png'
@@ -5330,7 +5352,7 @@ create_or_edit_node.loadUI = function() {
 										}
 										//AUTOCOMPLETE TABLE
 										var autocomplete_table = Titanium.UI.createTableView({
-											top : top + ((PLATFORM=='android')?heightTextField-10:heightValue),
+											top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
 											searchHidden : true,
 											zIndex : 15,
 											height : getScreenHeight() * 0.3,
@@ -5340,7 +5362,7 @@ create_or_edit_node.loadUI = function() {
 											borderWidth : 1
 										});
 										content[count].autocomplete_table = autocomplete_table;
-										top += (PLATFORM=='android')?heightTextField:heightValue;
+										top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
 										regionView.add(content[count].autocomplete_table);
 
@@ -5418,12 +5440,14 @@ create_or_edit_node.loadUI = function() {
 													}
 													e.source.autocomplete_table.setData(table_data);
 													e.source.autocomplete_table.height = getScreenHeight() * 0.3;
-													if(table_data.length < 3 && table_data.length > 0) {
+													if (table_data.length < 3 && table_data.length > 0) {
 														e.source.autocomplete_table.height = (table_data.length == 1) ? getScreenHeight() * 0.1 : getScreenHeight() * 0.2;
 													}
-													e.source.autocomplete_table.scrollToTop(0, {animated: false});
-													viewContent.scrollTo(0,e.source.regionView.top+e.source.top-((PLATFORM=='android')?heightTextField:heightValue));
-													if(table_data.length > 0) {
+													e.source.autocomplete_table.scrollToTop(0, {
+														animated : false
+													});
+													viewContent.scrollTo(0, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
+													if (table_data.length > 0) {
 														e.source.autocomplete_table.visible = true;
 													} else {
 														e.source.autocomplete_table.visible = false;
@@ -5485,7 +5509,7 @@ create_or_edit_node.loadUI = function() {
 										hintText : field_arr[index_label][index_size].label + ' ...',
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										color : '#000000',
-										height : (PLATFORM=='android')?heightTextField:heightValue,
+										height : (PLATFORM == 'android') ? heightTextField : heightValue,
 										font : {
 											fontSize : fieldFontSize
 										},
@@ -5512,10 +5536,10 @@ create_or_edit_node.loadUI = function() {
 										defaultField : defaultField,
 										settings : settings,
 										changedFlag : 0,
-										returnKeyType: Ti.UI.RETURNKEY_DONE,
-										enabled: can_edit,
-										editable: can_edit,
-										regionView: regionView
+										returnKeyType : Ti.UI.RETURNKEY_DONE,
+										enabled : can_edit,
+										editable : can_edit,
+										regionView : regionView
 									});
 									if (PLATFORM == 'android') {
 										content[count].backgroundImage = '../images/textfield.png'
@@ -5532,7 +5556,7 @@ create_or_edit_node.loadUI = function() {
 									}
 									//AUTOCOMPLETE TABLE
 									var autocomplete_table = Titanium.UI.createTableView({
-										top : top + ((PLATFORM=='android')?heightTextField-10:heightValue),
+										top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
 										searchHidden : true,
 										zIndex : 15,
 										height : getScreenHeight() * 0.3,
@@ -5542,7 +5566,7 @@ create_or_edit_node.loadUI = function() {
 										borderWidth : 1
 									});
 									content[count].autocomplete_table = autocomplete_table;
-									top += (PLATFORM=='android')?heightTextField:heightValue;
+									top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
 									regionView.add(content[count].autocomplete_table);
 
@@ -5621,12 +5645,14 @@ create_or_edit_node.loadUI = function() {
 												}
 												e.source.autocomplete_table.setData(table_data);
 												e.source.autocomplete_table.height = getScreenHeight() * 0.3;
-												if(table_data.length<3 && table_data.length>0){
-													e.source.autocomplete_table.height = (table_data.length==1)?getScreenHeight() * 0.1: getScreenHeight() * 0.2;
+												if (table_data.length < 3 && table_data.length > 0) {
+													e.source.autocomplete_table.height = (table_data.length == 1) ? getScreenHeight() * 0.1 : getScreenHeight() * 0.2;
 												}
-												e.source.autocomplete_table.scrollToTop(0, {animated: false});
-												viewContent.scrollTo(0,e.source.regionView.top+e.source.top-((PLATFORM=='android')?heightTextField:heightValue));
-												if(table_data.length > 0) {
+												e.source.autocomplete_table.scrollToTop(0, {
+													animated : false
+												});
+												viewContent.scrollTo(0, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
+												if (table_data.length > 0) {
 													e.source.autocomplete_table.visible = true;
 												} else {
 													e.source.autocomplete_table.visible = false;
@@ -5718,7 +5744,9 @@ create_or_edit_node.loadUI = function() {
 								}
 								Ti.API.info(secondary);
 								var db_bah = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-								if(PLATFORM != 'android'){db_bah.file.setRemoteBackup(false);}
+								if (PLATFORM != 'android') {
+									db_bah.file.setRemoteBackup(false);
+								}
 								var nodes = db_bah.execute(secondary);
 								Ti.API.info("Num of rows: " + nodes.rowCount);
 								while (nodes.isValidRow()) {
@@ -5776,7 +5804,7 @@ create_or_edit_node.loadUI = function() {
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										color : '#000000',
 										private_index : o_index,
-										height : (PLATFORM=='android')?heightTextField:heightValue,
+										height : (PLATFORM == 'android') ? heightTextField : heightValue,
 										font : {
 											fontSize : fieldFontSize
 										},
@@ -5798,12 +5826,12 @@ create_or_edit_node.loadUI = function() {
 										settings : settings,
 										changedFlag : 0,
 										my_index : count,
-										autocorrect: false,
-										returnKeyType: Ti.UI.RETURNKEY_DONE,
-										enabled: can_edit,
-										editable: can_edit,
-										touched: false,
-										regionView: regionView
+										autocorrect : false,
+										returnKeyType : Ti.UI.RETURNKEY_DONE,
+										enabled : can_edit,
+										editable : can_edit,
+										touched : false,
+										regionView : regionView
 									});
 									if (PLATFORM == 'android') {
 										content[count].backgroundImage = '../images/textfield.png'
@@ -5820,7 +5848,7 @@ create_or_edit_node.loadUI = function() {
 									}
 									//AUTOCOMPLETE TABLE
 									var autocomplete_table = Titanium.UI.createTableView({
-										top : top + ((PLATFORM=='android')?heightTextField-10:heightValue),
+										top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
 										searchHidden : true,
 										zIndex : 15,
 										height : getScreenHeight() * 0.3,
@@ -5830,7 +5858,7 @@ create_or_edit_node.loadUI = function() {
 										borderWidth : 1
 									});
 									content[count].autocomplete_table = autocomplete_table;
-									top += (PLATFORM=='android')?heightTextField:heightValue;
+									top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
 									regionView.add(content[count].autocomplete_table);
 
@@ -5870,7 +5898,7 @@ create_or_edit_node.loadUI = function() {
 
 									content[count].addEventListener('focus', function(e) {
 										e.source.touched = true;
-										adjustView(e.source.my_index,e.source.regionView.top+e.source.top-((PLATFORM=='android')?heightTextField:heightValue) ); 
+										adjustView(e.source.my_index, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
 									});
 
 									//
@@ -5915,12 +5943,14 @@ create_or_edit_node.loadUI = function() {
 													}
 													e.source.autocomplete_table.setData(table_data);
 													e.source.autocomplete_table.height = getScreenHeight() * 0.3;
-													if(table_data.length<3 && table_data.length>0){
-														e.source.autocomplete_table.height = (table_data.length==1)?getScreenHeight() * 0.1: getScreenHeight() * 0.2;
+													if (table_data.length < 3 && table_data.length > 0) {
+														e.source.autocomplete_table.height = (table_data.length == 1) ? getScreenHeight() * 0.1 : getScreenHeight() * 0.2;
 													}
-													e.source.autocomplete_table.scrollToTop(0, {animated: false});
-													viewContent.scrollTo(0,e.source.regionView.top+e.source.top-((PLATFORM=='android')?heightTextField:heightValue));
-													if(table_data.length > 0) {
+													e.source.autocomplete_table.scrollToTop(0, {
+														animated : false
+													});
+													viewContent.scrollTo(0, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
+													if (table_data.length > 0) {
 														e.source.autocomplete_table.visible = true;
 													} else {
 														e.source.autocomplete_table.visible = false;
@@ -5961,7 +5991,7 @@ create_or_edit_node.loadUI = function() {
 									hintText : field_arr[index_label][index_size].label + ' ...',
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									color : '#000000',
-									height : (PLATFORM=='android')?heightTextField:heightValue,
+									height : (PLATFORM == 'android') ? heightTextField : heightValue,
 									font : {
 										fontSize : fieldFontSize
 									},
@@ -5982,13 +6012,13 @@ create_or_edit_node.loadUI = function() {
 									reffer_index : reffer_index,
 									settings : settings,
 									changedFlag : 0,
-									my_index: count,
-									autocorrect: false,
-									returnKeyType: Ti.UI.RETURNKEY_DONE,
-									enabled: can_edit,
-									editable: can_edit,
-									touched: false,
-									regionView: regionView
+									my_index : count,
+									autocorrect : false,
+									returnKeyType : Ti.UI.RETURNKEY_DONE,
+									enabled : can_edit,
+									editable : can_edit,
+									touched : false,
+									regionView : regionView
 								});
 								if (PLATFORM == 'android') {
 									content[count].backgroundImage = '../images/textfield.png'
@@ -6005,7 +6035,7 @@ create_or_edit_node.loadUI = function() {
 								}
 								//AUTOCOMPLETE TABLE
 								var autocomplete_table = Titanium.UI.createTableView({
-									top : top + ((PLATFORM=='android')?heightTextField-10:heightValue),
+									top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
 									searchHidden : true,
 									zIndex : 999,
 									height : getScreenHeight() * 0.3,
@@ -6015,7 +6045,7 @@ create_or_edit_node.loadUI = function() {
 									borderWidth : 1
 								});
 								content[count].autocomplete_table = autocomplete_table;
-								top += (PLATFORM=='android')?heightTextField:heightValue;
+								top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
 								regionView.add(content[count].autocomplete_table);
 
@@ -6056,7 +6086,7 @@ create_or_edit_node.loadUI = function() {
 
 								content[count].addEventListener('focus', function(e) {
 									e.source.touched = true;
-									adjustView(e.source.my_index,e.source.regionView.top+e.source.top-((PLATFORM=='android')?heightTextField:heightValue) ); 
+									adjustView(e.source.my_index, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
 								});
 
 								//
@@ -6102,12 +6132,14 @@ create_or_edit_node.loadUI = function() {
 												}
 												e.source.autocomplete_table.setData(table_data);
 												e.source.autocomplete_table.height = getScreenHeight() * 0.3;
-												if(table_data.length<3 && table_data.length>0){
-													e.source.autocomplete_table.height = (table_data.length==1)?getScreenHeight() * 0.1: getScreenHeight() * 0.2;
+												if (table_data.length < 3 && table_data.length > 0) {
+													e.source.autocomplete_table.height = (table_data.length == 1) ? getScreenHeight() * 0.1 : getScreenHeight() * 0.2;
 												}
-												e.source.autocomplete_table.scrollToTop(0, {animated: false});
-												viewContent.scrollTo(0,e.source.regionView.top+e.source.top-((PLATFORM=='android')?heightTextField:heightValue));
-												if(table_data.length>0){
+												e.source.autocomplete_table.scrollToTop(0, {
+													animated : false
+												});
+												viewContent.scrollTo(0, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
+												if (table_data.length > 0) {
 													e.source.autocomplete_table.visible = true;
 												} else {
 													e.source.autocomplete_table.visible = false;
@@ -7465,7 +7497,7 @@ create_or_edit_node.loadUI = function() {
 										borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 										textAlign : 'left',
 										width : Ti.Platform.displayCaps.platformWidth - 30,
-										height : (PLATFORM=='android')?heightTextField:heightValue,
+										height : (PLATFORM == 'android') ? heightTextField : heightValue,
 										font : {
 											fontSize : fieldFontSize
 										},
@@ -7499,7 +7531,7 @@ create_or_edit_node.loadUI = function() {
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
 									}
-									top += (PLATFORM=='android')?heightTextField:heightValue;
+									top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
@@ -7540,7 +7572,7 @@ create_or_edit_node.loadUI = function() {
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									textAlign : 'left',
 									width : Ti.Platform.displayCaps.platformWidth - 30,
-									height : (PLATFORM=='android')?heightTextField:heightValue,
+									height : (PLATFORM == 'android') ? heightTextField : heightValue,
 									font : {
 										fontSize : fieldFontSize
 									},
@@ -7560,13 +7592,13 @@ create_or_edit_node.loadUI = function() {
 									_make : keep_from_make,
 									settings : settings,
 									changedFlag : 0,
-									i_name: i_name,
-									my_index: count,
-									autocorrect: false,
-									returnKeyType: Ti.UI.RETURNKEY_DONE,
-									enabled: can_edit,
-									editable: can_edit,
-									regionView: regionView
+									i_name : i_name,
+									my_index : count,
+									autocorrect : false,
+									returnKeyType : Ti.UI.RETURNKEY_DONE,
+									enabled : can_edit,
+									editable : can_edit,
+									regionView : regionView
 								});
 								if (PLATFORM == 'android') {
 									content[count].backgroundImage = '../images/textfield.png'
@@ -7583,7 +7615,7 @@ create_or_edit_node.loadUI = function() {
 								}
 								//AUTOCOMPLETE TABLE
 								var autocomplete_table = Titanium.UI.createTableView({
-									top : top + ((PLATFORM=='android')?heightTextField-10:heightValue),
+									top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
 									searchHidden : true,
 									zIndex : 15,
 									height : getScreenHeight() * 0.3,
@@ -7593,7 +7625,7 @@ create_or_edit_node.loadUI = function() {
 									borderWidth : 1
 								});
 								content[count].autocomplete_table = autocomplete_table;
-								top += (PLATFORM=='android')?heightTextField:heightValue;
+								top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
 								regionView.add(content[count].autocomplete_table);
 
@@ -7618,7 +7650,7 @@ create_or_edit_node.loadUI = function() {
 								});
 
 								content[count].addEventListener('focus', function(e) {
-									adjustView(e.source.my_index,e.source.regionView.top+e.source.top-((PLATFORM=='android')?heightTextField:heightValue) ); 
+									adjustView(e.source.my_index, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
 									if (e.source.fantasy_name == "Model") {
 										Ti.API.info(content[e.source.make_ind].value);
 
@@ -7675,12 +7707,14 @@ create_or_edit_node.loadUI = function() {
 											}
 											e.source.autocomplete_table.setData(table_data);
 											e.source.autocomplete_table.height = getScreenHeight() * 0.3;
-											if(table_data.length<3 && table_data.length>0){
-												e.source.autocomplete_table.height = (table_data.length==1)?getScreenHeight() * 0.1: getScreenHeight() * 0.2;
+											if (table_data.length < 3 && table_data.length > 0) {
+												e.source.autocomplete_table.height = (table_data.length == 1) ? getScreenHeight() * 0.1 : getScreenHeight() * 0.2;
 											}
-											e.source.autocomplete_table.scrollToTop(0, {animated: false});
-											viewContent.scrollTo(0,(e.source.regionView.top+e.source.top-((PLATFORM=='android')?heightTextField:heightValue)));
-											if(table_data.length>0){
+											e.source.autocomplete_table.scrollToTop(0, {
+												animated : false
+											});
+											viewContent.scrollTo(0, (e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue)));
+											if (table_data.length > 0) {
 												e.source.autocomplete_table.visible = true;
 											} else {
 												e.source.autocomplete_table.visible = false;
@@ -7907,7 +7941,7 @@ create_or_edit_node.loadUI = function() {
 									composed_obj : false,
 									image : defaultImageVal,
 									imageVal : val,
-									isImage: false,
+									isImage : false,
 									bigImg : null,
 									mimeType : null,
 									cardinality : settings.cardinality,
@@ -8077,7 +8111,7 @@ create_or_edit_node.loadUI = function() {
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 									color : '#000000',
 									backgroundColor : '#D6CED9',
-									height : (PLATFORM=='android')?heightTextField:heightValue,
+									height : (PLATFORM == 'android') ? heightTextField : heightValue,
 									font : {
 										fontSize : fieldFontSize
 									},
@@ -8101,7 +8135,7 @@ create_or_edit_node.loadUI = function() {
 								});
 								regionView.add(content[count]);
 
-								top += (PLATFORM=='android')?heightTextField:heightValue;
+								top += (PLATFORM == 'android') ? heightTextField : heightValue;
 								regionView.add(content[count]);
 								count++;
 							}
@@ -8204,22 +8238,22 @@ create_or_edit_node.loadUI = function() {
 
 		}
 	}
-	
-	if(viewContent.getChildren() != null) {
-		for(var i = viewContent.getChildren().length; i >= 0; i--) {
+
+	if (viewContent.getChildren() != null) {
+		for (var i = viewContent.getChildren().length; i >= 0; i--) {
 			var v = viewContent.getChildren()[i];
 			var isLabel = false;
-			if(PLATFORM == 'android') {
-				if( v instanceof Ti.UI.Label) {
+			if (PLATFORM == 'android') {
+				if ( v instanceof Ti.UI.Label) {
 					isLabel = true;
 				}
 			} else {
-				if(v == '[object TiUILabel]') {
+				if (v == '[object TiUILabel]') {
 					isLabel = true;
 				}
 			}
 
-			if(isLabel == true && v.viewContainer.expanded == true) {
+			if (isLabel == true && v.viewContainer.expanded == true) {
 				v.viewContainer.height = v.viewContainer.height + (getScreenHeight() * 0.3);
 				break;
 			}
@@ -8385,7 +8419,9 @@ create_or_edit_node.loadUI = function() {
 					}).show();
 				}
 				var db_toDeleteImage = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-				if(PLATFORM != 'android'){db_toDeleteImage.file.setRemoteBackup(false);}
+				if (PLATFORM != 'android') {
+					db_toDeleteImage.file.setRemoteBackup(false);
+				}
 				db_toDeleteImage.execute("DELETE FROM file_upload_queue WHERE nid=0;");
 				db_toDeleteImage.close();
 				win.close();
@@ -8403,22 +8439,23 @@ if (PLATFORM == 'android') {
 	//camera.addEventListener("successCameraCapture", function(e){openAndroidCamera(e);});
 }
 
-function saveImageInDb(currentImageView, field_name){
-	var file_upload_nid = 0 ;
+function saveImageInDb(currentImageView, field_name) {
+	var file_upload_nid = 0;
 	var db_toSaveImage = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-	if(PLATFORM != 'android'){db_toSaveImage.file.setRemoteBackup(false);}
+	if (PLATFORM != 'android') {
+		db_toSaveImage.file.setRemoteBackup(false);
+	}
 	var encodeImage = Ti.Utils.base64encode(currentImageView.bigImg);
 	var mime = currentImageView.mimeType;
 	var imageName = 'image.' + mime.substring(mime.indexOf('/') + 1, mime.length);
 	var is_exists = db_toSaveImage.execute('SELECT delta, nid FROM file_upload_queue WHERE nid=' + file_upload_nid + ' and delta=' + currentImageView.private_index + ' and field_name="' + field_name + '";');
-	if(is_exists.rowCount > 0) {
+	if (is_exists.rowCount > 0) {
 		db_toSaveImage.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '", file_data="' + encodeImage + '", field_name="' + field_name + '", file_name="' + imageName + '", delta=' + currentImageView.private_index + ' WHERE nid=' + file_upload_nid + ' and delta=' + currentImageView.private_index + ' and field_name="' + field_name + '";');
-	}else{
+	} else {
 		db_toSaveImage.execute('INSERT INTO file_upload_queue (nid , file_data , field_name, file_name, delta) VALUES (' + file_upload_nid + ', "' + encodeImage + '", "' + field_name + '", "' + imageName + '", ' + currentImageView.private_index + ')');
 	}
 	db_toSaveImage.close();
 }
-
 
 function openAndroidCamera(e) {
 	setTimeout(function(evt) {
@@ -8437,14 +8474,14 @@ function openAndroidCamera(e) {
 			e.source.isImage = true;
 			e.source.bigImg = imagescr;
 			e.source.mimeType = "/jpeg";
-			if(e.source.cardinality > 1 || e.source.cardinality < 0) {
-				if(e.source.cardinality < 1) {
+			if (e.source.cardinality > 1 || e.source.cardinality < 0) {
+				if (e.source.cardinality < 1) {
 					arrImages = createImage(e.source.scrollView.addButton.o_index, e.source.scrollView.arrImages, defaultImageVal, e.source.scrollView, false);
 					e.source.scrollView.arrImages = arrImages;
 					e.source.scrollView.addButton.o_index += 1;
 					newSource = arrImages.length - 1;
 				} else {
-					if(e.source.private_index == e.source.cardinality - 1) {
+					if (e.source.private_index == e.source.cardinality - 1) {
 						return;
 					}
 					newSource = (e.source.private_index == e.source.cardinality - 1) ? 0 : e.source.private_index + 1;
@@ -8464,14 +8501,15 @@ function openAndroidCamera(e) {
 	}, 200);
 }
 
-
 // To open camera
 function openCamera(e) {
 	if (PLATFORM == 'android') {
-		if(Ti.Media.isCameraSupported) {
+		if (Ti.Media.isCameraSupported) {
 			camera.openCamera({
 				"event" : e.source,
-				"callbackFnc" : function(e){openAndroidCamera(e);}
+				"callbackFnc" : function(e) {
+					openAndroidCamera(e);
+				}
 			});
 		} else {
 			alert('No Camera in device');
@@ -8480,6 +8518,7 @@ function openCamera(e) {
 	} else {
 		try {
 			var overlayView;
+			
 			var actInd = Ti.UI.createActivityIndicator();
 			actInd.font = {
 				fontFamily : 'Helvetica Neue',
@@ -8488,6 +8527,7 @@ function openCamera(e) {
 			};
 			actInd.color = 'white';
 			actInd.message = 'Please wait...';
+			
 			
 			overlayView = Ti.UI.createView();
 			var captureBtn = Ti.UI.createButton({
@@ -8499,6 +8539,19 @@ function openCamera(e) {
 			var flexible = Ti.UI.createButton({
 				systemButton : Ti.UI.iPhone.SystemButton.FLEXIBLE_SPACE,
 			});
+			
+			var flashMode = Ti.App.Properties.getInt("flashMode",Ti.Media.CAMERA_FLASH_OFF);
+			
+			var flashBtn = Ti.UI.createButton({
+				top : 5,
+				right : 5,
+				height : 34,
+				width : 68,
+				backgroundImage: (flashMode == Ti.Media.CAMERA_FLASH_ON) ? '../images/flashOn.png' : '../images/flashOff.png'
+			});
+			if(movement.isFlashAvailableInCamera()){
+			overlayView.add(flashBtn);
+			}
 			var navbar = Ti.UI.iOS.createToolbar({
 				left : 0,
 				right : 0,
@@ -8507,13 +8560,25 @@ function openCamera(e) {
 				items : [doneBtn, flexible, captureBtn, flexible]
 			});
 			overlayView.add(navbar);
+			
 			captureBtn.addEventListener('click', function(evt) {
 				Ti.Media.takePicture();
 			});
 			doneBtn.addEventListener('click', function(evt) {
 				Ti.Media.hideCamera();
 			});
-
+			
+			flashBtn.addEventListener('click', function(evt) {
+				if (Ti.Media.cameraFlashMode == Ti.Media.CAMERA_FLASH_ON) {
+					evt.source.backgroundImage = "../images/flashOff.png";
+					Ti.Media.cameraFlashMode = Ti.Media.CAMERA_FLASH_OFF;
+				} else {
+					evt.source.backgroundImage = "../images/flashOn.png";
+					Ti.Media.cameraFlashMode = Ti.Media.CAMERA_FLASH_ON;
+				}
+				Ti.App.Properties.setInt("flashMode", Ti.Media.cameraFlashMode);
+			});
+			
 			Ti.Media.showCamera({
 
 				success : function(event) {
@@ -8547,7 +8612,7 @@ function openCamera(e) {
 						actInd.hide();
 						Ti.Media.hideCamera();
 						openCamera(e);
-					}else {
+					} else {
 						actInd.hide();
 						Ti.Media.hideCamera();
 						saveImageInDb(e.source, e.source.field_name);
@@ -8567,13 +8632,19 @@ function openCamera(e) {
 				allowEditing : false,
 				mediaTypes : [Ti.Media.MEDIA_TYPE_PHOTO]
 			});
+			try{
+				if(movement.isFlashAvailableInCamera()){
+				Ti.Media.cameraFlashMode = flashMode;	
+				}			
+				
+			}catch(ex){
+				
+			}			
 		} catch(ex) {
-
 		}
 
 	}
 }
-
 function createImage(o_index, arrImages, data, scrollView, updated) {
 	contentImage = Ti.UI.createImageView({
 		private_index : o_index,
@@ -8663,7 +8734,9 @@ function bottomButtons(actualWindow) {
 
 				if (win.nid != null) {
 					var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-					if(PLATFORM != 'android'){db_act.file.setRemoteBackup(false);}
+					if (PLATFORM != 'android') {
+						db_act.file.setRemoteBackup(false);
+					}
 					var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
 					var _data = JSON.parse(json_data.fieldByName('_data'));
 
@@ -8683,7 +8756,9 @@ function bottomButtons(actualWindow) {
 					db_act.close();
 				} else {
 					var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-					if(PLATFORM != 'android'){db_act.file.setRemoteBackup(false);}
+					if (PLATFORM != 'android') {
+						db_act.file.setRemoteBackup(false);
+					}
 					var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
 					var _data = JSON.parse(json_data.fieldByName('_data'));
 
@@ -8798,7 +8873,9 @@ function cancelOpt() {
 				}
 			}
 			var db_toDeleteImage = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-			if(PLATFORM != 'android'){db_toDeleteImage.file.setRemoteBackup(false);}
+			if (PLATFORM != 'android') {
+				db_toDeleteImage.file.setRemoteBackup(false);
+			}
 			db_toDeleteImage.execute("DELETE FROM file_upload_queue WHERE nid=0;");
 			db_toDeleteImage.close();
 			win.close();
@@ -8821,7 +8898,9 @@ function setDefaultValues(content, e) {
 				if (content[counter].parent_name == e.source.field_name) {
 
 					db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-					if(PLATFORM != 'android'){db_display.file.setRemoteBackup(false);}
+					if (PLATFORM != 'android') {
+						db_display.file.setRemoteBackup(false);
+					}
 					var table = db_display.execute('SELECT table_name FROM node WHERE nid = ' + e.source.nid);
 					table = table.fieldByName('table_name');
 
@@ -9055,7 +9134,9 @@ function addDoneButtonInKB(content) {
 function reCalculate(singel_content) {
 	try {
 		db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-		if(PLATFORM != 'android'){db_display.file.setRemoteBackup(false);}
+		if (PLATFORM != 'android') {
+			db_display.file.setRemoteBackup(false);
+		}
 		var entity = createEntityMultiple();
 		var result = _calculation_field_get_values(win, db_display, singel_content, entity, content);
 		var row_values = result[0].rows;
@@ -9777,7 +9858,9 @@ function showRulesRow(current_content, db_display, current_window) {
 						row.add(row.label);
 						heightView += heightCellView + 1;
 						row.addEventListener('click', function(e) {
-							if(PLATFORM == 'android'){Ti.UI.Android.hideSoftKeyboard()};
+							if (PLATFORM == 'android') {
+								Ti.UI.Android.hideSoftKeyboard()
+							};
 							var detail_popup = Ti.UI.createView({
 								backgroundColor : '#00000000'
 							});
@@ -10016,7 +10099,9 @@ function setParticularRulesField(rulesFieldContent) {
 	var omadi_reference_title = "";
 	var violation_time = "";
 	db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-	if(PLATFORM != 'android'){db_display.file.setRemoteBackup(false);}
+	if (PLATFORM != 'android') {
+		db_display.file.setRemoteBackup(false);
+	}
 	var violations_vocabulary = db_display.execute('SELECT vid from vocabulary WHERE machine_name="' + machine_name + '";');
 	var violations_terms_rslt = db_display.execute('SELECT tid,name from term_data WHERE vid=' + violations_vocabulary.fieldByName('vid'));
 	while (violations_terms_rslt.isValidRow()) {
@@ -10037,8 +10122,7 @@ function setParticularRulesField(rulesFieldContent) {
 		var rules_field_name = content[entityArr[rulesFieldContent['widgetObj']['rules_field_name']][0].reffer_index];
 		var rules_violation_time_field_name = content[entityArr[rulesFieldContent['widgetObj']['rules_violation_time_field_name']][0].reffer_index];
 
-
-		if(rules_field_name.nid != null && rules_violation_time_field_name.value != null) {
+		if (rules_field_name.nid != null && rules_violation_time_field_name.value != null) {
 			omadi_reference_title = rules_field_name.value;
 			var table = db_display.execute('SELECT table_name FROM node WHERE nid = ' + rules_field_name.nid);
 			table = table.fieldByName('table_name');
@@ -10128,8 +10212,8 @@ function setParticularRulesField(rulesFieldContent) {
 			content[rulesFieldContent.reffer_index + o_index].arr_opt = arr_opt;
 			content[rulesFieldContent.reffer_index + o_index].title = aux_val.title;
 			content[rulesFieldContent.reffer_index + o_index].value = aux_val.value;
-			content[rulesFieldContent.reffer_index + o_index].omadi_reference_title = (arr_opt.length==1)?omadi_reference_title:"";
-			content[rulesFieldContent.reffer_index + o_index].violation_time = (arr_opt.length==1)?violation_time:"";
+			content[rulesFieldContent.reffer_index + o_index].omadi_reference_title = (arr_opt.length == 1) ? omadi_reference_title : "";
+			content[rulesFieldContent.reffer_index + o_index].violation_time = (arr_opt.length == 1) ? violation_time : "";
 		}
 	} else if (rulesFieldContent.settings.cardinality == 1) {
 		var arr_picker = new Array();
@@ -10157,8 +10241,8 @@ function setParticularRulesField(rulesFieldContent) {
 		content[rulesFieldContent.reffer_index].arr_opt = arr_opt;
 		content[rulesFieldContent.reffer_index].title = aux_val.title;
 		content[rulesFieldContent.reffer_index].value = aux_val.value;
-		content[rulesFieldContent.reffer_index].omadi_reference_title = (arr_opt.length==1)?omadi_reference_title:"";
-		content[rulesFieldContent.reffer_index].violation_time = (arr_opt.length==1)?violation_time:"";
+		content[rulesFieldContent.reffer_index].omadi_reference_title = (arr_opt.length == 1) ? omadi_reference_title : "";
+		content[rulesFieldContent.reffer_index].violation_time = (arr_opt.length == 1) ? violation_time : "";
 
 	} else if (rulesFieldContent.settings.cardinality == -1) {
 		var sel_text = "";
@@ -10177,8 +10261,8 @@ function setParticularRulesField(rulesFieldContent) {
 		content[rulesFieldContent.reffer_index].itens = _val_itens;
 		content[rulesFieldContent.reffer_index].desLabel.text = sel_text;
 		content[rulesFieldContent.reffer_index].from_cond_vs = fromViolationRules;
-		content[rulesFieldContent.reffer_index].omadi_reference_title = (_itens==null)?omadi_reference_title:"";
-		content[rulesFieldContent.reffer_index].violation_time = (_itens==null)?violation_time:"";
+		content[rulesFieldContent.reffer_index].omadi_reference_title = (_itens == null) ? omadi_reference_title : "";
+		content[rulesFieldContent.reffer_index].violation_time = (_itens == null) ? violation_time : "";
 	}
 	db_display.close();
 }

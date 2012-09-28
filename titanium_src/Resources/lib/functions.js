@@ -3572,6 +3572,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					//setUse();
 					unsetUse();
 					close_parent();
+					hideIndicator();
 					uploadFile(win, 'POST');
 					
 				} else if (mode == 0) {
@@ -3587,7 +3588,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 
 					//setUse();
 					unsetUse();
+					hideIndicator();
 					close_parent();
+					
+					
 					uploadFile(win, 'POST');
 				} else {
 					unsetUse();
@@ -3706,7 +3710,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				alert('Error :: ' + e.error);
 				//Change message for testing purpose
 			}
-			close_parent();
+			hideIndicator();
 		} else if (mode == 1) {
 			if (PLATFORM == 'android') {
 				Ti.UI.createNotification({
@@ -3719,7 +3723,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				alert('Error :: ' + e.error);
 				//Change message for testing purpose
 			}
-			close_parent();
+			hideIndicator();
 		}
 
 		db_installMe.close();

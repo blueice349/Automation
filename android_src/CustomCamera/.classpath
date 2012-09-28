@@ -3,12 +3,11 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="build/.apt_generated"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/Users/cdn93/Library/android_sdk/platforms/android-8/android.jar"/>
-	<classpathentry kind="lib" path="/Users/cdn93/Library/android_sdk/add-ons/addon_google_apis_google_inc_8/libs/maps.jar"/>
-	<classpathentry kind="lib" path="/Users/cdn93/Library/Application Support/Titanium/mobilesdk/osx/2.1.1.GA/android/titanium.jar"/>
-	<classpathentry kind="lib" path="/Users/cdn93/Library/Application Support/Titanium/mobilesdk/osx/2.1.1.GA/android/js.jar"/>
-	<classpathentry kind="lib" path="/Users/cdn93/Library/Application Support/Titanium/mobilesdk/osx/2.1.1.GA/android/kroll-common.jar"/>
-	<classpathentry kind="lib" path="/Users/cdn93/Library/Application Support/Titanium/mobilesdk/osx/2.1.1.GA/android/kroll-apt.jar"/>
-	<classpathentry kind="lib" path="/Volumes/UNTITLED 2/pooja_laad/Titanium/omadi/Repository_20120829/omadi_mobile/android_src/CustomCamera/lib/Acra.jar"/>
+	<classpathentry kind="lib" path="/Users/cdnn/Library/Application Support/Titanium/mobilesdk/osx/2.1.1.GA/android/titanium.jar"/>
+	<classpathentry kind="lib" path="/Volumes/Untitled 2/swapnil desai/anroiod/setup/android-sdk-mac_x86-1/add-ons/addon_google_apis_google_inc_8/libs/maps.jar"/>
+	<classpathentry kind="lib" path="/Volumes/Untitled 2/swapnil desai/anroiod/setup/android-sdk-mac_x86-1/platforms/android-8/android.jar"/>
+	<classpathentry kind="lib" path="/Users/cdnn/Library/Application Support/Titanium/mobilesdk/osx/2.1.1.GA/android/js.jar"/>
+	<classpathentry kind="lib" path="/Users/cdnn/Library/Application Support/Titanium/mobilesdk/osx/2.1.1.GA/android/kroll-apt.jar"/>
+	<classpathentry kind="lib" path="/Users/cdnn/Library/Application Support/Titanium/mobilesdk/osx/2.1.1.GA/android/kroll-common.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

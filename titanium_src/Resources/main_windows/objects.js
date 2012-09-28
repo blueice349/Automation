@@ -19,6 +19,7 @@ var win3 = Ti.UI.currentWindow;
 
 //Sets only portrait mode
 win3.orientationModes = [Titanium.UI.PORTRAIT];
+var movement = win3.movement;
 
 //Definition of the window before (opens when the user clicks on the back button)
 var goToWindow = Titanium.UI.createWindow({
@@ -264,6 +265,7 @@ function openEditScreen(part, nid, e){
 	win_new.up_node = win3.up_node;
 	win_new.uid = win3.uid;
 	win_new.region_form = part;
+	win_new.movement = win3.movement;
 
 	//Passing parameters
 	win_new.nid = nid;
@@ -339,6 +341,7 @@ function bottomButtons1(_nid, win3, e){
 				win_new.picked 		 = win3.picked;
 				win_new.nid 			 = e.row.nid;
 				win_new.nameSelected 	 = e.row.name;
+				win_new.movement = win3.movement;
 		
 				//Avoiding memory leaking
 				win_new.open();

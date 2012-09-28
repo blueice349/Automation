@@ -136,4 +136,15 @@ MAKE_SYSTEM_PROP_DBL(LOCATION_ACCURACY_THREE_KILOMETERS, kCLLocationAccuracyThre
     return movementData;
 }
 
+- (BOOL) isFlashAvailableInCamera: (id)sender {
+    
+    if([UIImagePickerController isFlashAvailableForCameraDevice:UIImagePickerControllerCameraDeviceRear]){
+        return YES;
+    }else{
+        return NO;
+    }
+       
+}
+
+
 @end
