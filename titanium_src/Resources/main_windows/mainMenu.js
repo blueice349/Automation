@@ -133,13 +133,13 @@ function update_node(mode, close_parent, _node_name, flag_next_part){
 	db_up.close();
 
 	//function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent)
-	installMe(0, win2, updatedTimeStamp  , null, win2.listView, null, 'POST', mode, function (){
+	installMe(0, win2, updatedTimeStamp  , null, win2.listView, null, 'POST', mode, function (isError){
 		Ti.API.info('Closing create or edit node');
 		if (flag_next_part != null){
 			close_parent(flag_next_part);
 		}
 		else{
-			close_parent();
+			close_parent(isError);
 		}
 	}, _node_name);
 }

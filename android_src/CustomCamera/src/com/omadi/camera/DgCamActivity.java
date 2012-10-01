@@ -169,7 +169,7 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 			}
 
 		});
-
+		
 		// FLASH BUTTON
 		if(mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH))
 		{
@@ -193,6 +193,7 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 						is = mContext.getAssets().open("flashOn.png");
 						cParams.setFlashMode(cParams.FLASH_MODE_ON);
 					}
+					System.setProperty("MYPROP",cParams.getFlashMode());
 					bitmap = BitmapFactory.decodeStream(is);
 					flash.setImageBitmap(bitmap);
 					mCamera.setParameters(cParams);
@@ -245,20 +246,23 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 		cParams.setJpegQuality(95);
 		mCamera.setParameters(cParams);
 		InputStream is;
-		if(mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH))
-		{
-		try {
-			if(cParams.getFlashMode().equals(cParams.FLASH_MODE_ON)){
-				is = mContext.getAssets().open("flashOff.png");
-				cParams.setFlashMode(cParams.FLASH_MODE_OFF);
-			}else{
-				is = mContext.getAssets().open("flashOn.png");
-				cParams.setFlashMode(cParams.FLASH_MODE_ON);
+		if(mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)){
+			try {
+				String myprop = System.getProperty("MYPROP");
+				if (myprop == null) {
+					myprop = cParams.FLASH_MODE_OFF;
+				}
+				if (myprop == cParams.FLASH_MODE_OFF) {
+					is = mContext.getAssets().open("flashOff.png");
+				} else {
+					is = mContext.getAssets().open("flashOn.png");
+				}
+				cParams.setFlashMode(myprop);
+				bitmap = BitmapFactory.decodeStream(is);
+				flash.setImageBitmap(bitmap);
+				mCamera.setParameters(cParams);
+			} catch (IOException e) {
 			}
-			bitmap = BitmapFactory.decodeStream(is);
-			flash.setImageBitmap(bitmap);
-			mCamera.setParameters(cParams);
-		} catch (IOException e) {}
 		}
 
 		// Create our Preview view and set it as the content of our activity.

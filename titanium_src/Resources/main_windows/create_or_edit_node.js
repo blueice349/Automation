@@ -1018,7 +1018,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 					if (content[j].value === false || content[j].value === 0 || content[j].value === 'false') {
 						value_to_insert = 'false';
 					} else {
-						value_to_insert = JSON.stringify(content[j].value);
+						value_to_insert = JSON.stringify(content[j].value).replace(/"/gi, "\"\"");
 					}
 				} else if ((content[j].field_type == 'omadi_time') || (content[j].field_type == 'datestamp')) {
 					if (content[j].update_it === true) {
@@ -1239,11 +1239,13 @@ function close_me_delay() {
 	}, 3000);
 }
 
-function close_me() {
-	//hideIndicator();
-	win.close();
+function close_me(isError) {
+	hideIndicator();
+	if(isError == false){
+		win.close();
+	}
 }
-
+	
 function reload_me(part) {
 	var new_node = Titanium.App.Properties.getString("new_node_id");
 	if (new_node != null) {
@@ -1335,7 +1337,7 @@ function get_models(make) {
 			_aux_dt.next();
 		}
 	} else {
-		var _aux_dt = db_display.execute("SELECT DISTINCT model FROM _vehicles");
+		var _aux_dt = db_for_veh.execute("SELECT DISTINCT model FROM _vehicles");
 		while (_aux_dt.isValidRow()) {
 			_set_result.push(_aux_dt.fieldByName('model'));
 			_aux_dt.next();
@@ -8570,13 +8572,14 @@ function openCamera(e) {
 			
 			flashBtn.addEventListener('click', function(evt) {
 				if (Ti.Media.cameraFlashMode == Ti.Media.CAMERA_FLASH_ON) {
+					Ti.App.Properties.setInt("flashMode", Ti.Media.CAMERA_FLASH_OFF);
 					evt.source.backgroundImage = "../images/flashOff.png";
 					Ti.Media.cameraFlashMode = Ti.Media.CAMERA_FLASH_OFF;
 				} else {
+					Ti.App.Properties.setInt("flashMode", Ti.Media.CAMERA_FLASH_ON);
 					evt.source.backgroundImage = "../images/flashOn.png";
 					Ti.Media.cameraFlashMode = Ti.Media.CAMERA_FLASH_ON;
 				}
-				Ti.App.Properties.setInt("flashMode", Ti.Media.cameraFlashMode);
 			});
 			
 			Ti.Media.showCamera({

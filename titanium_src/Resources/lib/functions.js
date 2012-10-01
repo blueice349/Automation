@@ -3571,8 +3571,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 
 					//setUse();
 					unsetUse();
-					close_parent();
-					hideIndicator();
+					close_parent(false);
 					uploadFile(win, 'POST');
 					
 				} else if (mode == 0) {
@@ -3588,10 +3587,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 
 					//setUse();
 					unsetUse();
-					hideIndicator();
-					close_parent();
-					
-					
+					close_parent(false);
 					uploadFile(win, 'POST');
 				} else {
 					unsetUse();
@@ -3710,7 +3706,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				alert('Error :: ' + e.error);
 				//Change message for testing purpose
 			}
-			hideIndicator();
+			close_parent(true);
 		} else if (mode == 1) {
 			if (PLATFORM == 'android') {
 				Ti.UI.createNotification({
@@ -3723,7 +3719,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				alert('Error :: ' + e.error);
 				//Change message for testing purpose
 			}
-			hideIndicator();
+			close_parent(true);
 		}
 
 		db_installMe.close();
@@ -4143,7 +4139,7 @@ function reduceImageSize(blobImage, maxWidth, maxHeight) {
 function updateFileUploadTable(win, json) {
 	try {
 		if (json.total_item_count == 0) {
-			close_parent();
+			close_parent(false);
 			return;
 		}
 		var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
@@ -4290,7 +4286,7 @@ function showImage(source, actInd) {
 	header.add(close_btn);
 
 	var fullImage = reduceImageSize(source.bigImg, Ti.Platform.displayCaps.platformWidth, Ti.Platform.displayCaps.platformHeight - 50);
-	fullImage.canScale = true;
+	
 	var imageBaseView = Ti.UI.createView({
 		top : 38,
 		right : 0,
@@ -4300,7 +4296,11 @@ function showImage(source, actInd) {
 	close_btn.addEventListener('click', function(e) {
 		imageWin.close();
 	});
+	
+	if(!(fullImage==null))
+	{
 	imageBaseView.add(fullImage);
+	}
 	imageWin.add(imageBaseView);
 	actInd.hide();
 	imageWin.open();
