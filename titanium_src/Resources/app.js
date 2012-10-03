@@ -14,7 +14,8 @@
 Titanium.UI.setBackgroundColor('#EEEEEE');
 
 //Common used functions
-Ti.include('lib/functions.js'); 
+Ti.include('/lib/functions.js'); 
+Ti.include('/lib/encoder_base_64.js');
 var movement;
 if(PLATFORM!='android'){clearCache();
  	movement =  require('com.omadi.ios_gps');
@@ -26,10 +27,11 @@ var win1 = Titanium.UI.createWindow({
     title:'Omadi CRM',
     fullscreen: false,
     zIndex: -100,
-	backgroundColor: '#EEEEEE'
+	backgroundColor: '#EEEEEE',
+	navBarHidden : true
 });
 
-var OMADI_VERSION = "omadiDb1599";
+var OMADI_VERSION = "omadiDb1645";
 
 Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION);
 var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );
@@ -41,6 +43,72 @@ var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.ge
 if(PLATFORM != 'android'){db_a.file.setRemoteBackup(false);}
 var updatedTime = db_a.execute('SELECT timestamp FROM updated WHERE rowid=1');
 
+
+if (PLATFORM == "android"){
+	var intent = Titanium.Android.createServiceIntent({
+	  url: 'android_gps_event.js'
+	});
+	Titanium.Android.stopService(intent);
+	
+	//createNotification("Omadi is running ...");
+	var ostate = null;
+	//MANAGE APP LIFECYCLE
+	function registerState(state){
+		if (ostate == "start" && state == "pause"){
+			//BLANK SCREEN!!!
+			Ti.API.error ('BLANK SCREEN');
+			alert ('BLANK SCREEN'); 
+		}
+		ostate = state;
+	}
+	function registerCreate(){
+		ostate = "create"
+		//createNotification("Create event called ...");
+	}
+	
+	function registerStart(){
+		if (ostate == "create"){
+			ostate = "created";	
+			//createNotification("First run event called ...");
+		}
+		else{
+			ostate = "start";
+			//createNotification("Start event called ...");
+		}
+		
+	}
+	
+	function registerPause(){
+		if (ostate == "start"){
+			//BLANK SCREEN!!!
+			Ti.API.error ('BLANK SCREEN');
+			alert ('BLANK SCREEN'); 
+			createNotification("BLANK SCREEN ...");
+			removeNotifications();
+		}
+		else{
+			//createNotification("Pause event called ...");
+		}
+		ostate = "pause";
+	}
+
+
+	var activity = Ti.Android.currentActivity;
+	activity.addEventListener('create', registerCreate);
+    activity.addEventListener('start', registerStart);
+    activity.addEventListener('pause', registerPause);
+    
+    activity.addEventListener('destroy', function(){
+    	removeNotifications();
+    });
+    
+    activity.addEventListener('stop', function(){
+    	//createNotification("Stop event called ...");
+    });		
+    
+    
+    createNotification("No coordinates uploaded so far");
+}
 
 function is_first_time(){
 	var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
@@ -68,6 +136,7 @@ else{
 
 updatedTime.close();
 db_a.close();
+
 var version_label = Titanium.UI.createLabel({
 	top: 0,
 	height: 'auto',
@@ -451,8 +520,7 @@ i_scroll_page.add(block_i);
  * 			 tf1.value and tf2.value as the user's credentials. 
  */
 b1.addEventListener('click', function(){
-	var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") );
-	if(PLATFORM != 'android'){db.file.setRemoteBackup(false);}
+	
 	//Onblur the text fields, remove keyboard from screen
 	portal.blur();
 	tf2.blur();
@@ -512,14 +580,19 @@ b1.addEventListener('click', function(){
 					Ti.API.info('database exists');
 				}
 				else{
+					db_list.execute("BEGIN IMMEDIATE TRANSACTION");
 					//Create another database
 					Ti.API.info('database does not exist, creating a new one');
 					db_list.execute('INSERT INTO domains (domain, db_name) VALUES ("'+portal.value+'", "db_'+portal.value+'_'+tf1.value+'" )');
+					db_list.execute("COMMIT TRANSACTION");
 				}
 				Ti.API.info('DB NAME_APP: db_'+portal.value+'_'+tf1.value+' ');
 				
-				db_list.execute('UPDATE history SET domain = "'+portal.value+'", username = "'+tf1.value+'", password = "", db_name="db_'+portal.value+'_'+tf1.value+'" WHERE "id_hist"=1');
-				db_list.close();
+				db_list.execute("BEGIN IMMEDIATE TRANSACTION");
+				db_list.execute('UPDATE history SET domain = "'+portal.value+'", username = "'+tf1.value+'", password = "'+tf2.value+'", db_name="db_'+portal.value+'_'+tf1.value+'" WHERE "id_hist"=1');
+				db_list.execute("COMMIT TRANSACTION");
+				
+				//db_list.close();
 				
 				//Debug
 				Ti.API.info("You have just connected");
@@ -532,6 +605,7 @@ b1.addEventListener('click', function(){
 					fullscreen: false,
 					title:'Omadi CRM',
 					url:'main_windows/mainMenu.js',
+					navBarHidden : true,
 					zIndex: 100
 				});
 				
@@ -541,21 +615,26 @@ b1.addEventListener('click', function(){
 				win2.log		 = xhr;
 				win2.movement	 = movement;
 				Ti.API.info(this.responseText);
+				var cookie = this.getResponseHeader('Set-Cookie');
+				var new_app_login_time = Math.round(new Date().getTime() / 1000);
 				
-				db.close();
+				db_list.execute("BEGIN IMMEDIATE TRANSACTION");
+				Ti.API.info('UPDATE login SET picked = "'+picked+'", login_json = "'+Ti.Utils.base64encode(win2.result)+'", is_logged = "true", cookie = "'+cookie+'", logged_time = "'+new_app_login_time+'" WHERE "id_log"=1');
+				var __res = db_list.execute('UPDATE login SET picked = "'+picked+'", login_json = "'+Ti.Utils.base64encode(win2.result)+'", is_logged = "true", cookie = "'+cookie+'", logged_time = "'+new_app_login_time+'" WHERE "id_log"=1' );
+				db_list.execute("COMMIT TRANSACTION");
+				Ti.API.info(isLogged()+" Logged ... Database   "+Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName());
+				db_list.close();
 
 				win1.touchEnabled = false;
 				win2.open();
 				
 				hideIndicator();	
-				//xhr.abort();
-				//(PLATFORM == 'android')?win1.close():'';
+
 		}
 			
 		//If username and pass wrong:
 		xhr.onerror = function(e) {
 			Ti.API.info("status is: "+this.status);
-			db.close();
 			hideIndicator();
 			if (this.status == 406){
 				label_error.text = "The user '"+tf1.value+"' is already logged in another device";
@@ -608,3 +687,33 @@ if ( (PLATFORM != 'android') && (Ti.Platform.displayCaps.platformHeight > 500)){
 Ti.App.addEventListener('free_login', function(){
 	win1.touchEnabled = true;	
 });
+
+if (isLogged() === true){
+	//Already logged
+	var db = Ti.Database.install( '/database/db_list.sqlite' , Titanium.App.Properties.getString("databaseVersion")+"_list"  );
+	no_backup(db);
+	var logged_result = db.execute('SELECT * FROM login WHERE "id_log"=1');
+	// Receives the selected row's value
+	var picked = logged_result.fieldByName("picked");
+
+	//Creation of the main menu window
+	var win2 = Titanium.UI.createWindow({  
+		fullscreen: false,
+		title:'Omadi CRM',
+		url:'main_windows/mainMenu.js',
+		navBarHidden : true,
+		zIndex: 100
+	});
+	
+	//Passes parameter to the second window:
+	win2.picked 	 = picked;
+	win2.result 	 = Ti.Utils.base64decode(logged_result.fieldByName("login_json"));
+	win2.log		 = null;
+	win2.movement	 = movement;
+	Ti.API.info(win2.result);
+	
+	db.close();
+
+	win1.touchEnabled = false;
+	win2.open();
+}

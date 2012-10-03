@@ -47,6 +47,7 @@ var create_or_edit_node = {};
 create_or_edit_node.getWindow = function() {
 	win = Titanium.UI.createWindow({
 		fullscreen : false,
+		navBarHidden : true,
 		backgroundColor : '#DDDDDD'
 	});
 
@@ -1357,6 +1358,7 @@ function display_widget(obj) {
 	if(PLATFORM == 'android'){Ti.UI.Android.hideSoftKeyboard()};
 	var win_wid = Ti.UI.createWindow({
 		backgroundColor : "#000",
+		navBarHidden : true,
 		opacity : 0.9
 	});
 
@@ -1609,6 +1611,7 @@ function display_omadi_time(obj) {
 	if(PLATFORM == 'android'){Ti.UI.Android.hideSoftKeyboard()};
 	var win_wid = Ti.UI.createWindow({
 		//modal: true,
+		navBarHidden : true,
 		backgroundColor : "#000",
 		opacity : 0.9
 	});
@@ -1704,6 +1707,7 @@ function open_mult_selector(obj) {
 	if(PLATFORM == 'android'){Ti.UI.Android.hideSoftKeyboard()};
 	var win_wid = Ti.UI.createWindow({
 		//	modal: true,
+		navBarHidden : true,
 		opacity : 1
 	});
 	var opacView = Ti.UI.createView({

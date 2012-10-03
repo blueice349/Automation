@@ -28,6 +28,70 @@ weekday[4]="Thursday";
 weekday[5]="Friday";
 weekday[6]="Saturday";
 
+
+function isLogged(){
+	var db_a = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list");
+	if(PLATFORM != 'android'){db_a.file.setRemoteBackup(false);}
+	var isLogged = db_a.execute('SELECT * FROM login WHERE "id_log"=1');
+	var logged = isLogged.fieldByName('is_logged');
+	var _l_timestamp = isLogged.fieldByName('logged_time');
+	Ti.API.info("TIME FROM DB = "+_l_timestamp);
+	
+	var _time_now = Math.round(new Date().getTime() / 1000);
+	if (_l_timestamp == "null" || _l_timestamp == null ||  _l_timestamp == "0"){
+		_l_timestamp = 0;
+	}
+	
+	var last_logged_timestamp = _time_now - _l_timestamp;
+	
+	isLogged.close();
+	db_a.close();
+	Ti.API.info("********************   IS LOGGED: " + logged);
+	if (logged === "false"){
+		return false;
+	}
+	else if ( last_logged_timestamp >= (60*60*24*7) ){ //Seven days
+	//else if ( last_logged_timestamp >= (60*5) ){ //Five minutes ----> testing
+		Ti.API.info("SESSION IS NO LONGER VALID! "+last_logged_timestamp);
+		Ti.App.Properties.setString('logStatus', "Please login");
+		return false;
+	}
+	return true;
+}
+
+function no_backup (db_obj){
+	if(PLATFORM != 'android'){db_obj.file.setRemoteBackup(false);}
+}
+
+function createNotification(message) {
+ 
+    var mainIntent = Titanium.Android.createIntent({
+        className: 'org.appcelerator.titanium.TiActivity', 
+        packageName: 'com.omadi.crm',
+        flags: Titanium.Android.FLAG_ACTIVITY_CLEAR_TOP | Titanium.Android.FLAG_ACTIVITY_SINGLE_TOP
+    });
+ 
+    var pending = Titanium.Android.createPendingIntent({ 
+        activity: Titanium.Android.currentActivity,
+        intent: mainIntent,
+        type: Titanium.Android.PENDING_INTENT_FOR_ACTIVITY,
+        flags: Titanium.Android.FLAG_UPDATE_CURRENT
+    });
+ 
+    var notification = Titanium.Android.createNotification({
+            icon: 0x7f020000,
+            contentTitle: 'Omadi CRM',
+            contentText: message,
+            tickerText: 'Omadi notification',
+            contentIntent: pending,
+            flags: Titanium.Android.FLAG_ONGOING_EVENT | Titanium.Android.FLAG_NO_CLEAR
+    });
+    Titanium.Android.NotificationManager.notify(42, notification);
+}
+function removeNotifications(){
+	Titanium.Android.NotificationManager.cancelAll();
+}
+
 function getDBName() {
 	var db_list = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_list");
 	if(PLATFORM != 'android'){db_list.file.setRemoteBackup(false);}
@@ -52,6 +116,7 @@ function notifyIOS(msg, update_time) {
 		height : "50dp",
 		width : "100%",
 		top : "-50dp",
+		navBarHidden : true,
 		zIndex: -1000
 	});
 
@@ -90,6 +155,7 @@ function showIndicator(show) {
 	indWin = Titanium.UI.createWindow({
 		title : 'Omadi CRM',
 		fullscreen : false,
+		navBarHidden : true,
 		backgroundColor : '#000'
 	});
 
@@ -243,6 +309,7 @@ function showIndicatorDelete(inform) {
 	indWin = Titanium.UI.createWindow({
 		title : 'Omadi CRM',
 		modal : true,
+		navBarHidden : true,
 		opacity : 0.9,
 		backgroundColor : '#000000'
 	});
@@ -1470,6 +1537,16 @@ function isJsonString(str) {
 	return true;
 }
 
+function getCookie(){
+	var db = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list" );
+	no_backup(db);
+	var logged_result = db.execute('SELECT * FROM login WHERE rowid=1');
+	db.close();	
+	var cookie = logged_result.fieldByName("cookie");
+	Ti.API.info("FOUND COOKIE = "+cookie);
+	return cookie;
+}
+
 //Install new updates using pagination
 //Load existing data with pagination
 function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent, _node_name) {
@@ -1478,10 +1555,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 	if(PLATFORM != 'android'){db_installMe.file.setRemoteBackup(false);}
 	var objectsUp = Ti.Network.createHTTPClient();
 	Ti.API.info('Log type : ' + objectsUp);
-
+	
 	//Timeout until error:
 	objectsUp.setTimeout(15000);
-
+	
 	Ti.API.info("Current page: " + pageIndex);
 	Ti.API.info("Mode: " + mode);
 	Ti.API.info("Menu: " + menu);
@@ -1505,6 +1582,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 	}
 	//Header parameters
 	objectsUp.setRequestHeader("Content-Type", "application/json");
+	objectsUp.setRequestHeader("Cookie", getCookie()); // Set cookies
 
 	//When connected
 	objectsUp.onload = function(e) {
@@ -3625,60 +3703,90 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 	//Connection error:
 	objectsUp.onerror = function(e) {
 		Ti.API.error('Code status: ' + e.error);
+		Ti.API.error('CODE ERROR = '+this.status);
 		Ti.API.info("Progress bar = " + progress);
 		if (progress != null) {
 			progress.close();
 
 			Titanium.Media.vibrate();
 
-			var a_msg = Titanium.UI.createAlertDialog({
-				title : 'Omadi',
-				buttonNames : ['Yes', 'No'],
-				cancel : 1,
-				click_index : e.index,
-				sec_obj : e.section,
-				row_obj : e.row
-			});
-
-			a_msg.message = "There was a network error, and your data could not be synched. Do you want to retry now? Error description: " + e.error;
 			if(this.status == 403 || elements.status == 403) {
+				var a_msg = Titanium.UI.createAlertDialog({
+					title : 'Omadi',
+					buttonNames : ['OK']
+				});				
+				
 				a_msg.message = "You have been logged out. Please log back in."
 				a_msg.addEventListener('click', function(e) {
-					//if(getDeviceTypeIndentifier() == "android") {
-						Ti.App.fireEvent('stop_gps');
-					//}
+					Ti.App.fireEvent('stop_gps');
 					Ti.App.fireEvent('free_login');
+					var db_func = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list"  );
+					no_backup(db_func);	
+					db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+					db_func.close();
 					win.close();
 				});
+							
+				a_msg.show();
 			}
+			else if(this.status == 401 || elements.status == 401) {
+				var a_msg = Titanium.UI.createAlertDialog({
+					title : 'Omadi',
+					buttonNames : ['OK']
+				});				
+				
+				a_msg.message = "You session is no longer valid. Please log back in."
+				a_msg.addEventListener('click', function(e) {
+					Ti.App.fireEvent('stop_gps');
+					Ti.App.fireEvent('free_login');
+					var db_func = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list"  );
+					no_backup(db_func);	
+					db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+					db_func.close();
+					win.close();
+				});
+							
+				a_msg.show();
+			}
+			else{	
+				var a_msg = Titanium.UI.createAlertDialog({
+					title : 'Omadi',
+					buttonNames : ['Yes', 'No'],
+					cancel : 1,
+					click_index : e.index,
+					sec_obj : e.section,
+					row_obj : e.row
+				});
+				a_msg.message = "There was a network error, and your data could not be synched. Do you want to retry now? Error description: " + e.error;
 
 				
-			a_msg.show();
-
-			a_msg.addEventListener('click', function(e) {
-				if (PLATFORM == "android"){
-					if (e.index != 1) {
-						setTimeout(function() {
-							progress = null;
-							progress = new Progress_install(0, 100);
-							installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
-						}, 800);
-					} else {
-						unsetUse();
+				a_msg.addEventListener('click', function(e) {
+					if (PLATFORM == "android"){
+						if (e.index != 1) {
+							setTimeout(function() {
+								progress = null;
+								progress = new Progress_install(0, 100);
+								installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
+							}, 800);
+						} else {
+							unsetUse();
+						}
 					}
-				}
-				else{
-					if (e.cancel === false) {
-						setTimeout(function() {
-							progress = null;
-							progress = new Progress_install(0, 100);
-							installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
-						}, 800);
-					} else {
-						unsetUse();
+					else{
+						if (e.cancel === false) {
+							setTimeout(function() {
+								progress = null;
+								progress = new Progress_install(0, 100);
+								installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
+							}, 800);
+						} else {
+							unsetUse();
+						}
 					}
-				}
-			});
+				});
+							
+				a_msg.show();
+			}
 		}
 
 		Ti.API.info('Request type: ' + type_request + ' progress value: ' + progress);
@@ -3747,6 +3855,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 function openBigText(descAux) {
 	if(PLATFORM == 'android'){Ti.UI.Android.hideSoftKeyboard()};
 	var descWin = Ti.UI.createWindow({
+		navBarHidden : true,
 		backgroundColor : '#00000000'
 	});
 	var tanslucent = Ti.UI.createView({
@@ -4240,6 +4349,7 @@ function downloadMainImage(file_id, content, win) {
 function showImage(source, actInd) {
 	var imageWin = Ti.UI.createWindow({
 		backgroundColor : '#00000000',
+		navBarHidden : true
 	});
 	imageWin.orientation = [Ti.UI.PORTRAIT];
 

@@ -108,10 +108,10 @@ function checkUpdate(evt){
 			else {
 				if(PLATFORM == 'android'){
 					Ti.UI.createNotification({
-						message : 'Another updated is already running'
+						message : 'Another update is already running'
 					}).show();
 				}else{
-					notifyIOS('Another updated is already running');
+					notifyIOS('Another update is already running');
 				}
 			}
 		}
@@ -373,7 +373,8 @@ listView.addEventListener('click',function(e){
 	}
 	else{
 		if(e.row.app_permissions.can_view == true){
-			var win_new = Titanium.UI.createWindow({  
+			var win_new = Titanium.UI.createWindow({ 
+				navBarHidden : true,
 				title: e.row.display,
 				fullscreen: false,
 				url:'objects.js',
@@ -454,6 +455,7 @@ offImage.addEventListener('click',function(e)
 {
 	// window container
 	indLog = Titanium.UI.createWindow({
+		navBarHidden : true,
 	    url: 'logDecision.js',
 		title:'Omadi CRM',
 	    fullscreen: false,
@@ -536,6 +538,7 @@ activity.onCreateOptionsMenu = function(e) {
 		else{
 			var about_win = Ti.UI.createWindow({
 				title: 'About',
+				navBarHidden : true,
 				fullscreen: false,
 				backgroundColor: '#EEEEEE',
 				url:'about.js'
@@ -739,6 +742,7 @@ if(PLATFORM != 'android'){
 			} else if(ev.index == 2) {
 				var about_win = Ti.UI.createWindow({
 					title : 'About',
+					navBarHidden : true,
 					fullscreen : false,
 					backgroundColor : 'black',
 					url : 'about.js'
@@ -768,6 +772,7 @@ function openDraftWindow(){
 	Ti.API.info('Opening drafts');
 	var win_new = Titanium.UI.createWindow({  
 		title: 'Drafts',
+		navBarHidden : true,
 		fullscreen: false,
 		url:'drafts.js',
 		type: 'draft',

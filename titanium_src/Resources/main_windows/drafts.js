@@ -30,6 +30,7 @@ win3.addEventListener('android:back', function() {
 //Definition of the window before (opens when the user clicks on the back button)
 var goToWindow = Titanium.UI.createWindow({
 	fullscreen : false,
+	navBarHidden : true,
 	title:'Omadi CRM',	
 	url : 'mainMenu.js',
 	notOpen: true

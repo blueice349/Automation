@@ -160,6 +160,7 @@ Ti.App.addEventListener('upload_gps_locations', function() {
 	
 				//Header parameters
 				objectsCheck.setRequestHeader("Content-Type", "application/json");
+				objectsCheck.setRequestHeader("Cookie", getCookie());
 	
 				//When connected
 				objectsCheck.onload = function(e) {
@@ -217,6 +218,8 @@ Ti.App.addEventListener('upload_gps_locations', function() {
 						db_coord.close();
 						Ti.App.fireEvent('refresh_UI_Alerts', {status: 'success'});
 						uploading = false;
+						var __timestamp  = Math.round(new Date().getTime() / 1000);
+						createNotification("Uploaded Coordinates at "+date('h:i a', Number(__timestamp)));
 					}
 				}
 				//Connection error:
@@ -247,6 +250,16 @@ Ti.App.addEventListener('upload_gps_locations', function() {
 	}
 });
 
-setInterval(function() {
-	Ti.App.fireEvent('upload_gps_locations');
-}, 120000);
+if (PLATFORM != "android"){
+	setInterval(function() {
+		Ti.App.fireEvent('upload_gps_locations');
+	}, 120000);	
+}
+else{
+	var SECONDS = 120; // every 120 seconds
+	var intent = Titanium.Android.createServiceIntent({
+	  url: 'android_gps_event.js'
+	});
+	intent.putExtra('interval', SECONDS * 1000); // Needs to be milliseconds	
+	Titanium.Android.startService(intent);
+}

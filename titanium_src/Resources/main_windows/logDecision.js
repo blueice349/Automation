@@ -6,12 +6,12 @@ Ti.include('/lib/functions.js');
 //Definition of the window before (opens when the user clicks on the back button)
 var goToWindow = Titanium.UI.createWindow({
 	fullscreen : false,
+	navBarHidden : true,
 	title:'Omadi CRM',	
 	url : 'mainMenu.js',
 	notOpen: false
 });
 
-goToWindow.log    = indLog.log;
 goToWindow.picked = indLog.picked;
 goToWindow.result = indLog.result;
 
@@ -58,35 +58,40 @@ labelOut.addEventListener('click',function (){
 	Ti.App.fireEvent('upload_gps_locations');
 	showIndicator("Logging you out...");
 	
-	indLog.log.open('POST', indLog.picked+'/js-sync/sync/logout.json');
+	var logout_xhr = Ti.Network.createHTTPClient();
+	
+	logout_xhr.open('POST', indLog.picked+'/js-sync/sync/logout.json');
 	
 	//Timeout until error:
-	indLog.log.setTimeout(10000);
+	logout_xhr.setTimeout(10000);
 	
 	//Header parameters
-	indLog.log.setRequestHeader("Content-Type", "application/json");
+	logout_xhr.setRequestHeader("Content-Type", "application/json");
+	logout_xhr.setRequestHeader("Cookie", getCookie()); // Set cookies
 	
-	indLog.log.onload = function(e) {
+	logout_xhr.onload = function(e) {
 		Ti.App.Properties.setString('logStatus', "You have successfully logged out");
 		Ti.API.info('From Functions ... Value is : '+ Ti.App.Properties.getString('logStatus'));
-		//if( getDeviceTypeIndentifier() == "android"){
-			Ti.App.fireEvent('stop_gps');
-		//}
+		Ti.App.fireEvent('stop_gps');
+
+		var db = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list"  );
+		no_backup(db);	
+		db.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+		db.close();
 		Ti.App.fireEvent('free_login');
 		
 		indLog._parent.close();
 		hideIndicator();
-		indLog.log.abort();
+		logout_xhr.abort();
 		indLog.close();
-		
 	}
 
-	indLog.log.onerror = function(e) {
+	logout_xhr.onerror = function(e) {
 		hideIndicator();
 		Ti.API.info("Failed to log out");
 		alert("Failed to log out, please try again");
 	}
-	indLog.log.send();
+	logout_xhr.send();
 });
 
 labelIn.addEventListener('click',function (){

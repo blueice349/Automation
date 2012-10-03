@@ -18,6 +18,7 @@ var actIndAlert;
 message_center.get_win = function() {
 	win = Titanium.UI.createWindow({
 		fullscreen : false,
+		navBarHidden : true,
 		backgroundColor : '#FFF',
 		is_opened: false
 	});
@@ -302,6 +303,7 @@ function loadData(){
 function opnAccountAlertsList(e) {
 	accountMessage.win = Ti.UI.createWindow({
 		fullscreen : false,
+		navBarHidden : true,
 		//title : e.row.lbl + " - Alert List",
 		nid: e.row.nid,
 		isOpened: false
@@ -356,6 +358,7 @@ function opnAccountAlertsList(e) {
 					//Next window to be opened
 					var win_new = Titanium.UI.createWindow({
 						fullscreen : false,
+						navBarHidden : true,
 						title : type_vl.charAt(0).toUpperCase() + type_vl.slice(1),
 						type : type_vl,
 						url : 'individual_object.js',

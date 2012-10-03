@@ -23,6 +23,7 @@ win3.orientationModes = [Titanium.UI.PORTRAIT];
 //Definition of the window before (opens when the user clicks on the back button)
 var goToWindow = Titanium.UI.createWindow({
 	fullscreen : false,
+	navBarHidden : true,
 	title:'Omadi CRM',	
 	url : 'mainMenu.js',
 	notOpen: true
@@ -326,6 +327,7 @@ function bottomButtons1(_nid, win3, e){
 				//Next window to be opened 
 				var win_new = Titanium.UI.createWindow({
 					fullscreen : false,
+					navBarHidden : true,
 					title: win3.type.charAt(0).toUpperCase() + win3.type.slice(1),
 					type: win3.type,
 					url : 'individual_object.js',

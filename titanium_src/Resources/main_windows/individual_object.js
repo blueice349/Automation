@@ -474,6 +474,7 @@ if(c_index > 0) {
 									highlightMe(e.source.id);
 									var newWin = Ti.UI.createWindow({
 										fullscreen : false,
+										navBarHidden : true,
 										title : 'Account',
 										url : "individual_object.js"
 									});
