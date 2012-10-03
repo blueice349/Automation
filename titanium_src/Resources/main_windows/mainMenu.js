@@ -133,13 +133,13 @@ function update_node(mode, close_parent, _node_name, flag_next_part){
 	db_up.close();
 
 	//function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent)
-	installMe(0, win2, updatedTimeStamp  , null, win2.listView, null, 'POST', mode, function (){
+	installMe(0, win2, updatedTimeStamp  , null, win2.listView, null, 'POST', mode, function (isError){
 		Ti.API.info('Closing create or edit node');
 		if (flag_next_part != null){
 			close_parent(flag_next_part);
 		}
 		else{
-			close_parent();
+			close_parent(isError);
 		}
 	}, _node_name);
 }
@@ -361,6 +361,7 @@ listView.addEventListener('click',function(e){
 		win_new.up_node = update_node;
 		win_new.mode = 0;
 		win_new.picked = win2.picked;
+		win_new.movement = movement;
 		win_new.region_form = 0;
 		win_new.backgroundColor = "#EEEEEE";
 		win_new.app_permissions = e.row.app_permissions;
@@ -385,6 +386,7 @@ listView.addEventListener('click',function(e){
 				show_plus: e.row.show_plus
 			});
 			win_new.picked 	 = win2.picked;
+			win_new.movement = movement;
 			win_new.app_permissions = e.row.app_permissions;
 			win_new.addEventListener('focus', function(){
 				unlock_screen();

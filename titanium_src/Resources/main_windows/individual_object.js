@@ -20,6 +20,7 @@ var win4 = Ti.UI.currentWindow;
 win4.backgroundColor = "#EEEEEE";
 //Sets only portrait mode
 win4.orientationModes = [Titanium.UI.PORTRAIT];
+var movement = win4.movement;
 
 //When back button on the phone is pressed, it opens mainMenu.js and close the current window
 win4.addEventListener('android:back', function() {
@@ -1319,6 +1320,7 @@ function openEditScreen(part){
 			win_new.up_node = win4.up_node;
 			win_new.uid = win4.uid;
 			win_new.region_form = part;
+			win_new.movement = win4.movement;
 
 			//Passing parameters
 			win_new.nid = win4.nid;
