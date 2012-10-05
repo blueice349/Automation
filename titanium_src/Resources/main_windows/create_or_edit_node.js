@@ -13,8 +13,8 @@
 Ti.include('/lib/functions.js');
 Ti.include('/lib/encoder_base_64.js');
 
-var heightValue = (PLATFORM == 'android') ? 55 : 50;
-var heightTextField = 74;
+var heightValue = (PLATFORM == 'android') ? "55dp" : "50dp";
+var heightTextField = "74dp";
 var toolActInd = Ti.UI.createActivityIndicator();
 toolActInd.font = {
 	fontFamily : 'Helvetica Neue',
@@ -74,6 +74,7 @@ create_or_edit_node.getWindow = function() {
 			showVerticalScrollIndicator : true,
 			opacity : 1,
 			scrollType : "vertical",
+			layout: "vertical",
 			zIndex : 10
 		});
 	} else {
@@ -97,6 +98,7 @@ create_or_edit_node.getWindow = function() {
 			showVerticalScrollIndicator : true,
 			opacity : 1,
 			scrollType : "vertical",
+			layout: 'vertical',
 			zIndex : 10
 		});
 	}
@@ -1278,6 +1280,7 @@ function reload_me(part) {
 			showVerticalScrollIndicator : true,
 			opacity : 1,
 			scrollType : "vertical",
+			layout: 'vertical',
 			zIndex : 10
 		});
 	} else {
@@ -1301,6 +1304,7 @@ function reload_me(part) {
 			showVerticalScrollIndicator : true,
 			opacity : 1,
 			scrollType : "vertical",
+			layout: 'vertical',
 			zIndex : 10
 		});
 	}
@@ -2046,10 +2050,11 @@ create_or_edit_node.loadUI = function() {
 		} else {
 			var arrow_img = Ti.UI.createImageView({
 				image : '/images/arrow_left.png',
-				width : 29,
-				height : 29,
-				top : y + 5,
-				right : 5,
+				width : "29dp",
+				height : "29dp",
+				top : "5dp",
+				//top : PixelsToDPUnits(y + 5),
+				right : "5dp",
 				zIndex : 999
 			});
 
@@ -2057,26 +2062,28 @@ create_or_edit_node.loadUI = function() {
 				text : regions.fieldByName('label'),
 				color : '#4C5A88',
 				font : {
-					fontSize : 22,
+					fontSize : "22dp",
 					fontWeight : 'bold'
 				},
 				textAlign : 'center',
 				width : '100%',
-				height : 40,
+				height : "40dp",
 				borderColor : "#C8C9C9",
 				borderWidth : 2,
 				borderRadius : 2,
-				top : y,
+				//top : PixelsToDPUnits(y),
+				//top : 0,
 				backgroundColor : '#FFFFFF',
 				zIndex : 0,
 				ellipsize : true,
 				wordWrap : false
 			});
-			y = y + 40;
-
+			y = PixelsToDPUnits(y + 40);
+			//alert(y);
 			var regionView = Ti.UI.createView({
 				width : '100%',
-				top : y,
+				layout: 'vertical',
+				//top : 0,
 				backgroundColor : '#EEEEEE',
 				zIndex : 0
 			});
@@ -2184,7 +2191,9 @@ create_or_edit_node.loadUI = function() {
 			var isAnyEnabledField = false;
 
 			var index_label = regions.fieldByName('label');
+			//while (fields_result.isValidRow()) {
 			while (fields_result.isValidRow()) {
+				top = 0;
 				if (fields_result.fieldByName('disabled') == 0) {
 					isAnyEnabledField = true;
 					var widget = JSON.parse(fields_result.fieldByName('widget'));
@@ -2270,9 +2279,9 @@ create_or_edit_node.loadUI = function() {
 								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
-								top : top
+								//top : top
 							});
-							top += heightValue;
+							//top += heightValue;
 
 							var fi_name = field_arr[index_label][index_size].field_name;
 							var reffer_index = count;
@@ -2561,7 +2570,7 @@ create_or_edit_node.loadUI = function() {
 												fontSize : fieldFontSize
 											},
 											color : '#000000',
-											top : top,
+											//top : top,
 											selectionIndicator : true,
 											field_type : field_arr[index_label][index_size].type,
 											field_name : field_arr[index_label][index_size].field_name,
@@ -2625,13 +2634,13 @@ create_or_edit_node.loadUI = function() {
 											borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
 											textAlign : 'left',
 											width : Ti.Platform.displayCaps.platformWidth - 30,
-											height : (PLATFORM == 'android') ? heightTextField : heightValue,
+											height : (PLATFORM == 'android') ? heightTextField : heightValue, 
 											maxLength : 10,
 											font : {
 												fontSize : fieldFontSize
 											},
 											color : '#000000',
-											top : top,
+											//top : top,
 											autocapitalization : Titanium.UI.TEXT_AUTOCAPITALIZATION_ALL,
 											field_type : field_arr[index_label][index_size].type,
 											field_name : field_arr[index_label][index_size].field_name,
@@ -2931,7 +2940,7 @@ create_or_edit_node.loadUI = function() {
 											fontSize : fieldFontSize
 										},
 										color : '#000000',
-										top : top,
+										//top : top,
 										selectionIndicator : true,
 										field_type : field_arr[index_label][index_size].type,
 										field_name : field_arr[index_label][index_size].field_name,
@@ -2992,7 +3001,7 @@ create_or_edit_node.loadUI = function() {
 											fontSize : fieldFontSize
 										},
 										color : '#000000',
-										top : top,
+										//top : top,
 										autocapitalization : Titanium.UI.TEXT_AUTOCAPITALIZATION_ALL,
 										field_type : field_arr[index_label][index_size].type,
 										field_name : field_arr[index_label][index_size].field_name,
@@ -3094,7 +3103,7 @@ create_or_edit_node.loadUI = function() {
 								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
-								top : top
+								//top : top
 							});
 							top += heightValue;
 							//Add fields:
@@ -3140,7 +3149,7 @@ create_or_edit_node.loadUI = function() {
 											fontSize : fieldFontSize
 										},
 										color : '#000000',
-										top : top,
+										//top : top,
 										field_type : field_arr[index_label][index_size].type,
 										field_name : field_arr[index_label][index_size].field_name,
 										required : field_arr[index_label][index_size].required,
@@ -3189,7 +3198,7 @@ create_or_edit_node.loadUI = function() {
 										fontSize : fieldFontSize
 									},
 									color : '#000000',
-									top : top,
+									//top : top,
 									field_type : field_arr[index_label][index_size].type,
 									field_name : field_arr[index_label][index_size].field_name,
 									required : field_arr[index_label][index_size].required,
@@ -3272,7 +3281,7 @@ create_or_edit_node.loadUI = function() {
 								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
-								top : top
+								//top : top
 							});
 							top += heightValue;
 
@@ -3326,7 +3335,7 @@ create_or_edit_node.loadUI = function() {
 											fontSize : fieldFontSize
 										},
 										color : '#000000',
-										top : top,
+										//top : top,
 										field_type : field_arr[index_label][index_size].type,
 										field_name : field_arr[index_label][index_size].field_name,
 										required : field_arr[index_label][index_size].required,
@@ -3455,7 +3464,7 @@ create_or_edit_node.loadUI = function() {
 										fontSize : fieldFontSize
 									},
 									color : '#000000',
-									top : top,
+									//top : top,
 									field_type : field_arr[index_label][index_size].type,
 									field_name : field_arr[index_label][index_size].field_name,
 									required : field_arr[index_label][index_size].required,
@@ -3623,7 +3632,7 @@ create_or_edit_node.loadUI = function() {
 								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
-								top : top
+								//top : top
 							});
 							top += heightValue;
 
@@ -3674,7 +3683,7 @@ create_or_edit_node.loadUI = function() {
 										width : Ti.Platform.displayCaps.platformWidth - 30,
 										height : (PLATFORM == 'android') ? 2 * heightTextField : 100,
 										color : '#000000',
-										top : top,
+										//top : top,
 										field_type : field_arr[index_label][index_size].type,
 										field_name : field_arr[index_label][index_size].field_name,
 										required : field_arr[index_label][index_size].required,
@@ -3800,7 +3809,7 @@ create_or_edit_node.loadUI = function() {
 									width : Ti.Platform.displayCaps.platformWidth - 30,
 									height : (PLATFORM == 'android') ? 2 * heightTextField : 100,
 									color : '#000000',
-									top : top,
+									//top : top,
 									field_type : field_arr[index_label][index_size].type,
 									field_name : field_arr[index_label][index_size].field_name,
 									required : field_arr[index_label][index_size].required,
@@ -3960,7 +3969,7 @@ create_or_edit_node.loadUI = function() {
 								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
-								top : top
+								//top : top
 							});
 							top += heightValue;
 
@@ -4005,7 +4014,7 @@ create_or_edit_node.loadUI = function() {
 											fontSize : fieldFontSize
 										},
 										color : '#000000',
-										top : top,
+										//top : top,
 										field_type : field_arr[index_label][index_size].type,
 										field_name : field_arr[index_label][index_size].field_name,
 										required : field_arr[index_label][index_size].required,
@@ -4044,7 +4053,7 @@ create_or_edit_node.loadUI = function() {
 										fontSize : fieldFontSize
 									},
 									color : '#000000',
-									top : top,
+									//top : top,
 									field_type : field_arr[index_label][index_size].type,
 									field_name : field_arr[index_label][index_size].field_name,
 									required : field_arr[index_label][index_size].required,
@@ -4127,7 +4136,7 @@ create_or_edit_node.loadUI = function() {
 								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
-								top : top
+								//top : top
 							});
 							top += heightValue;
 
@@ -4200,7 +4209,7 @@ create_or_edit_node.loadUI = function() {
 											fontSize : fieldFontSize
 										},
 										color : '#000000',
-										top : top,
+										//top : top,
 										field_type : field_arr[index_label][index_size].type,
 										field_name : field_arr[index_label][index_size].field_name,
 										required : field_arr[index_label][index_size].required,
@@ -4290,7 +4299,7 @@ create_or_edit_node.loadUI = function() {
 										fontSize : fieldFontSize
 									},
 									color : '#000000',
-									top : top,
+									//top : top,
 									field_type : field_arr[index_label][index_size].type,
 									field_name : field_arr[index_label][index_size].field_name,
 									required : field_arr[index_label][index_size].required,
@@ -4415,7 +4424,7 @@ create_or_edit_node.loadUI = function() {
 								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
-								top : top
+								//top : top
 							});
 							top += heightValue;
 							//Add fields:
@@ -4460,7 +4469,7 @@ create_or_edit_node.loadUI = function() {
 											fontSize : fieldFontSize
 										},
 										color : '#000000',
-										top : top,
+										//top : top,
 										field_type : field_arr[index_label][index_size].type,
 										field_name : field_arr[index_label][index_size].field_name,
 										required : field_arr[index_label][index_size].required,
@@ -4512,7 +4521,7 @@ create_or_edit_node.loadUI = function() {
 										fontSize : fieldFontSize
 									},
 									color : '#000000',
-									top : top,
+									//top : top,
 									field_type : field_arr[index_label][index_size].type,
 									field_name : field_arr[index_label][index_size].field_name,
 									required : field_arr[index_label][index_size].required,
@@ -4547,7 +4556,6 @@ create_or_edit_node.loadUI = function() {
 								content[count].addEventListener('change', function(e) {
 									changedContentValue(e.source);
 									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
 								});
 								count++;
 							}
@@ -4597,7 +4605,7 @@ create_or_edit_node.loadUI = function() {
 								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
-								top : top
+								//top : top
 							});
 							top += heightValue;
 
@@ -4642,7 +4650,7 @@ create_or_edit_node.loadUI = function() {
 											fontSize : fieldFontSize
 										},
 										color : '#000000',
-										top : top,
+										//top : top,
 										field_type : field_arr[index_label][index_size].type,
 										field_name : field_arr[index_label][index_size].field_name,
 										required : field_arr[index_label][index_size].required,
@@ -4693,7 +4701,7 @@ create_or_edit_node.loadUI = function() {
 										fontSize : fieldFontSize
 									},
 									color : '#000000',
-									top : top,
+									//top : top,
 									field_type : field_arr[index_label][index_size].type,
 									field_name : field_arr[index_label][index_size].field_name,
 									required : field_arr[index_label][index_size].required,
@@ -4792,7 +4800,7 @@ create_or_edit_node.loadUI = function() {
 									width : Ti.Platform.displayCaps.platformWidth - 30,
 									touchEnabled : false,
 									height : heightValue,
-									top : top
+									//top : top
 								});
 								top += heightValue;
 								var reffer_index = count;
@@ -4889,7 +4897,7 @@ create_or_edit_node.loadUI = function() {
 												fontSize : fieldFontSize
 											},
 											color : '#000000',
-											top : top,
+											//top : top,
 											selectionIndicator : true,
 											field_type : field_arr[index_label][index_size].type,
 											field_name : field_arr[index_label][index_size].field_name,
@@ -4910,7 +4918,7 @@ create_or_edit_node.loadUI = function() {
 											enabled : can_edit
 										});
 										var desLabel = Ti.UI.createLabel({
-											top : (top + heightValue),
+											//top : (top + heightValue),
 											width : Ti.Platform.displayCaps.platformWidth - 30,
 											ellipsize : true,
 											wordWrap : false,
@@ -5010,7 +5018,7 @@ create_or_edit_node.loadUI = function() {
 											fontSize : fieldFontSize
 										},
 										color : '#000000',
-										top : top,
+										//top : top,
 										selectionIndicator : true,
 										field_type : field_arr[index_label][index_size].type,
 										field_name : field_arr[index_label][index_size].field_name,
@@ -5031,7 +5039,7 @@ create_or_edit_node.loadUI = function() {
 										enabled : can_edit
 									});
 									var desLabel = Ti.UI.createLabel({
-										top : (top + heightValue),
+										//top : (top + heightValue),
 										width : Ti.Platform.displayCaps.platformWidth - 30,
 										ellipsize : true,
 										wordWrap : false,
@@ -5159,7 +5167,7 @@ create_or_edit_node.loadUI = function() {
 											fontSize : fieldFontSize
 										},
 										color : '#000000',
-										top : top,
+										//top : top,
 										field_type : field_arr[index_label][index_size].type,
 										field_name : field_arr[index_label][index_size].field_name,
 										machine_name : vocabulary.fieldByName('machine_name'),
@@ -5180,7 +5188,7 @@ create_or_edit_node.loadUI = function() {
 									});
 
 									var desLabel = Ti.UI.createLabel({
-										top : (top + heightValue),
+										//top : (top + heightValue),
 										width : Ti.Platform.displayCaps.platformWidth - 30,
 										ellipsize : true,
 										wordWrap : false,
@@ -5241,7 +5249,7 @@ create_or_edit_node.loadUI = function() {
 									width : Ti.Platform.displayCaps.platformWidth - 30,
 									touchEnabled : false,
 									height : heightValue,
-									top : top
+									//top : top
 								});
 								top += heightValue;
 
@@ -5319,7 +5327,7 @@ create_or_edit_node.loadUI = function() {
 												fontSize : fieldFontSize
 											},
 											width : Ti.Platform.displayCaps.platformWidth - 30,
-											top : top,
+											//top : top,
 											field_type : field_arr[index_label][index_size].type,
 											field_name : field_arr[index_label][index_size].field_name,
 											machine_name : vocabulary.fieldByName('machine_name'),
@@ -5358,7 +5366,7 @@ create_or_edit_node.loadUI = function() {
 										}
 										//AUTOCOMPLETE TABLE
 										var autocomplete_table = Titanium.UI.createTableView({
-											top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
+											//top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
 											searchHidden : true,
 											zIndex : 15,
 											height : getScreenHeight() * 0.3,
@@ -5520,7 +5528,7 @@ create_or_edit_node.loadUI = function() {
 											fontSize : fieldFontSize
 										},
 										width : Ti.Platform.displayCaps.platformWidth - 30,
-										top : top,
+										//top : top,
 										field_type : field_arr[index_label][index_size].type,
 										field_name : field_arr[index_label][index_size].field_name,
 										machine_name : vocabulary.fieldByName('machine_name'),
@@ -5562,7 +5570,7 @@ create_or_edit_node.loadUI = function() {
 									}
 									//AUTOCOMPLETE TABLE
 									var autocomplete_table = Titanium.UI.createTableView({
-										top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
+										//top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
 										searchHidden : true,
 										zIndex : 15,
 										height : getScreenHeight() * 0.3,
@@ -5726,7 +5734,7 @@ create_or_edit_node.loadUI = function() {
 								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
-								top : top
+								//top : top
 							});
 							top += heightValue;
 
@@ -5815,7 +5823,7 @@ create_or_edit_node.loadUI = function() {
 											fontSize : fieldFontSize
 										},
 										width : Ti.Platform.displayCaps.platformWidth - 30,
-										top : top,
+										//top : top,
 										field_type : field_arr[index_label][index_size].type,
 										field_name : field_arr[index_label][index_size].field_name,
 										terms : data_terms,
@@ -5854,7 +5862,7 @@ create_or_edit_node.loadUI = function() {
 									}
 									//AUTOCOMPLETE TABLE
 									var autocomplete_table = Titanium.UI.createTableView({
-										top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
+										//top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
 										searchHidden : true,
 										zIndex : 15,
 										height : getScreenHeight() * 0.3,
@@ -6002,7 +6010,7 @@ create_or_edit_node.loadUI = function() {
 										fontSize : fieldFontSize
 									},
 									width : Ti.Platform.displayCaps.platformWidth - 30,
-									top : top,
+									//top : top,
 									field_type : field_arr[index_label][index_size].type,
 									field_name : field_arr[index_label][index_size].field_name,
 									terms : data_terms,
@@ -6041,7 +6049,7 @@ create_or_edit_node.loadUI = function() {
 								}
 								//AUTOCOMPLETE TABLE
 								var autocomplete_table = Titanium.UI.createTableView({
-									top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
+									//top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
 									searchHidden : true,
 									zIndex : 999,
 									height : getScreenHeight() * 0.3,
@@ -6205,7 +6213,7 @@ create_or_edit_node.loadUI = function() {
 								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
-								top : top
+								//top : top
 
 							});
 							top += heightValue;
@@ -6316,7 +6324,7 @@ create_or_edit_node.loadUI = function() {
 											fontSize : fieldFontSize
 										},
 										color : '#000000',
-										top : top,
+										//top : top,
 										selectionIndicator : true,
 										field_type : field_arr[index_label][index_size].type,
 										field_name : field_arr[index_label][index_size].field_name,
@@ -6419,7 +6427,7 @@ create_or_edit_node.loadUI = function() {
 										fontSize : fieldFontSize
 									},
 									color : '#000000',
-									top : top,
+									//top : top,
 									selectionIndicator : true,
 									field_type : field_arr[index_label][index_size].type,
 									field_name : field_arr[index_label][index_size].field_name,
@@ -6519,7 +6527,7 @@ create_or_edit_node.loadUI = function() {
 								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
-								top : top
+								//top : top
 
 							});
 							top += heightValue;
@@ -6617,7 +6625,7 @@ create_or_edit_node.loadUI = function() {
 
 										var mother_of_view = Ti.UI.createView({
 											height : heightValue,
-											top : top
+											//top : top
 										});
 										top += heightValue;
 
@@ -6721,7 +6729,7 @@ create_or_edit_node.loadUI = function() {
 
 									var mother_of_view = Ti.UI.createView({
 										height : heightValue,
-										top : top
+										//top : top
 									});
 									top += heightValue;
 
@@ -6858,7 +6866,7 @@ create_or_edit_node.loadUI = function() {
 
 										var mother_of_view = Ti.UI.createView({
 											height : heightValue,
-											top : top
+											//top : top
 										});
 										top += heightValue;
 
@@ -6968,7 +6976,7 @@ create_or_edit_node.loadUI = function() {
 
 									var mother_of_view = Ti.UI.createView({
 										height : heightValue,
-										top : top
+										//top : top
 									});
 									top += heightValue;
 
@@ -7027,7 +7035,7 @@ create_or_edit_node.loadUI = function() {
 								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
-								top : top
+								//top : top
 
 							});
 							top += heightValue;
@@ -7068,7 +7076,7 @@ create_or_edit_node.loadUI = function() {
 									}
 
 									content[count] = Titanium.UI.createButton({
-										top : top,
+										//top : top,
 										width : '30dp',
 										height : '30dp',
 										borderRadius : 4,
@@ -7118,7 +7126,7 @@ create_or_edit_node.loadUI = function() {
 									var vl_to_field = false;
 
 								content[count] = Titanium.UI.createView({
-									top : top,
+									//top : top,
 									width : '30dp',
 									height : '30dp',
 									borderRadius : 4,
@@ -7202,7 +7210,7 @@ create_or_edit_node.loadUI = function() {
 								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
-								top : top
+								//top : top
 							});
 							top += heightValue;
 							var reffer_index = count;
@@ -7284,7 +7292,7 @@ create_or_edit_node.loadUI = function() {
 
 									var mother_of_view = Ti.UI.createView({
 										height : heightValue,
-										top : top
+										//top : top
 									});
 									top += heightValue;
 
@@ -7371,7 +7379,7 @@ create_or_edit_node.loadUI = function() {
 
 								var mother_of_view = Ti.UI.createView({
 									height : heightValue,
-									top : top
+									//top : top
 								});
 								top += heightValue;
 
@@ -7451,7 +7459,7 @@ create_or_edit_node.loadUI = function() {
 								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
-								top : top
+								//top : top
 							});
 							top += heightValue;
 
@@ -7508,7 +7516,7 @@ create_or_edit_node.loadUI = function() {
 											fontSize : fieldFontSize
 										},
 										color : '#000000',
-										top : top,
+										//top : top,
 										field_type : field_arr[index_label][index_size].type,
 										field_name : field_arr[index_label][index_size].field_name,
 										required : field_arr[index_label][index_size].required,
@@ -7583,7 +7591,7 @@ create_or_edit_node.loadUI = function() {
 										fontSize : fieldFontSize
 									},
 									color : '#000000',
-									top : top,
+									//top : top,
 									field_type : field_arr[index_label][index_size].type,
 									field_name : field_arr[index_label][index_size].field_name,
 									required : field_arr[index_label][index_size].required,
@@ -7621,7 +7629,7 @@ create_or_edit_node.loadUI = function() {
 								}
 								//AUTOCOMPLETE TABLE
 								var autocomplete_table = Titanium.UI.createTableView({
-									top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
+									//top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
 									searchHidden : true,
 									zIndex : 15,
 									height : getScreenHeight() * 0.3,
@@ -7757,7 +7765,7 @@ create_or_edit_node.loadUI = function() {
 								if (top == 0) {
 									var regionTop = 0;
 								} else {
-									var regionTop = top + 10;
+									var regionTop = "10dp";
 								}
 								label[count] = Ti.UI.createLabel({
 									text : field_arr[index_label][index_size].label + ' :',
@@ -7769,11 +7777,11 @@ create_or_edit_node.loadUI = function() {
 									textAlign : 'center',
 									width : '100%',
 									touchEnabled : false,
-									height : 40,
-									top : regionTop,
+									height : "40dp",
+									//top : regionTop,
 									backgroundColor : '#FFFFFF'
 								});
-								top += 40;
+								//top += 40;
 
 								regionView.add(label[count]);
 								count++;
@@ -7794,7 +7802,7 @@ create_or_edit_node.loadUI = function() {
 								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : 25,
-								top : top
+								//top : top
 							});
 
 							//Add fields:
@@ -7809,7 +7817,7 @@ create_or_edit_node.loadUI = function() {
 								content[count] = Ti.UI.createScrollView({
 									right : 10,
 									width : Ti.Platform.displayCaps.platformWidth - 30,
-									top : top,
+									//top : top,
 									contentWidth : 'auto',
 									contentHeight : 100,
 									height : 100,
@@ -7879,7 +7887,7 @@ create_or_edit_node.loadUI = function() {
 									addButton = Ti.UI.createButton({
 										right : '5',
 										title : '+',
-										top : reserveTop,
+										//top : reserveTop,
 										height : 40,
 										width : 40,
 										scrollView : content[count],
@@ -7938,7 +7946,7 @@ create_or_edit_node.loadUI = function() {
 										height : '80',
 										width : '80'
 									},
-									top : top + 10,
+									//top : top + 10,
 									private_index : 0,
 									field_type : field_arr[index_label][index_size].type,
 									field_name : field_arr[index_label][index_size].field_name,
@@ -8004,7 +8012,7 @@ create_or_edit_node.loadUI = function() {
 								width : Ti.Platform.displayCaps.platformWidth - 30,
 								touchEnabled : false,
 								height : heightValue,
-								top : top
+								//top : top
 							});
 							var settings = JSON.parse(field_arr[index_label][index_size].settings);
 							if (settings.hidden == null || settings.hidden != 1) {
@@ -8014,7 +8022,7 @@ create_or_edit_node.loadUI = function() {
 							var reffer_index = count;
 							content[count] = Ti.UI.createView({
 								width : Ti.Platform.displayCaps.platformWidth - 30,
-								top : top,
+								//top : top,
 								field_type : field_arr[index_label][index_size].type,
 								field_name : field_arr[index_label][index_size].field_name,
 								required : field_arr[index_label][index_size].required,
@@ -8051,7 +8059,7 @@ create_or_edit_node.loadUI = function() {
 									width : Ti.Platform.displayCaps.platformWidth - 30,
 									touchEnabled : false,
 									height : heightValue,
-									top : top
+									//top : top
 								});
 								regionView.add(label[count]);
 								var reffer_index = count;
@@ -8059,7 +8067,7 @@ create_or_edit_node.loadUI = function() {
 								top += heightValue;
 								content[count] = Ti.UI.createView({
 									width : Ti.Platform.displayCaps.platformWidth - 30,
-									top : top,
+									//top : top,
 									field_type : field_arr[index_label][index_size].type,
 									field_name : field_arr[index_label][index_size].field_name,
 									required : field_arr[index_label][index_size].required,
@@ -8098,7 +8106,7 @@ create_or_edit_node.loadUI = function() {
 									width : Ti.Platform.displayCaps.platformWidth - 30,
 									touchEnabled : false,
 									height : heightValue,
-									top : top
+									//top : top
 								});
 								regionView.add(label[count]);
 
@@ -8122,7 +8130,7 @@ create_or_edit_node.loadUI = function() {
 										fontSize : fieldFontSize
 									},
 									width : Ti.Platform.displayCaps.platformWidth - 30,
-									top : top,
+									//top : top,
 									field_type : field_arr[index_label][index_size].type,
 									field_name : field_arr[index_label][index_size].field_name,
 									fantasy_name : field_arr[index_label][index_size].label,
@@ -8148,13 +8156,12 @@ create_or_edit_node.loadUI = function() {
 							break;
 
 					}
-
 				}
 				fields_result.next();
 				index_size++;
 			}
 			fields_result.close();
-
+			
 			if (reg_settings != null && reg_settings.form_part != null) {
 				regionView.form_part = parseInt(reg_settings.form_part);
 			} else {
@@ -8185,19 +8192,19 @@ create_or_edit_node.loadUI = function() {
 			// regionView.expanded = false;
 			// regionView.hide();
 			// }
-			y = y + regionView.height + 10;
-
+			//y = y + regionView.height + 10;
+			
 			if (isAnyEnabledField == true) {
-				viewContent.add(regionHeader);
 				viewContent.add(arrow_img);
+				viewContent.add(regionHeader);
 				viewContent.add(regionView);
 			}
 		}
 		regions.next();
 		regionCount++;
 	}
-
 	regions.close();
+	
 	if (content_fields != null) {
 		content_fields.close();
 	}
@@ -9515,27 +9522,27 @@ function noDataCheckbox(reffer_index, baseView, top) {
 				isRequired = true;
 			}
 			content[reffer_index].noDataView = Ti.UI.createView({
-				height : 30,
+				height : "30dp",
 				width : Ti.Platform.displayCaps.platformWidth - 30,
 				layout : 'horizontal',
 				top : top + 2,
 			});
 
 			content[reffer_index].noDataView.checkbox = Ti.UI.createButton({
-				top : 7,
-				height : 16,
-				width : 16,
+				top : "7dp",
+				height : "16dp",
+				width : "16dp",
 				backgroundImage : '../images/unchecked.png',
 				value : false
 			});
 			content[reffer_index].noDataView.text = Ti.UI.createLabel({
-				height : 30,
+				height : "30dp",
 				text : (isRequired) ? 'No Data Available' : 'Not Applicable',
-				left : 5,
-				width : 200,
+				left : "5dp",
+				width : "200dp",
 				color : '#000',
 				font : {
-					fontSize : 10
+					fontSize : "10dp"
 				}
 			});
 			content[reffer_index].noDataView.checkbox.addEventListener('click', function(e) {

@@ -120,7 +120,6 @@ function checkUpdate(evt){
 
 function update_node(mode, close_parent, _node_name, flag_next_part){
 	//Sets status to 'updating'
-
 	var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 	if(PLATFORM != 'android'){db_up.file.setRemoteBackup(false);}
 	var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');

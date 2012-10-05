@@ -28,6 +28,17 @@ weekday[4]="Thursday";
 weekday[5]="Friday";
 weekday[6]="Saturday";
 
+function PixelsToDPUnits(ThePixels)
+{
+  return (ThePixels / (Titanium.Platform.displayCaps.dpi / 160));
+}
+ 
+ 
+function DPUnitsToPixels(TheDPUnits)
+{
+  return (TheDPUnits * (Titanium.Platform.displayCaps.dpi / 160));
+}
+
 
 function isLogged(){
 	var db_a = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list");
