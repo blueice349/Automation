@@ -82,6 +82,7 @@ var Base64 = {
  
 	// private method for UTF-8 encoding
 	_utf8_encode : function (string) {
+		string += "";
 		string = string.replace(/\r\n/g,"\n");
 		var utftext = "";
  
