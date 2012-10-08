@@ -1,0 +1,1 @@
+Ti.App.fireEvent('upload_gps_locations');
