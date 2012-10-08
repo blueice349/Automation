@@ -31,7 +31,7 @@ var message = Titanium.UI.createLabel({
     width:'auto',
     height:'auto',
     textAlign:'center',
-   	font:{fontWeight:'bold', fontSize:'14'},
+   	font:{fontWeight:'bold', fontSize:'15dp'},
     top:'35%'
 });
  

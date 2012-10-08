@@ -236,7 +236,7 @@ while ( elements.isValidRow() ){
 		}
 		check++;
 		var row_t = Ti.UI.createTableViewRow({
-			height      : 60,	
+			height      : "60dp",	
 			display     : display,
 			name		: display,
 			desc : description,
@@ -249,10 +249,10 @@ while ( elements.isValidRow() ){
 		});
 		
 		var icon = Titanium.UI.createImageView({
-			width: 48,
-			height: 48,
-			top: 6,
-			left: 5,
+			width: "48dp",
+			height: "48dp",
+			top: "6dp",
+			left: "5dp",
 			image: '/images/icons/' + name_table.toLowerCase() + '.png',
 			desc : description,
 		});
@@ -264,12 +264,12 @@ while ( elements.isValidRow() ){
 		var title = Titanium.UI.createLabel({
 			text: display,
 			font:{
-				fontSize:28
+				fontSize: "28dp"
 			},
 			width:'80%',
 			textAlign:'left',
-			left:58,
-			height:'48',
+			left:"58dp",
+			height:'48dp',
 			color: '#000',
 			desc : description,
 		});
@@ -277,9 +277,9 @@ while ( elements.isValidRow() ){
 		var plus =  Titanium.UI.createButton({
 			backgroundImage: '/images/plus_btn.png',
 			backgroundSelectedImage: '/images/plus_btn_selected.png',
-			width:64,
-			height:48,
-			right: 1,
+			width:"64dp",
+			height:"48dp",
+			right: "1dp",
 			is_plus: true
 		});
 		if (show_plus === false){
@@ -416,7 +416,10 @@ var label_top = Titanium.UI.createLabel({
 	width:'70%',
 	left: '5%',
 	horizontalAlign: 'left',
-	height: 'auto'
+	height: 'auto',
+	font: {
+		fontSize: "15dp"
+	}
 }); 
 
 var offImage = Titanium.UI.createLabel({
@@ -810,3 +813,7 @@ Ti.App.addEventListener('update_from_menu', function(){
 Ti.App.addEventListener('normal_update_from_menu', function(){
 	checkUpdate('from_menu');
 });
+
+
+//TEST
+//alert("DPTOPIXEL = "+DPUnitsToPixels(100)+"      PIXELTODP = "+PixelsToDPUnits(100));

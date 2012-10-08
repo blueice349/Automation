@@ -37,9 +37,9 @@ if(Titanium.Platform.name == 'android') {
 
 var logo = Ti.UI.createImageView({
 	image : '/images/logo.png',
-	top : 50,
-	width : 200,
-	height : 114
+	top : "50dp",
+	width : "200dp",
+	height : "114dp"
 });
 
 win_about.add(logo);
@@ -47,8 +47,8 @@ win_about.add(logo);
 var versionLbl = Ti.UI.createLabel({
 	width : 'auto',
 	height : 'auto',
-	top : 180,
-	left : 10,
+	top : "180dp",
+	left : "10dp",
 	text : 'Application version : ' + Ti.App.version,
 	color : '#000'
 });
@@ -117,8 +117,8 @@ if(ls != null) {
 var syncLbl = Ti.UI.createLabel({
 	width : 'auto',
 	height : 'auto',
-	top : 220,
-	left : 10,
+	top : "220dp",
+	left : "10dp",
 	text : lastSyncText,
 	color : '#000'
 });
@@ -126,15 +126,15 @@ var syncLbl = Ti.UI.createLabel({
 win_about.add(syncLbl);
 
 var buttonView = Ti.UI.createView({
-	top : 280,
-	width : 285,
-	height : 50
+	top : "280dp",
+	width : "285dp",
+	height : "50dp"
 });
 
 var updateBtn = Ti.UI.createButton({
-	left : 0,
-	width : 122,
-	height : 50,
+	left : "0dp",
+	width : "122dp",
+	height : "50dp",
 	title : 'Sync Data'
 });
 updateBtn.addEventListener('click', function() {
@@ -145,9 +145,9 @@ updateBtn.addEventListener('click', function() {
 buttonView.add(updateBtn);
 
 var reinitializeBtn = Ti.UI.createButton({
-	left : 130,
-	width : 153,
-	height : 50,
+	left : "130dp",
+	width : "153dp",
+	height : "50dp",
 	title : 'Reset All Data'
 });
 reinitializeBtn.addEventListener('click', function() {

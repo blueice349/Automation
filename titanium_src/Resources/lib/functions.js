@@ -1861,7 +1861,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 											continue;
 										}
 										var row_a = Ti.UI.createTableViewRow({
-											height : 60,
+											height : "60dp",
 											name : display,
 											display : display,
 											desc : description,
@@ -1874,10 +1874,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 										});
 
 										var icon = Titanium.UI.createImageView({
-											width : 48,
-											height : 48,
-											top : 6,
-											left : 5,
+											width : "48dp",
+											height : "48dp",
+											top : "6dp",
+											left : "5dp",
 											desc : description,
 											image: '/images/icons/' + name_table.toLowerCase() + '.png',
 										});
@@ -1889,11 +1889,11 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 										var title_a = Titanium.UI.createLabel({
 											text : display,
 											font : {
-												fontSize : 28
+												fontSize : "28dp"
 											},
 											width : '80%',
 											textAlign : 'left',
-											left : 58,
+											left : "58dp",
 											height : 'auto',
 											desc : description,
 											color : '#000'
@@ -1902,9 +1902,9 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 										var plus_a = Titanium.UI.createButton({
 											backgroundImage : '/images/plus_btn.png',
 											backgroundSelectedImage : '/images/plus_btn_selected.png',
-											width : 64,
-											height : 48,
-											right : 1,
+											width : "64dp",
+											height : "48dp",
+											right : "1dp",
 											is_plus : true
 										});
 										if(show_plus === false) {
@@ -2030,7 +2030,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 											continue;
 										}
 									var row_a = Ti.UI.createTableViewRow({
-										height : 60,
+										height : "60dp",
 										name : display,
 										display : display,
 										desc : description,
@@ -2043,10 +2043,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									});
 
 									var icon = Titanium.UI.createImageView({
-										width : 48,
-										height : 48,
-										top : 6,
-										left : 5,
+										width : "48dp",
+										height : "48dp",
+										top : "6dp",
+										left : "5dp",
 										desc : description,
 										image: '/images/icons/' + name_table.toLowerCase() + '.png',
 									});
@@ -2058,11 +2058,11 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									var title_a = Titanium.UI.createLabel({
 										text : display,
 										font : {
-											fontSize : 28
+											fontSize : "28dp"
 										},
 										width : '80%',
 										textAlign : 'left',
-										left : 58,
+										left : "58dp",
 										height : 'auto',
 										desc : description,
 										color : '#000'
@@ -2071,9 +2071,9 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									var plus_a = Titanium.UI.createButton({
 										backgroundImage : '/images/plus_btn.png',
 										backgroundSelectedImage : '/images/plus_btn_selected.png',
-										width : 64,
-										height : 48,
-										right : 1,
+										width : "64dp",
+										height : "48dp",
+										right : "1dp",
 										is_plus : true
 									});
 									if(show_plus === false) {
@@ -3304,7 +3304,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							}
 
 							var row_a = Ti.UI.createTableViewRow({
-								height : 60,
+								height : "60dp",
 								name : display,
 								display : display,
 								desc : description,
@@ -3317,10 +3317,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							});
 
 							var icon = Titanium.UI.createImageView({
-								width : 48,
-								height : 48,
-								top : 6,
-								left : 5,
+								width : "48dp",
+								height : "48dp",
+								top : "6dp",
+								left : "5dp",
 								desc : description,
 								image: '/images/icons/' + name_table.toLowerCase() + '.png',
 							});
@@ -3332,11 +3332,11 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							var title_a = Titanium.UI.createLabel({
 								text : display,
 								font : {
-									fontSize : 28
+									fontSize : "28dp"
 								},
 								width : '80%',
 								textAlign : 'left',
-								left : 58,
+								left : "58dp",
 								height : 'auto',
 								desc : description,
 								color : '#000'
@@ -3345,9 +3345,9 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							var plus_a = Titanium.UI.createButton({
 								backgroundImage : '/images/plus_btn.png',
 								backgroundSelectedImage : '/images/plus_btn_selected.png',
-								width : 64,
-								height : 48,
-								right : 1,
+								width : "64dp",
+								height : "48dp",
+								right : "1dp",
 								is_plus : true
 							});
 							if (show_plus === false) {

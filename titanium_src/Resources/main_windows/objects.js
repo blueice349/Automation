@@ -53,7 +53,7 @@ while (resultsNames.isValidRow())
 {
 	var fullName = resultsNames.fieldByName('title');
 	var row = Ti.UI.createTableViewRow({
-		height : 'auto',
+		height : '60dp',
 		hasChild : false,
 		title : fullName,
 		color: '#000'
