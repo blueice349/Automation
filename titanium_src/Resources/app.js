@@ -46,7 +46,8 @@ var updatedTime = db_a.execute('SELECT timestamp FROM updated WHERE rowid=1');
 
 if (PLATFORM == "android"){
 	var intent = Titanium.Android.createServiceIntent({
-	  url: 'android_gps_event.js'
+	  url: 'android_gps_event.js',
+	  startMode: Ti.Android.START_REDELIVER_INTENT
 	});
 	Titanium.Android.stopService(intent);
 	
