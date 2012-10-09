@@ -36,7 +36,17 @@ var movement;
 
 //Geolocation module
 movement = win2.movement;
-Ti.include('geolocation.js');
+if(PLATFORM != "android"){
+	Ti.include('geolocation.js');
+}
+else{
+	var intent = Titanium.Android.createServiceIntent({
+	  url: 'android_gps_event.js',
+	  startMode:Ti.Android.START_REDELIVER_INTENT 
+	});
+	
+	Titanium.Android.startService(intent);
+}
 
 function checkUpdate(evt){
 	Ti.API.info('******* Called checkupate => '+evt);

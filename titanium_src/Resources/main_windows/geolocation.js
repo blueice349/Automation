@@ -255,11 +255,3 @@ if (PLATFORM != "android"){
 		Ti.App.fireEvent('upload_gps_locations');
 	}, 120000);	
 }
-else{
-	var SECONDS = 120; // every 120 seconds
-	var intent = Titanium.Android.createServiceIntent({
-	  url: 'android_gps_event.js'
-	});
-	intent.putExtra('interval', SECONDS * 1000); // Needs to be milliseconds	
-	Titanium.Android.startService(intent);
-}
