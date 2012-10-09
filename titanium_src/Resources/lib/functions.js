@@ -1541,9 +1541,9 @@ function getCookie(){
 	var db = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list" );
 	no_backup(db);
 	var logged_result = db.execute('SELECT * FROM login WHERE rowid=1');
-	db.close();	
 	var cookie = logged_result.fieldByName("cookie");
 	Ti.API.info("FOUND COOKIE = "+cookie);
+	db.close();	
 	return cookie;
 }
 
@@ -1582,7 +1582,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 	}
 	//Header parameters
 	objectsUp.setRequestHeader("Content-Type", "application/json");
-	objectsUp.setRequestHeader("Cookie", getCookie()); // Set cookies
+	if(PLATFORM == 'android'){objectsUp.setRequestHeader("Cookie", getCookie());} // Set cookies
 
 	//When connected
 	objectsUp.onload = function(e) {

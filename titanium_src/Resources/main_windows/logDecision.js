@@ -67,7 +67,7 @@ labelOut.addEventListener('click',function (){
 	
 	//Header parameters
 	logout_xhr.setRequestHeader("Content-Type", "application/json");
-	logout_xhr.setRequestHeader("Cookie", getCookie()); // Set cookies
+	if(PLATFORM == 'android'){logout_xhr.setRequestHeader("Cookie", getCookie());} // Set cookies
 	
 	logout_xhr.onload = function(e) {
 		Ti.App.Properties.setString('logStatus', "You have successfully logged out");
