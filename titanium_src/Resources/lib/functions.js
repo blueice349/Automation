@@ -1861,7 +1861,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 											continue;
 										}
 										var row_a = Ti.UI.createTableViewRow({
-											height : "60dp",
+											height : "40dp",
 											name : display,
 											display : display,
 											desc : description,
@@ -1874,8 +1874,8 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 										});
 
 										var icon = Titanium.UI.createImageView({
-											width : "48dp",
-											height : "48dp",
+											width : "32dp",
+											height : "32dp",
 											top : "6dp",
 											left : "5dp",
 											desc : description,
@@ -1889,11 +1889,11 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 										var title_a = Titanium.UI.createLabel({
 											text : display,
 											font : {
-												fontSize : "28dp"
+												fontSize : "20dp"
 											},
-											width : '80%',
+											width : '82%',
 											textAlign : 'left',
-											left : "58dp",
+											left : "42dp",
 											height : 'auto',
 											desc : description,
 											color : '#000'
@@ -1902,8 +1902,8 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 										var plus_a = Titanium.UI.createButton({
 											backgroundImage : '/images/plus_btn.png',
 											backgroundSelectedImage : '/images/plus_btn_selected.png',
-											width : "64dp",
-											height : "48dp",
+											width : "54dp",
+											height : "38dp",
 											right : "1dp",
 											is_plus : true
 										});
@@ -2030,7 +2030,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 											continue;
 										}
 									var row_a = Ti.UI.createTableViewRow({
-										height : "60dp",
+										height : "40dp",
 										name : display,
 										display : display,
 										desc : description,
@@ -2043,8 +2043,8 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									});
 
 									var icon = Titanium.UI.createImageView({
-										width : "48dp",
-										height : "48dp",
+										width : "32dp",
+										height : "32dp",
 										top : "6dp",
 										left : "5dp",
 										desc : description,
@@ -2058,11 +2058,11 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									var title_a = Titanium.UI.createLabel({
 										text : display,
 										font : {
-											fontSize : "28dp"
+											fontSize : "20dp"
 										},
-										width : '80%',
+										width : '82%',
 										textAlign : 'left',
-										left : "58dp",
+										left : "42dp",
 										height : 'auto',
 										desc : description,
 										color : '#000'
@@ -2071,8 +2071,8 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									var plus_a = Titanium.UI.createButton({
 										backgroundImage : '/images/plus_btn.png',
 										backgroundSelectedImage : '/images/plus_btn_selected.png',
-										width : "64dp",
-										height : "48dp",
+										width : "54dp",
+										height : "38dp",
 										right : "1dp",
 										is_plus : true
 									});
@@ -3304,7 +3304,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							}
 
 							var row_a = Ti.UI.createTableViewRow({
-								height : "60dp",
+								height : "40dp",
 								name : display,
 								display : display,
 								desc : description,
@@ -3317,8 +3317,8 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							});
 
 							var icon = Titanium.UI.createImageView({
-								width : "48dp",
-								height : "48dp",
+								width : "32dp",
+								height : "32dp",
 								top : "6dp",
 								left : "5dp",
 								desc : description,
@@ -3332,11 +3332,11 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							var title_a = Titanium.UI.createLabel({
 								text : display,
 								font : {
-									fontSize : "28dp"
+									fontSize : "20dp"
 								},
-								width : '80%',
+								width : '82%',
 								textAlign : 'left',
-								left : "58dp",
+								left : "42dp",
 								height : 'auto',
 								desc : description,
 								color : '#000'
@@ -3345,8 +3345,8 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 							var plus_a = Titanium.UI.createButton({
 								backgroundImage : '/images/plus_btn.png',
 								backgroundSelectedImage : '/images/plus_btn_selected.png',
-								width : "64dp",
-								height : "48dp",
+								width : "54dp",
+								height : "38dp",
 								right : "1dp",
 								is_plus : true
 							});
