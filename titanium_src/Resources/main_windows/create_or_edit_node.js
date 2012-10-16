@@ -13,8 +13,8 @@
 Ti.include('/lib/functions.js');
 Ti.include('/lib/encoder_base_64.js');
 
-var heightValue = (PLATFORM == 'android') ? DPUnitsToPixels(55) : DPUnitsToPixels(50);
-var heightTextField = DPUnitsToPixels(74);
+var heightValue = (PLATFORM == 'android') ? DPUnitsToPixels(40) : DPUnitsToPixels(35);
+var heightTextField = DPUnitsToPixels(45);
 var toolActInd = Ti.UI.createActivityIndicator();
 toolActInd.font = {
 	fontFamily : 'Helvetica Neue',

@@ -160,7 +160,7 @@ Ti.App.addEventListener('upload_gps_locations', function() {
 	
 				//Header parameters
 				objectsCheck.setRequestHeader("Content-Type", "application/json");
-				objectsCheck.setRequestHeader("Cookie", getCookie());
+				if(PLATFORM == 'android'){objectsCheck.setRequestHeader("Cookie", getCookie());}
 	
 				//When connected
 				objectsCheck.onload = function(e) {

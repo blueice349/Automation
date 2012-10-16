@@ -14,6 +14,7 @@
 Ti.include('/main_windows/create_or_edit_node.js');
 Ti.include('/main_windows/message_center.js');
 Ti.include('/lib/functions.js'); 
+Ti.include('/lib/encoder_base_64.js');
 
 //Current window's instance
 var win2 = Ti.UI.currentWindow;
@@ -246,7 +247,7 @@ while ( elements.isValidRow() ){
 		}
 		check++;
 		var row_t = Ti.UI.createTableViewRow({
-			height      : "60dp",	
+			height      : "40dp",	
 			display     : display,
 			name		: display,
 			desc : description,
@@ -259,8 +260,8 @@ while ( elements.isValidRow() ){
 		});
 		
 		var icon = Titanium.UI.createImageView({
-			width: "48dp",
-			height: "48dp",
+			width: "32dp",
+			height: "32dp",
 			top: "6dp",
 			left: "5dp",
 			image: '/images/icons/' + name_table.toLowerCase() + '.png',
@@ -274,12 +275,12 @@ while ( elements.isValidRow() ){
 		var title = Titanium.UI.createLabel({
 			text: display,
 			font:{
-				fontSize: "28dp"
+				fontSize: "20dp"
 			},
-			width:'80%',
+			width:'82%',
 			textAlign:'left',
-			left:"58dp",
-			height:'48dp',
+			left:"42dp",
+			height:'auto',
 			color: '#000',
 			desc : description,
 		});
@@ -287,8 +288,8 @@ while ( elements.isValidRow() ){
 		var plus =  Titanium.UI.createButton({
 			backgroundImage: '/images/plus_btn.png',
 			backgroundSelectedImage: '/images/plus_btn_selected.png',
-			width:"64dp",
-			height:"48dp",
+			width:"54dp",
+			height:"38dp",
 			right: "1dp",
 			is_plus: true
 		});
