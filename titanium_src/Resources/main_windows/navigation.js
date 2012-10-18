@@ -80,19 +80,25 @@ if (num_nav > 0){
 	var distance_total = 0;
 	var lat_o = nav_res.fieldByName('latitude');
 	var lon_o = nav_res.fieldByName('longitude');
-
+	var time_o = nav_res.fieldByName('timestamp');
 	
 	while (nav_res.isValidRow())
 	{
 		var lat = nav_res.fieldByName('latitude');
 		var lon = nav_res.fieldByName('longitude');
+		var time = nav_res.fieldByName('timestamp');
 		
-		distance_total += getDistance(parseFloat(lat_o) , parseFloat(lon_o), parseFloat(lat), parseFloat(lon));
+		//If it's been more than 10 minutes since the last saved coordinate, we do not consider this distance
+		if (time - time_o < 60*10){
+			distance_total += getDistance(parseFloat(lat_o) , parseFloat(lon_o), parseFloat(lat), parseFloat(lon));
+		}
 		
 		var entry = {latitude:lat,longitude:lon};
 		points.push(entry);
 		lat_o = lat;
 		lon_o = lon;
+		time_o = time;
+		
 		nav_res.next();
 	}
 	
@@ -148,7 +154,7 @@ if (num_nav > 0){
 	box.add(speed);
 
 	var miles = Ti.UI.createLabel({
-		text: 'Distance traveled: '+(distance_total*0.621371192).toFixed(2)+' Miles',
+		text: 'Traveled: '+(distance_total*0.621371192).toFixed(2)+' Miles',
 		color: '#FFF',
 		font: {
 			size: '12dp'
@@ -180,7 +186,7 @@ if (num_nav > 0){
 	var al_db = db_nav.execute("SELECT * FROM gps ORDER BY altitude DESC");
 	
 	var altitude = Ti.UI.createLabel({
-		text: 'Highest altitude: '+al_db.fieldByName('altitude').toFixed(1) +' meters',
+		text: 'Highest altitude: '+al_db.fieldByName('altitude').toFixed(1) +' Meters',
 		color: '#FFF',
 		font: {
 			size: '12dp'

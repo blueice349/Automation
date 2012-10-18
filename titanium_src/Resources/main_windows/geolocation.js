@@ -143,15 +143,19 @@ Ti.App.addEventListener('upload_gps_locations', function() {
 		var aux_location = location_obj.slice(0);
 		Ti.API.info(aux_location.length + " Length after: " + location_obj.length);
 		location_obj = new Array();
-	
+		var timestamp_del = 0;
+		
 		for (var ind_local in aux_location) {
 			//Ti.API.info(aux_location[ind_local].accurated_location);
 			db_coord.execute(aux_location[ind_local].accurated_location);
 			if (PLATFORM != "android"){
 				nav_database.execute("INSERT INTO gps (longitude, latitude, accuracy, speed, altitude, timestamp ) VALUES ( '"+aux_location[ind_local].longitude+"', '"+aux_location[ind_local].latitude+"', '"+aux_location[ind_local].accuracy+"', '"+aux_location[ind_local].speed+"', '"+aux_location[ind_local].altitude+"', '"+aux_location[ind_local].timestamp+"' )");
 				Ti.API.info("INSERT INTO gps (longitude, latitude, accuracy, speed, altitude, timestamp ) VALUES ( '"+aux_location[ind_local].longitude+"', '"+aux_location[ind_local].latitude+"', '"+aux_location[ind_local].accuracy+"', "+aux_location[ind_local].speed+", "+aux_location[ind_local].altitude+", '"+aux_location[ind_local].timestamp+"' )");
+				timestamp_del = aux_location[ind_local].timestamp;
 			}
 		}
+		timestamp_del = timestamp_del - (60*60*24);
+		nav_database.execute("DELETE FROM gps WHERE timestamp < "+timestamp_del);
 		nav_database.close();
 		if (aux_location.length > 0) {
 			last_db_timestamp = aux_location.pop().timestamp;
