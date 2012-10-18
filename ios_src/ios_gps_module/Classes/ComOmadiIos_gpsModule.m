@@ -125,15 +125,23 @@ MAKE_SYSTEM_PROP_DBL(LOCATION_ACCURACY_THREE_KILOMETERS, kCLLocationAccuracyThre
 
 - (NSDictionary *) currentMovement
 {
-    NSDictionary *location = [NSDictionary dictionaryWithObjectsAndKeys:
+    
+    //NSLog(@"[INFO] speed = %@ ", [NSNumber numberWithDouble:self.locationManager.location.speed]);
+    //NSLog(@"[INFO] altitude = %@", [NSNumber numberWithDouble:self.locationManager.location.altitude]);
+    
+    NSDictionary *location = [NSDictionary dictionaryWithObjectsAndKeys:    
                               [NSNumber numberWithDouble:self.locationManager.location.coordinate.longitude], @"longitude",
                               [NSNumber numberWithDouble:self.locationManager.location.coordinate.latitude], @"latitude",
                               [NSNumber numberWithDouble:self.locationManager.location.horizontalAccuracy], @"accuracy",
+                              [NSNumber numberWithDouble:self.locationManager.location.speed], @"speed",
+                              [NSNumber numberWithDouble:self.locationManager.location.altitude], @"altitude",
                               nil];
+    
     NSDictionary *movementData = [NSDictionary dictionaryWithObjectsAndKeys:
                                   location, @"location",
                                   nil];
     return movementData;
+    
 }
 
 - (BOOL) isFlashAvailableInCamera: (id)sender {

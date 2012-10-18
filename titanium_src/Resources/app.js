@@ -31,7 +31,7 @@ var win1 = Titanium.UI.createWindow({
 	navBarHidden : true
 });
 
-var OMADI_VERSION = "omadiDb1649";
+var OMADI_VERSION = "omadiDb1658";
 
 Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION);
 var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );
@@ -479,7 +479,7 @@ t_terms_services_i.addEventListener('click', function(e){
 });
 
 t_terms_services_ii.addEventListener('click', function(){
-	Ti.Platform.openURL('https://omadi.com/terms');
+	Ti.Platform.openURL('https://omadi.com/terms.txt');
 });
 
 v_terms_services.add(s_terms_services);

@@ -745,16 +745,27 @@ if(PLATFORM != 'android'){
 	
 	actions_view.addEventListener('click', function(){
 		var postDialog = Titanium.UI.createOptionDialog();
-		postDialog.options = ['Sync Data', 'Display Draft', 'About', 'cancel'];
-		postDialog.cancel = 3;
+		postDialog.options = ['Sync Data', 'Navigation Map', 'Display Draft', 'About', 'cancel'];
+		postDialog.cancel = 4;
 		postDialog.show();
 
 		postDialog.addEventListener('click', function(ev) {
 			if(ev.index == 0) {
 				checkUpdate('from_menu');
-			} else if(ev.index == 1) {
+			}
+			else if(ev.index == 1) {
+				var nav_win = Ti.UI.createWindow({
+					title : 'Navigation',
+					//navBarHidden : false,
+					modal : true,
+					backgroundColor : 'black',
+					url : 'navigation.js'
+				});
+				nav_win.open();
+			}
+			 else if(ev.index == 2) {
 				openDraftWindow();
-			} else if(ev.index == 2) {
+			} else if(ev.index == 3) {
 				var about_win = Ti.UI.createWindow({
 					title : 'About',
 					navBarHidden : true,

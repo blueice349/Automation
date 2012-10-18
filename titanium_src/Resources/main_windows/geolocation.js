@@ -3,6 +3,8 @@ var time_interval_for_alerts = 120;
 
 // state vars used by resume/pause
 var db_coord_name = Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName() + "_GPS";
+var nav_database_name = Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName() + "_NAVIGATION";
+
 var location_obj = [];
 var dist_filter = 50;
 var last_db_timestamp = 0;
@@ -29,23 +31,30 @@ if(PLATFORM == 'android') {
 
 function updateCurrentLocation(e) {
 	curr = e;
+	var timestamp = new Date().getTime();
+	timestamp = Math.round(timestamp / 1000);
+
 	if(PLATFORM == 'android'){
 		longitude = curr.longitude;
 		latitude = curr.latitude;
 		accuracy = curr.accuracy;
+
+		Ti.API.info('=====>>> Longitude ' + longitude);
+		Ti.API.info('=====>>> Latitude ' + latitude);
+		Ti.API.info('=====>>> Accuracy ' + accuracy);
+		Ti.API.info('=====>>> Timestamp ' + timestamp);
 	}else{
 		longitude = curr.location.longitude;
 		latitude = curr.location.latitude;
-		accuracy = curr.location.longitude;
+		accuracy = curr.location.accuracy;
+		speed = curr.location.speed;
+		altitude = curr.location.altitude;
+		
+		
+		Ti.API.info('=====>>> Speed ' + speed*2.23693629+' Miles/H');
 	}
 	
-	var timestamp = new Date().getTime();
-	timestamp = Math.round(timestamp / 1000);
 	
-	Ti.API.info('=====>>> Longitude ' + longitude);
-	Ti.API.info('=====>>> Latitude ' + latitude);
-	Ti.API.info('=====>>> Accuracy ' + accuracy);
-	Ti.API.info('=====>>> Timestamp ' + timestamp);
 
 	if(latitude != 0 && longitude != 0) {
 		if(accuracy > 200) {
@@ -57,15 +66,29 @@ function updateCurrentLocation(e) {
 				Ti.API.info('NOT SHOWN - Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is ' + accuracy + ' meters');
 			}
 		}
-
-		location_obj.push({
-			no_accurated_location : false,
-			accurated_location : "INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + longitude + "','" + latitude + "'," + timestamp + ", 'notUploaded')",
-			accuracy : accuracy,
-			longitude : longitude,
-			latitude : latitude,
-			timestamp : timestamp
-		});
+		
+		if ( PLATFORM ==  "android"){
+			location_obj.push({
+				no_accurated_location : false,
+				accurated_location : "INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + longitude + "','" + latitude + "'," + timestamp + ", 'notUploaded')",
+				accuracy : accuracy,
+				longitude : longitude,
+				latitude : latitude,
+				timestamp : timestamp			
+			});
+		}
+		else{
+			location_obj.push({
+				no_accurated_location : false,
+				accurated_location : "INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + longitude + "','" + latitude + "'," + timestamp + ", 'notUploaded')",
+				accuracy : accuracy,
+				longitude : longitude,
+				latitude : latitude,
+				timestamp : timestamp,
+				speed: speed,
+				altitude: altitude
+			});			
+		}
 	}
 	setTimeout(s, 5000);
 	return;
@@ -109,6 +132,12 @@ Ti.App.addEventListener('upload_gps_locations', function() {
 		Ti.API.info('GPS');
 		var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
 		if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
+		
+		if (PLATFORM != "android"){
+			var nav_database = Ti.Database.install('/database/navigation.sqlite', nav_database_name);
+			nav_database.file.setRemoteBackup(false);
+		}
+		
 		Ti.API.info("Length before: " + location_obj.length);
 		var leng_before = location_obj.length;
 		var aux_location = location_obj.slice(0);
@@ -116,9 +145,14 @@ Ti.App.addEventListener('upload_gps_locations', function() {
 		location_obj = new Array();
 	
 		for (var ind_local in aux_location) {
-			Ti.API.info(aux_location[ind_local].accurated_location);
+			//Ti.API.info(aux_location[ind_local].accurated_location);
 			db_coord.execute(aux_location[ind_local].accurated_location);
+			if (PLATFORM != "android"){
+				nav_database.execute("INSERT INTO gps (longitude, latitude, accuracy, speed, altitude, timestamp ) VALUES ( '"+aux_location[ind_local].longitude+"', '"+aux_location[ind_local].latitude+"', '"+aux_location[ind_local].accuracy+"', '"+aux_location[ind_local].speed+"', '"+aux_location[ind_local].altitude+"', '"+aux_location[ind_local].timestamp+"' )");
+				Ti.API.info("INSERT INTO gps (longitude, latitude, accuracy, speed, altitude, timestamp ) VALUES ( '"+aux_location[ind_local].longitude+"', '"+aux_location[ind_local].latitude+"', '"+aux_location[ind_local].accuracy+"', "+aux_location[ind_local].speed+", "+aux_location[ind_local].altitude+", '"+aux_location[ind_local].timestamp+"' )");
+			}
 		}
+		nav_database.close();
 		if (aux_location.length > 0) {
 			last_db_timestamp = aux_location.pop().timestamp;
 			Ti.API.info("Last timestamp = " + last_db_timestamp);
