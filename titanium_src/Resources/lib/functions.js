@@ -10,6 +10,37 @@ Ti.include('/lib/encoder_base_64.js');
 var DOWNLOAD_URL_THUMBNAIL = '/sync/image/thumbnail/';
 var DOWNLOAD_URL_IMAGE_FILE = '/sync/file/';
 var PLATFORM = Ti.Platform.name;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 var NUMBER_FORMAT_CURRENCY = 'currency';
 var NUMBER_FORMAT_INTEGER = 'integer';
 var NUMBER_FORMAT_DECIMAL_0 = 'one decimal';
@@ -4087,18 +4118,26 @@ function uploadFile(win, type_request) {
 				_file_xhr.setRequestHeader("Content-Type", "application/json");
 
 				if (PLATFORM == 'android') {
-					_file_xhr.send('{"file_data"	:"' + fileUploadTable.fieldByName('file_data') + '", "filename"	:"' + fileUploadTable.fieldByName('file_name') + '", "nid"		:"' + fileUploadTable.fieldByName('nid') + '", "field_name":"' + fileUploadTable.fieldByName('field_name') + '", "delta"		:' + fileUploadTable.fieldByName('delta') + '}');
-
+					
+					_file_xhr.send('{"file_data"	:"' + fileUploadTable.fieldByName('file_data') + '", "filename"	:"' + fileUploadTable.fieldByName('file_name') + '", "nid"		:"' + fileUploadTable.fieldByName('nid') + '", "field_name":"' + fileUploadTable.fieldByName('field_name') + '", "delta" :"' + fileUploadTable.fieldByName('delta') + '","timestamp":"'+ fileUploadTable.fieldByName('timestamp')+'"}');
+                    //alert(fileUploadTable.fieldByName('timestamp'));
+                    // alert("time_stamp_send_to_sever_in_android")
+                    
 				} else {
+					
 					_file_xhr.send({
 						file_data : fileUploadTable.fieldByName('file_data'),
 						filename : fileUploadTable.fieldByName('file_name'),
 						nid : fileUploadTable.fieldByName('nid'),
 						field_name : fileUploadTable.fieldByName('field_name'),
-						delta : fileUploadTable.fieldByName('delta')
+						delta : fileUploadTable.fieldByName('delta'),
+						timestamp:fileUploadTable.fieldByName('timestamp'),
+						
 					});
+					//alert("time_stamp_send_to_sever_in_ios");
+					
 				}
-				
+				 //alert("time_stamp_sent_to_server");
 				fileUploadTable.close();
 				database.close();
 			}
@@ -4236,7 +4275,6 @@ function downloadMainImage(file_id, content, win) {
 		Ti.API.info("==== ERROR ===" + e);
 	}
 }
-
 function showImage(source, actInd) {
 	var imageWin = Ti.UI.createWindow({
 		backgroundColor : '#00000000',
@@ -4316,6 +4354,7 @@ function clearCache() {
 }
 
 function node_load(db_display, nid) {
+	
 	var parent_node = new Array();
 	var table = db_display.execute('SELECT table_name FROM node WHERE nid = ' + nid);
 	table = table.fieldByName('table_name');

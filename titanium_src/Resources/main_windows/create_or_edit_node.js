@@ -170,7 +170,6 @@ function get_android_menu(menu_exists) {
 			var _data = JSON.parse(json_data.fieldByName('_data'));
 
 			var node_form = 0;
-
 			Ti.API.info('Form node part = ' + node_form);
 
 			if (_data.form_parts != null && _data.form_parts != "") {
@@ -428,6 +427,7 @@ function adjustView(counter, top) {
 }
 
 function keep_info(_flag_info, pass_it, new_time) {
+	
 	Ti.API.info("--------------------Inside keep_info--------------------");
 	var a = Titanium.UI.createAlertDialog({
 		title : 'Omadi',
@@ -475,10 +475,26 @@ function keep_info(_flag_info, pass_it, new_time) {
 		}
 		//Regular expression for license Plate
 		if (content[x].field_type == 'license_plate') {
+			
 			if (content[x].value != null && content[x].value != "") {
 				content[x].value = content[x].value.replace(/[^[0-9A-Z]/g, '', content[x].value);
 			}
 		}
+       
+		if (content[x].field_type == 'number_integer') {
+
+			if (content[x].value != null && content[x].value != "") {
+				if (content[x].value >= (2147483647)) {
+					content[x].value = null;
+					alert("The Maximum for this field is 2147483647 ")
+				} else if (content[x].value <= (-2147483647)) {
+					content[x].value = null;
+					alert("The Minimum for this field is 2147483647 ")
+				}
+			}
+		}
+
+		
 
 		// Regular expression for phone
 		if (content[x].field_type == 'phone') {
@@ -4331,6 +4347,16 @@ create_or_edit_node.loadUI = function() {
 
 								content[count].addEventListener('blur', function(e) {
 									Ti.API.info(e.source.value + ' or ' + e.value + ' Field number ==> min: ' + e.source.my_min + ' max: ' + e.source.my_max);
+									if(e.source.value <=(-2147483648) )
+									{
+										alert("The minimum for this field is -2147483647");
+										e.source.value =null;
+									}
+									else if(e.source.value >=(2147483647) )
+									{
+										alert("The maximum for this field is 2147483647");
+										e.source.value =null;
+									}
 									if (e.source.value != null && e.source.value != "") {
 										if (e.source.my_max != null && e.source.my_min != null) {
 											if (parseFloat(e.source.value) < parseFloat(e.source.my_min)) {
@@ -7776,11 +7802,11 @@ create_or_edit_node.loadUI = function() {
 							}
 
 							break;
-
-						//Stuff to add image field..
+							//Stuff to add file
+						
 						case 'image':
 							label[count] = Ti.UI.createLabel({
-								text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
+								text :( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
 								color : isRequired ? 'red' : _lb_color,
 								font : {
 									fontSize : fieldFontSize,
@@ -7792,7 +7818,6 @@ create_or_edit_node.loadUI = function() {
 								height : 25,
 								top : top
 							});
-
 							//Add fields:
 							var reserveTop = top;
 							regionView.add(label[count]);
@@ -8450,14 +8475,16 @@ function saveImageInDb(currentImageView, field_name) {
 	var encodeImage = Ti.Utils.base64encode(currentImageView.bigImg);
 	var mime = currentImageView.mimeType;
 	var imageName = 'image.' + mime.substring(mime.indexOf('/') + 1, mime.length);
+	var currentDate = new Date();
+	var vl_to_field = currentDate.getTime();
 	var is_exists = db_toSaveImage.execute('SELECT delta, nid FROM file_upload_queue WHERE nid=' + file_upload_nid + ' and delta=' + currentImageView.private_index + ' and field_name="' + field_name + '";');
 	if (is_exists.rowCount > 0) {
-		db_toSaveImage.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '", file_data="' + encodeImage + '", field_name="' + field_name + '", file_name="' + imageName + '", delta=' + currentImageView.private_index + ' WHERE nid=' + file_upload_nid + ' and delta=' + currentImageView.private_index + ' and field_name="' + field_name + '";');
+		db_toSaveImage.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '",timestamp="'+ vl_to_field +'",file_data="' + encodeImage + '", field_name="' + field_name + '", file_name="' + imageName + '", delta=' + currentImageView.private_index + ' WHERE nid=' + file_upload_nid + ' and delta=' + currentImageView.private_index + ' and field_name="' + field_name + '";');
 	} else {
-		db_toSaveImage.execute('INSERT INTO file_upload_queue (nid , file_data , field_name, file_name, delta) VALUES (' + file_upload_nid + ', "' + encodeImage + '", "' + field_name + '", "' + imageName + '", ' + currentImageView.private_index + ')');
+		db_toSaveImage.execute('INSERT INTO file_upload_queue (nid ,timestamp, file_data , field_name, file_name, delta) VALUES (' + file_upload_nid + ',"'+ vl_to_field +'", "' + encodeImage + '", "' + field_name + '", "' + imageName + '", ' + currentImageView.private_index + ')');
 	}
 	db_toSaveImage.close();
-}
+	}
 
 function openAndroidCamera(e) {
 	setTimeout(function(evt) {

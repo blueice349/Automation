@@ -771,7 +771,8 @@ function openDraftWindow(){
 	var win_new = Titanium.UI.createWindow({  
 		title: 'Drafts',
 		fullscreen: false,
-		url:'drafts.js',
+		//url:'drafts.js',
+		url:'window_demo.js',
 		type: 'draft',
 		uid: jsonLogin.user.uid,
 		up_node: update_node,
