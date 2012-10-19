@@ -3747,88 +3747,91 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 		Ti.API.error('Code status: ' + e.error);
 		Ti.API.error('CODE ERROR = '+this.status);
 		Ti.API.info("Progress bar = " + progress);
+		
 		if (progress != null) {
 			progress.close();
+		}
+		
+		Titanium.Media.vibrate();
 
-			Titanium.Media.vibrate();
+		if(this.status == 403 || elements.status == 403) {
+			var a_msg = Titanium.UI.createAlertDialog({
+				title : 'Omadi',
+				buttonNames : ['OK']
+			});				
+			
+			a_msg.message = "You have been logged out. Please log back in."
+			a_msg.addEventListener('click', function(e) {
+				Ti.App.fireEvent('stop_gps');
+				Ti.App.fireEvent('free_login');
+				var db_func = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list"  );
+				no_backup(db_func);	
+				db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+				db_func.close();
+				win.close();
+			});
+						
+			a_msg.show();
+		}
+		else if(this.status == 401 || elements.status == 401) {
+			var a_msg = Titanium.UI.createAlertDialog({
+				title : 'Omadi',
+				buttonNames : ['OK']
+			});				
+			
+			a_msg.message = "You session is no longer valid. Please log back in."
+			a_msg.addEventListener('click', function(e) {
+				Ti.App.fireEvent('stop_gps');
+				Ti.App.fireEvent('free_login');
+				var db_func = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list"  );
+				no_backup(db_func);	
+				db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+				db_func.close();
+				win.close();
+			});
+						
+			a_msg.show();
+		}
+		else if(progress != null){	
+			var a_msg = Titanium.UI.createAlertDialog({
+				title : 'Omadi',
+				buttonNames : ['Yes', 'No'],
+				cancel : 1,
+				click_index : e.index,
+				sec_obj : e.section,
+				row_obj : e.row
+			});
+			a_msg.message = "There was a network error, and your data could not be synched. Do you want to retry now? Error description: " + e.error;
 
-			if(this.status == 403 || elements.status == 403) {
-				var a_msg = Titanium.UI.createAlertDialog({
-					title : 'Omadi',
-					buttonNames : ['OK']
-				});				
-				
-				a_msg.message = "You have been logged out. Please log back in."
-				a_msg.addEventListener('click', function(e) {
-					Ti.App.fireEvent('stop_gps');
-					Ti.App.fireEvent('free_login');
-					var db_func = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list"  );
-					no_backup(db_func);	
-					db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
-					db_func.close();
-					win.close();
-				});
-							
-				a_msg.show();
-			}
-			else if(this.status == 401 || elements.status == 401) {
-				var a_msg = Titanium.UI.createAlertDialog({
-					title : 'Omadi',
-					buttonNames : ['OK']
-				});				
-				
-				a_msg.message = "You session is no longer valid. Please log back in."
-				a_msg.addEventListener('click', function(e) {
-					Ti.App.fireEvent('stop_gps');
-					Ti.App.fireEvent('free_login');
-					var db_func = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list"  );
-					no_backup(db_func);	
-					db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
-					db_func.close();
-					win.close();
-				});
-							
-				a_msg.show();
-			}
-			else{	
-				var a_msg = Titanium.UI.createAlertDialog({
-					title : 'Omadi',
-					buttonNames : ['Yes', 'No'],
-					cancel : 1,
-					click_index : e.index,
-					sec_obj : e.section,
-					row_obj : e.row
-				});
-				a_msg.message = "There was a network error, and your data could not be synched. Do you want to retry now? Error description: " + e.error;
-
-				
-				a_msg.addEventListener('click', function(e) {
-					if (PLATFORM == "android"){
-						if (e.index != 1) {
-							setTimeout(function() {
-								progress = null;
-								progress = new Progress_install(0, 100);
-								installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
-							}, 800);
-						} else {
-							unsetUse();
-						}
+			
+		
+			a_msg.addEventListener('click', function(e) {
+				if (PLATFORM == "android"){
+					if (e.index != 1) {
+						setTimeout(function() {
+							progress = null;
+							progress = new Progress_install(0, 100);
+							installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
+						}, 800);
+					} else {
+						unsetUse();
 					}
-					else{
-						if (e.cancel === false) {
-							setTimeout(function() {
-								progress = null;
-								progress = new Progress_install(0, 100);
-								installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
-							}, 800);
-						} else {
-							unsetUse();
-						}
+				}
+				else{
+					if (e.cancel === false) {
+						setTimeout(function() {
+							progress = null;
+							progress = new Progress_install(0, 100);
+							installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
+						}, 800);
+					} else {
+						unsetUse();
 					}
-				});
-							
-				a_msg.show();
-			}
+				}
+			});
+						
+			a_msg.show();
+			
 		}
 
 		Ti.API.info('Request type: ' + type_request + ' progress value: ' + progress);
@@ -4225,7 +4228,7 @@ function uploadFile(win, type_request) {
 				}
 
 				_file_xhr.onerror = function(e) {
-					Ti.API.info('=========== Error in uploading ========' + this.error + this.status);
+					Ti.API.error('=========== Error in uploading ========' + this.error + this.status);
 					if (this.status == '406' && this.error == 'Nid is not connected to a valid node.') {
 						var database = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 						if(PLATFORM != 'android'){database.file.setRemoteBackup(false);}
@@ -4349,6 +4352,7 @@ function downloadThumnail(file_id, image, win) {
 		}
 
 		downloadImage.onerror = function(e) {
+			Ti.API.error("Error in download image.");
 			image.image = '../images/default.png';
 		}
 
@@ -4387,6 +4391,7 @@ function downloadMainImage(file_id, content, win) {
 		}
 
 		downloadImage.onerror = function(e) {
+			Ti.API.error("Error in download Image 2");
 			actInd.hide();
 		}
 		downloadImage.send();

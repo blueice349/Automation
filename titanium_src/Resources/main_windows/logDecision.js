@@ -88,8 +88,26 @@ labelOut.addEventListener('click',function (){
 
 	logout_xhr.onerror = function(e) {
 		hideIndicator();
-		Ti.API.info("Failed to log out");
-		alert("Failed to log out, please try again");
+		
+		if(this.status == 403 || elements.status == 403 || this.status == 401 || elements.status == 401) {
+			Ti.App.Properties.setString('logStatus', "You are logged out");
+			Ti.App.fireEvent('stop_gps');
+	
+			var db = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list"  );
+			no_backup(db);	
+			db.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+			db.close();
+			Ti.App.fireEvent('free_login');
+			
+			indLog._parent.close();
+			hideIndicator();
+			logout_xhr.abort();
+			indLog.close();
+		}
+		else{
+			Ti.API.info("Failed to log out");
+			alert("Failed to log out, please try again");
+		}
 	}
 	logout_xhr.send();
 });
