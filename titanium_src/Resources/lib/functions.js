@@ -10,6 +10,37 @@ Ti.include('/lib/encoder_base_64.js');
 var DOWNLOAD_URL_THUMBNAIL = '/sync/image/thumbnail/';
 var DOWNLOAD_URL_IMAGE_FILE = '/sync/file/';
 var PLATFORM = Ti.Platform.name;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 var NUMBER_FORMAT_CURRENCY = 'currency';
 var NUMBER_FORMAT_INTEGER = 'integer';
 var NUMBER_FORMAT_DECIMAL_0 = 'one decimal';
@@ -3716,88 +3747,91 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 		Ti.API.error('Code status: ' + e.error);
 		Ti.API.error('CODE ERROR = '+this.status);
 		Ti.API.info("Progress bar = " + progress);
+		
 		if (progress != null) {
 			progress.close();
+		}
+		
+		Titanium.Media.vibrate();
 
-			Titanium.Media.vibrate();
+		if(this.status == 403 || elements.status == 403) {
+			var a_msg = Titanium.UI.createAlertDialog({
+				title : 'Omadi',
+				buttonNames : ['OK']
+			});				
+			
+			a_msg.message = "You have been logged out. Please log back in."
+			a_msg.addEventListener('click', function(e) {
+				Ti.App.fireEvent('stop_gps');
+				Ti.App.fireEvent('free_login');
+				var db_func = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list"  );
+				no_backup(db_func);	
+				db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+				db_func.close();
+				win.close();
+			});
+						
+			a_msg.show();
+		}
+		else if(this.status == 401 || elements.status == 401) {
+			var a_msg = Titanium.UI.createAlertDialog({
+				title : 'Omadi',
+				buttonNames : ['OK']
+			});				
+			
+			a_msg.message = "You session is no longer valid. Please log back in."
+			a_msg.addEventListener('click', function(e) {
+				Ti.App.fireEvent('stop_gps');
+				Ti.App.fireEvent('free_login');
+				var db_func = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list"  );
+				no_backup(db_func);	
+				db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+				db_func.close();
+				win.close();
+			});
+						
+			a_msg.show();
+		}
+		else if(progress != null){	
+			var a_msg = Titanium.UI.createAlertDialog({
+				title : 'Omadi',
+				buttonNames : ['Yes', 'No'],
+				cancel : 1,
+				click_index : e.index,
+				sec_obj : e.section,
+				row_obj : e.row
+			});
+			a_msg.message = "There was a network error, and your data could not be synched. Do you want to retry now? Error description: " + e.error;
 
-			if(this.status == 403 || elements.status == 403) {
-				var a_msg = Titanium.UI.createAlertDialog({
-					title : 'Omadi',
-					buttonNames : ['OK']
-				});				
-				
-				a_msg.message = "You have been logged out. Please log back in."
-				a_msg.addEventListener('click', function(e) {
-					Ti.App.fireEvent('stop_gps');
-					Ti.App.fireEvent('free_login');
-					var db_func = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list"  );
-					no_backup(db_func);	
-					db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
-					db_func.close();
-					win.close();
-				});
-							
-				a_msg.show();
-			}
-			else if(this.status == 401 || elements.status == 401) {
-				var a_msg = Titanium.UI.createAlertDialog({
-					title : 'Omadi',
-					buttonNames : ['OK']
-				});				
-				
-				a_msg.message = "You session is no longer valid. Please log back in."
-				a_msg.addEventListener('click', function(e) {
-					Ti.App.fireEvent('stop_gps');
-					Ti.App.fireEvent('free_login');
-					var db_func = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list"  );
-					no_backup(db_func);	
-					db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
-					db_func.close();
-					win.close();
-				});
-							
-				a_msg.show();
-			}
-			else{	
-				var a_msg = Titanium.UI.createAlertDialog({
-					title : 'Omadi',
-					buttonNames : ['Yes', 'No'],
-					cancel : 1,
-					click_index : e.index,
-					sec_obj : e.section,
-					row_obj : e.row
-				});
-				a_msg.message = "There was a network error, and your data could not be synched. Do you want to retry now? Error description: " + e.error;
-
-				
-				a_msg.addEventListener('click', function(e) {
-					if (PLATFORM == "android"){
-						if (e.index != 1) {
-							setTimeout(function() {
-								progress = null;
-								progress = new Progress_install(0, 100);
-								installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
-							}, 800);
-						} else {
-							unsetUse();
-						}
+			
+		
+			a_msg.addEventListener('click', function(e) {
+				if (PLATFORM == "android"){
+					if (e.index != 1) {
+						setTimeout(function() {
+							progress = null;
+							progress = new Progress_install(0, 100);
+							installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
+						}, 800);
+					} else {
+						unsetUse();
 					}
-					else{
-						if (e.cancel === false) {
-							setTimeout(function() {
-								progress = null;
-								progress = new Progress_install(0, 100);
-								installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
-							}, 800);
-						} else {
-							unsetUse();
-						}
+				}
+				else{
+					if (e.cancel === false) {
+						setTimeout(function() {
+							progress = null;
+							progress = new Progress_install(0, 100);
+							installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
+						}, 800);
+					} else {
+						unsetUse();
 					}
-				});
-							
-				a_msg.show();
-			}
+				}
+			});
+						
+			a_msg.show();
+			
 		}
 
 		Ti.API.info('Request type: ' + type_request + ' progress value: ' + progress);
@@ -4194,7 +4228,7 @@ function uploadFile(win, type_request) {
 				}
 
 				_file_xhr.onerror = function(e) {
-					Ti.API.info('=========== Error in uploading ========' + this.error + this.status);
+					Ti.API.error('=========== Error in uploading ========' + this.error + this.status);
 					if (this.status == '406' && this.error == 'Nid is not connected to a valid node.') {
 						var database = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 						if(PLATFORM != 'android'){database.file.setRemoteBackup(false);}
@@ -4207,18 +4241,26 @@ function uploadFile(win, type_request) {
 				_file_xhr.setRequestHeader("Content-Type", "application/json");
 
 				if (PLATFORM == 'android') {
-					_file_xhr.send('{"file_data"	:"' + fileUploadTable.fieldByName('file_data') + '", "filename"	:"' + fileUploadTable.fieldByName('file_name') + '", "nid"		:"' + fileUploadTable.fieldByName('nid') + '", "field_name":"' + fileUploadTable.fieldByName('field_name') + '", "delta"		:' + fileUploadTable.fieldByName('delta') + '}');
-
+					
+					_file_xhr.send('{"file_data"	:"' + fileUploadTable.fieldByName('file_data') + '", "filename"	:"' + fileUploadTable.fieldByName('file_name') + '", "nid"		:"' + fileUploadTable.fieldByName('nid') + '", "field_name":"' + fileUploadTable.fieldByName('field_name') + '", "delta" :"' + fileUploadTable.fieldByName('delta') + '","timestamp":"'+ fileUploadTable.fieldByName('timestamp')+'"}');
+                    //alert(fileUploadTable.fieldByName('timestamp'));
+                    // alert("time_stamp_send_to_sever_in_android")
+                    
 				} else {
+					
 					_file_xhr.send({
 						file_data : fileUploadTable.fieldByName('file_data'),
 						filename : fileUploadTable.fieldByName('file_name'),
 						nid : fileUploadTable.fieldByName('nid'),
 						field_name : fileUploadTable.fieldByName('field_name'),
-						delta : fileUploadTable.fieldByName('delta')
+						delta : fileUploadTable.fieldByName('delta'),
+						timestamp:fileUploadTable.fieldByName('timestamp'),
+						
 					});
+					//alert("time_stamp_send_to_sever_in_ios");
+					
 				}
-				
+				 //alert("time_stamp_sent_to_server");
 				fileUploadTable.close();
 				database.close();
 			}
@@ -4310,6 +4352,7 @@ function downloadThumnail(file_id, image, win) {
 		}
 
 		downloadImage.onerror = function(e) {
+			Ti.API.error("Error in download image.");
 			image.image = '../images/default.png';
 		}
 
@@ -4348,6 +4391,7 @@ function downloadMainImage(file_id, content, win) {
 		}
 
 		downloadImage.onerror = function(e) {
+			Ti.API.error("Error in download Image 2");
 			actInd.hide();
 		}
 		downloadImage.send();
@@ -4356,7 +4400,6 @@ function downloadMainImage(file_id, content, win) {
 		Ti.API.info("==== ERROR ===" + e);
 	}
 }
-
 function showImage(source, actInd) {
 	var imageWin = Ti.UI.createWindow({
 		backgroundColor : '#00000000',
@@ -4437,6 +4480,7 @@ function clearCache() {
 }
 
 function node_load(db_display, nid) {
+	
 	var parent_node = new Array();
 	var table = db_display.execute('SELECT table_name FROM node WHERE nid = ' + nid);
 	table = table.fieldByName('table_name');

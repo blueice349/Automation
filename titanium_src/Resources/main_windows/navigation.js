@@ -142,9 +142,13 @@ if (num_nav > 0){
 	win_nav.add(box);
 	
 	
-	var sp_db = db_nav.execute("SELECT * FROM gps ORDER BY speed DESC");
+	var sp_db = db_nav.execute("SELECT MAX(speed) AS speed FROM gps");
+	var maxSpeed = (sp_db.fieldByName('speed')*2.23693629).toFixed(1);
+	if(maxSpeed < 0){
+		maxSpeed = 0;
+	}
 	var speed = Ti.UI.createLabel({
-		text: 'Top speed: '+ (sp_db.fieldByName('speed')*2.23693629).toFixed(2) +' Mph',
+		text: 'Top speed: '+ maxSpeed +' Mph',
 		color: '#FFF',
 		font: {
 			size: '12dp'
@@ -157,7 +161,7 @@ if (num_nav > 0){
 	box.add(speed);
 
 	var miles = Ti.UI.createLabel({
-		text: 'Traveled: '+(distance_total*0.621371192).toFixed(2)+' Miles',
+		text: 'Traveled: '+(distance_total*0.621371192).toFixed(1)+' Miles',
 		color: '#FFF',
 		font: {
 			size: '12dp'
@@ -174,7 +178,7 @@ if (num_nav > 0){
 	var time_obj = secondsToTime(total_seconds);
 	
 	var time = Ti.UI.createLabel({
-		text: 'Time traveled:  '+time_obj.h+' h : '+time_obj.m+' m',
+		text: 'Time:  '+time_obj.h+'h '+time_obj.m+'m',
 		color: '#FFF',
 		font: {
 			size: '12dp'
@@ -186,10 +190,10 @@ if (num_nav > 0){
 	});
 	box.add(time);
 	
-	var al_db = db_nav.execute("SELECT * FROM gps ORDER BY altitude DESC");
+	var al_db = db_nav.execute("SELECT MAX(altitude) AS altitude FROM gps");
 	
 	var altitude = Ti.UI.createLabel({
-		text: 'Highest altitude: '+al_db.fieldByName('altitude').toFixed(1) +' Meters',
+		text: 'Highest altitude: '+Math.round(al_db.fieldByName('altitude') * 3.28084) +' Ft',
 		color: '#FFF',
 		font: {
 			size: '12dp'
@@ -209,7 +213,7 @@ else{
 		buttonNames: ['OK']
 	});
 	
-	a.message = 'Omadi still have\'t got any coordinates from the GPS in order to trace your route, come back shortly';
+	a.message = 'Omadi has not processed any saved GPS coordinates yet. Please come back shortly.';
 	a.show();
 	
 	a.addEventListener('click', function(e){
