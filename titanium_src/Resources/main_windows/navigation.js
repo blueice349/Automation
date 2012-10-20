@@ -50,18 +50,13 @@ var db_nav_name = Titanium.App.Properties.getString("databaseVersion") + "_" + g
 var db_nav = Ti.Database.install('/database/navigation.sqlite', db_nav_name);
 db_nav.file.setRemoteBackup(false);
 var nav_res = db_nav.execute("SELECT * FROM gps ORDER BY timestamp ASC");
+var nav_res_last = db_nav.execute("SELECT * FROM gps ORDER BY timestamp DESC");
+
 var num_nav = nav_res.rowCount;
 
 if (num_nav > 0){
-	var annotation = Titanium.Map.createAnnotation({
-		latitude:42.334537,
-		longitude:-71.170101,
-		title:"Boston College",
-		subtitle:'Newton Campus, Chestnut Hill, MA',
-		animate:true
-	});
 	
-	var focus_region = {latitude:nav_res.fieldByName('latitude'),longitude:nav_res.fieldByName('longitude'),latitudeDelta:0.50, longitudeDelta:0.50};
+	var focus_region = {latitude:nav_res_last.fieldByName('latitude'),longitude:nav_res_last.fieldByName('longitude'),latitudeDelta:0.50, longitudeDelta:0.50};
 	
 	//
 	// CREATE MAP VIEW
@@ -72,15 +67,15 @@ if (num_nav > 0){
 		animate:true,
 		regionFit:true,
 		userLocation:true,
-		annotations:[annotation],
 		zIndex: 1
 	});
 	
-	var points = [];
+	var points = new Array();
 	var distance_total = 0;
 	var lat_o = nav_res.fieldByName('latitude');
 	var lon_o = nav_res.fieldByName('longitude');
 	var time_o = nav_res.fieldByName('timestamp');
+	points.push(new Array());
 	
 	while (nav_res.isValidRow())
 	{
@@ -92,9 +87,13 @@ if (num_nav > 0){
 		if (time - time_o < 60*10){
 			distance_total += getDistance(parseFloat(lat_o) , parseFloat(lon_o), parseFloat(lat), parseFloat(lon));
 		}
+		else{
+			points.push(new Array());
+		}
 		
 		var entry = {latitude:lat,longitude:lon};
-		points.push(entry);
+		points[points.length - 1].push(entry);
+		
 		lat_o = lat;
 		lon_o = lon;
 		time_o = time;
@@ -102,17 +101,21 @@ if (num_nav > 0){
 		nav_res.next();
 	}
 	
-	// route object
-	var route = {
-		name:"Route",
-		points:points,
-		color:"red",
-		width:4
-	};
 	
-	// add a route
-	mapview.addRoute(route);
-	
+	for (var _w in points){
+		Ti.API.info(_w+" = "+points[_w]);
+		
+		// route object
+		var route = {
+			name:"Route",
+			points:points[_w],
+			color:"red",
+			width:4
+		};
+		
+		// add a route
+		mapview.addRoute(route);
+	}
 	win_nav.add(mapview);
 	
 	var back_bt = Titanium.UI.createButton({
