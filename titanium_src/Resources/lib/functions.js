@@ -10,37 +10,6 @@ Ti.include('/lib/encoder_base_64.js');
 var DOWNLOAD_URL_THUMBNAIL = '/sync/image/thumbnail/';
 var DOWNLOAD_URL_IMAGE_FILE = '/sync/file/';
 var PLATFORM = Ti.Platform.name;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 var NUMBER_FORMAT_CURRENCY = 'currency';
 var NUMBER_FORMAT_INTEGER = 'integer';
 var NUMBER_FORMAT_DECIMAL_0 = 'one decimal';
@@ -1624,7 +1593,18 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 	}
 	//Header parameters
 	objectsUp.setRequestHeader("Content-Type", "application/json");
-	if(PLATFORM == 'android'){objectsUp.setRequestHeader("Cookie", getCookie());} // Set cookies
+	
+	if(PLATFORM == 'android'){
+		objectsUp.setRequestHeader("Cookie", getCookie());// Set cookies
+	}
+	else{
+		var split_cookie = getCookie().split(';');
+		if (!split_cookie[0] ){
+			split_cookie[0]="";
+		}
+		objectsUp.setRequestHeader("Cookie", split_cookie[0]);// Set cookies
+	} 
+	
 
 	//When connected
 	objectsUp.onload = function(e) {

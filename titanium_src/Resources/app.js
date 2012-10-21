@@ -624,7 +624,7 @@ b1.addEventListener('click', function(){
 				db_list.execute("COMMIT TRANSACTION");
 				Ti.API.info(isLogged()+" Logged ... Database   "+Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName());
 				db_list.close();
-
+				tf2.value	 = "";
 				win1.touchEnabled = false;
 				win2.open();
 				
