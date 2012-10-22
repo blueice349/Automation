@@ -642,6 +642,14 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 	while (deploy.isValidRow()) {
 		col_titles[ind_column] = deploy.fieldByName('field_name');
 		col_type[ind_column] = deploy.fieldByName('type');
+		if(deploy.fieldByName('type') == 'file'){
+			ind_column++;
+			col_titles[ind_column] = deploy.fieldByName('field_name')+'___fid';
+			col_type[ind_column] = deploy.fieldByName('type');
+			ind_column++;
+			col_titles[ind_column] = deploy.fieldByName('field_name')+'___filename';
+			col_type[ind_column] = deploy.fieldByName('type');
+		}
 		ind_column++;
 		deploy.next();
 	}
@@ -2273,6 +2281,11 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 											perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___file_id' + '\' ' + type;
 											perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___status' + '\' ' + type;
 										}
+										if (json.fields.insert[i].type == 'file') {
+											perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___fid' + '\' ' + type;
+											perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___filename' + '\' ' + type;
+										}
+
 										perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '\' ' + type;
 									}
 								} else {
@@ -2390,6 +2403,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 									if (json.fields.insert[i].type == 'image') {
 										perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___file_id' + '\' ' + type;
 										perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___status' + '\' ' + type;
+									}
+									if (json.fields.insert[i].type == 'file') {
+										perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___fid' + '\' ' + type;
+										perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___filename' + '\' ' + type;
 									}
 									perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '\' ' + type;
 									//Ti.API.info("Inserted: "+field_name+" to be used in "+bundle);
@@ -2540,6 +2557,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 											if (json.fields.update[i].type == 'image') {
 												perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___file_id' + '\' ' + type;
 												perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___status' + '\' ' + type;
+											}
+											if (json.fields.update[i].type == 'file') {
+												perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___fid' + '\' ' + type;
+												perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___filename' + '\' ' + type;
 											}
 											perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '\' ' + type;
 											Ti.API.info("Updated: " + field_name + " to be used in " + bundle);
@@ -2804,6 +2825,11 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 											perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___file_id' + '\' ' + type;
 											perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___status' + '\' ' + type;
 										}
+										if (json.fields.update[i].type == 'file') {
+											perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___fid' + '\' ' + type;
+											perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___filename' + '\' ' + type;
+										}
+
 										perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '\' ' + type;
 										Ti.API.info("Updated: " + field_name + " to be used in " + bundle);
 									}
@@ -4207,7 +4233,7 @@ function uploadFile(win, type_request) {
 				_file_xhr.setRequestHeader("Content-Type", "application/json");
 
 				if (PLATFORM == 'android') {
-					_file_xhr.send('{"file_data"	:"' + fileUploadTable.fieldByName('file_data') + '", "filename"	:"' + fileUploadTable.fieldByName('file_name') + '", "nid"		:"' + fileUploadTable.fieldByName('nid') + '", "field_name":"' + fileUploadTable.fieldByName('field_name') + '", "delta"		:' + fileUploadTable.fieldByName('delta') + '}');
+					_file_xhr.send('{"file_data"	:"' + fileUploadTable.fieldByName('file_data') + '", "filename"	:"' + fileUploadTable.fieldByName('file_name') + '", "nid"		:"' + fileUploadTable.fieldByName('nid') + '", "field_name":"' + fileUploadTable.fieldByName('field_name') + '", "delta"		:' + fileUploadTable.fieldByName('delta') + '","timestamp":"'+ fileUploadTable.fieldByName('timestamp')+'}');
 
 				} else {
 					_file_xhr.send({
@@ -4215,7 +4241,8 @@ function uploadFile(win, type_request) {
 						filename : fileUploadTable.fieldByName('file_name'),
 						nid : fileUploadTable.fieldByName('nid'),
 						field_name : fileUploadTable.fieldByName('field_name'),
-						delta : fileUploadTable.fieldByName('delta')
+						delta : fileUploadTable.fieldByName('delta'),
+						timestamp:fileUploadTable.fieldByName('timestamp'),
 					});
 				}
 				
@@ -4335,6 +4362,7 @@ function downloadMainImage(file_id, content, win) {
 	}
 
 	var URL = win.picked + DOWNLOAD_URL_IMAGE_FILE + win.nid + '/' + file_id;
+	
 	Ti.API.info("==== site:: " + URL);
 	try {
 		var downloadImage = Ti.Network.createHTTPClient();
@@ -5325,7 +5353,6 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 										node_values.push(elements['value']);
 									}
 								}
-
 								for (var value_index in node_values) {
 									node_value = node_values[value_index];
 									switch(search_operator) {
@@ -5374,7 +5401,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 									node_values.push(elements['value']);
 								}
 
-								if (search_operator == '__filled') {
+								if (search_operator == '__filled'){
 									for (var value_index in node_values) {
 										node_value = node_values[value_index];
 										if (node_value != 0) {
@@ -5391,7 +5418,6 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 											if (node_value == 0) {
 												row_matches[criteria_index] = true;
 											}
-
 										}
 									}
 								}

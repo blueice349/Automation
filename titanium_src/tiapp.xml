@@ -2,7 +2,7 @@
 <ti:app xmlns:ti="http://ti.appcelerator.org">
     <property name="ti.android.bug2373.finishfalseroot" type="bool">true</property>
     <property name="ti.android.runtime">v8</property>
-    <sdk-version>2.1.3.GA</sdk-version>
+    <sdk-version>2.1.1.GA</sdk-version>
     <deployment-targets>
         <target device="mobileweb">true</target>
         <target device="iphone">true</target>
@@ -12,7 +12,7 @@
     </deployment-targets>
     <id>com.omadi.crm</id>
     <name>Omadi</name>
-    <version>1.5.14</version>
+    <version>1.5.17</version>
     <publisher>Omadi</publisher>
     <url>http://www.omadi.com</url>
     <description>CRM from omadi</description>
@@ -35,9 +35,8 @@
         <services>
             <service type="interval" url="android_gps_event.js"/>
         </services>
-			<manifest android:versionCode="1"
-            android:versionName="1.5.14"
-			android:installLocation="preferExternal">
+        <manifest android:installLocation="preferExternal"
+            android:versionCode="1" android:versionName="1.5.14">
             <uses-sdk android:minSdkVersion="7"/>
             <uses-permission android:name="android.permission.READ_LOGS"/>
             <uses-permission android:name="android.permission.INTERNET"/>
@@ -62,6 +61,6 @@
     <modules>
         <module platform="android" version="1.0">com.omadi.camera</module>
         <module platform="android" version="1.0">com.omadi.gps</module>
-        <module platform="iphone" version="2">com.omadi.ios_gps</module>
+        <module platform="iphone" version="4">com.omadi.ios_gps</module>
     </modules>
 </ti:app>

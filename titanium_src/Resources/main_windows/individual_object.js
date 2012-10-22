@@ -48,8 +48,8 @@ var resultView = Ti.UI.createView({
 	width: '100%',
 	backgroundColor: '#EEEEEE',
 });
-win4.add(resultView);
-
+ win4.add(resultView);
+Ti.API.info("-----------------------------------------------------------------------------------------------------------------------------------")
 //Header where the selected name is presented
 var header = Ti.UI.createView({
 	top: '0',
@@ -74,7 +74,6 @@ var labelNameContent = Ti.UI.createLabel({
 });
 
 header.add(labelNameContent);
-
 if (PLATFORM == 'android'){
 	var viewContent = Ti.UI.createScrollView({
 	    top: "35dp",
@@ -111,17 +110,45 @@ var fields = new Array();
 var unsorted_res = new Array();
 var c_index = 0;
 var label = [];
+var label_file=[];
+var i=0;
+var file_id =[];
+var x=0;
 var content = [];
 var border = [];
 var cell = [];
 var count = 0;
+var file_upload_boolean =true;
+var upload_boolean =true;
+var data_boolean =true;
 var heightValue = 60;
+var height_label =5;
 var bug = [];
 var isEditEnabled = (node_form.fieldByName('perm_edit')==1)?true:false;
 omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
 roles = omadi_session_details.user.roles;
 
 while(fields_result.isValidRow()) {
+	if(fields_result.fieldByName('type') == 'file'){
+		unsorted_res.push({
+		field_name :fields_result.fieldByName('field_name')+'___filename',
+		label : fields_result.fieldByName('label'),
+		type : fields_result.fieldByName('type'),
+		settings : fields_result.fieldByName('settings'),
+		widget : fields_result.fieldByName('widget'),
+		required : fields_result.fieldByName('required'),
+		});
+	}
+		// if(fields_result.fieldByName('type') == 'file'){
+		// unsorted_res.push({
+		// field_name :fields_result.fieldByName('field_name')+'___fid',
+		// label : fields_result.fieldByName('label'),
+		// type : fields_result.fieldByName('type'),
+		// settings : fields_result.fieldByName('settings'),
+		// widget : fields_result.fieldByName('widget'),
+		// required : fields_result.fieldByName('required'),
+			// });
+			// }
 	unsorted_res.push({
 		label : fields_result.fieldByName('label'),
 		type : fields_result.fieldByName('type'),
@@ -133,7 +160,6 @@ while(fields_result.isValidRow()) {
 	c_index++;
 	fields_result.next();
 }
-
 while (regions.isValidRow()){
 	var reg_settings = JSON.parse(regions.fieldByName('settings'));
 		
@@ -162,6 +188,7 @@ while (regions.isValidRow()){
 				Ti.API.info('Field label: ' + unsorted_res[i].label);
 				Ti.API.info('Field type: ' + unsorted_res[i].type);
 				Ti.API.info('Field name: ' + unsorted_res[i].field_name);
+				
 				Ti.API.info('Field settings: ' + unsorted_res[i].settings);
 				Ti.API.info('Field widget: ' + unsorted_res[i].widget);
 
@@ -176,6 +203,7 @@ while (regions.isValidRow()){
 				fields[unsorted_res[i].field_name]['required'] = unsorted_res[i].required;
 			} else {
 				Ti.API.info(' Regions dont match! ');
+				
 			}
 		}
 	}
@@ -198,6 +226,7 @@ if(c_index > 0) {
 		try{
 			//Check is coloum exist in table or not
 			fieldVal = results.fieldByName(f_name_f);
+			
 		}catch(e){
 			if (fields[f_name_f]['type'] != 'region_separator_mode'){
 				Ti.API.info(" !!!!!!!!!!   >>>>>>>>ERROR<<<<<<<<< !!!!!!!!!!! "+e+" - Error found, there is no such column "+f_name_f);
@@ -206,7 +235,8 @@ if(c_index > 0) {
 			}
 		}
 		
-		if ( (fieldVal != null && fieldVal != "") ||  (fields[f_name_f]['type'] == 'region_separator_mode') || (fields[f_name_f]['type'] == 'image') || (fields[f_name_f]['type'] == 'calculation_field')) {
+		
+		if ((fieldVal != null && fieldVal != "") || (fields[f_name_f]['type'] == 'region_separator_mode') || (fields[f_name_f]['type'] == 'image') || (fields[f_name_f]['type'] == 'calculation_field')) {
 
 			//fields from Fields table that match with current object
 			c_type[count] = fields[f_name_f]['type'];
@@ -215,16 +245,16 @@ if(c_index > 0) {
 			c_widget[count] = fields[f_name_f]['widget'];
 			c_field_name[count] = fields[f_name_f]['field_name'];
 			
-			
-			if(c_settings[count] != null  && c_settings[count]!="" && c_settings[count] != 'null' && c_type[count] != 'region_separator_mode'){
+
+			if (c_settings[count] != null && c_settings[count] != "" && c_settings[count] != 'null' && c_type[count] != 'region_separator_mode') {
 				var can_view = false;
 				var per_settings = JSON.parse(c_settings[count]);
-				if(per_settings['enforce_permissions'] != null && per_settings['enforce_permissions'] == 1) {
-					for(var _l in per_settings.permissions) {
-						for(_k in roles) {
-							if(_l == _k) {
+				if (per_settings['enforce_permissions'] != null && per_settings['enforce_permissions'] == 1) {
+					for (var _l in per_settings.permissions) {
+						for (_k in roles) {
+							if (_l == _k) {
 								var stringifyObj = JSON.stringify(per_settings.permissions[_l]);
-								if(stringifyObj.indexOf('view') >= 0 || per_settings.permissions[_l]["all_permissions"]) {
+								if (stringifyObj.indexOf('view') >= 0 || per_settings.permissions[_l]["all_permissions"]) {
 									can_view = true;
 								}
 
@@ -232,63 +262,64 @@ if(c_index > 0) {
 						}
 					}
 				} else {
+				
 					can_view = true;
 				}
-				
-				if(!can_view) {
+
+				if (!can_view) {
 					continue;
 				}
-			}				
+			}
 
 			//Content
 			c_content[count] = fieldVal;
 			var node_table = db_display.execute('SELECT * FROM node WHERE nid=' + win4.nid);
-			if(node_table.rowCount > 0) {
+			if (node_table.rowCount > 0) {
 				var no_data_fields = node_table.fieldByName('no_data_fields');
-				if (isJsonString()){
+				if (isJsonString()) {
 					no_data_fields = JSON.parse(no_data_fields);
-					for(var key in no_data_fields) {
-						if(no_data_fields.hasOwnProperty(key)) {
+					for (var key in no_data_fields) {
+						if (no_data_fields.hasOwnProperty(key)) {
 							no_data_fieldsArr.push(key);
 						}
 					}
-				}
-				else{
+				} else {
 					no_data_fieldsArr.push(key);
 				}
 			}
 
-			if(in_array(c_field_name[count], no_data_fieldsArr) && c_settings[count].required_no_data_checkbox!=null && c_settings[count].required_no_data_checkbox==1){
-				if(fields[f_name_f]['required']){
+			if (in_array(c_field_name[count], no_data_fieldsArr) && c_settings[count].required_no_data_checkbox != null && c_settings[count].required_no_data_checkbox == 1) {
+				if (fields[f_name_f]['required']) {
 					c_content[count] = 'No Data'
-				}else{
+				} else {
 					c_content[count] = 'Not Applicable'
 				}
-				
-			}	
+
+			}
 			var loop_times = 1;
 			is_array = false;
 			//Check if it is an array, token = 7411317618171051229
-			if(((c_content[count] == 7411317618171051229) || (c_content[count] == '7411317618171051229')) && c_type[count] != 'image') {
+			if (((c_content[count] == 7411317618171051229) || (c_content[count] == '7411317618171051229')) && c_type[count] != 'image') {
 				//var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = '+win4.nid+' AND field_name = \''+f_name_f+'\' ');
-				var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win4.nid + ' AND field_name = \'' + f_name_f + '\'  ');
+				var array_cont = db_display.execute('SELECT encoded_array,field_name FROM array_base WHERE node_id = ' + win4.nid + ' AND field_name = \'' + f_name_f + '\'  ');
 
 				Ti.API.info(array_cont.rowCount);
-				Ti.API.info('SELECT encoded_array FROM array_base WHERE node_id = ' + win4.nid + ' AND field_name = \'' + f_name_f + '\' ');
+				Ti.API.info('SELECT encoded_array,field_name FROM array_base WHERE node_id = ' + win4.nid + ' AND field_name = \'' + f_name_f + '\' ');
 
-				while(array_cont.isValidRow()) {
+				while (array_cont.isValidRow()) {
 					var decoded = array_cont.fieldByName('encoded_array');
-
-					if(decoded != null && decoded != 'undefined' && decoded != ''){
+                    var field_name = array_cont.fieldByName('field_name');
+                    
+					Ti.API.info('-------------------------------------------------------------------------------------->>>> Decoded array is equals to: ' + decoded);
+					if (decoded != null && decoded != 'undefined' && decoded != '') {
 						//Decode the stored array:
 						decoded = Base64.decode(decoded);
-						//Ti.API.info('------------->>>> Decoded array is equals to: ' + decoded);
+						Ti.API.info('1-------------------------------------------------------------------------------------->>>> Decoded array is equals to: ' + decoded);
 					}
 					array_cont.next();
 				}
 				decoded = decoded.toString();
-
-				// Token that splits each element contained into the array: 'j8Oc2s1E'
+				// Token that splits each element contained into the array: 'j8Oc2s1E'						
 				var decoded_values = decoded.split("j8Oc2s1E");
 				loop_times = decoded_values.length;
 				is_array = true;
@@ -297,37 +328,38 @@ if(c_index > 0) {
 				keep_sett = c_settings[count];
 				keep_widget = c_widget[count];
 				keep_name = c_field_name[count];
+				
 				//Test echo
 				//for(var tili in decoded_values) {
-					//Ti.API.info(tili + ' value is equals to: ' + decoded_values[tili]);
+				//Ti.API.info(tili + ' value is equals to: ' + decoded_values[tili]);
 				//}
 
 			}
 
-			while(loop_times >= 1) {
-				if(is_array) {
-					c_content[count] = decoded_values[loop_times - 1];
-					c_type[count] = keep_type;
+			while (loop_times >= 1) {
+				if (is_array) {
+					c_content[count] = decoded_values[loop_times-1];
+					c_type[count] = keep_type; 
 					c_label[count] = keep_label;
 					c_settings[count] = keep_sett;
 					c_widget[count] = keep_widget;
 					c_field_name[count] = keep_name;
 
-					Ti.API.info('For type: ' + c_type[count] + ' is associated ' + c_content[count]);
+					Ti.API.info('For type: ' + c_type[count] + ' is associated ' + c_content[count] + 'having label' + c_label[count]);
 				}
 				loop_times--;
 
-				if ( c_type[count] != 'region_separator_mode' &&  c_type[count] != 'calculation_field'){
-					if (( (c_content[count] == "") || (c_content[count] == "null")  || (c_content[count] == null) ) ) {
+				if (c_type[count] != 'region_separator_mode' && c_type[count] != 'calculation_field') {
+					if (((c_content[count] == "") || (c_content[count] == "null") || (c_content[count] == null) )) {
 						continue;
 					}
 				}
 
 				//Treat regions
-				if((c_settings[count] != null) && (c_settings[count] != 'null') && (c_settings[count] != undefined) && (c_settings[count] != 'undefined') && (c_settings[count] != '')) {
+				if ((c_settings[count] != null) && (c_settings[count] != 'null') && (c_settings[count] != undefined) && (c_settings[count] != 'undefined') && (c_settings[count] != '')) {
 					Ti.API.info('Settings: ' + c_settings[count]);
 					var settings = JSON.parse(c_settings[count]);
-					if(show_region[settings.region]) {
+					if (show_region[settings.region]) {
 						show_region[settings.region] = true;
 						Ti.API.info('Region added : ' + settings.region);
 					} else {
@@ -335,8 +367,9 @@ if(c_index > 0) {
 					}
 				}
 
-				Ti.API.info('**FIELD: '+c_type[count]+' VALUE: '+c_content[count]);
-				switch(c_type[count]){
+				Ti.API.info('**FIELD: ' + c_type[count] + ' VALUE: ' + c_content[count]);
+				
+				switch(c_type[count]) {
 					//Treatment follows the same for text or text_long
 					case 'text':
 					case 'location':
@@ -349,17 +382,17 @@ if(c_index > 0) {
 							touchEnabled : false,
 							field : true
 						});
-						if(c_type[count]=='location'){
+						if (c_type[count] == 'location') {
 							var locVal = c_field_name[count];
-							locVal = (locVal.lastIndexOf('___')!=-1)?locVal.substr(locVal.lastIndexOf('___')+3,locVal.length):'';
-							locVal = (locVal!='')?locVal.charAt(0).toUpperCase() + locVal.slice(1):''
-							label[count].text = c_label[count] +" " + locVal;
+							locVal = (locVal.lastIndexOf('___') != -1) ? locVal.substr(locVal.lastIndexOf('___') + 3, locVal.length) : '';
+							locVal = (locVal != '') ? locVal.charAt(0).toUpperCase() + locVal.slice(1) : ''
+							label[count].text = c_label[count] + " " + locVal;
 						}
 
 						var openDescWin = false;
 						var aux_text_desc = c_content[count];
 
-						if(c_content[count].length > 45) {
+						if (c_content[count].length > 45) {
 							c_content[count] = c_content[count].substring(0, 45);
 							c_content[count] = c_content[count] + "...";
 							openDescWin = true;
@@ -378,7 +411,7 @@ if(c_index > 0) {
 
 						content[count].addEventListener('click', function(e) {
 							highlightMe(e.source.id);
-							if(e.source.open) {
+							if (e.source.open) {
 								openBigText(e.source.w_content);
 							}
 						});
@@ -413,7 +446,7 @@ if(c_index > 0) {
 
 						content[count].text = "" + c_content[count];
 						count++;
-					break;
+						break;
 
 					//Refers to some object:
 					case 'omadi_reference':
@@ -424,71 +457,71 @@ if(c_index > 0) {
 						//Define available tables:
 						// var tables_array = new Array();
 						// for(var i in json.reference_types) {
-							// tables_array.push(json.reference_types[i]);
+						// tables_array.push(json.reference_types[i]);
 						// }
-// 
+						//
 						// var count_tables = 0;
 						// var tables_query = "";
 						// for(var i in tables_array) {
-							// if(tables_array.length - 1 == count_tables) {
-								// tables_query += tables_array[i];
-							// } else {
-								// tables_query += tables_array[i] + ", ";
-							// }
+						// if(tables_array.length - 1 == count_tables) {
+						// tables_query += tables_array[i];
+						// } else {
+						// tables_query += tables_array[i] + ", ";
+						// }
 						// }
 						//Ti.API.info('TABLES: ' + tables_query);
 						try {
 
 							// var auxA = db_display.execute('SELECT * FROM ' + tables_query + ' WHERE nid=' + c_content[count]);
 							// if(auxA.rowCount === 0) {
-								// bug[bug.length] = c_content[count];
+							// bug[bug.length] = c_content[count];
 							// } else {
-								var auxRes = db_display.execute('SELECT DISTINCT node.title, node.table_name FROM node INNER JOIN account ON node.nid=' + c_content[count]);
-								ref_name = auxRes.fieldByName("title");
-								var tableName = auxRes.fieldByName("table_name");
-								auxRes.close();
+							var auxRes = db_display.execute('SELECT DISTINCT node.title, node.table_name FROM node INNER JOIN account ON node.nid=' + c_content[count]);
+							ref_name = auxRes.fieldByName("title");
+							var tableName = auxRes.fieldByName("table_name");
+							auxRes.close();
 
-								label[count] = Ti.UI.createLabel({
-									text : c_label[count],
-									width : "33%",
-									textAlign : 'left',
-									left : 5,
-									touchEnabled : false,
-									field : true
+							label[count] = Ti.UI.createLabel({
+								text : c_label[count],
+								width : "33%",
+								textAlign : 'left',
+								left : 5,
+								touchEnabled : false,
+								field : true
+							});
+
+							content[count] = Ti.UI.createLabel({
+								text : "" + ref_name,
+								width : "60%",
+								height : "100%",
+								textAlign : 'left',
+								left : "40%",
+								id : count,
+								nid : c_content[count],
+								type : tableName
+							});
+
+							// When account is clicked opens a modal window to show off the content of the specific touched
+							// object.
+
+							content[count].addEventListener('click', function(e) {
+								highlightMe(e.source.id);
+								var newWin = Ti.UI.createWindow({
+									fullscreen : false,
+									navBarHidden : true,
+									title : 'Account',
+									url : "individual_object.js"
 								});
 
-								content[count] = Ti.UI.createLabel({
-									text : "" + ref_name,
-									width : "60%",
-									height : "100%",
-									textAlign : 'left',
-									left : "40%",
-									id : count,
-									nid : c_content[count],
-									type: tableName
-								});
-
-								// When account is clicked opens a modal window to show off the content of the specific touched
-								// object.
-
-								content[count].addEventListener('click', function(e) {
-									highlightMe(e.source.id);
-									var newWin = Ti.UI.createWindow({
-										fullscreen : false,
-										navBarHidden : true,
-										title : 'Account',
-										url : "individual_object.js"
-									});
-
-									newWin.nameSelected = e.source.text;
-									newWin.type = e.source.type;
-									newWin.nid = e.source.nid;
-									newWin.open();
-								});
-								count++;
+								newWin.nameSelected = e.source.text;
+								newWin.type = e.source.type;
+								newWin.nid = e.source.nid;
+								newWin.open();
+							});
+							count++;
 							//}
 						} catch(e) {
-							Ti.API.info('!! ERROR !! '+e);
+							Ti.API.info('!! ERROR !! ' + e);
 							bug[bug.length] = c_content[count];
 						}
 						break;
@@ -558,15 +591,16 @@ if(c_index > 0) {
 
 					//Link to taxonomy table:
 					case 'taxonomy_term_reference':
+
 						Ti.API.info('Contains: ' + c_content[count]);
-						if(c_content[count] == null || c_content[count] == 'undefined' || c_content[count] == ''){
+						if (c_content[count] == null || c_content[count] == 'undefined' || c_content[count] == '') {
 							break;
 						}
 						var ref_name = "";
-						if(c_content[count]) {
+						if (c_content[count]) {
 							var auxRes = db_display.execute('SELECT * FROM term_data WHERE tid=' + c_content[count]);
 							Ti.API.info('We got : ' + auxRes.rowCount + ' lines');
-							if(auxRes.rowCount == 0) {
+							if (auxRes.rowCount == 0) {
 								ref_name = "Invalid term";
 							} else {
 								ref_name = auxRes.fieldByName("name");
@@ -603,7 +637,7 @@ if(c_index > 0) {
 					case 'user_reference':
 						var auxRes = db_display.execute('SELECT realname FROM user WHERE uid = ' + c_content[count]);
 						var ref_name = "";
-						if(auxRes.isValidRow())
+						if (auxRes.isValidRow())
 							ref_name = auxRes.fieldByName("realname");
 						else
 							ref_name = "Not defined";
@@ -661,7 +695,7 @@ if(c_index > 0) {
 						});
 						count++;
 
-					break;
+						break;
 
 					case 'auto_increment':
 						label[count] = Ti.UI.createLabel({
@@ -672,16 +706,16 @@ if(c_index > 0) {
 							touchEnabled : false,
 							field : true
 						});
-						
-						var settings 	= JSON.parse(c_settings[count]);
+
+						var settings = JSON.parse(c_settings[count]);
 						//alert(c_settings[count]);
 						var prefix = "";
-						if (settings.prefix){
+						if (settings.prefix) {
 							prefix = settings.prefix;
 						}
-						
+
 						content[count] = Ti.UI.createLabel({
-							text : prefix+"" + c_content[count],
+							text : prefix + "" + c_content[count],
 							width : "60%",
 							height : "100%",
 							textAlign : 'left',
@@ -693,8 +727,7 @@ if(c_index > 0) {
 							highlightMe(e.source.id);
 						});
 						count++;
-					break;
-
+						break;
 
 					//Formats as integer
 					case 'number_integer':
@@ -787,7 +820,7 @@ if(c_index > 0) {
 						});
 
 						content[count] = Ti.UI.createLabel({
-							text : (c_content[count]==0 || c_content[count]=="0" || c_content[count]==false || c_content[count]=="false")?"No":"Yes",
+							text : (c_content[count] == 0 || c_content[count] == "0" || c_content[count] == false || c_content[count] == "false") ? "No" : "Yes",
 							width : "60%",
 							height : "100%",
 							textAlign : 'left',
@@ -801,7 +834,7 @@ if(c_index > 0) {
 						count++;
 
 						break;
-						
+
 					//Prints out content
 					case 'license_plate':
 						label[count] = Ti.UI.createLabel({
@@ -831,7 +864,7 @@ if(c_index > 0) {
 					case 'vehicle_fields':
 						var fi_name = c_field_name[count]
 						fi_name = fi_name.split('___');
-						if(fi_name[1]) {
+						if (fi_name[1]) {
 							var i_name = fi_name[1];
 						} else {
 							var i_name = fi_name[0];
@@ -880,9 +913,289 @@ if(c_index > 0) {
 						});
 						count++;
 						break;
+						
+
+					case 'file':
+					
+					if(file_upload_boolean==true)
+					{
+						 if (c_label[count] == 'File Upload') {
+						 	file_upload_boolean =false;
+								array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win4.nid + ' AND field_name = "file_upload___fid"');
+								//Decode the stored array:
+								var decoded = array_cont.fieldByName('encoded_array');
+								
+								decoded = Base64.decode(decoded);
+								decoded = decoded.toString();
+								decodedValues = decoded.split("j8Oc2s1E");
+								
+								for(i=(decodedValues.length)-1;i>=0;i--)
+								{
+								file_id.push(decodedValues[i]);
+								}
+								
+							}
+						}
+						if(upload_boolean==true)
+					{
+						 if (c_label[count] == 'Upload #2') {
+						 	upload_boolean =false;
+								array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win4.nid + ' AND field_name = "upload___fid"');
+								//Decode the stored array:
+								var decoded = array_cont.fieldByName('encoded_array');
+								decoded = Base64.decode(decoded);
+								decoded = decoded.toString() .replace("(", "") ;
+								decodedValues = decoded.split("j8Oc2s1E");
+								//alert(decodedValues.length)
+								for(i=(decodedValues.length)-1;i>=0;i--)
+								{
+								file_id.push(decodedValues[i]);
+								}
+											
+							}
+						}
+							if(data_boolean==true)
+					{
+						 if (c_label[count] == 'Data File Upload') {
+						 	data_boolean =false;
+								array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win4.nid + ' AND field_name = "data_file_upload___fid"');
+								//Decode the stored array:
+								var decoded = array_cont.fieldByName('encoded_array');
+								decoded = Base64.decode(decoded);
+								decoded = decoded.toString() .replace("(", "") ;
+								decodedValues = decoded.split("j8Oc2s1E");
+								for(i=(decodedValues.length)-1;i>=0;i--)
+								{
+								file_id.push(decodedValues[i]);
+								}
+												
+							}
+						}
+
+					
+					if(field_name=='data_file_upload___fid'||field_name=='file_upload___fid'||field_name=='upload___fid')
+					{
+						
+					}
+					else{
+						
+					if (c_label[count - 1]=='File Upload'&& c_label[count]=='File Upload')
+					{	
+						height_label=label_file[i-1].top+25+5
+						label_file[i] = Ti.UI.createLabel({
+							text : "" + c_content[count],
+							width : "70%",
+							height : 25,
+							font: {fontSize: 18,  fontWeight: "bold"},
+							color:'blue',
+							top:height_label,
+							textAlign : 'left',
+							left : "05%",
+							id : count,
+							upload_id:file_id[x]
+							
+						});
+                        
+					 	content[count-1].add(label_file[i]);
+						 content[count-1].height =label_file[i].height+label_file[i].top ;
+						 if (PLATFORM == 'android'){
+							
+						}
+						else{
+						 label_file[i].addEventListener('click', function(e) {
+							//alert(e.source.upload_id)
+							var win =Ti.UI.createWindow();
+							//alert(win4.picked+'/sync/file/'+win4.nid+'/'+e.source.upload_id)
+							var web_view =Ti.UI.createWebView({url:win4.picked+'/sync/file/'+win4.nid+'/'+e.source.upload_id})
+						
+							
+							var back = Ti.UI.createButton({
+								title : 'Back',
+								bottom:0,
+								right:0,
+								style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+							});
+							back.addEventListener('click', function() {
+								win.close();
+							}); 
+                            web_view.add(back);
+							win.add(web_view);
+							win.open();
+						});	
+}
+						 i++;
+						 x++;
+                         
+					}
+					else if(c_label[count-1]=='Upload #2' && c_label[count]=='Upload #2')
+					{	
+						
+						height_label=label_file[i-1].top+25+5
+						label_file[i] = Ti.UI.createLabel({
+							text : "" + c_content[count],
+							width : "70%",
+							height : 25,
+							font: {fontSize: 18,  fontWeight: "bold"},
+							color:'blue',
+							top:height_label,
+							textAlign : 'left',
+							left : "05%",
+							id : count,
+							upload_id:file_id[x]
+						   
+
+						});
+                        
+					 	content[count-1].add(label_file[i]);
+						 content[count-1].height =label_file[i].height+label_file[i].top ;
+						 if (PLATFORM == 'android'){
+							
+						}
+						else{
+						 label_file[i].addEventListener('click', function(e) {
+							//alert(e.source.upload_id)
+							var win =Ti.UI.createWindow();
+							
+							var web_view =Ti.UI.createWebView({url:win4.picked+'/sync/file/'+win4.nid+'/'+e.source.upload_id})
+						
+							
+							var back = Ti.UI.createButton({
+								title : 'Back',
+								bottom:0,
+								right:0,
+								style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+							});
+							back.addEventListener('click', function() {
+								win.close();
+							}); 
+                            web_view.add(back);
+							win.add(web_view);
+							win.open();
+						});	
+						}					
+						 i++;
+						 x++;
+						 
+						}			
+					else if(c_label[count-1]=='Data File Upload' && c_label[count]=='Data File Upload')
+					{
+						
+						height_label=label_file[i-1].top+25+5
+						label_file[i] = Ti.UI.createLabel({
+							text : "" + c_content[count],
+							width : "70%",
+							height : 25,
+							top:height_label,
+							color:'blue',
+							font: {fontSize: 18,  fontWeight: "bold"},
+							textAlign : 'left',
+							left : "05%",
+							id : count,
+							upload_id:file_id[x]
+						});
+                        
+					 	content[count-1].add(label_file[i]);
+                          if (PLATFORM == 'android'){
+							
+						  }
+						  else{
+						  	
+						  
+						 label_file[i].addEventListener('click', function(e) {
+							//alert(e.source.upload_id)
+							var win =Ti.UI.createWindow();
+							
+							var web_view =Ti.UI.createWebView({url:win4.picked+'/sync/file/'+win4.nid+'/'+e.source.upload_id})
+						
+							
+							var back = Ti.UI.createButton({
+								title : 'Back',
+								bottom:0,
+								right:0,
+								style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+							});
+							back.addEventListener('click', function() {
+								win.close();
+							}); 
+                            web_view.add(back);
+							win.add(web_view);
+							win.open();
+						});
+						}					
+						 i++;
+						 x++;
+						 
+					}
+						else{
+							
+						  label[count] = Ti.UI.createLabel({
+							text : c_label[count],
+							width : "33%",
+							textAlign : 'left',
+							left : 3,
+							touchEnabled : false,
+							field : true
+						});
+						content[count] = Ti.UI.createView({
+							width : "100%",
+							height :30,
+							textAlign : 'left',
+							left : "40%",
+							id : count
+						});	
+							label_file[i] = Ti.UI.createLabel({
+							text : "" + c_content[count], 
+							width : "70%",
+							height : 25,
+							color:'blue',
+							font: {fontSize: 18,  fontWeight: "bold"},
+
+							top:height_label,
+							textAlign : 'left',
+							left : "05%",
+							id : count,
+							upload_id:file_id[x]
+
+						});
+						label_file[i].top=5;
+						content[count].add(label_file[i]);
+						//Not yet developed for android devices 
+						//one can not view files on web view 
+						//Because viewing files are not supported in android devices.
+						if (PLATFORM == 'android'){
+							
+						}
+						else{
+						label_file[i].addEventListener('click', function(e) {
+							//alert(e.source.upload_id)
+							var win =Ti.UI.createWindow();
+							
+							var web_view =Ti.UI.createWebView({url:win4.picked+'/sync/file/'+win4.nid+'/'+e.source.upload_id})
+						
+							
+							var back = Ti.UI.createButton({
+								title : 'Back',
+								bottom:0,
+								right:0,
+								style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+							});
+							back.addEventListener('click', function() {
+								win.close();
+							}); 
+                            web_view.add(back);
+							win.add(web_view);
+							win.open();
+						});	
+						}					
+                    	i++;
+						x++;
+						count++;
+							}
+							}
+						break;
 					case 'image':
 						var settings = JSON.parse(c_settings[count]);
-						if(settings.cardinality > 1 || settings.cardinality < 0) {
+						if (settings.cardinality > 1 || settings.cardinality < 0) {
 							isUpdated = [];
 							content[count] = Ti.UI.createScrollView({
 								field_name : c_label[count],
@@ -896,12 +1209,16 @@ if(c_index > 0) {
 							});
 							var decodedValues = [];
 							var array_cont;
-							if(results.fieldByName(c_field_name[count] + '___file_id') == '7411317618171051229' || results.fieldByName(c_field_name[count] + '___file_id') == 7411317618171051229) {
+				
+							if (results.fieldByName(c_field_name[count] + '___file_id') == '7411317618171051229' || results.fieldByName(c_field_name[count] + '___file_id') == 7411317618171051229) {
 								array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win4.nid + ' AND field_name = \'' + c_field_name[count] + '___file_id\'');
+							
 							} else {
+								
 								array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win4.nid + ' AND field_name = \'' + c_field_name[count] + '\'');
 							}
-							if(array_cont.rowCount > 0) {
+							if (array_cont.rowCount > 0) {
+								
 								//Decode the stored array:
 								var decoded = array_cont.fieldByName('encoded_array');
 								decoded = Base64.decode(decoded);
@@ -910,19 +1227,19 @@ if(c_index > 0) {
 							}
 							val = db_display.execute('SELECT * FROM file_upload_queue WHERE nid=' + win4.nid + ' AND field_name ="' + c_field_name[count] + '";');
 
-							if(val.rowCount > 0) {
-								while(val.isValidRow()) {
+							if (val.rowCount > 0) {
+								while (val.isValidRow()) {
 									isUpdated[val.fieldByName('delta')] = true;
 									decodedValues[val.fieldByName('delta')] = Ti.Utils.base64decode(val.fieldByName('file_data'));
 									val.next();
 								}
 							}
 							var arrImages = [];
-							for( img = 0; img < decodedValues.length; img++) {
+							for ( img = 0; img < decodedValues.length; img++) {
 								var updated = false
-								if((img < decodedValues.length) && (decodedValues[img] != "") && (decodedValues[img] != null) && decodedValues[img] != 'null' && decodedValues[img] != 'undefined') {
+								if ((img < decodedValues.length) && (decodedValues[img] != "") && (decodedValues[img] != null) && decodedValues[img] != 'null' && decodedValues[img] != 'undefined') {
 									var vl_to_field = decodedValues[img];
-									if(isUpdated[img] == true) {
+									if (isUpdated[img] == true) {
 										updated = isUpdated[img];
 									}
 								} else {
@@ -933,31 +1250,31 @@ if(c_index > 0) {
 							content[count].arrImages = arrImages;
 						} else {
 							isUpdated = false;
-							if(results.rowCount > 0) {
+							if (results.rowCount > 0) {
 								val = results.fieldByName(c_field_name[count] + '___file_id');
-								if(val == 'null' || val == null || val == 'undefined' || val == '') {
+								if (val == 'null' || val == null || val == 'undefined' || val == '') {
 									val = results.fieldByName(c_field_name[count]);
 								}
 							}
 							valUp = db_display.execute('SELECT * FROM file_upload_queue WHERE nid=' + win4.nid + ' AND field_name ="' + c_field_name[count] + '";');
 
-							if(valUp.rowCount > 0) {
+							if (valUp.rowCount > 0) {
 								isUpdated = true;
 								val = Ti.Utils.base64decode(valUp.fieldByName('file_data'));
 							}
-							if((val == 'null' || val == 'undefined' || val == '') && valUp.rowCount == 0) {
+							if ((val == 'null' || val == 'undefined' || val == '') && valUp.rowCount == 0) {
 								break;
 							}
-							
-						content[count] = Ti.UI.createImageView({
-							label 			: c_label[count],
-							height			: '100',
-							width			: '100',
-							top				:5,
-							bottom			:5,
-							size: {
-									height		: '100',
-									width		: '100'
+
+							content[count] = Ti.UI.createImageView({
+								label : c_label[count],
+								height : '100',
+								width : '100',
+								top : 5,
+								bottom : 5,
+								size : {
+									height : '100',
+									width : '100'
 								},
 								image : '../images/default.png',
 								imageVal : val,
@@ -967,7 +1284,7 @@ if(c_index > 0) {
 								isUpdated : isUpdated
 							});
 
-							if(isUpdated == true) {
+							if (isUpdated == true) {
 								content[count].image = val;
 								content[count].bigImg = val;
 								contentImage.isImage = true;
@@ -986,77 +1303,77 @@ if(c_index > 0) {
 							field : true
 						});
 						count++;
-					break;
-					
+						break;
+
 					case 'calculation_field':
 						label[count] = Ti.UI.createLabel({
-							text: c_label[count],
-							width:  "100%",
-							textAlign: 'left',
-							left: 5,
-							touchEnabled: false,
-							field: true,
-							top: 0,
-							height: 40,
-							wordWrap: false,
-							ellipsize: true
+							text : c_label[count],
+							width : "100%",
+							textAlign : 'left',
+							left : 5,
+							touchEnabled : false,
+							field : true,
+							top : 0,
+							height : 40,
+							wordWrap : false,
+							ellipsize : true
 						});
-						
-						var settings 		= JSON.parse(c_settings[count]); 					
+
+						var settings = JSON.parse(c_settings[count]);
 						content[count] = Ti.UI.createView({
-								left			: '3%',
-								right			: '3%',
-								field_type		: c_type[count],
-								field_name		: c_field_name[count],
-								cardinality		: settings.cardinality,
-								reffer_index	: count,
-								settings		: settings,
-								layout 			: 'vertical'
+							left : '3%',
+							right : '3%',
+							field_type : c_type[count],
+							field_name : c_field_name[count],
+							cardinality : settings.cardinality,
+							reffer_index : count,
+							settings : settings,
+							layout : 'vertical'
 						});
 						count++;
-					break;
+						break;
 					case 'rules_field':
-					
-						if(c_content[count]!=false && c_content[count]!="false" && c_content[count]!=0 && JSON.parse(c_content[count]).length>0){
+
+						if (c_content[count] != false && c_content[count] != "false" && c_content[count] != 0 && JSON.parse(c_content[count]).length > 0) {
 							label[count] = Ti.UI.createLabel({
-								text: c_label[count],
-								width:  "100%",
-								textAlign: 'left',
-								left: 5,
-								touchEnabled: false,
-								field: true,
-								top: 0,
-								height: 40,
-								wordWrap: false,
-								ellipsize: true
+								text : c_label[count],
+								width : "100%",
+								textAlign : 'left',
+								left : 5,
+								touchEnabled : false,
+								field : true,
+								top : 0,
+								height : 40,
+								wordWrap : false,
+								ellipsize : true
 							});
 							content[count] = Ti.UI.createView({
-								width			: Ti.Platform.displayCaps.platformWidth - 30,
-								field_type		: c_type[count],
-								field_name		: c_field_name[count],
-								cardinality		: settings.cardinality,
-								reffer_index	: count,
-								settings		: settings,
-								value			: JSON.parse(c_content[count]),
-								layout 			: 'vertical',
-								widget			: JSON.parse(c_widget[count])
+								width : Ti.Platform.displayCaps.platformWidth - 30,
+								field_type : c_type[count],
+								field_name : c_field_name[count],
+								cardinality : settings.cardinality,
+								reffer_index : count,
+								settings : settings,
+								value : JSON.parse(c_content[count]),
+								layout : 'vertical',
+								widget : JSON.parse(c_widget[count])
 							});
 							count++;
 						}
-					break;
-					
+						break;
+
 				}
 			}
 		}
-	}
+		}
 
 	if(bug.length === 0) {
-		Ti.API.info("Items (count): " + count);
 		var index_fields = 0
 		for(var i = 0; i < count; i++) {
 			//Normal fields
+			//alert(label[i].text+'  '+label[i].is_region+'  '+label[i].field)
 			if((label[i].is_region !== true) && (label[i].field === true)) {
-
+           //alert(label[i].text+'  '+label[i].is_region+'  '+label[i].field)
 				cell[i] = Ti.UI.createView({
 					height : heightValue,
 					//	top : (heightValue+2)*index_fields,
@@ -1065,7 +1382,7 @@ if(c_index > 0) {
 
 				label[i].color = "#4C5A88";
 				content[i].color = "#000";
-
+    
 				cell[i].add(label[i]);
 				if(c_type[i] == 'image') {
 					if(content[i].cardinality > 1 || content[i].cardinality < 0) {
@@ -1074,14 +1391,27 @@ if(c_index > 0) {
 						}
 					}
 					cell[i].height = '110';
-				}else if(c_type[i]=='calculation_field'){
+				}
+				  else if(c_type[i]=='file') {
+					   if (!(content[i].height < heightValue)){
+						cell[i].layout = 'vertical';
+						cell[i].height = content[i].height+ heightValue;
+						
+					}else{
+						label[i].width = '33%';
+						label[i].height = '60'
+						content[i].left = '40%'
+					}
+
+        				   }
+				else if(c_type[i]=='calculation_field'){
 					if(content[i].settings.hidden!=null && content[i].settings.hidden==1){
 						continue;
 					}
 					createCalculationTableFormat(content[i] , db_display, content);
 					if (!(content[i].height < heightValue)){
 						cell[i].layout = 'vertical';
-						cell[i].height = content[i].height+ heightValue;
+						cell[i].height = content[i].height;
 					}else{
 						label[i].width = '33%';
 						label[i].height = '60'
@@ -1472,9 +1802,9 @@ function createCalculationTableFormat(content , db_display, contentArr) {
 			ellipsize 		: true,
 			backgroundColor : '#FFF'
 		});
-		row.add(row_label);
-		row.add(value);
-		content.add(row);
+	//	row.add(row_label);
+		//row.add(value);
+	//	content.add(row);
 		heightView += heightCellView + 1;
 
 	}else{
