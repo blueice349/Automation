@@ -467,7 +467,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 	 */
 
 	for (var x in content) {
-
+  
 		try {
 			Ti.API.info(label[x].text + ' is required: ' + content[x].required + ' = ' + content[x].value);
 		} catch(e) {
@@ -495,6 +495,21 @@ function keep_info(_flag_info, pass_it, new_time) {
 		}
 
 		
+
+		if (content[x].field_type == 'number_integer' || content[x].field_type == 'number_decimal') {
+			var minRange = (content[x].field_type == 'number_integer')?-2147483648:-99999999;
+			var maxRange = (content[x].field_type == 'number_integer')?2147483647:99999999;
+
+			if (content[x].value != null && content[x].value != "") {
+				if (content[x].value >= maxRange) {
+					content[x].value = null;
+					alert("The Maximum for this field is"+maxRange)
+				} else if (content[x].value <= minRange) {
+					content[x].value = null;
+					alert("The Minimum for this field is "+minRange)
+				}
+			}
+		}
 
 		// Regular expression for phone
 		if (content[x].field_type == 'phone') {
@@ -2188,7 +2203,9 @@ create_or_edit_node.loadUI = function() {
 			fields_result = db_display.execute('SELECT * FROM fields WHERE bundle = "' + win.type + '" AND region = "' + regionName + '" ORDER BY weight, id ASC');
 
 			if (win.mode == 1) {
+		
 				content_fields = db_display.execute('SELECT * FROM ' + win.type + ' WHERE nid = "' + win.nid + '" ');
+			//alert(content_fields.fieldByName)
 			}
 
 			var top = 10;
@@ -4162,6 +4179,9 @@ create_or_edit_node.loadUI = function() {
 							}
 							var _min = null;
 							var _max = null;
+							
+							var minRange = (field_arr[index_label][index_size].type == 'number_integer')?-2147483648:-99999999;
+							var maxRange = (field_arr[index_label][index_size].type == 'number_integer')?2147483647:99999999;
 
 							if (settings.min && settings.min != null && settings.min != "null") {
 								_min = settings.min
@@ -4173,7 +4193,7 @@ create_or_edit_node.loadUI = function() {
 
 							Ti.API.info('********************** Field: ' + field_arr[index_label][index_size].label + ",  Cardinality: " + settings.cardinality);
 							if (settings.cardinality > 1) {
-								Ti.API.info('Value: ' + field_arr[index_label][index_size].actual_value);
+								
 								if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
 									var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
 
@@ -4261,6 +4281,13 @@ create_or_edit_node.loadUI = function() {
 
 									content[count].addEventListener('blur', function(e) {
 										Ti.API.info(e.source.value + ' or ' + e.value + ' Field number ==> min: ' + e.source.my_min + ' max: ' + e.source.my_max);
+										if (e.source.value <= (minRange)) {
+											alert("The minimum for this field is " + minRange);
+											e.source.value = null;
+										} else if (e.source.value >= (maxRange)) {
+											alert("The maximum for this field is " + maxRange);
+											e.source.value = null;
+										}
 										if (e.source.value != null && e.source.value != "") {
 											if (e.source.my_max != null && e.source.my_min != null) {
 												if (parseFloat(e.source.value) < parseFloat(e.source.my_min)) {
@@ -4351,16 +4378,16 @@ create_or_edit_node.loadUI = function() {
 
 								content[count].addEventListener('blur', function(e) {
 									Ti.API.info(e.source.value + ' or ' + e.value + ' Field number ==> min: ' + e.source.my_min + ' max: ' + e.source.my_max);
-									if(e.source.value <=(-2147483648) )
-									{
-										alert("The minimum for this field is -2147483647");
-										e.source.value =null;
+
+									if (e.source.value <= (minRange)) {
+										alert("The minimum for this field is " + minRange);
+										e.source.value = null;
+									} else if (e.source.value >= (maxRange)) {
+										alert("The maximum for this field is " + maxRange);
+										e.source.value = null;
 									}
-									else if(e.source.value >=(2147483647) )
-									{
-										alert("The maximum for this field is 2147483647");
-										e.source.value =null;
-									}
+
+
 									if (e.source.value != null && e.source.value != "") {
 										if (e.source.my_max != null && e.source.my_min != null) {
 											if (parseFloat(e.source.value) < parseFloat(e.source.my_min)) {
@@ -8171,8 +8198,82 @@ create_or_edit_node.loadUI = function() {
 								count++;
 							}
 							break;
+						case 'file':
+						            var settings = JSON.parse(field_arr[index_label][index_size].settings);
+							        var can_view = false;
+							        var can_edit = false;
 
-					}
+							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
+								for (var _l in settings.permissions) {
+									for (_k in roles) {
+										if (_l == _k) {
+											var stringifyObj = JSON.stringify(settings.permissions[_l]);
+											if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_edit = true;
+											}
+
+											if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+												can_view = true;
+											}
+
+										}
+									}
+								}
+							} 
+							else {
+								can_view = can_edit = true;
+							}
+
+							if (!can_view) {
+								break;
+							}
+							
+							if (settings.cardinality >= -1) {
+								
+								label[count] = Ti.UI.createLabel({
+									text : field_arr[index_label][index_size].label,
+									color : _lb_color,
+									font : {
+										fontSize : fieldFontSize,
+										fontWeight : 'bold'
+									},
+									textAlign : 'left',
+									width : Ti.Platform.displayCaps.platformWidth - 30,
+									touchEnabled : false,
+									height : heightValue,
+									top : top
+								});
+								
+								regionView.add(label[count]);
+								var reffer_index = count;
+								top += heightValue;
+		
+								 content[count] = Ti.UI.createView({
+									width : Ti.Platform.displayCaps.platformWidth - 30,
+									top : top,
+									field_type : field_arr[index_label][index_size].type,
+									field_name : field_arr[index_label][index_size].field_name,
+									required : field_arr[index_label][index_size].required,
+									composed_obj : false,
+									is_title : field_arr[index_label][index_size].is_title,
+									cardinality : settings.cardinality,
+									value : field_arr[index_label][index_size].actual_value,
+									label : field_arr[index_label][index_size].label,
+									reffer_index : reffer_index,
+									settings : settings,
+									layout : 'vertical',
+									widget : JSON.parse(field_arr[index_label][index_size].widget),
+									height :  heightValue
+								})
+                                 top += heightValue;
+                                
+								regionView.add(content[count]);
+								
+								count++;
+								
+								break;	
+							}
+            }
 
 				}
 				fields_result.next();
@@ -8489,6 +8590,7 @@ function saveImageInDb(currentImageView, field_name) {
 	} else {
 		db_toSaveImage.execute('INSERT INTO file_upload_queue (nid ,timestamp, file_data , field_name, file_name, delta) VALUES (' + file_upload_nid + ',"'+ vl_to_field +'", "' + encodeImage + '", "' + field_name + '", "' + imageName + '", ' + currentImageView.private_index + ')');
 	}
+
 	db_toSaveImage.close();
 	}
 

@@ -477,9 +477,26 @@ t_terms_services_i.addEventListener('click', function(e){
 	}
 });
 
-t_terms_services_ii.addEventListener('click', function(){
-	Ti.Platform.openURL('https://omadi.com/terms.txt');
-});
+t_terms_services_ii.addEventListener('click', function() {
+	var win = Ti.UI.createWindow();
+	var web_view = Ti.UI.createWebView({
+		url : 'https://omadi.com/terms.txt'
+	})
+
+	var back = Ti.UI.createButton({
+		title : 'Back',
+		bottom : 0,
+		right : 0,
+		style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+	});
+	back.addEventListener('click', function() {
+		win.close();
+	});
+	
+	web_view.add(back);
+	win.add(web_view);
+win.open();
+}); 
 
 v_terms_services.add(s_terms_services);
 v_terms_services.add(t_terms_services_i);
