@@ -168,7 +168,7 @@ else {
 		search.blur();
 		//hides the keyboard
 	});
-
+	
 	//When the user clicks on a certain contact, it opens individual_contact.js
 	listTableView.addEventListener('click', function(e) {
 		//Hide keyboard when returning 
