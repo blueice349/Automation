@@ -1,9 +1,8 @@
-setInterval(function(){
-	Ti.API.info("SEEEEEEEEERRRRRRVVVVVIIIIIIIIICEEEE");	
-}, 5000);
+Ti.include("/lib/functions.js");
+
+movement =  require('com.omadi.gps');
 
 
-/*
 Ti.App.Properties.setString("last_alert_popup", 0);
 var time_interval_for_alerts = 120;
 
@@ -19,19 +18,7 @@ var latitude;
 var longitude;
 var accuracy;
 
-if(PLATFORM == 'android') {
-	movement.startGPSTracking();
-} else {
-	Ti.API.info('Accuracy three: ' + movement.LOCATION_ACCURACY_THREE_KILOMETERS);
-	Ti.API.info('Accuracy best: ' + movement.LOCATION_ACCURACY_BEST);
-	Ti.API.info('Accuracy navig: ' + movement.LOCATION_ACCURACY_BEST_FOR_NAVIGATION);
-
-	movement.startMovementUpdates({
-		location : true,
-		locationAccuracy : movement.LOCATION_ACCURACY_BEST_FOR_NAVIGATION
-	});
-
-}
+movement.startGPSTracking();
 
 function updateCurrentLocation(e) {
 	curr = e;
@@ -78,6 +65,20 @@ function updateCurrentLocation(e) {
 }
 
 
+//  as the destroy handler will remove the listener, only set the pause handler to remove if you need battery savings
+Ti.Android.currentActivity.addEventListener('pause', function(e) {
+	Ti.API.info("pause event received");
+});
+
+Ti.Android.currentActivity.addEventListener('destroy', function(e) {
+	Ti.API.info("destroy event received");
+});
+
+Ti.Android.currentActivity.addEventListener('resume', function(e) {
+	Ti.API.info("resume event received");
+});
+
+
 function s() {
 	if (stop === false){
 		if(PLATFORM == 'android') {
@@ -108,10 +109,13 @@ Ti.App.addEventListener('stop_gps', function(e){
 	//clearInterval(gpsInterval);
 });
 
+var domainName =  Titanium.App.Properties.getString("domainName");
+//var domainName =  "https://test1.omadi.com";
 
-Ti.App.addEventListener('upload_gps_locations', function() {
-	if (uploading === false){
-		uploading = true;
+var upload_gps_locations = function() {
+	Ti.API.info('################################## CALLED UPDATE FUNCTION ################################## '+is_GPS_uploading());
+	if (is_GPS_uploading() === false){
+		set_GPS_uploading();
 		Ti.API.info('GPS');
 		var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
 		if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
@@ -162,7 +166,7 @@ Ti.App.addEventListener('upload_gps_locations', function() {
 				objectsCheck.setTimeout(30000);
 	
 				//Opens address to retrieve contact list
-				objectsCheck.open('POST', win2.picked + '/js-location/mobile_location.json');
+				objectsCheck.open('POST', domainName + '/js-location/mobile_location.json');
 	
 				//Header parameters
 				objectsCheck.setRequestHeader("Content-Type", "application/json");
@@ -223,7 +227,7 @@ Ti.App.addEventListener('upload_gps_locations', function() {
 						Ti.API.info('Finished inserting');
 						db_coord.close();
 						Ti.App.fireEvent('refresh_UI_Alerts', {status: 'success'});
-						uploading = false;
+						unset_GPS_uploading();
 						var __timestamp  = Math.round(new Date().getTime() / 1000);
 						createNotification("Uploaded Coordinates at "+date('h:i a', Number(__timestamp)));
 					}
@@ -236,16 +240,16 @@ Ti.App.addEventListener('upload_gps_locations', function() {
 					Ti.API.info("Error found for GPS uploading ");
 					db_coord.close();
 					Ti.App.fireEvent('refresh_UI_Alerts', {status: 'fail'});
-					uploading = false;
+					unset_GPS_uploading();
 				}
 				//Sending information and try to connect
 				objectsCheck.send(json_coord);
 			} else {
-				uploading = false;
+				unset_GPS_uploading();
 				Ti.API.info('We are offline');
 			}
 		} else {
-			uploading = false;
+			unset_GPS_uploading();
 			Ti.API.info('No GPS coordinates found');
 			result.close();
 			db_coord.close();
@@ -254,22 +258,10 @@ Ti.App.addEventListener('upload_gps_locations', function() {
 	else{
 		Ti.API.info("##### There are locations being updated already #####");
 	}
-});
+};
 
-if (PLATFORM != "android"){
-	setInterval(function() {
-		Ti.App.fireEvent('upload_gps_locations');
-	}, 120000);	
-}
-else{
-	var SECONDS = 120; // every 120 seconds
-	var intent = Titanium.Android.createServiceIntent({
-	  url: 'android_gps_event.js'
-	});
-	intent.putExtra('interval', SECONDS * 1000); // Needs to be milliseconds	
-	Titanium.Android.startService(intent);
-}
+setInterval(function() {
+	upload_gps_locations();
+}, 120000);	
 
-//Ti.App.fireEvent('upload_gps_locations');
-
-*/
+uploading = false;

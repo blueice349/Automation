@@ -28,17 +28,44 @@ weekday[4]="Thursday";
 weekday[5]="Friday";
 weekday[6]="Saturday";
 
+function is_GPS_uploading(){
+	var db_coord_name = Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName() + "_GPS";
+	var _db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
+	if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
+	var resp = _db_coord.execute('SELECT * FROM gps_state WHERE rowid=1');
+	Ti.API.info('===> Is uploading GPS? '+resp.fieldByName('is_uploading'));
+	var gps_state = resp.fieldByName('is_uploading');
+	_db_coord.close();
+	return gps_state;
+	
+}
+
+function set_GPS_uploading(){
+	var db_coord_name = Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName() + "_GPS";
+	var _db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
+	if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
+	_db_coord.execute('UPDATE gps_state SET is_uploading=true WHERE rowid=1');
+	_db_coord.close();
+}
+
+function unset_GPS_uploading(){
+	var db_coord_name = Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName() + "_GPS";
+	var _db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
+	if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
+	_db_coord.execute('UPDATE gps_state SET is_uploading=false WHERE rowid=1');
+	_db_coord.close();
+}
+
+
 function PixelsToDPUnits(ThePixels)
 {
   return (ThePixels / (Titanium.Platform.displayCaps.dpi / 160));
-}
- 
+} 
  
 function DPUnitsToPixels(TheDPUnits)
 {
   return (TheDPUnits * (Titanium.Platform.displayCaps.dpi / 160));
 }
-
 
 function isLogged(){
 	var db_a = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list");

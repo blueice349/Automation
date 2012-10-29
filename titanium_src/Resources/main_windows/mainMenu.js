@@ -41,9 +41,10 @@ if(PLATFORM != "android"){
 	Ti.include('geolocation.js');
 }
 else{
+	//Initialize the GPS background service
 	var intent = Titanium.Android.createServiceIntent({
 	  url: 'android_gps_event.js',
-	  startMode:Ti.Android.START_REDELIVER_INTENT 
+	  startMode:Ti.Android.START_REDELIVER_INTENT
 	});
 	
 	Titanium.Android.startService(intent);
