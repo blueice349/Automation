@@ -1,23 +1,19 @@
 =\=\=\=\=\=\=
+<<<<<<<=HEAD
+>>>>>>>=12oct09
 eclipse.preferences.version=1
-<<<<<<< HEAD
 provisioning_profiles/development/2F0CA729-6050-44CD-99CD-F500928241EE/appid=com.omadi.crm
 provisioning_profiles/development/2F0CA729-6050-44CD-99CD-F500928241EE/filepath=/Users/chris/Library/MobileDevice/Provisioning Profiles/2F0CA729-6050-44CD-99CD-F500928241EE.mobileprovision
 provisioning_profiles/development/2F0CA729-6050-44CD-99CD-F500928241EE/name=omadi_development_profile
 provisioning_profiles/development/2F0CA729-6050-44CD-99CD-F500928241EE/uuid=2F0CA729-6050-44CD-99CD-F500928241EE
-=======
->>>>>>> 12oct09
 provisioning_profiles/development/44662BE0-E4F3-41B5-837B-DA3FE68F54BA/appid=com.omadi.joseandro
 provisioning_profiles/development/44662BE0-E4F3-41B5-837B-DA3FE68F54BA/filepath=/Users/cdnn/Library/MobileDevice/Provisioning Profiles/44662BE0-E4F3-41B5-837B-DA3FE68F54BA.mobileprovision
 provisioning_profiles/development/44662BE0-E4F3-41B5-837B-DA3FE68F54BA/name=Omadi_Devloper_Profile_20120825
 provisioning_profiles/development/44662BE0-E4F3-41B5-837B-DA3FE68F54BA/uuid=44662BE0-E4F3-41B5-837B-DA3FE68F54BA
-<<<<<<< HEAD
 provisioning_profiles/development/68AC393D-6B92-483A-8168-391A3B7442FE/appid=com.omadi.crm
 provisioning_profiles/development/68AC393D-6B92-483A-8168-391A3B7442FE/filepath=/Users/chris/Library/MobileDevice/Provisioning Profiles/68AC393D-6B92-483A-8168-391A3B7442FE.mobileprovision
 provisioning_profiles/development/68AC393D-6B92-483A-8168-391A3B7442FE/name=omadi_crm_distribution
 provisioning_profiles/development/68AC393D-6B92-483A-8168-391A3B7442FE/uuid=68AC393D-6B92-483A-8168-391A3B7442FE
-=======
->>>>>>> 12oct09
 provisioning_profiles/development/8A21E666-133C-45A3-8781-9CD666A1EEEC/appid=com.cdn.flashcardDevlopment
 provisioning_profiles/development/8A21E666-133C-45A3-8781-9CD666A1EEEC/filepath=/Users/cdnn/Library/MobileDevice/Provisioning Profiles/8A21E666-133C-45A3-8781-9CD666A1EEEC.mobileprovision
 provisioning_profiles/development/8A21E666-133C-45A3-8781-9CD666A1EEEC/name=flashCard_developmentProfile
@@ -26,29 +22,22 @@ provisioning_profiles/development/AA5BD4CE-9E0F-49EE-88F4-40B9414AE40E/appid=jos
 provisioning_profiles/development/AA5BD4CE-9E0F-49EE-88F4-40B9414AE40E/filepath=/Users/cdnn/Library/MobileDevice/Provisioning Profiles/AA5BD4CE-9E0F-49EE-88F4-40B9414AE40E.mobileprovision
 provisioning_profiles/development/AA5BD4CE-9E0F-49EE-88F4-40B9414AE40E/name=Omadi_Devloper_Profile_20120718
 provisioning_profiles/development/AA5BD4CE-9E0F-49EE-88F4-40B9414AE40E/uuid=AA5BD4CE-9E0F-49EE-88F4-40B9414AE40E
-<<<<<<< HEAD
 provisioning_profiles/development/BC301C0C-F571-4C02-9694-3092A7095A20/appid=com.omadi.crm
 provisioning_profiles/development/BC301C0C-F571-4C02-9694-3092A7095A20/filepath=/Users/cdn74/Library/MobileDevice/Provisioning Profiles/BC301C0C-F571-4C02-9694-3092A7095A20.mobileprovision
 provisioning_profiles/development/BC301C0C-F571-4C02-9694-3092A7095A20/name=Omadi_Devloper_Profile_12sep19
 provisioning_profiles/development/BC301C0C-F571-4C02-9694-3092A7095A20/uuid=BC301C0C-F571-4C02-9694-3092A7095A20
-=======
->>>>>>> 12oct09
 provisioning_profiles/development/BDC36C07-C64C-4B36-A790-931CCCB294AB/appid=com.cdnsol.playgame
 provisioning_profiles/development/BDC36C07-C64C-4B36-A790-931CCCB294AB/filepath=/Users/cdnn/Library/MobileDevice/Provisioning Profiles/BDC36C07-C64C-4B36-A790-931CCCB294AB.mobileprovision
 provisioning_profiles/development/BDC36C07-C64C-4B36-A790-931CCCB294AB/name=PlayGame_Adhoc_110712
 provisioning_profiles/development/BDC36C07-C64C-4B36-A790-931CCCB294AB/uuid=BDC36C07-C64C-4B36-A790-931CCCB294AB
-<<<<<<< HEAD
 provisioning_profiles/development/C2F313BA-5FFC-4323-80BC-6566973516E7/appid=*
 provisioning_profiles/development/C2F313BA-5FFC-4323-80BC-6566973516E7/filepath=/Users/chris/Library/MobileDevice/Provisioning Profiles/C2F313BA-5FFC-4323-80BC-6566973516E7.mobileprovision
 provisioning_profiles/development/C2F313BA-5FFC-4323-80BC-6566973516E7/name=iOS Team Provisioning Profile\: *
 provisioning_profiles/development/C2F313BA-5FFC-4323-80BC-6566973516E7/uuid=C2F313BA-5FFC-4323-80BC-6566973516E7
-=======
->>>>>>> 12oct09
 provisioning_profiles/development/C889A736-03BF-4403-AC48-331D83B71DE2/appid=com.play2winprize.ptwp
 provisioning_profiles/development/C889A736-03BF-4403-AC48-331D83B71DE2/filepath=/Users/cdnn/Library/MobileDevice/Provisioning Profiles/C889A736-03BF-4403-AC48-331D83B71DE2.mobileprovision
 provisioning_profiles/development/C889A736-03BF-4403-AC48-331D83B71DE2/name=PTWP_Adhoc_Profile_160412
 provisioning_profiles/development/C889A736-03BF-4403-AC48-331D83B71DE2/uuid=C889A736-03BF-4403-AC48-331D83B71DE2
-<<<<<<< HEAD
 provisioning_profiles/development/D9829526-41FF-4FB5-9545-DE529DC72C20/appid=joseandro.omadi.com
 provisioning_profiles/development/D9829526-41FF-4FB5-9545-DE529DC72C20/filepath=/Users/chris/Library/MobileDevice/Provisioning Profiles/D9829526-41FF-4FB5-9545-DE529DC72C20.mobileprovision
 provisioning_profiles/development/D9829526-41FF-4FB5-9545-DE529DC72C20/name=Pooja_Joseandro_certification
@@ -57,8 +46,6 @@ provisioning_profiles/development/DE4FC5C4-3858-4042-A223-E230840EBEAA/appid=com
 provisioning_profiles/development/DE4FC5C4-3858-4042-A223-E230840EBEAA/filepath=/Users/chris/Library/MobileDevice/Provisioning Profiles/DE4FC5C4-3858-4042-A223-E230840EBEAA.mobileprovision
 provisioning_profiles/development/DE4FC5C4-3858-4042-A223-E230840EBEAA/name=Omadi_Devloper_Profile_12oct18
 provisioning_profiles/development/DE4FC5C4-3858-4042-A223-E230840EBEAA/uuid=DE4FC5C4-3858-4042-A223-E230840EBEAA
-=======
->>>>>>> 12oct09
 provisioning_profiles/development/E0E8D5C3-AB58-4741-B058-F4413D227F0F/appid=com.play2winprize.ptwp
 provisioning_profiles/development/E0E8D5C3-AB58-4741-B058-F4413D227F0F/filepath=/Users/cdnn/Library/MobileDevice/Provisioning Profiles/E0E8D5C3-AB58-4741-B058-F4413D227F0F.mobileprovision
 provisioning_profiles/development/E0E8D5C3-AB58-4741-B058-F4413D227F0F/name=ptwp_Adhoc
@@ -67,7 +54,6 @@ provisioning_profiles/development/E770A3A5-46B5-42DA-85A9-630121B0594F/appid=com
 provisioning_profiles/development/E770A3A5-46B5-42DA-85A9-630121B0594F/filepath=/Users/cdnn/Library/MobileDevice/Provisioning Profiles/E770A3A5-46B5-42DA-85A9-630121B0594F.mobileprovision
 provisioning_profiles/development/E770A3A5-46B5-42DA-85A9-630121B0594F/name=Omadi_Devloper_Profile_12sep19
 provisioning_profiles/development/E770A3A5-46B5-42DA-85A9-630121B0594F/uuid=E770A3A5-46B5-42DA-85A9-630121B0594F
-<<<<<<< HEAD
 provisioning_profiles/distribution/0BC35D5D-AABD-486B-9EA6-099A611AB8EE/appid=com.omadi.crm
 provisioning_profiles/distribution/0BC35D5D-AABD-486B-9EA6-099A611AB8EE/filepath=/Users/chris/Library/MobileDevice/Provisioning Profiles/0BC35D5D-AABD-486B-9EA6-099A611AB8EE.mobileprovision
 provisioning_profiles/distribution/0BC35D5D-AABD-486B-9EA6-099A611AB8EE/name=Omadi_distribution_12sep07
@@ -92,13 +78,3 @@ provisioning_profiles/distribution/DE4FC5C4-3858-4042-A223-E230840EBEAA/appid=co
 provisioning_profiles/distribution/DE4FC5C4-3858-4042-A223-E230840EBEAA/filepath=/Users/chris/Library/MobileDevice/Provisioning Profiles/DE4FC5C4-3858-4042-A223-E230840EBEAA.mobileprovision
 provisioning_profiles/distribution/DE4FC5C4-3858-4042-A223-E230840EBEAA/name=Omadi_Devloper_Profile_12oct18
 provisioning_profiles/distribution/DE4FC5C4-3858-4042-A223-E230840EBEAA/uuid=DE4FC5C4-3858-4042-A223-E230840EBEAA
-=======
-provisioning_profiles/distribution/93762FBD-E1C0-43E8-A66B-3D4FA0C7559A/appid=com.omadi.crm
-provisioning_profiles/distribution/93762FBD-E1C0-43E8-A66B-3D4FA0C7559A/filepath=/Users/cdn93/Library/MobileDevice/Provisioning Profiles/93762FBD-E1C0-43E8-A66B-3D4FA0C7559A.mobileprovision
-provisioning_profiles/distribution/93762FBD-E1C0-43E8-A66B-3D4FA0C7559A/name=Omadi_distribution_12sep07
-provisioning_profiles/distribution/93762FBD-E1C0-43E8-A66B-3D4FA0C7559A/uuid=93762FBD-E1C0-43E8-A66B-3D4FA0C7559A
-provisioning_profiles/distribution/E770A3A5-46B5-42DA-85A9-630121B0594F/appid=com.omadi.crm
-provisioning_profiles/distribution/E770A3A5-46B5-42DA-85A9-630121B0594F/filepath=/Users/cdn93/Library/MobileDevice/Provisioning Profiles/E770A3A5-46B5-42DA-85A9-630121B0594F.mobileprovision
-provisioning_profiles/distribution/E770A3A5-46B5-42DA-85A9-630121B0594F/name=Omadi_Devloper_Profile_12sep19
-provisioning_profiles/distribution/E770A3A5-46B5-42DA-85A9-630121B0594F/uuid=E770A3A5-46B5-42DA-85A9-630121B0594F
->>>>>>> 12oct09
