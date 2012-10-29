@@ -20,7 +20,8 @@ var movement;
 if(PLATFORM!='android'){clearCache();
  	movement =  require('com.omadi.ios_gps');
 }else{
-	movement =  require('com.omadi.gps');
+	//movement =  require('com.omadi.gps');
+	movement = null;
 }
 
 var win1 = Titanium.UI.createWindow({  
@@ -628,6 +629,8 @@ b1.addEventListener('click', function(){
 				
 				//Passes parameter to the second window:
 				win2.picked 	 = picked;
+				Titanium.App.Properties.setString("domainName", picked); 
+				
 				win2.result 	 = this.responseText;
 				win2.log		 = xhr;
 				win2.movement	 = movement;
@@ -724,6 +727,8 @@ if (isLogged() === true){
 	
 	//Passes parameter to the second window:
 	win2.picked 	 = picked;
+	Ti.API.info('PORTAL : '+picked)
+	Titanium.App.Properties.setString("domainName", picked); 
 	win2.result 	 = Ti.Utils.base64decode(logged_result.fieldByName("login_json"));
 	win2.log		 = null;
 	win2.movement	 = movement;

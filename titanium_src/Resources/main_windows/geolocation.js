@@ -127,36 +127,22 @@ Ti.App.addEventListener('stop_gps', function(e){
 
 
 Ti.App.addEventListener('upload_gps_locations', function() {
-	if (uploading === false){
-		uploading = true;
+	Ti.API.info('################################## CALLED UPDATE FUNCTION ################################## '+is_GPS_uploading());
+	if (is_GPS_uploading() === false){
+		set_GPS_uploading();
 		Ti.API.info('GPS');
 		var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
 		if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
-		
-		if (PLATFORM != "android"){
-			var nav_database = Ti.Database.install('/database/navigation.sqlite', nav_database_name);
-			nav_database.file.setRemoteBackup(false);
-		}
-		
 		Ti.API.info("Length before: " + location_obj.length);
 		var leng_before = location_obj.length;
 		var aux_location = location_obj.slice(0);
 		Ti.API.info(aux_location.length + " Length after: " + location_obj.length);
 		location_obj = new Array();
-		var timestamp_del = 0;
-		
+	
 		for (var ind_local in aux_location) {
-			//Ti.API.info(aux_location[ind_local].accurated_location);
+			Ti.API.info(aux_location[ind_local].accurated_location);
 			db_coord.execute(aux_location[ind_local].accurated_location);
-			if (PLATFORM != "android"){
-				nav_database.execute("INSERT INTO gps (longitude, latitude, accuracy, speed, altitude, timestamp ) VALUES ( '"+aux_location[ind_local].longitude+"', '"+aux_location[ind_local].latitude+"', '"+aux_location[ind_local].accuracy+"', '"+aux_location[ind_local].speed+"', '"+aux_location[ind_local].altitude+"', '"+aux_location[ind_local].timestamp+"' )");
-				Ti.API.info("INSERT INTO gps (longitude, latitude, accuracy, speed, altitude, timestamp ) VALUES ( '"+aux_location[ind_local].longitude+"', '"+aux_location[ind_local].latitude+"', '"+aux_location[ind_local].accuracy+"', "+aux_location[ind_local].speed+", "+aux_location[ind_local].altitude+", '"+aux_location[ind_local].timestamp+"' )");
-				timestamp_del = aux_location[ind_local].timestamp;
-			}
 		}
-		timestamp_del = timestamp_del - (60*60*24);
-		nav_database.execute("DELETE FROM gps WHERE timestamp < "+timestamp_del);
-		nav_database.close();
 		if (aux_location.length > 0) {
 			last_db_timestamp = aux_location.pop().timestamp;
 			Ti.API.info("Last timestamp = " + last_db_timestamp);
@@ -194,11 +180,11 @@ Ti.App.addEventListener('upload_gps_locations', function() {
 				objectsCheck.setTimeout(30000);
 	
 				//Opens address to retrieve contact list
-				objectsCheck.open('POST', win2.picked + '/js-location/mobile_location.json');
+				objectsCheck.open('POST', domainName + '/js-location/mobile_location.json');
 	
 				//Header parameters
 				objectsCheck.setRequestHeader("Content-Type", "application/json");
-				if(PLATFORM == 'android'){objectsCheck.setRequestHeader("Cookie", getCookie());}
+				objectsCheck.setRequestHeader("Cookie", getCookie());
 	
 				//When connected
 				objectsCheck.onload = function(e) {
@@ -255,7 +241,7 @@ Ti.App.addEventListener('upload_gps_locations', function() {
 						Ti.API.info('Finished inserting');
 						db_coord.close();
 						Ti.App.fireEvent('refresh_UI_Alerts', {status: 'success'});
-						uploading = false;
+						unset_GPS_uploading();
 						var __timestamp  = Math.round(new Date().getTime() / 1000);
 						createNotification("Uploaded Coordinates at "+date('h:i a', Number(__timestamp)));
 					}
@@ -268,16 +254,16 @@ Ti.App.addEventListener('upload_gps_locations', function() {
 					Ti.API.info("Error found for GPS uploading ");
 					db_coord.close();
 					Ti.App.fireEvent('refresh_UI_Alerts', {status: 'fail'});
-					uploading = false;
+					unset_GPS_uploading();
 				}
 				//Sending information and try to connect
 				objectsCheck.send(json_coord);
 			} else {
-				uploading = false;
+				unset_GPS_uploading();
 				Ti.API.info('We are offline');
 			}
 		} else {
-			uploading = false;
+			unset_GPS_uploading();
 			Ti.API.info('No GPS coordinates found');
 			result.close();
 			db_coord.close();
