@@ -36,7 +36,10 @@ function is_GPS_uploading(){
 	Ti.API.info('===> Is uploading GPS? '+resp.fieldByName('is_uploading'));
 	var gps_state = resp.fieldByName('is_uploading');
 	_db_coord.close();
-	return gps_state;
+	if (gps_state == "false" || gps_state == false || gps_state === false || gps_state == null){
+		return false
+	}
+	return true;
 	
 }
 
@@ -44,7 +47,7 @@ function set_GPS_uploading(){
 	var db_coord_name = Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName() + "_GPS";
 	var _db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
 	if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
-	_db_coord.execute('UPDATE gps_state SET is_uploading=true WHERE rowid=1');
+	_db_coord.execute('UPDATE gps_state SET is_uploading="true" WHERE rowid=1');
 	_db_coord.close();
 }
 
@@ -52,7 +55,7 @@ function unset_GPS_uploading(){
 	var db_coord_name = Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName() + "_GPS";
 	var _db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
 	if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
-	_db_coord.execute('UPDATE gps_state SET is_uploading=false WHERE rowid=1');
+	_db_coord.execute('UPDATE gps_state SET is_uploading="false" WHERE rowid=1');
 	_db_coord.close();
 }
 
@@ -4274,6 +4277,7 @@ function uploadFile(win, type_request) {
 				_file_xhr.setRequestHeader("Content-Type", "application/json");
 
 				if (PLATFORM == 'android') {
+					Ti.API.info('{"file_data"	:"' + fileUploadTable.fieldByName('file_data') + '", "filename"	:"' + fileUploadTable.fieldByName('file_name') + '", "nid"		:"' + fileUploadTable.fieldByName('nid') + '", "field_name":"' + fileUploadTable.fieldByName('field_name') + '", "delta"		:' + fileUploadTable.fieldByName('delta') + '","timestamp":"'+ fileUploadTable.fieldByName('timestamp')+'}');
 					_file_xhr.send('{"file_data"	:"' + fileUploadTable.fieldByName('file_data') + '", "filename"	:"' + fileUploadTable.fieldByName('file_name') + '", "nid"		:"' + fileUploadTable.fieldByName('nid') + '", "field_name":"' + fileUploadTable.fieldByName('field_name') + '", "delta"		:' + fileUploadTable.fieldByName('delta') + '","timestamp":"'+ fileUploadTable.fieldByName('timestamp')+'}');
 				} else {
 					

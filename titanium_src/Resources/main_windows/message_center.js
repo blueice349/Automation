@@ -3,26 +3,13 @@ Ti.include('/lib/functions.js');
 var db_coord_name = Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName() + "_GPS";
 
 var _upload_gps_locations = function() {
-	Ti.API.info('################################## CALLED UPDATE FUNCTION ################################## '+is_GPS_uploading());
-	if (is_GPS_uploading() === false){
+	var vlr = is_GPS_uploading();
+	Ti.API.info('################################## CALLED UPDATE FUNCTION ################################## '+vlr);	
+	if ( vlr == false){
 		set_GPS_uploading();
 		Ti.API.info('GPS');
 		var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
 		if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
-		Ti.API.info("Length before: " + location_obj.length);
-		var leng_before = location_obj.length;
-		var aux_location = location_obj.slice(0);
-		Ti.API.info(aux_location.length + " Length after: " + location_obj.length);
-		location_obj = new Array();
-	
-		for (var ind_local in aux_location) {
-			Ti.API.info(aux_location[ind_local].accurated_location);
-			db_coord.execute(aux_location[ind_local].accurated_location);
-		}
-		if (aux_location.length > 0) {
-			last_db_timestamp = aux_location.pop().timestamp;
-			Ti.API.info("Last timestamp = " + last_db_timestamp);
-		}
 		var result = db_coord.execute("SELECT * FROM user_location WHERE status = 'notUploaded' ORDER BY timestamp ASC");
 	
 		if (result.rowCount > 0) {
@@ -146,7 +133,7 @@ var _upload_gps_locations = function() {
 		}
 	}
 	else{
-		Ti.API.info("##### There are locations being updated already #####");
+		Ti.API.info("##### There are locations being updated already ##### "+is_GPS_uploading());
 	}
 };
 
