@@ -4374,35 +4374,37 @@ function updateFileUploadTable(win, json) {
 
 // Download Image from the server
 function downloadThumnail(file_id, image, win) {
-	var URL = win.picked + DOWNLOAD_URL_THUMBNAIL + win.nid + '/' + file_id;
-	Ti.API.info("==== site:: " + URL);
-	try {
-		var downloadImage = Ti.Network.createHTTPClient();
-		downloadImage.setTimeout(30000);
-		downloadImage.open('GET', URL);
-
-		downloadImage.onload = function(e) {
-			var tempImg = Ti.UI.createImageView({
-				height : 'auto',
-				width : 'auto',
-				image : this.responseData
-			});
-			if (tempImg.toImage().height > 100 || tempImg.toImage().width > 100) {
-				image.image = reduceImageSize(tempImg.toImage(), 100, 100).toBlob();
-			} else {
-				image.image = this.responseData
+	if(win.nid > 0 && file_id > 0){   
+		var URL = win.picked + DOWNLOAD_URL_THUMBNAIL + win.nid + '/' + file_id;
+		Ti.API.info("==== site:: " + URL);
+		try {
+			var downloadImage = Ti.Network.createHTTPClient();
+			downloadImage.setTimeout(30000);
+			downloadImage.open('GET', URL);
+	
+			downloadImage.onload = function(e) {
+				var tempImg = Ti.UI.createImageView({
+					height : 'auto',
+					width : 'auto',
+					image : this.responseData
+				});
+				if (tempImg.toImage().height > 100 || tempImg.toImage().width > 100) {
+					image.image = reduceImageSize(tempImg.toImage(), 100, 100).toBlob();
+				} else {
+					image.image = this.responseData
+				}
+				image.isImage = true;
 			}
-			image.isImage = true;
+	
+			downloadImage.onerror = function(e) {
+				Ti.API.error("Error in download image.");
+				image.image = '../images/default.png';
+			}
+	
+			downloadImage.send();
+		} catch(e) {
+			Ti.API.info("==== ERROR ===" + e);
 		}
-
-		downloadImage.onerror = function(e) {
-			Ti.API.error("Error in download image.");
-			image.image = '../images/default.png';
-		}
-
-		downloadImage.send();
-	} catch(e) {
-		Ti.API.info("==== ERROR ===" + e);
 	}
 }
 
