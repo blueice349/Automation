@@ -60,8 +60,8 @@
     </android>
     <modules>
         <module platform="commonjs" version="2.2.0">ti.cloud</module>
-        <module platform="android" version="1.0">com.omadi.camera</module>
-        <module platform="android" version="1.0">com.omadi.gps</module>
+        <module platform="android" version="1.1">com.omadi.camera</module>
+        <module platform="android" version="1.1">com.omadi.gps</module>
         <module platform="iphone" version="4">com.omadi.ios_gps</module>
     </modules>
 </ti:app>

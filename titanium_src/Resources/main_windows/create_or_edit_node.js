@@ -1137,6 +1137,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 				}
 			}
 
+			Ti.API.info("New Nid = " + file_upload_nid);
 			/*for (var j = 0; j <= content.length; j++) {
 			 if (!content[j]) {
 			 continue;

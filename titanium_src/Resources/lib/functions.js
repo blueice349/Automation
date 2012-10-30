@@ -4189,20 +4189,36 @@ function getScreenHeight() {
 }
 
 function uploadFile(win, type_request) {
+	//type_request = 'POST';
+	Ti.API.info("UPLOAD FILE: " + type_request);
 	try {
 		//var fileUploadXHR = win.log;
 		var _file_xhr = Ti.Network.createHTTPClient();
 		_file_xhr.setTimeout(30000);
 		_file_xhr.open(type_request, win.picked + '/js-sync/upload.json');
+		
+		if(PLATFORM == 'android'){
+			_file_xhr.setRequestHeader("Cookie", getCookie());// Set cookies
+		}
+		else{
+			var split_cookie = getCookie().split(';');
+			if (!split_cookie[0] ){
+				split_cookie[0]="";
+			}
+			_file_xhr.setRequestHeader("Cookie", split_cookie[0]);// Set cookies
+		} 
+		
 		// Upload images
 		var database = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 		if(PLATFORM != 'android'){database.file.setRemoteBackup(false);}
+		
 		var fileUploadTable = database.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
 		if (fileUploadTable.isValidRow()) {
 			//Only upload those images that have positive nids
 			if (fileUploadTable.fieldByName('nid') > 0) {
+				
 				_file_xhr.onload = function(e) {
-					Ti.API.info('=========== Success ========' + this.responseText);
+					Ti.API.info('UPLOAD FILE: =========== Success ========' + this.responseText);
 					var respnseJson = JSON.parse(this.responseText);
 					
 					database = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
@@ -4261,7 +4277,7 @@ function uploadFile(win, type_request) {
 				}
 
 				_file_xhr.onerror = function(e) {
-					Ti.API.error('=========== Error in uploading ========' + this.error + this.status);
+					Ti.API.error('UPLOAD FILE: =========== Error in uploading ========' + this.error + this.status);
 					if (this.status == '406' && this.error == 'Nid is not connected to a valid node.') {
 						var database = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 						if(PLATFORM != 'android'){database.file.setRemoteBackup(false);}
@@ -4274,7 +4290,7 @@ function uploadFile(win, type_request) {
 				_file_xhr.setRequestHeader("Content-Type", "application/json");
 
 				if (PLATFORM == 'android') {
-					_file_xhr.send('{"file_data"	:"' + fileUploadTable.fieldByName('file_data') + '", "filename"	:"' + fileUploadTable.fieldByName('file_name') + '", "nid"		:"' + fileUploadTable.fieldByName('nid') + '", "field_name":"' + fileUploadTable.fieldByName('field_name') + '", "delta"		:' + fileUploadTable.fieldByName('delta') + '","timestamp":"'+ fileUploadTable.fieldByName('timestamp')+'}');
+				  _file_xhr.send('{"file_data"	:"' + fileUploadTable.fieldByName('file_data') + '", "filename"	:"' + fileUploadTable.fieldByName('file_name') + '", "nid"		:"' + fileUploadTable.fieldByName('nid') + '", "field_name":"' + fileUploadTable.fieldByName('field_name') + '", "delta":"' + fileUploadTable.fieldByName('delta') + '","timestamp":"'+ fileUploadTable.fieldByName('timestamp')+'"}');
 				} else {
 					
 					_file_xhr.send({
