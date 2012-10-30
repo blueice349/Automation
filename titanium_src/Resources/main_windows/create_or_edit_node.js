@@ -5410,7 +5410,7 @@ create_or_edit_node.loadUI = function() {
 											content[count].paddingLeft = 3;
 											content[count].paddingRight = 3;
 										}
-										//AUTOCOMPLETE TABLE
+										//AUTOCOMPLETE TABLE for taxonomy_term_reference and auto_complete widget cardinality > 1
 										var autocomplete_table = Titanium.UI.createTableView({
 											top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
 											searchHidden : true,
@@ -5419,7 +5419,7 @@ create_or_edit_node.loadUI = function() {
 											backgroundColor : '#FFFFFF',
 											visible : false,
 											borderColor : '#000',
-											borderWidth : 1
+											borderWidth : 0
 										});
 										content[count].autocomplete_table = autocomplete_table;
 										top += (PLATFORM == 'android') ? heightTextField : heightValue;
@@ -5427,7 +5427,7 @@ create_or_edit_node.loadUI = function() {
 										regionView.add(content[count].autocomplete_table);
 
 										//
-										// TABLE EVENTS
+										// TABLE EVENTS for taxonomy_term_reference and auto_complete widget, cardinality > 1
 										//
 										content[count].autocomplete_table.addEventListener('click', function(e) {
 											//e.source.setValueF(e.rowData.title, e.rowData.tid);
@@ -5440,12 +5440,14 @@ create_or_edit_node.loadUI = function() {
 
 											setTimeout(function() {
 												e.source.autocomplete_table.visible = false;
+												e.source.autocomplete_table.borderWidth = 0;
 												Ti.API.info(e.rowData.title + ' was selected!');
 											}, 80);
 										});
 
 										content[count].addEventListener('blur', function(e) {
 											e.source.autocomplete_table.visible = false;
+											e.source.autocomplete_table.borderWidth = 0;
 											if ((e.source.restrict_new_autocomplete_terms == 1) && (e.source.value != "") && (e.source.tid == null)) {
 												if (PLATFORM == 'android') {
 													Ti.UI.createNotification({
@@ -5459,7 +5461,7 @@ create_or_edit_node.loadUI = function() {
 										});
 
 										//
-										// SEARCH EVENTS
+										// SEARCH EVENTS for taxonomy_term_reference and auto_complete widget cardinality > 1
 										//
 										content[count].addEventListener('change', function(e) {
 											changedContentValue(e.source);
@@ -5500,6 +5502,10 @@ create_or_edit_node.loadUI = function() {
 													}
 													e.source.autocomplete_table.setData(table_data);
 													e.source.autocomplete_table.height = getScreenHeight() * 0.3;
+													e.source.autocomplete_table.borderWidth = 1;
+													if(table_data.length == 0){
+														e.source.autocomplete_table.borderWidth = 0;
+													}
 													if (table_data.length < 3 && table_data.length > 0) {
 														e.source.autocomplete_table.height = (table_data.length == 1) ? getScreenHeight() * 0.1 : getScreenHeight() * 0.2;
 													}
@@ -5614,7 +5620,7 @@ create_or_edit_node.loadUI = function() {
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
 									}
-									//AUTOCOMPLETE TABLE
+									//AUTOCOMPLETE TABLE taxonomy_term_reference widget auto_complete, cardinality = 1
 									var autocomplete_table = Titanium.UI.createTableView({
 										top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
 										searchHidden : true,
@@ -5623,7 +5629,7 @@ create_or_edit_node.loadUI = function() {
 										backgroundColor : '#FFFFFF',
 										visible : false,
 										borderColor : '#000',
-										borderWidth : 1
+										borderWidth : 0
 									});
 									content[count].autocomplete_table = autocomplete_table;
 									top += (PLATFORM == 'android') ? heightTextField : heightValue;
@@ -5631,7 +5637,7 @@ create_or_edit_node.loadUI = function() {
 									regionView.add(content[count].autocomplete_table);
 
 									//
-									// TABLE EVENTS
+									// TABLE EVENTS taxonomy_term_reference widget auto_complete, cardinality = 1
 									//
 									content[count].autocomplete_table.addEventListener('click', function(e) {
 
@@ -5644,6 +5650,7 @@ create_or_edit_node.loadUI = function() {
 										}
 										setTimeout(function() {
 											e.source.autocomplete_table.visible = false;
+											e.source.autocomplete_table.borderWidth = 0;
 											Ti.API.info(e.rowData.title + ' was selected!');
 										}, 80);
 									});
@@ -5651,6 +5658,7 @@ create_or_edit_node.loadUI = function() {
 									content[count].addEventListener('blur', function(e) {
 
 										e.source.autocomplete_table.visible = false;
+										e.source.autocomplete_table.borderWidth = 0;
 										if ((e.source.restrict_new_autocomplete_terms == 1) && (e.source.value != "") && (e.source.tid == null)) {
 											if (PLATFORM == 'android') {
 												Ti.UI.createNotification({
@@ -5663,7 +5671,7 @@ create_or_edit_node.loadUI = function() {
 										}
 									});
 									//
-									// SEARCH EVENTS
+									// SEARCH EVENTS taxonomy_term_reference widget auto_complete, cardinality = 1
 									//
 									content[count].addEventListener('change', function(e) {
 										changedContentValue(e.source);
@@ -5705,6 +5713,10 @@ create_or_edit_node.loadUI = function() {
 												}
 												e.source.autocomplete_table.setData(table_data);
 												e.source.autocomplete_table.height = getScreenHeight() * 0.3;
+												e.source.autocomplete_table.borderWidth = 1;
+												if(table_data.length == 0){
+													e.source.autocomplete_table.borderWidth = 0;
+												}
 												if (table_data.length < 3 && table_data.length > 0) {
 													e.source.autocomplete_table.height = (table_data.length == 1) ? getScreenHeight() * 0.1 : getScreenHeight() * 0.2;
 												}
@@ -5906,7 +5918,7 @@ create_or_edit_node.loadUI = function() {
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
 									}
-									//AUTOCOMPLETE TABLE
+									//AUTOCOMPLETE TABLE omadi_reference, cardinality > 1
 									var autocomplete_table = Titanium.UI.createTableView({
 										top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
 										searchHidden : true,
@@ -5915,7 +5927,7 @@ create_or_edit_node.loadUI = function() {
 										backgroundColor : '#FFFFFF',
 										visible : false,
 										borderColor : '#000',
-										borderWidth : 1
+										borderWidth : 0
 									});
 									content[count].autocomplete_table = autocomplete_table;
 									top += (PLATFORM == 'android') ? heightTextField : heightValue;
@@ -5923,7 +5935,7 @@ create_or_edit_node.loadUI = function() {
 									regionView.add(content[count].autocomplete_table);
 
 									//
-									// TABLE EVENTS
+									// TABLE EVENTS omadi_reference, cardinality > 1
 									//
 									content[count].autocomplete_table.addEventListener('click', function(e) {
 										//e.source.textField.setValueF(e.rowData.title, e.rowData.nid);
@@ -5937,6 +5949,7 @@ create_or_edit_node.loadUI = function() {
 
 										setTimeout(function() {
 											e.source.autocomplete_table.visible = false;
+											e.source.autocomplete_table.borderWidth = 0;
 											Ti.API.info(e.rowData.title + ' was selected!');
 										}, 80);
 
@@ -5944,6 +5957,7 @@ create_or_edit_node.loadUI = function() {
 
 									content[count].addEventListener('blur', function(e) {
 										e.source.autocomplete_table.visible = false;
+										e.source.autocomplete_table.borderWidth = 0;
 										if ((e.source.nid === null) && (e.source.value != "")) {
 											if (PLATFORM == 'android') {
 												Ti.UI.createNotification({
@@ -5962,7 +5976,7 @@ create_or_edit_node.loadUI = function() {
 									});
 
 									//
-									// SEARCH EVENTS
+									// SEARCH EVENTS, omadi_reference, cardinality > 1
 									//
 									content[count].addEventListener('change', function(e) {
 										if (e.source.touched === true) {
@@ -6003,6 +6017,10 @@ create_or_edit_node.loadUI = function() {
 													}
 													e.source.autocomplete_table.setData(table_data);
 													e.source.autocomplete_table.height = getScreenHeight() * 0.3;
+													e.source.autocomplete_table.borderWidth = 1;
+													if(table_data.length == 0){
+														e.source.autocomplete_table.borderWidth = 0;
+													}
 													if (table_data.length < 3 && table_data.length > 0) {
 														e.source.autocomplete_table.height = (table_data.length == 1) ? getScreenHeight() * 0.1 : getScreenHeight() * 0.2;
 													}
@@ -6093,7 +6111,7 @@ create_or_edit_node.loadUI = function() {
 									content[count].paddingLeft = 3;
 									content[count].paddingRight = 3;
 								}
-								//AUTOCOMPLETE TABLE
+								//AUTOCOMPLETE TABLE FOR OMADI REFERENCE FIELDS, cardinality = 1
 								var autocomplete_table = Titanium.UI.createTableView({
 									top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
 									searchHidden : true,
@@ -6102,7 +6120,7 @@ create_or_edit_node.loadUI = function() {
 									backgroundColor : '#FFFFFF',
 									visible : false,
 									borderColor : '#000',
-									borderWidth : 1
+									borderWidth : 0
 								});
 								content[count].autocomplete_table = autocomplete_table;
 								top += (PLATFORM == 'android') ? heightTextField : heightValue;
@@ -6110,7 +6128,7 @@ create_or_edit_node.loadUI = function() {
 								regionView.add(content[count].autocomplete_table);
 
 								//
-								// TABLE EVENTS
+								// TABLE EVENTS FOR OMADI REFERENCE FIELDS, cardinality = 1
 								//
 								content[count].autocomplete_table.addEventListener('click', function(e) {
 									if (PLATFORM != 'android') {
@@ -6122,6 +6140,7 @@ create_or_edit_node.loadUI = function() {
 
 									setTimeout(function() {
 										e.source.autocomplete_table.visible = false;
+										e.source.autocomplete_table.borderWidth = 0;
 										Ti.API.info(e.rowData.title + ' was selected!');
 									}, 80);
 
@@ -6129,6 +6148,7 @@ create_or_edit_node.loadUI = function() {
 
 								content[count].addEventListener('blur', function(e) {
 									e.source.autocomplete_table.visible = false;
+									e.source.autocomplete_table.borderWidth = 0;
 									if ((e.source.nid === null) && (e.source.value != "")) {
 										if (PLATFORM == 'android') {
 											Ti.UI.createNotification({
@@ -6150,7 +6170,7 @@ create_or_edit_node.loadUI = function() {
 								});
 
 								//
-								// SEARCH EVENTS
+								// SEARCH EVENTS omadi_reference, cardinality == 1
 								//
 								content[count].addEventListener('change', function(e) {
 									if (e.source.touched === true) {
@@ -6191,7 +6211,11 @@ create_or_edit_node.loadUI = function() {
 													}
 												}
 												e.source.autocomplete_table.setData(table_data);
+												e.source.autocomplete_table.borderWidth = 1;
 												e.source.autocomplete_table.height = getScreenHeight() * 0.3;
+												if(table_data.length == 0){
+													e.source.autocomplete_table.borderWidth = 0;
+												}
 												if (table_data.length < 3 && table_data.length > 0) {
 													e.source.autocomplete_table.height = (table_data.length == 1) ? getScreenHeight() * 0.1 : getScreenHeight() * 0.2;
 												}
@@ -7673,7 +7697,7 @@ create_or_edit_node.loadUI = function() {
 									content[count].paddingLeft = 3;
 									content[count].paddingRight = 3;
 								}
-								//AUTOCOMPLETE TABLE
+								//AUTOCOMPLETE TABLE FOR vehicle_fields fields
 								var autocomplete_table = Titanium.UI.createTableView({
 									top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
 									searchHidden : true,
@@ -7682,7 +7706,7 @@ create_or_edit_node.loadUI = function() {
 									backgroundColor : '#FFFFFF',
 									visible : false,
 									borderColor : '#000',
-									borderWidth : 1
+									borderWidth : 0
 								});
 								content[count].autocomplete_table = autocomplete_table;
 								top += (PLATFORM == 'android') ? heightTextField : heightValue;
@@ -7690,7 +7714,7 @@ create_or_edit_node.loadUI = function() {
 								regionView.add(content[count].autocomplete_table);
 
 								//
-								// TABLE EVENTS
+								// TABLE EVENTS for vehicle_fields fields, cardinality == 1
 								//
 								content[count].autocomplete_table.addEventListener('click', function(e) {
 									if (PLATFORM != 'android') {
@@ -7701,12 +7725,14 @@ create_or_edit_node.loadUI = function() {
 
 									setTimeout(function() {
 										e.source.autocomplete_table.visible = false;
+										e.source.autocomplete_table.borderWidth = 0;
 										Ti.API.info(e.rowData.title + ' was selected!');
 									}, 80);
 								});
 
 								content[count].addEventListener('blur', function(e) {
 									e.source.autocomplete_table.visible = false;
+									e.source.autocomplete_table.borderWidth = 0;
 								});
 
 								content[count].addEventListener('focus', function(e) {
@@ -7726,7 +7752,7 @@ create_or_edit_node.loadUI = function() {
 									}
 								});
 								//
-								// SEARCH EVENTS
+								// SEARCH EVENTS vehicle_fields, cardinality == 1
 								//
 								content[count].addEventListener('change', function(e) {
 									if (e.source.i_name == 'Make') {
@@ -7767,6 +7793,10 @@ create_or_edit_node.loadUI = function() {
 											}
 											e.source.autocomplete_table.setData(table_data);
 											e.source.autocomplete_table.height = getScreenHeight() * 0.3;
+											e.source.autocomplete_table.borderWidth = 1;
+											if(table_data.lenth == 0){
+												e.source.autocomplete_table.borderWidth = 0;
+											}
 											if (table_data.length < 3 && table_data.length > 0) {
 												e.source.autocomplete_table.height = (table_data.length == 1) ? getScreenHeight() * 0.1 : getScreenHeight() * 0.2;
 											}
