@@ -114,7 +114,7 @@ var domainName =  Titanium.App.Properties.getString("domainName");
 
 var upload_gps_locations = function() {
 	Ti.API.info('################################## CALLED UPDATE FUNCTION ################################## '+is_GPS_uploading());
-	if (is_GPS_uploading() === false){
+	if (is_GPS_uploading() == false){
 		set_GPS_uploading();
 		Ti.API.info('GPS');
 		var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
