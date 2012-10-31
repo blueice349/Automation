@@ -1437,6 +1437,7 @@ function getJSON() {
 			Ti.API.info('1');
 			while (node_fields.isValidRow()) {
 				Ti.API.info('2');
+				Ti.API.debug("CREATE JSON: processing field " + node_fields.fieldByName('field_name'));
 				if ((selected_node.rowCount > 0) && (selected_node.fieldByName(node_fields.fieldByName('field_name')) != null) && (selected_node.fieldByName(node_fields.fieldByName('field_name')) != '')) {
 					Ti.API.info('3');
 					if (selected_node.fieldByName(node_fields.fieldByName('field_name')) == 7411317618171051229) {
@@ -1459,7 +1460,19 @@ function getJSON() {
 							// Token that splits each element contained into the array: 'j8Oc2s1E'
 							var decoded_values = decoded.split("j8Oc2s1E");
 							Ti.API.info('11 '+decoded_values);
+							// TODO: why is it looking for the word photo in the field_name
+							// TODO: this should check if it is an image field type
 							if (node_fields.fieldByName('field_name').indexOf('photo') != -1){
+								
+								var db_images = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+								
+								var image_count_result = db_images.execute('SELECT COUNT(*) AS count FROM file_upload_queue WHERE nid = ' + new_nodes.fieldByName('nid') + ' AND field_name = \'' + node_fields.fieldByName('field_name') + '\'');
+								var image_count = image_count_result.fieldByName('count');
+								
+								db_images.close();
+								
+								Ti.API.info("IMAGE: Image Count: " + image_count);
+								
 								if (decoded_values.length){
 									if (decoded_values.length == 1){
 										if (decoded_values[0] == null || decoded_values[0] == "null" || decoded_values[0] == "" || isNumber(decoded_values[0]) === false){
@@ -1491,6 +1504,15 @@ function getJSON() {
 						} else {
 							Ti.API.info('12');
 							if (node_fields.fieldByName('field_name').indexOf('photo') != -1){
+								var db_images = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+								
+								var image_count_result = db_images.execute('SELECT COUNT(*) AS count FROM file_upload_queue WHERE nid = ' + new_nodes.fieldByName('nid') + ' AND field_name = \'' + node_fields.fieldByName('field_name') + '\'');
+								var image_count = image_count_result.fieldByName('count');
+								
+								db_images.close();
+								
+								Ti.API.info("IMAGE: Image Count bottom: " + image_count);
+								
 								if ( selected_node.fieldByName(node_fields.fieldByName('field_name')) == null || selected_node.fieldByName(node_fields.fieldByName('field_name'))== "null" || selected_node.fieldByName(node_fields.fieldByName('field_name')) == "" || isNumber( selected_node.fieldByName(node_fields.fieldByName('field_name'))) === false){
 									Ti.API.info('Nothing to add, pictures not taken');
 								}
@@ -1518,6 +1540,23 @@ function getJSON() {
 						}
 					}
 				}
+				else if (node_fields.fieldByName('field_name').indexOf('photo') != -1){
+								
+					var db_images = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+					var image_count_result = db_images.execute('SELECT COUNT(*) AS count FROM file_upload_queue WHERE nid = ' + new_nodes.fieldByName('nid') + ' AND field_name = \'' + node_fields.fieldByName('field_name') + '\'');
+					var image_count = image_count_result.fieldByName('count');
+					db_images.close();
+					
+					Ti.API.info("IMAGE: Image Count, none saved: " + image_count);
+					if(image_count > 0){
+						decoded_values = new Array();
+						for(i = 0; i < image_count; i ++){
+							decoded_values = decoded_values.concat(1);
+						}
+						returning_json += ', "' + node_fields.fieldByName('field_name') + '": [ \"' + decoded_values.join("\" , \"") + '\" ] ';
+					}
+				}
+				
 				node_fields.next();
 			}
 			returning_json += ' } ';
@@ -4221,59 +4260,61 @@ function uploadFile(win, type_request) {
 					Ti.API.info('UPLOAD FILE: =========== Success ========' + this.responseText);
 					var respnseJson = JSON.parse(this.responseText);
 					
-					database = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
-					if(PLATFORM != 'android'){database.file.setRemoteBackup(false);}
-					fileUploadTable = database.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
-
-					// Updating status
-					var table = database.execute("SELECT table_name FROM node WHERE nid=" + respnseJson.nid + ";");
-					var fieldSettings = database.execute("SELECT settings FROM fields WHERE bundle='" + table.fieldByName('table_name') + "' and type='image' and field_name='" + respnseJson.field_name + "';");
-
-					var settings = JSON.parse(fieldSettings.fieldByName('settings'));
-					if (settings.cardinality > 1 || settings.cardinality < 0) {
-						var array_cont = database.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + respnseJson.nid + ' AND field_name = \'' + respnseJson.field_name + '\'');
-						var decoded_values = [];
-						if (array_cont.rowCount > 0) {
-							var decoded = array_cont.fieldByName('encoded_array');
-							if (decoded != null || decoded != "") {
-								decoded = Base64.decode(decoded);
-								Ti.API.info('Decoded array is equals to: ' + decoded);
-								decoded = decoded.toString();
-								decoded_values = decoded.split("j8Oc2s1E");
+					if(respnseJson.nid){
+						database = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+						if(PLATFORM != 'android'){database.file.setRemoteBackup(false);}
+						fileUploadTable = database.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
+	
+						// Updating status
+						var table = database.execute("SELECT table_name FROM node WHERE nid=" + respnseJson.nid + ";");
+						var fieldSettings = database.execute("SELECT settings FROM fields WHERE bundle='" + table.fieldByName('table_name') + "' and type='image' and field_name='" + respnseJson.field_name + "';");
+	
+						var settings = JSON.parse(fieldSettings.fieldByName('settings'));
+						if (settings.cardinality > 1 || settings.cardinality < 0) {
+							var array_cont = database.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + respnseJson.nid + ' AND field_name = \'' + respnseJson.field_name + '\'');
+							var decoded_values = [];
+							if (array_cont.rowCount > 0) {
+								var decoded = array_cont.fieldByName('encoded_array');
+								if (decoded != null || decoded != "") {
+									decoded = Base64.decode(decoded);
+									Ti.API.info('Decoded array is equals to: ' + decoded);
+									decoded = decoded.toString();
+									decoded_values = decoded.split("j8Oc2s1E");
+								}
 							}
-						}
-
-						if (respnseJson.delta < decoded_values.length) {
-							decoded_values[respnseJson.delta] = respnseJson.file_id;
-						} else {
-							decoded_values.push(respnseJson.file_id);
-						}
-						var content = '';
-						for ( i = 0; i < decoded_values.length; i++) {
-							if (i == decoded_values.length - 1) {
-								content += decoded_values[i];
+	
+							if (respnseJson.delta < decoded_values.length) {
+								decoded_values[respnseJson.delta] = respnseJson.file_id;
 							} else {
-								content += decoded_values[i] + '' + "j8Oc2s1E";
+								decoded_values.push(respnseJson.file_id);
 							}
+							var content = '';
+							for ( i = 0; i < decoded_values.length; i++) {
+								if (i == decoded_values.length - 1) {
+									content += decoded_values[i];
+								} else {
+									content += decoded_values[i] + '' + "j8Oc2s1E";
+								}
+							}
+							content = Base64.encode(content);
+							database.execute("UPDATE " + table.fieldByName('table_name') + " SET " + respnseJson.field_name + "='7411317618171051229', " + respnseJson.field_name + "___file_id='7411317618171051229', " + respnseJson.field_name + "___status='7411317618171051229' WHERE nid='" + respnseJson.nid + "';");
+							database.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + respnseJson.nid + ', \'' + respnseJson.field_name + "___file_id" + '\',  \'' + content + '\' )');
+							database.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + respnseJson.nid + ', \'' + respnseJson.field_name + '\',  \'' + content + '\' )');
+						} else {
+							database.execute("UPDATE " + table.fieldByName('table_name') + " SET " + respnseJson.field_name + "='" + respnseJson.file_id + "', " + respnseJson.field_name + "___file_id='" + respnseJson.file_id + "', " + respnseJson.field_name + "___status='uploaded' WHERE nid='" + respnseJson.nid + "';");
 						}
-						content = Base64.encode(content);
-						database.execute("UPDATE " + table.fieldByName('table_name') + " SET " + respnseJson.field_name + "='7411317618171051229', " + respnseJson.field_name + "___file_id='7411317618171051229', " + respnseJson.field_name + "___status='7411317618171051229' WHERE nid='" + respnseJson.nid + "';");
-						database.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + respnseJson.nid + ', \'' + respnseJson.field_name + "___file_id" + '\',  \'' + content + '\' )');
-						database.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + respnseJson.nid + ', \'' + respnseJson.field_name + '\',  \'' + content + '\' )');
-					} else {
-						database.execute("UPDATE " + table.fieldByName('table_name') + " SET " + respnseJson.field_name + "='" + respnseJson.file_id + "', " + respnseJson.field_name + "___file_id='" + respnseJson.file_id + "', " + respnseJson.field_name + "___status='uploaded' WHERE nid='" + respnseJson.nid + "';");
+						//Deleting file after upload.
+						database.execute("DELETE FROM file_upload_queue WHERE nid=" + respnseJson.nid + " and delta=" + respnseJson.delta + " and field_name='" + respnseJson.field_name + "';");
+						fileUploadTable = database.execute("SELECT * FROM file_upload_queue WHERE nid > 0;");
+						var remainingRow = fileUploadTable.rowCount;
+						table.close();
+						fieldSettings.close();
+						fileUploadTable.close();
+						database.close();
+						if (remainingRow != 0) {
+							uploadFile(win, type_request);
+						} 
 					}
-					//Deleting file after upload.
-					database.execute("DELETE FROM file_upload_queue WHERE nid=" + respnseJson.nid + " and delta=" + respnseJson.delta + " and field_name='" + respnseJson.field_name + "';");
-					fileUploadTable = database.execute("SELECT * FROM file_upload_queue WHERE nid > 0;");
-					var remainingRow = fileUploadTable.rowCount;
-					table.close();
-					fieldSettings.close();
-					fileUploadTable.close();
-					database.close();
-					if (remainingRow != 0) {
-						uploadFile(win, type_request);
-					} 
 				}
 
 				_file_xhr.onerror = function(e) {

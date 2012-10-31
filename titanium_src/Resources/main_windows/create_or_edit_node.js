@@ -8318,6 +8318,12 @@ create_or_edit_node.loadUI = function() {
 				regionView.form_part = 0;
 			}
 			
+			if (reg_settings != null && reg_settings.always_expanded != null) {
+				regionView.always_expanded = parseInt(reg_settings.always_expanded);
+			} else {
+				regionView.always_expanded = 0;
+			}
+			
 			//regionView.calculatedHeight = DPUnitsToPixels(top);
 			regionView.calculatedHeight = top+10;
 			regionView.height = 0;
@@ -8378,7 +8384,7 @@ create_or_edit_node.loadUI = function() {
 			}
 
 			if (isLabel) {
-				if (v.viewContainer.form_part == viewContent.max_form_part) {
+				if (v.viewContainer.form_part == viewContent.max_form_part || v.viewContainer.always_expanded == 1) {
 					v.viewContainer.height = v.viewContainer.calculatedHeight;
 					v.viewContainer.expanded = true;
 					v.arrow.image = "/images/arrow_down.png";
