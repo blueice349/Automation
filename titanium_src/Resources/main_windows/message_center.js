@@ -1,15 +1,29 @@
 //Common used functions
 Ti.include('/lib/functions.js');
 var db_coord_name = Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName() + "_GPS";
+var domainName =  Titanium.App.Properties.getString("domainName");
 
 var _upload_gps_locations = function() {
-	var vlr = is_GPS_uploading();
-	Ti.API.info('################################## CALLED UPDATE FUNCTION ################################## '+vlr);	
-	if ( vlr == false){
+	Ti.API.info('################################## CALLED UPDATE FUNCTION ################################## '+is_GPS_uploading());
+	if (is_GPS_uploading() === false){
 		set_GPS_uploading();
 		Ti.API.info('GPS');
 		var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
 		if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
+		//Ti.API.info("Length before: " + location_obj.length);
+		//var leng_before = location_obj.length;
+		//var aux_location = location_obj.slice(0);
+		//Ti.API.info(aux_location.length + " Length after: " + location_obj.length);
+		//location_obj = new Array();
+	
+		//for (var ind_local in aux_location) {
+		//	Ti.API.info(aux_location[ind_local].accurated_location);
+		//	db_coord.execute(aux_location[ind_local].accurated_location);
+		//}
+		//if (aux_location.length > 0) {
+		//	last_db_timestamp = aux_location.pop().timestamp;
+		//	Ti.API.info("Last timestamp = " + last_db_timestamp);
+		//}
 		var result = db_coord.execute("SELECT * FROM user_location WHERE status = 'notUploaded' ORDER BY timestamp ASC");
 	
 		if (result.rowCount > 0) {
@@ -104,10 +118,11 @@ var _upload_gps_locations = function() {
 						Ti.API.info('Finished inserting');
 						db_coord.close();
 						Ti.App.fireEvent('refresh_UI_Alerts', {status: 'success'});
-						unset_GPS_uploading();
 						var __timestamp  = Math.round(new Date().getTime() / 1000);
 						createNotification("Uploaded Coordinates at "+date('h:i a', Number(__timestamp)));
 					}
+					actIndAlert.hide();
+					unset_GPS_uploading()
 				}
 				//Connection error:
 				objectsCheck.onerror = function(e) {
@@ -118,22 +133,26 @@ var _upload_gps_locations = function() {
 					db_coord.close();
 					Ti.App.fireEvent('refresh_UI_Alerts', {status: 'fail'});
 					unset_GPS_uploading();
+					actIndAlert.hide();
 				}
 				//Sending information and try to connect
 				objectsCheck.send(json_coord);
 			} else {
 				unset_GPS_uploading();
 				Ti.API.info('We are offline');
+				actIndAlert.hide();
 			}
 		} else {
 			unset_GPS_uploading();
 			Ti.API.info('No GPS coordinates found');
 			result.close();
 			db_coord.close();
+			actIndAlert.hide();
 		}
 	}
 	else{
-		Ti.API.info("##### There are locations being updated already ##### "+is_GPS_uploading());
+		Ti.API.info("##### There are locations being updated already #####");
+		actIndAlert.hide();
 	}
 };
 
@@ -189,7 +208,7 @@ message_center.get_win = function() {
 	win.add(empty);
 	
 	actIndAlert = Ti.UI.createActivityIndicator({
-		message: 'Please wait..',
+		message: 'Updating Alerts...',
 		color: '#fff'
 	});
 	win.add(actIndAlert);

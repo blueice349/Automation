@@ -35,10 +35,10 @@ function updateCurrentLocation(e) {
 	var timestamp = new Date().getTime();
 	timestamp = Math.round(timestamp / 1000);
 	
-	Ti.API.info('=====>>> Longitude ' + longitude);
-	Ti.API.info('=====>>> Latitude ' + latitude);
-	Ti.API.info('=====>>> Accuracy ' + accuracy);
-	Ti.API.info('=====>>> Timestamp ' + timestamp);
+	Ti.API.debug('LOCATION: Longitude ' + longitude);
+	Ti.API.debug('LOCATION: Latitude ' + latitude);
+	Ti.API.debug('LOCATION: Accuracy ' + accuracy);
+	Ti.API.debug('LOCATION: Timestamp ' + timestamp);
 
 	if(latitude != 0 && longitude != 0) {
 		if(accuracy > 200) {
@@ -50,7 +50,19 @@ function updateCurrentLocation(e) {
 				Ti.API.info('NOT SHOWN - Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is ' + accuracy + ' meters');
 			}
 		}
-
+		
+		var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
+		if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
+		
+		db_coord.execute("INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + longitude + "','" + latitude + "'," + timestamp + ", 'notUploaded')");
+		db_coord.close();
+		
+		//Ti.API.info("LOCATION SERVICE SAVE: location_obj.length before: " + location_obj.length);
+		//var leng_before = location_obj.length;
+		//var aux_location = location_obj.slice(0);
+		//Ti.API.info("LOCATION SERVICE SAVE: aux_location.length = " + aux_location.length + " location_obj.length after = " + location_obj.length);
+		
+		
 		location_obj.push({
 			no_accurated_location : false,
 			accurated_location : "INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + longitude + "','" + latitude + "'," + timestamp + ", 'notUploaded')",
@@ -116,23 +128,24 @@ var upload_gps_locations = function() {
 	Ti.API.info('################################## CALLED UPDATE FUNCTION ################################## '+is_GPS_uploading());
 	if (is_GPS_uploading() == false){
 		set_GPS_uploading();
-		Ti.API.info('GPS');
+		Ti.API.info('LOCATION SERVICE: UPLOAD GPS');
 		var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
 		if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
-		Ti.API.info("Length before: " + location_obj.length);
-		var leng_before = location_obj.length;
-		var aux_location = location_obj.slice(0);
-		Ti.API.info(aux_location.length + " Length after: " + location_obj.length);
-		location_obj = new Array();
+		
+		//Ti.API.info("LOCATION SERVICE SAVE: location_obj.length before: " + location_obj.length);
+		//var leng_before = location_obj.length;
+		//var aux_location = location_obj.slice(0);
+		//Ti.API.info("LOCATION SERVICE SAVE: aux_location.length = " + aux_location.length + " location_obj.length after = " + location_obj.length);
+		//location_obj = new Array();
 	
-		for (var ind_local in aux_location) {
-			Ti.API.info(aux_location[ind_local].accurated_location);
-			db_coord.execute(aux_location[ind_local].accurated_location);
-		}
-		if (aux_location.length > 0) {
-			last_db_timestamp = aux_location.pop().timestamp;
-			Ti.API.info("Last timestamp = " + last_db_timestamp);
-		}
+		//for (var ind_local in aux_location) {
+			//Ti.API.info("LOCATION SAVE: " + aux_location[ind_local].accurated_location);
+		//	db_coord.execute(aux_location[ind_local].accurated_location);
+		//}
+		//if (aux_location.length > 0) {
+		//	last_db_timestamp = aux_location.pop().timestamp;
+		//	Ti.API.info("Last timestamp = " + last_db_timestamp);
+		//}
 		var result = db_coord.execute("SELECT * FROM user_location WHERE status = 'notUploaded' ORDER BY timestamp ASC");
 	
 		if (result.rowCount > 0) {
