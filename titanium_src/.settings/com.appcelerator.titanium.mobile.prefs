@@ -1,7 +1,7 @@
 MOBILE_PROJECT_SDK_VERSION=1.7.2
 android/alias=android keystore
 android/keystore=/Users/chris/android_keystore
-android/output_location=/Users/chris
-android/recent_output=/Users/chris,/Users/joseandro/Dropbox/omadi/Android/Joseandro,/Users/joseandro/Dropbox/omadi/Android/Stage,/home/jo/Desktop/Sync/Dropbox/omadi/Android/Joseandro
+android/output_location=/Users/chris/Desktop
+android/recent_output=/Users/chris/Desktop,/Users/chris,/Users/joseandro/Dropbox/omadi/Android/Joseandro,/Users/joseandro/Dropbox/omadi/Android/Stage,/home/jo/Desktop/Sync/Dropbox/omadi/Android/Joseandro
 android/sdk=Real3D Add-On Android 2.3.3
 eclipse.preferences.version=1

@@ -31,7 +31,7 @@ weekday[6]="Saturday";
 function is_GPS_uploading(){
 	var db_coord_name = Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName() + "_GPS";
 	var _db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
-	if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
+	if(PLATFORM != 'android'){_db_coord.file.setRemoteBackup(false);}
 	var resp = _db_coord.execute('SELECT * FROM gps_state WHERE rowid=1');
 	Ti.API.info('===> Is uploading GPS? '+resp.fieldByName('is_uploading'));
 	var gps_state = resp.fieldByName('is_uploading');
@@ -46,15 +46,16 @@ function is_GPS_uploading(){
 function set_GPS_uploading(){
 	var db_coord_name = Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName() + "_GPS";
 	var _db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
-	if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
+	if(PLATFORM != 'android'){_db_coord.file.setRemoteBackup(false);}
 	_db_coord.execute('UPDATE gps_state SET is_uploading="true" WHERE rowid=1');
 	_db_coord.close();
 }
 
 function unset_GPS_uploading(){
+	
 	var db_coord_name = Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName() + "_GPS";
 	var _db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
-	if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
+	if(PLATFORM != 'android'){_db_coord.file.setRemoteBackup(false);}
 	_db_coord.execute('UPDATE gps_state SET is_uploading="false" WHERE rowid=1');
 	_db_coord.close();
 }

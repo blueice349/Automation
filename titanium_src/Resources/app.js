@@ -43,7 +43,9 @@ var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.ge
 if(PLATFORM != 'android'){db_a.file.setRemoteBackup(false);}
 var updatedTime = db_a.execute('SELECT timestamp FROM updated WHERE rowid=1');
 
-unset_GPS_uploading();
+if(updatedTime.fieldByName('timestamp') != 0){
+	unset_GPS_uploading();
+}
 
 if (PLATFORM == "android"){
 	var intent = Titanium.Android.createServiceIntent({
