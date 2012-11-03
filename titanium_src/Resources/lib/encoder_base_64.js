@@ -1,3 +1,4 @@
+
 /**
 *
 *  Base64 encode / decode
@@ -85,8 +86,8 @@ var Base64 = {
 		string += "";
 		string = string.replace(/\r\n/g,"\n");
 		var utftext = "";
- 
-		for (var n = 0; n < string.length; n++) {
+ 		var n;
+		for (n = 0; n < string.length; n++) {
  
 			var c = string.charCodeAt(n);
  
@@ -112,7 +113,9 @@ var Base64 = {
 	_utf8_decode : function (utftext) {
 		var string = "";
 		var i = 0;
-		var c = c1 = c2 = 0;
+		var c = 0;
+		var c1 = 0;
+		var c2 = 0;
  
 		while ( i < utftext.length ) {
  

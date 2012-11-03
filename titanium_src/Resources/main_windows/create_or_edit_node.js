@@ -2099,7 +2099,6 @@ create_or_edit_node.loadUI = function() {
 				borderRadius : "2dp",
 				top : y,
 				backgroundColor : '#FFFFFF',
-				zIndex : 0,
 				ellipsize : true,
 				wordWrap : false,
 				zIndex: 998
@@ -5388,7 +5387,7 @@ create_or_edit_node.loadUI = function() {
 											composed_obj : true,
 											cardinality : settings.cardinality,
 											value : aux_val.title,
-											first_time : true,
+											//first_time : true,
 											reffer_index : reffer_index,
 											settings : settings,
 											changedFlag : 0,
@@ -5466,7 +5465,7 @@ create_or_edit_node.loadUI = function() {
 										content[count].addEventListener('change', function(e) {
 											changedContentValue(e.source);
 											noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-											if (e.source.first_time === false) {
+											//if (e.source.first_time === false) {
 												var list = e.source.terms;
 												var func = function setValueF(value_f, tid) {
 													e.source.value = value_f;
@@ -5523,9 +5522,9 @@ create_or_edit_node.loadUI = function() {
 													e.source.autocomplete_table.visible = false;
 													e.source.tid = null;
 												}
-											} else {
-												e.source.first_time = false;
-											}
+											//} else {
+											//	e.source.first_time = false;
+											//}
 										});
 										//Add fields:
 										regionView.add(content[count]);
@@ -5595,7 +5594,7 @@ create_or_edit_node.loadUI = function() {
 										composed_obj : false,
 										cardinality : settings.cardinality,
 										value : aux_val.title,
-										first_time : true,
+										//first_time : true,
 										reffer_index : reffer_index,
 										hasParent : hasParent,
 										parent_name : parent_name,
@@ -5677,7 +5676,7 @@ create_or_edit_node.loadUI = function() {
 										changedContentValue(e.source);
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
 
-										if (e.source.first_time === false) {
+										//if (e.source.first_time === false) {
 											var list = e.source.terms;
 											var func = function setValueF(value_f, tid) {
 												e.source.value = value_f;
@@ -5733,9 +5732,9 @@ create_or_edit_node.loadUI = function() {
 												e.source.autocomplete_table.visible = false;
 												e.source.tid = null;
 											}
-										} else {
-											e.source.first_time = false;
-										}
+										//} else {
+										//	e.source.first_time = false;
+										//}
 
 									});
 									//Add fields:
@@ -5893,7 +5892,7 @@ create_or_edit_node.loadUI = function() {
 										composed_obj : true,
 										cardinality : settings.cardinality,
 										value : aux_val.title,
-										first_time : true,
+										//first_time : true,
 										reffer_index : reffer_index,
 										settings : settings,
 										changedFlag : 0,
@@ -5981,7 +5980,7 @@ create_or_edit_node.loadUI = function() {
 									content[count].addEventListener('change', function(e) {
 										if (e.source.touched === true) {
 											changedContentValue(e.source);
-											if (e.source.first_time === false) {
+											//if (e.source.first_time === false) {
 												var list = e.source.terms;
 												var func = function setValueF(value_f, nid) {
 													e.source.value = value_f;
@@ -6037,9 +6036,9 @@ create_or_edit_node.loadUI = function() {
 													e.source.autocomplete_table.visible = false;
 													e.source.nid = null;
 												}
-											} else {
-												e.source.first_time = false;
-											}
+											//} else {
+											//	e.source.first_time = false;
+											//}
 										}
 
 									});
@@ -6086,7 +6085,7 @@ create_or_edit_node.loadUI = function() {
 									composed_obj : false,
 									cardinality : settings.cardinality,
 									value : aux_val.title,
-									first_time : true,
+									//first_time : true,
 									reffer_index : reffer_index,
 									settings : settings,
 									changedFlag : 0,
@@ -6176,7 +6175,7 @@ create_or_edit_node.loadUI = function() {
 									if (e.source.touched === true) {
 										e.source.nid = null;
 										changedContentValue(e.source);
-										if (e.source.first_time === false) {
+										//if (e.source.first_time === false) {
 											var list = e.source.terms;
 											var func = function setValueF(value_f, nid) {
 												e.source.value = value_f;
@@ -6232,9 +6231,9 @@ create_or_edit_node.loadUI = function() {
 												e.source.autocomplete_table.visible = false;
 												e.source.nid = null;
 											}
-										} else {
-											e.source.first_time = false;
-										}
+										//} else {
+										//	e.source.first_time = false;
+										//}
 									}
 								});
 								//Add fields:
@@ -7672,7 +7671,7 @@ create_or_edit_node.loadUI = function() {
 									reffer_index : reffer_index,
 									make_ind : _make_ref,
 									terms : data_terms,
-									first_time : true,
+									//first_time : true,
 									_make : keep_from_make,
 									settings : settings,
 									changedFlag : 0,
@@ -7747,7 +7746,7 @@ create_or_edit_node.loadUI = function() {
 											e.source._make = content[e.source.make_ind].value;
 											e.source.terms = get_models(content[e.source.make_ind].value);
 											e.source.value = null;
-											e.source.first_time = true;
+											//e.source.first_time = true;
 										}
 									}
 								});
@@ -7766,7 +7765,7 @@ create_or_edit_node.loadUI = function() {
 									}
 									changedContentValue(e.source);
 									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-									if (e.source.first_time === false) {
+									//if (e.source.first_time === false) {
 										var list = e.source.terms;
 										var func = function setValueF(value_f) {
 											e.source.value = value_f;
@@ -7812,9 +7811,9 @@ create_or_edit_node.loadUI = function() {
 										} else {
 											e.source.autocomplete_table.visible = false;
 										}
-									} else {
-										e.source.first_time = false;
-									}
+									//} else {
+									//	e.source.first_time = false;
+									//}
 								});
 								//Add fields:
 								regionView.add(content[count]);
@@ -8212,7 +8211,7 @@ create_or_edit_node.loadUI = function() {
 									composed_obj : false,
 									cardinality : 1,
 									value : field_arr[index_label][index_size].actual_value,
-									first_time : true,
+									//first_time : true,
 									reffer_index : reffer_index,
 									settings : settings,
 									changedFlag : 0,

@@ -7,7 +7,6 @@
  *		no submitions with empty fields.
  * 		the first window the user sees when the app starts.
  *		the window the user sees when he logs out.
- * @author Joseandro
  */
 
 // this sets the background color of every 
@@ -564,7 +563,15 @@ b1.addEventListener('click', function(){
 		showIndicator('Logging you in...');
 		//Create internet connection
 		var xhr = Ti.Network.createHTTPClient();
-		
+		var parms = {
+          username: tf1.value,
+          password: tf2.value,
+          device_id: Titanium.Platform.getId(),
+          app_version: Titanium.App.version,
+          //device_data: '{ "model": "'+Titanium.Platform.model+'", "version": "'+Titanium.Platform.version+'", "architecture": "'+Titanium.Platform.architecture+'", "platform": "'+Titanium.Platform.name+'", "os_type": "'+Titanium.Platform.ostype+'" }' 
+          device_data: { "model": Titanium.Platform.model, "version": Titanium.Platform.version, "architecture": Titanium.Platform.architecture, "platform": Titanium.Platform.name, "os_type": Titanium.Platform.ostype, "screen_density":Titanium.Platform.displayCaps.density, "primary_language": Titanium.Platform.locale, "processor_count": Titanium.Platform.processorCount }
+        };
+        
 		//10 seconds till die
 		xhr.setTimeout(10000);
 		
@@ -575,14 +582,7 @@ b1.addEventListener('click', function(){
 		xhr.setRequestHeader("Content-Type", "application/json");
 
 		//Parameters to send ()
-		var parms = {
-          username: tf1.value,
-          password: tf2.value,
-          device_id: Titanium.Platform.getId(),
-          app_version: Titanium.App.version,
-          //device_data: '{ "model": "'+Titanium.Platform.model+'", "version": "'+Titanium.Platform.version+'", "architecture": "'+Titanium.Platform.architecture+'", "platform": "'+Titanium.Platform.name+'", "os_type": "'+Titanium.Platform.ostype+'" }' 
-          device_data: { "model": Titanium.Platform.model, "version": Titanium.Platform.version, "architecture": Titanium.Platform.architecture, "platform": Titanium.Platform.name, "os_type": Titanium.Platform.ostype, "screen_density":Titanium.Platform.displayCaps.density, "primary_language": Titanium.Platform.locale, "processor_count": Titanium.Platform.processorCount }
-        };
+		
                 
 		//Send info
 		xhr.send('{"username":"'+parms["username"]+'","password":"'+parms["password"] +'","device_id":"'+parms["device_id"] +'","app_version":"'+parms["app_version"] +'","device_data": '+JSON.stringify(parms["device_data"]) +' }');
@@ -640,12 +640,20 @@ b1.addEventListener('click', function(){
 				Ti.API.info(this.responseText);
 				var cookie = this.getResponseHeader('Set-Cookie');
 				var new_app_login_time = Math.round(new Date().getTime() / 1000);
+			
+				var has_login_row_result = db_list.execute('SELECT COUNT(*) AS count FROM login WHERE id_log=1');
+				if(has_login_row_result.fieldByName('count') > 0){
+					db_list.execute("BEGIN IMMEDIATE TRANSACTION");
+					var __res = db_list.execute('UPDATE login SET picked = "'+picked+'", login_json = "'+Ti.Utils.base64encode(win2.result)+'", is_logged = "true", cookie = "'+cookie+'", logged_time = "'+new_app_login_time+'" WHERE "id_log"=1' );
+					db_list.execute("COMMIT TRANSACTION");
+				}
+				else{
+					db_list.execute("BEGIN IMMEDIATE TRANSACTION");
+					var __res = db_list.execute('INSERT INTO login SET picked = "' + picked + '", login_json = "' + Ti.Utils.base64encode(win2.result) + '", is_logged = "true", cookie = "' + cookie + '", logged_time = "' + new_app_login_time + '", id_log=1');
+					db_list.execute("COMMIT TRANSACTION");
+				}
 				
-				db_list.execute("BEGIN IMMEDIATE TRANSACTION");
-				Ti.API.info('UPDATE login SET picked = "'+picked+'", login_json = "'+Ti.Utils.base64encode(win2.result)+'", is_logged = "true", cookie = "'+cookie+'", logged_time = "'+new_app_login_time+'" WHERE "id_log"=1');
-				var __res = db_list.execute('UPDATE login SET picked = "'+picked+'", login_json = "'+Ti.Utils.base64encode(win2.result)+'", is_logged = "true", cookie = "'+cookie+'", logged_time = "'+new_app_login_time+'" WHERE "id_log"=1' );
-				db_list.execute("COMMIT TRANSACTION");
-				Ti.API.info(isLogged()+" Logged ... Database   "+Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName());
+				//Ti.API.info(isLogged()+" Logged ... Database   "+Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName());
 				db_list.close();
 				tf2.value	 = "";
 				win1.touchEnabled = false;
@@ -653,7 +661,7 @@ b1.addEventListener('click', function(){
 				
 				hideIndicator();	
 
-		}
+		};
 			
 		//If username and pass wrong:
 		xhr.onerror = function(e) {
@@ -668,7 +676,7 @@ b1.addEventListener('click', function(){
 			else{
 				label_error.text = "An error has occurred, please try again";
 			}
-   		}
+   		};
    	}
 });
 // Always show the window in portrait orientation
@@ -691,14 +699,14 @@ db.close();
 
 if(PLATFORM == 'android') {
 	portal.backgroundImage = tf1.backgroundImage = tf2.backgroundImage = 'images/textfield.png';
-	b1.backgroundImage = '',
-	b1.backgroundColor = 'white',
-	b1.backgroundSelectedColor = '#2E64FE',
-	b1.borderColor = 'gray',
-	b1.borderRadius = 10,
-	b1.color = 'black',
-	b1.height = '50',
-	b1.borderWidth = 1
+	b1.backgroundImage = '';
+	b1.backgroundColor = 'white';
+	b1.backgroundSelectedColor = '#2E64FE';
+	b1.borderColor = 'gray';
+	b1.borderRadius = 10;
+	b1.color = 'black';
+	b1.height = '50';
+	b1.borderWidth = 1;
 }
 
 //Make everthing happen:

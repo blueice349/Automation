@@ -67,7 +67,16 @@ labelOut.addEventListener('click',function (){
 	
 	//Header parameters
 	logout_xhr.setRequestHeader("Content-Type", "application/json");
-	if(PLATFORM == 'android'){logout_xhr.setRequestHeader("Cookie", getCookie());} // Set cookies
+	if(PLATFORM == 'android'){
+		logout_xhr.setRequestHeader("Cookie", getCookie());// Set cookies
+	}
+	else{
+		var split_cookie = getCookie().split(';');
+		if (!split_cookie[0] ){
+			split_cookie[0]="";
+		}
+		logout_xhr.setRequestHeader("Cookie", split_cookie[0]);// Set cookies
+	}
 	
 	logout_xhr.onload = function(e) {
 		Ti.App.Properties.setString('logStatus', "You have successfully logged out");
@@ -84,6 +93,7 @@ labelOut.addEventListener('click',function (){
 		hideIndicator();
 		logout_xhr.abort();
 		indLog.close();
+		removeNotifications();
 	}
 
 	logout_xhr.onerror = function(e) {
@@ -108,6 +118,7 @@ labelOut.addEventListener('click',function (){
 			Ti.API.info("Failed to log out");
 			alert("Failed to log out, please try again");
 		}
+		removeNotifications();
 	}
 	logout_xhr.send();
 });

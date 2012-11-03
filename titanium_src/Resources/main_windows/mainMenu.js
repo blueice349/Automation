@@ -43,11 +43,55 @@ if(PLATFORM != "android"){
 else{
 	//Initialize the GPS background service
 	var intent = Titanium.Android.createServiceIntent({
-	  url: 'android_gps_event.js',
-	  startMode:Ti.Android.START_REDELIVER_INTENT
+	  url: 'android_gps_event.js'
 	});
 	
-	Titanium.Android.startService(intent);
+	//intent.putExtra('interval', 5000);
+	
+	intent.putExtra('interval', 5000);
+	//intent.putExtra('message', 'Hi from started service');
+	Ti.Android.startService(intent);
+	
+	// var service = Titanium.Android.createService(intent);
+	// service.addEventListener('resume', function(e) {
+	    // Titanium.API.info('Service code resumes, iteration ' + e.iteration);
+	// });
+// 	
+	// service.addEventListener('pause', function(e) {
+	    // Titanium.API.info('Service code pauses, iteration ' + e.iteration);
+	    // //if (e.iteration === 3) {
+	        // Titanium.API.info('SERVICE code has run ' + e.iteration + ' times.');
+	        // //service.stop();
+	    // //}
+	// });
+	// service.start();
+	
+	
+	var intent2 = Titanium.Android.createServiceIntent({
+	  url: 'android_gps_upload.js'
+	});
+	
+	intent2.putExtra('interval', 60000);
+	
+	var service2 = Titanium.Android.createService(intent2);
+	service2.addEventListener('resume', function(e) {
+	    Titanium.API.info('Upload Service code resumes, iteration ' + e.iteration);
+	});
+	
+	service2.addEventListener('pause', function(e) {
+	    Titanium.API.info('Upload Service code pauses, iteration ' + e.iteration);
+	    //if (e.iteration === 3) {
+	        Titanium.API.info('UPLOAD SERVICE code has run ' + e.iteration + ' times.');
+	        //service.stop();
+	    //}
+	});
+	
+	// Start the GPS upload 30 seconds after the program starts
+	setTimeout(function() {
+		service2.start();
+ 	}, 30000);	
+	
+	//Titanium.Android.startService(intent);
 }
 
 function checkUpdate(evt){

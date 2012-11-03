@@ -12,10 +12,10 @@
     </deployment-targets>
     <id>com.omadi.crm</id>
     <name>Omadi</name>
-    <version>1.6.0</version>
+    <version>1.6.1</version>
     <publisher>Omadi</publisher>
     <url>http://www.omadi.com</url>
-    <description>CRM from omadi</description>
+    <description>Mobile CRM From Omadi</description>
     <copyright>2012 by Omadi</copyright>
     <icon>appicon.png</icon>
     <persistent-wifi>false</persistent-wifi>
@@ -34,9 +34,10 @@
     <android xmlns:android="http://schemas.android.com/apk/res/android">
         <services>
             <service type="interval" url="android_gps_event.js"/>
+            <service type="interval" url="android_gps_upload.js"/>
         </services>
         <manifest android:installLocation="preferExternal"
-            android:versionCode="1" android:versionName="1.5.14">
+            android:versionCode="2" android:versionName="1.6.0">
             <uses-sdk android:minSdkVersion="7"/>
             <uses-permission android:name="android.permission.READ_LOGS"/>
             <uses-permission android:name="android.permission.INTERNET"/>

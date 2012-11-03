@@ -1724,7 +1724,6 @@ function createCalculationTableFormat(content , db_display, contentArr) {
 				text 			: row_values[idx].row_label + ":  ",
 				textAlign 		: 'right',
 				width 			:  widthCellView/2-1,
-				color 			: 'white',
 				font 			: {
 									fontFamily 	: 'Helvetica Neue',
 									fontSize 	: 14
@@ -1740,8 +1739,7 @@ function createCalculationTableFormat(content , db_display, contentArr) {
 				text 			: "  " + cal_value_str,
 				textAlign 		: 'left',
 				width 			:  widthCellView/2,
-				left 			: 1,
-				color 			: 'white',
+				left 			: 1,	
 				font 			: {
 									fontFamily : 'Helvetica Neue',
 									fontSize : 14

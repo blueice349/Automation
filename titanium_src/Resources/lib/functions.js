@@ -1,8 +1,8 @@
-/**
+
+/*
  * Name: functions.js
  * Provides:
  * 		Functions used by the app
- * @author Joseandro
  */
 
 Ti.include('/lib/encoder_base_64.js');
@@ -37,7 +37,7 @@ function is_GPS_uploading(){
 	var gps_state = resp.fieldByName('is_uploading');
 	_db_coord.close();
 	if (gps_state == "false" || gps_state == false || gps_state === false || gps_state == null){
-		return false
+		return false;
 	}
 	return true;
 	
@@ -124,7 +124,7 @@ function createNotification(message) {
             icon: 0x7f020000,
             contentTitle: 'Omadi CRM',
             contentText: message,
-            tickerText: 'Omadi notification',
+            tickerText: 'Omadi GPS Service',
             contentIntent: pending,
             flags: Titanium.Android.FLAG_ONGOING_EVENT | Titanium.Android.FLAG_NO_CLEAR
     });
@@ -312,7 +312,7 @@ function Progress_install(current, max) {
 		pb_install.show();
 		this.max = value;
 		Ti.API.info("Changed max");
-	}
+	};
 
 	this.set = function() {
 		this.current++;
@@ -328,11 +328,11 @@ function Progress_install(current, max) {
 				pb_install.value = perc;
 			}
 		}
-	}
+	};
 
 	this.set_download = function(_value) {
 		pb_download.value = _value;
-	}
+	};
 
 	this.close = function() {
 		indView.animate(a1);
@@ -340,7 +340,7 @@ function Progress_install(current, max) {
 			Ti.UI.currentWindow.remove(indView);
 			loggedView.animate(a2);
 		}, 700);
-	}
+	};
 }
 
 function showIndicatorDelete(inform) {
@@ -396,15 +396,6 @@ function showIndicatorDelete(inform) {
 	actIndFun.show();
 };
 
-/* Function Name: hideIndicator()
- * Purpouse: Close the loading screen
- * Parameters: none
- * Variables:
- * 	indWin:  Window that is supposed to contain the loading screen
- * 			 modal or fullscreen.
- * 	actIndFun:  Activity indicator.
- *
- */
 
 function hideIndicator() {
 	actIndFun.hide();
@@ -421,15 +412,14 @@ function hideIndicatorFistPage() {
 	}, 1000);
 };
 
-/* Function Name: sortTableView( a, b)
+/**
+ * Function Name: sortTableView( a, b)
  * Purpouse: Sort arrays
  * Parameters:
  * 	a:   Previous object in the array.
  *  b: 	 Next object in the array.
  * Variables: none
- *
  */
-
 function sortTableView(a, b) {
 	if (a.name < b.name)
 		return -1;
@@ -439,7 +429,8 @@ function sortTableView(a, b) {
 	return 0;
 };
 
-/* Function Name: (actualWindow, goToWindow )
+/**
+ *  Function Name: (actualWindow, goToWindow )
  * Purpouse: Show button Back at the bottom and close actualWindow and go to goToWindow
  * Parameters:
  * 	actualWindow:   The windows where the function was called from.
@@ -628,7 +619,8 @@ function treatArray(num_to_insert, call_id) {
 		}
 		return content_s;
 	} else {
-		for (var key in num_to_insert) {
+		var key;
+		for (key in num_to_insert) {
 			count_a++;
 			if (count_a < array_size) {
 				content_s += num_to_insert[key] + '' + separator;
@@ -644,7 +636,8 @@ function treatArray(num_to_insert, call_id) {
 			Ti.API.info('@Developer, check arrays insertion! _' + call_id);
 			var blah = num_to_insert instanceof Array;
 			Ti.API.info('This is the original array-size: ' + num_to_insert.length + ' is this an array? ' + blah);
-			for (var key in num_to_insert) {
+			var key;
+			for (key in num_to_insert) {
 				Ti.API.info('For value ' + key + ' in array we got ' + num_to_insert[key]);
 			}
 		}
@@ -701,8 +694,8 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 		}
 		//Multiple objects
 		if (json[obj].insert.length) {
-
-			for (var i = 0; i < json[obj].insert.length; i++) {
+			var i;
+			for (i = 0; i < json[obj].insert.length; i++) {
 				if (progress != null) {
 					//Increments Progress Bar
 					progress.set();
@@ -744,9 +737,11 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 				while (aux_column > 0) {
 					var parse_api = col_titles[aux_column - 1];
 					mark = '"';
-					for (var i_index in f_marks) {
+					var i_index;
+					for (i_index in f_marks) {
 						if (i_index == parse_api) {
-							for (var j_index in f_marks[i_index]) {
+							var j_index;
+							for (j_index in f_marks[i_index]) {
 								if (j_index == obj) {
 									mark = '';
 								}
@@ -900,9 +895,11 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 			while (aux_column > 0) {
 				var parse_api = col_titles[aux_column - 1];
 				mark = '"';
-				for (var i_index in f_marks) {
+				var i_index;
+				for (i_index in f_marks) {
 					if (i_index == parse_api) {
-						for (var j_index in f_marks[i_index]) {
+						var j_index;
+						for (j_index in f_marks[i_index]) {
 							if (j_index == obj) {
 								mark = '';
 							}
@@ -1017,7 +1014,8 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 
 	if (json[obj].update) {
 		if (json[obj].update.length) {
-			for (var i = 0; i < json[obj].update.length; i++) {
+			var i;
+			for (i = 0; i < json[obj].update.length; i++) {
 				if (progress != null) {
 					//Increments Progress Bar
 					progress.set();
@@ -1059,9 +1057,11 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 				while (aux_column > 0) {
 					var parse_api = col_titles[aux_column - 1];
 					mark = '"';
-					for (var i_index in f_marks) {
+					var i_index;
+					for (i_index in f_marks) {
 						if (i_index == parse_api) {
-							for (var j_index in f_marks[i_index]) {
+							var j_index;
+							for (j_index in f_marks[i_index]) {
 								if (j_index == obj) {
 									mark = '';
 								}
@@ -1251,9 +1251,11 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 			while (aux_column > 0) {
 				var parse_api = col_titles[aux_column - 1];
 				mark = '"';
-				for (var i_index in f_marks) {
+				var i_index;
+				for (i_index in f_marks) {
 					if (i_index == parse_api) {
-						for (var j_index in f_marks[i_index]) {
+						var j_index;
+						for (j_index in f_marks[i_index]) {
 							if (j_index == obj) {
 								mark = '';
 							}
@@ -1358,7 +1360,8 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 	//Delete
 	if (json[obj]["delete"]) {
 		if (json[obj]["delete"].length) {
-			for (var i = 0; i < json[obj]["delete"].length; i++) {
+			var i;
+			for (i = 0; i < json[obj]["delete"].length; i++) {
 				if (progress != null) {
 					//Increments Progress Bar
 					progress.set();
@@ -1382,7 +1385,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 		//Ti.API.info("Deleted object [" + obj + "] sucefully!");
 	}
 
-	Ti.API.info('########## CRITICAL STEP ##########');
+	//Ti.API.info('########## CRITICAL STEP ##########');
 
 	var iObj = 0;
 	var iStart = Math.round(new Date().getTime() / 1000);
@@ -1437,33 +1440,38 @@ function getJSON() {
 			} else {
 				returning_json += '"' + new_nodes.fieldByName('nid') + '":{ "changed":"' + new_nodes.fieldByName('changed') + '", "nid":"' + new_nodes.fieldByName('nid') + '", "type":"' + type_string.toLowerCase() + '", "form_part":"' + new_nodes.fieldByName("form_part") + '", "no_data_fields":' + no_data_string;
 			}
-			Ti.API.info(returning_json);
-			Ti.API.info('1');
+			//Ti.API.info(returning_json);
+			//Ti.API.info('1');
 			while (node_fields.isValidRow()) {
-				Ti.API.info('2');
-				Ti.API.debug("CREATE JSON: processing field " + node_fields.fieldByName('field_name'));
+				//Ti.API.info('2');
+				//Ti.API.debug("CREATE JSON: processing field " + node_fields.fieldByName('field_name'));
 				if ((selected_node.rowCount > 0) && (selected_node.fieldByName(node_fields.fieldByName('field_name')) != null) && (selected_node.fieldByName(node_fields.fieldByName('field_name')) != '')) {
-					Ti.API.info('3');
+					//Ti.API.info('3');
 					if (selected_node.fieldByName(node_fields.fieldByName('field_name')) == 7411317618171051229) {
-						Ti.API.info('4');
+						//Ti.API.info('4');
 						var array_cont = db_json.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + new_nodes.fieldByName('nid') + ' AND field_name = \'' + node_fields.fieldByName('field_name') + '\'');
-						Ti.API.info('5');
+						//Ti.API.info('5');
 						if ((array_cont.rowCount > 0) || (array_cont.isValidRow())) {
 							//Decode the stored array:
-							Ti.API.info('6');
+							//Ti.API.info('6');
 							var a_decoded = array_cont.fieldByName('encoded_array');
-							Ti.API.info('7 '+a_decoded);
+							//Ti.API.info('7 '+a_decoded);
 							//TODO: Fix the decoded value:
 							//decoded = Titanium.Utils.base64decode(decoded);
 							var decoded = Base64.decode(a_decoded);
-							Ti.API.info('8 '+decoded);
-							Ti.API.info('Decoded array is equals to: ' + decoded);
-							Ti.API.info('9');
+							//Ti.API.info('8 '+decoded);
+							//Ti.API.info('Decoded array is equals to: ' + decoded);
+							//Ti.API.info('9');
 							decoded = decoded.toString();
-							Ti.API.info('10');
+							//Ti.API.info('10');
 							// Token that splits each element contained into the array: 'j8Oc2s1E'
 							var decoded_values = decoded.split("j8Oc2s1E");
-							Ti.API.info('11 '+decoded_values);
+							
+							var y;
+							for(y in decoded_values){
+								decoded_values[y] = decoded_values[y].toString().replace(/^\s+|\s+$/g,"");
+							}
+							//Ti.API.info('11 '+decoded_values);
 							// TODO: why is it looking for the word photo in the field_name
 							// TODO: this should check if it is an image field type
 							if (node_fields.fieldByName('field_name').indexOf('photo') != -1){
@@ -1475,7 +1483,7 @@ function getJSON() {
 								
 								db_images.close();
 								
-								Ti.API.info("IMAGE: Image Count: " + image_count);
+								//Ti.API.info("IMAGE: Image Count: " + image_count);
 								
 								if (decoded_values.length){
 									if (decoded_values.length == 1){
@@ -1488,7 +1496,8 @@ function getJSON() {
 									}
 									else{
 										var cp_decoded_values = decoded_values.slice();
-										for (var y in decoded_values){
+										var y;
+										for (y in decoded_values){
 											if (decoded_values[y] == null || decoded_values[y] == "null" || decoded_values[y] == "" || isNumber(decoded_values[y]) === false){
 												cp_decoded_values.splice(y,1);
 											}
@@ -1497,16 +1506,16 @@ function getJSON() {
 									}
 								}
 								else{
-									Ti.API.info('Nothing to add, pictures do not exit');
+									//Ti.API.info('Nothing to add, pictures do not exit');
 								}
 							}
 							else{
 								returning_json += ', "' + node_fields.fieldByName('field_name') + '": [ \"' + decoded_values.join("\" , \"") + '\" ] ';								
 							}
 
-							Ti.API.info('11.1 '+returning_json);
+							//Ti.API.info('11.1 '+returning_json);
 						} else {
-							Ti.API.info('12');
+							//Ti.API.info('12');
 							if (node_fields.fieldByName('field_name').indexOf('photo') != -1){
 								var db_images = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 								
@@ -1515,7 +1524,7 @@ function getJSON() {
 								
 								db_images.close();
 								
-								Ti.API.info("IMAGE: Image Count bottom: " + image_count);
+								//Ti.API.info("IMAGE: Image Count bottom: " + image_count);
 								
 								if ( selected_node.fieldByName(node_fields.fieldByName('field_name')) == null || selected_node.fieldByName(node_fields.fieldByName('field_name'))== "null" || selected_node.fieldByName(node_fields.fieldByName('field_name')) == "" || isNumber( selected_node.fieldByName(node_fields.fieldByName('field_name'))) === false){
 									Ti.API.info('Nothing to add, pictures not taken');
@@ -1525,22 +1534,26 @@ function getJSON() {
 								}
 							}
 							else{
-								returning_json += ', "' + node_fields.fieldByName('field_name') + '": "' + selected_node.fieldByName(node_fields.fieldByName('field_name')) + '"';
+								var value = selected_node.fieldByName(node_fields.fieldByName('field_name')).toString();
+								returning_json += ', "' + node_fields.fieldByName('field_name') + '": "' + value.replace(/^\s+|\s+$/g,"") + '"';
 							}
 							//returning_json += ', "' + node_fields.fieldByName('field_name') + '": "' + selected_node.fieldByName(node_fields.fieldByName('field_name')) + '"';
-							Ti.API.info('13 PRE_JSON: ' + returning_json);
+							//Ti.API.info('13 PRE_JSON: ' + returning_json);
 						}
 						array_cont.close();
 					} else {
-						Ti.API.info('14');
+						//Ti.API.info('14');
 						if (node_fields.fieldByName('type') == 'rules_field') {
-							Ti.API.info('15');
+							//Ti.API.info('15');
 							returning_json += ', "' + node_fields.fieldByName('field_name') + '": ' + selected_node.fieldByName(node_fields.fieldByName('field_name'));
-							Ti.API.info('16 PRE_JSON: ' + returning_json);
+							//Ti.API.info('16 PRE_JSON: ' + returning_json);
 						} else {
-							Ti.API.info('17');
-							returning_json += ', "' + node_fields.fieldByName('field_name') + '": "' + selected_node.fieldByName(node_fields.fieldByName('field_name')) + '" ';
-							Ti.API.info('18 PRE_JSON: ' + returning_json);
+							//Ti.API.info('17');
+							// Most fields go here
+							// single cardinality, non-photo, non-rules fields
+							var value = selected_node.fieldByName(node_fields.fieldByName('field_name')).toString();
+							returning_json += ', "' + node_fields.fieldByName('field_name') + '": "' + value.replace(/^\s+|\s+$/g,"") + '" ';
+							//Ti.API.info('18 PRE_JSON: ' + returning_json);
 						}
 					}
 				}
@@ -1551,7 +1564,7 @@ function getJSON() {
 					var image_count = image_count_result.fieldByName('count');
 					db_images.close();
 					
-					Ti.API.info("IMAGE: Image Count, none saved: " + image_count);
+					//Ti.API.info("IMAGE: Image Count, none saved: " + image_count);
 					if(image_count > 0){
 						decoded_values = new Array();
 						for(i = 0; i < image_count; i ++){
@@ -1661,12 +1674,14 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 			progress.set_download(e.progress);
 			Ti.API.info(' ONDATASTREAM1 - PROGRESS: ' + e.progress);
 		}
-	}
+	};
+	
 	if (type_request == 'POST') {
 		objectsUp.open('POST', win.picked + '/js-sync/sync.json');
-	} else {
+	} 
+	else {
 		//Opens address to retrieve list
-		Ti.API.info('GET, ' + win.picked + '/js-sync/download.json?sync_timestamp=' + timeIndex);
+		//Ti.API.info('GET, ' + win.picked + '/js-sync/download.json?sync_timestamp=' + timeIndex);
 		objectsUp.open('GET', win.picked + '/js-sync/download.json?sync_timestamp=' + timeIndex);
 	}
 	//Header parameters
@@ -1785,7 +1800,8 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					var veh_db = new Array();
 
 					if ( _veh instanceof Array) {
-						for (var _i_veh in _veh) {
+						var _i_veh;
+						for (_i_veh in _veh) {
 							veh_db.push("INSERT OR REPLACE INTO _vehicles (make, model ) VALUES ('" + _veh[_i_veh][0] + "', '" + _veh[_i_veh][1] + "' )");
 						}
 					} else {
@@ -3822,7 +3838,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 	objectsUp.onerror = function(e) {
 		Ti.API.error('Code status: ' + e.error);
 		Ti.API.error('CODE ERROR = '+this.status);
-		Ti.API.info("Progress bar = " + progress);
+		//Ti.API.info("Progress bar = " + progress);
 		
 		if (progress != null) {
 			progress.close();
@@ -3855,7 +3871,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 				buttonNames : ['OK']
 			});				
 			
-			a_msg.message = "You session is no longer valid. Please log back in."
+			a_msg.message = "Your session is no longer valid. Please log back in.\n" + e.error;
 			a_msg.addEventListener('click', function(e) {
 				Ti.App.fireEvent('stop_gps');
 				Ti.App.fireEvent('free_login');
@@ -3961,11 +3977,11 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 	//Get upload JSON
 	if (type_request == 'POST') {
 		var insert_JSON = getJSON();
-		while (Titanium.Network.online === false);
+		while (Titanium.Network.online === false){};
 		objectsUp.send(insert_JSON);
 	} else {
 		//Sending information and try to connect
-		while (Titanium.Network.online === false);
+		while (Titanium.Network.online === false){};
 		objectsUp.send();
 	}
 
@@ -4329,7 +4345,12 @@ function uploadFile(win, type_request) {
 						database.execute("DELETE FROM file_upload_queue WHERE nid=" + fileUploadTable.fieldByName('nid') + " and id=" + fileUploadTable.fieldByName('id') + ";");
 						database.close();
 					}
-					
+					var alertDialog = Titanium.UI.createAlertDialog({ 
+						title: 'Upload Error', 
+						message: 'There was a problem uploading your photo. Details: ' + this.status + " " + this.error, 
+						buttonNames: ['OK'] 
+					}); 
+					alertDialog.show();
 				}
 
 				_file_xhr.setRequestHeader("Content-Type", "application/json");
