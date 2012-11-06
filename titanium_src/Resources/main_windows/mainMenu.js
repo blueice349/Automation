@@ -292,7 +292,7 @@ while ( elements.isValidRow() ){
 		}
 		check++;
 		var row_t = Ti.UI.createTableViewRow({
-			height      : "40dp",	
+			height      : "50dp",	
 			display     : display,
 			name		: display,
 			desc : description,

@@ -1,6 +1,5 @@
 Ti.include("/lib/functions.js");
 
-Ti.App.Properties.setString("last_alert_popup", 0);
 var time_interval_for_alerts = 120;
 
 // state vars used by resume/pause
@@ -64,7 +63,7 @@ function updateCurrentLocation(e) {
 			var time_now = Math.round(new Date().getTime() / 1000);
 			var time_past = time_now - Ti.App.Properties.getString("last_alert_popup");
 			if(time_past > time_interval_for_alerts) {
-				notifyIOS('Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is ' + accuracy + ' meters', true);
+				notifyIOS('Your GPS is getting inaccurate data. Please make sure the sky is visible. Current GPS accuracy is ' + accuracy + ' meters.', true);
 			} else {
 				Ti.API.info('NOT SHOWN - Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is ' + accuracy + ' meters');
 			}

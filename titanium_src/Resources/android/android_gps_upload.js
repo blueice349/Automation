@@ -1,7 +1,5 @@
 Ti.include("/lib/functions.js");
 
-
-Ti.App.Properties.setString("last_alert_popup", 0);
 var time_interval_for_alerts = 120;
 
 // state vars used by resume/pause
@@ -66,7 +64,7 @@ var upload_gps_locations = function() {
 				}
 				json_coord += "], \"current_time\": \" " + Math.round(new Date().getTime() / 1000) + "\" }";
 	
-				result.close();
+				
 	
 				//alert ("Before open connection");
 				var objectsCheck = Ti.Network.createHTTPClient();
@@ -95,9 +93,9 @@ var upload_gps_locations = function() {
 								Ti.API.info(resultReq.success + " GPS coordinates successfully inserted ");
 							}
 						}
-						var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
+						var db_coord2 = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
 						if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
-						db_coord.execute('DELETE FROM user_location WHERE status="json"');
+						db_coord2.execute('DELETE FROM user_location WHERE status="json"');
 						var _arr_content = new Array();
 						var nids = new Array();
 						if (resultReq.alert) {
@@ -120,20 +118,20 @@ var upload_gps_locations = function() {
 								}
 							}
 						}
-						db_coord.execute("BEGIN IMMEDIATE TRANSACTION");
+						db_coord2.execute("BEGIN IMMEDIATE TRANSACTION");
 						for (var _e in nids) {
-							db_coord.execute('DELETE FROM alerts WHERE location_nid=' + nids[_e]);
-							db_coord.execute('DELETE FROM alert_names WHERE location_nid=' + nids[_e]);
+							db_coord2.execute('DELETE FROM alerts WHERE location_nid=' + nids[_e]);
+							db_coord2.execute('DELETE FROM alert_names WHERE location_nid=' + nids[_e]);
 							Ti.API.info('Deleted location nids: ' + nids[_e]);
 						}
 	
 						for (var _k in _arr_content) {
 							Ti.API.info(_arr_content[_k]);
-							db_coord.execute(_arr_content[_k]);
+							db_coord2.execute(_arr_content[_k]);
 						}
-						db_coord.execute("COMMIT TRANSACTION");
+						db_coord2.execute("COMMIT TRANSACTION");
 						Ti.API.info('Finished inserting');
-						db_coord.close();
+						db_coord2.close();
 						Ti.App.fireEvent('refresh_UI_Alerts', {status: 'success'});
 						unset_GPS_uploading();
 						var __timestamp  = Math.round(new Date().getTime() / 1000);
@@ -144,11 +142,11 @@ var upload_gps_locations = function() {
 				}
 				//Connection error:
 				objectsCheck.onerror = function(e) {
-					var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
+					var db_coord2 = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
 					if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
-					db_coord.execute("UPDATE user_location SET status =\"notUploaded\"");
+					db_coord2.execute("UPDATE user_location SET status =\"notUploaded\"");
 					Ti.API.info("Error found for GPS uploading ");
-					db_coord.close();
+					db_coord2.close();
 					Ti.App.fireEvent('refresh_UI_Alerts', {status: 'fail'});
 					unset_GPS_uploading();
 				}
@@ -161,8 +159,8 @@ var upload_gps_locations = function() {
 		} else {
 			unset_GPS_uploading();
 			Ti.API.info('No GPS coordinates found');
-			result.close();
-			db_coord.close();
+
+			var __timestamp  = Math.round(new Date().getTime() / 1000);
 			createNotification("No coordinates saved... "+date('g:i a', Number(__timestamp)));
 			
 			// var objectsCheck = Ti.Network.createHTTPClient();
@@ -176,6 +174,9 @@ var upload_gps_locations = function() {
 			// //Sending information and try to connect
 			// objectsCheck.send(json_coord);
 		}
+		
+		result.close();
+		db_coord.close();
 	}
 	else{
 		Ti.API.info("##### There are locations being updated already #####");
