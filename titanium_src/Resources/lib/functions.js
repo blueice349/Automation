@@ -7,6 +7,8 @@
 
 Ti.include('/lib/encoder_base_64.js');
 
+var domainName = Ti.App.Properties.getString("domainName");
+
 var DOWNLOAD_URL_THUMBNAIL = '/sync/image/thumbnail/';
 var DOWNLOAD_URL_IMAGE_FILE = '/sync/file/';
 var PLATFORM = Ti.Platform.name;
@@ -141,7 +143,7 @@ function getDBName() {
 	var recebe = portal_base.fieldByName('db_name');
 	portal_base.close();
 	db_list.close();
-	Ti.API.info("DB NAME: " + recebe);
+	//Ti.API.info("DB NAME: " + recebe);
 	return recebe;
 }
 
@@ -461,7 +463,6 @@ function showBottom(actualWindow, goToWindow) {
 	backView.addEventListener('click', function() {
 		if (!goToWindow.notOpen) {
 			goToWindow.log = actualWindow.log;
-			goToWindow.picked = actualWindow.picked;
 			goToWindow.result = actualWindow.result;
 			goToWindow.name = actualWindow.name;
 		}
@@ -1411,6 +1412,10 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 // Gets the JSON for updated nodes
 ////////////////////////////////////////////////
 
+function trimWhiteSpace(string){
+	return string.replace(/^\s+|\s+$/g,"");
+}
+
 function getJSON() {
 	//Initial JSON values:
 	var current_timestamp = Math.round(+new Date() / 1000);
@@ -1577,7 +1582,7 @@ function getJSON() {
 				node_fields.next();
 			}
 			returning_json += ' } ';
-			Ti.API.info('19 PRE_JSON: ' + returning_json);
+			//Ti.API.info('19 PRE_JSON: ' + returning_json);
 			//Next node
 			new_nodes.next();
 			if (new_nodes.isValidRow()) {
@@ -1616,7 +1621,7 @@ function getJSON() {
 		// close data and timestamp:
 		returning_json += ' } }';
 
-		Ti.API.info(returning_json);
+		//Ti.API.info('JSON: ' + returning_json);
 
 		//Close db connections and result set
 		new_nodes.close();
@@ -1645,13 +1650,38 @@ function getCookie(){
 	var logged_result = db.execute('SELECT * FROM login WHERE rowid=1');
 	var cookie = logged_result.fieldByName("cookie");
 	Ti.API.info("FOUND COOKIE = "+cookie);
+	logged_result.close();
 	db.close();	
 	return cookie;
 }
 
+function update_node(mode, close_parent, _node_name, flag_next_part){
+	//Sets status to 'updating'
+	var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+	if(PLATFORM != 'android'){db_up.file.setRemoteBackup(false);}
+	var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');
+	var updatedTimeStamp = updatedTime.fieldByName('timestamp');
+	var up_flag = db_up.execute('SELECT * FROM node WHERE flag_is_updated=1');
+	
+	Ti.API.info("Fired nodes update/creation ");
+	updatedTime.close();
+	up_flag.close();
+	db_up.close();
+
+	installMe(curWin, updatedTimeStamp  , null, curWin.listView, null, 'POST', mode, function (isError){
+		Ti.API.info('Closing create or edit node');
+		if (flag_next_part != null){
+			close_parent(flag_next_part);
+		}
+		else{
+			close_parent(isError);
+		}
+	}, _node_name);
+}
+
 //Install new updates using pagination
 //Load existing data with pagination
-function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent, _node_name) {
+function installMe(win, timeIndex, progress, menu, img, type_request, mode, close_parent, _node_name) {
 	setUse();
 	var db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 	if(PLATFORM != 'android'){db_installMe.file.setRemoteBackup(false);}
@@ -1661,7 +1691,6 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 	//Timeout until error:
 	objectsUp.setTimeout(15000);
 	
-	Ti.API.info("Current page: " + pageIndex);
 	Ti.API.info("Mode: " + mode);
 	Ti.API.info("Menu: " + menu);
 	Ti.API.info("TIME: " + timeIndex);
@@ -1672,17 +1701,16 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 		//ind.value = e.progress ;
 		if (progress != null) {
 			progress.set_download(e.progress);
-			Ti.API.info(' ONDATASTREAM1 - PROGRESS: ' + e.progress);
+			Ti.API.debug(' ONDATASTREAM1 - PROGRESS: ' + e.progress);
 		}
 	};
 	
 	if (type_request == 'POST') {
-		objectsUp.open('POST', win.picked + '/js-sync/sync.json');
+		objectsUp.open('POST', domainName + '/js-sync/sync.json');
 	} 
 	else {
 		//Opens address to retrieve list
-		//Ti.API.info('GET, ' + win.picked + '/js-sync/download.json?sync_timestamp=' + timeIndex);
-		objectsUp.open('GET', win.picked + '/js-sync/download.json?sync_timestamp=' + timeIndex);
+		objectsUp.open('GET', domainName+ '/js-sync/download.json?sync_timestamp=' + timeIndex);
 	}
 	//Header parameters
 	objectsUp.setRequestHeader("Content-Type", "application/json");
@@ -1784,10 +1812,9 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 			} else {
 				if (type_request == 'GET') {
 					if ((isFirstTime)) {
-						db_installMe.execute('UPDATE updated SET "url"="' + win.picked + '" WHERE "rowid"=1');
+						db_installMe.execute('UPDATE updated SET "url"="' + domainName + '" WHERE "rowid"=1');
 					}
 
-					//pageIndex == 1 means first load, pageIndex is incremented some lines above
 					Ti.API.info('######### Request time : ' + json.request_time);
 					db_installMe.execute('UPDATE updated SET "timestamp"=' + json.request_time + ' WHERE "rowid"=1');
 
@@ -3830,7 +3857,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 					Ti.App.fireEvent('stop_gps');
 				//}
 				Ti.App.fireEvent('free_login');
-				win2.close();
+				curWin.close();
 			});
 		}
 	}
@@ -3846,7 +3873,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 		
 		Titanium.Media.vibrate();
 
-		if(this.status == 403 || elements.status == 403) {
+		if(this.status == 403) {
 			var a_msg = Titanium.UI.createAlertDialog({
 				title : 'Omadi',
 				buttonNames : ['OK']
@@ -3865,7 +3892,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 						
 			a_msg.show();
 		}
-		else if(this.status == 401 || elements.status == 401) {
+		else if(this.status == 401) {
 			var a_msg = Titanium.UI.createAlertDialog({
 				title : 'Omadi',
 				buttonNames : ['OK']
@@ -3903,7 +3930,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 						setTimeout(function() {
 							progress = null;
 							progress = new Progress_install(0, 100);
-							installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
+							installMe(win, timeIndex, progress, menu, img, type_request, mode, close_parent);
 						}, 800);
 					} else {
 						unsetUse();
@@ -3914,7 +3941,7 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 						setTimeout(function() {
 							progress = null;
 							progress = new Progress_install(0, 100);
-							installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent);
+							installMe(win, timeIndex, progress, menu, img, type_request, mode, close_parent);
 						}, 800);
 					} else {
 						unsetUse();
@@ -3990,7 +4017,10 @@ function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request,
 //Function Opens a new window to display descAux [Description?].
 //The window closes when it receives a click event
 function openBigText(descAux) {
-	if(PLATFORM == 'android'){Ti.UI.Android.hideSoftKeyboard()};
+	if(PLATFORM == 'android'){
+		Ti.UI.Android.hideSoftKeyboard();
+		Ti.API.debug("Hid keyboard in openBigText");
+	};
 	var descWin = Ti.UI.createWindow({
 		navBarHidden : true,
 		backgroundColor : '#00000000'
@@ -4254,7 +4284,7 @@ function uploadFile(win, type_request) {
 		//var fileUploadXHR = win.log;
 		var _file_xhr = Ti.Network.createHTTPClient();
 		_file_xhr.setTimeout(30000);
-		_file_xhr.open(type_request, win.picked + '/js-sync/upload.json');
+		_file_xhr.open(type_request, domainName + '/js-sync/upload.json');
 		
 		if(PLATFORM == 'android'){
 			_file_xhr.setRequestHeader("Cookie", getCookie());// Set cookies
@@ -4404,7 +4434,9 @@ function reduceImageSize(blobImage, maxWidth, maxHeight) {
 
 		}
 		return image1;
-	}catch(evt){}
+	}catch(evt){
+		Ti.API.error("Error in reduce Image Size");
+	}
 	
 }
 
@@ -4441,12 +4473,23 @@ function updateFileUploadTable(win, json) {
 // Download Image from the server
 function downloadThumnail(file_id, image, win) {
 	if(win.nid > 0 && file_id > 0){   
-		var URL = win.picked + DOWNLOAD_URL_THUMBNAIL + win.nid + '/' + file_id;
+		var URL = domainName + DOWNLOAD_URL_THUMBNAIL + win.nid + '/' + file_id;
 		Ti.API.info("==== site:: " + URL);
 		try {
 			var downloadImage = Ti.Network.createHTTPClient();
 			downloadImage.setTimeout(30000);
 			downloadImage.open('GET', URL);
+			
+			if(PLATFORM == 'android'){
+				downloadImage.setRequestHeader("Cookie", getCookie());// Set cookies
+			}
+			else{
+				var split_cookie = getCookie().split(';');
+				if (!split_cookie[0] ){
+					split_cookie[0]="";
+				}
+				downloadImage.setRequestHeader("Cookie", split_cookie[0]);// Set cookies
+			} 
 	
 			downloadImage.onload = function(e) {
 				var tempImg = Ti.UI.createImageView({
@@ -4454,12 +4497,16 @@ function downloadThumnail(file_id, image, win) {
 					width : 'auto',
 					image : this.responseData
 				});
+				
+				//Ti.API.info(this.responseData);
+				
 				if (tempImg.toImage().height > 100 || tempImg.toImage().width > 100) {
-					image.image = reduceImageSize(tempImg.toImage(), 100, 100).toBlob();
+					image.setImage(reduceImageSize(tempImg.toImage(), 100, 100).toBlob());
 				} else {
-					image.image = this.responseData
+					image.setImage(this.responseData);
 				}
 				image.isImage = true;
+				//image = tempImg;
 			}
 	
 			downloadImage.onerror = function(e) {
@@ -4489,14 +4536,25 @@ function downloadMainImage(file_id, content, win) {
 		return;
 	}
 
-	var URL = win.picked + DOWNLOAD_URL_IMAGE_FILE + win.nid + '/' + file_id;
+	var URL = domainName + DOWNLOAD_URL_IMAGE_FILE + win.nid + '/' + file_id;
 	
 	Ti.API.info("==== site:: " + URL);
 	try {
 		var downloadImage = Ti.Network.createHTTPClient();
 		downloadImage.setTimeout(30000);
 		downloadImage.open('GET', URL);
-
+		
+		if(PLATFORM == 'android'){
+			downloadImage.setRequestHeader("Cookie", getCookie());// Set cookies
+		}
+		else{
+			var split_cookie = getCookie().split(';');
+			if (!split_cookie[0] ){
+				split_cookie[0]="";
+			}
+			downloadImage.setRequestHeader("Cookie", split_cookie[0]);// Set cookies
+		} 
+		
 		downloadImage.onload = function(e) {
 			Ti.API.info('=========== Success ========');
 			content.bigImg = this.responseData;

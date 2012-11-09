@@ -24,7 +24,7 @@ public class GpstrackerModule extends KrollModule
 {
 
 	private static GpstrackerModule _instance;
-	GPSTracker gps = null;
+	static GPSTracker gps = null;
 	static double latitude; // latitude
 	static double longitude; // longitude
 	KrollFunction updateLocation;
@@ -47,12 +47,17 @@ public class GpstrackerModule extends KrollModule
 	}
 
 	@Kroll.onAppCreate
-	public static void onAppCreate(TiApplication app){}	
+	public static void onAppCreate(TiApplication app){
+        //gps = new GPSTracker(_instance.getActivity());
+    }
 	
 	@Kroll.method
 	public void startGPSTracking(){
 		
-		gps = new GPSTracker(this.getActivity());
+        if(gps == null || !gps.isServiceRunning){
+            gps = new GPSTracker(this.getActivity());
+        }
+		//gps = new GPSTracker(this.getActivity());
         // check if GPS enabled
         if(gps.canGetLocation()){
             double latitude = gps.getLatitude();

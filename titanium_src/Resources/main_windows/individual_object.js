@@ -7,7 +7,6 @@
  *		a way to close the current window and open object.js. This is achieved when the user clicks on
  * 			"back" on the phone or on the Back button at the app's bottom
  *		the object's information.
- * @author Joseandro
  */
 
 //Common used functions
@@ -15,19 +14,20 @@ Ti.include('/lib/functions.js');
 Ti.include('/lib/encoder_base_64.js');
 Ti.include('/main_windows/create_or_edit_node.js');
 
+var domainName = Ti.App.Properties.getString("domainName");
+
 //Current window's instance
-var win4 = Ti.UI.currentWindow;
-win4.backgroundColor = "#EEEEEE";
+var curWin = Ti.UI.currentWindow;
+curWin.backgroundColor = "#EEEEEE";
 //Sets only portrait mode
-win4.orientationModes = [Titanium.UI.PORTRAIT];
-var movement = win4.movement;
+curWin.orientationModes = [Titanium.UI.PORTRAIT];
+var movement = curWin.movement;
 
 //When back button on the phone is pressed, it opens mainMenu.js and close the current window
-win4.addEventListener('android:back', function() {
+curWin.addEventListener('android:back', function() {
 	Ti.API.info("Back to the step before");
-	win4.close();
+	curWin.close();
 });
-//Functions:
 
 
 function form_min(min) {
@@ -39,7 +39,7 @@ function form_min(min) {
 
 var db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 if(PLATFORM != 'android'){db_display.file.setRemoteBackup(false);}
-var results = db_display.execute('SELECT * FROM ' + win4.type + ' WHERE  nid = ' + win4.nid);
+var results = db_display.execute('SELECT * FROM ' + curWin.type + ' WHERE  nid = ' + curWin.nid);
 
 //The view where the results are presented
 var resultView = Ti.UI.createView({
@@ -48,7 +48,7 @@ var resultView = Ti.UI.createView({
 	width: '100%',
 	backgroundColor: '#EEEEEE',
 });
- win4.add(resultView);
+ curWin.add(resultView);
 Ti.API.info("-----------------------------------------------------------------------------------------------------------------------------------")
 //Header where the selected name is presented
 var header = Ti.UI.createView({
@@ -62,7 +62,7 @@ resultView.add(header);
 
 //Label containing the selected name
 var labelNameContent = Ti.UI.createLabel({
-	text: win4.nameSelected,
+	text: curWin.nameSelected,
 	height: 'auto',
 	width:  '90%',
 	font: {fontSize: 18,  fontWeight: "bold"},
@@ -101,9 +101,9 @@ else{
 
 resultView.add(viewContent);
 
-var fields_result = db_display.execute('SELECT label, weight, type, field_name, widget, settings, required FROM fields WHERE bundle = "' + win4.type + '" ORDER BY weight, id ASC');
-var regions = db_display.execute('SELECT * FROM regions WHERE node_type = "' + win4.type + '" ORDER BY weight ASC');
-var node_form = db_display.execute('SELECT form_part, perm_edit FROM node WHERE nid=' + win4.nid);
+var fields_result = db_display.execute('SELECT label, weight, type, field_name, widget, settings, required FROM fields WHERE bundle = "' + curWin.type + '" ORDER BY weight, id ASC');
+var regions = db_display.execute('SELECT * FROM regions WHERE node_type = "' + curWin.type + '" ORDER BY weight ASC');
+var node_form = db_display.execute('SELECT form_part, perm_edit FROM node WHERE nid=' + curWin.nid);
 
 //Populate array with field name and configs
 var fields = new Array();
@@ -273,7 +273,7 @@ if(c_index > 0) {
 
 			//Content
 			c_content[count] = fieldVal;
-			var node_table = db_display.execute('SELECT * FROM node WHERE nid=' + win4.nid);
+			var node_table = db_display.execute('SELECT * FROM node WHERE nid=' + curWin.nid);
 			if (node_table.rowCount > 0) {
 				var no_data_fields = node_table.fieldByName('no_data_fields');
 				if (isJsonString()) {
@@ -300,11 +300,11 @@ if(c_index > 0) {
 			is_array = false;
 			//Check if it is an array, token = 7411317618171051229
 			if (((c_content[count] == 7411317618171051229) || (c_content[count] == '7411317618171051229')) && c_type[count] != 'image') {
-				//var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = '+win4.nid+' AND field_name = \''+f_name_f+'\' ');
-				var array_cont = db_display.execute('SELECT encoded_array,field_name FROM array_base WHERE node_id = ' + win4.nid + ' AND field_name = \'' + f_name_f + '\'  ');
+				//var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = '+curWin.nid+' AND field_name = \''+f_name_f+'\' ');
+				var array_cont = db_display.execute('SELECT encoded_array,field_name FROM array_base WHERE node_id = ' + curWin.nid + ' AND field_name = \'' + f_name_f + '\'  ');
 
 				Ti.API.info(array_cont.rowCount);
-				Ti.API.info('SELECT encoded_array,field_name FROM array_base WHERE node_id = ' + win4.nid + ' AND field_name = \'' + f_name_f + '\' ');
+				Ti.API.info('SELECT encoded_array,field_name FROM array_base WHERE node_id = ' + curWin.nid + ' AND field_name = \'' + f_name_f + '\' ');
 
 				while (array_cont.isValidRow()) {
 					var decoded = array_cont.fieldByName('encoded_array');
@@ -450,7 +450,7 @@ if(c_index > 0) {
 
 					//Refers to some object:
 					case 'omadi_reference':
-						// Ti.API.info("Contains: " + c_content[count] + " for nid " + win4.nid);
+						// Ti.API.info("Contains: " + c_content[count] + " for nid " + curWin.nid);
 						// Ti.API.info('SETTINGS: ' + c_settings[count]);
 						// var json = JSON.parse(c_settings[count]);
 
@@ -898,9 +898,10 @@ if(c_index > 0) {
 					case 'region_separator_mode':
 						label[count] = Ti.UI.createLabel({
 							text : c_label[count],
-							color : '#4F556C',
+							color : '#eee',
+							backgroundColor: '#666',
 							font : {
-								fontSize : 22,
+								fontSize : '26dp',
 								fontWeight : 'bold'
 							},
 							textAlign : 'center',
@@ -921,7 +922,7 @@ if(c_index > 0) {
 					{
 						 if (c_label[count] == 'File Upload') {
 						 	file_upload_boolean =false;
-								array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win4.nid + ' AND field_name = "file_upload___fid"');
+								array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + curWin.nid + ' AND field_name = "file_upload___fid"');
 								//Decode the stored array:
 								var decoded = array_cont.fieldByName('encoded_array');
 								
@@ -940,7 +941,7 @@ if(c_index > 0) {
 					{
 						 if (c_label[count] == 'Upload #2') {
 						 	upload_boolean =false;
-								array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win4.nid + ' AND field_name = "upload___fid"');
+								array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + curWin.nid + ' AND field_name = "upload___fid"');
 								//Decode the stored array:
 								var decoded = array_cont.fieldByName('encoded_array');
 								decoded = Base64.decode(decoded);
@@ -958,7 +959,7 @@ if(c_index > 0) {
 					{
 						 if (c_label[count] == 'Data File Upload') {
 						 	data_boolean =false;
-								array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win4.nid + ' AND field_name = "data_file_upload___fid"');
+								array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + curWin.nid + ' AND field_name = "data_file_upload___fid"');
 								//Decode the stored array:
 								var decoded = array_cont.fieldByName('encoded_array');
 								decoded = Base64.decode(decoded);
@@ -1003,12 +1004,9 @@ if(c_index > 0) {
 						}
 						else{
 						 label_file[i].addEventListener('click', function(e) {
-							//alert(e.source.upload_id)
-							var win =Ti.UI.createWindow();
-							//alert(win4.picked+'/sync/file/'+win4.nid+'/'+e.source.upload_id)
-							var web_view =Ti.UI.createWebView({url:win4.picked+'/sync/file/'+win4.nid+'/'+e.source.upload_id})
-						
 							
+							var win =Ti.UI.createWindow();
+							var web_view =Ti.UI.createWebView({url:domainName+'/sync/file/'+curWin.nid+'/'+e.source.upload_id})
 							var back = Ti.UI.createButton({
 								title : 'Back',
 								bottom:0,
@@ -1056,7 +1054,7 @@ if(c_index > 0) {
 							//alert(e.source.upload_id)
 							var win =Ti.UI.createWindow();
 							
-							var web_view =Ti.UI.createWebView({url:win4.picked+'/sync/file/'+win4.nid+'/'+e.source.upload_id})
+							var web_view =Ti.UI.createWebView({url:domainName+'/sync/file/'+curWin.nid+'/'+e.source.upload_id})
 						
 							
 							var back = Ti.UI.createButton({
@@ -1105,7 +1103,7 @@ if(c_index > 0) {
 							//alert(e.source.upload_id)
 							var win =Ti.UI.createWindow();
 							
-							var web_view =Ti.UI.createWebView({url:win4.picked+'/sync/file/'+win4.nid+'/'+e.source.upload_id})
+							var web_view =Ti.UI.createWebView({url:domainName+'/sync/file/'+curWin.nid+'/'+e.source.upload_id})
 						
 							
 							var back = Ti.UI.createButton({
@@ -1170,7 +1168,7 @@ if(c_index > 0) {
 							//alert(e.source.upload_id)
 							var win =Ti.UI.createWindow();
 							
-							var web_view =Ti.UI.createWebView({url:win4.picked+'/sync/file/'+win4.nid+'/'+e.source.upload_id})
+							var web_view =Ti.UI.createWebView({url:domainName+'/sync/file/'+curWin.nid+'/'+e.source.upload_id})
 						
 							
 							var back = Ti.UI.createButton({
@@ -1211,11 +1209,11 @@ if(c_index > 0) {
 							var array_cont;
 				
 							if (results.fieldByName(c_field_name[count] + '___file_id') == '7411317618171051229' || results.fieldByName(c_field_name[count] + '___file_id') == 7411317618171051229) {
-								array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win4.nid + ' AND field_name = \'' + c_field_name[count] + '___file_id\'');
+								array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + curWin.nid + ' AND field_name = \'' + c_field_name[count] + '___file_id\'');
 							
 							} else {
 								
-								array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win4.nid + ' AND field_name = \'' + c_field_name[count] + '\'');
+								array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + curWin.nid + ' AND field_name = \'' + c_field_name[count] + '\'');
 							}
 							if (array_cont.rowCount > 0) {
 								
@@ -1225,7 +1223,7 @@ if(c_index > 0) {
 								decoded = decoded.toString();
 								decodedValues = decoded.split("j8Oc2s1E");
 							}
-							val = db_display.execute('SELECT * FROM file_upload_queue WHERE nid=' + win4.nid + ' AND field_name ="' + c_field_name[count] + '";');
+							val = db_display.execute('SELECT * FROM file_upload_queue WHERE nid=' + curWin.nid + ' AND field_name ="' + c_field_name[count] + '";');
 
 							if (val.rowCount > 0) {
 								while (val.isValidRow()) {
@@ -1256,7 +1254,7 @@ if(c_index > 0) {
 									val = results.fieldByName(c_field_name[count]);
 								}
 							}
-							valUp = db_display.execute('SELECT * FROM file_upload_queue WHERE nid=' + win4.nid + ' AND field_name ="' + c_field_name[count] + '";');
+							valUp = db_display.execute('SELECT * FROM file_upload_queue WHERE nid=' + curWin.nid + ' AND field_name ="' + c_field_name[count] + '";');
 
 							if (valUp.rowCount > 0) {
 								isUpdated = true;
@@ -1276,7 +1274,7 @@ if(c_index > 0) {
 									height : '100',
 									width : '100'
 								},
-								image : '../images/default.png',
+								defaultImage : '../images/default.png',
 								imageVal : val,
 								bigImg : null,
 								mimeType : null,
@@ -1290,7 +1288,7 @@ if(c_index > 0) {
 								contentImage.isImage = true;
 							}
 							content[count].addEventListener('click', function(e) {
-								downloadMainImage(e.source.imageVal, e.source, win4);
+								downloadMainImage(e.source.imageVal, e.source, curWin);
 							});
 						}
 
@@ -1419,7 +1417,7 @@ if(c_index > 0) {
 					}
 				}else if(c_type[i]=='rules_field'){
 					cell[i].layout = 'vertical';
-					showRulesRow(content[i], db_display, win4);
+					showRulesRow(content[i], db_display, curWin);
 					cell[i].height = content[i].height+ heightValue;
 				}
 				cell[i].add(content[i]);
@@ -1476,12 +1474,12 @@ if(c_index > 0) {
 					var arrImages = content[i].arrImages;
 					for( i_idx = 0; i_idx < arrImages.length; i_idx++) {
 						if(arrImages[i_idx].isUpdated == false) {
-							downloadThumnail(arrImages[i_idx].imageVal, arrImages[i_idx], win4);
+							downloadThumnail(arrImages[i_idx].imageVal, arrImages[i_idx], curWin);
 						}
 					}
 				} else {
 					if(content[i].isUpdated == false) {
-						downloadThumnail(content[i].imageVal, content[i], win4);
+						downloadThumnail(content[i].imageVal, content[i], curWin);
 					}
 				}
 
@@ -1494,7 +1492,7 @@ if(c_index > 0) {
 			top : '30%',
 			textAlign : 'center',
 			width : '80%',
-			text : 'Well, this is embarrassing but it seems that you\'ve found a bug, please submit it to us, here are some things you should inform:\n    NID = ' + win4.nid + '\n   	Omadi_reference = ' + bug[0] + ' \nWe will fix it as soon as possible'
+			text : 'Well, this is embarrassing but it seems that you\'ve found a bug, please submit it to us, here are some things you should inform:\n    NID = ' + curWin.nid + '\n   	Omadi_reference = ' + bug[0] + ' \nWe will fix it as soon as possible'
 		});
 
 		viewContent.add(cell);
@@ -1515,7 +1513,7 @@ function highlightMe(data) {
 // MENU
 //======================================
 if(Ti.Platform.name == 'android' && isEditEnabled==true) {
-	var activity = win4.activity;
+	var activity = curWin.activity;
 	activity.onCreateOptionsMenu = function(e) {
 		//======================================
 		// MENU - UI
@@ -1524,10 +1522,10 @@ if(Ti.Platform.name == 'android' && isEditEnabled==true) {
 		var menu = e.menu;
 		var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 		if(PLATFORM != 'android'){db_act.file.setRemoteBackup(false);}
-		var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win4.type + '"');
+		var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + curWin.type + '"');
 		var _data = JSON.parse(json_data.fieldByName('_data'));
 
-		var node_form = db_act.execute('SELECT form_part FROM node WHERE nid=' + win4.nid);
+		var node_form = db_act.execute('SELECT form_part FROM node WHERE nid=' + curWin.nid);
 
 		Ti.API.info('Form node part = ' + node_form.fieldByName('form_part'));
 		//Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
@@ -1549,17 +1547,16 @@ if(Ti.Platform.name == 'android' && isEditEnabled==true) {
 			menu_zero.addEventListener("click", function(e) {
 				//Next window to be opened
 				var win_new = create_or_edit_node.getWindow();
-				win_new.title = win4.title;
-				win_new.type = win4.type;
-				win_new.listView = win4.listView;
-				win_new.up_node = win4.up_node;
-				win_new.uid = win4.uid;
+				win_new.title = curWin.title;
+				win_new.type = curWin.type;
+				win_new.listView = curWin.listView;
+				win_new.up_node = curWin.up_node;
+				win_new.uid = curWin.uid;
 				win_new.region_form = node_form.fieldByName('form_part') + 1;
 
 				//Passing parameters
-				win_new.nid = win4.nid;
-				win_new.picked = win4.picked;
-				win_new.nameSelected = win4.nameSelected;
+				win_new.nid = curWin.nid;
+				win_new.nameSelected = curWin.nameSelected;
 
 				//Sets a mode to fields edition
 				win_new.mode = 1;
@@ -1568,7 +1565,7 @@ if(Ti.Platform.name == 'android' && isEditEnabled==true) {
 				setTimeout(function() {
 					create_or_edit_node.loadUI();
 				}, 100);
-				win4.close();
+				curWin.close();
 			});
 		}
 
@@ -1601,10 +1598,10 @@ db_display.close();
 if(PLATFORM != 'android'){
 	resultView.remove(header);
 	resultView.top = 0;
-	bottomButtons1(win4);
+	bottomButtons1(curWin);
 }else{
 	viewContent.height = '90%'
-	bottomBack(win4);
+	bottomBack(curWin);
 }
 
 function createImage1(arrImages, data, scrollView, updated) {
@@ -1634,7 +1631,7 @@ function createImage1(arrImages, data, scrollView, updated) {
 	}
 	contentImage.addEventListener('click', function(e) {
 		//Following method will open camera to capture the image.
-		downloadMainImage(e.source.imageVal, e.source, win4);
+		downloadMainImage(e.source.imageVal, e.source, curWin);
 	});
 	scrollView.add(contentImage);
 	arrImages.push(contentImage)
@@ -1644,18 +1641,17 @@ function createImage1(arrImages, data, scrollView, updated) {
 function openEditScreen(part){
 //Next window to be opened
 			var win_new = create_or_edit_node.getWindow();
-			win_new.title = (PLATFORM == 'android') ? win4.title + '-' + win4.nameSelected:win4.title;
-			win_new.type = win4.type;
-			win_new.listView = win4.listView;
-			win_new.up_node = win4.up_node;
-			win_new.uid = win4.uid;
+			win_new.title = (PLATFORM == 'android') ? curWin.title + '-' + curWin.nameSelected:curWin.title;
+			win_new.type = curWin.type;
+			win_new.listView = curWin.listView;
+			win_new.up_node = curWin.up_node;
+			win_new.uid = curWin.uid;
 			win_new.region_form = part;
-			win_new.movement = win4.movement;
+			win_new.movement = curWin.movement;
 
 			//Passing parameters
-			win_new.nid = win4.nid;
-			win_new.picked = win4.picked;
-			win_new.nameSelected = win4.nameSelected;
+			win_new.nid = curWin.nid;
+			win_new.nameSelected = curWin.nameSelected;
 
 			//Sets a mode to fields edition
 			win_new.mode = 1;
@@ -1664,7 +1660,7 @@ function openEditScreen(part){
 			setTimeout(function() {
 				create_or_edit_node.loadUI();
 			}, 100);
-			(PLATFORM=='android')?win4.close():win4.hide();
+			(PLATFORM=='android')?curWin.close():curWin.hide();
 }
 
 function createEntity(){
@@ -1698,7 +1694,7 @@ function createEntity(){
 
 function createCalculationTableFormat(content , db_display, contentArr) {
 	var entity = createEntity();
-	var result = _calculation_field_get_values(win4, db_display, content, entity, contentArr);
+	var result = _calculation_field_get_values(curWin, db_display, content, entity, contentArr);
 	var row_values = result[0].rows;
 	var heightView = 0;
 	var heightCellView = 40;
@@ -1846,7 +1842,7 @@ function bottomButtons1(actualWindow){
 		systemButton:Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
 	});
 	var label = Titanium.UI.createButton({
-		title:win4.nameSelected,
+		title:curWin.nameSelected,
 		color:'#fff',
 		ellipsize: true,
 		wordwrap: false,
@@ -1863,10 +1859,10 @@ function bottomButtons1(actualWindow){
 	edit.addEventListener('click', function() {
 		var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 		if(PLATFORM != 'android'){db_act.file.setRemoteBackup(false);}
-		var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win4.type + '"');
+		var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + curWin.type + '"');
 		var _data = JSON.parse(json_data.fieldByName('_data'));
 
-		var node_form = db_act.execute('SELECT form_part FROM node WHERE nid=' + win4.nid);
+		var node_form = db_act.execute('SELECT form_part FROM node WHERE nid=' + curWin.nid);
 
 		Ti.API.info('Form node part = ' + node_form.fieldByName('form_part'));
 		
@@ -1913,7 +1909,7 @@ function bottomButtons1(actualWindow){
 		borderTop:false,
 		borderBottom:true
 	});
-	win4.add(toolbar);
+	curWin.add(toolbar);
 	
 };
 

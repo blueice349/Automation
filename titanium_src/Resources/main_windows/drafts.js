@@ -15,16 +15,17 @@ Ti.include('/lib/functions.js');
 Ti.include('/main_windows/create_or_edit_node.js');
 
 //Current window's instance
-var win3 = Ti.UI.currentWindow;
+var curWin = Ti.UI.currentWindow;
 
+var domainName = Ti.App.Properties.getString("domainName");
 //Sets only portrait mode
-win3.orientationModes = [Titanium.UI.PORTRAIT];
+curWin.orientationModes = [Titanium.UI.PORTRAIT];
 
 //When back button on the phone is pressed, it opens mainMenu.js and close the current window
-win3.addEventListener('android:back', function() {
+curWin.addEventListener('android:back', function() {
 	//Enable background updates
 	unsetUse();	
-	win3.close();
+	curWin.close();
 });
 
 //Definition of the window before (opens when the user clicks on the back button)
@@ -121,11 +122,11 @@ if(data.length < 1) {
 	});
 
 	//Debug
-	Ti.API.info("XXXXXXX ---- No "+win3.type+" ! ----- XXXXXX");
+	Ti.API.info("XXXXXXX ---- No "+curWin.type+" ! ----- XXXXXX");
 
-	win3.add(empty);
+	curWin.add(empty);
 	//showBottom(actualWindow, goToWindow )
-	//showBottom(win3, goToWindow);
+	//showBottom(curWin, goToWindow);
 }
 //Shows the contacts
 else {
@@ -178,14 +179,13 @@ else {
 			var win_new = create_or_edit_node.getWindow();
 			win_new.title = e.row.title;
 			win_new.type = e.row._type;
-			win_new.listView = win3.listView;
-			win_new.up_node = win3.up_node;
-			win_new.uid = win3.uid;
+			win_new.listView = curWin.listView;
+			win_new.up_node = curWin.up_node;
+			win_new.uid = curWin.uid;
 			win_new.region_form = e.row.form_part;
 
 			//Passing parameters
 			win_new.nid = e.row.nid;
-			win_new.picked = win3.picked;
 			win_new.nameSelected = e.row.name;
 
 			//Sets a mode to fields edition
@@ -196,9 +196,9 @@ else {
 				create_or_edit_node.loadUI();
 			}, 100);
 			unsetUse();	
-			(PLATFORM=='android')?win3.close():win3.hide();
+			(PLATFORM=='android')?curWin.close():curWin.hide();
 	
-			//win3.close();
+			//curWin.close();
 			resultsNames.close();
 		}
 	});
@@ -239,9 +239,9 @@ else {
 	});
 
 	//Adds contact list container to the UI
-	win3.add(listTableView);
+	curWin.add(listTableView);
 	search.blur();
-	win3.addEventListener('focus', function(){
+	curWin.addEventListener('focus', function(){
 		setTimeout(function (){
 			search.blur();
 		}, 110 );
@@ -256,7 +256,7 @@ db.close();
 
 //showBottom(actualWindow, goToWindow )
 if(PLATFORM == 'android'){
-	bottomBack_release(win3, "Back" , "enable");
+	bottomBack_release(curWin, "Back" , "enable");
 }else{
 	draftNavButtons();
 }
@@ -269,7 +269,7 @@ function draftNavButtons(){
 	});
 	back.addEventListener('click', function() {
 		unsetUse();	
-		win3.close();
+		curWin.close();
 	});
 	
 	var space = Titanium.UI.createButton({
@@ -291,6 +291,6 @@ function draftNavButtons(){
 		borderTop:false,
 		borderBottom:true
 	});
-	win3.add(toolbar);
+	curWin.add(toolbar);
 };
 

@@ -30,7 +30,7 @@ var fieldFontSize = (PLATFORM == 'android') ? '16dp' : '18dp'
 var months_set = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 //Current window's instance
-var win;
+var win = Ti.UI.currentWindow;
 var viewContent;
 var title_head;
 var resultView;
@@ -41,7 +41,7 @@ var no_data_fieldsArr = [];
 var doneButton = null;
 var menu = null;
 var ONE_MB = 524258;
-var movement;
+//var movement;
 var create_or_edit_node = {};
 
 create_or_edit_node.getWindow = function() {
@@ -1219,13 +1219,14 @@ function keep_info(_flag_info, pass_it, new_time) {
 		}
 
 		Ti.API.info('========= Updating new info running ========= ' + _flag_info);
+		
 		if ((Titanium.Network.online) && (has_bug === false) && (_flag_info != 'draft')) {
 			if (_flag_info == "normal") {
 				Ti.API.info('Submitting');
-				win.up_node(win.mode, close_me,win.type.toUpperCase());
+				update_node(win.mode, close_me,win.type.toUpperCase());
 			} else {
 				Ti.API.info('Submitting and preparing next part reload');
-				win.up_node(win.mode, reload_me, win.type.toUpperCase(), _flag_info);
+				update_node(win.mode, reload_me, win.type.toUpperCase(), _flag_info);
 			}
 		} else if (has_bug === true) {
 			Ti.API.info('Error');
@@ -1403,7 +1404,8 @@ function form_min(min) {
 
 function display_widget(obj) {
 	if (PLATFORM == 'android') {
-		Ti.UI.Android.hideSoftKeyboard()
+		Ti.UI.Android.hideSoftKeyboard();
+		Ti.API.debug("hid keyboard in display_widget");
 	};
 	var win_wid = Ti.UI.createWindow({
 		backgroundColor : "#000",
@@ -1658,7 +1660,8 @@ function display_widget(obj) {
 
 function display_omadi_time(obj) {
 	if (PLATFORM == 'android') {
-		Ti.UI.Android.hideSoftKeyboard()
+		Ti.UI.Android.hideSoftKeyboard();
+		Ti.API.debug("hide keyboard in display_omadi_time");
 	};
 	var win_wid = Ti.UI.createWindow({
 		//modal: true,
@@ -1756,7 +1759,8 @@ function display_omadi_time(obj) {
 
 function open_mult_selector(obj) {
 	if (PLATFORM == 'android') {
-		Ti.UI.Android.hideSoftKeyboard()
+		Ti.UI.Android.hideSoftKeyboard();
+		Ti.API.debug("hide keyboard in open_mult_selector");
 	};
 	var win_wid = Ti.UI.createWindow({
 		//	modal: true,
@@ -2043,7 +2047,7 @@ create_or_edit_node.loadUI = function() {
 	values_query = new Array();
 	count = 0;
 	title = 0;
-	movement = win.movement;
+	//movement = win.movement;
 	omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
 	roles = omadi_session_details.user.roles;
 	db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
@@ -2694,14 +2698,22 @@ create_or_edit_node.loadUI = function() {
 										content[count].borderWidth = 1;
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
+										if(PLATFORM == 'android'){
+											content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+										}
 									}
 									top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
 										if (e.source.value.length > 10) {
-											e.source.value = e.source.value.substr(0, 10);
+											//e.source.value = e.source.value.substr(0, 10);
+											//e.source.blur();
+											e.source.setValue(e.source.value.substr(0, 10));
+											e.source.setSelection(10,10);
+											e.source.setSoftKeyboardOnFocus(Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS);
 											e.source.blur();
+											Ti.UI.Android.hideSoftKeyboard();
 										}
 										changedContentValue(e.source);
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
@@ -3055,14 +3067,19 @@ create_or_edit_node.loadUI = function() {
 										content[count].borderWidth = 1;
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
+										if(PLATFORM == 'android'){
+											content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+										}
 									}
 									top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
 										if (e.source.value.length > 10) {
-											e.source.value = e.source.value.substr(0, 10);
-											e.source.blur();
+											//e.source.value = e.source.value.substr(0, 10);
+											//
+											e.source.setValue(e.source.value.substr(0, 10));
+											e.source.setSelection(10,10);
 										}
 										changedContentValue(e.source);
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
@@ -3200,6 +3217,9 @@ create_or_edit_node.loadUI = function() {
 										content[count].borderWidth = 1;
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
+										if(PLATFORM == 'android'){
+											content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+										}
 									}
 									top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
@@ -3249,6 +3269,9 @@ create_or_edit_node.loadUI = function() {
 									content[count].borderWidth = 1;
 									content[count].paddingLeft = 3;
 									content[count].paddingRight = 3;
+									if(PLATFORM == 'android'){
+										content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+									}
 								}
 								top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
@@ -3390,6 +3413,9 @@ create_or_edit_node.loadUI = function() {
 										content[count].borderWidth = 1;
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
+										if(PLATFORM == 'android'){
+											content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+										}
 									}
 									if (_max != null) {
 										content[count].maxLength = _max;
@@ -3399,8 +3425,13 @@ create_or_edit_node.loadUI = function() {
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
 										if (e.source.my_max != null && e.source.my_max != "" && e.source.value.length > e.source.my_max) {
+											//e.source.value = e.source.value.substr(0, e.source.my_max);
+											//e.source.blur();
 											e.source.value = e.source.value.substr(0, e.source.my_max);
-											e.source.blur();
+											e.source.setSelection(e.source.my_max,e.source.my_max);
+											
+											//Ti.UI.Android.hideSoftKeyboard();
+											
 										}
 										changedContentValue(e.source);
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
@@ -3519,6 +3550,9 @@ create_or_edit_node.loadUI = function() {
 									content[count].borderWidth = 1;
 									content[count].paddingLeft = 3;
 									content[count].paddingRight = 3;
+									if(PLATFORM == 'android'){
+										content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+									}
 								}
 
 								if (_max != null) {
@@ -3530,8 +3564,16 @@ create_or_edit_node.loadUI = function() {
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
 									if (e.source.my_max != null && e.source.my_max != "" && e.source.value.length >= e.source.my_max) {
+										//for(i in e.source){
+										//	Ti.API.debug(i + ": " + e.source[i]);	
+										//}
+										
 										e.source.value = e.source.value.substr(0, e.source.my_max);
-										e.source.blur();
+										//e.source.setValue(e.source.value.substr(0, e.source.my_max));
+										e.source.setSelection(e.source.my_max, e.source.my_max);
+										//e.source.setSoftKeyboardOnFocus(Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS);
+										//e.source.blur();
+										//Ti.UI.Android.hideSoftKeyboard();
 									}
 									changedContentValue(e.source);
 									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
@@ -3569,7 +3611,8 @@ create_or_edit_node.loadUI = function() {
 											} else {
 												//value is ok
 											}
-										} else if (e.source.my_max != null) {
+										} 
+										else if (e.source.my_max != null) {
 											if (parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
 												var _a = Titanium.UI.createAlertDialog({
 													title : 'Omadi',
@@ -3737,6 +3780,9 @@ create_or_edit_node.loadUI = function() {
 										content[count].borderWidth = 1;
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
+										if(PLATFORM == 'android'){
+											content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+										}
 									}
 
 									if (_max != null) {
@@ -3747,8 +3793,12 @@ create_or_edit_node.loadUI = function() {
 									regionView.add(content[count]);
 									content[count].addEventListener('change', function(e) {
 										if (e.source.my_max != null && e.source.my_max != "" && e.source.value.length >= e.source.my_max) {
+											//e.source.value = e.source.value.substr(0, e.source.my_max);
+											//e.source.blur();
 											e.source.value = e.source.value.substr(0, e.source.my_max);
-											e.source.blur();
+											e.source.setSelection(e.source.my_max, e.source.my_max);
+											//e.source.blur();
+											//Ti.UI.Android.hideSoftKeyboard();
 										}
 										changedContentValue(e.source);
 										noDataChecboxEnableDisable(e.source, e.source.reffer_index);
@@ -3862,6 +3912,9 @@ create_or_edit_node.loadUI = function() {
 									content[count].color = '#848484';
 									content[count].paddingLeft = 3;
 									content[count].paddingRight = 3;
+									if(PLATFORM == 'android'){
+										content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+									}
 								}
 								if (_max != null) {
 									content[count].maxLength = _max;
@@ -3872,8 +3925,13 @@ create_or_edit_node.loadUI = function() {
 								regionView.add(content[count]);
 								content[count].addEventListener('change', function(e) {
 									if (e.source.my_max != null && e.source.my_max != "" && e.source.value.length >= e.source.my_max) {
+										//e.source.value = e.source.value.substr(0, e.source.my_max);
+										//e.source.blur();
 										e.source.value = e.source.value.substr(0, e.source.my_max);
-										e.source.blur();
+										e.source.setSelection(e.source.my_max, e.source.my_max);
+										//e.source.setSoftKeyboardOnFocus(Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS);
+										//e.source.blur();
+										//Ti.UI.Android.hideSoftKeyboard();
 									}
 									changedContentValue(e.source);
 									noDataChecboxEnableDisable(e.source, e.source.reffer_index);
@@ -4090,7 +4148,8 @@ create_or_edit_node.loadUI = function() {
 									changedFlag : 0,
 									autocorrect : false,
 									returnKeyType : Ti.UI.RETURNKEY_DONE,
-									enabled : true
+									enabled : true,
+									softKeyboardOnFocus : Ti.UI.Android.SOFT_KEYBOARD_SHOW_ON_FOCUS
 								});
 								if (PLATFORM == 'android') {
 									content[count].backgroundImage = '../images/textfield.png'
@@ -4268,6 +4327,9 @@ create_or_edit_node.loadUI = function() {
 										content[count].borderWidth = 1;
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
+										if(PLATFORM == 'android'){
+											content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+										}
 									}
 									addDoneButtonInKB(content[count]);
 									top += (PLATFORM == 'android') ? heightTextField : heightValue;
@@ -4365,6 +4427,9 @@ create_or_edit_node.loadUI = function() {
 									content[count].borderWidth = 1;
 									content[count].paddingLeft = 3;
 									content[count].paddingRight = 3;
+									if(PLATFORM == 'android'){
+										content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+									}
 								}
 								addDoneButtonInKB(content[count]);
 								top += (PLATFORM == 'android') ? heightTextField : heightValue;
@@ -4540,6 +4605,9 @@ create_or_edit_node.loadUI = function() {
 										content[count].borderWidth = 1;
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
+										if(PLATFORM == 'android'){
+											content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+										}
 									}
 									addDoneButtonInKB(content[count]);
 									top += (PLATFORM == 'android') ? heightTextField : heightValue;
@@ -4592,6 +4660,9 @@ create_or_edit_node.loadUI = function() {
 									content[count].borderWidth = 1;
 									content[count].paddingLeft = 3;
 									content[count].paddingRight = 3;
+									if(PLATFORM == 'android'){
+										content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+									}
 								}
 								addDoneButtonInKB(content[count]);
 								top += (PLATFORM == 'android') ? heightTextField : heightValue;
@@ -4723,6 +4794,9 @@ create_or_edit_node.loadUI = function() {
 										content[count].borderWidth = 1;
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
+										if(PLATFORM == 'android'){
+											content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+										}
 									}
 									top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
@@ -4774,6 +4848,9 @@ create_or_edit_node.loadUI = function() {
 									content[count].borderWidth = 1;
 									content[count].paddingLeft = 3;
 									content[count].paddingRight = 3;
+									if(PLATFORM == 'android'){
+										content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+									}
 								}
 								top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
@@ -5408,6 +5485,9 @@ create_or_edit_node.loadUI = function() {
 											content[count].borderWidth = 1;
 											content[count].paddingLeft = 3;
 											content[count].paddingRight = 3;
+											if(PLATFORM == 'android'){
+												content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+											}
 										}
 										//AUTOCOMPLETE TABLE for taxonomy_term_reference and auto_complete widget cardinality > 1
 										var autocomplete_table = Titanium.UI.createTableView({
@@ -5617,6 +5697,9 @@ create_or_edit_node.loadUI = function() {
 										content[count].borderWidth = 1;
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
+										if(PLATFORM == 'android'){
+											content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+										}
 									}
 									//AUTOCOMPLETE TABLE taxonomy_term_reference widget auto_complete, cardinality = 1
 									var autocomplete_table = Titanium.UI.createTableView({
@@ -5915,6 +5998,9 @@ create_or_edit_node.loadUI = function() {
 										content[count].borderWidth = 1;
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
+										if(PLATFORM == 'android'){
+											content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+										}
 									}
 									//AUTOCOMPLETE TABLE omadi_reference, cardinality > 1
 									var autocomplete_table = Titanium.UI.createTableView({
@@ -6107,6 +6193,9 @@ create_or_edit_node.loadUI = function() {
 									content[count].borderWidth = 1;
 									content[count].paddingLeft = 3;
 									content[count].paddingRight = 3;
+									if(PLATFORM == 'android'){
+										content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+									}
 								}
 								//AUTOCOMPLETE TABLE FOR OMADI REFERENCE FIELDS, cardinality = 1
 								var autocomplete_table = Titanium.UI.createTableView({
@@ -7611,6 +7700,9 @@ create_or_edit_node.loadUI = function() {
 										content[count].borderWidth = 1;
 										content[count].paddingLeft = 3;
 										content[count].paddingRight = 3;
+										if(PLATFORM == 'android'){
+											content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+										}
 									}
 									top += (PLATFORM == 'android') ? heightTextField : heightValue;
 
@@ -7693,6 +7785,9 @@ create_or_edit_node.loadUI = function() {
 									content[count].borderWidth = 1;
 									content[count].paddingLeft = 3;
 									content[count].paddingRight = 3;
+									if(PLATFORM == 'android'){
+										content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+									}
 								}
 								//AUTOCOMPLETE TABLE FOR vehicle_fields fields
 								var autocomplete_table = Titanium.UI.createTableView({
@@ -8721,8 +8816,9 @@ function openCamera(e) {
 				width : 68,
 				backgroundImage: (flashMode == Ti.Media.CAMERA_FLASH_ON) ? '../images/flashOn.png' : '../images/flashOff.png'
 			});
-			if(movement.isFlashAvailableInCamera()){
-			overlayView.add(flashBtn);
+			
+			if(camera.isFlashAvailableInCamera()){
+				overlayView.add(flashBtn);
 			}
 			var navbar = Ti.UI.iOS.createToolbar({
 				left : 0,
@@ -8806,8 +8902,8 @@ function openCamera(e) {
 				mediaTypes : [Ti.Media.MEDIA_TYPE_PHOTO]
 			});
 			try{
-				if(movement.isFlashAvailableInCamera()){
-				Ti.Media.cameraFlashMode = flashMode;	
+				if(camera.isFlashAvailableInCamera()){
+					Ti.Media.cameraFlashMode = flashMode;	
 				}			
 				
 			}catch(ex){
@@ -10033,7 +10129,8 @@ function showRulesRow(current_content, db_display, current_window) {
 						heightView += heightCellView + 1;
 						row.addEventListener('click', function(e) {
 							if (PLATFORM == 'android') {
-								Ti.UI.Android.hideSoftKeyboard()
+								Ti.UI.Android.hideSoftKeyboard();
+								Ti.API.info("hide keyboard in row click listener");
 							};
 							var detail_popup = Ti.UI.createView({
 								backgroundColor : '#00000000'

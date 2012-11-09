@@ -10,9 +10,9 @@
         <target device="android">true</target>
         <target device="blackberry">false</target>
     </deployment-targets>
-    <id>com.omadi.crm</id>
+    <id>com.omadi.mobile</id>
     <name>Omadi</name>
-    <version>1.6.1</version>
+    <version>1.6.2</version>
     <publisher>Omadi</publisher>
     <url>http://www.omadi.com</url>
     <description>Mobile CRM From Omadi</description>
@@ -37,7 +37,7 @@
             <service type="interval" url="android_gps_upload.js"/>
         </services>
         <manifest android:installLocation="preferExternal"
-            android:versionCode="2" android:versionName="1.6.0">
+            android:versionCode="3" android:versionName="1.6.2">
             <uses-sdk android:minSdkVersion="7"/>
             <uses-permission android:name="android.permission.READ_LOGS"/>
             <uses-permission android:name="android.permission.INTERNET"/>

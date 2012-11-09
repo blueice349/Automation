@@ -607,7 +607,6 @@ function opnAccountAlertsList(e) {
 					//hide keyboard
 
 					//Passing parameters
-					win_new.picked = win.picked;
 					win_new.nid = n_nid;
 					win_new.nameSelected = name_s
 					//db_t.close();

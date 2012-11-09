@@ -14,85 +14,159 @@ var latitude;
 var longitude;
 var accuracy;
 
-// Ti.Geolocation.preferredProvider = Ti.Geolocation.PROVIDER_GPS;
-// Ti.Geolocation.purpose = "Omadi GPS Tracking";
-// Ti.Geolocation.accuracy = Ti.Geolocation.ACCURACY_BEST;
+ // Ti.Geolocation.preferredProvider = Ti.Geolocation.PROVIDER_GPS;
+ // Ti.Geolocation.purpose = "Omadi GPS Tracking";
+ // Ti.Geolocation.accuracy = Ti.Geolocation.ACCURACY_BEST;
+// var gpsProvider = Ti.Geolocation.Android.createLocationProvider({
+    // name: Ti.Geolocation.PROVIDER_GPS,
+    // minUpdateTime: 5, 
+    // minUpdateDistance: 1
+// });
+// Ti.Geolocation.Android.addLocationProvider(gpsProvider);
 // 
 // Ti.Geolocation.getCurrentPosition( function(e) {
-  // if (!e.success || e.error) {
+   // if (!e.success || e.error) {
     // //setTimeout(s, 5000);
-    // return;
-  // }
+     // return;
+   // }
 //   
-  // updateCurrentLocation(e.coords);
-// 
-// });
+   // updateCurrentLocation(e.coords);
+//  
+ // });
 
-movement =  require('com.omadi.gps');
+movement = require('com.omadi.gps');
+// function updatePosition(e) {
+// 	 
+    // if( ! e.success || e.error ) {
+        // alert("Unable to get your location.");
+        // Ti.API.debug(JSON.stringify(e));
+        // Ti.API.debug(e);
+        // return;
+    // }
+//  
+    // Ti.App.fireEvent("app:got.location", {
+        // "coords" : e.coords
+    // });
+// };
 
-movement.startGPSTracking();
 
-movement.currentMovement({
-	"updateLatLng" : function(e) {
-		updateCurrentLocation(e);
-	}
-});
+var interval;
 
-function updateCurrentLocation(e) {
-	curr = e;
-	//if(PLATFORM == 'android'){
-		longitude = curr.longitude;
-		latitude = curr.latitude;
-		accuracy = curr.accuracy;
-	// }else{
-		// longitude = curr.location.longitude;
-		// latitude = curr.location.latitude;
-		// accuracy = curr.location.longitude;
-	// }
-// 	
-	var timestamp = new Date().getTime();
-	timestamp = Math.round(timestamp / 1000);
+
+function saveGPS(){
 	
-	Ti.API.debug('LOCATION: ' + longitude + ', ' + latitude);
-	//Ti.API.debug('LOCATION: Latitude ' + latitude);
-	//Ti.API.debug('LOCATION: Accuracy ' + accuracy);
-	Ti.API.debug('LOCATION: Timestamp ' + timestamp);
-
-	if(latitude != 0 && longitude != 0) {
-		if(accuracy > 200) {
-			var time_now = Math.round(new Date().getTime() / 1000);
-			var time_past = time_now - Ti.App.Properties.getString("last_alert_popup");
-			if(time_past > time_interval_for_alerts) {
-				notifyIOS('Your GPS is getting inaccurate data. Please make sure the sky is visible. Current GPS accuracy is ' + accuracy + ' meters.', true);
-			} else {
-				Ti.API.info('NOT SHOWN - Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is ' + accuracy + ' meters');
-			}
+	var stopGPS = Ti.App.Properties.getBool('stopGPS', false);
+Ti.API.info("stopGPS: " + stopGPS);
+	
+	if(stopGPS){
+		Ti.API.info("TRYING TO STOP GPS NOW!!!");
+		try{
+			movement.stopGPSTracking();
+			clearInterval(interval);
+			Titanium.Android.currentService.stop();
 		}
-		
-		var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
-		if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
-		
-		db_coord.execute("INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + longitude + "','" + latitude + "'," + timestamp + ", 'notUploaded')");
-		db_coord.close();
-		
-		//Ti.API.info("LOCATION SERVICE SAVE: location_obj.length before: " + location_obj.length);
-		//var leng_before = location_obj.length;
-		//var aux_location = location_obj.slice(0);
-		//Ti.API.info("LOCATION SERVICE SAVE: aux_location.length = " + aux_location.length + " location_obj.length after = " + location_obj.length);
-		
-		
-		// location_obj.push({
-			// no_accurated_location : false,
-			// accurated_location : "INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + longitude + "','" + latitude + "'," + timestamp + ", 'notUploaded')",
-			// accuracy : accuracy,
-			// longitude : longitude,
-			// latitude : latitude,
-			// timestamp : timestamp
-		// });
+		catch(ex){
+			Ti.API.error("Stopping gps service: " + ex);
+		}
 	}
-	//setTimeout(s, 5000);
+	else{
+		
+		movement.startGPSTracking();
+		
+		movement.currentMovement({
+			"updateLatLng" : function(e) {
+				updateCurrentLocation(e);
+			}
+		});
+		
+		//Ti.App.movement = movement;
+		
+			// Ti.Geolocation.preferredProvider = Titanium.Geolocation.PROVIDER_GPS;
+		// Ti.Geolocation.purpose = "testing";
+		// Titanium.Geolocation.accuracy = Titanium.Geolocation.ACCURACY_BEST;
+		// Titanium.Geolocation.distanceFilter = 10;
+	// 	 
+		// if( Titanium.Geolocation.locationServicesEnabled === false ) {
+		    // Ti.API.debug('Your device has GPS turned off. Please turn it on.');
+		// }
+		 
+		
+		 
+		// Ti.App.addEventListener("app:got.location", function(d) {
+		    // Ti.App.GeoApp.f_lng = d.longitude;
+		    // Ti.App.GeoApp.f_lat = d.latitude;
+		    // Ti.API.debug(JSON.stringify(d));
+	// 	 
+		    // // you need to remove this listener, see the blog post mentioned above
+		    // Ti.Geolocation.removeEventListener('location', updatePosition);
+	// 	 
+		    // alert(JSON.stringify(d));
+	// 	 
+		// });
+	
+		//Titanium.Geolocation.getCurrentPosition( updateCurrentLocation );   
+		//Titanium.Geolocation.addEventListener( 'location', updatePosition ); 
+	
+		
+		
+		function updateCurrentLocation(e) {
+			curr = e;
+			//if(PLATFORM == 'android'){
+				longitude = curr.longitude;
+				latitude = curr.latitude;
+				accuracy = curr.accuracy;
+			// }else{
+				// longitude = curr.location.longitude;
+				// latitude = curr.location.latitude;
+				// accuracy = curr.location.longitude;
+			// }
+		// 	
+			var timestamp = new Date().getTime();
+			timestamp = Math.round(timestamp / 1000);
+			
+			Ti.API.debug('LOCATION: ' + longitude + ', ' + latitude + ': ' + accuracy);
+			//Ti.API.debug('LOCATION: Latitude ' + latitude);
+			//Ti.API.debug('LOCATION: Accuracy ' + accuracy);
+			//Ti.API.debug('LOCATION: Timestamp ' + timestamp);
+		
+			if(latitude != 0 && longitude != 0) {
+				if(accuracy > 200) {
+					var time_now = Math.round(new Date().getTime() / 1000);
+					var time_past = time_now - Ti.App.Properties.getString("last_alert_popup");
+					if(time_past > time_interval_for_alerts) {
+						notifyIOS('Your GPS is getting inaccurate data. Please make sure the sky is visible. Current GPS accuracy is ' + accuracy + ' meters.', true);
+					} else {
+						Ti.API.info('NOT SHOWN - Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is ' + accuracy + ' meters');
+					}
+				}
+				
+				var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
+				if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
+				
+				db_coord.execute("INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + longitude + "','" + latitude + "'," + timestamp + ", 'notUploaded')");
+				db_coord.close();
+				
+				//Ti.API.info("LOCATION SERVICE SAVE: location_obj.length before: " + location_obj.length);
+				//var leng_before = location_obj.length;
+				//var aux_location = location_obj.slice(0);
+				//Ti.API.info("LOCATION SERVICE SAVE: aux_location.length = " + aux_location.length + " location_obj.length after = " + location_obj.length);
+				
+				
+				// location_obj.push({
+					// no_accurated_location : false,
+					// accurated_location : "INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + longitude + "','" + latitude + "'," + timestamp + ", 'notUploaded')",
+					// accuracy : accuracy,
+					// longitude : longitude,
+					// latitude : latitude,
+					// timestamp : timestamp
+				// });
+			}
+			//setTimeout(s, 5000);
+		}
+	}
 }
 
+interval = setInterval(saveGPS, 5000);
 
 //  as the destroy handler will remove the listener, only set the pause handler to remove if you need battery savings
 // Ti.Android.currentActivity.addEventListener('pause', function(e) {
@@ -125,10 +199,10 @@ function updateCurrentLocation(e) {
 // });
 // Ti.Geolocation.Android.addLocationRule(gpsRule);
 
-function s() {
+//function s() {
 	
 	
-	if (stop === false){
+	//if (stop === false){
 		
 			//movement.currentMovement({
 			//	"updateLatLng" : function(e) {
@@ -152,19 +226,16 @@ function s() {
 			// });
 			
 		
-	}else{
+	//}else{
 		//movement.stopGPSTracking();
-	}
-}
+	//}
+//}
 
  //setInterval(s, 5000);
 //var gpsInterval = setInterval(s, 5000);
 //s();
 
-//Ti.App.addEventListener('stop_gps', function(e){
-//	stop = true;
-	//clearInterval(gpsInterval);
-///});
+
 
 // var domainName =  Titanium.App.Properties.getString("domainName");
 // //var domainName =  "https://test1.omadi.com";

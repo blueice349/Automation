@@ -20,7 +20,7 @@ var curWin = Ti.UI.currentWindow;
 
 //Sets only portrait mode
 curWin.orientationModes = [Titanium.UI.PORTRAIT];
-curWin.backgroundColor = "#eee";
+curWin.setBackgroundColor("#eee");
 
 var movement = curWin.movement;
 
@@ -35,9 +35,25 @@ var goToWindow = Titanium.UI.createWindow({
 
 var backButtonPressed = function(e){
 	 
-	 Ti.API.info("Went to final results: " + e.source.showFinalResults);
-	 if(!e.source.showFinalResults && filterValues.length){
-	 	filterValues.pop();
+	 //Ti.API.info("Went to final results: " + e.source.showFinalResults);
+	 if(PLATFORM == 'android'){
+		 if(!e.source.showFinalResults && filterValues.length){
+		 	filterValues.pop();
+		 }
+	 }
+	 
+	 Ti.UI.currentWindow.close();
+ };
+ 
+var homeButtonPressed = function(e){
+	
+	 var thisWin = Ti.UI.currentWindow;
+	 
+	 if('nestedWindows' in thisWin){
+	 	var i;
+	 	for(i in thisWin.nestedWindows){
+	 		thisWin.nestedWindows[i].close();
+	 	}
 	 }
 	 
 	 Ti.UI.currentWindow.close();
@@ -61,8 +77,9 @@ for(i in filterValues){
 
 var filterFields = [];
 
-var db_result = db.execute('SELECT _data FROM bundles WHERE bundle_name="' + curWin.type + '"');
+var db_result = db.execute('SELECT _data, display_name FROM bundles WHERE bundle_name="' + curWin.type + '"');
 var bundle_data = JSON.parse(db_result.fieldByName('_data'));
+var bundle_label = db_result.fieldByName('display_name');
 var filterFieldNames = [];
 
 if ('mobile' in bundle_data && 'filters' in bundle_data.mobile && 'fields' in bundle_data.mobile.filters && bundle_data.mobile.filters.fields.length > 0) {
@@ -204,16 +221,75 @@ db_result = db.execute(sql);
 if(showFinalResults){
 	while(db_result.isValidRow()){
 		
-		Ti.API.info("FILTER FINAL RESULT: " + db_result.fieldByName('nid'));
-		Ti.API.info("FILTER FINAL RESULT: " + db_result.fieldByName('title'));
+		//Ti.API.info("FILTER FINAL RESULT: " + db_result.fieldByName('nid'));
+		//Ti.API.info("FILTER FINAL RESULT: " + db_result.fieldByName('title'));
+		
+		var title = db_result.fieldByName('title');
+		
+		title = trimWhiteSpace(title);
+		
+		if(title.length == 0){
+			title = '- No Title -';
+		}
+		
+		var separator = ' - ';
+		if('title_fields' in bundle_data && 'separator' in bundle_data.title_fields){
+			separator = bundle_data.title_fields.separator;
+		}
+		
+		var whiteSpaceTest = trimWhiteSpace(separator);
 		
 		var row = Ti.UI.createTableViewRow({
-			height : '50dp',
-			hasChild : false,
-			title : db_result.fieldByName('title'),
+			hasChild: false,
+			searchValue: db_result.fieldByName('title'),
 			color: '#000',
 			nid: db_result.fieldByName('nid')
 		});
+		
+		if(whiteSpaceTest.length > 0){
+			var titleParts = title.split(separator);
+			var numTitleRows = Math.ceil(titleParts.length / 2);
+			for(i = 0; i <= numTitleRows; i ++){
+				
+				// Add label1 before label2 so the white background will go over the right label if it's extra long
+				var label1 = Ti.UI.createLabel({
+					height : '20dp',
+					text : titleParts[i*2],
+					color: '#000',
+					top: (i * 20 + 5) + 'dp',
+					left: '5dp',
+					zIndex: 1,
+					width: '45%',
+					font: {fontSize: '14dp'},
+					wordWrap: false,
+					ellipsize: true
+				});
+				
+				row.add(label1);
+				
+				if(typeof titleParts[i*2+1] != 'undefined'){
+					var label2 = Ti.UI.createLabel({
+						height : '20dp',
+						text : titleParts[i*2+1],
+						color: '#666',
+						top: (i * 20 + 5) + 'dp',
+						left: '54%',
+						width: '45%',
+						font: {fontSize: '14dp'},
+						wordWrap: false,
+						ellipsize: true
+					});
+					
+					row.add(label2);
+				}
+			}
+			row.height = (numTitleRows * 20) + 10 + 'dp';
+
+		}
+		else{
+			row.height = '50dp';
+			row.title = row.searchValue;
+		}
 		
 		tableData[tableIndex] = row;
 		tableIndex++;
@@ -262,7 +338,7 @@ else{
 		db_result = db.execute("SELECT tid AS value, name AS text_value FROM term_data WHERE tid IN (" + safeValues.join(",") + ")");
 		while(db_result.isValidRow()){
 			text_values[db_result.fieldByName('value')] = db_result.fieldByName('text_value');			
-			Ti.API.info("FILTER: " + db_result.fieldByName('text_value'));
+			//Ti.API.info("FILTER: " + db_result.fieldByName('text_value'));
 			db_result.next();
 		}
 		
@@ -272,7 +348,7 @@ else{
 		db_result = db.execute("SELECT nid AS value, title AS text_value FROM node WHERE nid IN (" + safeValues.join(",") + ")");
 		while(db_result.isValidRow()){
 			text_values[db_result.fieldByName('value')] = db_result.fieldByName('text_value');			
-			Ti.API.info("FILTER: " + db_result.fieldByName('text_value'));
+			//Ti.API.info("FILTER: " + db_result.fieldByName('text_value'));
 			db_result.next();
 		}
 		
@@ -282,26 +358,23 @@ else{
 		db_result = db.execute("SELECT uid AS value, realname AS text_value FROM user WHERE uid IN (" + safeValues.join(",") + ")");
 		while(db_result.isValidRow()){
 			text_values[db_result.fieldByName('value')] = db_result.fieldByName('text_value');			
-			Ti.API.info("FILTER: " + db_result.fieldByName('text_value'));
+			//Ti.API.info("FILTER: " + db_result.fieldByName('text_value'));
 			db_result.next();
 		}
 		
 		db_result.close();
 	}
 	else if(field_name == 'form_part'){
-		var db_result = db.execute('SELECT _data FROM bundles WHERE bundle_name="' + curWin.type + '"');
-		var bundle_data = JSON.parse(db_result.fieldByName('_data'));
-
+		
 		if (bundle_data.form_parts != null && bundle_data.form_parts != "") {
 			Ti.API.info('Form table part = ' + bundle_data.form_parts.parts.length);
 			if (bundle_data.form_parts.parts.length > 0) {
 				for(i in bundle_data.form_parts.parts){
 					text_values[i] = bundle_data.form_parts.parts[i].label;
-					Ti.API.info("FILTER: " + bundle_data.form_parts.parts[i].label);
+					//Ti.API.info("FILTER: " + bundle_data.form_parts.parts[i].label);
 				}
 			}
 		}
-		db_result.close();
 	}
 	
 
@@ -325,6 +398,10 @@ else{
 		tableData[tableIndex] = row;
 		tableIndex++;
 	}	
+	
+	if(field_name != 'form_part'){
+		tableData.sort(sortByTitle);
+	}
 }
 
 
@@ -345,10 +422,11 @@ var topBar = Titanium.UI.createView({
 
 var listLabel = Ti.UI.createLabel({
 	font: {fontWeight: "bold", fontSize: '16dp'},
-	text: curWin.type.toUpperCase() + " List " + (showFinalResults ? '(' + tableData.length + ')' : ''),
+	text: bundle_label + " List " + (showFinalResults ? '(' + tableData.length + ')' : ''),
 	top: '4dp',
 	left: '10dp',
-	textAlign: Ti.UI.TEXT_ALIGNMENT_LEFT	
+	textAlign: Ti.UI.TEXT_ALIGNMENT_LEFT,
+	color: '#ccc'
 });
 
 var showAllButton = Ti.UI.createButton({
@@ -356,7 +434,16 @@ var showAllButton = Ti.UI.createButton({
 	top: '10dp',
 	right: '10dp',
 	width: '100dp',
-	height: '45dp'
+	height: '40dp',
+	style: (PLATFORM != 'android' ? Titanium.UI.iPhone.SystemButtonStyle.BORDERED : ''),
+	backgroundGradient: {
+        type: 'linear',
+        startPoint: { x: '50%', y: '0%' },
+        endPoint: { x: '50%', y: '100%' },
+        colors: [ { color: '#ccc', offset: 0.0}, { color: '#ddd', offset: 0.25 }, { color: '#aaa', offset: 1.0 } ],
+   },
+   borderRadius: '5dp', 
+   color: '#000'
 });
 
 var search = Ti.UI.createSearchBar({
@@ -372,11 +459,16 @@ topBar.add(listLabel);
 
 var barHeight;
 
-if(showFinalResults){
-	barHeight = 30;
+if(PLATFORM == 'android'){
+	if(showFinalResults){
+		barHeight = 30;
+	}
+	else{
+		barHeight = 60;
+	}
 }
 else{
-	barHeight = 60;
+	barHeight = 40;
 }
 
 if(filterValues.length){
@@ -405,15 +497,24 @@ if(filterValues.length){
 	if(showFinalResults){
 		filterLabel.top = '5dp';
 		filterLabel.right = '10dp';
-		barHeight = 15 + (filterValues.length * 14);
+		if(PLATFORM == 'android'){
+			barHeight = 15 + (filterValues.length * 14);
+		}
 	}
 	else{
 		filterLabel.top = '25dp';
-		filterLabel.left = '10dp';
+		if(PLATFORM == 'android'){
+			filterLabel.left = '10dp';
+		}
+		else{
+			filterLabel.left = '80dp';
+		}
 		
-		barHeight = 30 + (filterValues.length * 14);
-		if(barHeight < 60){
-			barHeight = 60;
+		if(PLATFORM == 'android'){
+			barHeight = 30 + (filterValues.length * 14);
+			if(barHeight < 60){
+				barHeight = 60;
+			}
 		}
 	}
 	
@@ -422,12 +523,151 @@ if(filterValues.length){
 	filterTableView.top = barHeight + 'dp';
 }
 
-if(!showFinalResults){
-	topBar.add(showAllButton);
+/*** ADD the IOS top navigation bar ***/
+if(PLATFORM != 'android'){
+	
+	// var iOSBackButton = Ti.UI.createButton({
+		// title : 'Back',
+		// style:Titanium.UI.iPhone.SystemButtonStyle.PLAIN,
+		// top: '10dp',
+		// left: '10dp',
+		// height: '40dp',
+		// backgroundGradient: {
+        // type: 'linear',
+	        // startPoint: { x: '50%', y: '0%' },
+	        // endPoint: { x: '50%', y: '100%' },
+	        // colors: [ { color: '#ccc', offset: 0.0}, { color: '#ddd', offset: 0.25 }, { color: '#aaa', offset: 1.0 } ],
+	   // },
+	   // borderRadius: '5dp', 
+	   // color: '#000',
+	   // width: '60dp'
+	// });
+	// iOSBackButton.addEventListener('click', function() {
+		// curWin.close();
+	// });
+// 	
+	// topBar.add(iOSBackButton);
+// 	
+	// listLabel.left = '80dp';
+	
+	
+	
+	var back = Ti.UI.createButton({
+		title : 'Back',
+        style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+	});
+	
+	back.addEventListener('click', function() {
+		backButtonPressed();
+	});
+	
+	var homeButton = Ti.UI.createButton({
+		title : 'Home',
+        style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+	});
+	
+	homeButton.addEventListener('click', function() {
+		homeButtonPressed();
+	});
+	
+	var space = Titanium.UI.createButton({
+		systemButton:Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+	});
+	
+	var label = Titanium.UI.createButton({
+		title: bundle_label + ' List',
+		color:'#fff',
+		ellipsize: true,
+		wordwrap: false,
+		width: "200dp",
+		style:Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+	});
+	
+	var items = [];
+	
+	var plusButton =  Titanium.UI.createButton({
+		backgroundImage: '/images/plus_btn.png',
+		backgroundSelectedImage: '/images/plus_btn_selected.png',
+		width:"54dp",
+		height:"38dp",
+		right: "1dp",
+		is_plus: true
+	});
+	
+	plusButton.addEventListener('click', function() {
+		openCreateNodeScreen();
+	}); 
+	
+	items.push(back);
+	
+	if(numFilterValues > 0){
+		items.push(homeButton);
+	}
+	
+	items.push(space);
+	if(Ti.Platform.osname == 'ipad'){
+		items.push(label);
+		items.push(space);
+	}
+	
+	if(!showFinalResults){
+		showAllButton.width = '80dp';
+		items.push(showAllButton)
+	}
+	
+	if(curWin.show_plus == true){
+		items.push(plusButton);
+	}
+	
+	// else{
+		// items = (Ti.Platform.osname == 'ipad')? [back, space, label, space, showAllButton, space]:[back, label, space, showAllButton]
+	// }
+	
+	// create and add toolbar
+	var toolbar = Ti.UI.iOS.createToolbar({
+		items:items,
+		top:0,
+		borderTop:false,
+		borderBottom:true,
+		zIndex: 1,
+		height: '60dp'
+	});
+	curWin.add(toolbar);
 }
+else{ // PLATFORM == 'android'
+	curWin.add(topBar);
+	if(!showFinalResults){
+		topBar.add(showAllButton);
+	}
+	
+	var activity = curWin.activity;
+	activity.onCreateOptionsMenu = function(e) {
 
-curWin.add(topBar);
-
+		var menu = e.menu;
+		
+		var homeItem = menu.add({
+			title : 'Home',
+			order : 0
+		});
+		
+		homeItem.setIcon("/images/home2.png");
+		homeItem.addEventListener("click", function(e) {
+			homeButtonPressed();
+		});
+			
+		if(curWin.show_plus){
+			var newItem = menu.add({
+				title : 'New ' + bundle_label,
+				order : 1
+			});
+			
+			newItem.setIcon("/images/plus_btn.png");
+			newItem.addEventListener("click", function(e) {
+				openCreateNodeScreen();
+			});
+		}
+	};
+}
 
 
 if(showFinalResults){
@@ -442,7 +682,6 @@ else{
 
 	var filterFieldLabel = Ti.UI.createLabel({
 		font: {fontSize: '16dp', fontWeight: "bold"},
-		text: 'Filter by ' + lastFilterField.field_label,
 		top: barHeight + 'dp',
 		width: '100%',
 		height: '25dp',
@@ -456,6 +695,14 @@ else{
 	        colors: [ { color: '#ddd', offset: 0.0}, { color: '#eee', offset: 0.3 }, { color: '#bbb', offset: 1.0 } ],
 	    }
 	});
+	
+	if(Ti.Platform.osname == 'iphone'){
+		filterFieldLabel.text = bundle_label + ': Filter by ' + lastFilterField.field_label;
+	}
+	else{
+		filterFieldLabel.text = 'Filter by ' + lastFilterField.field_label;
+	}
+	
 	curWin.add(filterFieldLabel);
 	filterTableView.top = (barHeight + 25) + 'dp';
 }
@@ -474,29 +721,31 @@ else{
 	curWin.add(emptyLabel);
 }
 
-//search.hide();
 
-// EVENTS
+
+
+/********** EVENTS *************/
 
 search.addEventListener('change', function(e) {
 		//e.value; // search string as user types
 	filterData = [];
 	for(var i = 0; i < tableData.length; i++) {
 		var rg = new RegExp(e.source.value, 'i');
-		if(tableData[i].title.search(rg) != -1) {
+		if(tableData[i].searchValue.search(rg) != -1) {
 			filterData.push(tableData[i]);
 		}
 	}
 	
-	listLabel.setText(curWin.type.toUpperCase() + " List " + (showFinalResults ? '(' + filterData.length + ')' : ''));
+	listLabel.setText(bundle_label + " List " + (showFinalResults ? '(' + filterData.length + ')' : ''));
 	
 	if(filterData.length == 0){
 		var row = Ti.UI.createTableViewRow({
 			height : '50dp',
 			hasChild : false,
 			title : 'No Results (Touch to Reset)',
-			color: '#000',
-			nid: 0
+			color: '#900',
+			nid: 0,
+			font: {fontWeight: 'bold', fontSize: '16dp'}
 		});
 		filterData.push(row);
 	}
@@ -532,10 +781,12 @@ showAllButton.addEventListener('click', function(e){
 	var newWin = Ti.UI.createWindow({
 	    backgroundColor: '#FFF',
 	    title:'Results',
-	    url: 'main_windows/objects.js',
+	    url: 'objects.js',
 	    navBarHidden: true,
 	    type: curWin.type,
-	    showFinalResults: true
+	    showFinalResults: true,
+	    uid: curWin.uid,
+	    show_plus: curWin.show_plus
 	});
 	
 	var filterValues = curWin.filterValues;
@@ -577,9 +828,11 @@ else{
 		var newWin = Ti.UI.createWindow({
 		    backgroundColor: '#FFF',
 		    title:'Results',
-		    url: 'main_windows/objects.js',
+		    url: 'objects.js',
 		    navBarHidden: true,
-		    type: curWin.type
+		    type: curWin.type,
+		    uid: curWin.uid,
+		    show_plus: curWin.show_plus
 		});
 		
 		var filterValues = curWin.filterValues;
@@ -593,157 +846,48 @@ else{
 			text: e.row.filterValueText
 		});
 		
-		newWin.filterValues = filterValues;
+		var nestedWindows;
+		if(typeof curWin.nestedWindows == 'undefined'){
+			nestedWindows = [];
+		}
+		else{
+			nestedWindows = curWin.nestedWindows;
+		}
+		nestedWindows.push(curWin);
 		
+		newWin.filterValues = filterValues;
+		newWin.nestedWindows = nestedWindows;
 		// Remove the listener to close the first window
 		//e.row.cWin.removeEventListener('android:back', backButtonPressed);
 		newWin.addEventListener('open', windowOpened);
 		
 		newWin.open();
 	});
+	
 }
 
 function windowOpened(e){
 	Ti.API.info("window opened");
 	search.blur();
-	
-	Ti.UI.Android.hideSoftKeyboard();
+	if(PLATFORM == 'android'){
+		Ti.UI.Android.hideSoftKeyboard();
+	}
+	Ti.API.debug("hide keyboard in windowOpened");
 	
 	setTimeout(function(){
 		search.blur();
 		Ti.API.info("window 1 second passed");
 		search.setFocusable(true);
-		search.setSoftKeyboardOnFocus(Ti.UI.Android.SOFT_KEYBOARD_SHOW_ON_FOCUS);
 	}, 1000);
 }
 	
 search.blur();
 Ti.API.info("END OF OBJECTS WINDOW FILE");
-// var resultsNames  = db.execute('SELECT node.nid, node.title FROM node INNER JOIN '+curWin.type+' ON node.nid='+curWin.type+'.nid WHERE (node.flag_is_updated=0 OR node.flag_is_updated=1) ORDER BY node.title ASC ');
-// 
-// var data = [];
-// var filterData = [];
-// var i = 0;
-// 
-// i = 0;
-// while (resultsNames.isValidRow())
-// {
-	// var fullName = resultsNames.fieldByName('title');
-	// var row = Ti.UI.createTableViewRow({
-		// height : '60dp',
-		// hasChild : false,
-		// title : fullName,
-		// color: '#000'
-	// });
-// 
-	// //Parameters added to each row
-	// row.nid = resultsNames.fieldByName('nid');
-	// row.name = fullName;
-// 	
-	// //Populates the array
-	// data[i] = row;
-	// i++;
-	// resultsNames.next();
-// }
-// var listTableView = null;
-// 
-// //Check if the list is empty or not
-// if(data.length < 1) {
-	// //Shows the empty list
-	// var empty = Titanium.UI.createLabel({
-		// height : 'auto',
-		// width : 'auto',
-		// top : '50%',
-		// text : 'No '+curWin.type+' has been saved.'
-	// });
-// 
-	// //Debug
-	// Ti.API.info("XXXXXXX ---- No "+curWin.type+" ! ----- XXXXXX");
-// 
-	// curWin.add(empty);
-	// //showBottom(actualWindow, goToWindow )
-	// showBottom(curWin, goToWindow);
-// }
-// //Shows the contacts
-// else {
-	// //Sort the array (A>B>C>...>Z):
-	// data.sort(sortTableView);
-// 
-	// //Search bar definition
-	// var search = Ti.UI.createSearchBar({
-		// hintText : 'Search...',
-		// autocorrect : false,
-		// barColor : '#000',
-		// top: 0,
-		// color: 'black',
-		// height: '50dp'
-	// });
-// 	
-	// //Contat list container
-	// var listTableView = Titanium.UI.createTableView({
-		// data : data,
-		// //height : '91%',
-		// separatorColor: '#BDBDBD'
-	// });
-// 	
-	// listTableView.addEventListener('focus', function(e) {
-		// search.blur();
-		// //hides the keyboard
-	// });
-// 	
-	// //Sort the array (A>B>C>...>Z):
-	// data.sort(sortTableView);
-// 
-	// // SEARCH BAR EVENTS
-	// search.addEventListener('change', function(e) {
-		// //e.value; // search string as user types
-		// filterData = [];
-		// for(var i = 0; i < data.length; i++) {
-			// var rg = new RegExp(e.source.value, 'i');
-			// if(data[i].title.search(rg) != -1) {
-				// filterData.push(data[i]);
-			// }
-		// }
-		// listTableView.setData(filterData);
-// 		
-// 		
-	// });
-// 
-	// search.addEventListener('return', function(e) {
-		// search.blur();
-		// //hides the keyboard
-	// });
-// 	
-	// search.addEventListener('cancel', function(e) {
-		// e.source.value = "";
-		// search.blur();
-		// //hides the keyboard
-	// });
-// 	
-	// curWin.addEventListener('android:menu', function() {
-		// alert('clicked');
-	// });
-// 	
-	// //When the user clicks on a certain contact, it opens individual_contact.js
-	// listTableView.addEventListener('click', function(e) {
-		// //Hide keyboard when returning 
-		// search.blur();
-		// bottomButtons1(e.row.nid, curWin, e);
-		// resultsNames.close();
-	// });
-	// //Adds contact list container to the UI
-	// curWin.add(search);
-	// curWin.add(listTableView);
-	// search.blur();
-// }
-// 
-// resultsNames.close();
-
 
 db.close();
 
 //showBottom(actualWindow, goToWindow )
-// if(PLATFORM == 'android'){
+if(PLATFORM == 'android'){
 	// bottomBack(curWin, "Back" , "enable", true);
 	// if (listTableView != null ){
 		// listTableView.bottom = '6%'	
@@ -763,70 +907,14 @@ db.close();
 			// });
 		// }
 	// }
-// }else{
-	// topToolBar_object();
-// }
-
-function topToolBar_object(){
-	if (listTableView != null ){
-		listTableView.top = '90'	
-		search.top = '40';
-		listTableView.bottom = 0;			
-	}
-
-	var back = Ti.UI.createButton({
-		title : 'Back',
-		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-	});
-	back.addEventListener('click', function() {
-		curWin.close();
-	});
-	
-	var space = Titanium.UI.createButton({
-		systemButton:Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
-	});
-	var label = Titanium.UI.createButton({
-		title: curWin.type.charAt(0).toUpperCase() + curWin.type.slice(1)+' List',
-		color:'#fff',
-		ellipsize: true,
-		wordwrap: false,
-		width: 200,
-		style:Titanium.UI.iPhone.SystemButtonStyle.PLAIN
-	});
-	
-	
-	var items = [];
-	if(curWin.show_plus == true){
-		var newNode = Ti.UI.createButton({
-			title : 'New',
-			style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-		});
-		newNode.addEventListener('click', function() {
-			openCreateNodeScreen();
-		}); 
-		items = [back, space, label, space, newNode];
-	}else{
-		items = (Ti.Platform.osname == 'ipad')? [back, space, label, space]:[back, label, space]
-	}
-	
-	// create and add toolbar
-	var toolbar = Ti.UI.iOS.createToolbar({
-		items:items,
-		top:0,
-		borderTop:false,
-		borderBottom:true
-	});
-	curWin.add(toolbar);
-};
+}
 
 function openCreateNodeScreen(){
 	var win_new = create_or_edit_node.getWindow();
-	win_new.title = "New "+ curWin.title;
+	win_new.title = "New " + bundle_label;
 	win_new.type = curWin.type;
 	win_new.uid = curWin.uid;
-	win_new.up_node = curWin.up_node;
 	win_new.mode = 0;
-	win_new.picked = win.picked;
 	win_new.region_form = 0;
 	win_new.backgroundColor = "#EEEEEE";
 	win_new.nameSelected = 'Fill Details...';
@@ -838,7 +926,7 @@ function openCreateNodeScreen(){
 function openEditScreen(part, nid, e){
 //Next window to be opened
 	var win_new = create_or_edit_node.getWindow();
-	win_new.title = (PLATFORM == 'android') ? curWin.title + '-' + e.row.name:curWin.title;
+	win_new.title = bundle_label;
 	win_new.type = curWin.type;
 	win_new.listView = curWin.listView;
 	win_new.up_node = curWin.up_node;
@@ -848,7 +936,6 @@ function openEditScreen(part, nid, e){
 
 	//Passing parameters
 	win_new.nid = nid;
-	win_new.picked = curWin.picked;
 	win_new.nameSelected =  e.row.name;
 
 	//Sets a mode to fields edition
@@ -864,8 +951,8 @@ function openEditScreen(part, nid, e){
 function bottomButtons1(_nid, curWin, e){
 	var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
 	if(PLATFORM != 'android'){db_act.file.setRemoteBackup(false);}
-	var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + curWin.type + '"');
-	var _data = JSON.parse(json_data.fieldByName('_data'));
+	// var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + curWin.type + '"');
+	// var _data = JSON.parse(json_data.fieldByName('_data'));
 
 	var node_form = db_act.execute('SELECT form_part, perm_edit FROM node WHERE nid=' + _nid);
 
@@ -875,11 +962,11 @@ function bottomButtons1(_nid, curWin, e){
 	var btn_id = [];
 	var isEditEnabled = false;
 	if(node_form.fieldByName('perm_edit')==1){
-		if(_data.form_parts!=null && _data.form_parts!=""){
-			Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
-			if(_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2) { 
-				Ti.API.info("Title = " + _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
-				btn_tt.push(_data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
+		if(bundle_data.form_parts!=null && bundle_data.form_parts!=""){
+			Ti.API.info('Form table part = ' + bundle_data.form_parts.parts.length);
+			if(bundle_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2) { 
+				Ti.API.info("Title = " + bundle_data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
+				btn_tt.push(bundle_data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
 				btn_id.push(node_form.fieldByName('form_part') + 1);
 				Ti.API.info(node_form.fieldByName('form_part') + 1);
 			}
@@ -892,7 +979,7 @@ function bottomButtons1(_nid, curWin, e){
 	btn_tt.push('View');
 	btn_id.push(0);
 	
-	json_data.close();
+	//json_data.close();
 	db_act.close();
 
 	btn_tt.push('Cancel');
@@ -908,7 +995,7 @@ function bottomButtons1(_nid, curWin, e){
 				var win_new = Titanium.UI.createWindow({
 					fullscreen : false,
 					navBarHidden : true,
-					title: curWin.type.charAt(0).toUpperCase() + curWin.type.slice(1),
+					title: bundle_label,
 					type: curWin.type,
 					url : 'individual_object.js',
 					up_node: curWin.up_node,
@@ -918,7 +1005,6 @@ function bottomButtons1(_nid, curWin, e){
 				});
 		
 				//Passing parameters
-				win_new.picked 		 = curWin.picked;
 				win_new.nid 			 = e.row.nid;
 				win_new.nameSelected 	 = e.row.name;
 				win_new.movement = curWin.movement;
@@ -933,6 +1019,15 @@ function bottomButtons1(_nid, curWin, e){
 				openEditScreen(btn_id[ev.index], _nid, e);
 			}
 	});	
+};
+
+function sortByTitle(a, b) {
+	if (a.title < b.title)
+		return -1;
+	if (a.title > b.title)
+		return 1;
+	// a must be equal to b
+	return 0;
 };
 
 unsetUse();

@@ -3,6 +3,8 @@ var indLog = Ti.UI.currentWindow;
 
 Ti.include('/lib/functions.js'); 
 
+var domainName = Ti.App.Properties.getString("domainName");
+
 //Definition of the window before (opens when the user clicks on the back button)
 var goToWindow = Titanium.UI.createWindow({
 	fullscreen : false,
@@ -12,7 +14,6 @@ var goToWindow = Titanium.UI.createWindow({
 	notOpen: false
 });
 
-goToWindow.picked = indLog.picked;
 goToWindow.result = indLog.result;
 
 //When back button on the phone is pressed, it opens mainMenu.js and close the current window
@@ -60,7 +61,7 @@ labelOut.addEventListener('click',function (){
 	
 	var logout_xhr = Ti.Network.createHTTPClient();
 	
-	logout_xhr.open('POST', indLog.picked+'/js-sync/sync/logout.json');
+	logout_xhr.open('POST', domainName+'/js-sync/sync/logout.json');
 	
 	//Timeout until error:
 	logout_xhr.setTimeout(10000);
@@ -101,7 +102,7 @@ labelOut.addEventListener('click',function (){
 		
 		if(this.status == 403 || elements.status == 403 || this.status == 401 || elements.status == 401) {
 			Ti.App.Properties.setString('logStatus', "You are logged out");
-			Ti.App.fireEvent('stop_gps');
+			
 	
 			var db = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list"  );
 			no_backup(db);	
@@ -118,9 +119,15 @@ labelOut.addEventListener('click',function (){
 			Ti.API.info("Failed to log out");
 			alert("Failed to log out, please try again");
 		}
+		
+		Ti.App.fireEvent('stop_gps');
 		removeNotifications();
 	}
 	logout_xhr.send();
+	
+	Ti.App.Properties.setBool("stopGPS", true);
+	Ti.App.Properties.setBool("quitApp", true);
+	
 });
 
 labelIn.addEventListener('click',function (){

@@ -16,12 +16,20 @@ var accuracy;
 
 var domainName =  Titanium.App.Properties.getString("domainName");
 
-var upload_gps_locations = function() {
-	
+if(Ti.App.Properties.getBool('stopGPS', false)){
+	try{
+		Titanium.Android.currentService.stop();
+	}
+	catch(ex){
+		Ti.API.error("Stopping gps upload service: " + ex);
+	}
+}
+else{
+
 	Ti.API.info('################################## CALLED ANDROID UPDATE FUNCTION ################################## '+is_GPS_uploading());
 	if (is_GPS_uploading() == false){
 		set_GPS_uploading();
-		Ti.API.info('LOCATION SERVICE: UPLOAD GPS');
+		//Ti.API.info('LOCATION SERVICE: UPLOAD GPS');
 		var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
 		if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
 		
@@ -39,7 +47,7 @@ var upload_gps_locations = function() {
 		//	last_db_timestamp = aux_location.pop().timestamp;
 		//	Ti.API.info("Last timestamp = " + last_db_timestamp);
 		//}
-		var result = db_coord.execute("SELECT * FROM user_location WHERE status = 'notUploaded' ORDER BY timestamp ASC");
+		var result = db_coord.execute("SELECT * FROM user_location WHERE status = 'notUploaded' ORDER BY timestamp DESC LIMIT 50");
 	
 		if (result.rowCount > 0) {
 			Ti.API.info(result.rowCount + ' gps locations were found ');
@@ -47,20 +55,43 @@ var upload_gps_locations = function() {
 	
 				//Build JSON structure
 				var json_coord = "{ \"data\": [";
-				if (result.rowCount >= 50){
-					for (var i = 0; i < 50; i++) {
-						db_coord.execute("UPDATE user_location SET status =\"json\" WHERE ulid=" + result.fieldByName('ulid'));
-						(i == 49) ? json_coord += " {\"lat\" : \"" + result.fieldByName('latitude') + "\", \"lng\" : \"" + result.fieldByName('longitude') + "\" , \"time\" : \"" + result.fieldByName('timestamp') + "\"}" : json_coord += " {\"lat\" : \"" + result.fieldByName('latitude') + "\", \"lng\" : \"" + result.fieldByName('longitude') + "\" , \"time\" : \"" + result.fieldByName('timestamp') + "\"}, ";
-						result.next();
-					}
-				}
-				else{
+				// if (result.rowCount >= 50){
+					// for (var i = 0; i < 50; i++) {
+						// db_coord.execute("UPDATE user_location SET status =\"json\" WHERE ulid=" + result.fieldByName('ulid'));
+						// (i == 49) ? json_coord += " {\"lat\" : \"" + result.fieldByName('latitude') + "\", \"lng\" : \"" + result.fieldByName('longitude') + "\" , \"time\" : \"" + result.fieldByName('timestamp') + "\"}" : json_coord += " {\"lat\" : \"" + result.fieldByName('latitude') + "\", \"lng\" : \"" + result.fieldByName('longitude') + "\" , \"time\" : \"" + result.fieldByName('timestamp') + "\"}, ";
+						// result.next();
+					// }
+				// }
+				// else{
+					var locationItems = [];
+					
 					for (var i = 0; i < result.rowCount; i++) {
 						db_coord.execute("UPDATE user_location SET status =\"json\" WHERE ulid=" + result.fieldByName('ulid'));
-		
-						(i == result.rowCount - 1) ? json_coord += " {\"lat\" : \"" + result.fieldByName('latitude') + "\", \"lng\" : \"" + result.fieldByName('longitude') + "\" , \"time\" : \"" + result.fieldByName('timestamp') + "\"}" : json_coord += " {\"lat\" : \"" + result.fieldByName('latitude') + "\", \"lng\" : \"" + result.fieldByName('longitude') + "\" , \"time\" : \"" + result.fieldByName('timestamp') + "\"}, ";
+						
+						locationItems.unshift({
+							lat: result.fieldByName('latitude'),
+							lng: result.fieldByName('longitude'),
+							timestamp: result.fieldByName('timestamp')
+						});
+						// (i == result.rowCount - 1) ? json_coord += " {\"lat\" : \"" + result.fieldByName('latitude') + "\", \"lng\" : \"" + result.fieldByName('longitude') + "\" , \"time\" : \"" + result.fieldByName('timestamp') + "\"}" : json_coord += " {\"lat\" : \"" + result.fieldByName('latitude') + "\", \"lng\" : \"" + result.fieldByName('longitude') + "\" , \"time\" : \"" + result.fieldByName('timestamp') + "\"}, ";
 						result.next();
 					}
+				//}
+				
+				var locCount = 0;
+				
+				var locItem;
+				for(i in locationItems){
+					locItem = locationItems[i];
+					
+					json_coord += " {\"lat\" : \"" + locItem.lat + "\", \"lng\" : \"" + locItem.lng + "\" , \"time\" : \"" + locItem.timestamp + "\"}";	
+					
+					
+					if(locCount < locationItems.length - 1){
+						json_coord += ',';
+					}
+					
+					locCount ++;
 				}
 				json_coord += "], \"current_time\": \" " + Math.round(new Date().getTime() / 1000) + "\" }";
 	
@@ -73,18 +104,27 @@ var upload_gps_locations = function() {
 	
 				//Opens address to retrieve contact list
 				objectsCheck.open('POST', domainName + '/js-location/mobile_location.json');
-	
+				
+				if(PLATFORM == 'android'){
+					objectsCheck.setRequestHeader("Cookie", getCookie());// Set cookies
+				}
+				else{
+					var split_cookie = getCookie().split(';');
+					if (!split_cookie[0] ){
+						split_cookie[0]="";
+					}
+					objectsCheck.setRequestHeader("Cookie", split_cookie[0]);// Set cookies
+				}
 				//Header parameters
 				objectsCheck.setRequestHeader("Content-Type", "application/json");
-				objectsCheck.setRequestHeader("Cookie", getCookie());
 	
 				//When connected
 				objectsCheck.onload = function(e) {
 					//Parses response into strings
-					Ti.API.info('onLoad for GPS coordiates reached! Here is the reply: ');
-					Ti.API.info(this.responseText);
-					Ti.API.info('Requested: ');
-					Ti.API.info(json_coord);
+					//Ti.API.info('onLoad for GPS coordiates reached! Here is the reply: ');
+					//Ti.API.info(this.responseText);
+					//Ti.API.info('Requested: ');
+					//Ti.API.info(json_coord);
 	
 					if (isJsonString(this.responseText) === true) {
 						var resultReq = JSON.parse(this.responseText);
@@ -101,7 +141,7 @@ var upload_gps_locations = function() {
 						if (resultReq.alert) {
 							for (var _i in resultReq.alert) {
 								var tmstp = new Date();
-								Ti.API.info("====>>>>>>>>>>>> " + resultReq.alert[_i].location_nid);
+								//Ti.API.info("====>>>>>>>>>>>> " + resultReq.alert[_i].location_nid);
 								if (nids.indexOf(resultReq.alert[_i].location_nid) == -1) {
 									nids.push(resultReq.alert[_i].location_nid);
 								}
@@ -109,10 +149,10 @@ var upload_gps_locations = function() {
 	
 								for (var _y in resultReq.alert[_i].alerts) {
 									if (resultReq.alert[_i].alerts[_y]) {
-										Ti.API.info("Alert Message: " + resultReq.alert[_i].alerts[_y].message);
+										//Ti.API.info("Alert Message: " + resultReq.alert[_i].alerts[_y].message);
 										_arr_content.push('INSERT OR REPLACE INTO alerts (subject, ref_nid, alert_id, location_nid, location_label, message, timestamp) VALUES ( "' + resultReq.alert[_i].alerts[_y].subject + '", ' + resultReq.alert[_i].alerts[_y].reference_id + ', ' + resultReq.alert[_i].alerts[_y].alert_id + ', ' + resultReq.alert[_i].alerts[_y].location_nid + ', "' + resultReq.alert[_i].alerts[_y].location_label + '", "' + resultReq.alert[_i].alerts[_y].message + '" , ' + tmstp.getTime() + ' )');
 									} else {
-										Ti.API.info("Alert Message: " + resultReq.alert[_i].alerts.message);
+										//Ti.API.info("Alert Message: " + resultReq.alert[_i].alerts.message);
 										_arr_content.push('INSERT OR REPLACE INTO alerts (subject, ref_nid, alert_id, location_nid, location_label, message, timestamp) VALUES ( "' + resultReq.alert[_i].alerts.subject + '", ' + resultReq.alert[_i].alerts.reference_id + ', ' + resultReq.alert[_i].alerts.alert_id + ', ' + resultReq.alert[_i].alerts.location_nid + ', "' + resultReq.alert[_i].alerts.location_label + '", "' + resultReq.alert[_i].alerts.message + '" , ' + tmstp.getTime() + ' )');
 									}
 								}
@@ -122,15 +162,15 @@ var upload_gps_locations = function() {
 						for (var _e in nids) {
 							db_coord2.execute('DELETE FROM alerts WHERE location_nid=' + nids[_e]);
 							db_coord2.execute('DELETE FROM alert_names WHERE location_nid=' + nids[_e]);
-							Ti.API.info('Deleted location nids: ' + nids[_e]);
+							//Ti.API.info('Deleted location nids: ' + nids[_e]);
 						}
 	
 						for (var _k in _arr_content) {
-							Ti.API.info(_arr_content[_k]);
+							//Ti.API.info(_arr_content[_k]);
 							db_coord2.execute(_arr_content[_k]);
 						}
 						db_coord2.execute("COMMIT TRANSACTION");
-						Ti.API.info('Finished inserting');
+						//Ti.API.info('Finished inserting');
 						db_coord2.close();
 						Ti.App.fireEvent('refresh_UI_Alerts', {status: 'success'});
 						unset_GPS_uploading();
@@ -181,11 +221,10 @@ var upload_gps_locations = function() {
 	else{
 		Ti.API.info("##### There are locations being updated already #####");
 	}
-
-};
+}
 
 // setInterval(function() {
 	// upload_gps_locations();
 // }, 60000);	
 
-upload_gps_locations();
+

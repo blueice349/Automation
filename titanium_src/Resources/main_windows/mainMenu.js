@@ -17,8 +17,8 @@ Ti.include('/lib/functions.js');
 Ti.include('/lib/encoder_base_64.js');
 
 //Current window's instance
-var win2 = Ti.UI.currentWindow;
-win2.backgroundColor = '#FFFFFF';
+var curWin = Ti.UI.currentWindow;
+curWin.backgroundColor = '#FFFFFF';
 
 var toolActInd = Ti.UI.createActivityIndicator();
 toolActInd.font = {fontFamily:'Helvetica Neue', fontSize:15,fontWeight:'bold'};
@@ -27,72 +27,11 @@ toolActInd.message = 'Loading...';
 
 var version = 'Omadi Inc';
 var isFirstTime = false;
-var movement;
 
 //Common used functions
 unsetUse();
 var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 if(PLATFORM != 'android'){db.file.setRemoteBackup(false);}
-var movement;
-
-//Geolocation module
-movement = win2.movement;
-if(PLATFORM != "android"){
-	Ti.include('geolocation.js');
-}
-else{
-	//Initialize the GPS background service
-	var intent = Titanium.Android.createServiceIntent({
-	  url: 'android_gps_event.js'
-	});
-	
-	//intent.putExtra('interval', 5000);
-	
-	intent.putExtra('interval', 5000);
-	//intent.putExtra('message', 'Hi from started service');
-	Ti.Android.startService(intent);
-	
-	// var service = Titanium.Android.createService(intent);
-	// service.addEventListener('resume', function(e) {
-	    // Titanium.API.info('Service code resumes, iteration ' + e.iteration);
-	// });
-// 	
-	// service.addEventListener('pause', function(e) {
-	    // Titanium.API.info('Service code pauses, iteration ' + e.iteration);
-	    // //if (e.iteration === 3) {
-	        // Titanium.API.info('SERVICE code has run ' + e.iteration + ' times.');
-	        // //service.stop();
-	    // //}
-	// });
-	// service.start();
-	
-	
-	var intent2 = Titanium.Android.createServiceIntent({
-	  url: 'android_gps_upload.js'
-	});
-	
-	intent2.putExtra('interval', 60000);
-	
-	var service2 = Titanium.Android.createService(intent2);
-	service2.addEventListener('resume', function(e) {
-	    Titanium.API.info('Upload Service code resumes, iteration ' + e.iteration);
-	});
-	
-	service2.addEventListener('pause', function(e) {
-	    Titanium.API.info('Upload Service code pauses, iteration ' + e.iteration);
-	    //if (e.iteration === 3) {
-	        Titanium.API.info('UPLOAD SERVICE code has run ' + e.iteration + ' times.');
-	        //service.stop();
-	    //}
-	});
-	
-	// Start the GPS upload 30 seconds after the program starts
-	setTimeout(function() {
-		service2.start();
- 	}, 30000);	
-	
-	//Titanium.Android.startService(intent);
-}
 
 function checkUpdate(evt){
 	Ti.API.info('******* Called checkupate => '+evt);
@@ -111,8 +50,6 @@ function checkUpdate(evt){
 			//No progress bar
 			var pb = null;
 		}
-		
-		var pageIndex = 0;
  
 		var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 		if(PLATFORM != 'android'){db_up.file.setRemoteBackup(false);}
@@ -123,26 +60,26 @@ function checkUpdate(evt){
 		updatedTime = updatedTime.fieldByName('timestamp');
 		if (up_flag.rowCount > 0){
 			Ti.API.info("Fired nodes update");
-			Ti.API.info('installMe( '+pageIndex+' , '+win2+' , '+updatedTime +' , '+pb+' , '+listView+', '+null+' , POST  )');
+			Ti.API.info('installMe( '+curWin+' , '+updatedTime +' , '+pb+' , '+listView+', '+null+' , POST  )');
 			db_up.close();
-			installMe(pageIndex, win2, updatedTime , pb, listView, null, 'POST', null);
+			installMe(curWin, updatedTime , pb, listView, null, 'POST', null);
 		}
 		else{
 			//Normal install
 			if ( see.rowCount > 0 ){
 				Ti.API.info("Fired normal database install");
-				//installMe(pageIndex, win, timeIndex, progress_bar, menu_list)
-				Ti.API.info('installMe( '+pageIndex+' , '+win2+' , '+updatedTime +' , '+pb+' , '+listView+', '+null+' , GET  )');
+	
+				Ti.API.info('installMe( '+curWin+' , '+updatedTime +' , '+pb+' , '+listView+', '+null+' , GET  )');
 				db_up.close();
-				installMe(pageIndex, win2, updatedTime , pb, listView, null, 'GET', null);
+				installMe(curWin, updatedTime , pb, listView, null, 'GET', null);
 			}
 			//First install
 			else{
 				Ti.API.info("Fired first database install");
-				Ti.API.info('installMe( '+pageIndex+' , '+win2+' , '+updatedTime +' , '+pb+' , '+listView+', '+img+' , GET  )');
-				//installMe(pageIndex, win, timeIndex, progress, menu, img, type)
+				Ti.API.info('installMe( '+curWin+' , '+updatedTime +' , '+pb+' , '+listView+', '+img+' , GET  )');
+			
 				db_up.close();
-				installMe(pageIndex, win2, updatedTime , pb, listView, img, 'GET', null);
+				installMe(curWin, updatedTime , pb, listView, img, 'GET', null);
 			}
 		}
 		//updatedTime.close();
@@ -174,30 +111,6 @@ function checkUpdate(evt){
 	}
 };
 
-function update_node(mode, close_parent, _node_name, flag_next_part){
-	//Sets status to 'updating'
-	var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
-	if(PLATFORM != 'android'){db_up.file.setRemoteBackup(false);}
-	var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');
-	var updatedTimeStamp = updatedTime.fieldByName('timestamp');
-	var up_flag = db_up.execute('SELECT * FROM node WHERE flag_is_updated=1');
-	
-	Ti.API.info("Fired nodes update/creation ");
-	updatedTime.close();
-	up_flag.close();
-	db_up.close();
-
-	//function installMe(pageIndex, win, timeIndex, progress, menu, img, type_request, mode, close_parent)
-	installMe(0, win2, updatedTimeStamp  , null, win2.listView, null, 'POST', mode, function (isError){
-		Ti.API.info('Closing create or edit node');
-		if (flag_next_part != null){
-			close_parent(flag_next_part);
-		}
-		else{
-			close_parent(isError);
-		}
-	}, _node_name);
-}
 
 var listView = Titanium.UI.createTableView({
 	data : [],
@@ -212,10 +125,10 @@ var elements = db.execute('SELECT * FROM bundles');
 var check = 0;
 
 //Parses result from user's login 
-var jsonLogin = JSON.parse(win2.result);
+var jsonLogin = JSON.parse(curWin.result);
 
 //Retrieves username
-Ti.App.Properties.setString('Omadi_session_details', win2.result);
+Ti.App.Properties.setString('Omadi_session_details', curWin.result);
 
 var time_format = jsonLogin.user.time_format;
 Ti.App.Properties.setString('Omadi_time_format', (time_format!=null && time_format!="")?time_format:'g:iA' );
@@ -373,7 +286,7 @@ while ( elements.isValidRow() ){
 }
 elements.close();
 
-win2.add(listView);
+curWin.add(listView);
 
 if (check == 0){
 	var img = Ti.UI.createImageView({
@@ -384,7 +297,7 @@ if (check == 0){
 		zIndex: 0
 	});
 	
-	win2.add(img);
+	curWin.add(img);
 }
 
 if(PLATFORM == 'android'){
@@ -415,8 +328,7 @@ listView.addEventListener('click',function(e){
 		win_new.uid = jsonLogin.user.uid;
 		win_new.up_node = update_node;
 		win_new.mode = 0;
-		win_new.picked = win2.picked;
-		win_new.movement = movement;
+		//win_new.movement = movement;
 		win_new.region_form = 0;
 		win_new.backgroundColor = "#EEEEEE";
 		win_new.app_permissions = e.row.app_permissions;
@@ -440,8 +352,7 @@ listView.addEventListener('click',function(e){
 				backgroundColor: '#EEEEEE',
 				show_plus: e.row.show_plus
 			});
-			win_new.picked 	 = win2.picked;
-			win_new.movement = movement;
+			//win_new.movement = movement;
 			win_new.app_permissions = e.row.app_permissions;
 			win_new.addEventListener('focus', function(){
 				unlock_screen();
@@ -456,7 +367,7 @@ listView.addEventListener('click',function(e){
 	}
 });
 
-// showToolbar(name, win2)
+// showToolbar(name, curWin)
 var loggedView = Titanium.UI.createView({
 	top: '0px',	
 	backgroundColor:'#111',
@@ -481,13 +392,21 @@ var label_top = Titanium.UI.createLabel({
 var offImage = Titanium.UI.createLabel({
 	color:'#FFF',
 	text:'Log Out',
-	backgroundColor: '#888',
 	borderRadius: '4dp',
 	width:'70dp',
 	horizontalAlign: 'right',
 	textAlign: 'center',
 	right: '50dp',
-	height: '30dp'
+	height: '30dp',
+	backgroundGradient: {
+        type: 'linear',
+        startPoint: { x: '50%', y: '0%' },
+        endPoint: { x: '50%', y: '100%' },
+        colors: [ { color: '#ccc', offset: 0.0}, { color: '#ddd', offset: 0.25 }, { color: '#aaa', offset: 1.0 } ],
+   },
+   borderRadius: '5dp', 
+   color: '#000',
+   style: Ti.UI.iPhone.SystemButtonStyle.PLAIN
 });
 
 var refresh_image = Ti.UI.createImageView({
@@ -500,7 +419,7 @@ loggedView.add(refresh_image);
 
 loggedView.add(label_top);
 loggedView.add(offImage);
-win2.add(loggedView);
+curWin.add(loggedView);
 
 var a = Titanium.UI.createAlertDialog({
 	title:'Omadi',
@@ -523,15 +442,14 @@ offImage.addEventListener('click',function(e)
 	});
 
 	//Setting both windows with login values:
-	indLog.log		 = win2.log;
-	indLog.result	 = win2.result;
-	indLog.picked 	 = win2.picked;
-	indLog._parent	 = win2;
+	indLog.log		 = curWin.log;
+	indLog.result	 = curWin.result;
+	indLog._parent	 = curWin;
     
     indLog.open();
 });
 
-win2.addEventListener('close', function(){
+curWin.addEventListener('close', function(){
 	Ti.API.info('Closing main menu');
 });
 
@@ -551,11 +469,11 @@ else{
 updatedTime.close();
 
 //Sets only portrait mode
-win2.orientationModes = [ Titanium.UI.PORTRAIT ];
+curWin.orientationModes = [ Titanium.UI.PORTRAIT ];
 
 //When back button on the phone is pressed, it alerts the user (pop up box)
 // that he needs to log out in order to go back to the root window
-win2.addEventListener('android:back', function() {
+curWin.addEventListener('android:back', function() {
 	a.message = 'In order to log off, please click on \'Log Out\' next to your username at the top';
 	a.show();
 });
@@ -624,17 +542,18 @@ db.close();
 
 //Check behind the courtins if there is a new version - 5 minutes
 //setInterval( checkUpdate('auto') , 10000);
-setInterval( function(){
+Ti.App.syncInterval = setInterval( function(){
 	Ti.API.info('========= Automated Update Check running ========= ');
 	
-	if ( (isUpdating() === false) && (Titanium.Network.online) ){
+	if(!isLogged()){
+		Ti.API.info("Tried to sync, but not logged in... quitting.");
+	}
+	else if ( (isUpdating() === false) && (Titanium.Network.online) ){
 		//Sets status to 'updating'
 		setUse();
 
 		//No progress bar
 		var pb = null;
-		
-		var pageIndex = 0;
 
 		var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
 		if(PLATFORM != 'android'){db_up.file.setRemoteBackup(false);}
@@ -648,26 +567,26 @@ setInterval( function(){
 			Ti.API.info("Fired nodes update");
 			updatedTime.close();
 			db_up.close();
-			installMe(pageIndex, win2, updatedTimeStamp , pb, listView, null, 'POST', null);
+			installMe(curWin, updatedTimeStamp , pb, listView, null, 'POST', null);
 		}
 		else{
 			//Normal install
 			if ( see.rowCount > 0 ){
 				Ti.API.info("Fired normal database install");
-				//installMe(pageIndex, win, timeIndex, progress_bar, menu_list)
+			
 				updatedTime.close();
 				db_up.close();
 
-				installMe(pageIndex, win2, updatedTimeStamp , pb, listView, null, 'GET', null);
+				installMe(curWin, updatedTimeStamp , pb, listView, null, 'GET', null);
 			}
 			//First install
 			else{
 				Ti.API.info("Fired first database install");
-				//installMe(pageIndex, win, timeIndex, progress, menu, img, type)
+				
 				updatedTime.close();
 				db_up.close();
 
-				installMe(pageIndex, win2, updatedTimeStamp , pb, listView, img, 'GET', null);
+				installMe(curWin, updatedTimeStamp , pb, listView, img, 'GET', null);
 			}
 		}
 	}
@@ -709,7 +628,6 @@ alerts_view.add(alerts_lb);
 alerts_view.addEventListener('click', function(){
 	lock_screen();
 	var win_new = message_center.get_win();
-	win_new.picked = win2.picked;
 	
 	win_new.addEventListener('focus', function(){
 		unlock_screen();
@@ -825,7 +743,7 @@ if(PLATFORM != 'android'){
 	});
 }
 
-win2.add(databaseStatusView);
+curWin.add(databaseStatusView);
 
 function openDraftWindow(){
 	lock_screen();
@@ -851,7 +769,7 @@ function openDraftWindow(){
 		up_node: update_node,
 		backgroundColor: '#EEE'
 	});
-	win_new.picked 	 = win2.picked;
+
 	win_new.addEventListener('focus', function(){
 		unlock_screen();
 	});
@@ -861,13 +779,13 @@ function openDraftWindow(){
 }
 
 function lock_screen(){
-	win2.touchEnabled = false;
+	curWin.touchEnabled = false;
 	databaseStatusView.touchEnabled = false;
 	databaseStatusView.focusable = false;
 }
 
 function unlock_screen(){
-	win2.touchEnabled = true;
+	curWin.touchEnabled = true;
 	databaseStatusView.touchEnabled = true;
 	databaseStatusView.focusable = true;
 }
