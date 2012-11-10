@@ -17,6 +17,8 @@ var domainName;
 Ti.include('/lib/functions.js'); 
 Ti.include('/lib/encoder_base_64.js');
 
+Ti.API.info("Starting App.");
+
 var movement;
 
 if(PLATFORM!='android'){
@@ -42,43 +44,49 @@ var OMADI_VERSION = "omadiDb1667";
 Ti.App.Properties.setBool('stopGPS', false);
 Ti.App.Properties.setBool('quitApp', false);
 
+Ti.App.addEventListener('upload_gps_locations', function(e){
+	uploadGPSCoordinates();
+});
+
 Ti.App.addEventListener('stop_gps', function(e){
 //loginWin.addEventListener('focus', function(e){
 	Ti.App.Properties.setBool('stopGPS', true);
+	
+	Ti.API.info("STOP GPS EVENT CAUGHT!");
 	
 	if(Ti.App.Properties.getBool('stopGPS', false)){
 		
 		if(PLATFORM == 'android'){
 			
-			// setTimeout(function(){
-				// var intent = Titanium.Android.createServiceIntent({
-				  // url: 'android_gps_event.js',
-				// });
-				// Titanium.Android.stopService(intent);
-			// }, 15000);
-// 			
-			// var intent2 = Titanium.Android.createServiceIntent({
-			  // url: 'android_gps_upload.js',
-			// });
-			// Titanium.Android.stopService(intent2);
-			
 			Ti.API.info("in stop gps");
 			if('service1' in Ti.App){
 				setTimeout(function(){
-					try{
-						Ti.App.service1.stop();
-						Ti.API.info("Stopped service 1.");
-					}
-					catch(ex){
-						Ti.API.error("Could not stop service 1 or already stopped.");
+					if(!isLogged()){
+						try{
+							if(Ti.App.service1.isStarted){
+								Ti.App.service1.stop();
+								Ti.API.info("Stopped service 1.");
+							}
+							else{
+								Ti.API.info("Service 1 was never started");
+							}
+						}
+						catch(ex){
+							Ti.API.error("Could not stop service 1 or already stopped.");
+						}
 					}
 				}, 15000);
 			}
 			
 			if('service2' in Ti.App){
 				try{
-					Ti.App.service2.stop();
-					Ti.API.info("Stopped service 2.");
+					if(Ti.App.service2.isStarted){
+						Ti.App.service2.stop();
+						Ti.API.info("Stopped service 2.");
+					}
+					else{
+						Ti.API.info("Service 2 was never started");
+					}
 				}
 				catch(ex){
 					Ti.API.error("Could not stop service 2 or already stopped.");
@@ -277,11 +285,11 @@ var portal = Titanium.UI.createTextField({
 i_scroll_page.add(portal);
 
 portal.addEventListener('return', function(){
-	tf1.focus();
+	usernameField.focus();
 });
 
 //Text field for username
-var tf1 = Titanium.UI.createTextField({
+var usernameField = Titanium.UI.createTextField({
 	hintText:'Username',
 	width:parseInt((Ti.Platform.displayCaps.platformWidth*65)/100),
 	top: '10dp',
@@ -297,14 +305,14 @@ var tf1 = Titanium.UI.createTextField({
 });
 
 //No autocorrection for username
-tf1.autocorrect = false;
+usernameField.autocorrect = false;
 
 //Adds text field "username" to the interface
-i_scroll_page.add(tf1);
+i_scroll_page.add(usernameField);
 
 
 //Text field for password
-var tf2 = Titanium.UI.createTextField({
+var passwordField = Titanium.UI.createTextField({
 	hintText:'Password',
 	color:'#000000',
 	width:parseInt((Ti.Platform.displayCaps.platformWidth*65)/100),
@@ -322,17 +330,17 @@ var tf2 = Titanium.UI.createTextField({
 
 credentials.close();
 //No autocorrection for password
-tf2.autocorrect = false;
+passwordField.autocorrect = false;
 
 //Adds text field "password" to the interface
-i_scroll_page.add(tf2);
+i_scroll_page.add(passwordField);
 
-tf1.addEventListener('return', function(){
-	tf2.focus();
+usernameField.addEventListener('return', function(){
+	passwordField.focus();
 });
 
-tf2.addEventListener('return', function(){
-	b1.fireEvent('click');
+passwordField.addEventListener('return', function(){
+	loginButton.fireEvent('click');
 });
 
 loginWin.addEventListener('focus', function(){
@@ -356,8 +364,8 @@ loginWin.addEventListener('focus', function(){
 	db_a.close();
 	
 	portal.color = new_color;
-	tf1.color	 = new_color;
-	tf2.value	 = "";
+	usernameField.color	 = new_color;
+	passwordField.value	 = "";
 
 	//iOS only	
 	if(PLATFORM != 'android'){
@@ -581,7 +589,7 @@ i_scroll_page.add(t_row);
 
 
 //Login button definition:
-var b1 = Titanium.UI.createButton({
+var loginButton = Titanium.UI.createButton({
    title: 'Log In',
    width: '80%',
    height: '55',
@@ -589,7 +597,7 @@ var b1 = Titanium.UI.createButton({
 });
 
 //Adds button to the interface
-i_scroll_page.add(b1);
+i_scroll_page.add(loginButton);
 
 var block_i = Ti.UI.createView({
 	top: '20dp',
@@ -600,25 +608,25 @@ i_scroll_page.add(block_i);
 
 
 /* Function: Trigger for login button
- * Name: b1.addEventListener('click', function(){ ... }); 
+ * Name: loginButton.addEventListener('click', function(){ ... }); 
  * Parameters: none
  * Variables:
- * 	tf1:   Username text field
- * 	tf2:   Password text field
+ * 	usernameField:   Username text field
+ * 	passwordField:   Password text field
  * 	xhr:   Connection to retrieve session ID
  * 	log:   Connection to log into the system
  * Purpouse: Provides Log in to the system using 
- * 			 tf1.value and tf2.value as the user's credentials. 
+ * 			 usernameField.value and passwordField.value as the user's credentials. 
  */
-b1.addEventListener('click', function(){
+loginButton.addEventListener('click', function(){
 	
 	//Onblur the text fields, remove keyboard from screen
 	portal.blur();
-	tf2.blur();
-	tf1.blur();
+	passwordField.blur();
+	usernameField.blur();
 	
 	//Empty text fields 
-	if ( tf1.value == "" || tf2.value == "" || portal.value == ""){
+	if ( usernameField.value == "" || passwordField.value == "" || portal.value == ""){
 		alert ("Please, in order to login, fill out the boxes.");
 	}
 	//No internet connection
@@ -635,8 +643,8 @@ b1.addEventListener('click', function(){
 		//Create internet connection
 		var xhr = Ti.Network.createHTTPClient();
 		var parms = {
-          username: tf1.value,
-          password: tf2.value,
+          username: usernameField.value,
+          password: passwordField.value,
           device_id: Titanium.Platform.getId(),
           app_version: Titanium.App.version,
           //device_data: '{ "model": "'+Titanium.Platform.model+'", "version": "'+Titanium.Platform.version+'", "architecture": "'+Titanium.Platform.architecture+'", "platform": "'+Titanium.Platform.name+'", "os_type": "'+Titanium.Platform.ostype+'" }' 
@@ -675,13 +683,13 @@ b1.addEventListener('click', function(){
 				db_list.execute("BEGIN IMMEDIATE TRANSACTION");
 				//Create another database
 				Ti.API.info('database does not exist, creating a new one');
-				db_list.execute('INSERT INTO domains (domain, db_name) VALUES ("'+portal.value+'", "db_'+portal.value+'_'+tf1.value+'" )');
+				db_list.execute('INSERT INTO domains (domain, db_name) VALUES ("'+portal.value+'", "db_'+portal.value+'_'+usernameField.value+'" )');
 				db_list.execute("COMMIT TRANSACTION");
 			}
-			Ti.API.info('DB NAME_APP: db_'+portal.value+'_'+tf1.value+' ');
+			Ti.API.info('DB NAME_APP: db_'+portal.value+'_'+usernameField.value+' ');
 			
 			db_list.execute("BEGIN IMMEDIATE TRANSACTION");
-			db_list.execute('UPDATE history SET domain = "'+portal.value+'", username = "'+tf1.value+'", password = "'+tf2.value+'", db_name="db_'+portal.value+'_'+tf1.value+'" WHERE "id_hist"=1');
+			db_list.execute('UPDATE history SET domain = "'+portal.value+'", username = "'+usernameField.value+'", password = "'+passwordField.value+'", db_name="db_'+portal.value+'_'+usernameField.value+'" WHERE "id_hist"=1');
 			db_list.execute("COMMIT TRANSACTION");
 			
 			//db_list.close();
@@ -730,14 +738,14 @@ b1.addEventListener('click', function(){
 			
 			//Ti.API.info(isLogged()+" Logged ... Database   "+Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName());
 			db_list.close();
-			tf2.value	 = "";
+			passwordField.value	 = "";
 			loginWin.touchEnabled = false;
 			newWin.open();
 			
 			hideIndicator();	
 			startGPSService();
 			
-			if('new_app' in loginJSON){
+			if('new_app' in loginJSON && loginJSON.new_app.length > 0){
 				var dialog = Ti.UI.createAlertDialog({
 				    message: loginJSON.new_app,
 				    ok: 'OK',
@@ -752,7 +760,7 @@ b1.addEventListener('click', function(){
 			Ti.API.info("status is: "+this.status);
 			hideIndicator();
 			if (this.status == 406){
-				label_error.text = "The user '"+tf1.value+"' is already logged in another device";
+				label_error.text = "The user '"+usernameField.value+"' is already logged in another device";
 			}
 			else if (this.status == 401){
 				label_error.text = "Check your username or password and try again ";
@@ -775,6 +783,8 @@ function startGPSService(){
 		Ti.include('/main_windows/ios_geolocation.js');
 	}
 	else{
+		
+		Ti.API.info("Starting Android services.");
 		
 		Ti.App.Properties.setBool('stopGPS', false);
 		
@@ -838,15 +848,15 @@ Ti.App.Properties.removeProperty('logStatus');
 db.close();
 
 if(PLATFORM == 'android') {
-	portal.backgroundImage = tf1.backgroundImage = tf2.backgroundImage = 'images/textfield.png';
-	b1.backgroundImage = '';
-	b1.backgroundColor = 'white';
-	b1.backgroundSelectedColor = '#2E64FE';
-	b1.borderColor = 'gray';
-	b1.borderRadius = 10;
-	b1.color = 'black';
-	b1.height = '50';
-	b1.borderWidth = 1;
+	portal.backgroundImage = usernameField.backgroundImage = passwordField.backgroundImage = 'images/textfield.png';
+	loginButton.backgroundImage = '';
+	loginButton.backgroundColor = 'white';
+	loginButton.backgroundSelectedColor = '#2E64FE';
+	loginButton.borderColor = 'gray';
+	loginButton.borderRadius = 10;
+	loginButton.color = 'black';
+	loginButton.height = '50';
+	loginButton.borderWidth = 1;
 }
 
 //Make everthing happen:

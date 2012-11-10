@@ -915,7 +915,9 @@ if(c_index > 0) {
 						        startPoint: { x: '50%', y: '0%' },
 						        endPoint: { x: '50%', y: '100%' },
 						        colors: [ { color: '#555', offset: 0.0}, { color: '#666', offset: 0.3 }, { color: '#333', offset: 1.0 } ],
-						    }
+						   },
+						   ellipsize: true,
+						   wordWrap: false
 						});
 						count++;
 						break;

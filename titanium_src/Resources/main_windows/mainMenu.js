@@ -16,6 +16,8 @@ Ti.include('/main_windows/message_center.js');
 Ti.include('/lib/functions.js'); 
 Ti.include('/lib/encoder_base_64.js');
 
+Ti.API.info("hi");
+
 //Current window's instance
 var curWin = Ti.UI.currentWindow;
 curWin.backgroundColor = '#FFFFFF';
@@ -430,23 +432,40 @@ refresh_image.addEventListener('click', function(e){
 	checkUpdate('from_menu');
 });
 
-offImage.addEventListener('click',function(e)
-{
+offImage.addEventListener('click', function(e){
 	// window container
-	indLog = Titanium.UI.createWindow({
-		navBarHidden : true,
-	    url: 'logDecision.js',
-		title:'Omadi CRM',
-	    fullscreen: false,
-	    backgroundColor: '#EEEEEE'
-	});
-
-	//Setting both windows with login values:
-	indLog.log		 = curWin.log;
-	indLog.result	 = curWin.result;
-	indLog._parent	 = curWin;
+	// indLog = Titanium.UI.createWindow({
+		// navBarHidden : true,
+	    // url: 'logDecision.js',
+		// title:'Omadi CRM',
+	    // fullscreen: false,
+	    // backgroundColor: '#EEEEEE'
+	// });
+// 
+	// //Setting both windows with login values:
+	// indLog.log		 = curWin.log;
+	// indLog.result	 = curWin.result;
+	// indLog._parent	 = curWin;
     
-    indLog.open();
+    //indLog.open();
+    
+    var verifyLogout = Titanium.UI.createAlertDialog({
+		title: 'Logout?',
+		message: 'Are you sure you want to logout?',
+		buttonNames: ['Yes', 'No'],
+		cancel: 1
+	});
+	
+	verifyLogout.addEventListener('click', function(e){
+		if (e.index !== e.source.cancel){
+			Ti.API.info('The yes button was clicked.');
+			
+			do_logout();
+		}
+	});
+	
+	verifyLogout.show();
+
 });
 
 curWin.addEventListener('close', function(){
@@ -474,67 +493,81 @@ curWin.orientationModes = [ Titanium.UI.PORTRAIT ];
 //When back button on the phone is pressed, it alerts the user (pop up box)
 // that he needs to log out in order to go back to the root window
 curWin.addEventListener('android:back', function() {
-	a.message = 'In order to log off, please click on \'Log Out\' next to your username at the top';
-	a.show();
+	var verifyLogout = Titanium.UI.createAlertDialog({
+		title: 'Logout?',
+		message: 'Are you sure you want to logout?',
+		buttonNames: ['Yes', 'No'],
+		cancel: 1
+	});
+	
+	verifyLogout.addEventListener('click', function(e){
+		if (e.index !== e.source.cancel){
+			Ti.API.info('The yes button was clicked.');
+			
+			do_logout();
+		}
+	});
+	
+	verifyLogout.show();
 });
 
 if(PLATFORM == 'android'){
 
-var activity = Ti.Android.currentActivity;
-
-activity.onCreateOptionsMenu = function(e) {
-    var menu = e.menu;
-
-	var menuItem = menu.add({ 
-		title: 'Sync Data',
-		order: 0
-	});
-	menuItem.setIcon('/images/item1.png');
-
-    
-    var menu_draft = menu.add({ 			
-		title: 'Display drafts',
-		order: 1
-	});
-	menu_draft.setIcon("/images/draft.png");
+	var activity = Ti.Android.currentActivity;
 	
-	var menu_about = menu.add({
-		title: 'About',
-		order: 2
-	});
-	menu_about.setIcon("/images/about.png");
-
-	menu_about.addEventListener("click", function(e) {
-		if (isUpdating()){
-			if(PLATFORM == 'android'){
-				notf.show();
+	activity.onCreateOptionsMenu = function(e) {
+	    var menu = e.menu;
+	
+		var menuItem = menu.add({ 
+			title: 'Sync Data',
+			order: 0
+		});
+		menuItem.setIcon('/images/item1.png');
+	
+	    
+	    var menu_draft = menu.add({ 			
+			title: 'Display drafts',
+			order: 1
+		});
+		menu_draft.setIcon("/images/draft.png");
+		
+		var menu_about = menu.add({
+			title: 'About',
+			order: 2
+		});
+		menu_about.setIcon("/images/about.png");
+	
+		menu_about.addEventListener("click", function(e) {
+			if (isUpdating()){
+				if(PLATFORM == 'android'){
+					notf.show();
+				}
+				else{
+					notifyIOS('Please, wait ...');
+				}
 			}
 			else{
-				notifyIOS('Please, wait ...');
+				var about_win = Ti.UI.createWindow({
+					title: 'About',
+					navBarHidden : true,
+					fullscreen: false,
+					backgroundColor: '#EEEEEE',
+					url:'about.js'
+				});
+				about_win.open();
 			}
-		}
-		else{
-			var about_win = Ti.UI.createWindow({
-				title: 'About',
-				navBarHidden : true,
-				fullscreen: false,
-				backgroundColor: '#EEEEEE',
-				url:'about.js'
-			});
-			about_win.open();
-		}
-    });
-
-    menuItem.addEventListener("click", function(e) {
-		Ti.API.info('Refresh event!');
-		checkUpdate('from_menu');
-    });
-    
-    menu_draft.addEventListener('click', function(){
-    	openDraftWindow();
-    });
-    
-};
+	    });
+	
+	    menuItem.addEventListener("click", function(e) {
+			Ti.API.info('Refresh event!');
+			checkUpdate('from_menu');
+	    });
+	    
+	    menu_draft.addEventListener('click', function(){
+	    	openDraftWindow();
+	    });
+	    
+	};
 }
 
 //Close database

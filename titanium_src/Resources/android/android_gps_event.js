@@ -56,7 +56,7 @@ var interval;
 function saveGPS(){
 	
 	var stopGPS = Ti.App.Properties.getBool('stopGPS', false);
-Ti.API.info("stopGPS: " + stopGPS);
+	Ti.API.info("stopGPS: " + stopGPS);
 	
 	if(stopGPS){
 		Ti.API.info("TRYING TO STOP GPS NOW!!!");

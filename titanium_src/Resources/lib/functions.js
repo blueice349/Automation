@@ -7,6 +7,7 @@
 
 Ti.include('/lib/encoder_base_64.js');
 
+
 var domainName = Ti.App.Properties.getString("domainName");
 
 var DOWNLOAD_URL_THUMBNAIL = '/sync/image/thumbnail/';
@@ -29,6 +30,84 @@ weekday[3]="Wednesday";
 weekday[4]="Thursday";
 weekday[5]="Friday";
 weekday[6]="Saturday";
+
+function do_logout(){
+	Ti.App.fireEvent('upload_gps_locations');
+	Ti.App.fireEvent('stop_gps');
+	Ti.App.fireEvent('free_login');
+	
+	showIndicator("Logging you out...");
+	
+	var logout_xhr = Ti.Network.createHTTPClient();
+	
+	logout_xhr.open('POST', domainName+'/js-sync/sync/logout.json');
+	
+	//Timeout until error:
+	logout_xhr.setTimeout(10000);
+	
+	//Header parameters
+	logout_xhr.setRequestHeader("Content-Type", "application/json");
+	if(PLATFORM == 'android'){
+		logout_xhr.setRequestHeader("Cookie", getCookie());// Set cookies
+	}
+	else{
+		var split_cookie = getCookie().split(';');
+		if (!split_cookie[0] ){
+			split_cookie[0]="";
+		}
+		logout_xhr.setRequestHeader("Cookie", split_cookie[0]);// Set cookies
+	}
+	
+	logout_xhr.onload = function(e) {
+		Ti.App.Properties.setString('logStatus', "You have successfully logged out");
+		Ti.API.info('From Functions ... Value is : '+ Ti.App.Properties.getString('logStatus'));
+		
+		
+		Ti.UI.currentWindow.close();
+		
+		var db = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list"  );
+		no_backup(db);	
+		db.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+		db.close();
+		
+		//indLog._parent.close();
+		hideIndicator();
+		logout_xhr.abort();
+		//indLog.close();
+		removeNotifications();
+	}
+	
+	logout_xhr.onerror = function(e) {
+		hideIndicator();
+		
+		if(this.status == 403 || this.status == 401) {
+			Ti.App.Properties.setString('logStatus', "You are logged out");
+			
+	
+			var db = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list"  );
+			no_backup(db);	
+			db.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+			db.close();
+			
+			
+			//indLog._parent.close();
+			hideIndicator();
+			logout_xhr.abort();
+			//indLog.close();
+		}
+		else{
+			Ti.API.info("Failed to log out");
+			//alert("Failed to log out, please try again");
+		}
+		
+		Ti.UI.currentWindow.close();
+		removeNotifications();
+	}
+	logout_xhr.send();
+	
+	Ti.App.Properties.setBool("stopGPS", true);
+	Ti.App.Properties.setBool("quitApp", true);
+}
 
 function is_GPS_uploading(){
 	var db_coord_name = Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName() + "_GPS";
@@ -1701,7 +1780,7 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 		//ind.value = e.progress ;
 		if (progress != null) {
 			progress.set_download(e.progress);
-			Ti.API.debug(' ONDATASTREAM1 - PROGRESS: ' + e.progress);
+			//Ti.API.debug(' ONDATASTREAM1 - PROGRESS: ' + e.progress);
 		}
 	};
 	
@@ -3811,7 +3890,7 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 					//setUse();
 					unsetUse();
 					close_parent(false);
-					uploadFile(win, 'POST');
+					uploadFile(win);
 					
 				} else if (mode == 0) {
 					if (PLATFORM == 'android') {
@@ -3827,10 +3906,10 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 					//setUse();
 					unsetUse();
 					close_parent(false);
-					uploadFile(win, 'POST');
+					uploadFile(win);
 				} else {
 					unsetUse();
-					uploadFile(win, type_request)
+					uploadFile(win)
 				}
 			}
 		} 
@@ -3854,11 +3933,7 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 
 				Ti.App.Properties.setString('logStatus', "The server logged you out");
 				Ti.API.info('From Functions ... Value is : '+ Ti.App.Properties.getString('logStatus'));
-				//if( getDeviceTypeIndentifier() == "android"){
-					Ti.App.fireEvent('stop_gps');
-				//}
-				Ti.App.fireEvent('free_login');
-				curWin.close();
+				do_logout();
 			});
 		}
 	}
@@ -3882,7 +3957,6 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 			
 			a_msg.message = "You have been logged out. Please log back in."
 			a_msg.addEventListener('click', function(e) {
-				Ti.App.fireEvent('free_login');
 				var db_func = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list"  );
 				no_backup(db_func);	
 				db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
@@ -3890,9 +3964,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 				win.close();
 			});
 						
+			do_logout();
 			a_msg.show();
-			
-			Ti.App.fireEvent('stop_gps');
 		}
 		else if(this.status == 401) {
 			var a_msg = Titanium.UI.createAlertDialog({
@@ -3903,17 +3976,15 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 			a_msg.message = "Your session is no longer valid. Please log back in.";
 			a_msg.addEventListener('click', function(e) {
 				
-				Ti.App.fireEvent('free_login');
 				var db_func = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list"  );
 				no_backup(db_func);	
 				db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
 				db_func.close();
-				win.close();
+				
 			});
-						
-			a_msg.show();
 			
-			Ti.App.fireEvent('stop_gps');
+			do_logout();		
+			a_msg.show();
 		}
 		else if(progress != null){	
 			var a_msg = Titanium.UI.createAlertDialog({
@@ -4281,14 +4352,16 @@ function getScreenHeight() {
 	return ret;
 }
 
-function uploadFile(win, type_request) {
-	//type_request = 'POST';
-	Ti.API.info("UPLOAD FILE: " + type_request);
+function uploadFile(win) {
+	var type_request = 'POST';
+	
 	try {
 		//var fileUploadXHR = win.log;
 		var _file_xhr = Ti.Network.createHTTPClient();
 		_file_xhr.setTimeout(30000);
 		_file_xhr.open(type_request, domainName + '/js-sync/upload.json');
+		
+		Ti.API.info("Uploading to " + domainName);
 		
 		if(PLATFORM == 'android'){
 			_file_xhr.setRequestHeader("Cookie", getCookie());// Set cookies
@@ -4366,7 +4439,7 @@ function uploadFile(win, type_request) {
 						fileUploadTable.close();
 						database.close();
 						if (remainingRow != 0) {
-							uploadFile(win, type_request);
+							uploadFile(win);
 						} 
 					}
 				}
@@ -4409,8 +4482,9 @@ function uploadFile(win, type_request) {
 				database.close();
 			}
 		}
-	} catch(e) {
-		Ti.API.info("==== ERROR ===" + e);
+	} catch(ex) {
+		Ti.API.error("==== ERROR ===" + ex);
+		alert("There was an error uploading your photo. Details: " + ex);
 	}
 }
 
@@ -6233,3 +6307,9 @@ function rules_field_passed_time_check(time_rule, timestamp) {
 	}
 	return retval;
 }
+
+
+
+Ti.include('/lib/location_functions.js');
+
+
