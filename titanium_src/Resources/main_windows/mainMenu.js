@@ -168,7 +168,7 @@ while ( elements.isValidRow() ){
 		for(var _l in node_type_json.permissions) {
 			for(_k in roles) {
 				if(_l == _k) {
-					Ti.API.info("====>> " + _l);
+					//Ti.API.info("====>> " + _l);
 					var stringifyObj = JSON.stringify(node_type_json.permissions[_l]);
 					if(node_type_json.permissions[_l]["can create"] || node_type_json.permissions[_l]["all_permissions"]) {
 						show_plus = true;
@@ -195,7 +195,7 @@ while ( elements.isValidRow() ){
 		}
 	}
 
-	Ti.API.info(flag_display+" = "+_is_disabled);	
+	//Ti.API.info(flag_display+" = "+_is_disabled);	
 	
 	if (flag_display == 'true' && ( _is_disabled != 1 && _is_disabled != "1" && _is_disabled != "true" && _is_disabled != true) ){
 		

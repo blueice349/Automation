@@ -51,32 +51,32 @@ var resultView = Ti.UI.createView({
  curWin.add(resultView);
 Ti.API.info("-----------------------------------------------------------------------------------------------------------------------------------")
 //Header where the selected name is presented
-var header = Ti.UI.createView({
-	top: '0',
-	height: '35',
-	width: '100%',
-	backgroundColor: '#585858',
-	zIndex: 11
-});
-resultView.add(header);
+// var header = Ti.UI.createView({
+	// top: '0',
+	// height: '35',
+	// width: '100%',
+	// backgroundColor: '#585858',
+	// zIndex: 11
+// });
+// resultView.add(header);
+// 
+// //Label containing the selected name
+// var labelNameContent = Ti.UI.createLabel({
+	// text: curWin.nameSelected,
+	// height: 'auto',
+	// width:  '90%',
+	// font: {fontSize: 18,  fontWeight: "bold"},
+	// color: '#000',
+	// textAlign: 'center',
+	// touchEnabled: false,
+	// ellipsize: true,
+	// wordWrap: false
+// });
+// 
+// header.add(labelNameContent);
 
-//Label containing the selected name
-var labelNameContent = Ti.UI.createLabel({
-	text: curWin.nameSelected,
-	height: 'auto',
-	width:  '90%',
-	font: {fontSize: 18,  fontWeight: "bold"},
-	color: '#000',
-	textAlign: 'center',
-	touchEnabled: false,
-	ellipsize: true,
-	wordWrap: false
-});
-
-header.add(labelNameContent);
 if (PLATFORM == 'android'){
 	var viewContent = Ti.UI.createScrollView({
-	    top: "35dp",
 	    contentHeight: 'auto',
 	    backgroundColor: '#EEEEEE',
 		showHorizontalScrollIndicator: false,
@@ -184,13 +184,13 @@ while (regions.isValidRow()){
 			var settings = JSON.parse(unsorted_res[i].settings);
 			Ti.API.info('Field region = ' + settings.region);
 			if(regions.fieldByName('region_name') == settings.region) {
-				Ti.API.info('Regions match! ');
+				//Ti.API.info('Regions match! ');
 				Ti.API.info('Field label: ' + unsorted_res[i].label);
 				Ti.API.info('Field type: ' + unsorted_res[i].type);
-				Ti.API.info('Field name: ' + unsorted_res[i].field_name);
+				//Ti.API.info('Field name: ' + unsorted_res[i].field_name);
 				
-				Ti.API.info('Field settings: ' + unsorted_res[i].settings);
-				Ti.API.info('Field widget: ' + unsorted_res[i].widget);
+				//Ti.API.info('Field settings: ' + unsorted_res[i].settings);
+				//Ti.API.info('Field widget: ' + unsorted_res[i].widget);
 
 				fields[unsorted_res[i].field_name] = new Array();
 
@@ -897,11 +897,10 @@ if(c_index > 0) {
 
 					case 'region_separator_mode':
 						label[count] = Ti.UI.createLabel({
-							text : c_label[count],
-							color : '#eee',
-							backgroundColor: '#666',
+							text : c_label[count].toUpperCase(),
+							color : '#ddd',
 							font : {
-								fontSize : '26dp',
+								fontSize : '22dp',
 								fontWeight : 'bold'
 							},
 							textAlign : 'center',
@@ -910,7 +909,13 @@ if(c_index > 0) {
 							height : '100%',
 							is_region : true,
 							ref : f_name_f,
-							field : false
+							field : false,
+							backgroundGradient: {
+						        type: 'linear',
+						        startPoint: { x: '50%', y: '0%' },
+						        endPoint: { x: '50%', y: '100%' },
+						        colors: [ { color: '#555', offset: 0.0}, { color: '#666', offset: 0.3 }, { color: '#333', offset: 1.0 } ],
+						    }
 						});
 						count++;
 						break;
@@ -1164,7 +1169,7 @@ if(c_index > 0) {
 							
 						}
 						else{
-						label_file[i].addEventListener('click', function(e) {
+							label_file[i].addEventListener('click', function(e) {
 							//alert(e.source.upload_id)
 							var win =Ti.UI.createWindow();
 							
@@ -1191,6 +1196,7 @@ if(c_index > 0) {
 							}
 							}
 						break;
+						
 					case 'image':
 						var settings = JSON.parse(c_settings[count]);
 						if (settings.cardinality > 1 || settings.cardinality < 0) {
@@ -1274,7 +1280,7 @@ if(c_index > 0) {
 									height : '100',
 									width : '100'
 								},
-								defaultImage : '../images/default.png',
+								defaultImage : '../images/photo-loading.png',
 								imageVal : val,
 								bigImg : null,
 								mimeType : null,
@@ -1596,12 +1602,7 @@ fields_result.close();
 db_display.close();
 
 if(PLATFORM != 'android'){
-	resultView.remove(header);
-	resultView.top = 0;
 	bottomButtons1(curWin);
-}else{
-	viewContent.height = '90%'
-	bottomBack(curWin);
 }
 
 function createImage1(arrImages, data, scrollView, updated) {
@@ -1615,7 +1616,7 @@ function createImage1(arrImages, data, scrollView, updated) {
 		},
 		top				:5,
 		bottom			:5,
-		image			: '../images/default.png',
+		image			: '../images/photo-loading.png',
 		imageVal		: data,
 		bigImg 			: null,
 		mimeType		: null,

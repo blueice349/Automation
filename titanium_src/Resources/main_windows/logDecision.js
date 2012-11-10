@@ -100,7 +100,7 @@ labelOut.addEventListener('click',function (){
 	logout_xhr.onerror = function(e) {
 		hideIndicator();
 		
-		if(this.status == 403 || elements.status == 403 || this.status == 401 || elements.status == 401) {
+		if(this.status == 403 || this.status == 401) {
 			Ti.App.Properties.setString('logStatus', "You are logged out");
 			
 	

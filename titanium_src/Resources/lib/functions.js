@@ -3833,7 +3833,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 					uploadFile(win, type_request)
 				}
 			}
-		} else {
+		} 
+		else {
 			if (progress != null) {
 				progress.close();
 			}
@@ -3845,7 +3846,7 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 				buttonNames : ['OK']
 			});
 
-			a_msg.message = "We are sorry, but the server has diconnected you. Don't worry though, we will help you to get to the login window again";
+			a_msg.message = "We are sorry, but the server has diconnected you. Please login again.";
 			a_msg.show();
 
 			a_msg.addEventListener('click', function(e) {
@@ -3881,7 +3882,6 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 			
 			a_msg.message = "You have been logged out. Please log back in."
 			a_msg.addEventListener('click', function(e) {
-				Ti.App.fireEvent('stop_gps');
 				Ti.App.fireEvent('free_login');
 				var db_func = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list"  );
 				no_backup(db_func);	
@@ -3891,6 +3891,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 			});
 						
 			a_msg.show();
+			
+			Ti.App.fireEvent('stop_gps');
 		}
 		else if(this.status == 401) {
 			var a_msg = Titanium.UI.createAlertDialog({
@@ -3898,9 +3900,9 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 				buttonNames : ['OK']
 			});				
 			
-			a_msg.message = "Your session is no longer valid. Please log back in.\n" + e.error;
+			a_msg.message = "Your session is no longer valid. Please log back in.";
 			a_msg.addEventListener('click', function(e) {
-				Ti.App.fireEvent('stop_gps');
+				
 				Ti.App.fireEvent('free_login');
 				var db_func = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list"  );
 				no_backup(db_func);	
@@ -3910,6 +3912,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 			});
 						
 			a_msg.show();
+			
+			Ti.App.fireEvent('stop_gps');
 		}
 		else if(progress != null){	
 			var a_msg = Titanium.UI.createAlertDialog({

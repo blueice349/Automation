@@ -420,14 +420,27 @@ var topBar = Titanium.UI.createView({
    height: '60dp'
 });
 
+
+var labelText = '';
+if(Ti.Platform.osname == 'iphone'){
+	labelText += 'Found (' + tableData.length + ')';
+}
+else{
+	labelText += bundle_label + " List " + (showFinalResults ? '(' + tableData.length + ')' : '');
+}
+
 var listLabel = Ti.UI.createLabel({
 	font: {fontWeight: "bold", fontSize: '16dp'},
-	text: bundle_label + " List " + (showFinalResults ? '(' + tableData.length + ')' : ''),
-	top: '4dp',
-	left: '10dp',
+	text: labelText,
 	textAlign: Ti.UI.TEXT_ALIGNMENT_LEFT,
-	color: '#ccc'
+	color: '#ccc',
+	style:Titanium.UI.iPhone.SystemButtonStyle.PLAIN
 });
+
+if(PLATFORM == 'android'){
+	listLabel.top = '4dp';
+	listLabel.left = '10dp';
+}
 
 var showAllButton = Ti.UI.createButton({
 	title: 'Show All',
@@ -574,15 +587,6 @@ if(PLATFORM != 'android'){
 		systemButton:Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
 	});
 	
-	var label = Titanium.UI.createButton({
-		title: bundle_label + ' List',
-		color:'#fff',
-		ellipsize: true,
-		wordwrap: false,
-		width: "200dp",
-		style:Titanium.UI.iPhone.SystemButtonStyle.PLAIN
-	});
-	
 	var items = [];
 	
 	var plusButton =  Titanium.UI.createButton({
@@ -604,10 +608,21 @@ if(PLATFORM != 'android'){
 		items.push(homeButton);
 	}
 	
+	listLabel.color = '#fff';
+	listLabel.textAlign = Ti.UI.TEXT_ALIGNMENT_CENTER;
 	items.push(space);
+	
 	if(Ti.Platform.osname == 'ipad'){
-		items.push(label);
+		
+		items.push(listLabel);
 		items.push(space);
+		listLabel.color = '#000';
+	}
+	else if(showFinalResults){// for iPhone
+		listLabel.setTextAlign(Ti.UI.TEXT_ALIGNMENT_RIGHT);
+		listLabel.setWidth('160dp');
+		
+		items.push(listLabel);
 	}
 	
 	if(!showFinalResults){
@@ -736,7 +751,15 @@ search.addEventListener('change', function(e) {
 		}
 	}
 	
-	listLabel.setText(bundle_label + " List " + (showFinalResults ? '(' + filterData.length + ')' : ''));
+	var labelText = '';
+	if(Ti.Platform.osname == 'iphone'){
+		labelText += 'Found (' + filterData.length + ')';
+	}
+	else{
+		labelText += bundle_label + " List " + (showFinalResults ? '(' + filterData.length + ')' : '');
+	}
+	
+	listLabel.setText(labelText);
 	
 	if(filterData.length == 0){
 		var row = Ti.UI.createTableViewRow({

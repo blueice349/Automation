@@ -256,7 +256,7 @@ db.close();
 
 //showBottom(actualWindow, goToWindow )
 if(PLATFORM == 'android'){
-	bottomBack_release(curWin, "Back" , "enable");
+	//bottomBack_release(curWin, "Back" , "enable");
 }else{
 	draftNavButtons();
 }

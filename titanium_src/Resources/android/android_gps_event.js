@@ -61,8 +61,10 @@ Ti.API.info("stopGPS: " + stopGPS);
 	if(stopGPS){
 		Ti.API.info("TRYING TO STOP GPS NOW!!!");
 		try{
-			movement.stopGPSTracking();
-			clearInterval(interval);
+			if(movement){
+				movement.stopGPSTracking();
+			}
+			//clearInterval(interval);
 			Titanium.Android.currentService.stop();
 		}
 		catch(ex){
@@ -166,7 +168,8 @@ Ti.API.info("stopGPS: " + stopGPS);
 	}
 }
 
-interval = setInterval(saveGPS, 5000);
+//interval = setInterval(saveGPS, 5000);
+saveGPS();
 
 //  as the destroy handler will remove the listener, only set the pause handler to remove if you need battery savings
 // Ti.Android.currentActivity.addEventListener('pause', function(e) {

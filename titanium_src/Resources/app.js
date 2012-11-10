@@ -19,8 +19,10 @@ Ti.include('/lib/encoder_base_64.js');
 
 var movement;
 
-if(PLATFORM!='android'){clearCache();
+if(PLATFORM!='android'){
+	clearCache();
  	movement =  require('com.omadi.ios_gps');
+ 	Ti.App.Properties.setBool('deviceHasFlash', movement.isFlashAvailableInCamera());
 }else{
 	//movement =  require('com.omadi.gps');
 	//movement = null;
@@ -37,26 +39,28 @@ var loginWin = Titanium.UI.createWindow({
 });
 var OMADI_VERSION = "omadiDb1667";
 
-Ti.App.Properties.setBool('stopGPS', true);
+Ti.App.Properties.setBool('stopGPS', false);
 Ti.App.Properties.setBool('quitApp', false);
 
-loginWin.addEventListener('focus', function(e){
-
+Ti.App.addEventListener('stop_gps', function(e){
+//loginWin.addEventListener('focus', function(e){
+	Ti.App.Properties.setBool('stopGPS', true);
+	
 	if(Ti.App.Properties.getBool('stopGPS', false)){
 		
 		if(PLATFORM == 'android'){
 			
-			setTimeout(function(){
-				var intent = Titanium.Android.createServiceIntent({
-				  url: 'android_gps_event.js',
-				});
-				Titanium.Android.stopService(intent);
-			}, 15000);
-			
-			var intent2 = Titanium.Android.createServiceIntent({
-			  url: 'android_gps_upload.js',
-			});
-			Titanium.Android.stopService(intent2);
+			// setTimeout(function(){
+				// var intent = Titanium.Android.createServiceIntent({
+				  // url: 'android_gps_event.js',
+				// });
+				// Titanium.Android.stopService(intent);
+			// }, 15000);
+// 			
+			// var intent2 = Titanium.Android.createServiceIntent({
+			  // url: 'android_gps_upload.js',
+			// });
+			// Titanium.Android.stopService(intent2);
 			
 			Ti.API.info("in stop gps");
 			if('service1' in Ti.App){
@@ -705,7 +709,10 @@ b1.addEventListener('click', function(){
 			newWin.result 	 = this.responseText;
 			newWin.log		 = xhr;
 			newWin.movement	 = movement;
-			Ti.API.info(this.responseText);
+			//Ti.API.info(this.responseText);
+			
+			var loginJSON = JSON.parse(this.responseText);
+			
 			var cookie = this.getResponseHeader('Set-Cookie');
 			var new_app_login_time = Math.round(new Date().getTime() / 1000);
 		
@@ -729,6 +736,15 @@ b1.addEventListener('click', function(){
 			
 			hideIndicator();	
 			startGPSService();
+			
+			if('new_app' in loginJSON){
+				var dialog = Ti.UI.createAlertDialog({
+				    message: loginJSON.new_app,
+				    ok: 'OK',
+				    title: 'Updated App'
+				  }).show();
+			}
+			Ti.API.info(loginJSON.new_app);
 		};
 			
 		//If username and pass wrong:
@@ -756,7 +772,7 @@ function startGPSService(){
 	//Geolocation module
 	//Ti.App.movement = curWin.movement;
 	if(PLATFORM != "android"){
-		Ti.include('geolocation.js');
+		Ti.include('/main_windows/ios_geolocation.js');
 	}
 	else{
 		
@@ -771,10 +787,11 @@ function startGPSService(){
 		
 		//intent.putExtra('interval', 5000);
 		
-		//intent.putExtra('interval', 5000);
+		intent.putExtra('interval', 5000);
 		Ti.App.service1 = Titanium.Android.createService(intent);
 		
 		Ti.App.service1.start();
+		Ti.App.service1.isStarted = true;
 		
 		//Ti.App.Properties.setObject('AndroidGPSService1', service);
 		

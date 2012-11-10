@@ -14,20 +14,17 @@ var uploading = false;
 var latitude;
 var longitude;
 var accuracy;
+var gpsInterval;
 
-if(PLATFORM == 'android') {
-	movement.startGPSTracking();
-} else {
-	Ti.API.info('Accuracy three: ' + movement.LOCATION_ACCURACY_THREE_KILOMETERS);
-	Ti.API.info('Accuracy best: ' + movement.LOCATION_ACCURACY_BEST);
-	Ti.API.info('Accuracy navig: ' + movement.LOCATION_ACCURACY_BEST_FOR_NAVIGATION);
 
-	movement.startMovementUpdates({
-		location : true,
-		locationAccuracy : movement.LOCATION_ACCURACY_BEST_FOR_NAVIGATION
-	});
+Ti.API.info('Accuracy three: ' + movement.LOCATION_ACCURACY_THREE_KILOMETERS);
+Ti.API.info('Accuracy best: ' + movement.LOCATION_ACCURACY_BEST);
+Ti.API.info('Accuracy navig: ' + movement.LOCATION_ACCURACY_BEST_FOR_NAVIGATION);
 
-}
+movement.startMovementUpdates({
+	location : true,
+	locationAccuracy : movement.LOCATION_ACCURACY_BEST_FOR_NAVIGATION
+});
 
 function updateCurrentLocation(e) {
 	curr = e;
@@ -90,7 +87,7 @@ function updateCurrentLocation(e) {
 			});			
 		}
 	}
-	setTimeout(s, 5000);
+	//setTimeout(s, 5000);
 	return;
 }
 
@@ -117,12 +114,12 @@ function s() {
 	}
 }
 
-setTimeout(s, 5000);
+gpsInterval = setInterval(s, 5000);
 //var gpsInterval = setInterval(s, 5000);
 
 Ti.App.addEventListener('stop_gps', function(e){
 	stop = true;
-	//clearInterval(gpsInterval);
+	clearInterval(gpsInterval);
 });
 
 

@@ -299,7 +299,7 @@ message_center.get_win = function() {
 
 	if(PLATFORM == 'android') {
 		alertNavButtons_android(listTableView, win)
-		bottomBack_release(win, "Back", "enable");
+		//bottomBack_release(win, "Back", "enable");
 	} else {
 		alertNavButtons(listTableView, win);
 	}
