@@ -38,7 +38,7 @@ if (Titanium.Platform.name == 'android') {
 		myHttpClient.onerror = function(e) {
 			Ti.API.debug(e.error);
 			alert('error');
-		},
+		};
 		myHttpClient.open("GET", downloadingFileUrl);
 		//Send request
 		myHttpClient.send();

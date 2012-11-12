@@ -167,7 +167,8 @@ while ( elements.isValidRow() ){
 		app_permissions.can_update = true;
 		app_permissions.can_view = true;
 	} else {
-		for(var _l in node_type_json.permissions) {
+		var _l;
+		for(_l in node_type_json.permissions) {
 			for(_k in roles) {
 				if(_l == _k) {
 					//Ti.API.info("====>> " + _l);

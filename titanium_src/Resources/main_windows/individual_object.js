@@ -179,7 +179,8 @@ while (regions.isValidRow()){
 
 		//Organizing every field into regions:
 		//while (fields_result.isValidRow()){
-		for(var i in unsorted_res) {
+			var i;
+		for(i in unsorted_res) {
 
 			var settings = JSON.parse(unsorted_res[i].settings);
 			Ti.API.info('Field region = ' + settings.region);
@@ -220,8 +221,9 @@ if(c_index > 0) {
 	var is_array = false;
 	var field_definer = 0;
 	var show_region = new Array();
-
-	for(var f_name_f in fields ) {
+	
+	var f_name_f;
+	for(f_name_f in fields ) {
 		var fieldVal = null; 
 		try{
 			//Check is coloum exist in table or not
@@ -250,7 +252,8 @@ if(c_index > 0) {
 				var can_view = false;
 				var per_settings = JSON.parse(c_settings[count]);
 				if (per_settings['enforce_permissions'] != null && per_settings['enforce_permissions'] == 1) {
-					for (var _l in per_settings.permissions) {
+					var _l;
+					for (_l in per_settings.permissions) {
 						for (_k in roles) {
 							if (_l == _k) {
 								var stringifyObj = JSON.stringify(per_settings.permissions[_l]);
@@ -278,7 +281,8 @@ if(c_index > 0) {
 				var no_data_fields = node_table.fieldByName('no_data_fields');
 				if (isJsonString()) {
 					no_data_fields = JSON.parse(no_data_fields);
-					for (var key in no_data_fields) {
+					var key;
+					for (key in no_data_fields) {
 						if (no_data_fields.hasOwnProperty(key)) {
 							no_data_fieldsArr.push(key);
 						}
@@ -1374,8 +1378,9 @@ if(c_index > 0) {
 		}
 
 	if(bug.length === 0) {
-		var index_fields = 0
-		for(var i = 0; i < count; i++) {
+		var index_fields = 0;
+		var i;
+		for(i = 0; i < count; i++) {
 			//Normal fields
 			//alert(label[i].text+'  '+label[i].is_region+'  '+label[i].field)
 			if((label[i].is_region !== true) && (label[i].field === true)) {
@@ -1442,7 +1447,8 @@ if(c_index > 0) {
 			//Regions
 			else {
 				var cnd = 0;
-				for(var j in show_region) {
+				var j;
+				for(j in show_region) {
 					if(j == label[i].ref) {
 						cnd++;
 
@@ -1475,8 +1481,9 @@ if(c_index > 0) {
 				}
 			}
 		}
-
-		for(var i = 0; i < count; i++) {
+		
+		var i;
+		for(i = 0; i < count; i++) {
 			if(c_type[i] == 'image') {
 				if(content[i].cardinality > 1 || content[i].cardinality < 0) {
 					var arrImages = content[i].arrImages;

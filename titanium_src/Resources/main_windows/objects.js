@@ -687,7 +687,7 @@ else{ // PLATFORM == 'android'
 
 if(showFinalResults){
 	//Search bar definition
-	search.top = barHeight + 'dp',
+	search.top = barHeight + 'dp';
 	curWin.add(search);
 	filterTableView.top = (barHeight + 50) + 'dp';
 }
@@ -744,7 +744,8 @@ else{
 search.addEventListener('change', function(e) {
 		//e.value; // search string as user types
 	filterData = [];
-	for(var i = 0; i < tableData.length; i++) {
+	var i;
+	for(i = 0; i < tableData.length; i++) {
 		var rg = new RegExp(e.source.value, 'i');
 		if(tableData[i].searchValue.search(rg) != -1) {
 			filterData.push(tableData[i]);

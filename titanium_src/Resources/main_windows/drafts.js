@@ -59,7 +59,8 @@ else{
 			
 			if (i != 0 ){
 				aux_data.sort(sortTableView);
-				for (var _i in aux_data ){
+				var _i;
+				for (_i in aux_data ){
 					section.add(aux_data[_i]);
 				}
 				data.push(section);
@@ -102,7 +103,8 @@ else{
 		
 		if (!resultsNames.isValidRow()){
 			aux_data.sort(sortTableView);
-			for (var _i in aux_data ){
+			var _i;
+			for (_i in aux_data ){
 				section.add(aux_data[_i]);
 			}	
 			data.push(section);

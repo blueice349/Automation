@@ -75,7 +75,7 @@ function do_logout(){
 		logout_xhr.abort();
 		//indLog.close();
 		removeNotifications();
-	}
+	};
 	
 	logout_xhr.onerror = function(e) {
 		hideIndicator();
@@ -102,7 +102,8 @@ function do_logout(){
 		
 		Ti.UI.currentWindow.close();
 		removeNotifications();
-	}
+	};
+	
 	logout_xhr.send();
 	
 	Ti.App.Properties.setBool("stopGPS", true);
@@ -793,7 +794,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 				if (!(json[obj].insert[i].no_data_fields instanceof Array)) {
 					no_data = JSON.stringify(json[obj].insert[i].no_data_fields);
 				}
-				process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , perm_edit, perm_delete, created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields ) VALUES ( ' + json[obj].insert[i].nid + ', '+ json[obj].insert[i].perm_edit + ', '+ json[obj].insert[i].perm_delete + ', ' + json[obj].insert[i].created + ' , ' + json[obj].insert[i].changed + ', "' + json[obj].insert[i].title.replace(/"/gi, "'") + '" , ' + json[obj].insert[i].author_uid + ' , 0 , "' + obj + '", ' + json[obj].insert[i].form_part + ',' + json[obj].insert[i].changed_uid + ',\'' + no_data + '\') ';
+				process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , perm_edit, perm_delete, created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields, viewed ) VALUES ( ' + json[obj].insert[i].nid + ', '+ json[obj].insert[i].perm_edit + ', '+ json[obj].insert[i].perm_delete + ', ' + json[obj].insert[i].created + ' , ' + json[obj].insert[i].changed + ', "' + json[obj].insert[i].title.replace(/"/gi, "'") + '" , ' + json[obj].insert[i].author_uid + ' , 0 , "' + obj + '", ' + json[obj].insert[i].form_part + ',' + json[obj].insert[i].changed_uid + ',\'' + no_data + '\', \'' + json[obj].insert[i].viewed + '\') ';
 
 				if (aux_column > 0) {
 					query = 'INSERT OR REPLACE  INTO ' + obj + ' (\'nid\', ';
@@ -951,7 +952,7 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 			if (!(json[obj].insert.no_data_fields instanceof Array)) {
 				no_data = JSON.stringify(json[obj].insert.no_data_fields);
 			}
-			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , perm_edit, perm_delete, created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields  ) VALUES ( ' + json[obj].insert.nid + ', ' + json[obj].insert.perm_edit + ', '+ json[obj].insert.perm_delete + ', '+ json[obj].insert.created + ' , ' + json[obj].insert.changed + ', "' + json[obj].insert.title.replace(/"/gi, "'") + '" , ' + json[obj].insert.author_uid + ' , 0 , "' + obj + '", ' + json[obj].insert.form_part + ',' + json[obj].insert.changed_uid + ',\'' + no_data + '\') ';
+			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , perm_edit, perm_delete, created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields, viewed ) VALUES ( ' + json[obj].insert.nid + ', ' + json[obj].insert.perm_edit + ', '+ json[obj].insert.perm_delete + ', '+ json[obj].insert.created + ' , ' + json[obj].insert.changed + ', "' + json[obj].insert.title.replace(/"/gi, "'") + '" , ' + json[obj].insert.author_uid + ' , 0 , "' + obj + '", ' + json[obj].insert.form_part + ',' + json[obj].insert.changed_uid + ',\'' + no_data + '\', \'' + json[obj].insert.viewed + '\') ';
 
 			if (aux_column > 0) {
 				query = 'INSERT OR REPLACE  INTO ' + obj + ' (\'nid\', ';
@@ -1941,7 +1942,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 					if (json.node_type.insert) {
 						//Multiple nodes inserts
 						if (json.node_type.insert.length) {
-							for (var i = 0; i < json.node_type.insert.length; i++) {
+							var i;
+							for (i = 0; i < json.node_type.insert.length; i++) {
 								if (json.node_type.insert[i].type != 'user') {
 									//Increment the progress bar
 									if (progress != null) {
@@ -1984,7 +1986,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 						
 						if (json.node_type.update.length) {
 							var data_rows = [];
-							for (var i = 0; i < json.node_type.update.length; i++) {
+							var i;
+							for (i = 0; i < json.node_type.update.length; i++) {
 								//Increment the progress bar
 								if (progress != null) {
 									progress.set();
@@ -2036,8 +2039,10 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 										app_permissions.can_update = true;
 										app_permissions.can_view = true;
 
-									} else {
-										for(var _l in node_type_json.permissions) {
+									} 
+									else {
+										var _l;
+										for(_l in node_type_json.permissions) {
 											for(_k in roles) {
 												if(_l == _k) {
 													var stringifyObj = JSON.stringify(node_type_json.permissions[_l]);
@@ -2205,8 +2210,10 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 									app_permissions.can_update = true;
 									app_permissions.can_view = true;
 
-								} else {
-									for(var _l in node_type_json.permissions) {
+								} 
+								else {
+									var _l;
+									for(_l in node_type_json.permissions) {
 										for(_k in roles) {
 											if(_l == _k) {
 												var stringifyObj = JSON.stringify(node_type_json.permissions[_l]);
@@ -2323,7 +2330,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 					else if (json.node_type['delete']) {
 						//Multiple node type deletions
 						if (json.node_type['delete'].length) {
-							for (var i = 0; i < json.node_type['delete'].length; i++) {
+							var i;
+							for (i = 0; i < json.node_type['delete'].length; i++) {
 								//Increment the progress bar
 								if (progress != null) {
 									progress.set();
@@ -2373,7 +2381,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 					if (json.fields.insert) {
 						//Array of objects
 						if (json.fields.insert.length) {
-							for (var i = 0; i < json.fields.insert.length; i++) {
+							var i;
+							for (i = 0; i < json.fields.insert.length; i++) {
 								if (progress != null) {
 									//Increment Progress Bar
 									progress.set();
@@ -2441,7 +2450,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 
 								//Multiple parts
 								if (json.fields.insert[i].settings.parts) {
-									for (var f_value_i in json.fields.insert[i].settings.parts ) {
+									var f_value_i;
+									for (f_value_i in json.fields.insert[i].settings.parts ) {
 										perform[perform.length] = "INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings) VALUES (" + fid + ",'" + type + "','" + field_name + "___" + f_value_i + "','" + label + "','" + description + "','" + bundle + "','" + region + "'," + weight + ", '" + required + "' ,  '" + disabled + "' , '" + widget + "','" + settings + "' )";
 									}
 								}
@@ -2476,7 +2486,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 								var q_bund = db_installMe.execute('SELECT * FROM bundles WHERE bundle_name = "' + bundle + '"');
 								if (q_bund.isValidRow()) {
 									if (json.fields.insert[i].settings.parts) {
-										for (var f_value_i in json.fields.insert[i].settings.parts ) {
+										var f_value_i;
+										for (f_value_i in json.fields.insert[i].settings.parts ) {
 											perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___' + f_value_i + '\' ' + type;
 										}
 									} else {
@@ -2566,7 +2577,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 
 							//Multiple parts
 							if (json.fields.insert.settings.parts) {
-								for (var f_value_i in json.fields.insert.settings.parts ) {
+								var f_value_i;
+								for (f_value_i in json.fields.insert.settings.parts ) {
 									perform[perform.length] = "INSERT OR REPLACE  INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings) VALUES (" + fid + ",'" + type + "','" + field_name + "___" + f_value_i + "','" + label + "','" + description + "','" + bundle + "','" + region + "'," + weight + ", '" + required + "', '" + disabled + "','" + widget + "','" + settings + "' )";
 								}
 							}
@@ -2598,7 +2610,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 							var q_bund = db_installMe.execute('SELECT * FROM bundles WHERE bundle_name = "' + bundle + '"');
 							if (q_bund.isValidRow()) {
 								if (json.fields.insert.settings.parts) {
-									for (var f_value_i in json.fields.insert.settings.parts ) {
+									var f_value_i;
+									for (f_value_i in json.fields.insert.settings.parts ) {
 										perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___' + f_value_i + '\' ' + type;
 										//Ti.API.info("Inserted: "+field_name+"___"+f_value_i+" to be used in "+bundle);
 									}
@@ -2625,7 +2638,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 						Ti.API.info("################################ Fields update found! #################################");
 						//Array of objects
 						if (json.fields.update.length) {
-							for (var i = 0; i < json.fields.update.length; i++) {
+							var i;
+							for (i = 0; i < json.fields.update.length; i++) {
 								if (progress != null) {
 									//Increment Progress Bar
 									progress.set();
@@ -2718,7 +2732,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 									//Shouldn't happen within an update but if it does, it will be treated
 									//Multiple parts
 									if (json.fields.update[i].settings.parts) {
-										for (var f_value_i in json.fields.update[i].settings.parts ) {
+										var f_value_i;
+										for (f_value_i in json.fields.update[i].settings.parts ) {
 											perform[perform.length] = "INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings) VALUES (" + fid + ",'" + type + "','" + field_name + "___" + f_value_i + "','" + label + "','" + description + "','" + bundle + "','" + region + "'," + weight + ", '" + required + "' ,  '" + disabled + "' , '" + widget + "','" + settings + "' )";
 											//Ti.API.info('Field not presented in the database, creating field_name = '+field_name+"___"+f_value_i);
 										}
@@ -2752,7 +2767,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 									var q_bund = db_installMe.execute('SELECT * FROM bundles WHERE bundle_name = "' + bundle + '"');
 									if (q_bund.isValidRow()) {
 										if (json.fields.update[i].settings.parts) {
-											for (var f_value_i in json.fields.update[i].settings.parts ) {
+											var f_value_i;
+											for (f_value_i in json.fields.update[i].settings.parts ) {
 												perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___' + f_value_i + '\' ' + type;
 												Ti.API.info("Updated: " + field_name + "___" + f_value_i + " to be used in " + bundle);
 											}
@@ -2781,12 +2797,12 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 										//Filter fields from database
 										var missing_update = new Array();
 										var match_base = new Array();
-
-										for (var f_base in json.fields.update[i].settings.parts) {
+										var f_base;
+										for (f_base in json.fields.update[i].settings.parts) {
 											missing_update[f_base] = true;
 										}
 
-										for (var f_base in fi_array.fi_obj) {
+										for (f_base in fi_array.fi_obj) {
 											var i_obj = {
 												match : false,
 												id : fi_array.fi_obj[f_base]['id'],
@@ -2801,8 +2817,9 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 										//Fields in database and in JSON update
 										var parts = json.fields.update[i].settings.parts;
 
-										for (var f_base in fi_array.fi_obj) {
-											for (var indField in parts) {
+										for (f_base in fi_array.fi_obj) {
+											var indField;
+											for (indField in parts) {
 												if (field_name + "___" + indField == fi_array.fi_obj[f_base]['field_name']) {
 													Ti.API.info('IS in database : ' + fi_array.fi_obj[f_base]['field_name']);
 													//Turn update flag off
@@ -2811,7 +2828,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 											}
 										}
 										//Delete missing fields at the database
-										for (var i_x in match_base) {
+										var i_x;
+										for (i_x in match_base) {
 											if (match_base[i_x].match === false) {
 												perform[perform.length] = "DELETE FROM fields WHERE id=" + match_base[i_x].id;
 											}
@@ -2819,8 +2837,10 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 
 										//UPDATES:
 										//First off, update the fields:
-										for (var indField in json.fields.update[i].settings.parts) {
-											for (var f_base in fi_array.fi_obj) {
+										var indField;
+										for (indField in json.fields.update[i].settings.parts) {
+											var f_base;
+											for (f_base in fi_array.fi_obj) {
 												if (field_name + "___" + indField == fi_array.fi_obj[f_base]['field_name']) {
 													Ti.API.info(field_name + '___' + indField);
 													Ti.API.info(fi_array.fi_obj[f_base]['field_name']);
@@ -2837,7 +2857,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 										}
 
 										//Now we have the new properties, let's add them
-										for (var index in missing_update) {
+										var index;
+										for (index in missing_update) {
 											if (missing_update[index] === true) {
 												perform[perform.length] = "INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings) VALUES (" + fid + ",'" + type + "','" + field_name + "___" + index + "','" + label + "','" + description + "','" + bundle + "','" + region + "'," + weight + ", '" + required + "' ,  '" + disabled + "' , '" + widget + "','" + settings + "' )";
 												Ti.API.info('Created a new field because of a new part, field_name = ' + field_name + "___" + index);
@@ -2985,7 +3006,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 								//Shouldn't happen within an update but if it does, it will be treated
 								//Multiple parts
 								if (json.fields.update.settings.parts) {
-									for (var f_value_i in json.fields.update.settings.parts ) {
+									var f_value_i;
+									for (f_value_i in json.fields.update.settings.parts ) {
 										perform[perform.length] = "INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings) VALUES (" + fid + ",'" + type + "','" + field_name + "___" + f_value_i + "','" + label + "','" + description + "','" + bundle + "','" + region + "'," + weight + ", '" + required + "' ,  '" + disabled + "' , '" + widget + "','" + settings + "' )";
 										Ti.API.info('Field not presented in the database, creating field_name = ' + field_name + "___" + f_value_i);
 									}
@@ -3019,7 +3041,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 								var q_bund = db_installMe.execute('SELECT * FROM bundles WHERE bundle_name = "' + bundle + '"');
 								if (q_bund.isValidRow()) {
 									if (json.fields.update.settings.parts) {
-										for (var f_value_i in json.fields.update.settings.parts ) {
+										var f_value_i;
+										for (f_value_i in json.fields.update.settings.parts ) {
 											perform[perform.length] = 'ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___' + f_value_i + '\' ' + type;
 											Ti.API.info("Updated: " + field_name + "___" + f_value_i + " to be used in " + bundle);
 										}
@@ -3049,12 +3072,12 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 									//Filter fields from database
 									var missing_update = new Array();
 									var match_base = new Array();
-
-									for (var f_base in json.fields.update.settings.parts) {
+									var f_base;
+									for (f_base in json.fields.update.settings.parts) {
 										missing_update[f_base] = true;
 									}
 
-									for (var f_base in fi_array.fi_obj) {
+									for (f_base in fi_array.fi_obj) {
 										var i_obj = {
 											match : false,
 											id : fi_array.fi_obj[f_base]['id'],
@@ -3069,8 +3092,9 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 									//Fields in database and in JSON update
 									var parts = json.fields.update.settings.parts;
 
-									for (var f_base in fi_array.fi_obj) {
-										for (var indField in parts) {
+									for (f_base in fi_array.fi_obj) {
+										var indField;
+										for (indField in parts) {
 											if (field_name + "___" + indField == fi_array.fi_obj[f_base]['field_name']) {
 												Ti.API.info('IS in database : ' + fi_array.fi_obj[f_base]['field_name']);
 												//Turn update flag off
@@ -3079,7 +3103,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 										}
 									}
 									//Delete missing fields at the database
-									for (var i_x in match_base) {
+									var i_x;
+									for (i_x in match_base) {
 										if (match_base[i_x].match === false) {
 											perform[perform.length] = "DELETE FROM fields WHERE id=" + match_base[i_x].id;
 										}
@@ -3087,8 +3112,10 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 
 									//UPDATES:
 									//First off, update the fields:
-									for (var indField in json.fields.update.settings.parts) {
-										for (var f_base in fi_array.fi_obj) {
+									var indField;
+									for (indField in json.fields.update.settings.parts) {
+										var f_base;
+										for (f_base in fi_array.fi_obj) {
 											if (field_name + "___" + indField == fi_array.fi_obj[f_base]['field_name']) {
 												Ti.API.info(field_name + '___' + indField);
 												Ti.API.info(fi_array.fi_obj[f_base]['field_name']);
@@ -3105,7 +3132,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 									}
 
 									//Now we have the new properties, let's add them
-									for (var index in missing_update) {
+									var index;
+									for (index in missing_update) {
 										if (missing_update[index] === true) {
 											perform[perform.length] = "INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings) VALUES (" + fid + ",'" + type + "','" + field_name + "___" + index + "','" + label + "','" + description + "','" + bundle + "','" + region + "'," + weight + ", '" + required + "' ,  '" + disabled + "' , '" + widget + "','" + settings + "' )";
 											Ti.API.info('Created a new field because of a new part, field_name = ' + field_name + "___" + index);
@@ -3165,7 +3193,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 
 					if (json.fields["delete"]) {
 						if (json.fields["delete"].length) {
-							for (var i = 0; i < json.fields["delete"].length; i++) {
+							var i;
+							for (i = 0; i < json.fields["delete"].length; i++) {
 								Ti.API.info('FID: ' + json.fields["delete"][i].fid + ' was deleted');
 								//Deletes rows from terms
 								perform[perform.length] = 'DELETE FROM fields WHERE "fid"=' + json.fields["delete"][i].fid;
@@ -3226,7 +3255,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 
 					if (json.vocabularies.insert) {
 						if (json.vocabularies.insert.length) {
-							for (var i = 0; i < json.vocabularies.insert.length; i++) {
+							var i;
+							for (i = 0; i < json.vocabularies.insert.length; i++) {
 								//Increment Progress Bar
 								if (progress != null) {
 									progress.set();
@@ -3263,7 +3293,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 					}
 					if (json.vocabularies.update) {
 						if (json.vocabularies.update.length) {
-							for (var i = 0; i < json.vocabularies.update.length; i++) {
+							var i;
+							for (i = 0; i < json.vocabularies.update.length; i++) {
 								if (progress != null) {
 									//Increment Progress Bar
 									progress.set();
@@ -3272,7 +3303,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 								//Ti.API.info("About to update vocabulary: "+json.vocabularies.update[i].vid);
 								perform_vocabulary[perform_vocabulary.length] = 'UPDATE vocabulary SET "name"="' + json.vocabularies.update[i].name + '", "machine_name"="' + json.vocabularies.update[i].machine_name + '" WHERE "vid"=' + json.vocabularies.update[i].vid;
 							}
-						} else {
+						} 
+						else {
 							if (progress != null) {
 								//Increment Progress Bar
 								progress.set();
@@ -3284,7 +3316,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 					}
 					if (json.vocabularies["delete"]) {
 						if (json.vocabularies["delete"].length) {
-							for (var i = 0; i < json.vocabularies["delete"].length; i++) {
+							var i;
+							for (i = 0; i < json.vocabularies["delete"].length; i++) {
 								if (progress != null) {
 									//Increment Progress Bar
 									progress.set();
@@ -3296,7 +3329,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 								//Deletes corresponding rows in vocabulary
 								perform_vocabulary[perform_vocabulary.length] = 'DELETE FROM vocabulary WHERE "vid"=' + json.vocabularies["delete"][i].vid;
 							}
-						} else {
+						} 
+						else {
 							if (progress != null) {
 								//Increment Progress Bar
 								progress.set();
@@ -3340,7 +3374,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 					Ti.API.info('Terms');
 					if (json.terms.insert) {
 						if (json.terms.insert.length) {
-							for (var i = 0; i < json.terms.insert.length; i++) {
+							var i;
+							for (i = 0; i < json.terms.insert.length; i++) {
 								if (progress != null) {
 									//Increment Progress Bar
 									progress.set();
@@ -3393,7 +3428,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 					}
 					if (json.terms.update) {
 						if (json.terms.update.length) {
-							for (var i = 0; i < json.terms.update.length; i++) {
+							var i;
+							for (i = 0; i < json.terms.update.length; i++) {
 
 								if (progress != null) {
 									//Increment Progress Bar
@@ -3412,7 +3448,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 					}
 					if (json.terms["delete"]) {
 						if (json.terms["delete"].length) {
-							for (var i = 0; i < json.terms["delete"].length; i++) {
+							var i;
+							for (i = 0; i < json.terms["delete"].length; i++) {
 								if (progress != null) {
 									//Increment Progress Bar
 									progress.set();
@@ -3495,8 +3532,10 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 							app_permissions.can_update = true;
 							app_permissions.can_view = true;
 
-						} else {
-							for (var _l in node_type_json.permissions) {
+						} 
+						else {
+							var _l;
+							for (_l in node_type_json.permissions) {
 								for (_k in roles) {
 									if (_l == _k) {
 										var stringifyObj = JSON.stringify(node_type_json.permissions[_l]);
@@ -3622,7 +3661,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 					//Insert - Users
 					if (json.users.insert) {
 						if (json.users.insert.length) {
-							for (var i = 0; i < json.users.insert.length; i++) {
+							var i;
+							for (i = 0; i < json.users.insert.length; i++) {
 								if (progress != null) {
 									//Increment Progress Bar
 									progress.set();
@@ -3631,14 +3671,17 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 								perform_user[perform_user.length] = 'INSERT OR REPLACE  INTO user (uid, username, mail, realname, status ) VALUES (' + json.users.insert[i].uid + ',"' + json.users.insert[i].username + '","' + json.users.insert[i].mail + '","' + json.users.insert[i].realname + '",' + json.users.insert[i].status + ')';
 
 								if (json.users.insert[i].roles.length) {
-									for (var j = 0; j < json.users.insert[i].roles.length; j++) {
+									var j;
+									for (j = 0; j < json.users.insert[i].roles.length; j++) {
 										perform_user[perform_user.length] = 'INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES (' + json.users.insert[i].uid + ',' + json.users.insert[i].roles[j] + ')';
 									}
-								} else {
+								} 
+								else {
 									perform_user[perform_user.length] = 'INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES (' + json.users.insert[i].uid + ',' + json.users.insert[i].roles + ')';
 								}
 							}
-						} else {
+						} 
+						else {
 							if (progress != null) {
 								//Increment Progress Bar
 								progress.set();
@@ -3648,10 +3691,12 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 							perform_user[perform_user.length] = 'INSERT OR REPLACE INTO user (uid, username, mail, realname, status ) VALUES (' + json.users.insert.uid + ',"' + json.users.insert.username + '","' + json.users.insert.mail + '","' + json.users.insert.realname + '",' + json.users.insert.status + ')';
 
 							if (json.users.insert.roles.length) {
-								for (var j = 0; j < json.users.insert.roles.length; j++) {
+								var j;
+								for (j = 0; j < json.users.insert.roles.length; j++) {
 									perform_user[perform_user.length] = 'INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES (' + json.users.insert.uid + ',' + json.users.insert.roles[j] + ')';
 								}
-							} else {
+							} 
+							else {
 								perform_user[perform_user.length] = 'INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES (' + json.users.insert.uid + ',' + json.users.insert.roles + ')';
 							}
 						}
@@ -3661,7 +3706,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 					//Update - Users
 					if (json.users.update) {
 						if (json.users.update.length) {
-							for (var i = 0; i < json.users.update.length; i++) {
+							var i;
+							for (i = 0; i < json.users.update.length; i++) {
 								if (progress != null) {
 									//Increment Progress Bar
 									progress.set();
@@ -3674,7 +3720,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 								//Insert it over again!
 								if (json.users.update[i].roles) {
 									if (json.users.update[i].roles.length) {
-										for (var j = 0; j < json.users.update[i].roles.length; j++) {
+										var j;
+										for (j = 0; j < json.users.update[i].roles.length; j++) {
 											perform_user[perform_user.length] = 'INSERT OR REPLACE INTO user_roles (uid, rid ) VALUES (' + json.users.update[i].uid + ',' + json.users.update[i].roles[j] + ')';
 										}
 									} else {
@@ -3696,7 +3743,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 							//Insert it over again!
 							if (json.users.update.roles) {
 								if (json.users.update.roles.length) {
-									for (var j = 0; j < json.users.update.roles.length; j++) {
+									var j;
+									for (j = 0; j < json.users.update.roles.length; j++) {
 										perform_user[perform_user.length] = 'INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES (' + json.users.update.uid + ',' + json.users.update.roles[j] + ')';
 									}
 								} else {
@@ -3710,7 +3758,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 					//Delete - Users
 					if (json.users["delete"]) {
 						if (json.users["delete"].length) {
-							for (var i = 0; i < json.users["delete"].length; i++) {
+							var i;
+							for (i = 0; i < json.users["delete"].length; i++) {
 								if (progress != null) {
 									//Increment Progress Bar
 									progress.set();
@@ -3764,7 +3813,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 					if (json.regions.insert) {
 						Ti.API.info('####################### Regions insert');
 						if (json.regions.insert.length) {
-							for (var i = 0; i < json.regions.insert.length; i++) {
+							var i;
+							for (i = 0; i < json.regions.insert.length; i++) {
 								if (progress != null) {
 									//Increment Progress Bar
 									progress.set();
@@ -3807,7 +3857,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 					if (json.regions.update) {
 						Ti.API.info('####################### Regions update');
 						if (json.regions.update.length) {
-							for (var i = 0; i < json.regions.update.length; i++) {
+							var i;
+							for (i = 0; i < json.regions.update.length; i++) {
 								if (progress != null) {
 									//Increment Progress Bar
 									progress.set();
@@ -3828,7 +3879,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 					if (json.regions["delete"]) {
 						Ti.API.info('####################### Regions delete');
 						if (json.regions["delete"].length) {
-							for (var i = 0; i < json.regions["delete"].length; i++) {
+							var i;
+							for (i = 0; i < json.regions["delete"].length; i++) {
 								if (progress != null) {
 									//Increment Progress Bar
 									progress.set();
@@ -3936,7 +3988,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 				do_logout();
 			});
 		}
-	}
+	};
+	
 	//Connection error:
 	objectsUp.onerror = function(e) {
 		Ti.API.error('Code status: ' + e.error);
@@ -4073,7 +4126,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 		unsetUse();
 
 		Ti.API.info("Services are down");
-	}
+	};
+	
 	app_timestamp = Math.round(+new Date().getTime() / 1000);
 	Ti.API.info('App Time: ' + app_timestamp);
 	//Get upload JSON
@@ -4442,7 +4496,7 @@ function uploadFile(win) {
 							uploadFile(win);
 						} 
 					}
-				}
+				};
 
 				_file_xhr.onerror = function(e) {
 					Ti.API.error('UPLOAD FILE: =========== Error in uploading ========' + this.error + this.status);
@@ -4458,13 +4512,14 @@ function uploadFile(win) {
 						buttonNames: ['OK'] 
 					}); 
 					alertDialog.show();
-				}
+				};
 
 				_file_xhr.setRequestHeader("Content-Type", "application/json");
 
 				if (PLATFORM == 'android') {
 				  _file_xhr.send('{"file_data"	:"' + fileUploadTable.fieldByName('file_data') + '", "filename"	:"' + fileUploadTable.fieldByName('file_name') + '", "nid"		:"' + fileUploadTable.fieldByName('nid') + '", "field_name":"' + fileUploadTable.fieldByName('field_name') + '", "delta":"' + fileUploadTable.fieldByName('delta') + '","timestamp":"'+ fileUploadTable.fieldByName('timestamp')+'"}');
-				} else {
+				} 
+				else {
 					
 					_file_xhr.send({
 						file_data : fileUploadTable.fieldByName('file_data'),
@@ -4585,15 +4640,16 @@ function downloadThumnail(file_id, image, win) {
 				}
 				image.isImage = true;
 				//image = tempImg;
-			}
+			};
 	
 			downloadImage.onerror = function(e) {
 				Ti.API.error("Error in download image.");
 				image.image = '../images/default.png';
-			}
+			};
 	
 			downloadImage.send();
-		} catch(e) {
+		} 
+		catch(e) {
 			Ti.API.info("==== ERROR ===" + e);
 		}
 	}
@@ -4637,18 +4693,21 @@ function downloadMainImage(file_id, content, win) {
 			Ti.API.info('=========== Success ========');
 			content.bigImg = this.responseData;
 			showImage(content, actInd);
-		}
+		};
 
 		downloadImage.onerror = function(e) {
 			Ti.API.error("Error in download Image 2");
 			actInd.hide();
-		}
+		};
+		
 		downloadImage.send();
-	} catch(e) {
+	} 
+	catch(e) {
 		actInd.hide();
 		Ti.API.info("==== ERROR ===" + e);
 	}
 }
+
 function showImage(source, actInd) {
 	var imageWin = Ti.UI.createWindow({
 		backgroundColor : '#00000000',
@@ -4757,8 +4816,9 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 		}
 
 		usort(instance['settings']['calculation']['items'], '_calculation_field_sort_on_weight');
-
-		for (var idx in instance.settings.calculation.items) {
+		
+		var idx;
+		for (idx in instance.settings.calculation.items) {
 			var calculation_row = instance.settings.calculation.items[idx];
 			var value = 0;
 			var field_1_multiplier = 0;
@@ -4992,7 +5052,8 @@ function omadi_fields_get_fields(win, db_display) {
 				fields[regions.fieldByName('region_name')]['label'] = regions.fieldByName('label');
 				fields[regions.fieldByName('region_name')]['type'] = 'region_separator_mode';
 				fields[regions.fieldByName('region_name')]['settings'] = regions.fieldByName('settings');
-				for (var i in unsorted_res) {
+				var i;
+				for (i in unsorted_res) {
 					var settings = JSON.parse(unsorted_res[i].settings);
 					if (regions.fieldByName('region_name') == settings.region) {
 						fields[unsorted_res[i].field_name] = new Array();
@@ -5288,18 +5349,18 @@ Number.prototype.toCurrency = function($O) {// extending Number prototype
 			$val = $val.replace(rx, '$1' + $O.thousands_separator + '$2');
 		}
 		return $val;
-	}
+	};
 
 	Number.prototype.toFixed = function() {// Rounding
 		var m = Math.pow(10, $O.use_fractions.fractions);
 		return Math.round(this * m, 0) / m;
-	}
+	};
 
 	String.prototype.times = function(by) {// String multiplication
 		by = (by >> 0);
 		var t = (by > 1 ? this.times(by / 2) : '' );
 		return t + (by % 2 ? t + this : t);
-	}
+	};
 	var $A = this;
 
 	/* I like to keep all options, as the name would sugesst, **optional** :) so, let me make tham as such */
@@ -5332,15 +5393,18 @@ Number.prototype.toCurrency = function($O) {// extending Number prototype
 	$O.symbol_position ? null : $O.symbol_position = "front";
 	$O.symbol_position == "front" ? $A.ret = $O.currency_symbol + $A._int + $A._dec : $A.ret = $A._int + $A._dec + " " + $O.currency_symbol;
 	return $A.ret;
-}
+};
+
 var in_array = function(p_val, haystack) {
-	for (var i = 0, l = haystack.length; i < l; i++) {
+	var i;
+	for (i = 0, l = haystack.length; i < l; i++) {
 		if (haystack[i] == p_val) {
 			return true;
 		}
 	}
 	return false;
-}
+};
+
 function isArray(input) {
 	return typeof (input) == 'object' && ( input instanceof Array);
 }
@@ -5427,7 +5491,8 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 			var instances = omadi_fields_get_fields(win, db_display);
 			//Ti.API.info('here--------A.2');
 			usort(criteria['search_criteria'], '_list_search_criteria_search_order');
-			for (var criteria_index in criteria.search_criteria) {
+			var criteria_index;
+			for (criteria_index in criteria.search_criteria) {
 				//Ti.API.info('here--------A.3' + criteria.search_criteria[criteria_index]);
 				var criteria_row = criteria.search_criteria[criteria_index];
 				row_matches[criteria_index] = false;
@@ -5472,14 +5537,16 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 							var search_time_value = Number(search_value.time);
 							//Ti.API.info('here--------A.12' + search_time_value);
 							var compare_times = new Array();
-							for (var value_index in node_values) {
+							var value_index;
+							for (value_index in node_values) {
 								compare_times[value_index] = search_time_value + mktime(0, 0, 0, date('n', Number(node_values[value_index])), date('j', Number(node_values[value_index])), date('Y', Number(node_values[value_index])));
 								//Ti.API.info('here--------A.13' + compare_times[value_index] + "," + node_values[value_index]);
 							}
 
 							if (search_operator == 'after-time') {
 								//Ti.API.info('here--------A.14' + search_operator);
-								for (var value_index in node_values) {
+								var value_index;
+								for (value_index in node_values) {
 									//Ti.API.info('here--------A.15' + node_values[value_index] + "," + compare_times[value_index]);
 									if (node_values[value_index] > compare_times[value_index]) {
 										//Ti.API.info('here--------A.16');
@@ -5488,7 +5555,8 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 								}
 							} else if (search_operator == 'before-time') {
 								//Ti.API.info('here--------A.17');
-								for (var value_index in node_values) {
+								var value_index;
+								for (value_index in node_values) {
 									//Ti.API.info('here--------A.18');
 									if (node_values[value_index] < compare_times[value_index]) {
 										//Ti.API.info('here--------A.19');
@@ -5500,7 +5568,8 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 								var search_time_value2 = search_value.time2;
 								//Ti.API.info('here--------A.21');
 								var compare_times2 = new Array();
-								for (var value_index in node_values) {
+								var value_index;
+								for (value_index in node_values) {
 
 									compare_times2[value_index] = search_time_value2 + mktime(0, 0, 0, date('n', Number(node_values[value_index])), date('j', Number(node_values[value_index])), date('Y', Number(node_values[value_index])));
 									//Ti.API.info('here--------A.22' + compare_times2[value_index] + "," + node_values[value_index]);
@@ -5509,17 +5578,20 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 								if (search_time_value < search_time_value2) {
 									//Ti.API.info('here--------A.23');
 									// Like between 5:00PM - 8:00PM
-									for (var value_index in node_values) {
+									var value_index;
+									for (value_index in node_values) {
 										//Ti.API.info('here--------A.24');
 										if (node_values[value_index] >= compare_times[value_index] && node_values[value_index] < compare_times2[value_index]) {
 											//Ti.API.info('here--------A.25');
 											row_matches[criteria_index] = true;
 										}
 									}
-								} else {
+								} 
+								else {
 									//Ti.API.info('here--------A.25----1');
 									// Like between 8:00PM - 4:00AM
-									for (var value_index in node_values) {
+									var value_index;
+									for (value_index in node_values) {
 										//Ti.API.info('here--------A.26');
 										if (node_values[value_index] >= compare_times[value_index] || node_values[value_index] < compare_times2[value_index]) {
 											//Ti.API.info('here--------A.26---1');
@@ -5528,10 +5600,12 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 									}
 								}
 							}
-						} else if (search_operator == '__blank') {
+						} 
+						else if (search_operator == '__blank') {
 							//Ti.API.info('here--------A.26---2');
 							row_matches[criteria_index] = true;
-							for (var value_index in node_values) {
+							var value_index;
+							for (value_index in node_values) {
 								//Ti.API.info('here--------A.26---3');
 								node_value = node_values[value_index];
 								if (node_value != null && node_value != "") {
@@ -5540,9 +5614,11 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 								}
 
 							}
-						} else if (search_operator == '__filled') {
+						} 
+						else if (search_operator == '__filled') {
 							//Ti.API.info('here--------A.26---5');
-							for (var value_index in node_values) {
+							var value_index;
+							for (value_index in node_values) {
 								//Ti.API.info('here--------A.26---6');
 								node_value = node_values[value_index];
 								if (node_value != null && node_value != "") {
@@ -5551,13 +5627,15 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 								}
 
 							}
-						} else if (search_operator == 'weekday') {
+						} 
+						else if (search_operator == 'weekday') {
 							//Ti.API.info('here--------A.27' + search_value.weekday);
 							var weekdays = search_value.weekday;
 							if (!isArray(search_value.weekday)) {
 								//Ti.API.info('here--------A.28' + search_value.weekday);
 								weekdays = [];
-								for (var key in search_value.weekday) {
+								var key;
+								for (key in search_value.weekday) {
 									//Ti.API.info('here--------A.29' + search_value.weekday);
 									if (search_value.weekday.hasOwnProperty(key)) {
 										//Ti.API.info('here--------A.30' + key);
@@ -5565,8 +5643,9 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 									}
 								}
 							}
-
-							for (var value_index in node_values) {
+							
+							var value_index;
+							for (value_index in node_values) {
 								//Ti.API.info('here--------A.31' + node_values[value_index] + ", " + date('w', Number(node_values[value_index])), weekdays);
 								if (in_array(date('w', Number(node_values[value_index])), weekdays)) {
 									//Ti.API.info('here--------A.32' + date('w', Number(node_values[value_index])), weekdays);
@@ -5618,7 +5697,8 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 										node_values.push(elements['value']);
 									}
 								}
-								for (var value_index in node_values) {
+								var value_index;
+								for (value_index in node_values) {
 									node_value = node_values[value_index];
 									switch(search_operator) {
 										case 'not like':
@@ -5667,18 +5747,22 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 								}
 
 								if (search_operator == '__filled'){
-									for (var value_index in node_values) {
+									var value_index;
+									for (value_index in node_values) {
 										node_value = node_values[value_index];
 										if (node_value != 0) {
 											row_matches[criteria_index] = true;
 										}
 
 									}
-								} else {
+								} 
+								else {
 									if (node_values == null && node_values == "") {
 										row_matches[criteria_index] = true;
-									} else {
-										for (var value_index in node_values) {
+									} 
+									else {
+										var value_index;
+										for (value_index in node_values) {
 											node_value = node_values[value_index];
 											if (node_value == 0) {
 												row_matches[criteria_index] = true;
@@ -5693,8 +5777,9 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 								var calculation_values = _calculation_field_get_values(win, db_display, content[entity[field_name][0]['reffer_index']], entity);
 								//Ti.API.info('here--------A.35' + calculation_values);
 								node_values.push(calculation_values[0].final_value);
-
-								for (var value_index in node_values) {
+								
+								var value_index;
+								for (value_index in node_values) {
 									node_value = node_values[value_index];
 									//Ti.API.info('here--------A.36' + node_value);
 									switch(search_operator) {
@@ -5747,8 +5832,9 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 										node_values.push(elements['value']);
 									}
 								}
-
-								for (var value_index in node_values) {
+								
+								var value_index;
+								for (value_index in node_values) {
 									node_value = node_values[value_index];
 									switch(search_operator) {
 
@@ -5799,13 +5885,17 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 				              	var reference_types = JSON.parse(search_field['settings'])['reference_types'];
 				               	var array_filter = '';
 				               	var reference_types_arr = [];
-				                for(var key in reference_types) {
+				               	var key;
+				                for(key in reference_types) {
 									reference_types_arr.push(reference_types[key]);
 								}
-								for (var reference_types_idx = 0; reference_types_idx < reference_types_arr.length; reference_types_idx++) {
+								
+								var reference_types_idx;
+								for (reference_types_idx = 0; reference_types_idx < reference_types_arr.length; reference_types_idx++) {
 									if (reference_types_idx == reference_types_arr.length - 1) {
 										array_filter += '\'' + reference_types_arr[reference_types_idx] + '\'';
-									} else {
+									} 
+									else {
 										array_filter += '\'' + reference_types_arr[reference_types_idx] + '\',';
 									}
 								}
@@ -5885,7 +5975,8 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 								var search_value_arr = [];
 								if (!isArray(search_value)) {
 									//Ti.API.info('here--------A.44' + search_value);
-									for (var key in search_value) {
+									var key;
+									for (key in search_value) {
 										//Ti.API.info('here--------A.45' + key);
 										if (search_value.hasOwnProperty(key)) {
 											//Ti.API.info('here--------A.46' + key);
@@ -5901,7 +5992,8 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 									if (search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
 										//Ti.API.info('here--------A.48');
 										row_matches[criteria_index] = false;
-									} else {
+									} 
+									else {
 										//Ti.API.info('here--------A.49');
 										for (idx in search_value) {
 											//Ti.API.info('here--------A.50' + search_value[idx] + row_matches[criteria_index] + criteria_index);
@@ -5943,7 +6035,8 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 									// Make sure the search value is an array
 									var search_value_arr = [];
 									if (!isArray(search_value)) {
-										for (var key in search_value) {
+										var key;
+										for (key in search_value) {
 											if (search_value.hasOwnProperty(key)) {
 												search_value_arr[key] = key;
 											}
@@ -6134,7 +6227,8 @@ function rules_field_format_readable_time_rules(timeValue) {
 
 	if (timeValue > '') {
 		var rows = timeValue.split(';');
-		for (var idx in rows) {
+		var idx;
+		for (idx in rows) {
 			var row = rows[idx];
 			var values = row.split('|');
 			if (values[0] == '1') {
@@ -6156,17 +6250,19 @@ function rules_field_format_readable_time_rules(timeValue) {
 
 		if (times['All Day'] != null && count_arr_obj(times['All Day']) == 7) {
 			// This is equivalent to no rules, so fall through
-		} else {
-
-			for (var time_index in times) {
+		} 
+		else {
+			var time_index;
+			for (time_index in times) {
 				var time = times[time_index];
 				var timeString = '';
 				var startDay = -1;
 				var currentDay = -2;
 				var lastConsecutive = -1;
 				var dayPatrolStrings = [];
-
-				for (var day_index in time) {
+				
+				var day_index;
+				for (day_index in time) {
 					var day = time[day_index];
 					currentDay = Number(day);
 					if (startDay == -1) {

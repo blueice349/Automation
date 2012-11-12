@@ -101,8 +101,8 @@ if (num_nav > 0){
 		nav_res.next();
 	}
 	
-	
-	for (var _w in points){
+	var _w;
+	for (_w in points){
 		Ti.API.info(_w+" = "+points[_w]);
 		
 		// route object

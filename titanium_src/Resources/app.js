@@ -37,7 +37,7 @@ var loginWin = Titanium.UI.createWindow({
 	backgroundColor: '#EEEEEE',
 	navBarHidden : true
 });
-var OMADI_VERSION = "omadiDb1667";
+var OMADI_VERSION = "omadiDb1668";
 
 Ti.App.Properties.setBool('stopGPS', false);
 Ti.App.Properties.setBool('quitApp', false);

@@ -307,13 +307,14 @@ message_center.get_win = function() {
 	}
 
 	return win;
-}
+};
+
 var listTableView = null;
 
 message_center.loadUI = function() {
 	win.is_opened = true;
 	loadData();
-}
+};
 
 var showLoading = function(){
 	if(PLATFORM == 'android'){
@@ -327,7 +328,7 @@ var showLoading = function(){
 		actIndAlert.show();
 		refresh_image.hide();
 	}
-}
+};
 
 var hideLoading = function(){
 	if(PLATFORM == 'android'){
@@ -342,7 +343,7 @@ var hideLoading = function(){
 		refresh_image.show();
 		
 	}
-}
+};
 
 //message_center.loadUI = function() {
 Ti.App.addEventListener('refresh_UI_Alerts', function(e){
@@ -487,7 +488,8 @@ function loadData(){
 		
 		while (res_names.isValidRow()){
 			var insert_it = true;
-			for (var b in obj_cnt){
+			var b;
+			for (b in obj_cnt){
 				if (obj_cnt[b].nid == res_names.fieldByName('location_nid')){
 					insert_it = false;
 				}
@@ -506,8 +508,10 @@ function loadData(){
 			listTableView.hide();
 			empty.show();
 			
-		}else { //Shows the messages
-			for (var x in obj_cnt){
+		}
+		else { //Shows the messages
+			var x;
+			for (x in obj_cnt){
 				var fullName = obj_cnt[x].label+" ("+obj_cnt[x].count+")";
 				var row = Ti.UI.createTableViewRow({
 					height : 'auto',

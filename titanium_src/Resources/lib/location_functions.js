@@ -56,8 +56,8 @@ function uploadGPSCoordinates(){
 				// }
 				// else{
 					var locationItems = [];
-					
-					for (var i = 0; i < result.rowCount; i++) {
+					var i;
+					for (i = 0; i < result.rowCount; i++) {
 						db_coord.execute("UPDATE user_location SET status =\"json\" WHERE ulid=" + result.fieldByName('ulid'));
 						
 						locationItems.unshift({
@@ -131,15 +131,16 @@ function uploadGPSCoordinates(){
 						var _arr_content = new Array();
 						var nids = new Array();
 						if (resultReq.alert) {
-							for (var _i in resultReq.alert) {
+							var _i;
+							for (_i in resultReq.alert) {
 								var tmstp = new Date();
 								//Ti.API.info("====>>>>>>>>>>>> " + resultReq.alert[_i].location_nid);
 								if (nids.indexOf(resultReq.alert[_i].location_nid) == -1) {
 									nids.push(resultReq.alert[_i].location_nid);
 								}
 								_arr_content.push('INSERT OR REPLACE INTO alert_names (location_nid, location_label) VALUES ( ' + resultReq.alert[_i].location_nid + ', "' + resultReq.alert[_i].location_label + '" )');
-	
-								for (var _y in resultReq.alert[_i].alerts) {
+								var _y;
+								for (_y in resultReq.alert[_i].alerts) {
 									if (resultReq.alert[_i].alerts[_y]) {
 										//Ti.API.info("Alert Message: " + resultReq.alert[_i].alerts[_y].message);
 										_arr_content.push('INSERT OR REPLACE INTO alerts (subject, ref_nid, alert_id, location_nid, location_label, message, timestamp) VALUES ( "' + resultReq.alert[_i].alerts[_y].subject + '", ' + resultReq.alert[_i].alerts[_y].reference_id + ', ' + resultReq.alert[_i].alerts[_y].alert_id + ', ' + resultReq.alert[_i].alerts[_y].location_nid + ', "' + resultReq.alert[_i].alerts[_y].location_label + '", "' + resultReq.alert[_i].alerts[_y].message + '" , ' + tmstp.getTime() + ' )');
@@ -151,13 +152,15 @@ function uploadGPSCoordinates(){
 							}
 						}
 						db_coord2.execute("BEGIN IMMEDIATE TRANSACTION");
-						for (var _e in nids) {
+						var _e;
+						for (_e in nids) {
 							db_coord2.execute('DELETE FROM alerts WHERE location_nid=' + nids[_e]);
 							db_coord2.execute('DELETE FROM alert_names WHERE location_nid=' + nids[_e]);
 							//Ti.API.info('Deleted location nids: ' + nids[_e]);
 						}
-	
-						for (var _k in _arr_content) {
+						
+						var _k;
+						for (_k in _arr_content) {
 							//Ti.API.info(_arr_content[_k]);
 							db_coord2.execute(_arr_content[_k]);
 						}
@@ -171,7 +174,8 @@ function uploadGPSCoordinates(){
 						createNotification("Uploaded GPS at "+date('g:i a', Number(__timestamp)));
 						
 					}
-				}
+				};
+				
 				//Connection error:
 				objectsCheck.onerror = function(e) {
 					var db_coord2 = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
@@ -181,10 +185,12 @@ function uploadGPSCoordinates(){
 					db_coord2.close();
 					Ti.App.fireEvent('refresh_UI_Alerts', {status: 'fail'});
 					unset_GPS_uploading();
-				}
+				};
+				
 				//Sending information and try to connect
 				objectsCheck.send(json_coord);
-			} else {
+			} 
+			else {
 				unset_GPS_uploading();
 				Ti.API.info('We are offline');
 			}

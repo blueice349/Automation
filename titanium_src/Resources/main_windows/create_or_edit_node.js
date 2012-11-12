@@ -109,7 +109,7 @@ create_or_edit_node.getWindow = function() {
 	});
 
 	return win;
-}
+};
 ///////////////////////////
 // Extra Functions
 //////////////////////////
@@ -465,12 +465,13 @@ function keep_info(_flag_info, pass_it, new_time) {
 	 }
 	 }
 	 */
-
-	for (var x in content) {
+	var x;
+	for (x in content) {
   
 		try {
 			Ti.API.info(label[x].text + ' is required: ' + content[x].required + ' = ' + content[x].value);
-		} catch(e) {
+		} 
+		catch(e) {
 			Ti.API.info('!!!!! ERROR !!!!! ' + e);
 		}
 		//Regular expression for license Plate
@@ -599,15 +600,17 @@ function keep_info(_flag_info, pass_it, new_time) {
 			}
 		}
 	}
-
-	for (var k = 0; k <= content.length; k++) {
+	
+	var k;
+	for (k = 0; k <= content.length; k++) {
 		if (!content[k]) {
 			continue;
 		}
 
 		if ((win.mode == 0 || _flag_info == 'draft')) {
 			//validating license plate and vin value entered by user against restritions
-			for (var r in restrictions) {
+			var r;
+			for (r in restrictions) {
 				var accountRestricted = restrictions[r].restrict_entire_account;
 				if (content[k].field_name == 'license_plate___plate') {
 					if (accountRestricted != null && accountRestricted == "1" && accountRestricted != "") {
@@ -710,8 +713,8 @@ function keep_info(_flag_info, pass_it, new_time) {
 
 		_a.addEventListener('click', function(e) {
 			if (e.index != e.cancel) {
-
-				for (var _i in content) {
+				var _i;
+				for (_i in content) {
 					Ti.API.info("Field: " + content[_i].field_type);
 					if (content[_i].field_type == "datestamp" || content[_i].field_type == "omadi_time") {
 						var tp = content[_i].value;
@@ -777,28 +780,34 @@ function keep_info(_flag_info, pass_it, new_time) {
 		var query = "INSERT OR REPLACE INTO " + win.type + " ( 'nid', ";
 
 		var _array_value = new Array();
-		for (var x_j in content) {
+		var x_j;
+		for (x_j in content) {
 			if ((content[x_j].composed_obj === true) && (content[x_j].cardinality > 1)) {
 
 				if ((content[x_j].field_type == 'omadi_time') || (content[x_j].field_type == 'datestamp')) {
-					if (content[x_j].value != null)
+					if (content[x_j].value != null){
 						var _vlr = Math.round(content[x_j].value / 1000);
-					else
+					}
+					else{
 						var _vlr = null;
-				} else if ((content[x_j].field_type == 'number_integer') || (content[x_j].field_type == 'number_decimal')) {
+					}
+				} 
+				else if ((content[x_j].field_type == 'number_integer') || (content[x_j].field_type == 'number_decimal')) {
 					if ((content[x_j].value == null) || (content[x_j].value == "") || (content[x_j].value == " ")) {
 						var _vlr = null;
 					} else {
 						var _vlr = content[x_j].value;
 					}
-				} else {
+				} 
+				else {
 					var _vlr = content[x_j].value;
 				}
 
 				if (_array_value[content[x_j].field_name]) {
 					_array_value[content[x_j].field_name].push(_vlr);
 					continue;
-				} else {
+				} 
+				else {
 					_array_value[content[x_j].field_name] = new Array();
 					_array_value[content[x_j].field_name].push(_vlr);
 					continue;
@@ -807,7 +816,8 @@ function keep_info(_flag_info, pass_it, new_time) {
 		}
 
 		//field names
-		for (var j_y = 0; j_y < content.length; j_y++) {
+		var j_y;
+		for (j_y = 0; j_y < content.length; j_y++) {
 			Ti.API.info('INDEX: ' + j_y);
 
 			//Is different of a region
@@ -843,8 +853,8 @@ function keep_info(_flag_info, pass_it, new_time) {
 
 		//Values
 		var title_to_node = "";
-
-		for (var j = 0; j <= content.length; j++) {
+		var j;
+		for (j = 0; j <= content.length; j++) {
 			if (!content[j]) {
 				continue;
 			}
@@ -978,8 +988,10 @@ function keep_info(_flag_info, pass_it, new_time) {
 
 							if (content[j].value == null) {
 								vital_info.push("null");
-							} else {
-								for (var v_info_tax in content[j].value ) {
+							} 
+							else {
+								var v_info_tax;
+								for (v_info_tax in content[j].value ) {
 									vital_info.push(content[j].value[v_info_tax].v_info.toString());
 								}
 							}
@@ -1128,7 +1140,8 @@ function keep_info(_flag_info, pass_it, new_time) {
 			db_put.execute('UPDATE file_upload_queue SET nid=' + file_upload_nid + ' WHERE nid=0;');
 
 			//If Images captured and not yet uploaded then store in file_uploaded_queue
-			for (var j = 0; j <= content.length; j++) {
+			var j;
+			for (j = 0; j <= content.length; j++) {
 				if (!content[j]) {
 					continue;
 				}
@@ -1842,7 +1855,8 @@ function open_mult_selector(obj) {
 	win_view.add(desLabel);
 
 	var elements_to_insert = [];
-	for (var v_iten in obj.itens) {
+	var v_iten;
+	for (v_iten in obj.itens) {
 		Ti.API.info(v_iten);
 		elements_to_insert.push({
 			title : obj.itens[v_iten].title,
@@ -1902,7 +1916,8 @@ function open_mult_selector(obj) {
 			if (obj.from_cond_vs != null && obj.from_cond_vs == true) {
 				listView.height = '66.5%';
 				desLabel.visible = true;
-				for (var i_sel = 0; i_sel < listView.data[0].rows.length; i_sel++) {
+				var i_sel;
+				for (i_sel = 0; i_sel < listView.data[0].rows.length; i_sel++) {
 					if (listView.data[0].rows[i_sel].selected == true) {
 						desLabel.text = (listView.data[0].rows[i_sel].desc != null && listView.data[0].rows[i_sel].desc != "") ? listView.data[0].rows[i_sel].desc : 'No Description'
 						break;
@@ -1944,7 +1959,8 @@ function open_mult_selector(obj) {
 	selected_ok.addEventListener('click', function() {
 		var aux_ret = new Array();
 		var valid_return = new Array();
-		for (var i_sel = 0; i_sel < listView.data[0].rows.length; i_sel++) {
+		var i_sel;
+		for (i_sel = 0; i_sel < listView.data[0].rows.length; i_sel++) {
 			if (listView.data[0].rows[i_sel].selected == true) {
 				aux_ret.push({
 					title : listView.data[0].rows[i_sel].display,
@@ -2061,7 +2077,8 @@ create_or_edit_node.loadUI = function() {
 			var no_data_fields = node_table.fieldByName('no_data_fields');
 			if (no_data_fields != null && no_data_fields != "") {
 				no_data_fields = JSON.parse(no_data_fields);
-				for (var key in no_data_fields) {
+				var key;
+				for (key in no_data_fields) {
 					if (no_data_fields.hasOwnProperty(key)) {
 						no_data_fieldsArr.push(key);
 					}
@@ -2125,7 +2142,8 @@ create_or_edit_node.loadUI = function() {
 				if (e.source.viewContainer.expanded === true) {
 					e.source.viewContainer.height = e.source.viewContainer.calculatedHeight;
 					var top = 0;
-					for (var i = 0; i < viewContent.getChildren().length; i++) {
+					var i;
+					for (i = 0; i < viewContent.getChildren().length; i++) {
 						var v = viewContent.getChildren()[i];
 						var isLabel = false;
 						if (PLATFORM == 'android') {
@@ -2151,11 +2169,13 @@ create_or_edit_node.loadUI = function() {
 							e.source.viewContainer.show();
 						}
 					}
-				} else {
+				} 
+				else {
 					e.source.viewContainer.height = 0;
 					e.source.viewContainer.hide();
 					var top = 0;
-					for (var i = 0; i < viewContent.getChildren().length; i++) {
+					var i;
+					for (i = 0; i < viewContent.getChildren().length; i++) {
 						var v = viewContent.getChildren()[i];
 						var isLabel = false;
 						if (PLATFORM == 'android') {
@@ -2183,14 +2203,16 @@ create_or_edit_node.loadUI = function() {
 				}
 
 				if (viewContent.getChildren() != null) {
-					for (var i = viewContent.getChildren().length - 1; i >= 0; i--) {
+					var i;
+					for (i = viewContent.getChildren().length - 1; i >= 0; i--) {
 						var v = viewContent.getChildren()[i];
 						var isLabel = false;
 						if (PLATFORM == 'android') {
 							if ( v instanceof Ti.UI.Label) {
 								isLabel = true;
 							}
-						} else {
+						} 
+						else {
 							if (v == '[object TiUILabel]') {
 								isLabel = true;
 							}
@@ -2199,7 +2221,8 @@ create_or_edit_node.loadUI = function() {
 						if (isLabel == true && v.viewContainer.expanded == true) {
 							v.viewContainer.height = v.viewContainer.height + DPUnitsToPixels(30); //(getScreenHeight() * 0.3);
 							break;
-						} else if (isLabel == true && v.viewContainer.expanded == false) {
+						} 
+						else if (isLabel == true && v.viewContainer.expanded == false) {
 							break;
 						}
 					}
@@ -2246,7 +2269,8 @@ create_or_edit_node.loadUI = function() {
 							is_title : false,
 							actual_value : content_fields.fieldByName(fields_result.fieldByName('field_name'))
 						};
-					} else {
+					} 
+					else {
 						field_arr[index_label][index_size] = {
 							label : fields_result.fieldByName('label'),
 							type : fields_result.fieldByName('type'),
@@ -2275,7 +2299,8 @@ create_or_edit_node.loadUI = function() {
 							var can_edit = false;
 
 							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-								for (var _l in settings.permissions) {
+								var _l;
+								for (_l in settings.permissions) {
 									for (_k in roles) {
 										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
@@ -2290,7 +2315,8 @@ create_or_edit_node.loadUI = function() {
 										}
 									}
 								}
-							} else {
+							} 
+							else {
 								can_view = can_edit = true;
 							}
 
@@ -2339,12 +2365,14 @@ create_or_edit_node.loadUI = function() {
 
 									// Token that splits each element contained into the array: 'j8Oc2s1E'
 									var decoded_values = decoded.split("j8Oc2s1E");
-								} else {
+								} 
+								else {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
 								}
-
-								for (var o_index = 0; o_index < settings.cardinality; o_index++) {
+								
+								var o_index;
+								for (o_index = 0; o_index < settings.cardinality; o_index++) {
 
 									if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
 										var vl_to_field = decoded_values[o_index];
@@ -2571,8 +2599,8 @@ create_or_edit_node.loadUI = function() {
 
 										var count_at = 0;
 										//var to_row = new Array();
-
-										for (var at in arr_picker) {
+										var at;
+										for (at in arr_picker) {
 											// to_row.push(Ti.UI.createPickerRow({
 											// title : arr_picker[at].title,
 											// usps : arr_picker[at].usps
@@ -2655,7 +2683,8 @@ create_or_edit_node.loadUI = function() {
 										regionView.add(content[count]);
 										count++;
 
-									} else {
+									} 
+									else {
 										label[count].text += ' #';
 										content[count] = Ti.UI.createTextField({
 											hintText : "#" + o_index + " " + label[count].text,
@@ -2724,7 +2753,8 @@ create_or_edit_node.loadUI = function() {
 
 									count++;
 								}
-							} else {
+							} 
+							else {
 								if (field_arr[index_label][index_size].field_name == "license_plate___state" || field_arr[index_label][index_size].field_name == "restriction_license_plate___state") {
 
 									label[count].text += ' State';
@@ -2949,8 +2979,8 @@ create_or_edit_node.loadUI = function() {
 
 									var count_at = 0;
 									//var to_row = new Array();
-
-									for (var at in arr_picker) {
+									var at;
+									for (at in arr_picker) {
 										// to_row.push(Ti.UI.createPickerRow({
 										// title : arr_picker[at].title,
 										// usps : arr_picker[at].usps
@@ -2993,7 +3023,13 @@ create_or_edit_node.loadUI = function() {
 										enabled : can_edit
 									});
 									if (PLATFORM == 'android') {
-										content[count].backgroundImage = '', content[count].backgroundColor = 'white', content[count].backgroundSelectedColor = '#2E64FE', content[count].borderColor = 'gray', content[count].borderRadius = 10, content[count].color = 'black', content[count].borderWidth = 1
+										content[count].backgroundImage = ''; 
+										content[count].backgroundColor = 'white';
+										content[count].backgroundSelectedColor = '#2E64FE';
+										content[count].borderColor = 'gray';
+										content[count].borderRadius = 10;
+										content[count].color = 'black';
+										content[count].borderWidth = 1;
 									}
 									if (!can_edit) {
 										content[count].backgroundImage = '';
@@ -3001,7 +3037,7 @@ create_or_edit_node.loadUI = function() {
 										content[count].borderColor = 'gray';
 										content[count].borderRadius = 10;
 										content[count].color = '#848484';
-										content[count].borderWidth = 1
+										content[count].borderWidth = 1;
 									}
 
 									content[count].addEventListener('click', function(e) {
@@ -3112,7 +3148,8 @@ create_or_edit_node.loadUI = function() {
 							var can_edit = false;
 
 							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-								for (var _l in settings.permissions) {
+								var _l;
+								for (_l in settings.permissions) {
 									for (_k in roles) {
 										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
@@ -3168,16 +3205,19 @@ create_or_edit_node.loadUI = function() {
 
 									// Token that splits each element contained into the array: 'j8Oc2s1E'
 									var decoded_values = decoded.split("j8Oc2s1E");
-								} else {
+								} 
+								else {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
 								}
-
-								for (var o_index = 0; o_index < settings.cardinality; o_index++) {
+								
+								var o_index;
+								for (o_index = 0; o_index < settings.cardinality; o_index++) {
 
 									if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
 										var vl_to_field = decoded_values[o_index];
-									} else {
+									} 
+									else {
 										var vl_to_field = "";
 									}
 
@@ -3233,7 +3273,8 @@ create_or_edit_node.loadUI = function() {
 
 									count++;
 								}
-							} else {
+							} 
+							else {
 								content[count] = Ti.UI.createTextField({
 									hintText : field_arr[index_label][index_size].label,
 									borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
@@ -3297,7 +3338,8 @@ create_or_edit_node.loadUI = function() {
 							var can_edit = false;
 
 							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-								for (var _l in settings.permissions) {
+								var _l;
+								for (_l in settings.permissions) {
 									for (_k in roles) {
 										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
@@ -3364,8 +3406,9 @@ create_or_edit_node.loadUI = function() {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
 								}
-
-								for (var o_index = 0; o_index < settings.cardinality; o_index++) {
+								
+								var o_index;
+								for (o_index = 0; o_index < settings.cardinality; o_index++) {
 
 									if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
 										var vl_to_field = decoded_values[o_index];
@@ -3667,7 +3710,8 @@ create_or_edit_node.loadUI = function() {
 							var can_edit = false;
 
 							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-								for (var _l in settings.permissions) {
+								var _l;
+								for (_l in settings.permissions) {
 									for (_k in roles) {
 										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
@@ -3682,7 +3726,8 @@ create_or_edit_node.loadUI = function() {
 										}
 									}
 								}
-							} else {
+							} 
+							else {
 								can_view = can_edit = true;
 							}
 
@@ -3735,8 +3780,9 @@ create_or_edit_node.loadUI = function() {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
 								}
-
-								for (var o_index = 0; o_index < settings.cardinality; o_index++) {
+								
+								var o_index;
+								for (o_index = 0; o_index < settings.cardinality; o_index++) {
 
 									if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
 										var vl_to_field = decoded_values[o_index];
@@ -4022,7 +4068,8 @@ create_or_edit_node.loadUI = function() {
 
 							//Set our auxiliar array
 							var aux_local = new Array;
-							for (var i in settings.parts) {
+							var i;
+							for (i in settings.parts) {
 								aux_local.push(settings.parts[i]);
 							}
 
@@ -4078,8 +4125,9 @@ create_or_edit_node.loadUI = function() {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
 								}
-
-								for (var o_index = 0; o_index < settings.cardinality; o_index++) {
+								
+								var o_index;
+								for (o_index = 0; o_index < settings.cardinality; o_index++) {
 
 									if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
 										var vl_to_field = decoded_values[o_index];
@@ -4187,7 +4235,8 @@ create_or_edit_node.loadUI = function() {
 							var can_edit = false;
 
 							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-								for (var _l in settings.permissions) {
+								var _l;
+								for (_l in settings.permissions) {
 									for (_k in roles) {
 										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
@@ -4275,8 +4324,9 @@ create_or_edit_node.loadUI = function() {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
 								}
-
-								for (var o_index = 0; o_index < settings.cardinality; o_index++) {
+								
+								var o_index;
+								for (o_index = 0; o_index < settings.cardinality; o_index++) {
 
 									if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") && (decoded_values[o_index] != "null"))) {
 										var vl_to_field = decoded_values[o_index];
@@ -4501,7 +4551,8 @@ create_or_edit_node.loadUI = function() {
 							var can_edit = false;
 
 							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-								for (var _l in settings.permissions) {
+								var _l;
+								for (_l in settings.permissions) {
 									for (_k in roles) {
 										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
@@ -4516,7 +4567,8 @@ create_or_edit_node.loadUI = function() {
 										}
 									}
 								}
-							} else {
+							} 
+							else {
 								can_view = can_edit = true;
 							}
 
@@ -4554,16 +4606,19 @@ create_or_edit_node.loadUI = function() {
 
 									// Token that splits each element contained into the array: 'j8Oc2s1E'
 									var decoded_values = decoded.split("j8Oc2s1E");
-								} else {
+								} 
+								else {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
 								}
-
-								for (var o_index = 0; o_index < settings.cardinality; o_index++) {
+								
+								var o_index;
+								for (o_index = 0; o_index < settings.cardinality; o_index++) {
 
 									if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
 										var vl_to_field = decoded_values[o_index];
-									} else {
+									} 
+									else {
 										var vl_to_field = "";
 									}
 
@@ -4690,7 +4745,8 @@ create_or_edit_node.loadUI = function() {
 							var can_edit = false;
 
 							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-								for (var _l in settings.permissions) {
+								var _l;
+								for (_l in settings.permissions) {
 									for (_k in roles) {
 										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
@@ -4747,8 +4803,9 @@ create_or_edit_node.loadUI = function() {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
 								}
-
-								for (var o_index = 0; o_index < settings.cardinality; o_index++) {
+								
+								var o_index;
+								for (o_index = 0; o_index < settings.cardinality; o_index++) {
 
 									if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
 										var vl_to_field = decoded_values[o_index];
@@ -4878,7 +4935,8 @@ create_or_edit_node.loadUI = function() {
 							var can_edit = false;
 
 							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-								for (var _l in settings.permissions) {
+								var _l;
+								for (_l in settings.permissions) {
 									for (_k in roles) {
 										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
@@ -4971,8 +5029,9 @@ create_or_edit_node.loadUI = function() {
 										var decoded_values = new Array();
 										decoded_values[0] = field_arr[index_label][index_size].actual_value;
 									}
-
-									for (var o_index = 0; o_index < settings.cardinality; o_index++) {
+									
+									var o_index;
+									for (o_index = 0; o_index < settings.cardinality; o_index++) {
 
 										if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
 											var vl_to_field = decoded_values[o_index];
@@ -4995,7 +5054,8 @@ create_or_edit_node.loadUI = function() {
 										};
 
 										var counter_loop = 0;
-										for (var i_data_terms in data_terms) {
+										var i_data_terms;
+										for (i_data_terms in data_terms) {
 											if (vl_to_field == data_terms[i_data_terms].tid) {
 												aux_val.title = data_terms[i_data_terms].title;
 												aux_val.vl = data_terms[i_data_terms].tid;
@@ -5059,7 +5119,13 @@ create_or_edit_node.loadUI = function() {
 											openBigText(e.source.text);
 										});
 										if (PLATFORM == 'android') {
-											content[count].backgroundImage = '', content[count].backgroundColor = 'white', content[count].backgroundSelectedColor = '#2E64FE', content[count].borderColor = 'gray', content[count].borderRadius = 10, content[count].color = 'black', content[count].borderWidth = 1
+											content[count].backgroundImage = '';
+											content[count].backgroundColor = 'white';
+											content[count].backgroundSelectedColor = '#2E64FE';
+											content[count].borderColor = 'gray';
+											content[count].borderRadius = 10;
+											content[count].color = 'black';
+											content[count].borderWidth = 1;
 										}
 										if (!can_edit) {
 											content[count].backgroundImage = '';
@@ -5067,7 +5133,7 @@ create_or_edit_node.loadUI = function() {
 											content[count].borderColor = 'gray';
 											content[count].borderRadius = 10;
 											content[count].color = '#848484';
-											content[count].borderWidth = 1
+											content[count].borderWidth = 1;
 										}
 										content[count].addEventListener('click', function(e) {
 											//Ti.API.info('TID: '+e.row.tid);
@@ -5117,7 +5183,8 @@ create_or_edit_node.loadUI = function() {
 									};
 
 									var counter_loop = 0;
-									for (var i_data_terms in data_terms) {
+									var i_data_terms;
+									for (i_data_terms in data_terms) {
 										if (field_arr[index_label][index_size].actual_value == data_terms[i_data_terms].tid) {
 											aux_val.title = data_terms[i_data_terms].title;
 											aux_val.vl = data_terms[i_data_terms].tid;
@@ -5180,7 +5247,13 @@ create_or_edit_node.loadUI = function() {
 										openBigText(e.source.text);
 									});
 									if (PLATFORM == 'android') {
-										content[count].backgroundImage = '', content[count].backgroundColor = 'white', content[count].backgroundSelectedColor = '#2E64FE', content[count].borderColor = 'gray', content[count].borderRadius = 10, content[count].color = 'black', content[count].borderWidth = 1
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = 'white';
+										content[count].backgroundSelectedColor = '#2E64FE';
+										content[count].borderColor = 'gray';
+										content[count].borderRadius = 10;
+										content[count].color = 'black';
+										content[count].borderWidth = 1;
 									}
 									if (!can_edit) {
 										content[count].backgroundImage = '';
@@ -5188,7 +5261,7 @@ create_or_edit_node.loadUI = function() {
 										content[count].borderColor = 'gray';
 										content[count].borderRadius = 10;
 										content[count].color = '#848484';
-										content[count].borderWidth = 1
+										content[count].borderWidth = 1;
 									}
 
 									content[count].addEventListener('click', function(e) {
@@ -5242,8 +5315,9 @@ create_or_edit_node.loadUI = function() {
 										var decoded_values = new Array();
 										decoded_values[0] = field_arr[index_label][index_size].actual_value;
 									}
-
-									for (var j_ind in data_terms) {
+									
+									var j_ind;
+									for (j_ind in data_terms) {
 										Ti.API.info(data_terms[j_ind].tid + ' = ' + decoded_values.indexOf(data_terms[j_ind].tid.toString()));
 
 										if (decoded_values.indexOf(data_terms[j_ind].tid.toString()) != -1) {
@@ -5338,7 +5412,8 @@ create_or_edit_node.loadUI = function() {
 
 									content[count].addEventListener('click', function(e) {
 										if (e.source.can_edit) {
-											for (var jsa in e.source.itens) {
+											var jsa;
+											for (jsa in e.source.itens) {
 												Ti.API.info(jsa + ' = ' + e.source.itens[jsa].title);
 											}
 											if (e.source.itens.length == 0) {
@@ -5393,16 +5468,19 @@ create_or_edit_node.loadUI = function() {
 
 										// Token that splits each element contained into the array: 'j8Oc2s1E'
 										var decoded_values = decoded.split("j8Oc2s1E");
-									} else {
+									} 
+									else {
 										var decoded_values = new Array();
 										decoded_values[0] = field_arr[index_label][index_size].actual_value;
 									}
-
-									for (var o_index = 0; o_index < settings.cardinality; o_index++) {
+									
+									var o_index;
+									for (o_index = 0; o_index < settings.cardinality; o_index++) {
 
 										if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
 											var vl_to_field = decoded_values[o_index];
-										} else {
+										} 
+										else {
 											var vl_to_field = "";
 										}
 
@@ -5554,12 +5632,13 @@ create_or_edit_node.loadUI = function() {
 													e.source.value = value_f;
 													e.source.tid = tid;
 													Ti.API.info('Value: ' + value_f + ' TID: ' + tid);
-												}
+												};
 
 												e.source.tid = null;
 												if ((e.value != null) && (e.value != '')) {
 													table_data = [];
-													for (var i = 0; i < list.length; i++) {
+													var i;
+													for (i = 0; i < list.length; i++) {
 														var rg = new RegExp(e.source.value, 'i');
 														if (list[i].title.search(rg) != -1) {
 															//Check match
@@ -5769,12 +5848,13 @@ create_or_edit_node.loadUI = function() {
 												e.source.value = value_f;
 												e.source.tid = tid;
 												Ti.API.info('Value: ' + value_f + ' TID: ' + tid);
-											}
+											};
 
 											e.source.tid = null;
 											if ((e.value != null) && (e.value != '')) {
 												table_data = [];
-												for (var i = 0; i < list.length; i++) {
+												var i;
+												for (i = 0; i < list.length; i++) {
 													var rg = new RegExp(e.source.value, 'i');
 													if (list[i].title.search(rg) != -1) {
 														//Check match
@@ -5845,7 +5925,8 @@ create_or_edit_node.loadUI = function() {
 							var can_edit = false;
 
 							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-								for (var _l in settings.permissions) {
+								var _l;
+								for (_l in settings.permissions) {
 									for (_k in roles) {
 										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
@@ -5886,18 +5967,20 @@ create_or_edit_node.loadUI = function() {
 							var reffer_index = count;
 							data_terms = new Array();
 							aux_nodes = new Array();
-
-							for (var i in settings.reference_types) {
+							
+							var i;
+							for (i in settings.reference_types) {
 								aux_nodes.push(settings.reference_types[i]);
 							}
 
 							if (aux_nodes.length > 0) {
 								var secondary = 'SELECT * FROM node WHERE ';
-
-								for (var i = 0; i < aux_nodes.length; i++) {
+								var i;
+								for (i = 0; i < aux_nodes.length; i++) {
 									if (i == aux_nodes.length - 1) {
 										secondary += ' table_name = \'' + aux_nodes[i] + '\' ';
-									} else {
+									} 
+									else {
 										secondary += ' table_name = \'' + aux_nodes[i] + '\' OR ';
 									}
 								}
@@ -6145,8 +6228,8 @@ create_or_edit_node.loadUI = function() {
 									title : "",
 									vl : null
 								};
-
-								for (var h in data_terms) {
+								var h;
+								for (h in data_terms) {
 									if (data_terms[h].nid == vl_to_field) {
 										aux_val.title = data_terms[h].title;
 										aux_val.vl = data_terms[h].nid;
@@ -6277,17 +6360,20 @@ create_or_edit_node.loadUI = function() {
 												e.source.value = value_f;
 												e.source.nid = nid;
 												//Ti.API.info('Value: ' + value_f + ' NID: ' + nid);
-											}
+											};
+											
 											if ((e.value != null) && (e.value != '')) {
 												table_data = [];
 												e.source.nid = null;
-												for (var i = 0; i < list.length; i++) {
+												var i;
+												for (i = 0; i < list.length; i++) {
 													var rg = new RegExp(e.source.value, 'i');
 													if (list[i].title.search(rg) != -1) {
 														//Check match
 														if (e.source.value == list[i].title) {
 															e.source.nid = list[i].nid;
-														} else {
+														} 
+														else {
 															e.source.nid = null;
 														}
 
@@ -6346,7 +6432,8 @@ create_or_edit_node.loadUI = function() {
 							var can_edit = false;
 
 							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-								for (var _l in settings.permissions) {
+								var _l;
+								for (_l in settings.permissions) {
 									for (_k in roles) {
 										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
@@ -6361,7 +6448,8 @@ create_or_edit_node.loadUI = function() {
 										}
 									}
 								}
-							} else {
+							} 
+							else {
 								can_view = can_edit = true;
 							}
 
@@ -6411,7 +6499,8 @@ create_or_edit_node.loadUI = function() {
 								users.next();
 							}
 							users.close();
-							for (var algo in settings) {
+							var algo;
+							for (algo in settings) {
 								Ti.API.info(algo + " ===================>>> " + settings[algo]);
 							}
 
@@ -6431,12 +6520,14 @@ create_or_edit_node.loadUI = function() {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
 								}
-
-								for (var o_index = 0; o_index < settings.cardinality; o_index++) {
+								
+								var o_index;
+								for (o_index = 0; o_index < settings.cardinality; o_index++) {
 
 									if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
 										var vl_to_field = decoded_values[o_index];
-									} else {
+									} 
+									else {
 										var vl_to_field = "";
 									}
 
@@ -6464,7 +6555,8 @@ create_or_edit_node.loadUI = function() {
 									Ti.API.info(vl_to_field + " ----------------- is the uid ------------------- " + settings.default_value);
 
 									var counter_loop = 0;
-									for (var i_data_terms in data_terms) {
+									var i_data_terms;
+									for (i_data_terms in data_terms) {
 										if (vl_to_field == data_terms[i_data_terms].uid) {
 											aux_val.title = data_terms[i_data_terms].title;
 											aux_val.vl = data_terms[i_data_terms].uid;
@@ -6505,7 +6597,13 @@ create_or_edit_node.loadUI = function() {
 										enabled : can_edit
 									});
 									if (PLATFORM == 'android') {
-										content[count].backgroundImage = '', content[count].backgroundColor = 'white', content[count].backgroundSelectedColor = '#2E64FE', content[count].borderColor = 'gray', content[count].borderRadius = 10, content[count].color = 'black', content[count].borderWidth = 1
+										content[count].backgroundImage = '';
+										content[count].backgroundColor = 'white';
+										content[count].backgroundSelectedColor = '#2E64FE';
+										content[count].borderColor = 'gray';
+										content[count].borderRadius = 10;
+										content[count].color = 'black';
+										content[count].borderWidth = 1;
 									}
 									if (!can_edit) {
 										content[count].backgroundImage = '';
@@ -6513,7 +6611,7 @@ create_or_edit_node.loadUI = function() {
 										content[count].borderColor = 'gray';
 										content[count].borderRadius = 10;
 										content[count].color = '#848484';
-										content[count].borderWidth = 1
+										content[count].borderWidth = 1;
 									}
 									top += heightValue;
 
@@ -6567,8 +6665,8 @@ create_or_edit_node.loadUI = function() {
 								};
 
 								var counter_loop = 0;
-
-								for (var i_data_terms in data_terms) {
+								var i_data_terms;
+								for (i_data_terms in data_terms) {
 									if (vl_to_field == data_terms[i_data_terms].uid) {
 										aux_val.title = data_terms[i_data_terms].title;
 										aux_val.vl = data_terms[i_data_terms].uid;
@@ -6608,7 +6706,13 @@ create_or_edit_node.loadUI = function() {
 									enabled : can_edit
 								});
 								if (PLATFORM == 'android') {
-									content[count].backgroundImage = '', content[count].backgroundColor = 'white', content[count].backgroundSelectedColor = '#2E64FE', content[count].borderColor = 'gray', content[count].borderRadius = 10, content[count].color = 'black', content[count].borderWidth = 1
+									content[count].backgroundImage = '';
+									content[count].backgroundColor = 'white';
+									content[count].backgroundSelectedColor = '#2E64FE';
+									content[count].borderColor = 'gray';
+									content[count].borderRadius = 10;
+									content[count].color = 'black';
+									content[count].borderWidth = 1;
 								}
 								if (!can_edit) {
 									content[count].backgroundImage = '';
@@ -6616,7 +6720,7 @@ create_or_edit_node.loadUI = function() {
 									content[count].borderColor = 'gray';
 									content[count].borderRadius = 10;
 									content[count].color = '#848484';
-									content[count].borderWidth = 1
+									content[count].borderWidth = 1;
 								}
 								top += heightValue;
 
@@ -6658,7 +6762,8 @@ create_or_edit_node.loadUI = function() {
 							var can_edit = false;
 
 							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-								for (var _l in settings.permissions) {
+								var _l;
+								for (_l in settings.permissions) {
 									for (_k in roles) {
 										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
@@ -6722,8 +6827,9 @@ create_or_edit_node.loadUI = function() {
 										var decoded_values = new Array();
 										decoded_values[0] = field_arr[index_label][index_size].actual_value;
 									}
-
-									for (var o_index = 0; o_index < settings.cardinality; o_index++) {
+									
+									var o_index;
+									for (o_index = 0; o_index < settings.cardinality; o_index++) {
 										var text_in_field = "";
 										if ((o_index < decoded_values.length) && ((decoded_values[o_index] != null) && (decoded_values[o_index] != "null") && (decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
 											var vl_to_field = (decoded_values[o_index]) * 1000;
@@ -6952,8 +7058,9 @@ create_or_edit_node.loadUI = function() {
 										var decoded_values = new Array();
 										decoded_values[0] = field_arr[index_label][index_size].actual_value;
 									}
-
-									for (var o_index = 0; o_index < settings.cardinality; o_index++) {
+									
+									var o_index;
+									for (o_index = 0; o_index < settings.cardinality; o_index++) {
 										var text_in_field = "";
 										if ((o_index < decoded_values.length) && ((decoded_values[o_index] != null) && (decoded_values[o_index] != "null") && (decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
 											var vl_to_field = decoded_values[o_index] * 1000;
@@ -6968,7 +7075,8 @@ create_or_edit_node.loadUI = function() {
 											var hours = currentDate.getHours();
 											//text_in_field = hours + ":" + form_min(min) + " - " + months_set[month] + " / " + day + " / " + year;
 											text_in_field = date(omadi_time_format, currentDate) + " - " + months_set[month] + " / " + day + " / " + year;
-										} else {
+										} 
+										else {
 											//Get current
 											var currentDate = new Date();
 
@@ -7229,15 +7337,17 @@ create_or_edit_node.loadUI = function() {
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
 
 								}
-
-								for (var o_index = 0; o_index < settings.cardinality; o_index++) {
+								
+								var o_index;
+								for (o_index = 0; o_index < settings.cardinality; o_index++) {
 
 									if (o_index < decoded_values.length) {
 										if ((decoded_values[o_index] === true ) || (decoded_values[o_index] == "true") || (field_arr[index_label][index_size].actual_value == 1) || (field_arr[index_label][index_size].actual_value == '1'))
 											var vl_to_field = true;
 										else
 											var vl_to_field = false;
-									} else {
+									} 
+									else {
 										var vl_to_field = false;
 									}
 
@@ -7343,7 +7453,8 @@ create_or_edit_node.loadUI = function() {
 							var can_edit = false;
 
 							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-								for (var _l in settings.permissions) {
+								var _l;
+								for (_l in settings.permissions) {
 									for (_k in roles) {
 										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
@@ -7406,8 +7517,9 @@ create_or_edit_node.loadUI = function() {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
 								}
-
-								for (var o_index = 0; o_index < settings.cardinality; o_index++) {
+								
+								var o_index;
+								for (o_index = 0; o_index < settings.cardinality; o_index++) {
 
 									if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") && (decoded_values[o_index] != null) )) {
 										var vl_to_field = decoded_values[o_index] * 1000;
@@ -7592,7 +7704,8 @@ create_or_edit_node.loadUI = function() {
 							var can_edit = false;
 
 							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-								for (var _l in settings.permissions) {
+								var _l;
+								for (_l in settings.permissions) {
 									for (_k in roles) {
 										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
@@ -7662,8 +7775,9 @@ create_or_edit_node.loadUI = function() {
 									var decoded_values = new Array();
 									decoded_values[0] = field_arr[index_label][index_size].actual_value;
 								}
-
-								for (var o_index = 0; o_index < settings.cardinality; o_index++) {
+								
+								var o_index;
+								for (o_index = 0; o_index < settings.cardinality; o_index++) {
 
 									if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
 										var vl_to_field = decoded_values[o_index];
@@ -7875,10 +7989,12 @@ create_or_edit_node.loadUI = function() {
 										var func = function setValueF(value_f) {
 											e.source.value = value_f;
 											Ti.API.info('Value: ' + value_f);
-										}
+										};
+										
 										if ((e.value != null) && (e.value != '')) {
 											table_data = [];
-											for (var i = 0; i < list.length; i++) {
+											var i;
+											for (i = 0; i < list.length; i++) {
 												var rg = new RegExp(e.source.value, 'i');
 												if (list[i].search(rg) != -1) {
 
@@ -8080,8 +8196,10 @@ create_or_edit_node.loadUI = function() {
 										e.source.o_index += 1;
 									});
 									content[count].addButton = addButton;
-								} else {
-									for (var o_index = 0; o_index < settings.cardinality; o_index++) {
+								} 
+								else {
+									var o_index;
+									for (o_index = 0; o_index < settings.cardinality; o_index++) {
 										var updated = false;
 										if ((o_index < decodedValues.length) && (decodedValues[o_index] != "") && (decodedValues[o_index] != null) && decodedValues[o_index] != 'null' && decodedValues[o_index] != 'undefined') {
 											var vl_to_field = decodedValues[o_index];
@@ -8341,7 +8459,8 @@ create_or_edit_node.loadUI = function() {
 							        var can_edit = false;
 
 							if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-								for (var _l in settings.permissions) {
+								var _l;
+								for (_l in settings.permissions) {
 									for (_k in roles) {
 										if (_l == _k) {
 											var stringifyObj = JSON.stringify(settings.permissions[_l]);
@@ -8476,7 +8595,8 @@ create_or_edit_node.loadUI = function() {
 
 	var top = 0;
 	if (viewContent.getChildren() != null) {
-		for (var i = 0; i < viewContent.getChildren().length; i++) {
+		var i;
+		for (i = 0; i < viewContent.getChildren().length; i++) {
 			var v = viewContent.getChildren()[i];
 			var isLabel = false;
 			if (PLATFORM == 'android') {
@@ -8517,7 +8637,8 @@ create_or_edit_node.loadUI = function() {
 	}
 
 	if (viewContent.getChildren() != null) {
-		for (var i = viewContent.getChildren().length; i >= 0; i--) {
+		var i;
+		for (i = viewContent.getChildren().length; i >= 0; i--) {
 			var v = viewContent.getChildren()[i];
 			var isLabel = false;
 			if (PLATFORM == 'android') {
@@ -8539,7 +8660,8 @@ create_or_edit_node.loadUI = function() {
 
 	setTimeout(function() {
 		var entityArr = createEntityMultiple();
-		for (var j = 0; j <= content.length; j++) {
+		var j;
+		for (j = 0; j <= content.length; j++) {
 			if (!content[j]) {
 				continue;
 			}
@@ -8553,7 +8675,8 @@ create_or_edit_node.loadUI = function() {
 
 			// set conditional required field
 			if (content[j].settings != null && content[j].settings != "" && content[j].settings['criteria'] != null && content[j].settings['criteria']['search_criteria'] != null) {
-				for (var row_idx in content[j].settings['criteria']['search_criteria']) {
+				var row_idx;
+				for (row_idx in content[j].settings['criteria']['search_criteria']) {
 					var criteria_row = content[j].settings['criteria']['search_criteria'][row_idx];
 					var field_name = criteria_row.field_name;
 					if (content[entityArr[field_name][0]['reffer_index']].condDependedFields == null) {
@@ -8639,8 +8762,10 @@ create_or_edit_node.loadUI = function() {
 							//}
 							var itens = content[j].itens;
 							var value = content[j].value;
-							for (var itens_idx in itens) {
-								for (var value_idx in value) {
+							var itens_idx;
+							for (itens_idx in itens) {
+								var value_idx;
+								for (value_idx in value) {
 									if (itens[itens_idx].v_info == value[value_idx].v_info) {
 										itens[itens_idx].is_set = true;
 									}
@@ -8709,7 +8834,8 @@ create_or_edit_node.loadUI = function() {
 	});
 
 	toolActInd.hide();
-}
+};
+
 var camera;
 if (PLATFORM == 'android') {
 	camera = require('com.omadi.camera');
@@ -9557,8 +9683,9 @@ function conditionalSetRequiredField(idx) {
 	var row_matches = [];
 	if (content[idx].settings['criteria'] != null && content[idx].settings['criteria']['search_criteria'] != null) {
 		usort(content[idx].settings['criteria']['search_criteria'], '_list_search_criteria_search_order');
-
-		for (var row_idx in content[idx].settings['criteria']['search_criteria']) {
+		
+		var row_idx;
+		for (row_idx in content[idx].settings['criteria']['search_criteria']) {
 			var criteria_row = content[idx].settings['criteria']['search_criteria'][row_idx];
 			row_matches[row_idx] = false;
 			var field_name = criteria_row.field_name;
@@ -9588,7 +9715,8 @@ function conditionalSetRequiredField(idx) {
 							}
 						}
 						if (search_operator == '__filled') {
-							for (var value_index in node_values) {
+							var value_index;
+							for (value_index in node_values) {
 								node_value = node_values[value_index];
 								if (node_value != null && node_value != "") {
 									row_matches[row_idx] = true;
@@ -9599,7 +9727,8 @@ function conditionalSetRequiredField(idx) {
 							if (node_values == null || node_values == "" || node_values.length == 0) {
 								row_matches[row_idx] = true;
 							} else {
-								for (var value_index in node_values) {
+								var value_index;
+								for (value_index in node_values) {
 									node_value = node_values[value_index];
 									if (node_value == null || node_value == "") {
 										row_matches[row_idx] = true;
@@ -9620,7 +9749,8 @@ function conditionalSetRequiredField(idx) {
 
 						var search_value_arr = [];
 						if (!isArray(search_value)) {
-							for (var key in search_value) {
+							var key;
+							for (key in search_value) {
 								if (search_value.hasOwnProperty(key)) {
 									search_value_arr[key] = key;
 								}
@@ -9668,7 +9798,8 @@ function conditionalSetRequiredField(idx) {
 						}
 
 						if (search_operator == '__filled') {
-							for (var value_index in node_values) {
+							var value_index;
+							for (value_index in node_values) {
 								node_value = node_values[value_index];
 								if (node_value != 0) {
 									row_matches[row_idx] = true;
@@ -9679,7 +9810,8 @@ function conditionalSetRequiredField(idx) {
 							if (node_values == null || node_values == "" || node_values.length == 0) {
 								row_matches[row_idx] = true;
 							} else {
-								for (var value_index in node_values) {
+								var value_index;
+								for (value_index in node_values) {
 									node_value = node_values[value_index];
 									if (node_value == 0) {
 										row_matches[row_idx] = true;
@@ -10110,7 +10242,8 @@ function showRulesRow(current_content, db_display, current_window) {
 		case 'rules_field_violations':
 			if ( contentVal instanceof Array) {
 				if (contentVal.length > 0) {
-					for (var idx = 0; idx < contentVal.length; idx++) {
+					var idx;
+					for (idx = 0; idx < contentVal.length; idx++) {
 						var violation_name = '- ALL OTHER VIOLATIONS -';
 						if (!isNaN(contentVal[idx].tid)) {
 							var db_violation_name = db_display.execute('SELECT name FROM term_data WHERE tid=' + contentVal[idx].tid);
@@ -10120,7 +10253,8 @@ function showRulesRow(current_content, db_display, current_window) {
 
 						var formsArr = [];
 						if (!isArray(contentVal[idx].node_types)) {
-							for (var key in contentVal[idx].node_types) {
+							var key;
+							for (key in contentVal[idx].node_types) {
 								if (contentVal[idx].node_types.hasOwnProperty(key)) {
 									var display_name = db_display.execute('SELECT display_name FROM bundles WHERE bundle_name="' + key + '"');
 									display_name = display_name.fieldByName('display_name');
@@ -10314,7 +10448,8 @@ function showRulesRow(current_content, db_display, current_window) {
 							var forms_str = '- All -';
 							if (formsArr.length < 4 && formsArr.length > 0) {
 								forms_str = '';
-								for (var form_idx = 0; form_idx < formsArr.length; form_idx++) {
+								var form_idx;
+								for (form_idx = 0; form_idx < formsArr.length; form_idx++) {
 									forms_str += formsArr[form_idx] + ((form_idx == formsArr.length - 1) ? "" : ", ");
 								}
 							} else if (formsArr.length == 0) {
@@ -10388,7 +10523,8 @@ function setRulesField(select_content) {
 	if (select_content.rulesFieldArr != null && select_content.rulesFieldArr != "") {
 		var rulesFieldArr = select_content.rulesFieldArr;
 		if (rulesFieldArr.length > 0) {
-			for (var rulesFieldIdx in rulesFieldArr) {
+			var rulesFieldIdx;
+			for (rulesFieldIdx in rulesFieldArr) {
 				var rulesFieldContent = content[rulesFieldArr[rulesFieldIdx]];
 				setParticularRulesField(rulesFieldContent);
 			}
@@ -10444,8 +10580,9 @@ function setParticularRulesField(rulesFieldContent) {
 				var tids = [];
 				var used_tids = [];
 				var all_others_row = [];
-
-				for (var data_idx in data) {
+				
+				var data_idx;
+				for (data_idx in data) {
 					var data_row = data[data_idx];
 					if (!isNaN(data_row['tid'])) {
 						if (data_row['node_types'][node_type] != null && data_row['node_types'][node_type] != "") {
@@ -10473,7 +10610,8 @@ function setParticularRulesField(rulesFieldContent) {
 				if (all_others_row.length > 0) {
 					if (all_others_row[0]['node_types'][node_type] != null && all_others_row[0]['node_types'][node_type] != "") {
 						if (rules_field_passed_time_check(all_others_row[0]['time_rules'], violation_timestamp)) {
-							for (var violations_terms_idx in violations_terms) {
+							var violations_term_idx;
+							for (violations_terms_idx in violations_terms) {
 								var violation_term = violations_terms[violations_terms_idx][0].tid;
 								if (used_tids[violation_term] == null || used_tids[violation_term] == "") {
 									if (tids[violation_term] == null) {
@@ -10492,7 +10630,8 @@ function setParticularRulesField(rulesFieldContent) {
 
 	}
 	if (rulesFieldContent.settings.cardinality > 1) {
-		for (var o_index = 0; o_index < rulesFieldContent.settings.cardinality; o_index++) {
+		var o_index;
+		for (o_index = 0; o_index < rulesFieldContent.settings.cardinality; o_index++) {
 			var arr_picker = new Array();
 			var arr_opt = new Array();
 			arr_picker.push({
@@ -10505,8 +10644,9 @@ function setParticularRulesField(rulesFieldContent) {
 				vl : null,
 				cnt : 0
 			};
-
-			for (var i_data_terms in violations_terms) {
+			
+			var i_data_terms;
+			for (i_data_terms in violations_terms) {
 				arr_picker.push({
 					title : violations_terms[i_data_terms][0].title,
 					tid : violations_terms[i_data_terms][0].tid,
@@ -10521,7 +10661,8 @@ function setParticularRulesField(rulesFieldContent) {
 			content[rulesFieldContent.reffer_index + o_index].omadi_reference_title = (arr_opt.length == 1) ? omadi_reference_title : "";
 			content[rulesFieldContent.reffer_index + o_index].violation_time = (arr_opt.length == 1) ? violation_time : "";
 		}
-	} else if (rulesFieldContent.settings.cardinality == 1) {
+	} 
+	else if (rulesFieldContent.settings.cardinality == 1) {
 		var arr_picker = new Array();
 		var arr_opt = new Array();
 		arr_picker.push({
@@ -10534,8 +10675,9 @@ function setParticularRulesField(rulesFieldContent) {
 			vl : null,
 			cnt : 0
 		};
-
-		for (var i_data_terms in violations_terms) {
+		
+		var i_data_terms;
+		for (i_data_terms in violations_terms) {
 			arr_picker.push({
 				title : violations_terms[i_data_terms][0].title,
 				tid : violations_terms[i_data_terms][0].tid,
@@ -10550,11 +10692,13 @@ function setParticularRulesField(rulesFieldContent) {
 		content[rulesFieldContent.reffer_index].omadi_reference_title = (arr_opt.length == 1) ? omadi_reference_title : "";
 		content[rulesFieldContent.reffer_index].violation_time = (arr_opt.length == 1) ? violation_time : "";
 
-	} else if (rulesFieldContent.settings.cardinality == -1) {
+	} 
+	else if (rulesFieldContent.settings.cardinality == -1) {
 		var sel_text = "";
 		var _val_itens = [];
 		var _itens = null;
-		for (var j_ind in violations_terms) {
+		var j_ind;
+		for (j_ind in violations_terms) {
 			_val_itens.push({
 				title : violations_terms[j_ind][0].title,
 				v_info : violations_terms[j_ind][0].tid,
