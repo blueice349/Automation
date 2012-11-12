@@ -22,12 +22,10 @@ Ti.API.info("Starting App.");
 var movement;
 
 if(PLATFORM!='android'){
+	Ti.include('/main_windows/ios_geolocation.js');
 	clearCache();
  	movement =  require('com.omadi.ios_gps');
  	Ti.App.Properties.setBool('deviceHasFlash', movement.isFlashAvailableInCamera());
-}else{
-	//movement =  require('com.omadi.gps');
-	//movement = null;
 }
 
 //Ti.App.movement = movement;
@@ -780,7 +778,7 @@ function startGPSService(){
 	//Geolocation module
 	//Ti.App.movement = curWin.movement;
 	if(PLATFORM != "android"){
-		Ti.include('/main_windows/ios_geolocation.js');
+		iOSStartGPS();
 	}
 	else{
 		

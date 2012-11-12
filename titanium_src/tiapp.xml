@@ -10,7 +10,7 @@
         <target device="android">true</target>
         <target device="blackberry">false</target>
     </deployment-targets>
-    <id>com.omadi.mobile</id>
+    <id>com.omadi.crm</id>
     <name>Omadi</name>
     <version>1.6.3</version>
     <publisher>Omadi</publisher>

@@ -9,49 +9,67 @@ var location_obj = [];
 var dist_filter = 50;
 var last_db_timestamp = 0;
 var curr;
-var stop = false;
 var uploading = false;
 var latitude;
 var longitude;
 var accuracy;
 var gpsInterval;
+var uploadInterval;
+
+var movement =  require('com.omadi.ios_gps');
 
 
-Ti.API.info('Accuracy three: ' + movement.LOCATION_ACCURACY_THREE_KILOMETERS);
-Ti.API.info('Accuracy best: ' + movement.LOCATION_ACCURACY_BEST);
-Ti.API.info('Accuracy navig: ' + movement.LOCATION_ACCURACY_BEST_FOR_NAVIGATION);
+//Ti.API.info('Accuracy three: ' + movement.LOCATION_ACCURACY_THREE_KILOMETERS);
+//Ti.API.info('Accuracy best: ' + movement.LOCATION_ACCURACY_BEST);
+//Ti.API.info('Accuracy navig: ' + movement.LOCATION_ACCURACY_BEST_FOR_NAVIGATION);
 
-movement.startMovementUpdates({
-	location : true,
-	locationAccuracy : movement.LOCATION_ACCURACY_BEST_FOR_NAVIGATION
-});
+function iOSStartGPS(){
 
-function updateCurrentLocation(e) {
+	movement.startMovementUpdates({
+		location : true,
+		locationAccuracy : movement.LOCATION_ACCURACY_BEST_FOR_NAVIGATION
+	});
+	
+	gpsInterval = setInterval(getGPSCoordinateiOS, 5000);
+	
+	uploadInterval = setInterval(function() {
+		Ti.App.fireEvent('upload_gps_locations');
+	}, 120000);	
+	
+	Ti.App.addEventListener('stop_gps', function(e){
+		Ti.API.info("STOPPING IOS GPS INTERVALS");
+		clearInterval(gpsInterval);
+		clearInterval(uploadInterval);
+	});
+}
+
+function getGPSCoordinateiOS() {
+	var stop = Ti.App.Properties.getBool('stopGPS', false);
+	if (stop){
+		Ti.API.info("STOPPING MOVEMENT UPDATES");
+		movement.stopMovementUpdates();
+	}
+	else{
+		curr = movement.currentMovement;
+		updateCurrentLocationiOS(curr);
+	}
+}
+
+function updateCurrentLocationiOS(e) {
 	curr = e;
 	var timestamp = new Date().getTime();
 	timestamp = Math.round(timestamp / 1000);
 
-	if(PLATFORM == 'android'){
-		longitude = curr.longitude;
-		latitude = curr.latitude;
-		accuracy = curr.accuracy;
-
-		Ti.API.info('=====>>> Longitude ' + longitude);
-		Ti.API.info('=====>>> Latitude ' + latitude);
-		Ti.API.info('=====>>> Accuracy ' + accuracy);
-		Ti.API.info('=====>>> Timestamp ' + timestamp);
-	}else{
-		longitude = curr.location.longitude;
-		latitude = curr.location.latitude;
-		accuracy = curr.location.accuracy;
-		speed = curr.location.speed;
-		altitude = curr.location.altitude;
-		
-		
-		Ti.API.info('=====>>> Speed ' + speed*2.23693629+' Miles/H');
-	}
+	
+	longitude = curr.location.longitude;
+	latitude = curr.location.latitude;
+	accuracy = curr.location.accuracy;
+	speed = curr.location.speed;
+	altitude = curr.location.altitude;
 	
 	
+	//Ti.API.info('=====>>> Speed ' + speed*2.23693629+' Miles/H');
+	Ti.API.info('LOCATION: ' + longitude + ', ' + latitude + ': ' + accuracy);
 
 	if(latitude != 0 && longitude != 0) {
 		if(accuracy > 200) {
@@ -64,63 +82,54 @@ function updateCurrentLocation(e) {
 			}
 		}
 		
-		if ( PLATFORM ==  "android"){
-			location_obj.push({
-				no_accurated_location : false,
-				accurated_location : "INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + longitude + "','" + latitude + "'," + timestamp + ", 'notUploaded')",
-				accuracy : accuracy,
-				longitude : longitude,
-				latitude : latitude,
-				timestamp : timestamp			
-			});
-		}
-		else{
-			location_obj.push({
-				no_accurated_location : false,
-				accurated_location : "INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + longitude + "','" + latitude + "'," + timestamp + ", 'notUploaded')",
-				accuracy : accuracy,
-				longitude : longitude,
-				latitude : latitude,
-				timestamp : timestamp,
-				speed: speed,
-				altitude: altitude
-			});			
-		}
-	}
-	//setTimeout(s, 5000);
-	return;
-}
-
-
-function s() {
-	if (stop === false){
-		if(PLATFORM == 'android') {
-			movement.currentMovement({
-				"updateLatLng" : function(e) {
-					updateCurrentLocation(e);
+		if(latitude != 0 && longitude != 0) {
+			if(accuracy > 200) {
+				var time_now = Math.round(new Date().getTime() / 1000);
+				var time_past = time_now - Ti.App.Properties.getString("last_alert_popup");
+				if(time_past > time_interval_for_alerts) {
+					notifyIOS('Your GPS is getting inaccurate data. Please make sure the sky is visible. Current GPS accuracy is ' + accuracy + ' meters.', true);
+				} else {
+					Ti.API.info('NOT SHOWN - Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is ' + accuracy + ' meters');
 				}
-			});
-		} else {
-			curr = movement.currentMovement;
-			updateCurrentLocation(curr);
+			}
+			
+			var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
+			db_coord.file.setRemoteBackup(false);
+			
+			db_coord.execute("INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + longitude + "','" + latitude + "'," + timestamp + ", 'notUploaded')");
+			db_coord.close();
+			
+			//Ti.API.info("LOCATION SERVICE SAVE: location_obj.length before: " + location_obj.length);
+			//var leng_before = location_obj.length;
+			//var aux_location = location_obj.slice(0);
+			//Ti.API.info("LOCATION SERVICE SAVE: aux_location.length = " + aux_location.length + " location_obj.length after = " + location_obj.length);
+			
+			
+			// location_obj.push({
+				// no_accurated_location : false,
+				// accurated_location : "INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + longitude + "','" + latitude + "'," + timestamp + ", 'notUploaded')",
+				// accuracy : accuracy,
+				// longitude : longitude,
+				// latitude : latitude,
+				// timestamp : timestamp
+			// });
 		}
-	}else{
-		if(PLATFORM == 'android') {
-			movement.stopGPSTracking();
-		}else{
-			movement.stopMovementUpdates();
-		}
-		return;
+			// location_obj.push({
+				// no_accurated_location : false,
+				// accurated_location : "INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + longitude + "','" + latitude + "'," + timestamp + ", 'notUploaded')",
+				// accuracy : accuracy,
+				// longitude : longitude,
+				// latitude : latitude,
+				// timestamp : timestamp,
+				// speed: speed,
+				// altitude: altitude
+			// });			
+		
 	}
 }
 
-gpsInterval = setInterval(s, 5000);
-//var gpsInterval = setInterval(s, 5000);
 
-Ti.App.addEventListener('stop_gps', function(e){
-	stop = true;
-	clearInterval(gpsInterval);
-});
+
 
 
 // Ti.App.addEventListener('upload_gps_locations', function() {
@@ -271,8 +280,3 @@ Ti.App.addEventListener('stop_gps', function(e){
 	// }
 // });
 
-if (PLATFORM != "android"){
-	setInterval(function() {
-		Ti.App.fireEvent('upload_gps_locations');
-	}, 120000);	
-}
