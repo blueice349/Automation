@@ -1,11 +1,11 @@
 
 /*
  * Name: functions.js
- * Provides:
- * 		Functions used by the app
+ * Provides: Functions used by the app
  */
 
 Ti.include('/lib/encoder_base_64.js');
+Ti.include('/lib/util_functions.js');
 
 
 var domainName = Ti.App.Properties.getString("domainName");
@@ -183,6 +183,12 @@ function isLogged(){
 	return true;
 }
 
+function openListDatabase(){
+	var db = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list" );
+	if(PLATFORM != 'android'){db.file.setRemoteBackup(false);}
+	return db;
+}
+
 function no_backup (db_obj){
 	if(PLATFORM != 'android'){db_obj.file.setRemoteBackup(false);}
 }
@@ -214,17 +220,6 @@ function createNotification(message) {
 }
 function removeNotifications(){
 	Titanium.Android.NotificationManager.cancelAll();
-}
-
-function getDBName() {
-	var db_list = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_list");
-	if(PLATFORM != 'android'){db_list.file.setRemoteBackup(false);}
-	var portal_base = db_list.execute('SELECT db_name FROM history WHERE id_hist=1');
-	var recebe = portal_base.fieldByName('db_name');
-	portal_base.close();
-	db_list.close();
-	//Ti.API.info("DB NAME: " + recebe);
-	return recebe;
 }
 
 function notifyIOS(msg, update_time) {
@@ -1725,12 +1720,15 @@ function isJsonString(str) {
 }
 
 function getCookie(){
-	var db = Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list" );
-	no_backup(db);
-	var logged_result = db.execute('SELECT * FROM login WHERE rowid=1');
-	var cookie = logged_result.fieldByName("cookie");
+	"use strict";
+	var db, result, cookie;
+	
+	db = openListDatabase();//Ti.Database.install('/database/db_list.sqlite',  Titanium.App.Properties.getString("databaseVersion")+"_list" );
+	result = db.execute('SELECT * FROM login WHERE rowid=1');
+	cookie = result.fieldByName("cookie");
 	Ti.API.info("FOUND COOKIE = "+cookie);
-	logged_result.close();
+	
+	result.close();
 	db.close();	
 	return cookie;
 }
