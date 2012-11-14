@@ -45,16 +45,18 @@ var ONE_MB = 524258;
 var create_or_edit_node = {};
 
 create_or_edit_node.getWindow = function() {
+	
 	win = Titanium.UI.createWindow({
 		fullscreen : false,
 		navBarHidden : true,
 		backgroundColor : '#DDDDDD'
 	});
+	
 
 	//Sets only portrait mode
 	win.orientationModes = [Titanium.UI.PORTRAIT];
 
-	if (PLATFORM == 'android') {
+	if (PLATFORM === 'android') {
 		//The view where the results are presented
 		resultView = Ti.UI.createView({
 			top : 0,
@@ -75,11 +77,12 @@ create_or_edit_node.getWindow = function() {
 			scrollType : "vertical",
 			zIndex : 10
 		});
-	} else {
+	} 
+	else {
 
 		//The view where the results are presented
 		resultView = Ti.UI.createView({
-			top : 0,
+			top : '50dp',
 			height : '100%',
 			width : '100%',
 			bottom : 0,
@@ -126,7 +129,7 @@ function get_android_menu(menu_exists) {
 		menu.clear();
 
 		if (win.nid != null) {
-			var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+			var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 			if (PLATFORM != 'android') {
 				db_act.file.setRemoteBackup(false);
 			}
@@ -162,7 +165,7 @@ function get_android_menu(menu_exists) {
 			json_data.close();
 			db_act.close();
 		} else {
-			var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+			var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 			if (PLATFORM != 'android') {
 				db_act.file.setRemoteBackup(false);
 			}
@@ -273,7 +276,7 @@ function get_android_menu(menu_exists) {
 			menu.clear();
 
 			if (win.nid != null) {
-				var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+				var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 				if (PLATFORM != 'android') {
 					db_act.file.setRemoteBackup(false);
 				}
@@ -309,7 +312,7 @@ function get_android_menu(menu_exists) {
 				json_data.close();
 				db_act.close();
 			} else {
-				var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+				var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 				if (PLATFORM != 'android') {
 					db_act.file.setRemoteBackup(false);
 				}
@@ -446,7 +449,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 		}
 	}
 	//this is used for checking restrictions in db against all nid on this form
-	var db_check_restrictions = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	var db_check_restrictions = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 	if (PLATFORM != 'android') {
 		db_check_restrictions.file.setRemoteBackup(false);
 	}
@@ -751,7 +754,7 @@ function keep_info(_flag_info, pass_it, new_time) {
 		}
 
 		showIndicator(mode_msg);
-		var db_put = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+		var db_put = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 		if (PLATFORM != 'android') {
 			db_put.file.setRemoteBackup(false);
 		}
@@ -1355,7 +1358,7 @@ function reload_me(part) {
 	win.mode = 1;
 	/*
 	 Ti.API.info('###############>>>>>>>>      Before increment : '+win.region_form);
-	 var db_nod_i = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	 var db_nod_i = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 	 db_nod_i.execute('UPDATE node SET form_part='+parseInt(part)+'  WHERE nid=' + win.nid);
 	 db_nod_i.close();
 	 */
@@ -1371,7 +1374,7 @@ function reload_me(part) {
 
 //Return models based on a certain "make" if "make" is not present returns the whole database set
 function get_models(make) {
-	var db_for_veh = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	var db_for_veh = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 	if (PLATFORM != 'android') {
 		db_for_veh.file.setRemoteBackup(false);
 	}
@@ -2043,6 +2046,7 @@ var title = 0;
 var defaultImageVal = '/images/take-a-photo.png'
 
 create_or_edit_node.loadUI = function() {
+	
 	toolActInd.show();
 	db_display = null;
 	regions = null;
@@ -2066,7 +2070,7 @@ create_or_edit_node.loadUI = function() {
 	//movement = win.movement;
 	omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
 	roles = omadi_session_details.user.roles;
-	db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 	if (PLATFORM != 'android') {
 		db_display.file.setRemoteBackup(false);
 	}
@@ -2086,6 +2090,13 @@ create_or_edit_node.loadUI = function() {
 			}
 		}
 	}
+	
+	// if(win.mode == 1){
+		// win.addEventListener('open', function(e){
+			// Ti.API.info("window opened");
+			// setNodeViewed(e.source.nid);
+		// });
+	// }
 
 	var y = 0;
 	var regionCount = 0;
@@ -5985,7 +5996,7 @@ create_or_edit_node.loadUI = function() {
 									}
 								}
 								Ti.API.info(secondary);
-								var db_bah = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+								var db_bah = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 								if (PLATFORM != 'android') {
 									db_bah.file.setRemoteBackup(false);
 								}
@@ -8820,7 +8831,7 @@ create_or_edit_node.loadUI = function() {
 						duration : Ti.UI.NOTIFICATION_DURATION_LONG
 					}).show();
 				}
-				var db_toDeleteImage = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+				var db_toDeleteImage = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 				if (PLATFORM != 'android') {
 					db_toDeleteImage.file.setRemoteBackup(false);
 				}
@@ -8844,7 +8855,7 @@ if (PLATFORM == 'android') {
 
 function saveImageInDb(currentImageView, field_name) {
 	var file_upload_nid = 0;
-	var db_toSaveImage = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	var db_toSaveImage = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 	if (PLATFORM != 'android') {
 		db_toSaveImage.file.setRemoteBackup(false);
 	}
@@ -8921,7 +8932,8 @@ function openCamera(e) {
 			alert('No Camera in device');
 		}
 
-	} else {
+	} 
+	else {
 		try {
 			var overlayView;
 			
@@ -9144,7 +9156,7 @@ function bottomButtons(actualWindow) {
 				btn_tt.push('Save');
 
 				if (win.nid != null) {
-					var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+					var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 					if (PLATFORM != 'android') {
 						db_act.file.setRemoteBackup(false);
 					}
@@ -9166,7 +9178,7 @@ function bottomButtons(actualWindow) {
 					json_data.close();
 					db_act.close();
 				} else {
-					var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+					var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 					if (PLATFORM != 'android') {
 						db_act.file.setRemoteBackup(false);
 					}
@@ -9283,7 +9295,7 @@ function cancelOpt() {
 					//alert(win.title + ' update was cancelled !');
 				}
 			}
-			var db_toDeleteImage = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+			var db_toDeleteImage = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 			if (PLATFORM != 'android') {
 				db_toDeleteImage.file.setRemoteBackup(false);
 			}
@@ -9308,7 +9320,7 @@ function setDefaultValues(content, e) {
 				}
 				if (content[counter].parent_name == e.source.field_name) {
 
-					db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+					db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 					if (PLATFORM != 'android') {
 						db_display.file.setRemoteBackup(false);
 					}
@@ -9561,7 +9573,7 @@ function addDoneButtonInKB(content) {
 
 function reCalculate(singel_content) {
 	try {
-		db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+		db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 		if (PLATFORM != 'android') {
 			db_display.file.setRemoteBackup(false);
 		}
@@ -10540,7 +10552,7 @@ function setParticularRulesField(rulesFieldContent) {
 	var machine_name = rulesFieldContent['settings'].vocabulary;
 	var omadi_reference_title = "";
 	var violation_time = "";
-	db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	db_display = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 	if (PLATFORM != 'android') {
 		db_display.file.setRemoteBackup(false);
 	}

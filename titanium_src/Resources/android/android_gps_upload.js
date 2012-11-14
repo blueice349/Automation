@@ -11,7 +11,7 @@ if(Ti.App.Properties.getBool('stopGPS', false) || !isLogged()){
 }
 else{
 
-	uploadGPSCoordinates();
+	Omadi.location.uploadGPSCoordinates();
 }
 
 

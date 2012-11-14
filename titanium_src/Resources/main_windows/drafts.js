@@ -41,7 +41,7 @@ var goToWindow = Titanium.UI.createWindow({
 //Lock database for background updates
 setUse();
 
-var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+Omadi.utils.getMainDBName() );
 if(PLATFORM != 'android'){db.file.setRemoteBackup(false);}
 var resultsNames = "";
 var data = new Array();
@@ -231,7 +231,7 @@ else {
 					Ti.API.info('deleted');
 					Ti.API.info(e.source.click_index);
 					listTableView.deleteRow(listTableView.data[0][e.source.click_index]);
-					var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+					var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+Omadi.utils.getMainDBName() );
 					if(PLATFORM != 'android'){db.file.setRemoteBackup(false);}
 					db.execute('UPDATE node SET flag_is_updated = 4 WHERE nid='+e.source.row_obj.nid);
 					db.close();

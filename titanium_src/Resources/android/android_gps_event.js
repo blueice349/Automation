@@ -3,7 +3,7 @@ Ti.include("/lib/functions.js");
 var time_interval_for_alerts = 120;
 
 // state vars used by resume/pause
-var db_coord_name = Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName() + "_GPS";
+var db_coord_name = Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName() + "_GPS";
 var location_obj = [];
 var dist_filter = 50;
 var last_db_timestamp = 0;

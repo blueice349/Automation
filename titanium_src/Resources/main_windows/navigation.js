@@ -45,7 +45,7 @@ function getDistance(lat1, lon1, lat2, lon2){
 }
 
 
-var db_nav_name = Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName() + "_NAVIGATION";
+var db_nav_name = Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName() + "_NAVIGATION";
 
 var db_nav = Ti.Database.install('/database/navigation.sqlite', db_nav_name);
 db_nav.file.setRemoteBackup(false);

@@ -1,35 +1,24 @@
-/**
- * Name: app.js
- * Function: 
- * 		Log into the system.
- * Provides:
- * 		internet connection checking. 	
- *		no submitions with empty fields.
- * 		the first window the user sees when the app starts.
- *		the window the user sees when he logs out.
- */
 
 // this sets the background color of every 
 Titanium.UI.setBackgroundColor('#EEEEEE');
 var domainName;
 
 //Common used functions
-Ti.include('/lib/functions.js'); 
 Ti.include('/lib/encoder_base_64.js');
+Ti.include('/lib/functions.js'); 
+Ti.include('/main_windows/ios_geolocation.js');
 
 Ti.API.info("Starting App.");
 
 var movement;
 
-if(PLATFORM!='android'){
-	Ti.include('/main_windows/ios_geolocation.js');
+if(PLATFORM !== 'android'){
 	clearCache();
- 	movement =  require('com.omadi.ios_gps');
- 	Ti.App.Properties.setBool('deviceHasFlash', movement.isFlashAvailableInCamera());
+    movement =  require('com.omadi.ios_gps');
+    Ti.App.Properties.setBool('deviceHasFlash', movement.isFlashAvailableInCamera());
 }
 
 //Ti.App.movement = movement;
-
 var loginWin = Titanium.UI.createWindow({  
     title:'Omadi CRM',
     fullscreen: false,
@@ -43,7 +32,8 @@ Ti.App.Properties.setBool('stopGPS', false);
 Ti.App.Properties.setBool('quitApp', false);
 
 Ti.App.addEventListener('upload_gps_locations', function(e){
-	uploadGPSCoordinates();
+    "use strict";
+	Omadi.location.uploadGPSCoordinates();
 });
 
 Ti.App.addEventListener('stop_gps', function(e){
@@ -112,13 +102,11 @@ if(PLATFORM != 'android'){db.file.setRemoteBackup(false);}
 var credentials = db.execute('SELECT domain, username, password FROM history WHERE "id_hist"=1');
 
 //var locked_field = true;
-var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+Omadi.utils.getMainDBName() );
 if(PLATFORM != 'android'){db_a.file.setRemoteBackup(false);}
 var updatedTime = db_a.execute('SELECT timestamp FROM updated WHERE rowid=1');
 
-if(updatedTime.fieldByName('timestamp') != 0){
-	unset_GPS_uploading();
-}
+Omadi.location.unset_GPS_uploading();
 
 if (PLATFORM == "android"){
 	var intent = Titanium.Android.createServiceIntent({
@@ -192,7 +180,7 @@ if (PLATFORM == "android"){
 }
 
 function is_first_time(){
-	var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+	var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+Omadi.utils.getMainDBName() );
 	if(PLATFORM != 'android'){db_a.file.setRemoteBackup(false);}
 	var updatedTime = db_a.execute('SELECT timestamp FROM updated WHERE rowid=1');
 	
@@ -342,7 +330,7 @@ passwordField.addEventListener('return', function(){
 });
 
 loginWin.addEventListener('focus', function(){
-	var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+	var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+Omadi.utils.getMainDBName() );
 	if(PLATFORM != 'android'){db_a.file.setRemoteBackup(false);}
 	var updatedTime = db_a.execute('SELECT timestamp FROM updated WHERE rowid=1');
 	
@@ -734,7 +722,7 @@ loginButton.addEventListener('click', function(){
 				db_list.execute("COMMIT TRANSACTION");
 			}
 			
-			//Ti.API.info(isLogged()+" Logged ... Database   "+Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName());
+			//Ti.API.info(isLogged()+" Logged ... Database   "+Titanium.App.Properties.getString("databaseVersion")+"_"+Omadi.utils.getMainDBName());
 			db_list.close();
 			passwordField.value	 = "";
 			loginWin.touchEnabled = false;

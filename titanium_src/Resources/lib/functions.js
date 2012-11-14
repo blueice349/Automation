@@ -22,6 +22,9 @@ var ROLE_ID_ADMIN = 3;
 var app_timestamp = 0;
 var omadi_time_format = Ti.App.Properties.getString("Omadi_time_format", 'g:iA');
 
+var newNotificationCount = 0;
+var newNotificationNid = 0;
+
 var weekday=new Array(7);
 weekday[0]="Sunday";
 weekday[1]="Monday";
@@ -108,38 +111,6 @@ function do_logout(){
 	
 	Ti.App.Properties.setBool("stopGPS", true);
 	Ti.App.Properties.setBool("quitApp", true);
-}
-
-function is_GPS_uploading(){
-	var db_coord_name = Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName() + "_GPS";
-	var _db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
-	if(PLATFORM != 'android'){_db_coord.file.setRemoteBackup(false);}
-	var resp = _db_coord.execute('SELECT * FROM gps_state WHERE rowid=1');
-	Ti.API.info('===> Is uploading GPS? '+resp.fieldByName('is_uploading'));
-	var gps_state = resp.fieldByName('is_uploading');
-	_db_coord.close();
-	if (gps_state == "false" || gps_state == false || gps_state === false || gps_state == null){
-		return false;
-	}
-	return true;
-	
-}
-
-function set_GPS_uploading(){
-	var db_coord_name = Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName() + "_GPS";
-	var _db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
-	if(PLATFORM != 'android'){_db_coord.file.setRemoteBackup(false);}
-	_db_coord.execute('UPDATE gps_state SET is_uploading="true" WHERE rowid=1');
-	_db_coord.close();
-}
-
-function unset_GPS_uploading(){
-	
-	var db_coord_name = Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName() + "_GPS";
-	var _db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
-	if(PLATFORM != 'android'){_db_coord.file.setRemoteBackup(false);}
-	_db_coord.execute('UPDATE gps_state SET is_uploading="false" WHERE rowid=1');
-	_db_coord.close();
 }
 
 
@@ -634,7 +605,7 @@ function bottomBack_release(actualWindow, text, method) {
 //
 
 function check_type(name, object) {
-	var db_type = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	var db_type = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 	if(PLATFORM != 'android'){db_type.file.setRemoteBackup(false);}
 	var qRes = db_type.execute("SELECT DISTINCT type FROM fields WHERE field_name=? AND bundle=?", name, object);
 
@@ -685,7 +656,9 @@ function treatArray(num_to_insert, call_id) {
 		//Pack everything
 		var content_s = Base64.encode("null");
 		return content_s;
-	} else if (array_size == 1) {
+	} 
+	
+	if (array_size == 1) {
 		//Pack everything
 		//Ti.API.info(num_to_insert[0]);
 		if (num_to_insert[0] != null) {
@@ -694,35 +667,35 @@ function treatArray(num_to_insert, call_id) {
 			var content_s = Base64.encode("null");
 		}
 		return content_s;
-	} else {
+	} 
+	
+	var key;
+	for (key in num_to_insert) {
+		count_a++;
+		if (count_a < array_size) {
+			content_s += num_to_insert[key] + '' + separator;
+			test1++;
+		} else if (count_a == array_size) {
+			content_s += num_to_insert[key] + '';
+			test2++;
+		}
+	}
+
+	//Checking test:
+	if ((test1 < 1) || (test2 != 1)) {
+		Ti.API.info('@Developer, check arrays insertion! _' + call_id);
+		var blah = num_to_insert instanceof Array;
+		Ti.API.info('This is the original array-size: ' + num_to_insert.length + ' is this an array? ' + blah);
 		var key;
 		for (key in num_to_insert) {
-			count_a++;
-			if (count_a < array_size) {
-				content_s += num_to_insert[key] + '' + separator;
-				test1++;
-			} else if (count_a == array_size) {
-				content_s += num_to_insert[key] + '';
-				test2++;
-			}
+			Ti.API.info('For value ' + key + ' in array we got ' + num_to_insert[key]);
 		}
-
-		//Checking test:
-		if ((test1 < 1) || (test2 != 1)) {
-			Ti.API.info('@Developer, check arrays insertion! _' + call_id);
-			var blah = num_to_insert instanceof Array;
-			Ti.API.info('This is the original array-size: ' + num_to_insert.length + ' is this an array? ' + blah);
-			var key;
-			for (key in num_to_insert) {
-				Ti.API.info('For value ' + key + ' in array we got ' + num_to_insert[key]);
-			}
-		}
-
-		//Pack everything
-		content_s = Base64.encode(content_s);
-
-		return content_s;
 	}
+
+	//Pack everything
+	content_s = Base64.encode(content_s);
+
+	return content_s;
 }
 
 //
@@ -733,6 +706,39 @@ function treatArray(num_to_insert, call_id) {
 //		obj: Name of the object (contact/potential/account/lead)
 // Returns: An empty return to callback the parent's action.
 //
+
+function getNodeTableInsertStatement(node){
+	"use strict";
+	
+	var sql = 'INSERT OR REPLACE INTO node (nid, perm_edit, perm_delete, created, changed, title, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, viewed) VALUES (';
+	
+	sql += node.nid;
+	sql += ',' + node.perm_edit;
+	sql += ',' + node.perm_delete;
+	sql += ',' + node.created;
+	sql += ',' + node.changed;
+	sql += ',"' + node.title.replace(/"/g, "'") + '"';
+	sql += ',' + node.author_uid;
+	sql += ',' + node.flag_is_updated;
+	sql += ',"' + node.table_name + '"';
+	sql += ',' + node.form_part;
+	sql += ',' + node.changed_uid;
+	sql += ',\'' + node.no_data_fields + '\'';
+	sql += ',\'' + node.viewed + '\'';
+	
+	sql += ')';
+	
+	if(node.table_name == 'notification' && node.viewed == 0){
+		newNotificationCount ++;
+		newNotificationNid = node.nid;
+	}
+	
+	
+	return sql;
+			//json[obj].insert[i].nid + ', '+ json[obj].insert[i].perm_edit + ', '+ json[obj].insert[i].perm_delete + ', ' + 
+				//json[obj].insert[i].created + ' , ' + json[obj].insert[i].changed + ', "' + json[obj].insert[i].title.replace(/"/gi, "'") + '" , ' + 
+				//json[obj].insert[i].author_uid + ' , 0 , "' + obj + '", ' + json[obj].insert[i].form_part + ',' + json[obj].insert[i].changed_uid + ',\'' + no_data + '\', \'' + json[obj].insert[i].viewed + '\') ';
+}
 
 function process_object(json, obj, f_marks, progress, type_request, db_process_object) {
 	var deploy = db_process_object.execute('SELECT field_name, type FROM fields WHERE bundle = "' + obj + '"');
@@ -789,7 +795,27 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 				if (!(json[obj].insert[i].no_data_fields instanceof Array)) {
 					no_data = JSON.stringify(json[obj].insert[i].no_data_fields);
 				}
-				process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , perm_edit, perm_delete, created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields, viewed ) VALUES ( ' + json[obj].insert[i].nid + ', '+ json[obj].insert[i].perm_edit + ', '+ json[obj].insert[i].perm_delete + ', ' + json[obj].insert[i].created + ' , ' + json[obj].insert[i].changed + ', "' + json[obj].insert[i].title.replace(/"/gi, "'") + '" , ' + json[obj].insert[i].author_uid + ' , 0 , "' + obj + '", ' + json[obj].insert[i].form_part + ',' + json[obj].insert[i].changed_uid + ',\'' + no_data + '\', \'' + json[obj].insert[i].viewed + '\') ';
+				
+				process_obj[process_obj.length] = getNodeTableInsertStatement({
+					nid: json[obj].insert[i].nid,
+					perm_edit: json[obj].insert[i].perm_edit,
+					perm_delete: json[obj].insert[i].perm_delete,
+					created: json[obj].insert[i].created,
+					changed: json[obj].insert[i].changed,
+					title: json[obj].insert[i].title.replace(/"/gi, "'"),
+					author_uid: json[obj].insert[i].author_uid,
+					flag_is_updated: 0,
+					table_name: obj,
+					form_part: json[obj].insert[i].form_part,
+					changed_uid: json[obj].insert[i].changed_uid,
+					no_data_fields: no_data,
+					viewed: json[obj].insert[i].viewed
+				});
+				
+				//'INSERT OR REPLACE INTO node (nid , perm_edit, perm_delete, created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields, viewed ) VALUES ( ' + 
+				//json[obj].insert[i].nid + ', '+ json[obj].insert[i].perm_edit + ', '+ json[obj].insert[i].perm_delete + ', ' + 
+				//json[obj].insert[i].created + ' , ' + json[obj].insert[i].changed + ', "' + json[obj].insert[i].title.replace(/"/gi, "'") + '" , ' + 
+				//json[obj].insert[i].author_uid + ' , 0 , "' + obj + '", ' + json[obj].insert[i].form_part + ',' + json[obj].insert[i].changed_uid + ',\'' + no_data + '\', \'' + json[obj].insert[i].viewed + '\') ';
 
 				if (aux_column > 0) {
 					query = 'INSERT OR REPLACE  INTO ' + obj + ' (\'nid\', ';
@@ -947,7 +973,29 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 			if (!(json[obj].insert.no_data_fields instanceof Array)) {
 				no_data = JSON.stringify(json[obj].insert.no_data_fields);
 			}
-			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , perm_edit, perm_delete, created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields, viewed ) VALUES ( ' + json[obj].insert.nid + ', ' + json[obj].insert.perm_edit + ', '+ json[obj].insert.perm_delete + ', '+ json[obj].insert.created + ' , ' + json[obj].insert.changed + ', "' + json[obj].insert.title.replace(/"/gi, "'") + '" , ' + json[obj].insert.author_uid + ' , 0 , "' + obj + '", ' + json[obj].insert.form_part + ',' + json[obj].insert.changed_uid + ',\'' + no_data + '\', \'' + json[obj].insert.viewed + '\') ';
+			
+			
+			process_obj[process_obj.length] = getNodeTableInsertStatement({
+				nid: json[obj].insert.nid,
+				perm_edit: json[obj].insert.perm_edit,
+				perm_delete: json[obj].insert.perm_delete,
+				created: json[obj].insert.created,
+				changed: json[obj].insert.changed,
+				title: json[obj].insert.title,
+				author_uid: json[obj].insert.author_uid,
+				flag_is_updated: 0,
+				table_name: obj,
+				form_part: json[obj].insert.form_part,
+				changed_uid: json[obj].insert.changed_uid,
+				no_data_fields: no_data,
+				viewed: json[obj].insert.viewed
+			});
+			
+			//process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , perm_edit, perm_delete, created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields, viewed ) VALUES ( ' + 
+			//json[obj].insert.nid + ', ' + json[obj].insert.perm_edit + ', '+ json[obj].insert.perm_delete + ', '+ json[obj].insert.created + ' , ' + 
+			//json[obj].insert.changed + ', "' + json[obj].insert.title.replace(/"/gi, "'") + '" , ' + 
+			//json[obj].insert.author_uid + ' , 0 , "' + obj + '", ' + json[obj].insert.form_part + ',' + json[obj].insert.changed_uid + ',\'' + 
+			//no_data + '\', \'' + json[obj].insert.viewed + '\') ';
 
 			if (aux_column > 0) {
 				query = 'INSERT OR REPLACE  INTO ' + obj + ' (\'nid\', ';
@@ -1109,7 +1157,25 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 					no_data = JSON.stringify(json[obj].update[i].no_data_fields);
 				}
 				//'update' is a flag to decide whether the node needs to be synced to the server or not
-				process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , perm_edit, perm_delete, created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields ) VALUES ( ' + json[obj].update[i].nid + ', ' + json[obj].update[i].perm_edit + ', '+ json[obj].update[i].perm_delete + ', '+ json[obj].update[i].created + ' , ' + json[obj].update[i].changed + ', "' + json[obj].update[i].title.replace(/"/gi, "'") + '" , ' + json[obj].update[i].author_uid + ' , 0 , "' + obj + '", ' + json[obj].update[i].form_part + ', ' + json[obj].update[i].changed_uid + ',\'' + no_data + '\') ';
+				
+				process_obj[process_obj.length] = getNodeTableInsertStatement({
+					nid: json[obj].update[i].nid,
+					perm_edit: json[obj].update[i].perm_edit,
+					perm_delete: json[obj].update[i].perm_delete,
+					created: json[obj].update[i].created,
+					changed: json[obj].update[i].changed,
+					title: json[obj].update[i].title,
+					author_uid: json[obj].update[i].author_uid,
+					flag_is_updated: 0,
+					table_name: obj,
+					form_part: json[obj].update[i].form_part,
+					changed_uid: json[obj].update[i].changed_uid,
+					no_data_fields: no_data,
+					viewed: json[obj].update[i].viewed
+				});
+				
+				//process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , perm_edit, perm_delete, created , changed , title , author_uid , 
+					//bj].update[i].form_part + ', ' + json[obj].update[i].changed_uid + ',\'' + no_data + '\') ';
 
 				if (aux_column > 0) {
 					query = 'INSERT OR REPLACE  INTO ' + obj + ' (\'nid\', ';
@@ -1303,7 +1369,28 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 				no_data = JSON.stringify(json[obj].update.no_data_fields);
 			}
 			//'update' is a flag to decide whether the node needs to be synced to the server or not
-			process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , perm_edit, perm_delete, created , changed , title , author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields ) VALUES ( ' + json[obj].update.nid + ', ' + json[obj].update.perm_edit + ', '+ json[obj].update.perm_delete + ', '+ json[obj].update.created + ' , ' + json[obj].update.changed + ', "' + json[obj].update.title.replace(/"/gi, "'") + '" , ' + json[obj].update.author_uid + ' , 0 , "' + obj + '", ' + json[obj].update.form_part + ', ' + json[obj].update.changed_uid + ',\'' + no_data + '\') ';
+			process_obj[process_obj.length] = getNodeTableInsertStatement({
+				nid: json[obj].update.nid,
+				perm_edit: json[obj].update.perm_edit,
+				perm_delete: json[obj].update.perm_delete,
+				created: json[obj].update.created,
+				changed: json[obj].update.changed,
+				title: json[obj].update.title,
+				author_uid: json[obj].update.author_uid,
+				flag_is_updated: 0,
+				table_name: obj,
+				form_part: json[obj].update.form_part,
+				changed_uid: json[obj].update.changed_uid,
+				no_data_fields: no_data,
+				viewed: json[obj].update.viewed
+			});
+			
+			//process_obj[process_obj.length] = 'INSERT OR REPLACE INTO node (nid , perm_edit, perm_delete, created , changed , title , 
+				// author_uid , flag_is_updated, table_name, form_part, changed_uid, no_data_fields ) VALUES ( ' + 
+				// json[obj].update.nid + ', ' + json[obj].update.perm_edit + ', '+ json[obj].update.perm_delete + ', '+ 
+				// json[obj].update.created + ' , ' + json[obj].update.changed + ', "' + json[obj].update.title.replace(/"/gi, "'") + '" , ' + 
+				// json[obj].update.author_uid + ' , 0 , "' + obj + '", ' + json[obj].update.form_part + ', ' + json[obj].update.changed_uid + ',\'' + 
+				// no_data + '\') ';
 
 			if (aux_column > 0) {
 				query = 'INSERT OR REPLACE  INTO ' + obj + ' (\'nid\', ';
@@ -1495,7 +1582,7 @@ function getJSON() {
 	//Initial JSON values:
 	var current_timestamp = Math.round(+new Date() / 1000);
 	var returning_json = '{ "timestamp" : "' + current_timestamp + '", "data" : { ';
-	var db_json = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	var db_json = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 	if(PLATFORM != 'android'){db_json.file.setRemoteBackup(false);}
 	//=============================
 	//Builds JSON for new nodes and for nodes that were updated
@@ -1556,7 +1643,7 @@ function getJSON() {
 							// TODO: this should check if it is an image field type
 							if (node_fields.fieldByName('field_name').indexOf('photo') != -1){
 								
-								var db_images = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+								var db_images = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 								
 								var image_count_result = db_images.execute('SELECT COUNT(*) AS count FROM file_upload_queue WHERE nid = ' + new_nodes.fieldByName('nid') + ' AND field_name = \'' + node_fields.fieldByName('field_name') + '\'');
 								var image_count = image_count_result.fieldByName('count');
@@ -1597,7 +1684,7 @@ function getJSON() {
 						} else {
 							//Ti.API.info('12');
 							if (node_fields.fieldByName('field_name').indexOf('photo') != -1){
-								var db_images = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+								var db_images = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 								
 								var image_count_result = db_images.execute('SELECT COUNT(*) AS count FROM file_upload_queue WHERE nid = ' + new_nodes.fieldByName('nid') + ' AND field_name = \'' + node_fields.fieldByName('field_name') + '\'');
 								var image_count = image_count_result.fieldByName('count');
@@ -1639,7 +1726,7 @@ function getJSON() {
 				}
 				else if (node_fields.fieldByName('field_name').indexOf('photo') != -1){
 								
-					var db_images = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+					var db_images = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 					var image_count_result = db_images.execute('SELECT COUNT(*) AS count FROM file_upload_queue WHERE nid = ' + new_nodes.fieldByName('nid') + ' AND field_name = \'' + node_fields.fieldByName('field_name') + '\'');
 					var image_count = image_count_result.fieldByName('count');
 					db_images.close();
@@ -1735,7 +1822,7 @@ function getCookie(){
 
 function update_node(mode, close_parent, _node_name, flag_next_part){
 	//Sets status to 'updating'
-	var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+	var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+Omadi.utils.getMainDBName() );
 	if(PLATFORM != 'android'){db_up.file.setRemoteBackup(false);}
 	var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');
 	var updatedTimeStamp = updatedTime.fieldByName('timestamp');
@@ -1761,7 +1848,10 @@ function update_node(mode, close_parent, _node_name, flag_next_part){
 //Load existing data with pagination
 function installMe(win, timeIndex, progress, menu, img, type_request, mode, close_parent, _node_name) {
 	setUse();
-	var db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	
+	newNotificationCount = 0;
+	
+	var db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 	if(PLATFORM != 'android'){db_installMe.file.setRemoteBackup(false);}
 	var objectsUp = Ti.Network.createHTTPClient();
 	Ti.API.info('Log type : ' + objectsUp);
@@ -1785,10 +1875,15 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 	
 	if (type_request == 'POST') {
 		objectsUp.open('POST', domainName + '/js-sync/sync.json');
-	} 
+	}
 	else {
 		//Opens address to retrieve list
-		objectsUp.open('GET', domainName+ '/js-sync/download.json?sync_timestamp=' + timeIndex);
+		if(timeIndex === 0){
+			objectsUp.open('GET', domainName+ '/js-sync/download.json?sync_timestamp=' + timeIndex);
+		}
+		else{
+			objectsUp.open('GET', domainName+ '/js-sync/download.json');
+		}
 	}
 	//Header parameters
 	objectsUp.setRequestHeader("Content-Type", "application/json");
@@ -1861,10 +1956,10 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 						db_file.deleteFile();
 					}
 					db_installMe = null;
-					db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+					db_installMe = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 					if(PLATFORM != 'android'){db_installMe.file.setRemoteBackup(false);}
 					
-					var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName()+"_GPS");
+					var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+Omadi.utils.getMainDBName()+"_GPS");
 					if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
 					db_coord.execute('DELETE FROM alerts');
 					db_coord.close();
@@ -1887,7 +1982,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 				if ((mode != 0 ) && (mode != 1)) {
 					unsetUse();
 				}
-			} else {
+			}
+			else {
 				if (type_request == 'GET') {
 					if ((isFirstTime)) {
 						db_installMe.execute('UPDATE updated SET "url"="' + domainName + '" WHERE "rowid"=1');
@@ -3986,6 +4082,69 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 				do_logout();
 			});
 		}
+		
+		if(newNotificationCount > 0){
+			
+			if(newNotificationCount > 1){
+				var newNotificationsAlert = Titanium.UI.createAlertDialog({
+					title: '(' + newNotificationCount + ') New Notifications',
+					message: 'View the notification list?',
+					buttonNames: ['Take Me There', 'View Later'],
+					cancel: 1
+				});
+				
+				newNotificationsAlert.addEventListener('click', function(e){
+					if (e.index !== e.source.cancel){
+						var win_new = Titanium.UI.createWindow({ 
+							navBarHidden : true,
+							title: 'Notifications',
+							fullscreen: false,
+							url:'objects.js',
+							type: 'notification',
+							uid: jsonLogin.user.uid,
+							backgroundColor: '#EEEEEE',
+							show_plus: false
+						});
+						//win_new.movement = movement;
+						//win_new.app_permissions = e.row.app_permissions;
+						//win_new.addEventListener('focus', function(){
+						//	unlock_screen();
+						//});
+					
+						win_new.open();
+					}
+				});
+				
+				newNotificationsAlert.show();
+			}
+			else{
+				var newNotificationsAlert = Titanium.UI.createAlertDialog({
+					title: 'New Notification',
+					message: 'Read the notification now?',
+					buttonNames: ['Read Now', 'Read Later'],
+					cancel: 1
+				});
+				
+				newNotificationsAlert.addEventListener('click', function(e){
+					if (e.index !== e.source.cancel){
+						var win_new = Titanium.UI.createWindow({
+							fullscreen : false,
+							navBarHidden : true,
+							title: 'Read Notification',
+							type: 'notification',
+							url : 'individual_object.js',
+							uid: win.uid,
+							nid: newNotificationNid
+						});
+				
+						win_new.open();
+					}
+				});
+				
+				newNotificationsAlert.show();
+			}
+
+		}
 	};
 	
 	//Connection error:
@@ -4277,10 +4436,10 @@ function timeConverter(UNIX_timestamp, type) {
 	}
 
 	if (type != "1") {
-		var time = month + " / " + date + " / " + year;
+		var time = month + " " + date + ", " + year;
 		return time;
 	} else {
-		var time = display_omadi_time01(UNIX_timestamp) + " - " + month + " / " + date + " / " + year;
+		var time =  month + " " + date + ", " + year + " - " + display_omadi_time01(UNIX_timestamp);
 		return time;
 	}
 
@@ -4299,7 +4458,7 @@ function display_omadi_time01(timestamp) {
 }
 
 function setUse() {
-	var db_su = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	var db_su = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 	if(PLATFORM != 'android'){db_su.file.setRemoteBackup(false);}
 	db_su.execute('UPDATE updated SET updating = 1 ');
 	Ti.API.info("DB WAS JUST SET");
@@ -4307,7 +4466,7 @@ function setUse() {
 }
 
 function unsetUse() {
-	var db_us = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	var db_us = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 	if(PLATFORM != 'android'){db_us.file.setRemoteBackup(false);}
 	db_us.execute('UPDATE updated SET updating = 0 ');
 	Ti.API.info("DB WAS JUST UNSET");
@@ -4315,7 +4474,7 @@ function unsetUse() {
 }
 
 function isUpdating() {
-	var db_gu = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+	var db_gu = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 	if(PLATFORM != 'android'){db_gu.file.setRemoteBackup(false);}
 	var res_set = db_gu.execute('SELECT updating FROM updated WHERE rowid=1');
 
@@ -4427,7 +4586,7 @@ function uploadFile(win) {
 		} 
 		
 		// Upload images
-		var database = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+		var database = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 		if(PLATFORM != 'android'){database.file.setRemoteBackup(false);}
 		
 		var fileUploadTable = database.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
@@ -4440,7 +4599,7 @@ function uploadFile(win) {
 					var respnseJson = JSON.parse(this.responseText);
 					
 					if(respnseJson.nid){
-						database = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+						database = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 						if(PLATFORM != 'android'){database.file.setRemoteBackup(false);}
 						fileUploadTable = database.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
 	
@@ -4499,7 +4658,7 @@ function uploadFile(win) {
 				_file_xhr.onerror = function(e) {
 					Ti.API.error('UPLOAD FILE: =========== Error in uploading ========' + this.error + this.status);
 					if (this.status == '406' && this.error == 'Nid is not connected to a valid node.') {
-						var database = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+						var database = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 						if(PLATFORM != 'android'){database.file.setRemoteBackup(false);}
 						database.execute("DELETE FROM file_upload_queue WHERE nid=" + fileUploadTable.fieldByName('nid') + " and id=" + fileUploadTable.fieldByName('id') + ";");
 						database.close();
@@ -4577,7 +4736,7 @@ function updateFileUploadTable(win, json) {
 			close_parent(false);
 			return;
 		}
-		var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
+		var db_fileUpload = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 		if(PLATFORM != 'android'){db_fileUpload.file.setRemoteBackup(false);}
 		// To replace all negative nid to positive in file_upload_queue table
 		var bundles = db_fileUpload.execute('SELECT * FROM bundles;');
@@ -6402,8 +6561,5 @@ function rules_field_passed_time_check(time_rule, timestamp) {
 	return retval;
 }
 
-
-
-Ti.include('/lib/location_functions.js');
 
 

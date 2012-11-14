@@ -1,6 +1,6 @@
 Ti.include('/lib/functions.js');
 
-/*global isUpdating, getTimeAgoStr, openMainDatabase, openGPSDatabase, PLATFORM*/
+/*global isUpdating, getTimeAgoStr, PLATFORM, Omadi*/
 
 (function(){
 	'use strict';
@@ -139,7 +139,7 @@ Ti.include('/lib/functions.js');
 				if (!isUpdating()){
 					
 					//If delete_all is present, delete all contents:
-					db = openMainDatabase();
+					db = Omadi.utils.openMainDatabase();
 					
 					if(PLATFORM === "android") {
 						//Remove the database
@@ -153,11 +153,11 @@ Ti.include('/lib/functions.js');
 					}
 					
 					// Install database with an empty version
-					db = openMainDatabase();
+					db = Omadi.utils.openMainDatabase();
 					db.close();
 					
 					// Clear out the GPS database alerts
-					db = openGPSDatabase();
+					db = Omadi.utils.openGPSDatabase();
 					db.execute('DELETE FROM alerts');
 					db.close();
 					

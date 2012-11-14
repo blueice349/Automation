@@ -32,7 +32,7 @@ var isFirstTime = false;
 
 //Common used functions
 unsetUse();
-var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+Omadi.utils.getMainDBName() );
 if(PLATFORM != 'android'){db.file.setRemoteBackup(false);}
 
 function checkUpdate(evt){
@@ -53,7 +53,7 @@ function checkUpdate(evt){
 			var pb = null;
 		}
  
-		var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+		var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+Omadi.utils.getMainDBName() );
 		if(PLATFORM != 'android'){db_up.file.setRemoteBackup(false);}
 		var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');
 
@@ -312,6 +312,7 @@ if(PLATFORM == 'android'){
 
 //Go to contact.js when contact's button is clicked
 listView.addEventListener('click',function(e){
+	Ti.API.info("just before row click output");
 	lock_screen();
 	Ti.API.info("row click on table view. index = "+e.index+", row_desc = "+e.row.description+", section = "+e.section+", source_desc="+e.source.description);
 	if(e.row.app_permissions.can_view == false && e.source.is_plus != true){
@@ -589,7 +590,7 @@ Ti.App.syncInterval = setInterval( function(){
 		//No progress bar
 		var pb = null;
 
-		var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
+		var db_up = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+Omadi.utils.getMainDBName() );
 		if(PLATFORM != 'android'){db_up.file.setRemoteBackup(false);}
 		var updatedTime = db_up.execute('SELECT timestamp FROM updated WHERE rowid=1');
 		var updatedTimeStamp = updatedTime.fieldByName('timestamp');
