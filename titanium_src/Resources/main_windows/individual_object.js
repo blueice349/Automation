@@ -1,15 +1,6 @@
-/**
- * Name: individual_object.js
- * Function:
- * 		Show individual object's information retrieved from the database
- * Provides:
- * 		the window called by object.js
- *		a way to close the current window and open object.js. This is achieved when the user clicks on
- * 			"back" on the phone or on the Back button at the app's bottom
- *		the object's information.
- */
+/*jslint eqeq:true, plusplus: true*/ 
 
-//Common used functions
+
 Ti.include('/lib/functions.js');
 Ti.include('/lib/encoder_base_64.js');
 Ti.include('/main_windows/create_or_edit_node.js');
@@ -295,12 +286,17 @@ function loadNode(nid){
     }
     result.close();
     
+    
+    var real_field_name, part;
+    
     result = db.execute("SELECT * FROM " + node.table_name + " WHERE nid = " + node.nid);
     if(result.isValidRow()){
         for(field_name in instances){
             if(instances.hasOwnProperty(field_name)){
 				
                 dbValue = result.fieldByName(field_name);
+                
+                //Ti.API.info("INPUT FIELD NAME: " + field_name);
                 
                 node[field_name] = {};
                 node[field_name].textValues = [];
@@ -319,8 +315,8 @@ function loadNode(nid){
 					*/
 					if(field_name.indexOf("___") !== -1){
 						var field_parts = field_name.split("___");
-						var real_field_name = field_parts[0];
-						var part = field_parts[1];
+						real_field_name = field_parts[0];
+						part = field_parts[1];
 						
 						if(typeof node[real_field_name] === 'undefined'){
 							node[real_field_name] = {};
@@ -459,9 +455,25 @@ function loadNode(nid){
 						var widget = instances[field_name].widget;
 						
 						for(i = 0; i < node[field_name].values.length; i += 1){
-							node[field_name].textValues[i] = timeConverter(node[field_name].values[i], widget.settings['time']);
+						    if(node[field_name].values[i] != null && node[field_name].values[i] != 0){
+							     node[field_name].textValues[i] = timeConverter(node[field_name].values[i], widget.settings.time);
+						    }
 						}
 
+						break;
+						
+					case 'image':
+						subResult = db.execute('SELECT * FROM file_upload_queue WHERE nid=' + node.nid + ' AND field_name ="' + field_name + '" ORDER BY delta ASC');
+						
+						node[field_name].imageData = [];
+						if (subResult.rowCount > 0) {
+							while (subResult.isValidRow()) {
+								//isUpdated[val.fieldByName('delta')] = true;
+								node[field_name].imageData.push(Ti.Utils.base64decode(subResult.fieldByName('file_data')));
+								subResult.next();
+							}
+						}
+						subResult.close();
 						break;
 						
                 } 
@@ -480,8 +492,9 @@ var node = loadNode(curWin.nid);
 
 function doFieldOutput(fieldObj){
     "use strict";
-    var i;
-    var rowView = Ti.UI.createView({
+    var i, rowView, valueView, valueLabel, labelView, labelLabel, fieldIsHidden;
+    
+    rowView = Ti.UI.createView({
         width: '100%',
         top: 0,
         height: Ti.UI.SIZE,
@@ -489,7 +502,7 @@ function doFieldOutput(fieldObj){
         borderColor: '#ccc'
     });
     
-    var labelView = Ti.UI.createView({
+    labelView = Ti.UI.createView({
 		width : "40%",
         height: '40dp',
         top: 0,
@@ -503,7 +516,7 @@ function doFieldOutput(fieldObj){
        // }
     });
     
-    labelView.add(Ti.UI.createLabel({
+    labelLabel = Ti.UI.createLabel({
         text : fieldObj.label,
         right: '5dp',
         top: '10dp',
@@ -515,140 +528,303 @@ function doFieldOutput(fieldObj){
         ellipsize: true,
         wordWrap: false,
         color: "#246"
-    }));
+    });
     
-    var valueView = Ti.UI.createView({
+    labelView.add(labelLabel);
+    
+    valueView = Ti.UI.createView({
        width: "59%",
        right: 0,
        height: Ti.UI.SIZE,
        layout: 'vertical'
     });
+	    
+	fieldIsHidden = false;
 	
-	for(i = 0; i < node[fieldObj.field_name].textValues.length; i += 1){
-		
-		var valueLabel = Ti.UI.createLabel({
-			text : node[fieldObj.field_name].textValues[i],
+    if(fieldObj.type === 'calculation_field'){
+			
+		if(fieldObj.settings.hidden === null || fieldObj.settings.hidden == 0){
+			var tableView = getCalculationTableView(node, fieldObj);
+			
+			if(tableView.singleValue){
+				valueView.add(tableView);
+				rowView.add(labelView);
+				rowView.add(valueView);
+			}
+			else{
+				//labelView.width = '100%';
+				//labelLabel.setTextAlign(Ti.UI.TEXT_ALIGNMENT_CENTER);
+				//labelLabel.setWidth('100%');
+				//labelView.height = '25dp';
+				//labelLabel.top = '2dp';
+				
+				//viewContent.add(labelView);
+				viewContent.add(tableView);
+			}
+		}
+		else{
+			fieldIsHidden = true;
+		}
+	}
+	else if(fieldObj.type == 'metadata'){
+		valueLabel = Ti.UI.createLabel({
+			text : fieldObj.textValue,
             textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
             wordWrap: true,
             height: Ti.UI.SIZE,
             width: '100%',
             font: {
-				fontSize: '16dp'
+				fontSize: '14dp'
 			},
             left: '5dp',
             color: '#666'
 		});
 		
-	    switch(fieldObj.type){
-	        case 'text':
-	        case 'text_long':
-	        case 'list_boolean':
-	        case 'user_reference':
-	        case 'taxonomy_term_reference':
-	        case 'number_integer':
-	        case 'number_decimal':
-	            break;
-	            
-	        case 'phone':
-				valueLabel.color = '#369';
-				valueLabel.number = node[fieldObj.field_name].textValues[i].replace(/\D/g, '');
-				valueLabel.addEventListener('click', function(e) {
-					//highlightMe(e.source.id);
-					Titanium.Platform.openURL('tel:' + e.source.number);
-				});
-				break;
-				
-			case 'link_field':
-				
-				valueLabel.color = '#369';
-				valueLabel.addEventListener('click', function(e) {
-					Titanium.Platform.openURL(e.source.text);
-				});
-				break;
-				
-			case 'email':
-				valueLabel.color = '#369';
-				valueLabel.addEventListener('click', function(e) {
-					var emailDialog = Titanium.UI.createEmailDialog();
-					emailDialog.subject = node.title;
-					emailDialog.toRecipients = [e.source.text];
-					emailDialog.open();
-				});
-				break;
-				
-			case 'omadi_reference':
-				
-				if(typeof node[fieldObj.field_name].nodeTypes[i] !== 'undefined'){
-					valueLabel.color = '#369';
-					valueLabel.type = node[fieldObj.field_name].nodeTypes[i];
-					valueLabel.nid = node[fieldObj.field_name].values[i];
-					
-					valueLabel.addEventListener('click', function(e) {
-						var newWin = Ti.UI.createWindow({
-							fullscreen : false,
-							navBarHidden : true,
-							title : e.source.text,
-							url : "individual_object.js",
-							type: e.source.type,
-							nid: e.source.nid
-						});
-	
-						newWin.open();
-					});
-				}
-				
-				break;
-				
-			case 'location':
-			
-				var field_parts = fieldObj.field_name.split("___");
-				//var part;
-				valueLabel.text = "";//node[field_parts[0]].values.join(', ');
-				var part;
-				
-				if(node[field_parts[0]].parts.street.textValue > ""){
-					valueLabel.text += node[field_parts[0]].parts.street.textValue;
-				}
-				if(valueLabel.text > ""){
-					valueLabel.text += "\n";
-				}
-				if(node[field_parts[0]].parts.city.textValue > ""){
-					valueLabel.text += node[field_parts[0]].parts.city.textValue;
-				}
-				
-				if(node[field_parts[0]].parts.province.textValue > ""){
-					if(node[field_parts[0]].parts.city.textValue > ""){
-						valueLabel.text += ', ';
-					}
-					valueLabel.text += node[field_parts[0]].parts.province.textValue;
-				}
-				
-				if(node[field_parts[0]].parts.postal_code.textValue > ""){
-					valueLabel.text += " " + node[field_parts[0]].parts.postal_code.textValue;
-				}
-				
-				break;
-				
-			case 'vehicle_fields':
-			
-				var field_parts = fieldObj.field_name.split("___");
-				valueLabel.text = node[field_parts[0]].parts.make.textValue + " " + node[field_parts[0]].parts.model.textValue;
-
-				break;
-				
-			case 'license_plate':
-			
-				var field_parts = fieldObj.field_name.split("___");
-				valueLabel.text = "(" + node[field_parts[0]].parts.state.textValue + ") " + node[field_parts[0]].parts.plate.textValue;
-
-				break;
-	    }
-	    
-	    valueView.add(valueLabel);
+		labelView.height = Ti.UI.SIZE;
+		labelLabel.top = 0;
+		labelLabel.color = '#666';
+		labelLabel.font = {
+		    fontSize: '14dp',
+		    fontWeight: 'bold'
+		};
+		
+		valueView.add(valueLabel);
+		rowView.add(labelView);
+		rowView.add(valueView);
 	}
+	else{
+	    
+		if(fieldObj.type === 'image'){
+			valueView = Ti.UI.createScrollView({
+				contentWidth : 'auto',
+				contentHeight : 100,
+				arrImages : null,
+				scrollType : "horizontal",
+				layout : 'horizontal',
+				right : 0,
+				width: '60%',
+				height: 100
+			});
+			
+	
+			for (i = 0; i < node[fieldObj.field_name].values.length; i += 1) {
+	
+				if(node[fieldObj.field_name].values[i] > 0){
+					var fileId = node[fieldObj.field_name].values[i];
+					var contentImage = Ti.UI.createImageView({
+						height: 100,
+						width: 100,
+						left: 0,
+						top: 0,
+						image: '../images/photo-loading.png',
+						borderColor: '#333',
+						borderWidth: '2dp',
+						imageVal: fileId,
+						bigImg: null
+					});
+					
+					contentImage.addEventListener('click', function(e) {
+						Omadi.display.displayLargeImage(e.source, curWin.nid, e.source.imageVal);
+					});
+					valueView.add(contentImage);
+					Omadi.display.setImageViewThumbnail(contentImage, node.nid, fileId);
+	
+				}
+			}
+			
+			for (i = 0; i < node[fieldObj.field_name].imageData.length; i += 1) {
+				
+				if(node[fieldObj.field_name].imageData[i] > ""){
+					var fileId = node[fieldObj.field_name].values[i];
+					var contentImage = Ti.UI.createImageView({
+						height			: 100,
+						width			: 100,
+						left			: 0,
+						top				: 0,
+						image			: node[fieldObj.field_name].imageData[i],
+						borderColor: '#333',
+						borderWidth: '2dp',
+						bigImg: node[fieldObj.field_name].imageData[i],
+						isImage: true
+					});
+					
+					contentImage.addEventListener('click', function(e) {
+						// //Following method will open camera to capture the image.
+						Omadi.display.displayLargeImage(e.source, curWin.nid, e.source.imageVal);
+					});
+					valueView.add(contentImage);
+				}
+			}
+			
+			if(valueView.getChildren().length === 0){
+				valueView.height = 0;
+			}
+		}
+		else{
+		    
+		    fieldIsHidden = false;
+	    
+			for(i = 0; i < node[fieldObj.field_name].textValues.length; i += 1){
+				
+				valueLabel = Ti.UI.createLabel({
+					text : node[fieldObj.field_name].textValues[i],
+		            textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
+		            wordWrap: true,
+		            height: Ti.UI.SIZE,
+		            width: '100%',
+		            font: {
+						fontSize: '16dp'
+					},
+		            left: '5dp',
+		            color: '#666'
+				});
+				
+			    switch(fieldObj.type){
+			        case 'text':
+			        case 'text_long':
+			        case 'list_boolean':
+			        case 'user_reference':
+			        case 'taxonomy_term_reference':
+			        case 'number_integer':
+			        case 'number_decimal':
+			            break;
+			        
+			        case 'phone':
+						valueLabel.color = '#369';
+						valueLabel.number = node[fieldObj.field_name].textValues[i].replace(/\D/g, '');
+						valueLabel.addEventListener('click', function(e) {
+							//highlightMe(e.source.id);
+							Titanium.Platform.openURL('tel:' + e.source.number);
+						});
+						break;
+						
+					case 'link_field':
+						
+						valueLabel.color = '#369';
+						valueLabel.addEventListener('click', function(e) {
+							Titanium.Platform.openURL(e.source.text);
+						});
+						break;
+						
+					case 'email':
+						valueLabel.color = '#369';
+						valueLabel.addEventListener('click', function(e) {
+							var emailDialog = Titanium.UI.createEmailDialog();
+							emailDialog.subject = node.title;
+							emailDialog.toRecipients = [e.source.text];
+							emailDialog.open();
+						});
+						break;
+						
+					case 'omadi_reference':
+						
+						if(typeof node[fieldObj.field_name].nodeTypes[i] !== 'undefined'){
+							valueLabel.color = '#369';
+							valueLabel.type = node[fieldObj.field_name].nodeTypes[i];
+							valueLabel.nid = node[fieldObj.field_name].values[i];
+							
+							valueLabel.addEventListener('click', function(e) {
+								var newWin = Ti.UI.createWindow({
+									fullscreen : false,
+									navBarHidden : true,
+									title : e.source.text,
+									url : "individual_object.js",
+									type: e.source.type,
+									nid: e.source.nid
+								});
+			
+								newWin.open();
+							});
+						}
+						
+						break;
+						
+					case 'location':
+					
+						var field_parts = fieldObj.field_name.split("___");
+						//var part;
+						valueLabel.text = "";//node[field_parts[0]].values.join(', ');
+						var part;
+						
+						if(node[field_parts[0]].parts.street.textValue > ""){
+							valueLabel.text += node[field_parts[0]].parts.street.textValue;
+						}
+						if(valueLabel.text > ""){
+							valueLabel.text += "\n";
+						}
+						if(node[field_parts[0]].parts.city.textValue > ""){
+							valueLabel.text += node[field_parts[0]].parts.city.textValue;
+						}
+						
+						if(node[field_parts[0]].parts.province.textValue > ""){
+							if(node[field_parts[0]].parts.city.textValue > ""){
+								valueLabel.text += ', ';
+							}
+							valueLabel.text += node[field_parts[0]].parts.province.textValue;
+						}
+						
+						if(node[field_parts[0]].parts.postal_code.textValue > ""){
+							valueLabel.text += " " + node[field_parts[0]].parts.postal_code.textValue;
+						}
+						
+						break;
+						
+					case 'vehicle_fields':
+					
+						var field_parts = fieldObj.field_name.split("___");
+						valueLabel.text = node[field_parts[0]].parts.make.textValue + " " + node[field_parts[0]].parts.model.textValue;
+		
+						break;
+						
+					case 'license_plate':
+					
+						var field_parts = fieldObj.field_name.split("___");
+						valueLabel.text = "(" + node[field_parts[0]].parts.state.textValue + ") " + node[field_parts[0]].parts.plate.textValue;
+		
+						break;
+						
+					
+						
+					// case 'rules_field':
+	// 
+						// if (c_content[count] != false && c_content[count] != "false" && c_content[count] != 0 && JSON.parse(c_content[count]).length > 0) {
+							// label[count] = Ti.UI.createLabel({
+								// text : c_label[count],
+								// width : "100%",
+								// textAlign : 'left',
+								// left : 5,
+								// touchEnabled : false,
+								// field : true,
+								// top : 0,
+								// height : 40,
+								// wordWrap : false,
+								// ellipsize : true
+							// });
+							// content[count] = Ti.UI.createView({
+								// width : Ti.Platform.displayCaps.platformWidth - 30,
+								// field_type : c_type[count],
+								// field_name : c_field_name[count],
+								// cardinality : settings.cardinality,
+								// reffer_index : count,
+								// settings : settings,
+								// value : JSON.parse(c_content[count]),
+								// layout : 'vertical',
+								// widget : JSON.parse(c_widget[count])
+							// });
+							// count++;
+						// }
+						// break;
+			    
+			    }
+		    
+				valueView.add(valueLabel);
+		    }
+		}
+	    
+	    rowView.add(labelView);
+	    rowView.add(valueView);
+    }
     
-    rowView.add(labelView);
-    rowView.add(valueView);
     viewContent.add(rowView);
 }
 
@@ -708,10 +884,79 @@ function doRegionOutput(regionObj){
 	
 	for(regionName in regions){
 	    if(regions.hasOwnProperty(regionName)){
-	    	Ti.API.info(regions[regionName].fields.length);
 	        doRegionOutput(regions[regionName]);
 	    }
 	}
+	
+	viewContent.add(Ti.UI.createLabel({
+        text : 'METADATA',
+        color : '#ddd',
+        font : {
+            fontSize : '16dp',
+            fontWeight : 'bold'
+        },
+        textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER,
+        width : '100%',
+        touchEnabled : false,
+        height : '25dp',
+        backgroundGradient: {
+            type: 'linear',
+            startPoint: { x: '50%', y: '0%' },
+            endPoint: { x: '50%', y: '100%' },
+            colors: [ { color: '#888', offset: 0.0}, { color: '#999', offset: 0.3 }, { color: '#666', offset: 1.0 } ]
+       },
+       ellipsize: true,
+       wordWrap: false
+    }));
+    
+    
+    var db = Omadi.utils.openMainDatabase();
+    var result = db.execute("SELECT realname, uid FROM user WHERE uid IN (" + node.author_uid + "," + node.changed_uid + ")");
+    var usernames = [];
+    
+    while(result.isValidRow()){
+        usernames[result.fieldByName("uid")] = result.fieldByName("realname");
+        result.next();
+    }
+    result.close();
+    db.close();
+    
+    var metaDataFields = [];
+    
+    metaDataFields.push({
+        type: 'metadata',
+        label: 'Created By',
+        field_name: 'author_uid',
+        textValue: usernames[node.author_uid]
+    });
+    metaDataFields.push({
+		type: 'metadata',
+		label: 'Created Time',
+		field_name: 'created',
+		textValue: dateFormat(node.created, true)
+    });
+    
+    
+    if(node.created !== node.changed){
+         metaDataFields.push({
+            type: 'metadata',
+            label: 'Last Updated By',
+            field_name: 'author_uid',
+            textValue: usernames[node.author_uid]
+        });
+        metaDataFields.push({
+            type: 'metadata',
+            label: 'Last Updated Time',
+            field_name: 'changed',
+            textValue: dateFormat(node.changed, true)
+        });
+    }
+    
+    var i;
+    for(i = 0; i < metaDataFields.length; i ++){
+		doFieldOutput(metaDataFields[i]);
+    }
+    
 }());
 
 
@@ -1765,174 +2010,174 @@ if(true) {
 							}
 						break;
 						
-					case 'image':
-						var settings = JSON.parse(c_settings[count]);
-						if (settings.cardinality > 1 || settings.cardinality < 0) {
-							isUpdated = [];
-							content[count] = Ti.UI.createScrollView({
-								field_name : c_label[count],
-								contentWidth : 'auto',
-								contentHeight : 100,
-								arrImages : null,
-								scrollType : "horizontal",
-								layout : 'horizontal',
-								left : '33%',
-								cardinality : settings.cardinality
-							});
-							var decodedValues = [];
-							var array_cont;
-				
-							if (results.fieldByName(c_field_name[count] + '___file_id') == '7411317618171051229' || results.fieldByName(c_field_name[count] + '___file_id') == 7411317618171051229) {
-								array_cont = db.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + curWin.nid + ' AND field_name = \'' + c_field_name[count] + '___file_id\'');
-							
-							} else {
-								
-								array_cont = db.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + curWin.nid + ' AND field_name = \'' + c_field_name[count] + '\'');
-							}
-							if (array_cont.rowCount > 0) {
-								
-								//Decode the stored array:
-								var decoded = array_cont.fieldByName('encoded_array');
-								decoded = Base64.decode(decoded);
-								decoded = decoded.toString();
-								decodedValues = decoded.split("j8Oc2s1E");
-							}
-							val = db.execute('SELECT * FROM file_upload_queue WHERE nid=' + curWin.nid + ' AND field_name ="' + c_field_name[count] + '";');
+					// case 'image':
+						// var settings = JSON.parse(c_settings[count]);
+						// if (settings.cardinality > 1 || settings.cardinality < 0) {
+							// isUpdated = [];
+							// content[count] = Ti.UI.createScrollView({
+								// field_name : c_label[count],
+								// contentWidth : 'auto',
+								// contentHeight : 100,
+								// arrImages : null,
+								// scrollType : "horizontal",
+								// layout : 'horizontal',
+								// left : '33%',
+								// cardinality : settings.cardinality
+							// });
+							// var decodedValues = [];
+							// var array_cont;
+// 				
+							// if (results.fieldByName(c_field_name[count] + '___file_id') == '7411317618171051229' || results.fieldByName(c_field_name[count] + '___file_id') == 7411317618171051229) {
+								// array_cont = db.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + curWin.nid + ' AND field_name = \'' + c_field_name[count] + '___file_id\'');
+// 							
+							// } else {
+// 								
+								// array_cont = db.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + curWin.nid + ' AND field_name = \'' + c_field_name[count] + '\'');
+							// }
+							// if (array_cont.rowCount > 0) {
+// 								
+								// //Decode the stored array:
+								// var decoded = array_cont.fieldByName('encoded_array');
+								// decoded = Base64.decode(decoded);
+								// decoded = decoded.toString();
+								// decodedValues = decoded.split("j8Oc2s1E");
+							// }
+							// val = db.execute('SELECT * FROM file_upload_queue WHERE nid=' + curWin.nid + ' AND field_name ="' + c_field_name[count] + '";');
+// 
+							// if (val.rowCount > 0) {
+								// while (val.isValidRow()) {
+									// isUpdated[val.fieldByName('delta')] = true;
+									// decodedValues[val.fieldByName('delta')] = Ti.Utils.base64decode(val.fieldByName('file_data'));
+									// val.next();
+								// }
+							// }
+							// var arrImages = [];
+							// for ( img = 0; img < decodedValues.length; img++) {
+								// var updated = false
+								// if ((img < decodedValues.length) && (decodedValues[img] != "") && (decodedValues[img] != null) && decodedValues[img] != 'null' && decodedValues[img] != 'undefined') {
+									// var vl_to_field = decodedValues[img];
+									// if (isUpdated[img] == true) {
+										// updated = isUpdated[img];
+									// }
+								// } else {
+									// continue;
+								// }
+								// arrImages = createImage1(arrImages, vl_to_field, content[count], updated);
+							// }
+							// content[count].arrImages = arrImages;
+						// } else {
+							// isUpdated = false;
+							// if (results.rowCount > 0) {
+								// val = results.fieldByName(c_field_name[count] + '___file_id');
+								// if (val == 'null' || val == null || val == 'undefined' || val == '') {
+									// val = results.fieldByName(c_field_name[count]);
+								// }
+							// }
+							// valUp = db.execute('SELECT * FROM file_upload_queue WHERE nid=' + curWin.nid + ' AND field_name ="' + c_field_name[count] + '";');
+// 
+							// if (valUp.rowCount > 0) {
+								// isUpdated = true;
+								// val = Ti.Utils.base64decode(valUp.fieldByName('file_data'));
+							// }
+							// if ((val == 'null' || val == 'undefined' || val == '') && valUp.rowCount == 0) {
+								// break;
+							// }
+// 
+							// content[count] = Ti.UI.createImageView({
+								// label : c_label[count],
+								// height : '100',
+								// width : '100',
+								// top : 5,
+								// bottom : 5,
+								// size : {
+									// height : '100',
+									// width : '100'
+								// },
+								// defaultImage : '../images/photo-loading.png',
+								// imageVal : val,
+								// bigImg : null,
+								// mimeType : null,
+								// cardinality : settings.cardinality,
+								// isUpdated : isUpdated
+							// });
+// 
+							// if (isUpdated == true) {
+								// content[count].image = val;
+								// content[count].bigImg = val;
+								// contentImage.isImage = true;
+							// }
+							// content[count].addEventListener('click', function(e) {
+								// downloadMainImage(e.source.imageVal, e.source, curWin);
+							// });
+						// }
+// 
+						// label[count] = Ti.UI.createLabel({
+							// text : c_label[count],
+							// width : "33%",
+							// textAlign : 'left',
+							// left : 5,
+							// touchEnabled : false,
+							// field : true
+						// });
+						// count++;
+						// break;
 
-							if (val.rowCount > 0) {
-								while (val.isValidRow()) {
-									isUpdated[val.fieldByName('delta')] = true;
-									decodedValues[val.fieldByName('delta')] = Ti.Utils.base64decode(val.fieldByName('file_data'));
-									val.next();
-								}
-							}
-							var arrImages = [];
-							for ( img = 0; img < decodedValues.length; img++) {
-								var updated = false
-								if ((img < decodedValues.length) && (decodedValues[img] != "") && (decodedValues[img] != null) && decodedValues[img] != 'null' && decodedValues[img] != 'undefined') {
-									var vl_to_field = decodedValues[img];
-									if (isUpdated[img] == true) {
-										updated = isUpdated[img];
-									}
-								} else {
-									continue;
-								}
-								arrImages = createImage1(arrImages, vl_to_field, content[count], updated);
-							}
-							content[count].arrImages = arrImages;
-						} else {
-							isUpdated = false;
-							if (results.rowCount > 0) {
-								val = results.fieldByName(c_field_name[count] + '___file_id');
-								if (val == 'null' || val == null || val == 'undefined' || val == '') {
-									val = results.fieldByName(c_field_name[count]);
-								}
-							}
-							valUp = db.execute('SELECT * FROM file_upload_queue WHERE nid=' + curWin.nid + ' AND field_name ="' + c_field_name[count] + '";');
-
-							if (valUp.rowCount > 0) {
-								isUpdated = true;
-								val = Ti.Utils.base64decode(valUp.fieldByName('file_data'));
-							}
-							if ((val == 'null' || val == 'undefined' || val == '') && valUp.rowCount == 0) {
-								break;
-							}
-
-							content[count] = Ti.UI.createImageView({
-								label : c_label[count],
-								height : '100',
-								width : '100',
-								top : 5,
-								bottom : 5,
-								size : {
-									height : '100',
-									width : '100'
-								},
-								defaultImage : '../images/photo-loading.png',
-								imageVal : val,
-								bigImg : null,
-								mimeType : null,
-								cardinality : settings.cardinality,
-								isUpdated : isUpdated
-							});
-
-							if (isUpdated == true) {
-								content[count].image = val;
-								content[count].bigImg = val;
-								contentImage.isImage = true;
-							}
-							content[count].addEventListener('click', function(e) {
-								downloadMainImage(e.source.imageVal, e.source, curWin);
-							});
-						}
-
-						label[count] = Ti.UI.createLabel({
-							text : c_label[count],
-							width : "33%",
-							textAlign : 'left',
-							left : 5,
-							touchEnabled : false,
-							field : true
-						});
-						count++;
-						break;
-
-					case 'calculation_field':
-						label[count] = Ti.UI.createLabel({
-							text : c_label[count],
-							width : "100%",
-							textAlign : 'left',
-							left : 5,
-							touchEnabled : false,
-							field : true,
-							top : 0,
-							height : 40,
-							wordWrap : false,
-							ellipsize : true
-						});
-
-						var settings = JSON.parse(c_settings[count]);
-						content[count] = Ti.UI.createView({
-							left : '3%',
-							right : '3%',
-							field_type : c_type[count],
-							field_name : c_field_name[count],
-							cardinality : settings.cardinality,
-							reffer_index : count,
-							settings : settings,
-							layout : 'vertical'
-						});
-						count++;
-						break;
-					case 'rules_field':
-
-						if (c_content[count] != false && c_content[count] != "false" && c_content[count] != 0 && JSON.parse(c_content[count]).length > 0) {
-							label[count] = Ti.UI.createLabel({
-								text : c_label[count],
-								width : "100%",
-								textAlign : 'left',
-								left : 5,
-								touchEnabled : false,
-								field : true,
-								top : 0,
-								height : 40,
-								wordWrap : false,
-								ellipsize : true
-							});
-							content[count] = Ti.UI.createView({
-								width : Ti.Platform.displayCaps.platformWidth - 30,
-								field_type : c_type[count],
-								field_name : c_field_name[count],
-								cardinality : settings.cardinality,
-								reffer_index : count,
-								settings : settings,
-								value : JSON.parse(c_content[count]),
-								layout : 'vertical',
-								widget : JSON.parse(c_widget[count])
-							});
-							count++;
-						}
-						break;
+					// case 'calculation_field':
+						// label[count] = Ti.UI.createLabel({
+							// text : c_label[count],
+							// width : "100%",
+							// textAlign : 'left',
+							// left : 5,
+							// touchEnabled : false,
+							// field : true,
+							// top : 0,
+							// height : 40,
+							// wordWrap : false,
+							// ellipsize : true
+						// });
+// 
+						// var settings = JSON.parse(c_settings[count]);
+						// content[count] = Ti.UI.createView({
+							// left : '3%',
+							// right : '3%',
+							// field_type : c_type[count],
+							// field_name : c_field_name[count],
+							// cardinality : settings.cardinality,
+							// reffer_index : count,
+							// settings : settings,
+							// layout : 'vertical'
+						// });
+						// count++;
+						// break;
+					// case 'rules_field':
+// 
+						// if (c_content[count] != false && c_content[count] != "false" && c_content[count] != 0 && JSON.parse(c_content[count]).length > 0) {
+							// label[count] = Ti.UI.createLabel({
+								// text : c_label[count],
+								// width : "100%",
+								// textAlign : 'left',
+								// left : 5,
+								// touchEnabled : false,
+								// field : true,
+								// top : 0,
+								// height : 40,
+								// wordWrap : false,
+								// ellipsize : true
+							// });
+							// content[count] = Ti.UI.createView({
+								// width : Ti.Platform.displayCaps.platformWidth - 30,
+								// field_type : c_type[count],
+								// field_name : c_field_name[count],
+								// cardinality : settings.cardinality,
+								// reffer_index : count,
+								// settings : settings,
+								// value : JSON.parse(c_content[count]),
+								// layout : 'vertical',
+								// widget : JSON.parse(c_widget[count])
+							// });
+							// count++;
+						// }
+						// break;
 
 				}
 			}
@@ -1978,33 +2223,33 @@ if(true) {
 					}
 
                 }
-				else if(c_type[i]=='calculation_field'){
-					if(content[i].settings.hidden!=null && content[i].settings.hidden==1){
-						continue;
-					}
-					createCalculationTableFormat(content[i] , db, content);
-					if (!(content[i].height < heightValue)){
-						cell[i].layout = 'vertical';
-						cell[i].height = content[i].height;
-					}else{
-						label[i].width = '33%';
-						label[i].height = '60'
-						content[i].left = '40%'
-					}
-				
-				}
-				else if(c_type[i]=='user_reference'){
-                    
-                    if (!(content[i].height < heightValue)){
-                        cell[i].layout = 'vertical';
-                        cell[i].height = content[i].height;
-                    }else{
-                        label[i].width = '33%';
-                        label[i].height = '60'
-                        content[i].left = '40%'
-                    }
-                
-                }
+				// else if(c_type[i]=='calculation_field'){
+					// if(content[i].settings.hidden!=null && content[i].settings.hidden==1){
+						// continue;
+					// }
+					// createCalculationTableFormat(content[i] , db, content);
+					// if (!(content[i].height < heightValue)){
+						// cell[i].layout = 'vertical';
+						// cell[i].height = content[i].height;
+					// }else{
+						// label[i].width = '33%';
+						// label[i].height = '60'
+						// content[i].left = '40%'
+					// }
+// 				
+				// }
+				// else if(c_type[i]=='user_reference'){
+//                     
+                    // if (!(content[i].height < heightValue)){
+                        // cell[i].layout = 'vertical';
+                        // cell[i].height = content[i].height;
+                    // }else{
+                        // label[i].width = '33%';
+                        // label[i].height = '60'
+                        // content[i].left = '40%'
+                    // }
+//                 
+                // }
 				else if(c_type[i]=='rules_field'){
 					cell[i].layout = 'vertical';
 					showRulesRow(content[i], db, curWin);
@@ -2059,24 +2304,24 @@ if(true) {
 			}
 		}
 		
-		var i;
-		for(i = 0; i < count; i++) {
-			if(c_type[i] == 'image') {
-				if(content[i].cardinality > 1 || content[i].cardinality < 0) {
-					var arrImages = content[i].arrImages;
-					for( i_idx = 0; i_idx < arrImages.length; i_idx++) {
-						if(arrImages[i_idx].isUpdated == false) {
-							downloadThumnail(arrImages[i_idx].imageVal, arrImages[i_idx], curWin);
-						}
-					}
-				} else {
-					if(content[i].isUpdated == false) {
-						downloadThumnail(content[i].imageVal, content[i], curWin);
-					}
-				}
-
-			}
-		}
+		// var i;
+		// for(i = 0; i < count; i++) {
+			// if(c_type[i] == 'image') {
+				// if(content[i].cardinality > 1 || content[i].cardinality < 0) {
+					// var arrImages = content[i].arrImages;
+					// for( i_idx = 0; i_idx < arrImages.length; i_idx++) {
+						// if(arrImages[i_idx].isUpdated == false) {
+							// downloadThumnail(arrImages[i_idx].imageVal, arrImages[i_idx], curWin);
+						// }
+					// }
+				// } else {
+					// if(content[i].isUpdated == false) {
+						// downloadThumnail(content[i].imageVal, content[i], curWin);
+					// }
+				// }
+// 
+			// }
+		// }
 
 	} else {
 		var cell = Ti.UI.createLabel({
@@ -2192,39 +2437,39 @@ if(PLATFORM != 'android'){
 	bottomButtons1(curWin);
 }
 
-function createImage1(arrImages, data, scrollView, updated) {
-	contentImage = Ti.UI.createImageView({
-		height			: '100',
-		width			: '100',
-		left			: 5,
-		size: {
-			height		: '100',
-			width		: '100'
-		},
-		top				:5,
-		bottom			:5,
-		image			: '../images/photo-loading.png',
-		imageVal		: data,
-		bigImg 			: null,
-		mimeType		: null,
-		label			: scrollView.field_name,
-		isUpdated		: updated
-	});
-	
-
-	if(updated == true) {
-		contentImage.image = data;
-		contentImage.bigImg = data;
-		contentImage.isImage = true;
-	}
-	contentImage.addEventListener('click', function(e) {
-		//Following method will open camera to capture the image.
-		downloadMainImage(e.source.imageVal, e.source, curWin);
-	});
-	scrollView.add(contentImage);
-	arrImages.push(contentImage)
-	return arrImages;
-}
+// function createImage1(arrImages, data, scrollView, updated) {
+	// contentImage = Ti.UI.createImageView({
+		// height			: '100',
+		// width			: '100',
+		// left			: 5,
+		// size: {
+			// height		: '100',
+			// width		: '100'
+		// },
+		// top				:5,
+		// bottom			:5,
+		// image			: '../images/photo-loading.png',
+		// imageVal		: data,
+		// bigImg 			: null,
+		// mimeType		: null,
+		// label			: scrollView.field_name,
+		// isUpdated		: updated
+	// });
+// 	
+// 
+	// if(updated == true) {
+		// contentImage.image = data;
+		// contentImage.bigImg = data;
+		// contentImage.isImage = true;
+	// }
+	// contentImage.addEventListener('click', function(e) {
+		// //Following method will open camera to capture the image.
+		// Omadi.display.displayLargeImage(e.source, curWin.nid, e.source.imageVal);
+	// });
+	// scrollView.add(contentImage);
+	// arrImages.push(contentImage)
+	// return arrImages;
+// }
 
 function openEditScreen(part){
 //Next window to be opened
@@ -2253,7 +2498,7 @@ function openEditScreen(part){
 
 function createEntity(){
 	
-	var entity = new Array();
+	var entity = [];
 	
 	for( idx = 0; idx < content.length; idx++) {
 		if(!content[idx]) {
@@ -2278,6 +2523,386 @@ function createEntity(){
 	}
 
 	return entity; 
+}
+
+function calculationFieldGetValues(node, instance) {
+	//Ti.API.info('here--------0.1' + instance.field_name + ", mode: " + win.mode);
+	var entity;
+	var calculated_field_cache = [];
+	var final_value = 0;
+	if (instance.settings.calculation.items != null && !instance.disabled) {
+		var row_values = [];
+		if (instance.value != null && instance.value != "") {
+			cached_final_value = instance.value;
+		} else {
+			cached_final_value = 0;
+		}
+
+		usort(instance.settings.calculation.items, '_calculation_field_sort_on_weight');
+		
+		var idx;
+		for (idx in instance.settings.calculation.items) {
+			var calculation_row = instance.settings.calculation.items[idx];
+			var value = 0;
+			var field_1_multiplier = 0;
+			var field_2_multiplier = 0;
+			var numeric_multiplier = 0;
+			calculated_field_cache = new Array();
+			if (calculation_row.field_name_1 != null && node[calculation_row.field_name_1] != null && instances[calculation_row.field_name_1] != null && instances[calculation_row.field_name_1].type == 'calculation_field') {
+				// Make sure a dependency calculation is made first
+				// TODO: Statically cache these values for future use by other calculation fields
+				// TODO: Make sure an infinite loop doesn't occur
+				//Ti.API.info('here--------0.2');
+				required_instance_final_values = calculationFieldGetValues(node, instances[calculation_row.field_name_1]);//content[entity[calculation_row.field_name_1][0]['reffer_index']], node, content);
+				//Ti.API.info('here--------0.3' + required_instance_final_values[0].final_value);
+				calculated_field_cache[calculation_row.field_name_1] = required_instance_final_values[0].final_value;
+			}
+
+			if (calculation_row.field_name_1 != null && calculation_row.field_name_1 != "") {
+				//Ti.API.info('here--------0.4' + calculation_row.field_name_1 + "," + calculated_field_cache[calculation_row.field_name_1]);
+				if (calculated_field_cache[calculation_row.field_name_1] != null) {
+					//Ti.API.info('here--------0.5' + calculated_field_cache[calculation_row.field_name_1]);
+					field_1_multiplier = calculated_field_cache[calculation_row.field_name_1];
+				} 
+				else if (calculation_row.type == 'parent_field_value') {
+					//Ti.API.info('here--------0.6' + calculation_row.parent_field);
+					parent_field = calculation_row.parent_field;
+					if (node[parent_field] != null && node[parent_field].values[0] != null) {
+						parent_node = loadNode(node[parent_field].values[0]);
+						if (parent_node && parent_node[calculation_row.field_name_1].values[0] != null) {
+							field_1_multiplier = parent_node[calculation_row.field_name_1].values[0];
+							//Ti.API.info('here--------0.7' + field_1_multiplier);
+						}
+					}
+				} 
+				else if (node[calculation_row.field_name_1] != null && node[calculation_row.field_name_1].values[0] != null) {
+					field_1_multiplier = node[calculation_row.field_name_1].values[0];
+					//Ti.API.info('here--------0.8' + field_1_multiplier);
+				}
+				if (calculation_row.datestamp_end_field != null && calculation_row.datestamp_end_field != "") {
+					//Ti.API.info('here--------0.9' + field_1_multiplier);
+					start_timestamp = field_1_multiplier;
+					// Set this end value to 0 in case the terminating datestamp field is empty
+					field_1_multiplier = 0;
+					if (node[calculation_row.datestamp_end_field] != null && node[calculation_row.datestamp_end_field].values[0] != null) {
+						end_timestamp = node[calculation_row.datestamp_end_field].values[0];
+						//Ti.API.info('here--------0.10' + end_timestamp);
+						if (calculation_row.type == 'time-only') {
+							//Ti.API.info('here--------0.11' + calculation_row.type);
+							if (end_timestamp < start_timestamp) {
+								//Ti.API.info('here--------0.12' + start_timestamp);
+								end_timestamp += (24 * 3600);
+							}
+						}
+
+						difference = end_timestamp - start_timestamp;
+
+						switch(calculation_row.datestamp_interval) {
+							case 'minute':
+								field_1_multiplier = difference / 60;
+								//Ti.API.info('here--------0.13' + field_1_multiplier);
+								break;
+							case 'hour':
+								field_1_multiplier = difference / 3600;
+								//Ti.API.info('here--------0.14' + field_1_multiplier);
+								break;
+							case 'day':
+								field_1_multiplier = difference / (3600 * 24);
+								//Ti.API.info('here--------0.15' + field_1_multiplier);
+								break;
+							case 'week':
+								field_1_multiplier = difference / (3600 * 24 * 7);
+								//Ti.API.info('here--------0.16' + field_1_multiplier);
+								break;
+						}
+						if (calculation_row.type == 'time') {
+							//Ti.API.info('here--------0.17' + calculation_row.type);
+							if (calculation_row.interval_rounding == 'up') {
+								field_1_multiplier = Math.ceil(field_1_multiplier);
+								//Ti.API.info('here--------0.18' + field_1_multiplier);
+							} 
+							else if (calculation_row.interval_rounding == 'down') {
+								field_1_multiplier = Math.floor(field_1_multiplier);
+								//Ti.API.info('here--------0.19' + field_1_multiplier);
+							} 
+							else if (calculation_row.interval_rounding == 'integer') {
+								field_1_multiplier = Math.round(field_1_multiplier);
+								//Ti.API.info('here--------0.20' + field_1_multiplier);
+							} 
+							else if (calculation_row.interval_rounding == 'increment-at-time') {
+								//Ti.API.info('here--------0.21' + calculation_row.increment_at_time);
+								at_time = calculation_row.increment_at_time;
+								start_timestamp = Number(start_timestamp);
+								relative_increment_time = at_time = mktime(0, 0, 0, date('n', start_timestamp), date('j', start_timestamp), date('Y', start_timestamp));
+								//Ti.API.info('here--------0.22' + relative_increment_time + "," + end_timestamp);
+								day_count = 0;
+								if (relative_increment_time < start_timestamp) {
+									relative_increment_time += (3600 * 24);
+									//Ti.API.info('here--------0.23' + relative_increment_time);
+								}
+
+								while (relative_increment_time <= end_timestamp) {
+									day_count++;
+									relative_increment_time += (3600 * 24);
+									//	Ti.API.info('here--------0.24' + relative_increment_time );
+								}
+
+								field_1_multiplier = day_count;
+							}
+						}
+					}
+				}
+
+			}
+
+			if (calculation_row.field_name_2 != null && calculation_row.field_name_2 != "") {
+				//Ti.API.info('here--------1' + calculation_row.field_name_2);
+				if (calculated_field_cache[calculation_row.field_name_1] != null) {
+					field_2_multiplier = calculated_field_cache[calculation_row.field_name_2];
+					//Ti.API.info('here--------2' + field_2_multiplier);
+				} 
+				else if (calculation_row.type == 'parent_field_value') {
+					parent_field = calculation_row.parent_field;
+					//Ti.API.info('here--------3' + parent_field);
+					if (node[parent_field] != null && node[parent_field].values[0] != null) {
+						parent_node = loadNode(node[parent_field].values[0]);
+						//Ti.API.info('here--------4' + parent_field);
+						if (parent_node && parent_node[calculation_row.field_name_2].values[0] != null) {
+							field_2_multiplier = parent_node[calculation_row.field_name_2].values[0];
+							//Ti.API.info('here--------5' + field_2_multiplier);
+						}
+					}
+				} 
+				else if (node[calculation_row.field_name_2] != null && node[calculation_row.field_name_2].values[0] != null) {
+					field_2_multiplier = node[calculation_row.field_name_2].values[0];
+					//Ti.API.info('here--------6' + field_2_multiplier);
+				}
+			}
+
+			if (calculation_row.numeric_multiplier != null && calculation_row.numeric_multiplier != "") {
+				numeric_multiplier = Number(calculation_row.numeric_multiplier);
+				//Ti.API.info('here--------7' + numeric_multiplier);
+			}
+
+			var zero = false;
+
+			if (calculation_row.criteria != null && calculation_row.criteria.search_criteria != null) {
+				//Ti.API.info('here--------8' + calculation_row.criteria);
+				//if (!list_search_node_matches_search_criteria(win, db_display, entity, calculation_row.criteria, content)) {
+					//Ti.API.info('here--------9');
+					//zero = true;
+				//}
+			}
+
+			var value = 0;
+			if (field_1_multiplier == 0 && calculation_row.field_name_1 != null && calculation_row.field_name_1 != "") {
+				//Ti.API.info('here--------10');
+				zero = true;
+			} 
+			else if (value == 0 && field_1_multiplier != 0) {
+				//Ti.API.info('here--------11');
+				value = field_1_multiplier;
+			}
+
+			if (field_2_multiplier == 0 && calculation_row.field_name_2 != null && calculation_row.field_name_2 != "") {
+				//Ti.API.info('here--------12');
+				zero = true;
+			} 
+			else if (value == 0 && field_2_multiplier != 0) {
+				//Ti.API.info('here--------13');
+				value = Number(field_2_multiplier);
+			} 
+			else if (value != 0 && field_2_multiplier != 0) {
+				//Ti.API.info('here--------14');
+				value *= Number(field_2_multiplier);
+			}
+
+			if (value == 0 && numeric_multiplier != 0) {
+				//Ti.API.info('here--------15');
+				value = Number(numeric_multiplier);
+			} 
+			else if (value != 0 && numeric_multiplier != 0) {
+				//Ti.API.info('here--------16');
+				value *= Number(numeric_multiplier);
+			}
+
+			// if(calculation_row.type!=null && calculation_row.type=='static'){
+			// Ti.API.info('here--------17' );
+			// zero = false;
+			// }
+			if (zero) {
+				//Ti.API.info('here--------18');
+				value = 0;
+			}
+
+			row_values.push({
+				'row_label' : (calculation_row.row_label != null && calculation_row.row_label != "") ? calculation_row.row_label : '',
+				'value' : value
+			});
+			//alert('field_1_multiplier : ' + field_1_multiplier);
+			//alert('field_2_multiplier : ' + field_2_multiplier);
+			//alert('numeric_multiplier : ' + numeric_multiplier);
+			//alert('Value : ' + value);
+			final_value += Number(value);
+			//Ti.API.info('here--------19' + final_value);
+		}
+		//	alert("final value: " + final_value);
+		return [{
+			'cached_final_value' : cached_final_value,
+			'final_value' : final_value,
+			'rows' : row_values,
+		}];
+
+	}
+	return [];
+}
+
+function getCalculationTableView(node, instance) {
+	//var entity = createEntity();
+	//var instance = instances[field_name];
+	var result = calculationFieldGetValues(node, instance);
+	var row_values = result[0].rows;
+	//var heightView = 0;
+	
+	//var widthCellView = Ti.Platform.displayCaps.platformWidth;
+	//var content;
+	
+	var tableView = Ti.UI.createView({
+		width: '100%',
+		layout: 'vertical',
+		height: Ti.UI.SIZE
+	});
+	
+	if(row_values.length > 1){
+		var cal_value = 0;
+		var cal_value_str = "";
+		var isNegative = false;
+		
+		for(idx = 0; idx < row_values.length; idx++) {
+			cal_value = row_values[idx].value;
+			typeof(cal_value) == 'number' ? null : typeof(cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null; //Check type of the data
+			isNegative = (cal_value < 0) ? true : false; // Is negative. And if it is -ve then write in this value in (brackets).
+			cal_value_str =  applyNumberFormat(instance, cal_value);
+            cal_value_str = (isNegative)?"(" + cal_value_str + ")":cal_value_str; // Adding brackets over -ve value.
+			
+			var row = Ti.UI.createView({
+                height: Ti.UI.SIZE,
+                width: '100%',
+                top: 0,
+                backgroundColor: '#ccc'
+			});
+			
+			var row_label = Ti.UI.createLabel({
+                text: row_values[idx].row_label + "  ",
+                textAlign: Ti.UI.TEXT_ALIGNMENT_RIGHT,
+                width:  '59.5%',
+                font: {
+                    fontSize: '15dp'
+                },
+                left: 0,
+                top: '1dp',
+                color: '#545454',
+                wordWrap: false,
+                ellipsize: true,
+                backgroundColor : '#f3f3f3'
+			});
+			
+			var value = Ti.UI.createLabel({
+				text: "  " + cal_value_str,
+				textAlign: Ti.UI.TEXT_ALIGNMENT_LEFT,
+				width:  '40%',	
+				font: {
+					fontFamily : 'Helvetica Neue',
+					fontSize : '15dp'
+				},
+				top: '1dp',
+				right: 0,
+				color: '#424242',
+				wordWrap: false,
+				ellipsize: true,
+				backgroundColor: '#fff'
+			});
+			
+			row.add(row_label);
+			row.add(value);
+			tableView.add(row);
+		}
+
+		cal_value = result[0].final_value;
+		typeof(cal_value) == 'number' ? null : typeof(cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
+		isNegative = (cal_value < 0) ? true  : false; // Is negative. And if it is -ve then write in this value in (brackets).
+		cal_value_str =  applyNumberFormat(instance, cal_value);
+        cal_value_str = (isNegative)?"(" + cal_value_str + ")":cal_value_str; // Adding brackets over -ve value.
+			
+		var row = Ti.UI.createView({
+			height: Ti.UI.SIZE,
+			width: '100%',
+			backgroundColor: '#ccc'
+		});
+		
+		var row_label = Ti.UI.createLabel({
+			text: instance.label + "  ",
+			textAlign: Ti.UI.TEXT_ALIGNMENT_RIGHT,
+			width: '59.5%',
+			left: 0,
+			top: '1dp',
+			font: {
+				fontSize: '16dp',
+				fontWeight: 'bold'
+			},
+			color: '#246',
+			backgroundColor: '#ddd'
+		});
+		
+		var value = Ti.UI.createLabel({
+			text: "  " + cal_value_str,
+			textAlign: 'left',
+			width: '40%',
+			right: 0,
+			top: '1dp',
+			font: {
+				fontSize : '16dp',
+				fontWeight : 'bold'
+			},
+			color: '#424242',
+			wordWrap: false,
+			ellipsize: true,
+			backgroundColor: '#eee'
+		});
+		row.add(row_label);
+		row.add(value);
+		tableView.add(row);
+		tableView.singleValue = false;
+	}
+	else{
+		
+		Ti.API.info(row_values.length + " rows");
+		cal_value = (row_values.length == 1)?result[0].final_value:0;
+		typeof(cal_value) == 'number' ? null : typeof(cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
+		isNegative = (cal_value < 0) ? true  : false; // Is negative. And if it is -ve then write in this value in (brackets).
+		cal_value_str =  applyNumberFormat(instance, cal_value);
+        cal_value_str = (isNegative)?"(" + cal_value_str + ")":cal_value_str; // Adding brackets over -ve value.
+		
+		var value = Ti.UI.createLabel({
+			text: "  " + cal_value_str,
+			textAlign: Ti.UI.TEXT_ALIGNMENT_LEFT,
+			left: 0,
+			font: {
+				fontSize : '16dp'
+			},
+			color: '#666',
+			height: Ti.UI.SIZE,
+			wordWrap: false,
+			ellipsize: true
+		});
+		
+		tableView.add(value);
+		tableView.singleValue = true;
+		//heightView += heightCellView;
+	}
+	//content.height = heightView;
+	
+	return tableView;
 }
 
 function createCalculationTableFormat(content , db, contentArr) {

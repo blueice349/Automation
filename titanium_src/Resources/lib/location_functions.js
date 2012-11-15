@@ -1,4 +1,4 @@
-
+/*jslint eqeq:true, plusplus: true*/ 
 Omadi.location = Omadi.location || {};
 
 Omadi.location.currentPositionCallback = function(e) {

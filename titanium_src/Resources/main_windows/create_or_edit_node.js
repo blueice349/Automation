@@ -1,6 +1,3 @@
-/**
- * @author Joseandro
- */
 
 /*
 * This code generates forms for node creation and node edition.
@@ -8290,7 +8287,8 @@ create_or_edit_node.loadUI = function() {
 											if (ev.index == 0) {
 												openCamera(e);
 											} else if (ev.index == 1) {
-												downloadMainImage(e.source.imageVal, e.source, win);
+												//downloadMainImage(e.source.imageVal, e.source, win);
+												Omadi.display.displayLargeImage(e.source, win.nid, e.source.imageVal);
 											}
 										});
 										return;
@@ -8709,12 +8707,14 @@ create_or_edit_node.loadUI = function() {
 						var arrImages = content[j].arrImages;
 						for ( i_idx = 0; i_idx < arrImages.length; i_idx++) {
 							if (arrImages[i_idx].imageVal != defaultImageVal && arrImages[i_idx].isUpdated == false) {
-								downloadThumnail(arrImages[i_idx].imageVal, arrImages[i_idx], win);
+								//downloadThumnail(arrImages[i_idx].imageVal, arrImages[i_idx], win);
+								Omadi.display.setImageViewThumbnail(arrImages[i_idx], win.nid, arrImages[i_idx].imageVal);
 							}
 						}
 					} else {
 						if (content[j].imageVal != defaultImageVal && content[j].isUpdated == false) {
-							downloadThumnail(content[j].imageVal, content[j], win);
+							//downloadThumnail(content[j].imageVal, content[j], win);
+							Omadi.display.setImageViewThumbnail(content[j], win.nid, content[j].imageVal);
 						}
 					}
 				}
@@ -9007,7 +9007,7 @@ function openCamera(e) {
 					Ti.API.info("MIME TYPE: " + event.media.mimeType);
 					// If image size greater than 1MB we will reduce th image else take as it is.
 					if (event.media.length > ONE_MB) {
-						e.source.isImage = reduceImageSize(event.media, 500, 700).image;
+						e.source.isImage = Omadi.display.getImageViewFromData(event.media, 500, 700).image;
 					} else {
 						e.source.isImage = event.media;
 					}
@@ -9106,7 +9106,8 @@ function createImage(o_index, arrImages, data, scrollView, updated) {
 				if (ev.index == 0) {
 					openCamera(e);
 				} else if (ev.index == 1) {
-					downloadMainImage(e.source.imageVal, e.source, win);
+					//downloadMainImage(e.source.imageVal, e.source, win);
+					Omadi.display.displayLargeImage(e.source, win.nid, e.source.imageVal);
 				}
 			});
 			return;

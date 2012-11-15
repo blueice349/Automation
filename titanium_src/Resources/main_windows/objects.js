@@ -1,21 +1,24 @@
+/*jslint eqeq:true, plusplus: true*/ 
 
-Ti.include('/main_windows/create_or_edit_node.js');
+//Ti.include('/main_windows/create_or_edit_node.js');
+Ti.include('/lib/functions.js');
 	
 /*global PLATFORM,create_or_edit_node*/
 
-var bundle_data,
-bundle_label,
+var bundle,
 curWin,
 search,
+instances,
 filterValues,
 filterFields;
 
 curWin = Ti.UI.currentWindow;
 
+
 function openCreateNodeScreen(){
 	"use strict";
 	var win_new = create_or_edit_node.getWindow();
-	win_new.title = "New " + bundle_label;
+	win_new.title = "New " + bundle.label;
 	win_new.type = curWin.type;
 	win_new.uid = curWin.uid;
 	win_new.mode = 0;
@@ -33,7 +36,7 @@ function openCreateNodeScreen(){
 	// "use strict";
 // //Next window to be opened
 	// // var win_new = create_or_edit_node.getWindow();
-	// // win_new.title = bundle_label;
+	// // win_new.title = bundle.label;
 	// // win_new.type = curWin.type;
 	// // win_new.listView = curWin.listView;
 	// // win_new.up_node = curWin.up_node;
@@ -101,7 +104,7 @@ function openCreateNodeScreen(){
 				// var win_new = Titanium.UI.createWindow({
 					// fullscreen : false,
 					// navBarHidden : true,
-					// title: bundle_label,
+					// title: bundle.label,
 					// type: curWin.type,
 					// url : 'individual_object.js',
 					// up_node: curWin.up_node,
@@ -124,7 +127,7 @@ function openCreateNodeScreen(){
 				// //openEditScreen(btn_id[ev.index], _nid, e);
 			
 				// var win_new = create_or_edit_node.getWindow();
-				// win_new.title = bundle_label;
+				// win_new.title = bundle.label;
 				// win_new.type = curWin.type;
 				// win_new.listView = curWin.listView;
 				// win_new.up_node = curWin.up_node;
@@ -158,17 +161,17 @@ function windowOpened(e){
 	"use strict";
 	
 	Ti.API.info("window opened");
-	search.blur();
-	if(PLATFORM === 'android'){
-		Ti.UI.Android.hideSoftKeyboard();
-	}
-	Ti.API.debug("hide keyboard in windowOpened");
+	//search.blur();
+	//if(PLATFORM === 'android'){
+		//Ti.UI.Android.hideSoftKeyboard();
+	//}
+	//Ti.API.debug("hide keyboard in windowOpened");
 	
-	setTimeout(function(){
-		search.blur();
-		Ti.API.info("window 1 second passed");
-		search.setFocusable(true);
-	}, 1000);
+	//setTimeout(function(){
+		//search.blur();
+		//Ti.API.info("window 1 second passed");
+		//search.setFocusable(true);
+	//}, 1000);
 }
 	
 function backButtonPressed(e){
@@ -195,18 +198,29 @@ function homeButtonPressed(e){
      
      Ti.UI.currentWindow.close();
 }
+
+// function getFinalResults(filterFields, filterValues){
+//     
+// }
 	
 
 (function(){
 	"use strict";
 	/*global setUse, Omadi*/
+	/*jslint vars: true*/
 	
-	var i, curWin, db, db_result, filterFieldNames, filterField, filter_field_name;
+	var i, filterField, field_name;
+	var db, db_result;
+	
+	setUse();
+	
+	bundle = Omadi.data.getBundle(curWin.type);
+	instances = Omadi.data.getFields(curWin.type);
 	
 	Ti.API.info("OPENED NEW LIST WINDOW");
 	
 	//Current window's instance
-	curWin = Ti.UI.currentWindow;
+	
 	
 	//Sets only portrait mode
 	curWin.orientationModes = [Titanium.UI.PORTRAIT];
@@ -214,9 +228,9 @@ function homeButtonPressed(e){
     curWin.addEventListener('android:back', backButtonPressed);
 	
 	//Lock database for background updates
-	setUse();
 	
-	db = Omadi.utils.openMainDatabase();//Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+Omadi.utils.getMainDBName() );
+	
+	//Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+Omadi.utils.getMainDBName() );
 	//if(PLATFORM != 'android'){db.file.setRemoteBackup(false);}
 	
 	filterValues = curWin.filterValues;
@@ -229,62 +243,50 @@ function homeButtonPressed(e){
 	//}
 	
 	filterFields = [];
-	filterFieldNames = [];
 	
-	db_result = db.execute('SELECT _data, display_name FROM bundles WHERE bundle_name="' + curWin.type + '"');
-	bundle_data = JSON.parse(db_result.fieldByName('_data'));
-	bundle_label = db_result.fieldByName('display_name');
-    
-	
-	if (typeof bundle_data.mobile !== 'undefined' && typeof bundle_data.mobile.filters !== 'undefined' && typeof bundle_data.mobile.filters.fields !== 'undefined' && bundle_data.mobile.filters.fields.length > 0) {
-		
-		for(i in bundle_data.mobile.filters.fields){
-		    if(bundle_data.mobile.filters.fields.hasOwnProperty(i)){
-  
-                filter_field_name = bundle_data.mobile.filters.fields[i].field_name;
-                filterField = {};
-                filterField.field_name = filter_field_name;
 
-                if(filter_field_name === 'form_part'){
-                    filterField.field_label = 'Form Part';
-                    filterField.field_type = 'metadata';
+	if (typeof bundle.data.mobile !== 'undefined' && typeof bundle.data.mobile.filters !== 'undefined' && typeof bundle.data.mobile.filters.fields !== 'undefined' && bundle.data.mobile.filters.fields.length > 0) {
+		
+		for(i in bundle.data.mobile.filters.fields){
+		    if(bundle.data.mobile.filters.fields.hasOwnProperty(i)){
+  
+                field_name = bundle.data.mobile.filters.fields[i].field_name;
+                
+                if(field_name === 'form_part'){
+                    filterFields.push({
+                        label: 'Form Part',
+                        type: 'metadata'
+                    });
                 }
                 else{
-                    filterFieldNames.push(filter_field_name);
+                    filterFields.push(instances[field_name]);
                 }
-                filterFields.push(filterField);
-                //Ti.API.info('mobile filter field: ' + filter_field_name);
+                
+                //Ti.API.info('mobile filter field: ' + field_name);
             }
 		}
 	}
-	db_result.close();
 	
-	if(filterFieldNames.length > 0){
-		db_result = db.execute("SELECT label, type, field_name FROM fields WHERE field_name IN ('" + filterFieldNames.join("','") + "') AND bundle = '" + curWin.type + "'");
-		
-		while(db_result.isValidRow()){
-			for(i = 0; i < filterFields.length; i += 1){
-				if(filterFields[i].field_name === db_result.fieldByName('field_name')){
-					filterFields[i].field_type = db_result.fieldByName('type');
-					filterFields[i].field_label = db_result.fieldByName('label');
-				}
-			}
-			
-			db_result.next();	
-		}
-		
-		db_result.close();
-	}
+	
+	// if(filterFieldNames.length > 0){
+		// for(i = 0; i < filterFieldNames.length; i += 1){
+		    // filterFields[i] = instances[filterFieldNames[i]];
+			// // if(filterFields[i].field_name === db_result.fieldByName('field_name')){
+				// // filterFields[i].field_type = db_result.fieldByName('type');
+				// // filterFields[i].field_label = db_result.fieldByName('label');
+			// // }
+		// }
+	// }
+	
+	
 	
 	// for(i in filterValues){
 		// Ti.API.info('FILTER VALUE MIDDLE: ' + i + ": "+ filterValues[i].value);	
 	// }
 	
-	var numFilters = filterFields.length;
-	var numFilterValues = filterValues.length;
 	
-	//Ti.API.info(numFilters);
-    //Ti.API.info(numFilterValues);
+	//Ti.API.info(filterFields.length);
+    //Ti.API.info(filterValues.length);
 
 	var tableData = [];
 	var tableIndex = 0;
@@ -297,10 +299,10 @@ function homeButtonPressed(e){
 	var sql;
 	var lastFilterField;
 	
-	if(numFilterValues < numFilters && !showFinalResults){
-		lastFilterField = filterFields[numFilterValues];
+	if(filterValues.length < filterFields.length && !showFinalResults){
+		lastFilterField = filterFields[filterValues.length];
 		if(typeof lastFilterField.field_name !== 'undefined'){
-            var field_name = lastFilterField.field_name;
+            field_name = lastFilterField.field_name;
             sql = "SELECT DISTINCT " + field_name + " AS value FROM " + curWin.type + " type  INNER JOIN node n ON n.nid = type.nid";
         }
         else{
@@ -309,7 +311,7 @@ function homeButtonPressed(e){
             showFinalResults = true;
         }
 	}
-	else{//(numFilterValues == numFilters){
+	else{//(filterValues.length == filterFields.length){
 		sql = "SELECT n.title, n.nid, n.viewed FROM node n INNER JOIN " + curWin.type + " type ON type.nid = n.nid ";
 		
 		showFinalResults = true;
@@ -318,9 +320,9 @@ function homeButtonPressed(e){
 	var conditions = [];
 	
 	if(filterFields.length > 0){
-		for(i in filterFields){
+		for(i = 0; i < filterFields.length; i ++){
 		    Ti.API.info(i);
-			var field_name = filterFields[i].field_name;
+			field_name = filterFields[i].field_name;
 			Ti.API.info("FILTER FIELD NAME: " + field_name);
 			
 			
@@ -351,22 +353,24 @@ function homeButtonPressed(e){
 		sql += conditions.join(" AND ");
 	}
 	
-	Ti.API.info("FILTER SQL: " + sql);
+	
 	
 	if(showFinalResults){
 		sql += " ORDER BY ";
 		
-		if(typeof bundle_data.mobile !== 'undefined' && typeof bundle_data.mobile.sort_field !== 'undefined'){
-			sql += "n." + bundle_data.mobile.sort_field + " " + bundle_data.mobile.sort_direction;
+		if(typeof bundle.data.mobile !== 'undefined' && typeof bundle.data.mobile.sort_field !== 'undefined'){
+			sql += "n." + bundle.data.mobile.sort_field + " " + bundle.data.mobile.sort_direction;
 		}
 		else{
 			sql += "n.title ASC";
 		}
 	}
 	
-	db_result = db.execute(sql);
+	Ti.API.info("FILTER SQL: " + sql);
 	
 	if(showFinalResults){
+	    db = Omadi.utils.openMainDatabase();
+        db_result = db.execute(sql);
 		while(db_result.isValidRow()){
 			
 			//Ti.API.info("FILTER FINAL RESULT: " + db_result.fieldByName('nid'));
@@ -374,18 +378,18 @@ function homeButtonPressed(e){
 			
 			var title = db_result.fieldByName('title');
 			
-			title = trimWhiteSpace(title);
+			title = Omadi.utils.trimWhiteSpace(title);
 			
 			if(title.length == 0){
 				title = '- No Title -';
 			}
 			
 			var separator = ' - ';
-			if('title_fields' in bundle_data && 'separator' in bundle_data.title_fields){
-				separator = bundle_data.title_fields.separator;
+			if(typeof bundle.data.title_fields !== 'undefined' && typeof bundle.data.title_fields.separator !== 'undefined'){
+				separator = bundle.data.title_fields.separator;
 			}
 			
-			var whiteSpaceTest = trimWhiteSpace(separator);
+			var whiteSpaceTest = Omadi.utils.trimWhiteSpace(separator);
 			var backgroundColor = '#eee';
 			if(db_result.fieldByName('viewed') > 0){
 				backgroundColor = '#fff';
@@ -449,12 +453,15 @@ function homeButtonPressed(e){
 			db_result.next();
 		}
 		db_result.close();
+		db.close();
 	}
 	else{
 		
 		var text_values = [];
 		var values = [];
 		
+		db = Omadi.utils.openMainDatabase();
+        db_result = db.execute(sql);
 		while(db_result.isValidRow()){
 			
 			values.push(db_result.fieldByName('value'));
@@ -463,20 +470,17 @@ function homeButtonPressed(e){
 			
 			db_result.next();
 		}
-		
 		db_result.close();
+		
 		
 		
 		sql = "SELECT ";
 		
-		lastFilterField = filterFields[numFilterValues];
-	
-		var field_name = lastFilterField.field_name;
-		var field_type = lastFilterField.field_type;
+		lastFilterField = filterFields[filterValues.length];
 		
 		var safeValues = [];
 		
-		for(i in values){
+		for(i = 0; i < values.length; i ++){
 			if(values[i] > ''){
 				safeValues.push(values[i]);
 			}
@@ -485,68 +489,71 @@ function homeButtonPressed(e){
 			}
 		}
 		
-		if(field_type == 'taxonomy_term_reference'){
-			db_result = db.execute("SELECT tid AS value, name AS text_value FROM term_data WHERE tid IN (" + safeValues.join(",") + ")");
-			while(db_result.isValidRow()){
-				text_values[db_result.fieldByName('value')] = db_result.fieldByName('text_value');			
-				//Ti.API.info("FILTER: " + db_result.fieldByName('text_value'));
-				db_result.next();
+		var subResult;
+		//db = Omadi.utils.openMainDatabase();
+		
+		if(lastFilterField.type == 'taxonomy_term_reference'){
+			subResult = db.execute("SELECT tid AS value, name AS text_value FROM term_data WHERE tid IN (" + safeValues.join(",") + ")");
+			while(subResult.isValidRow()){
+				text_values[subResult.fieldByName('value')] = subResult.fieldByName('text_value');			
+				//Ti.API.info("FILTER: " + subResult.fieldByName('text_value'));
+				subResult.next();
 			}
 			
-			db_result.close();
+			subResult.close();
 		}
-		else if(field_type == 'omadi_reference'){
-			db_result = db.execute("SELECT nid AS value, title AS text_value FROM node WHERE nid IN (" + safeValues.join(",") + ")");
-			while(db_result.isValidRow()){
-				text_values[db_result.fieldByName('value')] = db_result.fieldByName('text_value');			
-				//Ti.API.info("FILTER: " + db_result.fieldByName('text_value'));
-				db_result.next();
+		else if(lastFilterField.type == 'omadi_reference'){
+			subResult = db.execute("SELECT nid AS value, title AS text_value FROM node WHERE nid IN (" + safeValues.join(",") + ")");
+			while(subResult.isValidRow()){
+				text_values[subResult.fieldByName('value')] = subResult.fieldByName('text_value');			
+				//Ti.API.info("FILTER: " + subResult.fieldByName('text_value'));
+				subResult.next();
 			}
 			
-			db_result.close();
+			subResult.close();
 		}
-		else if(field_type == 'user_reference'){
-			db_result = db.execute("SELECT uid AS value, realname AS text_value FROM user WHERE uid IN (" + safeValues.join(",") + ")");
-			while(db_result.isValidRow()){
-				text_values[db_result.fieldByName('value')] = db_result.fieldByName('text_value');			
-				//Ti.API.info("FILTER: " + db_result.fieldByName('text_value'));
-				db_result.next();
+		else if(lastFilterField.type == 'user_reference'){
+			subResult = db.execute("SELECT uid AS value, realname AS text_value FROM user WHERE uid IN (" + safeValues.join(",") + ")");
+			while(subResult.isValidRow()){
+				text_values[subResult.fieldByName('value')] = subResult.fieldByName('text_value');			
+				//Ti.API.info("FILTER: " + subResult.fieldByName('text_value'));
+				subResult.next();
 			}
 			
-			db_result.close();
+			subResult.close();
 		}
-		else if(field_name == 'form_part'){
+		else if(lastFilterField.field_name == 'form_part'){
 			
-			if (bundle_data.form_parts != null && bundle_data.form_parts != "") {
-				Ti.API.info('Form table part = ' + bundle_data.form_parts.parts.length);
-				if (bundle_data.form_parts.parts.length > 0) {
-					for(i in bundle_data.form_parts.parts){
-						text_values[i] = bundle_data.form_parts.parts[i].label;
-						//Ti.API.info("FILTER: " + bundle_data.form_parts.parts[i].label);
+			if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
+				Ti.API.info('Form table part = ' + bundle.data.form_parts.parts.length);
+				if (bundle.data.form_parts.parts.length > 0) {
+					for(i in bundle.data.form_parts.parts){
+					    if(bundle.data.form_parts.parts.hasOwnProperty(i)){
+						    text_values[i] = bundle.data.form_parts.parts[i].label;
+						}
+						//Ti.API.info("FILTER: " + bundle.data.form_parts.parts[i].label);
 					}
 				}
 			}
 		}
-		
+		db.close();
 	
 		tableIndex = 0;
-		for(i in values){
+		for(i = 0; i < values.length; i ++){
 		
 			//var text_value = '- Empty - ';
 			//if(value > 0){
 			var text_value = text_values[values[i]];
 			//}
 			
-			var row = Ti.UI.createTableViewRow({
-				height : '50dp',
-				hasChild : true,
-				title : text_value,
-				color: '#000',
-				filterValue: values[i],
-				filterValueText: text_value
-			});
-			
-			tableData[tableIndex] = row;
+			tableData[tableIndex] = Ti.UI.createTableViewRow({
+                height : '50dp',
+                hasChild : true,
+                title : text_value,
+                color: '#000',
+                filterValue: values[i],
+                filterValueText: text_value
+            });
 			tableIndex++;
 		}	
 		
@@ -554,12 +561,13 @@ function homeButtonPressed(e){
 			tableData.sort(sortByTitle);
 		}
 	}
+	//Ti.API.debug("10");
 	
 	
 	var filterTableView = Titanium.UI.createTableView({
 		data : tableData,
 		separatorColor: '#BDBDBD',
-		top: '60dp',
+		top: '60dp'
 	});	
 	
 	//Contat list container
@@ -577,7 +585,7 @@ function homeButtonPressed(e){
 		labelText += 'Found (' + tableData.length + ')';
 	}
 	else{
-		labelText += bundle_label + " List " + (showFinalResults ? '(' + tableData.length + ')' : '');
+		labelText += bundle.label + " List " + (showFinalResults ? '(' + tableData.length + ')' : '');
 	}
 	
 	var listLabel = Ti.UI.createLabel({
@@ -604,7 +612,7 @@ function homeButtonPressed(e){
 	        type: 'linear',
 	        startPoint: { x: '50%', y: '0%' },
 	        endPoint: { x: '50%', y: '100%' },
-	        colors: [ { color: '#ccc', offset: 0.0}, { color: '#ddd', offset: 0.25 }, { color: '#aaa', offset: 1.0 } ],
+	        colors: [ { color: '#ccc', offset: 0.0}, { color: '#ddd', offset: 0.25 }, { color: '#aaa', offset: 1.0 } ]
 	   },
 	   borderRadius: '5dp', 
 	   color: '#000'
@@ -635,11 +643,14 @@ function homeButtonPressed(e){
 		barHeight = 40;
 	}
 	
+	
+	Ti.API.debug("13");
 	if(filterValues.length){
 		var filterLabelParts = [];
-		for(i in filterValues){
+		for(i = 0; i < filterValues.length; i ++){
 			if(typeof filterValues[i] != 'undefined' && filterValues[i].value !== false){
 				Ti.API.info(filterValues[i].text);
+				
 				var filterLabelText = filterFields[i].field_label + ": ";
 				if(filterValues[i].text == ""){
 					filterLabelText += "- Not Set -";
@@ -753,7 +764,7 @@ function homeButtonPressed(e){
 		
 		items.push(back);
 		
-		if(numFilterValues > 0){
+		if(filterValues.length > 0){
 			items.push(homeButton);
 		}
 		
@@ -776,7 +787,7 @@ function homeButtonPressed(e){
 		
 		if(!showFinalResults){
 			showAllButton.width = '80dp';
-			items.push(showAllButton)
+			items.push(showAllButton);
 		}
 		
 		if(curWin.show_plus == true){
@@ -821,7 +832,7 @@ function homeButtonPressed(e){
 				
 			if(curWin.show_plus){
 				var newItem = menu.add({
-					title : 'New ' + bundle_label,
+					title : 'New ' + bundle.label,
 					order : 1
 				});
 				
@@ -842,7 +853,7 @@ function homeButtonPressed(e){
 	}
 	else{
 		
-		lastFilterField = filterFields[numFilterValues];
+		lastFilterField = filterFields[filterValues.length];
 	
 		var filterFieldLabel = Ti.UI.createLabel({
 			font: {fontSize: '16dp', fontWeight: "bold"},
@@ -856,12 +867,12 @@ function homeButtonPressed(e){
 		        type: 'linear',
 		        startPoint: { x: '50%', y: '0%' },
 		        endPoint: { x: '50%', y: '100%' },
-		        colors: [ { color: '#ddd', offset: 0.0}, { color: '#eee', offset: 0.3 }, { color: '#bbb', offset: 1.0 } ],
+		        colors: [ { color: '#ddd', offset: 0.0}, { color: '#eee', offset: 0.3 }, { color: '#bbb', offset: 1.0 } ]
 		    }
 		});
 		
 		if(Ti.Platform.osname == 'iphone'){
-			filterFieldLabel.text = bundle_label + ': Filter by ' + lastFilterField.field_label;
+			filterFieldLabel.text = bundle.label + ': Filter by ' + lastFilterField.field_label;
 		}
 		else{
 			filterFieldLabel.text = 'Filter by ' + lastFilterField.field_label;
@@ -906,7 +917,7 @@ function homeButtonPressed(e){
 			labelText += 'Found (' + filterData.length + ')';
 		}
 		else{
-			labelText += bundle_label + " List " + (showFinalResults ? '(' + filterData.length + ')' : '');
+			labelText += bundle.label + " List " + (showFinalResults ? '(' + filterData.length + ')' : '');
 		}
 		
 		listLabel.setText(labelText);
@@ -984,42 +995,45 @@ function homeButtonPressed(e){
 			else{
 				//bottomButtons1(e.row.nid, curWin, e);
 				
-				var _nid = e.row.nid;
-				var db = Omadi.utils.openMainDatabase();//Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
+				//var _nid = e.row.nid;
+				var subDB = Omadi.utils.openMainDatabase();//Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
 				//if(PLATFORM != 'android'){db_act.file.setRemoteBackup(false);}
 				// var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + curWin.type + '"');
 				// var _data = JSON.parse(json_data.fieldByName('_data'));
 			
-				var result = db.execute('SELECT form_part, perm_edit FROM node WHERE nid=' + _nid);
+				var result = subDB.execute('SELECT form_part, perm_edit FROM node WHERE nid=' + e.row.nid);
 			
 				//Ti.API.info('Form node part = ' + result.fieldByName('form_part'));
 				
 				var btn_tt = [];
 				var btn_id = [];
 				var isEditEnabled = false;
-				if(result.fieldByName('perm_edit') == 1){
-					if(bundle_data.form_parts!=null && bundle_data.form_parts!=""){
-						//Ti.API.info('Form table part = ' + bundle_data.form_parts.parts.length);
-						if(bundle_data.form_parts.parts.length >= parseInt(result.fieldByName('form_part')) + 2) { 
-							//Ti.API.info("Title = " + bundle_data.form_parts.parts[result.fieldByName('form_part') + 1].label);
-							btn_tt.push(bundle_data.form_parts.parts[result.fieldByName('form_part') + 1].label);
-							btn_id.push(result.fieldByName('form_part') + 1);
-							//Ti.API.info(result.fieldByName('form_part') + 1);
+				
+				if(result){
+					if(result.fieldByName('perm_edit') == 1){
+						if(bundle.data.form_parts!=null && bundle.data.form_parts!=""){
+							//Ti.API.info('Form table part = ' + bundle.data.form_parts.parts.length);
+							if(bundle.data.form_parts.parts.length >= parseInt(result.fieldByName('form_part')) + 2) { 
+								//Ti.API.info("Title = " + bundle.data.form_parts.parts[result.fieldByName('form_part') + 1].label);
+								btn_tt.push(bundle.data.form_parts.parts[result.fieldByName('form_part') + 1].label);
+								btn_id.push(result.fieldByName('form_part') + 1);
+								//Ti.API.info(result.fieldByName('form_part') + 1);
+							}
 						}
+						isEditEnabled = true;
+						btn_tt.push('Edit');
+						btn_id.push(result.fieldByName('form_part'));
 					}
-					isEditEnabled = true;
-					btn_tt.push('Edit');
-					btn_id.push(result.fieldByName('form_part'));
+					result.close();
 				}
 				
-				result.close();
-				db.close();
+				subDB.close();
 				
 				if(!isEditEnabled){
 				    var win_new = Titanium.UI.createWindow({
                         fullscreen : false,
                         navBarHidden : true,
-                        title: bundle_label,
+                        title: bundle.label,
                         type: curWin.type,
                         url : 'individual_object.js',
                         up_node: curWin.up_node,
@@ -1056,18 +1070,18 @@ function homeButtonPressed(e){
                             var win_new = Titanium.UI.createWindow({
                                 fullscreen : false,
                                 navBarHidden : true,
-                                title: bundle_label,
+                                title: bundle.label,
                                 type: curWin.type,
                                 url : 'individual_object.js',
                                 up_node: curWin.up_node,
                                 uid: curWin.uid,
-                                region_form: e.row.form_part,
+                                region_form: ev.source.eventSource.row.form_part,
                                 backgroundColor: '#000'
                             });
                             
                             //Passing parameters
-                            win_new.nid				= e.row.nid;
-                            win_new.nameSelected	= e.row.name;
+                            win_new.nid				= ev.source.eventSource.row.nid;
+                            win_new.nameSelected	= ev.source.eventSource.row.name;
                             
                             ev.source.eventSource.setBackgroundColor('#fff');
                             
@@ -1082,7 +1096,7 @@ function homeButtonPressed(e){
                         
                             var win_new;
                             win_new = create_or_edit_node.getWindow();
-                            win_new.title = bundle_label;
+                            win_new.title = bundle.label;
                             win_new.type = curWin.type;
                             win_new.listView = curWin.listView;
                             win_new.up_node = curWin.up_node;
@@ -1090,8 +1104,8 @@ function homeButtonPressed(e){
                             win_new.region_form = btn_id[ev.index];
                             
                             //Passing parameters
-                            win_new.nid = _nid;
-                            win_new.nameSelected = e.row.name;
+                            win_new.nid = ev.source.eventSource.row.nid;
+                            win_new.nameSelected = ev.source.eventSource.row.name;
                             
                             //Sets a mode to fields edition
                             win_new.mode = 1;
@@ -1099,7 +1113,7 @@ function homeButtonPressed(e){
                             ev.source.eventSource.setBackgroundColor('#fff');
                             
                             win_new.addEventListener("open", function(e){
-                                Omadi.service.setNodeViewed(e.source.nid);
+                                Omadi.service.setNodeViewed(ev.source.eventSource.row.nid);
                             });
                                 
                             win_new.open();
@@ -1169,9 +1183,9 @@ function homeButtonPressed(e){
 	search.blur();
 	Ti.API.info("END OF OBJECTS WINDOW FILE");
 	
-	db.close();
+	
 
-	if(PLATFORM === 'android'){
+	//if(PLATFORM === 'android'){
 		// bottomBack(curWin, "Back" , "enable", true);
 		// if (listTableView != null ){
 			// listTableView.bottom = '6%'	
@@ -1191,7 +1205,7 @@ function homeButtonPressed(e){
 				// });
 			// }
 		// }
-	}
+	//}
 		
 	unsetUse();
 	

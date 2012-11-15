@@ -4,14 +4,16 @@
  * Provides: Functions used by the app
  */
 
-Ti.include('/lib/encoder_base_64.js');
-Ti.include('/lib/util_functions.js');
-
-
 var domainName = Ti.App.Properties.getString("domainName");
 
-var DOWNLOAD_URL_THUMBNAIL = '/sync/image/thumbnail/';
-var DOWNLOAD_URL_IMAGE_FILE = '/sync/file/';
+Ti.include('/lib/encoder_base_64.js');
+Ti.include('/lib/util_functions.js');
+Ti.include('/lib/data_functions.js');
+Ti.include('/lib/display_functions.js');
+
+
+
+
 var PLATFORM = Ti.Platform.name;
 var NUMBER_FORMAT_CURRENCY = 'currency';
 var NUMBER_FORMAT_INTEGER = 'integer';
@@ -165,29 +167,31 @@ function no_backup (db_obj){
 }
 
 function createNotification(message) {
- 
-    var mainIntent = Titanium.Android.createIntent({
-        className: 'org.appcelerator.titanium.TiActivity', 
-        packageName: 'com.omadi.crm',
-        flags: Titanium.Android.FLAG_ACTIVITY_CLEAR_TOP | Titanium.Android.FLAG_ACTIVITY_SINGLE_TOP
-    });
- 
-    var pending = Titanium.Android.createPendingIntent({ 
-        activity: Titanium.Android.currentActivity,
-        intent: mainIntent,
-        type: Titanium.Android.PENDING_INTENT_FOR_ACTIVITY,
-        flags: Titanium.Android.FLAG_UPDATE_CURRENT
-    });
- 
-    var notification = Titanium.Android.createNotification({
-            icon: 0x7f020000,
-            contentTitle: 'Omadi CRM',
-            contentText: message,
-            tickerText: 'Omadi GPS Service',
-            contentIntent: pending,
-            flags: Titanium.Android.FLAG_ONGOING_EVENT | Titanium.Android.FLAG_NO_CLEAR
-    });
-    Titanium.Android.NotificationManager.notify(42, notification);
+ 	
+ 	if(PLATFORM === 'android'){
+	    var mainIntent = Titanium.Android.createIntent({
+	        className: 'org.appcelerator.titanium.TiActivity', 
+	        packageName: 'com.omadi.crm',
+	        flags: Titanium.Android.FLAG_ACTIVITY_CLEAR_TOP | Titanium.Android.FLAG_ACTIVITY_SINGLE_TOP
+	    });
+	 
+	    var pending = Titanium.Android.createPendingIntent({ 
+	        activity: Titanium.Android.currentActivity,
+	        intent: mainIntent,
+	        type: Titanium.Android.PENDING_INTENT_FOR_ACTIVITY,
+	        flags: Titanium.Android.FLAG_UPDATE_CURRENT
+	    });
+	 
+	    var notification = Titanium.Android.createNotification({
+	            icon: 0x7f020000,
+	            contentTitle: 'Omadi CRM',
+	            contentText: message,
+	            tickerText: 'Omadi GPS Service',
+	            contentIntent: pending,
+	            flags: Titanium.Android.FLAG_ONGOING_EVENT | Titanium.Android.FLAG_NO_CLEAR
+	    });
+	    Titanium.Android.NotificationManager.notify(42, notification);
+	}
 }
 function removeNotifications(){
 	Titanium.Android.NotificationManager.cancelAll();
@@ -1573,10 +1577,6 @@ function process_object(json, obj, f_marks, progress, type_request, db_process_o
 ////////////////////////////////////////////////
 // Gets the JSON for updated nodes
 ////////////////////////////////////////////////
-
-function trimWhiteSpace(string){
-	return string.replace(/^\s+|\s+$/g,"");
-}
 
 function getJSON() {
 	//Initial JSON values:
@@ -4238,7 +4238,7 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 			
 		}
 
-		Ti.API.info('Request type: ' + type_request + ' progress value: ' + progress);
+		//Ti.API.info('Request type: ' + type_request + ' progress value: ' + progress);
 		if ((type_request == 'POST') && (progress != null)) {
 			if (PLATFORM == 'android') {
 				Ti.UI.createNotification({
@@ -4251,7 +4251,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 				alert('Error :: ' + e.error);
 				//Change message for testing purpose
 			}
-		} else if (mode == 0) {
+		} 
+		else if (mode == 0) {
 			if (PLATFORM == 'android') {
 				Ti.UI.createNotification({
 					//message : 'An error happened while we tried to connect to the server in order to transfer the recently updated node, please make a manual update',
@@ -4264,7 +4265,8 @@ function installMe(win, timeIndex, progress, menu, img, type_request, mode, clos
 				//Change message for testing purpose
 			}
 			close_parent(true);
-		} else if (mode == 1) {
+		} 
+		else if (mode == 1) {
 			if (PLATFORM == 'android') {
 				Ti.UI.createNotification({
 					//message : 'An error happened while we tried to connect to the server in order to transfer the recently saved node, please make a manual update',
@@ -4483,7 +4485,8 @@ function isUpdating() {
 		db_gu.close();
 		Ti.API.info("App is updating");
 		return true;
-	} else {
+	} 
+	else {
 		res_set.close();
 		db_gu.close();
 		Ti.API.info("App is idle");
@@ -4701,34 +4704,34 @@ function uploadFile(win) {
 }
 
 // To reduce image
-function reduceImageSize(blobImage, maxWidth, maxHeight) {
-	try{
-		var image1 = Titanium.UI.createImageView({
-			image : blobImage,
-			width : 'auto',
-			height : 'auto'
-		});
-		var imageBlob = image1.toBlob();
-		var multiple;
-		if(imageBlob.height / imageBlob.width > maxHeight / maxWidth) {
-			multiple = imageBlob.height / maxHeight;
-		} else {
-			multiple = imageBlob.width / maxWidth;
-		}
-
-		if(multiple >= 1) {
-			image1.height = parseInt(imageBlob.height / multiple);
-			image1.width = parseInt(imageBlob.width / multiple);
-			image1.image = image1.toImage();
-		} else {
-
-		}
-		return image1;
-	}catch(evt){
-		Ti.API.error("Error in reduce Image Size");
-	}
-	
-}
+// function reduceImageSize(blobImage, maxWidth, maxHeight) {
+	// try{
+		// var image1 = Titanium.UI.createImageView({
+			// image : blobImage,
+			// width : 'auto',
+			// height : 'auto'
+		// });
+		// var imageBlob = image1.toBlob();
+		// var multiple;
+		// if(imageBlob.height / imageBlob.width > maxHeight / maxWidth) {
+			// multiple = imageBlob.height / maxHeight;
+		// } else {
+			// multiple = imageBlob.width / maxWidth;
+		// }
+// 
+		// if(multiple >= 1) {
+			// image1.height = parseInt(imageBlob.height / multiple);
+			// image1.width = parseInt(imageBlob.width / multiple);
+			// image1.image = image1.toImage();
+		// } else {
+// 
+		// }
+		// return image1;
+	// }catch(evt){
+		// Ti.API.error("Error in reduce Image Size");
+	// }
+// 	
+// }
 
 function updateFileUploadTable(win, json) {
 	try {
@@ -4756,184 +4759,173 @@ function updateFileUploadTable(win, json) {
 		}
 		bundles.close();
 		db_fileUpload.close();
-	} catch(evt) {
-	}
-}
-
-// Download Image from the server
-function downloadThumnail(file_id, image, win) {
-	if(win.nid > 0 && file_id > 0){   
-		var URL = domainName + DOWNLOAD_URL_THUMBNAIL + win.nid + '/' + file_id;
-		Ti.API.info("==== site:: " + URL);
-		try {
-			var downloadImage = Ti.Network.createHTTPClient();
-			downloadImage.setTimeout(30000);
-			downloadImage.open('GET', URL);
-			
-			if(PLATFORM == 'android'){
-				downloadImage.setRequestHeader("Cookie", getCookie());// Set cookies
-			}
-			else{
-				var split_cookie = getCookie().split(';');
-				if (!split_cookie[0] ){
-					split_cookie[0]="";
-				}
-				downloadImage.setRequestHeader("Cookie", split_cookie[0]);// Set cookies
-			} 
-	
-			downloadImage.onload = function(e) {
-				var tempImg = Ti.UI.createImageView({
-					height : 'auto',
-					width : 'auto',
-					image : this.responseData
-				});
-				
-				//Ti.API.info(this.responseData);
-				
-				if (tempImg.toImage().height > 100 || tempImg.toImage().width > 100) {
-					image.setImage(reduceImageSize(tempImg.toImage(), 100, 100).toBlob());
-				} else {
-					image.setImage(this.responseData);
-				}
-				image.isImage = true;
-				//image = tempImg;
-			};
-	
-			downloadImage.onerror = function(e) {
-				Ti.API.error("Error in download image.");
-				image.image = '../images/default.png';
-			};
-	
-			downloadImage.send();
-		} 
-		catch(e) {
-			Ti.API.info("==== ERROR ===" + e);
-		}
-	}
-}
-
-function downloadMainImage(file_id, content, win) {
-	var actInd = Ti.UI.createActivityIndicator();
-	actInd.font = {
-		fontFamily : 'Helvetica Neue',
-		fontSize : 15,
-		fontWeight : 'bold'
-	};
-	actInd.color = 'white';
-	actInd.message = 'Loading...';
-	actInd.show();
-	if (content.bigImg != null) {
-		showImage(content, actInd);
-		return;
-	}
-
-	var URL = domainName + DOWNLOAD_URL_IMAGE_FILE + win.nid + '/' + file_id;
-	
-	Ti.API.info("==== site:: " + URL);
-	try {
-		var downloadImage = Ti.Network.createHTTPClient();
-		downloadImage.setTimeout(30000);
-		downloadImage.open('GET', URL);
-		
-		if(PLATFORM == 'android'){
-			downloadImage.setRequestHeader("Cookie", getCookie());// Set cookies
-		}
-		else{
-			var split_cookie = getCookie().split(';');
-			if (!split_cookie[0] ){
-				split_cookie[0]="";
-			}
-			downloadImage.setRequestHeader("Cookie", split_cookie[0]);// Set cookies
-		} 
-		
-		downloadImage.onload = function(e) {
-			Ti.API.info('=========== Success ========');
-			content.bigImg = this.responseData;
-			showImage(content, actInd);
-		};
-
-		downloadImage.onerror = function(e) {
-			Ti.API.error("Error in download Image 2");
-			actInd.hide();
-		};
-		
-		downloadImage.send();
 	} 
-	catch(e) {
-		actInd.hide();
-		Ti.API.info("==== ERROR ===" + e);
+	catch(evt) {
+		Ti.API.error(evt);
 	}
 }
 
-function showImage(source, actInd) {
-	var imageWin = Ti.UI.createWindow({
-		backgroundColor : '#00000000',
-		navBarHidden : true
-	});
-	imageWin.orientation = [Ti.UI.PORTRAIT];
+// // Download Image from the server
+// function downloadThumnail(file_id, image, win) {
+	// if(win.nid > 0 && file_id > 0){   
+		// var URL = domainName + DOWNLOAD_URL_THUMBNAIL + win.nid + '/' + file_id;
+		// Ti.API.info("==== site:: " + URL);
+		// try {
+			// var downloadImage = Ti.Network.createHTTPClient();
+			// downloadImage.setTimeout(30000);
+			// downloadImage.open('GET', URL);
+// 			
+			// Omadi.utils.setCookieHeader(downloadImage);
+// 			
+// 	
+			// downloadImage.onload = function(e) {
+				// var tempImg = Ti.UI.createImageView({
+					// height : 'auto',
+					// width : 'auto',
+					// image : this.responseData
+				// });
+// 				
+				// //Ti.API.info(this.responseData);
+// 				
+				// if (tempImg.toImage().height > 100 || tempImg.toImage().width > 100) {
+					// image.setImage(reduceImageSize(tempImg.toImage(), 100, 100).toBlob());
+				// } else {
+					// image.setImage(this.responseData);
+				// }
+				// image.isImage = true;
+				// //image = tempImg;
+			// };
+// 	
+			// downloadImage.onerror = function(e) {
+				// Ti.API.error("Error in download image.");
+				// image.image = '../images/default.png';
+			// };
+// 	
+			// downloadImage.send();
+		// } 
+		// catch(e) {
+			// Ti.API.info("==== ERROR ===" + e);
+		// }
+	// }
+// }
 
-	var tanslucent = Ti.UI.createView({
-		backgroundColor : 'black',
-		opacity : 0.7,
-		top : 0,
-		bottom : 0,
-		right : 0,
-		left : 0
-	});
-	imageWin.add(tanslucent);
-	//Header part
-	var header = Ti.UI.createView({
-		backgroundImage : '../images/header.png',
-		height : '40',
-		top : 0
-	});
-	header.top = header.left = header.right = 0
-	var labelDesc = Ti.UI.createLabel({
-		text : source.label,
-		left : 5,
-		height : 30,
-		width : Ti.Platform.displayCaps.platformWidth - 10,
-		color : '#fff',
-		font : {
-			fontFamily : 'Helvetica Neue',
-			fontSize : 18,
-			fontWeight : 'bold',
+// function downloadMainImage(file_id, content, win) {
+	// var actInd = Ti.UI.createActivityIndicator();
+	// actInd.font = {
+		// fontFamily : 'Helvetica Neue',
+		// fontSize : 15,
+		// fontWeight : 'bold'
+	// };
+	// actInd.color = 'white';
+	// actInd.message = 'Loading...';
+	// actInd.show();
+	// if (content.bigImg != null) {
+		// showImage(content, actInd);
+		// return;
+	// }
+// 	
+	// //Ti.API.info("==== site:: " + URL);
+	// try {
+		// var http = Ti.Network.createHTTPClient();
+		// http.setTimeout(30000);
+		// http.open('GET', Omadi.DOMAIN_NAME + '/sync/file/' + win.nid + '/' + file_id);
+// 		
+		// Omadi.utils.setCookieHeader(http);
+// 		
+		// http.onload = function(e) {
+			// //Ti.API.info('=========== Success ========');
+			// content.bigImg = this.responseData;
+			// showImage(content, actInd);
+			// actInd.hide();
+		// };
+// 
+		// http.onerror = function(e) {
+			// Ti.API.error("Error in download Image 2");
+			// actInd.hide();
+			// alert("There was an error retrieving the file.");
+		// };
+// 		
+		// http.send();
+	// } 
+	// catch(e) {
+		// actInd.hide();
+		// alert("There was an error retrieving the file.");
+		// Ti.API.info("==== ERROR ===" + e);
+	// }
+// }
 
-		},
-		ellipsize : true,
-		wordWrap : false
-	});
-	var close_btn = Ti.UI.createImageView({
-		height : 30,
-		width : 25,
-		top : 4,
-		right : 5,
-		image : '../images/close.png'
-	});
-	imageWin.add(header);
-	header.add(labelDesc);
-	header.add(close_btn);
-
-	var fullImage = reduceImageSize(source.bigImg, Ti.Platform.displayCaps.platformWidth, Ti.Platform.displayCaps.platformHeight - 50);
-	
-	var imageBaseView = Ti.UI.createView({
-		top : 38,
-		right : 0,
-		left : 0,
-		bottom : 0
-	});
-	close_btn.addEventListener('click', function(e) {
-		imageWin.close();
-	});
-	
-	if(!(fullImage==null))
-	{
-	imageBaseView.add(fullImage);
-	}
-	imageWin.add(imageBaseView);
-	actInd.hide();
-	imageWin.open();
-}
+// function showImage(source, actInd) {
+	// var imageWin = Ti.UI.createWindow({
+		// backgroundColor : '#00000000'
+	// });
+	// imageWin.orientation = [Ti.UI.PORTRAIT];
+// 
+	// var tanslucent = Ti.UI.createView({
+		// backgroundColor : 'black',
+		// opacity : 0.8,
+		// top : 0,
+		// bottom : 0,
+		// right : 0,
+		// left : 0
+	// });
+// 	
+	// //Header part
+	// // var header = Ti.UI.createView({
+		// // backgroundImage : '../images/header.png',
+		// // height : '40',
+		// // top : 0
+	// // });
+	// // header.top = header.left = header.right = 0
+	// // var labelDesc = Ti.UI.createLabel({
+		// // text : source.label,
+		// // left : 5,
+		// // height : 30,
+		// // width : Ti.Platform.displayCaps.platformWidth - 10,
+		// // color : '#fff',
+		// // font : {
+			// // fontFamily : 'Helvetica Neue',
+			// // fontSize : 18,
+			// // fontWeight : 'bold',
+// // 
+		// // },
+		// // ellipsize : true,
+		// // wordWrap : false
+	// // });
+	// // var close_btn = Ti.UI.createImageView({
+		// // height : 30,
+		// // width : 25,
+		// // top : 4,
+		// // right : 5,
+		// // image : '../images/close.png'
+	// // });
+	// //imageWin.add(header);
+	// //header.add(labelDesc);
+	// //header.add(close_btn);
+// 
+	// var fullImage = Omadi.display.getImageViewFromData(source.bigImg, Ti.Platform.displayCaps.platformWidth, Ti.Platform.displayCaps.platformHeight - 50);
+// 	
+	// // var imageBaseView = Ti.UI.createView({
+		// // top : 0,
+		// // right : 0,
+		// // left : 0,
+		// // bottom : 0
+	// // });
+// 	
+	// fullImage.addEventListener('click', function(e) {
+		// imageWin.close();
+	// });
+// 	
+	// tanslucent.addEventListener('click', function(e) {
+		// imageWin.close();
+	// });
+// 	
+	// if(!(fullImage==null)){
+		// tanslucent.add(fullImage);
+	// }
+	// imageWin.add(tanslucent);
+	// //imageWin.add(imageBaseView);
+	// imageWin.open();
+// }
 
 function clearCache() {
 	var path = Ti.Filesystem.getFile(Titanium.Filesystem.applicationDirectory).getParent();
@@ -4959,6 +4951,10 @@ function _calculation_field_sort_on_weight(a, b) {
 	}
 	return 0;
 }
+
+
+
+
 
 function _calculation_field_get_values(win, db_display, instance, entity, content) {
 	//Ti.API.info('here--------0.1' + instance.field_name + ", mode: " + win.mode);
@@ -4997,7 +4993,8 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 				if (calculated_field_cache[calculation_row.field_name_1] != null) {
 					//Ti.API.info('here--------0.5' + calculated_field_cache[calculation_row.field_name_1]);
 					field_1_multiplier = calculated_field_cache[calculation_row.field_name_1];
-				} else if (calculation_row.type == 'parent_field_value') {
+				} 
+				else if (calculation_row.type == 'parent_field_value') {
 					//Ti.API.info('here--------0.6' + calculation_row.parent_field);
 					parent_field = calculation_row.parent_field;
 					if (entity[parent_field] != null && entity[parent_field][0]['nid'] != null) {
@@ -5007,7 +5004,8 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 							//Ti.API.info('here--------0.7' + field_1_multiplier);
 						}
 					}
-				} else if (entity[calculation_row.field_name_1] != null && entity[calculation_row.field_name_1][0]['value'] != null) {
+				} 
+				else if (entity[calculation_row.field_name_1] != null && entity[calculation_row.field_name_1][0]['value'] != null) {
 					field_1_multiplier = entity[calculation_row.field_name_1][0]['value'];
 					//Ti.API.info('here--------0.8' + field_1_multiplier);
 				}
@@ -5052,13 +5050,16 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 							if (calculation_row.interval_rounding == 'up') {
 								field_1_multiplier = Math.ceil(field_1_multiplier);
 								//Ti.API.info('here--------0.18' + field_1_multiplier);
-							} else if (calculation_row.interval_rounding == 'down') {
+							} 
+							else if (calculation_row.interval_rounding == 'down') {
 								field_1_multiplier = Math.floor(field_1_multiplier);
 								//Ti.API.info('here--------0.19' + field_1_multiplier);
-							} else if (calculation_row.interval_rounding == 'integer') {
+							} 
+							else if (calculation_row.interval_rounding == 'integer') {
 								field_1_multiplier = Math.round(field_1_multiplier);
 								//Ti.API.info('here--------0.20' + field_1_multiplier);
-							} else if (calculation_row.interval_rounding == 'increment-at-time') {
+							} 
+							else if (calculation_row.interval_rounding == 'increment-at-time') {
 								//Ti.API.info('here--------0.21' + calculation_row.increment_at_time);
 								at_time = calculation_row.increment_at_time;
 								start_timestamp = Number(start_timestamp);
@@ -5089,7 +5090,8 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 				if (calculated_field_cache[calculation_row.field_name_1] != null) {
 					field_2_multiplier = calculated_field_cache[calculation_row.field_name_2];
 					//Ti.API.info('here--------2' + field_2_multiplier);
-				} else if (calculation_row.type == 'parent_field_value') {
+				} 
+				else if (calculation_row.type == 'parent_field_value') {
 					parent_field = calculation_row.parent_field;
 					//Ti.API.info('here--------3' + parent_field);
 					if (entity[parent_field] != null && entity[parent_field][0]['nid'] != null) {
@@ -5100,7 +5102,8 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 							//Ti.API.info('here--------5' + field_2_multiplier);
 						}
 					}
-				} else if (entity[calculation_row.field_name_2] != null && entity[calculation_row.field_name_2][0]['value'] != null) {
+				} 
+				else if (entity[calculation_row.field_name_2] != null && entity[calculation_row.field_name_2][0]['value'] != null) {
 					field_2_multiplier = entity[calculation_row.field_name_2][0]['value'];
 					//Ti.API.info('here--------6' + field_2_multiplier);
 				}
@@ -5125,7 +5128,8 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 			if (field_1_multiplier == 0 && calculation_row.field_name_1 != null && calculation_row.field_name_1 != "") {
 				//Ti.API.info('here--------10');
 				zero = true;
-			} else if (value == 0 && field_1_multiplier != 0) {
+			} 
+			else if (value == 0 && field_1_multiplier != 0) {
 				//Ti.API.info('here--------11');
 				value = field_1_multiplier;
 			}
@@ -5133,10 +5137,12 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 			if (field_2_multiplier == 0 && calculation_row.field_name_2 != null && calculation_row.field_name_2 != "") {
 				//Ti.API.info('here--------12');
 				zero = true;
-			} else if (value == 0 && field_2_multiplier != 0) {
+			} 
+			else if (value == 0 && field_2_multiplier != 0) {
 				//Ti.API.info('here--------13');
 				value = Number(field_2_multiplier);
-			} else if (value != 0 && field_2_multiplier != 0) {
+			} 
+			else if (value != 0 && field_2_multiplier != 0) {
 				//Ti.API.info('here--------14');
 				value *= Number(field_2_multiplier);
 			}
@@ -5144,7 +5150,8 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 			if (value == 0 && numeric_multiplier != 0) {
 				//Ti.API.info('here--------15');
 				value = Number(numeric_multiplier);
-			} else if (value != 0 && numeric_multiplier != 0) {
+			} 
+			else if (value != 0 && numeric_multiplier != 0) {
 				//Ti.API.info('here--------16');
 				value *= Number(numeric_multiplier);
 			}
@@ -5170,14 +5177,14 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
 			//Ti.API.info('here--------19' + final_value);
 		}
 		//	alert("final value: " + final_value);
-		return new Array({
+		return [{
 			'cached_final_value' : cached_final_value,
 			'final_value' : final_value,
 			'rows' : row_values,
-		});
+		}];
 
 	}
-	return new Array();
+	return [];
 }
 
 function omadi_fields_get_fields(win, db_display) {

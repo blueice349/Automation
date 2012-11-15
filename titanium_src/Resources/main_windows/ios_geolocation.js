@@ -1,3 +1,5 @@
+/*jslint eqeq:true, plusplus: true*/ 
+
 Ti.include('/lib/util_functions.js');
 
 Ti.App.Properties.setString("last_alert_popup", 0);

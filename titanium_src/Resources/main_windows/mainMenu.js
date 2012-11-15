@@ -1,22 +1,7 @@
-/**
- * Name: mainMenu.js
- * Function: 
- * 		Show buttons where the user can select where he
- *		wants to go.  
- * Provides:
- * 		First window the user sees when he logs in.
- *		Alert messages when user clicks on "back" on the phone.
- *		Menu with different buttons.
- *		Log out button.
- * @author Joseandro
- */ 
+/*jslint eqeq:true, plusplus: true*/ 
 
 Ti.include('/main_windows/create_or_edit_node.js');
 Ti.include('/main_windows/message_center.js');
-Ti.include('/lib/functions.js'); 
-Ti.include('/lib/encoder_base_64.js');
-
-Ti.API.info("hi");
 
 //Current window's instance
 var curWin = Ti.UI.currentWindow;
@@ -32,8 +17,8 @@ var isFirstTime = false;
 
 //Common used functions
 unsetUse();
-var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+Omadi.utils.getMainDBName() );
-if(PLATFORM != 'android'){db.file.setRemoteBackup(false);}
+var db = Omadi.utils.openMainDatabase();//Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+Omadi.utils.getMainDBName() );
+//if(PLATFORM != 'android'){db.file.setRemoteBackup(false);}
 
 function checkUpdate(evt){
 	Ti.API.info('******* Called checkupate => '+evt);
@@ -90,7 +75,7 @@ function checkUpdate(evt){
 	else{
 		if (evt == 'from_menu'){
 			if ( !(Titanium.Network.online)) {
-				if(PLATFORM == 'android'){
+				if(PLATFORM === 'android'){
 					Ti.UI.createNotification({
 						message : 'You have no internet access, make sure you are online in order to update'
 					}).show();
@@ -101,7 +86,7 @@ function checkUpdate(evt){
 				unsetUse();
 			}
 			else {
-				if(PLATFORM == 'android'){
+				if(PLATFORM === 'android'){
 					Ti.UI.createNotification({
 						message : 'Another update is already running'
 					}).show();
@@ -111,7 +96,7 @@ function checkUpdate(evt){
 			}
 		}
 	}
-};
+}
 
 
 var listView = Titanium.UI.createTableView({
@@ -166,7 +151,8 @@ while ( elements.isValidRow() ){
 		app_permissions.all_permissions = true;
 		app_permissions.can_update = true;
 		app_permissions.can_view = true;
-	} else {
+	} 
+	else {
 		var _l;
 		for(_l in node_type_json.permissions) {
 			for(_k in roles) {
@@ -254,10 +240,12 @@ while ( elements.isValidRow() ){
 			right: "1dp",
 			is_plus: true
 		});
+		
 		if (show_plus === false){
 			if(PLATFORM=='android'){
 				plus.visible = false;
-			}else{
+			}
+			else{
 				plus.hide();	
 			}
 		}
@@ -276,7 +264,8 @@ while ( elements.isValidRow() ){
 					alert(e.source.desc)
 				}
 			});
-		} else {
+		} 
+		else {
 			row_t.addEventListener('longpress', function(e) {
 				if(e.source.desc != null && e.source.desc != "") {
 					alert(e.source.desc)
@@ -513,7 +502,7 @@ curWin.addEventListener('android:back', function() {
 	verifyLogout.show();
 });
 
-if(PLATFORM == 'android'){
+if(PLATFORM === 'android'){
 
 	var activity = Ti.Android.currentActivity;
 	
@@ -568,7 +557,6 @@ if(PLATFORM == 'android'){
 	    menu_draft.addEventListener('click', function(){
 	    	openDraftWindow();
 	    });
-	    
 	};
 }
 
@@ -658,6 +646,7 @@ var alerts_lb = Ti.UI.createLabel({
 	height: 'auto',
 	bottom: 0
 });
+
 alerts_view.add(alerts_img);
 alerts_view.add(alerts_lb);
 alerts_view.addEventListener('click', function(){
@@ -673,16 +662,18 @@ alerts_view.addEventListener('click', function(){
 	setTimeout(function(){message_center.loadUI();}, 100);
 });
 
-var drafts_view = Ti.UI.createView(
-{
+var drafts_view = Ti.UI.createView({
 	backgroundSelectedColor: 'orange',
 	focusable: true,
 	width: '50%'
 });
+
 databaseStatusView.add(drafts_view);
+
 var draft_img = Ti.UI.createImageView({
 	image: '/images/drafts.png'
 });
+
 var drafts_lb = Ti.UI.createLabel({
 	text: 'Drafts',
 	font: {
@@ -691,6 +682,7 @@ var drafts_lb = Ti.UI.createLabel({
 	height: 'auto',
 	bottom: 0
 });
+
 drafts_view.add(draft_img);
 drafts_view.add(drafts_lb);
 drafts_view.addEventListener('click', function(){
