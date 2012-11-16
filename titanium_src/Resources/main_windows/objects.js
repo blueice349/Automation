@@ -3,14 +3,15 @@
 //Ti.include('/main_windows/create_or_edit_node.js');
 Ti.include('/lib/functions.js');
 	
-/*global PLATFORM,create_or_edit_node*/
+/*global PLATFORM,create_or_edit_node,unsetUse*/
 
 var bundle,
 curWin,
 search,
 instances,
 filterValues,
-filterFields;
+filterFields, 
+win_new;
 
 curWin = Ti.UI.currentWindow;
 
@@ -592,8 +593,7 @@ function homeButtonPressed(e){
 		font: {fontWeight: "bold", fontSize: '16dp'},
 		text: labelText,
 		textAlign: Ti.UI.TEXT_ALIGNMENT_LEFT,
-		color: '#ccc',
-		style:Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+		color: '#ccc'
 	});
 	
 	if(PLATFORM == 'android'){
@@ -618,20 +618,26 @@ function homeButtonPressed(e){
 	   color: '#000'
 	});
 	
-	search = Ti.UI.createSearchBar({
-		hintText : 'Search...',
-		autocorrect : false,
-		barColor : '#666',
-		color: 'black',
-		height: '50dp',
-		focusable: false
-	});
+	if(showFinalResults){
+	    
+	    search = Ti.UI.createSearchBar({
+            hintText : 'Search...',
+            autocorrect : false,
+            barColor : '#666',
+            color: 'black',
+            height: '50dp',
+            focusable: false
+        });
+	}
+
 	
-	topBar.add(listLabel);
 	
 	var barHeight;
 	
 	if(PLATFORM == 'android'){
+	    
+	    topBar.add(listLabel); // IMPORTANT!! This took way too long to figure out... Do not add this to iOS, or the app will crash at random
+		
 		if(showFinalResults){
 			barHeight = 30;
 		}
@@ -901,88 +907,93 @@ function homeButtonPressed(e){
 	
 	/********** EVENTS *************/
 	
-	search.addEventListener('change', function(e) {
+	if(showFinalResults){
+	    
+	   search.addEventListener('change', function(e) {
 			//e.value; // search string as user types
-		var filterData = [];
-		var i;
-		for(i = 0; i < tableData.length; i++) {
-			var rg = new RegExp(e.source.value, 'i');
-			if(tableData[i].searchValue.search(rg) != -1) {
-				filterData.push(tableData[i]);
-			}
-		}
-		
-		var labelText = '';
-		if(Ti.Platform.osname == 'iphone'){
-			labelText += 'Found (' + filterData.length + ')';
-		}
-		else{
-			labelText += bundle.label + " List " + (showFinalResults ? '(' + filterData.length + ')' : '');
-		}
-		
-		listLabel.setText(labelText);
-		
-		if(filterData.length == 0){
-			var row = Ti.UI.createTableViewRow({
-				height : '50dp',
-				hasChild : false,
-				title : 'No Results (Touch to Reset)',
-				color: '#900',
-				nid: 0,
-				font: {fontWeight: 'bold', fontSize: '16dp'}
-			});
-			filterData.push(row);
-		}
-		
-		filterTableView.setData(filterData);
-	});
-	
-	search.addEventListener('return', function(e) {
-		search.blur();
-		//hides the keyboard
-	});
-	
-	search.addEventListener('cancel', function(e) {
-		e.source.value = "";
-		search.blur();
-		//hides the keyboard
-	});
-	
-	filterTableView.addEventListener('focus', function(e) {
-		search.blur();
-	});
-	 
-	filterTableView.addEventListener('scroll', function(e){
-		search.blur();
-	});
-	 
-	filterTableView.addEventListener('touchstart', function(e){
-		search.blur();
-	});
-	
-	showAllButton.addEventListener('click', function(e){
-		
-		var newWin = Ti.UI.createWindow({
-		    backgroundColor: '#FFF',
-		    title:'Results',
-		    url: 'objects.js',
-		    navBarHidden: true,
-		    type: curWin.type,
-		    showFinalResults: true,
-		    uid: curWin.uid,
-		    show_plus: curWin.show_plus
-		});
-		
-		var filterValues = curWin.filterValues;
-		
-		if(typeof filterValues != "object"){
-			filterValues = [];
-		}
-		
-		newWin.filterValues = filterValues;
-		newWin.addEventListener('open', windowOpened);
-		newWin.open();
-	});
+            var filterData = [];
+            var i;
+            for(i = 0; i < tableData.length; i++) {
+                var rg = new RegExp(e.source.value, 'i');
+                if(tableData[i].searchValue.search(rg) != -1) {
+                    filterData.push(tableData[i]);
+                }
+            }
+            
+            var labelText = '';
+            if(Ti.Platform.osname == 'iphone'){
+                labelText += 'Found (' + filterData.length + ')';
+            }
+            else{
+                labelText += bundle.label + " List " + (showFinalResults ? '(' + filterData.length + ')' : '');
+            }
+            
+            listLabel.setText(labelText);
+            
+            if(filterData.length == 0){
+                var row = Ti.UI.createTableViewRow({
+                    height : '50dp',
+                    hasChild : false,
+                    title : 'No Results (Touch to Reset)',
+                    color: '#900',
+                    nid: 0,
+                    font: {fontWeight: 'bold', fontSize: '16dp'}
+                });
+                filterData.push(row);
+            }
+            
+            filterTableView.setData(filterData);
+        });
+        
+        search.addEventListener('return', function(e) {
+            search.blur();
+            //hides the keyboard
+        });
+        
+        search.addEventListener('cancel', function(e) {
+            e.source.value = "";
+            search.blur();
+            //hides the keyboard
+        });
+        
+        
+        filterTableView.addEventListener('focus', function(e) {
+            search.blur();
+        });
+         
+        filterTableView.addEventListener('scroll', function(e){
+            search.blur();
+        });
+         
+        filterTableView.addEventListener('touchstart', function(e){
+            search.blur();
+        });
+    }
+	else{
+        showAllButton.addEventListener('click', function(e){
+        
+        var newWin = Ti.UI.createWindow({
+            backgroundColor: '#FFF',
+            title:'Results',
+            url: 'objects.js',
+            navBarHidden: true,
+            type: curWin.type,
+            showFinalResults: true,
+            uid: curWin.uid,
+            show_plus: curWin.show_plus
+        });
+        
+        var filterValues = curWin.filterValues;
+        
+        if(typeof filterValues != "object"){
+            filterValues = [];
+        }
+        
+        newWin.filterValues = filterValues;
+        newWin.addEventListener('open', windowOpened);
+            newWin.open();
+        });
+    }
 	
 	if(showFinalResults){
 		// //When the user clicks on a certain contact, it opens individual_contact.js
@@ -1013,7 +1024,7 @@ function homeButtonPressed(e){
 					if(result.fieldByName('perm_edit') == 1){
 						if(bundle.data.form_parts!=null && bundle.data.form_parts!=""){
 							//Ti.API.info('Form table part = ' + bundle.data.form_parts.parts.length);
-							if(bundle.data.form_parts.parts.length >= parseInt(result.fieldByName('form_part')) + 2) { 
+							if(bundle.data.form_parts.parts.length >= parseInt(result.fieldByName('form_part'), 10) + 2) { 
 								//Ti.API.info("Title = " + bundle.data.form_parts.parts[result.fieldByName('form_part') + 1].label);
 								btn_tt.push(bundle.data.form_parts.parts[result.fieldByName('form_part') + 1].label);
 								btn_id.push(result.fieldByName('form_part') + 1);
@@ -1067,7 +1078,7 @@ function homeButtonPressed(e){
                     postDialog.addEventListener('click', function(ev) {
                         if (ev.index === btn_tt.length - 2 ){
                             //Next window to be opened 
-                            var win_new = Titanium.UI.createWindow({
+                            win_new = Titanium.UI.createWindow({
                                 fullscreen : false,
                                 navBarHidden : true,
                                 title: bundle.label,
@@ -1094,7 +1105,6 @@ function homeButtonPressed(e){
                         else if (ev.index !== -1 && isEditEnabled === true){
                             //openEditScreen(btn_id[ev.index], _nid, e);
                         
-                            var win_new;
                             win_new = create_or_edit_node.getWindow();
                             win_new.title = bundle.label;
                             win_new.type = curWin.type;
@@ -1180,7 +1190,7 @@ function homeButtonPressed(e){
 	}
 	
 	
-	search.blur();
+	//search.blur();
 	Ti.API.info("END OF OBJECTS WINDOW FILE");
 	
 	
