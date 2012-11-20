@@ -45,10 +45,11 @@ function getDistance(lat1, lon1, lat2, lon2){
 }
 
 
-var db_nav_name = Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName() + "_NAVIGATION";
+var db_nav_name = Omadi.DB_VERSION + "_" + Omadi.utils.getMainDBName() + "_NAVIGATION";
 
 var db_nav = Ti.Database.install('/database/navigation.sqlite', db_nav_name);
 db_nav.file.setRemoteBackup(false);
+
 var nav_res = db_nav.execute("SELECT * FROM gps ORDER BY timestamp ASC");
 var nav_res_last = db_nav.execute("SELECT * FROM gps ORDER BY timestamp DESC");
 

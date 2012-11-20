@@ -1,13 +1,12 @@
-/*jslint eqeq:true, plusplus: true*/ 
-
 Ti.include('/lib/util_functions.js');
+
+/*jslint eqeq:true, plusplus: true*/ 
+/*global Omadi*/
 
 Ti.App.Properties.setString("last_alert_popup", 0);
 var time_interval_for_alerts = 120;
 
 // state vars used by resume/pause
-var db_coord_name = Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName() + "_GPS";
-var nav_database_name = Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName() + "_NAVIGATION";
 
 var location_obj = [];
 var dist_filter = 50;

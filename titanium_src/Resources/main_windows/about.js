@@ -1,6 +1,6 @@
 Ti.include('/lib/functions.js');
 
-/*global isUpdating, getTimeAgoStr, PLATFORM, Omadi*/
+/*global PLATFORM, Omadi*/
 
 (function(){
 	'use strict';
@@ -18,8 +18,7 @@ Ti.include('/lib/functions.js');
 	buttonView,
 	updateButton,
 	reinitializeBtn,
-	dialog, 
-	db;
+	dialog;
 	
 	
 	curWin = Ti.UI.currentWindow;
@@ -79,11 +78,11 @@ Ti.include('/lib/functions.js');
 	
 	curWin.add(versionLbl);
 	
-	lastSyncTimestamp = Titanium.App.Properties.getDouble("lastSynced", 0);
+	lastSyncTimestamp = Omadi.data.getSyncTimestamp(); 
 	lastSyncText = "Last synched: ";
 	
 	if(lastSyncTimestamp !== 0){
-		lastSyncText += getTimeAgoStr(lastSyncTimestamp);
+		lastSyncText += Omadi.utils.getTimeAgoStr(lastSyncTimestamp);
 	} 
 	else{
 		lastSyncText += 'NA';
@@ -136,32 +135,9 @@ Ti.include('/lib/functions.js');
 	
 		dialog.addEventListener('click', function(e) {
 			if(e.index === 0) {
-				if (!isUpdating()){
+				if (!Omadi.data.isUpdating()){
 					
-					//If delete_all is present, delete all contents:
-					db = Omadi.utils.openMainDatabase();
-					
-					if(PLATFORM === "android") {
-						//Remove the database
-						db.remove();
-						db.close();
-					} else {
-						var db_file = db.getFile();
-						db.close();
-						//phisically removes the file
-						db_file.deleteFile();
-					}
-					
-					// Install database with an empty version
-					db = Omadi.utils.openMainDatabase();
-					db.close();
-					
-					// Clear out the GPS database alerts
-					db = Omadi.utils.openGPSDatabase();
-					db.execute('DELETE FROM alerts');
-					db.close();
-					
-					Ti.App.fireEvent('update_from_menu');
+					Ti.App.fireEvent('full_update_from_menu');
 					dialog.hide(); 
 					curWin.close();
 				} 

@@ -31,8 +31,7 @@ Omadi.location.uploadGPSCoordinates = function(){
 		else {
 			Omadi.location.set_GPS_uploading();
 			//Ti.API.info('LOCATION SERVICE: UPLOAD GPS');
-			db = Omadi.utils.openGPSDatabase();//Ti.Database.install('/database/gps_coordinates.sqlite', db_name);
-			//if(PLATFORM != 'android'){db.file.setRemoteBackup(false);}
+			db = Omadi.utils.openGPSDatabase();
 			
 			//Ti.API.info("LOCATION SERVICE SAVE: location_obj.length before: " + location_obj.length);
 			//var leng_before = location_obj.length;
@@ -156,8 +155,7 @@ Omadi.location.uploadSuccess = function(e) {
 			}
 		}
 		
-		db = Omadi.utils.openGPSDatabase();//Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
-		//if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
+		db = Omadi.utils.openGPSDatabase();
 		db.execute('DELETE FROM user_location WHERE status="json"');
 		
 		sqlArray = [];
@@ -215,8 +213,7 @@ Omadi.location.uploadSuccess = function(e) {
 
 Omadi.location.uploadError = function(e) {
 	"use strict";
-	var db = Omadi.utils.openGPSDatabase();//Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
-	//if(PLATFORM != 'android'){db_coord.file.setRemoteBackup(false);}
+	var db = Omadi.utils.openGPSDatabase();
 	db.execute("UPDATE user_location SET status =\"notUploaded\"");
 	Ti.API.error("Error found for GPS uploading: " + e.status);
 	db.close();

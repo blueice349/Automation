@@ -1,9 +1,9 @@
 /*jslint eqeq:true, plusplus: true*/ 
 
-//Ti.include('/main_windows/create_or_edit_node.js');
+Ti.include('/main_windows/create_or_edit_node.js');
 Ti.include('/lib/functions.js');
 	
-/*global PLATFORM,create_or_edit_node,unsetUse*/
+/*global PLATFORM,create_or_edit_node*/
 
 var bundle,
 curWin,
@@ -58,94 +58,6 @@ function openCreateNodeScreen(){
 // }
 
 
-// function bottomButtons1(_nid, curWin, e){
-	// var db_act = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
-	// if(PLATFORM != 'android'){db_act.file.setRemoteBackup(false);}
-	// // var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + curWin.type + '"');
-	// // var _data = JSON.parse(json_data.fieldByName('_data'));
-// 
-	// var node_form = db_act.execute('SELECT form_part, perm_edit FROM node WHERE nid=' + _nid);
-// 
-	// Ti.API.info('Form node part = ' + node_form.fieldByName('form_part'));
-	
-	// var btn_tt = [];
-	// var btn_id = [];
-	// var isEditEnabled = false;
-	// if(node_form.fieldByName('perm_edit')==1){
-		// if(bundle_data.form_parts!=null && bundle_data.form_parts!=""){
-			// Ti.API.info('Form table part = ' + bundle_data.form_parts.parts.length);
-			// if(bundle_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2) { 
-				// Ti.API.info("Title = " + bundle_data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
-				// btn_tt.push(bundle_data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
-				// btn_id.push(node_form.fieldByName('form_part') + 1);
-				// Ti.API.info(node_form.fieldByName('form_part') + 1);
-			// }
-		// }
-		// isEditEnabled = true;
-		// btn_tt.push('Edit');
-		// btn_id.push(node_form.fieldByName('form_part'));
-	// }
-
-	// btn_tt.push('View');
-	// btn_id.push(0);
-
-	// //json_data.close();
-	// db_act.close();
-// 
-	// btn_tt.push('Cancel');
-	// btn_id.push(0);
-// 
-	// var postDialog = Titanium.UI.createOptionDialog();
-	// postDialog.options = btn_tt;
-	// postDialog.show();
-// 
-	// postDialog.addEventListener('click', function(ev) {
-			// if (ev.index == btn_tt.length-2 ){
-				// //Next window to be opened 
-				// var win_new = Titanium.UI.createWindow({
-					// fullscreen : false,
-					// navBarHidden : true,
-					// title: bundle.label,
-					// type: curWin.type,
-					// url : 'individual_object.js',
-					// up_node: curWin.up_node,
-					// uid: curWin.uid,
-					// region_form: e.row.form_part,
-					// backgroundColor: '#000'
-				// });
-
-				// //Passing parameters
-				// win_new.nid= e.row.nid;
-				// win_new.nameSelected= e.row.name;
-	
-				// //Avoiding memory leaking
-				// win_new.open();
-			// }
-			// else if (ev.index  == btn_tt.length-1){
-				// Ti.API.info("Cancelled")
-			// }
-			// else if (ev.index != -1 && isEditEnabled==true){
-				// //openEditScreen(btn_id[ev.index], _nid, e);
-			
-				// var win_new = create_or_edit_node.getWindow();
-				// win_new.title = bundle.label;
-				// win_new.type = curWin.type;
-				// win_new.listView = curWin.listView;
-				// win_new.up_node = curWin.up_node;
-				// win_new.uid = curWin.uid;
-				// win_new.region_form = btn_id[ev.index];		
-				// //Passing parameters
-				// win_new.nid = nid;
-				// win_new.nameSelected = e.row.name;		
-				// //Sets a mode to fields edition
-				// win_new.mode = 1;	
-				// win_new.open();
-				// setTimeout(function() {
-					// create_or_edit_node.loadUI();
-				// }, 100);
-			// }
-	// });	
-// }
 
 function sortByTitle(a, b) {
 	"use strict";
@@ -207,13 +119,13 @@ function homeButtonPressed(e){
 
 (function(){
 	"use strict";
-	/*global setUse, Omadi*/
+	/*global Omadi*/
 	/*jslint vars: true*/
 	
 	var i, filterField, field_name;
 	var db, db_result;
 	
-	setUse();
+	Omadi.data.setUpdating(true);
 	
 	bundle = Omadi.data.getBundle(curWin.type);
 	instances = Omadi.data.getFields(curWin.type);
@@ -228,11 +140,6 @@ function homeButtonPressed(e){
 	curWin.setBackgroundColor("#eee");
     curWin.addEventListener('android:back', backButtonPressed);
 	
-	//Lock database for background updates
-	
-	
-	//Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+Omadi.utils.getMainDBName() );
-	//if(PLATFORM != 'android'){db.file.setRemoteBackup(false);}
 	
 	filterValues = curWin.filterValues;
 	if(typeof filterValues !== "object"){
@@ -267,23 +174,6 @@ function homeButtonPressed(e){
             }
 		}
 	}
-	
-	
-	// if(filterFieldNames.length > 0){
-		// for(i = 0; i < filterFieldNames.length; i += 1){
-		    // filterFields[i] = instances[filterFieldNames[i]];
-			// // if(filterFields[i].field_name === db_result.fieldByName('field_name')){
-				// // filterFields[i].field_type = db_result.fieldByName('type');
-				// // filterFields[i].field_label = db_result.fieldByName('label');
-			// // }
-		// }
-	// }
-	
-	
-	
-	// for(i in filterValues){
-		// Ti.API.info('FILTER VALUE MIDDLE: ' + i + ": "+ filterValues[i].value);	
-	// }
 	
 	
 	//Ti.API.info(filterFields.length);
@@ -562,13 +452,13 @@ function homeButtonPressed(e){
 			tableData.sort(sortByTitle);
 		}
 	}
-	//Ti.API.debug("10");
 	
 	
 	var filterTableView = Titanium.UI.createTableView({
 		data : tableData,
 		separatorColor: '#BDBDBD',
-		top: '60dp'
+		top: '60dp',
+		height: Ti.UI.SIZE
 	});	
 	
 	//Contat list container
@@ -657,7 +547,7 @@ function homeButtonPressed(e){
 			if(typeof filterValues[i] != 'undefined' && filterValues[i].value !== false){
 				Ti.API.info(filterValues[i].text);
 				
-				var filterLabelText = filterFields[i].field_label + ": ";
+				var filterLabelText = filterFields[i].label + ": ";
 				if(filterValues[i].text == ""){
 					filterLabelText += "- Not Set -";
 				}
@@ -860,31 +750,38 @@ function homeButtonPressed(e){
 	else{
 		
 		lastFilterField = filterFields[filterValues.length];
-	
+	   
+	    var filterFieldView = Ti.UI.createView({
+	       height: '25dp',
+	       width: '100%',
+	       top: barHeight + 'dp' ,
+	       backgroundGradient: {
+                type: 'linear',
+                startPoint: { x: '50%', y: '0%' },
+                endPoint: { x: '50%', y: '100%' },
+                colors: [ { color: '#555', offset: 0.0}, { color: '#777', offset: 0.3 }, { color: '#444', offset: 1.0 } ]
+            }   
+	    });
+	    
 		var filterFieldLabel = Ti.UI.createLabel({
 			font: {fontSize: '16dp', fontWeight: "bold"},
-			top: barHeight + 'dp',
 			width: '100%',
 			height: '25dp',
+			top: '1dp',
+			left: '10dp',
 			textAlign: Ti.UI.TEXT_ALIGNMENT_LEFT,
-			backgroundColor: '#ddd',
-			color: '#000',
-			backgroundGradient: {
-		        type: 'linear',
-		        startPoint: { x: '50%', y: '0%' },
-		        endPoint: { x: '50%', y: '100%' },
-		        colors: [ { color: '#ddd', offset: 0.0}, { color: '#eee', offset: 0.3 }, { color: '#bbb', offset: 1.0 } ]
-		    }
+			color: '#fff'
 		});
 		
 		if(Ti.Platform.osname == 'iphone'){
-			filterFieldLabel.text = bundle.label + ': Filter by ' + lastFilterField.field_label;
+			filterFieldLabel.text = bundle.label + ': Filter by ' + lastFilterField.label;
 		}
 		else{
-			filterFieldLabel.text = 'Filter by ' + lastFilterField.field_label;
+			filterFieldLabel.text = 'Filter by ' + lastFilterField.label;
 		}
 		
-		curWin.add(filterFieldLabel);
+		filterFieldView.add(filterFieldLabel);
+		curWin.add(filterFieldView);
 		filterTableView.top = (barHeight + 25) + 'dp';
 	}
 	
@@ -902,9 +799,7 @@ function homeButtonPressed(e){
 		curWin.add(emptyLabel);
 	}
 	
-	
-	
-	
+
 	/********** EVENTS *************/
 	
 	if(showFinalResults){
@@ -1007,8 +902,8 @@ function homeButtonPressed(e){
 				//bottomButtons1(e.row.nid, curWin, e);
 				
 				//var _nid = e.row.nid;
-				var subDB = Omadi.utils.openMainDatabase();//Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
-				//if(PLATFORM != 'android'){db_act.file.setRemoteBackup(false);}
+				var subDB = Omadi.utils.openMainDatabase();
+				
 				// var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + curWin.type + '"');
 				// var _data = JSON.parse(json_data.fieldByName('_data'));
 			
@@ -1047,15 +942,16 @@ function homeButtonPressed(e){
                         title: bundle.label,
                         type: curWin.type,
                         url : 'individual_object.js',
-                        up_node: curWin.up_node,
+                        //up_node: curWin.up_node,
                         uid: curWin.uid,
                         region_form: e.row.form_part,
-                        backgroundColor: '#000'
+                        backgroundColor: '#000',
+                        nid: e.row.nid
                     });
                     
                     //Passing parameters
-                    win_new.nid             = e.row.nid;
-                    win_new.nameSelected    = e.row.name;
+                    //win_new.nid             = e.row.nid;
+                    //win_new.nameSelected    = e.row.name;
                     
                     e.row.setBackgroundColor('#fff');
                     win_new.open();
@@ -1072,7 +968,7 @@ function homeButtonPressed(e){
                     
                     var postDialog = Titanium.UI.createOptionDialog();
                     postDialog.options = btn_tt;
-                    postDialog.eventSource = e.row;
+                    postDialog.eventRow = e.row;
                     postDialog.show();
                     
                     postDialog.addEventListener('click', function(ev) {
@@ -1086,15 +982,12 @@ function homeButtonPressed(e){
                                 url : 'individual_object.js',
                                 up_node: curWin.up_node,
                                 uid: curWin.uid,
-                                region_form: ev.source.eventSource.row.form_part,
-                                backgroundColor: '#000'
+                                region_form: ev.source.eventRow.form_part,
+                                backgroundColor: '#000',
+                                nid: ev.source.eventRow.nid
                             });
                             
-                            //Passing parameters
-                            win_new.nid				= ev.source.eventSource.row.nid;
-                            win_new.nameSelected	= ev.source.eventSource.row.name;
-                            
-                            ev.source.eventSource.setBackgroundColor('#fff');
+                            ev.source.eventRow.setBackgroundColor('#fff');
                             
                             //Avoiding memory leaking
                             win_new.open();
@@ -1114,16 +1007,16 @@ function homeButtonPressed(e){
                             win_new.region_form = btn_id[ev.index];
                             
                             //Passing parameters
-                            win_new.nid = ev.source.eventSource.row.nid;
-                            win_new.nameSelected = ev.source.eventSource.row.name;
+                            win_new.nid = ev.source.eventRow.nid;
+                            win_new.nameSelected = ev.source.eventRow.name;
                             
                             //Sets a mode to fields edition
                             win_new.mode = 1;
                             
-                            ev.source.eventSource.setBackgroundColor('#fff');
+                            ev.source.eventRow.setBackgroundColor('#fff');
                             
                             win_new.addEventListener("open", function(e){
-                                Omadi.service.setNodeViewed(ev.source.eventSource.row.nid);
+                                Omadi.service.setNodeViewed(ev.source.eventRow.nid);
                             });
                                 
                             win_new.open();
@@ -1217,6 +1110,6 @@ function homeButtonPressed(e){
 		// }
 	//}
 		
-	unsetUse();
+	Omadi.data.setUpdating(false);
 	
 }());

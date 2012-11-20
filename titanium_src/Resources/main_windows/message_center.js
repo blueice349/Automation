@@ -1,7 +1,6 @@
 //Common used functions
 Ti.include('/lib/functions.js');
 
-var db_coord_name = Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName() + "_GPS";
 var domainName =  Titanium.App.Properties.getString("domainName");
 var message_center = {};
 var win = {};
@@ -48,12 +47,17 @@ message_center.get_win = function() {
 	win.add(listTableView);
 	
 	empty = Titanium.UI.createLabel({
-				height : 'auto',
-				width : 'auto',
-				top : '50%',
-				color: '#000',
-				text : 'You have no messages'
-			});
+		height : 'auto',
+		width : 'auto',
+		top : '50%',
+		color: '#999',
+		font: {
+		    fontWeight: 'bold',
+		    fontSize: '22dp'
+		},
+		text : 'No location alerts were found'
+	});
+	
 	win.add(empty);
 	
 	if(PLATFORM == 'android'){
@@ -76,7 +80,7 @@ message_center.get_win = function() {
 	win.addEventListener('android:back', function() {
 		//Enable background updates
 		win.is_opened = false;
-		unsetUse();	
+		//Omadi.data.setUpdating(false);
 		win.close();
 	});
 	
@@ -185,7 +189,7 @@ function alertNavButtons(lv_listTableView, currentWin, type){
 		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
 	});
 	back.addEventListener('click', function() {
-		unsetUse();	
+		//Omadi.data.setUpdating(false);
 		currentWin.close();
 	});
 	
@@ -283,8 +287,7 @@ function alertNavButtons_android(lv_listTableView, win, type){
 }
 
 function loadData(){
-		var db = Ti.Database.install('/database/gps_coordinates.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+Omadi.utils.getMainDBName()+"_GPS" );
-		if(PLATFORM != 'android'){db.file.setRemoteBackup(false);}
+		var db = Omadi.utils.openGPSDatabase();
 		var res_set = db.execute('SELECT *, COUNT(*) term_count FROM alerts GROUP BY location_nid ORDER BY timestamp DESC');
 		var res_names = db.execute('SELECT * FROM alert_names');
 		
@@ -382,8 +385,8 @@ function opnAccountAlertsList(e) {
 	accountMessage.win.add(accountMessage.listView);
 	accountMessage.listView.addEventListener('click', function(e) {
 			//accountMessage.search.blur();
-			var a_db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName());
-			if(PLATFORM != 'android'){a_db.file.setRemoteBackup(false);}
+			var a_db = Omadi.utils.openMainDatabase();
+			
 			var a_res = a_db.execute("SELECT * FROM node WHERE nid=" + e.row.nid);
 			var n_nid = e.row.nid;
 			var type_vl = a_res.fieldByName('table_name');
@@ -477,8 +480,8 @@ function opnAccountAlertsList(e) {
 }
 
 function loadAccAlertData(){
-	var db_t = Ti.Database.install('/database/gps_coordinates.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName() + "_GPS");
-	if(PLATFORM != 'android'){db_t.file.setRemoteBackup(false);}
+	var db_t = Omadi.utils.openGPSDatabase();
+	
 	var msgs = db_t.execute('SELECT * FROM alerts WHERE location_nid=' + accountMessage.win.nid + ' ORDER BY timestamp DESC');
 	if(msgs.rowCount > 0) {
 		var n_data = new Array();

@@ -1,6 +1,7 @@
 
 // this sets the background color of every 
 Titanium.UI.setBackgroundColor('#EEEEEE');
+
 var domainName;
 
 //Common used functions
@@ -26,10 +27,11 @@ var loginWin = Titanium.UI.createWindow({
 	backgroundColor: '#EEEEEE',
 	navBarHidden : true
 });
-var OMADI_VERSION = "omadiDb1668";
 
 Ti.App.Properties.setBool('stopGPS', false);
 Ti.App.Properties.setBool('quitApp', false);
+
+Omadi.data.setUpdating(false);
 
 Ti.App.addEventListener('upload_gps_locations', function(e){
     "use strict";
@@ -37,7 +39,7 @@ Ti.App.addEventListener('upload_gps_locations', function(e){
 });
 
 Ti.App.addEventListener('stop_gps', function(e){
-//loginWin.addEventListener('focus', function(e){
+
 	Ti.App.Properties.setBool('stopGPS', true);
 	
 	Ti.API.info("STOP GPS EVENT CAUGHT!");
@@ -96,14 +98,14 @@ Ti.App.addEventListener('stop_gps', function(e){
 	
 });
 
-Titanium.App.Properties.setString("databaseVersion", OMADI_VERSION);
-var db = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );
-if(PLATFORM != 'android'){db.file.setRemoteBackup(false);}
+
+var db = Omadi.utils.openListDatabase();
+
 var credentials = db.execute('SELECT domain, username, password FROM history WHERE "id_hist"=1');
 
 //var locked_field = true;
-var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+Omadi.utils.getMainDBName() );
-if(PLATFORM != 'android'){db_a.file.setRemoteBackup(false);}
+var db_a = Omadi.utils.openMainDatabase();
+
 var updatedTime = db_a.execute('SELECT timestamp FROM updated WHERE rowid=1');
 
 Omadi.location.unset_GPS_uploading();
@@ -153,7 +155,7 @@ if (PLATFORM == "android"){
 			Ti.API.error ('BLANK SCREEN');
 			alert ('BLANK SCREEN'); 
 			//createNotification("BLANK SCREEN ...");
-			removeNotifications();
+			Omadi.display.removeNotifications();
 		}
 		else{
 			//createNotification("Pause event called ...");
@@ -168,7 +170,7 @@ if (PLATFORM == "android"){
     activity.addEventListener('pause', registerPause);
     
     activity.addEventListener('destroy', function(){
-    	removeNotifications();
+    	Omadi.display.removeNotifications();
     });
     
     activity.addEventListener('stop', function(){
@@ -180,8 +182,8 @@ if (PLATFORM == "android"){
 }
 
 function is_first_time(){
-	var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+Omadi.utils.getMainDBName() );
-	if(PLATFORM != 'android'){db_a.file.setRemoteBackup(false);}
+	var db_a = Omadi.utils.openMainDatabase();
+
 	var updatedTime = db_a.execute('SELECT timestamp FROM updated WHERE rowid=1');
 	
 	if (updatedTime.fieldByName('timestamp') != 0){
@@ -330,8 +332,8 @@ passwordField.addEventListener('return', function(){
 });
 
 loginWin.addEventListener('focus', function(){
-	var db_a = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+Omadi.utils.getMainDBName() );
-	if(PLATFORM != 'android'){db_a.file.setRemoteBackup(false);}
+	var db_a = Omadi.utils.openMainDatabase();
+	
 	var updatedTime = db_a.execute('SELECT timestamp FROM updated WHERE rowid=1');
 	
 	var new_color = "#000000";
@@ -625,7 +627,7 @@ loginButton.addEventListener('click', function(){
 	//Everything ok, so let's login:
 	else{
 
-		showIndicator('Logging you in...');
+		Omadi.display.showLoadingIndicator('Logging you in...');
 		//Create internet connection
 		var xhr = Ti.Network.createHTTPClient();
 		var parms = {
@@ -657,8 +659,8 @@ loginButton.addEventListener('click', function(){
 		// When infos are retrieved:
 		xhr.onload = function(e) {
 							
-			var db_list = Ti.Database.install('/database/db_list.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_list" );	
-			if(PLATFORM != 'android'){db_list.file.setRemoteBackup(false);}
+			var db_list = Omadi.utils.openListDatabase();	
+			
 			var portal_base = db_list.execute('SELECT domain FROM domains WHERE domain=\''+portal.value+'\'');
 			
 			if ( portal_base.rowCount > 0){
@@ -722,13 +724,13 @@ loginButton.addEventListener('click', function(){
 				db_list.execute("COMMIT TRANSACTION");
 			}
 			
-			//Ti.API.info(isLogged()+" Logged ... Database   "+Titanium.App.Properties.getString("databaseVersion")+"_"+Omadi.utils.getMainDBName());
+			
 			db_list.close();
 			passwordField.value	 = "";
 			loginWin.touchEnabled = false;
 			newWin.open();
 			
-			hideIndicator();	
+			Omadi.display.hideLoadingIndicator();	
 			startGPSService();
 			
 			if('new_app' in loginJSON && loginJSON.new_app.length > 0){
@@ -744,7 +746,7 @@ loginButton.addEventListener('click', function(){
 		//If username and pass wrong:
 		xhr.onerror = function(e) {
 			Ti.API.info("status is: "+this.status);
-			hideIndicator();
+			Omadi.display.hideLoadingIndicator();
 			if (this.status == 406){
 				label_error.text = "The user '"+usernameField.value+"' is already logged in another device";
 			}
@@ -847,7 +849,7 @@ if(PLATFORM == 'android') {
 
 //Make everthing happen:
 loginWin.open();
-if ( (PLATFORM != 'android') && (Ti.Platform.displayCaps.platformHeight > 500)){
+if ( (PLATFORM !== 'android') && (Ti.Platform.displayCaps.platformHeight > 500)){
 	i_scroll_page.top = '200dp'
 }
 
@@ -857,8 +859,8 @@ Ti.App.addEventListener('free_login', function(){
 
 if (isLogged() === true){
 	//Already logged
-	var db = Ti.Database.install( '/database/db_list.sqlite' , Titanium.App.Properties.getString("databaseVersion")+"_list"  );
-	no_backup(db);
+	var db = Omadi.utils.openListDatabase();
+	
 	var logged_result = db.execute('SELECT * FROM login WHERE "id_log"=1');
 	// Receives the selected row's value
 	domainName = logged_result.fieldByName("picked");
