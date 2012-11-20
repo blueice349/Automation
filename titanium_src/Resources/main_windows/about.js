@@ -78,7 +78,7 @@ Ti.include('/lib/functions.js');
 	
 	curWin.add(versionLbl);
 	
-	lastSyncTimestamp = Omadi.data.getSyncTimestamp(); 
+	lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp(); 
 	lastSyncText = "Last synched: ";
 	
 	if(lastSyncTimestamp !== 0){

@@ -1320,12 +1320,12 @@ function keep_info(_flag_info, pass_it, new_time) {
         }
         else if(Ti.Network.online){
             if (_flag_info == "normal") {
-                Ti.API.info('Submitting');
+                Ti.API.info('Submitting, mode=' + win.mode);
                 //Omadi.service.sendUpdates();
                 update_node(win.mode, close_me, win.type.toUpperCase());
             }
             else {
-                //Ti.API.info('Submitting and preparing next part reload');
+                Ti.API.info('Submitting and preparing next part reload');
                 //Omadi.service.sendUpdates();
                 // TODO: send the user to the next form part
                 update_node(win.mode, reload_me, win.type.toUpperCase(), _flag_info);

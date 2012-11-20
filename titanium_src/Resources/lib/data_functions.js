@@ -24,10 +24,10 @@ Omadi.data.isUpdating = function(){ "use strict";
 };
 
 Omadi.data.setUpdating = function(updating){ "use strict";
-    Ti.App.Properties.getBool("isUpdating", updating);
+    Ti.App.Properties.setBool("isUpdating", updating);
 };
 
-Omadi.data.setSyncTimestamp = function(sync_timestamp){ "use strict";
+Omadi.data.setLastUpdateTimestamp = function(sync_timestamp){ "use strict";
     
     var listDB = Omadi.utils.openMainDatabase();
     listDB.execute('UPDATE updated SET timestamp =' + sync_timestamp + ' WHERE rowid=1');
@@ -36,7 +36,7 @@ Omadi.data.setSyncTimestamp = function(sync_timestamp){ "use strict";
     Ti.App.Properties.setDouble("sync_timestamp", sync_timestamp);
 };
 
-Omadi.data.getSyncTimestamp = function(){ "use strict";
+Omadi.data.getLastUpdateTimestamp = function(){ "use strict";
     return Ti.App.Properties.getDouble("sync_timestamp", 0);
 };
 
@@ -571,7 +571,10 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) { "use stric
                      
                     queries.push(query);
                     
+                    
+                    
                     if(typeof json.insert[i].__negative_nid !== 'undefined'){
+                        Ti.API.debug("Deleting nid: " + json.insert[i].__negative_nid);
                         queries.push('DELETE FROM ' + type + ' WHERE nid=' + json.insert[i].__negative_nid);
                         queries.push('DELETE FROM node WHERE nid=' + json.insert[i].__negative_nid);
                         
@@ -758,6 +761,7 @@ Omadi.data.processRegionsJson = function(json, mainDB, progress){"use strict";
 };
 
 Omadi.data.processTermsJson = function(json, mainDB, progress){ "use strict";
+    /*jslint nomen: true*/
     var i, vid, tid, name, desc, weight, queries;
     
     try{
@@ -789,7 +793,9 @@ Omadi.data.processTermsJson = function(json, mainDB, progress){ "use strict";
                     }
 
                     queries.push('INSERT OR REPLACE  INTO term_data ( tid , vid, name, description, weight) VALUES (' + tid + ',' + vid + ',"' + name + '","' + desc + '","' + weight + '")');
-
+                    if(typeof json.insert[i].__negative_tid !== 'undefined'){
+                        queries.push('DELETE FROM term_data WHERE tid=' + json.insert[i].__negative_tid);
+                    }
                 }
             }
         }

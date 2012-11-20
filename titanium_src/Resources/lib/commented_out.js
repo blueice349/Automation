@@ -1,3 +1,72 @@
+/**
+ *  Function Name: (actualWindow, goToWindow )
+ * Purpouse: Show button Back at the bottom and close actualWindow and go to goToWindow
+ * Parameters:
+ *  actualWindow:   The windows where the function was called from.
+ *  goToWindow:     The target window (The window where the user is gonna be redirected)
+ * Variables:
+ *  backView:       The bottom button
+ *  label_bottom:   Label "Back"
+ */
+// function showBottom(actualWindow, goToWindow) {
+    // var backView = Titanium.UI.createView({
+        // top : '95%',
+        // backgroundColor : '#111',
+        // height : '6%',
+        // width : '100%',
+        // opacity : 0.99,
+        // borderRadius : 5
+    // });
+// 
+    // var label_bottom = Titanium.UI.createLabel({
+        // color : '#FFFFFF',
+        // text : 'Back',
+        // textAlign : 'center',
+        // height : 'auto'
+    // });
+// 
+    // backView.add(label_bottom);
+// 
+    // backView.addEventListener('click', function() {
+        // if (!goToWindow.notOpen) {
+            // goToWindow.log = actualWindow.log;
+            // goToWindow.result = actualWindow.result;
+            // goToWindow.name = actualWindow.name;
+        // }
+// 
+        // if ((actualWindow.returnTo == "individual_contact.js") || (actualWindow.returnTo == "individual_potential.js")) {
+            // goToWindow.nid = actualWindow.nidToReturn;
+            // goToWindow.nameSelected = actualWindow.nameToReturn;
+        // }
+// 
+        // //Avoiding memory leaking problems:
+        // if (!goToWindow.notOpen)
+            // goToWindow.open();
+// 
+        // actualWindow.close();
+    // });
+    // actualWindow.add(backView);
+// };
+
+
+
+
+// function getCookie() {"use strict";
+    // var db, result, cookie;
+// 
+    // db = Omadi.utils.openListDatabase();
+    // result = db.execute('SELECT * FROM login WHERE rowid=1');
+    // cookie = result.fieldByName("cookie");
+    // Ti.API.info("FOUND COOKIE = " + cookie);
+// 
+    // result.close();
+    // db.close();
+    // return cookie;
+// }
+
+
+
+
 // function Omadi.display.showLoadingIndicatorDelete(inform) {
     // Titanium.App.Properties.setBool("indicatorActive", true);
 // 

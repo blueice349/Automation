@@ -1,5 +1,5 @@
-
 /*jslint eqeq: true, plusplus: true */
+/*global Omadi*/
 
 var domainName = Ti.App.Properties.getString("domainName");
 
@@ -30,46 +30,15 @@ weekday[4] = "Thursday";
 weekday[5] = "Friday";
 weekday[6] = "Saturday";
 
-
-
-function PixelsToDPUnits(ThePixels) {
+function PixelsToDPUnits(ThePixels) {"use strict";
     return (ThePixels / (Titanium.Platform.displayCaps.dpi / 160));
 }
 
-function DPUnitsToPixels(TheDPUnits) {
+function DPUnitsToPixels(TheDPUnits) {"use strict";
     return (TheDPUnits * (Titanium.Platform.displayCaps.dpi / 160));
 }
 
-function isLogged() {
-    var db_a = Omadi.utils.openListDatabase();
-   
-    var isLogged = db_a.execute('SELECT * FROM login WHERE "id_log"=1');
-    var logged = isLogged.fieldByName('is_logged');
-    var _l_timestamp = isLogged.fieldByName('logged_time');
-    Ti.API.info("TIME FROM DB = " + _l_timestamp);
 
-    var _time_now = Math.round(new Date().getTime() / 1000);
-    if (_l_timestamp == "null" || _l_timestamp == null || _l_timestamp == "0") {
-        _l_timestamp = 0;
-    }
-
-    var last_logged_timestamp = _time_now - _l_timestamp;
-
-    isLogged.close();
-    db_a.close();
-    Ti.API.info("********************   IS LOGGED: " + logged);
-    if (logged === "false") {
-        return false;
-    }
-    else
-    if (last_logged_timestamp >= (60 * 60 * 24 * 7)) {//Seven days
-        //else if ( last_logged_timestamp >= (60*5) ){ //Five minutes ----> testing
-        Ti.API.info("SESSION IS NO LONGER VALID! " + last_logged_timestamp);
-        Ti.App.Properties.setString('logStatus', "Please login");
-        return false;
-    }
-    return true;
-}
 
 function createNotification(message) {
 
@@ -98,7 +67,6 @@ function createNotification(message) {
         Titanium.Android.NotificationManager.notify(42, notification);
     }
 }
-
 
 function notifyIOS(msg, update_time) {
     if (update_time === true) {
@@ -150,12 +118,6 @@ function notifyIOS(msg, update_time) {
 
 }
 
-
-
-
-
-
-
 /**
  * Function Name: sortTableView( a, b)
  * Purpouse: Sort arrays
@@ -172,57 +134,6 @@ function sortTableView(a, b) {
     // a must be equal to b
     return 0;
 };
-
-/**
- *  Function Name: (actualWindow, goToWindow )
- * Purpouse: Show button Back at the bottom and close actualWindow and go to goToWindow
- * Parameters:
- * 	actualWindow:   The windows where the function was called from.
- *  goToWindow: 	The target window (The window where the user is gonna be redirected)
- * Variables:
- *  backView:		The bottom button
- *  label_bottom:   Label "Back"
- */
-function showBottom(actualWindow, goToWindow) {
-    var backView = Titanium.UI.createView({
-        top : '95%',
-        backgroundColor : '#111',
-        height : '6%',
-        width : '100%',
-        opacity : 0.99,
-        borderRadius : 5
-    });
-
-    var label_bottom = Titanium.UI.createLabel({
-        color : '#FFFFFF',
-        text : 'Back',
-        textAlign : 'center',
-        height : 'auto'
-    });
-
-    backView.add(label_bottom);
-
-    backView.addEventListener('click', function() {
-        if (!goToWindow.notOpen) {
-            goToWindow.log = actualWindow.log;
-            goToWindow.result = actualWindow.result;
-            goToWindow.name = actualWindow.name;
-        }
-
-        if ((actualWindow.returnTo == "individual_contact.js") || (actualWindow.returnTo == "individual_potential.js")) {
-            goToWindow.nid = actualWindow.nidToReturn;
-            goToWindow.nameSelected = actualWindow.nameToReturn;
-        }
-
-        //Avoiding memory leaking problems:
-        if (!goToWindow.notOpen)
-            goToWindow.open();
-
-        actualWindow.close();
-    });
-    actualWindow.add(backView);
-};
-
 
 
 //
@@ -306,8 +217,7 @@ function treatArray(num_to_insert, call_id) {
             content_s += num_to_insert[key] + '' + separator;
             test1++;
         }
-        else
-        if (count_a == array_size) {
+        else if (count_a == array_size) {
             content_s += num_to_insert[key] + '';
             test2++;
         }
@@ -370,232 +280,6 @@ function getNodeTableInsertStatement(node) {"use strict";
     //json[obj].insert[i].author_uid + ' , 0 , "' + obj + '", ' + json[obj].insert[i].form_part + ',' + json[obj].insert[i].changed_uid + ',\'' + no_data + '\', \'' + json[obj].insert[i].viewed + '\') ';
 }
 
-
-
-////////////////////////////////////////////////
-// Gets the JSON for updated nodes
-////////////////////////////////////////////////
-
-function getJSON() {
-    //Initial JSON values:
-    var current_timestamp = Math.round(+new Date() / 1000);
-    var returning_json = '{ "timestamp" : "' + current_timestamp + '", "data" : { ';
-    var db_json = Omadi.utils.openMainDatabase();
-   
-    //=============================
-    //Builds JSON for new nodes and for nodes that were updated
-    //=============================
-    var new_nodes = db_json.execute('SELECT * FROM node WHERE flag_is_updated=1 ORDER BY nid DESC');
-    //Ti.API.info('Lets update the node :'+new_nodes.fieldByName('nid'));
-    if (new_nodes.rowCount > 0) {
-        returning_json += '"node":{ ';
-        while (new_nodes.isValidRow()) {
-            Ti.API.info('NODE ' + new_nodes.fieldByName('nid') + ' -----JSON BEING CREATED-----');
-            var selected_node = db_json.execute('SELECT * FROM ' + new_nodes.fieldByName('table_name') + ' WHERE nid = ' + new_nodes.fieldByName('nid'));
-            var node_fields = db_json.execute('SELECT * FROM fields WHERE bundle = "' + new_nodes.fieldByName('table_name') + '"');
-            var type = db_json.execute('SELECT display_name, bundle_name FROM bundles WHERE bundle_name = "' + node_fields.fieldByName('bundle') + '"');
-            var type_string = type.fieldByName('bundle_name');
-
-            var no_data_string = '""';
-            if (new_nodes.fieldByName("no_data_fields") != null && new_nodes.fieldByName("no_data_fields") != "") {
-                no_data_string = new_nodes.fieldByName("no_data_fields");
-            }
-            if (new_nodes.fieldByName('nid') < 0) {
-                returning_json += '"' + new_nodes.fieldByName('nid') + '":{ "created":"' + new_nodes.fieldByName('created') + '", "nid":"' + new_nodes.fieldByName('nid') + '", "type":"' + type_string.toLowerCase() + '", "form_part":"' + new_nodes.fieldByName("form_part") + '", "no_data_fields":' + no_data_string;
-            }
-            else {
-                returning_json += '"' + new_nodes.fieldByName('nid') + '":{ "changed":"' + new_nodes.fieldByName('changed') + '", "nid":"' + new_nodes.fieldByName('nid') + '", "type":"' + type_string.toLowerCase() + '", "form_part":"' + new_nodes.fieldByName("form_part") + '", "no_data_fields":' + no_data_string;
-            }
-            //Ti.API.info(returning_json);
-            //Ti.API.info('1');
-            while (node_fields.isValidRow()) {
-                //Ti.API.info('2');
-                //Ti.API.debug("CREATE JSON: processing field " + node_fields.fieldByName('field_name'));
-                if ((selected_node.rowCount > 0) && (selected_node.fieldByName(node_fields.fieldByName('field_name')) != null) && (selected_node.fieldByName(node_fields.fieldByName('field_name')) != '')) {
-                    //Ti.API.info('3');
-                    if (selected_node.fieldByName(node_fields.fieldByName('field_name')) == 7411317618171051229) {
-                        //Ti.API.info('4');
-                        var array_cont = db_json.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + new_nodes.fieldByName('nid') + ' AND field_name = \'' + node_fields.fieldByName('field_name') + '\'');
-                        //Ti.API.info('5');
-                        if ((array_cont.rowCount > 0) || (array_cont.isValidRow())) {
-                            //Decode the stored array:
-                            //Ti.API.info('6');
-                            var a_decoded = array_cont.fieldByName('encoded_array');
-                            //Ti.API.info('7 '+a_decoded);
-                            //TODO: Fix the decoded value:
-                            //decoded = Titanium.Utils.base64decode(decoded);
-                            var decoded = Base64.decode(a_decoded);
-                            //Ti.API.info('8 '+decoded);
-                            //Ti.API.info('Decoded array is equals to: ' + decoded);
-                            //Ti.API.info('9');
-                            decoded = decoded.toString();
-                            //Ti.API.info('10');
-                            // Token that splits each element contained into the array: 'j8Oc2s1E'
-                            var decoded_values = decoded.split("j8Oc2s1E");
-
-                            var y;
-                            for (y in decoded_values) {
-                                decoded_values[y] = decoded_values[y].toString().replace(/^\s+|\s+$/g, "");
-                            }
-                            //Ti.API.info('11 '+decoded_values);
-                            // TODO: why is it looking for the word photo in the field_name
-                            // TODO: this should check if it is an image field type
-                            if (node_fields.fieldByName('field_name').indexOf('photo') != -1) {
-
-                                var db_images = Omadi.utils.openMainDatabase();
-
-                                var image_count_result = db_images.execute('SELECT COUNT(*) AS count FROM file_upload_queue WHERE nid = ' + new_nodes.fieldByName('nid') + ' AND field_name = \'' + node_fields.fieldByName('field_name') + '\'');
-                                var image_count = image_count_result.fieldByName('count');
-
-                                db_images.close();
-
-                                //Ti.API.info("IMAGE: Image Count: " + image_count);
-
-                                if (decoded_values.length) {
-                                    if (decoded_values.length == 1) {
-                                        if (decoded_values[0] == null || decoded_values[0] == "null" || decoded_values[0] == "" || isNumber(decoded_values[0]) === false) {
-                                            Ti.API.info('Nothing to add, pictures not taken');
-                                        }
-                                        else {
-                                            returning_json += ', "' + node_fields.fieldByName('field_name') + '": [ \"' + decoded_values.join("\" , \"") + '\" ] ';
-                                        }
-                                    }
-                                    else {
-                                        var cp_decoded_values = decoded_values.slice();
-                                        var y;
-                                        for (y in decoded_values) {
-                                            if (decoded_values[y] == null || decoded_values[y] == "null" || decoded_values[y] == "" || isNumber(decoded_values[y]) === false) {
-                                                cp_decoded_values.splice(y, 1);
-                                            }
-                                        }
-                                        returning_json += ', "' + node_fields.fieldByName('field_name') + '": [ \"' + cp_decoded_values.join("\" , \"") + '\" ] ';
-                                    }
-                                }
-                                else {
-                                    //Ti.API.info('Nothing to add, pictures do not exit');
-                                }
-                            }
-                            else {
-                                returning_json += ', "' + node_fields.fieldByName('field_name') + '": [ \"' + decoded_values.join("\" , \"") + '\" ] ';
-                            }
-
-                            //Ti.API.info('11.1 '+returning_json);
-                        }
-                        else {
-                            //Ti.API.info('12');
-                            if (node_fields.fieldByName('field_name').indexOf('photo') != -1) {
-                                var db_images = Omadi.utils.openMainDatabase();
-
-                                var image_count_result = db_images.execute('SELECT COUNT(*) AS count FROM file_upload_queue WHERE nid = ' + new_nodes.fieldByName('nid') + ' AND field_name = \'' + node_fields.fieldByName('field_name') + '\'');
-                                var image_count = image_count_result.fieldByName('count');
-
-                                db_images.close();
-
-                                //Ti.API.info("IMAGE: Image Count bottom: " + image_count);
-
-                                if (selected_node.fieldByName(node_fields.fieldByName('field_name')) == null || selected_node.fieldByName(node_fields.fieldByName('field_name')) == "null" || selected_node.fieldByName(node_fields.fieldByName('field_name')) == "" || isNumber(selected_node.fieldByName(node_fields.fieldByName('field_name'))) === false) {
-                                    Ti.API.info('Nothing to add, pictures not taken');
-                                }
-                                else {
-                                    returning_json += ', "' + node_fields.fieldByName('field_name') + '": "' + selected_node.fieldByName(node_fields.fieldByName('field_name')) + '"';
-                                }
-                            }
-                            else {
-                                var value = selected_node.fieldByName(node_fields.fieldByName('field_name')).toString();
-                                returning_json += ', "' + node_fields.fieldByName('field_name') + '": "' + value.replace(/^\s+|\s+$/g, "") + '"';
-                            }
-                            //returning_json += ', "' + node_fields.fieldByName('field_name') + '": "' + selected_node.fieldByName(node_fields.fieldByName('field_name')) + '"';
-                            //Ti.API.info('13 PRE_JSON: ' + returning_json);
-                        }
-                        array_cont.close();
-                    }
-                    else {
-                        //Ti.API.info('14');
-                        if (node_fields.fieldByName('type') == 'rules_field') {
-                            //Ti.API.info('15');
-                            returning_json += ', "' + node_fields.fieldByName('field_name') + '": ' + selected_node.fieldByName(node_fields.fieldByName('field_name'));
-                            //Ti.API.info('16 PRE_JSON: ' + returning_json);
-                        }
-                        else {
-                            //Ti.API.info('17');
-                            // Most fields go here
-                            // single cardinality, non-photo, non-rules fields
-                            var value = selected_node.fieldByName(node_fields.fieldByName('field_name')).toString();
-                            returning_json += ', "' + node_fields.fieldByName('field_name') + '": "' + value.replace(/^\s+|\s+$/g, "") + '" ';
-                            //Ti.API.info('18 PRE_JSON: ' + returning_json);
-                        }
-                    }
-                }
-                else
-                if (node_fields.fieldByName('field_name').indexOf('photo') != -1) {
-
-                    var db_images = Omadi.utils.openMainDatabase();
-                    var image_count_result = db_images.execute('SELECT COUNT(*) AS count FROM file_upload_queue WHERE nid = ' + new_nodes.fieldByName('nid') + ' AND field_name = \'' + node_fields.fieldByName('field_name') + '\'');
-                    var image_count = image_count_result.fieldByName('count');
-                    db_images.close();
-
-                    //Ti.API.info("IMAGE: Image Count, none saved: " + image_count);
-                    if (image_count > 0) {
-                        decoded_values = new Array();
-                        for ( i = 0; i < image_count; i++) {
-                            decoded_values = decoded_values.concat(1);
-                        }
-                        returning_json += ', "' + node_fields.fieldByName('field_name') + '": [ \"' + decoded_values.join("\" , \"") + '\" ] ';
-                    }
-                }
-
-                node_fields.next();
-            }
-            returning_json += ' } ';
-            //Ti.API.info('19 PRE_JSON: ' + returning_json);
-            //Next node
-            new_nodes.next();
-            if (new_nodes.isValidRow()) {
-                returning_json += ', ';
-            }
-        }
-        //close 'node'
-        returning_json += '} ';
-        selected_node.close();
-        node_fields.close();
-        type.close();
-
-        //=============================
-        //Builds JSON for new terms
-        //=============================
-        var new_terms = db_json.execute('SELECT * FROM term_data WHERE tid < 0 ORDER BY tid DESC');
-        //Ti.API.info('Lets update the terms :'+new_terms.fieldByName('tid'));
-        Ti.API.info('20');
-        if (new_terms.rowCount > 0) {
-            Ti.API.info('21');
-            returning_json += ',"term":{ ';
-            while (new_terms.isValidRow()) {
-                Ti.API.info('22');
-                Ti.API.info('TERM ' + new_terms.fieldByName('tid') + ' -----JSON BEING CREATED-----');
-                var vocabulary = db_json.execute('SELECT * FROM vocabulary WHERE vid = ' + new_terms.fieldByName('vid'));
-                returning_json += '"' + new_terms.fieldByName('tid') + '":{ "created":"' + new_terms.fieldByName('created') + '", "tid":"' + new_terms.fieldByName('tid') + '", "machine_name":"' + vocabulary.fieldByName('machine_name') + '", "name":"' + new_terms.fieldByName('name') + '"  }';
-                //Next term
-                new_terms.next();
-                if (new_terms.isValidRow()) {
-                    returning_json += ', ';
-                }
-            }
-            //close 'term'
-            returning_json += '} ';
-        }
-        // close data and timestamp:
-        returning_json += ' } }';
-
-        //Ti.API.info('JSON: ' + returning_json);
-
-        //Close db connections and result set
-        new_nodes.close();
-        new_terms.close();
-        db_json.close();
-        return returning_json;
-    }
-}
-
 function isJsonString(str) {
     if (str == "" || str == null) {
         return false;
@@ -611,51 +295,38 @@ function isJsonString(str) {
     return true;
 }
 
-function getCookie() {"use strict";
-    var db, result, cookie;
 
-    db = Omadi.utils.openListDatabase();
-    result = db.execute('SELECT * FROM login WHERE rowid=1');
-    cookie = result.fieldByName("cookie");
-    Ti.API.info("FOUND COOKIE = " + cookie);
-
-    result.close();
-    db.close();
-    return cookie;
-}
 
 function update_node(mode, close_parent, _node_name, flag_next_part) {"use strict";
-    
+
     //Omadi.display.showLoadingIndicator("Saving data to the web...");
-    
-    Omadi.service.sendUpdates(mode, _node_name, function(error){
-        
+
+    Omadi.service.sendUpdates(mode, _node_name, function(error) {
+
         //Omadi.display.hideLoadingIndicator();
         Ti.API.info('Closing create or edit node');
-        if(typeof error !== 'undefined'){
+        if ( typeof error !== 'undefined') {
             alert(error);
         }
-        
-        if(flag_next_part != null){
+
+        if (flag_next_part != null) {
             close_parent(flag_next_part);
         }
-        else{
+        else {
             close_parent(false);
         }
     });
-    
+
     // installMe(curWin, null, curWin.listView, null, 'POST', mode, function(isError) {
-        // Ti.API.info('Closing create or edit node');
-        // if (flag_next_part != null) {
-            // close_parent(flag_next_part);
-        // }
-        // else {
-            // close_parent(isError);
-        // }
+    // Ti.API.info('Closing create or edit node');
+    // if (flag_next_part != null) {
+    // close_parent(flag_next_part);
+    // }
+    // else {
+    // close_parent(isError);
+    // }
     // }, _node_name);
 }
-
-
 
 //Function Opens a new window to display descAux [Description?].
 //The window closes when it receives a click event
@@ -749,8 +420,7 @@ function verify_UTC(date_original) {
         Ti.API.info('Timezone is negative');
         return -1;
     }
-    else
-    if ((date_original.getFullYear() - date_original.getUTCFullYear()) < 0) {
+    else if ((date_original.getFullYear() - date_original.getUTCFullYear()) < 0) {
         Ti.API.info('Timezone is positive');
         return 1;
     }
@@ -759,8 +429,7 @@ function verify_UTC(date_original) {
             Ti.API.info('Timezone is negative');
             return -1;
         }
-        else
-        if ((date_original.getMonth() - date_original.getUTCMonth()) < 0) {
+        else if ((date_original.getMonth() - date_original.getUTCMonth()) < 0) {
             Ti.API.info('Timezone is positive');
             return 1;
         }
@@ -769,8 +438,7 @@ function verify_UTC(date_original) {
                 Ti.API.info('Timezone is negative');
                 return -1;
             }
-            else
-            if ((date_original.getDate() - date_original.getUTCDate()) < 0) {
+            else if ((date_original.getDate() - date_original.getUTCDate()) < 0) {
                 Ti.API.info('Timezone is positive');
                 return 1;
             }
@@ -900,150 +568,6 @@ function getScreenHeight() {
     return ret;
 }
 
-function uploadFile() {
-    //var type_request = 'POST';
-
-    try {
-      
-        var _file_xhr = Ti.Network.createHTTPClient();
-        _file_xhr.setTimeout(30000);
-        _file_xhr.open('POST', domainName + '/js-sync/upload.json');
-
-        Ti.API.info("Uploading to " + domainName);
-
-        if (PLATFORM == 'android') {
-            _file_xhr.setRequestHeader("Cookie", getCookie());
-            // Set cookies
-        }
-        else {
-            var split_cookie = getCookie().split(';');
-            if (!split_cookie[0]) {
-                split_cookie[0] = "";
-            }
-            _file_xhr.setRequestHeader("Cookie", split_cookie[0]);
-            // Set cookies
-        }
-
-        // Upload images
-        var database = Omadi.utils.openMainDatabase();
-       
-
-        var fileUploadTable = database.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
-        if (fileUploadTable.isValidRow()) {
-            //Only upload those images that have positive nids
-            if (fileUploadTable.fieldByName('nid') > 0) {
-
-                _file_xhr.onload = function(e) {
-                    Ti.API.info('UPLOAD FILE: =========== Success ========' + this.responseText);
-                    var respnseJson = JSON.parse(this.responseText);
-
-                    if (respnseJson.nid) {
-                        database = Omadi.utils.openMainDatabase();
-                        
-                        fileUploadTable = database.execute("SELECT * FROM file_upload_queue WHERE nid> 0;");
-
-                        // Updating status
-                        var table = database.execute("SELECT table_name FROM node WHERE nid=" + respnseJson.nid + ";");
-                        var fieldSettings = database.execute("SELECT settings FROM fields WHERE bundle='" + table.fieldByName('table_name') + "' and type='image' and field_name='" + respnseJson.field_name + "';");
-
-                        var settings = JSON.parse(fieldSettings.fieldByName('settings'));
-                        if (settings.cardinality > 1 || settings.cardinality < 0) {
-                            var array_cont = database.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + respnseJson.nid + ' AND field_name = \'' + respnseJson.field_name + '\'');
-                            var decoded_values = [];
-                            if (array_cont.rowCount > 0) {
-                                var decoded = array_cont.fieldByName('encoded_array');
-                                if (decoded != null || decoded != "") {
-                                    decoded = Base64.decode(decoded);
-                                    Ti.API.info('Decoded array is equals to: ' + decoded);
-                                    decoded = decoded.toString();
-                                    decoded_values = decoded.split("j8Oc2s1E");
-                                }
-                            }
-
-                            if (respnseJson.delta < decoded_values.length) {
-                                decoded_values[respnseJson.delta] = respnseJson.file_id;
-                            }
-                            else {
-                                decoded_values.push(respnseJson.file_id);
-                            }
-                            var content = '';
-                            for ( i = 0; i < decoded_values.length; i++) {
-                                if (i == decoded_values.length - 1) {
-                                    content += decoded_values[i];
-                                }
-                                else {
-                                    content += decoded_values[i] + '' + "j8Oc2s1E";
-                                }
-                            }
-                            content = Base64.encode(content);
-                            database.execute("UPDATE " + table.fieldByName('table_name') + " SET " + respnseJson.field_name + "='7411317618171051229', " + respnseJson.field_name + "___file_id='7411317618171051229', " + respnseJson.field_name + "___status='7411317618171051229' WHERE nid='" + respnseJson.nid + "';");
-                            database.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + respnseJson.nid + ', \'' + respnseJson.field_name + "___file_id" + '\',  \'' + content + '\' )');
-                            database.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + respnseJson.nid + ', \'' + respnseJson.field_name + '\',  \'' + content + '\' )');
-                        }
-                        else {
-                            database.execute("UPDATE " + table.fieldByName('table_name') + " SET " + respnseJson.field_name + "='" + respnseJson.file_id + "', " + respnseJson.field_name + "___file_id='" + respnseJson.file_id + "', " + respnseJson.field_name + "___status='uploaded' WHERE nid='" + respnseJson.nid + "';");
-                        }
-                        //Deleting file after upload.
-                        database.execute("DELETE FROM file_upload_queue WHERE nid=" + respnseJson.nid + " and delta=" + respnseJson.delta + " and field_name='" + respnseJson.field_name + "';");
-                        fileUploadTable = database.execute("SELECT * FROM file_upload_queue WHERE nid > 0;");
-                        var remainingRow = fileUploadTable.rowCount;
-                        table.close();
-                        fieldSettings.close();
-                        fileUploadTable.close();
-                        database.close();
-                        if (remainingRow != 0) {
-                            uploadFile();
-                        }
-                    }
-                };
-
-                _file_xhr.onerror = function(e) {
-                    Ti.API.error('UPLOAD FILE: =========== Error in uploading ========' + this.error + this.status);
-                    if (this.status == '406' && this.error == 'Nid is not connected to a valid node.') {
-                        var database = Omadi.utils.openMainDatabase();
-                       
-                        database.execute("DELETE FROM file_upload_queue WHERE nid=" + fileUploadTable.fieldByName('nid') + " and id=" + fileUploadTable.fieldByName('id') + ";");
-                        database.close();
-                    }
-                    var alertDialog = Titanium.UI.createAlertDialog({
-                        title : 'Upload Error',
-                        message : 'There was a problem uploading your photo. Details: ' + this.status + " " + this.error,
-                        buttonNames : ['OK']
-                    });
-                    alertDialog.show();
-                };
-
-                _file_xhr.setRequestHeader("Content-Type", "application/json");
-
-                if (PLATFORM == 'android') {
-                    _file_xhr.send('{"file_data"	:"' + fileUploadTable.fieldByName('file_data') + '", "filename"	:"' + fileUploadTable.fieldByName('file_name') + '", "nid"		:"' + fileUploadTable.fieldByName('nid') + '", "field_name":"' + fileUploadTable.fieldByName('field_name') + '", "delta":"' + fileUploadTable.fieldByName('delta') + '","timestamp":"' + fileUploadTable.fieldByName('timestamp') + '"}');
-                }
-                else {
-
-                    _file_xhr.send({
-                        file_data : fileUploadTable.fieldByName('file_data'),
-                        filename : fileUploadTable.fieldByName('file_name'),
-                        nid : fileUploadTable.fieldByName('nid'),
-                        field_name : fileUploadTable.fieldByName('field_name'),
-                        delta : fileUploadTable.fieldByName('delta'),
-                        timestamp : fileUploadTable.fieldByName('timestamp'),
-                    });
-                    //alert("time_stamp_send_to_sever_in_ios");
-
-                }
-                //alert("time_stamp_sent_to_server");
-                fileUploadTable.close();
-                database.close();
-            }
-        }
-    }
-    catch(ex) {
-        Ti.API.error("==== ERROR ===" + ex);
-        alert("There was an error uploading your photo. Details: " + ex);
-    }
-}
-
-
 function clearCache() {
     var path = Ti.Filesystem.getFile(Titanium.Filesystem.applicationDirectory).getParent();
     var cookies = Ti.Filesystem.getFile(path + '/Library/Cookies', 'Cookies.binarycookies');
@@ -1108,8 +632,7 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
                     //Ti.API.info('here--------0.5' + calculated_field_cache[calculation_row.field_name_1]);
                     field_1_multiplier = calculated_field_cache[calculation_row.field_name_1];
                 }
-                else
-                if (calculation_row.type == 'parent_field_value') {
+                else if (calculation_row.type == 'parent_field_value') {
                     //Ti.API.info('here--------0.6' + calculation_row.parent_field);
                     parent_field = calculation_row.parent_field;
                     if (entity[parent_field] != null && entity[parent_field][0]['nid'] != null) {
@@ -1120,8 +643,7 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
                         }
                     }
                 }
-                else
-                if (entity[calculation_row.field_name_1] != null && entity[calculation_row.field_name_1][0]['value'] != null) {
+                else if (entity[calculation_row.field_name_1] != null && entity[calculation_row.field_name_1][0]['value'] != null) {
                     field_1_multiplier = entity[calculation_row.field_name_1][0]['value'];
                     //Ti.API.info('here--------0.8' + field_1_multiplier);
                 }
@@ -1167,18 +689,15 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
                                 field_1_multiplier = Math.ceil(field_1_multiplier);
                                 //Ti.API.info('here--------0.18' + field_1_multiplier);
                             }
-                            else
-                            if (calculation_row.interval_rounding == 'down') {
+                            else if (calculation_row.interval_rounding == 'down') {
                                 field_1_multiplier = Math.floor(field_1_multiplier);
                                 //Ti.API.info('here--------0.19' + field_1_multiplier);
                             }
-                            else
-                            if (calculation_row.interval_rounding == 'integer') {
+                            else if (calculation_row.interval_rounding == 'integer') {
                                 field_1_multiplier = Math.round(field_1_multiplier);
                                 //Ti.API.info('here--------0.20' + field_1_multiplier);
                             }
-                            else
-                            if (calculation_row.interval_rounding == 'increment-at-time') {
+                            else if (calculation_row.interval_rounding == 'increment-at-time') {
                                 //Ti.API.info('here--------0.21' + calculation_row.increment_at_time);
                                 at_time = calculation_row.increment_at_time;
                                 start_timestamp = Number(start_timestamp);
@@ -1210,8 +729,7 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
                     field_2_multiplier = calculated_field_cache[calculation_row.field_name_2];
                     //Ti.API.info('here--------2' + field_2_multiplier);
                 }
-                else
-                if (calculation_row.type == 'parent_field_value') {
+                else if (calculation_row.type == 'parent_field_value') {
                     parent_field = calculation_row.parent_field;
                     //Ti.API.info('here--------3' + parent_field);
                     if (entity[parent_field] != null && entity[parent_field][0]['nid'] != null) {
@@ -1223,8 +741,7 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
                         }
                     }
                 }
-                else
-                if (entity[calculation_row.field_name_2] != null && entity[calculation_row.field_name_2][0]['value'] != null) {
+                else if (entity[calculation_row.field_name_2] != null && entity[calculation_row.field_name_2][0]['value'] != null) {
                     field_2_multiplier = entity[calculation_row.field_name_2][0]['value'];
                     //Ti.API.info('here--------6' + field_2_multiplier);
                 }
@@ -1250,8 +767,7 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
                 //Ti.API.info('here--------10');
                 zero = true;
             }
-            else
-            if (value == 0 && field_1_multiplier != 0) {
+            else if (value == 0 && field_1_multiplier != 0) {
                 //Ti.API.info('here--------11');
                 value = field_1_multiplier;
             }
@@ -1260,13 +776,11 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
                 //Ti.API.info('here--------12');
                 zero = true;
             }
-            else
-            if (value == 0 && field_2_multiplier != 0) {
+            else if (value == 0 && field_2_multiplier != 0) {
                 //Ti.API.info('here--------13');
                 value = Number(field_2_multiplier);
             }
-            else
-            if (value != 0 && field_2_multiplier != 0) {
+            else if (value != 0 && field_2_multiplier != 0) {
                 //Ti.API.info('here--------14');
                 value *= Number(field_2_multiplier);
             }
@@ -1275,8 +789,7 @@ function _calculation_field_get_values(win, db_display, instance, entity, conten
                 //Ti.API.info('here--------15');
                 value = Number(numeric_multiplier);
             }
-            else
-            if (value != 0 && numeric_multiplier != 0) {
+            else if (value != 0 && numeric_multiplier != 0) {
                 //Ti.API.info('here--------16');
                 value *= Number(numeric_multiplier);
             }
@@ -1626,8 +1139,7 @@ function date(format, timestamp) {
             // escaped
             ret = s;
         }
-        else
-        if (f[s]) {
+        else if (f[s]) {
             // a date function exists
             ret = f[s]();
         }
@@ -1719,8 +1231,7 @@ function count_arr_obj(mixed_var, mode) {
     if (mixed_var === null || typeof mixed_var === 'undefined') {
         return 0;
     }
-    else
-    if (mixed_var.constructor !== Array && mixed_var.constructor !== Object) {
+    else if (mixed_var.constructor !== Array && mixed_var.constructor !== Object) {
         return 1;
     }
 
@@ -1748,8 +1259,7 @@ function usort(inputArr, sorter) {
     if ( typeof sorter === 'string') {
         sorter = this[sorter];
     }
-    else
-    if (Object.prototype.toString.call(sorter) === '[object Array]') {
+    else if (Object.prototype.toString.call(sorter) === '[object Array]') {
         sorter = this[sorter[0]][sorter[1]];
     }
     // BEGIN REDUNDANT
@@ -1862,8 +1372,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
                                     }
                                 }
                             }
-                            else
-                            if (search_operator == 'before-time') {
+                            else if (search_operator == 'before-time') {
                                 //Ti.API.info('here--------A.17');
                                 var value_index;
                                 for (value_index in node_values) {
@@ -1874,8 +1383,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
                                     }
                                 }
                             }
-                            else
-                            if (search_operator == 'between-time') {
+                            else if (search_operator == 'between-time') {
                                 //Ti.API.info('here--------A.20');
                                 var search_time_value2 = search_value.time2;
                                 //Ti.API.info('here--------A.21');
@@ -1913,8 +1421,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
                                 }
                             }
                         }
-                        else
-                        if (search_operator == '__blank') {
+                        else if (search_operator == '__blank') {
                             //Ti.API.info('here--------A.26---2');
                             row_matches[criteria_index] = true;
                             var value_index;
@@ -1928,8 +1435,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 
                             }
                         }
-                        else
-                        if (search_operator == '__filled') {
+                        else if (search_operator == '__filled') {
                             //Ti.API.info('here--------A.26---5');
                             var value_index;
                             for (value_index in node_values) {
@@ -1942,8 +1448,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
 
                             }
                         }
-                        else
-                        if (search_operator == 'weekday') {
+                        else if (search_operator == 'weekday') {
                             //Ti.API.info('here--------A.27' + search_value.weekday);
                             var weekdays = search_value.weekday;
                             if (!isArray(search_value.weekday)) {
@@ -1971,7 +1476,9 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
                     }
 
                     /* TODO ---- In Future
+
                     else
+
                      if(search_field['settings']['parts'] != null) {
 
                      if(search_field['type'] == 'location') {
@@ -2597,8 +2104,7 @@ function rules_field_format_readable_time_rules(timeValue) {
                     if (startDay == -1) {
                         startDay = currentDay;
                     }
-                    else
-                    if (currentDay == (lastConsecutive + 1)) {
+                    else if (currentDay == (lastConsecutive + 1)) {
                         // Just continue to the next day
                     }
                     else {
@@ -2654,12 +2160,10 @@ function omadi_time_seconds_to_string(seconds, format) {
         if (hours == 0) {
             time_string = '12:' + minutes + 'AM';
         }
-        else
-        if (hours == 12) {
+        else if (hours == 12) {
             time_string = '12:' + minutes + 'PM';
         }
-        else
-        if (hours > 12) {
+        else if (hours > 12) {
             var new_hours = hours - 12;
             hours_str = new_hours;
             if (new_hours < 10) {

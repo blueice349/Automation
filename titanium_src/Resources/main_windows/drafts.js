@@ -150,8 +150,7 @@ function draftNavButtons() {"use strict";
         });
 
         curWin.add(empty);
-        //showBottom(actualWindow, goToWindow )
-        //showBottom(curWin, goToWindow);
+       
     }
     //Shows the contacts
     else {
@@ -281,7 +280,6 @@ function draftNavButtons() {"use strict";
 
     db.close();
 
-    //showBottom(actualWindow, goToWindow )
     if (PLATFORM !== 'android') {
         draftNavButtons();
     }

@@ -51,7 +51,7 @@ Ti.App.addEventListener('stop_gps', function(e){
 			Ti.API.info("in stop gps");
 			if('service1' in Ti.App){
 				setTimeout(function(){
-					if(!isLogged()){
+					if(!Omadi.utils.isLoggedIn()){
 						try{
 							if(Ti.App.service1.isStarted){
 								Ti.App.service1.stop();
@@ -857,7 +857,7 @@ Ti.App.addEventListener('free_login', function(){
 	loginWin.touchEnabled = true;	
 });
 
-if (isLogged() === true){
+if (Omadi.utils.isLoggedIn() === true){
 	//Already logged
 	var db = Omadi.utils.openListDatabase();
 	

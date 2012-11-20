@@ -1,7 +1,7 @@
 
 Ti.include("/lib/functions.js");
 
-if(Ti.App.Properties.getBool('stopGPS', false) || !isLogged()){
+if(Ti.App.Properties.getBool('stopGPS', false) || !Omadi.utils.isLoggedIn()){
 	try{
 		Titanium.Android.currentService.stop();
 	}

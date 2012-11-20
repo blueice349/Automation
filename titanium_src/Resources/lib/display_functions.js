@@ -260,7 +260,7 @@ Omadi.display.ProgressBar = function(current, max) {"use strict";
     this.current = current;
     this.max = max;
     
-    var progressView, pb_download, pb_install;
+    //var progressView, pb_download, pb_install;
 
     //var a1 = Titanium.UI.createAnimation();
     //a1.top = -1 * Ti.Platform.displayCaps.platformHeight * 0.14;
@@ -271,7 +271,7 @@ Omadi.display.ProgressBar = function(current, max) {"use strict";
     //a2.duration = 1000;
 
     // black view
-    progressView = Titanium.UI.createView({
+    this.progressView = Titanium.UI.createView({
         height : '50dp',
         width : '100%',
         backgroundColor : '#111',
@@ -280,7 +280,7 @@ Omadi.display.ProgressBar = function(current, max) {"use strict";
         zIndex: 100
     });
 
-    Ti.UI.currentWindow.add(progressView);
+    Ti.UI.currentWindow.add(this.progressView);
 
     //If bar is not hiding change this to be incorporated at mainMenu.js
     //loggedView.animate(a1);
@@ -289,7 +289,7 @@ Omadi.display.ProgressBar = function(current, max) {"use strict";
     //    indView.animate(a2);
     //}, 500);
 
-    pb_download = Titanium.UI.createProgressBar({
+    this.pb_download = Titanium.UI.createProgressBar({
         width : "70%",
         min : 0,
         max : 1,
@@ -300,7 +300,7 @@ Omadi.display.ProgressBar = function(current, max) {"use strict";
         style : (PLATFORM !== 'android') ? Titanium.UI.iPhone.ProgressBarStyle.PLAIN : ''
     });
 
-    pb_install = Titanium.UI.createProgressBar({
+    this.pb_install = Titanium.UI.createProgressBar({
         width : "70%",
         min : 0,
         max : 100,
@@ -311,44 +311,44 @@ Omadi.display.ProgressBar = function(current, max) {"use strict";
         style : (PLATFORM !== 'android') ? Titanium.UI.iPhone.ProgressBarStyle.PLAIN : ''
     });
 
-    progressView.add(pb_download);
-    pb_download.show();
+    this.progressView.add(this.pb_download);
+    this.pb_download.show();
 
-    pb_download.value = 0;
-    pb_install.value = this.current;
+    this.pb_download.value = 0;
+    this.pb_install.value = this.current;
 
     this.set_max = function(value) {
-        progressView.remove(pb_download);
-        progressView.add(pb_install);
-        pb_install.show();
+        this.progressView.remove(this.pb_download);
+        this.progressView.add(this.pb_install);
+        this.pb_install.show();
         this.max = value;
-        Ti.API.info("Changed max");
+        //Ti.API.info("Changed max");
     };
 
     this.set = function() {
         this.current ++;
 
         if (this.max <= 0) {
-            pb_install.value = 100;
+            this.pb_install.value = 100;
         }
         else {
             //Only one page case
             if ((this.current === 0) && (this.max === 1)) {
-                pb_install.value = 50;
+                this.pb_install.value = 50;
             }
             else {
                 var perc = parseInt((this.current * 100) / this.max, 10);
-                pb_install.value = perc;
+                this.pb_install.value = perc;
             }
         }
     };
 
     this.set_download = function(value) {
-        pb_download.value = value;
+        this.pb_download.value = value;
     };
 
     this.close = function() {
-        Ti.UI.currentWindow.remove(progressView);
+        Ti.UI.currentWindow.remove(this.progressView);
         //indView.animate(a1);
         //setTimeout(function() {
         //    Ti.UI.currentWindow.remove(indView);

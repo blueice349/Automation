@@ -5,7 +5,7 @@ var Omadi = Omadi || {};
 Omadi.utils = Omadi.utils || {};
 
 Omadi.DOMAIN_NAME = domainName;
-Omadi.DB_VERSION = "omadiDb1671";
+Omadi.DB_VERSION = "omadiDb1673";
 
 Omadi.utils.openListDatabase = function() {"use strict";
     var db = Ti.Database.install('/database/db_list.sqlite', Omadi.DB_VERSION + "_list");
@@ -112,9 +112,15 @@ Omadi.utils.getTimeAgoStr = function(timestamp) {'use strict';
 };
 
 Omadi.utils.setCookieHeader = function(http) {"use strict";
-    /*global getCookie*/
+    var db, result, cookie;
 
-    var cookie = getCookie();
+    db = Omadi.utils.openListDatabase();
+    result = db.execute('SELECT * FROM login WHERE rowid=1');
+    cookie = result.fieldByName("cookie");
+    //Ti.API.info("FOUND COOKIE = " + cookie);
+    result.close();
+    db.close();
+
 
     if (PLATFORM === 'android') {
         http.setRequestHeader("Cookie", cookie);
@@ -143,12 +149,50 @@ Omadi.utils.setCookieHeader = function(http) {"use strict";
  * The mask defaults to dateFormat.masks.default.
  */
 
-var dateFormat = function() {
-    var token = /d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[LloSZ]|"[^"]*"|'[^']*'/g, timezone = /\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[-+]\d{4})?)\b/g, timezoneClip = /[^-+\dA-Z]/g, pad = function(val, len) {
+Omadi.utils.isLoggedIn = function() {"use strict";
+    var mainDB, result, lastLoggedTimestamp, timestamp, is_logged_in, now;
+    
+    mainDB = Omadi.utils.openListDatabase();
+
+    result = mainDB.execute('SELECT * FROM login WHERE "id_log"=1');
+    is_logged_in = result.fieldByName('is_logged', Ti.Database.FIELD_TYPE_STRING);
+    timestamp = result.fieldByName('logged_time');
+    //Ti.API.info("TIME FROM DB = " + _l_timestamp);
+
+    now = Omadi.utils.getUTCTimestamp();
+    if (timestamp == "null" || timestamp == null || timestamp == "0") {
+        timestamp = 0;
+    }
+
+    lastLoggedTimestamp = now - timestamp;
+
+    result.close();
+    mainDB.close();
+    
+    //Ti.API.info("********************   IS LOGGED: " + logged);
+    if (is_logged_in === "false") {
+        return false;
+    }
+    
+    if (lastLoggedTimestamp >= (60 * 60 * 24 * 7)) {//Seven days
+        //else if ( last_logged_timestamp >= (60*5) ){ //Five minutes ----> testing
+        //Ti.API.info("SESSION IS NO LONGER VALID! " + last_logged_timestamp);
+        Ti.App.Properties.setString('logStatus', "Please login");
+        return false;
+    }
+    
+    return true;
+};
+
+var dateFormat = function() {"use strict";
+    /*jslint vars: true, regexp: true, nomen: true*/
+   
+    var token = /d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[LloSZ]|"[^"]*"|'[^']*'/g, timezone = /\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[\-+]\d{4})?)\b/g, timezoneClip = /[^\-+\dA-Z]/g, pad = function(val, len) {
         val = String(val);
         len = len || 2;
-        while (val.length < len)
-        val = "0" + val;
+        while (val.length < len){
+            val = "0" + val;
+        }
         return val;
     };
 
@@ -169,9 +213,10 @@ var dateFormat = function() {
         }
 
         // Passing date through Date applies Date.parse, if necessary
-        date = date ? new Date(date) : new Date;
-        if (isNaN(date))
-            throw SyntaxError("invalid date");
+        date = date ? new Date(date) : new Date();
+        if (isNaN(date)){
+            throw new SyntaxError("invalid date");
+        }
 
         mask = String(dF.masks[mask] || mask || dF.masks["default"]);
 
@@ -212,10 +257,10 @@ var dateFormat = function() {
         };
 
         return mask.replace(token, function($0) {
-            return $0 in flags ? flags[$0] : $0.slice(1, $0.length - 1);
+            return (flags.hasOwnProperty($0)) ? flags[$0] : $0.slice(1, $0.length - 1);
         });
     };
-}();
+};
 
 // Some common format strings
 dateFormat.masks = {
@@ -230,7 +275,7 @@ dateFormat.masks = {
     isoDate : "yyyy-mm-dd",
     isoTime : "HH:MM:ss",
     isoDateTime : "yyyy-mm-dd'T'HH:MM:ss",
-    isoUtcDateTime : "UTC:yyyy-mm-dd'T'HH:MM:ss'Z'",
+    isoUtcDateTime : "UTC:yyyy-mm-dd'T'HH:MM:ss'Z'"
 };
 
 // Internationalization strings
@@ -244,7 +289,7 @@ dateFormat.i18n = {
 // return dateFormat(this, mask, utc);
 // };
 
-Omadi.utils.trimWhiteSpace = function(string) {
+Omadi.utils.trimWhiteSpace = function(string) {"use strict";
     return string.replace(/^\s+|\s+$/g, "");
 };
 

@@ -32,6 +32,7 @@ var databaseStatusView = Titanium.UI.createView({
 
 //Common used functions
 Omadi.data.setUpdating(false);
+Ti.App.Properties.setBool("isSendingData", false);
 
 var listView = Titanium.UI.createTableView({
     data : [],
@@ -73,22 +74,22 @@ function checkUpdate(evt) {"use strict";
             //db_up.close();
             //installMe(curWin, pb, listView, null, 'POST', null);
             Omadi.service.sendUpdates(0, 'data', function(){
-                var pb = null;
+                var useProgressBar = false;
 
                 if (curWin.isTopWindow || evt == 'from_menu') {
-                    pb = new Omadi.display.ProgressBar(0, 100);
+                    useProgressBar = true;//new Omadi.display.ProgressBar(0, 100);
                 }
-                Omadi.service.fetchUpdates(curWin, pb);
+                Omadi.service.fetchUpdates(useProgressBar);
             });
         }
         else {
             
-            var pb = null;
+            var useProgressBar = false;
 
             if (curWin.isTopWindow || evt == 'from_menu') {
-                pb = new Omadi.display.ProgressBar(0, 100);
+                useProgressBar = true;//new Omadi.display.ProgressBar(0, 100);
             }
-            Omadi.service.fetchUpdates(curWin, pb);
+            Omadi.service.fetchUpdates(useProgressBar);
 
         }
         up_flag.close();
@@ -528,13 +529,13 @@ var db = Omadi.utils.openMainDatabase();
 var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
 var lastSyncTimestamp = updatedTime.fieldByName('timestamp');
 
-if(!lastSyncTimestamp){
+if(lastSyncTimestamp === null){
     db.execute("INSERT INTO updated SET timestamp=0, updating=0");
 }
 
 db.close();
 
-Omadi.data.setSyncTimestamp(lastSyncTimestamp);
+Omadi.data.setLastUpdateTimestamp(lastSyncTimestamp);
 
 if (lastSyncTimestamp == 0) {
     isFirstTime = true;
@@ -642,7 +643,7 @@ if (PLATFORM === 'android') {
 Ti.App.syncInterval = setInterval(function() {
     // Ti.API.info('========= Automated Update Check running ========= ');
 // 
-    // if (!isLogged()) {
+    // if (!Omadi.utils.isLoggedIn()) {
         // Ti.API.info("Tried to sync, but not logged in... quitting.");
     // }
     // else if ((Omadi.data.isUpdating() === false) && (Titanium.Network.online)) {
@@ -886,7 +887,7 @@ Ti.App.addEventListener('full_update_from_menu', function() {
     Ti.API.debug("in full update menu listener");
     Omadi.data.setUpdating(true);    
     
-    Omadi.data.setSyncTimestamp(0);
+    Omadi.data.setLastUpdateTimestamp(0);
     //If delete_all is present, delete all contents:
     var db = Omadi.utils.openMainDatabase();
     

@@ -19,11 +19,11 @@ Omadi.location.uploadGPSCoordinates = function(){
 	
 	var db, result, json, http, i, locationItems;
 	
-	/*global isLogged,PLATFORM,createNotification*/
+	/*global PLATFORM,createNotification*/
 	
 	Ti.API.info('################################## CALLED ANDROID UPDATE FUNCTION ################################## '+ Omadi.location.is_GPS_uploading());
 	
-	if (!Omadi.location.is_GPS_uploading() && isLogged()){
+	if (!Omadi.location.is_GPS_uploading() && Omadi.utils.isLoggedIn()){
 		
 		if (!Ti.Network.getOnline()) {
 			Ti.API.info('We are offline');
