@@ -108,11 +108,11 @@ Omadi.data.getNodeTableInsertStatement = function(node) {"use strict";
     sql += ')';
 
 
-    if (node.table_name == 'notification' && node.viewed == 0) {
-        Ti.API.debug("A notification was added");
-        //newNotificationCount++;
-        //newNotificationNid = node.nid;
-    }
+    // if (node.table_name == 'notification' && node.viewed == 0) {
+        // Ti.API.debug("A notification was added");
+        // //newNotificationCount++;
+        // //newNotificationNid = node.nid;
+    // }
 
     return sql;
     //json[obj].insert[i].nid + ', '+ json[obj].insert[i].perm_edit + ', '+ json[obj].insert[i].perm_delete + ', ' +
@@ -435,7 +435,7 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) { "use stric
     /*jslint nomen: true*/
     /*global treatArray, isNumber*/
 
-    var closeDB, instances, queries, i, field_name, query, fieldNames, no_data, values, value;
+    var closeDB, instances, queries, i, field_name, query, fieldNames, no_data, values, value, notifications = {};
     closeDB = false;
     queries = [];
      
@@ -572,6 +572,17 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) { "use stric
                     queries.push(query);
                     
                     
+                    if(type == 'notification' && json.insert[i].viewed == 0){
+                        notifications = Ti.App.Properties.getObject('newNotifications', {
+                            count: 0,
+                            nid: 0
+                        });
+                        
+                        Ti.App.Properties.setObject('newNotifications', {
+                            count: notifications.count + 1,
+                            nid: json.insert[i].nid
+                        });
+                    }
                     
                     if(typeof json.insert[i].__negative_nid !== 'undefined'){
                         Ti.API.debug("Deleting nid: " + json.insert[i].__negative_nid);

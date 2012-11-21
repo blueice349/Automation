@@ -930,6 +930,7 @@ function mktime() {
     return Math.floor(d.getTime() / 1000);
 }
 
+
 function date(format, timestamp) {
 
     var a, jsdate = (( typeof (timestamp) == 'undefined') ? new Date() : ( typeof (timestamp) == 'number') ? new Date(timestamp * 1000) : new Date(timestamp)

@@ -70,10 +70,9 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
     
             //When connected
             http.onload = function(e) { 
-                var nodeType, mainDB, gpsDB, dbFile, tableName, json, GMT_OFFSET, dialog, newNotificationCount;          
+                var nodeType, mainDB, gpsDB, dbFile, tableName, json, GMT_OFFSET, dialog, newNotifications;          
                 
                 try{
-                    newNotificationCount = 0;  
                     //Parses response into strings
                     //Ti.API.info("Onload reached - Here follows the json: ");
                     Ti.API.info(this.responseText.substr(0, 200));
@@ -234,12 +233,22 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                             Omadi.service.logout();
                         });
                     }
+                    
+                    newNotifications = Ti.App.Properties.getObject('newNotifications', {
+                        count: 0,
+                        nid: 0
+                    });
+                    
+                    if (newNotifications.count > 0) {
+                        
+                        Ti.App.Properties.setObject('newNotifications',{
+                           count: 0,
+                           nid: 0 
+                        });
         
-                    if (newNotificationCount > 0) {
-        
-                        if (newNotificationCount > 1) {
+                        if (newNotifications.count > 1) {
                             dialog = Titanium.UI.createAlertDialog({
-                                title : '(' + newNotificationCount + ') New Notifications',
+                                title : '(' + newNotifications.count + ') New Notifications',
                                 message : 'View the notification list?',
                                 buttonNames : ['Take Me There', 'View Later'],
                                 cancel : 1
@@ -279,9 +288,8 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                                         navBarHidden : true,
                                         title : 'Read Notification',
                                         type : 'notification',
-                                        url : 'individual_object.js'
-                                        //uid : win.uid
-                                        //nid : newNotificationNid
+                                        url : 'individual_object.js',
+                                        nid : newNotifications.nid
                                     });
         
                                     win_new.open();
@@ -290,7 +298,6 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
         
                             dialog.show();
                         }
-        
                     }
                 }
                 catch(ex){
