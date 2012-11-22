@@ -68,15 +68,23 @@ Omadi.data.getFields = function(type){
     
     instances = {};
     db = Omadi.utils.openMainDatabase();
-    result = db.execute("SELECT label, type, field_name, settings FROM fields WHERE bundle = '" + type + "'");
+    result = db.execute("SELECT type, field_name, label, description, bundle, weight, required, widget, settings, disabled, region, fid FROM fields WHERE bundle = '" + type + "' ORDER BY weight");
     
     while(result.isValidRow()){
         field_name = result.fieldByName('field_name'); 
         instances[field_name] = {
-            field_name: field_name,
-            label: result.fieldByName('label'),
             type: result.fieldByName('type'),
-            settings: JSON.parse(result.fieldByName('settings'))
+            field_name: result.fieldByName('field_name'),
+            label: result.fieldByName('label'),
+            description: result.fieldByName('description'),
+            bundle: result.fieldByName('bundle'),
+            weight: result.fieldByName('weight'),
+            required: result.fieldByName('required'),
+            widget: result.fieldByName('widget'),
+            settings: JSON.parse(result.fieldByName('settings')),
+            disabled: result.fieldByName('disabled'),
+            region: result.fieldByName('region'),
+            fid: result.fieldByName('fid')
         };
         result.next();   
     }

@@ -428,940 +428,940 @@ function adjustView(counter, top) {
     }
 
 }
-
-function keep_info(_flag_info, pass_it, new_time) {
-
-    Ti.API.info("--------------------Inside keep_info--------------------");
-    var a = Titanium.UI.createAlertDialog({
-        title : 'Omadi',
-        buttonNames : ['OK']
-    });
-
-    var string_text = "";
-    var string_err = "";
-    var count_fields = 0;
-    var value_err = 0;
-    if (pass_it === false) {
-        var _now = Math.round(new Date().getTime() / 1000);
-    }
-    else {
-        if (new_time != null) {
-            var _now = new_time;
-        }
-    }
-    //this is used for checking restrictions in db against all nid on this form
-    var db_check_restrictions = Omadi.utils.openMainDatabase();
-
-    var restrictions = new Array();
-
-    Ti.API.info("--------------------content array length : " + content.length + " --------------------");
-
-    /*
-     for (var k = 0; k < content.length; k++) {
-     Ti.API.info(k+" <<<===>>> "+content[k].value);
-     if (content[k].value && content[k].value != null ){
-     var __tmp = content[k].value.toString();
-     __tmp = __tmp.replace(/'/gi, '\'');
-     content[k].value = __tmp;
-     Ti.API.info(__tmp+' - '+content[k].value);
-     }
-     }
-     */
-    var x;
-    for (x in content) {
-
-        try {
-            Ti.API.info(label[x].text + ' is required: ' + content[x].required + ' = ' + content[x].value);
-        }
-        catch(e) {
-            Ti.API.info('!!!!! ERROR !!!!! ' + e);
-        }
-        //Regular expression for license Plate
-        if (content[x].field_type == 'license_plate') {
-
-            if (content[x].value != null && content[x].value != "") {
-                content[x].value = content[x].value.replace(/[^[0-9A-Z]/g, '', content[x].value);
-            }
-        }
-
-        if (content[x].field_type == 'number_integer') {
-
-            if (content[x].value != null && content[x].value != "") {
-                if (content[x].value >= (2147483647)) {
-                    content[x].value = null;
-                    alert("The Maximum for this field is 2147483647 ")
-                }
-                else if (content[x].value <= (-2147483647)) {
-                    content[x].value = null;
-                    alert("The Minimum for this field is 2147483647 ")
-                }
-            }
-        }
-
-        if (content[x].field_type == 'number_integer' || content[x].field_type == 'number_decimal') {
-            var minRange = (content[x].field_type == 'number_integer') ? -2147483648 : -99999999;
-            var maxRange = (content[x].field_type == 'number_integer') ? 2147483647 : 99999999;
-
-            if (content[x].value != null && content[x].value != "") {
-                if (content[x].value >= maxRange) {
-                    content[x].value = null;
-                    alert("The Maximum for this field is" + maxRange)
-                }
-                else if (content[x].value <= minRange) {
-                    content[x].value = null;
-                    alert("The Minimum for this field is " + minRange)
-                }
-            }
-        }
-
-        // Regular expression for phone
-        if (content[x].field_type == 'phone') {
-            if (content[x].value != "" && content[x].value != null) {
-                var str = content[x].value.trim();
-                var regExp = /\D*(\d*)\D*[2-9][0-8]\d\D*[2-9]\d{2}\D*\d{4}\D*\d*\D*/g
-                var match = regExp.test(str);
-                regExp.exec(str)
-                var matchVal = regExp.exec(str);
-                if (match == false || (matchVal[1] != '' && matchVal[1] != null)) {
-                    value_err++;
-                    string_err += content[x].value + ' is not a valid North American phone number.' + '\nPhone numbers should only contain numbers, +, -, (, ) and spaces and be like 999-999-9999. Please enter a valid ten-digit phone number.';
-                }
-                break;
-            }
-        }
-        else if (content[x].field_type == 'omadi_reference') {//for preparing the list of restrictions
-            Ti.API.info("-------------------- omadi_refrence = " + content[x].value + " ... NID:  " + content[x].nid + "--------------------");
-            if (content[x].nid != null) {
-                var d = new Date();
-                var utcDate = Date.parse(d.toUTCString());
-                var result = db_check_restrictions.execute('SELECT restriction_license_plate___plate, vin, restrict_entire_account, vehicle___make, vehicle___model, vehicle_color FROM restriction where restriction_account="' + content[x].nid + '" AND ((restriction_start_date < ' + utcDate / 1000 + ' OR restriction_start_date IS NULL) AND (restriction_end_date > ' + utcDate / 1000 + ' OR restriction_end_date IS NULL))');
-
-                while (result.isValidRow()) {
-                    var restriction = {
-                        license_plate : result.fieldByName('restriction_license_plate___plate'),
-                        vehicle_make : result.fieldByName('vehicle___make'),
-                        vehicle_model : result.fieldByName('vehicle___model'),
-                        vehicle_color : result.fieldByName('vehicle_color'),
-                        restrict_entire_account : result.fieldByName('restrict_entire_account'),
-                        vin : result.fieldByName('vin')
-                    };
-                    restrictions.push(restriction);
-                    result.next();
-                }
-                result.close();
-            }
-            Ti.API.info("--------------------Restrictions array length : " + restrictions.length + "--------------------");
-        }
-
-        if (((content[x].is_title === true) || (content[x].required == 'true') || (content[x].required === true) || (content[x].required == '1') || (content[x].required == 1) ) && ((content[x].value == '') || (content[x].value == null)) && (content[x].no_data_checkbox == null || content[x].no_data_checkbox == "" || content[x].no_data_checkbox == false) && content[x].enabled == true) {
-            //Check for image field
-            if (content[x].field_type == 'image') {
-                var is_images_query = 'SELECT id FROM file_upload_queue WHERE nid=0 ';
-                if (win.nid != null && win.nid != "") {
-                    is_images_query += ' OR nid=' + win.nid + ' ';
-                }
-                is_images_query += ' AND field_name="' + content[x].field_name + '";';
-                Ti.API.info(is_images_query);
-
-                var is_images = db_check_restrictions.execute(is_images_query);
-                var crdnlty = content[x].cardinality;
-                //if cardinality is unlimited or one than only one image can be work for required
-                //But if cardinality is greater than 1 then required that number of images
-                if (win.mode == 1) {
-                    if (crdnlty > 1 || crdnlty < 0) {
-                        var arrImages = content[x].arrImages;
-                        var imageOdometer = 0;
-                        for ( i_idx = 0; i_idx < arrImages.length; i_idx++) {
-                            if (arrImages[i_idx].imageVal != defaultImageVal || arrImages[i_idx].bigImg != null || arrImages[i_idx].bigImg != "") {
-                                imageOdometer++;
-                            }
-                        }
-                        if ((crdnlty < 1 && imageOdometer == 0) || (crdnlty > 1 && imageOdometer != is_images.rowCount)) {
-                            string_text += label[content[x].reffer_index].text + "\n";
-                            count_fields++;
-                        }
-                    }
-                    else {
-                        if (content[x].imageVal == defaultImageVal && is_images.rowCount == 0) {
-                            string_text += label[content[x].reffer_index].text + "\n";
-                            count_fields++;
-                        }
-                    }
-                }
-                else {
-                    if ((crdnlty <= 1 && is_images.rowCount == 0) || (crdnlty > 1 && crdnlty != is_images.rowCount)) {
-                        string_text += label[content[x].reffer_index].text + "\n";
-                        count_fields++;
-                    }
-                }
-                is_images.close();
-                continue;
-            }
-            count_fields++;
-            if (content[x].cardinality > 1) {
-                string_text += "#" + content[x].private_index + " " + label[content[x].reffer_index].text + "\n";
-            }
-            else {
-                string_text += label[content[x].reffer_index].text + "\n";
-            }
-        }
-    }
-
-    var k;
-    for ( k = 0; k <= content.length; k++) {
-        if (!content[k]) {
-            continue;
-        }
-
-        if ((win.mode == 0 || _flag_info == 'draft')) {
-            //validating license plate and vin value entered by user against restritions
-            var r;
-            for (r in restrictions) {
-                var accountRestricted = restrictions[r].restrict_entire_account;
-                if (content[k].field_name == 'license_plate___plate') {
-                    if (accountRestricted != null && accountRestricted == "1" && accountRestricted != "") {
-                        a.message = "The selected account is restricted from any parking enforcement activity.";
-                        a.show();
-                        return;
-                    }
-                    else {
-                        var license_plate = content[k].value;
-                        var restricted_license_plate = restrictions[r].license_plate;
-                        if (license_plate != null && restricted_license_plate != null && license_plate != "" && restricted_license_plate != "") {
-                            license_plate = license_plate.toLowerCase().replace(/o/g, '0');
-                            restricted_license_plate = restricted_license_plate.toLowerCase().replace(/o/g, '0');
-                            Ti.API.info('1 License Plate: ' + license_plate + ' ---- Restriction License Plate: ' + restricted_license_plate);
-                            if (license_plate.toString() == restricted_license_plate.toString()) {
-                                var colorName = "";
-                                var resMsg = "";
-                                if (restrictions[r].vehicle_color != null && restrictions[r].vehicle_color != "") {
-                                    var term_data = db_check_restrictions.execute("SELECT name FROM term_data WHERE tid = " + restrictions[r].vehicle_color);
-                                    colorName = term_data.getFieldByName('name');
-                                    term_data.close();
-                                }
-                                resMsg = colorName + " " + restrictions[r].vehicle_make + " " + restrictions[r].vehicle_model;
-                                resMsg += ((resMsg.trim() != "") ? " - " : "");
-                                resMsg += restrictions[r].license_plate + " is currently restricted for the account entered.";
-
-                                a.message = resMsg;
-                                a.show();
-                                return;
-                            }
-                        }
-                    }
-
-                }
-
-                if (content[k].field_name == 'vin') {
-                    if (accountRestricted != null && accountRestricted == "1") {
-                        a.message = "Do not enforce any violations on this property. It is restricted by management.";
-                        a.show();
-                        return;
-                    }
-                    else {
-                        var vin = content[k].value;
-                        var restricted_vin = restrictions[r].vin;
-                        if (vin != null && vin != "" && restricted_vin != null && restricted_vin != "") {
-                            Ti.API.info('VIN: ' + vin + ' RS_VIN: ' + restricted_vin);
-                            if (vin == restricted_vin) {
-                                var colorName = "";
-                                var resMsg = "";
-                                if (restrictions[r].vehicle_color != null && restrictions[r].vehicle_color != "") {
-                                    var term_data = db_check_restrictions.execute("SELECT name FROM term_data WHERE tid = " + restrictions[r].vehicle_color);
-                                    colorName = term_data.getFieldByName('name');
-                                    term_data.close();
-                                }
-                                resMsg = colorName + " " + restrictions[r].vehicle_make + " " + restrictions[r].vehicle_model;
-                                resMsg += ((resMsg.trim() != "") ? " - " : "");
-                                resMsg += restrictions[r].vin + " is currently restricted for the account entered.";
-
-                                a.message = resMsg;
-                                a.show();
-                                return;
-                            }
-                        }
-                    }
-
-                }
-            }
-        }
-
-    }
-
-    db_check_restrictions.close();
-
-    if ((count_fields > 0) && (_flag_info != "draft")) {
-        if (count_fields == 1) {
-            if (win.mode == 0) {
-                a.message = 'The field "' + string_text + '" is empty, please fill it out in order to save this node';
-            }
-            else {
-                a.message = 'The field "' + string_text + '" is empty, please fill it out in order to update this node';
-            }
-        }
-        else {
-            a.message = 'The following fields are required and are empty:\n' + string_text;
-        }
-        a.show();
-    }
-    else if (value_err > 0) {
-        a.message = string_err;
-        a.show();
-    }
-    //TODO: fix the below
-    /*else if (pass_it === false && Ti.App.Properties.getString("timestamp_offset") > OFF_BY) {
-
-        var actual_time = Math.round(new Date().getTime() / 1000);
-        actual_time = parseInt(actual_time) + parseInt(Ti.App.Properties.getString("timestamp_offset"));
-
-        var server_time = new Date(actual_time);
-
-        var _a = Titanium.UI.createAlertDialog({
-            title : 'Omadi',
-            buttonNames : ['Yes', 'No'],
-            message : 'Your device\'s clock is off a little bit. Please adjust your clock to ' + timeConverter(server_time, "1") + '. Do you want to save this form now using the correct time?',
-            cancel : 1
-        });
-        _a.show();
-
-        _a.addEventListener('click', function(e) {
-            if (e.index != e.cancel) {
-                var _i;
-                for (_i in content) {
-                    Ti.API.info("Field: " + content[_i].field_type);
-                    if (content[_i].field_type == "datestamp" || content[_i].field_type == "omadi_time") {
-                        var tp = content[_i].value;
-                        content[_i].value = parseInt(content[_i].value) + parseInt(Ti.App.Properties.getString("timestamp_offset") * 1000);
-                        alert(tp + '  =  ' + content[_i].value);
-                        Ti.API.info(tp + '  =  ' + content[_i].value);
-                    }
-                }
-                try {
-                    keep_info(_flag_info, true, actual_time);
-                }
-                catch(e) {
-                    alert('Error Tracking 9: ' + e);
-                    //To catch error to resolve issue #916
-                }
-            }
-            else {
-                try {
-                    keep_info(_flag_info, true, null);
-                }
-                catch(e) {
-                    alert('Error Tracking 10: ' + e);
-                    //To catch error to resolve issue #916
-                }
-            }
-        });
-
-    }*/
-    else {
-        var mode_msg = '';
-        var no_data_fields = [];
-        if (_flag_info == "draft") {
-            mode_msg = 'Saving draft';
-        }
-        else if (win.mode == 0) {
-            mode_msg = 'Saving ' + win.title;
-        }
-        else {
-            mode_msg = 'Updating ' + win.title;
-        }
-        
-        Ti.API.debug("showing indicator");
-        
-        Omadi.display.showLoadingIndicator(mode_msg);
-        var db_put = Omadi.utils.openMainDatabase();
-
-        //
-        //Retrieve objects that need quotes:
-        //
-        var need_at = db_put.execute("SELECT field_name FROM fields WHERE bundle = '" + win.type + "' AND ( type='number_integer' OR type='number_decimal' ) ");
-        var quotes = [];
-        while (need_at.isValidRow()) {
-            quotes[need_at.fieldByName('field_name')] = true;
-            need_at.next();
-        }
-        need_at.close();
-        
-        var nid;
-        var new_nid;
-        
-        if (win.mode == 0) {
-            //Get smallest nid
-            nid = db_put.execute("SELECT nid FROM node ORDER BY nid ASC ");
-
-            if (nid.fieldByName('nid') >= 0) {
-                new_nid = -1;
-            }
-            else {
-                new_nid = nid.fieldByName('nid') - 1;
-            }
-        }
-
-        var query = "INSERT OR REPLACE INTO " + win.type + " ( 'nid', ";
-
-        var _array_value = [];
-        var x_j;
-        for (x_j in content) {
-            if ((content[x_j].composed_obj === true) && (content[x_j].cardinality > 1)) {
-
-                if ((content[x_j].field_type == 'omadi_time') || (content[x_j].field_type == 'datestamp')) {
-                    if (content[x_j].value != null) {
-                        var _vlr = Math.round(content[x_j].value / 1000);
-                    }
-                    else {
-                        var _vlr = null;
-                    }
-                }
-                else if ((content[x_j].field_type == 'number_integer') || (content[x_j].field_type == 'number_decimal')) {
-                    if ((content[x_j].value == null) || (content[x_j].value == "") || (content[x_j].value == " ")) {
-                        var _vlr = null;
-                    }
-                    else {
-                        var _vlr = content[x_j].value;
-                    }
-                }
-                else {
-                    var _vlr = content[x_j].value;
-                }
-
-                if (_array_value[content[x_j].field_name]) {
-                    _array_value[content[x_j].field_name].push(_vlr);
-                 
-                }
-                else {
-                    _array_value[content[x_j].field_name] = [];
-                    _array_value[content[x_j].field_name].push(_vlr);
-                  
-                }
-            }
-        }
-
-        //field names
-        var j_y;
-        for ( j_y = 0; j_y < content.length; j_y++) {
-            Ti.API.info('INDEX: ' + j_y);
-
-            //Is different of a region
-            if (!content[j_y]) {
-                continue;
-            }
-
-            //Point the last field
-            if (content[j_y + 1]) {
-                while (content[j_y].field_name == content[j_y + 1].field_name) {
-                    j_y++;
-                    if (content[j_y + 1]) {
-                        //Go on
-                    }
-                    else {
-                        //Finish, we found the point
-                        break;
-                    }
-                }
-            }
-
-            if (j_y == content.length - 1) {
-                query += "'" + content[j_y].field_name + "' ) ";
-            }
-            else {
-                query += "'" + content[j_y].field_name + "', ";
-            }
-        }
-
-        if (win.mode == 1) {
-            query += ' VALUES ( ' + win.nid + ', ';
-        }
-        else {
-            query += ' VALUES ( ' + new_nid + ', ';
-        }
-
-        //Values
-        var title_to_node = "";
-        var j;
-        for ( j = 0; j <= content.length; j++) {
-            if (!content[j]) {
-                continue;
-            }
-
-            if (content[j].is_title === true) {
-                if (title_to_node.charAt(0) == "") {
-                    if (content[j].cardinality == -1) {
-                        var tit_aux = content[j].value;
-                        if (tit_aux == null)
-                            tit_aux = "";
-                        else
-                            tit_aux = tit_aux[0].title;
-                        title_to_node = tit_aux;
-                    }
-                    else {
-                        if (content[j].value == null) {
-                            title_to_node = "";
-                        }
-                        else {
-                            title_to_node = content[j].value;
-                        }
-                    }
-                }
-                else {
-                    if (content[j].cardinality == -1) {
-                        var tit_aux = content[j].value;
-                        if (tit_aux == null)
-                            tit_aux = "";
-                        else
-                            tit_aux = " - " + tit_aux[0].title;
-                        title_to_node += tit_aux;
-                    }
-                    else {
-                        if (content[j].value == null) {
-                            title_to_node = "";
-                        }
-                        else {
-                            title_to_node += " - " + content[j].value;
-                        }
-                    }
-                }
-            }
-
-            Ti.API.info(content[j].field_type + ' is the field');
-
-            if (quotes[content[j].field_name] === true) {
-                var mark = "";
-            }
-            else {
-                var mark = '"';
-            }
-
-            if (content[j].value === null) {
-                mark = "";
-            }
-
-            var value_to_insert = '';
-            var is_no_data = false;
-            //INSERTING NO DATA FIEDLS IN ARRAY
-            if (content[j].no_data_checkbox != null && content[j].no_data_checkbox != "" && content[j].no_data_checkbox) {
-                is_no_data = true;
-                if (content[j].noDataView != null) {
-                    var fieldName = content[j].field_name;
-                    if (content[j].partsArr != null && content[j].partsArr.length > 0) {
-                        fieldName = fieldName.split('___');
-                        fieldName = fieldName[0];
-                    }
-                    no_data_fields.push(fieldName);
-                }
-            }
-
-            //If it is a composed field, just insert the number
-            //Build cardinality for fields
-            if ((content[j].composed_obj === true) && (content[j].cardinality > 1)) {
-                //Point the last field
-                if (content[j + 1]) {
-                    while (content[j].field_name == content[j + 1].field_name) {
-                        j++;
-                        if (content[j + 1]) {
-                            //Go on
-                        }
-                        else {
-                            //Finish, we found the point
-                            break;
-                        }
-                    }
-                }
-                if (!is_no_data) {
-
-                    //Treat the array
-                    content_s = treatArray(_array_value[content[j].field_name], 6);
-                    Ti.API.info('About to insert ' + _array_value[content[j].field_name]);
-                    // table structure:
-                    // incremental, node_id, field_name, value
-                    if (win.mode == 0) {
-                        Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + new_nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
-                        db_put.execute("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + new_nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
-                    }
-                    else {
-                        Ti.API.info("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + win.nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
-                        db_put.execute("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + win.nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
-                    }
-
-                    // Code must to be a number since this database field accepts only integers numbers
-                    // Token to indentify array of numbers is 7411317618171051229
-                    value_to_insert = 7411317618171051229;
-                }
-            }
-            else if (!is_no_data) {
-
-                if ((content[j].field_type == 'number_decimal') || (content[j].field_type == 'number_integer')) {
-                    if ((content[j].value == '') || (content[j].value == null)) {
-                        value_to_insert = 'null';
-                        mark = '"';
-                    }
-                    else {
-                        value_to_insert = content[j].value;
-                        mark = '';
-                    }
-                }
-                else if (content[j].field_type == 'user_reference') {
-                    if (content[j].value == null) {
-                        value_to_insert = ''
-                        mark = '\"';
-                    }
-                    else {
-                        value_to_insert = content[j].value;
-                        mark = '';
-                    }
-                }
-                else if (content[j].field_type == 'taxonomy_term_reference') {
-                    if (content[j].widget == 'options_select') {
-                        if (content[j].cardinality != -1) {
-                            if (content[j].value == null) {
-                                value_to_insert = ''
-                                mark = '\"';
-                            }
-                            else {
-                                value_to_insert = content[j].value;
-                                mark = '';
-                            }
-                        }
-                        else {
-
-                            var vital_info = [];
-
-                            if (content[j].value == null) {
-                                vital_info.push("null");
-                            }
-                            else {
-                                var v_info_tax;
-                                for (v_info_tax in content[j].value ) {
-                                    vital_info.push(content[j].value[v_info_tax].v_info.toString());
-                                }
-                            }
-
-                            //Treat the array
-                            content_s = treatArray(vital_info, 6);
-                            Ti.API.info('About to insert ' + content[j].field_name);
-                            // table structure:
-                            // incremental, node_id, field_name, value
-                            if (win.mode == 0) {
-                                Ti.API.info("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + new_nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
-                                db_put.execute("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + new_nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
-                            }
-                            else {
-                                Ti.API.info("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + win.nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
-                                db_put.execute("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + win.nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
-                            }
-                            // Code must to be a number since this database field accepts only integers numbers
-                            // Token to indentify array of numbers is 7411317618171051229
-                            value_to_insert = 7411317618171051229;
-                            mark = '';
-                        }
-                    }
-                    else if (content[j].widget == 'taxonomy_autocomplete') {
-                        if ((content[j].tid == null) && (content[j].value == "")) {
-                            value_to_insert = '';
-                            mark = '\"';
-                        }
-                        else if ((win.mode == 0) && (content[j].tid == null) && (content[j].value != "")) {
-                            if (content[j].restrict_new_autocomplete_terms != 1) {
-                                mark = '';
-                                //Get smallest tid
-                                var tid = db_put.execute("SELECT tid FROM term_data ORDER BY tid ASC ");
-
-                                if (tid.fieldByName('tid') >= 0) {
-                                    var new_tid = -1;
-                                }
-                                else {
-                                    var new_tid = tid.fieldByName('tid') - 1;
-                                }
-                                var date_created = Math.round(+new Date() / 1000);
-                                db_put.execute("INSERT INTO term_data (tid, vid, name, description, weight, created) VALUES (" + new_tid + ", " + content[j].vid + ", '" + content[j].value + "', '', '', '" + date_created + "'  )");
-                                value_to_insert = new_tid;
-
-                                Ti.API.info('First tid is: ' + new_tid + ' and tid ' + content[j].tid + ' and value ' + content[j].value);
-                                tid.close();
-                            }
-                            else {
-                                value_to_insert = '';
-                            }
-
-                        }
-                        else if ((content[j].tid != null)) {
-                            mark = '';
-                            value_to_insert = content[j].tid;
-                        }
-                    }
-                }
-                else if (content[j].field_type == 'omadi_reference') {
-                    if (content[j].nid === null) {
-                        value_to_insert = '';
-                        mark = '\"';
-                    }
-                    else {
-                        mark = '';
-                        value_to_insert = content[j].nid;
-                    }
-                }
-                else if (content[j].field_type == 'list_boolean') {
-                    if (content[j].value === true) {
-                        value_to_insert = 1;
-                    }
-                    else {
-                        value_to_insert = 0;
-                    }
-                }
-                else if (content[j].field_type == 'rules_field') {
-                    if (content[j].value === false || content[j].value === 0 || content[j].value === 'false') {
-                        value_to_insert = 'false';
-                    }
-                    else {
-                        value_to_insert = JSON.stringify(content[j].value).replace(/"/gi, "\"\"");
-                    }
-                }
-                else if ((content[j].field_type == 'omadi_time') || (content[j].field_type == 'datestamp')) {
-                    if (content[j].update_it === true) {
-                        value_to_insert = Math.round(content[j].value / 1000);
-                    }
-                    else {
-                        mark = "\"";
-                        value_to_insert = '';
-                    }
-                }
-                else {
-                    value_to_insert = content[j].value;
-                }
-            }
-            if (value_to_insert == '') {
-                mark = '\"';
-            }
-
-            if (j == content.length - 1) {
-                query += mark + "" + value_to_insert + "" + mark + " )";
-            }
-            else {
-                query += mark + "" + value_to_insert + "" + mark + ", ";
-            }
-            Ti.API.info(content[j].field_type + ' has value to insert ' + value_to_insert);
-        }
-
-        var has_bug = false;
-        try {
-            Ti.API.info('Title: ' + title_to_node);
-            if (title_to_node == "") {
-                title_to_node = "No title";
-            }
-
-            //No data fields JSON
-            var no_data_fields_content = '';
-            for ( idx_k = 0; idx_k < no_data_fields.length; idx_k++) {
-                if (idx_k == no_data_fields.length - 1) {
-                    no_data_fields_content += '\"' + no_data_fields[idx_k] + '\" : \"' + no_data_fields[idx_k] + '\"';
-                }
-                else {
-                    no_data_fields_content += '\"' + no_data_fields[idx_k] + '\" : \"' + no_data_fields[idx_k] + '\",';
-                }
-            }
-            if (no_data_fields_content != null && no_data_fields_content != '') {
-                no_data_fields_content = "{" + no_data_fields_content + "}"
-            }
-
-            // var nodeObj = {};
-//             
-            // nodeObj.nid = 0;
-            // nodeObj.perm_edit = 0;
-            // nodeObj.perm_delete = 0;
-//             
-            // nodeObj.changed = 0;
-            // nodeObj.title = '';
-            // nodeObj.author_uid = 0;
-            // nodeObj.flag_is_updated = 0;
-            // nodeObj.table_name = 0;
-            // nodeObj.form_part = 0;
-            // nodeObj.changed_uid = 0;
-            // nodeObj.no_data_fields = ';'
-            // nodeObj.viewed = "1";
-//                
-//             
-            // nodeObj.created = 0;
-        
-            //Insert into node table
-            if (_flag_info == "draft") {
-                if (win.mode == 1) {
-                   // Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=3, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\'' + no_data_fields_content + '\' WHERE nid=' + win.nid);
-                    db_put.execute('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=3, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\'' + no_data_fields_content + '\', viewed=\'1\' WHERE nid=' + win.nid);
-                }
-                else {
-                    //Ti.API.info('INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 3 , "' + win.type + '" , ' + win.region_form + ', \'' + no_data_fields_content + '\')');
-                    db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name , form_part, no_data_fields, viewed ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 3 , "' + win.type + '", ' + win.region_form + ', \'' + no_data_fields_content + '\', \'1\')');
-
-                }
-            }
-            else if (win.mode == 1) {
-               // Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\'' + no_data_fields_content + '\' WHERE nid=' + win.nid);
-                db_put.execute('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\'' + no_data_fields_content + '\', viewed=\'1\' WHERE nid=' + win.nid);
-            }
-            else {
-                //Ti.API.info('INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '", ' + win.region_form + ', \'' + no_data_fields_content + '\')');
-                db_put.execute('INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields, viewed) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '"  , ' + win.region_form + ', \'' + no_data_fields_content + '\', \'1\')');
-            }
-
-            //Insert into table
-            Ti.API.info("=====Query=== " + query);
-            if (win.mode == 1) {
-                var oldVal = db_put.execute('SELECT * FROM ' + win.type + ' WHERE nid=' + win.nid);
-            }
-            db_put.execute(query);
-
-            //If Images captured and not yet uploaded then store in file_uploaded_queue
-            if (win.mode == 1) {
-                file_upload_nid = win.nid;
-            }
-            else {
-                file_upload_nid = new_nid;
-            }
-            db_put.execute('UPDATE file_upload_queue SET nid=' + file_upload_nid + ' WHERE nid=0;');
-
-            //If Images captured and not yet uploaded then store in file_uploaded_queue
-            var j;
-            for ( j = 0; j <= content.length; j++) {
-                if (!content[j]) {
-                    continue;
-                }
-                if (content[j].field_type == 'image' && win.mode == 1) {
-                    db_put.execute('UPDATE ' + win.type + ' SET ' + content[j].field_name + '="' + oldVal.fieldByName(content[j].field_name) + '", ' + content[j].field_name + '___file_id="' + oldVal.fieldByName(content[j].field_name + '___file_id') + '", ' + content[j].field_name + '___status="' + oldVal.fieldByName(content[j].field_name + '___status') + '" WHERE nid=' + file_upload_nid + ';');
-                }
-            }
-
-            Ti.API.info("New Nid = " + file_upload_nid);
-            /*for (var j = 0; j <= content.length; j++) {
-             if (!content[j]) {
-             continue;
-             }
-
-             var file_upload_nid;
-
-             if (win.mode == 1) {
-             file_upload_nid = win.nid;
-             } else {
-             file_upload_nid = new_nid;
-             }
-
-             if (content[j].field_type == 'image' && (content[j].cardinality > 1 || content[j].cardinality < 0) && !content[j].no_data_checkbox) {
-             var arrImages = content[j].arrImages;
-             for ( k = 0; k < arrImages.length; k++) {
-             if (arrImages[k].isImage != false && arrImages[k].mimeType != null) {
-             var encodeImage = Ti.Utils.base64encode(arrImages[k].bigImg);
-             var mime = arrImages[k].mimeType;
-             var imageName = 'image.' + mime.substring(mime.indexOf('/') + 1, mime.length);
-             var is_exists = db_put.execute('SELECT delta, nid FROM file_upload_queue WHERE nid=' + file_upload_nid + ' and delta=' + arrImages[k].private_index + ' and field_name="' + content[j].field_name + '";');
-             if (is_exists.rowCount > 0) {
-             db_put.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '", file_data="' + encodeImage + '", field_name="' + content[j].field_name + '", file_name="' + imageName + '", delta=' + arrImages[k].private_index + ' WHERE nid=' + file_upload_nid + ' and delta=' + arrImages[k].private_index + ' and field_name="' + content[j].field_name + '";');
-             continue;
-             }
-
-             db_put.execute('INSERT INTO file_upload_queue (nid , file_data , field_name, file_name, delta) VALUES (' + file_upload_nid + ', "' + encodeImage + '", "' + content[j].field_name + '", "' + imageName + '", ' + arrImages[k].private_index + ')');
-             Ti.API.info('Filse Saved' + arrImages[k].private_index);
-             }
-             }
-             } else if (content[j].field_type == 'image'  && !content[j].no_data_checkbox) {
-             if (content[j].isImage != false && content[j].mimeType != null) {
-             var encodeImage = Ti.Utils.base64encode(content[j].bigImg);
-             var mime = content[j].mimeType;
-             var imageName = 'image.' + mime.substring(mime.indexOf('/') + 1, mime.length);
-
-             var is_exists = db_put.execute('SELECT delta, nid FROM file_upload_queue WHERE nid=' + file_upload_nid + ' and delta=' + content[j].private_index + ' and field_name="' + content[j].field_name + '";');
-
-             if (is_exists.rowCount > 0) {
-             db_put.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '", file_data="' + encodeImage + '", field_name="' + content[j].field_name + '", file_name="' + imageName + '", delta=' + content[j].private_index + ' WHERE nid=' + file_upload_nid + ' and delta=' + content[j].private_index + ' and field_name="' + content[j].field_name + '";');
-             continue;
-             }
-             db_put.execute('INSERT INTO file_upload_queue (nid , file_data , field_name, file_name, delta) VALUES (' + file_upload_nid + ', "' + encodeImage + '", "' + content[j].field_name + '", "' + imageName + '","' + content[j].private_index + '")');
-             }
-             }
-
-             if (content[j].field_type == 'image' && win.mode == 1) {
-             db_put.execute('UPDATE ' + win.type + ' SET ' + content[j].field_name + '="' + oldVal.fieldByName(content[j].field_name) + '", ' + content[j].field_name + '___file_id="' + oldVal.fieldByName(content[j].field_name + '___file_id') + '", ' + content[j].field_name + '___status="' + oldVal.fieldByName(content[j].field_name + '___status') + '" WHERE nid=' + file_upload_nid + ';');
-             }
-             }*/
-
-         
-            has_bug = false;
-        }
-        catch(e) {
-            Ti.API.info("Error----------" + e);
-
-            if (_flag_info == 'draft') {
-                
-                alert('An error has occurred when we tried to save this node as a draft, please try again');
-            }
-            else if (win.mode == 1) {
-                
-               alert('An error has occurred when we tried to update this new node, please try again');
-            }
-            else {
-                
-                alert('An error has occurred when we tried to create this new node, please try again');
-            }
-            has_bug = true;
-        }
-        finally{
-            db_put.close();
-        }
-
-        Ti.API.info('========= Updating new info running ========= ' + _flag_info);
-        
-        var alertMessage = "";
-        if(has_bug){
-            alert("There was a problem saving your data. Please try again. If this error continues, please report the problem.");
-        }
-        else if(_flag_info == 'draft'){
-            alert('The ' + win.title + ' was saved as a draft.');
-            close_me();
-        }
-        else if(Ti.Network.online){
-            if (_flag_info == "normal") {
-                Ti.API.info('Submitting, mode=' + win.mode);
-                //Omadi.service.sendUpdates();
-                update_node(win.mode, close_me, win.type.toUpperCase());
-            }
-            else {
-                Ti.API.info('Submitting and preparing next part reload');
-                //Omadi.service.sendUpdates();
-                // TODO: send the user to the next form part
-                update_node(win.mode, reload_me, win.type.toUpperCase(), _flag_info);
-            }
-        }
-        else{
-           
-            alert('Alert management of this ' + win.title + ' immediately. You do not have an Internet connection right now.  Your data was saved and will be synched when you connect to the Internet.');
-            close_me_delay();
-        }
-        
-        // if ((Titanium.Network.online) && (has_bug === false) && (_flag_info != 'draft')) {
-//             
+// 
+// function keep_info(_flag_info, pass_it, new_time) {
+// 
+    // Ti.API.info("--------------------Inside keep_info--------------------");
+    // var a = Titanium.UI.createAlertDialog({
+        // title : 'Omadi',
+        // buttonNames : ['OK']
+    // });
+// 
+    // var string_text = "";
+    // var string_err = "";
+    // var count_fields = 0;
+    // var value_err = 0;
+    // if (pass_it === false) {
+        // var _now = Math.round(new Date().getTime() / 1000);
+    // }
+    // else {
+        // if (new_time != null) {
+            // var _now = new_time;
         // }
-        // else if (has_bug === true) {
-            // Ti.API.info('Error');
-            // close_me_delay();
+    // }
+    // //this is used for checking restrictions in db against all nid on this form
+    // var db_check_restrictions = Omadi.utils.openMainDatabase();
+// 
+    // var restrictions = new Array();
+// 
+    // Ti.API.info("--------------------content array length : " + content.length + " --------------------");
+// 
+    // /*
+     // for (var k = 0; k < content.length; k++) {
+     // Ti.API.info(k+" <<<===>>> "+content[k].value);
+     // if (content[k].value && content[k].value != null ){
+     // var __tmp = content[k].value.toString();
+     // __tmp = __tmp.replace(/'/gi, '\'');
+     // content[k].value = __tmp;
+     // Ti.API.info(__tmp+' - '+content[k].value);
+     // }
+     // }
+     // */
+    // var x;
+    // for (x in content) {
+// 
+        // try {
+            // Ti.API.info(label[x].text + ' is required: ' + content[x].required + ' = ' + content[x].value);
         // }
-        // else if (!(Titanium.Network.online) || (_flag_info == 'draft')) {
+        // catch(e) {
+            // Ti.API.info('!!!!! ERROR !!!!! ' + e);
+        // }
+        // //Regular expression for license Plate
+        // if (content[x].field_type == 'license_plate') {
+// 
+            // if (content[x].value != null && content[x].value != "") {
+                // content[x].value = content[x].value.replace(/[^[0-9A-Z]/g, '', content[x].value);
+            // }
+        // }
+// 
+        // if (content[x].field_type == 'number_integer') {
+// 
+            // if (content[x].value != null && content[x].value != "") {
+                // if (content[x].value >= (2147483647)) {
+                    // content[x].value = null;
+                    // alert("The Maximum for this field is 2147483647 ")
+                // }
+                // else if (content[x].value <= (-2147483647)) {
+                    // content[x].value = null;
+                    // alert("The Minimum for this field is 2147483647 ")
+                // }
+            // }
+        // }
+// 
+        // if (content[x].field_type == 'number_integer' || content[x].field_type == 'number_decimal') {
+            // var minRange = (content[x].field_type == 'number_integer') ? -2147483648 : -99999999;
+            // var maxRange = (content[x].field_type == 'number_integer') ? 2147483647 : 99999999;
+// 
+            // if (content[x].value != null && content[x].value != "") {
+                // if (content[x].value >= maxRange) {
+                    // content[x].value = null;
+                    // alert("The Maximum for this field is" + maxRange)
+                // }
+                // else if (content[x].value <= minRange) {
+                    // content[x].value = null;
+                    // alert("The Minimum for this field is " + minRange)
+                // }
+            // }
+        // }
+// 
+        // // Regular expression for phone
+        // if (content[x].field_type == 'phone') {
+            // if (content[x].value != "" && content[x].value != null) {
+                // var str = content[x].value.trim();
+                // var regExp = /\D*(\d*)\D*[2-9][0-8]\d\D*[2-9]\d{2}\D*\d{4}\D*\d*\D*/g
+                // var match = regExp.test(str);
+                // regExp.exec(str)
+                // var matchVal = regExp.exec(str);
+                // if (match == false || (matchVal[1] != '' && matchVal[1] != null)) {
+                    // value_err++;
+                    // string_err += content[x].value + ' is not a valid North American phone number.' + '\nPhone numbers should only contain numbers, +, -, (, ) and spaces and be like 999-999-9999. Please enter a valid ten-digit phone number.';
+                // }
+                // break;
+            // }
+        // }
+        // else if (content[x].field_type == 'omadi_reference') {//for preparing the list of restrictions
+            // Ti.API.info("-------------------- omadi_refrence = " + content[x].value + " ... NID:  " + content[x].nid + "--------------------");
+            // if (content[x].nid != null) {
+                // var d = new Date();
+                // var utcDate = Date.parse(d.toUTCString());
+                // var result = db_check_restrictions.execute('SELECT restriction_license_plate___plate, vin, restrict_entire_account, vehicle___make, vehicle___model, vehicle_color FROM restriction where restriction_account="' + content[x].nid + '" AND ((restriction_start_date < ' + utcDate / 1000 + ' OR restriction_start_date IS NULL) AND (restriction_end_date > ' + utcDate / 1000 + ' OR restriction_end_date IS NULL))');
+// 
+                // while (result.isValidRow()) {
+                    // var restriction = {
+                        // license_plate : result.fieldByName('restriction_license_plate___plate'),
+                        // vehicle_make : result.fieldByName('vehicle___make'),
+                        // vehicle_model : result.fieldByName('vehicle___model'),
+                        // vehicle_color : result.fieldByName('vehicle_color'),
+                        // restrict_entire_account : result.fieldByName('restrict_entire_account'),
+                        // vin : result.fieldByName('vin')
+                    // };
+                    // restrictions.push(restriction);
+                    // result.next();
+                // }
+                // result.close();
+            // }
+            // Ti.API.info("--------------------Restrictions array length : " + restrictions.length + "--------------------");
+        // }
+// 
+        // if (((content[x].is_title === true) || (content[x].required == 'true') || (content[x].required === true) || (content[x].required == '1') || (content[x].required == 1) ) && ((content[x].value == '') || (content[x].value == null)) && (content[x].no_data_checkbox == null || content[x].no_data_checkbox == "" || content[x].no_data_checkbox == false) && content[x].enabled == true) {
+            // //Check for image field
+            // if (content[x].field_type == 'image') {
+                // var is_images_query = 'SELECT id FROM file_upload_queue WHERE nid=0 ';
+                // if (win.nid != null && win.nid != "") {
+                    // is_images_query += ' OR nid=' + win.nid + ' ';
+                // }
+                // is_images_query += ' AND field_name="' + content[x].field_name + '";';
+                // Ti.API.info(is_images_query);
+// 
+                // var is_images = db_check_restrictions.execute(is_images_query);
+                // var crdnlty = content[x].cardinality;
+                // //if cardinality is unlimited or one than only one image can be work for required
+                // //But if cardinality is greater than 1 then required that number of images
+                // if (win.mode == 1) {
+                    // if (crdnlty > 1 || crdnlty < 0) {
+                        // var arrImages = content[x].arrImages;
+                        // var imageOdometer = 0;
+                        // for ( i_idx = 0; i_idx < arrImages.length; i_idx++) {
+                            // if (arrImages[i_idx].imageVal != defaultImageVal || arrImages[i_idx].bigImg != null || arrImages[i_idx].bigImg != "") {
+                                // imageOdometer++;
+                            // }
+                        // }
+                        // if ((crdnlty < 1 && imageOdometer == 0) || (crdnlty > 1 && imageOdometer != is_images.rowCount)) {
+                            // string_text += label[content[x].reffer_index].text + "\n";
+                            // count_fields++;
+                        // }
+                    // }
+                    // else {
+                        // if (content[x].imageVal == defaultImageVal && is_images.rowCount == 0) {
+                            // string_text += label[content[x].reffer_index].text + "\n";
+                            // count_fields++;
+                        // }
+                    // }
+                // }
+                // else {
+                    // if ((crdnlty <= 1 && is_images.rowCount == 0) || (crdnlty > 1 && crdnlty != is_images.rowCount)) {
+                        // string_text += label[content[x].reffer_index].text + "\n";
+                        // count_fields++;
+                    // }
+                // }
+                // is_images.close();
+                // continue;
+            // }
+            // count_fields++;
+            // if (content[x].cardinality > 1) {
+                // string_text += "#" + content[x].private_index + " " + label[content[x].reffer_index].text + "\n";
+            // }
+            // else {
+                // string_text += label[content[x].reffer_index].text + "\n";
+            // }
+        // }
+    // }
+// 
+    // var k;
+    // for ( k = 0; k <= content.length; k++) {
+        // if (!content[k]) {
+            // continue;
+        // }
+// 
+        // if ((win.mode == 0 || _flag_info == 'draft')) {
+            // //validating license plate and vin value entered by user against restritions
+            // var r;
+            // for (r in restrictions) {
+                // var accountRestricted = restrictions[r].restrict_entire_account;
+                // if (content[k].field_name == 'license_plate___plate') {
+                    // if (accountRestricted != null && accountRestricted == "1" && accountRestricted != "") {
+                        // a.message = "The selected account is restricted from any parking enforcement activity.";
+                        // a.show();
+                        // return;
+                    // }
+                    // else {
+                        // var license_plate = content[k].value;
+                        // var restricted_license_plate = restrictions[r].license_plate;
+                        // if (license_plate != null && restricted_license_plate != null && license_plate != "" && restricted_license_plate != "") {
+                            // license_plate = license_plate.toLowerCase().replace(/o/g, '0');
+                            // restricted_license_plate = restricted_license_plate.toLowerCase().replace(/o/g, '0');
+                            // Ti.API.info('1 License Plate: ' + license_plate + ' ---- Restriction License Plate: ' + restricted_license_plate);
+                            // if (license_plate.toString() == restricted_license_plate.toString()) {
+                                // var colorName = "";
+                                // var resMsg = "";
+                                // if (restrictions[r].vehicle_color != null && restrictions[r].vehicle_color != "") {
+                                    // var term_data = db_check_restrictions.execute("SELECT name FROM term_data WHERE tid = " + restrictions[r].vehicle_color);
+                                    // colorName = term_data.getFieldByName('name');
+                                    // term_data.close();
+                                // }
+                                // resMsg = colorName + " " + restrictions[r].vehicle_make + " " + restrictions[r].vehicle_model;
+                                // resMsg += ((resMsg.trim() != "") ? " - " : "");
+                                // resMsg += restrictions[r].license_plate + " is currently restricted for the account entered.";
+// 
+                                // a.message = resMsg;
+                                // a.show();
+                                // return;
+                            // }
+                        // }
+                    // }
+// 
+                // }
+// 
+                // if (content[k].field_name == 'vin') {
+                    // if (accountRestricted != null && accountRestricted == "1") {
+                        // a.message = "Do not enforce any violations on this property. It is restricted by management.";
+                        // a.show();
+                        // return;
+                    // }
+                    // else {
+                        // var vin = content[k].value;
+                        // var restricted_vin = restrictions[r].vin;
+                        // if (vin != null && vin != "" && restricted_vin != null && restricted_vin != "") {
+                            // Ti.API.info('VIN: ' + vin + ' RS_VIN: ' + restricted_vin);
+                            // if (vin == restricted_vin) {
+                                // var colorName = "";
+                                // var resMsg = "";
+                                // if (restrictions[r].vehicle_color != null && restrictions[r].vehicle_color != "") {
+                                    // var term_data = db_check_restrictions.execute("SELECT name FROM term_data WHERE tid = " + restrictions[r].vehicle_color);
+                                    // colorName = term_data.getFieldByName('name');
+                                    // term_data.close();
+                                // }
+                                // resMsg = colorName + " " + restrictions[r].vehicle_make + " " + restrictions[r].vehicle_model;
+                                // resMsg += ((resMsg.trim() != "") ? " - " : "");
+                                // resMsg += restrictions[r].vin + " is currently restricted for the account entered.";
+// 
+                                // a.message = resMsg;
+                                // a.show();
+                                // return;
+                            // }
+                        // }
+                    // }
+// 
+                // }
+            // }
+        // }
+// 
+    // }
+// 
+    // db_check_restrictions.close();
+// 
+    // if ((count_fields > 0) && (_flag_info != "draft")) {
+        // if (count_fields == 1) {
+            // if (win.mode == 0) {
+                // a.message = 'The field "' + string_text + '" is empty, please fill it out in order to save this node';
+            // }
+            // else {
+                // a.message = 'The field "' + string_text + '" is empty, please fill it out in order to update this node';
+            // }
+        // }
+        // else {
+            // a.message = 'The following fields are required and are empty:\n' + string_text;
+        // }
+        // a.show();
+    // }
+    // else if (value_err > 0) {
+        // a.message = string_err;
+        // a.show();
+    // }
+    // //TODO: fix the below
+    // /*else if (pass_it === false && Ti.App.Properties.getString("timestamp_offset") > OFF_BY) {
+// 
+        // var actual_time = Math.round(new Date().getTime() / 1000);
+        // actual_time = parseInt(actual_time) + parseInt(Ti.App.Properties.getString("timestamp_offset"));
+// 
+        // var server_time = new Date(actual_time);
+// 
+        // var _a = Titanium.UI.createAlertDialog({
+            // title : 'Omadi',
+            // buttonNames : ['Yes', 'No'],
+            // message : 'Your device\'s clock is off a little bit. Please adjust your clock to ' + timeConverter(server_time, "1") + '. Do you want to save this form now using the correct time?',
+            // cancel : 1
+        // });
+        // _a.show();
+// 
+        // _a.addEventListener('click', function(e) {
+            // if (e.index != e.cancel) {
+                // var _i;
+                // for (_i in content) {
+                    // Ti.API.info("Field: " + content[_i].field_type);
+                    // if (content[_i].field_type == "datestamp" || content[_i].field_type == "omadi_time") {
+                        // var tp = content[_i].value;
+                        // content[_i].value = parseInt(content[_i].value) + parseInt(Ti.App.Properties.getString("timestamp_offset") * 1000);
+                        // alert(tp + '  =  ' + content[_i].value);
+                        // Ti.API.info(tp + '  =  ' + content[_i].value);
+                    // }
+                // }
+                // try {
+                    // keep_info(_flag_info, true, actual_time);
+                // }
+                // catch(e) {
+                    // alert('Error Tracking 9: ' + e);
+                    // //To catch error to resolve issue #916
+                // }
+            // }
+            // else {
+                // try {
+                    // keep_info(_flag_info, true, null);
+                // }
+                // catch(e) {
+                    // alert('Error Tracking 10: ' + e);
+                    // //To catch error to resolve issue #916
+                // }
+            // }
+        // });
+// 
+    // }*/
+    // else {
+        // var mode_msg = '';
+        // var no_data_fields = [];
+        // if (_flag_info == "draft") {
+            // mode_msg = 'Saving draft';
+        // }
+        // else if (win.mode == 0) {
+            // mode_msg = 'Saving ' + win.title;
+        // }
+        // else {
+            // mode_msg = 'Updating ' + win.title;
+        // }
+//         
+        // Ti.API.debug("showing indicator");
+//         
+        // Omadi.display.showLoadingIndicator(mode_msg);
+        // var db_put = Omadi.utils.openMainDatabase();
+// 
+        // //
+        // //Retrieve objects that need quotes:
+        // //
+        // var need_at = db_put.execute("SELECT field_name FROM fields WHERE bundle = '" + win.type + "' AND ( type='number_integer' OR type='number_decimal' ) ");
+        // var quotes = [];
+        // while (need_at.isValidRow()) {
+            // quotes[need_at.fieldByName('field_name')] = true;
+            // need_at.next();
+        // }
+        // need_at.close();
+//         
+        // var nid;
+        // var new_nid;
+//         
+        // if (win.mode == 0) {
+            // //Get smallest nid
+            // nid = db_put.execute("SELECT nid FROM node ORDER BY nid ASC ");
+// 
+            // if (nid.fieldByName('nid') >= 0) {
+                // new_nid = -1;
+            // }
+            // else {
+                // new_nid = nid.fieldByName('nid') - 1;
+            // }
+        // }
+// 
+        // var query = "INSERT OR REPLACE INTO " + win.type + " ( 'nid', ";
+// 
+        // var _array_value = [];
+        // var x_j;
+        // for (x_j in content) {
+            // if ((content[x_j].composed_obj === true) && (content[x_j].cardinality > 1)) {
+// 
+                // if ((content[x_j].field_type == 'omadi_time') || (content[x_j].field_type == 'datestamp')) {
+                    // if (content[x_j].value != null) {
+                        // var _vlr = Math.round(content[x_j].value / 1000);
+                    // }
+                    // else {
+                        // var _vlr = null;
+                    // }
+                // }
+                // else if ((content[x_j].field_type == 'number_integer') || (content[x_j].field_type == 'number_decimal')) {
+                    // if ((content[x_j].value == null) || (content[x_j].value == "") || (content[x_j].value == " ")) {
+                        // var _vlr = null;
+                    // }
+                    // else {
+                        // var _vlr = content[x_j].value;
+                    // }
+                // }
+                // else {
+                    // var _vlr = content[x_j].value;
+                // }
+// 
+                // if (_array_value[content[x_j].field_name]) {
+                    // _array_value[content[x_j].field_name].push(_vlr);
+//                  
+                // }
+                // else {
+                    // _array_value[content[x_j].field_name] = [];
+                    // _array_value[content[x_j].field_name].push(_vlr);
+//                   
+                // }
+            // }
+        // }
+// 
+        // //field names
+        // var j_y;
+        // for ( j_y = 0; j_y < content.length; j_y++) {
+            // Ti.API.info('INDEX: ' + j_y);
+// 
+            // //Is different of a region
+            // if (!content[j_y]) {
+                // continue;
+            // }
+// 
+            // //Point the last field
+            // if (content[j_y + 1]) {
+                // while (content[j_y].field_name == content[j_y + 1].field_name) {
+                    // j_y++;
+                    // if (content[j_y + 1]) {
+                        // //Go on
+                    // }
+                    // else {
+                        // //Finish, we found the point
+                        // break;
+                    // }
+                // }
+            // }
+// 
+            // if (j_y == content.length - 1) {
+                // query += "'" + content[j_y].field_name + "' ) ";
+            // }
+            // else {
+                // query += "'" + content[j_y].field_name + "', ";
+            // }
+        // }
+// 
+        // if (win.mode == 1) {
+            // query += ' VALUES ( ' + win.nid + ', ';
+        // }
+        // else {
+            // query += ' VALUES ( ' + new_nid + ', ';
+        // }
+// 
+        // //Values
+        // var title_to_node = "";
+        // var j;
+        // for ( j = 0; j <= content.length; j++) {
+            // if (!content[j]) {
+                // continue;
+            // }
+// 
+            // if (content[j].is_title === true) {
+                // if (title_to_node.charAt(0) == "") {
+                    // if (content[j].cardinality == -1) {
+                        // var tit_aux = content[j].value;
+                        // if (tit_aux == null)
+                            // tit_aux = "";
+                        // else
+                            // tit_aux = tit_aux[0].title;
+                        // title_to_node = tit_aux;
+                    // }
+                    // else {
+                        // if (content[j].value == null) {
+                            // title_to_node = "";
+                        // }
+                        // else {
+                            // title_to_node = content[j].value;
+                        // }
+                    // }
+                // }
+                // else {
+                    // if (content[j].cardinality == -1) {
+                        // var tit_aux = content[j].value;
+                        // if (tit_aux == null)
+                            // tit_aux = "";
+                        // else
+                            // tit_aux = " - " + tit_aux[0].title;
+                        // title_to_node += tit_aux;
+                    // }
+                    // else {
+                        // if (content[j].value == null) {
+                            // title_to_node = "";
+                        // }
+                        // else {
+                            // title_to_node += " - " + content[j].value;
+                        // }
+                    // }
+                // }
+            // }
+// 
+            // Ti.API.info(content[j].field_type + ' is the field');
+// 
+            // if (quotes[content[j].field_name] === true) {
+                // var mark = "";
+            // }
+            // else {
+                // var mark = '"';
+            // }
+// 
+            // if (content[j].value === null) {
+                // mark = "";
+            // }
+// 
+            // var value_to_insert = '';
+            // var is_no_data = false;
+            // //INSERTING NO DATA FIEDLS IN ARRAY
+            // if (content[j].no_data_checkbox != null && content[j].no_data_checkbox != "" && content[j].no_data_checkbox) {
+                // is_no_data = true;
+                // if (content[j].noDataView != null) {
+                    // var fieldName = content[j].field_name;
+                    // if (content[j].partsArr != null && content[j].partsArr.length > 0) {
+                        // fieldName = fieldName.split('___');
+                        // fieldName = fieldName[0];
+                    // }
+                    // no_data_fields.push(fieldName);
+                // }
+            // }
+// 
+            // //If it is a composed field, just insert the number
+            // //Build cardinality for fields
+            // if ((content[j].composed_obj === true) && (content[j].cardinality > 1)) {
+                // //Point the last field
+                // if (content[j + 1]) {
+                    // while (content[j].field_name == content[j + 1].field_name) {
+                        // j++;
+                        // if (content[j + 1]) {
+                            // //Go on
+                        // }
+                        // else {
+                            // //Finish, we found the point
+                            // break;
+                        // }
+                    // }
+                // }
+                // if (!is_no_data) {
+// 
+                    // //Treat the array
+                    // content_s = treatArray(_array_value[content[j].field_name], 6);
+                    // Ti.API.info('About to insert ' + _array_value[content[j].field_name]);
+                    // // table structure:
+                    // // incremental, node_id, field_name, value
+                    // if (win.mode == 0) {
+                        // Ti.API.info('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + new_nid + ', \'' + content[j].field_name + '\',  \'' + content_s + '\' )');
+                        // db_put.execute("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + new_nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
+                    // }
+                    // else {
+                        // Ti.API.info("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + win.nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
+                        // db_put.execute("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + win.nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
+                    // }
+// 
+                    // // Code must to be a number since this database field accepts only integers numbers
+                    // // Token to indentify array of numbers is 7411317618171051229
+                    // value_to_insert = 7411317618171051229;
+                // }
+            // }
+            // else if (!is_no_data) {
+// 
+                // if ((content[j].field_type == 'number_decimal') || (content[j].field_type == 'number_integer')) {
+                    // if ((content[j].value == '') || (content[j].value == null)) {
+                        // value_to_insert = 'null';
+                        // mark = '"';
+                    // }
+                    // else {
+                        // value_to_insert = content[j].value;
+                        // mark = '';
+                    // }
+                // }
+                // else if (content[j].field_type == 'user_reference') {
+                    // if (content[j].value == null) {
+                        // value_to_insert = ''
+                        // mark = '\"';
+                    // }
+                    // else {
+                        // value_to_insert = content[j].value;
+                        // mark = '';
+                    // }
+                // }
+                // else if (content[j].field_type == 'taxonomy_term_reference') {
+                    // if (content[j].widget == 'options_select') {
+                        // if (content[j].cardinality != -1) {
+                            // if (content[j].value == null) {
+                                // value_to_insert = ''
+                                // mark = '\"';
+                            // }
+                            // else {
+                                // value_to_insert = content[j].value;
+                                // mark = '';
+                            // }
+                        // }
+                        // else {
+// 
+                            // var vital_info = [];
+// 
+                            // if (content[j].value == null) {
+                                // vital_info.push("null");
+                            // }
+                            // else {
+                                // var v_info_tax;
+                                // for (v_info_tax in content[j].value ) {
+                                    // vital_info.push(content[j].value[v_info_tax].v_info.toString());
+                                // }
+                            // }
+// 
+                            // //Treat the array
+                            // content_s = treatArray(vital_info, 6);
+                            // Ti.API.info('About to insert ' + content[j].field_name);
+                            // // table structure:
+                            // // incremental, node_id, field_name, value
+                            // if (win.mode == 0) {
+                                // Ti.API.info("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + new_nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
+                                // db_put.execute("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + new_nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
+                            // }
+                            // else {
+                                // Ti.API.info("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + win.nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
+                                // db_put.execute("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + win.nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
+                            // }
+                            // // Code must to be a number since this database field accepts only integers numbers
+                            // // Token to indentify array of numbers is 7411317618171051229
+                            // value_to_insert = 7411317618171051229;
+                            // mark = '';
+                        // }
+                    // }
+                    // else if (content[j].widget == 'taxonomy_autocomplete') {
+                        // if ((content[j].tid == null) && (content[j].value == "")) {
+                            // value_to_insert = '';
+                            // mark = '\"';
+                        // }
+                        // else if ((win.mode == 0) && (content[j].tid == null) && (content[j].value != "")) {
+                            // if (content[j].restrict_new_autocomplete_terms != 1) {
+                                // mark = '';
+                                // //Get smallest tid
+                                // var tid = db_put.execute("SELECT tid FROM term_data ORDER BY tid ASC ");
+// 
+                                // if (tid.fieldByName('tid') >= 0) {
+                                    // var new_tid = -1;
+                                // }
+                                // else {
+                                    // var new_tid = tid.fieldByName('tid') - 1;
+                                // }
+                                // var date_created = Math.round(+new Date() / 1000);
+                                // db_put.execute("INSERT INTO term_data (tid, vid, name, description, weight, created) VALUES (" + new_tid + ", " + content[j].vid + ", '" + content[j].value + "', '', '', '" + date_created + "'  )");
+                                // value_to_insert = new_tid;
+// 
+                                // Ti.API.info('First tid is: ' + new_tid + ' and tid ' + content[j].tid + ' and value ' + content[j].value);
+                                // tid.close();
+                            // }
+                            // else {
+                                // value_to_insert = '';
+                            // }
+// 
+                        // }
+                        // else if ((content[j].tid != null)) {
+                            // mark = '';
+                            // value_to_insert = content[j].tid;
+                        // }
+                    // }
+                // }
+                // else if (content[j].field_type == 'omadi_reference') {
+                    // if (content[j].nid === null) {
+                        // value_to_insert = '';
+                        // mark = '\"';
+                    // }
+                    // else {
+                        // mark = '';
+                        // value_to_insert = content[j].nid;
+                    // }
+                // }
+                // else if (content[j].field_type == 'list_boolean') {
+                    // if (content[j].value === true) {
+                        // value_to_insert = 1;
+                    // }
+                    // else {
+                        // value_to_insert = 0;
+                    // }
+                // }
+                // else if (content[j].field_type == 'rules_field') {
+                    // if (content[j].value === false || content[j].value === 0 || content[j].value === 'false') {
+                        // value_to_insert = 'false';
+                    // }
+                    // else {
+                        // value_to_insert = JSON.stringify(content[j].value).replace(/"/gi, "\"\"");
+                    // }
+                // }
+                // else if ((content[j].field_type == 'omadi_time') || (content[j].field_type == 'datestamp')) {
+                    // if (content[j].update_it === true) {
+                        // value_to_insert = Math.round(content[j].value / 1000);
+                    // }
+                    // else {
+                        // mark = "\"";
+                        // value_to_insert = '';
+                    // }
+                // }
+                // else {
+                    // value_to_insert = content[j].value;
+                // }
+            // }
+            // if (value_to_insert == '') {
+                // mark = '\"';
+            // }
+// 
+            // if (j == content.length - 1) {
+                // query += mark + "" + value_to_insert + "" + mark + " )";
+            // }
+            // else {
+                // query += mark + "" + value_to_insert + "" + mark + ", ";
+            // }
+            // Ti.API.info(content[j].field_type + ' has value to insert ' + value_to_insert);
+        // }
+// 
+        // var has_bug = false;
+        // try {
+            // Ti.API.info('Title: ' + title_to_node);
+            // if (title_to_node == "") {
+                // title_to_node = "No title";
+            // }
+// 
+            // //No data fields JSON
+            // var no_data_fields_content = '';
+            // for ( idx_k = 0; idx_k < no_data_fields.length; idx_k++) {
+                // if (idx_k == no_data_fields.length - 1) {
+                    // no_data_fields_content += '\"' + no_data_fields[idx_k] + '\" : \"' + no_data_fields[idx_k] + '\"';
+                // }
+                // else {
+                    // no_data_fields_content += '\"' + no_data_fields[idx_k] + '\" : \"' + no_data_fields[idx_k] + '\",';
+                // }
+            // }
+            // if (no_data_fields_content != null && no_data_fields_content != '') {
+                // no_data_fields_content = "{" + no_data_fields_content + "}"
+            // }
+// 
+            // // var nodeObj = {};
+// //             
+            // // nodeObj.nid = 0;
+            // // nodeObj.perm_edit = 0;
+            // // nodeObj.perm_delete = 0;
+// //             
+            // // nodeObj.changed = 0;
+            // // nodeObj.title = '';
+            // // nodeObj.author_uid = 0;
+            // // nodeObj.flag_is_updated = 0;
+            // // nodeObj.table_name = 0;
+            // // nodeObj.form_part = 0;
+            // // nodeObj.changed_uid = 0;
+            // // nodeObj.no_data_fields = ';'
+            // // nodeObj.viewed = "1";
+// //                
+// //             
+            // // nodeObj.created = 0;
+//         
+            // //Insert into node table
+            // if (_flag_info == "draft") {
+                // if (win.mode == 1) {
+                   // // Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=3, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\'' + no_data_fields_content + '\' WHERE nid=' + win.nid);
+                    // db_put.execute('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=3, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\'' + no_data_fields_content + '\', viewed=\'1\' WHERE nid=' + win.nid);
+                // }
+                // else {
+                    // //Ti.API.info('INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 3 , "' + win.type + '" , ' + win.region_form + ', \'' + no_data_fields_content + '\')');
+                    // db_put.execute('INSERT INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name , form_part, no_data_fields, viewed ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 3 , "' + win.type + '", ' + win.region_form + ', \'' + no_data_fields_content + '\', \'1\')');
+// 
+                // }
+            // }
+            // else if (win.mode == 1) {
+               // // Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\'' + no_data_fields_content + '\' WHERE nid=' + win.nid);
+                // db_put.execute('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\'' + no_data_fields_content + '\', viewed=\'1\' WHERE nid=' + win.nid);
+            // }
+            // else {
+                // //Ti.API.info('INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '", ' + win.region_form + ', \'' + no_data_fields_content + '\')');
+                // db_put.execute('INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields, viewed) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '"  , ' + win.region_form + ', \'' + no_data_fields_content + '\', \'1\')');
+            // }
+// 
+            // //Insert into table
+            // Ti.API.info("=====Query=== " + query);
+            // if (win.mode == 1) {
+                // var oldVal = db_put.execute('SELECT * FROM ' + win.type + ' WHERE nid=' + win.nid);
+            // }
+            // db_put.execute(query);
+// 
+            // //If Images captured and not yet uploaded then store in file_uploaded_queue
+            // if (win.mode == 1) {
+                // file_upload_nid = win.nid;
+            // }
+            // else {
+                // file_upload_nid = new_nid;
+            // }
+            // db_put.execute('UPDATE file_upload_queue SET nid=' + file_upload_nid + ' WHERE nid=0;');
+// 
+            // //If Images captured and not yet uploaded then store in file_uploaded_queue
+            // var j;
+            // for ( j = 0; j <= content.length; j++) {
+                // if (!content[j]) {
+                    // continue;
+                // }
+                // if (content[j].field_type == 'image' && win.mode == 1) {
+                    // db_put.execute('UPDATE ' + win.type + ' SET ' + content[j].field_name + '="' + oldVal.fieldByName(content[j].field_name) + '", ' + content[j].field_name + '___file_id="' + oldVal.fieldByName(content[j].field_name + '___file_id') + '", ' + content[j].field_name + '___status="' + oldVal.fieldByName(content[j].field_name + '___status') + '" WHERE nid=' + file_upload_nid + ';');
+                // }
+            // }
+// 
+            // Ti.API.info("New Nid = " + file_upload_nid);
+            // /*for (var j = 0; j <= content.length; j++) {
+             // if (!content[j]) {
+             // continue;
+             // }
+// 
+             // var file_upload_nid;
+// 
+             // if (win.mode == 1) {
+             // file_upload_nid = win.nid;
+             // } else {
+             // file_upload_nid = new_nid;
+             // }
+// 
+             // if (content[j].field_type == 'image' && (content[j].cardinality > 1 || content[j].cardinality < 0) && !content[j].no_data_checkbox) {
+             // var arrImages = content[j].arrImages;
+             // for ( k = 0; k < arrImages.length; k++) {
+             // if (arrImages[k].isImage != false && arrImages[k].mimeType != null) {
+             // var encodeImage = Ti.Utils.base64encode(arrImages[k].bigImg);
+             // var mime = arrImages[k].mimeType;
+             // var imageName = 'image.' + mime.substring(mime.indexOf('/') + 1, mime.length);
+             // var is_exists = db_put.execute('SELECT delta, nid FROM file_upload_queue WHERE nid=' + file_upload_nid + ' and delta=' + arrImages[k].private_index + ' and field_name="' + content[j].field_name + '";');
+             // if (is_exists.rowCount > 0) {
+             // db_put.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '", file_data="' + encodeImage + '", field_name="' + content[j].field_name + '", file_name="' + imageName + '", delta=' + arrImages[k].private_index + ' WHERE nid=' + file_upload_nid + ' and delta=' + arrImages[k].private_index + ' and field_name="' + content[j].field_name + '";');
+             // continue;
+             // }
+// 
+             // db_put.execute('INSERT INTO file_upload_queue (nid , file_data , field_name, file_name, delta) VALUES (' + file_upload_nid + ', "' + encodeImage + '", "' + content[j].field_name + '", "' + imageName + '", ' + arrImages[k].private_index + ')');
+             // Ti.API.info('Filse Saved' + arrImages[k].private_index);
+             // }
+             // }
+             // } else if (content[j].field_type == 'image'  && !content[j].no_data_checkbox) {
+             // if (content[j].isImage != false && content[j].mimeType != null) {
+             // var encodeImage = Ti.Utils.base64encode(content[j].bigImg);
+             // var mime = content[j].mimeType;
+             // var imageName = 'image.' + mime.substring(mime.indexOf('/') + 1, mime.length);
+// 
+             // var is_exists = db_put.execute('SELECT delta, nid FROM file_upload_queue WHERE nid=' + file_upload_nid + ' and delta=' + content[j].private_index + ' and field_name="' + content[j].field_name + '";');
+// 
+             // if (is_exists.rowCount > 0) {
+             // db_put.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '", file_data="' + encodeImage + '", field_name="' + content[j].field_name + '", file_name="' + imageName + '", delta=' + content[j].private_index + ' WHERE nid=' + file_upload_nid + ' and delta=' + content[j].private_index + ' and field_name="' + content[j].field_name + '";');
+             // continue;
+             // }
+             // db_put.execute('INSERT INTO file_upload_queue (nid , file_data , field_name, file_name, delta) VALUES (' + file_upload_nid + ', "' + encodeImage + '", "' + content[j].field_name + '", "' + imageName + '","' + content[j].private_index + '")');
+             // }
+             // }
+// 
+             // if (content[j].field_type == 'image' && win.mode == 1) {
+             // db_put.execute('UPDATE ' + win.type + ' SET ' + content[j].field_name + '="' + oldVal.fieldByName(content[j].field_name) + '", ' + content[j].field_name + '___file_id="' + oldVal.fieldByName(content[j].field_name + '___file_id') + '", ' + content[j].field_name + '___status="' + oldVal.fieldByName(content[j].field_name + '___status') + '" WHERE nid=' + file_upload_nid + ';');
+             // }
+             // }*/
+// 
+//          
+            // has_bug = false;
+        // }
+        // catch(e) {
+            // Ti.API.info("Error----------" + e);
+// 
             // if (_flag_info == 'draft') {
-//                
 //                 
+                // alert('An error has occurred when we tried to save this node as a draft, please try again');
             // }
             // else if (win.mode == 1) {
 //                 
-                // alert('Alert management of this updated ' + win.title + ' immediately. Your device failed to connect to the Internet.');
-//                 
+               // alert('An error has occurred when we tried to update this new node, please try again');
             // }
             // else {
 //                 
-                // alert('Alert management of this new ' + win.title + ' immediately. Your device failed to connect to the Internet.');
+                // alert('An error has occurred when we tried to create this new node, please try again');
             // }
-//             
+            // has_bug = true;
         // }
-    }
-}
+        // finally{
+            // db_put.close();
+        // }
+// 
+        // Ti.API.info('========= Updating new info running ========= ' + _flag_info);
+//         
+        // var alertMessage = "";
+        // if(has_bug){
+            // alert("There was a problem saving your data. Please try again. If this error continues, please report the problem.");
+        // }
+        // else if(_flag_info == 'draft'){
+            // alert('The ' + win.title + ' was saved as a draft.');
+            // close_me();
+        // }
+        // else if(Ti.Network.online){
+            // if (_flag_info == "normal") {
+                // Ti.API.info('Submitting, mode=' + win.mode);
+                // //Omadi.service.sendUpdates();
+                // update_node(win.mode, close_me, win.type.toUpperCase());
+            // }
+            // else {
+                // Ti.API.info('Submitting and preparing next part reload');
+                // //Omadi.service.sendUpdates();
+                // // TODO: send the user to the next form part
+                // update_node(win.mode, reload_me, win.type.toUpperCase(), _flag_info);
+            // }
+        // }
+        // else{
+//            
+            // alert('Alert management of this ' + win.title + ' immediately. You do not have an Internet connection right now.  Your data was saved and will be synched when you connect to the Internet.');
+            // close_me_delay();
+        // }
+//         
+        // // if ((Titanium.Network.online) && (has_bug === false) && (_flag_info != 'draft')) {
+// //             
+        // // }
+        // // else if (has_bug === true) {
+            // // Ti.API.info('Error');
+            // // close_me_delay();
+        // // }
+        // // else if (!(Titanium.Network.online) || (_flag_info == 'draft')) {
+            // // if (_flag_info == 'draft') {
+// //                
+// //                 
+            // // }
+            // // else if (win.mode == 1) {
+// //                 
+                // // alert('Alert management of this updated ' + win.title + ' immediately. Your device failed to connect to the Internet.');
+// //                 
+            // // }
+            // // else {
+// //                 
+                // // alert('Alert management of this new ' + win.title + ' immediately. Your device failed to connect to the Internet.');
+            // // }
+// //             
+        // // }
+    // }
+// }
 
 function close_me_delay() {
     setTimeout(function() {
@@ -2134,6972 +2134,480 @@ var content_fields;
 
 var count = 0;
 var title = 0;
-var defaultImageVal = '/images/take-a-photo.png'
+var defaultImageVal = '/images/take-a-photo.png';
 
-create_or_edit_node.loadUI = function() {
 
-    toolActInd.show();
-    db_display = null;
-    regions = null;
-    fields_result = null;
-    bundle_titles = null;
-    content_fields = null;
-    label = null;
-    content = null;
-    border = null;
-    values_query = null;
-    field_arr = null;
-    unsorted_res = null;
-    field_arr = new Array();
-    unsorted_res = new Array();
-    label = new Array();
-    content = new Array();
-    border = new Array();
-    values_query = new Array();
-    count = 0;
-    title = 0;
-    //movement = win.movement;
-    omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
-    roles = omadi_session_details.user.roles;
-    db_display = Omadi.utils.openMainDatabase();
-    regions = db_display.execute('SELECT * FROM regions WHERE node_type = "' + win.type + '" ORDER BY weight ASC');
-    if (win.mode == 1) {
-        var node_table = db_display.execute('SELECT * FROM node WHERE nid=' + win.nid);
-        if (node_table.rowCount > 0) {
-            var no_data_fields = node_table.fieldByName('no_data_fields');
-            if (no_data_fields != null && no_data_fields != "") {
-                no_data_fields = JSON.parse(no_data_fields);
-                var key;
-                for (key in no_data_fields) {
-                    if (no_data_fields.hasOwnProperty(key)) {
-                        no_data_fieldsArr.push(key);
-                    }
-                }
-            }
-        }
-    }
+// a field view is the complete view for a field
+// indexed by field_name
+// contains fieldLabel property, which points to the label view
 
-    // if(win.mode == 1){
-    // win.addEventListener('open', function(e){
-    // Ti.API.info("window opened");
-    // setNodeViewed(e.source.nid);
-    // });
-    // }
+var fieldViews = {};
 
-    var y = 0;
-    var regionCount = 0;
-    var expandedRegion = 0;
-    while (regions.isValidRow()) {
-        var reg_settings = JSON.parse(regions.fieldByName('settings'));
 
-        if (reg_settings != null && parseInt(reg_settings.form_part) > win.region_form) {
-            Ti.API.info('Region : ' + regions.fieldByName('label') + ' won\'t appear');
-        }
-        else {
-            var arrow_img = Ti.UI.createImageView({
-                image : '/images/light_arrow_left.png',
-                width : DPUnitsToPixels(29),
-                height : DPUnitsToPixels(29),
-                top : DPUnitsToPixels(y + 5),
-                right : DPUnitsToPixels(5),
-                zIndex : 999
-            });
-
-            var regionHeader = Ti.UI.createLabel({
-                text : regions.fieldByName('label').toUpperCase(),
-                color : '#ddd',
-                font : {
-                    fontSize : "18dp",
-                    fontWeight : 'bold'
-                },
-                textAlign : 'center',
-                width : '100%',
-                height : DPUnitsToPixels(40),
-                top : y,
-                ellipsize : true,
-                wordWrap : false,
-                zIndex : 998,
-                backgroundGradient : {
-                    type : 'linear',
-                    startPoint : {
-                        x : '50%',
-                        y : '0%'
-                    },
-                    endPoint : {
-                        x : '50%',
-                        y : '100%'
-                    },
-                    colors : [{
-                        color : '#555',
-                        offset : 0.0
-                    }, {
-                        color : '#666',
-                        offset : 0.3
-                    }, {
-                        color : '#333',
-                        offset : 1.0
-                    }],
-                }
-            });
-            y = y + DPUnitsToPixels(50);
-
-            var regionView = Ti.UI.createView({
-                width : '100%',
-                top : y,
-                backgroundColor : '#EEEEEE',
-                zIndex : 0
-            });
-
-            regionHeader.arrow = arrow_img;
-            regionHeader.viewContainer = regionView;
-            regionHeader.addEventListener('click', function(e) {
-                e.source.viewContainer.expanded = !e.source.viewContainer.expanded;
-                if (e.source.viewContainer.expanded === true) {
-                    e.source.viewContainer.height = e.source.viewContainer.calculatedHeight;
-                    var top = 0;
-                    var i;
-                    for ( i = 0; i < viewContent.getChildren().length; i++) {
-                        var v = viewContent.getChildren()[i];
-                        var isLabel = false;
-                        if (PLATFORM == 'android') {
-                            if ( v instanceof Ti.UI.Label) {
-                                isLabel = true;
-                            }
-                        }
-                        else {
-                            if (v == '[object TiUILabel]') {
-                                isLabel = true;
-                            }
-                        }
-                        if (isLabel) {
-                            v.top = top;
-                            v.arrow.top = top + 5;
-                            if (v.viewContainer.expanded === true) {
-                                v.arrow.image = "/images/light_arrow_down.png";
-                            }
-                            else {
-                                v.arrow.image = "/images/light_arrow_left.png";
-                            }
-                            top = top + DPUnitsToPixels(40);
-                            v.viewContainer.top = top;
-                            top = top + v.viewContainer.height + 10;
-                            e.source.viewContainer.show();
-                        }
-                    }
-                }
-                else {
-                    e.source.viewContainer.height = 0;
-                    e.source.viewContainer.hide();
-                    var top = 0;
-                    var i;
-                    for ( i = 0; i < viewContent.getChildren().length; i++) {
-                        var v = viewContent.getChildren()[i];
-                        var isLabel = false;
-                        if (PLATFORM == 'android') {
-                            if ( v instanceof Ti.UI.Label) {
-                                isLabel = true;
-                            }
-                        }
-                        else {
-                            if (v == '[object TiUILabel]') {
-                                isLabel = true;
-                            }
-                        }
-                        if (isLabel) {
-                            v.top = top;
-                            v.arrow.top = top + 5;
-                            if (v.viewContainer.expanded === true) {
-                                v.arrow.image = "/images/light_arrow_down.png";
-                            }
-                            else {
-                                v.arrow.image = "/images/light_arrow_left.png";
-                            }
-                            top = top + DPUnitsToPixels(40);
-                            v.viewContainer.top = top;
-                            top = top + v.viewContainer.height + 10;
-                        }
-                    }
-                }
-
-                if (viewContent.getChildren() != null) {
-                    var i;
-                    for ( i = viewContent.getChildren().length - 1; i >= 0; i--) {
-                        var v = viewContent.getChildren()[i];
-                        var isLabel = false;
-                        if (PLATFORM == 'android') {
-                            if ( v instanceof Ti.UI.Label) {
-                                isLabel = true;
-                            }
-                        }
-                        else {
-                            if (v == '[object TiUILabel]') {
-                                isLabel = true;
-                            }
-                        }
-
-                        if (isLabel == true && v.viewContainer.expanded == true) {
-                            v.viewContainer.height = v.viewContainer.height + DPUnitsToPixels(30);
-                            //(getScreenHeight() * 0.3);
-                            break;
-                        }
-                        else if (isLabel == true && v.viewContainer.expanded == false) {
-                            break;
-                        }
-                    }
-                }
-            });
-            var regionName = regions.fieldByName('region_name');
-            fields_result = db_display.execute('SELECT * FROM fields WHERE bundle = "' + win.type + '" AND region = "' + regionName + '" ORDER BY weight, id ASC');
-
-            if (win.mode == 1) {
-
-                content_fields = db_display.execute('SELECT * FROM ' + win.type + ' WHERE nid = "' + win.nid + '" ');
-                //alert(content_fields.fieldByName)
-            }
-
-            var top = 10;
-            var field_definer = 0;
-            var index_size = 0;
-            var partsArr = [];
-
-            //If there is no field enabled for this region, then remove the header for this region after the end of loop.
-            var isAnyEnabledField = false;
-
-            var index_label = regions.fieldByName('label');
-            while (fields_result.isValidRow()) {
-                if (fields_result.fieldByName('disabled') == 0) {
-                    isAnyEnabledField = true;
-                    var widget = JSON.parse(fields_result.fieldByName('widget'));
-                    var settings = JSON.parse(fields_result.fieldByName('settings'));
-
-                    //Array of fields
-                    // field_arr[label][length]
-                    // field_arr[address][0], field_arr[address][1], field_arr[address][2]
-                    ////
-                    field_arr[index_label] = new Array();
-                    if (win.mode == 1) {
-                        field_arr[index_label][index_size] = {
-                            label : fields_result.fieldByName('label'),
-                            type : fields_result.fieldByName('type'),
-                            required : fields_result.fieldByName('required'),
-                            field_name : fields_result.fieldByName('field_name'),
-                            settings : fields_result.fieldByName('settings'),
-                            widget : fields_result.fieldByName('widget'),
-                            fid : fields_result.fieldByName('fid'),
-                            is_title : false,
-                            actual_value : content_fields.fieldByName(fields_result.fieldByName('field_name'))
-                        };
-                    }
-                    else {
-                        field_arr[index_label][index_size] = {
-                            label : fields_result.fieldByName('label'),
-                            type : fields_result.fieldByName('type'),
-                            required : fields_result.fieldByName('required'),
-                            field_name : fields_result.fieldByName('field_name'),
-                            settings : fields_result.fieldByName('settings'),
-                            widget : fields_result.fieldByName('widget'),
-                            fid : fields_result.fieldByName('fid'),
-                            is_title : false,
-                            actual_value : ""
-                        };
-                    }
-
-                    var isRequired = false;
-                    if (field_arr[index_label][index_size].required == true || field_arr[index_label][index_size].required == 'true' || field_arr[index_label][index_size].required == 1 || field_arr[index_label][index_size].required == '1') {
-                        isRequired = true;
-                    }
-
-                    field_arr[index_label][index_size].label = field_arr[index_label][index_size].label.replace(/"/gi, '\'');
-
-                    switch(field_arr[index_label][index_size].type) {
-
-                        case 'license_plate':
-                            var settings = JSON.parse(field_arr[index_label][index_size].settings);
-                            var can_view = false;
-                            var can_edit = false;
-
-                            if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-                                var _l;
-                                for (_l in settings.permissions) {
-                                    for (_k in roles) {
-                                        if (_l == _k) {
-                                            var stringifyObj = JSON.stringify(settings.permissions[_l]);
-                                            if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_edit = true;
-                                            }
-
-                                            if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_view = true;
-                                            }
-
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                can_view = can_edit = true;
-                            }
-
-                            if (!can_view) {
-                                break;
-                            }
-
-                            label[count] = Ti.UI.createLabel({
-                                text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-                                color : isRequired ? 'red' : _lb_color,
-                                font : {
-                                    fontSize : fieldFontSize,
-                                    fontWeight : 'bold'
-                                },
-                                textAlign : 'left',
-                                width : Ti.Platform.displayCaps.platformWidth - 30,
-                                touchEnabled : false,
-                                height : heightValue,
-                                top : top
-                            });
-                            top += heightValue;
-
-                            var fi_name = field_arr[index_label][index_size].field_name;
-                            var reffer_index = count;
-
-                            fi_name = fi_name.split('___');
-                            if (fi_name[1]) {
-                                var i_name = fi_name[1];
-                            }
-                            else {
-                                var i_name = fi_name[0];
-                            }
-
-                            i_name = i_name.charAt(0).toUpperCase() + i_name.slice(1);
-                            //Add fields:
-                            regionView.add(label[count]);
-
-                            if (settings.cardinality > 1) {
-                                if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
-                                    var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
-
-                                    //Decode the stored array:
-                                    var decoded = array_cont.fieldByName('encoded_array');
-                                    decoded = Base64.decode(decoded);
-                                    Ti.API.info('Decoded array is equals to: ' + decoded);
-                                    decoded = decoded.toString();
-
-                                    // Token that splits each element contained into the array: 'j8Oc2s1E'
-                                    var decoded_values = decoded.split("j8Oc2s1E");
-                                }
-                                else {
-                                    var decoded_values = new Array();
-                                    decoded_values[0] = field_arr[index_label][index_size].actual_value;
-                                }
-
-                                var o_index;
-                                for ( o_index = 0; o_index < settings.cardinality; o_index++) {
-
-                                    if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
-                                        var vl_to_field = decoded_values[o_index];
-                                    }
-                                    else {
-                                        var vl_to_field = settings.state_default_value;
-                                    }
-
-                                    if (field_arr[index_label][index_size].field_name == "license_plate___state" || field_arr[index_label][index_size].field_name == "restriction_license_plate___state") {
-                                        label[count].text += ' State';
-                                        var arr_picker = [];
-                                        var arr_opt = new Array();
-
-                                        var aux_val = {
-                                            cnt : 0,
-                                            usps : null,
-                                            title : " -- State -- "
-                                        }
-
-                                        //States
-                                        arr_picker.push({
-                                            title : " -- State -- ",
-                                            usps : null
-                                        });
-                                        arr_picker.push({
-                                            title : "Alabama",
-                                            usps : "AL"
-                                        });
-                                        arr_picker.push({
-                                            title : "Alaska",
-                                            usps : "AK"
-                                        });
-                                        arr_picker.push({
-                                            title : "Arizona",
-                                            usps : "AZ"
-                                        });
-                                        arr_picker.push({
-                                            title : "Arkansas",
-                                            usps : "AR"
-                                        });
-                                        arr_picker.push({
-                                            title : "California",
-                                            usps : "CA"
-                                        });
-                                        arr_picker.push({
-                                            title : "Colorado",
-                                            usps : "CO"
-                                        });
-                                        arr_picker.push({
-                                            title : "Connecticut",
-                                            usps : "CT"
-                                        });
-                                        arr_picker.push({
-                                            title : "Delaware",
-                                            usps : "DE"
-                                        });
-                                        arr_picker.push({
-                                            title : "Florida",
-                                            usps : "FL"
-                                        });
-                                        arr_picker.push({
-                                            title : "Georgia",
-                                            usps : "GA"
-                                        });
-                                        arr_picker.push({
-                                            title : "Hawaii",
-                                            usps : "HI"
-                                        });
-                                        arr_picker.push({
-                                            title : "Idaho",
-                                            usps : "ID"
-                                        });
-                                        arr_picker.push({
-                                            title : "Illinois",
-                                            usps : "IL"
-                                        });
-                                        arr_picker.push({
-                                            title : "Indiana",
-                                            usps : "IN"
-                                        });
-                                        arr_picker.push({
-                                            title : "Iowa",
-                                            usps : "IA"
-                                        });
-                                        arr_picker.push({
-                                            title : "Kansas",
-                                            usps : "KS"
-                                        });
-                                        arr_picker.push({
-                                            title : "Kentucky",
-                                            usps : "KY"
-                                        });
-                                        arr_picker.push({
-                                            title : "Louisiana",
-                                            usps : "LA"
-                                        });
-                                        arr_picker.push({
-                                            title : "Maine",
-                                            usps : "ME"
-                                        });
-                                        arr_picker.push({
-                                            title : "Maryland",
-                                            usps : "MD"
-                                        });
-                                        arr_picker.push({
-                                            title : "Massachusetts",
-                                            usps : "MA"
-                                        });
-                                        arr_picker.push({
-                                            title : "Michigan",
-                                            usps : "MI"
-                                        });
-                                        arr_picker.push({
-                                            title : "Minnesota",
-                                            usps : "MN"
-                                        });
-                                        arr_picker.push({
-                                            title : "Mississippi",
-                                            usps : "MS"
-                                        });
-                                        arr_picker.push({
-                                            title : "Missouri",
-                                            usps : "MO"
-                                        });
-                                        arr_picker.push({
-                                            title : "Montana",
-                                            usps : "MT"
-                                        });
-                                        arr_picker.push({
-                                            title : "Nebraska",
-                                            usps : "NE"
-                                        });
-                                        arr_picker.push({
-                                            title : "Nevada",
-                                            usps : "NV"
-                                        });
-                                        arr_picker.push({
-                                            title : "New Hampshire",
-                                            usps : "NH"
-                                        });
-                                        arr_picker.push({
-                                            title : "New Jersey",
-                                            usps : "NJ"
-                                        });
-                                        arr_picker.push({
-                                            title : "New Mexico",
-                                            usps : "NM"
-                                        });
-                                        arr_picker.push({
-                                            title : "New York",
-                                            usps : "NY"
-                                        });
-                                        arr_picker.push({
-                                            title : "North Carolina",
-                                            usps : "NC"
-                                        });
-                                        arr_picker.push({
-                                            title : "North Dakota",
-                                            usps : "ND"
-                                        });
-                                        arr_picker.push({
-                                            title : "Ohio",
-                                            usps : "OH"
-                                        });
-                                        arr_picker.push({
-                                            title : "Oklahoma",
-                                            usps : "OK"
-                                        });
-                                        arr_picker.push({
-                                            title : "Oregon",
-                                            usps : "OR"
-                                        });
-                                        arr_picker.push({
-                                            title : "Pennsylvania",
-                                            usps : "PA"
-                                        });
-                                        arr_picker.push({
-                                            title : "Rhode Island",
-                                            usps : "RI"
-                                        });
-                                        arr_picker.push({
-                                            title : "South Carolina",
-                                            usps : "SC"
-                                        });
-                                        arr_picker.push({
-                                            title : "South Dakota",
-                                            usps : "SD"
-                                        });
-                                        arr_picker.push({
-                                            title : "Tennessee",
-                                            usps : "TN"
-                                        });
-                                        arr_picker.push({
-                                            title : "Texas",
-                                            usps : "TX"
-                                        });
-                                        arr_picker.push({
-                                            title : "Utah",
-                                            usps : "UT"
-                                        });
-                                        arr_picker.push({
-                                            title : "Vermont",
-                                            usps : "VT"
-                                        });
-                                        arr_picker.push({
-                                            title : "Virginia",
-                                            usps : "VA"
-                                        });
-                                        arr_picker.push({
-                                            title : "Washington",
-                                            usps : "WA"
-                                        });
-                                        arr_picker.push({
-                                            title : "West Virginia",
-                                            usps : "WV"
-                                        });
-                                        arr_picker.push({
-                                            title : "Wisconsin",
-                                            usps : "WI"
-                                        });
-                                        arr_picker.push({
-                                            title : "Wyoming",
-                                            usps : "WY"
-                                        });
-
-                                        var count_at = 0;
-                                        //var to_row = new Array();
-                                        var at;
-                                        for (at in arr_picker) {
-                                            // to_row.push(Ti.UI.createPickerRow({
-                                            // title : arr_picker[at].title,
-                                            // usps : arr_picker[at].usps
-                                            // }));
-                                            if (arr_picker[at].usps == vl_to_field) {
-                                                aux_val.cnt = count_at;
-                                                aux_val.title = arr_picker[at].title;
-                                                aux_val.usps = arr_picker[at].usps;
-                                            }
-                                            arr_opt.push(arr_picker[at].title);
-                                            count_at++;
-                                        }
-
-                                        //Compares where it is
-
-                                        content[count] = Titanium.UI.createButton({
-                                            borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                            private_index : o_index,
-                                            width : Ti.Platform.displayCaps.platformWidth - 30,
-                                            height : heightValue,
-                                            arr_opt : arr_opt,
-                                            arr_picker : arr_picker,
-                                            title : aux_val.title,
-                                            font : {
-                                                fontSize : fieldFontSize
-                                            },
-                                            color : '#000000',
-                                            top : top,
-                                            selectionIndicator : true,
-                                            field_type : field_arr[index_label][index_size].type,
-                                            field_name : field_arr[index_label][index_size].field_name,
-                                            required : field_arr[index_label][index_size].required,
-                                            is_title : field_arr[index_label][index_size].is_title,
-                                            value : aux_val.usps,
-                                            composed_obj : true,
-                                            cardinality : settings.cardinality,
-                                            reffer_index : reffer_index,
-                                            settings : settings,
-                                            changedFlag : 0,
-                                            enabled : can_edit
-                                        });
-                                        if (PLATFORM == 'android') {
-                                            content[count].backgroundImage = '';
-                                            content[count].backgroundColor = 'white';
-                                            content[count].backgroundSelectedColor = '#2E64FE';
-                                            content[count].borderColor = 'gray';
-                                            content[count].borderRadius = 10;
-                                            content[count].color = 'black';
-                                            content[count].borderWidth = 1
-                                        }
-                                        if (!can_edit) {
-                                            content[count].backgroundImage = '';
-                                            content[count].backgroundColor = '#BDBDBD';
-                                            content[count].borderColor = 'gray';
-                                            content[count].borderRadius = 10;
-                                            content[count].color = '#848484';
-                                            content[count].borderWidth = 1
-                                        }
-
-                                        content[count].addEventListener('click', function(e) {
-                                            //Ti.API.info('USPS: '+e.row.usps);
-                                            //e.source.value = e.row.usps;
-                                            var postDialog = Titanium.UI.createOptionDialog();
-                                            postDialog.options = e.source.arr_opt;
-                                            postDialog.cancel = -1;
-                                            postDialog.show();
-
-                                            postDialog.addEventListener('click', function(ev) {
-                                                if (ev.index >= 0) {
-                                                    e.source.title = e.source.arr_opt[ev.index];
-                                                    e.source.value = e.source.arr_picker[ev.index].usps;
-                                                }
-                                                changedContentValue(e.source);
-                                                noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
-                                            });
-                                        });
-                                        top += heightValue;
-
-                                        regionView.add(content[count]);
-                                        count++;
-
-                                    }
-                                    else {
-                                        label[count].text += ' #';
-                                        content[count] = Ti.UI.createTextField({
-                                            hintText : "#" + o_index + " " + label[count].text,
-                                            private_index : o_index,
-                                            reffer_index : reffer_index,
-                                            borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                            textAlign : 'left',
-                                            width : Ti.Platform.displayCaps.platformWidth - 30,
-                                            height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                            maxLength : 10,
-                                            font : {
-                                                fontSize : fieldFontSize
-                                            },
-                                            color : '#000000',
-                                            top : top,
-                                            autocapitalization : Titanium.UI.TEXT_AUTOCAPITALIZATION_ALL,
-                                            field_type : field_arr[index_label][index_size].type,
-                                            field_name : field_arr[index_label][index_size].field_name,
-                                            required : field_arr[index_label][index_size].required,
-                                            is_title : field_arr[index_label][index_size].is_title,
-                                            composed_obj : true,
-                                            cardinality : settings.cardinality,
-                                            value : vl_to_field,
-                                            settings : settings,
-                                            changedFlag : 0,
-                                            real_ind : count,
-                                            autocorrect : false,
-                                            returnKeyType : Ti.UI.RETURNKEY_DONE,
-                                            enabled : can_edit,
-                                            editable : can_edit
-                                        });
-                                    }
-                                    if (PLATFORM == 'android') {
-                                        content[count].backgroundImage = '../images/textfield.png'
-                                    }
-                                    if (!can_edit) {
-                                        content[count].backgroundImage = '';
-                                        content[count].backgroundColor = '#BDBDBD';
-                                        content[count].borderColor = 'gray';
-                                        content[count].borderRadius = 10;
-                                        content[count].color = '#848484';
-                                        content[count].borderWidth = 1;
-                                        content[count].paddingLeft = 3;
-                                        content[count].paddingRight = 3;
-                                        if (PLATFORM == 'android') {
-                                            content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-                                        }
-                                    }
-                                    top += (PLATFORM == 'android') ? heightTextField : heightValue;
-
-                                    regionView.add(content[count]);
-                                    content[count].addEventListener('change', function(e) {
-                                        if (e.source.value.length > 10) {
-                                            //e.source.value = e.source.value.substr(0, 10);
-                                            //e.source.blur();
-                                            e.source.setValue(e.source.value.substr(0, 10));
-                                            e.source.setSelection(10, 10);
-                                            e.source.setSoftKeyboardOnFocus(Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS);
-                                            e.source.blur();
-                                            Ti.UI.Android.hideSoftKeyboard();
-                                        }
-                                        changedContentValue(e.source);
-                                        noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
-                                    });
-
-                                    count++;
-                                }
-                            }
-                            else {
-                                if (field_arr[index_label][index_size].field_name == "license_plate___state" || field_arr[index_label][index_size].field_name == "restriction_license_plate___state") {
-
-                                    label[count].text += ' State';
-                                    var arr_picker = [];
-                                    var arr_opt = new Array();
-
-                                    var aux_val = {
-                                        cnt : 0,
-                                        usps : null,
-                                        title : " -- State -- "
-                                    }
-                                    if (field_arr[index_label][index_size].actual_value != "" && field_arr[index_label][index_size].actual_value != "null" && field_arr[index_label][index_size].actual_value != null) {
-                                    }
-                                    else {
-                                        field_arr[index_label][index_size].actual_value = settings.state_default_value;
-                                    }
-                                    Ti.API.info(settings.state_default_value);
-                                    //States
-                                    arr_picker.push({
-                                        title : " -- State -- ",
-                                        usps : null
-                                    });
-                                    arr_picker.push({
-                                        title : "Alabama",
-                                        usps : "AL"
-                                    });
-                                    arr_picker.push({
-                                        title : "Alaska",
-                                        usps : "AK"
-                                    });
-                                    arr_picker.push({
-                                        title : "Arizona",
-                                        usps : "AZ"
-                                    });
-                                    arr_picker.push({
-                                        title : "Arkansas",
-                                        usps : "AR"
-                                    });
-                                    arr_picker.push({
-                                        title : "California",
-                                        usps : "CA"
-                                    });
-                                    arr_picker.push({
-                                        title : "Colorado",
-                                        usps : "CO"
-                                    });
-                                    arr_picker.push({
-                                        title : "Connecticut",
-                                        usps : "CT"
-                                    });
-                                    arr_picker.push({
-                                        title : "Delaware",
-                                        usps : "DE"
-                                    });
-                                    arr_picker.push({
-                                        title : "Florida",
-                                        usps : "FL"
-                                    });
-                                    arr_picker.push({
-                                        title : "Georgia",
-                                        usps : "GA"
-                                    });
-                                    arr_picker.push({
-                                        title : "Hawaii",
-                                        usps : "HI"
-                                    });
-                                    arr_picker.push({
-                                        title : "Idaho",
-                                        usps : "ID"
-                                    });
-                                    arr_picker.push({
-                                        title : "Illinois",
-                                        usps : "IL"
-                                    });
-                                    arr_picker.push({
-                                        title : "Indiana",
-                                        usps : "IN"
-                                    });
-                                    arr_picker.push({
-                                        title : "Iowa",
-                                        usps : "IA"
-                                    });
-                                    arr_picker.push({
-                                        title : "Kansas",
-                                        usps : "KS"
-                                    });
-                                    arr_picker.push({
-                                        title : "Kentucky",
-                                        usps : "KY"
-                                    });
-                                    arr_picker.push({
-                                        title : "Louisiana",
-                                        usps : "LA"
-                                    });
-                                    arr_picker.push({
-                                        title : "Maine",
-                                        usps : "ME"
-                                    });
-                                    arr_picker.push({
-                                        title : "Maryland",
-                                        usps : "MD"
-                                    });
-                                    arr_picker.push({
-                                        title : "Massachusetts",
-                                        usps : "MA"
-                                    });
-                                    arr_picker.push({
-                                        title : "Michigan",
-                                        usps : "MI"
-                                    });
-                                    arr_picker.push({
-                                        title : "Minnesota",
-                                        usps : "MN"
-                                    });
-                                    arr_picker.push({
-                                        title : "Mississippi",
-                                        usps : "MS"
-                                    });
-                                    arr_picker.push({
-                                        title : "Missouri",
-                                        usps : "MO"
-                                    });
-                                    arr_picker.push({
-                                        title : "Montana",
-                                        usps : "MT"
-                                    });
-                                    arr_picker.push({
-                                        title : "Nebraska",
-                                        usps : "NE"
-                                    });
-                                    arr_picker.push({
-                                        title : "Nevada",
-                                        usps : "NV"
-                                    });
-                                    arr_picker.push({
-                                        title : "New Hampshire",
-                                        usps : "NH"
-                                    });
-                                    arr_picker.push({
-                                        title : "New Jersey",
-                                        usps : "NJ"
-                                    });
-                                    arr_picker.push({
-                                        title : "New Mexico",
-                                        usps : "NM"
-                                    });
-                                    arr_picker.push({
-                                        title : "New York",
-                                        usps : "NY"
-                                    });
-                                    arr_picker.push({
-                                        title : "North Carolina",
-                                        usps : "NC"
-                                    });
-                                    arr_picker.push({
-                                        title : "North Dakota",
-                                        usps : "ND"
-                                    });
-                                    arr_picker.push({
-                                        title : "Ohio",
-                                        usps : "OH"
-                                    });
-                                    arr_picker.push({
-                                        title : "Oklahoma",
-                                        usps : "OK"
-                                    });
-                                    arr_picker.push({
-                                        title : "Oregon",
-                                        usps : "OR"
-                                    });
-                                    arr_picker.push({
-                                        title : "Pennsylvania",
-                                        usps : "PA"
-                                    });
-                                    arr_picker.push({
-                                        title : "Rhode Island",
-                                        usps : "RI"
-                                    });
-                                    arr_picker.push({
-                                        title : "South Carolina",
-                                        usps : "SC"
-                                    });
-                                    arr_picker.push({
-                                        title : "South Dakota",
-                                        usps : "SD"
-                                    });
-                                    arr_picker.push({
-                                        title : "Tennessee",
-                                        usps : "TN"
-                                    });
-                                    arr_picker.push({
-                                        title : "Texas",
-                                        usps : "TX"
-                                    });
-                                    arr_picker.push({
-                                        title : "Utah",
-                                        usps : "UT"
-                                    });
-                                    arr_picker.push({
-                                        title : "Vermont",
-                                        usps : "VT"
-                                    });
-                                    arr_picker.push({
-                                        title : "Virginia",
-                                        usps : "VA"
-                                    });
-                                    arr_picker.push({
-                                        title : "Washington",
-                                        usps : "WA"
-                                    });
-                                    arr_picker.push({
-                                        title : "West Virginia",
-                                        usps : "WV"
-                                    });
-                                    arr_picker.push({
-                                        title : "Wisconsin",
-                                        usps : "WI"
-                                    });
-                                    arr_picker.push({
-                                        title : "Wyoming",
-                                        usps : "WY"
-                                    });
-
-                                    var count_at = 0;
-                                    //var to_row = new Array();
-                                    var at;
-                                    for (at in arr_picker) {
-                                        // to_row.push(Ti.UI.createPickerRow({
-                                        // title : arr_picker[at].title,
-                                        // usps : arr_picker[at].usps
-                                        // }));
-                                        if (arr_picker[at].usps == field_arr[index_label][index_size].actual_value) {
-                                            aux_val.cnt = count_at;
-                                            aux_val.title = arr_picker[at].title;
-                                            aux_val.usps = arr_picker[at].usps;
-                                        }
-                                        arr_opt.push(arr_picker[at].title);
-                                        count_at++;
-                                    }
-
-                                    //Compares where it is
-
-                                    content[count] = Titanium.UI.createButton({
-                                        borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                        private_index : o_index,
-                                        width : Ti.Platform.displayCaps.platformWidth - 30,
-                                        height : heightValue,
-                                        arr_opt : arr_opt,
-                                        arr_picker : arr_picker,
-                                        title : aux_val.title,
-                                        font : {
-                                            fontSize : fieldFontSize
-                                        },
-                                        color : '#000000',
-                                        top : top,
-                                        selectionIndicator : true,
-                                        field_type : field_arr[index_label][index_size].type,
-                                        field_name : field_arr[index_label][index_size].field_name,
-                                        required : field_arr[index_label][index_size].required,
-                                        is_title : field_arr[index_label][index_size].is_title,
-                                        value : aux_val.usps,
-                                        composed_obj : false,
-                                        cardinality : settings.cardinality,
-                                        reffer_index : reffer_index,
-                                        settings : settings,
-                                        changedFlag : 0,
-                                        enabled : can_edit
-                                    });
-                                    if (PLATFORM == 'android') {
-                                        content[count].backgroundImage = '';
-                                        content[count].backgroundColor = 'white';
-                                        content[count].backgroundSelectedColor = '#2E64FE';
-                                        content[count].borderColor = 'gray';
-                                        content[count].borderRadius = 10;
-                                        content[count].color = 'black';
-                                        content[count].borderWidth = 1;
-                                    }
-                                    if (!can_edit) {
-                                        content[count].backgroundImage = '';
-                                        content[count].backgroundColor = '#BDBDBD';
-                                        content[count].borderColor = 'gray';
-                                        content[count].borderRadius = 10;
-                                        content[count].color = '#848484';
-                                        content[count].borderWidth = 1;
-                                    }
-
-                                    content[count].addEventListener('click', function(e) {
-                                        //Ti.API.info('USPS: '+e.row.usps);
-                                        //e.source.value = e.row.usps;
-                                        var postDialog = Titanium.UI.createOptionDialog();
-                                        postDialog.options = e.source.arr_opt;
-                                        postDialog.cancel = -1;
-                                        postDialog.show();
-
-                                        postDialog.addEventListener('click', function(ev) {
-                                            if (ev.index >= 0) {
-                                                e.source.title = e.source.arr_opt[ev.index];
-                                                e.source.value = e.source.arr_picker[ev.index].usps;
-                                            }
-                                            changedContentValue(e.source);
-                                            noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
-                                        });
-                                    });
-                                    top += heightValue;
-
-                                    regionView.add(content[count]);
-                                    count++;
-                                }
-                                else {
-                                    label[count].text += ' #';
-                                    content[count] = Ti.UI.createTextField({
-                                        hintText : label[count].text,
-                                        borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                        textAlign : 'left',
-                                        width : Ti.Platform.displayCaps.platformWidth - 30,
-                                        height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                        maxLength : 10,
-                                        font : {
-                                            fontSize : fieldFontSize
-                                        },
-                                        color : '#000000',
-                                        top : top,
-                                        autocapitalization : Titanium.UI.TEXT_AUTOCAPITALIZATION_ALL,
-                                        field_type : field_arr[index_label][index_size].type,
-                                        field_name : field_arr[index_label][index_size].field_name,
-                                        required : field_arr[index_label][index_size].required,
-                                        is_title : field_arr[index_label][index_size].is_title,
-                                        composed_obj : false,
-                                        cardinality : settings.cardinality,
-                                        value : field_arr[index_label][index_size].actual_value,
-                                        reffer_index : reffer_index,
-                                        settings : settings,
-                                        changedFlag : 0,
-                                        real_ind : count,
-                                        autocorrect : false,
-                                        returnKeyType : Ti.UI.RETURNKEY_DONE,
-                                        enabled : can_edit,
-                                        editable : can_edit
-                                    });
-                                    if (PLATFORM == 'android') {
-                                        content[count].backgroundImage = '../images/textfield.png'
-                                    }
-                                    if (!can_edit) {
-                                        content[count].backgroundImage = '';
-                                        content[count].backgroundColor = '#BDBDBD';
-                                        content[count].borderColor = 'gray';
-                                        content[count].borderRadius = 10;
-                                        content[count].color = '#848484';
-                                        content[count].borderWidth = 1;
-                                        content[count].paddingLeft = 3;
-                                        content[count].paddingRight = 3;
-                                        if (PLATFORM == 'android') {
-                                            content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-                                        }
-                                    }
-                                    top += (PLATFORM == 'android') ? heightTextField : heightValue;
-
-                                    regionView.add(content[count]);
-                                    content[count].addEventListener('change', function(e) {
-                                        if (e.source.value.length > 10) {
-                                            //e.source.value = e.source.value.substr(0, 10);
-                                            //
-                                            e.source.setValue(e.source.value.substr(0, 10));
-                                            e.source.setSelection(10, 10);
-                                        }
-                                        changedContentValue(e.source);
-                                        noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
-                                    });
-
-                                    count++;
-                                }
-                            }
-                            //No data checkbox functionality
-                            if (settings.parts != null && settings.parts != "") {
-                                partsArr.push(reffer_index);
-                                if (partsArr.length == 2) {
-                                    content[reffer_index].partsArr = partsArr;
-                                    partsArr = [];
-                                    noDataCheckbox(reffer_index, regionView, top);
-                                    if (content[reffer_index].noDataView != null) {
-                                        top += 40;
-                                    }
-                                }
-                            }
-
-                            break;
-
-                        case 'link_field':
-                            var settings = JSON.parse(field_arr[index_label][index_size].settings);
-                            var can_view = false;
-                            var can_edit = false;
-
-                            if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-                                var _l;
-                                for (_l in settings.permissions) {
-                                    for (_k in roles) {
-                                        if (_l == _k) {
-                                            var stringifyObj = JSON.stringify(settings.permissions[_l]);
-                                            if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_edit = true;
-                                            }
-
-                                            if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_view = true;
-                                            }
-
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                can_view = can_edit = true;
-                            }
-
-                            if (!can_view) {
-                                break;
-                            }
-
-                            label[count] = Ti.UI.createLabel({
-                                text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-                                color : isRequired ? 'red' : _lb_color,
-                                font : {
-                                    fontSize : fieldFontSize,
-                                    fontWeight : 'bold'
-                                },
-                                textAlign : 'left',
-                                width : Ti.Platform.displayCaps.platformWidth - 30,
-                                touchEnabled : false,
-                                height : heightValue,
-                                top : top
-                            });
-                            top += heightValue;
-                            //Add fields:
-                            regionView.add(label[count]);
-                            var reffer_index = count;
-
-                            var _min = null;
-                            var _max = null;
-
-                            if (settings.cardinality > 1) {
-                                if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
-                                    var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
-
-                                    //Decode the stored array:
-                                    var decoded = array_cont.fieldByName('encoded_array');
-                                    decoded = Base64.decode(decoded);
-                                    Ti.API.info('Decoded array is equals to: ' + decoded);
-                                    decoded = decoded.toString();
-
-                                    // Token that splits each element contained into the array: 'j8Oc2s1E'
-                                    var decoded_values = decoded.split("j8Oc2s1E");
-                                }
-                                else {
-                                    var decoded_values = new Array();
-                                    decoded_values[0] = field_arr[index_label][index_size].actual_value;
-                                }
-
-                                var o_index;
-                                for ( o_index = 0; o_index < settings.cardinality; o_index++) {
-
-                                    if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
-                                        var vl_to_field = decoded_values[o_index];
-                                    }
-                                    else {
-                                        var vl_to_field = "";
-                                    }
-
-                                    content[count] = Ti.UI.createTextField({
-                                        hintText : "#" + o_index + " " + field_arr[index_label][index_size].label,
-                                        private_index : o_index,
-                                        borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                        textAlign : 'left',
-                                        width : Ti.Platform.displayCaps.platformWidth - 30,
-                                        height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                        font : {
-                                            fontSize : fieldFontSize
-                                        },
-                                        color : '#000000',
-                                        top : top,
-                                        field_type : field_arr[index_label][index_size].type,
-                                        field_name : field_arr[index_label][index_size].field_name,
-                                        required : field_arr[index_label][index_size].required,
-                                        is_title : field_arr[index_label][index_size].is_title,
-                                        composed_obj : true,
-                                        cardinality : settings.cardinality,
-                                        value : vl_to_field,
-                                        reffer_index : reffer_index,
-                                        settings : settings,
-                                        changedFlag : 0,
-                                        autocorrect : false,
-                                        returnKeyType : Ti.UI.RETURNKEY_DONE,
-                                        enabled : can_edit
-                                    });
-                                    if (PLATFORM == 'android') {
-                                        content[count].backgroundImage = '../images/textfield.png'
-                                    }
-                                    if (!can_edit) {
-                                        content[count].backgroundImage = '';
-                                        content[count].backgroundColor = '#BDBDBD';
-                                        content[count].borderColor = 'gray';
-                                        content[count].borderRadius = 10;
-                                        content[count].color = '#848484';
-                                        content[count].borderWidth = 1;
-                                        content[count].paddingLeft = 3;
-                                        content[count].paddingRight = 3;
-                                        if (PLATFORM == 'android') {
-                                            content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-                                        }
-                                    }
-                                    top += (PLATFORM == 'android') ? heightTextField : heightValue;
-
-                                    regionView.add(content[count]);
-                                    content[count].addEventListener('change', function(e) {
-                                        changedContentValue(e.source);
-                                        noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-                                    });
-
-                                    count++;
-                                }
-                            }
-                            else {
-                                content[count] = Ti.UI.createTextField({
-                                    hintText : field_arr[index_label][index_size].label,
-                                    borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                    textAlign : 'left',
-                                    width : Ti.Platform.displayCaps.platformWidth - 30,
-                                    height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                    font : {
-                                        fontSize : fieldFontSize
-                                    },
-                                    color : '#000000',
-                                    top : top,
-                                    field_type : field_arr[index_label][index_size].type,
-                                    field_name : field_arr[index_label][index_size].field_name,
-                                    required : field_arr[index_label][index_size].required,
-                                    is_title : field_arr[index_label][index_size].is_title,
-                                    composed_obj : false,
-                                    cardinality : settings.cardinality,
-                                    value : field_arr[index_label][index_size].actual_value,
-                                    reffer_index : reffer_index,
-                                    settings : settings,
-                                    changedFlag : 0,
-                                    autocorrect : false,
-                                    returnKeyType : Ti.UI.RETURNKEY_DONE,
-                                    enabled : can_edit
-                                });
-                                if (PLATFORM == 'android') {
-                                    content[count].backgroundImage = '../images/textfield.png'
-                                }
-                                if (!can_edit) {
-                                    content[count].backgroundImage = '';
-                                    content[count].backgroundColor = '#BDBDBD';
-                                    content[count].borderColor = 'gray';
-                                    content[count].borderRadius = 10;
-                                    content[count].color = '#848484';
-                                    content[count].borderWidth = 1;
-                                    content[count].paddingLeft = 3;
-                                    content[count].paddingRight = 3;
-                                    if (PLATFORM == 'android') {
-                                        content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-                                    }
-                                }
-                                top += (PLATFORM == 'android') ? heightTextField : heightValue;
-
-                                regionView.add(content[count]);
-                                content[count].addEventListener('change', function(e) {
-                                    changedContentValue(e.source);
-                                    noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-                                });
-                                count++;
-                            }
-                            //No data checkbox functionality
-                            noDataCheckbox(reffer_index, regionView, top);
-                            if (content[reffer_index].noDataView != null) {
-                                top += 40;
-                            }
-                            break;
-
-                        case 'text':
-                            var settings = JSON.parse(field_arr[index_label][index_size].settings);
-                            var can_view = false;
-                            var can_edit = false;
-
-                            if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-                                var _l;
-                                for (_l in settings.permissions) {
-                                    for (_k in roles) {
-                                        if (_l == _k) {
-                                            var stringifyObj = JSON.stringify(settings.permissions[_l]);
-                                            if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_edit = true;
-                                            }
-
-                                            if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_view = true;
-                                            }
-
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                can_view = can_edit = true;
-                            }
-
-                            if (!can_view) {
-                                break;
-                            }
-                            label[count] = Ti.UI.createLabel({
-                                text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-                                color : isRequired ? 'red' : _lb_color,
-                                font : {
-                                    fontSize : fieldFontSize,
-                                    fontWeight : 'bold'
-                                },
-                                textAlign : 'left',
-                                width : Ti.Platform.displayCaps.platformWidth - 30,
-                                touchEnabled : false,
-                                height : heightValue,
-                                top : top
-                            });
-                            top += heightValue;
-
-                            //Add fields:
-                            regionView.add(label[count]);
-                            var reffer_index = count;
-                            var _min = null;
-                            var _max = null;
-
-                            if (settings.min_length && settings.min_length != null && settings.min_length != "null") {
-                                _min = settings.min_length
-                            }
-
-                            if (settings.max_length && settings.max_length != null && settings.max_length != "null") {
-                                _max = settings.max_length
-                            }
-
-                            if (settings.cardinality > 1) {
-                                if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
-                                    var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
-
-                                    //Decode the stored array:
-                                    var decoded = array_cont.fieldByName('encoded_array');
-                                    decoded = Base64.decode(decoded);
-                                    Ti.API.info('Decoded array is equals to: ' + decoded);
-                                    decoded = decoded.toString();
-
-                                    // Token that splits each element contained into the array: 'j8Oc2s1E'
-                                    var decoded_values = decoded.split("j8Oc2s1E");
-                                }
-                                else {
-                                    var decoded_values = new Array();
-                                    decoded_values[0] = field_arr[index_label][index_size].actual_value;
-                                }
-
-                                var o_index;
-                                for ( o_index = 0; o_index < settings.cardinality; o_index++) {
-
-                                    if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
-                                        var vl_to_field = decoded_values[o_index];
-                                    }
-                                    else {
-                                        var vl_to_field = "";
-                                    }
-
-                                    content[count] = Ti.UI.createTextField({
-                                        hintText : "#" + o_index + " " + field_arr[index_label][index_size].label,
-                                        private_index : o_index,
-                                        borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                        textAlign : 'left',
-                                        width : Ti.Platform.displayCaps.platformWidth - 30,
-                                        height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                        font : {
-                                            fontSize : fieldFontSize
-                                        },
-                                        color : '#000000',
-                                        top : top,
-                                        field_type : field_arr[index_label][index_size].type,
-                                        field_name : field_arr[index_label][index_size].field_name,
-                                        required : field_arr[index_label][index_size].required,
-                                        is_title : field_arr[index_label][index_size].is_title,
-                                        composed_obj : true,
-                                        cardinality : settings.cardinality,
-                                        value : vl_to_field,
-                                        reffer_index : reffer_index,
-                                        settings : settings,
-                                        changedFlag : 0,
-                                        my_min : _min,
-                                        my_max : _max,
-                                        real_ind : count,
-                                        autocorrect : false,
-                                        returnKeyType : Ti.UI.RETURNKEY_DONE,
-                                        enabled : can_edit,
-                                        editable : can_edit
-                                    });
-                                    if (PLATFORM == 'android') {
-                                        content[count].backgroundImage = '../images/textfield.png'
-                                    }
-                                    if (!can_edit) {
-                                        content[count].backgroundImage = '';
-                                        content[count].backgroundColor = '#BDBDBD';
-                                        content[count].borderColor = 'gray';
-                                        content[count].borderRadius = 10;
-                                        content[count].color = '#848484';
-                                        content[count].borderWidth = 1;
-                                        content[count].paddingLeft = 3;
-                                        content[count].paddingRight = 3;
-                                        if (PLATFORM == 'android') {
-                                            content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-                                        }
-                                    }
-                                    if (_max != null) {
-                                        content[count].maxLength = _max;
-                                    }
-                                    top += (PLATFORM == 'android') ? heightTextField : heightValue;
-
-                                    regionView.add(content[count]);
-                                    content[count].addEventListener('change', function(e) {
-                                        if (e.source.my_max != null && e.source.my_max != "" && e.source.value.length > e.source.my_max) {
-                                            //e.source.value = e.source.value.substr(0, e.source.my_max);
-                                            //e.source.blur();
-                                            e.source.value = e.source.value.substr(0, e.source.my_max);
-                                            e.source.setSelection(e.source.my_max, e.source.my_max);
-
-                                            //Ti.UI.Android.hideSoftKeyboard();
-
-                                        }
-                                        changedContentValue(e.source);
-                                        noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-                                    });
-
-                                    content[count].addEventListener('blur', function(e) {
-                                        Ti.API.info(e.source.value.length + ' or ' + e.value.length + ' Field number ==> min: ' + e.source.my_min + ' max: ' + e.source.my_max);
-                                        if (e.source.value != null && e.source.value != "") {
-                                            if (e.source.my_max != null && e.source.my_min != null) {
-                                                if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)) {
-                                                    var _a = Titanium.UI.createAlertDialog({
-                                                        title : 'Omadi',
-                                                        message : 'The minimum for this field is ' + e.source.my_min,
-                                                        buttonNames : ['OK']
-                                                    });
-
-                                                    _a.show();
-
-                                                    _a.addEventListener('click', function(evt) {
-                                                        content[e.source.real_ind].focus();
-                                                    });
-
-                                                }
-                                                else if (parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
-                                                    var _a = Titanium.UI.createAlertDialog({
-                                                        title : 'Omadi',
-                                                        message : "The maximum for this field is " + e.source.my_max,
-                                                        buttonNames : ['OK']
-                                                    });
-
-                                                    _a.show();
-
-                                                    _a.addEventListener('click', function(evt) {
-                                                        content[e.source.real_ind].focus();
-                                                    });
-                                                }
-                                                else {
-                                                    //value is ok
-                                                }
-                                            }
-                                            else if (e.source.my_max != null) {
-                                                if (parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
-                                                    var _a = Titanium.UI.createAlertDialog({
-                                                        title : 'Omadi',
-                                                        message : "The maximum for this field is " + e.source.my_max,
-                                                        buttonNames : ['OK']
-                                                    });
-
-                                                    _a.show();
-
-                                                    _a.addEventListener('click', function(evt) {
-                                                        content[e.source.real_ind].focus();
-                                                    });
-                                                }
-                                                else {
-                                                    //value is ok
-                                                }
-                                            }
-                                            else if (e.source.my_min != null) {
-                                                if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)) {
-                                                    var _a = Titanium.UI.createAlertDialog({
-                                                        title : 'Omadi',
-                                                        message : 'The minimum for this field is ' + e.source.my_min,
-                                                        buttonNames : ['OK']
-                                                    });
-
-                                                    _a.show();
-
-                                                    _a.addEventListener('click', function(evt) {
-                                                        content[e.source.real_ind].focus();
-                                                    });
-                                                }
-                                                else {
-                                                    //value is ok
-                                                }
-                                            }
-                                            else {
-                                                //No min or max sets
-                                            }
-                                        }
-                                    });
-                                    count++;
-                                }
-                            }
-                            else {
-                                content[count] = Ti.UI.createTextField({
-                                    hintText : field_arr[index_label][index_size].label,
-                                    borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                    textAlign : 'left',
-                                    width : Ti.Platform.displayCaps.platformWidth - 30,
-                                    height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                    font : {
-                                        fontSize : fieldFontSize
-                                    },
-                                    color : '#000000',
-                                    top : top,
-                                    field_type : field_arr[index_label][index_size].type,
-                                    field_name : field_arr[index_label][index_size].field_name,
-                                    required : field_arr[index_label][index_size].required,
-                                    is_title : field_arr[index_label][index_size].is_title,
-                                    composed_obj : false,
-                                    cardinality : settings.cardinality,
-                                    value : field_arr[index_label][index_size].actual_value,
-                                    reffer_index : reffer_index,
-                                    settings : settings,
-                                    changedFlag : 0,
-                                    my_min : _min,
-                                    my_max : _max,
-                                    real_ind : count,
-                                    autocorrect : false,
-                                    returnKeyType : Ti.UI.RETURNKEY_DONE,
-                                    enabled : can_edit,
-                                    editable : can_edit
-                                });
-                                if (PLATFORM == 'android') {
-                                    content[count].backgroundImage = '../images/textfield.png'
-                                }
-                                if (!can_edit) {
-                                    content[count].backgroundImage = '';
-                                    content[count].backgroundColor = '#BDBDBD';
-                                    content[count].borderColor = 'gray';
-                                    content[count].borderRadius = 10;
-                                    content[count].color = '#848484';
-                                    content[count].borderWidth = 1;
-                                    content[count].paddingLeft = 3;
-                                    content[count].paddingRight = 3;
-                                    if (PLATFORM == 'android') {
-                                        content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-                                    }
-                                }
-
-                                if (_max != null) {
-                                    content[count].maxLength = _max;
-                                }
-
-                                top += (PLATFORM == 'android') ? heightTextField : heightValue;
-
-                                regionView.add(content[count]);
-                                content[count].addEventListener('change', function(e) {
-                                    if (e.source.my_max != null && e.source.my_max != "" && e.source.value.length >= e.source.my_max) {
-                                        //for(i in e.source){
-                                        //	Ti.API.debug(i + ": " + e.source[i]);
-                                        //}
-
-                                        e.source.value = e.source.value.substr(0, e.source.my_max);
-                                        //e.source.setValue(e.source.value.substr(0, e.source.my_max));
-                                        e.source.setSelection(e.source.my_max, e.source.my_max);
-                                        //e.source.setSoftKeyboardOnFocus(Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS);
-                                        //e.source.blur();
-                                        //Ti.UI.Android.hideSoftKeyboard();
-                                    }
-                                    changedContentValue(e.source);
-                                    noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-                                });
-
-                                content[count].addEventListener('blur', function(e) {
-                                    Ti.API.info(e.source.value.length + ' or ' + e.value.length + ' Field number ==> min: ' + e.source.my_min + ' max: ' + e.source.my_max);
-                                    if (e.source.value != null && e.source.value != "") {
-                                        if (e.source.my_max != null && e.source.my_min != null) {
-                                            if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)) {
-                                                var _a = Titanium.UI.createAlertDialog({
-                                                    title : 'Omadi',
-                                                    message : 'The minimum for this field is ' + e.source.my_min,
-                                                    buttonNames : ['OK']
-                                                });
-
-                                                _a.show();
-
-                                                _a.addEventListener('click', function(evt) {
-                                                    content[e.source.real_ind].focus();
-                                                });
-
-                                            }
-                                            else if (parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
-                                                var _a = Titanium.UI.createAlertDialog({
-                                                    title : 'Omadi',
-                                                    message : "The maximum for this field is " + e.source.my_max,
-                                                    buttonNames : ['OK']
-                                                });
-
-                                                _a.show();
-
-                                                _a.addEventListener('click', function(evt) {
-                                                    content[e.source.real_ind].focus();
-                                                });
-                                            }
-                                            else {
-                                                //value is ok
-                                            }
-                                        }
-                                        else if (e.source.my_max != null) {
-                                            if (parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
-                                                var _a = Titanium.UI.createAlertDialog({
-                                                    title : 'Omadi',
-                                                    message : "The maximum for this field is " + e.source.my_max,
-                                                    buttonNames : ['OK']
-                                                });
-
-                                                _a.show();
-
-                                                _a.addEventListener('click', function(evt) {
-                                                    content[e.source.real_ind].focus();
-                                                });
-                                            }
-                                            else {
-                                                //value is ok
-                                            }
-                                        }
-                                        else if (e.source.my_min != null) {
-                                            if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)) {
-                                                var _a = Titanium.UI.createAlertDialog({
-                                                    title : 'Omadi',
-                                                    message : 'The minimum for this field is ' + e.source.my_min,
-                                                    buttonNames : ['OK']
-                                                });
-
-                                                _a.show();
-
-                                                _a.addEventListener('click', function(evt) {
-                                                    content[e.source.real_ind].focus();
-                                                });
-                                            }
-                                            else {
-                                                //value is ok
-                                            }
-                                        }
-                                        else {
-                                            //No min or max sets
-                                        }
-                                    }
-                                });
-                                count++;
-                            }
-                            //No data checkbox functionality
-                            noDataCheckbox(reffer_index, regionView, top);
-                            if (content[reffer_index].noDataView != null) {
-                                top += 40;
-                            }
-
-                            break;
-
-                        case 'text_long':
-                            var settings = JSON.parse(field_arr[index_label][index_size].settings);
-                            var can_view = false;
-                            var can_edit = false;
-
-                            if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-                                var _l;
-                                for (_l in settings.permissions) {
-                                    for (_k in roles) {
-                                        if (_l == _k) {
-                                            var stringifyObj = JSON.stringify(settings.permissions[_l]);
-                                            if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_edit = true;
-                                            }
-
-                                            if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_view = true;
-                                            }
-
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                can_view = can_edit = true;
-                            }
-
-                            if (!can_view) {
-                                break;
-                            }
-
-                            label[count] = Ti.UI.createLabel({
-                                text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-                                color : isRequired ? 'red' : _lb_color,
-                                font : {
-                                    fontSize : fieldFontSize,
-                                    fontWeight : 'bold'
-                                },
-                                textAlign : 'left',
-                                width : Ti.Platform.displayCaps.platformWidth - 30,
-                                touchEnabled : false,
-                                height : heightValue,
-                                top : top
-                            });
-                            top += heightValue;
-
-                            //Add fields:
-                            regionView.add(label[count]);
-                            var reffer_index = count;
-                            var _min = null;
-                            var _max = null;
-
-                            if (settings.min_length && settings.min_length != null && settings.min_length != "null") {
-                                _min = settings.min_length
-                            }
-
-                            if (settings.max_length && settings.max_length != null && settings.max_length != "null") {
-                                _max = settings.max_length
-                            }
-
-                            if (settings.cardinality > 1) {
-                                if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
-                                    var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
-
-                                    //Decode the stored array:
-                                    var decoded = array_cont.fieldByName('encoded_array');
-                                    decoded = Base64.decode(decoded);
-                                    Ti.API.info('Decoded array is equals to: ' + decoded);
-                                    decoded = decoded.toString();
-
-                                    // Token that splits each element contained into the array: 'j8Oc2s1E'
-                                    var decoded_values = decoded.split("j8Oc2s1E");
-                                }
-                                else {
-                                    var decoded_values = new Array();
-                                    decoded_values[0] = field_arr[index_label][index_size].actual_value;
-                                }
-
-                                var o_index;
-                                for ( o_index = 0; o_index < settings.cardinality; o_index++) {
-
-                                    if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
-                                        var vl_to_field = decoded_values[o_index];
-                                    }
-                                    else {
-                                        var vl_to_field = "";
-                                    }
-
-                                    content[count] = Ti.UI.createTextField({
-                                        hintText : "#" + o_index + " " + field_arr[index_label][index_size].label,
-                                        private_index : o_index,
-                                        borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                        textAlign : 'left',
-                                        width : Ti.Platform.displayCaps.platformWidth - 30,
-                                        height : (PLATFORM == 'android') ? 2 * heightTextField : 100,
-                                        color : '#000000',
-                                        top : top,
-                                        field_type : field_arr[index_label][index_size].type,
-                                        field_name : field_arr[index_label][index_size].field_name,
-                                        required : field_arr[index_label][index_size].required,
-                                        is_title : field_arr[index_label][index_size].is_title,
-                                        composed_obj : true,
-                                        cardinality : settings.cardinality,
-                                        value : vl_to_field,
-                                        reffer_index : reffer_index,
-                                        settings : settings,
-                                        changedFlag : 0,
-                                        my_min : _min,
-                                        my_max : _max,
-                                        real_ind : count,
-                                        returnKeyType : Ti.UI.RETURNKEY_DONE,
-                                        enabled : can_edit,
-                                        editable : can_edit
-                                    });
-                                    if (PLATFORM == 'android') {
-                                        content[count].backgroundImage = '../images/textfield.png'
-                                    }
-                                    if (!can_edit) {
-                                        content[count].backgroundImage = '';
-                                        content[count].backgroundColor = '#BDBDBD';
-                                        content[count].borderColor = 'gray';
-                                        content[count].borderRadius = 10;
-                                        content[count].color = '#848484';
-                                        content[count].borderWidth = 1;
-                                        content[count].paddingLeft = 3;
-                                        content[count].paddingRight = 3;
-                                        if (PLATFORM == 'android') {
-                                            content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-                                        }
-                                    }
-
-                                    if (_max != null) {
-                                        content[count].maxLength = _max;
-                                    }
-                                    top += (PLATFORM == 'android') ? 2 * heightTextField : 100;
-
-                                    regionView.add(content[count]);
-                                    content[count].addEventListener('change', function(e) {
-                                        if (e.source.my_max != null && e.source.my_max != "" && e.source.value.length >= e.source.my_max) {
-                                            //e.source.value = e.source.value.substr(0, e.source.my_max);
-                                            //e.source.blur();
-                                            e.source.value = e.source.value.substr(0, e.source.my_max);
-                                            e.source.setSelection(e.source.my_max, e.source.my_max);
-                                            //e.source.blur();
-                                            //Ti.UI.Android.hideSoftKeyboard();
-                                        }
-                                        changedContentValue(e.source);
-                                        noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-                                    });
-
-                                    content[count].addEventListener('blur', function(e) {
-                                        Ti.API.info(e.source.value.length + ' or ' + e.value.length + ' Field number ==> min: ' + e.source.my_min + ' max: ' + e.source.my_max);
-                                        if (e.source.value != null && e.source.value != "") {
-                                            if (e.source.my_max != null && e.source.my_min != null) {
-                                                if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)) {
-                                                    var _a = Titanium.UI.createAlertDialog({
-                                                        title : 'Omadi',
-                                                        message : 'The minimum for this field is ' + e.source.my_min,
-                                                        buttonNames : ['OK']
-                                                    });
-
-                                                    _a.show();
-
-                                                    _a.addEventListener('click', function(evt) {
-                                                        content[e.source.real_ind].focus();
-                                                    });
-
-                                                }
-                                                else if (parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
-                                                    var _a = Titanium.UI.createAlertDialog({
-                                                        title : 'Omadi',
-                                                        message : "The maximum for this field is " + e.source.my_max,
-                                                        buttonNames : ['OK']
-                                                    });
-
-                                                    _a.show();
-
-                                                    _a.addEventListener('click', function(evt) {
-                                                        content[e.source.real_ind].focus();
-                                                    });
-                                                }
-                                                else {
-                                                    //value is ok
-                                                }
-                                            }
-                                            else if (e.source.my_max != null) {
-                                                if (parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
-                                                    var _a = Titanium.UI.createAlertDialog({
-                                                        title : 'Omadi',
-                                                        message : "The maximum for this field is " + e.source.my_max,
-                                                        buttonNames : ['OK']
-                                                    });
-
-                                                    _a.show();
-
-                                                    _a.addEventListener('click', function(evt) {
-                                                        content[e.source.real_ind].focus();
-                                                    });
-                                                }
-                                                else {
-                                                    //value is ok
-                                                }
-                                            }
-                                            else if (e.source.my_min != null) {
-                                                if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)) {
-                                                    var _a = Titanium.UI.createAlertDialog({
-                                                        title : 'Omadi',
-                                                        message : 'The minimum for this field is ' + e.source.my_min,
-                                                        buttonNames : ['OK']
-                                                    });
-
-                                                    _a.show();
-
-                                                    _a.addEventListener('click', function(evt) {
-                                                        content[e.source.real_ind].focus();
-                                                    });
-                                                }
-                                                else {
-                                                    //value is ok
-                                                }
-                                            }
-                                            else {
-                                                //No min or max sets
-                                            }
-                                        }
-                                    });
-                                    count++;
-                                }
-                            }
-                            else {
-                                content[count] = Ti.UI.createTextField({
-                                    hintText : field_arr[index_label][index_size].label,
-                                    borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                    textAlign : 'left',
-                                    width : Ti.Platform.displayCaps.platformWidth - 30,
-                                    height : (PLATFORM == 'android') ? 2 * heightTextField : 100,
-                                    color : '#000000',
-                                    top : top,
-                                    field_type : field_arr[index_label][index_size].type,
-                                    field_name : field_arr[index_label][index_size].field_name,
-                                    required : field_arr[index_label][index_size].required,
-                                    is_title : field_arr[index_label][index_size].is_title,
-                                    composed_obj : false,
-                                    cardinality : settings.cardinality,
-                                    value : field_arr[index_label][index_size].actual_value,
-                                    reffer_index : reffer_index,
-                                    settings : settings,
-                                    changedFlag : 0,
-                                    my_min : _min,
-                                    my_max : _max,
-                                    real_ind : count,
-                                    returnKeyType : Ti.UI.RETURNKEY_DONE,
-                                    enabled : can_edit,
-                                    editable : can_edit
-                                });
-                                if (PLATFORM == 'android') {
-                                    content[count].backgroundImage = '../images/textfield.png'
-                                }
-                                if (!can_edit) {
-                                    content[count].backgroundImage = '';
-                                    content[count].backgroundColor = '#BDBDBD';
-                                    content[count].borderColor = 'gray';
-                                    content[count].borderRadius = 10;
-                                    content[count].color = '#848484';
-                                    content[count].paddingLeft = 3;
-                                    content[count].paddingRight = 3;
-                                    if (PLATFORM == 'android') {
-                                        content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-                                    }
-                                }
-                                if (_max != null) {
-                                    content[count].maxLength = _max;
-                                }
-
-                                top += (PLATFORM == 'android') ? 2 * heightTextField : 100;
-
-                                regionView.add(content[count]);
-                                content[count].addEventListener('change', function(e) {
-                                    if (e.source.my_max != null && e.source.my_max != "" && e.source.value.length >= e.source.my_max) {
-                                        //e.source.value = e.source.value.substr(0, e.source.my_max);
-                                        //e.source.blur();
-                                        e.source.value = e.source.value.substr(0, e.source.my_max);
-                                        e.source.setSelection(e.source.my_max, e.source.my_max);
-                                        //e.source.setSoftKeyboardOnFocus(Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS);
-                                        //e.source.blur();
-                                        //Ti.UI.Android.hideSoftKeyboard();
-                                    }
-                                    changedContentValue(e.source);
-                                    noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-                                });
-
-                                content[count].addEventListener('blur', function(e) {
-                                    Ti.API.info(e.source.value.length + ' or ' + e.value.length + ' Field number ==> min: ' + e.source.my_min + ' max: ' + e.source.my_max);
-                                    if (e.source.value != null && e.source.value != "") {
-                                        if (e.source.my_max != null && e.source.my_min != null) {
-                                            if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)) {
-                                                var _a = Titanium.UI.createAlertDialog({
-                                                    title : 'Omadi',
-                                                    message : 'The minimum for this field is ' + e.source.my_min,
-                                                    buttonNames : ['OK']
-                                                });
-
-                                                _a.show();
-
-                                                _a.addEventListener('click', function(evt) {
-                                                    content[e.source.real_ind].focus();
-                                                });
-
-                                            }
-                                            else if (parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
-                                                var _a = Titanium.UI.createAlertDialog({
-                                                    title : 'Omadi',
-                                                    message : "The maximum for this field is " + e.source.my_max,
-                                                    buttonNames : ['OK']
-                                                });
-
-                                                _a.show();
-
-                                                _a.addEventListener('click', function(evt) {
-                                                    content[e.source.real_ind].focus();
-                                                });
-                                            }
-                                            else {
-                                                //value is ok
-                                            }
-                                        }
-                                        else if (e.source.my_max != null) {
-                                            if (parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
-                                                var _a = Titanium.UI.createAlertDialog({
-                                                    title : 'Omadi',
-                                                    message : "The maximum for this field is " + e.source.my_max,
-                                                    buttonNames : ['OK']
-                                                });
-
-                                                _a.show();
-
-                                                _a.addEventListener('click', function(evt) {
-                                                    content[e.source.real_ind].focus();
-                                                });
-                                            }
-                                            else {
-                                                //value is ok
-                                            }
-                                        }
-                                        else if (e.source.my_min != null) {
-                                            if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)) {
-                                                var _a = Titanium.UI.createAlertDialog({
-                                                    title : 'Omadi',
-                                                    message : 'The minimum for this field is ' + e.source.my_min,
-                                                    buttonNames : ['OK']
-                                                });
-
-                                                _a.show();
-
-                                                _a.addEventListener('click', function(evt) {
-                                                    content[e.source.real_ind].focus();
-                                                });
-                                            }
-                                            else {
-                                                //value is ok
-                                            }
-                                        }
-                                        else {
-                                            //No min or max sets
-                                        }
-                                    }
-                                });
-                                count++;
-                            }
-                            //No data checkbox functionality
-                            noDataCheckbox(reffer_index, regionView, top);
-                            if (content[reffer_index].noDataView != null) {
-                                top += 40;
-                            }
-                            break;
-
-                        case 'location':
-                            var settings = JSON.parse(field_arr[index_label][index_size].settings);
-
-                            //Set our auxiliar array
-                            var aux_local = new Array;
-                            var i;
-                            for (i in settings.parts) {
-                                aux_local.push(settings.parts[i]);
-                            }
-
-                            var title_location = "";
-
-                            if (aux_local.length > 0) {
-                                if (aux_local.length == field_definer) {
-                                    field_definer = 0;
-                                }
-                                if (aux_local[field_definer]) {
-                                    title_location = aux_local[field_definer];
-                                    field_definer++;
-                                }
-
-                            }
-                            else {
-                                title_location = field_arr[index_label][index_size].label;
-                                field_definer = 0;
-                            }
-
-                            label[count] = Ti.UI.createLabel({
-                                text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label + " " + title_location,
-                                color : isRequired ? 'red' : _lb_color,
-                                font : {
-                                    fontSize : fieldFontSize,
-                                    fontWeight : 'bold'
-                                },
-                                textAlign : 'left',
-                                width : Ti.Platform.displayCaps.platformWidth - 30,
-                                touchEnabled : false,
-                                height : heightValue,
-                                top : top
-                            });
-                            top += heightValue;
-
-                            //Add fields:
-                            regionView.add(label[count]);
-
-                            var reffer_index = count;
-
-                            if (settings.cardinality > 1) {
-                                if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
-                                    var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
-
-                                    //Decode the stored array:
-                                    var decoded = array_cont.fieldByName('encoded_array');
-                                    decoded = Base64.decode(decoded);
-                                    Ti.API.info('Decoded array is equals to: ' + decoded);
-                                    decoded = decoded.toString();
-
-                                    // Token that splits each element contained into the array: 'j8Oc2s1E'
-                                    var decoded_values = decoded.split("j8Oc2s1E");
-                                }
-                                else {
-                                    var decoded_values = new Array();
-                                    decoded_values[0] = field_arr[index_label][index_size].actual_value;
-                                }
-
-                                var o_index;
-                                for ( o_index = 0; o_index < settings.cardinality; o_index++) {
-
-                                    if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
-                                        var vl_to_field = decoded_values[o_index];
-                                    }
-                                    else {
-                                        var vl_to_field = "";
-                                    }
-
-                                    content[count] = Ti.UI.createTextField({
-                                        hintText : "#" + o_index + " " + field_arr[index_label][index_size].label + " " + title_location,
-                                        private_index : o_index,
-                                        borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                        textAlign : 'left',
-                                        width : Ti.Platform.displayCaps.platformWidth - 30,
-                                        height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                        font : {
-                                            fontSize : fieldFontSize
-                                        },
-                                        color : '#000000',
-                                        top : top,
-                                        field_type : field_arr[index_label][index_size].type,
-                                        field_name : field_arr[index_label][index_size].field_name,
-                                        required : field_arr[index_label][index_size].required,
-                                        is_title : field_arr[index_label][index_size].is_title,
-                                        composed_obj : true,
-                                        cardinality : settings.cardinality,
-                                        value : vl_to_field,
-                                        reffer_index : reffer_index,
-                                        settings : settings,
-                                        changedFlag : 0,
-                                        autocorrect : false,
-                                        returnKeyType : Ti.UI.RETURNKEY_DONE,
-                                        enabled : true
-                                    });
-                                    if (PLATFORM == 'android') {
-                                        content[count].backgroundImage = '../images/textfield.png'
-                                    }
-                                    top += (PLATFORM == 'android') ? heightTextField : heightValue;
-
-                                    regionView.add(content[count]);
-                                    content[count].addEventListener('change', function(e) {
-                                        changedContentValue(e.source);
-                                        noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
-                                    });
-                                    count++;
-                                }
-                            }
-                            else {
-                                content[count] = Ti.UI.createTextField({
-                                    hintText : field_arr[index_label][index_size].label + " " + title_location,
-                                    borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                    textAlign : 'left',
-                                    width : Ti.Platform.displayCaps.platformWidth - 30,
-                                    height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                    font : {
-                                        fontSize : fieldFontSize
-                                    },
-                                    color : '#000000',
-                                    top : top,
-                                    field_type : field_arr[index_label][index_size].type,
-                                    field_name : field_arr[index_label][index_size].field_name,
-                                    required : field_arr[index_label][index_size].required,
-                                    is_title : field_arr[index_label][index_size].is_title,
-                                    composed_obj : false,
-                                    cardinality : settings.cardinality,
-                                    value : field_arr[index_label][index_size].actual_value,
-                                    reffer_index : reffer_index,
-                                    settings : settings,
-                                    changedFlag : 0,
-                                    autocorrect : false,
-                                    returnKeyType : Ti.UI.RETURNKEY_DONE,
-                                    enabled : true,
-                                    softKeyboardOnFocus : Ti.UI.Android.SOFT_KEYBOARD_SHOW_ON_FOCUS
-                                });
-                                if (PLATFORM == 'android') {
-                                    content[count].backgroundImage = '../images/textfield.png'
-                                }
-                                top += (PLATFORM == 'android') ? heightTextField : heightValue;
-
-                                regionView.add(content[count]);
-                                content[count].addEventListener('change', function(e) {
-                                    changedContentValue(e.source);
-                                    noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-                                });
-                                count++;
-                            }
-                            //No data checkbox functionality
-                            if (settings.parts != null && settings.parts != "") {
-                                partsArr.push(reffer_index);
-                                if (partsArr.length == 4) {
-                                    content[reffer_index].partsArr = partsArr;
-                                    partsArr = [];
-                                    noDataCheckbox(reffer_index, regionView, top);
-                                    if (content[reffer_index].noDataView != null) {
-                                        top += 30;
-                                    }
-                                }
-                            }
-
-                            break;
-
-                        case 'number_decimal':
-                        case 'number_integer':
-                            var settings = JSON.parse(field_arr[index_label][index_size].settings);
-                            var can_view = false;
-                            var can_edit = false;
-
-                            if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-                                var _l;
-                                for (_l in settings.permissions) {
-                                    for (_k in roles) {
-                                        if (_l == _k) {
-                                            var stringifyObj = JSON.stringify(settings.permissions[_l]);
-                                            if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_edit = true;
-                                            }
-
-                                            if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_view = true;
-                                            }
-
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                can_view = can_edit = true;
-                            }
-
-                            if (!can_view) {
-                                break;
-                            }
-
-                            label[count] = Ti.UI.createLabel({
-                                text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-                                color : isRequired ? 'red' : _lb_color,
-                                font : {
-                                    fontSize : fieldFontSize,
-                                    fontWeight : 'bold'
-                                },
-                                textAlign : 'left',
-                                width : Ti.Platform.displayCaps.platformWidth - 30,
-                                touchEnabled : false,
-                                height : heightValue,
-                                top : top
-                            });
-                            top += heightValue;
-
-                            //Add fields:
-                            regionView.add(label[count]);
-                            var reffer_index = count;
-                            var hasParent = false;
-                            var parent_name = "";
-                            var defaultField = "";
-                            if (settings.parent_form_default_value) {
-                                if (settings.parent_form_default_value.parent_field != null && settings.parent_form_default_value.parent_field != "") {
-                                    hasParent = true;
-                                    parent_name = settings.parent_form_default_value.parent_field;
-                                    defaultField = settings.parent_form_default_value.default_value_field;
-                                }
-                            }
-                            var _min = null;
-                            var _max = null;
-
-                            var minRange = (field_arr[index_label][index_size].type == 'number_integer') ? -2147483648 : -99999999;
-                            var maxRange = (field_arr[index_label][index_size].type == 'number_integer') ? 2147483647 : 99999999;
-
-                            if (settings.min && settings.min != null && settings.min != "null") {
-                                _min = settings.min
-                            }
-
-                            if (settings.max && settings.max != null && settings.max != "null") {
-                                _max = settings.max
-                            }
-
-                            Ti.API.info('********************** Field: ' + field_arr[index_label][index_size].label + ",  Cardinality: " + settings.cardinality);
-                            if (settings.cardinality > 1) {
-
-                                if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
-                                    var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
-
-                                    Ti.API.info('#######################################################################');
-                                    Ti.API.info('Field: ' + field_arr[index_label][index_size].label + " Cardinality: " + settings.cardinality);
-
-                                    //Decode the stored array:
-                                    var decoded = array_cont.fieldByName('encoded_array');
-                                    Ti.API.info('Encoded array is equals to: ' + decoded);
-                                    decoded = Base64.decode(decoded);
-                                    Ti.API.info('Decoded array is equals to: ' + decoded);
-                                    decoded = decoded.toString();
-                                    // Token that splits each element contained into the array: 'j8Oc2s1E'
-                                    var decoded_values = decoded.split("j8Oc2s1E");
-                                    Ti.API.info('Splited: ' + decoded_values);
-                                    Ti.API.info('#######################################################################');
-                                }
-                                else {
-                                    var decoded_values = new Array();
-                                    decoded_values[0] = field_arr[index_label][index_size].actual_value;
-                                }
-
-                                var o_index;
-                                for ( o_index = 0; o_index < settings.cardinality; o_index++) {
-
-                                    if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") && (decoded_values[o_index] != "null"))) {
-                                        var vl_to_field = decoded_values[o_index];
-                                    }
-                                    else {
-                                        var vl_to_field = null;
-                                    }
-
-                                    content[count] = Ti.UI.createTextField({
-                                        hintText : "#" + o_index + " " + field_arr[index_label][index_size].label,
-                                        private_index : o_index,
-                                        borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                        keyboardType : Titanium.UI.KEYBOARD_NUMBER_PAD,
-                                        returnKeyType : Titanium.UI.RETURNKEY_DONE,
-                                        textAlign : 'left',
-                                        width : Ti.Platform.displayCaps.platformWidth - 30,
-                                        height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                        font : {
-                                            fontSize : fieldFontSize
-                                        },
-                                        color : '#000000',
-                                        top : top,
-                                        field_type : field_arr[index_label][index_size].type,
-                                        field_name : field_arr[index_label][index_size].field_name,
-                                        required : field_arr[index_label][index_size].required,
-                                        composed_obj : true,
-                                        is_title : field_arr[index_label][index_size].is_title,
-                                        cardinality : settings.cardinality,
-                                        value : vl_to_field,
-                                        reffer_index : reffer_index,
-                                        hasParent : hasParent,
-                                        parent_name : parent_name,
-                                        defaultField : defaultField,
-                                        settings : settings,
-                                        changedFlag : 0,
-                                        my_max : _max,
-                                        my_min : _min,
-                                        autocorrect : false,
-                                        enabled : can_edit,
-                                        editable : can_edit
-                                    });
-                                    if (PLATFORM == 'android') {
-                                        content[count].backgroundImage = '../images/textfield.png'
-                                    }
-                                    if (!can_edit) {
-                                        content[count].backgroundImage = '';
-                                        content[count].backgroundColor = '#BDBDBD';
-                                        content[count].borderColor = 'gray';
-                                        content[count].borderRadius = 10;
-                                        content[count].color = '#848484';
-                                        content[count].borderWidth = 1;
-                                        content[count].paddingLeft = 3;
-                                        content[count].paddingRight = 3;
-                                        if (PLATFORM == 'android') {
-                                            content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-                                        }
-                                    }
-                                    addDoneButtonInKB(content[count]);
-                                    top += (PLATFORM == 'android') ? heightTextField : heightValue;
-
-                                    regionView.add(content[count]);
-                                    content[count].addEventListener('change', function(e) {
-                                        changedContentValue(e.source);
-                                        noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
-                                    });
-
-                                    content[count].addEventListener('blur', function(e) {
-                                        Ti.API.info(e.source.value + ' or ' + e.value + ' Field number ==> min: ' + e.source.my_min + ' max: ' + e.source.my_max);
-                                        if (e.source.value <= (minRange)) {
-                                            alert("The minimum for this field is " + minRange);
-                                            e.source.value = null;
-                                        }
-                                        else if (e.source.value >= (maxRange)) {
-                                            alert("The maximum for this field is " + maxRange);
-                                            e.source.value = null;
-                                        }
-                                        if (e.source.value != null && e.source.value != "") {
-                                            if (e.source.my_max != null && e.source.my_min != null) {
-                                                if (parseFloat(e.source.value) < parseFloat(e.source.my_min)) {
-                                                    alert("The minimum for this field is " + e.source.my_min);
-                                                    e.source.value = null;
-                                                }
-                                                else if (parseFloat(e.source.value) > parseFloat(e.source.my_max)) {
-                                                    alert("The maximum for this field is " + e.source.my_max);
-                                                    e.source.value = null;
-                                                }
-                                                else {
-                                                    //value is ok
-                                                }
-                                            }
-                                            else if (e.source.my_max != null) {
-                                                if (parseFloat(e.source.value) > parseFloat(e.source.my_max)) {
-                                                    alert("The maximum for this field is " + e.source.my_max);
-                                                    e.source.value = null;
-                                                }
-                                                else {
-                                                    //value is ok
-                                                }
-                                            }
-                                            else if (e.source.my_min != null) {
-                                                if (parseFloat(e.source.value) < parseFloat(e.source.my_min)) {
-                                                    alert("The minimum for this field is " + e.source.my_min);
-                                                    e.source.value = null;
-                                                }
-                                                else {
-                                                    //value is ok
-                                                }
-                                            }
-                                            else {
-                                                //No min or max sets
-                                            }
-                                        }
-                                    });
-                                    count++;
-                                }
-                            }
-                            else {
-                                content[count] = Ti.UI.createTextField({
-                                    hintText : field_arr[index_label][index_size].label,
-                                    borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                    keyboardType : Titanium.UI.KEYBOARD_NUMBER_PAD,
-                                    returnKeyType : Titanium.UI.RETURNKEY_DONE,
-                                    textAlign : 'left',
-                                    width : Ti.Platform.displayCaps.platformWidth - 30,
-                                    height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                    font : {
-                                        fontSize : fieldFontSize
-                                    },
-                                    color : '#000000',
-                                    top : top,
-                                    field_type : field_arr[index_label][index_size].type,
-                                    field_name : field_arr[index_label][index_size].field_name,
-                                    required : field_arr[index_label][index_size].required,
-                                    composed_obj : false,
-                                    is_title : field_arr[index_label][index_size].is_title,
-                                    cardinality : settings.cardinality,
-                                    value : field_arr[index_label][index_size].actual_value,
-                                    reffer_index : reffer_index,
-                                    hasParent : hasParent,
-                                    parent_name : parent_name,
-                                    defaultField : defaultField,
-                                    settings : settings,
-                                    changedFlag : 0,
-                                    my_max : _max,
-                                    my_min : _min,
-                                    autocorrect : false,
-                                    enabled : can_edit,
-                                    editable : can_edit
-                                });
-                                if (PLATFORM == 'android') {
-                                    content[count].backgroundImage = '../images/textfield.png'
-                                }
-                                if (!can_edit) {
-                                    content[count].backgroundImage = '';
-                                    content[count].backgroundColor = '#BDBDBD';
-                                    content[count].borderColor = 'gray';
-                                    content[count].borderRadius = 10;
-                                    content[count].color = '#848484';
-                                    content[count].borderWidth = 1;
-                                    content[count].paddingLeft = 3;
-                                    content[count].paddingRight = 3;
-                                    if (PLATFORM == 'android') {
-                                        content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-                                    }
-                                }
-                                addDoneButtonInKB(content[count]);
-                                top += (PLATFORM == 'android') ? heightTextField : heightValue;
-
-                                regionView.add(content[count]);
-                                content[count].addEventListener('change', function(e) {
-                                    changedContentValue(e.source);
-                                    noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
-                                });
-
-                                content[count].addEventListener('blur', function(e) {
-                                    Ti.API.info(e.source.value + ' or ' + e.value + ' Field number ==> min: ' + e.source.my_min + ' max: ' + e.source.my_max);
-
-                                    if (e.source.value <= (minRange)) {
-                                        alert("The minimum for this field is " + minRange);
-                                        e.source.value = null;
-                                    }
-                                    else if (e.source.value >= (maxRange)) {
-                                        alert("The maximum for this field is " + maxRange);
-                                        e.source.value = null;
-                                    }
-
-                                    if (e.source.value != null && e.source.value != "") {
-                                        if (e.source.my_max != null && e.source.my_min != null) {
-                                            if (parseFloat(e.source.value) < parseFloat(e.source.my_min)) {
-                                                alert("The minimum for this field is " + e.source.my_min);
-                                                e.source.value = null;
-                                            }
-                                            else if (parseFloat(e.source.value) > parseFloat(e.source.my_max)) {
-                                                alert("The maximum for this field is " + e.source.my_max);
-                                                e.source.value = null;
-                                            }
-                                            else {
-                                                //value is ok
-                                            }
-                                        }
-                                        else if (e.source.my_max != null) {
-                                            if (parseFloat(e.source.value) > parseFloat(e.source.my_max)) {
-                                                alert("The maximum for this field is " + e.source.my_max);
-                                                e.source.value = null;
-                                            }
-                                            else {
-                                                //value is ok
-                                            }
-                                        }
-                                        else if (e.source.my_min != null) {
-                                            if (parseFloat(e.source.value) < parseFloat(e.source.my_min)) {
-                                                alert("The minimum for this field is " + e.source.my_min);
-                                                e.source.value = null;
-                                            }
-                                            else {
-                                                //value is ok
-                                            }
-                                        }
-                                        else {
-                                            //No min or max sets
-                                        }
-                                    }
-                                });
-
-                                count++;
-                            }
-                            //No data checkbox functionality
-                            noDataCheckbox(reffer_index, regionView, top);
-                            if (content[reffer_index].noDataView != null) {
-                                top += 40;
-                            }
-                            break;
-
-                        case 'phone':
-                            var settings = JSON.parse(field_arr[index_label][index_size].settings);
-                            var can_view = false;
-                            var can_edit = false;
-
-                            if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-                                var _l;
-                                for (_l in settings.permissions) {
-                                    for (_k in roles) {
-                                        if (_l == _k) {
-                                            var stringifyObj = JSON.stringify(settings.permissions[_l]);
-                                            if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_edit = true;
-                                            }
-
-                                            if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_view = true;
-                                            }
-
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                can_view = can_edit = true;
-                            }
-
-                            if (!can_view) {
-                                break;
-                            }
-
-                            label[count] = Ti.UI.createLabel({
-                                text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-                                color : isRequired ? 'red' : _lb_color,
-                                font : {
-                                    fontSize : fieldFontSize,
-                                    fontWeight : 'bold'
-                                },
-                                textAlign : 'left',
-                                width : Ti.Platform.displayCaps.platformWidth - 30,
-                                touchEnabled : false,
-                                height : heightValue,
-                                top : top
-                            });
-                            top += heightValue;
-                            //Add fields:
-                            regionView.add(label[count]);
-                            var reffer_index = count;
-
-                            if (settings.cardinality > 1) {
-                                if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
-                                    var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
-
-                                    //Decode the stored array:
-                                    var decoded = array_cont.fieldByName('encoded_array');
-                                    decoded = Base64.decode(decoded);
-                                    Ti.API.info('Decoded array is equals to: ' + decoded);
-                                    decoded = decoded.toString();
-
-                                    // Token that splits each element contained into the array: 'j8Oc2s1E'
-                                    var decoded_values = decoded.split("j8Oc2s1E");
-                                }
-                                else {
-                                    var decoded_values = new Array();
-                                    decoded_values[0] = field_arr[index_label][index_size].actual_value;
-                                }
-
-                                var o_index;
-                                for ( o_index = 0; o_index < settings.cardinality; o_index++) {
-
-                                    if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
-                                        var vl_to_field = decoded_values[o_index];
-                                    }
-                                    else {
-                                        var vl_to_field = "";
-                                    }
-
-                                    content[count] = Ti.UI.createTextField({
-                                        hintText : "#" + o_index + " " + field_arr[index_label][index_size].label,
-                                        private_index : o_index,
-                                        borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                        keyboardType : Titanium.UI.KEYBOARD_NUMBER_PAD,
-                                        returnKeyType : Titanium.UI.RETURNKEY_DONE,
-                                        textAlign : 'left',
-                                        width : Ti.Platform.displayCaps.platformWidth - 30,
-                                        height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                        font : {
-                                            fontSize : fieldFontSize
-                                        },
-                                        color : '#000000',
-                                        top : top,
-                                        field_type : field_arr[index_label][index_size].type,
-                                        field_name : field_arr[index_label][index_size].field_name,
-                                        required : field_arr[index_label][index_size].required,
-                                        composed_obj : true,
-                                        is_title : field_arr[index_label][index_size].is_title,
-                                        cardinality : settings.cardinality,
-                                        value : vl_to_field,
-                                        reffer_index : reffer_index,
-                                        settings : settings,
-                                        changedFlag : 0,
-                                        autocorrect : false,
-                                        enabled : can_edit,
-                                        editable : can_edit
-                                    });
-                                    if (PLATFORM == 'android') {
-                                        content[count].backgroundImage = '../images/textfield.png'
-                                    }
-                                    if (!can_edit) {
-                                        content[count].backgroundImage = '';
-                                        content[count].backgroundColor = '#BDBDBD';
-                                        content[count].borderColor = 'gray';
-                                        content[count].borderRadius = 10;
-                                        content[count].color = '#848484';
-                                        content[count].borderWidth = 1;
-                                        content[count].paddingLeft = 3;
-                                        content[count].paddingRight = 3;
-                                        if (PLATFORM == 'android') {
-                                            content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-                                        }
-                                    }
-                                    addDoneButtonInKB(content[count]);
-                                    top += (PLATFORM == 'android') ? heightTextField : heightValue;
-
-                                    regionView.add(content[count]);
-                                    content[count].addEventListener('change', function(e) {
-                                        changedContentValue(e.source);
-                                        noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
-                                    });
-                                    count++;
-                                }
-                            }
-                            else {
-                                content[count] = Ti.UI.createTextField({
-                                    hintText : field_arr[index_label][index_size].label,
-                                    borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                    keyboardType : Titanium.UI.KEYBOARD_NUMBER_PAD,
-                                    returnKeyType : Titanium.UI.RETURNKEY_DONE,
-                                    textAlign : 'left',
-                                    width : Ti.Platform.displayCaps.platformWidth - 30,
-                                    height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                    font : {
-                                        fontSize : fieldFontSize
-                                    },
-                                    color : '#000000',
-                                    top : top,
-                                    field_type : field_arr[index_label][index_size].type,
-                                    field_name : field_arr[index_label][index_size].field_name,
-                                    required : field_arr[index_label][index_size].required,
-                                    composed_obj : false,
-                                    is_title : field_arr[index_label][index_size].is_title,
-                                    cardinality : settings.cardinality,
-                                    value : field_arr[index_label][index_size].actual_value,
-                                    reffer_index : reffer_index,
-                                    settings : settings,
-                                    changedFlag : 0,
-                                    autocorrect : false,
-                                    enabled : can_edit,
-                                    editable : can_edit
-                                });
-                                if (PLATFORM == 'android') {
-                                    content[count].backgroundImage = '../images/textfield.png'
-                                }
-                                if (!can_edit) {
-                                    content[count].backgroundImage = '';
-                                    content[count].backgroundColor = '#BDBDBD';
-                                    content[count].borderColor = 'gray';
-                                    content[count].borderRadius = 10;
-                                    content[count].color = '#848484';
-                                    content[count].borderWidth = 1;
-                                    content[count].paddingLeft = 3;
-                                    content[count].paddingRight = 3;
-                                    if (PLATFORM == 'android') {
-                                        content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-                                    }
-                                }
-                                addDoneButtonInKB(content[count]);
-                                top += (PLATFORM == 'android') ? heightTextField : heightValue;
-
-                                regionView.add(content[count]);
-                                content[count].addEventListener('change', function(e) {
-                                    changedContentValue(e.source);
-                                    noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
-                                });
-                                count++;
-                            }
-                            //No data checkbox functionality
-                            noDataCheckbox(reffer_index, regionView, top);
-                            if (content[reffer_index].noDataView != null) {
-                                top += 40;
-                            }
-                            break;
-
-                        case 'email':
-                            var settings = JSON.parse(field_arr[index_label][index_size].settings);
-                            var can_view = false;
-                            var can_edit = false;
-
-                            if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-                                var _l;
-                                for (_l in settings.permissions) {
-                                    for (_k in roles) {
-                                        if (_l == _k) {
-                                            var stringifyObj = JSON.stringify(settings.permissions[_l]);
-                                            if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_edit = true;
-                                            }
-
-                                            if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_view = true;
-                                            }
-
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                can_view = can_edit = true;
-                            }
-
-                            if (!can_view) {
-                                break;
-                            }
-                            label[count] = Ti.UI.createLabel({
-                                text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-                                color : isRequired ? 'red' : _lb_color,
-                                font : {
-                                    fontSize : fieldFontSize,
-                                    fontWeight : 'bold'
-                                },
-                                textAlign : 'left',
-                                width : Ti.Platform.displayCaps.platformWidth - 30,
-                                touchEnabled : false,
-                                height : heightValue,
-                                top : top
-                            });
-                            top += heightValue;
-
-                            //Add fields:
-                            regionView.add(label[count]);
-                            var reffer_index = count;
-
-                            if (settings.cardinality > 1) {
-                                if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
-                                    var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
-
-                                    //Decode the stored array:
-                                    var decoded = array_cont.fieldByName('encoded_array');
-                                    decoded = Base64.decode(decoded);
-                                    Ti.API.info('Decoded array is equals to: ' + decoded);
-                                    decoded = decoded.toString();
-
-                                    // Token that splits each element contained into the array: 'j8Oc2s1E'
-                                    var decoded_values = decoded.split("j8Oc2s1E");
-                                }
-                                else {
-                                    var decoded_values = new Array();
-                                    decoded_values[0] = field_arr[index_label][index_size].actual_value;
-                                }
-
-                                var o_index;
-                                for ( o_index = 0; o_index < settings.cardinality; o_index++) {
-
-                                    if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
-                                        var vl_to_field = decoded_values[o_index];
-                                    }
-                                    else {
-                                        var vl_to_field = "";
-                                    }
-
-                                    content[count] = Ti.UI.createTextField({
-                                        hintText : "#" + o_index + " " + field_arr[index_label][index_size].label,
-                                        private_index : o_index,
-                                        borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                        keyboardType : Ti.UI.KEYBOARD_EMAIL,
-                                        textAlign : 'left',
-                                        width : Ti.Platform.displayCaps.platformWidth - 30,
-                                        height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                        font : {
-                                            fontSize : fieldFontSize
-                                        },
-                                        color : '#000000',
-                                        top : top,
-                                        field_type : field_arr[index_label][index_size].type,
-                                        field_name : field_arr[index_label][index_size].field_name,
-                                        required : field_arr[index_label][index_size].required,
-                                        is_title : field_arr[index_label][index_size].is_title,
-                                        composed_obj : true,
-                                        cardinality : settings.cardinality,
-                                        value : vl_to_field,
-                                        reffer_index : reffer_index,
-                                        settings : settings,
-                                        changedFlag : 0,
-                                        autocorrect : false,
-                                        returnKeyType : Ti.UI.RETURNKEY_DONE,
-                                        enabled : can_edit,
-                                        editable : can_edit
-                                    });
-                                    if (PLATFORM == 'android') {
-                                        content[count].backgroundImage = '../images/textfield.png'
-                                    }
-                                    if (!can_edit) {
-                                        content[count].backgroundImage = '';
-                                        content[count].backgroundColor = '#BDBDBD';
-                                        content[count].borderColor = 'gray';
-                                        content[count].borderRadius = 10;
-                                        content[count].color = '#848484';
-                                        content[count].borderWidth = 1;
-                                        content[count].paddingLeft = 3;
-                                        content[count].paddingRight = 3;
-                                        if (PLATFORM == 'android') {
-                                            content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-                                        }
-                                    }
-                                    top += (PLATFORM == 'android') ? heightTextField : heightValue;
-
-                                    regionView.add(content[count]);
-                                    content[count].addEventListener('change', function(e) {
-                                        changedContentValue(e.source);
-                                        noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
-                                    });
-                                    count++;
-                                }
-                            }
-                            else {
-                                content[count] = Ti.UI.createTextField({
-                                    hintText : field_arr[index_label][index_size].label,
-                                    borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                    keyboardType : Ti.UI.KEYBOARD_EMAIL,
-                                    textAlign : 'left',
-                                    width : Ti.Platform.displayCaps.platformWidth - 30,
-                                    height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                    font : {
-                                        fontSize : fieldFontSize
-                                    },
-                                    color : '#000000',
-                                    top : top,
-                                    field_type : field_arr[index_label][index_size].type,
-                                    field_name : field_arr[index_label][index_size].field_name,
-                                    required : field_arr[index_label][index_size].required,
-                                    is_title : field_arr[index_label][index_size].is_title,
-                                    composed_obj : false,
-                                    cardinality : settings.cardinality,
-                                    value : field_arr[index_label][index_size].actual_value,
-                                    reffer_index : reffer_index,
-                                    settings : settings,
-                                    changedFlag : 0,
-                                    autocorrect : false,
-                                    returnKeyType : Ti.UI.RETURNKEY_DONE,
-                                    enabled : can_edit,
-                                    editable : can_edit
-                                });
-                                if (PLATFORM == 'android') {
-                                    content[count].backgroundImage = '../images/textfield.png'
-                                }
-                                if (!can_edit) {
-                                    content[count].backgroundImage = '';
-                                    content[count].backgroundColor = '#BDBDBD';
-                                    content[count].borderColor = 'gray';
-                                    content[count].borderRadius = 10;
-                                    content[count].color = '#848484';
-                                    content[count].borderWidth = 1;
-                                    content[count].paddingLeft = 3;
-                                    content[count].paddingRight = 3;
-                                    if (PLATFORM == 'android') {
-                                        content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-                                    }
-                                }
-                                top += (PLATFORM == 'android') ? heightTextField : heightValue;
-
-                                regionView.add(content[count]);
-                                content[count].addEventListener('change', function(e) {
-                                    changedContentValue(e.source);
-                                    noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
-                                });
-                                count++;
-                            }
-                            //No data checkbox functionality
-                            noDataCheckbox(reffer_index, regionView, top);
-                            if (content[reffer_index].noDataView != null) {
-                                top += 40;
-                            }
-                            break;
-
-                        case 'taxonomy_term_reference':
-                            var widget = JSON.parse(field_arr[index_label][index_size].widget);
-                            var settings = JSON.parse(field_arr[index_label][index_size].settings);
-                            var can_view = false;
-                            var can_edit = false;
-
-                            if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-                                var _l;
-                                for (_l in settings.permissions) {
-                                    for (_k in roles) {
-                                        if (_l == _k) {
-                                            var stringifyObj = JSON.stringify(settings.permissions[_l]);
-                                            if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_edit = true;
-                                            }
-
-                                            if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_view = true;
-                                            }
-
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                can_view = can_edit = true;
-                            }
-
-                            if (!can_view) {
-                                break;
-                            }
-                            var hasParent = false;
-                            var parent_name = "";
-                            var defaultField = "";
-                            if (settings.parent_form_default_value) {
-                                if (settings.parent_form_default_value.parent_field != null && settings.parent_form_default_value.parent_field != "") {
-                                    hasParent = true;
-                                    parent_name = settings.parent_form_default_value.parent_field;
-                                    defaultField = settings.parent_form_default_value.default_value_field;
-                                }
-                            }
-
-                            //Create picker list
-                            if (widget.type == 'options_select' || widget.type == 'violation_select') {
-                                label[count] = Ti.UI.createLabel({
-                                    text : ( isRequired ? '*' : '') + '' + field_arr[index_label][index_size].label,
-                                    color : isRequired ? 'red' : _lb_color,
-                                    font : {
-                                        fontSize : fieldFontSize,
-                                        fontWeight : 'bold'
-                                    },
-                                    textAlign : 'left',
-                                    width : Ti.Platform.displayCaps.platformWidth - 30,
-                                    touchEnabled : false,
-                                    height : heightValue,
-                                    top : top
-                                });
-                                top += heightValue;
-                                var reffer_index = count;
-
-                                var vocabulary = db_display.execute("SELECT vid FROM vocabulary WHERE machine_name = '" + settings.vocabulary + "'");
-                                var terms = db_display.execute("SELECT * FROM term_data WHERE vid='" + vocabulary.fieldByName('vid') + "'GROUP BY name ORDER BY CAST(`weight` AS INTEGER) ASC");
-
-                                var data_terms = [];
-                                if (settings.cardinality != -1) {
-                                    // data_terms.push({
-                                    // title : field_arr[index_label][index_size].label,
-                                    // tid : null
-                                    // });
-                                }
-
-                                while (terms.isValidRow()) {
-                                    data_terms.push({
-                                        title : terms.fieldByName('name'),
-                                        tid : terms.fieldByName('tid')
-                                    });
-                                    terms.next();
-                                }
-                                terms.close();
-                                vocabulary.close();
-
-                                //Add fields:
-                                regionView.add(label[count]);
-
-                                Ti.API.info('===> ' + settings.cardinality);
-
-                                if (settings.cardinality > 1) {
-                                    if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
-                                        var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
-
-                                        //Decode the stored array:
-                                        var decoded = array_cont.fieldByName('encoded_array');
-                                        decoded = Base64.decode(decoded);
-                                        Ti.API.info('Decoded array is equals to: ' + decoded);
-                                        decoded = decoded.toString();
-
-                                        // Token that splits each element contained into the array: 'j8Oc2s1E'
-                                        var decoded_values = decoded.split("j8Oc2s1E");
-                                    }
-                                    else {
-                                        var decoded_values = new Array();
-                                        decoded_values[0] = field_arr[index_label][index_size].actual_value;
-                                    }
-
-                                    var o_index;
-                                    for ( o_index = 0; o_index < settings.cardinality; o_index++) {
-
-                                        if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
-                                            var vl_to_field = decoded_values[o_index];
-                                        }
-                                        else {
-                                            var vl_to_field = "";
-                                        }
-
-                                        var arr_picker = new Array();
-                                        var arr_opt = new Array();
-                                        arr_picker.push({
-                                            title : '-- NONE --',
-                                            uid : null
-                                        });
-                                        arr_opt.push('-- NONE --');
-
-                                        var aux_val = {
-                                            title : '-- NONE --',
-                                            vl : null,
-                                            cnt : 0
-                                        };
-
-                                        var counter_loop = 0;
-                                        var i_data_terms;
-                                        for (i_data_terms in data_terms) {
-                                            if (vl_to_field == data_terms[i_data_terms].tid) {
-                                                aux_val.title = data_terms[i_data_terms].title;
-                                                aux_val.vl = data_terms[i_data_terms].tid;
-                                                aux_val.cnt = counter_loop;
-                                            }
-                                            arr_picker.push({
-                                                title : data_terms[i_data_terms].title,
-                                                tid : data_terms[i_data_terms].tid
-                                            });
-                                            arr_opt.push(data_terms[i_data_terms].title);
-                                            counter_loop++;
-                                        }
-
-                                        content[count] = Titanium.UI.createButton({
-                                            borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                            private_index : o_index,
-                                            width : Ti.Platform.displayCaps.platformWidth - 30,
-                                            height : heightValue,
-                                            arr_opt : arr_opt,
-                                            arr_picker : arr_picker,
-                                            title : aux_val.title,
-                                            font : {
-                                                fontSize : fieldFontSize
-                                            },
-                                            color : '#000000',
-                                            top : top,
-                                            selectionIndicator : true,
-                                            field_type : field_arr[index_label][index_size].type,
-                                            field_name : field_arr[index_label][index_size].field_name,
-                                            machine_name : vocabulary.fieldByName('machine_name'),
-                                            widget : 'options_select',
-                                            widgetObj : widget,
-                                            required : field_arr[index_label][index_size].required,
-                                            is_title : field_arr[index_label][index_size].is_title,
-                                            value : aux_val.vl,
-                                            composed_obj : true,
-                                            cardinality : settings.cardinality,
-                                            reffer_index : reffer_index,
-                                            hasParent : hasParent,
-                                            parent_name : parent_name,
-                                            defaultField : defaultField,
-                                            settings : settings,
-                                            changedFlag : 0,
-                                            enabled : can_edit
-                                        });
-                                        var desLabel = Ti.UI.createLabel({
-                                            top : (top + heightValue),
-                                            width : Ti.Platform.displayCaps.platformWidth - 30,
-                                            ellipsize : true,
-                                            wordWrap : false,
-                                            visible : false,
-                                            font : {
-                                                fontsize : 10
-                                            },
-                                            color : 'black',
-                                            height : 20
-
-                                        });
-                                        content[count].desLabel = desLabel;
-                                        desLabel.addEventListener('click', function(e) {
-                                            openBigText(e.source.text);
-                                        });
-                                        if (PLATFORM == 'android') {
-                                            content[count].backgroundImage = '';
-                                            content[count].backgroundColor = 'white';
-                                            content[count].backgroundSelectedColor = '#2E64FE';
-                                            content[count].borderColor = 'gray';
-                                            content[count].borderRadius = 10;
-                                            content[count].color = 'black';
-                                            content[count].borderWidth = 1;
-                                        }
-                                        if (!can_edit) {
-                                            content[count].backgroundImage = '';
-                                            content[count].backgroundColor = '#BDBDBD';
-                                            content[count].borderColor = 'gray';
-                                            content[count].borderRadius = 10;
-                                            content[count].color = '#848484';
-                                            content[count].borderWidth = 1;
-                                        }
-                                        content[count].addEventListener('click', function(e) {
-                                            //Ti.API.info('TID: '+e.row.tid);
-                                            //e.source.value = e.row.tid;
-                                            if (e.source.arr_opt.length == 1) {
-                                                var dt = new Date(e.source.violation_time);
-                                                alert("No violations should be enforced at " + e.source.omadi_reference_title + " at " + date(omadi_time_format, dt) + " on " + weekday[dt.getDay()]);
-                                                return;
-                                            }
-                                            var postDialog = Titanium.UI.createOptionDialog();
-                                            postDialog.options = e.source.arr_opt;
-                                            postDialog.cancel = -1;
-                                            postDialog.show();
-
-                                            postDialog.addEventListener('click', function(ev) {
-                                                if (ev.index >= 0) {
-                                                    e.source.title = e.source.arr_opt[ev.index];
-                                                    e.source.value = e.source.arr_picker[ev.index].tid;
-                                                }
-                                                changedContentValue(e.source);
-                                                noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
-                                            });
-                                        });
-
-                                        top += heightValue;
-
-                                        //Add fields:
-                                        regionView.add(desLabel);
-                                        regionView.add(content[count]);
-                                        count++;
-                                    }
-                                }
-                                else if (settings.cardinality == 1) {
-
-                                    var arr_picker = new Array();
-                                    var arr_opt = new Array();
-                                    arr_picker.push({
-                                        title : '-- NONE --',
-                                        uid : null
-                                    });
-                                    arr_opt.push('-- NONE --');
-
-                                    var aux_val = {
-                                        title : '-- NONE --',
-                                        vl : null,
-                                        cnt : 0
-                                    };
-
-                                    var counter_loop = 0;
-                                    var i_data_terms;
-                                    for (i_data_terms in data_terms) {
-                                        if (field_arr[index_label][index_size].actual_value == data_terms[i_data_terms].tid) {
-                                            aux_val.title = data_terms[i_data_terms].title;
-                                            aux_val.vl = data_terms[i_data_terms].tid;
-                                            aux_val.cnt = counter_loop;
-                                        }
-                                        arr_picker.push({
-                                            title : data_terms[i_data_terms].title,
-                                            tid : data_terms[i_data_terms].tid
-                                        });
-                                        arr_opt.push(data_terms[i_data_terms].title);
-                                        counter_loop++;
-                                    }
-
-                                    content[count] = Titanium.UI.createButton({
-                                        borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                        width : Ti.Platform.displayCaps.platformWidth - 30,
-                                        height : heightValue,
-                                        arr_opt : arr_opt,
-                                        arr_picker : arr_picker,
-                                        title : aux_val.title,
-                                        font : {
-                                            fontSize : fieldFontSize
-                                        },
-                                        color : '#000000',
-                                        top : top,
-                                        selectionIndicator : true,
-                                        field_type : field_arr[index_label][index_size].type,
-                                        field_name : field_arr[index_label][index_size].field_name,
-                                        machine_name : vocabulary.fieldByName('machine_name'),
-                                        widget : 'options_select',
-                                        widgetObj : widget,
-                                        required : field_arr[index_label][index_size].required,
-                                        is_title : field_arr[index_label][index_size].is_title,
-                                        composed_obj : false,
-                                        cardinality : settings.cardinality,
-                                        value : aux_val.vl,
-                                        reffer_index : reffer_index,
-                                        hasParent : hasParent,
-                                        parent_name : parent_name,
-                                        defaultField : defaultField,
-                                        settings : settings,
-                                        changedFlag : 0,
-                                        enabled : can_edit
-                                    });
-                                    var desLabel = Ti.UI.createLabel({
-                                        top : (top + heightValue),
-                                        width : Ti.Platform.displayCaps.platformWidth - 30,
-                                        ellipsize : true,
-                                        wordWrap : false,
-                                        visible : false,
-                                        font : {
-                                            fontsize : 10
-                                        },
-                                        color : 'black',
-                                        height : 20
-
-                                    });
-                                    content[count].desLabel = desLabel;
-                                    desLabel.addEventListener('click', function(e) {
-                                        openBigText(e.source.text);
-                                    });
-                                    if (PLATFORM == 'android') {
-                                        content[count].backgroundImage = '';
-                                        content[count].backgroundColor = 'white';
-                                        content[count].backgroundSelectedColor = '#2E64FE';
-                                        content[count].borderColor = 'gray';
-                                        content[count].borderRadius = 10;
-                                        content[count].color = 'black';
-                                        content[count].borderWidth = 1;
-                                    }
-                                    if (!can_edit) {
-                                        content[count].backgroundImage = '';
-                                        content[count].backgroundColor = '#BDBDBD';
-                                        content[count].borderColor = 'gray';
-                                        content[count].borderRadius = 10;
-                                        content[count].color = '#848484';
-                                        content[count].borderWidth = 1;
-                                    }
-
-                                    content[count].addEventListener('click', function(e) {
-                                        //Ti.API.info('TID: '+e.row.tid);
-                                        //e.source.value = e.row.tid;
-                                        if (e.source.arr_opt.length == 1) {
-                                            var dt = new Date(e.source.violation_time);
-                                            alert("No violations should be enforced at " + e.source.omadi_reference_title + " at " + date(omadi_time_format, dt) + " on " + weekday[dt.getDay()]);
-                                            return;
-                                        }
-
-                                        var postDialog = Titanium.UI.createOptionDialog();
-                                        postDialog.options = e.source.arr_opt;
-                                        postDialog.cancel = -1;
-                                        postDialog.show();
-
-                                        postDialog.addEventListener('click', function(ev) {
-                                            if (ev.index >= 0) {
-                                                e.source.title = e.source.arr_opt[ev.index];
-                                                e.source.value = e.source.arr_picker[ev.index].tid;
-                                            }
-                                            changedContentValue(e.source);
-                                            noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
-                                        });
-                                    });
-                                    top += heightValue;
-
-                                    //Add fields:
-                                    regionView.add(desLabel);
-                                    regionView.add(content[count]);
-                                    count++;
-                                }
-                                else if (settings.cardinality == -1) {
-                                    var sel_text = "";
-                                    var _val_itens = [];
-                                    var _itens = "";
-                                    var _exist = [];
-
-                                    if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
-                                        var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
-
-                                        //Decode the stored array:
-                                        var decoded = array_cont.fieldByName('encoded_array');
-                                        decoded = Base64.decode(decoded);
-                                        Ti.API.info('Decoded array is equals to: ' + decoded);
-                                        decoded = decoded.toString();
-
-                                        // Token that splits each element contained into the array: 'j8Oc2s1E'
-                                        var decoded_values = decoded.split("j8Oc2s1E");
-                                    }
-                                    else {
-                                        var decoded_values = new Array();
-                                        decoded_values[0] = field_arr[index_label][index_size].actual_value;
-                                    }
-
-                                    var j_ind;
-                                    for (j_ind in data_terms) {
-                                        Ti.API.info(data_terms[j_ind].tid + ' = ' + decoded_values.indexOf(data_terms[j_ind].tid.toString()));
-
-                                        if (decoded_values.indexOf(data_terms[j_ind].tid.toString()) != -1) {
-                                            sel_text = data_terms[j_ind].title;
-                                            _val_itens.push({
-                                                title : data_terms[j_ind].title,
-                                                v_info : data_terms[j_ind].tid,
-                                                is_set : true
-                                            });
-
-                                            _exist.push({
-                                                title : data_terms[j_ind].title,
-                                                v_info : data_terms[j_ind].tid
-                                            });
-
-                                        }
-                                        else {
-                                            _val_itens.push({
-                                                title : data_terms[j_ind].title,
-                                                v_info : data_terms[j_ind].tid,
-                                                is_set : false
-                                            });
-                                        }
-
-                                    }
-
-                                    if (_exist.length > 1) {
-                                        sel_text = field_arr[index_label][index_size].label + " [" + _exist.length + "]"
-                                    }
-                                    _itens = _exist;
-
-                                    if (_exist.length == 0) {
-                                        _itens = null;
-                                    }
-
-                                    Ti.API.info("==>> " + _val_itens);
-                                    Ti.API.info("==>> " + _itens);
-
-                                    content[count] = Titanium.UI.createLabel({
-                                        width : Ti.Platform.displayCaps.platformWidth - 30,
-                                        text : sel_text,
-                                        backgroundColor : "#FFF",
-                                        textAlign : "center",
-                                        height : heightValue,
-                                        font : {
-                                            fontSize : fieldFontSize
-                                        },
-                                        color : '#000000',
-                                        top : top,
-                                        field_type : field_arr[index_label][index_size].type,
-                                        field_name : field_arr[index_label][index_size].field_name,
-                                        machine_name : vocabulary.fieldByName('machine_name'),
-                                        widget : 'options_select',
-                                        widgetObj : widget,
-                                        required : field_arr[index_label][index_size].required,
-                                        is_title : field_arr[index_label][index_size].is_title,
-                                        composed_obj : false,
-                                        cardinality : settings.cardinality,
-                                        value : _itens,
-                                        itens : _val_itens,
-                                        view_title : field_arr[index_label][index_size].label,
-                                        reffer_index : reffer_index,
-                                        settings : settings,
-                                        changedFlag : 0,
-                                        can_edit : can_edit,
-                                        enabled : can_edit,
-                                    });
-
-                                    var desLabel = Ti.UI.createLabel({
-                                        top : (top + heightValue),
-                                        width : Ti.Platform.displayCaps.platformWidth - 30,
-                                        ellipsize : true,
-                                        wordWrap : false,
-                                        visible : false,
-                                        font : {
-                                            fontsize : 10
-                                        },
-                                        color : 'black',
-                                        height : 20
-
-                                    });
-                                    content[count].desLabel = desLabel;
-                                    desLabel.addEventListener('click', function(e) {
-                                        openBigText(e.source.text);
-                                    });
-                                    if (!can_edit) {
-                                        content[count].backgroundImage = '';
-                                        content[count].backgroundColor = '#BDBDBD';
-                                        content[count].borderColor = 'gray';
-                                        content[count].color = '#848484';
-                                        content[count].borderWidth = 1
-                                    }
-
-                                    content[count].addEventListener('click', function(e) {
-                                        if (e.source.can_edit) {
-                                            var jsa;
-                                            for (jsa in e.source.itens) {
-                                                Ti.API.info(jsa + ' = ' + e.source.itens[jsa].title);
-                                            }
-                                            if (e.source.itens.length == 0) {
-                                                var dt = new Date(e.source.violation_time);
-                                                alert("No violations should be enforced at " + e.source.omadi_reference_title + " at " + date(omadi_time_format, dt) + " on " + weekday[dt.getDay()]);
-                                                return;
-                                            }
-                                            open_mult_selector(e.source);
-                                            changedContentValue(e.source);
-                                            noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-                                        }
-                                    });
-
-                                    top += heightValue + 20;
-
-                                    //Add fields:
-                                    regionView.add(desLabel);
-                                    regionView.add(content[count]);
-                                    count++;
-                                }
-                            }
-                            //Create autofill field
-                            else if (widget.type == 'taxonomy_autocomplete') {
-                                label[count] = Ti.UI.createLabel({
-                                    text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-                                    color : isRequired ? 'red' : _lb_color,
-                                    font : {
-                                        fontSize : fieldFontSize,
-                                        fontWeight : 'bold'
-                                    },
-                                    textAlign : 'left',
-                                    width : Ti.Platform.displayCaps.platformWidth - 30,
-                                    touchEnabled : false,
-                                    height : heightValue,
-                                    top : top
-                                });
-                                top += heightValue;
-
-                                //Add fields:
-                                regionView.add(label[count]);
-                                var reffer_index = count;
-
-                                if (settings.cardinality > 1) {
-                                    if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
-                                        var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
-
-                                        //Decode the stored array:
-                                        var decoded = array_cont.fieldByName('encoded_array');
-                                        decoded = Base64.decode(decoded);
-                                        Ti.API.info('Decoded array is equals to: ' + decoded);
-                                        decoded = decoded.toString();
-
-                                        // Token that splits each element contained into the array: 'j8Oc2s1E'
-                                        var decoded_values = decoded.split("j8Oc2s1E");
-                                    }
-                                    else {
-                                        var decoded_values = new Array();
-                                        decoded_values[0] = field_arr[index_label][index_size].actual_value;
-                                    }
-
-                                    var o_index;
-                                    for ( o_index = 0; o_index < settings.cardinality; o_index++) {
-
-                                        if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
-                                            var vl_to_field = decoded_values[o_index];
-                                        }
-                                        else {
-                                            var vl_to_field = "";
-                                        }
-
-                                        if (!settings.vocabulary) {
-                                            settings.vocabulary = field_arr[index_label][index_size].field_name;
-                                        }
-                                        Ti.API.info('================> Vocabulary ' + settings.vocabulary);
-                                        var vocabulary = db_display.execute("SELECT vid FROM vocabulary WHERE machine_name = '" + settings.vocabulary + "'");
-                                        var terms = db_display.execute("SELECT * FROM term_data WHERE vid='" + vocabulary.fieldByName('vid') + "'GROUP BY name ORDER BY name ASC");
-                                        var vid = vocabulary.fieldByName('vid');
-                                        data_terms = new Array;
-                                        var aux_val = {
-                                            title : "",
-                                            vl : null
-                                        };
-
-                                        while (terms.isValidRow()) {
-                                            if (vl_to_field == terms.fieldByName('tid')) {
-                                                aux_val.title = terms.fieldByName('name');
-                                                aux_val.vl = terms.fieldByName('tid');
-                                            }
-
-                                            data_terms.push({
-                                                title : terms.fieldByName('name'),
-                                                tid : terms.fieldByName('tid')
-                                            });
-                                            terms.next();
-                                        }
-                                        //alert('AQUI => title: '+aux_val.title+' tid = '+aux_val.vl);
-
-                                        terms.close();
-                                        vocabulary.close();
-
-                                        var rest_up = settings.restrict_new_autocomplete_terms;
-                                        if (!rest_up) {
-                                            rest_up = 0;
-                                        }
-
-                                        content[count] = Titanium.UI.createTextField({
-                                            hintText : "#" + o_index + " " + field_arr[index_label][index_size].label + ' ...',
-                                            borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                            color : '#000000',
-                                            private_index : o_index,
-                                            height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                            font : {
-                                                fontSize : fieldFontSize
-                                            },
-                                            width : Ti.Platform.displayCaps.platformWidth - 30,
-                                            top : top,
-                                            field_type : field_arr[index_label][index_size].type,
-                                            field_name : field_arr[index_label][index_size].field_name,
-                                            machine_name : vocabulary.fieldByName('machine_name'),
-                                            terms : data_terms,
-                                            tid : aux_val.vl,
-                                            restrict_new_autocomplete_terms : rest_up,
-                                            widget : 'taxonomy_autocomplete',
-                                            vid : vid,
-                                            fantasy_name : field_arr[index_label][index_size].label,
-                                            required : field_arr[index_label][index_size].required,
-                                            is_title : field_arr[index_label][index_size].is_title,
-                                            composed_obj : true,
-                                            cardinality : settings.cardinality,
-                                            value : aux_val.title,
-                                            //first_time : true,
-                                            lastValue : aux_val.title,
-                                            reffer_index : reffer_index,
-                                            settings : settings,
-                                            changedFlag : 0,
-                                            returnKeyType : Ti.UI.RETURNKEY_DONE,
-                                            enabled : can_edit,
-                                            editable : can_edit,
-                                            regionView : regionView
-                                        });
-                                        if (PLATFORM == 'android') {
-                                            content[count].backgroundImage = '../images/textfield.png'
-                                        }
-                                        if (!can_edit) {
-                                            content[count].backgroundImage = '';
-                                            content[count].backgroundColor = '#BDBDBD';
-                                            content[count].borderColor = 'gray';
-                                            content[count].borderRadius = 10;
-                                            content[count].color = '#848484';
-                                            content[count].borderWidth = 1;
-                                            content[count].paddingLeft = 3;
-                                            content[count].paddingRight = 3;
-                                            if (PLATFORM == 'android') {
-                                                content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-                                            }
-                                        }
-                                        //AUTOCOMPLETE TABLE for taxonomy_term_reference and auto_complete widget cardinality > 1
-                                        var autocomplete_table = Titanium.UI.createTableView({
-                                            top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
-                                            searchHidden : true,
-                                            zIndex : 15,
-                                            height : getScreenHeight() * 0.3,
-                                            backgroundColor : '#FFFFFF',
-                                            visible : false,
-                                            borderColor : '#000',
-                                            borderWidth : 0
-                                        });
-                                        content[count].autocomplete_table = autocomplete_table;
-                                        top += (PLATFORM == 'android') ? heightTextField : heightValue;
-
-                                        regionView.add(content[count].autocomplete_table);
-
-                                        //
-                                        // TABLE EVENTS for taxonomy_term_reference and auto_complete widget, cardinality > 1
-                                        //
-                                        content[count].autocomplete_table.addEventListener('click', function(e) {
-                                            //e.source.setValueF(e.rowData.title, e.rowData.tid);
-                                            if (PLATFORM != 'android') {
-                                                e.source.textField.value = e.rowData.title;
-                                                e.source.textField.tid = e.rowData.tid;
-                                            }
-                                            else {
-                                                e.source.setValueF(e.rowData.title, e.rowData.tid);
-                                            }
-
-                                            setTimeout(function() {
-                                                e.source.autocomplete_table.visible = false;
-                                                e.source.autocomplete_table.borderWidth = 0;
-                                                Ti.API.info(e.rowData.title + ' was selected!');
-                                            }, 80);
-                                        });
-
-                                        content[count].addEventListener('blur', function(e) {
-                                            e.source.autocomplete_table.visible = false;
-                                            e.source.autocomplete_table.borderWidth = 0;
-                                            if ((e.source.restrict_new_autocomplete_terms == 1) && (e.source.value != "") && (e.source.tid == null)) {
-                                                if (PLATFORM == 'android') {
-                                                    Ti.UI.createNotification({
-                                                        message : 'The field ' + e.source.fantasy_name + ' does not accept fields creation, select one of the list !',
-                                                        duration : Ti.UI.NOTIFICATION_DURATION_LONG
-                                                    }).show();
-                                                }
-                                                else {
-                                                    alert('The field ' + e.source.fantasy_name + ' does not accept fields creation, select one of the list !');
-                                                }
-                                            }
-                                        });
-
-                                        //
-                                        // SEARCH EVENTS for taxonomy_term_reference and auto_complete widget cardinality > 1
-                                        //
-                                        content[count].addEventListener('change', function(e) {
-                                            changedContentValue(e.source);
-                                            noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-                                            if (e.source.lastValue != e.source.value) {
-                                                var list = e.source.terms;
-                                                var func = function setValueF(value_f, tid) {
-                                                    e.source.value = value_f;
-                                                    e.source.tid = tid;
-                                                    Ti.API.info('Value: ' + value_f + ' TID: ' + tid);
-                                                };
-
-                                                e.source.tid = null;
-                                                if ((e.value != null) && (e.value != '')) {
-                                                    table_data = [];
-                                                    var i;
-                                                    for ( i = 0; i < list.length; i++) {
-                                                        var rg = new RegExp(e.source.value, 'i');
-                                                        if (list[i].title.search(rg) != -1) {
-                                                            //Check match
-                                                            if (e.source.value == list[i].title) {
-                                                                e.source.tid = list[i].tid;
-                                                            }
-                                                            else {
-                                                                e.source.tid = null;
-                                                            }
-
-                                                            var row = Ti.UI.createTableViewRow({
-                                                                height : getScreenHeight() * 0.10,
-                                                                title : list[i].title,
-                                                                tid : list[i].tid,
-                                                                color : '#000000',
-                                                                autocomplete_table : e.source.autocomplete_table,
-                                                                setValueF : func,
-                                                                textField : e.source
-                                                            });
-                                                            // apply rows to data array
-                                                            table_data.push(row);
-                                                        }
-                                                    }
-                                                    e.source.autocomplete_table.setData(table_data);
-                                                    e.source.autocomplete_table.height = getScreenHeight() * 0.3;
-                                                    e.source.autocomplete_table.borderWidth = 1;
-                                                    if (table_data.length == 0) {
-                                                        e.source.autocomplete_table.borderWidth = 0;
-                                                    }
-                                                    if (table_data.length < 3 && table_data.length > 0) {
-                                                        e.source.autocomplete_table.height = (table_data.length == 1) ? getScreenHeight() * 0.1 : getScreenHeight() * 0.2;
-                                                    }
-                                                    e.source.autocomplete_table.scrollToTop(0, {
-                                                        animated : false
-                                                    });
-                                                    viewContent.scrollTo(0, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
-                                                    if (table_data.length > 0) {
-                                                        e.source.autocomplete_table.visible = true;
-                                                    }
-                                                    else {
-                                                        e.source.autocomplete_table.visible = false;
-                                                    }
-
-                                                }
-                                                else {
-                                                    e.source.autocomplete_table.visible = false;
-                                                    e.source.tid = null;
-                                                }
-                                            }
-                                            //e.source.first_time = false;
-                                            e.source.lastValue = e.source.value;
-                                        });
-                                        //Add fields:
-                                        regionView.add(content[count]);
-                                        count++;
-                                    }
-                                }
-                                else {
-
-                                    var vl_to_field = field_arr[index_label][index_size].actual_value;
-
-                                    if (!settings.vocabulary) {
-                                        settings.vocabulary = field_arr[index_label][index_size].field_name;
-                                    }
-
-                                    Ti.API.info('================> Vocabulary ' + settings.vocabulary);
-                                    var vocabulary = db_display.execute("SELECT vid FROM vocabulary WHERE machine_name = '" + settings.vocabulary + "'");
-                                    var terms = db_display.execute("SELECT * FROM term_data WHERE vid='" + vocabulary.fieldByName('vid') + "'GROUP BY name ORDER BY name ASC");
-                                    var vid = vocabulary.fieldByName('vid');
-                                    data_terms = new Array;
-                                    var aux_val = {
-                                        title : "",
-                                        vl : null
-                                    };
-
-                                    while (terms.isValidRow()) {
-                                        if (vl_to_field == terms.fieldByName('tid')) {
-                                            aux_val.title = terms.fieldByName('name');
-                                            aux_val.vl = terms.fieldByName('tid');
-                                        }
-
-                                        data_terms.push({
-                                            title : terms.fieldByName('name'),
-                                            tid : terms.fieldByName('tid')
-                                        });
-                                        terms.next();
-                                    }
-                                    //alert('AQUI => title: '+aux_val.title+' tid = '+aux_val.vl);
-
-                                    terms.close();
-                                    vocabulary.close();
-
-                                    var rest_up = settings.restrict_new_autocomplete_terms;
-                                    if (!rest_up) {
-                                        rest_up = 0;
-                                    }
-
-                                    content[count] = Titanium.UI.createTextField({
-                                        hintText : field_arr[index_label][index_size].label + ' ...',
-                                        borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                        color : '#000000',
-                                        height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                        font : {
-                                            fontSize : fieldFontSize
-                                        },
-                                        width : Ti.Platform.displayCaps.platformWidth - 30,
-                                        top : top,
-                                        field_type : field_arr[index_label][index_size].type,
-                                        field_name : field_arr[index_label][index_size].field_name,
-                                        machine_name : vocabulary.fieldByName('machine_name'),
-                                        terms : data_terms,
-                                        tid : aux_val.vl,
-                                        restrict_new_autocomplete_terms : rest_up,
-                                        widget : 'taxonomy_autocomplete',
-                                        vid : vid,
-                                        fantasy_name : field_arr[index_label][index_size].label,
-                                        required : field_arr[index_label][index_size].required,
-                                        is_title : field_arr[index_label][index_size].is_title,
-                                        composed_obj : false,
-                                        cardinality : settings.cardinality,
-                                        value : aux_val.title,
-                                        //first_time : true,
-                                        lastValue : aux_val.title,
-                                        reffer_index : reffer_index,
-                                        hasParent : hasParent,
-                                        parent_name : parent_name,
-                                        defaultField : defaultField,
-                                        settings : settings,
-                                        changedFlag : 0,
-                                        returnKeyType : Ti.UI.RETURNKEY_DONE,
-                                        enabled : can_edit,
-                                        editable : can_edit,
-                                        regionView : regionView
-                                    });
-                                    if (PLATFORM == 'android') {
-                                        content[count].backgroundImage = '../images/textfield.png'
-                                    }
-                                    if (!can_edit) {
-                                        content[count].backgroundImage = '';
-                                        content[count].backgroundColor = '#BDBDBD';
-                                        content[count].borderColor = 'gray';
-                                        content[count].borderRadius = 10;
-                                        content[count].color = '#848484';
-                                        content[count].borderWidth = 1;
-                                        content[count].paddingLeft = 3;
-                                        content[count].paddingRight = 3;
-                                        if (PLATFORM == 'android') {
-                                            content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-                                        }
-                                    }
-                                    //AUTOCOMPLETE TABLE taxonomy_term_reference widget auto_complete, cardinality = 1
-                                    var autocomplete_table = Titanium.UI.createTableView({
-                                        top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
-                                        searchHidden : true,
-                                        zIndex : 15,
-                                        height : getScreenHeight() * 0.3,
-                                        backgroundColor : '#FFFFFF',
-                                        visible : false,
-                                        borderColor : '#000',
-                                        borderWidth : 0
-                                    });
-                                    content[count].autocomplete_table = autocomplete_table;
-                                    top += (PLATFORM == 'android') ? heightTextField : heightValue;
-
-                                    regionView.add(content[count].autocomplete_table);
-
-                                    //
-                                    // TABLE EVENTS taxonomy_term_reference widget auto_complete, cardinality = 1
-                                    //
-                                    content[count].autocomplete_table.addEventListener('click', function(e) {
-
-                                        //e.source.setValueF(e.rowData.title, e.rowData.tid);
-                                        if (PLATFORM != 'android') {
-                                            e.source.textField.value = e.rowData.title;
-                                            e.source.textField.tid = e.rowData.tid;
-                                        }
-                                        else {
-                                            e.source.setValueF(e.rowData.title, e.rowData.tid);
-                                        }
-                                        setTimeout(function() {
-                                            e.source.autocomplete_table.visible = false;
-                                            e.source.autocomplete_table.borderWidth = 0;
-                                            Ti.API.info(e.rowData.title + ' was selected!');
-                                        }, 80);
-                                    });
-
-                                    content[count].addEventListener('blur', function(e) {
-
-                                        e.source.autocomplete_table.visible = false;
-                                        e.source.autocomplete_table.borderWidth = 0;
-                                        if ((e.source.restrict_new_autocomplete_terms == 1) && (e.source.value != "") && (e.source.tid == null)) {
-                                            if (PLATFORM == 'android') {
-                                                Ti.UI.createNotification({
-                                                    message : 'The field ' + e.source.fantasy_name + ' does not accept fields creation, select one of the list !',
-                                                    duration : Ti.UI.NOTIFICATION_DURATION_LONG
-                                                }).show();
-                                            }
-                                            else {
-                                                alert('The field ' + e.source.fantasy_name + ' does not accept fields creation, select one of the list !');
-                                            }
-                                        }
-                                    });
-                                    //
-                                    // SEARCH EVENTS taxonomy_term_reference widget auto_complete, cardinality = 1
-                                    //
-                                    content[count].addEventListener('change', function(e) {
-                                        changedContentValue(e.source);
-                                        noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
-                                        if (e.source.lastValue != e.source.value) {
-                                            var list = e.source.terms;
-                                            var func = function setValueF(value_f, tid) {
-                                                e.source.value = value_f;
-                                                e.source.tid = tid;
-                                                Ti.API.info('Value: ' + value_f + ' TID: ' + tid);
-                                            };
-
-                                            e.source.tid = null;
-                                            if ((e.value != null) && (e.value != '')) {
-                                                table_data = [];
-                                                var i;
-                                                for ( i = 0; i < list.length; i++) {
-                                                    var rg = new RegExp(e.source.value, 'i');
-                                                    if (list[i].title.search(rg) != -1) {
-                                                        //Check match
-                                                        if (e.source.value == list[i].title) {
-                                                            e.source.tid = list[i].tid;
-                                                        }
-                                                        else {
-                                                            e.source.tid = null;
-                                                        }
-
-                                                        var row = Ti.UI.createTableViewRow({
-                                                            height : getScreenHeight() * 0.10,
-                                                            title : list[i].title,
-                                                            tid : list[i].tid,
-                                                            color : '#000000',
-                                                            autocomplete_table : e.source.autocomplete_table,
-                                                            setValueF : func,
-                                                            textField : e.source
-                                                        });
-                                                        // apply rows to data array
-                                                        table_data.push(row);
-                                                    }
-                                                }
-                                                e.source.autocomplete_table.setData(table_data);
-                                                e.source.autocomplete_table.height = getScreenHeight() * 0.3;
-                                                e.source.autocomplete_table.borderWidth = 1;
-                                                if (table_data.length == 0) {
-                                                    e.source.autocomplete_table.borderWidth = 0;
-                                                }
-                                                if (table_data.length < 3 && table_data.length > 0) {
-                                                    e.source.autocomplete_table.height = (table_data.length == 1) ? getScreenHeight() * 0.1 : getScreenHeight() * 0.2;
-                                                }
-                                                e.source.autocomplete_table.scrollToTop(0, {
-                                                    animated : false
-                                                });
-                                                viewContent.scrollTo(0, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
-                                                if (table_data.length > 0) {
-                                                    e.source.autocomplete_table.visible = true;
-                                                }
-                                                else {
-                                                    e.source.autocomplete_table.visible = false;
-                                                }
-                                            }
-                                            else {
-                                                e.source.autocomplete_table.visible = false;
-                                                e.source.tid = null;
-                                            }
-                                        }
-
-                                        //e.source.first_time = false;
-                                        e.source.lastValue = e.source.value;
-
-                                    });
-                                    //Add fields:
-                                    regionView.add(content[count]);
-                                    count++;
-                                }
-                            }
-                            //No data checkbox functionality
-                            noDataCheckbox(reffer_index, regionView, top);
-                            if (content[reffer_index].noDataView != null) {
-                                top += 40;
-                            }
-                            break;
-
-                        //Refers to an object:
-                        case 'omadi_reference':
-                            var widget = JSON.parse(field_arr[index_label][index_size].widget);
-                            var settings = JSON.parse(field_arr[index_label][index_size].settings);
-                            var can_view = false;
-                            var can_edit = false;
-
-                            if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-                                var _l;
-                                for (_l in settings.permissions) {
-                                    for (_k in roles) {
-                                        if (_l == _k) {
-                                            var stringifyObj = JSON.stringify(settings.permissions[_l]);
-                                            if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_edit = true;
-                                            }
-
-                                            if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_view = true;
-                                            }
-
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                can_view = can_edit = true;
-                            }
-
-                            if (!can_view) {
-                                break;
-                            }
-
-                            label[count] = Ti.UI.createLabel({
-                                text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-                                color : isRequired ? 'red' : _lb_color,
-                                font : {
-                                    fontSize : fieldFontSize,
-                                    fontWeight : 'bold'
-                                },
-                                textAlign : 'left',
-                                width : Ti.Platform.displayCaps.platformWidth - 30,
-                                touchEnabled : false,
-                                height : heightValue,
-                                top : top
-                            });
-                            top += heightValue;
-
-                            var reffer_index = count;
-                            data_terms = new Array();
-                            aux_nodes = new Array();
-
-                            var i;
-                            for (i in settings.reference_types) {
-                                aux_nodes.push(settings.reference_types[i]);
-                            }
-
-                            if (aux_nodes.length > 0) {
-                                var secondary = 'SELECT * FROM node WHERE ';
-                                var i;
-                                for ( i = 0; i < aux_nodes.length; i++) {
-                                    if (i == aux_nodes.length - 1) {
-                                        secondary += ' table_name = \'' + aux_nodes[i] + '\' ';
-                                    }
-                                    else {
-                                        secondary += ' table_name = \'' + aux_nodes[i] + '\' OR ';
-                                    }
-                                }
-                                Ti.API.info(secondary);
-                                var db_bah = Omadi.utils.openMainDatabase();
-
-                                var nodes = db_bah.execute(secondary);
-                                Ti.API.info("Num of rows: " + nodes.rowCount);
-                                while (nodes.isValidRow()) {
-                                    Ti.API.info('Title: ' + nodes.fieldByName('title') + ' NID: ' + nodes.fieldByName('nid'));
-                                    data_terms.push({
-                                        title : nodes.fieldByName('title'),
-                                        nid : nodes.fieldByName('nid')
-                                    });
-                                    nodes.next();
-                                }
-                            }
-
-                            //Add fields:
-                            regionView.add(label[count]);
-
-                            if (settings.cardinality > 1) {
-                                // if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
-                                // var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
-                                //
-                                // //Decode the stored array:
-                                // var decoded = array_cont.fieldByName('encoded_array');
-                                // decoded = Base64.decode(decoded);
-                                // Ti.API.info('Decoded array is equals to: ' + decoded);
-                                // decoded = decoded.toString();
-                                //
-                                // // Token that splits each element contained into the array: 'j8Oc2s1E'
-                                // var decoded_values = decoded.split("j8Oc2s1E");
-                                // } else {
-                                // var decoded_values = new Array();
-                                // decoded_values[0] = field_arr[index_label][index_size].actual_value;
-                                // }
-                                //
-                                // for (var o_index = 0; o_index < settings.cardinality; o_index++) {
-                                //
-                                // if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
-                                // var vl_to_field = decoded_values[o_index];
-                                // } else {
-                                // var vl_to_field = "";
-                                // }
-                                //
-                                // var aux_val = {
-                                // title : "",
-                                // vl : null
-                                // };
-                                //
-                                // for (var h in data_terms) {
-                                // if (data_terms[h].nid == vl_to_field) {
-                                // aux_val.title = data_terms[h].title;
-                                // aux_val.vl = data_terms[h].nid;
-                                // }
-                                // }
-                                //
-                                // content[count] = Titanium.UI.createTextField({
-                                // hintText : "#" + o_index + " " + field_arr[index_label][index_size].label + ' ...',
-                                // borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                // color : '#000000',
-                                // private_index : o_index,
-                                // height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                // font : {
-                                // fontSize : fieldFontSize
-                                // },
-                                // width : Ti.Platform.displayCaps.platformWidth - 30,
-                                // top : top,
-                                // field_type : field_arr[index_label][index_size].type,
-                                // field_name : field_arr[index_label][index_size].field_name,
-                                // terms : data_terms,
-                                // restrict_new_autocomplete_terms : rest_up,
-                                // fantasy_name : field_arr[index_label][index_size].label,
-                                // nid : aux_val.vl,
-                                // required : field_arr[index_label][index_size].required,
-                                // is_title : field_arr[index_label][index_size].is_title,
-                                // composed_obj : true,
-                                // cardinality : settings.cardinality,
-                                // value : aux_val.title,
-                                // first_time : true,
-                                // reffer_index : reffer_index,
-                                // settings : settings,
-                                // changedFlag : 0,
-                                // my_index : count,
-                                // autocorrect : false,
-                                // returnKeyType : Ti.UI.RETURNKEY_DONE,
-                                // enabled : can_edit,
-                                // editable : can_edit,
-                                // touched : false,
-                                // regionView : regionView
-                                // });
-                                // if (PLATFORM == 'android') {
-                                // content[count].backgroundImage = '../images/textfield.png'
-                                // }
-                                // if (!can_edit) {
-                                // content[count].backgroundImage = '';
-                                // content[count].backgroundColor = '#BDBDBD';
-                                // content[count].borderColor = 'gray';
-                                // content[count].borderRadius = 10;
-                                // content[count].color = '#848484';
-                                // content[count].borderWidth = 1;
-                                // content[count].paddingLeft = 3;
-                                // content[count].paddingRight = 3;
-                                // if(PLATFORM == 'android'){
-                                // content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-                                // }
-                                // }
-                                // //AUTOCOMPLETE TABLE omadi_reference, cardinality > 1
-                                // var autocomplete_table = Titanium.UI.createTableView({
-                                // top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
-                                // searchHidden : true,
-                                // zIndex : 15,
-                                // height : getScreenHeight() * 0.3,
-                                // backgroundColor : '#FFFFFF',
-                                // visible : false,
-                                // borderColor : '#000',
-                                // borderWidth : 0
-                                // });
-                                // content[count].autocomplete_table = autocomplete_table;
-                                // top += (PLATFORM == 'android') ? heightTextField : heightValue;
-                                //
-                                // regionView.add(content[count].autocomplete_table);
-                                //
-                                // //
-                                // // TABLE EVENTS omadi_reference, cardinality > 1
-                                // //
-                                // content[count].autocomplete_table.addEventListener('click', function(e) {
-                                // //e.source.textField.setValueF(e.rowData.title, e.rowData.nid);
-                                //
-                                // if (PLATFORM != 'android') {
-                                // e.source.textField.value = e.rowData.title;
-                                // e.source.textField.nid = e.rowData.nid;
-                                // } else {
-                                // e.source.setValueF(e.rowData.title, e.rowData.nid);
-                                // }
-                                //
-                                // setTimeout(function() {
-                                // e.source.autocomplete_table.visible = false;
-                                // e.source.autocomplete_table.borderWidth = 0;
-                                // Ti.API.info(e.rowData.title + ' was selected!');
-                                // }, 80);
-                                //
-                                // });
-                                //
-                                // content[count].addEventListener('blur', function(e) {
-                                // e.source.autocomplete_table.visible = false;
-                                // e.source.autocomplete_table.borderWidth = 0;
-                                // if ((e.source.nid === null) && (e.source.value != "")) {
-                                // if (PLATFORM == 'android') {
-                                // Ti.UI.createNotification({
-                                // message : 'The field ' + e.source.fantasy_name + ' does not accept fields creation, select one of the list !',
-                                // duration : Ti.UI.NOTIFICATION_DURATION_LONG
-                                // }).show();
-                                // } else {
-                                // alert('The field ' + e.source.fantasy_name + ' does not accept fields creation, select one of the list !');
-                                // }
-                                // }
-                                // });
-                                //
-                                // content[count].addEventListener('focus', function(e) {
-                                // e.source.touched = true;
-                                // adjustView(e.source.my_index, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
-                                // });
-                                //
-                                // //
-                                // // SEARCH EVENTS, omadi_reference, cardinality > 1
-                                // //
-                                // content[count].addEventListener('change', function(e) {
-                                // if (e.source.touched === true) {
-                                // changedContentValue(e.source);
-                                // if (e.source.first_time === false || e.source.value == '') {
-                                // var list = e.source.terms;
-                                // var func = function setValueF(value_f, nid) {
-                                // e.source.value = value_f;
-                                // e.source.nid = nid;
-                                // Ti.API.info('Value: ' + value_f + ' NID: ' + nid);
-                                // }
-                                // if ((e.value != null) && (e.value != '')) {
-                                // table_data = [];
-                                // e.source.nid = null;
-                                // for (var i = 0; i < list.length; i++) {
-                                // var rg = new RegExp(e.source.value, 'i');
-                                // if (list[i].title.search(rg) != -1) {
-                                // //Check match
-                                // if (e.source.value == list[i].title) {
-                                // e.source.nid = list[i].nid;
-                                // } else {
-                                // e.source.nid = null;
-                                // }
-                                //
-                                // //Create partial matching row
-                                // var row = Ti.UI.createTableViewRow({
-                                // height : getScreenHeight() * 0.10,
-                                // title : list[i].title,
-                                // nid : list[i].nid,
-                                // color : '#000000',
-                                // autocomplete_table : e.source.autocomplete_table,
-                                // setValueF : func,
-                                // textField : e.source
-                                // });
-                                // // apply rows to data array
-                                // table_data.push(row);
-                                // }
-                                // }
-                                // e.source.autocomplete_table.setData(table_data);
-                                // e.source.autocomplete_table.height = getScreenHeight() * 0.3;
-                                // e.source.autocomplete_table.borderWidth = 1;
-                                // if(table_data.length == 0){
-                                // e.source.autocomplete_table.borderWidth = 0;
-                                // }
-                                // if (table_data.length < 3 && table_data.length > 0) {
-                                // e.source.autocomplete_table.height = (table_data.length == 1) ? getScreenHeight() * 0.1 : getScreenHeight() * 0.2;
-                                // }
-                                // e.source.autocomplete_table.scrollToTop(0, {
-                                // animated : false
-                                // });
-                                // viewContent.scrollTo(0, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
-                                // if (table_data.length > 0) {
-                                // e.source.autocomplete_table.visible = true;
-                                // } else {
-                                // e.source.autocomplete_table.visible = false;
-                                // }
-                                // } else {
-                                // e.source.autocomplete_table.visible = false;
-                                // e.source.nid = null;
-                                // }
-                                // }
-                                // e.source.first_time = false;
-                                // }
-                                //
-                                // });
-                                // //Add fields:
-                                // regionView.add(content[count]);
-                                // count++;
-                                // }
-                            }
-                            else {
-
-                                var vl_to_field = field_arr[index_label][index_size].actual_value;
-
-                                var aux_val = {
-                                    title : "",
-                                    vl : null
-                                };
-                                var h;
-                                for (h in data_terms) {
-                                    if (data_terms[h].nid == vl_to_field) {
-                                        aux_val.title = data_terms[h].title;
-                                        aux_val.vl = data_terms[h].nid;
-                                    }
-                                }
-
-                                Ti.API.info("-----------------     OMADI REFERENCE : " + aux_val.title + " NID: " + aux_val.vl);
-
-                                content[count] = Titanium.UI.createTextField({
-                                    hintText : field_arr[index_label][index_size].label + ' ...',
-                                    borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                    color : '#000000',
-                                    height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                    font : {
-                                        fontSize : fieldFontSize
-                                    },
-                                    width : Ti.Platform.displayCaps.platformWidth - 30,
-                                    top : top,
-                                    field_type : field_arr[index_label][index_size].type,
-                                    field_name : field_arr[index_label][index_size].field_name,
-                                    terms : data_terms,
-                                    restrict_new_autocomplete_terms : rest_up,
-                                    fantasy_name : field_arr[index_label][index_size].label,
-                                    nid : aux_val.vl,
-                                    required : field_arr[index_label][index_size].required,
-                                    is_title : field_arr[index_label][index_size].is_title,
-                                    composed_obj : false,
-                                    cardinality : settings.cardinality,
-                                    value : aux_val.title,
-                                    //first_time : true,
-                                    lastValue : aux_val.title,
-                                    reffer_index : reffer_index,
-                                    settings : settings,
-                                    changedFlag : 0,
-                                    my_index : count,
-                                    autocorrect : false,
-                                    returnKeyType : Ti.UI.RETURNKEY_DONE,
-                                    enabled : can_edit,
-                                    editable : can_edit,
-                                    touched : false,
-                                    regionView : regionView
-                                });
-                                if (PLATFORM == 'android') {
-                                    content[count].backgroundImage = '../images/textfield.png'
-                                }
-                                if (!can_edit) {
-                                    content[count].backgroundImage = '';
-                                    content[count].backgroundColor = '#BDBDBD';
-                                    content[count].borderColor = 'gray';
-                                    content[count].borderRadius = 10;
-                                    content[count].color = '#848484';
-                                    content[count].borderWidth = 1;
-                                    content[count].paddingLeft = 3;
-                                    content[count].paddingRight = 3;
-                                    if (PLATFORM == 'android') {
-                                        content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-                                    }
-                                }
-                                //AUTOCOMPLETE TABLE FOR OMADI REFERENCE FIELDS, cardinality = 1
-                                var autocomplete_table = Titanium.UI.createTableView({
-                                    top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
-                                    searchHidden : true,
-                                    zIndex : 999,
-                                    height : getScreenHeight() * 0.3,
-                                    backgroundColor : '#FFFFFF',
-                                    visible : false,
-                                    borderColor : '#000',
-                                    borderWidth : 0
-                                });
-                                content[count].autocomplete_table = autocomplete_table;
-                                top += (PLATFORM == 'android') ? heightTextField : heightValue;
-
-                                regionView.add(content[count].autocomplete_table);
-
-                                //
-                                // TABLE EVENTS FOR OMADI REFERENCE FIELDS, cardinality = 1
-                                //
-                                content[count].autocomplete_table.addEventListener('click', function(e) {
-                                    if (PLATFORM != 'android') {
-                                        e.source.textField.value = e.rowData.title;
-                                        e.source.textField.nid = e.rowData.nid;
-                                    }
-                                    else {
-                                        e.source.setValueF(e.rowData.title, e.rowData.nid);
-                                    }
-
-                                    setTimeout(function() {
-                                        e.source.autocomplete_table.visible = false;
-                                        e.source.autocomplete_table.borderWidth = 0;
-                                        Ti.API.info(e.rowData.title + ' was selected!');
-                                    }, 80);
-
-                                });
-
-                                content[count].addEventListener('blur', function(e) {
-                                    e.source.autocomplete_table.visible = false;
-                                    e.source.autocomplete_table.borderWidth = 0;
-                                    if ((e.source.nid === null) && (e.source.value != "")) {
-                                        if (PLATFORM == 'android') {
-                                            Ti.UI.createNotification({
-                                                message : 'The field ' + e.source.fantasy_name + ' does not accept fields creation, select one of the list !',
-                                                duration : Ti.UI.NOTIFICATION_DURATION_LONG
-                                            }).show();
-                                        }
-                                        else {
-                                            alert('The field ' + e.source.fantasy_name + ' does not accept fields creation, select one of the list !');
-                                        }
-                                    }
-                                    else {
-                                        setDefaultValues(content, e);
-                                        setRulesField(e.source);
-                                    }
-                                });
-
-                                content[count].addEventListener('focus', function(e) {
-                                    e.source.touched = true;
-                                    adjustView(e.source.my_index, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
-                                });
-
-                                //
-                                // SEARCH EVENTS omadi_reference, cardinality == 1
-                                //
-                                content[count].addEventListener('change', function(e) {
-                                    if (e.source.touched === true) {
-                                        e.source.nid = null;
-                                        changedContentValue(e.source);
-                                        //Ti.API.info('value: ' + e.source.lastValue + " " + e.source.value);
-                                        if (e.source.lastValue != e.source.value) {
-                                            var list = e.source.terms;
-                                            var func = function setValueF(value_f, nid) {
-                                                e.source.value = value_f;
-                                                e.source.nid = nid;
-                                                //Ti.API.info('Value: ' + value_f + ' NID: ' + nid);
-                                            };
-
-                                            if ((e.value != null) && (e.value != '')) {
-                                                table_data = [];
-                                                e.source.nid = null;
-                                                var i;
-                                                for ( i = 0; i < list.length; i++) {
-                                                    var rg = new RegExp(e.source.value, 'i');
-                                                    if (list[i].title.search(rg) != -1) {
-                                                        //Check match
-                                                        if (e.source.value == list[i].title) {
-                                                            e.source.nid = list[i].nid;
-                                                        }
-                                                        else {
-                                                            e.source.nid = null;
-                                                        }
-
-                                                        //Create partial matching row
-                                                        var row = Ti.UI.createTableViewRow({
-                                                            height : getScreenHeight() * 0.10,
-                                                            title : list[i].title,
-                                                            nid : list[i].nid,
-                                                            color : '#000000',
-                                                            autocomplete_table : e.source.autocomplete_table,
-                                                            setValueF : func,
-                                                            textField : e.source
-                                                        });
-                                                        // apply rows to data array
-                                                        table_data.push(row);
-                                                    }
-                                                }
-                                                e.source.autocomplete_table.setData(table_data);
-                                                e.source.autocomplete_table.borderWidth = 1;
-                                                e.source.autocomplete_table.height = getScreenHeight() * 0.3;
-                                                if (table_data.length == 0) {
-                                                    e.source.autocomplete_table.borderWidth = 0;
-                                                }
-                                                if (table_data.length < 3 && table_data.length > 0) {
-                                                    e.source.autocomplete_table.height = (table_data.length == 1) ? getScreenHeight() * 0.1 : getScreenHeight() * 0.2;
-                                                }
-                                                e.source.autocomplete_table.scrollToTop(0, {
-                                                    animated : false
-                                                });
-                                                viewContent.scrollTo(0, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
-                                                if (table_data.length > 0) {
-                                                    e.source.autocomplete_table.visible = true;
-                                                }
-                                                else {
-                                                    e.source.autocomplete_table.visible = false;
-                                                }
-                                            }
-                                            else {
-                                                e.source.autocomplete_table.visible = false;
-                                                e.source.nid = null;
-                                            }
-
-                                        }
-                                        //e.source.first_time = false;
-                                    }
-                                    e.source.lastValue = e.source.value;
-                                });
-                                //Add fields:
-                                regionView.add(content[count]);
-                                count++;
-                            }
-
-                            break;
-
-                        case 'user_reference':
-                            var settings = JSON.parse(field_arr[index_label][index_size].settings);
-                            var can_view = false;
-                            var can_edit = false;
-
-                            if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-                                var _l;
-                                for (_l in settings.permissions) {
-                                    for (_k in roles) {
-                                        if (_l == _k) {
-                                            var stringifyObj = JSON.stringify(settings.permissions[_l]);
-                                            if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_edit = true;
-                                            }
-
-                                            if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_view = true;
-                                            }
-
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                can_view = can_edit = true;
-                            }
-
-                            if (!can_view) {
-                                break;
-                            }
-                            label[count] = Ti.UI.createLabel({
-                                text : ( isRequired ? '*' : '') + '' + field_arr[index_label][index_size].label,
-                                color : isRequired ? 'red' : _lb_color,
-                                font : {
-                                    fontSize : fieldFontSize,
-                                    fontWeight : 'bold'
-                                },
-                                textAlign : 'left',
-                                width : Ti.Platform.displayCaps.platformWidth - 30,
-                                touchEnabled : false,
-                                height : heightValue,
-                                top : top
-
-                            });
-                            top += heightValue;
-
-                            var reffer_index = count;
-                            //Add fields:
-                            regionView.add(label[count]);
-
-                            var users = db_display.execute("SELECT * FROM user WHERE ((uid != 0) AND (uid != 1)) ORDER BY realname ASC");
-                            var data_terms = [];
-                            // data_terms.push({
-                            // title : field_arr[index_label][index_size].label,
-                            // uid : null
-                            // });
-
-                            while (users.isValidRow()) {
-                                if (users.fieldByName('realname') == '') {
-                                    var name_ff = users.fieldByName('username');
-                                }
-                                else {
-                                    var name_ff = users.fieldByName('realname');
-                                }
-
-                                data_terms.push({
-                                    title : name_ff,
-                                    uid : users.fieldByName('uid')
-                                });
-
-                                Ti.API.info('Username: \'' + users.fieldByName('username') + '\' , Realname: \'' + users.fieldByName('realname') + '\' , UID = ' + users.fieldByName('uid'));
-                                users.next();
-                            }
-                            users.close();
-                            var algo;
-                            for (algo in settings) {
-                                Ti.API.info(algo + " ===================>>> " + settings[algo]);
-                            }
-
-                            if (settings.cardinality > 1) {
-                                if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
-                                    var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
-
-                                    //Decode the stored array:
-                                    var decoded = array_cont.fieldByName('encoded_array');
-                                    decoded = Base64.decode(decoded);
-                                    Ti.API.info('Decoded array is equals to: ' + decoded);
-                                    decoded = decoded.toString();
-
-                                    // Token that splits each element contained into the array: 'j8Oc2s1E'
-                                    var decoded_values = decoded.split("j8Oc2s1E");
-                                }
-                                else {
-                                    var decoded_values = new Array();
-                                    decoded_values[0] = field_arr[index_label][index_size].actual_value;
-                                }
-
-                                var o_index;
-                                for ( o_index = 0; o_index < settings.cardinality; o_index++) {
-
-                                    if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
-                                        var vl_to_field = decoded_values[o_index];
-                                    }
-                                    else {
-                                        var vl_to_field = "";
-                                    }
-
-                                    var arr_picker = new Array();
-                                    var arr_opt = new Array();
-                                    arr_picker.push({
-                                        title : '-- NONE --',
-                                        uid : null
-                                    });
-                                    arr_opt.push('-- NONE --');
-
-                                    var aux_val = {
-                                        title : '-- NONE --',
-                                        vl : null,
-                                        cnt : 0
-                                    };
-
-                                    if (vl_to_field == "") {
-                                        if (settings.default_value == "current_user") {
-                                            vl_to_field = win.uid;
-                                        }
-
-                                    }
-
-                                    Ti.API.info(vl_to_field + " ----------------- is the uid ------------------- " + settings.default_value);
-
-                                    var counter_loop = 0;
-                                    var i_data_terms;
-                                    for (i_data_terms in data_terms) {
-                                        if (vl_to_field == data_terms[i_data_terms].uid) {
-                                            aux_val.title = data_terms[i_data_terms].title;
-                                            aux_val.vl = data_terms[i_data_terms].uid;
-                                            aux_val.cnt = counter_loop;
-                                        }
-                                        arr_picker.push({
-                                            title : data_terms[i_data_terms].title,
-                                            uid : data_terms[i_data_terms].uid
-                                        });
-                                        arr_opt.push(data_terms[i_data_terms].title);
-                                        counter_loop++;
-                                    }
-
-                                    content[count] = Titanium.UI.createButton({
-                                        borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                        private_index : o_index,
-                                        width : Ti.Platform.displayCaps.platformWidth - 30,
-                                        height : heightValue,
-                                        arr_opt : arr_opt,
-                                        arr_picker : arr_picker,
-                                        title : aux_val.title,
-                                        font : {
-                                            fontSize : fieldFontSize
-                                        },
-                                        color : '#000000',
-                                        top : top,
-                                        selectionIndicator : true,
-                                        field_type : field_arr[index_label][index_size].type,
-                                        field_name : field_arr[index_label][index_size].field_name,
-                                        required : field_arr[index_label][index_size].required,
-                                        is_title : field_arr[index_label][index_size].is_title,
-                                        value : aux_val.vl,
-                                        composed_obj : true,
-                                        cardinality : settings.cardinality,
-                                        reffer_index : reffer_index,
-                                        settings : settings,
-                                        changedFlag : 0,
-                                        enabled : can_edit
-                                    });
-                                    if (PLATFORM == 'android') {
-                                        content[count].backgroundImage = '';
-                                        content[count].backgroundColor = 'white';
-                                        content[count].backgroundSelectedColor = '#2E64FE';
-                                        content[count].borderColor = 'gray';
-                                        content[count].borderRadius = 10;
-                                        content[count].color = 'black';
-                                        content[count].borderWidth = 1;
-                                    }
-                                    if (!can_edit) {
-                                        content[count].backgroundImage = '';
-                                        content[count].backgroundColor = '#BDBDBD';
-                                        content[count].borderColor = 'gray';
-                                        content[count].borderRadius = 10;
-                                        content[count].color = '#848484';
-                                        content[count].borderWidth = 1;
-                                    }
-                                    top += heightValue;
-
-                                    content[count].addEventListener('click', function(e) {
-                                        //Ti.API.info('UID: '+e.row.uid);
-                                        //e.source.value = e.row.uid;
-                                        var postDialog = Titanium.UI.createOptionDialog();
-                                        postDialog.options = e.source.arr_opt;
-                                        postDialog.cancel = -1;
-                                        postDialog.show();
-
-                                        postDialog.addEventListener('click', function(ev) {
-                                            if (ev.index >= 0) {
-                                                e.source.title = e.source.arr_opt[ev.index];
-                                                e.source.value = e.source.arr_picker[ev.index].uid;
-                                            }
-                                            changedContentValue(e.source);
-                                            noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
-                                        });
-                                    });
-                                    //Add fields:
-                                    regionView.add(content[count]);
-                                    count++;
-
-                                }
-                            }
-                            else {
-
-                                var vl_to_field = field_arr[index_label][index_size].actual_value;
-
-                                if (vl_to_field == "" || vl_to_field == "null" || vl_to_field == null) {
-                                    if (settings.default_value == "current_user") {
-                                        vl_to_field = win.uid;
-                                    }
-                                }
-
-                                Ti.API.info(vl_to_field + " ----------------- is the uid ------------------- " + settings.default_value);
-
-                                var arr_picker = new Array();
-                                var arr_opt = new Array();
-                                arr_picker.push({
-                                    title : '-- NONE --',
-                                    uid : null
-                                });
-                                arr_opt.push('-- NONE --');
-
-                                var aux_val = {
-                                    title : '-- NONE --',
-                                    vl : null,
-                                    cnt : 0
-                                };
-
-                                var counter_loop = 0;
-                                var i_data_terms;
-                                for (i_data_terms in data_terms) {
-                                    if (vl_to_field == data_terms[i_data_terms].uid) {
-                                        aux_val.title = data_terms[i_data_terms].title;
-                                        aux_val.vl = data_terms[i_data_terms].uid;
-                                        aux_val.cnt = counter_loop;
-                                    }
-                                    arr_picker.push({
-                                        title : data_terms[i_data_terms].title,
-                                        uid : data_terms[i_data_terms].uid
-                                    });
-                                    arr_opt.push(data_terms[i_data_terms].title);
-                                    counter_loop++;
-                                }
-
-                                content[count] = Titanium.UI.createButton({
-                                    borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                    width : Ti.Platform.displayCaps.platformWidth - 30,
-                                    height : heightValue,
-                                    arr_opt : arr_opt,
-                                    arr_picker : arr_picker,
-                                    title : aux_val.title,
-                                    font : {
-                                        fontSize : fieldFontSize
-                                    },
-                                    color : '#000000',
-                                    top : top,
-                                    selectionIndicator : true,
-                                    field_type : field_arr[index_label][index_size].type,
-                                    field_name : field_arr[index_label][index_size].field_name,
-                                    required : field_arr[index_label][index_size].required,
-                                    is_title : field_arr[index_label][index_size].is_title,
-                                    composed_obj : false,
-                                    cardinality : settings.cardinality,
-                                    value : aux_val.vl,
-                                    reffer_index : reffer_index,
-                                    settings : settings,
-                                    changedFlag : 0,
-                                    enabled : can_edit
-                                });
-                                if (PLATFORM == 'android') {
-                                    content[count].backgroundImage = '';
-                                    content[count].backgroundColor = 'white';
-                                    content[count].backgroundSelectedColor = '#2E64FE';
-                                    content[count].borderColor = 'gray';
-                                    content[count].borderRadius = 10;
-                                    content[count].color = 'black';
-                                    content[count].borderWidth = 1;
-                                }
-                                if (!can_edit) {
-                                    content[count].backgroundImage = '';
-                                    content[count].backgroundColor = '#BDBDBD';
-                                    content[count].borderColor = 'gray';
-                                    content[count].borderRadius = 10;
-                                    content[count].color = '#848484';
-                                    content[count].borderWidth = 1;
-                                }
-                                top += heightValue;
-
-                                content[count].addEventListener('click', function(e) {
-                                    //Ti.API.info('UID: '+e.row.uid);
-                                    //e.source.value = e.row.uid;
-                                    var postDialog = Titanium.UI.createOptionDialog();
-                                    postDialog.options = e.source.arr_opt;
-                                    postDialog.cancel = -1;
-                                    postDialog.show();
-
-                                    postDialog.addEventListener('click', function(ev) {
-                                        if (ev.index >= 0) {
-                                            e.source.title = e.source.arr_opt[ev.index];
-                                            e.source.value = e.source.arr_picker[ev.index].uid;
-                                        }
-                                        changedContentValue(e.source);
-                                        noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
-                                    });
-
-                                });
-                                //Add fields:
-                                regionView.add(content[count]);
-                                count++;
-                            }
-                            //No data checkbox functionality
-                            noDataCheckbox(reffer_index, regionView, top);
-                            if (content[reffer_index].noDataView != null) {
-                                top += 40;
-                            }
-                            break;
-
-                        //Shows up date (check how it is exhibited):
-                        case 'datestamp':
-                            var widget = JSON.parse(field_arr[index_label][index_size].widget);
-                            var settings = JSON.parse(field_arr[index_label][index_size].settings);
-                            var can_view = false;
-                            var can_edit = false;
-
-                            if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-                                var _l;
-                                for (_l in settings.permissions) {
-                                    for (_k in roles) {
-                                        if (_l == _k) {
-                                            var stringifyObj = JSON.stringify(settings.permissions[_l]);
-                                            if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_edit = true;
-                                            }
-
-                                            if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_view = true;
-                                            }
-
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                can_view = can_edit = true;
-                            }
-
-                            if (!can_view) {
-                                break;
-                            }
-                            Ti.API.info(field_arr[index_label][index_size].settings);
-
-                            label[count] = Ti.UI.createLabel({
-                                text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-                                color : isRequired ? 'red' : _lb_color,
-                                font : {
-                                    fontSize : fieldFontSize,
-                                    fontWeight : 'bold'
-                                },
-                                textAlign : 'left',
-                                width : Ti.Platform.displayCaps.platformWidth - 30,
-                                touchEnabled : false,
-                                height : heightValue,
-                                top : top
-
-                            });
-                            top += heightValue;
-
-                            var reffer_index = count;
-
-                            //Add fields:
-                            regionView.add(label[count]);
-
-                            // call function display_widget
-                            if (widget.settings['time'] != "1") {
-
-                                if (settings.cardinality > 1) {
-                                    if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
-                                        var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
-
-                                        //Decode the stored array:
-                                        var decoded = array_cont.fieldByName('encoded_array');
-                                        decoded = Base64.decode(decoded);
-                                        Ti.API.info('Decoded array is equals to: ' + decoded);
-                                        decoded = decoded.toString();
-
-                                        // Token that splits each element contained into the array: 'j8Oc2s1E'
-                                        var decoded_values = decoded.split("j8Oc2s1E");
-                                    }
-                                    else {
-                                        var decoded_values = new Array();
-                                        decoded_values[0] = field_arr[index_label][index_size].actual_value;
-                                    }
-
-                                    var o_index;
-                                    for ( o_index = 0; o_index < settings.cardinality; o_index++) {
-                                        var text_in_field = "";
-                                        if ((o_index < decoded_values.length) && ((decoded_values[o_index] != null) && (decoded_values[o_index] != "null") && (decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
-                                            var vl_to_field = (decoded_values[o_index]) * 1000;
-                                            //Get current
-                                            var currentDate = new Date(vl_to_field);
-                                            var day = currentDate.getDate();
-                                            var month = currentDate.getMonth();
-                                            var year = currentDate.getFullYear();
-                                            text_in_field = months_set[month] + " / " + day + " / " + year;
-                                        }
-                                        else {
-                                            //Let's show it as
-                                            var currentDate = new Date();
-                                            var day = currentDate.getDate();
-                                            var month = currentDate.getMonth();
-                                            var year = currentDate.getFullYear();
-
-                                            if (settings.default_value == 'now') {
-                                                var vl_to_field = currentDate.getTime();
-                                                text_in_field = months_set[month] + " / " + day + " / " + year;
-                                            }
-                                            else {
-                                                var vl_to_field = null;
-                                                text_in_field = "";
-                                            }
-
-                                        }
-
-                                        content[count] = Titanium.UI.createLabel({
-                                            borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                            private_index : o_index,
-                                            width : Ti.Platform.displayCaps.platformWidth - 30,
-                                            title_picker : field_arr[index_label][index_size].label,
-                                            font : {
-                                                fontSize : fieldFontSize
-                                            },
-                                            text : text_in_field,
-                                            textAlign : 'center',
-                                            color : '#000000',
-                                            backgroundColor : '#FFFFFF',
-                                            field_type : field_arr[index_label][index_size].type,
-                                            field_name : field_arr[index_label][index_size].field_name,
-                                            widget : widget,
-                                            settings : settings,
-                                            currentDate : currentDate,
-                                            update_it : true,
-                                            time_type : 0,
-                                            required : field_arr[index_label][index_size].required,
-                                            value : vl_to_field,
-                                            is_title : field_arr[index_label][index_size].is_title,
-                                            composed_obj : true,
-                                            cardinality : settings.cardinality,
-                                            reffer_index : reffer_index,
-                                            height : heightValue,
-                                            settings : settings,
-                                            changedFlag : 0,
-                                            can_edit : can_edit,
-                                            enabled : can_edit,
-                                        });
-                                        if (!can_edit) {
-                                            content[count].backgroundImage = '';
-                                            content[count].backgroundColor = '#BDBDBD';
-                                            content[count].borderColor = 'gray';
-                                            content[count].color = '#848484';
-                                            content[count].borderWidth = 1
-                                        }
-
-                                        var mother_of_view = Ti.UI.createView({
-                                            height : heightValue,
-                                            top : top
-                                        });
-                                        top += heightValue;
-
-                                        mother_of_view.add(content[count]);
-
-                                        var clear = Ti.UI.createImageView({
-                                            image : '/images/cancel.png',
-                                            right : '4%',
-                                            height : '35dp',
-                                            width : '35dp',
-                                            is_clear : true,
-                                            its_parent : content[count],
-                                            can_edit : can_edit,
-                                        });
-
-                                        content[count].clear = clear;
-                                        mother_of_view.add(content[count].clear);
-                                        content[count].clear.addEventListener('click', function(e) {
-                                            if (e.source.can_edit) {
-                                                e.source.its_parent.text = "";
-                                                e.source.its_parent.value = null;
-                                            }
-                                        });
-
-                                        content[count].addEventListener('click', function(e) {
-                                            if (e.source.can_edit) {
-                                                display_widget(e.source);
-                                            }
-                                        });
-                                        //regionView.add(content[count]);
-                                        regionView.add(mother_of_view);
-                                        count++;
-
-                                    }
-                                }
-                                else {
-                                    var text_in_field = "";
-                                    if ((field_arr[index_label][index_size].actual_value != null) && (field_arr[index_label][index_size].actual_value != "null") && (field_arr[index_label][index_size].actual_value != "") && (field_arr[index_label][index_size].actual_value != " ")) {
-                                        var vl_to_field = (field_arr[index_label][index_size].actual_value) * 1000;
-
-                                        //Get current
-                                        var currentDate = new Date(vl_to_field);
-                                        var day = currentDate.getDate();
-                                        var month = currentDate.getMonth();
-                                        var year = currentDate.getFullYear();
-                                        text_in_field = months_set[month] + " / " + day + " / " + year;
-                                    }
-                                    else {
-                                        var currentDate = new Date();
-
-                                        var day = currentDate.getDate();
-                                        var month = currentDate.getMonth();
-                                        var year = currentDate.getFullYear();
-
-                                        if (settings.default_value == 'now') {
-                                            var vl_to_field = currentDate.getTime();
-                                            text_in_field = months_set[month] + " / " + day + " / " + year;
-                                        }
-                                        else {
-                                            var vl_to_field = null;
-                                            text_in_field = "";
-                                        }
-
-                                    }
-
-                                    content[count] = Titanium.UI.createLabel({
-                                        borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                        width : Ti.Platform.displayCaps.platformWidth - 30,
-                                        title_picker : field_arr[index_label][index_size].label,
-                                        font : {
-                                            fontSize : fieldFontSize
-                                        },
-                                        text : text_in_field,
-                                        textAlign : 'center',
-                                        color : '#000000',
-                                        backgroundColor : '#FFFFFF',
-                                        field_type : field_arr[index_label][index_size].type,
-                                        field_name : field_arr[index_label][index_size].field_name,
-                                        widget : widget,
-                                        settings : settings,
-                                        currentDate : currentDate,
-                                        update_it : true,
-                                        value : vl_to_field,
-                                        time_type : 0,
-                                        required : field_arr[index_label][index_size].required,
-                                        is_title : field_arr[index_label][index_size].is_title,
-                                        composed_obj : false,
-                                        cardinality : settings.cardinality,
-                                        reffer_index : reffer_index,
-                                        height : heightValue,
-                                        settings : settings,
-                                        changedFlag : 0,
-                                        can_edit : can_edit,
-                                        enabled : can_edit,
-
-                                    });
-                                    if (!can_edit) {
-                                        content[count].backgroundImage = '';
-                                        content[count].backgroundColor = '#BDBDBD';
-                                        content[count].borderColor = 'gray';
-                                        content[count].color = '#848484';
-                                        content[count].borderWidth = 1
-                                    }
-
-                                    var mother_of_view = Ti.UI.createView({
-                                        height : heightValue,
-                                        top : top
-                                    });
-                                    top += heightValue;
-
-                                    mother_of_view.add(content[count]);
-
-                                    var clear = Ti.UI.createImageView({
-                                        image : '/images/cancel.png',
-                                        right : '4%',
-                                        height : '35dp',
-                                        width : '35dp',
-                                        is_clear : true,
-                                        its_parent : content[count],
-                                        can_edit : can_edit,
-                                    });
-
-                                    content[count].clear = clear;
-                                    mother_of_view.add(content[count].clear);
-                                    content[count].clear.addEventListener('click', function(e) {
-                                        if (e.source.can_edit) {
-                                            e.source.its_parent.text = "";
-                                            e.source.its_parent.value = null;
-                                        }
-                                    });
-
-                                    content[count].addEventListener('click', function(e) {
-                                        if (e.source.can_edit) {
-                                            display_widget(e.source);
-                                        }
-                                    });
-                                    //regionView.add(content[count]);
-                                    regionView.add(mother_of_view);
-                                    count++;
-
-                                }
-                            }
-                            else {
-                                //Composed field
-                                // Date picker
-                                // Time picker
-                                // For current Titanium Studio version (1.8), Android doesn't supply such pre build API. Here we create it
-
-                                if (settings.cardinality > 1) {
-                                    if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
-                                        var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
-
-                                        //Decode the stored array:
-                                        var decoded = array_cont.fieldByName('encoded_array');
-                                        decoded = Base64.decode(decoded);
-                                        Ti.API.info('Decoded array is equals to: ' + decoded);
-                                        decoded = decoded.toString();
-
-                                        // Token that splits each element contained into the array: 'j8Oc2s1E'
-                                        var decoded_values = decoded.split("j8Oc2s1E");
-                                    }
-                                    else {
-                                        var decoded_values = new Array();
-                                        decoded_values[0] = field_arr[index_label][index_size].actual_value;
-                                    }
-
-                                    var o_index;
-                                    for ( o_index = 0; o_index < settings.cardinality; o_index++) {
-                                        var text_in_field = "";
-                                        if ((o_index < decoded_values.length) && ((decoded_values[o_index] != null) && (decoded_values[o_index] != "null") && (decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
-                                            var vl_to_field = decoded_values[o_index] * 1000;
-
-                                            //Get current
-                                            var currentDate = new Date(vl_to_field);
-
-                                            var day = currentDate.getDate();
-                                            var month = currentDate.getMonth();
-                                            var year = currentDate.getFullYear();
-                                            var min = currentDate.getMinutes();
-                                            var hours = currentDate.getHours();
-                                            //text_in_field = hours + ":" + form_min(min) + " - " + months_set[month] + " / " + day + " / " + year;
-                                            text_in_field = date(omadi_time_format, currentDate) + " - " + months_set[month] + " / " + day + " / " + year;
-                                        }
-                                        else {
-                                            //Get current
-                                            var currentDate = new Date();
-
-                                            var day = currentDate.getDate();
-                                            var month = currentDate.getMonth();
-                                            var year = currentDate.getFullYear();
-                                            var min = currentDate.getMinutes();
-                                            var hours = currentDate.getHours();
-
-                                            if (settings.default_value == 'now') {
-                                                var vl_to_field = currentDate.getTime();
-                                                //text_in_field = hours + ":" + form_min(min) + " - " + months_set[month] + " / " + day + " / " + year;
-                                                text_in_field = date(omadi_time_format, currentDate) + " - " + months_set[month] + " / " + day + " / " + year;
-                                            }
-                                            else {
-                                                var vl_to_field = null;
-                                                text_in_field = "";
-                                            }
-                                        }
-
-                                        //Date picker
-                                        content[count] = Titanium.UI.createLabel({
-                                            borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                            private_index : o_index,
-                                            width : Ti.Platform.displayCaps.platformWidth - 30,
-                                            font : {
-                                                fontSize : fieldFontSize
-                                            },
-                                            text : text_in_field,
-                                            textAlign : 'center',
-                                            color : '#000000',
-                                            backgroundColor : '#FFFFFF',
-                                            field_type : field_arr[index_label][index_size].type,
-                                            field_name : field_arr[index_label][index_size].field_name,
-                                            title_picker : field_arr[index_label][index_size].label,
-                                            widget : widget,
-                                            settings : settings,
-                                            currentDate : currentDate,
-                                            update_it : true,
-                                            value : vl_to_field,
-                                            time_type : 1,
-                                            required : field_arr[index_label][index_size].required,
-                                            is_title : field_arr[index_label][index_size].is_title,
-                                            composed_obj : true,
-                                            cardinality : settings.cardinality,
-                                            reffer_index : reffer_index,
-                                            height : heightValue,
-                                            settings : settings,
-                                            changedFlag : 0,
-                                            can_edit : can_edit,
-                                            enabled : can_edit,
-
-                                        });
-
-                                        if (!can_edit) {
-                                            content[count].backgroundImage = '';
-                                            content[count].backgroundColor = '#BDBDBD';
-                                            content[count].borderColor = 'gray';
-                                            content[count].color = '#848484';
-                                            content[count].borderWidth = 1
-                                        }
-
-                                        var mother_of_view = Ti.UI.createView({
-                                            height : heightValue,
-                                            top : top
-                                        });
-                                        top += heightValue;
-
-                                        mother_of_view.add(content[count]);
-
-                                        var clear = Ti.UI.createImageView({
-                                            image : '/images/cancel.png',
-                                            right : '4%',
-                                            height : '35dp',
-                                            width : '35dp',
-                                            is_clear : true,
-                                            its_parent : content[count],
-                                            can_edit : can_edit,
-                                        });
-
-                                        content[count].clear = clear;
-                                        mother_of_view.add(content[count].clear);
-                                        content[count].clear.addEventListener('click', function(e) {
-                                            if (e.source.can_edit) {
-                                                e.source.its_parent.text = "";
-                                                e.source.its_parent.value = null;
-                                            }
-                                        });
-
-                                        content[count].addEventListener('click', function(e) {
-                                            if (e.source.can_edit) {
-                                                display_widget(e.source);
-                                            }
-                                        });
-                                        //regionView.add(content[count]);
-                                        regionView.add(mother_of_view);
-                                        count++;
-                                    }
-                                }
-                                else {
-                                    var text_in_field = "";
-                                    if ((field_arr[index_label][index_size].actual_value != null) && (field_arr[index_label][index_size].actual_value != "null") && (field_arr[index_label][index_size].actual_value != "") && (field_arr[index_label][index_size].actual_value != " ")) {
-                                        var vl_to_field = field_arr[index_label][index_size].actual_value * 1000;
-                                        //Get current
-                                        var currentDate = new Date(vl_to_field);
-
-                                        var day = currentDate.getDate();
-                                        var month = currentDate.getMonth();
-                                        var year = currentDate.getFullYear();
-                                        var min = currentDate.getMinutes();
-                                        var hours = currentDate.getHours();
-                                        //text_in_field = hours + ":" + form_min(min) + " - " + months_set[month] + " / " + day + " / " + year;
-                                        text_in_field = date(omadi_time_format, currentDate) + " - " + months_set[month] + " / " + day + " / " + year;
-                                    }
-                                    else {
-                                        //Get current
-                                        var currentDate = new Date();
-
-                                        var day = currentDate.getDate();
-                                        var month = currentDate.getMonth();
-                                        var year = currentDate.getFullYear();
-                                        var min = currentDate.getMinutes();
-                                        var hours = currentDate.getHours();
-
-                                        if (settings.default_value == 'now') {
-                                            var vl_to_field = currentDate.getTime();
-                                            //text_in_field = hours + ":" + form_min(min) + " - " + months_set[month] + " / " + day + " / " + year;
-                                            text_in_field = date(omadi_time_format, currentDate) + " - " + months_set[month] + " / " + day + " / " + year;
-                                        }
-                                        else {
-                                            var vl_to_field = null;
-                                            text_in_field = "";
-                                        }
-                                    }
-
-                                    //Date picker
-
-                                    content[count] = Titanium.UI.createLabel({
-                                        borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                        width : Ti.Platform.displayCaps.platformWidth - 30,
-                                        font : {
-                                            fontSize : fieldFontSize
-                                        },
-                                        text : text_in_field,
-                                        textAlign : 'center',
-                                        color : '#000000',
-                                        backgroundColor : '#FFFFFF',
-                                        field_type : field_arr[index_label][index_size].type,
-                                        field_name : field_arr[index_label][index_size].field_name,
-                                        title_picker : field_arr[index_label][index_size].label,
-                                        widget : widget,
-                                        settings : settings,
-                                        currentDate : currentDate,
-                                        update_it : true,
-                                        time_type : 1,
-                                        required : field_arr[index_label][index_size].required,
-                                        value : vl_to_field,
-                                        is_title : field_arr[index_label][index_size].is_title,
-                                        composed_obj : false,
-                                        cardinality : settings.cardinality,
-                                        reffer_index : reffer_index,
-                                        height : heightValue,
-                                        settings : settings,
-                                        changedFlag : 0,
-                                        can_edit : can_edit,
-                                        enabled : can_edit,
-                                    });
-                                    if (!can_edit) {
-                                        content[count].backgroundImage = '';
-                                        content[count].backgroundColor = '#BDBDBD';
-                                        content[count].borderColor = 'gray';
-                                        content[count].color = '#848484';
-                                        content[count].borderWidth = 1
-                                    }
-
-                                    var mother_of_view = Ti.UI.createView({
-                                        height : heightValue,
-                                        top : top
-                                    });
-                                    top += heightValue;
-
-                                    mother_of_view.add(content[count]);
-
-                                    var clear = Ti.UI.createImageView({
-                                        image : '/images/cancel.png',
-                                        right : '4%',
-                                        height : '35dp',
-                                        width : '35dp',
-                                        is_clear : true,
-                                        its_parent : content[count],
-                                        can_edit : can_edit,
-                                    });
-
-                                    content[count].clear = clear;
-                                    mother_of_view.add(content[count].clear);
-                                    content[count].clear.addEventListener('click', function(e) {
-                                        if (e.source.can_edit) {
-                                            e.source.its_parent.text = "";
-                                            e.source.its_parent.value = null;
-                                        }
-                                    });
-
-                                    content[count].addEventListener('click', function(e) {
-                                        if (e.source.can_edit) {
-                                            display_widget(e.source);
-                                        }
-                                    });
-                                    //regionView.add(content[count]);
-                                    regionView.add(mother_of_view);
-                                    count++;
-                                }
-
-                            }
-                            //No data checkbox functionality
-                            noDataCheckbox(reffer_index, regionView, top);
-                            if (content[reffer_index].noDataView != null) {
-                                top += 40;
-                            }
-                            break;
-
-                        //Shows the on and off button?
-                        case 'list_boolean':
-
-                            var settings = JSON.parse(field_arr[index_label][index_size].settings);
-
-                            label[count] = Ti.UI.createLabel({
-                                text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-                                color : isRequired ? 'red' : _lb_color,
-                                font : {
-                                    fontSize : fieldFontSize,
-                                    fontWeight : 'bold'
-                                },
-                                textAlign : 'left',
-                                width : Ti.Platform.displayCaps.platformWidth - 30,
-                                touchEnabled : false,
-                                height : heightValue,
-                                top : top
-
-                            });
-                            top += heightValue;
-
-                            var reffer_index = count;
-
-                            //Add fields:
-                            regionView.add(label[count]);
-
-                            if (settings.cardinality > 1) {
-
-                                if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
-                                    var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
-
-                                    //Decode the stored array:
-                                    var decoded = array_cont.fieldByName('encoded_array');
-                                    decoded = Base64.decode(decoded);
-                                    Ti.API.info('Decoded array is equals to: ' + decoded);
-                                    decoded = decoded.toString();
-
-                                    // Token that splits each element contained into the array: 'j8Oc2s1E'
-                                    var decoded_values = decoded.split("j8Oc2s1E");
-                                }
-                                else {
-                                    var decoded_values = new Array();
-                                    decoded_values[0] = field_arr[index_label][index_size].actual_value;
-
-                                }
-
-                                var o_index;
-                                for ( o_index = 0; o_index < settings.cardinality; o_index++) {
-
-                                    if (o_index < decoded_values.length) {
-                                        if ((decoded_values[o_index] === true ) || (decoded_values[o_index] == "true") || (field_arr[index_label][index_size].actual_value == 1) || (field_arr[index_label][index_size].actual_value == '1'))
-                                            var vl_to_field = true;
-                                        else
-                                            var vl_to_field = false;
-                                    }
-                                    else {
-                                        var vl_to_field = false;
-                                    }
-
-                                    content[count] = Titanium.UI.createButton({
-                                        top : top,
-                                        width : '30dp',
-                                        height : '30dp',
-                                        borderRadius : 4,
-                                        borderColor : '#333',
-                                        borderWidth : 1,
-                                        backgroundColor : '#FFF',
-                                        private_index : o_index,
-                                        //height : getScreenHeight() * 0.1,
-                                        value : vl_to_field,
-                                        field_type : field_arr[index_label][index_size].type,
-                                        field_name : field_arr[index_label][index_size].field_name,
-                                        enabled : true,
-                                        required : field_arr[index_label][index_size].required,
-                                        is_title : field_arr[index_label][index_size].is_title,
-                                        composed_obj : true,
-                                        cardinality : settings.cardinality,
-                                        reffer_index : reffer_index,
-                                        settings : settings,
-                                        changedFlag : 0,
-                                        enabled : true
-                                    });
-                                    top += getScreenHeight() * 0.1;
-
-                                    content[count].addEventListener('click', function(e) {
-                                        if (e.source.value === false) {
-                                            e.source.backgroundImage = '/images/selected_test.png';
-                                            e.source.borderWidth = 2;
-                                            e.source.value = true;
-                                        }
-                                        else {
-                                            e.source.backgroundImage = null;
-                                            e.source.borderWidth = 1;
-                                            e.source.value = false;
-                                        }
-
-                                        Ti.API.info('Actual value = ' + e.source.value);
-                                        changedContentValue(e.source);
-                                    });
-
-                                    regionView.add(content[count]);
-                                    count++;
-                                }
-                            }
-                            else {
-
-                                if ((field_arr[index_label][index_size].actual_value === true ) || (field_arr[index_label][index_size].actual_value == "true") || (field_arr[index_label][index_size].actual_value == 1) || (field_arr[index_label][index_size].actual_value == '1'))
-                                    var vl_to_field = true;
-                                else
-                                    var vl_to_field = false;
-
-                                content[count] = Titanium.UI.createView({
-                                    top : top,
-                                    width : '30dp',
-                                    height : '30dp',
-                                    borderRadius : 4,
-                                    borderColor : '#333',
-                                    borderWidth : 1,
-                                    backgroundColor : '#FFF',
-                                    private_index : o_index,
-                                    value : vl_to_field,
-                                    field_type : field_arr[index_label][index_size].type,
-                                    field_name : field_arr[index_label][index_size].field_name,
-                                    enabled : true,
-                                    required : field_arr[index_label][index_size].required,
-                                    is_title : field_arr[index_label][index_size].is_title,
-                                    composed_obj : false,
-                                    cardinality : settings.cardinality,
-                                    reffer_index : reffer_index,
-                                    settings : settings,
-                                    changedFlag : 0,
-                                    enabled : true
-                                });
-                                top += getScreenHeight() * 0.1;
-
-                                content[count].addEventListener('click', function(e) {
-                                    Ti.API.info("CLICK");
-                                    if (e.source.value === false) {
-                                        e.source.backgroundImage = '/images/selected_test.png';
-                                        e.source.borderWidth = 2;
-                                        e.source.value = true;
-                                    }
-                                    else {
-                                        e.source.backgroundImage = null;
-                                        e.source.borderWidth = 1;
-                                        e.source.value = false;
-                                    }
-
-                                    Ti.API.info('Actual value = ' + e.source.value);
-                                    changedContentValue(e.source);
-                                });
-
-                                regionView.add(content[count]);
-                                count++;
-                            }
-                            break;
-
-                        //Shows up date (check how it is exhibited):
-                        case 'omadi_time':
-                            var settings = JSON.parse(field_arr[index_label][index_size].settings);
-                            var can_view = false;
-                            var can_edit = false;
-
-                            if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-                                var _l;
-                                for (_l in settings.permissions) {
-                                    for (_k in roles) {
-                                        if (_l == _k) {
-                                            var stringifyObj = JSON.stringify(settings.permissions[_l]);
-                                            if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_edit = true;
-                                            }
-
-                                            if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_view = true;
-                                            }
-
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                can_view = can_edit = true;
-                            }
-
-                            if (!can_view) {
-                                break;
-                            }
-                            label[count] = Ti.UI.createLabel({
-                                text : ( isRequired ? '*' : '') + '' + field_arr[index_label][index_size].label,
-                                color : isRequired ? 'red' : _lb_color,
-                                font : {
-                                    fontSize : fieldFontSize,
-                                    fontWeight : 'bold'
-                                },
-                                textAlign : 'left',
-                                width : Ti.Platform.displayCaps.platformWidth - 30,
-                                touchEnabled : false,
-                                height : heightValue,
-                                top : top
-                            });
-                            top += heightValue;
-                            var reffer_index = count;
-
-                            var widget = JSON.parse(field_arr[index_label][index_size].widget);
-
-                            Ti.API.info('SETTINGS FOR DATESTAMP: ' + settings.default_value);
-                            Ti.API.info('WIDGET FOR DATESTAMP: ' + widget.settings['time']);
-
-                            //Add fields:
-                            regionView.add(label[count]);
-
-                            if (settings.cardinality > 1) {
-                                var currentDate;
-                                if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
-                                    var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
-
-                                    //Decode the stored array:
-                                    var decoded = array_cont.fieldByName('encoded_array');
-                                    decoded = Base64.decode(decoded);
-                                    Ti.API.info('Decoded array is equals to: ' + decoded);
-                                    decoded = decoded.toString();
-
-                                    // Token that splits each element contained into the array: 'j8Oc2s1E'
-                                    var decoded_values = decoded.split("j8Oc2s1E");
-                                }
-                                else {
-                                    var decoded_values = new Array();
-                                    decoded_values[0] = field_arr[index_label][index_size].actual_value;
-                                }
-
-                                var o_index;
-                                for ( o_index = 0; o_index < settings.cardinality; o_index++) {
-
-                                    if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") && (decoded_values[o_index] != null) )) {
-                                        var vl_to_field = decoded_values[o_index] * 1000;
-                                        currentDate = new Date(vl_to_field);
-                                    }
-                                    else {
-                                        currentDate = new Date();
-                                        var vl_to_field = currentDate.getTime();
-                                    }
-                                    var text_in_field = date(omadi_time_format, currentDate);
-                                    content[count] = Titanium.UI.createLabel({
-                                        borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                        private_index : o_index,
-                                        width : Ti.Platform.displayCaps.platformWidth - 30,
-                                        title_picker : field_arr[index_label][index_size].label,
-                                        font : {
-                                            fontSize : fieldFontSize
-                                        },
-                                        text : text_in_field,
-                                        textAlign : 'center',
-                                        color : '#000000',
-                                        backgroundColor : '#FFFFFF',
-                                        value : vl_to_field,
-                                        field_type : field_arr[index_label][index_size].type,
-                                        field_name : field_arr[index_label][index_size].field_name,
-                                        widget : widget,
-                                        settings : settings,
-                                        currentDate : currentDate,
-                                        update_it : true,
-                                        timezone : null,
-                                        required : field_arr[index_label][index_size].required,
-                                        is_title : field_arr[index_label][index_size].is_title,
-                                        composed_obj : true,
-                                        cardinality : settings.cardinality,
-                                        reffer_index : reffer_index,
-                                        height : heightValue,
-                                        settings : settings,
-                                        changedFlag : 0,
-                                        can_edit : can_edit,
-                                        enabled : can_edit
-                                    });
-                                    if (!can_edit) {
-                                        content[count].backgroundImage = '';
-                                        content[count].backgroundColor = '#BDBDBD';
-                                        content[count].borderColor = 'gray';
-                                        content[count].color = '#848484';
-                                        content[count].borderWidth = 1
-                                    }
-
-                                    var mother_of_view = Ti.UI.createView({
-                                        height : heightValue,
-                                        top : top
-                                    });
-                                    top += heightValue;
-
-                                    mother_of_view.add(content[count]);
-
-                                    var clear = Ti.UI.createImageView({
-                                        image : '/images/cancel.png',
-                                        right : '4%',
-                                        height : '35dp',
-                                        width : '35dp',
-                                        is_clear : true,
-                                        its_parent : content[count],
-                                        can_edit : can_edit,
-                                    });
-
-                                    content[count].clear = clear;
-                                    mother_of_view.add(content[count].clear);
-                                    content[count].clear.addEventListener('click', function(e) {
-                                        if (e.source.can_edit) {
-                                            e.source.its_parent.text = "";
-                                            e.source.its_parent.value = null;
-                                        }
-                                    });
-
-                                    content[count].addEventListener('click', function(e) {
-                                        if (e.source.can_edit) {
-                                            display_omadi_time(e.source);
-                                        }
-                                    });
-                                    //regionView.add(content[count]);
-                                    regionView.add(mother_of_view);
-                                    count++;
-                                }
-                            }
-                            else {
-                                var text_in_field = "";
-                                var currentDate;
-                                var vl_to_field;
-                                if ((field_arr[index_label][index_size].actual_value != null) && (field_arr[index_label][index_size].actual_value != "null") && (field_arr[index_label][index_size].actual_value != "") && (field_arr[index_label][index_size].actual_value != " ")) {
-                                    vl_to_field = field_arr[index_label][index_size].actual_value * 1000;
-                                    currentDate = new Date(vl_to_field);
-                                }
-                                else {
-                                    currentDate = new Date();
-                                    vl_to_field = currentDate.getTime();
-                                }
-                                text_in_field = date(omadi_time_format, currentDate);
-
-                                content[count] = Titanium.UI.createLabel({
-                                    borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                    width : Ti.Platform.displayCaps.platformWidth - 30,
-                                    title_picker : field_arr[index_label][index_size].label,
-                                    font : {
-                                        fontSize : fieldFontSize
-                                    },
-                                    text : text_in_field,
-                                    textAlign : 'center',
-                                    color : '#000000',
-                                    backgroundColor : '#FFFFFF',
-                                    value : vl_to_field,
-                                    field_type : field_arr[index_label][index_size].type,
-                                    field_name : field_arr[index_label][index_size].field_name,
-                                    widget : widget,
-                                    settings : settings,
-                                    currentDate : currentDate,
-                                    update_it : true,
-                                    value : currentDate.getTime(),
-                                    required : field_arr[index_label][index_size].required,
-                                    is_title : field_arr[index_label][index_size].is_title,
-                                    composed_obj : false,
-                                    cardinality : settings.cardinality,
-                                    reffer_index : reffer_index,
-                                    height : heightValue,
-                                    settings : settings,
-                                    changedFlag : 0,
-                                    can_edit : can_edit,
-                                    enabled : can_edit
-                                });
-                                if (!can_edit) {
-                                    content[count].backgroundImage = '';
-                                    content[count].backgroundColor = '#BDBDBD';
-                                    content[count].borderColor = 'gray';
-                                    content[count].color = '#848484';
-                                    content[count].borderWidth = 1
-                                }
-
-                                var mother_of_view = Ti.UI.createView({
-                                    height : heightValue,
-                                    top : top
-                                });
-                                top += heightValue;
-
-                                mother_of_view.add(content[count]);
-
-                                var clear = Ti.UI.createImageView({
-                                    image : '/images/cancel.png',
-                                    right : '4%',
-                                    height : '35dp',
-                                    width : '35dp',
-                                    is_clear : true,
-                                    its_parent : content[count],
-                                    can_edit : can_edit,
-                                });
-
-                                content[count].clear = clear;
-                                mother_of_view.add(content[count].clear);
-                                content[count].clear.addEventListener('click', function(e) {
-                                    if (e.source.can_edit) {
-                                        e.source.its_parent.text = "";
-                                        e.source.its_parent.value = null;
-                                    }
-                                });
-
-                                content[count].addEventListener('click', function(e) {
-                                    if (e.source.can_edit) {
-                                        display_omadi_time(e.source);
-                                    }
-                                });
-                                //regionView.add(content[count]);
-                                regionView.add(mother_of_view);
-                                count++;
-                            }
-                            //No data checkbox functionality
-                            noDataCheckbox(reffer_index, regionView, top);
-                            if (content[reffer_index].noDataView != null) {
-                                top += 40;
-                            }
-                            break;
-
-                        case 'vehicle_fields':
-                            var settings = JSON.parse(field_arr[index_label][index_size].settings);
-                            var can_view = false;
-                            var can_edit = false;
-
-                            if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-                                var _l;
-                                for (_l in settings.permissions) {
-                                    for (_k in roles) {
-                                        if (_l == _k) {
-                                            var stringifyObj = JSON.stringify(settings.permissions[_l]);
-                                            if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_edit = true;
-                                            }
-
-                                            if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_view = true;
-                                            }
-
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                can_view = can_edit = true;
-                            }
-
-                            if (!can_view) {
-                                break;
-                            }
-                            label[count] = Ti.UI.createLabel({
-                                text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-                                color : isRequired ? 'red' : _lb_color,
-                                font : {
-                                    fontSize : fieldFontSize,
-                                    fontWeight : 'bold'
-                                },
-                                textAlign : 'left',
-                                width : Ti.Platform.displayCaps.platformWidth - 30,
-                                touchEnabled : false,
-                                height : heightValue,
-                                top : top
-                            });
-                            top += heightValue;
-
-                            var reffer_index = count;
-                            var fi_name = field_arr[index_label][index_size].field_name;
-                            fi_name = fi_name.split('___');
-                            if (fi_name[1]) {
-                                var i_name = fi_name[1];
-                            }
-                            else {
-                                var i_name = fi_name[0];
-                            }
-                            i_name = i_name.charAt(0).toUpperCase() + i_name.slice(1);
-
-                            if (i_name == "Make") {
-                                var _make_ref = reffer_index;
-                            }
-                            label[count].text += (' ' + i_name);
-                            //Add fields:
-                            regionView.add(label[count]);
-
-                            if (settings.cardinality > 1) {
-                                if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
-                                    var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
-
-                                    //Decode the stored array:
-                                    var decoded = array_cont.fieldByName('encoded_array');
-                                    decoded = Base64.decode(decoded);
-                                    Ti.API.info('Decoded array is equals to: ' + decoded);
-                                    decoded = decoded.toString();
-
-                                    // Token that splits each element contained into the array: 'j8Oc2s1E'
-                                    var decoded_values = decoded.split("j8Oc2s1E");
-                                }
-                                else {
-                                    var decoded_values = new Array();
-                                    decoded_values[0] = field_arr[index_label][index_size].actual_value;
-                                }
-
-                                var o_index;
-                                for ( o_index = 0; o_index < settings.cardinality; o_index++) {
-
-                                    if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
-                                        var vl_to_field = decoded_values[o_index];
-                                    }
-                                    else {
-                                        var vl_to_field = "";
-                                    }
-
-                                    content[count] = Ti.UI.createTextField({
-                                        hintText : "#" + o_index + " " + field_arr[index_label][index_size].label + " " + i_name,
-                                        private_index : o_index,
-                                        borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                        textAlign : 'left',
-                                        width : Ti.Platform.displayCaps.platformWidth - 30,
-                                        height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                        font : {
-                                            fontSize : fieldFontSize
-                                        },
-                                        color : '#000000',
-                                        top : top,
-                                        field_type : field_arr[index_label][index_size].type,
-                                        field_name : field_arr[index_label][index_size].field_name,
-                                        required : field_arr[index_label][index_size].required,
-                                        is_title : field_arr[index_label][index_size].is_title,
-                                        composed_obj : true,
-                                        cardinality : settings.cardinality,
-                                        value : vl_to_field,
-                                        reffer_index : reffer_index,
-                                        settings : settings,
-                                        changedFlag : 0,
-                                        autocorrect : false,
-                                        returnKeyType : Ti.UI.RETURNKEY_DONE,
-                                        enabled : can_edit,
-                                        editable : can_edit
-                                    });
-                                    if (PLATFORM == 'android') {
-                                        content[count].backgroundImage = '../images/textfield.png'
-                                    }
-                                    if (!can_edit) {
-                                        content[count].backgroundImage = '';
-                                        content[count].backgroundColor = '#BDBDBD';
-                                        content[count].borderColor = 'gray';
-                                        content[count].borderRadius = 10;
-                                        content[count].color = '#848484';
-                                        content[count].borderWidth = 1;
-                                        content[count].paddingLeft = 3;
-                                        content[count].paddingRight = 3;
-                                        if (PLATFORM == 'android') {
-                                            content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-                                        }
-                                    }
-                                    top += (PLATFORM == 'android') ? heightTextField : heightValue;
-
-                                    regionView.add(content[count]);
-                                    content[count].addEventListener('change', function(e) {
-                                        if (e.source.i_name == 'Make') {
-                                            if (e.source.value.length > 18) {
-                                                e.source.value = e.source.value.substr(0, 18);
-                                            }
-                                        }
-                                        else if (e.source.i_name == 'Model') {
-                                            if (e.source.value.length > 38) {
-                                                e.source.value = e.source.value.substr(0, 38);
-                                            }
-                                        }
-                                        changedContentValue(e.source);
-                                        noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
-                                    });
-                                    count++;
-                                }
-                            }
-                            else {
-                                var vl_to_field = field_arr[index_label][index_size].actual_value;
-                                var data_terms = new Array();
-
-                                if (i_name == "Make") {
-                                    var aux_dt = db_display.execute("SELECT DISTINCT make FROM _vehicles");
-                                    var keep_from_make = vl_to_field;
-
-                                    while (aux_dt.isValidRow()) {
-                                        data_terms.push(aux_dt.fieldByName("make"));
-                                        aux_dt.next();
-                                    }
-                                }
-                                else {
-                                    data_terms = get_models(keep_from_make);
-                                }
-
-                                content[count] = Ti.UI.createTextField({
-                                    hintText : field_arr[index_label][index_size].label + " " + i_name,
-                                    fantasy_name : i_name,
-                                    borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                    textAlign : 'left',
-                                    width : Ti.Platform.displayCaps.platformWidth - 30,
-                                    height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                    font : {
-                                        fontSize : fieldFontSize
-                                    },
-                                    color : '#000000',
-                                    top : top,
-                                    field_type : field_arr[index_label][index_size].type,
-                                    field_name : field_arr[index_label][index_size].field_name,
-                                    required : field_arr[index_label][index_size].required,
-                                    is_title : field_arr[index_label][index_size].is_title,
-                                    composed_obj : false,
-                                    cardinality : settings.cardinality,
-                                    value : vl_to_field,
-                                    reffer_index : reffer_index,
-                                    make_ind : _make_ref,
-                                    terms : data_terms,
-                                    //first_time : true,
-                                    lastValue : vl_to_field,
-                                    _make : keep_from_make,
-                                    settings : settings,
-                                    changedFlag : 0,
-                                    i_name : i_name,
-                                    my_index : count,
-                                    autocorrect : false,
-                                    returnKeyType : Ti.UI.RETURNKEY_DONE,
-                                    enabled : can_edit,
-                                    editable : can_edit,
-                                    regionView : regionView
-                                });
-                                if (PLATFORM == 'android') {
-                                    content[count].backgroundImage = '../images/textfield.png'
-                                }
-                                if (!can_edit) {
-                                    content[count].backgroundImage = '';
-                                    content[count].backgroundColor = '#BDBDBD';
-                                    content[count].borderColor = 'gray';
-                                    content[count].borderRadius = 10;
-                                    content[count].color = '#848484';
-                                    content[count].borderWidth = 1;
-                                    content[count].paddingLeft = 3;
-                                    content[count].paddingRight = 3;
-                                    if (PLATFORM == 'android') {
-                                        content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-                                    }
-                                }
-                                //AUTOCOMPLETE TABLE FOR vehicle_fields fields
-                                var autocomplete_table = Titanium.UI.createTableView({
-                                    top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
-                                    searchHidden : true,
-                                    zIndex : 15,
-                                    height : getScreenHeight() * 0.3,
-                                    backgroundColor : '#FFFFFF',
-                                    visible : false,
-                                    borderColor : '#000',
-                                    borderWidth : 0
-                                });
-                                content[count].autocomplete_table = autocomplete_table;
-                                top += (PLATFORM == 'android') ? heightTextField : heightValue;
-
-                                regionView.add(content[count].autocomplete_table);
-
-                                //
-                                // TABLE EVENTS for vehicle_fields fields, cardinality == 1
-                                //
-                                content[count].autocomplete_table.addEventListener('click', function(e) {
-                                    if (PLATFORM != 'android') {
-                                        e.source.textField.value = e.rowData.title;
-                                    }
-                                    else {
-                                        e.source.setValueF(e.rowData.title);
-                                    }
-
-                                    setTimeout(function() {
-                                        e.source.autocomplete_table.visible = false;
-                                        e.source.autocomplete_table.borderWidth = 0;
-                                        Ti.API.info(e.rowData.title + ' was selected!');
-                                    }, 80);
-                                });
-
-                                content[count].addEventListener('blur', function(e) {
-                                    e.source.autocomplete_table.visible = false;
-                                    e.source.autocomplete_table.borderWidth = 0;
-                                });
-
-                                content[count].addEventListener('focus', function(e) {
-                                    adjustView(e.source.my_index, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
-                                    if (e.source.fantasy_name == "Model") {
-                                        Ti.API.info(content[e.source.make_ind].value);
-
-                                        if (content[e.source.make_ind].value == e.source._make) {
-                                            Ti.API.info('User didn\'t change make');
-                                        }
-                                        else {
-                                            Ti.API.info('Make changed, reloading list')
-                                            e.source._make = content[e.source.make_ind].value;
-                                            e.source.terms = get_models(content[e.source.make_ind].value);
-                                            e.source.value = null;
-                                            //e.source.first_time = true;
-                                        }
-                                    }
-                                });
-                                //
-                                // SEARCH EVENTS vehicle_fields, cardinality == 1
-                                //
-                                content[count].addEventListener('change', function(e) {
-                                    if (e.source.i_name == 'Make') {
-                                        if (e.source.value.length > 18) {
-                                            e.source.value = e.source.value.substr(0, 18);
-                                        }
-                                    }
-                                    else if (e.source.i_name == 'Model') {
-                                        if (e.source.value.length > 38) {
-                                            e.source.value = e.source.value.substr(0, 38);
-                                        }
-                                    }
-                                    changedContentValue(e.source);
-                                    noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
-                                    if (e.source.lastValue != e.source.value) {
-                                        var list = e.source.terms;
-                                        var func = function setValueF(value_f) {
-                                            e.source.value = value_f;
-                                            Ti.API.info('Value: ' + value_f);
-                                        };
-
-                                        if ((e.value != null) && (e.value != '')) {
-                                            table_data = [];
-                                            var i;
-                                            for ( i = 0; i < list.length; i++) {
-                                                var rg = new RegExp(e.source.value, 'i');
-                                                if (list[i].search(rg) != -1) {
-
-                                                    //Create partial matching row
-                                                    var row = Ti.UI.createTableViewRow({
-                                                        height : getScreenHeight() * 0.10,
-                                                        title : list[i],
-                                                        color : '#000000',
-                                                        autocomplete_table : e.source.autocomplete_table,
-                                                        setValueF : func,
-                                                        textField : e.source
-                                                    });
-                                                    // apply rows to data array
-                                                    table_data.push(row);
-                                                }
-                                            }
-                                            e.source.autocomplete_table.setData(table_data);
-                                            e.source.autocomplete_table.height = getScreenHeight() * 0.3;
-                                            e.source.autocomplete_table.borderWidth = 1;
-                                            if (table_data.lenth == 0) {
-                                                e.source.autocomplete_table.borderWidth = 0;
-                                            }
-                                            if (table_data.length < 3 && table_data.length > 0) {
-                                                e.source.autocomplete_table.height = (table_data.length == 1) ? getScreenHeight() * 0.1 : getScreenHeight() * 0.2;
-                                            }
-                                            e.source.autocomplete_table.scrollToTop(0, {
-                                                animated : false
-                                            });
-                                            viewContent.scrollTo(0, (e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue)));
-                                            if (table_data.length > 0) {
-                                                e.source.autocomplete_table.visible = true;
-                                            }
-                                            else {
-                                                e.source.autocomplete_table.visible = false;
-                                            }
-                                        }
-                                        else {
-                                            e.source.autocomplete_table.visible = false;
-                                        }
-                                    }
-
-                                    //e.source.first_time = false;
-                                    e.source.lastValue = e.source.value;
-                                });
-                                //Add fields:
-                                regionView.add(content[count]);
-                                count++;
-
-                            }
-                            //No data checkbox functionality
-                            if (settings.parts != null && settings.parts != "") {
-                                partsArr.push(reffer_index);
-                                if (partsArr.length == 2) {
-                                    content[reffer_index].partsArr = partsArr;
-                                    partsArr = [];
-                                    noDataCheckbox(reffer_index, regionView, top);
-                                    if (content[reffer_index].noDataView != null) {
-                                        top += 40;
-                                    }
-                                }
-                            }
-
-                            break;
-
-                        case 'region_separator_mode':
-                            if (field_arr[index_label][index_size].region_show === true) {
-                                if (top == 0) {
-                                    var regionTop = 0;
-                                }
-                                else {
-                                    var regionTop = top + 10;
-                                }
-                                label[count] = Ti.UI.createLabel({
-                                    text : field_arr[index_label][index_size].label + ' :',
-                                    color : '#000000',
-                                    font : {
-                                        fontSize : fieldFontSize,
-                                        fontWeight : 'bold'
-                                    },
-                                    textAlign : 'center',
-                                    width : '100%',
-                                    touchEnabled : false,
-                                    height : 40,
-                                    top : regionTop,
-                                    backgroundColor : '#FFFFFF'
-                                });
-                                top += 40;
-
-                                regionView.add(label[count]);
-                                count++;
-                            }
-
-                            break;
-                        //Stuff to add file
-
-                        case 'image':
-                            label[count] = Ti.UI.createLabel({
-                                text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-                                color : isRequired ? 'red' : _lb_color,
-                                font : {
-                                    fontSize : fieldFontSize,
-                                    fontWeight : 'bold'
-                                },
-                                textAlign : 'left',
-                                width : Ti.Platform.displayCaps.platformWidth - 30,
-                                touchEnabled : false,
-                                height : heightValue,
-                                top : top
-                            });
-                            //Add fields:
-                            var reserveTop = top;
-                            regionView.add(label[count]);
-                            var settings = JSON.parse(field_arr[index_label][index_size].settings);
-                            var reffer_index = count;
-                            top += heightValue;
-
-                            if (settings.cardinality > 1 || settings.cardinality < 0) {
-                                isUpdated = [];
-                                content[count] = Ti.UI.createScrollView({
-                                    right : 10,
-                                    width : Ti.Platform.displayCaps.platformWidth - 30,
-                                    top : top,
-                                    contentWidth : 'auto',
-                                    contentHeight : 100,
-                                    height : 100,
-                                    reffer_index : reffer_index,
-                                    arrImages : null,
-                                    scrollType : "horizontal",
-                                    layout : 'horizontal',
-                                    field_type : field_arr[index_label][index_size].type,
-                                    field_name : field_arr[index_label][index_size].field_name,
-                                    required : field_arr[index_label][index_size].required,
-                                    is_title : field_arr[index_label][index_size].is_title,
-                                    label : field_arr[index_label][index_size].label,
-                                    composed_obj : true,
-                                    addButton : null,
-                                    cardinality : settings.cardinality,
-                                    value : null,
-                                    enabled : true
-                                });
-                                regionView.add(content[count]);
-                                var decodedValues = [];
-                                if (win.mode == 1) {
-                                    var val = db_display.execute('SELECT * FROM ' + win.type + ' WHERE nid=' + win.nid + ';');
-                                    if (val.fieldByName(field_arr[index_label][index_size].field_name + '___file_id') == '7411317618171051229' || val.fieldByName(field_arr[index_label][index_size].field_name + '___file_id') == 7411317618171051229) {
-                                        array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '___file_id\'');
-                                    }
-                                    else {
-                                        array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
-                                    }
-                                    if (array_cont.rowCount > 0) {
-                                        //Decode the stored array:
-                                        var decoded = array_cont.fieldByName('encoded_array');
-                                        decoded = Base64.decode(decoded);
-                                        decoded = decoded.toString();
-                                        decodedValues = decoded.split("j8Oc2s1E");
-                                    }
-                                    val = db_display.execute('SELECT * FROM file_upload_queue WHERE nid=' + win.nid + ' AND field_name ="' + field_arr[index_label][index_size].field_name + '";');
-                                    if (val.rowCount > 0) {
-                                        while (val.isValidRow()) {
-                                            isUpdated[val.fieldByName('delta')] = true;
-                                            decodedValues[val.fieldByName('delta')] = Ti.Utils.base64decode(val.fieldByName('file_data'));
-                                            val.next();
-                                        }
-                                    }
-                                }
-                                var arrImages = [];
-
-                                if (settings.cardinality < 0) {
-                                    o_index = 0;
-                                    for ( img = 0; img < decodedValues.length; img++) {
-                                        var updated = false
-                                        if ((img < decodedValues.length) && (decodedValues[img] != "") && (decodedValues[img] != null) && decodedValues[img] != 'null' && decodedValues[img] != 'undefined') {
-                                            var vl_to_field = decodedValues[img];
-                                            if (isUpdated[img] == true) {
-                                                updated = isUpdated[img];
-                                            }
-                                        }
-                                        else {
-                                            continue;
-                                        }
-                                        arrImages = createImage(o_index, arrImages, vl_to_field, content[count], updated);
-                                        o_index += 1;
-                                    }
-                                    if (decodedValues.length == 0 || o_index == 0) {
-                                        arrImages = createImage(o_index, arrImages, defaultImageVal, content[count], false);
-                                        o_index += 1;
-                                    }
-
-                                    //--------- Add Button
-                                    addButton = Ti.UI.createButton({
-                                        right : '5',
-                                        title : '+',
-                                        top : reserveTop,
-                                        height : 40,
-                                        width : 40,
-                                        scrollView : content[count],
-                                        o_index : o_index
-                                    });
-                                    regionView.add(addButton);
-                                    addButton.addEventListener('click', function(e) {
-                                        arrImages = createImage(e.source.o_index, arrImages, defaultImageVal, e.source.scrollView, false);
-                                        e.source.scrollView.arrImages = arrImages
-                                        e.source.o_index += 1;
-                                    });
-                                    content[count].addButton = addButton;
-                                }
-                                else {
-                                    var o_index;
-                                    for ( o_index = 0; o_index < settings.cardinality; o_index++) {
-                                        var updated = false;
-                                        if ((o_index < decodedValues.length) && (decodedValues[o_index] != "") && (decodedValues[o_index] != null) && decodedValues[o_index] != 'null' && decodedValues[o_index] != 'undefined') {
-                                            var vl_to_field = decodedValues[o_index];
-                                            if (isUpdated[o_index] == true) {
-                                                updated = isUpdated[o_index];
-                                            }
-                                        }
-                                        else {
-                                            var vl_to_field = defaultImageVal;
-                                        }
-                                        arrImages = createImage(o_index, arrImages, vl_to_field, content[count], updated);
-                                    }
-                                }
-                                content[count].arrImages = arrImages;
-                            }
-                            else {
-                                isUpdated = false;
-                                if (win.mode == 1) {
-                                    var results = db_display.execute('SELECT * FROM ' + win.type + ' WHERE nid=' + win.nid + ';');
-                                    if (results.rowCount > 0) {
-                                        val = results.fieldByName(field_arr[index_label][index_size].field_name + '___file_id');
-                                        if (val == null || val == 'null' || val == 'undefined') {
-                                            val = results.fieldByName(field_arr[index_label][index_size].field_name);
-                                        }
-                                    }
-                                    valUp = db_display.execute('SELECT * FROM file_upload_queue WHERE nid=' + win.nid + ' AND field_name ="' + field_arr[index_label][index_size].field_name + '";');
-
-                                    if (valUp.rowCount > 0) {
-                                        isUpdated = true;
-                                        val = Ti.Utils.base64decode(valUp.fieldByName('file_data'));
-                                    }
-                                    if (val == null || val == 'null' || val == 'undefined' || val.rowCount == 0) {
-                                        val = defaultImageVal;
-                                    }
-
-                                }
-                                content[count] = Ti.UI.createImageView({
-                                    label : field_arr[index_label][index_size].label,
-                                    width : Ti.Platform.displayCaps.platformWidth - 30,
-                                    height : 80,
-                                    width : 80,
-                                    reffer_index : reffer_index,
-                                    size : {
-                                        height : '80',
-                                        width : '80'
-                                    },
-                                    top : top + 10,
-                                    private_index : 0,
-                                    field_type : field_arr[index_label][index_size].type,
-                                    field_name : field_arr[index_label][index_size].field_name,
-                                    required : field_arr[index_label][index_size].required,
-                                    is_title : field_arr[index_label][index_size].is_title,
-                                    composed_obj : false,
-                                    image : defaultImageVal,
-                                    imageVal : val,
-                                    isImage : false,
-                                    bigImg : null,
-                                    mimeType : null,
-                                    cardinality : settings.cardinality,
-                                    isUpdated : isUpdated,
-                                    value : null,
-                                    enabled : true
-                                });
-
-                                if (isUpdated == true) {
-                                    content[count].image = val;
-                                    content[count].bigImg = val;
-                                    content[count].isImage = true;
-                                }
-                                content[count].addEventListener('click', function(e) {
-                                    //Following method will open camera to capture the image.
-                                    if (e.source.isImage != false) {
-                                        var postDialog = Titanium.UI.createOptionDialog();
-                                        postDialog.options = ['Capture Image', 'Show Image', 'cancel'];
-                                        postDialog.cancel = 2;
-                                        postDialog.show();
-
-                                        postDialog.addEventListener('click', function(ev) {
-                                            if (ev.index == 0) {
-                                                openCamera(e);
-                                            }
-                                            else if (ev.index == 1) {
-                                                //downloadMainImage(e.source.imageVal, e.source, win);
-                                                Omadi.display.displayLargeImage(e.source, win.nid, e.source.imageVal);
-                                            }
-                                        });
-                                        return;
-                                    }
-                                    openCamera(e);
-                                });
-                                regionView.add(content[count]);
-                            }
-
-                            top += 100;
-                            count++;
-                            //No data checkbox functionality
-                            noDataCheckbox(reffer_index, regionView, top);
-                            if (content[reffer_index].noDataView != null) {
-                                top += 40;
-                            }
-                            break;
-
-                        case 'calculation_field':
-                            label[count] = Ti.UI.createLabel({
-                                text : field_arr[index_label][index_size].label,
-                                color : _lb_color,
-                                font : {
-                                    fontSize : fieldFontSize,
-                                    fontWeight : 'bold'
-                                },
-                                textAlign : 'left',
-                                width : Ti.Platform.displayCaps.platformWidth - 30,
-                                touchEnabled : false,
-                                height : heightValue,
-                                top : top
-                            });
-                            var settings = JSON.parse(field_arr[index_label][index_size].settings);
-                            if (settings.hidden == null || settings.hidden != 1) {
-                                regionView.add(label[count]);
-                                top += heightValue;
-                            }
-                            var reffer_index = count;
-                            content[count] = Ti.UI.createView({
-                                width : Ti.Platform.displayCaps.platformWidth - 30,
-                                top : top,
-                                field_type : field_arr[index_label][index_size].type,
-                                field_name : field_arr[index_label][index_size].field_name,
-                                required : field_arr[index_label][index_size].required,
-                                composed_obj : false,
-                                is_title : field_arr[index_label][index_size].is_title,
-                                cardinality : settings.cardinality,
-                                value : field_arr[index_label][index_size].actual_value,
-                                label : field_arr[index_label][index_size].label,
-                                reffer_index : reffer_index,
-                                settings : settings,
-                                layout : 'vertical',
-                                settings : settings,
-                                changedFlag : 0,
-                                enabled : true
-                            });
-                            createCalFieldTableFormat(content[count], db_display, content);
-                            if (settings.hidden == null || settings.hidden != 1) {
-                                regionView.add(content[count]);
-                                top += content[count].height + 10;
-                            }
-                            count++;
-                            break;
-
-                        case 'rules_field':
-                            if (field_arr[index_label][index_size].actual_value != false && field_arr[index_label][index_size].actual_value != "false" && field_arr[index_label][index_size].actual_value != 0 && JSON.parse(field_arr[index_label][index_size].actual_value).length > 0) {
-                                label[count] = Ti.UI.createLabel({
-                                    text : field_arr[index_label][index_size].label,
-                                    color : _lb_color,
-                                    font : {
-                                        fontSize : fieldFontSize,
-                                        fontWeight : 'bold'
-                                    },
-                                    textAlign : 'left',
-                                    width : Ti.Platform.displayCaps.platformWidth - 30,
-                                    touchEnabled : false,
-                                    height : heightValue,
-                                    top : top
-                                });
-                                regionView.add(label[count]);
-                                var reffer_index = count;
-                                var settings = JSON.parse(field_arr[index_label][index_size].settings);
-                                top += heightValue;
-                                content[count] = Ti.UI.createView({
-                                    width : Ti.Platform.displayCaps.platformWidth - 30,
-                                    top : top,
-                                    field_type : field_arr[index_label][index_size].type,
-                                    field_name : field_arr[index_label][index_size].field_name,
-                                    required : field_arr[index_label][index_size].required,
-                                    composed_obj : false,
-                                    is_title : field_arr[index_label][index_size].is_title,
-                                    cardinality : settings.cardinality,
-                                    value : field_arr[index_label][index_size].actual_value,
-                                    label : field_arr[index_label][index_size].label,
-                                    reffer_index : reffer_index,
-                                    settings : settings,
-                                    value : JSON.parse(field_arr[index_label][index_size].actual_value),
-                                    layout : 'vertical',
-                                    widget : JSON.parse(field_arr[index_label][index_size].widget),
-                                    changedFlag : 0,
-                                    enabled : true
-                                });
-
-                                showRulesRow(content[count], db_display, win);
-                                top += content[count].height + 10;
-                                regionView.add(content[count]);
-                                count++;
-
-                            }
-                            break;
-
-                        case 'auto_increment':
-                            if (field_arr[index_label][index_size].actual_value != "" && field_arr[index_label][index_size].actual_value != " " && field_arr[index_label][index_size].actual_value != null && field_arr[index_label][index_size].actual_value != "null") {
-                                label[count] = Ti.UI.createLabel({
-                                    text : field_arr[index_label][index_size].label,
-                                    color : _lb_color,
-                                    font : {
-                                        fontSize : fieldFontSize,
-                                        fontWeight : 'bold'
-                                    },
-                                    textAlign : 'left',
-                                    width : Ti.Platform.displayCaps.platformWidth - 30,
-                                    touchEnabled : false,
-                                    height : heightValue,
-                                    top : top
-                                });
-                                regionView.add(label[count]);
-
-                                var reffer_index = count;
-                                var settings = JSON.parse(field_arr[index_label][index_size].settings);
-                                top += heightValue;
-
-                                //alert(c_settings[count]);
-                                var prefix = "";
-                                if (settings.prefix) {
-                                    prefix = settings.prefix;
-                                }
-                                content[count] = Ti.UI.createTextField({
-                                    text : prefix + "" + field_arr[index_label][index_size].actual_value,
-                                    hintText : "No prefix for this node",
-                                    borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                    color : '#000000',
-                                    backgroundColor : '#D6CED9',
-                                    height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                    font : {
-                                        fontSize : fieldFontSize
-                                    },
-                                    width : Ti.Platform.displayCaps.platformWidth - 30,
-                                    top : top,
-                                    field_type : field_arr[index_label][index_size].type,
-                                    field_name : field_arr[index_label][index_size].field_name,
-                                    fantasy_name : field_arr[index_label][index_size].label,
-                                    composed_obj : false,
-                                    cardinality : 1,
-                                    value : field_arr[index_label][index_size].actual_value,
-                                    //first_time : true,
-                                    lastValue : field_arr[index_label][index_size].actual_value,
-                                    reffer_index : reffer_index,
-                                    settings : settings,
-                                    changedFlag : 0,
-                                    my_index : count,
-                                    autocorrect : false,
-                                    enabled : false,
-                                    editable : false,
-                                    touched : false
-                                });
-                                regionView.add(content[count]);
-
-                                top += (PLATFORM == 'android') ? heightTextField : heightValue;
-                                regionView.add(content[count]);
-                                count++;
-                            }
-                            break;
-                        case 'file':
-                            var settings = JSON.parse(field_arr[index_label][index_size].settings);
-                            var can_view = false;
-                            var can_edit = false;
-
-                            if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-                                var _l;
-                                for (_l in settings.permissions) {
-                                    for (_k in roles) {
-                                        if (_l == _k) {
-                                            var stringifyObj = JSON.stringify(settings.permissions[_l]);
-                                            if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_edit = true;
-                                            }
-
-                                            if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_view = true;
-                                            }
-
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                can_view = can_edit = true;
-                            }
-
-                            if (!can_view) {
-                                break;
-                            }
-
-                            if (settings.cardinality >= -1) {
-
-                                label[count] = Ti.UI.createLabel({
-                                    text : field_arr[index_label][index_size].label,
-                                    color : _lb_color,
-                                    font : {
-                                        fontSize : fieldFontSize,
-                                        fontWeight : 'bold'
-                                    },
-                                    textAlign : 'left',
-                                    width : Ti.Platform.displayCaps.platformWidth - 30,
-                                    touchEnabled : false,
-                                    height : heightValue,
-                                    top : top
-                                });
-
-                                regionView.add(label[count]);
-                                var reffer_index = count;
-                                top += heightValue;
-
-                                content[count] = Ti.UI.createView({
-                                    width : Ti.Platform.displayCaps.platformWidth - 30,
-                                    top : top,
-                                    field_type : field_arr[index_label][index_size].type,
-                                    field_name : field_arr[index_label][index_size].field_name,
-                                    required : field_arr[index_label][index_size].required,
-                                    composed_obj : false,
-                                    is_title : field_arr[index_label][index_size].is_title,
-                                    cardinality : settings.cardinality,
-                                    value : field_arr[index_label][index_size].actual_value,
-                                    label : field_arr[index_label][index_size].label,
-                                    reffer_index : reffer_index,
-                                    settings : settings,
-                                    layout : 'vertical',
-                                    widget : JSON.parse(field_arr[index_label][index_size].widget),
-                                    height : heightValue
-                                })
-                                top += heightValue;
-
-                                regionView.add(content[count]);
-
-                                count++;
-
-                                break;
-                            }
-                    }
-
-                }
-                fields_result.next();
-                index_size++;
-            }
-            fields_result.close();
-
-            if (reg_settings != null && reg_settings.form_part != null) {
-                regionView.form_part = parseInt(reg_settings.form_part);
-            }
-            else {
-                regionView.form_part = 0;
-            }
-
-            if (reg_settings != null && reg_settings.always_expanded != null) {
-                regionView.always_expanded = parseInt(reg_settings.always_expanded);
-            }
-            else {
-                regionView.always_expanded = 0;
-            }
-
-            //regionView.calculatedHeight = DPUnitsToPixels(top);
-            regionView.calculatedHeight = top + 10;
-            regionView.height = 0;
-            regionView.expanded = false;
-            regionView.hide();
-
-            if (viewContent.max_form_part != null) {
-                if (regionView.form_part > viewContent.max_form_part) {
-                    viewContent.max_form_part = regionView.form_part;
-                }
-            }
-            else {
-                viewContent.max_form_part = regionView.form_part;
-            }
-
-            // Ti.API.info("expandedRegion = " + expandedRegion + "\ni = " + regionCount);
-            // if(expandedRegion == regionCount) {
-            // regionView.calculatedHeight = top;
-            // regionView.height = top;
-            // regionView.expanded = true;
-            // regionView.show();
-            // } else {
-            // regionView.calculatedHeight = top;
-            // regionView.height = 0;
-            // regionView.expanded = false;
-            // regionView.hide();
-            // }
-            y = y + regionView.height + 10;
-
-            if (isAnyEnabledField == true) {
-                viewContent.add(regionHeader);
-                viewContent.add(arrow_img);
-                viewContent.add(regionView);
-            }
-        }
-        regions.next();
-        regionCount++;
-    }
-
-    regions.close();
-    if (content_fields != null) {
-        content_fields.close();
-    }
-    db_display.close();
-
-    var top = 0;
-    if (viewContent.getChildren() != null) {
-        var i;
-        for ( i = 0; i < viewContent.getChildren().length; i++) {
-            var v = viewContent.getChildren()[i];
-            var isLabel = false;
-            if (PLATFORM == 'android') {
-                if ( v instanceof Ti.UI.Label) {
-                    isLabel = true;
-                }
-            }
-            else {
-                if (v == '[object TiUILabel]') {
-                    isLabel = true;
-                }
-            }
-
-            if (isLabel) {
-                if (v.viewContainer.form_part == viewContent.max_form_part || v.viewContainer.always_expanded == 1) {
-                    v.viewContainer.height = v.viewContainer.calculatedHeight;
-                    v.viewContainer.expanded = true;
-                    v.arrow.image = "/images/light_arrow_down.png";
-                    v.top = top;
-                    v.arrow.top = top + 5;
-                    top = top + DPUnitsToPixels(40);
-                    v.viewContainer.top = top;
-                    top = top + v.viewContainer.height + 10;
-                    v.viewContainer.show();
-                }
-                else {
-                    v.viewContainer.height = 0;
-                    v.viewContainer.expanded = false;
-                    v.arrow.image = "/images/light_arrow_left.png";
-                    v.top = top;
-                    v.arrow.top = top + 5;
-                    top = top + DPUnitsToPixels(40);
-                    v.viewContainer.top = top;
-                    top = top + v.viewContainer.height + 10;
-                    v.viewContainer.hide();
-                }
-            }
-
-        }
-    }
-
-    if (viewContent.getChildren() != null) {
-        var i;
-        for ( i = viewContent.getChildren().length; i >= 0; i--) {
-            var v = viewContent.getChildren()[i];
-            var isLabel = false;
-            if (PLATFORM == 'android') {
-                if ( v instanceof Ti.UI.Label) {
-                    isLabel = true;
-                }
-            }
-            else {
-                if (v == '[object TiUILabel]') {
-                    isLabel = true;
-                }
-            }
-
-            if (isLabel == true && v.viewContainer.expanded == true) {
-                v.viewContainer.height = v.viewContainer.height + DPUnitsToPixels(30);
-                //(getScreenHeight() * 0.3);
-                break;
-            }
-        }
-    }
-
-    setTimeout(function() {
-        var entityArr = createEntityMultiple();
-        var j;
-        for ( j = 0; j <= content.length; j++) {
-            if (!content[j]) {
-                continue;
-            }
-            // Call for Calculate 'Calculation field'
-            if (win.mode == 1) {
-                if (content[j].field_type == 'calculation_field') {
-                    Ti.API.info("RECALCULATE BUTTON" + content[j].field_name);
-                    reCalculate(content[j]);
-                }
-            }
-
-            // set conditional required field
-            if (content[j].settings != null && content[j].settings != "" && content[j].settings['criteria'] != null && content[j].settings['criteria']['search_criteria'] != null) {
-                var row_idx;
-                for (row_idx in content[j].settings['criteria']['search_criteria']) {
-                    var criteria_row = content[j].settings['criteria']['search_criteria'][row_idx];
-                    var field_name = criteria_row.field_name;
-                    if (content[entityArr[field_name][0]['reffer_index']].condDependedFields == null) {
-                        content[entityArr[field_name][0]['reffer_index']].condDependedFields = [];
-                    }
-                    var depArr = content[entityArr[field_name][0]['reffer_index']].condDependedFields;
-                    depArr.push(j);
-                    content[entityArr[field_name][0]['reffer_index']].condDependedFields = depArr;
-                }
-                if (content[j] != null) {
-                    conditionalSetRequiredField(j);
-                }
-
-            }
-            // Download thumbnails from site
-            if (win.mode == 1) {
-                if (content[j].field_type == 'image') {
-                    if (content[j].cardinality > 1 || content[j].cardinality < 0) {
-                        var arrImages = content[j].arrImages;
-                        for ( i_idx = 0; i_idx < arrImages.length; i_idx++) {
-                            if (arrImages[i_idx].imageVal != defaultImageVal && arrImages[i_idx].isUpdated == false) {
-                                //downloadThumnail(arrImages[i_idx].imageVal, arrImages[i_idx], win);
-                                Omadi.display.setImageViewThumbnail(arrImages[i_idx], win.nid, arrImages[i_idx].imageVal);
-                            }
-                        }
-                    }
-                    else {
-                        if (content[j].imageVal != defaultImageVal && content[j].isUpdated == false) {
-                            //downloadThumnail(content[j].imageVal, content[j], win);
-                            Omadi.display.setImageViewThumbnail(content[j], win.nid, content[j].imageVal);
-                        }
-                    }
-                }
-            }
-
-            //For 'rules_field'
-            if (content[j].widgetObj != null && content[j].widgetObj.type == 'violation_select') {
-                var content_widget = content[j].widgetObj;
-                if (content_widget['rules_field_name'] != null && content_widget['rules_field_name'] != "") {
-                    var _reffer_index = entityArr[content_widget['rules_field_name']][0]['reffer_index'];
-                    var _rulesFieldArr;
-                    if (content[_reffer_index].rulesFieldArr == null) {
-                        _rulesFieldArr = [];
-                        content[_reffer_index].rulesFieldArr = _rulesFieldArr;
-                    }
-                    _rulesFieldArr = content[_reffer_index].rulesFieldArr;
-                    _rulesFieldArr.push(content[j].reffer_index);
-                    content[_reffer_index].rulesFieldArr = _rulesFieldArr;
-                }
-
-                if (content_widget['rules_violation_time_field_name'] != null && content_widget['rules_violation_time_field_name'] != "") {
-                    var _reffer_index = entityArr[content_widget['rules_violation_time_field_name']][0]['reffer_index'];
-                    var _rulesFieldArr;
-                    if (content[_reffer_index].rulesFieldArr == null) {
-                        _rulesFieldArr = [];
-                        content[_reffer_index].rulesFieldArr = _rulesFieldArr;
-                    }
-                    _rulesFieldArr = content[_reffer_index].rulesFieldArr;
-                    _rulesFieldArr.push(content[j].reffer_index);
-                    content[_reffer_index].rulesFieldArr = _rulesFieldArr;
-                }
-
-                if (win.mode == 1) {
-                    if (content_widget['rules_field_name'] != null && content_widget['rules_violation_time_field_name'] != null && content_widget['rules_field_name'] != "" && content_widget['rules_violation_time_field_name'] != "") {
-                        var title = '';
-                        var value = content[j].value;
-                        if (content[j].settings.cardinality > 1 || content[j].settings.cardinality == 1) {
-                            title = content[j].title;
-                        }
-                        else if (content[j].settings.cardinality == -1) {
-                            title = content[j].text;
-                        }
-                        setParticularRulesField(content[j]);
-                        content[j].value = value;
-                        if (content[j].settings.cardinality > 1 || content[j].settings.cardinality == 1) {
-                            content[j].title = title;
-                        }
-                        else if (content[j].settings.cardinality == -1) {
-                            content[j].text = title;
-                            //for(var itens_idx =0; itens_idx<content[j].itens.length; itens_idx++){
-                            //for(var value_idx=0; value_idx < content[j].value.length ; value_idx++){
-                            //alert(content[j].itens[itens_idx][0].v_into);
-                            //alert(content[j].value[value_idx][0].v_into);
-                            //if(content[j].itens[itens_idx].v_into == content[j].value[value_idx].v_into){
-                            //content[j].itens[itens_idx].is_set = true;
-                            //}
-                            //}
-                            //}
-                            var itens = content[j].itens;
-                            var value = content[j].value;
-                            var itens_idx;
-                            for (itens_idx in itens) {
-                                var value_idx;
-                                for (value_idx in value) {
-                                    if (itens[itens_idx].v_info == value[value_idx].v_info) {
-                                        itens[itens_idx].is_set = true;
-                                    }
-                                }
-                            }
-                            content[j].itens = itens;
-                        }
-
-                    }
-                }
-
-            }
-
-        }
-    }, 100);
-
-    var a = Titanium.UI.createAlertDialog({
-        title : 'Omadi',
-        buttonNames : ['OK']
-    });
-
-    //MENU
-    //======================================
-    // MENU
-    //======================================
-
-    if (Ti.Platform.name == 'android') {
+create_or_edit_node.loadUI = function() {"use strict";
+    
+    /*jslint vars: true, eqeq: true*/
+   
+   
+   if (Ti.Platform.name == 'android') {
         get_android_menu();
     }
     else {
         bottomButtons(win);
     }
+   
+   //viewContent is the parent container
+   
+    var instances = Omadi.data.getFields(win.type);
+    var field_name;
+    var instance;
+    var i, j;
+    
+    var omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
+    var roles = omadi_session_details.user.roles;
+    //db_display = Omadi.utils.openMainDatabase();
+    
+    // regions = db_display.execute('SELECT * FROM regions WHERE node_type = "' + win.type + '" ORDER BY weight ASC');
+    // if (win.mode == 1) {
+        // var node_table = db_display.execute('SELECT * FROM node WHERE nid=' + win.nid);
+        // if (node_table.rowCount > 0) {
+            // var no_data_fields = node_table.fieldByName('no_data_fields');
+            // if (no_data_fields != null && no_data_fields != "") {
+                // no_data_fields = JSON.parse(no_data_fields);
+                // var key;
+                // for (key in no_data_fields) {
+                    // if (no_data_fields.hasOwnProperty(key)) {
+                        // no_data_fieldsArr.push(key);
+                    // }
+                // }
+            // }
+        // }
+    // }
+    
+    for(field_name in instances){
+        if(instances.hasOwnProperty(field_name)){
+            
+            instance = instances[field_name];        
+            
+            var settings = instance.settings;
+            var can_view = false;
+            var can_edit = false;
+            var isRequired = instance.required;
+            var labelColor = "#246";
 
-    win.addEventListener('android:back', function() {
+            if (settings.enforce_permissions != null && settings.enforce_permissions == 1) {
+                for (i in settings.permissions) {
+                    if(settings.permissions.hasOwnProperty(i)){
+                        for (j in roles) {
+                            if(roles.hasOwnProperty(j)){
+                                if (i == j) {
+                                    var stringifyObj = JSON.stringify(settings.permissions[i]);
+                                    if (stringifyObj.indexOf('update') >= 0 || settings.permissions[i].all_permissions) {
+                                        can_edit = true;
+                                    }
 
-        var dialog = Ti.UI.createAlertDialog({
-            cancel : 1,
-            buttonNames : ['Yes', 'No'],
-            message : 'Are you sure you want to cancel and go back?',
-            title : 'Cancel'
-        });
-
-        dialog.addEventListener('click', function(e) {
-            if (e.index == 0) {
-                if (win.mode == 1) {
-                    Ti.UI.createNotification({
-                        message : win.title + ' update was cancelled !',
-                        duration : Ti.UI.NOTIFICATION_DURATION_LONG
-                    }).show();
+                                    if (stringifyObj.indexOf('view') >= 0 || settings.permissions[i].all_permissions) {
+                                        can_view = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-                else {
-                    Ti.UI.createNotification({
-                        message : win.title + ' creation was cancelled !',
-                        duration : Ti.UI.NOTIFICATION_DURATION_LONG
-                    }).show();
-                }
-                var db_toDeleteImage = Omadi.utils.openMainDatabase();
-
-                db_toDeleteImage.execute("DELETE FROM file_upload_queue WHERE nid=0;");
-                db_toDeleteImage.close();
-                win.close();
             }
-        });
+            else {
+                can_view = can_edit = true;
+            }
 
-        dialog.show();
-    });
+            if (!can_view) {
+                break;
+            }
+            
+            var fieldView = Ti.UI.createView({
+               width: '100%',
+               layout: 'vertical',
+               height: Ti.UI.SIZE
+            });
+            
+            viewContent.add(fieldView);
+            
+            
+            switch(instance.type){
+                case 'text_long':
+                
+                    var labelView = Ti.UI.createLabel({
+                        text : ( isRequired ? '*' : '') + instance.label,
+                        color : isRequired ? 'red' : labelColor,
+                        font : {
+                            fontSize : fieldFontSize,
+                            fontWeight : 'bold'
+                        },
+                        textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
+                        width : Ti.Platform.displayCaps.platformWidth - 30,
+                        touchEnabled : false,
+                        height : Ti.UI.SIZE
+                    });
+                    
+                    fieldView.add(labelView);
 
-    toolActInd.hide();
+                    //Add fields:
+                    //regionView.add(label[count]);
+                    var reffer_index = count;
+                    var _min = null;
+                    var _max = null;
+
+                    if (settings.min_length && settings.min_length != null && settings.min_length != "null") {
+                        _min = settings.min_length
+                    }
+
+                    if (settings.max_length && settings.max_length != null && settings.max_length != "null") {
+                        _max = settings.max_length
+                    }
+
+                    if (settings.cardinality > 1) {
+                        if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
+                            var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
+
+                            //Decode the stored array:
+                            var decoded = array_cont.fieldByName('encoded_array');
+                            decoded = Base64.decode(decoded);
+                            Ti.API.info('Decoded array is equals to: ' + decoded);
+                            decoded = decoded.toString();
+
+                            // Token that splits each element contained into the array: 'j8Oc2s1E'
+                            var decoded_values = decoded.split("j8Oc2s1E");
+                        }
+                        else {
+                            var decoded_values = new Array();
+                            decoded_values[0] = field_arr[index_label][index_size].actual_value;
+                        }
+
+                        var o_index;
+                        for ( o_index = 0; o_index < settings.cardinality; o_index++) {
+
+                            if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
+                                var vl_to_field = decoded_values[o_index];
+                            }
+                            else {
+                                var vl_to_field = "";
+                            }
+
+                            content[count] = Ti.UI.createTextField({
+                                hintText : "#" + o_index + " " + field_arr[index_label][index_size].label,
+                                private_index : o_index,
+                                borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+                                textAlign : 'left',
+                                width : Ti.Platform.displayCaps.platformWidth - 30,
+                                height : (PLATFORM == 'android') ? 2 * heightTextField : 100,
+                                color : '#000000',
+                                top : top,
+                                field_type : field_arr[index_label][index_size].type,
+                                field_name : field_arr[index_label][index_size].field_name,
+                                required : field_arr[index_label][index_size].required,
+                                is_title : field_arr[index_label][index_size].is_title,
+                                composed_obj : true,
+                                cardinality : settings.cardinality,
+                                value : vl_to_field,
+                                reffer_index : reffer_index,
+                                settings : settings,
+                                changedFlag : 0,
+                                my_min : _min,
+                                my_max : _max,
+                                real_ind : count,
+                                returnKeyType : Ti.UI.RETURNKEY_DONE,
+                                enabled : can_edit,
+                                editable : can_edit
+                            });
+                            if (PLATFORM == 'android') {
+                                content[count].backgroundImage = '../images/textfield.png'
+                            }
+                            if (!can_edit) {
+                                content[count].backgroundImage = '';
+                                content[count].backgroundColor = '#BDBDBD';
+                                content[count].borderColor = 'gray';
+                                content[count].borderRadius = 10;
+                                content[count].color = '#848484';
+                                content[count].borderWidth = 1;
+                                content[count].paddingLeft = 3;
+                                content[count].paddingRight = 3;
+                                if (PLATFORM == 'android') {
+                                    content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+                                }
+                            }
+
+                            if (_max != null) {
+                                content[count].maxLength = _max;
+                            }
+                            top += (PLATFORM == 'android') ? 2 * heightTextField : 100;
+
+                            regionView.add(content[count]);
+                            content[count].addEventListener('change', function(e) {
+                                if (e.source.my_max != null && e.source.my_max != "" && e.source.value.length >= e.source.my_max) {
+                                    //e.source.value = e.source.value.substr(0, e.source.my_max);
+                                    //e.source.blur();
+                                    e.source.value = e.source.value.substr(0, e.source.my_max);
+                                    e.source.setSelection(e.source.my_max, e.source.my_max);
+                                    //e.source.blur();
+                                    //Ti.UI.Android.hideSoftKeyboard();
+                                }
+                                changedContentValue(e.source);
+                                noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+                            });
+
+                            content[count].addEventListener('blur', function(e) {
+                                Ti.API.info(e.source.value.length + ' or ' + e.value.length + ' Field number ==> min: ' + e.source.my_min + ' max: ' + e.source.my_max);
+                                if (e.source.value != null && e.source.value != "") {
+                                    if (e.source.my_max != null && e.source.my_min != null) {
+                                        if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)) {
+                                            var _a = Titanium.UI.createAlertDialog({
+                                                title : 'Omadi',
+                                                message : 'The minimum for this field is ' + e.source.my_min,
+                                                buttonNames : ['OK']
+                                            });
+
+                                            _a.show();
+
+                                            _a.addEventListener('click', function(evt) {
+                                                content[e.source.real_ind].focus();
+                                            });
+
+                                        }
+                                        else if (parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
+                                            var _a = Titanium.UI.createAlertDialog({
+                                                title : 'Omadi',
+                                                message : "The maximum for this field is " + e.source.my_max,
+                                                buttonNames : ['OK']
+                                            });
+
+                                            _a.show();
+
+                                            _a.addEventListener('click', function(evt) {
+                                                content[e.source.real_ind].focus();
+                                            });
+                                        }
+                                        else {
+                                            //value is ok
+                                        }
+                                    }
+                                    else if (e.source.my_max != null) {
+                                        if (parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
+                                            var _a = Titanium.UI.createAlertDialog({
+                                                title : 'Omadi',
+                                                message : "The maximum for this field is " + e.source.my_max,
+                                                buttonNames : ['OK']
+                                            });
+
+                                            _a.show();
+
+                                            _a.addEventListener('click', function(evt) {
+                                                content[e.source.real_ind].focus();
+                                            });
+                                        }
+                                        else {
+                                            //value is ok
+                                        }
+                                    }
+                                    else if (e.source.my_min != null) {
+                                        if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)) {
+                                            var _a = Titanium.UI.createAlertDialog({
+                                                title : 'Omadi',
+                                                message : 'The minimum for this field is ' + e.source.my_min,
+                                                buttonNames : ['OK']
+                                            });
+
+                                            _a.show();
+
+                                            _a.addEventListener('click', function(evt) {
+                                                content[e.source.real_ind].focus();
+                                            });
+                                        }
+                                        else {
+                                            //value is ok
+                                        }
+                                    }
+                                    else {
+                                        //No min or max sets
+                                    }
+                                }
+                            });
+                            count++;
+                        }
+                    }
+                    else {
+                        
+                        var widgetView = Ti.UI.createTextArea({
+                            autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_SENTENCES,
+                            autocorrect: true,
+                            editable : can_edit,
+                            enabled : can_edit,
+                            ellipsize: false,
+                            hintText : instance.label,
+                            keepScreenOn: true,
+                            suppessReturn: false,
+                            borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+                            textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
+                            width : Ti.Platform.displayCaps.platformWidth - 30,
+                            height : (PLATFORM == 'android') ? 2 * heightTextField : 100,
+                            color : '#000000'
+                            //value : instance.actual_value,
+                            
+                            // returnKeyType : Ti.UI.RETURNKEY_DONE,
+//                             
+                            // field_type : instance.type,
+                            // field_name : instance.field_name,
+                            // required : instance.required,
+                            // is_title : instance.is_title,
+                            // composed_obj : false,
+                            // cardinality : settings.cardinality,
+                            // reffer_index : reffer_index,
+                            // settings : settings,
+                            // changedFlag : 0,
+                            // my_min : _min,
+                            // my_max : _max,
+                            // real_ind : count
+                        });
+                        
+                        if (PLATFORM == 'android') {
+                            widgetView.backgroundImage = '/images/textfield.png'
+                        }
+                        
+                        if (!can_edit) {
+                            widgetView.backgroundImage = '';
+                            widgetView.backgroundColor = '#BDBDBD';
+                            widgetView.borderColor = 'gray';
+                            widgetView.borderRadius = 10;
+                            widgetView.color = '#848484';
+                            widgetView.paddingLeft = 3;
+                            widgetView.paddingRight = 3;
+                            if (PLATFORM == 'android') {
+                                widgetView.softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+                            }
+                        }
+                        if (_max != null) {
+                            widgetView.maxLength = _max;
+                        }
+
+                        //top += (PLATFORM == 'android') ? 2 * heightTextField : 100;
+
+                        //regionView.add(content[count]);
+                        
+                        fieldView.add(widgetView);
+                        
+                        widgetView.addEventListener('change', function(e) {
+                            // if (e.source.my_max != null && e.source.my_max != "" && e.source.value.length >= e.source.my_max) {
+                                // //e.source.value = e.source.value.substr(0, e.source.my_max);
+                                // //e.source.blur();
+                                // e.source.value = e.source.value.substr(0, e.source.my_max);
+                                // e.source.setSelection(e.source.my_max, e.source.my_max);
+                                // //e.source.setSoftKeyboardOnFocus(Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS);
+                                // //e.source.blur();
+                                // //Ti.UI.Android.hideSoftKeyboard();
+                            // }
+                            // changedContentValue(e.source);
+                            // noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+                        });
+
+                        widgetView.addEventListener('blur', function(e) {
+                            // Ti.API.info(e.source.value.length + ' or ' + e.value.length + ' Field number ==> min: ' + e.source.my_min + ' max: ' + e.source.my_max);
+                            // if (e.source.value != null && e.source.value != "") {
+                                // if (e.source.my_max != null && e.source.my_min != null) {
+                                    // if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)) {
+                                        // var _a = Titanium.UI.createAlertDialog({
+                                            // title : 'Omadi',
+                                            // message : 'The minimum for this field is ' + e.source.my_min,
+                                            // buttonNames : ['OK']
+                                        // });
+// 
+                                        // _a.show();
+// 
+                                        // _a.addEventListener('click', function(evt) {
+                                            // content[e.source.real_ind].focus();
+                                        // });
+// 
+                                    // }
+                                    // else if (parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
+                                        // var _a = Titanium.UI.createAlertDialog({
+                                            // title : 'Omadi',
+                                            // message : "The maximum for this field is " + e.source.my_max,
+                                            // buttonNames : ['OK']
+                                        // });
+// 
+                                        // _a.show();
+// 
+                                        // _a.addEventListener('click', function(evt) {
+                                            // content[e.source.real_ind].focus();
+                                        // });
+                                    // }
+                                    // else {
+                                        // //value is ok
+                                    // }
+                                // }
+                                // else if (e.source.my_max != null) {
+                                    // if (parseFloat(e.source.value.length) > parseFloat(e.source.my_max)) {
+                                        // var _a = Titanium.UI.createAlertDialog({
+                                            // title : 'Omadi',
+                                            // message : "The maximum for this field is " + e.source.my_max,
+                                            // buttonNames : ['OK']
+                                        // });
+// 
+                                        // _a.show();
+// 
+                                        // _a.addEventListener('click', function(evt) {
+                                            // content[e.source.real_ind].focus();
+                                        // });
+                                    // }
+                                    // else {
+                                        // //value is ok
+                                    // }
+                                // }
+                                // else if (e.source.my_min != null) {
+                                    // if (parseFloat(e.source.value.length) < parseFloat(e.source.my_min)) {
+                                        // var _a = Titanium.UI.createAlertDialog({
+                                            // title : 'Omadi',
+                                            // message : 'The minimum for this field is ' + e.source.my_min,
+                                            // buttonNames : ['OK']
+                                        // });
+// 
+                                        // _a.show();
+// 
+                                        // _a.addEventListener('click', function(evt) {
+                                            // content[e.source.real_ind].focus();
+                                        // });
+                                    // }
+                                    // else {
+                                        // //value is ok
+                                    // }
+                                // }
+                                // else {
+                                    // //No min or max sets
+                                // }
+                            // }
+                        });
+                    }
+                    
+                    //No data checkbox functionality
+                    //noDataCheckbox(reffer_index, regionView, top);
+                    //if (content[reffer_index].noDataView != null) {
+                    //    top += 40;
+                   // }
+                
+                
+                break;
+            }
+            
+        }
+    }   
 };
+
+
+
+
+
+
+
+
+
+
 
 var camera;
 if (PLATFORM == 'android') {
@@ -9385,160 +2893,160 @@ function createImage(o_index, arrImages, data, scrollView, updated) {
     return arrImages;
 }
 
-function bottomButtons(actualWindow) {
-    try {
-        if (actualWindow != null) {
-            var back = Ti.UI.createButton({
-                title : 'Back',
-                style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-            });
-            back.addEventListener('click', function() {
-                cancelOpt();
-            });
-
-            var space = Titanium.UI.createButton({
-                systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
-            });
-            var label = Titanium.UI.createButton({
-                title : actualWindow.title,
-                color : _lb_color,
-                ellipsize : true,
-                wordwrap : false,
-                width : 200,
-                style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
-            });
-
-            var actions = Ti.UI.createButton({
-                title : 'Actions',
-                style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-            });
-
-            actions.addEventListener('click', function() {
-
-                var btn_tt = [];
-                var btn_id = [];
-
-                btn_tt.push('Save');
-
-                if (win.nid != null) {
-                    var db_act = Omadi.utils.openMainDatabase();
-
-                    var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
-                    var _data = JSON.parse(json_data.fieldByName('_data'));
-
-                    var node_form = win.region_form;
-
-                    Ti.API.info('Form node part = ' + node_form);
-
-                    if (_data.form_parts != null && _data.form_parts != "") {
-                        Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
-                        if (_data.form_parts.parts.length >= parseInt(node_form) + 2) {
-                            Ti.API.info("<<<<<<<------->>>>>>> Title = " + _data.form_parts.parts[parseInt(node_form) + 1].label);
-                            btn_tt.push("Save + " + _data.form_parts.parts[node_form + 1].label);
-                            btn_id.push(node_form + 1);
-                        }
-                    }
-                    json_data.close();
-                    db_act.close();
-                }
-                else {
-                    var db_act = Omadi.utils.openMainDatabase();
-
-                    var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
-                    var _data = JSON.parse(json_data.fieldByName('_data'));
-
-                    var node_form = 0;
-
-                    Ti.API.info('Form node part = ' + node_form);
-
-                    if (_data.form_parts != null && _data.form_parts != "") {
-                        Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
-                        if (_data.form_parts.parts.length >= parseInt(node_form) + 2) {
-                            Ti.API.info("<<<<<<<------->>>>>>> Title = " + _data.form_parts.parts[node_form + 1].label);
-                            btn_tt.push("Save + " + _data.form_parts.parts[node_form + 1].label);
-                            btn_id.push(node_form + 1);
-                        }
-                    }
-                    json_data.close();
-                    db_act.close();
-                }
-
-                btn_tt.push('Draft');
-                btn_tt.push('Cancel');
-
-                var postDialog = Titanium.UI.createOptionDialog();
-                postDialog.options = btn_tt;
-                postDialog.show();
-
-                postDialog.addEventListener('click', function(ev) {
-                    if (btn_tt.length == 4) {
-                        if (ev.index == 1) {
-                            //openEditScreen(btn_id[0]);
-                            Ti.API.info('=======> ' + btn_id[0]);
-                            try {
-                                keep_info(btn_id[0], false);
-                            }
-                            catch(e) {
-                                alert('Error Tracking 11: ' + e);
-                                //To catch error to resolve issue #916
-                            }
-                        }
-                        else if (ev.index == 0) {
-                            try {
-                                keep_info('normal', false);
-                            }
-                            catch(e) {
-                                alert('Error Tracking 12: ' + e);
-                                //To catch error to resolve issue #916
-                            }
-                        }
-                        else if (ev.index == 2) {
-                            try {
-                                keep_info('draft', false);
-                            }
-                            catch(e) {
-                                alert('Error Tracking 13: ' + e);
-                                //To catch error to resolve issue #916
-                            }
-                        }
-                    }
-                    else {
-                        if (ev.index == 0) {
-                            try {
-                                keep_info('normal', false);
-                            }
-                            catch(e) {
-                                alert('Error Tracking 14: ' + e);
-                                //To catch error to resolve issue #916
-                            }
-                        }
-                        else if (ev.index == 1) {
-                            try {
-                                keep_info('draft', false);
-                            }
-                            catch(e) {
-                                alert('Error Tracking 15: ' + e);
-                                //To catch error to resolve issue #916
-                            }
-                        }
-                    }
-                });
-            });
-
-            // create and add toolbar
-            var toolbar = Ti.UI.iOS.createToolbar({
-                items : [back, space, label, space, actions],
-                top : 0,
-                borderTop : false,
-                borderBottom : true
-            });
-            actualWindow.add(toolbar);
-        }
-    }
-    catch(evt) {
-        Ti.API.info("TOP BAR ERROR = " + evt);
-    }
-};
+// function bottomButtons(actualWindow) {
+    // try {
+        // if (actualWindow != null) {
+            // var back = Ti.UI.createButton({
+                // title : 'Back',
+                // style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+            // });
+            // back.addEventListener('click', function() {
+                // cancelOpt();
+            // });
+// 
+            // var space = Titanium.UI.createButton({
+                // systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+            // });
+            // var label = Titanium.UI.createButton({
+                // title : actualWindow.title,
+                // color : _lb_color,
+                // ellipsize : true,
+                // wordwrap : false,
+                // width : 200,
+                // style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+            // });
+// 
+            // var actions = Ti.UI.createButton({
+                // title : 'Actions',
+                // style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+            // });
+// 
+            // actions.addEventListener('click', function() {
+// 
+                // var btn_tt = [];
+                // var btn_id = [];
+// 
+                // btn_tt.push('Save');
+// 
+                // if (win.nid != null) {
+                    // var db_act = Omadi.utils.openMainDatabase();
+// 
+                    // var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
+                    // var _data = JSON.parse(json_data.fieldByName('_data'));
+// 
+                    // var node_form = win.region_form;
+// 
+                    // Ti.API.info('Form node part = ' + node_form);
+// 
+                    // if (_data.form_parts != null && _data.form_parts != "") {
+                        // Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
+                        // if (_data.form_parts.parts.length >= parseInt(node_form) + 2) {
+                            // Ti.API.info("<<<<<<<------->>>>>>> Title = " + _data.form_parts.parts[parseInt(node_form) + 1].label);
+                            // btn_tt.push("Save + " + _data.form_parts.parts[node_form + 1].label);
+                            // btn_id.push(node_form + 1);
+                        // }
+                    // }
+                    // json_data.close();
+                    // db_act.close();
+                // }
+                // else {
+                    // var db_act = Omadi.utils.openMainDatabase();
+// 
+                    // var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + win.type + '"');
+                    // var _data = JSON.parse(json_data.fieldByName('_data'));
+// 
+                    // var node_form = 0;
+// 
+                    // Ti.API.info('Form node part = ' + node_form);
+// 
+                    // if (_data.form_parts != null && _data.form_parts != "") {
+                        // Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
+                        // if (_data.form_parts.parts.length >= parseInt(node_form) + 2) {
+                            // Ti.API.info("<<<<<<<------->>>>>>> Title = " + _data.form_parts.parts[node_form + 1].label);
+                            // btn_tt.push("Save + " + _data.form_parts.parts[node_form + 1].label);
+                            // btn_id.push(node_form + 1);
+                        // }
+                    // }
+                    // json_data.close();
+                    // db_act.close();
+                // }
+// 
+                // btn_tt.push('Draft');
+                // btn_tt.push('Cancel');
+// 
+                // var postDialog = Titanium.UI.createOptionDialog();
+                // postDialog.options = btn_tt;
+                // postDialog.show();
+// 
+                // postDialog.addEventListener('click', function(ev) {
+                    // if (btn_tt.length == 4) {
+                        // if (ev.index == 1) {
+                            // //openEditScreen(btn_id[0]);
+                            // Ti.API.info('=======> ' + btn_id[0]);
+                            // try {
+                                // keep_info(btn_id[0], false);
+                            // }
+                            // catch(e) {
+                                // alert('Error Tracking 11: ' + e);
+                                // //To catch error to resolve issue #916
+                            // }
+                        // }
+                        // else if (ev.index == 0) {
+                            // try {
+                                // keep_info('normal', false);
+                            // }
+                            // catch(e) {
+                                // alert('Error Tracking 12: ' + e);
+                                // //To catch error to resolve issue #916
+                            // }
+                        // }
+                        // else if (ev.index == 2) {
+                            // try {
+                                // keep_info('draft', false);
+                            // }
+                            // catch(e) {
+                                // alert('Error Tracking 13: ' + e);
+                                // //To catch error to resolve issue #916
+                            // }
+                        // }
+                    // }
+                    // else {
+                        // if (ev.index == 0) {
+                            // try {
+                                // keep_info('normal', false);
+                            // }
+                            // catch(e) {
+                                // alert('Error Tracking 14: ' + e);
+                                // //To catch error to resolve issue #916
+                            // }
+                        // }
+                        // else if (ev.index == 1) {
+                            // try {
+                                // keep_info('draft', false);
+                            // }
+                            // catch(e) {
+                                // alert('Error Tracking 15: ' + e);
+                                // //To catch error to resolve issue #916
+                            // }
+                        // }
+                    // }
+                // });
+            // });
+// 
+            // // create and add toolbar
+            // var toolbar = Ti.UI.iOS.createToolbar({
+                // items : [back, space, label, space, actions],
+                // top : 0,
+                // borderTop : false,
+                // borderBottom : true
+            // });
+            // actualWindow.add(toolbar);
+        // }
+    // }
+    // catch(evt) {
+        // Ti.API.info("TOP BAR ERROR = " + evt);
+    // }
+// };
 
 function cancelOpt() {
     var dialog = Ti.UI.createAlertDialog({

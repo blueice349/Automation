@@ -359,15 +359,17 @@ listView.addEventListener('click', function(e) {
         win_new.region_form = 0;
         win_new.backgroundColor = "#EEEEEE";
         win_new.app_permissions = e.row.app_permissions;
+        win_new.url = '/main_windows/form.js';
+        
         win_new.addEventListener('open', function() {
             unlock_screen();
         });
 
         win_new.open();
         
-        setTimeout(function() {
-            create_or_edit_node.loadUI();
-        }, 100);
+        //setTimeout(function() {
+        //    create_or_edit_node.loadUI();
+        //}, 100);
     }
     else {
         if (e.row.app_permissions.can_view == true) {
@@ -377,21 +379,23 @@ listView.addEventListener('click', function(e) {
                 fullscreen : false,
                 url : 'objects.js',
                 type : e.row.name_table,
-                uid : jsonLogin.user.uid,
-                //up_node : update_node,
-                backgroundColor : '#EEEEEE',
-                show_plus : e.row.show_plus
+                backgroundColor : '#EEEEEE'
             });
             
             curWin.isTopWindow = false;
             //win_new.movement = movement;
             win_new.app_permissions = e.row.app_permissions;
+            
             win_new.addEventListener('focus', function() {
                 unlock_screen();
             });
             
+            unlock_screen();
+            
             win_new.addEventListener('close', function(){
                curWin.isTopWindow = true; 
+               unlock_screen();
+               Ti.API.debug("Closed");
             });
 
             win_new.open();
