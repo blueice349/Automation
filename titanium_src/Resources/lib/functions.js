@@ -4409,22 +4409,6 @@ function uploadFile(win) {
 	
 	try {
 		//var fileUploadXHR = win.log;
-		var _file_xhr = Ti.Network.createHTTPClient();
-		_file_xhr.setTimeout(30000);
-		_file_xhr.open(type_request, domainName + '/js-sync/upload.json');
-		
-		Ti.API.info("Uploading to " + domainName);
-		
-		if(PLATFORM == 'android'){
-			_file_xhr.setRequestHeader("Cookie", getCookie());// Set cookies
-		}
-		else{
-			var split_cookie = getCookie().split(';');
-			if (!split_cookie[0] ){
-				split_cookie[0]="";
-			}
-			_file_xhr.setRequestHeader("Cookie", split_cookie[0]);// Set cookies
-		} 
 		
 		// Upload images
 		var database = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion") + "_" + getDBName());
@@ -4434,6 +4418,24 @@ function uploadFile(win) {
 		if (fileUploadTable.isValidRow()) {
 			//Only upload those images that have positive nids
 			if (fileUploadTable.fieldByName('nid') > 0) {
+			    
+			    var _file_xhr = Ti.Network.createHTTPClient();
+                _file_xhr.setTimeout(30000);
+                _file_xhr.open(type_request, domainName + '/js-sync/upload.json');
+                
+                Ti.API.info("Uploading to " + domainName);
+                
+                if(PLATFORM == 'android'){
+                    _file_xhr.setRequestHeader("Cookie", getCookie());// Set cookies
+                }
+                else{
+                    var split_cookie = getCookie().split(';');
+                    if (!split_cookie[0] ){
+                        split_cookie[0]="";
+                    }
+                    _file_xhr.setRequestHeader("Cookie", split_cookie[0]);// Set cookies
+                } 
+        
 				
 				_file_xhr.onload = function(e) {
 					Ti.API.info('UPLOAD FILE: =========== Success ========' + this.responseText);
@@ -4490,9 +4492,27 @@ function uploadFile(win) {
 						fieldSettings.close();
 						fileUploadTable.close();
 						database.close();
-						if (remainingRow != 0) {
+						
+						if (remainingRow > 0) {
 							uploadFile(win);
 						} 
+						
+						var http = Ti.Network.createHTTPClient();
+                        http.setTimeout(30000);
+                        http.open('GET', domainName + '/trying.json?uploadsuccessful');
+                        
+                        if(PLATFORM == 'android'){
+                            http.setRequestHeader("Cookie", getCookie());// Set cookies
+                        }
+                        else{
+                            var split_cookie = getCookie().split(';');
+                            if (!split_cookie[0] ){
+                                split_cookie[0]="";
+                            }
+                            http.setRequestHeader("Cookie", split_cookie[0]);// Set cookies
+                        } 
+                
+                        http.send();
 					}
 				};
 
@@ -4510,9 +4530,49 @@ function uploadFile(win) {
 						buttonNames: ['OK'] 
 					}); 
 					alertDialog.show();
+					
+					
+					var http = Ti.Network.createHTTPClient();
+                    http.setTimeout(30000);
+                    http.open('GET', domainName + '/trying.json?error=1&error1=' + this.error + "&status=" + this.status);
+                    
+                    if(PLATFORM == 'android'){
+                        http.setRequestHeader("Cookie", getCookie());// Set cookies
+                    }
+                    else{
+                        var split_cookie = getCookie().split(';');
+                        if (!split_cookie[0] ){
+                            split_cookie[0]="";
+                        }
+                        http.setRequestHeader("Cookie", split_cookie[0]);// Set cookies
+                    } 
+            
+                    http.send();
 				};
 
 				_file_xhr.setRequestHeader("Content-Type", "application/json");
+
+                
+                var http = Ti.Network.createHTTPClient();
+                http.setTimeout(30000);
+                http.open('GET', domainName + '/trying.json?initial=1&uid=' + Ti.App.Properties.getString('username') + '&filename=' + fileUploadTable.fieldByName('file_name') + "&nid=" + fileUploadTable.fieldByName('nid') + "&field_name=" + fileUploadTable.fieldByName('field_name') + "&delta=" + fileUploadTable.fieldByName('delta') + "&timestamp=" + fileUploadTable.fieldByName('timestamp') + "&domain=" + domainName);
+                
+                if(PLATFORM == 'android'){
+                    http.setRequestHeader("Cookie", getCookie());// Set cookies
+                }
+                else{
+                    var split_cookie = getCookie().split(';');
+                    if (!split_cookie[0] ){
+                        split_cookie[0]="";
+                    }
+                    http.setRequestHeader("Cookie", split_cookie[0]);// Set cookies
+                } 
+        
+                http.send();
+                
+                _file_xhr.nid = fileUploadTable.fieldByName('nid');
+                _file_xhr.delta = fileUploadTable.fieldByName('delta');
+                _file_xhr.filename = fileUploadTable.fieldByName('file_name');
 
 				if (PLATFORM == 'android') {
 				  _file_xhr.send('{"file_data"	:"' + fileUploadTable.fieldByName('file_data') + '", "filename"	:"' + fileUploadTable.fieldByName('file_name') + '", "nid"		:"' + fileUploadTable.fieldByName('nid') + '", "field_name":"' + fileUploadTable.fieldByName('field_name') + '", "delta":"' + fileUploadTable.fieldByName('delta') + '","timestamp":"'+ fileUploadTable.fieldByName('timestamp')+'"}');
@@ -4535,10 +4595,28 @@ function uploadFile(win) {
 				database.close();
 			}
 		}
-	} catch(ex) {
+	} 
+	catch(ex) {
 		Ti.API.error("==== ERROR ===" + ex);
 		alert("There was an error uploading your photo. Details: " + ex);
-	}
+		
+		var http = Ti.Network.createHTTPClient();
+        http.setTimeout(30000);
+        http.open('GET', domainName + '/trying.json?error=2&text=' + escape(ex.toString()));
+        
+        if(PLATFORM == 'android'){
+            http.setRequestHeader("Cookie", getCookie());// Set cookies
+        }
+        else{
+            var split_cookie = getCookie().split(';');
+            if (!split_cookie[0] ){
+                split_cookie[0]="";
+            }
+            http.setRequestHeader("Cookie", split_cookie[0]);// Set cookies
+        } 
+
+        http.send();
+    }
 }
 
 // To reduce image
