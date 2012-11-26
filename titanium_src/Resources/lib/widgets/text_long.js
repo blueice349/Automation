@@ -146,6 +146,8 @@ Omadi.widgets.text_long = {
             // real_ind : count
         });
         
+        widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
+        
         if (PLATFORM == 'android') {
             widgetView.backgroundImage = '/images/textfield.png';
         }
@@ -168,8 +170,13 @@ Omadi.widgets.text_long = {
         }
         
         widgetView.addEventListener('change', function(e) {
+            /*global setConditionallyRequiredLabels*/
             e.source.dbValue = e.source.value;
             e.source.textValue = e.source.value;
+            
+            if(e.source.check_conditional_fields.length > 0){
+                setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+            }
             // changedContentValue(e.source);
             // noDataChecboxEnableDisable(e.source, e.source.reffer_index);
         });

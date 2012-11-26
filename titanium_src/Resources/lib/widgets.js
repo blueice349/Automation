@@ -24,13 +24,13 @@ Omadi.widgets.getDBValues = function(fieldWrapper){"use strict";
     
     for(i = 0; i < children.length; i ++){
         if(typeof children[i].dbValue !== 'undefined'){
-            dbValues.push(children[i].dbValue);
+            dbValues.push(Omadi.utils.trimWhiteSpace(children[i].dbValue));
         }
         else if(children[i].getChildren().length > 0){
             subChildren = children[i].getChildren();
             for(j = 0; j < subChildren.length; j ++){
                 if(typeof subChildren[j].dbValue !== 'undefined'){
-                    dbValues.push(subChildren[j].dbValue);
+                    dbValues.push(Omadi.utils.trimWhiteSpace(subChildren[j].dbValue));
                 }
             }
         }
@@ -101,7 +101,6 @@ Omadi.widgets.shared = {
 };
 
 
-
 Omadi.widgets.redraw = function(instance){"use strict";
     
     
@@ -151,3 +150,12 @@ Omadi.widgets.validateAll = function(){"use strict";
         }
     }
 };
+
+
+
+
+
+
+
+
+

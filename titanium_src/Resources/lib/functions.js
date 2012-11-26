@@ -297,7 +297,7 @@ function isJsonString(str) {
 
 
 
-function update_node(mode, close_parent, _node_name, flag_next_part) {"use strict";
+function update_node(mode, _node_name, flag_next_part) {"use strict";
 
     //Omadi.display.showLoadingIndicator("Saving data to the web...");
 
@@ -310,10 +310,10 @@ function update_node(mode, close_parent, _node_name, flag_next_part) {"use stric
         }
 
         if (flag_next_part != null) {
-            close_parent(flag_next_part);
+            reload_me(flag_next_part);
         }
         else {
-            close_parent(false);
+            close_me(false);
         }
     });
 
@@ -1219,7 +1219,7 @@ var in_array = function(p_val, haystack) {
     return false;
 };
 
-function isArray(input) {
+function isArray(input) {"use strict";
     return typeof (input) == 'object' && ( input instanceof Array);
 }
 
@@ -1292,9 +1292,9 @@ function usort(inputArr, sorter) {
 
 // PHP equivelent function in javaScript-----END
 
-function _list_search_criteria_search_order(a, b) {
-    if (a['weight'] != null && a['weight'] != "" && b['weight'] != null && b['weight'] != "") {
-        return a['weight'] > b['weight'];
+function search_criteria_sort_order(a, b) {"use strict";
+    if (a.weight != null && a.weight != "" && b.weight != null && b.weight != "") {
+        return a.weight > b.weight;
     }
     return 0;
 }
@@ -1307,7 +1307,7 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
             //Ti.API.info('here--------A.1');
             var instances = omadi_fields_get_fields(win, db_display);
             //Ti.API.info('here--------A.2');
-            usort(criteria['search_criteria'], '_list_search_criteria_search_order');
+            criteria.search_criteria.sort(search_criteria_search_order);
             var criteria_index;
             for (criteria_index in criteria.search_criteria) {
                 //Ti.API.info('here--------A.3' + criteria.search_criteria[criteria_index]);

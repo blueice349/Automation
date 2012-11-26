@@ -1,5 +1,263 @@
 
+function conditionalSetRequiredField(idx) {
+    var entityArr = createEntityMultiple();
+    var row_matches = [];
+    if (content[idx].settings['criteria'] != null && content[idx].settings['criteria']['search_criteria'] != null) {
+        usort(content[idx].settings['criteria']['search_criteria'], 'search_criteria_search_order');
 
+        var row_idx;
+        for (row_idx in content[idx].settings['criteria']['search_criteria']) {
+            var criteria_row = content[idx].settings['criteria']['search_criteria'][row_idx];
+            row_matches[row_idx] = false;
+            var field_name = criteria_row.field_name;
+            var search_operator = criteria_row.operator;
+            var search_value = criteria_row.value;
+            var node_values = [];
+            if (entityArr[field_name] != null) {
+
+                switch(entityArr[field_name][0]['field_type']) {
+                    case 'text':
+                    case 'text_long':
+                    case 'link_field':
+                    case 'phone':
+                    case 'license_plate':
+                    case 'location':
+                    case 'vehicle_fields':
+                    case 'number_integer':
+                    case 'number_decimal':
+                    case 'email':
+                    case 'datestamp':
+                    case 'omadi_reference':
+                    case 'omadi_time':
+                        for (idx1 in entityArr[field_name]) {
+                            var elements = entityArr[field_name][idx1];
+                            if (elements['value'] != null && elements['value'] != "") {
+                                node_values.push(elements['value']);
+                            }
+                        }
+                        if (search_operator == '__filled') {
+                            var value_index;
+                            for (value_index in node_values) {
+                                node_value = node_values[value_index];
+                                if (node_value != null && node_value != "") {
+                                    row_matches[row_idx] = true;
+                                }
+
+                            }
+                        }
+                        else {
+                            if (node_values == null || node_values == "" || node_values.length == 0) {
+                                row_matches[row_idx] = true;
+                            }
+                            else {
+                                var value_index;
+                                for (value_index in node_values) {
+                                    node_value = node_values[value_index];
+                                    if (node_value == null || node_value == "") {
+                                        row_matches[row_idx] = true;
+                                    }
+
+                                }
+                            }
+                        }
+                        break;
+                    case 'taxonomy_term_reference':
+                    case 'user_reference':
+                        for (idx1 in entityArr[field_name]) {
+                            elements = entityArr[field_name][idx1];
+                            if (elements['value'] != null && elements['value'] != "") {
+                                node_values.push(elements['value']);
+                            }
+                        }
+
+                        var search_value_arr = [];
+                        if (!isArray(search_value)) {
+                            var key;
+                            for (key in search_value) {
+                                if (search_value.hasOwnProperty(key)) {
+                                    search_value_arr[key] = key;
+                                }
+                            }
+                            search_value = search_value_arr;
+                        }
+                        else {
+                            if (search_value.length == 0) {
+                                row_matches[row_idx] = true;
+                                break;
+                            }
+                        }
+                        if (search_operator != null && search_operator == '!=') {
+                            row_matches[row_idx] = true;
+                            if (search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
+                                row_matches[row_idx] = false;
+                            }
+                            else {
+                                for (idx1 in search_value) {
+                                    chosen_value = search_value[idx1];
+                                    if (in_array(chosen_value, node_values)) {
+                                        row_matches[row_idx] = false;
+                                    }
+                                }
+
+                            }
+                        }
+                        else if (search_operator == '=') {
+                            if (search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
+                                row_matches[row_idx] = true;
+                            }
+                            else {
+                                for (idx1 in search_value) {
+                                    chosen_value = search_value[idx1];
+                                    if (in_array(chosen_value, node_values)) {
+                                        row_matches[row_idx] = true;
+                                    }
+                                }
+                            }
+                        }
+
+                        break;
+
+                    case 'list_boolean':
+
+                        for (idx1 in entityArr[field_name]) {
+                            var elements = entityArr[field_name][idx1];
+                            node_values.push(elements['value']);
+                        }
+
+                        if (search_operator == '__filled') {
+                            var value_index;
+                            for (value_index in node_values) {
+                                node_value = node_values[value_index];
+                                if (node_value != 0) {
+                                    row_matches[row_idx] = true;
+                                }
+
+                            }
+                        }
+                        else {
+                            if (node_values == null || node_values == "" || node_values.length == 0) {
+                                row_matches[row_idx] = true;
+                            }
+                            else {
+                                var value_index;
+                                for (value_index in node_values) {
+                                    node_value = node_values[value_index];
+                                    if (node_value == 0) {
+                                        row_matches[row_idx] = true;
+                                    }
+
+                                }
+                            }
+                        }
+                        break;
+
+                    case 'calculation_field':
+                        for (idx1 in entityArr[field_name]) {
+                            var elements = entityArr[field_name][idx1];
+                            node_values.push(elements['value']);
+                        }
+                        node_value = node_values[0];
+                        switch(search_operator) {
+
+                            case '>':
+                                if (node_value > search_value) {
+                                    row_matches[row_idx] = true;
+                                }
+                                break;
+                            case '>=':
+                                if (node_value >= search_value) {
+                                    row_matches[row_idx] = true;
+                                }
+                                break;
+                            case '!=':
+                                if (node_value != search_value) {
+                                    row_matches[row_idx] = true;
+                                }
+                                break;
+                            case '<':
+                                if (node_value < search_value) {
+                                    row_matches[row_idx] = true;
+                                }
+                                break;
+                            case '<=':
+                                if (node_value <= search_value) {
+                                    row_matches[row_idx] = true;
+                                }
+                                break;
+
+                            default:
+                                if (node_value == search_value) {
+                                    row_matches[row_idx] = true;
+                                }
+                                break;
+                        }
+
+                        break;
+
+                }
+            }
+        }
+
+        var retval = true;
+        if (count_arr_obj(content[idx].settings['criteria']['search_criteria']) == 1) {
+            retval = row_matches[0];
+        }
+        else {
+            // Group each criteria row into groups of ors with the matching result of each or
+            var and_groups = new Array();
+            var and_group_index = 0;
+            and_groups[and_group_index] = new Array();
+            //print_r($criteria['search_criteria']);
+            for (criteria_index in content[idx].settings['criteria']['search_criteria']) {
+                criteria_row = content[idx].settings['criteria']['search_criteria'][criteria_index];
+                if (criteria_index == 0) {
+                    and_groups[and_group_index][0] = row_matches[criteria_index];
+                }
+                else {
+                    if (criteria_row['row_operator'] == null || criteria_row['row_operator'] != 'or') {
+                        and_group_index++;
+                        and_groups[and_group_index] = new Array();
+                    }
+                    and_groups[and_group_index][0] = row_matches[criteria_index];
+                }
+            }
+
+            // Get the final result, making sure each and group is TRUE
+            for (idx1 in and_groups) {
+                and_group = and_groups[idx1];
+                and_group_match = false;
+                for (idx1 in and_group) {
+                    or_match = and_group[idx1];
+                    // Make sure at least one item in an and group is true (or the only item is true)
+                    if (or_match) {
+                        and_group_match = true;
+                        break;
+                    }
+                }
+
+                // If one and group doesn't match the whole return value of this function is false
+                if (!and_group_match) {
+                    retval = false;
+                    break;
+                }
+            }
+        }
+        if (retval) {
+            if (content[idx].required != 'true' && content[idx].required != true && content[idx].required != 1) {
+                label[content[idx].reffer_index].text = '*' + label[content[idx].reffer_index].text;
+                label[content[idx].reffer_index].color = 'red';
+                content[idx].required = true;
+            }
+        }
+        else {
+            if (content[idx].required == 'true' || content[idx].required == true || content[idx].required == 1) {
+                label[content[idx].reffer_index].text = label[content[idx].reffer_index].text.substring(1, label[content[idx].reffer_index].text.length);
+                label[content[idx].reffer_index].color = _lb_color;
+                content[idx].required = false;
+            }
+        }
+    }
+}
 
 
 

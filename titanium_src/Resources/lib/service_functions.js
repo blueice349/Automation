@@ -872,7 +872,7 @@ Omadi.service.getUpdatedNodeJSON = function() { "use strict";
     /*jslint eqeq:true,plusplus:true*/
    /*global isNumber*/
 
-    var mainDB, newNodesResult, json, nodeDataResult, fieldsResult, type_string, no_data_string, array_cont, decoded, decoded_values, i, image_count_result, image_count, value, newTermsResult, vocabularyResult, cp_decoded_values;
+    var mainDB, field_name, newNodesResult, json, nodeDataResult, fieldsResult, type_string, no_data_string, array_cont, decoded, decoded_values, i, image_count_result, image_count, value, newTermsResult, vocabularyResult, cp_decoded_values;
     
     try{
         //Initial JSON values:
@@ -908,17 +908,18 @@ Omadi.service.getUpdatedNodeJSON = function() { "use strict";
                 //Ti.API.info(json);
                 //Ti.API.info('1');
                 while (fieldsResult.isValidRow()) {
-                    //Ti.API.info('2');
+                    field_name = fieldsResult.fieldByName('field_name');
+                    Ti.API.info(field_name);
                     //Ti.API.debug("CREATE JSON: processing field " + fieldsResult.fieldByName('field_name'));
-                    if ((nodeDataResult.rowCount > 0) && (nodeDataResult.fieldByName(fieldsResult.fieldByName('field_name')) != null) && (nodeDataResult.fieldByName(fieldsResult.fieldByName('field_name')) != '')) {
-                        //Ti.API.info('3');
-                        if (nodeDataResult.fieldByName(fieldsResult.fieldByName('field_name')) == 7411317618171051229) {
-                            //Ti.API.info('4');
+                    if ((nodeDataResult.rowCount > 0) && (nodeDataResult.fieldByName(field_name) != null) && (nodeDataResult.fieldByName(field_name) != '')) {
+                        Ti.API.info('3');
+                        if (nodeDataResult.fieldByName(field_name) == 7411317618171051229 || nodeDataResult.fieldByName(field_name) == "7411317618171051229") {
+                            Ti.API.info('4');
                             array_cont = mainDB.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + newNodesResult.fieldByName('nid') + ' AND field_name = \'' + fieldsResult.fieldByName('field_name') + '\'');
-                            //Ti.API.info('5');
+                            Ti.API.info('5');
                             if ((array_cont.rowCount > 0) || (array_cont.isValidRow())) {
                                 //Decode the stored array:
-                                //Ti.API.info('6');
+                                Ti.API.info('6');
                                 //var a_decoded = ;
                                 //Ti.API.info('7 '+a_decoded);
                                 //TODO: Fix the decoded value:
