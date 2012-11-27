@@ -4524,12 +4524,12 @@ function uploadFile(win) {
 						database.execute("DELETE FROM file_upload_queue WHERE nid=" + fileUploadTable.fieldByName('nid') + " and id=" + fileUploadTable.fieldByName('id') + ";");
 						database.close();
 					}
-					var alertDialog = Titanium.UI.createAlertDialog({ 
-						title: 'Upload Error', 
-						message: 'There was a problem uploading your photo. Details: ' + this.status + " " + this.error, 
-						buttonNames: ['OK'] 
-					}); 
-					alertDialog.show();
+					// var alertDialog = Titanium.UI.createAlertDialog({ 
+						// title: 'Upload Error', 
+						// message: 'There was a problem uploading your photo. Details: ' + this.status + " " + this.error, 
+						// buttonNames: ['OK'] 
+					// }); 
+					// alertDialog.show();
 					
 					
 					var http = Ti.Network.createHTTPClient();
@@ -4548,6 +4548,11 @@ function uploadFile(win) {
                     } 
             
                     http.send();
+                    
+                    setTimeout(function(){
+                        uploadFile(win);
+                    }, 10000);
+                    
 				};
 
 				_file_xhr.setRequestHeader("Content-Type", "application/json");
@@ -4598,7 +4603,7 @@ function uploadFile(win) {
 	} 
 	catch(ex) {
 		Ti.API.error("==== ERROR ===" + ex);
-		alert("There was an error uploading your photo. Details: " + ex);
+		//alert("There was an error uploading your photo. Details: " + ex);
 		
 		var http = Ti.Network.createHTTPClient();
         http.setTimeout(30000);
