@@ -1,8 +1,9 @@
 /*jslint eqeq:true, plusplus: true*/
 /*global PLATFORM,setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
 
-Omadi.widgets.text = {
+Omadi.widgets.link_field = {
     
+    //TODO: write a validation function for link_fields
     
     getFieldView: function(node, instance){"use strict";
         //this.base = Omadi.widgets.base.init(in_instance);
@@ -45,7 +46,7 @@ Omadi.widgets.text = {
         // Add the actual fields
         for(i = 0; i < instance.numVisibleFields; i ++){
             //widgetView = this._getUIComponent(instance); 
-            element = Omadi.widgets.text.getNewElement(node, instance,  i);
+            element = Omadi.widgets.link_field.getNewElement(node, instance,  i);
             instance.elements.push(element);
             fieldView.add(element);
             fieldView.add(Omadi.widgets.getSpacerView());
@@ -99,8 +100,7 @@ Omadi.widgets.text = {
         }
         
         settings = instance.settings;
-        Ti.API.debug("Creating text field");
-        
+        Ti.API.debug("Creating link_field field");
         
         widgetView = Ti.UI.createTextField({
             autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_WORDS,
@@ -137,9 +137,9 @@ Omadi.widgets.text = {
             // real_ind : count
         });
         
-        if(instance.numVisibleFields > 1){
-            widgetView.hintText = '#' + (index + 1) + " " + instance.label;
-        }
+        
+        //widgetView.hintText = '(000) 000-0000 x0000';
+        
         
         //hintText : instance.label,
         

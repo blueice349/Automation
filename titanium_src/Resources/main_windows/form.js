@@ -512,15 +512,16 @@ function bottomButtons(actualWindow) {"use strict";
 
 
 var fieldWrappers = [];
+var regionViews = {};
 
-
+var regions = {};
 
 
 (function(){"use strict";
     
     
     /*jslint vars: true, eqeq: true*/
-   /*global Omadi,PLATFORM */
+   /*global Omadi,PLATFORM, loadNode */
    
    
    // win = Titanium.UI.createWindow({
@@ -555,7 +556,8 @@ var fieldWrappers = [];
             scrollType : "vertical",
             zIndex : 10,
             layout: 'vertical',
-            height: Ti.UI.SIZE
+            height: Ti.UI.SIZE,
+            top: 0
         });
     }
     else {
@@ -563,7 +565,7 @@ var fieldWrappers = [];
         //The view where the results are presented
         resultView = Ti.UI.createView({
             top : '50dp',
-            height : '100%',
+            height : Ti.UI.SIZE,
             width : '100%',
             bottom : 0,
             backgroundColor : '#EEEEEE',
@@ -573,7 +575,6 @@ var fieldWrappers = [];
 
         viewContent = Ti.UI.createScrollView({
             contentHeight : 'auto',
-            //height : "98%",
             backgroundColor : '#EEEEEE',
             showHorizontalScrollIndicator : false,
             showVerticalScrollIndicator : true,
@@ -581,7 +582,8 @@ var fieldWrappers = [];
             scrollType : "vertical",
             zIndex : 10,
             layout: 'vertical',
-            height: Ti.UI.SIZE
+            height: Ti.UI.SIZE,
+            top: 0
         });
     }
 
@@ -621,11 +623,51 @@ var fieldWrappers = [];
             // }
         // }
     // }
-    var node = {};
+    var node = {
+        form_part: 0
+    };
+    var region_name;
+    var regionHeaderView;
+    var regionView;
     
     if(win.mode == 1){
-        
         node = loadNode(win.nid);
+    }
+    
+    regions = Omadi.data.getRegions(win.type);
+    var region;
+    var form_part = 0;
+    
+    for(region_name in regions){
+        if(regions.hasOwnProperty(region_name)){
+            region = regions[region_name];
+            
+            if(typeof region.settings.form_part !== 'undefined'){
+                form_part = parseInt(region.settings.form_part, 10);
+            }
+            else{
+                form_part = 0;
+            }
+            
+            Ti.API.debug("formpart: " + form_part);
+            
+            if(form_part <= node.form_part){
+                regionHeaderView = getRegionHeaderView(region);
+                
+                viewContent.add(regionHeaderView);
+                
+                regionView = Ti.UI.createView({
+                    width : '100%',
+                    backgroundColor : '#EEEEEE',
+                    height: Ti.UI.SIZE,
+                    layout: 'vertical'
+                });
+                
+                regionViews[region_name] = regionView;
+                
+                viewContent.add(regionView);
+            }
+        }
     }
     
     for(field_name in instances){
@@ -673,34 +715,32 @@ var fieldWrappers = [];
                 instance.isRequired = false;
             }
             
-        
-            if (instance.can_view) {
+            region_name = instance.region;
+            
+            // Make sure the region is visible
+            if(typeof regionViews[region_name] !== 'undefined'){
                 
-                var fieldWrapper = Ti.UI.createView({
-                   width: '100%',
-                   height: Ti.UI.SIZE, 
-                   instance: instance
-                });
-                
-                var fieldView;
-                
-                switch(instance.type){
+                if (instance.can_view) {
                     
-                    case 'text_long':
-                        fieldView = Omadi.widgets.text_long.getFieldView(node, instance);
+                    var fieldWrapper = Ti.UI.createView({
+                       width: '100%',
+                       height: Ti.UI.SIZE, 
+                       instance: instance
+                    });
+                    
+                   
+                    var fieldView = Omadi.widgets.getFieldView(node, instance);
+                    if(fieldView !== null){
                         fieldView.wrapper = fieldWrapper;
-                        break;
-                        
-                    case 'text':
-                        fieldView = Omadi.widgets.text.getFieldView(node, instance);
-                        fieldView.wrapper = fieldWrapper;
-                        break;
+                           
+                        fieldWrapper.add(fieldView);
+                        fieldWrappers.push(fieldWrapper);
+                        regionViews[region_name].add(fieldWrapper);
+                    }
+                    else{
+                        Ti.API.error("Could not add field type " + instance.type);
+                    }
                 }
-                
-                fieldWrapper.add(fieldView);
-                
-                fieldWrappers.push(fieldWrapper);
-                viewContent.add(fieldWrapper);
             }
         }
     }   
@@ -938,7 +978,7 @@ function affectsAnotherConditionalField(check_instance){"use strict";
     for(field_name in instances){
         if(instances.hasOwnProperty(field_name)){
             instance = instances[field_name];
-            if(instance.settings.criteria.search_criteria != null){
+            if(typeof instance.settings.criteria !== 'undefined' && typeof instance.settings.criteria.search_criteria !== 'undefined'){
                 search_criteria = instance.settings.criteria.search_criteria;
                 
                 for (i in search_criteria) {
@@ -960,7 +1000,8 @@ function affectsAnotherConditionalField(check_instance){"use strict";
 
 
 function setConditionallyRequiredLabels(check_instance, check_fields){"use strict";
-    var node, search_criteria, affectedFields, field_name, i, affectedFields, instance;
+    /*global setConditionallyRequiredLabelForInstance*/
+    var node, search_criteria, affectedFields, field_name, i, instance;
     
     if(typeof check_fields !== 'undefined'){
         affectedFields = check_fields;
@@ -1026,190 +1067,192 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
                     field_name = criteria_row.field_name;
                     search_operator = criteria_row.operator;
                     search_value = criteria_row.value;
-                    values = node[field_name].values;
+                    values = [];
+                    
+                    if(typeof node[field_name] !== 'undefined'){
+                       values = node[field_name].values;
+                    }
                     
                     Ti.API.debug(JSON.stringify(values));
-                    
-                    if (node[field_name] != null) {
+              
         
-                        switch(instance.type) {
-                            case 'text':
-                            case 'text_long':
-                            case 'link_field':
-                            case 'phone':
-                            case 'license_plate':
-                            case 'location':
-                            case 'vehicle_fields':
-                            case 'number_integer':
-                            case 'number_decimal':
-                            case 'email':
-                            case 'datestamp':
-                            case 'omadi_reference':
-                            case 'omadi_time':
-                            
-                                // for (i = 0; i < node[field_name].values.length; i++){
-                                    // var elements = entityArr[field_name][idx1];
-                                    // if (elements['value'] != null && elements['value'] != "") {
-                                        // node_values.push(elements['value']);
-                                    // }
-                                // }
-                                if (search_operator == '__filled') {
-                                    for (i = 0; i < values.length; i++) {
-                                        if (values[i] != null && values[i] != "") {
-                                            row_matches[row_idx] = true;
-                                        }
-        
-                                    }
-                                }
-                                else {
-                                    if (values == null || values.length == 0) {
-                                        row_matches[row_idx] = true;
-                                    }
-                                    else {
-                                        for (i = 0; i < values.length; i ++){
-                                            if (values[i] == null || values[i] == "") {
-                                                row_matches[row_idx] = true;
-                                            }
-                                        }
-                                    }
-                                }
-                                break;
-                                
-                            case 'taxonomy_term_reference':
-                            case 'user_reference':
-                                // for (idx1 in entityArr[field_name]) {
-                                    // elements = entityArr[field_name][idx1];
-                                    // if (elements['value'] != null && elements['value'] != "") {
-                                        // node_values.push(elements['value']);
-                                    // }
-                                // }
-        
-                                search_values = [];
-                                if (!isArray(search_value)) {
-                                    for (i in search_value) {
-                                        if (search_value.hasOwnProperty(i)) {
-                                            search_values.push(i);
-                                        }
-                                    }
-                                    search_value = search_values;
-                                }
-                                else {
-                                    if (search_value.length == 0) {
-                                        row_matches[row_idx] = true;
-                                        break;
-                                    }
-                                }
-                                
-                                if (search_operator != null && search_operator == '!=') {
-                                    row_matches[row_idx] = true;
-                                    if (search_value.__null == '__null' && (values.length === 0 || values[0] == null)) {
-                                        row_matches[row_idx] = false;
-                                    }
-                                    else {
-                                        for (i = 0; i < search_value.length; i ++){
-                                            if(values.indexOf(search_value[i]) !== -1){
-                                                row_matches[row_idx] = false;
-                                            }
-                                        }
-        
-                                    }
-                                }
-                                else if (search_operator == '=') {
-                                    if (search_value.__null == '__null' && (values.length === 0 || values[0] == null)) {
-                                        row_matches[row_idx] = true;
-                                    }
-                                    else {
-                                        for (i = 0; i < search_value.length; i ++){
-                                            if (values.indexOf(search_value[i]) !== -1){
-                                                row_matches[row_idx] = true;
-                                            }
-                                        }
-                                    }
-                                }
-        
-                                break;
-        
-                            case 'list_boolean':
-                                //TODO: finish this
-                                Ti.API.error("no list_boolean in conditional");
-                                // for (idx1 in entityArr[field_name]) {
-                                    // var elements = entityArr[field_name][idx1];
+                    switch(instance.type) {
+                        case 'text':
+                        case 'text_long':
+                        case 'link_field':
+                        case 'phone':
+                        case 'license_plate':
+                        case 'location':
+                        case 'vehicle_fields':
+                        case 'number_integer':
+                        case 'number_decimal':
+                        case 'email':
+                        case 'datestamp':
+                        case 'omadi_reference':
+                        case 'omadi_time':
+                        
+                            // for (i = 0; i < node[field_name].values.length; i++){
+                                // var elements = entityArr[field_name][idx1];
+                                // if (elements['value'] != null && elements['value'] != "") {
                                     // node_values.push(elements['value']);
                                 // }
-    //     
-                                // if (search_operator == '__filled') {
+                            // }
+                            if (search_operator == '__filled') {
+                                for (i = 0; i < values.length; i++) {
+                                    if (values[i] != null && values[i] != "") {
+                                        row_matches[row_idx] = true;
+                                    }
+    
+                                }
+                            }
+                            else {
+                                if (values.length == 0) {
+                                    row_matches[row_idx] = true;
+                                }
+                                else {
+                                    for (i = 0; i < values.length; i ++){
+                                        if (values[i] == null || values[i] == "") {
+                                            row_matches[row_idx] = true;
+                                        }
+                                    }
+                                }
+                            }
+                            break;
+                            
+                        case 'taxonomy_term_reference':
+                        case 'user_reference':
+                            // for (idx1 in entityArr[field_name]) {
+                                // elements = entityArr[field_name][idx1];
+                                // if (elements['value'] != null && elements['value'] != "") {
+                                    // node_values.push(elements['value']);
+                                // }
+                            // }
+    
+                            search_values = [];
+                            if (!isArray(search_value)) {
+                                for (i in search_value) {
+                                    if (search_value.hasOwnProperty(i)) {
+                                        search_values.push(i);
+                                    }
+                                }
+                                search_value = search_values;
+                            }
+                            else {
+                                if (search_value.length == 0) {
+                                    row_matches[row_idx] = true;
+                                    break;
+                                }
+                            }
+                            
+                            if (search_operator != null && search_operator == '!=') {
+                                row_matches[row_idx] = true;
+                                if (search_value.__null == '__null' && (values.length === 0 || values[0] == null)) {
+                                    row_matches[row_idx] = false;
+                                }
+                                else {
+                                    for (i = 0; i < search_value.length; i ++){
+                                        if(values.indexOf(search_value[i]) !== -1){
+                                            row_matches[row_idx] = false;
+                                        }
+                                    }
+    
+                                }
+                            }
+                            else if (search_operator == '=') {
+                                if (search_value.__null == '__null' && (values.length === 0 || values[0] == null)) {
+                                    row_matches[row_idx] = true;
+                                }
+                                else {
+                                    for (i = 0; i < search_value.length; i ++){
+                                        if (values.indexOf(search_value[i]) !== -1){
+                                            row_matches[row_idx] = true;
+                                        }
+                                    }
+                                }
+                            }
+    
+                            break;
+    
+                        case 'list_boolean':
+                            //TODO: finish this
+                            Ti.API.error("no list_boolean in conditional");
+                            // for (idx1 in entityArr[field_name]) {
+                                // var elements = entityArr[field_name][idx1];
+                                // node_values.push(elements['value']);
+                            // }
+//     
+                            // if (search_operator == '__filled') {
+                                // var value_index;
+                                // for (value_index in node_values) {
+                                    // node_value = node_values[value_index];
+                                    // if (node_value != 0) {
+                                        // row_matches[row_idx] = true;
+                                    // }
+//     
+                                // }
+                            // }
+                            // else {
+                                // if (node_values == null || node_values == "" || node_values.length == 0) {
+                                    // row_matches[row_idx] = true;
+                                // }
+                                // else {
                                     // var value_index;
                                     // for (value_index in node_values) {
                                         // node_value = node_values[value_index];
-                                        // if (node_value != 0) {
+                                        // if (node_value == 0) {
                                             // row_matches[row_idx] = true;
                                         // }
-    //     
+//     
                                     // }
                                 // }
-                                // else {
-                                    // if (node_values == null || node_values == "" || node_values.length == 0) {
+                            // }
+                            break;
+    
+                        case 'calculation_field':
+                        //TODO: finish this
+                            Ti.API.error("no calculation_field in conditional");
+                            // for (idx1 in entityArr[field_name]) {
+                                // var elements = entityArr[field_name][idx1];
+                                // node_values.push(elements['value']);
+                            // }
+                            // node_value = node_values[0];
+                            // switch(search_operator) {
+//     
+                                // case '>':
+                                    // if (node_value > search_value) {
                                         // row_matches[row_idx] = true;
                                     // }
-                                    // else {
-                                        // var value_index;
-                                        // for (value_index in node_values) {
-                                            // node_value = node_values[value_index];
-                                            // if (node_value == 0) {
-                                                // row_matches[row_idx] = true;
-                                            // }
-    //     
-                                        // }
+                                    // break;
+                                // case '>=':
+                                    // if (node_value >= search_value) {
+                                        // row_matches[row_idx] = true;
                                     // }
-                                // }
-                                break;
-        
-                            case 'calculation_field':
-                            //TODO: finish this
-                                Ti.API.error("no calculation_field in conditional");
-                                // for (idx1 in entityArr[field_name]) {
-                                    // var elements = entityArr[field_name][idx1];
-                                    // node_values.push(elements['value']);
-                                // }
-                                // node_value = node_values[0];
-                                // switch(search_operator) {
-    //     
-                                    // case '>':
-                                        // if (node_value > search_value) {
-                                            // row_matches[row_idx] = true;
-                                        // }
-                                        // break;
-                                    // case '>=':
-                                        // if (node_value >= search_value) {
-                                            // row_matches[row_idx] = true;
-                                        // }
-                                        // break;
-                                    // case '!=':
-                                        // if (node_value != search_value) {
-                                            // row_matches[row_idx] = true;
-                                        // }
-                                        // break;
-                                    // case '<':
-                                        // if (node_value < search_value) {
-                                            // row_matches[row_idx] = true;
-                                        // }
-                                        // break;
-                                    // case '<=':
-                                        // if (node_value <= search_value) {
-                                            // row_matches[row_idx] = true;
-                                        // }
-                                        // break;
-    //     
-                                    // default:
-                                        // if (node_value == search_value) {
-                                            // row_matches[row_idx] = true;
-                                        // }
-                                        // break;
-                                // }
-    //     
-                                break;
-        
-                        }
+                                    // break;
+                                // case '!=':
+                                    // if (node_value != search_value) {
+                                        // row_matches[row_idx] = true;
+                                    // }
+                                    // break;
+                                // case '<':
+                                    // if (node_value < search_value) {
+                                        // row_matches[row_idx] = true;
+                                    // }
+                                    // break;
+                                // case '<=':
+                                    // if (node_value <= search_value) {
+                                        // row_matches[row_idx] = true;
+                                    // }
+                                    // break;
+//     
+                                // default:
+                                    // if (node_value == search_value) {
+                                        // row_matches[row_idx] = true;
+                                    // }
+                                    // break;
+                            // }
+//     
+                            break;
+    
                     }
                 }
             }
@@ -1289,6 +1332,191 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
     }
 }
 
+
+function getRegionHeaderView(region){"use strict";
+    
+    var arrow_img, regionHeader, expanded;
+    
+    arrow_img = Ti.UI.createImageView({
+        image : '/images/light_arrow_left.png',
+        width : 29,
+        height : 29,
+        top: 5,
+        right: 5,
+        zIndex : 999
+    });
+    
+    expanded = true;
+    
+    if(expanded){
+        arrow_img.image = '/images/light_arrow_down.png';
+    }
+
+    regionHeader = Ti.UI.createLabel({
+        text : region.label.toUpperCase(),
+        color : '#ddd',
+        font : {
+            fontSize : "18dp",
+            fontWeight : 'bold'
+        },
+        textAlign : 'center',
+        width : '100%',
+        height : 40,
+        ellipsize : true,
+        wordWrap : false,
+        zIndex : 998,
+        region_name: region.region_name,
+        expanded: expanded,
+        backgroundGradient : {
+            type : 'linear',
+            startPoint : {
+                x : '50%',
+                y : '0%'
+            },
+            endPoint : {
+                x : '50%',
+                y : '100%'
+            },
+            colors : [{
+                color : '#555',
+                offset : 0.0
+            }, {
+                color : '#666',
+                offset : 0.3
+            }, {
+                color : '#333',
+                offset : 1.0
+            }]
+        }
+    });
+    
+    regionHeader.arrow = arrow_img;
+    //regionHeader.viewContainer = regionView;
+    
+    
+    regionHeader.addEventListener('click', function(e) {
+        
+        var regionView;
+        
+        e.source.expanded = !e.source.expanded;
+        
+        if (e.source.expanded === true) {
+            //e.source.viewContainer.height = e.source.viewContainer.calculatedHeight;
+            //top = 0;
+            
+            
+            regionView = regionViews[e.source.region_name];
+            regionView.startLayout();
+            regionView.show();
+            regionView.setHeight(Ti.UI.SIZE);
+            
+            e.source.arrow.setImage("/images/light_arrow_down.png");
+            
+            regionView.finishLayout();
+            
+            // for ( i = 0; i < viewContent.getChildren().length; i++) {
+                // v = viewContent.getChildren()[i];
+                // isLabel = false;
+                // if (PLATFORM == 'android') {
+                    // if ( v instanceof Ti.UI.Label) {
+                        // isLabel = true;
+                    // }
+                // }
+                // else {
+                    // if (v == '[object TiUILabel]') {
+                        // isLabel = true;
+                    // }
+                // }
+                // if (isLabel) {
+                    // //v.top = top;
+                    // //v.arrow.top = top + 5;
+                    // if (v.viewContainer.expanded === true) {
+                        // v.arrow.image = "/images/light_arrow_down.png";
+                    // }
+                    // else {
+                        // v.arrow.image = "/images/light_arrow_left.png";
+                    // }
+                    // //top = top + 40;
+                    // //v.viewContainer.top = top;
+                    // //top = top + v.viewContainer.height + 10;
+                    // //e.source.viewContainer.show();
+                // }
+            // }
+        }
+        else {
+            
+            regionView = regionViews[e.source.region_name];
+            regionView.startLayout();
+            regionView.hide();
+            regionView.setHeight(5);
+            
+            e.source.arrow.setImage("/images/light_arrow_left.png");
+            
+            regionView.finishLayout();
+            //e.source.viewContainer.height = 0;
+            //e.source.viewContainer.hide();
+            
+            // for ( i = 0; i < viewContent.getChildren().length; i++) {
+                // v = viewContent.getChildren()[i];
+                // isLabel = false;
+                // if (PLATFORM == 'android') {
+                    // if ( v instanceof Ti.UI.Label) {
+                        // isLabel = true;
+                    // }
+                // }
+                // else {
+                    // if (v == '[object TiUILabel]') {
+                        // isLabel = true;
+                    // }
+                // }
+                // if (isLabel) {
+                    // //v.top = top;
+                    // //v.arrow.top = top + 5;
+                    // if (v.viewContainer.expanded === true) {
+                        // v.arrow.image = "/images/light_arrow_down.png";
+                    // }
+                    // else {
+                        // v.arrow.image = "/images/light_arrow_left.png";
+                    // }
+                    // //top = top + 40;
+                    // //v.viewContainer.top = top;
+                    // //top = top + v.viewContainer.height + 10;
+                // }
+            // }
+        }
+
+        // if (viewContent.getChildren() != null) {
+// 
+            // for ( i = viewContent.getChildren().length - 1; i >= 0; i--) {
+                // v = viewContent.getChildren()[i];
+                // isLabel = false;
+                // if (PLATFORM == 'android') {
+                    // if ( v instanceof Ti.UI.Label) {
+                        // isLabel = true;
+                    // }
+                // }
+                // else {
+                    // if (v == '[object TiUILabel]') {
+                        // isLabel = true;
+                    // }
+                // }
+// 
+                // if (isLabel == true && v.viewContainer.expanded == true) {
+                    // //v.viewContainer.height = v.viewContainer.height + 30;
+                    // //(getScreenHeight() * 0.3);
+                    // break;
+                // }
+                // else if (isLabel == true && v.viewContainer.expanded == false) {
+                    // break;
+                // }
+            // }
+        // }
+    });
+    
+    regionHeader.add(arrow_img);
+    
+    return regionHeader;
+}
 
 
 

@@ -4,14 +4,44 @@ Ti.include('/lib/functions.js');
 Omadi.widgets = Omadi.widgets || {};
 
 Ti.include('/lib/widgets/text_long.js');
+Ti.include('/lib/widgets/text.js');
+Ti.include('/lib/widgets/phone.js');
+Ti.include('/lib/widgets/email.js');
+Ti.include('/lib/widgets/link_field.js');
+Ti.include('/lib/widgets/number_integer.js');
+Ti.include('/lib/widgets/number_decimal.js');
 
 /*jslint eqeq: true, plusplus: true, nomen: true*/
 /*global PLATFORM, Omadi*/
 
 
+Omadi.widgets.getFieldView = function (node, instance){"use strict";
+    var fieldView = null;
+    
+    if(instance.disabled == 0){
+        switch(instance.type){
+            case 'text':
+                fieldView = Omadi.widgets.text.getFieldView(node, instance); break;
+            case 'text_long':
+                fieldView = Omadi.widgets.text_long.getFieldView(node, instance); break;
+            case 'phone':
+                fieldView = Omadi.widgets.phone.getFieldView(node, instance); break;
+            case 'email':
+                fieldView = Omadi.widgets.email.getFieldView(node, instance); break;
+            case 'link_field':
+                fieldView = Omadi.widgets.link_field.getFieldView(node, instance); break;
+            case 'number_integer':
+                fieldView = Omadi.widgets.number_integer.getFieldView(node, instance); break;
+            case 'number_decimal':
+                fieldView = Omadi.widgets.number_decimal.getFieldView(node, instance); break;
+        }
+    }
+    
+    return fieldView;
+};
+
 
 var fieldFontSize = 16;
-
 var fieldViews = {};
 var labelViews = {};
 
@@ -62,8 +92,11 @@ Omadi.widgets.getTextValues = function(fieldWrapper){"use strict";
 };
 
 
+
+
 Omadi.widgets.shared = {
-  redraw: function(instance){"use strict";
+    redraw: function(instance){"use strict";
+    /*global formToNode*/
         
         var fieldView, children, i, newFieldView, newFieldViewChildren, wrapper, node;
         Ti.API.debug(instance.numVisibleFields);
@@ -78,8 +111,10 @@ Omadi.widgets.shared = {
         
         instance.values = Omadi.widgets.getDBValues(wrapper);
         instance.textValues = Omadi.widgets.getTextValues(wrapper);
-
-        newFieldView = Omadi.widgets.text_long.getFieldView(node, instance);
+        
+        newFieldView = Omadi.widgets.getFieldView(node, instance);
+        
+        //newFieldView = Omadi.widgets.text_long.getFieldView(node, instance);
         newFieldView.wrapper = wrapper;
         //newFieldViewChildren = newFieldView.getChildren();
        
@@ -130,21 +165,6 @@ Omadi.widgets.label = {
         labelViews[instance.field_name] = labelView;
         
         return labelView;
-    }
-};
-
-
-
-
-Omadi.widgets.validateAll = function(){"use strict";
-    var field_name;
-    
-    for(field_name in fieldViews){
-        if(fieldViews.hasOwnProperty(field_name)){
-            
-            
-            
-        }
     }
 };
 

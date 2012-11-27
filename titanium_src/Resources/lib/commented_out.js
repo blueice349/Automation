@@ -321,51 +321,51 @@ create_or_edit_node.loadUI = function() {
             Ti.API.info('Region : ' + regions.fieldByName('label') + ' won\'t appear');
         }
         else {
-            var arrow_img = Ti.UI.createImageView({
-                image : '/images/light_arrow_left.png',
-                width : DPUnitsToPixels(29),
-                height : DPUnitsToPixels(29),
-                top : DPUnitsToPixels(y + 5),
-                right : DPUnitsToPixels(5),
-                zIndex : 999
-            });
-
-            var regionHeader = Ti.UI.createLabel({
-                text : regions.fieldByName('label').toUpperCase(),
-                color : '#ddd',
-                font : {
-                    fontSize : "18dp",
-                    fontWeight : 'bold'
-                },
-                textAlign : 'center',
-                width : '100%',
-                height : DPUnitsToPixels(40),
-                top : y,
-                ellipsize : true,
-                wordWrap : false,
-                zIndex : 998,
-                backgroundGradient : {
-                    type : 'linear',
-                    startPoint : {
-                        x : '50%',
-                        y : '0%'
-                    },
-                    endPoint : {
-                        x : '50%',
-                        y : '100%'
-                    },
-                    colors : [{
-                        color : '#555',
-                        offset : 0.0
-                    }, {
-                        color : '#666',
-                        offset : 0.3
-                    }, {
-                        color : '#333',
-                        offset : 1.0
-                    }],
-                }
-            });
+            // var arrow_img = Ti.UI.createImageView({
+                // image : '/images/light_arrow_left.png',
+                // width : DPUnitsToPixels(29),
+                // height : DPUnitsToPixels(29),
+                // top : DPUnitsToPixels(y + 5),
+                // right : DPUnitsToPixels(5),
+                // zIndex : 999
+            // });
+// 
+            // var regionHeader = Ti.UI.createLabel({
+                // text : regions.fieldByName('label').toUpperCase(),
+                // color : '#ddd',
+                // font : {
+                    // fontSize : "18dp",
+                    // fontWeight : 'bold'
+                // },
+                // textAlign : 'center',
+                // width : '100%',
+                // height : DPUnitsToPixels(40),
+                // top : y,
+                // ellipsize : true,
+                // wordWrap : false,
+                // zIndex : 998,
+                // backgroundGradient : {
+                    // type : 'linear',
+                    // startPoint : {
+                        // x : '50%',
+                        // y : '0%'
+                    // },
+                    // endPoint : {
+                        // x : '50%',
+                        // y : '100%'
+                    // },
+                    // colors : [{
+                        // color : '#555',
+                        // offset : 0.0
+                    // }, {
+                        // color : '#666',
+                        // offset : 0.3
+                    // }, {
+                        // color : '#333',
+                        // offset : 1.0
+                    // }],
+                // }
+            // });
             y = y + DPUnitsToPixels(50);
 
             var regionView = Ti.UI.createView({

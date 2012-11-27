@@ -681,7 +681,7 @@ Ti.App.syncInterval = setInterval(function() {
     // }
     
     checkUpdate();
-}, 10000);
+}, 300000);
 
 Ti.App.addEventListener("updateUI", function() {
     // TODO: refresh table data

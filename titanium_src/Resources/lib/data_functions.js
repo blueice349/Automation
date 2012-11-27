@@ -94,6 +94,33 @@ Omadi.data.getFields = function(type){
     return instances;
 };
 
+Omadi.data.getRegions = function(type){
+    "use strict";
+    
+    var db, result, regions, region_name;
+    
+    regions = {};
+    db = Omadi.utils.openMainDatabase();
+    result = db.execute("SELECT rid, node_type, label, region_name, weight, settings FROM regions WHERE node_type = '" + type + "' ORDER BY weight ASC");
+    
+    while(result.isValidRow()){
+        region_name = result.fieldByName('region_name'); 
+        regions[region_name] = {
+            rid: result.fieldByName('rid'),
+            node_type: result.fieldByName('node_type'),
+            label: result.fieldByName('label'),
+            region_name: result.fieldByName('region_name'),
+            weight: result.fieldByName('weight'),
+            settings: JSON.parse(result.fieldByName('settings'))
+        };
+        result.next();   
+    }
+    result.close();
+    db.close();
+    
+    return regions;
+};
+
 function getDecodedResults(db, nid, field_name) {"use strict";
     /*global Base64*/
     var result, decoded;
@@ -120,7 +147,9 @@ function loadNode(nid) {"use strict";
     
     
     db = Omadi.utils.openMainDatabase();
-    node = {};
+    node = {
+        form_part: 0
+    };
 
     result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed FROM node WHERE  nid = ' + nid);
 

@@ -1,5 +1,5 @@
 /*jslint eqeq:true, plusplus: true*/
-/*global PLATFORM*/
+/*global PLATFORM,setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
 
 Omadi.widgets.text_long = {
     
@@ -30,7 +30,7 @@ Omadi.widgets.text_long = {
         if(typeof instance.numVisibleFields === 'undefined'){
             
             if(settings.cardinality == -1){
-                if(node[instance.field_name].values.length > 0){
+                if(typeof node[instance.field_name] !== 'undefined' && node[instance.field_name].values.length > 0){
                     instance.numVisibleFields = node[instance.field_name].values.length;
                 }
                 else{
@@ -86,8 +86,17 @@ Omadi.widgets.text_long = {
         
         var settings, widgetView, dbValue, textValue;
         
-        dbValue = (typeof node[instance.field_name].values !== 'undefined' && typeof node[instance.field_name].values[index] !== 'undefined') ? node[instance.field_name].values[index] : "";
-        textValue = (typeof node[instance.field_name].textValues !== 'undefined' && typeof node[instance.field_name].textValues[index] !== 'undefined') ? node[instance.field_name].textValues[index] : "";
+        dbValue = "";
+        textValue = "";
+        if(typeof node[instance.field_name] !== 'undefined'){
+            if(typeof node[instance.field_name].values !== 'undefined' && typeof node[instance.field_name].values[index] !== 'undefined'){
+                dbValue = node[instance.field_name].values[index];
+            }
+            
+            if(typeof node[instance.field_name].textValues !== 'undefined' && typeof node[instance.field_name].textValues[index] !== 'undefined'){
+                textValue = node[instance.field_name].textValues[index];
+            }
+        }
         
         settings = instance.settings;
         
