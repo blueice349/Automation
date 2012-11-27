@@ -65,8 +65,10 @@ Omadi.widgets.getTextValues = function(fieldWrapper){"use strict";
 Omadi.widgets.shared = {
   redraw: function(instance){"use strict";
         
-        var fieldView, children, i, newFieldView, newFieldViewChildren, wrapper;
+        var fieldView, children, i, newFieldView, newFieldViewChildren, wrapper, node;
         Ti.API.debug(instance.numVisibleFields);
+        
+        node = formToNode();
         
         fieldView = instance.fieldView;
         children = fieldView.getChildren();
@@ -77,7 +79,7 @@ Omadi.widgets.shared = {
         instance.values = Omadi.widgets.getDBValues(wrapper);
         instance.textValues = Omadi.widgets.getTextValues(wrapper);
 
-        newFieldView = Omadi.widgets.text_long.getFieldView(instance);
+        newFieldView = Omadi.widgets.text_long.getFieldView(node, instance);
         newFieldView.wrapper = wrapper;
         //newFieldViewChildren = newFieldView.getChildren();
        
@@ -100,11 +102,6 @@ Omadi.widgets.shared = {
     }
 };
 
-
-Omadi.widgets.redraw = function(instance){"use strict";
-    
-    
-};
 
 Omadi.widgets.getSpacerView = function(){"use strict";
     return Ti.UI.createView({

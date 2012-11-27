@@ -621,6 +621,12 @@ var fieldWrappers = [];
             // }
         // }
     // }
+    var node = {};
+    
+    if(win.mode == 1){
+        
+        node = loadNode(win.nid);
+    }
     
     for(field_name in instances){
         if(instances.hasOwnProperty(field_name)){
@@ -675,16 +681,23 @@ var fieldWrappers = [];
                    height: Ti.UI.SIZE, 
                    instance: instance
                 });
-            
+                
+                var fieldView;
+                
                 switch(instance.type){
                     
                     case 'text_long':
-                        var fieldView = Omadi.widgets.text_long.getFieldView(instance);
+                        fieldView = Omadi.widgets.text_long.getFieldView(node, instance);
                         fieldView.wrapper = fieldWrapper;
-                        fieldWrapper.add(fieldView);
+                        break;
                         
-                    break;
+                    case 'text':
+                        fieldView = Omadi.widgets.text.getFieldView(node, instance);
+                        fieldView.wrapper = fieldWrapper;
+                        break;
                 }
+                
+                fieldWrapper.add(fieldView);
                 
                 fieldWrappers.push(fieldWrapper);
                 viewContent.add(fieldWrapper);
@@ -717,133 +730,197 @@ function formToNode(){"use strict";
    return node;
 }
 
+
+function validateMinLength(node, instance){"use strict";
+    var minLength, form_errors = [], i;
+    
+    if (node[instance.field_name].values.length > 0) {
+        if (instance.settings.min_length != null) {
+            minLength = parseInt(instance.settings.min_length, 10);
+            if(minLength >= 0){
+                for(i = 0; i < node[instance.field_name].values.length; i ++){
+                    if (node[instance.field_name].values[i].length < minLength) {
+                        form_errors.push(instance.label + " requires at least " + minLength + " characters");
+                    }  
+                }
+            }
+        }
+    }
+    
+    
+    return form_errors;
+}
+
+function validateMaxLength(node, instance){"use strict";
+    var maxLength, form_errors = [], i;
+    
+    if (node[instance.field_name].values.length > 0) {
+        if (instance.settings.max_length != null) {
+            maxLength = parseInt(instance.settings.max_length, 10);
+            if(maxLength >= 0){
+                for(i = 0; i < node[instance.field_name].values.length; i ++){
+                    if (node[instance.field_name].values[i].length > maxLength) {
+                        form_errors.push(instance.label + " cannot have more than " + maxLength + " characters");
+                    }  
+                }
+            }
+        }
+    }
+    
+    
+    return form_errors;
+}
+
+function validateRequired(node, instance){"use strict";
+    var isEmpty, form_errors = [], values = [], i;
+    
+    isEmpty = true;
+            
+    if(typeof node[instance.field_name].values !== 'undefined' && node[instance.field_name].values.length > 0){
+        values = node[instance.field_name].values;
+        for(i = 0; i < values.length; i ++){
+            
+            
+            switch(instance.type){
+                case 'text':
+                case 'text_long':
+                case 'phone':
+                case 'email':
+                case 'link_field':
+                case 'location':
+                case 'vehicle_fields':
+                case 'license_plate':
+                case 'rules_field':
+                    if(values[i] > ""){
+                        isEmpty = false;
+                    }
+                    break;
+                    
+                case 'number_integer':
+                case 'number_decimal':
+                case 'omadi_reference':
+                case 'taxonomy_term_reference':
+                case 'user_reference':
+                case 'image':
+                case 'file':
+                    if(values[i] > 0){
+                        isEmpty = false;
+                    }
+                    break;
+                    
+                default: 
+                    Ti.API.error("Missing field type def in validate_form_data");
+                    break;
+            }
+        }
+    }
+    
+    //Ti.API.info(instance.required + '+');
+    
+    //=========================================
+    //---- Check for required fields ----------
+    //=========================================
+    if (((instance.is_title === true) || (instance.isRequired) || instance.isConditionallyRequired) && instance.can_view == true){
+        
+        
+         // TODO: something with no data checkboxes
+         
+         if(isEmpty){
+             form_errors.push(instance.label + " is required");
+         }
+         
+         if (instance.field_type == 'image') {
+            Ti.API.error("TODO: in image validation");
+            // var is_images_query = 'SELECT id FROM file_upload_queue WHERE nid=0 ';
+            // if (win.nid != null && win.nid != "") {
+                // is_images_query += ' OR nid=' + win.nid + ' ';
+            // }
+            // is_images_query += ' AND field_name="' + field_name + '"';
+            // //Ti.API.info(is_images_query);
+//     
+            // var is_images = db_check_restrictions.execute(is_images_query);
+            // var crdnlty = content[x].cardinality;
+            // //if cardinality is unlimited or one than only one image can be work for required
+            // //But if cardinality is greater than 1 then required that number of images
+            // if (win.mode == 1) {
+                // if (crdnlty > 1 || crdnlty < 0) {
+                    // var arrImages = content[x].arrImages;
+                    // var imageOdometer = 0;
+                    // for ( i_idx = 0; i_idx < arrImages.length; i_idx++) {
+                        // if (arrImages[i_idx].imageVal != defaultImageVal || arrImages[i_idx].bigImg != null || arrImages[i_idx].bigImg != "") {
+                            // imageOdometer++;
+                        // }
+                    // }
+                    // if ((crdnlty < 1 && imageOdometer == 0) || (crdnlty > 1 && imageOdometer != is_images.rowCount)) {
+                        // string_text += label[content[x].reffer_index].text + "\n";
+                        // //count_fields++;
+                    // }
+                // }
+                // else {
+                    // if (content[x].imageVal == defaultImageVal && is_images.rowCount == 0) {
+                        // string_text += label[content[x].reffer_index].text + "\n";
+                        // //count_fields++;
+                    // }
+                // }
+            // }
+            // else {
+                // if ((crdnlty <= 1 && is_images.rowCount == 0) || (crdnlty > 1 && crdnlty != is_images.rowCount)) {
+                    // string_text += label[content[x].reffer_index].text + "\n";
+                    // //count_fields++;
+                // }
+            // }
+            // is_images.close();
+            // continue;
+        }
+        //count_fields++;
+        
+         
+            //if(node[field_name].no_data_checkbox == null || node[field_name].no_data_checkbox == "" || node[field_name].no_data_checkbox == false) {
+                //Check for image field
+               
+                
+                
+                //if (content[x].cardinality > 1) {
+                //    string_text += "#" + content[x].private_index + " " + label[content[x].reffer_index].text + "\n";
+               // }
+               // else {
+               ////     string_text += label[content[x].reffer_index].text + "\n";
+               // }
+           // }
+        
+    }
+    
+    return form_errors;
+}
+
 function validate_form_data(node){"use strict";
     
     var field_name, instance, values, form_errors, isEmpty, i;
     
     form_errors = [];
     
-    Ti.API.debug(JSON.stringify(node));
     
     for(field_name in instances){
         if(instances.hasOwnProperty(field_name)){
             
             instance = instances[field_name];
-            isEmpty = true;
             
-            values = [];
+            /*** REQUIRED FIELD VALIDATION / CONDITIONALLY REQUIRED ***/
+            form_errors = form_errors.concat(validateRequired(node, instance));
             
-            if(typeof node[field_name].values !== 'undefined' && node[field_name].values.length > 0){
-                values = node[field_name].values;
-                for(i = 0; i < values.length; i ++){
-                    Ti.API.info(values[i] + '*');
-                    switch(instance.type){
-                        case 'text':
-                        case 'text_long':
-                        case 'phone':
-                        case 'email':
-                        case 'link_field':
-                        case 'location':
-                        case 'vehicle_fields':
-                        case 'license_plate':
-                        case 'rules_field':
-                            if(values[i] > ""){
-                                isEmpty = false;
-                            }
-                            break;
-                            
-                        case 'number_integer':
-                        case 'number_decimal':
-                        case 'omadi_reference':
-                        case 'taxonomy_term_reference':
-                        case 'user_reference':
-                        case 'image':
-                        case 'file':
-                            if(values[i] > 0){
-                                isEmpty = false;
-                            }
-                            break;
-                            
-                        default: 
-                            Ti.API.error("Missing field type def in validate_form_data");
-                            break;
-                    }
-                }
+            /*** MIN_LENGTH VALIDATION ***/
+            switch(instance.type){
+                case 'text_long':
+                case 'text':
+                    form_errors = form_errors.concat(validateMinLength(node, instance));
+                    break;
             }
             
-            //Ti.API.info(instance.required + '+');
-            
-            //=========================================
-            //---- Check for required fields ----------
-            //=========================================
-            if (((instance.is_title === true) || (instance.isRequired) || instance.isConditionallyRequired) && instance.can_view == true){
-                
-                
-                 // TODO: something with no data checkboxes
-                 
-                 if(isEmpty){
-                     form_errors.push(instance.label + " is required");
-                 }
-                 
-                 if (instance.field_type == 'image') {
-                    Ti.API.error("TODO: in image validation");
-                    // var is_images_query = 'SELECT id FROM file_upload_queue WHERE nid=0 ';
-                    // if (win.nid != null && win.nid != "") {
-                        // is_images_query += ' OR nid=' + win.nid + ' ';
-                    // }
-                    // is_images_query += ' AND field_name="' + field_name + '"';
-                    // //Ti.API.info(is_images_query);
-//     
-                    // var is_images = db_check_restrictions.execute(is_images_query);
-                    // var crdnlty = content[x].cardinality;
-                    // //if cardinality is unlimited or one than only one image can be work for required
-                    // //But if cardinality is greater than 1 then required that number of images
-                    // if (win.mode == 1) {
-                        // if (crdnlty > 1 || crdnlty < 0) {
-                            // var arrImages = content[x].arrImages;
-                            // var imageOdometer = 0;
-                            // for ( i_idx = 0; i_idx < arrImages.length; i_idx++) {
-                                // if (arrImages[i_idx].imageVal != defaultImageVal || arrImages[i_idx].bigImg != null || arrImages[i_idx].bigImg != "") {
-                                    // imageOdometer++;
-                                // }
-                            // }
-                            // if ((crdnlty < 1 && imageOdometer == 0) || (crdnlty > 1 && imageOdometer != is_images.rowCount)) {
-                                // string_text += label[content[x].reffer_index].text + "\n";
-                                // //count_fields++;
-                            // }
-                        // }
-                        // else {
-                            // if (content[x].imageVal == defaultImageVal && is_images.rowCount == 0) {
-                                // string_text += label[content[x].reffer_index].text + "\n";
-                                // //count_fields++;
-                            // }
-                        // }
-                    // }
-                    // else {
-                        // if ((crdnlty <= 1 && is_images.rowCount == 0) || (crdnlty > 1 && crdnlty != is_images.rowCount)) {
-                            // string_text += label[content[x].reffer_index].text + "\n";
-                            // //count_fields++;
-                        // }
-                    // }
-                    // is_images.close();
-                    // continue;
-                }
-                //count_fields++;
-                
-                 
-                    //if(node[field_name].no_data_checkbox == null || node[field_name].no_data_checkbox == "" || node[field_name].no_data_checkbox == false) {
-                        //Check for image field
-                       
-                        
-                        
-                        //if (content[x].cardinality > 1) {
-                        //    string_text += "#" + content[x].private_index + " " + label[content[x].reffer_index].text + "\n";
-                       // }
-                       // else {
-                       ////     string_text += label[content[x].reffer_index].text + "\n";
-                       // }
-                   // }
-                
+            /*** MAX_LENGTH VALIDATION ***/
+            switch(instance.type){
+                case 'text':
+                    form_errors = form_errors.concat(validateMaxLength(node, instance));
+                    break;
             }
         }
     }
@@ -1222,6 +1299,8 @@ function save_form_data(_flag_info, pass_it, new_time) {"use strict";
     
     node = formToNode();
     form_errors = validate_form_data(node);
+    
+    
     
     if(form_errors.length > 0){
         alert(form_errors.join("\n"));

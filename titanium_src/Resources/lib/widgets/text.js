@@ -1,7 +1,7 @@
 /*jslint eqeq:true, plusplus: true*/
 /*global PLATFORM*/
 
-Omadi.widgets.text_long = {
+Omadi.widgets.text = {
     
     
     getFieldView: function(node, instance){"use strict";
@@ -91,7 +91,7 @@ Omadi.widgets.text_long = {
         
         settings = instance.settings;
         
-        widgetView = Ti.UI.createTextArea({
+        widgetView = Ti.UI.createTextField({
             autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_SENTENCES,
             autocorrect: true,
             editable : instance.can_edit,
@@ -103,7 +103,6 @@ Omadi.widgets.text_long = {
             borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
             textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
             width : Ti.Platform.displayCaps.platformWidth - 30,
-            height : 100,
             color : '#000000',
             font: {
                 fontSize: Omadi.widgets.fontSize
@@ -160,12 +159,6 @@ Omadi.widgets.text_long = {
             }
             // changedContentValue(e.source);
             // noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-        });
-
-        widgetView.addEventListener('blur', function(e) {
-            //Ti.API.info(e.source.value.length + ' or ' + e.value.length + ' Field number ==> min: ' + e.source.myminLength + ' max: ' + e.source.mymaxLength);
-            
-            
         });
         
         return widgetView;

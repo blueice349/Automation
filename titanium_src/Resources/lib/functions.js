@@ -39,7 +39,6 @@ function DPUnitsToPixels(TheDPUnits) {"use strict";
 }
 
 
-
 function createNotification(message) {
 
     if (PLATFORM === 'android') {

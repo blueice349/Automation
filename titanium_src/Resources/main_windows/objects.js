@@ -1,6 +1,6 @@
 /*jslint eqeq:true, plusplus: true*/ 
 
-Ti.include('/main_windows/create_or_edit_node.js');
+//Ti.include('/main_windows/create_or_edit_node.js');
 Ti.include('/lib/functions.js');
 	
 /*global PLATFORM,create_or_edit_node*/
@@ -18,7 +18,7 @@ curWin = Ti.UI.currentWindow;
 
 function openCreateNodeScreen(){
 	"use strict";
-	var win_new = create_or_edit_node.getWindow();
+	var win_new = Ti.UI.createWindow();//create_or_edit_node.getWindow();
 	win_new.title = "New " + bundle.label;
 	win_new.type = curWin.type;
 	win_new.uid = curWin.uid;
@@ -26,10 +26,11 @@ function openCreateNodeScreen(){
 	win_new.region_form = 0;
 	win_new.backgroundColor = "#EEEEEE";
 	win_new.nameSelected = 'Fill Details...';
+	win_new.url = '/main_windows/form.js';
 	win_new.open();
-	setTimeout(function(){
-		create_or_edit_node.loadUI();
-	}, 100);
+	//setTimeout(function(){
+//		create_or_edit_node.loadUI();
+//	}, 100);
 }
 
 
@@ -998,13 +999,14 @@ function homeButtonPressed(e){
                         else if (ev.index !== -1 && isEditEnabled === true){
                             //openEditScreen(btn_id[ev.index], _nid, e);
                         
-                            win_new = create_or_edit_node.getWindow();
+                            win_new = Ti.UI.createWindow();//create_or_edit_node.getWindow();
                             win_new.title = bundle.label;
                             win_new.type = curWin.type;
                             win_new.listView = curWin.listView;
                             win_new.up_node = curWin.up_node;
                             win_new.uid = curWin.uid;
                             win_new.region_form = btn_id[ev.index];
+                            win_new.url = '/main_windows/form.js';
                             
                             //Passing parameters
                             win_new.nid = ev.source.eventRow.nid;
@@ -1020,9 +1022,9 @@ function homeButtonPressed(e){
                             });
                                 
                             win_new.open();
-                            setTimeout(function() {
-                                create_or_edit_node.loadUI();
-                            }, 100);
+                            //setTimeout(function() {
+                            //    create_or_edit_node.loadUI();
+                            //}, 100);
                         }
                     });	
                 }
