@@ -38,7 +38,6 @@ function DPUnitsToPixels(TheDPUnits) {"use strict";
     return (TheDPUnits * (Titanium.Platform.displayCaps.dpi / 160));
 }
 
-
 function createNotification(message) {
 
     if (PLATFORM === 'android') {

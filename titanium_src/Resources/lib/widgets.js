@@ -10,6 +10,7 @@ Ti.include('/lib/widgets/email.js');
 Ti.include('/lib/widgets/link_field.js');
 Ti.include('/lib/widgets/number_integer.js');
 Ti.include('/lib/widgets/number_decimal.js');
+Ti.include('/lib/widgets/omadi_reference.js');
 
 /*jslint eqeq: true, plusplus: true, nomen: true*/
 /*global PLATFORM, Omadi*/
@@ -34,6 +35,8 @@ Omadi.widgets.getFieldView = function (node, instance){"use strict";
                 fieldView = Omadi.widgets.number_integer.getFieldView(node, instance); break;
             case 'number_decimal':
                 fieldView = Omadi.widgets.number_decimal.getFieldView(node, instance); break;
+            case 'omadi_reference':
+                fieldView = Omadi.widgets.omadi_reference.getFieldView(node, instance); break;
         }
     }
     
@@ -48,9 +51,11 @@ var labelViews = {};
 Omadi.widgets.fontSize = 16;
 
 Omadi.widgets.getDBValues = function(fieldWrapper){"use strict";
-    var dbValues = [], i, j, children, subChildren;
+    var dbValues = [], i, j, k, children, subChildren, subSubChildren;
     
     children = fieldWrapper.getChildren();
+    
+    // Find the dbValue up to 3 levels deep in the UI elements
     
     for(i = 0; i < children.length; i ++){
         if(typeof children[i].dbValue !== 'undefined'){
@@ -62,6 +67,14 @@ Omadi.widgets.getDBValues = function(fieldWrapper){"use strict";
                 if(typeof subChildren[j].dbValue !== 'undefined'){
                     dbValues.push(Omadi.utils.trimWhiteSpace(subChildren[j].dbValue));
                 }
+                else if(subChildren[j].getChildren().length > 0){
+                    subSubChildren = subChildren[j].getChildren();
+                    for(k = 0; k < subSubChildren.length; k ++){
+                        if(typeof subSubChildren[k].dbValue !== 'undefined'){
+                            dbValues.push(Omadi.utils.trimWhiteSpace(subSubChildren[k].dbValue));
+                        }
+                    }
+                }
             }
         }
     }
@@ -70,9 +83,11 @@ Omadi.widgets.getDBValues = function(fieldWrapper){"use strict";
 };
 
 Omadi.widgets.getTextValues = function(fieldWrapper){"use strict";
-    var textValues = [], i, j, children, subChildren;
+    var textValues = [], i, j, k, children, subChildren, subSubChildren;
     
     children = fieldWrapper.getChildren();
+    
+    // Find the textValue up to 3 levels deep in the UI elements
     
     for(i = 0; i < children.length; i ++){
         if(typeof children[i].textValue !== 'undefined'){
@@ -83,6 +98,14 @@ Omadi.widgets.getTextValues = function(fieldWrapper){"use strict";
             for(j = 0; j < subChildren.length; j ++){
                 if(typeof subChildren[j].textValue !== 'undefined'){
                     textValues.push(subChildren[j].textValue);
+                }
+                else if(subChildren[j].getChildren().length > 0){
+                    subSubChildren = subChildren[j].getChildren();
+                    for(k = 0; k < subSubChildren.length; k ++){
+                        if(typeof subSubChildren[k].textValue !== 'undefined'){
+                            textValues.push(subSubChildren[k].textValue);
+                        }
+                    }
                 }
             }
         }

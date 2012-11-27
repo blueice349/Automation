@@ -110,7 +110,6 @@ Omadi.widgets.number_integer = {
             ellipsize: false,
             keepScreenOn: true,
             suppessReturn: false,
-            height: 50,
             borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
             textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
             width : Ti.Platform.displayCaps.platformWidth - 30,

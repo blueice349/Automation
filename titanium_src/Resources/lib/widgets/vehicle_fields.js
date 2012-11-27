@@ -1,9 +1,7 @@
 /*jslint eqeq:true, plusplus: true*/
 /*global PLATFORM,setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
 
-Omadi.widgets.email = {
-    
-    //TODO: write a validation function for email fields
+Omadi.widgets.vehicle_fields = {
     
     getFieldView: function(node, instance){"use strict";
         //this.base = Omadi.widgets.base.init(in_instance);
@@ -46,7 +44,7 @@ Omadi.widgets.email = {
         // Add the actual fields
         for(i = 0; i < instance.numVisibleFields; i ++){
             //widgetView = this._getUIComponent(instance); 
-            element = Omadi.widgets.email.getNewElement(node, instance,  i);
+            element = Omadi.widgets.phone.getNewElement(node, instance,  i);
             instance.elements.push(element);
             fieldView.add(element);
             fieldView.add(Omadi.widgets.getSpacerView());
@@ -100,7 +98,7 @@ Omadi.widgets.email = {
         }
         
         settings = instance.settings;
-        Ti.API.debug("Creating email field");
+        Ti.API.debug("Creating phone field");
         
         widgetView = Ti.UI.createTextField({
             autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_WORDS,

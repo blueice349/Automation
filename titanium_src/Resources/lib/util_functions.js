@@ -273,6 +273,16 @@ Date.replaceChars = {
 };
 
 Omadi.utils.trimWhiteSpace = function(string) {"use strict";
+    
+    
+    if(typeof string === 'undefined'){
+        return null;
+    }
+    
+    if(typeof string === 'number'){
+        return string;
+    }
+    
     return string.replace(/^\s+|\s+$/g, "");
 };
 
