@@ -348,10 +348,10 @@ function doFieldOutput(fieldObj) {"use strict";
                     height : 100
                 });
 
-                for ( i = 0; i < node[fieldObj.field_name].values.length; i += 1) {
+                for ( i = 0; i < node[fieldObj.field_name].dbValues.length; i += 1) {
 
-                    if (node[fieldObj.field_name].values[i] > 0) {
-                        fileId = node[fieldObj.field_name].values[i];
+                    if (node[fieldObj.field_name].dbValues[i] > 0) {
+                        fileId = node[fieldObj.field_name].dbValues[i];
                         contentImage = Ti.UI.createImageView({
                             height : 100,
                             width : 100,
@@ -376,7 +376,7 @@ function doFieldOutput(fieldObj) {"use strict";
                 for ( i = 0; i < node[fieldObj.field_name].imageData.length; i += 1) {
 
                     if (node[fieldObj.field_name].imageData[i] > "") {
-                        fileId = node[fieldObj.field_name].values[i];
+                        fileId = node[fieldObj.field_name].dbValues[i];
                         contentImage = Ti.UI.createImageView({
                             height : 100,
                             width : 100,
@@ -462,7 +462,7 @@ function doFieldOutput(fieldObj) {"use strict";
                             if ( typeof node[fieldObj.field_name].nodeTypes[i] !== 'undefined') {
                                 valueLabel.color = '#369';
                                 valueLabel.type = node[fieldObj.field_name].nodeTypes[i];
-                                valueLabel.nid = node[fieldObj.field_name].values[i];
+                                valueLabel.nid = node[fieldObj.field_name].dbValues[i];
 
                                 valueLabel.addEventListener('click', function(e) {
                                     var newWin = Ti.UI.createWindow({
@@ -485,7 +485,7 @@ function doFieldOutput(fieldObj) {"use strict";
                             field_parts = fieldObj.field_name.split("___");
                             //var part;
                             valueLabel.text = "";
-                            //node[field_parts[0]].values.join(', ');
+                            //node[field_parts[0]].dbValues.join(', ');
                           
 
                             if (node[field_parts[0]].parts.street.textValue > "") {
@@ -2331,16 +2331,16 @@ function calculationFieldGetValues(node, instance) {
                 else if (calculation_row.type == 'parent_field_value') {
                     //Ti.API.info('here--------0.6' + calculation_row.parent_field);
                     parent_field = calculation_row.parent_field;
-                    if (node[parent_field] != null && node[parent_field].values[0] != null) {
-                        parent_node = loadNode(node[parent_field].values[0]);
-                        if (parent_node && parent_node[calculation_row.field_name_1].values[0] != null) {
-                            field_1_multiplier = parent_node[calculation_row.field_name_1].values[0];
+                    if (node[parent_field] != null && node[parent_field].dbValues[0] != null) {
+                        parent_node = loadNode(node[parent_field].dbValues[0]);
+                        if (parent_node && parent_node[calculation_row.field_name_1].dbValues[0] != null) {
+                            field_1_multiplier = parent_node[calculation_row.field_name_1].dbValues[0];
                             //Ti.API.info('here--------0.7' + field_1_multiplier);
                         }
                     }
                 }
-                else if (node[calculation_row.field_name_1] != null && node[calculation_row.field_name_1].values[0] != null) {
-                    field_1_multiplier = node[calculation_row.field_name_1].values[0];
+                else if (node[calculation_row.field_name_1] != null && node[calculation_row.field_name_1].dbValues[0] != null) {
+                    field_1_multiplier = node[calculation_row.field_name_1].dbValues[0];
                     //Ti.API.info('here--------0.8' + field_1_multiplier);
                 }
                 if (calculation_row.datestamp_end_field != null && calculation_row.datestamp_end_field != "") {
@@ -2348,8 +2348,8 @@ function calculationFieldGetValues(node, instance) {
                     start_timestamp = field_1_multiplier;
                     // Set this end value to 0 in case the terminating datestamp field is empty
                     field_1_multiplier = 0;
-                    if (node[calculation_row.datestamp_end_field] != null && node[calculation_row.datestamp_end_field].values[0] != null) {
-                        end_timestamp = node[calculation_row.datestamp_end_field].values[0];
+                    if (node[calculation_row.datestamp_end_field] != null && node[calculation_row.datestamp_end_field].dbValues[0] != null) {
+                        end_timestamp = node[calculation_row.datestamp_end_field].dbValues[0];
                         //Ti.API.info('here--------0.10' + end_timestamp);
                         if (calculation_row.type == 'time-only') {
                             //Ti.API.info('here--------0.11' + calculation_row.type);
@@ -2428,17 +2428,17 @@ function calculationFieldGetValues(node, instance) {
                 else if (calculation_row.type == 'parent_field_value') {
                     parent_field = calculation_row.parent_field;
                     //Ti.API.info('here--------3' + parent_field);
-                    if (node[parent_field] != null && node[parent_field].values[0] != null) {
-                        parent_node = loadNode(node[parent_field].values[0]);
+                    if (node[parent_field] != null && node[parent_field].dbValues[0] != null) {
+                        parent_node = loadNode(node[parent_field].dbValues[0]);
                         //Ti.API.info('here--------4' + parent_field);
-                        if (parent_node && parent_node[calculation_row.field_name_2].values[0] != null) {
-                            field_2_multiplier = parent_node[calculation_row.field_name_2].values[0];
+                        if (parent_node && parent_node[calculation_row.field_name_2].dbValues[0] != null) {
+                            field_2_multiplier = parent_node[calculation_row.field_name_2].dbValues[0];
                             //Ti.API.info('here--------5' + field_2_multiplier);
                         }
                     }
                 }
-                else if (node[calculation_row.field_name_2] != null && node[calculation_row.field_name_2].values[0] != null) {
-                    field_2_multiplier = node[calculation_row.field_name_2].values[0];
+                else if (node[calculation_row.field_name_2] != null && node[calculation_row.field_name_2].dbValues[0] != null) {
+                    field_2_multiplier = node[calculation_row.field_name_2].dbValues[0];
                     //Ti.API.info('here--------6' + field_2_multiplier);
                 }
             }

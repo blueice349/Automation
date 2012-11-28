@@ -14,6 +14,7 @@ Ti.include('/lib/widgets/omadi_reference.js');
 Ti.include('/lib/widgets/vehicle_fields.js');
 Ti.include('/lib/widgets/license_plate.js');
 Ti.include('/lib/widgets/location.js');
+Ti.include('/lib/widgets/taxonomy_term_reference.js');
 
 /*jslint eqeq: true, plusplus: true, nomen: true*/
 /*global PLATFORM, Omadi*/
@@ -46,6 +47,8 @@ Omadi.widgets.getFieldView = function (node, instance){"use strict";
                 fieldView = Omadi.widgets.license_plate.getFieldView(node, instance); break;
             case 'location':
                 fieldView = Omadi.widgets.location.getFieldView(node, instance); break;
+            case 'taxonomy_term_reference':
+                fieldView = Omadi.widgets.taxonomy_term_reference.getFieldView(node, instance); break;
         }
     }
     
@@ -68,19 +71,36 @@ Omadi.widgets.getDBValues = function(fieldWrapper){"use strict";
     
     for(i = 0; i < children.length; i ++){
         if(typeof children[i].dbValue !== 'undefined'){
-            dbValues.push(Omadi.utils.trimWhiteSpace(children[i].dbValue));
+            if(typeof children[i].dbValue === 'object' && children[i].dbValue instanceof Array){
+                dbValues = children[i].dbValue;
+            }
+            else{
+                dbValues.push(Omadi.utils.trimWhiteSpace(children[i].dbValue));
+            }
         }
         else if(children[i].getChildren().length > 0){
             subChildren = children[i].getChildren();
             for(j = 0; j < subChildren.length; j ++){
                 if(typeof subChildren[j].dbValue !== 'undefined'){
-                    dbValues.push(Omadi.utils.trimWhiteSpace(subChildren[j].dbValue));
+                    
+                    if(typeof subChildren[j].dbValue === 'object' && subChildren[j].dbValue instanceof Array){
+                        //Ti.API.debug(JSON.stringify(subChildren[j].dbValue));
+                        dbValues = subChildren[j].dbValue;
+                    }
+                    else{
+                        dbValues.push(Omadi.utils.trimWhiteSpace(subChildren[j].dbValue));
+                    }
                 }
                 else if(subChildren[j].getChildren().length > 0){
                     subSubChildren = subChildren[j].getChildren();
                     for(k = 0; k < subSubChildren.length; k ++){
                         if(typeof subSubChildren[k].dbValue !== 'undefined'){
-                            dbValues.push(Omadi.utils.trimWhiteSpace(subSubChildren[k].dbValue));
+                            if(typeof subSubChildren[k].dbValue === 'object' && subSubChildren[k].dbValue instanceof Array){
+                                dbValues = subSubChildren[k].dbValue;
+                            }
+                            else{
+                                dbValues.push(Omadi.utils.trimWhiteSpace(subSubChildren[k].dbValue));
+                            }
                         }
                     }
                 }
@@ -124,7 +144,65 @@ Omadi.widgets.getTextValues = function(fieldWrapper){"use strict";
 };
 
 
-
+Omadi.widgets.setValues = function(field_name, defaultValues){"use strict";
+    var children, subChildren, subSubChildren, i, j, k, fieldWrapper, actualWidget;
+    
+    /*global fieldWrappers */
+    
+    fieldWrapper = fieldWrappers[field_name];
+    children = fieldWrapper.getChildren();
+    
+    actualWidget = null;
+    
+    // Find the textValue up to 3 levels deep in the UI elements
+    
+    for(i = 0; i < children.length; i ++){
+        Ti.API.info("what");
+        if(typeof children[i].textValue !== 'undefined'){
+            actualWidget = children[i];
+            break;
+        }
+        else if(children[i].getChildren().length > 0){
+            subChildren = children[i].getChildren();
+            for(j = 0; j < subChildren.length; j ++){
+                Ti.API.info("who");
+                if(typeof subChildren[j].textValue !== 'undefined'){
+                    actualWidget = subChildren[j];
+                    break;
+                }
+                else if(subChildren[j].getChildren().length > 0){
+                    subSubChildren = subChildren[j].getChildren();
+                    for(k = 0; k < subSubChildren.length; k ++){
+                        Ti.API.info("when");
+                        if(typeof subSubChildren[k].textValue !== 'undefined'){
+                            actualWidget = subSubChildren[k];
+                            break;
+                        }
+                    }
+                }
+                if(actualWidget !== null){
+                    break;
+                }
+            }
+        }
+        if(actualWidget !== null){
+            break;
+        }
+    }
+    
+    if(actualWidget !== null){
+    
+        actualWidget.textValue = defaultValues.textValues[0];
+        actualWidget.dbValue = defaultValues.dbValues[0];
+        
+        if(actualWidget.instance.type == 'taxonomy_term_reference'){
+            actualWidget.setTitle(defaultValues.textValues[0]);
+        }
+        else{
+            actualWidget.setValue(defaultValues.textValues[0]);
+        }
+    }
+};
 
 Omadi.widgets.shared = {
     redraw: function(instance){"use strict";
@@ -141,7 +219,7 @@ Omadi.widgets.shared = {
         wrapper = fieldView.wrapper;
         wrapper.startLayout();
         
-        instance.values = Omadi.widgets.getDBValues(wrapper);
+        instance.dbValues = Omadi.widgets.getDBValues(wrapper);
         instance.textValues = Omadi.widgets.getTextValues(wrapper);
         
         newFieldView = Omadi.widgets.getFieldView(node, instance);

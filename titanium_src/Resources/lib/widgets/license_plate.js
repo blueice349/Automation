@@ -87,6 +87,12 @@ Omadi.widgets.license_plate = {
                 }
             }
             
+            if(dbValue === ""){
+                if(typeof instance.settings.state_default_value !== 'undefined'){
+                    dbValue = instance.settings.state_default_value;
+                }
+            }
+            
             if(dbValue > ""){
                 for(i = 0; i < states.length; i ++){
                     if(states[i].usps == dbValue){

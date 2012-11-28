@@ -756,6 +756,8 @@ function formToNode(){"use strict";
    
    node = {};
    
+   node.type = Ti.UI.currentWindow.type;
+   
    try{
        
        Ti.API.info("CONVERTING TO NODE");
@@ -766,7 +768,7 @@ function formToNode(){"use strict";
                instance = fieldWrapper.instance;
                
                node[instance.field_name] = {};
-               node[instance.field_name].values = Omadi.widgets.getDBValues(fieldWrapper);
+               node[instance.field_name].dbValues = Omadi.widgets.getDBValues(fieldWrapper);
                node[instance.field_name].textValues = Omadi.widgets.getTextValues(fieldWrapper);
                
                //Ti.API.debug(JSON.stringify(getDBValues(fieldWrapper)));
@@ -785,7 +787,7 @@ function getFormFieldValues(field_name){"use strict";
     
     
     if(typeof fieldWrappers[field_name] !== 'undefined'){
-        retval.values = Omadi.widgets.getDBValues(fieldWrappers[field_name]);
+        retval.dbValues = Omadi.widgets.getDBValues(fieldWrappers[field_name]);
         retval.textValues = Omadi.widgets.getTextValues(fieldWrappers[field_name]);
     }
     
@@ -796,12 +798,12 @@ function getFormFieldValues(field_name){"use strict";
 function validateMinLength(node, instance){"use strict";
     var minLength, form_errors = [], i;
     
-    if (node[instance.field_name].values.length > 0) {
+    if (node[instance.field_name].dbValues.length > 0) {
         if (instance.settings.min_length != null) {
             minLength = parseInt(instance.settings.min_length, 10);
             if(minLength >= 0){
-                for(i = 0; i < node[instance.field_name].values.length; i ++){
-                    if (node[instance.field_name].values[i].length < minLength) {
+                for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
+                    if (node[instance.field_name].dbValues[i].length < minLength) {
                         form_errors.push(instance.label + " requires at least " + minLength + " characters");
                     }  
                 }
@@ -816,12 +818,12 @@ function validateMinLength(node, instance){"use strict";
 function validateMaxLength(node, instance){"use strict";
     var maxLength, form_errors = [], i;
     
-    if (node[instance.field_name].values.length > 0) {
+    if (node[instance.field_name].dbValues.length > 0) {
         if (instance.settings.max_length != null) {
             maxLength = parseInt(instance.settings.max_length, 10);
             if(maxLength >= 0){
-                for(i = 0; i < node[instance.field_name].values.length; i ++){
-                    if (node[instance.field_name].values[i].length > maxLength) {
+                for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
+                    if (node[instance.field_name].dbValues[i].length > maxLength) {
                         form_errors.push(instance.label + " cannot have more than " + maxLength + " characters");
                     }  
                 }
@@ -838,8 +840,8 @@ function validateRequired(node, instance){"use strict";
     
     isEmpty = true;
             
-    if(typeof node[instance.field_name].values !== 'undefined' && node[instance.field_name].values.length > 0){
-        values = node[instance.field_name].values;
+    if(typeof node[instance.field_name].dbValues !== 'undefined' && node[instance.field_name].dbValues.length > 0){
+        values = node[instance.field_name].dbValues;
         for(i = 0; i < values.length; i ++){
             
             
@@ -1012,8 +1014,10 @@ function affectsAnotherConditionalField(check_instance){"use strict";
                 
                 for (i in search_criteria) {
                     if(search_criteria.hasOwnProperty(i)){
-                        Ti.API.debug(search_criteria[i].field_name + " -> " + field_name);
+                        
+                        
                         if(check_instance.field_name == search_criteria[i].field_name){
+                            Ti.API.debug(search_criteria[i].field_name + " -> " + field_name);
                             affectedFields.push(field_name);
                         }
                     }
@@ -1085,7 +1089,7 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
             search_criteria = instance.settings.criteria.search_criteria;
             search_criteria.sort(sort_by_weight);
             
-            Ti.API.debug(JSON.stringify(search_criteria));
+            //Ti.API.debug(JSON.stringify(search_criteria));
             
             for (row_idx in search_criteria) {
                 if(search_criteria.hasOwnProperty(row_idx)){
@@ -1099,10 +1103,10 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
                     values = [];
                     
                     if(typeof node[field_name] !== 'undefined'){
-                       values = node[field_name].values;
+                       values = node[field_name].dbValues;
                     }
                     
-                    Ti.API.debug(JSON.stringify(values));
+                    //Ti.API.debug(JSON.stringify(values));
               
         
                     switch(instance.type) {
@@ -1120,7 +1124,7 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
                         case 'omadi_reference':
                         case 'omadi_time':
                         
-                            // for (i = 0; i < node[field_name].values.length; i++){
+                            // for (i = 0; i < node[field_name].dbValues.length; i++){
                                 // var elements = entityArr[field_name][idx1];
                                 // if (elements['value'] != null && elements['value'] != "") {
                                     // node_values.push(elements['value']);
@@ -1156,6 +1160,8 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
                                     // node_values.push(elements['value']);
                                 // }
                             // }
+                            
+                            
     
                             search_values = [];
                             if (!isArray(search_value)) {
@@ -1173,6 +1179,7 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
                                 }
                             }
                             
+                            
                             if (search_operator != null && search_operator == '!=') {
                                 row_matches[row_idx] = true;
                                 if (search_value.__null == '__null' && (values.length === 0 || values[0] == null)) {
@@ -1188,13 +1195,18 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
                                 }
                             }
                             else if (search_operator == '=') {
-                                if (search_value.__null == '__null' && (values.length === 0 || values[0] == null)) {
+                                //Ti.API.debug("search: " + JSON.stringify(search_values));
+                                //Ti.API.debug("values: " + JSON.stringify(values));
+                                
+                                if (search_value.indexOf('__null') !== -1 && (values.length === 0 || values[0] == null)) {
                                     row_matches[row_idx] = true;
                                 }
                                 else {
                                     for (i = 0; i < search_value.length; i ++){
-                                        if (values.indexOf(search_value[i]) !== -1){
-                                            row_matches[row_idx] = true;
+                                        for(j = 0; j < values.length; j ++){
+                                            if (values[j] == search_value[i]){
+                                                row_matches[row_idx] = true;
+                                            }   
                                         }
                                     }
                                 }
@@ -1991,7 +2003,7 @@ function save_form_data(_flag_info, pass_it, new_time) {"use strict";
                         //    continue;
                         //}
                         
-                        //if(node[field_name].values.length > 0){
+                        //if(node[field_name].dbValues.length > 0){
                             //Point the last field
                             // if (content[j_y + 1]) {
                                 // while (content[j_y].field_name == content[j_y + 1].field_name) {
@@ -2132,15 +2144,15 @@ function save_form_data(_flag_info, pass_it, new_time) {"use strict";
                                 var has_data = false;
                                 var k;
                                 
-                                for(k = 0; k < node[field_name].values.length; k ++){
-                                    if(node[field_name].values[k] > ""){
+                                for(k = 0; k < node[field_name].dbValues.length; k ++){
+                                    if(node[field_name].dbValues[k] > ""){
                                         has_data = true;
                                     }
                                 }
                                 
                                 if(has_data){
                                     //Treat the array
-                                    content_s = treatArray(node[field_name].values, 6);
+                                    content_s = treatArray(node[field_name].dbValues, 6);
                                     
                                     //Ti.API.info('About to insert ' + _array_value[content[j].field_name]);
                                     // table structure:
@@ -2161,10 +2173,10 @@ function save_form_data(_flag_info, pass_it, new_time) {"use strict";
                                 //}
                             }
                             else{ //} if (!is_no_data) {
-                                Ti.API.info("value: " + JSON.stringify(node[field_name].values));
-                                if(node[field_name].values.length == 1){
+                                Ti.API.info("value: " + JSON.stringify(node[field_name].dbValues));
+                                if(node[field_name].dbValues.length == 1){
                                     
-                                    value_to_insert = node[field_name].values.pop();
+                                    value_to_insert = node[field_name].dbValues.pop();
                                 }
                                 // if ((content[j].field_type == 'number_decimal') || (content[j].field_type == 'number_integer')) {
                                     // if ((content[j].value == '') || (content[j].value == null)) {

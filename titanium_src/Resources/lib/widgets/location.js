@@ -4,6 +4,7 @@
 Omadi.widgets.location = {
     
     // TODO: add validation for plate and state, remove spaces, capitalize all, don't send more than 10 chars
+    //TODO: add number keyboard for zip code
     
     getFieldView: function(node, instance){"use strict";
         //this.base = Omadi.widgets.base.init(in_instance);
@@ -144,7 +145,7 @@ Omadi.widgets.location = {
                         color : '#f9f9f9',
                         offset : 0.4
                     }, {
-                        color : '#ccc',
+                        color : '#bbb',
                         offset : 1.0
                     }]
                 },

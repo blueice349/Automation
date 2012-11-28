@@ -47,8 +47,8 @@ Omadi.widgets.omadi_reference = {
         dbValue = "";
         textValue = "";
         if(typeof node[instance.field_name] !== 'undefined'){
-            if(typeof node[instance.field_name].values !== 'undefined' && typeof node[instance.field_name].values[index] !== 'undefined'){
-                dbValue = node[instance.field_name].values[index];
+            if(typeof node[instance.field_name].dbValues !== 'undefined' && typeof node[instance.field_name].dbValues[index] !== 'undefined'){
+                dbValue = node[instance.field_name].dbValues[index];
             }
             
             if(typeof node[instance.field_name].textValues !== 'undefined' && typeof node[instance.field_name].textValues[index] !== 'undefined'){
@@ -109,7 +109,8 @@ Omadi.widgets.omadi_reference = {
             value : textValue,
             lastValue: textValue,
             touched: false,
-            possibleValues: possibleValues
+            possibleValues: possibleValues,
+            defaultValueChildFields: []
                         
             // field_type : instance.type,
             // field_name : instance.field_name,
@@ -122,6 +123,10 @@ Omadi.widgets.omadi_reference = {
             // changedFlag : 0,
             // real_ind : count
         });
+        
+        widgetView.defaultValueChildFields = Omadi.widgets.omadi_reference.setupParentDefaultFields(instance);
+        
+        Ti.API.info(JSON.stringify(widgetView));
         
         autocomplete_table = Titanium.UI.createTableView({
             zIndex : 999,
@@ -145,6 +150,8 @@ Omadi.widgets.omadi_reference = {
             e.source.autocomplete_table.setHeight(0);
             e.source.autocomplete_table.setBorderWidth(0);
             e.source.autocomplete_table.setVisible(false);
+            
+            Omadi.widgets.omadi_reference.setChildDefaultValues(e.source.textField);
         });        
         
 
@@ -176,10 +183,16 @@ Omadi.widgets.omadi_reference = {
             //adjustView(e.source.my_index, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
         });
         
+        widgetView.addEventListener('blur', function(e){
+            e.source.autocomplete_table.setBorderWidth(0);
+            e.source.autocomplete_table.setHeight(0);
+            e.source.autocomplete_table.setVisible(false);
+        });
+        
         widgetView.addEventListener('change', function(e) {
             /*global setConditionallyRequiredLabels*/
            
-            var possibleValues, tableData, i, regEx, row;
+            var possibleValues, tableData, i, regEx, row, upperCaseValue;
             
             if (e.source.touched === true) {
                 Ti.API.info("changed");
@@ -197,8 +210,8 @@ Omadi.widgets.omadi_reference = {
                     //    e.source.nid = nid;
                         //Ti.API.info('Value: ' + value_f + ' NID: ' + nid);
                     //};
-    
-                  
+                    
+                    upperCaseValue = e.source.value.toUpperCase();
                     tableData = [];
 
                     for (i = 0; i < possibleValues.length; i++) {
@@ -206,8 +219,9 @@ Omadi.widgets.omadi_reference = {
                         regEx = new RegExp(e.source.value, 'i');
                         if (possibleValues[i].title.search(regEx) != -1) {
                             //Check match
-                            if (e.source.value == possibleValues[i].title) {
+                            if (upperCaseValue == possibleValues[i].title.toUpperCase()) {
                                 e.source.dbValue = possibleValues[i].nid;
+                                Omadi.widgets.omadi_reference.setChildDefaultValues(e.source);
                             }
                             else {
                                 e.source.dbValue = null;
@@ -281,6 +295,146 @@ Omadi.widgets.omadi_reference = {
         wrapper.add(autocomplete_table);
         
         return wrapper;
+    },
+    setupParentDefaultFields: function(omadi_reference_instance){"use strict";
+        var instances, field_name, instance, parentFieldName, childFieldNames = [];
+        
+        
+        instances = Omadi.data.getFields(Ti.UI.currentWindow.type);
+        
+        for(field_name in instances){
+            if(instances.hasOwnProperty(field_name)){
+                instance = instances[field_name];
+                if (typeof instance.settings.parent_form_default_value !== 'undefined') {
+                    
+                    if (typeof instance.settings.parent_form_default_value.parent_field !== 'undefined' && instance.settings.parent_form_default_value.parent_field != "") {
+                       
+                        parentFieldName = instance.settings.parent_form_default_value.parent_field;
+                        
+                         
+                        if(parentFieldName == omadi_reference_instance.field_name){
+                            //Ti.API.info(field_name);
+                            childFieldNames.push({
+                                childFieldName: field_name,
+                                defaultValueField: instance.settings.parent_form_default_value.default_value_field
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        
+        return childFieldNames;
+    },
+    setChildDefaultValues: function(widgetView){"use strict";
+        var parentFieldName, defaultValueField, childFieldValues, parentNode, instance, instances, defaultValues, field_name, childFieldName, i, childInstance;
+        /*global getFormFieldValues, loadNode, setValues*/
+        
+        //Ti.API.debug(JSON.stringify(widgetView.defaultValueChildFields));
+        //Ti.API.debug(widgetView.dbValue);
+        
+        //instances = Omadi.data.getFields(Ti.UI.currentWindow.type);
+        
+        if(widgetView.dbValue > 0){
+            if(widgetView.defaultValueChildFields.length > 0){
+                parentNode = loadNode(widgetView.dbValue);
+                
+                for(i = 0; i < widgetView.defaultValueChildFields.length; i ++){
+                    childFieldName = widgetView.defaultValueChildFields[i].childFieldName;
+                    defaultValueField = widgetView.defaultValueChildFields[i].defaultValueField;
+                    
+                    childFieldValues = getFormFieldValues(childFieldName); 
+                    if(typeof childFieldValues.dbValues === 'undefined' || childFieldValues.dbValues.length == 0 || childFieldValues.dbValues[0] == null || childFieldValues.dbValues[0] == ""){
+                        
+                        if(typeof parentNode[defaultValueField] !== 'undefined'){
+                            defaultValues = parentNode[defaultValueField];
+                            
+                            Ti.API.debug("real defaults: " + JSON.stringify(defaultValues));
+                            
+                            Omadi.widgets.setValues(childFieldName, defaultValues);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // for(i = 0; i < widgetView.defaultValueChildFields.length; i ++){
+            // parentFieldValues = getFormFieldValues(widgetView.defaultValueChildFields[i]);
+//                 
+            // if(typeof parentFieldValues.dbValues !== 'undefined'){
+                // if(typeof parentFieldValues.dbValues[0] != null){
+                    // parentNode = loadNode(parentFieldValues.dbValues[0]);
+                    // Ti.API.debug(JSON.stringify(parentNode));
+                // }
+            // }
+        // }
+        
+        //instances = Omadi.data.getFields(Ti.UI.currentWindow.type);
+       // instance = widget.instance;
+        
+
+            
+        //if (typeof instance.settings.parent_form_default_value !== 'undefined') {
+        //    if (typeof instance.settings.parent_form_default_value.parent_field !== 'undefined' && instance.settings.parent_form_default_value.parent_field != "") {
+                // parentFieldName = instance.settings.parent_form_default_value.parent_field;
+                // defaultValueField = instance.settings.parent_form_default_value.default_value_field;
+//                 
+                // parentFieldValues = getFormFieldValues(parentFieldName);
+//                 
+                // if(typeof parentFieldValues.dbValues !== 'undefined'){
+                    // if(typeof parentFieldValues.dbValues[0] != null){
+                        // parentNode = loadNode(parentFieldValues.dbValues[0]);
+                        // Ti.API.debug(JSON.stringify(parentNode));
+                    // }
+                // }
+                // else if(typeof node[parentFieldName].dbValues !== 'undefined'){
+                    // if(typeof node[parentFieldName].dbValues[0] != null){
+                        // parentNode = loadNode(node[parentFieldName].dbValues[0]);
+                        // Ti.API.debug(JSON.stringify(parentNode));
+                    // }
+                // }
+                    
+                
+                // if ((content[counter].field_type == 'number_decimal' || content[counter].field_type == 'number_integer')) {
+                    // content[counter].value = defaultFieldVal + "";
+                    // content[counter].nid = e.source.nid;
+                // }
+                // else {
+                    // content[counter].value = defaultFieldVal;
+                    // defaultFieldVal = db_display.execute('SELECT name FROM term_data WHERE tid="' + defaultFieldVal + '";');
+                    // defaultFieldVal = defaultFieldVal.fieldByName('name');
+                    // content[counter].title = defaultFieldVal;
+                // }
+                
+                // if (content[counter].parent_name == e.source.field_name) {
+    // 
+                    // db_display = Omadi.utils.openMainDatabase();
+    // 
+                    // var table = db_display.execute('SELECT table_name FROM node WHERE nid = ' + e.source.nid);
+                    // table = table.fieldByName('table_name');
+    // 
+                    // var defaultFieldVal = db_display.execute('SELECT ' + content[counter].defaultField + ' FROM ' + table + ' WHERE nid=' + e.source.nid);
+                    // defaultFieldVal = defaultFieldVal.fieldByName(content[counter].defaultField);
+    // 
+                    // var defaultFieldSetting = db_display.execute('SELECT settings FROM fields WHERE field_name="' + content[counter].defaultField + '" and bundle="' + table + '";');
+                    // defaultFieldSetting = JSON.parse(defaultFieldSetting.fieldByName('settings'));
+                    // if (content[counter].cardinality == defaultFieldSetting.cardinality && defaultFieldSetting.cardinality == 1) {
+                        // if (defaultFieldVal == null || defaultFieldVal == "null" || defaultFieldVal == "" || defaultFieldVal == 7411317618171051229 || defaultFieldVal == "7411317618171051229" || defaultFieldVal == 7411317618171051000 || defaultFieldVal == "7411317618171051000") {
+                            // continue;
+                        // }
+    // 
+    //                     
+                        // changedContentValue(content[counter]);
+    // 
+                    // }
+                    // else if (content[counter].cardinality == defaultFieldSetting.cardinality && defaultFieldSetting.cardinality > 1) {
+    // 
+                    // }
+                    // db_display.close();
+                // }
+          //  }
+       // }  
+        
     }
 };
 

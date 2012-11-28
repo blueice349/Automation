@@ -222,6 +222,12 @@ Omadi.widgets.vehicle_fields = {
             //adjustView(e.source.my_index, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
         });
         
+        widgetView.addEventListener('blur', function(e){
+            e.source.autocomplete_table.setBorderWidth(0);
+            e.source.autocomplete_table.setHeight(0);
+            e.source.autocomplete_table.setVisible(false);
+        });
+        
         widgetView.addEventListener('change', function(e) {
             /*global setConditionallyRequiredLabels, getFormFieldValues*/
            
@@ -243,10 +249,10 @@ Omadi.widgets.vehicle_fields = {
                         //makeValue = 
                         makeValues = getFormFieldValues(e.source.real_field_name + '___make');
                         
-                        if(typeof makeValues.values !== 'undefined'){
+                        if(typeof makeValues.dbValues !== 'undefined'){
                             
-                            if(makeValues.values[0] != ""){
-                                makeValue = makeValues.values[0];
+                            if(makeValues.dbValues[0] != ""){
+                                makeValue = makeValues.dbValues[0];
                                 
                                 db = Omadi.utils.openMainDatabase();
                                 result = db.execute("SELECT DISTINCT model FROM _vehicles WHERE make LIKE '%" + makeValue + "%'");

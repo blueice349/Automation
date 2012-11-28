@@ -31,8 +31,8 @@ Omadi.widgets.phone = {
         if(typeof instance.numVisibleFields === 'undefined'){
             
             if(settings.cardinality == -1){
-                if(typeof node[instance.field_name] !== 'undefined' && node[instance.field_name].values.length > 0){
-                    instance.numVisibleFields = node[instance.field_name].values.length;
+                if(typeof node[instance.field_name] !== 'undefined' && node[instance.field_name].dbValues.length > 0){
+                    instance.numVisibleFields = node[instance.field_name].dbValues.length;
                 }
                 else{
                     instance.numVisibleFields = 1;
@@ -90,8 +90,8 @@ Omadi.widgets.phone = {
         dbValue = "";
         textValue = "";
         if(typeof node[instance.field_name] !== 'undefined'){
-            if(typeof node[instance.field_name].values !== 'undefined' && typeof node[instance.field_name].values[index] !== 'undefined'){
-                dbValue = node[instance.field_name].values[index];
+            if(typeof node[instance.field_name].dbValues !== 'undefined' && typeof node[instance.field_name].dbValues[index] !== 'undefined'){
+                dbValue = node[instance.field_name].dbValues[index];
             }
             
             if(typeof node[instance.field_name].textValues !== 'undefined' && typeof node[instance.field_name].textValues[index] !== 'undefined'){

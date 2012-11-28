@@ -144,241 +144,243 @@ function loadNode(nid) {"use strict";
 
     var db, node, result, subResult, field_name, dbValue, textValue, subValue, decoded, i, real_field_name, part, field_parts, widget, instances;
     
-    
-    
-    db = Omadi.utils.openMainDatabase();
     node = {
         form_part: 0
     };
-
-    result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed FROM node WHERE  nid = ' + nid);
-
-    if (result.isValidRow()) {
-
-        node.nid = result.fieldByName('nid');
-        node.title = result.fieldByName('title');
-        node.created = result.fieldByName('created');
-        node.changed = result.fieldByName('changed');
-        node.author_uid = result.fieldByName('author_uid');
-        node.flag_is_updated = result.fieldByName('flag_is_updated');
-        node.table_name = result.fieldByName('table_name');
-        node.form_part = result.fieldByName('form_part');
-        node.changed_uid = result.fieldByName('changed_uid');
-        node.no_data_fields = result.fieldByName('no_data_fields');
-        node.perm_edit = result.fieldByName('perm_edit');
-        node.perm_delete = result.fieldByName('perm_delete');
-        node.viewed = result.fieldByName('viewed');
-    }
-    result.close();
     
+    if(parseInt(nid, 10) > 0){
+        db = Omadi.utils.openMainDatabase();
+        
     
-    instances = Omadi.data.getFields(node.table_name);
-
-    if ( typeof node.nid !== 'undefined') {
-
-        result = db.execute("SELECT * FROM " + node.table_name + " WHERE nid = " + node.nid);
+        result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed FROM node WHERE  nid = ' + nid);
+    
         if (result.isValidRow()) {
-            for (field_name in instances) {
-                if (instances.hasOwnProperty(field_name)) {
-
-                    dbValue = result.fieldByName(field_name);
-
-                    //Ti.API.info("INPUT FIELD NAME: " + field_name);
-
-                    node[field_name] = {};
-                    node[field_name].textValues = [];
-                    node[field_name].values = [];
-
-                    if (dbValue === '7411317618171051229' || dbValue === 7411317618171051229) {
-
-                        node[field_name].values = getDecodedResults(db, node.nid, field_name);
-                    }
-                    else {
-                        /**
-                         * This takes care of all multi-part fields:
-                         * location
-                         * license_plate
-                         * vehicle_fields
-                         */
-                        if (field_name.indexOf("___") !== -1) {
-                            field_parts = field_name.split("___");
-                            real_field_name = field_parts[0];
-                            part = field_parts[1];
-
-                            if ( typeof node[real_field_name] === 'undefined') {
-                                node[real_field_name] = {};
-                                node[real_field_name].label = instances[field_name].label;
-                                node[real_field_name].parts = {};
-                                node[real_field_name].values = [];
-                                // Just make sure one and only one value gets saved to the expanded fieldname so it gets displayed once
-                                node[field_name].values.push("Parts Field");
-                            }
-
-                            if (dbValue === null) {
-                                dbValue = "";
-                            }
-
-                            node[real_field_name].parts[part] = {
-                                label : instances[field_name].settings.parts[part],
-                                textValue : dbValue
-                            };
-                            //Ti.API.info('HERE HERE: ' + field_name + " " + real_field_name + " " + dbValue);
-                            node[real_field_name].values.push(dbValue);
+    
+            node.nid = result.fieldByName('nid');
+            node.title = result.fieldByName('title');
+            node.created = result.fieldByName('created');
+            node.changed = result.fieldByName('changed');
+            node.author_uid = result.fieldByName('author_uid');
+            node.flag_is_updated = result.fieldByName('flag_is_updated');
+            node.table_name = result.fieldByName('table_name');
+            node.form_part = result.fieldByName('form_part');
+            node.changed_uid = result.fieldByName('changed_uid');
+            node.no_data_fields = result.fieldByName('no_data_fields');
+            node.perm_edit = result.fieldByName('perm_edit');
+            node.perm_delete = result.fieldByName('perm_delete');
+            node.viewed = result.fieldByName('viewed');
+        }
+        result.close();
+        
+        
+        instances = Omadi.data.getFields(node.table_name);
+    
+        if ( typeof node.nid !== 'undefined') {
+    
+            result = db.execute("SELECT * FROM " + node.table_name + " WHERE nid = " + node.nid);
+            if (result.isValidRow()) {
+                for (field_name in instances) {
+                    if (instances.hasOwnProperty(field_name)) {
+    
+                        dbValue = result.fieldByName(field_name);
+    
+                        //Ti.API.info("INPUT FIELD NAME: " + field_name);
+    
+                        node[field_name] = {};
+                        node[field_name].textValues = [];
+                        node[field_name].dbValues = [];
+    
+                        if (dbValue === '7411317618171051229' || dbValue === 7411317618171051229) {
+    
+                            node[field_name].dbValues = getDecodedResults(db, node.nid, field_name);
                         }
                         else {
-                            node[field_name].values.push(dbValue);
+                            /**
+                             * This takes care of all multi-part fields:
+                             * location
+                             * license_plate
+                             * vehicle_fields
+                             */
+                            if (field_name.indexOf("___") !== -1) {
+                                field_parts = field_name.split("___");
+                                real_field_name = field_parts[0];
+                                part = field_parts[1];
+    
+                                if ( typeof node[real_field_name] === 'undefined') {
+                                    node[real_field_name] = {};
+                                    node[real_field_name].label = instances[field_name].label;
+                                    node[real_field_name].parts = {};
+                                    node[real_field_name].dbValues = [];
+                                    // Just make sure one and only one value gets saved to the expanded fieldname so it gets displayed once
+                                    node[field_name].dbValues.push("Parts Field");
+                                }
+    
+                                if (dbValue === null) {
+                                    dbValue = "";
+                                }
+    
+                                node[real_field_name].parts[part] = {
+                                    label : instances[field_name].settings.parts[part],
+                                    textValue : dbValue
+                                };
+                                //Ti.API.info('HERE HERE: ' + field_name + " " + real_field_name + " " + dbValue);
+                                node[real_field_name].dbValues.push(dbValue);
+                            }
+                            else {
+                                node[field_name].dbValues.push(dbValue);
+                            }
                         }
-                    }
-
-                    // Make sure textValues is set to something for each value
-                    for ( i = 0; i < node[field_name].values.length; i += 1) {
-                        node[field_name].textValues[i] = "";
-                    }
-
-                    switch(instances[field_name].type) {
-                        case 'text':
-                        case 'text_long':
-                        case 'phone':
-                        case 'email':
-                        case 'link_field':
-                        case 'number_integer':
-                        case 'number_decimal':
-                            for ( i = 0; i < node[field_name].values.length; i++) {
-                                if (node[field_name].values[i] === null) {
-                                    node[field_name].textValues[i] = "";
-                                }
-                                else {
-                                    node[field_name].textValues[i] = node[field_name].values[i] + ''.toString();
-                                }
-                            }
-                            break;
-
-                        case 'auto_increment':
-                            for ( i = 0; i < node[field_name].values.length; i++) {
-
-                                if (instances[field_name].settings.prefix > '') {
-                                    node[field_name].textValues[i] = instances[field_name].settings.prefix + node[field_name].values[i];
-                                }
-                                else {
-                                    node[field_name].textValues[i] = node[field_name].values[i] + ''.toString();
-                                }
-                            }
-                            break;
-
-                        case 'list_boolean':
-                            for ( i = 0; i < node[field_name].values.length; i++) {
-                                if (node[field_name].values[i] === null) {
-                                    node[field_name].textValues[i] = '';
-                                }
-                                else if (node[field_name].values[i] == 1) {
-                                    node[field_name].textValues[i] = 'Yes';
-                                }
-                                else {
-                                    node[field_name].textValues[i] = 'No';
-                                }
-                            }
-                            break;
-
-                        case 'user_reference':
-
-                            subResult = db.execute('SELECT uid, realname FROM user WHERE uid IN(' + node[field_name].values.join(',') + ')');
-                            while (subResult.isValidRow()) {
-                                textValue = subResult.fieldByName("realname");
-                                subValue = subResult.fieldByName("uid");
-
-                                for ( i = 0; i < node[field_name].values.length; i += 1) {
-                                    if (node[field_name].values[i] == subValue) {
-                                        node[field_name].textValues[i] = textValue;
-                                        break;
+    
+                        // Make sure textValues is set to something for each value
+                        for ( i = 0; i < node[field_name].dbValues.length; i += 1) {
+                            node[field_name].textValues[i] = "";
+                        }
+    
+                        switch(instances[field_name].type) {
+                            case 'text':
+                            case 'text_long':
+                            case 'phone':
+                            case 'email':
+                            case 'link_field':
+                            case 'number_integer':
+                            case 'number_decimal':
+                                for ( i = 0; i < node[field_name].dbValues.length; i++) {
+                                    if (node[field_name].dbValues[i] === null) {
+                                        node[field_name].textValues[i] = "";
+                                    }
+                                    else {
+                                        node[field_name].textValues[i] = node[field_name].dbValues[i] + ''.toString();
                                     }
                                 }
-
-                                subResult.next();
-                            }
-                            subResult.close();
-                            break;
-
-                        case 'taxonomy_term_reference':
-
-                            subResult = db.execute('SELECT name, tid FROM term_data WHERE tid IN(' + node[field_name].values.join(',') + ')');
-                            while (subResult.isValidRow()) {
-                                textValue = subResult.fieldByName("name");
-                                subValue = subResult.fieldByName("tid");
-
-                                for ( i = 0; i < node[field_name].values.length; i += 1) {
-                                    if (node[field_name].values[i] == subValue) {
-                                        node[field_name].textValues[i] = textValue;
-                                        break;
+                                break;
+    
+                            case 'auto_increment':
+                                for ( i = 0; i < node[field_name].dbValues.length; i++) {
+    
+                                    if (instances[field_name].settings.prefix > '') {
+                                        node[field_name].textValues[i] = instances[field_name].settings.prefix + node[field_name].dbValues[i];
+                                    }
+                                    else {
+                                        node[field_name].textValues[i] = node[field_name].dbValues[i] + ''.toString();
                                     }
                                 }
-
-                                subResult.next();
-                            }
-                            subResult.close();
-
-                            break;
-
-                        case 'omadi_reference':
-                            subResult = db.execute('SELECT title, table_name, nid FROM node WHERE nid IN(' + node[field_name].values.join(',') + ')');
-                            node[field_name].nodeTypes = [];
-
-                            while (subResult.isValidRow()) {
-                                textValue = subResult.fieldByName("title");
-                                subValue = subResult.fieldByName("nid");
-
-                                for ( i = 0; i < node[field_name].values.length; i += 1) {
-                                    if (node[field_name].values[i] == subValue) {
-                                        node[field_name].textValues[i] = textValue;
-                                        node[field_name].nodeTypes[i] = subResult.fieldByName("table_name");
-                                        break;
+                                break;
+    
+                            case 'list_boolean':
+                                for ( i = 0; i < node[field_name].dbValues.length; i++) {
+                                    if (node[field_name].dbValues[i] === null) {
+                                        node[field_name].textValues[i] = '';
+                                    }
+                                    else if (node[field_name].dbValues[i] == 1) {
+                                        node[field_name].textValues[i] = 'Yes';
+                                    }
+                                    else {
+                                        node[field_name].textValues[i] = 'No';
                                     }
                                 }
-
-                                subResult.next();
-                            }
-                            subResult.close();
-                            break;
-
-                        case 'omadi_time':
-
-                            for ( i = 0; i < node[field_name].values.length; i += 1) {
-                                node[field_name].textValues[i] = display_omadi_time01(node[field_name].values[i]);
-                            }
-                            break;
-
-                        case 'datestamp':
-                            widget = instances[field_name].widget;
-
-                            for ( i = 0; i < node[field_name].values.length; i += 1) {
-                                if (node[field_name].values[i] !== null && node[field_name].values[i] !== 0) {
-                                    node[field_name].textValues[i] = timeConverter(node[field_name].values[i], instances[field_name].settings.time);
-                                }
-                            }
-
-                            break;
-
-                        case 'image':
-                            subResult = db.execute('SELECT * FROM file_upload_queue WHERE nid=' + node.nid + ' AND field_name ="' + field_name + '" ORDER BY delta ASC');
-
-                            node[field_name].imageData = [];
-                            if (subResult.rowCount > 0) {
+                                break;
+    
+                            case 'user_reference':
+    
+                                subResult = db.execute('SELECT uid, realname FROM user WHERE uid IN(' + node[field_name].dbValues.join(',') + ')');
                                 while (subResult.isValidRow()) {
-                                    //isUpdated[val.fieldByName('delta')] = true;
-                                    node[field_name].imageData.push(Ti.Utils.base64decode(subResult.fieldByName('file_data')));
+                                    textValue = subResult.fieldByName("realname");
+                                    subValue = subResult.fieldByName("uid");
+    
+                                    for ( i = 0; i < node[field_name].dbValues.length; i += 1) {
+                                        if (node[field_name].dbValues[i] == subValue) {
+                                            node[field_name].textValues[i] = textValue;
+                                            break;
+                                        }
+                                    }
+    
                                     subResult.next();
                                 }
-                            }
-                            subResult.close();
-                            break;
-
+                                subResult.close();
+                                break;
+    
+                            case 'taxonomy_term_reference':
+    
+                                subResult = db.execute('SELECT name, tid FROM term_data WHERE tid IN(' + node[field_name].dbValues.join(',') + ')');
+                                while (subResult.isValidRow()) {
+                                    textValue = subResult.fieldByName("name");
+                                    subValue = subResult.fieldByName("tid");
+    
+                                    for ( i = 0; i < node[field_name].dbValues.length; i += 1) {
+                                        if (node[field_name].dbValues[i] == subValue) {
+                                            node[field_name].textValues[i] = textValue;
+                                            break;
+                                        }
+                                    }
+    
+                                    subResult.next();
+                                }
+                                subResult.close();
+    
+                                break;
+    
+                            case 'omadi_reference':
+                                subResult = db.execute('SELECT title, table_name, nid FROM node WHERE nid IN(' + node[field_name].dbValues.join(',') + ')');
+                                node[field_name].nodeTypes = [];
+    
+                                while (subResult.isValidRow()) {
+                                    textValue = subResult.fieldByName("title");
+                                    subValue = subResult.fieldByName("nid");
+    
+                                    for ( i = 0; i < node[field_name].dbValues.length; i += 1) {
+                                        if (node[field_name].dbValues[i] == subValue) {
+                                            node[field_name].textValues[i] = textValue;
+                                            node[field_name].nodeTypes[i] = subResult.fieldByName("table_name");
+                                            break;
+                                        }
+                                    }
+    
+                                    subResult.next();
+                                }
+                                subResult.close();
+                                break;
+    
+                            case 'omadi_time':
+    
+                                for ( i = 0; i < node[field_name].dbValues.length; i += 1) {
+                                    node[field_name].textValues[i] = display_omadi_time01(node[field_name].dbValues[i]);
+                                }
+                                break;
+    
+                            case 'datestamp':
+                                widget = instances[field_name].widget;
+    
+                                for ( i = 0; i < node[field_name].dbValues.length; i += 1) {
+                                    if (node[field_name].dbValues[i] !== null && node[field_name].dbValues[i] !== 0) {
+                                        node[field_name].textValues[i] = timeConverter(node[field_name].dbValues[i], instances[field_name].settings.time);
+                                    }
+                                }
+    
+                                break;
+    
+                            case 'image':
+                                subResult = db.execute('SELECT * FROM file_upload_queue WHERE nid=' + node.nid + ' AND field_name ="' + field_name + '" ORDER BY delta ASC');
+    
+                                node[field_name].imageData = [];
+                                if (subResult.rowCount > 0) {
+                                    while (subResult.isValidRow()) {
+                                        //isUpdated[val.fieldByName('delta')] = true;
+                                        node[field_name].imageData.push(Ti.Utils.base64decode(subResult.fieldByName('file_data')));
+                                        subResult.next();
+                                    }
+                                }
+                                subResult.close();
+                                break;
+    
+                        }
                     }
                 }
             }
+            result.close();
         }
-        result.close();
+    
+        db.close();
     }
-
-    db.close();
 
     return node;
 }

@@ -3243,36 +3243,36 @@ create_or_edit_node.loadUI = function() {
                         
                         //// CREATE FORM ELEMENT
                         case 'taxonomy_term_reference':
-                            var widget = JSON.parse(field_arr[index_label][index_size].widget);
-                            var settings = JSON.parse(field_arr[index_label][index_size].settings);
-                            var can_view = false;
-                            var can_edit = false;
-
-                            if (settings.enforce_permissions != null && settings.enforce_permissions == 1) {
-                                var _l;
-                                for (_l in settings.permissions) {
-                                    for (_k in roles) {
-                                        if (_l == _k) {
-                                            var stringifyObj = JSON.stringify(settings.permissions[_l]);
-                                            if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_edit = true;
-                                            }
-
-                                            if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_view = true;
-                                            }
-
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                can_view = can_edit = true;
-                            }
-
-                            if (!can_view) {
-                                break;
-                            }
+                            // var widget = JSON.parse(field_arr[index_label][index_size].widget);
+                            // var settings = JSON.parse(field_arr[index_label][index_size].settings);
+                            // var can_view = false;
+                            // var can_edit = false;
+// 
+                            // if (settings.enforce_permissions != null && settings.enforce_permissions == 1) {
+                                // var _l;
+                                // for (_l in settings.permissions) {
+                                    // for (_k in roles) {
+                                        // if (_l == _k) {
+                                            // var stringifyObj = JSON.stringify(settings.permissions[_l]);
+                                            // if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+                                                // can_edit = true;
+                                            // }
+// 
+                                            // if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+                                                // can_view = true;
+                                            // }
+// 
+                                        // }
+                                    // }
+                                // }
+                            // }
+                            // else {
+                                // can_view = can_edit = true;
+                            // }
+// 
+                            // if (!can_view) {
+                                // break;
+                            // }
                             var hasParent = false;
                             var parent_name = "";
                             var defaultField = "";
@@ -3303,25 +3303,25 @@ create_or_edit_node.loadUI = function() {
                                 var reffer_index = count;
 
                                 var vocabulary = db_display.execute("SELECT vid FROM vocabulary WHERE machine_name = '" + settings.vocabulary + "'");
-                                var terms = db_display.execute("SELECT * FROM term_data WHERE vid='" + vocabulary.fieldByName('vid') + "'GROUP BY name ORDER BY CAST(`weight` AS INTEGER) ASC");
-
-                                var data_terms = [];
-                                if (settings.cardinality != -1) {
+                                // var terms = db_display.execute("SELECT * FROM term_data WHERE vid='" + vocabulary.fieldByName('vid') + "'GROUP BY name ORDER BY CAST(`weight` AS INTEGER) ASC");
+// 
+                                // var data_terms = [];
+                                // if (settings.cardinality != -1) {
+                                    // // data_terms.push({
+                                    // // title : field_arr[index_label][index_size].label,
+                                    // // tid : null
+                                    // // });
+                                // }
+// 
+                                // while (terms.isValidRow()) {
                                     // data_terms.push({
-                                    // title : field_arr[index_label][index_size].label,
-                                    // tid : null
+                                        // title : terms.fieldByName('name'),
+                                        // tid : terms.fieldByName('tid')
                                     // });
-                                }
-
-                                while (terms.isValidRow()) {
-                                    data_terms.push({
-                                        title : terms.fieldByName('name'),
-                                        tid : terms.fieldByName('tid')
-                                    });
-                                    terms.next();
-                                }
-                                terms.close();
-                                vocabulary.close();
+                                    // terms.next();
+                                // }
+                                // terms.close();
+                                // vocabulary.close();
 
                                 //Add fields:
                                 regionView.add(label[count]);
