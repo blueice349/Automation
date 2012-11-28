@@ -890,7 +890,12 @@ function validateRequired(node, instance){"use strict";
          // TODO: something with no data checkboxes
          
          if(isEmpty){
-             form_errors.push(instance.label + " is required");
+             if(instance.partLabel === null){
+                 form_errors.push(instance.label + " is required");
+             }
+             else{
+                 form_errors.push(instance.label + " " + instance.partLabel + " is required");
+             }
          }
          
          if (instance.field_type == 'image') {
@@ -1564,14 +1569,21 @@ function getRegionHeaderView(region){"use strict";
 function save_form_data(_flag_info, pass_it, new_time) {"use strict";
     /*jslint nomen: true*/
    /*global treatArray, update_node, close_me, reload_me, close_me_delay*/
-    var node, form_errors, dialog, string_text, string_err, count_fields, value_err, now, field_name;
+    var node, form_errors, dialog, string_text, string_err, count_fields, value_err, now, field_name, dialog;
     
     node = formToNode();
     
     form_errors = validate_form_data(node);
     
     if(form_errors.length > 0){
-        alert(form_errors.join("\n"));
+        dialog = Titanium.UI.createAlertDialog({
+            title : 'Form Validation',
+            buttonNames : ['OK'],
+            message: form_errors.join("\n")
+        });
+        
+        dialog.show();
+        //alert(form_errors.join("\n"));
     }
     else{
         //return;

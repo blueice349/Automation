@@ -15,6 +15,7 @@ Ti.include('/lib/widgets/vehicle_fields.js');
 Ti.include('/lib/widgets/license_plate.js');
 Ti.include('/lib/widgets/location.js');
 Ti.include('/lib/widgets/taxonomy_term_reference.js');
+Ti.include('/lib/widgets/user_reference.js');
 
 /*jslint eqeq: true, plusplus: true, nomen: true*/
 /*global PLATFORM, Omadi*/
@@ -49,6 +50,8 @@ Omadi.widgets.getFieldView = function (node, instance){"use strict";
                 fieldView = Omadi.widgets.location.getFieldView(node, instance); break;
             case 'taxonomy_term_reference':
                 fieldView = Omadi.widgets.taxonomy_term_reference.getFieldView(node, instance); break;
+            case 'user_reference':
+                fieldView = Omadi.widgets.user_reference.getFieldView(node, instance); break;
         }
     }
     

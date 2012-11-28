@@ -64,7 +64,7 @@ Omadi.data.getBundle = function(type){
 Omadi.data.getFields = function(type){
     "use strict";
     
-    var db, result, instances, field_name;
+    var db, result, instances, field_name, nameParts;
     
     instances = {};
     db = Omadi.utils.openMainDatabase();
@@ -86,6 +86,17 @@ Omadi.data.getFields = function(type){
             region: result.fieldByName('region'),
             fid: result.fieldByName('fid')
         };
+        
+        if(field_name.indexOf("___") !== -1){
+            nameParts = field_name.split("___");
+            instances[field_name].part = nameParts[1];
+            instances[field_name].partLabel = instances[field_name].settings.parts[nameParts[1]];
+        }
+        else{
+            instances[field_name].part = null;
+            instances[field_name].partLabel = null;
+        }
+        
         result.next();   
     }
     result.close();
