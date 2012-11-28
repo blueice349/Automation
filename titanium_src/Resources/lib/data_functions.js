@@ -351,7 +351,7 @@ function loadNode(nid) {"use strict";
 
                             for ( i = 0; i < node[field_name].values.length; i += 1) {
                                 if (node[field_name].values[i] !== null && node[field_name].values[i] !== 0) {
-                                    node[field_name].textValues[i] = timeConverter(node[field_name].values[i], widget.settings.time);
+                                    node[field_name].textValues[i] = timeConverter(node[field_name].values[i], instances[field_name].settings.time);
                                 }
                             }
 

@@ -1020,210 +1020,210 @@ create_or_edit_node.loadUI = function() {
                                     }
                                     Ti.API.info(settings.state_default_value);
                                     //States
-                                    arr_picker.push({
-                                        title : " -- State -- ",
-                                        usps : null
-                                    });
-                                    arr_picker.push({
-                                        title : "Alabama",
-                                        usps : "AL"
-                                    });
-                                    arr_picker.push({
-                                        title : "Alaska",
-                                        usps : "AK"
-                                    });
-                                    arr_picker.push({
-                                        title : "Arizona",
-                                        usps : "AZ"
-                                    });
-                                    arr_picker.push({
-                                        title : "Arkansas",
-                                        usps : "AR"
-                                    });
-                                    arr_picker.push({
-                                        title : "California",
-                                        usps : "CA"
-                                    });
-                                    arr_picker.push({
-                                        title : "Colorado",
-                                        usps : "CO"
-                                    });
-                                    arr_picker.push({
-                                        title : "Connecticut",
-                                        usps : "CT"
-                                    });
-                                    arr_picker.push({
-                                        title : "Delaware",
-                                        usps : "DE"
-                                    });
-                                    arr_picker.push({
-                                        title : "Florida",
-                                        usps : "FL"
-                                    });
-                                    arr_picker.push({
-                                        title : "Georgia",
-                                        usps : "GA"
-                                    });
-                                    arr_picker.push({
-                                        title : "Hawaii",
-                                        usps : "HI"
-                                    });
-                                    arr_picker.push({
-                                        title : "Idaho",
-                                        usps : "ID"
-                                    });
-                                    arr_picker.push({
-                                        title : "Illinois",
-                                        usps : "IL"
-                                    });
-                                    arr_picker.push({
-                                        title : "Indiana",
-                                        usps : "IN"
-                                    });
-                                    arr_picker.push({
-                                        title : "Iowa",
-                                        usps : "IA"
-                                    });
-                                    arr_picker.push({
-                                        title : "Kansas",
-                                        usps : "KS"
-                                    });
-                                    arr_picker.push({
-                                        title : "Kentucky",
-                                        usps : "KY"
-                                    });
-                                    arr_picker.push({
-                                        title : "Louisiana",
-                                        usps : "LA"
-                                    });
-                                    arr_picker.push({
-                                        title : "Maine",
-                                        usps : "ME"
-                                    });
-                                    arr_picker.push({
-                                        title : "Maryland",
-                                        usps : "MD"
-                                    });
-                                    arr_picker.push({
-                                        title : "Massachusetts",
-                                        usps : "MA"
-                                    });
-                                    arr_picker.push({
-                                        title : "Michigan",
-                                        usps : "MI"
-                                    });
-                                    arr_picker.push({
-                                        title : "Minnesota",
-                                        usps : "MN"
-                                    });
-                                    arr_picker.push({
-                                        title : "Mississippi",
-                                        usps : "MS"
-                                    });
-                                    arr_picker.push({
-                                        title : "Missouri",
-                                        usps : "MO"
-                                    });
-                                    arr_picker.push({
-                                        title : "Montana",
-                                        usps : "MT"
-                                    });
-                                    arr_picker.push({
-                                        title : "Nebraska",
-                                        usps : "NE"
-                                    });
-                                    arr_picker.push({
-                                        title : "Nevada",
-                                        usps : "NV"
-                                    });
-                                    arr_picker.push({
-                                        title : "New Hampshire",
-                                        usps : "NH"
-                                    });
-                                    arr_picker.push({
-                                        title : "New Jersey",
-                                        usps : "NJ"
-                                    });
-                                    arr_picker.push({
-                                        title : "New Mexico",
-                                        usps : "NM"
-                                    });
-                                    arr_picker.push({
-                                        title : "New York",
-                                        usps : "NY"
-                                    });
-                                    arr_picker.push({
-                                        title : "North Carolina",
-                                        usps : "NC"
-                                    });
-                                    arr_picker.push({
-                                        title : "North Dakota",
-                                        usps : "ND"
-                                    });
-                                    arr_picker.push({
-                                        title : "Ohio",
-                                        usps : "OH"
-                                    });
-                                    arr_picker.push({
-                                        title : "Oklahoma",
-                                        usps : "OK"
-                                    });
-                                    arr_picker.push({
-                                        title : "Oregon",
-                                        usps : "OR"
-                                    });
-                                    arr_picker.push({
-                                        title : "Pennsylvania",
-                                        usps : "PA"
-                                    });
-                                    arr_picker.push({
-                                        title : "Rhode Island",
-                                        usps : "RI"
-                                    });
-                                    arr_picker.push({
-                                        title : "South Carolina",
-                                        usps : "SC"
-                                    });
-                                    arr_picker.push({
-                                        title : "South Dakota",
-                                        usps : "SD"
-                                    });
-                                    arr_picker.push({
-                                        title : "Tennessee",
-                                        usps : "TN"
-                                    });
-                                    arr_picker.push({
-                                        title : "Texas",
-                                        usps : "TX"
-                                    });
-                                    arr_picker.push({
-                                        title : "Utah",
-                                        usps : "UT"
-                                    });
-                                    arr_picker.push({
-                                        title : "Vermont",
-                                        usps : "VT"
-                                    });
-                                    arr_picker.push({
-                                        title : "Virginia",
-                                        usps : "VA"
-                                    });
-                                    arr_picker.push({
-                                        title : "Washington",
-                                        usps : "WA"
-                                    });
-                                    arr_picker.push({
-                                        title : "West Virginia",
-                                        usps : "WV"
-                                    });
-                                    arr_picker.push({
-                                        title : "Wisconsin",
-                                        usps : "WI"
-                                    });
-                                    arr_picker.push({
-                                        title : "Wyoming",
-                                        usps : "WY"
-                                    });
+                                    // arr_picker.push({
+                                        // title : " -- State -- ",
+                                        // usps : null
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Alabama",
+                                        // usps : "AL"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Alaska",
+                                        // usps : "AK"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Arizona",
+                                        // usps : "AZ"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Arkansas",
+                                        // usps : "AR"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "California",
+                                        // usps : "CA"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Colorado",
+                                        // usps : "CO"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Connecticut",
+                                        // usps : "CT"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Delaware",
+                                        // usps : "DE"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Florida",
+                                        // usps : "FL"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Georgia",
+                                        // usps : "GA"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Hawaii",
+                                        // usps : "HI"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Idaho",
+                                        // usps : "ID"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Illinois",
+                                        // usps : "IL"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Indiana",
+                                        // usps : "IN"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Iowa",
+                                        // usps : "IA"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Kansas",
+                                        // usps : "KS"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Kentucky",
+                                        // usps : "KY"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Louisiana",
+                                        // usps : "LA"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Maine",
+                                        // usps : "ME"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Maryland",
+                                        // usps : "MD"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Massachusetts",
+                                        // usps : "MA"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Michigan",
+                                        // usps : "MI"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Minnesota",
+                                        // usps : "MN"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Mississippi",
+                                        // usps : "MS"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Missouri",
+                                        // usps : "MO"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Montana",
+                                        // usps : "MT"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Nebraska",
+                                        // usps : "NE"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Nevada",
+                                        // usps : "NV"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "New Hampshire",
+                                        // usps : "NH"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "New Jersey",
+                                        // usps : "NJ"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "New Mexico",
+                                        // usps : "NM"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "New York",
+                                        // usps : "NY"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "North Carolina",
+                                        // usps : "NC"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "North Dakota",
+                                        // usps : "ND"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Ohio",
+                                        // usps : "OH"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Oklahoma",
+                                        // usps : "OK"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Oregon",
+                                        // usps : "OR"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Pennsylvania",
+                                        // usps : "PA"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Rhode Island",
+                                        // usps : "RI"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "South Carolina",
+                                        // usps : "SC"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "South Dakota",
+                                        // usps : "SD"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Tennessee",
+                                        // usps : "TN"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Texas",
+                                        // usps : "TX"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Utah",
+                                        // usps : "UT"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Vermont",
+                                        // usps : "VT"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Virginia",
+                                        // usps : "VA"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Washington",
+                                        // usps : "WA"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "West Virginia",
+                                        // usps : "WV"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Wisconsin",
+                                        // usps : "WI"
+                                    // });
+                                    // arr_picker.push({
+                                        // title : "Wyoming",
+                                        // usps : "WY"
+                                    // });
 
                                     var count_at = 0;
                                     //var to_row = new Array();
@@ -6060,375 +6060,375 @@ create_or_edit_node.loadUI = function() {
                             break;
 
                         case 'vehicle_fields':
-                            var settings = JSON.parse(field_arr[index_label][index_size].settings);
-                            var can_view = false;
-                            var can_edit = false;
-
-                            if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
-                                var _l;
-                                for (_l in settings.permissions) {
-                                    for (_k in roles) {
-                                        if (_l == _k) {
-                                            var stringifyObj = JSON.stringify(settings.permissions[_l]);
-                                            if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_edit = true;
-                                            }
-
-                                            if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
-                                                can_view = true;
-                                            }
-
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                can_view = can_edit = true;
-                            }
-
-                            if (!can_view) {
-                                break;
-                            }
-                            label[count] = Ti.UI.createLabel({
-                                text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
-                                color : isRequired ? 'red' : _lb_color,
-                                font : {
-                                    fontSize : fieldFontSize,
-                                    fontWeight : 'bold'
-                                },
-                                textAlign : 'left',
-                                width : Ti.Platform.displayCaps.platformWidth - 30,
-                                touchEnabled : false,
-                                height : heightValue,
-                                top : top
-                            });
-                            top += heightValue;
-
-                            var reffer_index = count;
-                            var fi_name = field_arr[index_label][index_size].field_name;
-                            fi_name = fi_name.split('___');
-                            if (fi_name[1]) {
-                                var i_name = fi_name[1];
-                            }
-                            else {
-                                var i_name = fi_name[0];
-                            }
-                            i_name = i_name.charAt(0).toUpperCase() + i_name.slice(1);
-
-                            if (i_name == "Make") {
-                                var _make_ref = reffer_index;
-                            }
-                            label[count].text += (' ' + i_name);
-                            //Add fields:
-                            regionView.add(label[count]);
-
-                            if (settings.cardinality > 1) {
-                                if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
-                                    var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
-
-                                    //Decode the stored array:
-                                    var decoded = array_cont.fieldByName('encoded_array');
-                                    decoded = Base64.decode(decoded);
-                                    Ti.API.info('Decoded array is equals to: ' + decoded);
-                                    decoded = decoded.toString();
-
-                                    // Token that splits each element contained into the array: 'j8Oc2s1E'
-                                    var decoded_values = decoded.split("j8Oc2s1E");
-                                }
-                                else {
-                                    var decoded_values = new Array();
-                                    decoded_values[0] = field_arr[index_label][index_size].actual_value;
-                                }
-
-                                var o_index;
-                                for ( o_index = 0; o_index < settings.cardinality; o_index++) {
-
-                                    if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
-                                        var vl_to_field = decoded_values[o_index];
-                                    }
-                                    else {
-                                        var vl_to_field = "";
-                                    }
-
-                                    content[count] = Ti.UI.createTextField({
-                                        hintText : "#" + o_index + " " + field_arr[index_label][index_size].label + " " + i_name,
-                                        private_index : o_index,
-                                        borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                        textAlign : 'left',
-                                        width : Ti.Platform.displayCaps.platformWidth - 30,
-                                        height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                        font : {
-                                            fontSize : fieldFontSize
-                                        },
-                                        color : '#000000',
-                                        top : top,
-                                        field_type : field_arr[index_label][index_size].type,
-                                        field_name : field_arr[index_label][index_size].field_name,
-                                        required : field_arr[index_label][index_size].required,
-                                        is_title : field_arr[index_label][index_size].is_title,
-                                        composed_obj : true,
-                                        cardinality : settings.cardinality,
-                                        value : vl_to_field,
-                                        reffer_index : reffer_index,
-                                        settings : settings,
-                                        changedFlag : 0,
-                                        autocorrect : false,
-                                        returnKeyType : Ti.UI.RETURNKEY_DONE,
-                                        enabled : can_edit,
-                                        editable : can_edit
-                                    });
-                                    if (PLATFORM == 'android') {
-                                        content[count].backgroundImage = '../images/textfield.png'
-                                    }
-                                    if (!can_edit) {
-                                        content[count].backgroundImage = '';
-                                        content[count].backgroundColor = '#BDBDBD';
-                                        content[count].borderColor = 'gray';
-                                        content[count].borderRadius = 10;
-                                        content[count].color = '#848484';
-                                        content[count].borderWidth = 1;
-                                        content[count].paddingLeft = 3;
-                                        content[count].paddingRight = 3;
-                                        if (PLATFORM == 'android') {
-                                            content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-                                        }
-                                    }
-                                    top += (PLATFORM == 'android') ? heightTextField : heightValue;
-
-                                    regionView.add(content[count]);
-                                    content[count].addEventListener('change', function(e) {
-                                        if (e.source.i_name == 'Make') {
-                                            if (e.source.value.length > 18) {
-                                                e.source.value = e.source.value.substr(0, 18);
-                                            }
-                                        }
-                                        else if (e.source.i_name == 'Model') {
-                                            if (e.source.value.length > 38) {
-                                                e.source.value = e.source.value.substr(0, 38);
-                                            }
-                                        }
-                                        changedContentValue(e.source);
-                                        noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
-                                    });
-                                    count++;
-                                }
-                            }
-                            else {
-                                var vl_to_field = field_arr[index_label][index_size].actual_value;
-                                var data_terms = new Array();
-
-                                if (i_name == "Make") {
-                                    var aux_dt = db_display.execute("SELECT DISTINCT make FROM _vehicles");
-                                    var keep_from_make = vl_to_field;
-
-                                    while (aux_dt.isValidRow()) {
-                                        data_terms.push(aux_dt.fieldByName("make"));
-                                        aux_dt.next();
-                                    }
-                                }
-                                else {
-                                    data_terms = get_models(keep_from_make);
-                                }
-
-                                content[count] = Ti.UI.createTextField({
-                                    hintText : field_arr[index_label][index_size].label + " " + i_name,
-                                    fantasy_name : i_name,
-                                    borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                                    textAlign : 'left',
-                                    width : Ti.Platform.displayCaps.platformWidth - 30,
-                                    height : (PLATFORM == 'android') ? heightTextField : heightValue,
-                                    font : {
-                                        fontSize : fieldFontSize
-                                    },
-                                    color : '#000000',
-                                    top : top,
-                                    field_type : field_arr[index_label][index_size].type,
-                                    field_name : field_arr[index_label][index_size].field_name,
-                                    required : field_arr[index_label][index_size].required,
-                                    is_title : field_arr[index_label][index_size].is_title,
-                                    composed_obj : false,
-                                    cardinality : settings.cardinality,
-                                    value : vl_to_field,
-                                    reffer_index : reffer_index,
-                                    make_ind : _make_ref,
-                                    terms : data_terms,
-                                    //first_time : true,
-                                    lastValue : vl_to_field,
-                                    _make : keep_from_make,
-                                    settings : settings,
-                                    changedFlag : 0,
-                                    i_name : i_name,
-                                    my_index : count,
-                                    autocorrect : false,
-                                    returnKeyType : Ti.UI.RETURNKEY_DONE,
-                                    enabled : can_edit,
-                                    editable : can_edit,
-                                    regionView : regionView
-                                });
-                                if (PLATFORM == 'android') {
-                                    content[count].backgroundImage = '../images/textfield.png'
-                                }
-                                if (!can_edit) {
-                                    content[count].backgroundImage = '';
-                                    content[count].backgroundColor = '#BDBDBD';
-                                    content[count].borderColor = 'gray';
-                                    content[count].borderRadius = 10;
-                                    content[count].color = '#848484';
-                                    content[count].borderWidth = 1;
-                                    content[count].paddingLeft = 3;
-                                    content[count].paddingRight = 3;
-                                    if (PLATFORM == 'android') {
-                                        content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-                                    }
-                                }
-                                //AUTOCOMPLETE TABLE FOR vehicle_fields fields
-                                var autocomplete_table = Titanium.UI.createTableView({
-                                    top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
-                                    searchHidden : true,
-                                    zIndex : 15,
-                                    height : getScreenHeight() * 0.3,
-                                    backgroundColor : '#FFFFFF',
-                                    visible : false,
-                                    borderColor : '#000',
-                                    borderWidth : 0
-                                });
-                                content[count].autocomplete_table = autocomplete_table;
-                                top += (PLATFORM == 'android') ? heightTextField : heightValue;
-
-                                regionView.add(content[count].autocomplete_table);
-
-                                //
-                                // TABLE EVENTS for vehicle_fields fields, cardinality == 1
-                                //
-                                content[count].autocomplete_table.addEventListener('click', function(e) {
-                                    if (PLATFORM != 'android') {
-                                        e.source.textField.value = e.rowData.title;
-                                    }
-                                    else {
-                                        e.source.setValueF(e.rowData.title);
-                                    }
-
-                                    setTimeout(function() {
-                                        e.source.autocomplete_table.visible = false;
-                                        e.source.autocomplete_table.borderWidth = 0;
-                                        Ti.API.info(e.rowData.title + ' was selected!');
-                                    }, 80);
-                                });
-
-                                content[count].addEventListener('blur', function(e) {
-                                    e.source.autocomplete_table.visible = false;
-                                    e.source.autocomplete_table.borderWidth = 0;
-                                });
-
-                                content[count].addEventListener('focus', function(e) {
-                                    adjustView(e.source.my_index, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
-                                    if (e.source.fantasy_name == "Model") {
-                                        Ti.API.info(content[e.source.make_ind].value);
-
-                                        if (content[e.source.make_ind].value == e.source._make) {
-                                            Ti.API.info('User didn\'t change make');
-                                        }
-                                        else {
-                                            Ti.API.info('Make changed, reloading list')
-                                            e.source._make = content[e.source.make_ind].value;
-                                            e.source.terms = get_models(content[e.source.make_ind].value);
-                                            e.source.value = null;
-                                            //e.source.first_time = true;
-                                        }
-                                    }
-                                });
-                                //
-                                // SEARCH EVENTS vehicle_fields, cardinality == 1
-                                //
-                                content[count].addEventListener('change', function(e) {
-                                    if (e.source.i_name == 'Make') {
-                                        if (e.source.value.length > 18) {
-                                            e.source.value = e.source.value.substr(0, 18);
-                                        }
-                                    }
-                                    else if (e.source.i_name == 'Model') {
-                                        if (e.source.value.length > 38) {
-                                            e.source.value = e.source.value.substr(0, 38);
-                                        }
-                                    }
-                                    changedContentValue(e.source);
-                                    noDataChecboxEnableDisable(e.source, e.source.reffer_index);
-
-                                    if (e.source.lastValue != e.source.value) {
-                                        var list = e.source.terms;
-                                        var func = function setValueF(value_f) {
-                                            e.source.value = value_f;
-                                            Ti.API.info('Value: ' + value_f);
-                                        };
-
-                                        if ((e.value != null) && (e.value != '')) {
-                                            table_data = [];
-                                            var i;
-                                            for ( i = 0; i < list.length; i++) {
-                                                var rg = new RegExp(e.source.value, 'i');
-                                                if (list[i].search(rg) != -1) {
-
-                                                    //Create partial matching row
-                                                    var row = Ti.UI.createTableViewRow({
-                                                        height : getScreenHeight() * 0.10,
-                                                        title : list[i],
-                                                        color : '#000000',
-                                                        autocomplete_table : e.source.autocomplete_table,
-                                                        setValueF : func,
-                                                        textField : e.source
-                                                    });
-                                                    // apply rows to data array
-                                                    table_data.push(row);
-                                                }
-                                            }
-                                            e.source.autocomplete_table.setData(table_data);
-                                            e.source.autocomplete_table.height = getScreenHeight() * 0.3;
-                                            e.source.autocomplete_table.borderWidth = 1;
-                                            if (table_data.lenth == 0) {
-                                                e.source.autocomplete_table.borderWidth = 0;
-                                            }
-                                            if (table_data.length < 3 && table_data.length > 0) {
-                                                e.source.autocomplete_table.height = (table_data.length == 1) ? getScreenHeight() * 0.1 : getScreenHeight() * 0.2;
-                                            }
-                                            e.source.autocomplete_table.scrollToTop(0, {
-                                                animated : false
-                                            });
-                                            viewContent.scrollTo(0, (e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue)));
-                                            if (table_data.length > 0) {
-                                                e.source.autocomplete_table.visible = true;
-                                            }
-                                            else {
-                                                e.source.autocomplete_table.visible = false;
-                                            }
-                                        }
-                                        else {
-                                            e.source.autocomplete_table.visible = false;
-                                        }
-                                    }
-
-                                    //e.source.first_time = false;
-                                    e.source.lastValue = e.source.value;
-                                });
-                                //Add fields:
-                                regionView.add(content[count]);
-                                count++;
-
-                            }
-                            //No data checkbox functionality
-                            if (settings.parts != null && settings.parts != "") {
-                                partsArr.push(reffer_index);
-                                if (partsArr.length == 2) {
-                                    content[reffer_index].partsArr = partsArr;
-                                    partsArr = [];
-                                    noDataCheckbox(reffer_index, regionView, top);
-                                    if (content[reffer_index].noDataView != null) {
-                                        top += 40;
-                                    }
-                                }
-                            }
-
-                            break;
+                            // var settings = JSON.parse(field_arr[index_label][index_size].settings);
+                            // var can_view = false;
+                            // var can_edit = false;
+// 
+                            // if (settings['enforce_permissions'] != null && settings['enforce_permissions'] == 1) {
+                                // var _l;
+                                // for (_l in settings.permissions) {
+                                    // for (_k in roles) {
+                                        // if (_l == _k) {
+                                            // var stringifyObj = JSON.stringify(settings.permissions[_l]);
+                                            // if (stringifyObj.indexOf('update') >= 0 || settings.permissions[_l]["all_permissions"]) {
+                                                // can_edit = true;
+                                            // }
+// 
+                                            // if (stringifyObj.indexOf('view') >= 0 || settings.permissions[_l]["all_permissions"]) {
+                                                // can_view = true;
+                                            // }
+// 
+                                        // }
+                                    // }
+                                // }
+                            // }
+                            // else {
+                                // can_view = can_edit = true;
+                            // }
+// 
+                            // if (!can_view) {
+                                // break;
+                            // }
+                            // label[count] = Ti.UI.createLabel({
+                                // text : ( isRequired ? '*' : '') + field_arr[index_label][index_size].label,
+                                // color : isRequired ? 'red' : _lb_color,
+                                // font : {
+                                    // fontSize : fieldFontSize,
+                                    // fontWeight : 'bold'
+                                // },
+                                // textAlign : 'left',
+                                // width : Ti.Platform.displayCaps.platformWidth - 30,
+                                // touchEnabled : false,
+                                // height : heightValue,
+                                // top : top
+                            // });
+                            // top += heightValue;
+// 
+                            // var reffer_index = count;
+                            // var fi_name = field_arr[index_label][index_size].field_name;
+                            // fi_name = fi_name.split('___');
+                            // if (fi_name[1]) {
+                                // var i_name = fi_name[1];
+                            // }
+                            // else {
+                                // var i_name = fi_name[0];
+                            // }
+                            // i_name = i_name.charAt(0).toUpperCase() + i_name.slice(1);
+// 
+                            // if (i_name == "Make") {
+                                // var _make_ref = reffer_index;
+                            // }
+                            // label[count].text += (' ' + i_name);
+                            // //Add fields:
+                            // regionView.add(label[count]);
+// 
+                            // if (settings.cardinality > 1) {
+                                // if ((field_arr[index_label][index_size].actual_value) && (field_arr[index_label][index_size].actual_value.toString().indexOf('7411317618171051') != -1)) {
+                                    // var array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
+// 
+                                    // //Decode the stored array:
+                                    // var decoded = array_cont.fieldByName('encoded_array');
+                                    // decoded = Base64.decode(decoded);
+                                    // Ti.API.info('Decoded array is equals to: ' + decoded);
+                                    // decoded = decoded.toString();
+// 
+                                    // // Token that splits each element contained into the array: 'j8Oc2s1E'
+                                    // var decoded_values = decoded.split("j8Oc2s1E");
+                                // }
+                                // else {
+                                    // var decoded_values = new Array();
+                                    // decoded_values[0] = field_arr[index_label][index_size].actual_value;
+                                // }
+// 
+                                // var o_index;
+                                // for ( o_index = 0; o_index < settings.cardinality; o_index++) {
+// 
+                                    // if ((o_index < decoded_values.length) && ((decoded_values[o_index] != "") && (decoded_values[o_index] != " ") )) {
+                                        // var vl_to_field = decoded_values[o_index];
+                                    // }
+                                    // else {
+                                        // var vl_to_field = "";
+                                    // }
+// 
+                                    // content[count] = Ti.UI.createTextField({
+                                        // hintText : "#" + o_index + " " + field_arr[index_label][index_size].label + " " + i_name,
+                                        // private_index : o_index,
+                                        // borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+                                        // textAlign : 'left',
+                                        // width : Ti.Platform.displayCaps.platformWidth - 30,
+                                        // height : (PLATFORM == 'android') ? heightTextField : heightValue,
+                                        // font : {
+                                            // fontSize : fieldFontSize
+                                        // },
+                                        // color : '#000000',
+                                        // top : top,
+                                        // field_type : field_arr[index_label][index_size].type,
+                                        // field_name : field_arr[index_label][index_size].field_name,
+                                        // required : field_arr[index_label][index_size].required,
+                                        // is_title : field_arr[index_label][index_size].is_title,
+                                        // composed_obj : true,
+                                        // cardinality : settings.cardinality,
+                                        // value : vl_to_field,
+                                        // reffer_index : reffer_index,
+                                        // settings : settings,
+                                        // changedFlag : 0,
+                                        // autocorrect : false,
+                                        // returnKeyType : Ti.UI.RETURNKEY_DONE,
+                                        // enabled : can_edit,
+                                        // editable : can_edit
+                                    // });
+                                    // if (PLATFORM == 'android') {
+                                        // content[count].backgroundImage = '../images/textfield.png'
+                                    // }
+                                    // if (!can_edit) {
+                                        // content[count].backgroundImage = '';
+                                        // content[count].backgroundColor = '#BDBDBD';
+                                        // content[count].borderColor = 'gray';
+                                        // content[count].borderRadius = 10;
+                                        // content[count].color = '#848484';
+                                        // content[count].borderWidth = 1;
+                                        // content[count].paddingLeft = 3;
+                                        // content[count].paddingRight = 3;
+                                        // if (PLATFORM == 'android') {
+                                            // content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+                                        // }
+                                    // }
+                                    // top += (PLATFORM == 'android') ? heightTextField : heightValue;
+// 
+                                    // regionView.add(content[count]);
+                                    // content[count].addEventListener('change', function(e) {
+                                        // if (e.source.i_name == 'Make') {
+                                            // if (e.source.value.length > 18) {
+                                                // e.source.value = e.source.value.substr(0, 18);
+                                            // }
+                                        // }
+                                        // else if (e.source.i_name == 'Model') {
+                                            // if (e.source.value.length > 38) {
+                                                // e.source.value = e.source.value.substr(0, 38);
+                                            // }
+                                        // }
+                                        // changedContentValue(e.source);
+                                        // noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+// 
+                                    // });
+                                    // count++;
+                                // }
+                            // }
+                            // else {
+                                // var vl_to_field = field_arr[index_label][index_size].actual_value;
+                                // var data_terms = new Array();
+// 
+                                // if (i_name == "Make") {
+                                    // var aux_dt = db_display.execute("SELECT DISTINCT make FROM _vehicles");
+                                    // var keep_from_make = vl_to_field;
+// 
+                                    // while (aux_dt.isValidRow()) {
+                                        // data_terms.push(aux_dt.fieldByName("make"));
+                                        // aux_dt.next();
+                                    // }
+                                // }
+                                // else {
+                                    // data_terms = get_models(keep_from_make);
+                                // }
+// 
+                                // content[count] = Ti.UI.createTextField({
+                                    // hintText : field_arr[index_label][index_size].label + " " + i_name,
+                                    // fantasy_name : i_name,
+                                    // borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+                                    // textAlign : 'left',
+                                    // width : Ti.Platform.displayCaps.platformWidth - 30,
+                                    // height : (PLATFORM == 'android') ? heightTextField : heightValue,
+                                    // font : {
+                                        // fontSize : fieldFontSize
+                                    // },
+                                    // color : '#000000',
+                                    // top : top,
+                                    // field_type : field_arr[index_label][index_size].type,
+                                    // field_name : field_arr[index_label][index_size].field_name,
+                                    // required : field_arr[index_label][index_size].required,
+                                    // is_title : field_arr[index_label][index_size].is_title,
+                                    // composed_obj : false,
+                                    // cardinality : settings.cardinality,
+                                    // value : vl_to_field,
+                                    // reffer_index : reffer_index,
+                                    // make_ind : _make_ref,
+                                    // terms : data_terms,
+                                    // //first_time : true,
+                                    // lastValue : vl_to_field,
+                                    // _make : keep_from_make,
+                                    // settings : settings,
+                                    // changedFlag : 0,
+                                    // i_name : i_name,
+                                    // my_index : count,
+                                    // autocorrect : false,
+                                    // returnKeyType : Ti.UI.RETURNKEY_DONE,
+                                    // enabled : can_edit,
+                                    // editable : can_edit,
+                                    // regionView : regionView
+                                // });
+                                // if (PLATFORM == 'android') {
+                                    // content[count].backgroundImage = '../images/textfield.png'
+                                // }
+                                // if (!can_edit) {
+                                    // content[count].backgroundImage = '';
+                                    // content[count].backgroundColor = '#BDBDBD';
+                                    // content[count].borderColor = 'gray';
+                                    // content[count].borderRadius = 10;
+                                    // content[count].color = '#848484';
+                                    // content[count].borderWidth = 1;
+                                    // content[count].paddingLeft = 3;
+                                    // content[count].paddingRight = 3;
+                                    // if (PLATFORM == 'android') {
+                                        // content[count].softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+                                    // }
+                                // }
+                                // //AUTOCOMPLETE TABLE FOR vehicle_fields fields
+                                // var autocomplete_table = Titanium.UI.createTableView({
+                                    // top : top + ((PLATFORM == 'android') ? heightTextField - 10 : heightValue),
+                                    // searchHidden : true,
+                                    // zIndex : 15,
+                                    // height : getScreenHeight() * 0.3,
+                                    // backgroundColor : '#FFFFFF',
+                                    // visible : false,
+                                    // borderColor : '#000',
+                                    // borderWidth : 0
+                                // });
+                                // content[count].autocomplete_table = autocomplete_table;
+                                // top += (PLATFORM == 'android') ? heightTextField : heightValue;
+// 
+                                // regionView.add(content[count].autocomplete_table);
+// 
+                                // //
+                                // // TABLE EVENTS for vehicle_fields fields, cardinality == 1
+                                // //
+                                // content[count].autocomplete_table.addEventListener('click', function(e) {
+                                    // if (PLATFORM != 'android') {
+                                        // e.source.textField.value = e.rowData.title;
+                                    // }
+                                    // else {
+                                        // e.source.setValueF(e.rowData.title);
+                                    // }
+// 
+                                    // setTimeout(function() {
+                                        // e.source.autocomplete_table.visible = false;
+                                        // e.source.autocomplete_table.borderWidth = 0;
+                                        // Ti.API.info(e.rowData.title + ' was selected!');
+                                    // }, 80);
+                                // });
+// 
+                                // content[count].addEventListener('blur', function(e) {
+                                    // e.source.autocomplete_table.visible = false;
+                                    // e.source.autocomplete_table.borderWidth = 0;
+                                // });
+// 
+                                // content[count].addEventListener('focus', function(e) {
+                                    // adjustView(e.source.my_index, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
+                                    // if (e.source.fantasy_name == "Model") {
+                                        // Ti.API.info(content[e.source.make_ind].value);
+// 
+                                        // if (content[e.source.make_ind].value == e.source._make) {
+                                            // Ti.API.info('User didn\'t change make');
+                                        // }
+                                        // else {
+                                            // Ti.API.info('Make changed, reloading list')
+                                            // e.source._make = content[e.source.make_ind].value;
+                                            // e.source.terms = get_models(content[e.source.make_ind].value);
+                                            // e.source.value = null;
+                                            // //e.source.first_time = true;
+                                        // }
+                                    // }
+                                // });
+                                // //
+                                // // SEARCH EVENTS vehicle_fields, cardinality == 1
+                                // //
+                                // content[count].addEventListener('change', function(e) {
+                                    // if (e.source.i_name == 'Make') {
+                                        // if (e.source.value.length > 18) {
+                                            // e.source.value = e.source.value.substr(0, 18);
+                                        // }
+                                    // }
+                                    // else if (e.source.i_name == 'Model') {
+                                        // if (e.source.value.length > 38) {
+                                            // e.source.value = e.source.value.substr(0, 38);
+                                        // }
+                                    // }
+                                    // changedContentValue(e.source);
+                                    // noDataChecboxEnableDisable(e.source, e.source.reffer_index);
+// 
+                                    // if (e.source.lastValue != e.source.value) {
+                                        // var list = e.source.terms;
+                                        // var func = function setValueF(value_f) {
+                                            // e.source.value = value_f;
+                                            // Ti.API.info('Value: ' + value_f);
+                                        // };
+// 
+                                        // if ((e.value != null) && (e.value != '')) {
+                                            // table_data = [];
+                                            // var i;
+                                            // for ( i = 0; i < list.length; i++) {
+                                                // var rg = new RegExp(e.source.value, 'i');
+                                                // if (list[i].search(rg) != -1) {
+// 
+                                                    // //Create partial matching row
+                                                    // var row = Ti.UI.createTableViewRow({
+                                                        // height : getScreenHeight() * 0.10,
+                                                        // title : list[i],
+                                                        // color : '#000000',
+                                                        // autocomplete_table : e.source.autocomplete_table,
+                                                        // setValueF : func,
+                                                        // textField : e.source
+                                                    // });
+                                                    // // apply rows to data array
+                                                    // table_data.push(row);
+                                                // }
+                                            // }
+                                            // e.source.autocomplete_table.setData(table_data);
+                                            // e.source.autocomplete_table.height = getScreenHeight() * 0.3;
+                                            // e.source.autocomplete_table.borderWidth = 1;
+                                            // if (table_data.lenth == 0) {
+                                                // e.source.autocomplete_table.borderWidth = 0;
+                                            // }
+                                            // if (table_data.length < 3 && table_data.length > 0) {
+                                                // e.source.autocomplete_table.height = (table_data.length == 1) ? getScreenHeight() * 0.1 : getScreenHeight() * 0.2;
+                                            // }
+                                            // e.source.autocomplete_table.scrollToTop(0, {
+                                                // animated : false
+                                            // });
+                                            // viewContent.scrollTo(0, (e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue)));
+                                            // if (table_data.length > 0) {
+                                                // e.source.autocomplete_table.visible = true;
+                                            // }
+                                            // else {
+                                                // e.source.autocomplete_table.visible = false;
+                                            // }
+                                        // }
+                                        // else {
+                                            // e.source.autocomplete_table.visible = false;
+                                        // }
+                                    // }
+// 
+                                    // //e.source.first_time = false;
+                                    // e.source.lastValue = e.source.value;
+                                // });
+                                // //Add fields:
+                                // regionView.add(content[count]);
+                                // count++;
+// 
+                            // }
+                            // //No data checkbox functionality
+                            // if (settings.parts != null && settings.parts != "") {
+                                // partsArr.push(reffer_index);
+                                // if (partsArr.length == 2) {
+                                    // content[reffer_index].partsArr = partsArr;
+                                    // partsArr = [];
+                                    // noDataCheckbox(reffer_index, regionView, top);
+                                    // if (content[reffer_index].noDataView != null) {
+                                        // top += 40;
+                                    // }
+                                // }
+                            // }
+// 
+                            // break;
 
                         case 'region_separator_mode':
                             if (field_arr[index_label][index_size].region_show === true) {

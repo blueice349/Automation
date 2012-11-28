@@ -19,6 +19,7 @@ curWin = Ti.UI.currentWindow;
 function openCreateNodeScreen(){
 	"use strict";
 	var win_new = Ti.UI.createWindow();//create_or_edit_node.getWindow();
+	win_new.navBarHidden = true;
 	win_new.title = "New " + bundle.label;
 	win_new.type = curWin.type;
 	win_new.uid = curWin.uid;
@@ -27,6 +28,8 @@ function openCreateNodeScreen(){
 	win_new.backgroundColor = "#EEEEEE";
 	win_new.nameSelected = 'Fill Details...';
 	win_new.url = '/main_windows/form.js';
+	win_new.top = 0; 
+	win_new.bottom = 0;
 	win_new.open();
 	//setTimeout(function(){
 //		create_or_edit_node.loadUI();
@@ -999,15 +1002,20 @@ function homeButtonPressed(e){
                         else if (ev.index !== -1 && isEditEnabled === true){
                             //openEditScreen(btn_id[ev.index], _nid, e);
                         
-                            win_new = Ti.UI.createWindow();//create_or_edit_node.getWindow();
-                            win_new.title = bundle.label;
+                            win_new = Ti.UI.createWindow({
+                                navBarHidden: true,
+                                url: '/main_windows/form.js',
+                                title: bundle.label
+                            });//create_or_edit_node.getWindow();
+                            
                             win_new.type = curWin.type;
                             win_new.listView = curWin.listView;
                             win_new.up_node = curWin.up_node;
                             win_new.uid = curWin.uid;
                             win_new.region_form = btn_id[ev.index];
-                            win_new.url = '/main_windows/form.js';
                             
+                            win_new.top = 0; 
+                            win_new.bottom = 0;
                             //Passing parameters
                             win_new.nid = ev.source.eventRow.nid;
                             win_new.nameSelected = ev.source.eventRow.name;

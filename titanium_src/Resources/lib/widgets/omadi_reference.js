@@ -224,11 +224,6 @@ Omadi.widgets.omadi_reference = {
                                 textField : e.source
                             });
                             
-                            // If there's an exact match, set the dbValue
-                            if(possibleValues[i].title == e.source.value){
-                                e.source.dbValue = possibleValues[i].nid;
-                            }
-                            
                             // apply rows to data array
                             tableData.push(row);
                             //Ti.API.debug(tableData.length);

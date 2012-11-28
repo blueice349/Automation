@@ -10,6 +10,8 @@ var instances = {};
 
 var win = Ti.UI.currentWindow;
 
+win.setBackgroundColor("#eee");
+
 var resultView, viewContent;
 
 var menu;
@@ -511,7 +513,7 @@ function bottomButtons(actualWindow) {"use strict";
 
 
 
-var fieldWrappers = [];
+var fieldWrappers = {};
 var regionViews = {};
 
 var regions = {};
@@ -734,7 +736,7 @@ var regions = {};
                         fieldView.wrapper = fieldWrapper;
                            
                         fieldWrapper.add(fieldView);
-                        fieldWrappers.push(fieldWrapper);
+                        fieldWrappers[instance.field_name] = fieldWrapper;
                         regionViews[region_name].add(fieldWrapper);
                     }
                     else{
@@ -750,7 +752,7 @@ var regions = {};
 function formToNode(){"use strict";
     /*global fieldViews*/
    
-   var i, fieldWrapper, instance, node;
+   var field_name, fieldWrapper, instance, node;
    
    node = {};
    
@@ -758,16 +760,17 @@ function formToNode(){"use strict";
        
        Ti.API.info("CONVERTING TO NODE");
        
-       for(i = 0; i < fieldWrappers.length; i ++){
-           
-           fieldWrapper = fieldWrappers[i];
-           instance = fieldWrapper.instance;
-           
-           node[instance.field_name] = {};
-           node[instance.field_name].values = Omadi.widgets.getDBValues(fieldWrapper);
-           node[instance.field_name].textValues = Omadi.widgets.getTextValues(fieldWrapper);
-           
-           //Ti.API.debug(JSON.stringify(getDBValues(fieldWrapper)));
+       for(field_name in fieldWrappers){//} = 0; i < fieldWrappers.length; i ++){
+           if(fieldWrappers.hasOwnProperty(field_name)){
+               fieldWrapper = fieldWrappers[field_name];
+               instance = fieldWrapper.instance;
+               
+               node[instance.field_name] = {};
+               node[instance.field_name].values = Omadi.widgets.getDBValues(fieldWrapper);
+               node[instance.field_name].textValues = Omadi.widgets.getTextValues(fieldWrapper);
+               
+               //Ti.API.debug(JSON.stringify(getDBValues(fieldWrapper)));
+           }
        }
    }
    catch(ex){
@@ -775,6 +778,18 @@ function formToNode(){"use strict";
    }
    
    return node;
+}
+
+function getFormFieldValues(field_name){"use strict";
+    var retval = {};
+    
+    
+    if(typeof fieldWrappers[field_name] !== 'undefined'){
+        retval.values = Omadi.widgets.getDBValues(fieldWrappers[field_name]);
+        retval.textValues = Omadi.widgets.getTextValues(fieldWrappers[field_name]);
+    }
+    
+    return retval;
 }
 
 

@@ -1,4 +1,4 @@
-Ti.include('/main_windows/create_or_edit_node.js');
+//Ti.include('/main_windows/create_or_edit_node.js');
 Ti.include('/main_windows/message_center.js');
 
 /*jslint eqeq:true, plusplus: true, vars: true, nomen: true*/
@@ -349,7 +349,7 @@ listView.addEventListener('click', function(e) {
     //Creates a new node_type
     if (e.source.is_plus) {
         //alert('You clicked the '+e.row.display+' . His table\'s name is '+e.row.name_table);
-        var win_new = create_or_edit_node.getWindow();
+        var win_new = Ti.UI.createWindow();//create_or_edit_node.getWindow();
         win_new.title = "New " + e.row.display;
         win_new.type = e.row.name_table;
         win_new.uid = jsonLogin.user.uid;

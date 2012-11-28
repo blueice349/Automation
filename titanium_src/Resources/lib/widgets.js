@@ -11,6 +11,9 @@ Ti.include('/lib/widgets/link_field.js');
 Ti.include('/lib/widgets/number_integer.js');
 Ti.include('/lib/widgets/number_decimal.js');
 Ti.include('/lib/widgets/omadi_reference.js');
+Ti.include('/lib/widgets/vehicle_fields.js');
+Ti.include('/lib/widgets/license_plate.js');
+Ti.include('/lib/widgets/location.js');
 
 /*jslint eqeq: true, plusplus: true, nomen: true*/
 /*global PLATFORM, Omadi*/
@@ -37,6 +40,12 @@ Omadi.widgets.getFieldView = function (node, instance){"use strict";
                 fieldView = Omadi.widgets.number_decimal.getFieldView(node, instance); break;
             case 'omadi_reference':
                 fieldView = Omadi.widgets.omadi_reference.getFieldView(node, instance); break;
+            case 'vehicle_fields':
+                fieldView = Omadi.widgets.vehicle_fields.getFieldView(node, instance); break;
+            case 'license_plate':
+                fieldView = Omadi.widgets.license_plate.getFieldView(node, instance); break;
+            case 'location':
+                fieldView = Omadi.widgets.location.getFieldView(node, instance); break;
         }
     }
     
@@ -171,9 +180,20 @@ Omadi.widgets.getSpacerView = function(){"use strict";
 Omadi.widgets.label = {
     color: "#4C5A88",
     getRegularLabelView: function(instance){"use strict";
-
-        var labelView = Ti.UI.createLabel({
-            text : ( instance.isRequired ? '*' : '') + instance.label,
+        var labelText, labelView, nameParts, part;
+        
+        labelText = instance.label;
+        
+        if(instance.field_name.indexOf('___') !== -1){
+            nameParts = instance.field_name.split('___');
+            part = nameParts[1];
+            if(typeof instance.settings.parts !== 'undefined'){
+                labelText += " " + instance.settings.parts[part];
+            }
+        }
+        
+        labelView = Ti.UI.createLabel({
+            text : ( instance.isRequired ? '*' : '') + labelText,
             color : instance.isRequired ? 'red' : this.color,
             font : {
                 fontSize : fieldFontSize,

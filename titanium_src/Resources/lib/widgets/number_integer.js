@@ -4,6 +4,8 @@
 Omadi.widgets.number_integer = {
     
     //TODO: write a validation function for number_integers
+    //TODO: make sure it is a real number and the number isn't too high or low
+    //TODO: bring up the number keyboard
     
     getFieldView: function(node, instance){"use strict";
         //this.base = Omadi.widgets.base.init(in_instance);
