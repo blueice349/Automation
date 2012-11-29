@@ -283,8 +283,101 @@ Omadi.utils.trimWhiteSpace = function(string) {"use strict";
         return string;
     }
     
+    if(string === null){
+        return null;
+    }
+    
     return string.replace(/^\s+|\s+$/g, "");
 };
+
+function applyNumberFormat(single_content, cal_value) {
+    var cal_value_str = '';
+    if (single_content.settings != null && single_content.settings.number_format != null && single_content.settings.number_format != "") {
+        switch (single_content.settings.number_format) {
+            case NUMBER_FORMAT_CURRENCY:
+                cal_value_str = Math.abs(cal_value).toCurrency({
+                    "thousands_separator" : ",",
+                    "currency_symbol" : "$",
+                    "symbol_position" : "front",
+                    "use_fractions" : {
+                        "fractions" : 2,
+                        "fraction_separator" : "."
+                    }
+                });
+                break;
+            case NUMBER_FORMAT_INTEGER:
+                cal_value_str = Math.abs(cal_value).toCurrency({
+                    "thousands_separator" : ",",
+                    "currency_symbol" : "",
+                    "symbol_position" : "front",
+                    "use_fractions" : {
+                        "fractions" : 0,
+                        "fraction_separator" : "."
+                    }
+                });
+                break;
+            case NUMBER_FORMAT_DECIMAL_0:
+                cal_value_str = Math.abs(cal_value).toCurrency({
+                    "thousands_separator" : ",",
+                    "currency_symbol" : "",
+                    "symbol_position" : "front",
+                    "use_fractions" : {
+                        "fractions" : 1,
+                        "fraction_separator" : "."
+                    }
+                });
+                break;
+            case NUMBER_FORMAT_DECIMAL_00:
+                cal_value_str = Math.abs(cal_value).toCurrency({
+                    "thousands_separator" : ",",
+                    "currency_symbol" : "",
+                    "symbol_position" : "front",
+                    "use_fractions" : {
+                        "fractions" : 2,
+                        "fraction_separator" : "."
+                    }
+                });
+                break;
+            case NUMBER_FORMAT_DECIMAL_000:
+                cal_value_str = Math.abs(cal_value).toCurrency({
+                    "thousands_separator" : ",",
+                    "currency_symbol" : "",
+                    "symbol_position" : "front",
+                    "use_fractions" : {
+                        "fractions" : 3,
+                        "fraction_separator" : "."
+                    }
+                });
+                break;
+            default:
+                cal_value_str = Math.abs(cal_value).toCurrency({
+                    "thousands_separator" : ",",
+                    "currency_symbol" : "",
+                    "symbol_position" : "front",
+                    "use_fractions" : {
+                        "fractions" : 2,
+                        "fraction_separator" : "."
+                    }
+                });
+
+        }
+    }
+    else {
+        cal_value_str = Math.abs(cal_value).toCurrency({
+            "thousands_separator" : ",",
+            "currency_symbol" : "",
+            "symbol_position" : "front",
+            "use_fractions" : {
+                "fractions" : 2,
+                "fraction_separator" : "."
+            }
+        });
+    }
+    return cal_value_str;
+
+}
+
+
 
 Ti.include('/lib/location_functions.js');
 Ti.include('/lib/service_functions.js');

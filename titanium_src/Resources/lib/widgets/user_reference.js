@@ -238,6 +238,14 @@ Omadi.widgets.user_reference = {
             }
         }
         
+        //Ti.API.debug("reference: " + JSON.stringify(referenceable_roles));
+        if(referenceable_roles.length == 0){
+            referenceable_roles.push(3);
+            referenceable_roles.push(4);
+            referenceable_roles.push(5);
+            referenceable_roles.push(6);
+        }
+        
         if(referenceable_roles.length > 0){
             db = Omadi.utils.openMainDatabase();
 

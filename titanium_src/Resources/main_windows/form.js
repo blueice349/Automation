@@ -657,7 +657,10 @@ var regions = {};
                 regionHeaderView = getRegionHeaderView(region);
                 
                 viewContent.add(regionHeaderView);
-                
+                viewContent.add(Ti.UI.createView({
+                    height: 10,
+                    width: '100%'
+                }));
                 regionView = Ti.UI.createView({
                     width : '100%',
                     backgroundColor : '#EEEEEE',
@@ -722,7 +725,7 @@ var regions = {};
             // Make sure the region is visible
             if(typeof regionViews[region_name] !== 'undefined'){
                 
-                if (instance.can_view) {
+                if (instance.disabled == 0 && instance.can_view) {
                     
                     var fieldWrapper = Ti.UI.createView({
                        width: '100%',
@@ -730,7 +733,7 @@ var regions = {};
                        instance: instance
                     });
                     
-                   
+                    
                     var fieldView = Omadi.widgets.getFieldView(node, instance);
                     if(fieldView !== null){
                         fieldView.wrapper = fieldWrapper;

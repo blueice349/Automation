@@ -2544,7 +2544,14 @@ function getCalculationTableView(node, instance) {
 
         for ( idx = 0; idx < row_values.length; idx++) {
             cal_value = row_values[idx].value;
-            typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
+            
+            if(cal_value === null){
+                cal_value = 0;
+            }
+            else if(typeof cal_value === 'string'){
+                cal_value = parseFloat(cal_value);
+            }
+            //typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
             //Check type of the data
             isNegative = (cal_value < 0) ? true : false;
             // Is negative. And if it is -ve then write in this value in (brackets).

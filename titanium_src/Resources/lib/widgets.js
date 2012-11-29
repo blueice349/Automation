@@ -16,6 +16,7 @@ Ti.include('/lib/widgets/license_plate.js');
 Ti.include('/lib/widgets/location.js');
 Ti.include('/lib/widgets/taxonomy_term_reference.js');
 Ti.include('/lib/widgets/user_reference.js');
+Ti.include('/lib/widgets/list_boolean.js');
 
 /*jslint eqeq: true, plusplus: true, nomen: true*/
 /*global PLATFORM, Omadi*/
@@ -24,35 +25,36 @@ Ti.include('/lib/widgets/user_reference.js');
 Omadi.widgets.getFieldView = function (node, instance){"use strict";
     var fieldView = null;
     
-    if(instance.disabled == 0){
-        switch(instance.type){
-            case 'text':
-                fieldView = Omadi.widgets.text.getFieldView(node, instance); break;
-            case 'text_long':
-                fieldView = Omadi.widgets.text_long.getFieldView(node, instance); break;
-            case 'phone':
-                fieldView = Omadi.widgets.phone.getFieldView(node, instance); break;
-            case 'email':
-                fieldView = Omadi.widgets.email.getFieldView(node, instance); break;
-            case 'link_field':
-                fieldView = Omadi.widgets.link_field.getFieldView(node, instance); break;
-            case 'number_integer':
-                fieldView = Omadi.widgets.number_integer.getFieldView(node, instance); break;
-            case 'number_decimal':
-                fieldView = Omadi.widgets.number_decimal.getFieldView(node, instance); break;
-            case 'omadi_reference':
-                fieldView = Omadi.widgets.omadi_reference.getFieldView(node, instance); break;
-            case 'vehicle_fields':
-                fieldView = Omadi.widgets.vehicle_fields.getFieldView(node, instance); break;
-            case 'license_plate':
-                fieldView = Omadi.widgets.license_plate.getFieldView(node, instance); break;
-            case 'location':
-                fieldView = Omadi.widgets.location.getFieldView(node, instance); break;
-            case 'taxonomy_term_reference':
-                fieldView = Omadi.widgets.taxonomy_term_reference.getFieldView(node, instance); break;
-            case 'user_reference':
-                fieldView = Omadi.widgets.user_reference.getFieldView(node, instance); break;
-        }
+    
+    switch(instance.type){
+        case 'text':
+            fieldView = Omadi.widgets.text.getFieldView(node, instance); break;
+        case 'text_long':
+            fieldView = Omadi.widgets.text_long.getFieldView(node, instance); break;
+        case 'phone':
+            fieldView = Omadi.widgets.phone.getFieldView(node, instance); break;
+        case 'email':
+            fieldView = Omadi.widgets.email.getFieldView(node, instance); break;
+        case 'link_field':
+            fieldView = Omadi.widgets.link_field.getFieldView(node, instance); break;
+        case 'number_integer':
+            fieldView = Omadi.widgets.number_integer.getFieldView(node, instance); break;
+        case 'number_decimal':
+            fieldView = Omadi.widgets.number_decimal.getFieldView(node, instance); break;
+        case 'omadi_reference':
+            fieldView = Omadi.widgets.omadi_reference.getFieldView(node, instance); break;
+        case 'vehicle_fields':
+            fieldView = Omadi.widgets.vehicle_fields.getFieldView(node, instance); break;
+        case 'license_plate':
+            fieldView = Omadi.widgets.license_plate.getFieldView(node, instance); break;
+        case 'location':
+            fieldView = Omadi.widgets.location.getFieldView(node, instance); break;
+        case 'taxonomy_term_reference':
+            fieldView = Omadi.widgets.taxonomy_term_reference.getFieldView(node, instance); break;
+        case 'user_reference':
+            fieldView = Omadi.widgets.user_reference.getFieldView(node, instance); break;
+        case 'list_boolean':
+            fieldView = Omadi.widgets.list_boolean.getFieldView(node, instance); break;
     }
     
     return fieldView;
