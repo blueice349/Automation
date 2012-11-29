@@ -17,6 +17,7 @@ Ti.include('/lib/widgets/location.js');
 Ti.include('/lib/widgets/taxonomy_term_reference.js');
 Ti.include('/lib/widgets/user_reference.js');
 Ti.include('/lib/widgets/list_boolean.js');
+Ti.include('/lib/widgets/datestamp.js');
 
 /*jslint eqeq: true, plusplus: true, nomen: true*/
 /*global PLATFORM, Omadi*/
@@ -55,6 +56,8 @@ Omadi.widgets.getFieldView = function (node, instance){"use strict";
             fieldView = Omadi.widgets.user_reference.getFieldView(node, instance); break;
         case 'list_boolean':
             fieldView = Omadi.widgets.list_boolean.getFieldView(node, instance); break;
+        case 'datestamp':
+            fieldView = Omadi.widgets.datestamp.getFieldView(node, instance); break;
     }
     
     return fieldView;
@@ -298,7 +301,7 @@ Omadi.widgets.label = {
 Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         
     var popupWin, opacView, coItemSelected, wrapperView, descriptionView, headerView, ico_sel, label_sel, listView, descriptionLabel, 
-        i, color_set, color_unset, cancelButton, itemLabel, itemRow, bottomButtonsView, okButton, options, data, dbValues;
+        i, j, color_set, color_unset, cancelButton, itemLabel, itemRow, bottomButtonsView, okButton, options, data, dbValues;
     
     if (PLATFORM == 'android') {
         Ti.UI.Android.hideSoftKeyboard();
@@ -371,8 +374,10 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
     dbValues = buttonView.dbValue;
     
     for(i = 0; i < options.length; i ++){
-        if(dbValues.indexOf(options[i].dbValue) != -1){
-            options[i].selected = true;
+        for(j = 0; j < dbValues.length; j ++){
+            if(dbValues[j] == options[i].dbValue){
+                options[i].selected = true;
+            }
         }
     }
 
@@ -506,7 +511,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         aux_ret = [];
         valid_return = [];
         dbValues = [];
-        textValue = "- None -";
+        textValue = "";
         textValues = [];
 
         listView = e.source.listView;

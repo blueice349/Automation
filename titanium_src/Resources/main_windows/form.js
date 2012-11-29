@@ -839,13 +839,13 @@ function validateMaxLength(node, instance){"use strict";
 }
 
 function validateRequired(node, instance){"use strict";
-    var isEmpty, form_errors = [], values = [], i;
+    var isEmpty, form_errors = [], dbValues = [], i;
     
     isEmpty = true;
             
     if(typeof node[instance.field_name].dbValues !== 'undefined' && node[instance.field_name].dbValues.length > 0){
-        values = node[instance.field_name].dbValues;
-        for(i = 0; i < values.length; i ++){
+        dbValues = node[instance.field_name].dbValues;
+        for(i = 0; i < dbValues.length; i ++){
             
             
             switch(instance.type){
@@ -858,23 +858,37 @@ function validateRequired(node, instance){"use strict";
                 case 'vehicle_fields':
                 case 'license_plate':
                 case 'rules_field':
-                    if(values[i] > ""){
+                    if(dbValues[i] > ""){
                         isEmpty = false;
                     }
                     break;
                     
                 case 'number_integer':
                 case 'number_decimal':
+                    if(dbValues[i] != null){
+                        isEmpty = false;
+                    }
+                    break;
+                
                 case 'omadi_reference':
                 case 'taxonomy_term_reference':
                 case 'user_reference':
                 case 'image':
                 case 'file':
-                    if(values[i] > 0){
+                case 'auto_increment':
+                    
+                
+                case 'datestamp':
+                case 'omadi_time':
+                    if(dbValues[i] != 0){
                         isEmpty = false;
                     }
                     break;
                     
+                case 'list_boolean': 
+                    isEmpty = false;
+                    break;
+                
                 default: 
                     Ti.API.error("Missing field type def in validate_form_data");
                     break;
@@ -2351,12 +2365,21 @@ function save_form_data(_flag_info, pass_it, new_time) {"use strict";
                             insertValues.push('null');
                         }
                         else{
+                            //Ti.API.debug(value_to_insert);
                             switch(instance.type){
                                 case 'number_decimal':
                                 case 'number_integer':
                                 case 'user_reference':
                                 case 'taxonomy_term_reference':
                                 case 'omadi_reference':
+                                case 'datestamp':
+                                case 'omadi_time':
+                                case 'auto_increment':
+                                case 'list_boolean':
+                                    
+                                    if(value_to_insert == ""){
+                                        value_to_insert = "null";
+                                    }
                                     
                                     insertValues.push(value_to_insert);
                                     break;    

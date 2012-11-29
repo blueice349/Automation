@@ -75,8 +75,8 @@ Omadi.widgets.user_reference = {
             }
         }
         else{
-            dbValue = "";
-            textValue = "- None -";
+            dbValue = null;
+            textValue = "";
             if(typeof node[instance.field_name] !== 'undefined'){
                 if(typeof node[instance.field_name].dbValues !== 'undefined' && typeof node[instance.field_name].dbValues[index] !== 'undefined'){
                     dbValue = node[instance.field_name].dbValues[index];
@@ -185,7 +185,13 @@ Omadi.widgets.user_reference = {
         
                     postDialog.addEventListener('click', function(ev) {
                         if (ev.index >= 0) {
-                            ev.source.widgetView.title = ev.source.widgetView.textValue = ev.source.options[ev.index];
+                            var textValue = ev.source.options[ev.index];
+                            
+                            if(textValue == '- None -'){
+                                textValue = "";
+                            }
+                            ev.source.widgetView.textValue = textValue;
+                            ev.source.widgetView.setTitle(textValue);
                             ev.source.widgetView.value = ev.source.widgetView.dbValue = ev.source.widgetView.options[ev.index].dbValue;
                         }
                         
@@ -229,6 +235,7 @@ Omadi.widgets.user_reference = {
         
         
         options = [];
+        
         referenceable_roles = [];
         
         // Get the right roles in the list
@@ -250,7 +257,14 @@ Omadi.widgets.user_reference = {
             db = Omadi.utils.openMainDatabase();
 
             result = db.execute("SELECT u.username, u.realname, u.uid FROM user u JOIN user_roles r ON r.uid = u.uid WHERE u.uid NOT IN (0,1) AND rid IN (" + referenceable_roles.join(",") + ") GROUP BY u.uid ORDER BY u.realname ASC");
-        
+            
+            if(instance.settings.cardinality != -1 && instance.required == 0){
+                options.push({
+                   title: '- None -',
+                   dbValue: null 
+                });
+            }
+            
             while (result.isValidRow()) {
                 if (result.fieldByName('realname') == '') {
                     name = result.fieldByName('username');

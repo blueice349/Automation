@@ -167,19 +167,19 @@ function loadNode(nid) {"use strict";
     
         if (result.isValidRow()) {
     
-            node.nid = result.fieldByName('nid');
-            node.title = result.fieldByName('title');
-            node.created = result.fieldByName('created');
-            node.changed = result.fieldByName('changed');
-            node.author_uid = result.fieldByName('author_uid');
-            node.flag_is_updated = result.fieldByName('flag_is_updated');
-            node.table_name = result.fieldByName('table_name');
-            node.form_part = result.fieldByName('form_part');
-            node.changed_uid = result.fieldByName('changed_uid');
-            node.no_data_fields = result.fieldByName('no_data_fields');
-            node.perm_edit = result.fieldByName('perm_edit');
-            node.perm_delete = result.fieldByName('perm_delete');
-            node.viewed = result.fieldByName('viewed');
+            node.nid = result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT);
+            node.title = result.fieldByName('title', Ti.Database.FIELD_TYPE_STRING);
+            node.created = result.fieldByName('created', Ti.Database.FIELD_TYPE_INT);
+            node.changed = result.fieldByName('changed', Ti.Database.FIELD_TYPE_INT);
+            node.author_uid = result.fieldByName('author_uid', Ti.Database.FIELD_TYPE_INT);
+            node.flag_is_updated = result.fieldByName('flag_is_updated', Ti.Database.FIELD_TYPE_INT);
+            node.table_name = result.fieldByName('table_name', Ti.Database.FIELD_TYPE_STRING);
+            node.form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
+            node.changed_uid = result.fieldByName('changed_uid', Ti.Database.FIELD_TYPE_INT);
+            node.no_data_fields = result.fieldByName('no_data_fields', Ti.Database.FIELD_TYPE_STRING);
+            node.perm_edit = result.fieldByName('perm_edit', Ti.Database.FIELD_TYPE_INT);
+            node.perm_delete = result.fieldByName('perm_delete', Ti.Database.FIELD_TYPE_INT);
+            node.viewed = result.fieldByName('viewed', Ti.Database.FIELD_TYPE_STRING);
         }
         result.close();
         
@@ -193,7 +193,7 @@ function loadNode(nid) {"use strict";
                 for (field_name in instances) {
                     if (instances.hasOwnProperty(field_name)) {
     
-                        dbValue = result.fieldByName(field_name);
+                        dbValue = result.fieldByName(field_name, Ti.Database.FIELD_TYPE_STRING);
     
                         //Ti.API.info("INPUT FIELD NAME: " + field_name);
     
@@ -253,14 +253,36 @@ function loadNode(nid) {"use strict";
                             case 'phone':
                             case 'email':
                             case 'link_field':
-                            case 'number_integer':
-                            case 'number_decimal':
                                 for ( i = 0; i < node[field_name].dbValues.length; i++) {
-                                    if (node[field_name].dbValues[i] === null) {
+                                    if (node[field_name].dbValues[i] == null) {
                                         node[field_name].textValues[i] = "";
                                     }
                                     else {
-                                        node[field_name].textValues[i] = node[field_name].dbValues[i] + ''.toString();
+                                        node[field_name].textValues[i] = node[field_name].dbValues[i];
+                                    }
+                                }
+                                break;
+                            
+                            case 'number_integer':
+                                for ( i = 0; i < node[field_name].dbValues.length; i++) {
+                                    if (node[field_name].dbValues[i] == null) {
+                                        node[field_name].textValues[i] = "";
+                                    }
+                                    else {
+                                        node[field_name].textValues[i] = node[field_name].dbValues[i];
+                                        node[field_name].dbValues[i] = parseInt(node[field_name].dbValues[i], 10);
+                                    }
+                                }
+                                break;
+                            
+                            case 'number_decimal':
+                                for ( i = 0; i < node[field_name].dbValues.length; i++) {
+                                    if (node[field_name].dbValues[i] == null) {
+                                        node[field_name].textValues[i] = "";
+                                    }
+                                    else {
+                                        node[field_name].textValues[i] = node[field_name].dbValues[i];
+                                        node[field_name].dbValues[i] = parseFloat(node[field_name].dbValues[i], 10);
                                     }
                                 }
                                 break;
@@ -273,6 +295,7 @@ function loadNode(nid) {"use strict";
                                     }
                                     else {
                                         node[field_name].textValues[i] = node[field_name].dbValues[i] + ''.toString();
+                                        node[field_name].dbValues[i] = parseInt(node[field_name].dbValues[i], 10);
                                     }
                                 }
                                 break;
@@ -284,9 +307,11 @@ function loadNode(nid) {"use strict";
                                     }
                                     else if (node[field_name].dbValues[i] == 1) {
                                         node[field_name].textValues[i] = 'Yes';
+                                        node[field_name].dbValues[i] = 1;
                                     }
                                     else {
                                         node[field_name].textValues[i] = 'No';
+                                        node[field_name].dbValues[i] = 0;
                                     }
                                 }
                                 break;
@@ -338,7 +363,7 @@ function loadNode(nid) {"use strict";
                                     textValue = subResult.fieldByName("title");
                                     subValue = subResult.fieldByName("nid");
     
-                                    for ( i = 0; i < node[field_name].dbValues.length; i += 1) {
+                                    for ( i = 0; i < node[field_name].dbValues.length; i ++) {
                                         if (node[field_name].dbValues[i] == subValue) {
                                             node[field_name].textValues[i] = textValue;
                                             node[field_name].nodeTypes[i] = subResult.fieldByName("table_name");
@@ -353,17 +378,19 @@ function loadNode(nid) {"use strict";
     
                             case 'omadi_time':
     
-                                for ( i = 0; i < node[field_name].dbValues.length; i += 1) {
+                                for ( i = 0; i < node[field_name].dbValues.length; i ++) {
                                     node[field_name].textValues[i] = display_omadi_time01(node[field_name].dbValues[i]);
                                 }
                                 break;
     
                             case 'datestamp':
-                                widget = instances[field_name].widget;
-    
-                                for ( i = 0; i < node[field_name].dbValues.length; i += 1) {
-                                    if (node[field_name].dbValues[i] !== null && node[field_name].dbValues[i] !== 0) {
-                                        node[field_name].textValues[i] = timeConverter(node[field_name].dbValues[i], instances[field_name].settings.time);
+                                for ( i = 0; i < node[field_name].dbValues.length; i ++) {
+                                    if (!Omadi.utils.isNumberEmpty(node[field_name].dbValues[i])){
+                                        node[field_name].dbValues[i] = parseInt(node[field_name].dbValues[i], 10);
+                                        node[field_name].textValues[i] = Omadi.utils.formatDate(node[field_name].dbValues[i], instances[field_name].settings.time);
+                                    }
+                                    else{
+                                        node[field_name].dbValues[i] = null;
                                     }
                                 }
     
@@ -555,10 +582,13 @@ Omadi.data.processFieldsJson = function(json, mainDB, progress){ "use strict";
         
                         switch(json.insert[i].type) {
                             case "taxonomy_term_reference":
-                            case "term_reference":
+                            case "user_reference":
                             case "datestamp":
+                            case "omadi_time":
                             case "number_integer":
-                                if(PLATFORM == 'android'){
+                            case "omadi_reference":
+                            case "list_boolean":
+                                if(PLATFORM === 'android'){
                                     db_type = "INTEGER";
                                 }
                                 else{

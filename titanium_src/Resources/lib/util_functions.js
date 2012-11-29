@@ -199,6 +199,26 @@ Omadi.utils.formatDate = function(timestamp, showTime){"use strict";
     return (new Date(timestamp * 1000)).format(format);
 };
 
+Omadi.utils.isNumberEmpty = function(number){"use strict";
+    if(typeof number === 'undefined'){
+        return true;
+    }
+    
+    if(number === null){
+        return true;
+    }
+    
+    if(number === ""){
+        return true;
+    }
+    
+    if(number === "null"){
+        return true;
+    }
+    
+    return false;
+};
+
 Date.prototype.format = function(format) {"use strict";
     
     var i, returnStr, replace, curChar;

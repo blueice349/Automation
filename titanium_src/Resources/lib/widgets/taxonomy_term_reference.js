@@ -52,7 +52,7 @@ Omadi.widgets.taxonomy_term_reference = {
         
         if(instance.settings.cardinality == -1){
             dbValue = [];
-            textValue = '- None -';
+            textValue = '';
             if(typeof node[instance.field_name] !== 'undefined'){
                 if(typeof node[instance.field_name].dbValues !== 'undefined'){
                     dbValue = node[instance.field_name].dbValues;
@@ -67,8 +67,8 @@ Omadi.widgets.taxonomy_term_reference = {
             }
         }
         else{
-            dbValue = "";
-            textValue = "- None -";
+            dbValue = null;
+            textValue = "";
             if(typeof node[instance.field_name] !== 'undefined'){
                 if(typeof node[instance.field_name].dbValues !== 'undefined' && typeof node[instance.field_name].dbValues[index] !== 'undefined'){
                     dbValue = node[instance.field_name].dbValues[index];
@@ -171,7 +171,13 @@ Omadi.widgets.taxonomy_term_reference = {
         
                     postDialog.addEventListener('click', function(ev) {
                         if (ev.index >= 0) {
-                            ev.source.widgetView.title = ev.source.widgetView.textValue = ev.source.options[ev.index];
+                            var textValue = ev.source.options[ev.index];
+                            
+                            if(textValue == '- None -'){
+                                textValue = "";
+                            }
+                            ev.source.widgetView.textValue = textValue;
+                            ev.source.widgetView.setTitle(textValue);
                             ev.source.widgetView.value = ev.source.widgetView.dbValue = ev.source.widgetView.options[ev.index].dbValue;
                         }
                         
@@ -221,6 +227,14 @@ Omadi.widgets.taxonomy_term_reference = {
         result = db.execute("SELECT * FROM term_data WHERE vid='" + vid + "' GROUP BY name ORDER BY CAST(`weight` AS INTEGER) ASC");
 
         options = [];
+        
+        if(instance.settings.cardinality != -1 && instance.required == 0){
+            options.push({
+               title: '- None -',
+               dbValue: null 
+            });
+        }
+        
         while (result.isValidRow()) {
             options.push({
                 title : result.fieldByName('name'),
