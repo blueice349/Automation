@@ -293,6 +293,290 @@ Omadi.widgets.label = {
 };
 
 
+Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
+        
+    var popupWin, opacView, coItemSelected, wrapperView, descriptionView, headerView, ico_sel, label_sel, listView, descriptionLabel, 
+        i, color_set, color_unset, cancelButton, itemLabel, itemRow, bottomButtonsView, okButton, options, data, dbValues;
+    
+    if (PLATFORM == 'android') {
+        Ti.UI.Android.hideSoftKeyboard();
+        Ti.API.debug("hide keyboard in open_mult_selector");
+    }
+    
+    color_set = "#246";
+    color_unset = "#fff";
+    
+    popupWin = Ti.UI.createWindow({
+        
+    });
+    
+    opacView = Ti.UI.createView({
+        left : 0,
+        right : 0,
+        top : 0,
+        bottom : 0,
+        backgroundColor : '#000000',
+        opacity : 0.5
+    });
+    
+    coItemSelected = 0;
+    popupWin.add(opacView);
+
+    wrapperView = Ti.UI.createView({
+        backgroundColor : '#FFFFFF',
+        left : '5%',
+        right : '5%',
+        height: Ti.UI.SIZE,
+        borderRadius : 10,
+        borderWidth : 2,
+        borderColor : '#FFFFFF',
+        opacity: 1
+    });
+    popupWin.add(wrapperView);
+
+    headerView = Ti.UI.createView({
+        top : 0,
+        height : 50,
+        backgroundColor : '#444'
+    });
+    wrapperView.add(headerView);
+
+    label_sel = Ti.UI.createLabel({
+        text : 'Select ' + buttonView.view_title,
+        color : '#FFF',
+        font : {
+            fontSize : '18dp',
+            fontWeight : 'bold'
+        },
+        left : 10,
+        wordWrap : false,
+        ellipsize : true
+    });
+    headerView.add(label_sel);
+    
+    options = buttonView.options;
+    
+    listView = Titanium.UI.createTableView({
+        data : [],
+        scrollable : true,
+        options: options,
+        top: 50,
+        footerView: Ti.UI.createView({
+            height: 125
+        })
+    });
+    
+    dbValues = buttonView.dbValue;
+    
+    for(i = 0; i < options.length; i ++){
+        if(dbValues.indexOf(options[i].dbValue) != -1){
+            options[i].selected = true;
+        }
+    }
+
+    
+    data = [];
+    
+    for(i = 0; i < options.length; i ++){
+
+        itemRow = Ti.UI.createTableViewRow({
+            height : 30,
+            title : options[i].title,
+            selected : options[i].selected,
+            dbValue : options[i].dbValue,
+            description : options[i].description,
+            backgroundColor : (options[i].selected ? color_set : color_unset),
+            color: (options[i].selected ? '#fff' : '#000'),
+            listView: listView
+        });
+
+        if (options[i].selected) {
+            coItemSelected++;
+        }
+        data.push(itemRow);
+    }
+    
+    listView.setData(data);
+    
+    wrapperView.add(listView);
+
+    listView.addEventListener('click', function(e) {
+        if (!e.rowData.selected) {
+            e.rowData.selected = true;
+            e.row.setBackgroundColor(color_set);
+            e.row.setColor('#fff');
+            coItemSelected++;
+            //e.rowData.listView.options[e.index].selected = true;
+        }
+        else {
+            e.rowData.selected = false;
+            //listView.data[0].rows[e.index].backgroundColor = color_unset;
+            e.row.setBackgroundColor(color_unset);
+            e.row.setColor('#000');
+            coItemSelected--;
+            //e.rowData.listView.options[e.index].selected = false;
+        }
+
+        // if (coItemSelected == 1) {
+            // if (buttonView.from_cond_vs != null && obj.from_cond_vs == true) {
+                // listView.height = '66.5%';
+                // descriptionLabel.visible = true;
+                // var i_sel;
+                // for ( i_sel = 0; i_sel < listView.data[0].rows.length; i_sel++) {
+                    // if (listView.data[0].rows[i_sel].selected == true) {
+                        // descriptionLabel.text = (listView.data[0].rows[i_sel].desc != null && listView.data[0].rows[i_sel].desc != "") ? listView.data[0].rows[i_sel].desc : 'No Description';
+                        // break;
+                    // }
+                // }
+            // }
+        // }
+        // else if (coItemSelected > 1) {
+            // if (obj.from_cond_vs != null && obj.from_cond_vs == true) {
+                // listView.height = '66.5%';
+                // descriptionLabel.visible = true;
+                // descriptionLabel.text = 'Multiple violations selected';
+            // }
+        // }
+        // else if (coItemSelected == 0) {
+            // if (obj.from_cond_vs != null && obj.from_cond_vs == true) {
+                // listView.height = '73%';
+                // descriptionLabel.visible = false;
+                // descriptionLabel.text = '';
+            // }
+        // }
+
+        //Ti.API.info('Field set to ' + listView.data[0].rows[e.index].selected);
+    });
+    
+    bottomButtonsView = Ti.UI.createView({
+        bottom : 0,
+        height : 70,
+        width : '100%',
+        backgroundColor : '#AAA'
+    });
+    
+    //Ti.API.info("widget: " + JSON.stringify(buttonView.instance.settings));
+    
+    if(buttonView.instance.widget.indexOf('violation_select') !== -1){
+        descriptionView = Ti.UI.createView({
+            width: '100%',
+            height: Ti.UI.SIZE,
+            backgroundColor: '#eee',
+            borderColor: '#999',
+            borderWidth: 1,
+            bottom: 70
+        });
+        
+        descriptionLabel = Titanium.UI.createLabel({
+            ellipsize : false,
+            wordWrap : true,
+            font : {
+                fontsize : 12
+            },
+            color : 'black',
+            height : Ti.UI.SIZE,
+            width: '100%',
+            text: 'Description: None',
+            left: 10,
+            right: 10
+        });
+        
+        descriptionView.add(descriptionLabel);
+        wrapperView.add(descriptionView);
+    }
+    
+    wrapperView.add(bottomButtonsView);
+
+    okButton = Ti.UI.createButton({
+        title : 'OK',
+        width : '40%',
+        top : '3',
+        bottom : '5',
+        left : '6%',
+        listView: listView,
+        buttonView: buttonView
+    });
+    bottomButtonsView.add(okButton);
+    
+    okButton.addEventListener('click', function(e) {
+        /*global setConditionallyRequiredLabels*/
+        var i, aux_ret, valid_return, data, dbValues, textValue, textValues, listView;
+        aux_ret = [];
+        valid_return = [];
+        dbValues = [];
+        textValue = "- None -";
+        textValues = [];
+
+        listView = e.source.listView;
+        
+        //Ti.API.debug(JSON.stringify(data));
+
+        for (i = 0; i < listView.data[0].rows.length; i++) {
+            
+            
+            if (listView.data[0].rows[i].selected) {
+                
+                textValues.push(listView.data[0].rows[i].title);
+                dbValues.push(listView.data[0].rows[i].dbValue);
+                
+            }
+
+        }
+        
+        if(textValues.length > 0){
+            textValue = textValues.join(', ');
+        }
+
+        //if (valid_return.length == 0) {
+        e.source.buttonView.dbValue = dbValues;
+        e.source.buttonView.textValue = textValue;
+        //buttonView.setText(textValue);
+        e.source.buttonView.setTitle(textValue);
+        
+        
+        if(e.source.buttonView.check_conditional_fields.length > 0){
+            
+            setConditionallyRequiredLabels(e.source.buttonView.instance, e.source.buttonView.check_conditional_fields);
+        }
+       // }
+        // else {
+            // buttonView.value = valid_return;
+            // if (valid_return.length == 1) {
+                // buttonView.text = valid_return[0].title;
+                // if (obj.from_cond_vs != null && obj.from_cond_vs == true) {
+                    // obj.descriptionLabel.visible = true;
+                    // obj.descriptionLabel.text = (valid_return[0].desc != null && valid_return[0].desc != "") ? valid_return[0].desc : 'No Description';
+                // }
+//     
+            // }
+            // else {
+                // obj.text = obj.view_title + " [" + valid_return.length + "]";
+                // if (obj.from_cond_vs != null && obj.from_cond_vs == true) {
+                    // obj.descriptionLabel.visible = true;
+                    // obj.descriptionLabel.text = 'Multiple violations selected';
+                // }
+            // }
+        // }
+//     
+        // obj.itens = aux_ret;
+        popupWin.close();
+
+    });
+
+    cancelButton = Ti.UI.createButton({
+        title : 'Cancel',
+        width : '40%',
+        top : '3',
+        bottom : '5',
+        right : '6%'
+    });
+    bottomButtonsView.add(cancelButton);
+    cancelButton.addEventListener('click', function() {
+        popupWin.close();
+    });
+
+    popupWin.open();
+};
 
 
 
