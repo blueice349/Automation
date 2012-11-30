@@ -865,6 +865,9 @@ function validateRequired(node, instance){"use strict";
                     
                 case 'number_integer':
                 case 'number_decimal':
+                case 'image':
+                case 'datestamp':
+                case 'omadi_time':
                     if(dbValues[i] != null){
                         isEmpty = false;
                     }
@@ -873,13 +876,8 @@ function validateRequired(node, instance){"use strict";
                 case 'omadi_reference':
                 case 'taxonomy_term_reference':
                 case 'user_reference':
-                case 'image':
                 case 'file':
                 case 'auto_increment':
-                    
-                
-                case 'datestamp':
-                case 'omadi_time':
                     if(dbValues[i] != 0){
                         isEmpty = false;
                     }
@@ -2376,8 +2374,9 @@ function save_form_data(_flag_info, pass_it, new_time) {"use strict";
                                 case 'omadi_time':
                                 case 'auto_increment':
                                 case 'list_boolean':
+                                case 'image':
                                     
-                                    if(value_to_insert == ""){
+                                    if(Omadi.utils.isEmpty(value_to_insert)){
                                         value_to_insert = "null";
                                     }
                                     

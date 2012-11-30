@@ -5,7 +5,7 @@ var Omadi = Omadi || {};
 Omadi.utils = Omadi.utils || {};
 
 Omadi.DOMAIN_NAME = domainName;
-Omadi.DB_VERSION = "omadiDb1673";
+Omadi.DB_VERSION = "omadiDb1674";
 
 Omadi.utils.openListDatabase = function() {"use strict";
     var db = Ti.Database.install('/database/db_list.sqlite', Omadi.DB_VERSION + "_list");
@@ -199,7 +199,7 @@ Omadi.utils.formatDate = function(timestamp, showTime){"use strict";
     return (new Date(timestamp * 1000)).format(format);
 };
 
-Omadi.utils.isNumberEmpty = function(number){"use strict";
+Omadi.utils.isEmpty = function(number){"use strict";
     if(typeof number === 'undefined'){
         return true;
     }

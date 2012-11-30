@@ -18,6 +18,7 @@ Ti.include('/lib/widgets/taxonomy_term_reference.js');
 Ti.include('/lib/widgets/user_reference.js');
 Ti.include('/lib/widgets/list_boolean.js');
 Ti.include('/lib/widgets/datestamp.js');
+Ti.include('/lib/widgets/image.js');
 
 /*jslint eqeq: true, plusplus: true, nomen: true*/
 /*global PLATFORM, Omadi*/
@@ -58,6 +59,8 @@ Omadi.widgets.getFieldView = function (node, instance){"use strict";
             fieldView = Omadi.widgets.list_boolean.getFieldView(node, instance); break;
         case 'datestamp':
             fieldView = Omadi.widgets.datestamp.getFieldView(node, instance); break;
+        case 'image':
+            fieldView = Omadi.widgets.image.getFieldView(node, instance); break;
     }
     
     return fieldView;

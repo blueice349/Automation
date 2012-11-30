@@ -153,7 +153,7 @@ function getDecodedResults(db, nid, field_name) {"use strict";
 function loadNode(nid) {"use strict";
     /*global display_omadi_time01,timeConverter*/
 
-    var db, node, result, subResult, field_name, dbValue, textValue, subValue, decoded, i, real_field_name, part, field_parts, widget, instances;
+    var db, node, result, subResult, field_name, dbValue, tempDBValues, textValue, subValue, decoded, i, real_field_name, part, field_parts, widget, instances;
     
     node = {
         form_part: 0
@@ -204,6 +204,26 @@ function loadNode(nid) {"use strict";
                         if (dbValue === '7411317618171051229' || dbValue === 7411317618171051229) {
     
                             node[field_name].dbValues = getDecodedResults(db, node.nid, field_name);
+                            
+                            switch(instances[field_name].type){
+                                case 'image':
+                                case 'omadi_reference':
+                                case 'user_reference':
+                                case 'taxonomy_term_reference':
+                                case 'file':
+                                case 'datestamp':
+                                case 'omadi_time':
+                                
+                                    tempDBValues = [];
+                                    for(i = 0; i < node[field_name].dbValues.length; i ++){
+                                        if(!Omadi.utils.isEmpty(node[field_name].dbValues[i])){
+                                            tempDBValues.push(parseInt(node[field_name].dbValues[i], 10));
+                                        }
+                                    }
+                                    
+                                    node[field_name].dbValues = tempDBValues;
+                                    break;
+                            }
                         }
                         else {
                             /**
@@ -238,7 +258,25 @@ function loadNode(nid) {"use strict";
                                 node[real_field_name].dbValues.push(dbValue);
                             }
                             else {
-                                node[field_name].dbValues.push(dbValue);
+                                
+                                switch(instances[field_name].type){
+                                    case 'image':
+                                    case 'omadi_reference':
+                                    case 'user_reference':
+                                    case 'taxonomy_term_reference':
+                                    case 'file':
+                                    case 'datestamp':
+                                    case 'omadi_time':
+                                        if(!Omadi.utils.isEmpty(dbValue)){
+                                            dbValue = parseInt(dbValue, 10);
+                                            node[field_name].dbValues.push(dbValue);
+                                        }
+                                        break;
+                                        
+                                    default:
+                                        node[field_name].dbValues.push(dbValue);
+                                        break;
+                                }
                             }
                         }
     
@@ -385,7 +423,7 @@ function loadNode(nid) {"use strict";
     
                             case 'datestamp':
                                 for ( i = 0; i < node[field_name].dbValues.length; i ++) {
-                                    if (!Omadi.utils.isNumberEmpty(node[field_name].dbValues[i])){
+                                    if (!Omadi.utils.isEmpty(node[field_name].dbValues[i])){
                                         node[field_name].dbValues[i] = parseInt(node[field_name].dbValues[i], 10);
                                         node[field_name].textValues[i] = Omadi.utils.formatDate(node[field_name].dbValues[i], instances[field_name].settings.time);
                                     }

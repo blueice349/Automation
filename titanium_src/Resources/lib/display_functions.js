@@ -45,6 +45,11 @@ Omadi.display.displayLargeImage = function(imageView, nid, file_id) {
 	
 	var http, loading;
 	
+	if (imageView.bigImg !== null) {
+        Omadi.display.showBigImage(imageView);
+        return;
+    }
+
 	if(nid > 0 && file_id > 0){
 		loading = Ti.UI.createActivityIndicator();
 		loading.font = {
@@ -55,11 +60,6 @@ Omadi.display.displayLargeImage = function(imageView, nid, file_id) {
 		loading.color = 'white';
 		loading.message = 'Loading...';
 		loading.show();
-		
-		if (imageView.bigImg !== null) {
-			Omadi.display.showBigImage(imageView);
-			return;
-		}
 		
 		try {
 			http = Ti.Network.createHTTPClient();
@@ -73,6 +73,7 @@ Omadi.display.displayLargeImage = function(imageView, nid, file_id) {
 				imageView.bigImg = this.responseData;
 				Omadi.display.showBigImage(imageView);
 				loading.hide();
+				imageView.fullImageLoaded = true;
 			};
 	
 			http.onerror = function(e) {
@@ -154,6 +155,7 @@ Omadi.display.setImageViewThumbnail = function(imageView, nid, file_id) {
 					imageView.setImage(this.responseData);
 				}
 				imageView.isImage = true;
+				imageView.thumbnailLoaded = true;
 			};
 	
 			http.onerror = function(e) {
