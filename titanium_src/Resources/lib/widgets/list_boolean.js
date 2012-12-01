@@ -57,18 +57,19 @@ Omadi.widgets.list_boolean = {
         
         settings = instance.settings;
         
-        dbValue = "";
+        dbValue = "0";
         textValue = "";
         if(typeof node[instance.field_name] !== 'undefined'){
             if(typeof node[instance.field_name].dbValues !== 'undefined' && typeof node[instance.field_name].dbValues[index] !== 'undefined'){
                 dbValue = node[instance.field_name].dbValues[index];
             }
-            
-            if(typeof node[instance.field_name].textValues !== 'undefined' && typeof node[instance.field_name].textValues[index] !== 'undefined'){
-                textValue = node[instance.field_name].textValues[index];
-            }
         }
         
+        if(dbValue != 1){
+            dbValue = "0";
+        }
+        
+        textValue = dbValue;
         
         Ti.API.debug("Creating list_boolean field");
 
@@ -87,7 +88,7 @@ Omadi.widgets.list_boolean = {
             value : dbValue
         });
         
-        if(dbValue){
+        if(dbValue == 1){
             widgetView.setBackgroundImage('/images/selected_test.png');
         }
         
@@ -111,17 +112,9 @@ Omadi.widgets.list_boolean = {
                 widgetView.softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
             }
         }
-    
-        if (settings.min_length && settings.min_length != null && settings.min_length != "null") {
-            widgetView.minLength = settings.min_length;
-        }
         
         widgetView.addEventListener('click', function(e) {
             /*global setConditionallyRequiredLabels*/
-            
-            if(e.source.check_conditional_fields.length > 0){
-                setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
-            }
             
             if (!e.source.value) {
                 e.source.setBackgroundImage('/images/selected_test.png');
@@ -138,6 +131,9 @@ Omadi.widgets.list_boolean = {
                 e.source.textValue = "0";
             }
             
+            if(e.source.check_conditional_fields.length > 0){
+                setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+            }
             // changedContentValue(e.source);
             // noDataChecboxEnableDisable(e.source, e.source.reffer_index);
         });

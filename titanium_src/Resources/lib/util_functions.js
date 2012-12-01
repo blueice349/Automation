@@ -5,7 +5,7 @@ var Omadi = Omadi || {};
 Omadi.utils = Omadi.utils || {};
 
 Omadi.DOMAIN_NAME = domainName;
-Omadi.DB_VERSION = "omadiDb1674";
+Omadi.DB_VERSION = "omadiDb1675";
 
 Omadi.utils.openListDatabase = function() {"use strict";
     var db = Ti.Database.install('/database/db_list.sqlite', Omadi.DB_VERSION + "_list");
@@ -44,6 +44,25 @@ Omadi.utils.openGPSDatabase = function() {"use strict";
 
 Omadi.utils.getUTCTimestamp = function() {"use strict";
     return Math.round(new Date() / 1000);
+};
+
+Omadi.utils.getUid = function(){"use strict";
+    var loginJson = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
+    return parseInt(loginJson.user.uid, 10);
+};
+
+Omadi.utils.cloneObject = function(obj){"use strict";
+    var clone = {}, i;
+    
+    for(i in obj) {
+        if(typeof(obj[i])=="object"){
+            clone[i] = Omadi.utils.cloneObject(obj[i]);
+        }
+        else{
+            clone[i] = obj[i];
+        }
+    }
+    return clone;
 };
 
 // Takes a timestamp from the past and returns a string with the amount of time elapsed
@@ -116,23 +135,26 @@ Omadi.utils.setCookieHeader = function(http) {"use strict";
 
     db = Omadi.utils.openListDatabase();
     result = db.execute('SELECT * FROM login WHERE rowid=1');
-    cookie = result.fieldByName("cookie");
+    cookie = result.fieldByName("cookie", Ti.Database.FIELD_TYPE_STRING);
     //Ti.API.info("FOUND COOKIE = " + cookie);
     result.close();
     db.close();
 
-
-    if (PLATFORM === 'android') {
-        http.setRequestHeader("Cookie", cookie);
-        // Set cookies
-    }
-    else {
-        cookie = cookie.split(';');
-        if (!cookie[0]) {
-            cookie[0] = "";
+    if(cookie > ""){
+        if (PLATFORM === 'android') {
+            http.setRequestHeader("Cookie", cookie);
+            // Set cookies
         }
-        http.setRequestHeader("Cookie", cookie[0]);
-        // Set cookies
+        else {
+            
+            if(cookie.indexOf(';') != -1){
+                cookie = cookie.split(';');
+                cookie = cookie[0];
+            }
+            //Ti.API.error(cookie[0]);
+            http.setRequestHeader("Cookie", cookie);
+            // Set cookies
+        }
     }
 };
 

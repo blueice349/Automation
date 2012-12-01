@@ -1,3 +1,266 @@
+/***** FROM form.js *******/
+
+
+
+// _array_value = [];
+    // 
+                // for (x_j in content) {
+                    // if ((content[x_j].composed_obj === true) && (content[x_j].cardinality > 1)) {
+    //     
+                        // if ((content[x_j].field_type == 'omadi_time') || (content[x_j].field_type == 'datestamp')) {
+                            // if (content[x_j].value != null) {
+                                // var _vlr = Math.round(content[x_j].value / 1000);
+                            // }
+                            // else {
+                                // var _vlr = null;
+                            // }
+                        // }
+                        // else if ((content[x_j].field_type == 'number_integer') || (content[x_j].field_type == 'number_decimal')) {
+                            // if ((content[x_j].value == null) || (content[x_j].value == "") || (content[x_j].value == " ")) {
+                                // var _vlr = null;
+                            // }
+                            // else {
+                                // var _vlr = content[x_j].value;
+                            // }
+                        // }
+                        // else {
+                            // var _vlr = content[x_j].value;
+                        // }
+    //     
+                        // if (_array_value[content[x_j].field_name]) {
+                            // _array_value[content[x_j].field_name].push(_vlr);
+    //                      
+                        // }
+                        // else {
+                            // _array_value[content[x_j].field_name] = [];
+                            // _array_value[content[x_j].field_name].push(_vlr);
+    //                       
+                        // }
+                    // }
+                // }
+        
+                //field names
+                
+                
+                
+                
+                
+                
+                
+                // if (content[j].is_title === true) {
+                            // if (title_to_node.charAt(0) == "") {
+                                // if (content[j].cardinality == -1) {
+                                    // var tit_aux = content[j].value;
+                                    // if (tit_aux == null)
+                                        // tit_aux = "";
+                                    // else
+                                        // tit_aux = tit_aux[0].title;
+                                    // title_to_node = tit_aux;
+                                // }
+                                // else {
+                                    // if (content[j].value == null) {
+                                        // title_to_node = "";
+                                    // }
+                                    // else {
+                                        // title_to_node = content[j].value;
+                                    // }
+                                // }
+                            // }
+                            // else {
+                                // if (content[j].cardinality == -1) {
+                                    // var tit_aux = content[j].value;
+                                    // if (tit_aux == null)
+                                        // tit_aux = "";
+                                    // else
+                                        // tit_aux = " - " + tit_aux[0].title;
+                                    // title_to_node += tit_aux;
+                                // }
+                                // else {
+                                    // if (content[j].value == null) {
+                                        // title_to_node = "";
+                                    // }
+                                    // else {
+                                        // title_to_node += " - " + content[j].value;
+                                    // }
+                                // }
+                            // }
+                        // }
+        //     
+                        // Ti.API.info(content[j].field_type + ' is the field');
+            
+                        // if (quotes[content[j].field_name] === true) {
+                            // var mark = "";
+                        // }
+                        // else {
+                            // var mark = '"';
+                        // }
+            
+                        // if (content[j].value === null) {
+                            // mark = "";
+                        // }
+            
+            
+            
+            
+             // if ((content[j].field_type == 'number_decimal') || (content[j].field_type == 'number_integer')) {
+                                    // if ((content[j].value == '') || (content[j].value == null)) {
+                                        // value_to_insert = 'null';
+                                        // mark = '"';
+                                    // }
+                                    // else {
+                                        // value_to_insert = content[j].value;
+                                        // mark = '';
+                                    // }
+                                // }
+                                // else if (content[j].field_type == 'user_reference') {
+                                    // if (content[j].value == null) {
+                                        // value_to_insert = ''
+                                        // mark = '\"';
+                                    // }
+                                    // else {
+                                        // value_to_insert = content[j].value;
+                                        // mark = '';
+                                    // }
+                                // }
+                                // else if (content[j].field_type == 'taxonomy_term_reference') {
+                                    // if (content[j].widget == 'options_select') {
+                                        // if (content[j].cardinality != -1) {
+                                            // if (content[j].value == null) {
+                                                // value_to_insert = ''
+                                                // mark = '\"';
+                                            // }
+                                            // else {
+                                                // value_to_insert = content[j].value;
+                                                // mark = '';
+                                            // }
+                                        // }
+                                        // else {
+            //     
+                                            // var vital_info = [];
+            //     
+                                            // if (content[j].value == null) {
+                                                // vital_info.push("null");
+                                            // }
+                                            // else {
+                                                // var v_info_tax;
+                                                // for (v_info_tax in content[j].value ) {
+                                                    // vital_info.push(content[j].value[v_info_tax].v_info.toString());
+                                                // }
+                                            // }
+            //     
+                                            // //Treat the array
+                                            // content_s = treatArray(vital_info, 6);
+                                            // Ti.API.info('About to insert ' + content[j].field_name);
+                                            // // table structure:
+                                            // // incremental, node_id, field_name, value
+                                            // if (win.mode == 0) {
+                                                // Ti.API.info("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + new_nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
+                                                // db_put.execute("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + new_nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
+                                            // }
+                                            // else {
+                                                // Ti.API.info("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + win.nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
+                                                // db_put.execute("INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( " + win.nid + ", \"" + content[j].field_name + "\",  \"" + content_s + "\" )");
+                                            // }
+                                            // // Code must to be a number since this database field accepts only integers numbers
+                                            // // Token to indentify array of numbers is 7411317618171051229
+                                            // value_to_insert = 7411317618171051229;
+                                            // mark = '';
+                                        // }
+                                    // }
+                                    // else if (content[j].widget == 'taxonomy_autocomplete') {
+                                        // // TODO: add in new terms
+                                        // if ((content[j].tid == null) && (content[j].value == "")) {
+                                            // value_to_insert = '';
+                                            // mark = '\"';
+                                        // }
+                                        // else if ((win.mode == 0) && (content[j].tid == null) && (content[j].value != "")) {
+                                            // if (content[j].restrict_new_autocomplete_terms != 1) {
+                                                // mark = '';
+                                                // //Get smallest tid
+                                                // var tid = db_put.execute("SELECT tid FROM term_data ORDER BY tid ASC ");
+            //     
+                                                // if (tid.fieldByName('tid') >= 0) {
+                                                    // var new_tid = -1;
+                                                // }
+                                                // else {
+                                                    // var new_tid = tid.fieldByName('tid') - 1;
+                                                // }
+                                                // var date_created = Math.round(+new Date() / 1000);
+                                                // db_put.execute("INSERT INTO term_data (tid, vid, name, description, weight, created) VALUES (" + new_tid + ", " + content[j].vid + ", '" + content[j].value + "', '', '', '" + date_created + "'  )");
+                                                // value_to_insert = new_tid;
+            //     
+                                                // Ti.API.info('First tid is: ' + new_tid + ' and tid ' + content[j].tid + ' and value ' + content[j].value);
+                                                // tid.close();
+                                            // }
+                                            // else {
+                                                // value_to_insert = '';
+                                            // }
+            //     
+                                        // }
+                                        // else if ((content[j].tid != null)) {
+                                            // mark = '';
+                                            // value_to_insert = content[j].tid;
+                                        // }
+                                    // }
+                                // }
+                                // else if (content[j].field_type == 'omadi_reference') {
+                                    // if (content[j].nid === null) {
+                                        // value_to_insert = '';
+                                        // mark = '\"';
+                                    // }
+                                    // else {
+                                        // mark = '';
+                                        // value_to_insert = content[j].nid;
+                                    // }
+                                // }
+                                // else if (content[j].field_type == 'list_boolean') {
+                                    // if (content[j].value === true) {
+                                        // value_to_insert = 1;
+                                    // }
+                                    // else {
+                                        // value_to_insert = 0;
+                                    // }
+                                // }
+                                // else if (content[j].field_type == 'rules_field') {
+                                    // if (content[j].value === false || content[j].value === 0 || content[j].value === 'false') {
+                                        // value_to_insert = 'false';
+                                    // }
+                                    // else {
+                                        // value_to_insert = JSON.stringify(content[j].value).replace(/"/gi, "\"\"");
+                                    // }
+                                // }
+                                // else if ((content[j].field_type == 'omadi_time') || (content[j].field_type == 'datestamp')) {
+                                    // if (content[j].update_it === true) {
+                                        // value_to_insert = Math.round(content[j].value / 1000);
+                                    // }
+                                    // else {
+                                        // mark = "\"";
+                                        // value_to_insert = '';
+                                    // }
+                                // }
+                                // else {
+                                    // value_to_insert = content[j].value;
+                                // }
+                            // }
+                            // if (value_to_insert == '') {
+                                // mark = '\"';
+                            // }
+            //     
+                            // if (j == content.length - 1) {
+                                // query += mark + "" + value_to_insert + "" + mark + " )";
+                            // }
+                            // else {
+                                // query += mark + "" + value_to_insert + "" + mark + ", ";
+                            // }
+                            // Ti.API.info(content[j].field_type + ' has value to insert ' + value_to_insert);
+
+
+
+/***** END FROM form.js ******/
+
+
+
+
 
 function conditionalSetRequiredField(idx) {
     var entityArr = createEntityMultiple();

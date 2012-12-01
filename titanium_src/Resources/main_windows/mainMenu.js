@@ -349,23 +349,26 @@ listView.addEventListener('click', function(e) {
     //Creates a new node_type
     if (e.source.is_plus) {
         //alert('You clicked the '+e.row.display+' . His table\'s name is '+e.row.name_table);
-        var win_new = Ti.UI.createWindow();//create_or_edit_node.getWindow();
-        win_new.title = "New " + e.row.display;
-        win_new.type = e.row.name_table;
-        win_new.uid = jsonLogin.user.uid;
-        //win_new.up_node = update_node;
-        win_new.mode = 0;
-        //win_new.movement = movement;
-        win_new.region_form = 0;
-        win_new.backgroundColor = "#EEEEEE";
-        win_new.app_permissions = e.row.app_permissions;
-        win_new.url = '/main_windows/form.js';
+        var formWindow = Ti.UI.createWindow({
+            title: "New " + e.row.display,
+            type: e.row.name_table,
+            nid: 'new',
+            url: '/main_windows/form.js'
+        });//create_or_edit_node.getWindow();
+        // win_new.title = "New " + e.row.display;
+        // win_new.type = e.row.name_table;
+        // win_new.uid = jsonLogin.user.uid;
+        // win_new.mode = 0;
+        // win_new.region_form = 0;
+        // win_new.backgroundColor = "#EEEEEE";
+        // win_new.app_permissions = e.row.app_permissions;
+        // win_new.url = '/main_windows/form.js';
         
-        win_new.addEventListener('open', function() {
+        formWindow.addEventListener('open', function() {
             unlock_screen();
         });
 
-        win_new.open();
+        formWindow.open();
         
         //setTimeout(function() {
         //    create_or_edit_node.loadUI();
@@ -867,7 +870,6 @@ function openDraftWindow() {
         url : 'drafts.js',
         type : 'draft',
         uid : jsonLogin.user.uid,
-        //up_node : update_node,
         backgroundColor : '#EEE'
     });
     

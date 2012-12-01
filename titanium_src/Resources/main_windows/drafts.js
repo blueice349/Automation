@@ -195,25 +195,33 @@ function draftNavButtons() {"use strict";
 
             if (e.row.nid != null) {
 
-                win_new = create_or_edit_node.getWindow();
-                win_new.title = e.row.title;
-                win_new.type = e.row._type;
-                win_new.listView = curWin.listView;
-                win_new.up_node = curWin.up_node;
-                win_new.uid = curWin.uid;
-                win_new.region_form = e.row.form_part;
+                var formWindow = Ti.UI.createWindow({
+                    navBarHidden: true,
+                    title: e.row.title,
+                    type: e.row._type,
+                    nid: e.row.nid,
+                    url: '/main_windows/form.js'
+                });
+                
+                //Ti.API.debug(e.row._type);
+                // win_new.title = e.row.title;
+                // win_new.type = e.row._type;
+                // win_new.listView = curWin.listView;
+                // win_new.up_node = curWin.up_node;
+                // win_new.uid = curWin.uid;
+                // win_new.region_form = e.row.form_part;
+// 
+                // //Passing parameters
+                // win_new.nid = e.row.nid;
+                // win_new.nameSelected = e.row.name;
+// 
+                // //Sets a mode to fields edition
+                // win_new.mode = 1;
 
-                //Passing parameters
-                win_new.nid = e.row.nid;
-                win_new.nameSelected = e.row.name;
-
-                //Sets a mode to fields edition
-                win_new.mode = 1;
-
-                win_new.open();
-                setTimeout(function() {
-                    create_or_edit_node.loadUI();
-                }, 100);
+                formWindow.open();
+                // setTimeout(function() {
+                    // create_or_edit_node.loadUI();
+                // }, 100);
 
                 //Omadi.data.setUpdating(false);
 

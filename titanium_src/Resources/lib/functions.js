@@ -294,37 +294,54 @@ function isJsonString(str) {
 }
 
 
-
-function update_node(mode, _node_name, flag_next_part) {"use strict";
-
-    //Omadi.display.showLoadingIndicator("Saving data to the web...");
-
-    Omadi.service.sendUpdates(mode, _node_name, function(error) {
-
-        //Omadi.display.hideLoadingIndicator();
-        Ti.API.info('Closing create or edit node');
-        if ( typeof error !== 'undefined') {
-            alert(error);
-        }
-
-        if (flag_next_part != null) {
-            reload_me(flag_next_part);
-        }
-        else {
-            close_me(false);
-        }
-    });
-
-    // installMe(curWin, null, curWin.listView, null, 'POST', mode, function(isError) {
-    // Ti.API.info('Closing create or edit node');
-    // if (flag_next_part != null) {
-    // close_parent(flag_next_part);
-    // }
-    // else {
-    // close_parent(isError);
-    // }
-    // }, _node_name);
-}
+// 
+// function update_node(mode, _node_name, flag_next_part) {"use strict";
+    // var db, latest_nid, result, formWin;
+    // //Omadi.display.showLoadingIndicator("Saving data to the web...");
+// 
+    // Omadi.service.sendUpdates(mode, _node_name);//, function(error) {
+// 
+        // // //Omadi.display.hideLoadingIndicator();
+        // // Ti.API.info('Closing create or edit node');
+        // // if ( typeof error !== 'undefined') {
+            // // alert(error);
+        // // }
+// // 
+        // if (flag_next_part != null) {
+//             
+            // //reload_me(flag_next_part);
+            // db = Omadi.utils.openMainDatabase();
+            // result = db.execute("SELECT min(nid) FROM node");
+            // latest_nid = result.field(0);
+            // result.close();
+            // db.close();
+//             
+            // formWin = Ti.UI.createWindow({
+                // navBarHidden: true,
+                // url: '/main_windows/form.js',
+                // title: bundle.label
+            // });//create_or_edit_node.getWindow();
+//             
+            // formWin.type = curWin.type;
+            // formWin.nid = latest_nid;
+            // formWin.mode = 1;
+            // formWin.open();
+        // }
+        // // else {
+            // // close_me(false);
+        // // }
+    // // });
+// 
+    // // installMe(curWin, null, curWin.listView, null, 'POST', mode, function(isError) {
+    // // Ti.API.info('Closing create or edit node');
+    // // if (flag_next_part != null) {
+    // // close_parent(flag_next_part);
+    // // }
+    // // else {
+    // // close_parent(isError);
+    // // }
+    // // }, _node_name);
+// }
 
 //Function Opens a new window to display descAux [Description?].
 //The window closes when it receives a click event

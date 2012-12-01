@@ -89,7 +89,7 @@ Omadi.widgets.number_decimal = {
         
         var settings, widgetView, dbValue, textValue;
         
-        dbValue = "";
+        dbValue = null;
         textValue = "";
         if(typeof node[instance.field_name] !== 'undefined'){
             if(typeof node[instance.field_name].dbValues !== 'undefined' && typeof node[instance.field_name].dbValues[index] !== 'undefined'){
@@ -120,11 +120,13 @@ Omadi.widgets.number_decimal = {
                 fontSize: Omadi.widgets.fontSize
             },
             returnKeyType : Ti.UI.RETURNKEY_DONE,
+            keyboardType: Ti.UI.KEYBOARD_NUMBERS_PUNCTUATION,
             
             instance: instance,
             dbValue: dbValue,
             textValue: textValue,
             value : textValue
+            
                         
             // field_type : instance.type,
             // field_name : instance.field_name,
@@ -137,6 +139,8 @@ Omadi.widgets.number_decimal = {
             // changedFlag : 0,
             // real_ind : count
         });
+        
+        
         
         
         //widgetView.hintText = '(000) 000-0000 x0000';
@@ -169,7 +173,16 @@ Omadi.widgets.number_decimal = {
         
         widgetView.addEventListener('change', function(e) {
             /*global setConditionallyRequiredLabels*/
-            e.source.dbValue = e.source.value;
+            /*jslint regexp: true*/
+            
+            e.source.value = e.source.value.replace(/[^0-9\.]/g, '');
+            if(e.source.value.length > 0){
+                e.source.dbValue = parseFloat(e.source.value);
+            }
+            else{
+                e.source.dbValue = null;
+            }
+            
             e.source.textValue = e.source.value;
             
             if(e.source.check_conditional_fields.length > 0){

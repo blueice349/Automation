@@ -87,7 +87,7 @@ Omadi.widgets.user_reference = {
                 }
             }
             
-            if (dbValue === "" && typeof settings.default_value !== 'undefined' && settings.default_value == "current_user") {
+            if (dbValue === null && typeof settings.default_value !== 'undefined' && settings.default_value == "current_user") {
                 loginDetails = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
                 dbValue = loginDetails.user.uid;
                 textValue = loginDetails.user.realname;

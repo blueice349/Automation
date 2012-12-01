@@ -410,7 +410,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
         
                     Omadi.data.setUpdating(false);
         
-                    Ti.API.info("Services are down");
+                    Ti.API.error("Services are down");
                 };
         
                 http.send();    
@@ -422,7 +422,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
     }
 };
 
-Omadi.service.sendUpdates = function(mode, node_type, sendUpdatesCallback) { "use strict";
+Omadi.service.sendUpdates = function(formWindow) { "use strict";
     /*jslint eqeq: true*/
     
     //showNotification();
@@ -454,7 +454,7 @@ Omadi.service.sendUpdates = function(mode, node_type, sendUpdatesCallback) { "us
     
             //Header parameters
             http.setRequestHeader("Content-Type", "application/json");
-            http.node_type = node_type;
+            //http.node_type = node_type;
     
             Omadi.utils.setCookieHeader(http);
     
@@ -488,37 +488,37 @@ Omadi.service.sendUpdates = function(mode, node_type, sendUpdatesCallback) { "us
                     subDB.close();
     
                     //Ti.API.info("updated file upload table");
-                    if (mode === 1) {
-                        if (PLATFORM === 'android') {
-                            Ti.UI.createNotification({
-                                message : 'The ' + this.node_type + ' was updated successfully',
-                                duration : Ti.UI.NOTIFICATION_DURATION_LONG
-                            }).show();
-                        }
-                        else {
-                            alert('The ' + this.node_type + ' was updated successfully');
-                        }
-                        //Just to make sure mainDB keeps locked
-    
-                        //close_parent(false);
-                        //Omadi.service.uploadFile(win);
-    
-                    }
-                    else if (mode === 0) {
-                        if (PLATFORM === 'android') {
-                            Ti.UI.createNotification({
-                                message : 'The ' + this.node_type + ' was created successfully.',
-                                duration : Ti.UI.NOTIFICATION_DURATION_LONG
-                            }).show();
-                        }
-                        else {
-                            alert('The ' + this.node_type + ' was created successfully.');
-                        }
-                        //Just to make sure mainDB keeps locked
-    
-                        //close_parent(false);
-                        //Omadi.service.uploadFile(win);
-                    }
+                    // if (mode === 1) {
+                        // if (PLATFORM === 'android') {
+                            // Ti.UI.createNotification({
+                                // message : 'The ' + this.node_type + ' was updated successfully',
+                                // duration : Ti.UI.NOTIFICATION_DURATION_LONG
+                            // }).show();
+                        // }
+                        // else {
+                            // alert('The ' + this.node_type + ' was updated successfully');
+                        // }
+                        // //Just to make sure mainDB keeps locked
+//     
+                        // //close_parent(false);
+                        // //Omadi.service.uploadFile(win);
+//     
+                    // }
+                    // else if (mode === 0) {
+                        // if (PLATFORM === 'android') {
+                            // Ti.UI.createNotification({
+                                // message : 'The ' + this.node_type + ' was created successfully.',
+                                // duration : Ti.UI.NOTIFICATION_DURATION_LONG
+                            // }).show();
+                        // }
+                        // else {
+                            // alert('The ' + this.node_type + ' was created successfully.');
+                        // }
+                        // //Just to make sure mainDB keeps locked
+//     
+                        // //close_parent(false);
+                        // //Omadi.service.uploadFile(win);
+                    // }
     
                 }
                 else {
@@ -542,30 +542,40 @@ Omadi.service.sendUpdates = function(mode, node_type, sendUpdatesCallback) { "us
                     });
                 }
     
-                Ti.API.debug("at the bottom after sync has returned");
-                if ( typeof sendUpdatesCallback !== 'undefined') {
-                    sendUpdatesCallback();
-                }
+                //Ti.API.debug("at the bottom after sync has returned");
+                
+                // if ( typeof sendUpdatesCallback !== 'undefined') {
+                    // //sendUpdatesCallback();
+                // }
     
-    
+                
                 Ti.App.Properties.setBool("isSendingData", false);
-    
+                
+                if(formWindow !== 'undefined'){
+                    formWindow.close();
+                }
+                
+                Omadi.service.uploadFile();
             };
     
             //Connection error:
             http.onerror = function(e) {
-                var dialog;
+                var dialog, db;
                 Ti.API.error('Code status: ' + e.error);
                 Ti.API.error('CODE ERROR = ' + this.status);
                 //Ti.API.info("Progress bar = " + progress);
-    
+                
+                db = Omadi.utils.openMainDatabase();
+                db.execute("UPDATE node SET flag_is_updated = 3 WHERE nid < 0");
+                db.close();
+                
                 Titanium.Media.vibrate();
     
                 if (this.status == 403) {
                     dialog = Titanium.UI.createAlertDialog({
                         title : 'Omadi',
                         buttonNames : ['OK'],
-                        message: "You have been logged out. Please log back in."
+                        message: "You have been logged out. Please log back in. Your latest data was saved as a draft."
                     });
     
                     dialog.addEventListener('click', function(e) {
@@ -581,7 +591,7 @@ Omadi.service.sendUpdates = function(mode, node_type, sendUpdatesCallback) { "us
                     dialog = Titanium.UI.createAlertDialog({
                         title : 'Omadi',
                         buttonNames : ['OK'],
-                        message: "Your session is no longer valid. Please log back in."
+                        message: "Your session is no longer valid. Please log back in. Your latest data was saved as a draft."
                     });
     
                     dialog.addEventListener('click', function(e) {
@@ -594,7 +604,24 @@ Omadi.service.sendUpdates = function(mode, node_type, sendUpdatesCallback) { "us
                     Omadi.service.logout();
                     dialog.show();
                 }
-              
+                else if(this.status == 500){
+                    
+                    
+                    
+                    dialog = Titanium.UI.createAlertDialog({
+                        title : 'Service Error',
+                        buttonNames : ['OK'],
+                        message: "There was a problem synching your data to the server. Your latest data was saved as a draft."
+                    });
+    
+                    dialog.show();
+                }   
+                
+                
+                if(formWindow !== 'undefined'){
+                    formWindow.close();
+                }    
+                       
                 // if (mode == 0) {
                     // alert('Error: ' + e.error);
                 // }
@@ -617,9 +644,9 @@ Omadi.service.sendUpdates = function(mode, node_type, sendUpdatesCallback) { "us
     
                 //Ti.API.info("Services are down");
     
-                if ( typeof sendUpdatesCallback != 'undefined') {
-                    sendUpdatesCallback("There was a problem synching your data to the Internet, but your data is saved in the mobile app and will be synched when problems with Omadi services have been resolved.");
-                }
+                // if ( typeof sendUpdatesCallback != 'undefined') {
+                    // sendUpdatesCallback("There was a problem synching your data to the Internet, but your data is saved in the mobile app and will be synched when problems with Omadi services have been resolved.");
+                // }
             };
     
             //app_timestamp = Math.round(+new Date().getTime() / 1000);
@@ -645,8 +672,6 @@ Omadi.service.logout = function() { "use strict";
     Ti.App.fireEvent('stop_gps');
     Ti.App.fireEvent('free_login');
 
-    Omadi.display.showLoadingIndicator("Logging you out...");
-
     http = Ti.Network.createHTTPClient();
 
     http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync/logout.json');
@@ -663,16 +688,9 @@ Omadi.service.logout = function() { "use strict";
         Ti.App.Properties.setString('logStatus', "You have successfully logged out");
         //Ti.API.info('From Functions ... Value is : ' + Ti.App.Properties.getString('logStatus'));
 
-        Ti.UI.currentWindow.close();
-
         db = Omadi.utils.openListDatabase();
         db.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
         db.close();
-
-        //indLog._parent.close();
-        Omadi.display.hideLoadingIndicator();
-        //indLog.close();
-        Omadi.display.removeNotifications();
     };
 
     http.onerror = function(e) {
@@ -684,27 +702,25 @@ Omadi.service.logout = function() { "use strict";
             var db = Omadi.utils.openListDatabase();
             db.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
             db.close();
-
-            //indLog._parent.close();
-            Omadi.display.hideLoadingIndicator();
-            //indLog.close();
         }
         else {
             Ti.API.info("Failed to log out");
             //alert("Failed to log out, please try again");
         }
-
-        Ti.UI.currentWindow.close();
-        Omadi.display.removeNotifications();
     };
 
     http.send();
+    
+    Omadi.display.hideLoadingIndicator();
+    Omadi.display.removeNotifications();
+    
+    Ti.UI.currentWindow.hide();
 
     Ti.App.Properties.setBool("stopGPS", true);
     Ti.App.Properties.setBool("quitApp", true);
 };
 
-var IMAGE_MAX_BYTES = 524258;
+
 
 Omadi.service.uploadFile = function() {"use strict";
     /*jslint eqeq:true*/
@@ -731,40 +747,10 @@ Omadi.service.uploadFile = function() {"use strict";
         mainDB.close();
         
         
-        // if (file_data.length > IMAGE_MAX_BYTES) {
-            // //imageView.image = Omadi.display.getImageViewFromData(event.media, 1200, 800).image;
-//             
-            // tmpImageView = Titanium.UI.createImageView({
-                // image : file_data,
-                // width : 'auto',
-                // height : 'auto'
-            // });
-//             
-            // blobImage = tmpImageView.toImage();
-//            
-            // //var ratio
-            // if(blobImage.height > 1000 || blobImage.width > 1000) {
-//                 
-                // maxDiff = blobImage.height - 1000;
-                // if(blobImage.width - 1000 > maxDiff){
-                    // // Width is bigger
-                    // tmpImageView.width = 1000;
-                    // tmpImageView.height = (1000 / blobImage.width) * blobImage.height;
-                // }
-                // else{
-                    // // Height is bigger
-                    // tmpImageView.height = 1000;
-                    // tmpImageView.width = (1000 / blobImage.height) * blobImage.width;
-                // }
-//                 
-                // //tmpImageView.image = tmpImageView.toImage();
-//                 
-                // file_data = tmpImageView.toImage();
-            // } 
-        // }
         
-        //imageData = Ti.Utils.base64encode(file_data);
+        
         imageData = file_data;
+        //imageData = file_data;
         
         if(nid > 0){
                 

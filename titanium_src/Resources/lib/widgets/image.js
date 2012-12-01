@@ -4,6 +4,7 @@
 
 
 
+var IMAGE_MAX_BYTES = 524258;
 
 Omadi.widgets.image = {
     
@@ -325,7 +326,7 @@ Omadi.widgets.image = {
                 Ti.Media.showCamera({
     
                     success : function(event) {
-                        var newImageView;
+                        var newImageView, tmpImageView, blob, maxDiff, newHeight, newWidth;
     
                         //Ti.API.info("MIME TYPE: " + event.media.mimeType);
                         // If image size greater than 1MB we will reduce th image else take as it is.
@@ -369,7 +370,40 @@ Omadi.widgets.image = {
                             
                        //alert("success");
                        //Ti.Media.hideCamera();
-                       Omadi.widgets.image.saveImageInDb(imageView);
+                       
+                       blob = imageView.image;
+                       
+                       try{
+                           
+                           if (blob.getLength() > IMAGE_MAX_BYTES) {
+                            //imageView.image = Omadi.display.getImageViewFromData(event.media, 1200, 800).image;
+                               
+                                //var ratio
+                                if(blob.height > 1000 || blob.width > 1000) {
+                                    
+                                    maxDiff = blob.height - 1000;
+                                    if(blob.width - 1000 > maxDiff){
+                                        // Width is bigger
+                                        newWidth = 1000;
+                                        newHeight = (1000 / blob.width) * blob.height;
+                                    }
+                                    else{
+                                        // Height is bigger
+                                        newHeight = 1000;
+                                        newWidth = (1000 / blob.height) * blob.width;
+                                    }
+                                    
+                                    blob = blob.imageAsResized(newWidth, newHeight);
+                                } 
+                            }
+                        }
+                        catch(ex){
+                            alert("Error resizing the photo: " + ex);
+                        }
+                       
+                        
+                       
+                        Omadi.widgets.image.saveImageInDb(imageView, blob);
                         
                     },
                     error : function(error) {
@@ -405,14 +439,14 @@ Omadi.widgets.image = {
         }
 
     },
-    saveImageInDb: function(imageView) {"use strict";
+    saveImageInDb: function(imageView, blob) {"use strict";
         var nid, db, encodedImage, mime, imageName;
         
         try{
             nid = 0;
             
         
-            encodedImage = Ti.Utils.base64encode(imageView.bigImg);
+            encodedImage = Ti.Utils.base64encode(blob);
             //encodedImage = imageView.bigImg;
             mime = imageView.mimeType;
             
@@ -425,7 +459,6 @@ Omadi.widgets.image = {
             // else {
                 
             imageView.dbValue = -1;
-            
             
             db = Omadi.utils.openMainDatabase();
             db.execute('INSERT INTO file_upload_queue (nid, timestamp, file_data , field_name, file_name, delta) VALUES ("0","' + Omadi.utils.getUTCTimestamp() + '", "' + encodedImage + '", "' + imageView.instance.field_name + '", "' + imageName + '", ' + imageView.imageIndex + ')');

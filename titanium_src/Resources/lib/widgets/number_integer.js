@@ -89,11 +89,11 @@ Omadi.widgets.number_integer = {
         
         var settings, widgetView, dbValue, textValue;
         
-        dbValue = "";
+        dbValue = null;
         textValue = "";
         if(typeof node[instance.field_name] !== 'undefined'){
             if(typeof node[instance.field_name].dbValues !== 'undefined' && typeof node[instance.field_name].dbValues[index] !== 'undefined'){
-                dbValue = node[instance.field_name].dbValues[index];
+                dbValue = parseInt(node[instance.field_name].dbValues[index], 10);
             }
             
             if(typeof node[instance.field_name].textValues !== 'undefined' && typeof node[instance.field_name].textValues[index] !== 'undefined'){
@@ -120,11 +120,13 @@ Omadi.widgets.number_integer = {
                 fontSize: Omadi.widgets.fontSize
             },
             returnKeyType : Ti.UI.RETURNKEY_DONE,
+            keyboardType: Ti.UI.KEYBOARD_NUMBER_PAD,
             
             instance: instance,
             dbValue: dbValue,
             textValue: textValue,
             value : textValue
+            
                         
             // field_type : instance.type,
             // field_name : instance.field_name,
@@ -169,7 +171,16 @@ Omadi.widgets.number_integer = {
         
         widgetView.addEventListener('change', function(e) {
             /*global setConditionallyRequiredLabels*/
-            e.source.dbValue = e.source.value;
+            /*jslint regexp: true*/
+           
+            e.source.value = e.source.value.replace(/[^0-9]/g, '');
+            if(e.source.value.length > 0){
+                e.source.dbValue = parseInt(e.source.value, 10);
+            }
+            else{
+                e.source.dbValue = null;
+            }
+            
             e.source.textValue = e.source.value;
             
             if(e.source.check_conditional_fields.length > 0){

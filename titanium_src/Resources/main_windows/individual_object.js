@@ -285,7 +285,7 @@ function doFieldOutput(fieldObj) {"use strict";
 
         if (fieldObj.type === 'calculation_field') {
 
-            if (fieldObj.settings.hidden === null || fieldObj.settings.hidden == 0) {
+            if (fieldObj.settings.hidden != 1) {
                 tableView = getCalculationTableView(node, fieldObj);
 
                 if (tableView.singleValue) {
@@ -432,7 +432,9 @@ function doFieldOutput(fieldObj) {"use strict";
 
                         case 'phone':
                             valueLabel.color = '#369';
-                            valueLabel.number = node[fieldObj.field_name].textValues[i].replace(/\D/g, '');
+                            if(node[fieldObj.field_name].textValues[i] != null){
+                                valueLabel.number = node[fieldObj.field_name].textValues[i].replace(/\D/g, '');
+                            }
                             valueLabel.addEventListener('click', function(e) {
                                 //highlightMe(e.source.id);
                                 Titanium.Platform.openURL('tel:' + e.source.number);
@@ -564,8 +566,10 @@ function doFieldOutput(fieldObj) {"use strict";
             rowView.add(labelView);
             rowView.add(valueView);
         }
-
-        viewContent.add(rowView);
+        
+        if(!fieldIsHidden){
+            viewContent.add(rowView);
+        }
     }
     else {
         Ti.API.error(fieldObj.field_name + " not found in node!");
@@ -2143,27 +2147,24 @@ if (PLATFORM === 'android' && isEditEnabled == true) {
 
             menu_zero.addEventListener("click", function(e) {
                 //Next window to be opened
-                var win_new = Ti.UI.createWindow();//create_or_edit_node.getWindow();
-                win_new.title = curWin.title;
-                win_new.type = curWin.type;
-                win_new.listView = curWin.listView;
-                win_new.up_node = curWin.up_node;
-                win_new.uid = curWin.uid;
-                win_new.region_form = node_form.fieldByName('form_part') + 1;
-                win_new.url = "/main_windows/form.js";
+                var formWindow = Ti.UI.createWindow({
+                    navBarHidden: true,
+                    title: curWin.title,
+                    type: curWin.type,
+                    nid: curWin.nid,
+                    url: '/main_windows/form.js'
+                });
+                
 
-                //Passing parameters
-                win_new.nid = curWin.nid;
-                win_new.nameSelected = curWin.nameSelected;
+                formWindow.open();
+                
+                if(PLATFORM == 'android'){
+                    curWin.close();
+                }
+                else{
+                    //curWin.hide();
+                }
 
-                //Sets a mode to fields edition
-                win_new.mode = 1;
-
-                win_new.open();
-                //setTimeout(function() {
-                //    create_or_edit_node.loadUI();
-                //}, 100);
-                curWin.close();
             });
         }
 
@@ -2233,28 +2234,46 @@ if (PLATFORM !== 'android') {
 
 function openEditScreen(part) {
     //Next window to be opened
-    var win_new = Ti.UI.createWindow();//create_or_edit_node.getWindow();
-    win_new.title = (PLATFORM == 'android') ? curWin.title + '-' + curWin.nameSelected : curWin.title;
-    win_new.type = curWin.type;
-    win_new.listView = curWin.listView;
-    win_new.up_node = curWin.up_node;
-    win_new.uid = curWin.uid;
-    win_new.region_form = part;
-    win_new.movement = curWin.movement;
-    win_new.url = "/main_windows/form.js";
+    var formWindow = Ti.UI.createWindow({
+        navBarHidden: true,
+        title: curWin.title,
+        type: curWin.type,
+        nid: curWin.nid,
+        url: '/main_windows/form.js'
+    });//create_or_edit_node.getWindow();
+    // win_new.title = (PLATFORM == 'android') ? curWin.title + '-' + curWin.nameSelected : curWin.title;
+    // win_new.type = curWin.type;
+    // win_new.listView = curWin.listView;
+    // win_new.up_node = curWin.up_node;
+    // win_new.uid = curWin.uid;
+    // win_new.region_form = part;
+    // win_new.movement = curWin.movement;
+    // win_new.url = "/main_windows/form.js";
+// 
+    // //Passing parameters
+    // win_new.nid = curWin.nid;
+    // win_new.nameSelected = curWin.nameSelected;
+// 
+    // //Sets a mode to fields edition
+    // win_new.mode = 1;
 
-    //Passing parameters
-    win_new.nid = curWin.nid;
-    win_new.nameSelected = curWin.nameSelected;
-
-    //Sets a mode to fields edition
-    win_new.mode = 1;
-
-    win_new.open();
+    //formWindow.;
+    
+    //var lastWindow = Omadi.utils.cloneObject(Ti.UI.currentWindow);
+    
+    formWindow.open();
     //setTimeout(function() {
     //    create_or_edit_node.loadUI();
     //}, 100);
-    (PLATFORM == 'android') ? curWin.close() : curWin.hide();
+    if(PLATFORM == 'android'){
+        curWin.close();
+    }
+    else{
+        //curWin.hide();
+    }
+    
+    //lastWindow.close();
+    
 }
 
 function createEntity() {
