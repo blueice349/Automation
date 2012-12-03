@@ -131,23 +131,14 @@ Omadi.widgets.vehicle_fields = {
             possibleValues : possibleValues,
             real_field_name: real_field_name
                         
-            // field_type : instance.type,
-            // field_name : instance.field_name,
-            // required : instance.required,
-            // is_title : instance.is_title,
-            // composed_obj : false,
-            // cardinality : settings.cardinality,
-            // reffer_index : reffer_index,
-            // settings : settings,
-            // changedFlag : 0,
-            // real_ind : count
         });
         
-        
-        //widgetView.hintText = '(000) 000-0000 x0000';
-        
-        
-        //hintText : instance.label,
+        if(part == 'make'){
+            widgetView.maxLength = 18;
+        }
+        else{
+            widgetView.maxLength = 38;
+        }
         
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
         
@@ -167,10 +158,6 @@ Omadi.widgets.vehicle_fields = {
                 widgetView.softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
             }
         }
-    
-        if (settings.min_length && settings.min_length != null && settings.min_length != "null") {
-            widgetView.minLength = settings.min_length;
-        }
         
         autocomplete_table = Titanium.UI.createTableView({
             zIndex : 999,
@@ -182,6 +169,8 @@ Omadi.widgets.vehicle_fields = {
             top: 0,
             textField: widgetView
         });
+        
+        
         
         widgetView.autocomplete_table = autocomplete_table;
         
@@ -234,6 +223,12 @@ Omadi.widgets.vehicle_fields = {
             var possibleValues, tableData, i, regEx, row, db, result, makeValues;
             
             if (e.source.touched === true) {
+                
+                if(PLATFORM === 'android'){
+                    if(e.source.value.length > e.source.maxLength){
+                        e.source.value = e.source.value.substring(0, e.source.maxLength);
+                    }
+                }
                 
                 e.source.textValue = e.source.dbValue = e.source.value;
                 

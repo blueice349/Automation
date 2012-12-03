@@ -391,7 +391,7 @@ Omadi.data.saveNode = function(node){"use strict";
                 db.execute('INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed) VALUES (' + node.nid + ', ' + node.created + ', ' + node.changed + ', "' + node.title + '" , ' + node.author_uid + ',' + node.changed_uid + ', 1 , "' + node.type + '"  , ' + node.form_part + ', \'' + node.no_data + '\', \'1\')');
             }
             
-            db.execute('UPDATE file_upload_queue SET nid=' + node.nid + ' WHERE nid = 0');
+            db.execute('UPDATE _photos SET nid=' + node.nid + ' WHERE nid = 0');
             
             node._saved = true;
             Ti.API.debug("NODE SAVE WAS SUCCESSFUL");
@@ -429,6 +429,12 @@ Omadi.data.saveNode = function(node){"use strict";
     db.close();
     
     return node;
+};
+
+Omadi.data.deletePhotoUpload = function(id){"use strict";
+    var db = Omadi.utils.openMainDatabase();
+    db.execute("DELETE FROM _photos WHERE id = " + id);s
+    db.close();
 };
 
 function loadNode(nid) {"use strict";
@@ -742,7 +748,7 @@ function loadNode(nid) {"use strict";
                                 break;
     
                             case 'image':
-                                subResult = db.execute('SELECT * FROM file_upload_queue WHERE nid=' + node.nid + ' AND field_name ="' + field_name + '" ORDER BY delta ASC');
+                                subResult = db.execute('SELECT * FROM _photos WHERE nid=' + node.nid + ' AND field_name ="' + field_name + '" ORDER BY delta ASC');
     
                                 node[field_name].imageData = [];
                                 if (subResult.rowCount > 0) {
@@ -1275,7 +1281,7 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) { "use stric
                         queries.push('DELETE FROM ' + type + ' WHERE nid=' + json.insert[i].__negative_nid);
                         queries.push('DELETE FROM node WHERE nid=' + json.insert[i].__negative_nid);
                         
-                        queries.push("UPDATE file_upload_queue SET nid =" + json.insert[i].nid + " WHERE nid=" + json.insert[i].__negative_nid);
+                        queries.push("UPDATE _photos SET nid =" + json.insert[i].nid + " WHERE nid=" + json.insert[i].__negative_nid);
                         
                         
                         // Make sure we don't add a duplicate from doing a next_part action directly after a node save

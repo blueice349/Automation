@@ -38,8 +38,13 @@ var listView = Titanium.UI.createTableView({
     data : [],
     top : '50dp',
     bottom: '60dp',
+    height: Ti.UI.SIZE,
     scrollable : true,
-    separatorColor : '#BDBDBD'
+    separatorColor : '#BDBDBD',
+    footerView: Ti.UI.createView({
+        height: '60dp',
+        width: '100%'
+    })
 });
 
 function lock_screen() {"use strict";
@@ -94,6 +99,9 @@ function checkUpdate(evt) {"use strict";
         }
         up_flag.close();
         db_up.close();
+        
+        
+        Omadi.service.uploadFile();
     // }
     // else {
         // if (evt == 'from_menu') {
@@ -322,6 +330,45 @@ curWin.add(listView);
     // curWin.add(img);
 // }
 
+
+
+
+// showToolbar(name, curWin)
+var loggedView = Titanium.UI.createView({
+    top : '0px',
+    backgroundColor : '#111',
+    height : '50dp',
+    width : '100%',
+    opacity : 0.99
+});
+
+var networkStatusView = Ti.UI.createView({
+    zIndex: 1000,
+    top: 0,
+    height: '50dp',
+    width: '100%',
+    backgroundColor: '#111',
+    visible: false
+});
+
+var networkStatusLabel = Ti.UI.createLabel({
+   text: 'Testing...',
+   color: '#fff',
+   font: {
+       fontSize: 16
+   },
+   width: '100%',
+   height: '50dp',
+   textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+});
+
+networkStatusView.add(networkStatusLabel);
+
+
+
+
+
+
 displayBundleList();
 
 if (PLATFORM == 'android') {
@@ -330,6 +377,20 @@ if (PLATFORM == 'android') {
         duration : Ti.UI.NOTIFICATION_DURATION_LONG
     });
 }
+
+Ti.App.addEventListener("doneSendingData", function(){"use strict";
+    networkStatusView.hide();
+    Omadi.service.uploadFile();
+});
+
+Ti.App.addEventListener("doneSendingPhotos", function(){"use strict";
+    networkStatusView.hide();
+});
+
+Ti.App.addEventListener("sendingData", function(e){"use strict";
+    networkStatusLabel.setText(e.message);
+    networkStatusView.show();
+});
 
 //Go to contact.js when contact's button is clicked
 listView.addEventListener('click', function(e) {
@@ -413,14 +474,6 @@ listView.addEventListener('click', function(e) {
     Omadi.data.setUpdating(false);
 });
 
-// showToolbar(name, curWin)
-var loggedView = Titanium.UI.createView({
-    top : '0px',
-    backgroundColor : '#111',
-    height : '50dp',
-    width : '100%',
-    opacity : 0.99
-});
 
 var label_top = Titanium.UI.createLabel({
     color : '#FFFFFF',
@@ -480,7 +533,9 @@ loggedView.add(refresh_image);
 
 loggedView.add(label_top);
 loggedView.add(offImage);
+
 curWin.add(loggedView);
+curWin.add(networkStatusView);
 
 var a = Titanium.UI.createAlertDialog({
     title : 'Omadi',

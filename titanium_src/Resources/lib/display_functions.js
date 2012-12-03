@@ -182,8 +182,10 @@ var loadingIndicatorWindow, loadingActivityIndicator;
 Omadi.display.hideLoadingIndicator = function() { "use strict";
     Ti.API.info("hiding indicator");
     
-    loadingActivityIndicator.hide();
-    loadingIndicatorWindow.close();
+    //if(typeof loadingActivityIndicator !== 'undefined'){
+        loadingActivityIndicator.hide();
+        loadingIndicatorWindow.close();
+   // }
 };
 
 Omadi.display.showLoadingIndicator = function(show, timeout) {"use strict";

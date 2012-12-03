@@ -103,7 +103,7 @@ Omadi.widgets.image = {
             instance: instance
         });
         
-        Ti.API.debug("IMAGE DBVALUES: " + JSON.stringify(dbValue));
+        //Ti.API.debug("IMAGE DBVALUES: " + JSON.stringify(dbValue));
         
         if(isArray(dbValue)){
             for (i = 0; i < dbValue.length; i++) {
@@ -452,16 +452,16 @@ Omadi.widgets.image = {
             
             imageName = 'image.' + mime.substring(mime.indexOf('/') + 1, mime.length);
             
-            //var is_exists = db_toSaveImage.execute('SELECT delta, nid FROM file_upload_queue WHERE nid=' + file_upload_nid + ' and delta=' + currentImageView.private_index + ' and field_name="' + field_name + '";');
+            //var is_exists = db_toSaveImage.execute('SELECT delta, nid FROM _photos WHERE nid=' + file_upload_nid + ' and delta=' + currentImageView.private_index + ' and field_name="' + field_name + '";');
             // if (is_exists.rowCount > 0) {
-                // db_toSaveImage.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '",timestamp="' + vl_to_field + '",file_data="' + encodeImage + '", field_name="' + field_name + '", file_name="' + imageName + '", delta=' + currentImageView.private_index + ' WHERE nid=' + file_upload_nid + ' and delta=' + currentImageView.private_index + ' and field_name="' + field_name + '";');
+                // db_toSaveImage.execute('UPDATE _photos SET nid="' + file_upload_nid + '",timestamp="' + vl_to_field + '",file_data="' + encodeImage + '", field_name="' + field_name + '", file_name="' + imageName + '", delta=' + currentImageView.private_index + ' WHERE nid=' + file_upload_nid + ' and delta=' + currentImageView.private_index + ' and field_name="' + field_name + '";');
             // }
             // else {
                 
             imageView.dbValue = -1;
             
             db = Omadi.utils.openMainDatabase();
-            db.execute('INSERT INTO file_upload_queue (nid, timestamp, file_data , field_name, file_name, delta) VALUES ("0","' + Omadi.utils.getUTCTimestamp() + '", "' + encodedImage + '", "' + imageView.instance.field_name + '", "' + imageName + '", ' + imageView.imageIndex + ')');
+            db.execute('INSERT INTO _photos (nid, timestamp, file_data , field_name, file_name, delta) VALUES ("0","' + Omadi.utils.getUTCTimestamp() + '", "' + encodedImage + '", "' + imageView.instance.field_name + '", "' + imageName + '", ' + imageView.imageIndex + ')');
             //}
         
             db.close();
@@ -501,7 +501,7 @@ Omadi.widgets.image = {
                                         // decoded = decoded.toString();
                                         // decodedValues = decoded.split("j8Oc2s1E");
                                     // }
-                                    // val = db_display.execute('SELECT * FROM file_upload_queue WHERE nid=' + win.nid + ' AND field_name ="' + field_arr[index_label][index_size].field_name + '";');
+                                    // val = db_display.execute('SELECT * FROM _photos WHERE nid=' + win.nid + ' AND field_name ="' + field_arr[index_label][index_size].field_name + '";');
                                     // if (val.rowCount > 0) {
                                         // while (val.isValidRow()) {
                                             // isUpdated[val.fieldByName('delta')] = true;

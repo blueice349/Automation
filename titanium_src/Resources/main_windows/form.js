@@ -18,7 +18,7 @@ function cancelOpt() {"use strict";
     dialog.addEventListener('click', function(e) {
         if (e.index == 0) {
             var db_toDeleteImage = Omadi.utils.openMainDatabase();
-            db_toDeleteImage.execute("DELETE FROM file_upload_queue WHERE nid=0;");
+            db_toDeleteImage.execute("DELETE FROM _photos WHERE nid=0;");
             db_toDeleteImage.close();
             
             Ti.UI.currentWindow.close();
@@ -401,24 +401,29 @@ function bottomButtons() {"use strict";
 
             postDialog.addEventListener('click', function(ev) {
                 
-                if (btn_tt.length == 4) {
-                    if (ev.index == 1) {
-                        save_form_data('next_part');
+                if(Ti.UI.currentWindow.nodeSaved === false){
+                    if (btn_tt.length == 4) {
+                        if (ev.index == 1) {
+                            save_form_data('next_part');
+                        }
+                        else if (ev.index == 0) {
+                            save_form_data('normal');
+                        }
+                        else if (ev.index == 2) {
+                            save_form_data('draft');
+                        }
                     }
-                    else if (ev.index == 0) {
-                        save_form_data('normal');
-                    }
-                    else if (ev.index == 2) {
-                        save_form_data('draft');
+                    else {
+                        if (ev.index == 0) {
+                            save_form_data('normal');
+                        }
+                        else if (ev.index == 1) {
+                            save_form_data('draft');
+                        }
                     }
                 }
-                else {
-                    if (ev.index == 0) {
-                        save_form_data('normal');
-                    }
-                    else if (ev.index == 1) {
-                        save_form_data('draft');
-                    }
+                else{
+                    alert("The form data was saved correctly, but this screen didn't close for some reason. You can exit safely. Please report what you did to get this screen.");
                 }
             });
         });
@@ -446,6 +451,7 @@ var instances = {};
 var win = Ti.UI.currentWindow;
 
 win.setBackgroundColor("#eee");
+win.nodeSaved = false;
 
 Ti.API.error("WIN NID: " + win.nid);
 
@@ -622,7 +628,7 @@ var regions = {};
                 region_form_part = 0;
             }
             
-            Ti.API.debug("formpart: " + region_form_part);
+            //Ti.API.debug("formpart: " + region_form_part);
             
             if(region_form_part <= node.form_part){
                 
@@ -918,7 +924,7 @@ function validateRequired(node, instance){"use strict";
          
          if (instance.field_type == 'image') {
             Ti.API.error("TODO: in image validation");
-            // var is_images_query = 'SELECT id FROM file_upload_queue WHERE nid=0 ';
+            // var is_images_query = 'SELECT id FROM _photos WHERE nid=0 ';
             // if (win.nid != null && win.nid != "") {
                 // is_images_query += ' OR nid=' + win.nid + ' ';
             // }
@@ -1734,7 +1740,7 @@ function save_form_data(saveType) {"use strict";
                 // if (((content[x].is_title === true) || (content[x].required == 'true') || (content[x].required === true) || (content[x].required == '1') || (content[x].required == 1) ) && ((content[x].value == '') || (content[x].value == null)) && (content[x].no_data_checkbox == null || content[x].no_data_checkbox == "" || content[x].no_data_checkbox == false) && content[x].enabled == true) {
                     // //Check for image field
                     // if (content[x].field_type == 'image') {
-                        // var is_images_query = 'SELECT id FROM file_upload_queue WHERE nid=0 ';
+                        // var is_images_query = 'SELECT id FROM _photos WHERE nid=0 ';
                         // if (win.nid != null && win.nid != "") {
                             // is_images_query += ' OR nid=' + win.nid + ' ';
                         // }
@@ -1964,6 +1970,10 @@ function save_form_data(saveType) {"use strict";
                 //var saved = false;
                 
                 node = Omadi.data.saveNode(node);
+                
+                if(node._saved === true){
+                    Ti.UI.currentWindow.nodeSaved = true;
+                }
                 
                 // Setup the current node and nid in the window so a duplicate won't be made for this window
                 Ti.UI.currentWindow.node = node;

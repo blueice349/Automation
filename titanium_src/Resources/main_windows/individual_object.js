@@ -1815,7 +1815,7 @@ function doRegionOutput(regionObj) {"use strict";
 // // decoded = decoded.toString();
 // // decodedValues = decoded.split("j8Oc2s1E");
 // // }
-// // val = db.execute('SELECT * FROM file_upload_queue WHERE nid=' + curWin.nid + ' AND field_name ="' + c_field_name[count] + '";');
+// // val = db.execute('SELECT * FROM _photos WHERE nid=' + curWin.nid + ' AND field_name ="' + c_field_name[count] + '";');
 // //
 // // if (val.rowCount > 0) {
 // // while (val.isValidRow()) {
@@ -1846,7 +1846,7 @@ function doRegionOutput(regionObj) {"use strict";
 // // val = results.fieldByName(c_field_name[count]);
 // // }
 // // }
-// // valUp = db.execute('SELECT * FROM file_upload_queue WHERE nid=' + curWin.nid + ' AND field_name ="' + c_field_name[count] + '";');
+// // valUp = db.execute('SELECT * FROM _photos WHERE nid=' + curWin.nid + ' AND field_name ="' + c_field_name[count] + '";');
 // //
 // // if (valUp.rowCount > 0) {
 // // isUpdated = true;
@@ -2273,7 +2273,6 @@ function openEditScreen(part) {
     }
     
     //lastWindow.close();
-    
 }
 
 function createEntity() {

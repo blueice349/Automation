@@ -225,12 +225,9 @@ function draftNavButtons() {"use strict";
 
                 //Omadi.data.setUpdating(false);
 
-                if (PLATFORM === 'android') {
-                    curWin.close();
-                }
-                else {
-                    curWin.hide();
-                }
+                //if (PLATFORM === 'android') {
+                //    curWin.close();
+                //}
 
                 //curWin.close();
                 resultsNames.close();

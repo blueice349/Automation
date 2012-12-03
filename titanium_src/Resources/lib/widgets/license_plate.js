@@ -133,7 +133,8 @@ Omadi.widgets.license_plate = {
                 dbValue: dbValue,
                 textValue: textValue,
                 value : textValue,
-                real_field_name: real_field_name
+                real_field_name: real_field_name,
+                maxLength: 10
             });
             
             widgetView.addEventListener('focus', function(e) {
@@ -141,8 +142,16 @@ Omadi.widgets.license_plate = {
                 //adjustView(e.source.my_index, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
             });
             
+            
             widgetView.addEventListener('change', function(e) {
                 /*global setConditionallyRequiredLabels*/
+               
+                if(PLATFORM === 'android'){
+                    if(e.source.value.length > e.source.maxLength){
+                        e.source.value = e.source.value.substring(0, e.source.maxLength);
+                    }
+                }
+               
                 e.source.dbValue = e.source.value;
                 e.source.textValue = e.source.value;
                 

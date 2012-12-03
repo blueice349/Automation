@@ -556,7 +556,7 @@
         // // if (((content[x].is_title === true) || (content[x].required == 'true') || (content[x].required === true) || (content[x].required == '1') || (content[x].required == 1) ) && ((content[x].value == '') || (content[x].value == null)) && (content[x].no_data_checkbox == null || content[x].no_data_checkbox == "" || content[x].no_data_checkbox == false) && content[x].enabled == true) {
             // // //Check for image field
             // // if (content[x].field_type == 'image') {
-                // // var is_images_query = 'SELECT id FROM file_upload_queue WHERE nid=0 ';
+                // // var is_images_query = 'SELECT id FROM _photos WHERE nid=0 ';
                 // // if (win.nid != null && win.nid != "") {
                     // // is_images_query += ' OR nid=' + win.nid + ' ';
                 // // }
@@ -1219,7 +1219,7 @@
             // // else {
                 // // file_upload_nid = new_nid;
             // // }
-            // // db_put.execute('UPDATE file_upload_queue SET nid=' + file_upload_nid + ' WHERE nid=0;');
+            // // db_put.execute('UPDATE _photos SET nid=' + file_upload_nid + ' WHERE nid=0;');
 // // 
             // // //If Images captured and not yet uploaded then store in file_uploaded_queue
             // // var j;
@@ -1253,13 +1253,13 @@
              // // var encodeImage = Ti.Utils.base64encode(arrImages[k].bigImg);
              // // var mime = arrImages[k].mimeType;
              // // var imageName = 'image.' + mime.substring(mime.indexOf('/') + 1, mime.length);
-             // // var is_exists = db_put.execute('SELECT delta, nid FROM file_upload_queue WHERE nid=' + file_upload_nid + ' and delta=' + arrImages[k].private_index + ' and field_name="' + content[j].field_name + '";');
+             // // var is_exists = db_put.execute('SELECT delta, nid FROM _photos WHERE nid=' + file_upload_nid + ' and delta=' + arrImages[k].private_index + ' and field_name="' + content[j].field_name + '";');
              // // if (is_exists.rowCount > 0) {
-             // // db_put.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '", file_data="' + encodeImage + '", field_name="' + content[j].field_name + '", file_name="' + imageName + '", delta=' + arrImages[k].private_index + ' WHERE nid=' + file_upload_nid + ' and delta=' + arrImages[k].private_index + ' and field_name="' + content[j].field_name + '";');
+             // // db_put.execute('UPDATE _photos SET nid="' + file_upload_nid + '", file_data="' + encodeImage + '", field_name="' + content[j].field_name + '", file_name="' + imageName + '", delta=' + arrImages[k].private_index + ' WHERE nid=' + file_upload_nid + ' and delta=' + arrImages[k].private_index + ' and field_name="' + content[j].field_name + '";');
              // // continue;
              // // }
 // // 
-             // // db_put.execute('INSERT INTO file_upload_queue (nid , file_data , field_name, file_name, delta) VALUES (' + file_upload_nid + ', "' + encodeImage + '", "' + content[j].field_name + '", "' + imageName + '", ' + arrImages[k].private_index + ')');
+             // // db_put.execute('INSERT INTO _photos (nid , file_data , field_name, file_name, delta) VALUES (' + file_upload_nid + ', "' + encodeImage + '", "' + content[j].field_name + '", "' + imageName + '", ' + arrImages[k].private_index + ')');
              // // Ti.API.info('Filse Saved' + arrImages[k].private_index);
              // // }
              // // }
@@ -1269,13 +1269,13 @@
              // // var mime = content[j].mimeType;
              // // var imageName = 'image.' + mime.substring(mime.indexOf('/') + 1, mime.length);
 // // 
-             // // var is_exists = db_put.execute('SELECT delta, nid FROM file_upload_queue WHERE nid=' + file_upload_nid + ' and delta=' + content[j].private_index + ' and field_name="' + content[j].field_name + '";');
+             // // var is_exists = db_put.execute('SELECT delta, nid FROM _photos WHERE nid=' + file_upload_nid + ' and delta=' + content[j].private_index + ' and field_name="' + content[j].field_name + '";');
 // // 
              // // if (is_exists.rowCount > 0) {
-             // // db_put.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '", file_data="' + encodeImage + '", field_name="' + content[j].field_name + '", file_name="' + imageName + '", delta=' + content[j].private_index + ' WHERE nid=' + file_upload_nid + ' and delta=' + content[j].private_index + ' and field_name="' + content[j].field_name + '";');
+             // // db_put.execute('UPDATE _photos SET nid="' + file_upload_nid + '", file_data="' + encodeImage + '", field_name="' + content[j].field_name + '", file_name="' + imageName + '", delta=' + content[j].private_index + ' WHERE nid=' + file_upload_nid + ' and delta=' + content[j].private_index + ' and field_name="' + content[j].field_name + '";');
              // // continue;
              // // }
-             // // db_put.execute('INSERT INTO file_upload_queue (nid , file_data , field_name, file_name, delta) VALUES (' + file_upload_nid + ', "' + encodeImage + '", "' + content[j].field_name + '", "' + imageName + '","' + content[j].private_index + '")');
+             // // db_put.execute('INSERT INTO _photos (nid , file_data , field_name, file_name, delta) VALUES (' + file_upload_nid + ', "' + encodeImage + '", "' + content[j].field_name + '", "' + imageName + '","' + content[j].private_index + '")');
              // // }
              // // }
 // // 
@@ -2624,12 +2624,12 @@
     // var imageName = 'image.' + mime.substring(mime.indexOf('/') + 1, mime.length);
     // var currentDate = new Date();
     // var vl_to_field = currentDate.getTime();
-    // var is_exists = db_toSaveImage.execute('SELECT delta, nid FROM file_upload_queue WHERE nid=' + file_upload_nid + ' and delta=' + currentImageView.private_index + ' and field_name="' + field_name + '";');
+    // var is_exists = db_toSaveImage.execute('SELECT delta, nid FROM _photos WHERE nid=' + file_upload_nid + ' and delta=' + currentImageView.private_index + ' and field_name="' + field_name + '";');
     // if (is_exists.rowCount > 0) {
-        // db_toSaveImage.execute('UPDATE file_upload_queue SET nid="' + file_upload_nid + '",timestamp="' + vl_to_field + '",file_data="' + encodeImage + '", field_name="' + field_name + '", file_name="' + imageName + '", delta=' + currentImageView.private_index + ' WHERE nid=' + file_upload_nid + ' and delta=' + currentImageView.private_index + ' and field_name="' + field_name + '";');
+        // db_toSaveImage.execute('UPDATE _photos SET nid="' + file_upload_nid + '",timestamp="' + vl_to_field + '",file_data="' + encodeImage + '", field_name="' + field_name + '", file_name="' + imageName + '", delta=' + currentImageView.private_index + ' WHERE nid=' + file_upload_nid + ' and delta=' + currentImageView.private_index + ' and field_name="' + field_name + '";');
     // }
     // else {
-        // db_toSaveImage.execute('INSERT INTO file_upload_queue (nid ,timestamp, file_data , field_name, file_name, delta) VALUES (' + file_upload_nid + ',"' + vl_to_field + '", "' + encodeImage + '", "' + field_name + '", "' + imageName + '", ' + currentImageView.private_index + ')');
+        // db_toSaveImage.execute('INSERT INTO _photos (nid ,timestamp, file_data , field_name, file_name, delta) VALUES (' + file_upload_nid + ',"' + vl_to_field + '", "' + encodeImage + '", "' + field_name + '", "' + imageName + '", ' + currentImageView.private_index + ')');
     // }
 // 
     // db_toSaveImage.close();
@@ -3080,7 +3080,7 @@
             // }
             // var db_toDeleteImage = Omadi.utils.openMainDatabase();
 // 
-            // db_toDeleteImage.execute("DELETE FROM file_upload_queue WHERE nid=0;");
+            // db_toDeleteImage.execute("DELETE FROM _photos WHERE nid=0;");
             // db_toDeleteImage.close();
             // win.close();
         // }

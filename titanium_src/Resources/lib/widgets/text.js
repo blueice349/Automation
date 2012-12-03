@@ -165,8 +165,18 @@ Omadi.widgets.text = {
             widgetView.minLength = settings.min_length;
         }
         
+        if (settings.max_length && settings.max_length != null && settings.max_length != "null") {
+            widgetView.maxLength = settings.max_length;
+        }
+        
         widgetView.addEventListener('change', function(e) {
             /*global setConditionallyRequiredLabels*/
+            if(PLATFORM === 'android' && typeof e.source.maxLength !== 'undefined'){
+                if(e.source.value.length > e.source.maxLength){
+                    e.source.value = e.source.value.substring(0, e.source.maxLength);
+                }
+            }
+           
             e.source.dbValue = e.source.value;
             e.source.textValue = e.source.value;
             

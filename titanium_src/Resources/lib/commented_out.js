@@ -6786,7 +6786,7 @@ create_or_edit_node.loadUI = function() {
                                         decoded = decoded.toString();
                                         decodedValues = decoded.split("j8Oc2s1E");
                                     }
-                                    val = db_display.execute('SELECT * FROM file_upload_queue WHERE nid=' + win.nid + ' AND field_name ="' + field_arr[index_label][index_size].field_name + '";');
+                                    val = db_display.execute('SELECT * FROM _photos WHERE nid=' + win.nid + ' AND field_name ="' + field_arr[index_label][index_size].field_name + '";');
                                     if (val.rowCount > 0) {
                                         while (val.isValidRow()) {
                                             isUpdated[val.fieldByName('delta')] = true;
@@ -6864,7 +6864,7 @@ create_or_edit_node.loadUI = function() {
                                             val = results.fieldByName(field_arr[index_label][index_size].field_name);
                                         }
                                     }
-                                    valUp = db_display.execute('SELECT * FROM file_upload_queue WHERE nid=' + win.nid + ' AND field_name ="' + field_arr[index_label][index_size].field_name + '";');
+                                    valUp = db_display.execute('SELECT * FROM _photos WHERE nid=' + win.nid + ' AND field_name ="' + field_arr[index_label][index_size].field_name + '";');
 
                                     if (valUp.rowCount > 0) {
                                         isUpdated = true;
@@ -7479,7 +7479,7 @@ create_or_edit_node.loadUI = function() {
                 }
                 var db_toDeleteImage = Omadi.utils.openMainDatabase();
 
-                db_toDeleteImage.execute("DELETE FROM file_upload_queue WHERE nid=0;");
+                db_toDeleteImage.execute("DELETE FROM _photos WHERE nid=0;");
                 db_toDeleteImage.close();
                 win.close();
             }

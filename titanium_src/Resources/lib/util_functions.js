@@ -5,7 +5,7 @@ var Omadi = Omadi || {};
 Omadi.utils = Omadi.utils || {};
 
 Omadi.DOMAIN_NAME = domainName;
-Omadi.DB_VERSION = "omadiDb1675";
+Omadi.DB_VERSION = "omadiDb1677";
 
 Omadi.utils.openListDatabase = function() {"use strict";
     var db = Ti.Database.install('/database/db_list.sqlite', Omadi.DB_VERSION + "_list");
@@ -328,6 +328,8 @@ Omadi.utils.trimWhiteSpace = function(string) {"use strict";
     if(string === null){
         return null;
     }
+    
+    string += "".toString();
     
     return string.replace(/^\s+|\s+$/g, "");
 };
