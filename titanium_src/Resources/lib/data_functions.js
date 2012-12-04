@@ -87,6 +87,10 @@ Omadi.data.getFields = function(type){
             fid: result.fieldByName('fid')
         };
         
+        if(typeof instances[field_name].widget === 'string'){
+            instances[field_name].widget = JSON.parse(instances[field_name].widget);
+        }
+        
         if(field_name.indexOf("___") !== -1){
             nameParts = field_name.split("___");
             instances[field_name].part = nameParts[1];

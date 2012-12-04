@@ -613,6 +613,7 @@ var regions = {};
     regions = Omadi.data.getRegions(win.type);
     var region;
     var region_form_part = 0;
+    var hasViolationField = false;
     
     for(region_name in regions){
         if(regions.hasOwnProperty(region_name)){
@@ -726,6 +727,10 @@ var regions = {};
                         fieldWrapper.add(fieldView);
                         fieldWrappers[instance.field_name] = fieldWrapper;
                         regionViews[region_name].add(fieldWrapper);
+                        
+                        if(instance.widget.type == 'violation_select'){
+                            hasViolationField = true;
+                        }
                     }
                     else{
                         Ti.API.error("Could not add field type " + instance.type);
@@ -736,6 +741,10 @@ var regions = {};
     }   
     
     Ti.App.fireEvent("formFullyLoaded");
+    
+    if(hasViolationField){
+        setupViolationField();
+    }
     
 }());
 
@@ -1174,6 +1183,320 @@ function sort_by_weight(a, b) {"use strict";
     }
     return 0;
 }
+
+function changeViolationFieldOptions(violation_field_name){"use strict";
+    var db, result, options, textOptions, i, violation_instance, parentNid, parentNidDBValues, reference_field_name, 
+        rules_parent_field_name, parentNodeType, rulesData, dataRow, node_type, tids, used_tids, all_others_row,
+        rules_violation_time_field_name, violationTimestampValues, violation_timestamp, violationTerms, violation_term;
+    
+    /*global rules_field_passed_time_check*/
+    
+    node_type = Ti.UI.currentWindow.type;
+    
+    violation_instance = instances[violation_field_name];
+    
+    options = Omadi.widgets.taxonomy_term_reference.getOptions(violation_instance);
+    
+    violationTerms = [];
+    for(i = 0; i < options.length; i ++){
+        violationTerms[options[i].dbValue] = options[i];
+    }
+
+    db = Omadi.utils.openMainDatabase();
+    
+    reference_field_name = violation_instance.widget.rules_field_name;
+    rules_parent_field_name = violation_instance.widget.rules_parent_field_name;
+    rules_violation_time_field_name = violation_instance.widget.rules_violation_time_field_name;
+    
+    parentNidDBValues = Omadi.widgets.getDBValues(fieldWrappers[reference_field_name]);
+    
+    violationTimestampValues = Omadi.widgets.getDBValues(fieldWrappers[rules_violation_time_field_name]);
+    
+    violation_timestamp = null;
+    if(violationTimestampValues.length > 0){
+        violation_timestamp = violationTimestampValues[0];
+    }
+    
+    //Ti.API.error(violation_timestamp);
+    
+    if(parentNidDBValues.length > 0){
+        parentNid = parentNidDBValues[0];
+        if(parentNid > 0){
+            result = db.execute('SELECT table_name FROM node WHERE nid = ' + parentNid);
+            parentNodeType = result.fieldByName('table_name');
+            result.close();
+            
+            result = db.execute('SELECT ' + rules_parent_field_name + ' FROM ' + parentNodeType + ' WHERE nid = ' + parentNid);
+            rulesData = result.fieldByName(rules_parent_field_name);
+            rulesData = JSON.parse(rulesData);
+            
+            //Ti.API.debug(JSON.stringify(rulesData));
+            
+            if (rulesData != false && rulesData != null && rulesData != "" && rulesData.length > 0) {
+                tids = {};
+                used_tids = [];
+                all_others_row = [];
+        
+                for (i in rulesData) {
+                    if(rulesData.hasOwnProperty(i)){
+                        dataRow = rulesData[i];
+                        
+                        if (!isNaN(dataRow.tid)) {
+                            if (dataRow.node_types[node_type] != null && dataRow.node_types[node_type] != "") {
+                                if (rules_field_passed_time_check(dataRow.time_rules, violation_timestamp)) {
+            
+                                    //if (tids[dataRow.tid] == null) {
+                                        tids[dataRow.tid] = true;
+                                   // }
+                                   //Ti.API.debug(dataRow.tid);
+                                    //tids[dataRow.tid].push(violationTerms[dataRow.tid][0]);
+                                }
+                            }
+                            //if (used_tids[dataRow.tid] == null) {
+                                used_tids[dataRow.tid] = true;
+                            //}
+                            //used_tids[dataRow.tid].push(dataRow.tid);
+                        }
+                        else if (dataRow.tid == 'ALL') {
+                            all_others_row.push(dataRow);
+                        }
+                        //if (descripitons[dataRow.tid] == null) {
+                        //    descripitons[dataRow.tid] = [];
+                       // }
+                        //descripitons[dataRow.tid].push(dataRow.description);
+                    }
+                }
+        
+                if (all_others_row.length > 0) {
+                    if (all_others_row[0].node_types[node_type] != null && all_others_row[0].node_types[node_type] != "") {
+                        if (rules_field_passed_time_check(all_others_row[0].time_rules, violation_timestamp)) {
+                            for (i in violationTerms) {
+                                if(violationTerms.hasOwnProperty(i)){
+                                    violation_term = violationTerms[i][0].tid;
+                                    if (typeof used_tids[violation_term] === 'undefined') {
+                                        //if (tids[violation_term] == null) {
+                                            tids[violation_term] = true;
+                                        //}
+                                        //tids[violation_term].push(violationTerms[i][0]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                options = [];
+                
+                for(i in tids){
+                    if(tids.hasOwnProperty(i)){
+                        options.push(violationTerms[i]);
+                        //Ti.API.error(JSON.stringify(violationTerms[i]));
+                    }
+                }  
+            }
+        }
+    }
+    
+    //options = [];
+    
+    
+
+    // return;
+    // var violation_timestamp = rules_violation_time_field_name.value;
+    // violation_time = violation_timestamp;
+    // var node_type = win.type;
+// 
+    // if (data != false && data != null && data != "" && data.length > 0) {
+        // var tids = [];
+        // var used_tids = [];
+        // var all_others_row = [];
+// 
+        // var data_idx;
+        // for (data_idx in data) {
+            // var dataRow = data[data_idx];
+            // if (!isNaN(dataRow['tid'])) {
+                // if (dataRow['node_types'][node_type] != null && dataRow['node_types'][node_type] != "") {
+                    // if (rules_field_passed_time_check(dataRow['time_rules'], violation_timestamp)) {
+// 
+                        // if (tids[dataRow['tid']] == null) {
+                            // tids[dataRow['tid']] = new Array();
+                        // }
+                        // tids[dataRow['tid']].push(violations_terms[dataRow['tid']][0]);
+                    // }
+                // }
+                // if (used_tids[dataRow['tid']] == null) {
+                    // used_tids[dataRow['tid']] = new Array();
+                // }
+                // used_tids[dataRow['tid']].push(dataRow['tid']);
+            // }
+            // else if (dataRow['tid'] == 'ALL') {
+                // all_others_row.push(dataRow);
+            // }
+            // if (descripitons[dataRow['tid']] == null) {
+                // descripitons[dataRow['tid']] = new Array();
+            // }
+            // descripitons[dataRow['tid']].push(dataRow['description']);
+        // }
+// 
+        // if (all_others_row.length > 0) {
+            // if (all_others_row[0]['node_types'][node_type] != null && all_others_row[0]['node_types'][node_type] != "") {
+                // if (rules_field_passed_time_check(all_others_row[0]['time_rules'], violation_timestamp)) {
+                    // var violations_term_idx;
+                    // for (violations_terms_idx in violations_terms) {
+                        // var violation_term = violations_terms[violations_terms_idx][0].tid;
+                        // if (used_tids[violation_term] == null || used_tids[violation_term] == "") {
+                            // if (tids[violation_term] == null) {
+                                // tids[violation_term] = new Array();
+                            // }
+                            // tids[violation_term].push(violations_terms[violations_terms_idx][0]);
+                        // }
+                    // }
+                // }
+            // }
+        // }
+        // violations_terms = tids;
+        // fromViolationRules = true;
+    // }
+            
+            
+
+    Omadi.widgets.setValueWidgetProperty(violation_field_name, 'options', options);
+}
+
+
+function setupViolationField(){"use strict";
+    
+    var instances, field_name, instance, valueWidget, widget, referenceWidget, datestampWidget;
+    // NOTE: this will not work with time fields with multiple cardinality
+    
+    instances = Omadi.data.getFields(Ti.UI.currentWindow.type);
+    
+    for(field_name in instances){
+        if(instances.hasOwnProperty(field_name)){
+            instance = instances[field_name];
+            if(typeof instance.widget !== 'undefined' && instance.widget.type == 'violation_select'){
+                
+                widget = instance.widget;
+                Ti.API.error(JSON.stringify(widget));
+                
+                if(typeof fieldWrappers[field_name] !== 'undefined'){
+                    //valueWidget = Omadi.widgets.getValueWidget(field_name);
+                    
+                    
+                    if (widget.rules_field_name != null && widget.rules_field_name != "") {
+                        Ti.API.error(JSON.stringify(widget.rules_field_name));
+                        
+                        Omadi.widgets.setValueWidgetProperty(widget.rules_field_name, 'onChangeCallbacks', [changeViolationFieldOptions]);
+                        Omadi.widgets.setValueWidgetProperty(widget.rules_field_name, 'onChangeCallbackArgs', [[field_name]]);
+                        
+                        //referenceWidget.onChangeCallbacks.push(changeViolationFieldOptions);
+                        
+                        //var _reffer_index = entityArr[content_widget['rules_field_name']][0]['reffer_index'];
+                        //var _rulesFieldArr;
+                        //if (content[_reffer_index].rulesFieldArr == null) {
+                        //    _rulesFieldArr = [];
+                        //    content[_reffer_index].rulesFieldArr = _rulesFieldArr;
+                        //}
+                        //_rulesFieldArr = content[_reffer_index].rulesFieldArr;
+                        //_rulesFieldArr.push(content[j].reffer_index);
+                        //content[_reffer_index].rulesFieldArr = _rulesFieldArr;
+                        
+                        if (widget.rules_violation_time_field_name != null && widget.rules_violation_time_field_name != "") {
+                            Ti.API.error(JSON.stringify(widget.rules_violation_time_field_name));
+                            
+                            Omadi.widgets.setValueWidgetProperty(widget.rules_violation_time_field_name, 'onChangeCallbacks', [changeViolationFieldOptions]);
+                            Omadi.widgets.setValueWidgetProperty(widget.rules_violation_time_field_name, 'onChangeCallbackArgs', [[field_name]]);
+                            
+                            //referenceWidget.onChangeCallbacks.push(changeViolationFieldOptions);
+                            
+                            //var _reffer_index = entityArr[content_widget['rules_field_name']][0]['reffer_index'];
+                            //var _rulesFieldArr;
+                            //if (content[_reffer_index].rulesFieldArr == null) {
+                            //    _rulesFieldArr = [];
+                            //    content[_reffer_index].rulesFieldArr = _rulesFieldArr;
+                            //}
+                            //_rulesFieldArr = content[_reffer_index].rulesFieldArr;
+                            //_rulesFieldArr.push(content[j].reffer_index);
+                            //content[_reffer_index].rulesFieldArr = _rulesFieldArr;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // return;
+    // if (content[j].widgetObj != null && content[j].widgetObj.type == 'violation_select') {
+        // var content_widget = content[j].widgetObj;
+        // // if (content_widget['rules_field_name'] != null && content_widget['rules_field_name'] != "") {
+            // // var _reffer_index = entityArr[content_widget['rules_field_name']][0]['reffer_index'];
+            // // var _rulesFieldArr;
+            // // if (content[_reffer_index].rulesFieldArr == null) {
+                // // _rulesFieldArr = [];
+                // // content[_reffer_index].rulesFieldArr = _rulesFieldArr;
+            // // }
+            // // _rulesFieldArr = content[_reffer_index].rulesFieldArr;
+            // // _rulesFieldArr.push(content[j].reffer_index);
+            // // content[_reffer_index].rulesFieldArr = _rulesFieldArr;
+        // // }
+// 
+        // if (content_widget['rules_violation_time_field_name'] != null && content_widget['rules_violation_time_field_name'] != "") {
+            // var _reffer_index = entityArr[content_widget['rules_violation_time_field_name']][0]['reffer_index'];
+            // var _rulesFieldArr;
+            // if (content[_reffer_index].rulesFieldArr == null) {
+                // _rulesFieldArr = [];
+                // content[_reffer_index].rulesFieldArr = _rulesFieldArr;
+            // }
+            // _rulesFieldArr = content[_reffer_index].rulesFieldArr;
+            // _rulesFieldArr.push(content[j].reffer_index);
+            // content[_reffer_index].rulesFieldArr = _rulesFieldArr;
+        // }
+// 
+        // if (win.mode == 1) {
+            // if (content_widget['rules_field_name'] != null && content_widget['rules_violation_time_field_name'] != null && content_widget['rules_field_name'] != "" && content_widget['rules_violation_time_field_name'] != "") {
+                // var title = '';
+                // var value = content[j].value;
+                // if (content[j].settings.cardinality > 1 || content[j].settings.cardinality == 1) {
+                    // title = content[j].title;
+                // }
+                // else if (content[j].settings.cardinality == -1) {
+                    // title = content[j].text;
+                // }
+                // setParticularRulesField(content[j]);
+                // content[j].value = value;
+                // if (content[j].settings.cardinality > 1 || content[j].settings.cardinality == 1) {
+                    // content[j].title = title;
+                // }
+                // else if (content[j].settings.cardinality == -1) {
+                    // content[j].text = title;
+                    // //for(var itens_idx =0; itens_idx<content[j].itens.length; itens_idx++){
+                    // //for(var value_idx=0; value_idx < content[j].value.length ; value_idx++){
+                    // //alert(content[j].itens[itens_idx][0].v_into);
+                    // //alert(content[j].value[value_idx][0].v_into);
+                    // //if(content[j].itens[itens_idx].v_into == content[j].value[value_idx].v_into){
+                    // //content[j].itens[itens_idx].is_set = true;
+                    // //}
+                    // //}
+                    // //}
+                    // var itens = content[j].itens;
+                    // var value = content[j].value;
+                    // var itens_idx;
+                    // for (itens_idx in itens) {
+                        // var value_idx;
+                        // for (value_idx in value) {
+                            // if (itens[itens_idx].v_info == value[value_idx].v_info) {
+                                // itens[itens_idx].is_set = true;
+                            // }
+                        // }
+                    // }
+                    // content[j].itens = itens;
+                // }
+// 
+            // }
+        // }
+// 
+    // }
+};
 
 
 function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";

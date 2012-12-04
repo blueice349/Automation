@@ -354,7 +354,7 @@ Omadi.widgets.datestamp = {
                 //widgetView.jsDate = iOSDateCal;
             //}
             
-            var newDate;
+            var newDate, i, callback;
             
             if(typeof e.source.widgetView.tempDate !== 'undefined'){
                 
@@ -364,6 +364,14 @@ Omadi.widgets.datestamp = {
                 e.source.widgetView.textValue = Omadi.utils.formatDate(e.source.widgetView.dbValue, e.source.widgetView.showTime);
 //              
                 e.source.widgetView.setTitle(e.source.widgetView.textValue);
+                
+                if(e.source.widgetView.onChangeCallbacks.length > 0){
+                    for(i = 0; i < e.source.widgetView.onChangeCallbacks.length; i ++){
+                        callback = e.source.widgetView.onChangeCallbacks[i];
+                        callback(e.source.widgetView.onChangeCallbackArgs[i]);
+                    }
+                }
+                
                 // obj.value = obj.currentDate.getTime();
     
                 // var f_minute = obj.currentDate.getMinutes();

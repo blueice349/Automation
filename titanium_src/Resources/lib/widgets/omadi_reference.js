@@ -110,7 +110,8 @@ Omadi.widgets.omadi_reference = {
             lastValue: textValue,
             touched: false,
             possibleValues: possibleValues,
-            defaultValueChildFields: []
+            defaultValueChildFields: [],
+            onChangeCallbacks: []
                         
             // field_type : instance.type,
             // field_name : instance.field_name,
@@ -152,6 +153,13 @@ Omadi.widgets.omadi_reference = {
             e.source.autocomplete_table.setVisible(false);
             
             Omadi.widgets.omadi_reference.setChildDefaultValues(e.source.textField);
+            
+            if(e.source.textField.onChangeCallbacks.length > 0){
+                for(i = 0; i < e.source.textField.onChangeCallbacks.length; i ++){
+                    var callback = e.source.textField.onChangeCallbacks[i];
+                    callback(e.source.textField.onChangeCallbackArgs[i]);
+                }
+            }
         });        
         
 
@@ -192,7 +200,7 @@ Omadi.widgets.omadi_reference = {
         widgetView.addEventListener('change', function(e) {
             /*global setConditionallyRequiredLabels*/
            
-            var possibleValues, tableData, i, regEx, row, upperCaseValue;
+            var possibleValues, tableData, i, regEx, row, upperCaseValue, callback;
             
             if (e.source.touched === true) {
                 Ti.API.info("changed");
@@ -222,6 +230,12 @@ Omadi.widgets.omadi_reference = {
                             if (upperCaseValue == possibleValues[i].title.toUpperCase()) {
                                 e.source.dbValue = possibleValues[i].nid;
                                 Omadi.widgets.omadi_reference.setChildDefaultValues(e.source);
+                                if(e.source.onChangeCallbacks.length > 0){
+                                    for(i = 0; i < e.source.onChangeCallbacks.length; i ++){
+                                        callback = e.source.onChangeCallbacks[i];
+                                        callback(e.source.onChangeCallbackArgs[i]);
+                                    }
+                                }
                             }
                             else {
                                 e.source.dbValue = null;
@@ -281,6 +295,7 @@ Omadi.widgets.omadi_reference = {
             if(e.source.check_conditional_fields.length > 0){
                 setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
             }
+            
             // changedContentValue(e.source);
             // noDataChecboxEnableDisable(e.source, e.source.reffer_index);
         });
@@ -349,7 +364,7 @@ Omadi.widgets.omadi_reference = {
                         if(typeof parentNode[defaultValueField] !== 'undefined'){
                             defaultValues = parentNode[defaultValueField];
                             
-                            Ti.API.debug("real defaults: " + JSON.stringify(defaultValues));
+                            //Ti.API.debug("real defaults: " + JSON.stringify(defaultValues));
                             
                             Omadi.widgets.setValues(childFieldName, defaultValues);
                         }
