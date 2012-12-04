@@ -20,6 +20,7 @@ Ti.include('/lib/widgets/list_boolean.js');
 Ti.include('/lib/widgets/datestamp.js');
 Ti.include('/lib/widgets/image.js');
 Ti.include('/lib/widgets/calculation_field.js');
+Ti.include('/lib/widgets/rules_field.js');
 
 /*jslint eqeq: true, plusplus: true, nomen: true*/
 /*global PLATFORM, Omadi*/
@@ -64,6 +65,8 @@ Omadi.widgets.getFieldView = function (node, instance){"use strict";
             fieldView = Omadi.widgets.image.getFieldView(node, instance); break;
         case 'calculation_field':
             fieldView = Omadi.widgets.calculation_field.getFieldView(node, instance); break;
+        case 'rules_field':
+            fieldView = Omadi.widgets.rules_field.getFieldView(node, instance); break;
     }
     
     return fieldView;

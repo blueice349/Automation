@@ -306,6 +306,16 @@ function doFieldOutput(fieldObj) {"use strict";
                 fieldIsHidden = true;
             }
         }
+        else if (fieldObj.type === 'rules_field') {
+            rowView.add(labelView);
+            
+            valueView = Omadi.widgets.rules_field.getNewElement(node, fieldObj);
+            valueView.setWidth("59%");
+            valueView.setRight(0);
+            
+            rowView.add(valueView);
+                
+        }
         else if (fieldObj.type == 'metadata') {
             valueLabel = Ti.UI.createLabel({
                 text : fieldObj.textValue,
@@ -2187,7 +2197,6 @@ if (PLATFORM === 'android' && isEditEnabled == true) {
 
         json_data.close();
         db_act.close();
-
     }
 }
 
