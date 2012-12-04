@@ -422,7 +422,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
     }
 };
 
-Omadi.service.sendUpdates = function(formWindow) { "use strict";
+Omadi.service.sendUpdates = function() { "use strict";
     /*jslint eqeq: true*/
     
     //showNotification();
@@ -585,7 +585,7 @@ Omadi.service.sendUpdates = function(formWindow) { "use strict";
                         db_func.close();
                     });
                     
-                    Omadi.service.sendErrorReport('User logged out with code 403');
+                    Omadi.service.sendErrorReport('User logged out with code 401');
     
                     Omadi.service.logout();
                     dialog.show();
@@ -656,11 +656,7 @@ Omadi.service.sendUpdates = function(formWindow) { "use strict";
                     // sendUpdatesCallback("There was a problem synching your data to the Internet, but your data is saved in the mobile app and will be synched when problems with Omadi services have been resolved.");
                 // }
                 
-                
-                
-                if(formWindow !== 'undefined'){
-                    formWindow.close();
-                }    
+                Ti.UI.currentWindow.close();
                 /*** IMPORTANT: CANNOT DO ANYTHING AFTER THE WINDOW IS CLOSED ***/
             };
     
@@ -1015,215 +1011,311 @@ Omadi.service.sendErrorReport = function(message){"use strict";
 };
 
 
-////////////////////////////////////////////////
-// Gets the JSON for updated nodes
-////////////////////////////////////////////////
 
 Omadi.service.getUpdatedNodeJSON = function() { "use strict";
     /*jslint eqeq:true,plusplus:true*/
-   /*global isNumber*/
+   /*global isNumber,loadNode*/
 
-    var mainDB, field_name, newNodesResult, json, nodeDataResult, fieldsResult, type_string, no_data_string, array_cont, decoded, decoded_values, i, image_count_result, image_count, value, newTermsResult, vocabularyResult, cp_decoded_values;
+    var db, result, obj, nid, tid, nids, node, instances, field_name, i, v_result;
     
     try{
         //Initial JSON values:
         //var current_timestamp = Math.round(new Date() / 1000);
-        json = '{ "timestamp" : "' + Omadi.utils.getUTCTimestamp() + '", "data" : { ';
-        mainDB = Omadi.utils.openMainDatabase();
-       
-        //=============================
-        //Builds JSON for new nodes and for nodes that were updated
-        //=============================
-        newNodesResult = mainDB.execute('SELECT * FROM node WHERE flag_is_updated=1 ORDER BY nid DESC');
-        //Ti.API.info('Lets update the node :'+newNodesResult.fieldByName('nid'));
-        if (newNodesResult.rowCount > 0) {
-            json += '"node":{ ';
-            while (newNodesResult.isValidRow()) {
-               
-                //Ti.API.info('NODE ' + newNodesResult.fieldByName('nid') + ' -----JSON BEING CREATED-----');
-                
-                nodeDataResult = mainDB.execute('SELECT * FROM ' + newNodesResult.fieldByName('table_name') + ' WHERE nid = ' + newNodesResult.fieldByName('nid'));
-                fieldsResult = mainDB.execute('SELECT * FROM fields WHERE bundle = "' + newNodesResult.fieldByName('table_name') + '"');
-                type_string = fieldsResult.fieldByName('bundle');
-    
-                no_data_string = '""';
-                if (newNodesResult.fieldByName("no_data_fields") != null && newNodesResult.fieldByName("no_data_fields") != "") {
-                    no_data_string = newNodesResult.fieldByName("no_data_fields");
-                }
-                if (newNodesResult.fieldByName('nid') < 0) {
-                    json += '"' + newNodesResult.fieldByName('nid') + '":{ "created":"' + newNodesResult.fieldByName('created') + '", "nid":"' + newNodesResult.fieldByName('nid') + '", "type":"' + type_string.toLowerCase() + '", "form_part":"' + newNodesResult.fieldByName("form_part") + '", "no_data_fields":' + no_data_string;
-                }
-                else {
-                    json += '"' + newNodesResult.fieldByName('nid') + '":{ "changed":"' + newNodesResult.fieldByName('changed') + '", "nid":"' + newNodesResult.fieldByName('nid') + '", "type":"' + type_string.toLowerCase() + '", "form_part":"' + newNodesResult.fieldByName("form_part") + '", "no_data_fields":' + no_data_string;
-                }
-                //Ti.API.info(json);
-                //Ti.API.info('1');
-                while (fieldsResult.isValidRow()) {
-                    field_name = fieldsResult.fieldByName('field_name');
-                    //Ti.API.info(field_name);
-                    //Ti.API.debug("CREATE JSON: processing field " + fieldsResult.fieldByName('field_name'));
-                    if ((nodeDataResult.rowCount > 0) && (nodeDataResult.fieldByName(field_name) != null) && (nodeDataResult.fieldByName(field_name) != '')) {
-                        //Ti.API.info('3');
-                        if (nodeDataResult.fieldByName(field_name) == 7411317618171051229 || nodeDataResult.fieldByName(field_name) == "7411317618171051229") {
-                            //Ti.API.info('4');
-                            array_cont = mainDB.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + newNodesResult.fieldByName('nid') + ' AND field_name = \'' + fieldsResult.fieldByName('field_name') + '\'');
-                            //Ti.API.info('5');
-                            if ((array_cont.rowCount > 0) || (array_cont.isValidRow())) {
-                                //Decode the stored array:
-                                //Ti.API.info('6');
-                                //var a_decoded = ;
-                                //Ti.API.info('7 '+a_decoded);
-                                //TODO: Fix the decoded value:
-                                //decoded = Titanium.Utils.base64decode(decoded);
-                                decoded = Base64.decode(array_cont.fieldByName('encoded_array'));
-                                //Ti.API.info('8 '+decoded);
-                                //Ti.API.info('Decoded array is equals to: ' + decoded);
-                                //Ti.API.info('9');
-                                decoded = decoded.toString();
-                                //Ti.API.info('10');
-                                // Token that splits each element contained into the array: 'j8Oc2s1E'
-                                decoded_values = decoded.split("j8Oc2s1E");
-    
-                                for (i = 0; i < decoded_values.length; i ++) {
-                                    decoded_values[i] = decoded_values[i].toString().replace(/^\s+|\s+$/g, "");
-                                }
-                                
-                                
-                                if (fieldsResult.fieldByName('type') == 'image') {
-    
-                                    image_count_result = mainDB.execute('SELECT COUNT(*) AS count FROM _photos WHERE nid = ' + newNodesResult.fieldByName('nid') + ' AND field_name = \'' + fieldsResult.fieldByName('field_name') + '\'');
-                                    image_count = image_count_result.fieldByName('count');
-    
-                                    //Ti.API.info("IMAGE: Image Count: " + image_count);
-    
-                                    if (decoded_values.length) {
-                                        if (decoded_values.length == 1) {
-                                            if (decoded_values[0] == null || decoded_values[0] == "null" || decoded_values[0] == "" || isNumber(decoded_values[0]) === false) {
-                                                Ti.API.info('Nothing to add, pictures not taken');
-                                            }
-                                            else {
-                                                json += ', "' + fieldsResult.fieldByName('field_name') + '": [ \"' + decoded_values.join("\" , \"") + '\" ] ';
-                                            }
-                                        }
-                                        else {
-                                            cp_decoded_values = decoded_values.slice();
-                                        
-                                            for (i = 0; i < decoded_values.length; i ++) {
-                                                if (decoded_values[i] == null || decoded_values[i] == "null" || decoded_values[i] == "" || isNumber(decoded_values[i]) === false) {
-                                                    cp_decoded_values.splice(i, 1);
-                                                }
-                                            }
-                                            json += ', "' + fieldsResult.fieldByName('field_name') + '": [ \"' + cp_decoded_values.join("\" , \"") + '\" ] ';
-                                        }
-                                    }
-                                   
-                                }
-                                else {
-                                    json += ', "' + fieldsResult.fieldByName('field_name') + '": [ \"' + decoded_values.join("\" , \"") + '\" ] ';
-                                }
-    
-                                //Ti.API.info('11.1 '+json);
-                            }
-                            else {
-                                //Ti.API.info('12');
-                                if (fieldsResult.fieldByName('type') == 'image') {
-                                    
-                                    image_count_result = mainDB.execute('SELECT COUNT(*) AS count FROM _photos WHERE nid = ' + newNodesResult.fieldByName('nid') + ' AND field_name = \'' + fieldsResult.fieldByName('field_name') + '\'');
-                                    image_count = image_count_result.fieldByName('count');
-    
-                                    //Ti.API.info("IMAGE: Image Count bottom: " + image_count);
-    
-                                    if (nodeDataResult.fieldByName(fieldsResult.fieldByName('field_name')) == null || nodeDataResult.fieldByName(fieldsResult.fieldByName('field_name')) == "null" || nodeDataResult.fieldByName(fieldsResult.fieldByName('field_name')) == "" || isNumber(nodeDataResult.fieldByName(fieldsResult.fieldByName('field_name'))) === false) {
-                                        Ti.API.info('Nothing to add, pictures not taken');
-                                    }
-                                    else {
-                                        json += ', "' + fieldsResult.fieldByName('field_name') + '": "' + nodeDataResult.fieldByName(fieldsResult.fieldByName('field_name')) + '"';
-                                    }
-                                }
-                                else {
-                                    value = nodeDataResult.fieldByName(fieldsResult.fieldByName('field_name')).toString();
-                                    json += ', "' + fieldsResult.fieldByName('field_name') + '": "' + value.replace(/^\s+|\s+$/g, "") + '"';
-                                }
-                                //json += ', "' + fieldsResult.fieldByName('field_name') + '": "' + nodeDataResult.fieldByName(fieldsResult.fieldByName('field_name')) + '"';
-                                //Ti.API.info('13 PRE_JSON: ' + json);
-                            }
-                            array_cont.close();
-                        }
-                        else {
-                            //Ti.API.info('14');
-                            if (fieldsResult.fieldByName('type') == 'rules_field') {
-                                //Ti.API.info('15');
-                                json += ', "' + fieldsResult.fieldByName('field_name') + '": ' + nodeDataResult.fieldByName(fieldsResult.fieldByName('field_name'));
-                                //Ti.API.info('16 PRE_JSON: ' + json);
-                            }
-                            else {
-                                //Ti.API.info('17');
-                                // Most fields go here
-                                // single cardinality, non-photo, non-rules fields
-                                value = nodeDataResult.fieldByName(fieldsResult.fieldByName('field_name')).toString();
-                                json += ', "' + fieldsResult.fieldByName('field_name') + '": "' + value.replace(/^\s+|\s+$/g, "") + '" ';
-                                //Ti.API.info('18 PRE_JSON: ' + json);
-                            }
-                        }
-                    }
-    
-                    fieldsResult.next();
-                }
-                json += ' } ';
-                //Ti.API.info('19 PRE_JSON: ' + json);
-                //Next node
-                newNodesResult.next();
-                if (newNodesResult.isValidRow()) {
-                    json += ', ';
-                }
-            }
-            //close 'node'
-            json += '} ';
-            nodeDataResult.close();
-            fieldsResult.close();
-           
-            //=============================
-            //Builds JSON for new terms
-            //=============================
-            newTermsResult = mainDB.execute('SELECT * FROM term_data WHERE tid < 0 ORDER BY tid DESC');
-            //Ti.API.info('Lets update the terms :'+newTermsResult.fieldByName('tid'));
-            //Ti.API.info('20');
-            if (newTermsResult.rowCount > 0) {
-               // Ti.API.info('21');
-                json += ',"term":{ ';
-                while (newTermsResult.isValidRow()) {
-                    //Ti.API.info('22');
-                   // Ti.API.info('TERM ' + newTermsResult.fieldByName('tid') + ' -----JSON BEING CREATED-----');
-                    vocabularyResult = mainDB.execute('SELECT * FROM vocabulary WHERE vid = ' + newTermsResult.fieldByName('vid'));
-                    json += '"' + newTermsResult.fieldByName('tid') + '":{ "created":"' + newTermsResult.fieldByName('created') + '", "tid":"' + newTermsResult.fieldByName('tid') + '", "machine_name":"' + vocabularyResult.fieldByName('machine_name') + '", "name":"' + newTermsResult.fieldByName('name') + '"  }';
-                    //Next term
-                    newTermsResult.next();
-                    if (newTermsResult.isValidRow()) {
-                        json += ', ';
-                    }
-                    
-                    vocabularyResult.close();
-                    
-                }
-                //close 'term'
-                json += '} ';
-            }
-            // close data and timestamp:
-            json += ' } }';
-    
-            Ti.API.info('JSON: ' + json);
-    
-            //Close db connections and result set
-            newNodesResult.close();
-            newTermsResult.close();
-            mainDB.close();
-            return json;
+        //json = '{ "timestamp" : "' + Omadi.utils.getUTCTimestamp() + '", "data" : { ';
+        obj = {
+          timestamp: Omadi.utils.getUTCTimestamp(),
+          data: {}  
+        };
+        
+        nids = [];
+        
+        db = Omadi.utils.openMainDatabase();
+        result = db.execute("SELECT nid FROM node WHERE flag_is_updated=1");
+          
+        while(result.isValidRow()){
+            nids.push(result.fieldByName('nid'));
+            result.next();
         }
+        
+        result.close();
+        
+        result = db.execute('SELECT * FROM term_data WHERE tid < 0 ORDER BY tid DESC');
+        if (result.rowCount > 0) {
+            obj.data.term = {};
+           
+            while (result.isValidRow()) {
+
+                v_result = db.execute('SELECT * FROM vocabulary WHERE vid = ' + result.fieldByName('vid'));
+                
+                tid = result.fieldByName('tid');
+                
+                obj.data.term[tid] = {};
+                obj.data.term[tid].created = result.fieldByName('created');
+                obj.data.term[tid].tid = result.fieldByName('tid');
+                obj.data.term[tid].machine_name = v_result.fieldByName('machine_name');
+                obj.data.term[tid].vid = result.fieldByName('vid');
+                obj.data.term[tid].name = result.fieldByName('name');
+                
+                v_result.close();
+                
+                result.next();
+            }
+        }
+        result.close();
+        
+        db.close();
+        
+        
+        
+        if(nids.length > 0){
+            obj.data.node = {};
+            
+            for(i = 0; i < nids.length; i ++){
+                nid = nids[i];
+                node = loadNode(nid);
+                
+                instances = Omadi.data.getFields(node.type);
+                
+                obj.data.node[nid] = {};
+                obj.data.node[nid].created = node.created;
+                obj.data.node[nid].changed = node.changed;
+                obj.data.node[nid].nid = node.nid;
+                obj.data.node[nid].type = node.type;
+                obj.data.node[nid].form_part = node.form_part;
+                obj.data.node[nid].no_data_fields = node.no_data_fields;
+                
+                for(field_name in instances){
+                    if(instances.hasOwnProperty(field_name)){
+                        if(typeof node[field_name] !== 'undefined' && typeof node[field_name].dbValues !== 'undefined' && node[field_name].dbValues.length > 0){
+                            if(node[field_name].dbValues.length > 1){
+                                obj.data.node[nid][field_name] = node[field_name].dbValues;
+                            }
+                            else{
+                                obj.data.node[nid][field_name] = node[field_name].dbValues[0];
+                            }
+                        }
+                        else{
+                            obj.data.node[nid][field_name] = null;
+                        }
+                    }   
+                }
+            }
+        }
+       
+        return JSON.stringify(obj);
     }
     catch(ex){
         alert("Creating data for server: " + ex);
     }
 };
+
+// 
+// 
+// Omadi.service.getUpdatedNodeJSON = function() { "use strict";
+    // /*jslint eqeq:true,plusplus:true*/
+   // /*global isNumber*/
+// 
+    // var mainDB, field_name, newNodesResult, json, nodeDataResult, fieldsResult, type_string, no_data_string, array_cont, decoded, decoded_values, i, image_count_result, image_count, value, newTermsResult, vocabularyResult, cp_decoded_values;
+//     
+    // try{
+        // //Initial JSON values:
+        // //var current_timestamp = Math.round(new Date() / 1000);
+        // json = '{ "timestamp" : "' + Omadi.utils.getUTCTimestamp() + '", "data" : { ';
+        // mainDB = Omadi.utils.openMainDatabase();
+//        
+        // //=============================
+        // //Builds JSON for new nodes and for nodes that were updated
+        // //=============================
+        // newNodesResult = mainDB.execute('SELECT * FROM node WHERE flag_is_updated=1 ORDER BY nid DESC');
+        // //Ti.API.info('Lets update the node :'+newNodesResult.fieldByName('nid'));
+        // if (newNodesResult.rowCount > 0) {
+            // json += '"node":{ ';
+            // while (newNodesResult.isValidRow()) {
+//                
+                // //Ti.API.info('NODE ' + newNodesResult.fieldByName('nid') + ' -----JSON BEING CREATED-----');
+//                 
+                // nodeDataResult = mainDB.execute('SELECT * FROM ' + newNodesResult.fieldByName('table_name') + ' WHERE nid = ' + newNodesResult.fieldByName('nid'));
+                // fieldsResult = mainDB.execute('SELECT * FROM fields WHERE bundle = "' + newNodesResult.fieldByName('table_name') + '"');
+                // type_string = fieldsResult.fieldByName('bundle');
+//     
+                // no_data_string = '""';
+                // if (newNodesResult.fieldByName("no_data_fields") != null && newNodesResult.fieldByName("no_data_fields") != "") {
+                    // no_data_string = newNodesResult.fieldByName("no_data_fields");
+                // }
+                // if (newNodesResult.fieldByName('nid') < 0) {
+                    // json += '"' + newNodesResult.fieldByName('nid') + '":{ "created":"' + newNodesResult.fieldByName('created') + '", "nid":"' + newNodesResult.fieldByName('nid') + '", "type":"' + type_string.toLowerCase() + '", "form_part":"' + newNodesResult.fieldByName("form_part") + '", "no_data_fields":' + no_data_string;
+                // }
+                // else {
+                    // json += '"' + newNodesResult.fieldByName('nid') + '":{ "changed":"' + newNodesResult.fieldByName('changed') + '", "nid":"' + newNodesResult.fieldByName('nid') + '", "type":"' + type_string.toLowerCase() + '", "form_part":"' + newNodesResult.fieldByName("form_part") + '", "no_data_fields":' + no_data_string;
+                // }
+                // //Ti.API.info(json);
+                // //Ti.API.info('1');
+                // while (fieldsResult.isValidRow()) {
+                    // field_name = fieldsResult.fieldByName('field_name');
+                    // //Ti.API.info(field_name);
+                    // //Ti.API.debug("CREATE JSON: processing field " + fieldsResult.fieldByName('field_name'));
+                    // if ((nodeDataResult.rowCount > 0) && (nodeDataResult.fieldByName(field_name) != null) && (nodeDataResult.fieldByName(field_name) != '')) {
+                        // //Ti.API.info('3');
+                        // if (nodeDataResult.fieldByName(field_name) == 7411317618171051229 || nodeDataResult.fieldByName(field_name) == "7411317618171051229") {
+                            // //Ti.API.info('4');
+                            // array_cont = mainDB.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + newNodesResult.fieldByName('nid') + ' AND field_name = \'' + fieldsResult.fieldByName('field_name') + '\'');
+                            // //Ti.API.info('5');
+                            // if ((array_cont.rowCount > 0) || (array_cont.isValidRow())) {
+                                // //Decode the stored array:
+                                // //Ti.API.info('6');
+                                // //var a_decoded = ;
+                                // //Ti.API.info('7 '+a_decoded);
+                                // //TODO: Fix the decoded value:
+                                // //decoded = Titanium.Utils.base64decode(decoded);
+                                // decoded = Base64.decode(array_cont.fieldByName('encoded_array'));
+                                // //Ti.API.info('8 '+decoded);
+                                // //Ti.API.info('Decoded array is equals to: ' + decoded);
+                                // //Ti.API.info('9');
+                                // decoded = decoded.toString();
+                                // //Ti.API.info('10');
+                                // // Token that splits each element contained into the array: 'j8Oc2s1E'
+                                // decoded_values = decoded.split("j8Oc2s1E");
+//     
+                                // for (i = 0; i < decoded_values.length; i ++) {
+                                    // decoded_values[i] = decoded_values[i].toString().replace(/^\s+|\s+$/g, "");
+                                // }
+//                                 
+//                                 
+                                // if (fieldsResult.fieldByName('type') == 'image') {
+//     
+                                    // image_count_result = mainDB.execute('SELECT COUNT(*) AS count FROM _photos WHERE nid = ' + newNodesResult.fieldByName('nid') + ' AND field_name = \'' + fieldsResult.fieldByName('field_name') + '\'');
+                                    // image_count = image_count_result.fieldByName('count');
+//     
+                                    // //Ti.API.info("IMAGE: Image Count: " + image_count);
+//     
+                                    // if (decoded_values.length) {
+                                        // if (decoded_values.length == 1) {
+                                            // if (decoded_values[0] == null || decoded_values[0] == "null" || decoded_values[0] == "" || isNumber(decoded_values[0]) === false) {
+                                                // Ti.API.info('Nothing to add, pictures not taken');
+                                            // }
+                                            // else {
+                                                // json += ', "' + fieldsResult.fieldByName('field_name') + '": [ \"' + decoded_values.join("\" , \"") + '\" ] ';
+                                            // }
+                                        // }
+                                        // else {
+                                            // cp_decoded_values = decoded_values.slice();
+//                                         
+                                            // for (i = 0; i < decoded_values.length; i ++) {
+                                                // if (decoded_values[i] == null || decoded_values[i] == "null" || decoded_values[i] == "" || isNumber(decoded_values[i]) === false) {
+                                                    // cp_decoded_values.splice(i, 1);
+                                                // }
+                                            // }
+                                            // json += ', "' + fieldsResult.fieldByName('field_name') + '": [ \"' + cp_decoded_values.join("\" , \"") + '\" ] ';
+                                        // }
+                                    // }
+//                                    
+                                // }
+                                // else {
+                                    // json += ', "' + fieldsResult.fieldByName('field_name') + '": [ \"' + decoded_values.join("\" , \"") + '\" ] ';
+                                // }
+//     
+                                // //Ti.API.info('11.1 '+json);
+                            // }
+                            // else {
+                                // //Ti.API.info('12');
+                                // if (fieldsResult.fieldByName('type') == 'image') {
+//                                     
+                                    // image_count_result = mainDB.execute('SELECT COUNT(*) AS count FROM _photos WHERE nid = ' + newNodesResult.fieldByName('nid') + ' AND field_name = \'' + fieldsResult.fieldByName('field_name') + '\'');
+                                    // image_count = image_count_result.fieldByName('count');
+//     
+                                    // //Ti.API.info("IMAGE: Image Count bottom: " + image_count);
+//     
+                                    // if (nodeDataResult.fieldByName(fieldsResult.fieldByName('field_name')) == null || nodeDataResult.fieldByName(fieldsResult.fieldByName('field_name')) == "null" || nodeDataResult.fieldByName(fieldsResult.fieldByName('field_name')) == "" || isNumber(nodeDataResult.fieldByName(fieldsResult.fieldByName('field_name'))) === false) {
+                                        // Ti.API.info('Nothing to add, pictures not taken');
+                                    // }
+                                    // else {
+                                        // json += ', "' + fieldsResult.fieldByName('field_name') + '": "' + nodeDataResult.fieldByName(fieldsResult.fieldByName('field_name')) + '"';
+                                    // }
+                                // }
+                                // else {
+                                    // value = nodeDataResult.fieldByName(fieldsResult.fieldByName('field_name')).toString();
+                                    // json += ', "' + fieldsResult.fieldByName('field_name') + '": "' + value.replace(/^\s+|\s+$/g, "") + '"';
+                                // }
+                                // //json += ', "' + fieldsResult.fieldByName('field_name') + '": "' + nodeDataResult.fieldByName(fieldsResult.fieldByName('field_name')) + '"';
+                                // //Ti.API.info('13 PRE_JSON: ' + json);
+                            // }
+                            // array_cont.close();
+                        // }
+                        // else {
+                            // //Ti.API.info('14');
+                            // if (fieldsResult.fieldByName('type') == 'rules_field') {
+                                // //Ti.API.info('15');
+                                // json += ', "' + fieldsResult.fieldByName('field_name') + '": ' + nodeDataResult.fieldByName(fieldsResult.fieldByName('field_name'));
+                                // //Ti.API.info('16 PRE_JSON: ' + json);
+                            // }
+                            // else {
+                                // //Ti.API.info('17');
+                                // // Most fields go here
+                                // // single cardinality, non-photo, non-rules fields
+                                // value = nodeDataResult.fieldByName(fieldsResult.fieldByName('field_name')).toString();
+                                // json += ', "' + fieldsResult.fieldByName('field_name') + '": "' + value.replace(/^\s+|\s+$/g, "") + '" ';
+                                // //Ti.API.info('18 PRE_JSON: ' + json);
+                            // }
+                        // }
+                    // }
+//     
+                    // fieldsResult.next();
+                // }
+                // json += ' } ';
+                // //Ti.API.info('19 PRE_JSON: ' + json);
+                // //Next node
+                // newNodesResult.next();
+                // if (newNodesResult.isValidRow()) {
+                    // json += ', ';
+                // }
+            // }
+            // //close 'node'
+            // json += '} ';
+            // nodeDataResult.close();
+            // fieldsResult.close();
+//            
+            // //=============================
+            // //Builds JSON for new terms
+            // //=============================
+            // newTermsResult = mainDB.execute('SELECT * FROM term_data WHERE tid < 0 ORDER BY tid DESC');
+            // //Ti.API.info('Lets update the terms :'+newTermsResult.fieldByName('tid'));
+            // //Ti.API.info('20');
+            // if (newTermsResult.rowCount > 0) {
+               // // Ti.API.info('21');
+                // json += ',"term":{ ';
+                // while (newTermsResult.isValidRow()) {
+                    // //Ti.API.info('22');
+                   // // Ti.API.info('TERM ' + newTermsResult.fieldByName('tid') + ' -----JSON BEING CREATED-----');
+                    // vocabularyResult = mainDB.execute('SELECT * FROM vocabulary WHERE vid = ' + newTermsResult.fieldByName('vid'));
+                    // json += '"' + newTermsResult.fieldByName('tid') + '":{ "created":"' + newTermsResult.fieldByName('created') + '", "tid":"' + newTermsResult.fieldByName('tid') + '", "machine_name":"' + vocabularyResult.fieldByName('machine_name') + '", "name":"' + newTermsResult.fieldByName('name') + '"  }';
+                    // //Next term
+                    // newTermsResult.next();
+                    // if (newTermsResult.isValidRow()) {
+                        // json += ', ';
+                    // }
+//                     
+                    // vocabularyResult.close();
+//                     
+                // }
+                // //close 'term'
+                // json += '} ';
+            // }
+            // // close data and timestamp:
+            // json += ' } }';
+//     
+            // Ti.API.info('JSON: ' + json);
+//     
+            // //Close db connections and result set
+            // newNodesResult.close();
+            // newTermsResult.close();
+            // mainDB.close();
+            // return json;
+        // }
+    // }
+    // catch(ex){
+        // alert("Creating data for server: " + ex);
+    // }
+// };
 
 
 

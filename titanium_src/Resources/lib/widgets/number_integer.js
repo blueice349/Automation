@@ -93,7 +93,7 @@ Omadi.widgets.number_integer = {
         textValue = "";
         if(typeof node[instance.field_name] !== 'undefined'){
             if(typeof node[instance.field_name].dbValues !== 'undefined' && typeof node[instance.field_name].dbValues[index] !== 'undefined'){
-                dbValue = parseInt(node[instance.field_name].dbValues[index], 10);
+                dbValue = node[instance.field_name].dbValues[index];
             }
             
             if(typeof node[instance.field_name].textValues !== 'undefined' && typeof node[instance.field_name].textValues[index] !== 'undefined'){

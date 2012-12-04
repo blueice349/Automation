@@ -24,10 +24,8 @@ function cancelOpt() {"use strict";
             Ti.UI.currentWindow.close();
         }
     });
-    // TODO: uncomment this
-    //dialog.show();
-    
-    Ti.UI.currentWindow.close();
+
+    dialog.show(); 
 }
 
 // function get_android_menu(menu_exists) {"use strict";
@@ -443,7 +441,6 @@ function bottomButtons() {"use strict";
     }
 }
 
-
 var fieldViews = {};
 var instances = {};
 
@@ -453,10 +450,10 @@ var win = Ti.UI.currentWindow;
 win.setBackgroundColor("#eee");
 win.nodeSaved = false;
 
-Ti.API.error("WIN NID: " + win.nid);
+//Ti.API.error("WIN NID: " + win.nid);
 
 if(win.nid < 0){
-    Ti.API.error("WIN NID: " + win.nid);
+    //Ti.API.error("WIN NID: " + win.nid);
     
     Ti.App.addEventListener('switchedItUp', function(e){"use strict";
        //alert("it switched"); 
@@ -737,6 +734,9 @@ var regions = {};
             }
         }
     }   
+    
+    Ti.App.fireEvent("formFullyLoaded");
+    
 }());
 
 function getNewNode(){"use strict";
@@ -817,9 +817,11 @@ function validateMinLength(node, instance){"use strict";
             minLength = parseInt(instance.settings.min_length, 10);
             if(minLength >= 0){
                 for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
-                    if (node[instance.field_name].dbValues[i].length < minLength) {
-                        form_errors.push(instance.label + " requires at least " + minLength + " characters");
-                    }  
+                    if(node[instance.field_name].dbValues[i] !== null && node[instance.field_name].dbValues[i] > ''){
+                        if (node[instance.field_name].dbValues[i].length < minLength) {
+                            form_errors.push(instance.label + " requires at least " + minLength + " characters");
+                        }  
+                    }
                 }
             }
         }
@@ -986,6 +988,75 @@ function validateRequired(node, instance){"use strict";
     return form_errors;
 }
 
+function validateRestrictions(node){"use strict";
+    var instances, query, db, result, timestamp, field_name, vin, license_plate, nid, restrictions, form_errors, i, account;
+    
+    restrictions = [];
+    form_errors = [];
+    
+    nid = null;
+    vin = null;
+    account = null;
+    license_plate = null;
+    
+    if(typeof node.vin !== 'undefined'){
+        vin = node.vin.dbValues[0].toUpperCase();
+    }
+    
+    if(typeof node.license_plate___plate !== 'undefined'){
+        license_plate = node.license_plate___plate.dbValues[0].toUpperCase();
+    }
+    
+    if(typeof node.enforcement_account !== 'undefined'){
+        nid = node.enforcement_account.dbValues[0];
+        account = node.enforcement_account.textValues[0];
+    }
+    
+    if(nid !== null && nid > 0){
+        timestamp = Omadi.utils.getUTCTimestamp();
+        
+        
+        query = 'SELECT restriction_license_plate___plate, vin, restrict_entire_account, restriction_start_date, restriction_end_date ';
+        query += ' FROM restriction WHERE restriction_account="' + nid + '"';
+        query += ' AND ((restriction_start_date < ' + timestamp + ' OR restriction_start_date IS NULL) ';
+        query += ' AND (restriction_end_date > ' + timestamp + ' OR restriction_end_date IS NULL))';
+        
+        //Ti.API.error(query);
+        
+        db = Omadi.utils.openMainDatabase();
+        result = db.execute(query);
+    
+        while (result.isValidRow()) {
+            
+            restrictions.push({
+                license_plate : result.fieldByName('restriction_license_plate___plate'),
+                restrict_entire_account : result.fieldByName('restrict_entire_account'),
+                startTime: result.fieldByName('restriction_start_date'),
+                endTime: result.fieldByName('restriction_end_date'),
+                vin : result.fieldByName('vin')
+            });
+            result.next();
+        }
+        result.close();
+            
+        for(i = 0; i < restrictions.length; i ++){
+           //Ti.API.info(JSON.stringify(restrictions[i]));
+            if(restrictions[i].restrict_entire_account == 1){
+                form_errors.push("No parking enforcement is allowed for \"" + account + "\" right now due to a restriction.");
+            }
+            else if(restrictions[i].license_plate > '' && license_plate == restrictions[i].license_plate.toUpperCase()){
+                form_errors.push("The license plate \"" + license_plate + "\" is currently restricted for \"" + account + "\".");
+            }
+            else if(restrictions[i].vin > '' && vin == restrictions[i].vin.toUpperCase()){
+                form_errors.push("The VIN \"" + vin + "\" is currently restricted for \"" + account + "\".");
+            }
+        }
+        db.close();
+    }
+    
+    return form_errors;
+}
+
 function validate_form_data(node){"use strict";
     
     var field_name, instance, values, form_errors, isEmpty, i, region_name;
@@ -993,32 +1064,38 @@ function validate_form_data(node){"use strict";
     form_errors = [];
     
     try{
-        for(field_name in instances){
-            if(instances.hasOwnProperty(field_name)){
-                
-                instance = instances[field_name];
-                
-                region_name = instance.region;
-                
-                if(instance.disabled == 0 && typeof regionViews[region_name] !== 'undefined'){                
-                    if(typeof node[field_name] !== 'undefined'){
+        
+        form_errors = form_errors.concat(validateRestrictions(node));
+        // Only show restriction error if one exists
+        if(form_errors.length == 0){
+            
+            for(field_name in instances){
+                if(instances.hasOwnProperty(field_name)){
                     
-                        /*** REQUIRED FIELD VALIDATION / CONDITIONALLY REQUIRED ***/
-                        form_errors = form_errors.concat(validateRequired(node, instance));
+                    instance = instances[field_name];
+                    
+                    region_name = instance.region;
+                    
+                    if(instance.disabled == 0 && typeof regionViews[region_name] !== 'undefined'){                
+                        if(typeof node[field_name] !== 'undefined'){
                         
-                        /*** MIN_LENGTH VALIDATION ***/
-                        switch(instance.type){
-                            case 'text_long':
-                            case 'text':
-                                form_errors = form_errors.concat(validateMinLength(node, instance));
-                                break;
-                        }
-                        
-                        /*** MAX_LENGTH VALIDATION ***/
-                        switch(instance.type){
-                            case 'text':
-                                form_errors = form_errors.concat(validateMaxLength(node, instance));
-                                break;
+                            /*** REQUIRED FIELD VALIDATION / CONDITIONALLY REQUIRED ***/
+                            form_errors = form_errors.concat(validateRequired(node, instance));
+                            
+                            /*** MIN_LENGTH VALIDATION ***/
+                            switch(instance.type){
+                                case 'text_long':
+                                case 'text':
+                                    form_errors = form_errors.concat(validateMinLength(node, instance));
+                                    break;
+                            }
+                            
+                            /*** MAX_LENGTH VALIDATION ***/
+                            switch(instance.type){
+                                case 'text':
+                                    form_errors = form_errors.concat(validateMaxLength(node, instance));
+                                    break;
+                            }
                         }
                     }
                 }
@@ -2065,7 +2142,7 @@ function save_form_data(saveType) {"use strict";
                         }
                         
                         // Send a clone of the object so the window will close after the network returns a response
-                        Omadi.service.sendUpdates(Omadi.utils.cloneObject(Ti.UI.currentWindow));
+                        Omadi.service.sendUpdates();
                     }
                     else{
                         alert('Alert management of this ' + node.type.toUpperCase() + ' immediately. You do not have an Internet connection right now.  Your data was saved and will be synched when you connect to the Internet.');

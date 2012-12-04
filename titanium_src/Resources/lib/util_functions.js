@@ -55,7 +55,7 @@ Omadi.utils.cloneObject = function(obj){"use strict";
     var clone = {}, i;
     
     for(i in obj) {
-        if(typeof(obj[i])=="object"){
+        if(typeof obj[i] == "object"){
             clone[i] = Omadi.utils.cloneObject(obj[i]);
         }
         else{
@@ -235,6 +235,10 @@ Omadi.utils.isEmpty = function(number){"use strict";
     }
     
     if(number === "null"){
+        return true;
+    }
+    
+    if(number.toString() == "NaN"){
         return true;
     }
     

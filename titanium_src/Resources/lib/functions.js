@@ -1314,726 +1314,743 @@ function search_criteria_sort_order(a, b) {"use strict";
     return 0;
 }
 
-function list_search_node_matches_search_criteria(win, db_display, entity, criteria, content) {
+function list_search_node_matches_search_criteria(node, criteria) {"use strict";
+
+    var user, row_matches, instances, i, j, criteria_index, criteria_row, field_name, search_field, search_value, search_operator, search_time_value,
+        compare_times, value_index, nodeDBValues, nodeTextValues, search_time_value2, compare_times2, node_value, weekdays, 
+        reference_types, db, result, query, possibleValues, searchValues, chosen_value, retval, and_groups, and_group, and_group_index,
+        and_group_match;
+    
+    /*jslint nomen: true*/
+   
     try {
-        var user;
-        var row_matches = [];
-        if (criteria.search_criteria != null && criteria.search_criteria != "") {
-            //Ti.API.info('here--------A.1');
-            var instances = omadi_fields_get_fields(win, db_display);
-            //Ti.API.info('here--------A.2');
-            criteria.search_criteria.sort(search_criteria_search_order);
-            var criteria_index;
+      
+        row_matches = [];
+        if (typeof criteria.search_criteria !== 'undefined' && criteria.search_criteria != "") {
+            
+            instances = Omadi.data.getFields(node.type);
+            
+            //criteria.search_criteria.sort(search_criteria_search_order);
+            
             for (criteria_index in criteria.search_criteria) {
-                //Ti.API.info('here--------A.3' + criteria.search_criteria[criteria_index]);
-                var criteria_row = criteria.search_criteria[criteria_index];
-                row_matches[criteria_index] = false;
-                var field_name = criteria_row.field_name;
-                //Ti.API.info('here--------A.4' + field_name);
-                if (instances[field_name] != null) {
-                    var search_field = instances[field_name];
-                    //Ti.API.info('here--------A.5' + search_field['type']);
-                    var node_values = [];
-                    if (search_field['type'] == 'datestamp') {
-                        //Ti.API.info('here--------A.6' + search_field['type']);
-                        if ((field_name == 'uid' || field_name == 'created' || field_name == 'changed_uid') && win.nid != null & win.nid != "") {
-                            var node = db_display.execute('SELECT ' + field_name + ' from node WHERE nid="' + win.nid + '";');
-                            if (field_name == 'uid') {
-                                field_name = 'author_uid';
-                            }
-                            node_values.push(node.fieldByName(field_name));
-                        }
-                        else {
-                            //Ti.API.info('here--------A.7');
-                            if (entity[field_name] != null) {
-                                //Ti.API.info('here--------A.8');
-                                for (idx in entity[field_name]) {
-                                    //Ti.API.info('here--------A.9' + entity[field_name][idx]);
-                                    var elements = entity[field_name][idx];
-                                    if (elements['value'] != null && elements['value'] != "") {
-                                        //Ti.API.info('here--------A.10' + elements['value']);
-                                        node_values.push(elements['value']);
-                                    }
+                if(criteria.search_criteria.hasOwnProperty(criteria_index)){
+                    //Ti.API.info('here--------A.3' + criteria.search_criteria[criteria_index]);
+                    criteria_row = criteria.search_criteria[criteria_index];
+                    row_matches[criteria_index] = false;
+                    field_name = criteria_row.field_name;
+                    nodeDBValues = node[field_name].dbValues;
+                    nodeTextValues = node[field_name].textValues;
+                    
+                    //Ti.API.info('here--------A.4' + field_name);
+                    
+                    if (instances[field_name] != null) {
+                        search_field = instances[field_name];
+                        //Ti.API.info('here--------A.5' + search_field['type']);
+
+                        if (search_field.type == 'datestamp') {
+                            //Ti.API.info('here--------A.6' + search_field['type']);
+                            // if ((field_name == 'uid' || field_name == 'created' || field_name == 'changed_uid') && win.nid != null & win.nid != "") {
+                                // var node = db_display.execute('SELECT ' + field_name + ' from node WHERE nid="' + win.nid + '";');
+                                // if (field_name == 'uid') {
+                                    // field_name = 'author_uid';
+                                // }
+                                // node_values.push(node.fieldByName(field_name));
+                            // }
+                            // else {
+                                // //Ti.API.info('here--------A.7');
+                                // if (entity[field_name] != null) {
+                                    // //Ti.API.info('here--------A.8');
+                                    // for (idx in entity[field_name]) {
+                                        // //Ti.API.info('here--------A.9' + entity[field_name][idx]);
+                                        // var elements = entity[field_name][idx];
+                                        // if (elements['value'] != null && elements['value'] != "") {
+                                            // //Ti.API.info('here--------A.10' + elements['value']);
+                                            // node_values.push(elements['value']);
+                                        // }
+                                    // }
+                                // }
+                                // else {
+                                    // // No match, so move on
+                                    // continue;
+                                // }
+                            // }
+    
+                            search_value = criteria_row.value;
+                            search_operator = criteria_row.operator + "".toString();
+                            //Ti.API.info('here--------A.11' + search_value + "," + search_operator);
+    
+                            if (['after-time', 'before-time', 'between-time'].indexOf(search_operator) != -1) {
+                                //Ti.API.info('here--------A.12');
+                                search_time_value = Number(search_value.time);
+                                //Ti.API.info('here--------A.12' + search_time_value);
+                                compare_times = [];
+                                
+                                for (i = 0; i < nodeDBValues.length; i ++) {
+                                    compare_times[i] = search_time_value + mktime(0, 0, 0, date('n', Number(nodeDBValues[i])), date('j', Number(nodeDBValues[i])), date('Y', Number(nodeDBValues[i])));
+                                    //Ti.API.info('here--------A.13' + compare_times[value_index] + "," + node_values[value_index]);
                                 }
-                            }
-                            else {
-                                // No match, so move on
-                                continue;
-                            }
-                        }
-
-                        var search_value = criteria_row.value;
-                        var search_operator = criteria_row.operator;
-                        //Ti.API.info('here--------A.11' + search_value + "," + search_operator);
-
-                        if (in_array(search_operator, Array('after-time', 'before-time', 'between-time'))) {
-                            //Ti.API.info('here--------A.12');
-                            var search_time_value = Number(search_value.time);
-                            //Ti.API.info('here--------A.12' + search_time_value);
-                            var compare_times = new Array();
-                            var value_index;
-                            for (value_index in node_values) {
-                                compare_times[value_index] = search_time_value + mktime(0, 0, 0, date('n', Number(node_values[value_index])), date('j', Number(node_values[value_index])), date('Y', Number(node_values[value_index])));
-                                //Ti.API.info('here--------A.13' + compare_times[value_index] + "," + node_values[value_index]);
-                            }
-
-                            if (search_operator == 'after-time') {
-                                //Ti.API.info('here--------A.14' + search_operator);
-                                var value_index;
-                                for (value_index in node_values) {
-                                    //Ti.API.info('here--------A.15' + node_values[value_index] + "," + compare_times[value_index]);
-                                    if (node_values[value_index] > compare_times[value_index]) {
-                                        //Ti.API.info('here--------A.16');
-                                        row_matches[criteria_index] = true;
-                                    }
-                                }
-                            }
-                            else if (search_operator == 'before-time') {
-                                //Ti.API.info('here--------A.17');
-                                var value_index;
-                                for (value_index in node_values) {
-                                    //Ti.API.info('here--------A.18');
-                                    if (node_values[value_index] < compare_times[value_index]) {
-                                        //Ti.API.info('here--------A.19');
-                                        row_matches[criteria_index] = true;
-                                    }
-                                }
-                            }
-                            else if (search_operator == 'between-time') {
-                                //Ti.API.info('here--------A.20');
-                                var search_time_value2 = search_value.time2;
-                                //Ti.API.info('here--------A.21');
-                                var compare_times2 = new Array();
-                                var value_index;
-                                for (value_index in node_values) {
-
-                                    compare_times2[value_index] = search_time_value2 + mktime(0, 0, 0, date('n', Number(node_values[value_index])), date('j', Number(node_values[value_index])), date('Y', Number(node_values[value_index])));
-                                    //Ti.API.info('here--------A.22' + compare_times2[value_index] + "," + node_values[value_index]);
-                                }
-
-                                if (search_time_value < search_time_value2) {
-                                    //Ti.API.info('here--------A.23');
-                                    // Like between 5:00PM - 8:00PM
-                                    var value_index;
-                                    for (value_index in node_values) {
-                                        //Ti.API.info('here--------A.24');
-                                        if (node_values[value_index] >= compare_times[value_index] && node_values[value_index] < compare_times2[value_index]) {
-                                            //Ti.API.info('here--------A.25');
+    
+                                if (search_operator == 'after-time') {
+                                    //Ti.API.info('here--------A.14' + search_operator);
+                                   
+                                    for (i = 0; i < nodeDBValues.length; i++) {
+                                        //Ti.API.info('here--------A.15' + node_values[value_index] + "," + compare_times[value_index]);
+                                        if (nodeDBValues[i] > compare_times[i]) {
+                                            //Ti.API.info('here--------A.16');
                                             row_matches[criteria_index] = true;
                                         }
                                     }
                                 }
-                                else {
-                                    //Ti.API.info('here--------A.25----1');
-                                    // Like between 8:00PM - 4:00AM
-                                    var value_index;
-                                    for (value_index in node_values) {
-                                        //Ti.API.info('here--------A.26');
-                                        if (node_values[value_index] >= compare_times[value_index] || node_values[value_index] < compare_times2[value_index]) {
-                                            //Ti.API.info('here--------A.26---1');
+                                else if (search_operator == 'before-time') {
+                                    //Ti.API.info('here--------A.17');
+                                    
+                                    for (i = 0; i < nodeDBValues.length; i++) {
+                                        //Ti.API.info('here--------A.18');
+                                        if (nodeDBValues[i] < compare_times[i]) {
+                                            //Ti.API.info('here--------A.19');
                                             row_matches[criteria_index] = true;
                                         }
                                     }
                                 }
-                            }
-                        }
-                        else if (search_operator == '__blank') {
-                            //Ti.API.info('here--------A.26---2');
-                            row_matches[criteria_index] = true;
-                            var value_index;
-                            for (value_index in node_values) {
-                                //Ti.API.info('here--------A.26---3');
-                                node_value = node_values[value_index];
-                                if (node_value != null && node_value != "") {
-                                    //Ti.API.info('here--------A.26---4');
-                                    row_matches[criteria_index] = false;
-                                }
-
-                            }
-                        }
-                        else if (search_operator == '__filled') {
-                            //Ti.API.info('here--------A.26---5');
-                            var value_index;
-                            for (value_index in node_values) {
-                                //Ti.API.info('here--------A.26---6');
-                                node_value = node_values[value_index];
-                                if (node_value != null && node_value != "") {
-                                    //Ti.API.info('here--------A.26---7');
-                                    row_matches[criteria_index] = true;
-                                }
-
-                            }
-                        }
-                        else if (search_operator == 'weekday') {
-                            //Ti.API.info('here--------A.27' + search_value.weekday);
-                            var weekdays = search_value.weekday;
-                            if (!isArray(search_value.weekday)) {
-                                //Ti.API.info('here--------A.28' + search_value.weekday);
-                                weekdays = [];
-                                var key;
-                                for (key in search_value.weekday) {
-                                    //Ti.API.info('here--------A.29' + search_value.weekday);
-                                    if (search_value.weekday.hasOwnProperty(key)) {
-                                        //Ti.API.info('here--------A.30' + key);
-                                        weekdays.push(key);
+                                else if (search_operator == 'between-time') {
+                                    //Ti.API.info('here--------A.20');
+                                    search_time_value2 = search_value.time2;
+                                    //Ti.API.info('here--------A.21');
+                                    compare_times2 = [];
+                                    
+                                    for (i = 0; i < nodeDBValues.length; i++) {
+    
+                                        compare_times2[i] = search_time_value2 + mktime(0, 0, 0, date('n', Number(nodeDBValues[i])), date('j', Number(nodeDBValues[i])), date('Y', Number(nodeDBValues[i])));
+                                        //Ti.API.info('here--------A.22' + compare_times2[value_index] + "," + node_values[value_index]);
                                     }
-                                }
-                            }
+    
+                                    if (search_time_value < search_time_value2) {
+                                        //Ti.API.info('here--------A.23');
+                                        // Like between 5:00PM - 8:00PM
 
-                            var value_index;
-                            for (value_index in node_values) {
-                                //Ti.API.info('here--------A.31' + node_values[value_index] + ", " + date('w', Number(node_values[value_index])), weekdays);
-                                if (in_array(date('w', Number(node_values[value_index])), weekdays)) {
-                                    //Ti.API.info('here--------A.32' + date('w', Number(node_values[value_index])), weekdays);
-                                    row_matches[criteria_index] = true;
-                                }
-                            }
-                        }
-                    }
-
-                    /* TODO ---- In Future
-
-                    else
-
-                     if(search_field['settings']['parts'] != null) {
-
-                     if(search_field['type'] == 'location') {
-                     for(part in search_field['settings']['parts']) {
-                     search_value = isset($form_state['values']['search'][$search_field['field_name']][$part]) ? $form_state['values']['search'][$search_field['field_name']][$part] : $form_state['values']['search']['more_fields'][$search_field['field_name']][$part];
-                     $query->condition('l_' . $search_field['field_name'] . '.' . $part, '%' . $search_value . '%', 'LIKE');
-                     $search_fields[$search_key][$part]['default_value'] = $search_value;
-                     }
-                     object_lists_add_location_column($query, FALSE, $search_field, $id, $node_table);
-                     } else {
-                     for(part in search_field['settings']['parts']) {
-                     $search_value = isset($form_state['values']['search'][$search_field['field_name']][$part]) ? $form_state['values']['search'][$search_field['field_name']][$part] : $form_state['values']['search']['more_fields'][$search_field['field_name']][$part];
-                     $query->condition($search_field['field_name'] . '.' . $search_field['field_name'] . '_' . $part, '%' . $search_value . '%', 'LIKE');
-                     $search_fields[$search_key][$part]['default_value'] = $search_value;
-                     }
-                     object_lists_add_parts_column($query, FALSE, $search_field, $id, $node_table);
-                     }
-
-                     }
-                     */
-
-                    else {
-                        //Ti.API.info('here--------A.33');
-                        // if(entity[field_name] == null) {
-                        // entity[field_name] = null;
-                        // }
-                        search_value = criteria_row.value != null && criteria_row.value != "" ? criteria_row.value : null;
-                        search_operator = criteria_row.operator;
-                        //Ti.API.info('here--------A.34' + search_value + "," + search_operator);
-                        switch(search_field['type']) {
-                            case 'text':
-                            case 'text_long':
-                            case 'email':
-                            case 'link_field':
-                            case 'phone':
-                                for (idx in entity[field_name]) {
-                                    var elements = entity[field_name][idx];
-                                    if (elements['value'] != null && elements['value'] != "") {
-                                        node_values.push(elements['value']);
-                                    }
-                                }
-                                var value_index;
-                                for (value_index in node_values) {
-                                    node_value = node_values[value_index];
-                                    switch(search_operator) {
-                                        case 'not like':
-                                            if (strpos(node_value, search_value) === false) {
+                                        for (i = 0; i < nodeDBValues.length; i++) {
+                                            //Ti.API.info('here--------A.24');
+                                            if (nodeDBValues[i] >= compare_times[i] && nodeDBValues[i] < compare_times2[i]) {
+                                                //Ti.API.info('here--------A.25');
                                                 row_matches[criteria_index] = true;
                                             }
-                                            break;
-
-                                        case 'starts with':
-                                            if (strpos(node_value, search_value) === 0) {
-                                                row_matches[criteria_index] = true;
-                                            }
-                                            break;
-
-                                        case 'ends with':
-                                            if (strpos(node_value, search_value) === node_value.length - search_value.length) {
-                                                row_matches[criteria_index] = true;
-                                            }
-                                            break;
-
-                                        case 'not starts with':
-                                            if (strpos(node_value, search_value) !== 0) {
-                                                row_matches[criteria_index] = true;
-                                            }
-                                            break;
-
-                                        case 'not ends with':
-                                            if (strpos(node_value, search_value) !== node_value.length - search_value.length) {
-                                                row_matches[criteria_index] = true;
-                                            }
-                                            break;
-
-                                        default:
-                                            if (strpos(node_value, search_value) !== false) {
-                                                row_matches[criteria_index] = true;
-                                            }
-                                            break;
-                                    }
-                                }
-
-                                break;
-                            case 'list_boolean':
-                                for (idx in entity[field_name]) {
-                                    var elements = entity[field_name][idx];
-                                    node_values.push(elements['value']);
-                                }
-
-                                if (search_operator == '__filled') {
-                                    var value_index;
-                                    for (value_index in node_values) {
-                                        node_value = node_values[value_index];
-                                        if (node_value != 0) {
-                                            row_matches[criteria_index] = true;
                                         }
-
-                                    }
-                                }
-                                else {
-                                    if (node_values == null && node_values == "") {
-                                        row_matches[criteria_index] = true;
                                     }
                                     else {
-                                        var value_index;
-                                        for (value_index in node_values) {
-                                            node_value = node_values[value_index];
-                                            if (node_value == 0) {
+                                        //Ti.API.info('here--------A.25----1');
+                                        // Like between 8:00PM - 4:00AM
+
+                                        for (i = 0; i < nodeDBValues.length; i++) {
+                                            //Ti.API.info('here--------A.26');
+                                            if (nodeDBValues[i] >= compare_times[i] || nodeDBValues[i] < compare_times2[i]) {
+                                                //Ti.API.info('here--------A.26---1');
                                                 row_matches[criteria_index] = true;
                                             }
                                         }
                                     }
                                 }
-
-                                break;
-                            case 'calculation_field':
-                                //Ti.API.info('here--------A.35---1');
-                                var calculation_values = _calculation_field_get_values(win, db_display, content[entity[field_name][0]['reffer_index']], entity);
-                                //Ti.API.info('here--------A.35' + calculation_values);
-                                node_values.push(calculation_values[0].final_value);
-
-                                var value_index;
-                                for (value_index in node_values) {
-                                    node_value = node_values[value_index];
-                                    //Ti.API.info('here--------A.36' + node_value);
-                                    switch(search_operator) {
-
-                                        case '>':
-                                            //Ti.API.info('here--------A.37' + node_value + "," + search_value);
-                                            if (node_value > search_value) {
-                                                row_matches[criteria_index] = true;
-                                            }
-                                            break;
-                                        case '>=':
-                                            //Ti.API.info('here--------A.38' + node_value + "," + search_value);
-                                            if (node_value >= search_value) {
-                                                row_matches[criteria_index] = true;
-                                            }
-                                            break;
-                                        case '!=':
-                                            //Ti.API.info('here--------A.39' + node_value + "," + search_value);
-                                            if (node_value != search_value) {
-                                                row_matches[criteria_index] = true;
-                                            }
-                                            break;
-                                        case '<':
-                                            //Ti.API.info('here--------A.40' + node_value + "," + search_value);
-                                            if (node_value < search_value) {
-                                                row_matches[criteria_index] = true;
-                                            }
-                                            break;
-                                        case '<=':
-                                            //Ti.API.info('here--------A.41' + node_value + "," + search_value);
-                                            if (node_value <= search_value) {
-                                                row_matches[criteria_index] = true;
-                                            }
-                                            break;
-                                        default:
-                                            //Ti.API.info('here--------A.42' + node_value + "," + search_value);
-                                            if (node_value == search_value) {
-                                                row_matches[criteria_index] = true;
-                                            }
-                                            break;
-                                    }
-                                }
-                                break;
-                            case 'number_integer':
-                            case 'number_decimal':
-                            case 'auto_increment':
-                                for (idx in entity[field_name]) {
-                                    var elements = entity[field_name][idx];
-                                    if (elements['value'] != null && elements['value'] != "") {
-                                        node_values.push(elements['value']);
-                                    }
-                                }
-
-                                var value_index;
-                                for (value_index in node_values) {
-                                    node_value = node_values[value_index];
-                                    switch(search_operator) {
-
-                                        case '>':
-                                            if (node_value > search_value) {
-                                                row_matches[criteria_index] = true;
-                                            }
-                                            break;
-                                        case '>=':
-                                            if (node_value >= search_value) {
-                                                row_matches[criteria_index] = true;
-                                            }
-                                            break;
-                                        case '!=':
-                                            if (node_value != search_value) {
-                                                row_matches[criteria_index] = true;
-                                            }
-                                            break;
-                                        case '<':
-                                            if (node_value < search_value) {
-                                                row_matches[criteria_index] = true;
-                                            }
-                                            break;
-                                        case '<=':
-                                            if (node_value <= search_value) {
-                                                row_matches[criteria_index] = true;
-                                            }
-                                            break;
-
-                                        default:
-                                            if (node_value == search_value) {
-                                                row_matches[criteria_index] = true;
-                                            }
-                                            break;
-                                    }
-                                }
-
-                                break;
-
-                            case 'omadi_reference':
-                                for (idx in entity[field_name]) {
-                                    var elements = entity[field_name][idx];
-                                    if (elements['nid'] != null && elements['nid'] != "") {
-                                        node_values.push(elements['nid']);
-                                    }
-                                }
-
-                                var reference_types = JSON.parse(search_field['settings'])['reference_types'];
-                                var array_filter = '';
-                                var reference_types_arr = [];
-                                var key;
-                                for (key in reference_types) {
-                                    reference_types_arr.push(reference_types[key]);
-                                }
-
-                                var reference_types_idx;
-                                for ( reference_types_idx = 0; reference_types_idx < reference_types_arr.length; reference_types_idx++) {
-                                    if (reference_types_idx == reference_types_arr.length - 1) {
-                                        array_filter += '\'' + reference_types_arr[reference_types_idx] + '\'';
-                                    }
-                                    else {
-                                        array_filter += '\'' + reference_types_arr[reference_types_idx] + '\',';
-                                    }
-                                }
-                                var query = 'SELECT nid from node WHERE table_name IN (' + array_filter + ')';
-                                switch(search_operator) {
-                                    case 'starts with':
-                                    case 'not starts with':
-                                        query += ' AND title LIKE "%' + search_value + '%";'
-                                        break;
-                                    case 'ends with':
-                                    case 'not ends with':
-                                        query += ' AND title LIKE "%' + search_value + '";'
-                                        break;
-                                    default:
-                                        query += ' AND title LIKE "%' + search_value + '%";'
-                                        break;
-                                }
-
-                                var possible_nids = db_display.execute(query);
-                                var possible_nids_arr = [];
-                                while (possible_nids.isValidRow()) {
-                                    possible_nids_arr.push(possible_nids.fieldByName('nid'));
-                                    possible_nids.next();
-                                }
-
-                                switch(search_operator) {
-                                    case 'not starts with':
-                                    case 'not ends with':
-                                    case 'not like':
-                                        if (node_values[0] == 0) {
-                                            row_matches[criteria_index] = true;
-                                        }
-                                        else {
-                                            row_matches[criteria_index] = true;
-                                            for (idx in node_values) {
-                                                node_value = node_values[idx];
-                                                if (in_array(node_value, possible_nids_arr)) {
-                                                    row_matches[criteria_index] = false;
-                                                }
-                                            }
-                                        }
-                                        break;
-                                    default:
-                                        for (idx in node_values) {
-                                            node_value = node_values[idx];
-                                            if (in_array(node_value, possible_nids_arr)) {
-                                                row_matches[criteria_index] = true;
-                                            }
-                                        }
-                                        break;
-                                }
-
-                                break;
-                            case 'user_reference':
-                                //Ti.API.info('here--------A.43');
-                                if ((field_name == 'uid' || field_name == 'created' || field_name == 'changed_uid') && win.nid != null & win.nid != "") {
-                                    var node = db_display.execute('SELECT ' + field_name + ' from node WHERE nid="' + win.nid + '";');
-                                    if (field_name == 'uid') {
-                                        field_name = 'author_uid';
-                                    }
-                                    node_values.push(node.fieldByName(field_name));
-                                }
-                                else {
-                                    //Ti.API.info('here--------A.44');
-                                    for (idx in entity[field_name]) {
-                                        var elements = entity[field_name][idx];
-                                        //Ti.API.info('here--------A.45' + elements);
-                                        if (elements['uid'] != null && elements['uid'] != "") {
-                                            //Ti.API.info('here--------A.43' + elements['uid']);
-                                            node_values.push(elements['value']);
-                                        }
-                                    }
-
-                                }
-                                if (search_value == 'current_user') {
-                                    search_value = win.uid;
-                                }
-                                // Make sure the search value is an array
-                                var search_value_arr = [];
-                                if (!isArray(search_value)) {
-                                    //Ti.API.info('here--------A.44' + search_value);
-                                    var key;
-                                    for (key in search_value) {
-                                        //Ti.API.info('here--------A.45' + key);
-                                        if (search_value.hasOwnProperty(key)) {
-                                            //Ti.API.info('here--------A.46' + key);
-                                            search_value_arr[key] = key;
-                                        }
-                                    }
-                                    search_value = search_value_arr;
-                                }
-
-                                if (search_operator != null && search_operator == '!=') {
-                                    //Ti.API.info('here--------A.47' + search_value['__null']);
-                                    row_matches[criteria_index] = true;
-                                    if (search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
-                                        //Ti.API.info('here--------A.48');
+                            }
+                            else if (search_operator == '__blank') {
+                                //Ti.API.info('here--------A.26---2');
+                                row_matches[criteria_index] = true;
+                               
+                                for (i = 0; i < nodeDBValues.length; i++) {
+                                    //Ti.API.info('here--------A.26---3');
+                                    node_value = nodeDBValues[i];
+                                    if (node_value != null && node_value != "") {
+                                        //Ti.API.info('here--------A.26---4');
                                         row_matches[criteria_index] = false;
                                     }
-                                    else {
-                                        //Ti.API.info('here--------A.49');
-                                        for (idx in search_value) {
-                                            //Ti.API.info('here--------A.50' + search_value[idx] + row_matches[criteria_index] + criteria_index);
-                                            chosen_value = search_value[idx];
-                                            if (in_array(chosen_value, node_values)) {
-                                                //Ti.API.info('here--------A.51' + chosen_value);
-                                                row_matches[criteria_index] = false;
-                                            }
+    
+                                }
+                            }
+                            else if (search_operator == '__filled') {
+                                //Ti.API.info('here--------A.26---5');
+                                
+                                for (i = 0; i < nodeDBValues.length; i++) {
+                                    //Ti.API.info('here--------A.26---6');
+                                    node_value = nodeDBValues[i];
+                                    if (node_value != null && node_value != "") {
+                                        //Ti.API.info('here--------A.26---7');
+                                        row_matches[criteria_index] = true;
+                                    }
+    
+                                }
+                            }
+                            else if (search_operator == 'weekday') {
+                                //Ti.API.info('here--------A.27' + search_value.weekday);
+                                weekdays = search_value.weekday;
+                                if (!isArray(search_value.weekday)) {
+                                    //Ti.API.info('here--------A.28' + search_value.weekday);
+                                    weekdays = [];
+                                   
+                                    for (i in search_value.weekday) {
+                                        if(search_value.weekday.hasOwnProperty(i)){
+                                            //Ti.API.info('here--------A.30' + key);
+                                            weekdays.push(i);
                                         }
                                     }
                                 }
-                                else {
-                                    //Ti.API.info('here--------A.52');
-                                    if (search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
-                                        //Ti.API.info('here--------A.53');
+    
+                                
+                                for (i = 0; i < nodeDBValues.length; i++) {
+                                    //Ti.API.info('here--------A.31' + node_values[value_index] + ", " + date('w', Number(node_values[value_index])), weekdays);
+                                    if (in_array(date('w', Number(nodeDBValues[i])), weekdays)) {
+                                        //Ti.API.info('here--------A.32' + date('w', Number(node_values[value_index])), weekdays);
                                         row_matches[criteria_index] = true;
                                     }
-                                    else {
-                                        //Ti.API.info('here--------A.54');
-                                        for (idx in search_value) {
-                                            //Ti.API.info('here--------A.55' + search_value[idx]);
-                                            chosen_value = search_value[idx];
-                                            if (in_array(chosen_value, node_values)) {
-                                                //Ti.API.info('here--------A.56' + chosen_value);
+                                }
+                            }
+                        }
+    
+                        /* TODO ---- In Future
+    
+                        else
+    
+                         if(search_field['settings']['parts'] != null) {
+    
+                         if(search_field['type'] == 'location') {
+                         for(part in search_field['settings']['parts']) {
+                         search_value = isset($form_state['values']['search'][$search_field['field_name']][$part]) ? $form_state['values']['search'][$search_field['field_name']][$part] : $form_state['values']['search']['more_fields'][$search_field['field_name']][$part];
+                         $query->condition('l_' . $search_field['field_name'] . '.' . $part, '%' . $search_value . '%', 'LIKE');
+                         $search_fields[$search_key][$part]['default_value'] = $search_value;
+                         }
+                         object_lists_add_location_column($query, FALSE, $search_field, $id, $node_table);
+                         } else {
+                         for(part in search_field['settings']['parts']) {
+                         $search_value = isset($form_state['values']['search'][$search_field['field_name']][$part]) ? $form_state['values']['search'][$search_field['field_name']][$part] : $form_state['values']['search']['more_fields'][$search_field['field_name']][$part];
+                         $query->condition($search_field['field_name'] . '.' . $search_field['field_name'] . '_' . $part, '%' . $search_value . '%', 'LIKE');
+                         $search_fields[$search_key][$part]['default_value'] = $search_value;
+                         }
+                         object_lists_add_parts_column($query, FALSE, $search_field, $id, $node_table);
+                         }
+    
+                         }
+                         */
+    
+                        else {
+                            //Ti.API.info('here--------A.33');
+                            // if(entity[field_name] == null) {
+                            // entity[field_name] = null;
+                            // }
+                            search_value = criteria_row.value != null && criteria_row.value != "" ? criteria_row.value : null;
+                            search_operator = criteria_row.operator;
+                            //Ti.API.info('here--------A.34' + search_value + "," + search_operator);
+                            switch(search_field.type) {
+                                case 'text':
+                                case 'text_long':
+                                case 'email':
+                                case 'link_field':
+                                case 'phone':
+                                    // for (idx in entity[field_name]) {
+                                        // var elements = entity[field_name][idx];
+                                        // if (elements['value'] != null && elements['value'] != "") {
+                                            // node_values.push(elements['value']);
+                                        // }
+                                    // }
+                                   
+                                    for (i = 0; i < nodeDBValues.length; i++) {
+                                        node_value = nodeDBValues[i];
+                                        switch(search_operator) {
+                                            case 'not like':
+                                                if (strpos(node_value, search_value) === false) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+    
+                                            case 'starts with':
+                                                if (strpos(node_value, search_value) === 0) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+    
+                                            case 'ends with':
+                                                if (strpos(node_value, search_value) === node_value.length - search_value.length) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+    
+                                            case 'not starts with':
+                                                if (strpos(node_value, search_value) !== 0) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+    
+                                            case 'not ends with':
+                                                if (strpos(node_value, search_value) !== node_value.length - search_value.length) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+    
+                                            default:
+                                                if (strpos(node_value, search_value) !== false) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                        }
+                                    }
+    
+                                    break;
+                                case 'list_boolean':
+                                    // for (idx in entity[field_name]) {
+                                        // var elements = entity[field_name][idx];
+                                        // node_values.push(elements['value']);
+                                    // }
+    
+                                    if (search_operator == '__filled') {
+                                       
+                                        for (i = 0; i < nodeDBValues.length; i++) {
+                                            node_value = nodeDBValues[i];
+                                            if (node_value != 0) {
                                                 row_matches[criteria_index] = true;
                                             }
                                         }
                                     }
-                                }
-                                break;
-                            case 'taxonomy_term_reference':
-
-                                for (idx in entity[field_name]) {
-                                    elements = entity[field_name][idx];
-                                    if (elements['tid'] == 0) {
-                                        node_values.push(elements['tid']);
-                                    }
-                                }
-
-                                if (JSON.parse(search_field['widget']).type == 'options_select' || JSON.parse(search_field['widget']).type == 'violation_select') {
-                                    // Make sure the search value is an array
-                                    var search_value_arr = [];
-                                    if (!isArray(search_value)) {
-                                        var key;
-                                        for (key in search_value) {
-                                            if (search_value.hasOwnProperty(key)) {
-                                                search_value_arr[key] = key;
-                                            }
-                                        }
-                                        search_value = search_value_arr;
-                                    }
-
-                                    if (search_operator != null && search_operator == '!=') {
-
-                                        row_matches[criteria_index] = true;
-                                        if (search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
-                                            row_matches[criteria_index] = false;
-                                        }
-                                        else {
-                                            for (idx in search_value) {
-                                                chosen_value = search_value[idx];
-                                                if (in_array(chosen_value, node_values)) {
-                                                    row_matches[criteria_index] = false;
-                                                }
-                                            }
-
-                                        }
-                                    }
                                     else {
-                                        if (search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
+                                        if (nodeDBValues.length == 0 || nodeDBValues[0] == null || nodeDBValues[0] == 0) {
                                             row_matches[criteria_index] = true;
                                         }
                                         else {
-                                            for (idx in search_value) {
-                                                chosen_value = search_value[idx];
-                                                if (in_array(chosen_value, node_values)) {
+                                            for (i = 0; i < nodeDBValues.length; i++) {
+                                                node_value = nodeDBValues[i];
+                                                if (node_value == 0) {
                                                     row_matches[criteria_index] = true;
                                                 }
                                             }
                                         }
                                     }
-                                }
-                                else {
-                                    var machine_name = JSON.parse(search_field['settings']).vocabulary;
-                                    var vocabulary = db_display.execute('SELECT vid from vocabulary WHERE machine_name="' + machine_name + '";');
-                                    var query = 'SELECT tid from term_data WHERE vid=' + vocabulary.fieldByName('vid');
+    
+                                    break;
+                                case 'calculation_field':
+                                    //Ti.API.info('here--------A.35---1');
+                                    //calculation_values = _calculation_field_get_values(win, db_display, content[entity[field_name][0]['reffer_index']], entity);
+                                    //Ti.API.info('here--------A.35' + calculation_values);
+                                    
+                                    
+                                    //node_values.push(calculation_values[0].final_value);
+    
+                                    
+                                    for (i = 0; i < nodeDBValues.length; i++) {
+                                        node_value = nodeDBValues[i];
+                                        //Ti.API.info('here--------A.36' + node_value);
+                                        switch(search_operator) {
+    
+                                            case '>':
+                                                //Ti.API.info('here--------A.37' + node_value + "," + search_value);
+                                                if (node_value > search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                            case '>=':
+                                                //Ti.API.info('here--------A.38' + node_value + "," + search_value);
+                                                if (node_value >= search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                            case '!=':
+                                                //Ti.API.info('here--------A.39' + node_value + "," + search_value);
+                                                if (node_value != search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                            case '<':
+                                                //Ti.API.info('here--------A.40' + node_value + "," + search_value);
+                                                if (node_value < search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                            case '<=':
+                                                //Ti.API.info('here--------A.41' + node_value + "," + search_value);
+                                                if (node_value <= search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                            default:
+                                                //Ti.API.info('here--------A.42' + node_value + "," + search_value);
+                                                if (node_value == search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                        }
+                                    }
+                                    break;
+                                case 'number_integer':
+                                case 'number_decimal':
+                                case 'auto_increment':
+                                    // for (idx in entity[field_name]) {
+                                        // var elements = entity[field_name][idx];
+                                        // if (elements['value'] != null && elements['value'] != "") {
+                                            // node_values.push(elements['value']);
+                                        // }
+                                    // }
+    
+                                    for (i = 0; i < nodeDBValues.length; i++) {
+                                        node_value = nodeDBValues[i];
+                                        switch(search_operator) {
+    
+                                            case '>':
+                                                if (node_value > search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                            case '>=':
+                                                if (node_value >= search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                            case '!=':
+                                                if (node_value != search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                            case '<':
+                                                if (node_value < search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                            case '<=':
+                                                if (node_value <= search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+    
+                                            default:
+                                                if (node_value == search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                        }
+                                    }
+    
+                                    break;
+    
+                                case 'omadi_reference':
+                                    // for (idx in entity[field_name]) {
+                                        // var elements = entity[field_name][idx];
+                                        // if (elements['nid'] != null && elements['nid'] != "") {
+                                            // node_values.push(elements['nid']);
+                                        // }
+                                    // }
+    
+                                    reference_types = [];
+                                    
+                                    for (i in search_field.settings.reference_types) {
+                                        if(search_field.settings.reference_types.hasOwnProperty(i)){
+                                            reference_types.push(search_field.settings.reference_types[i]);
+                                        }
+                                    }
+    
+
+                                    query = 'SELECT nid from node WHERE table_name IN (' + reference_types.join(',') + ')';
                                     switch(search_operator) {
                                         case 'starts with':
                                         case 'not starts with':
-                                            query += ' AND name LIKE "' + search_value + '%";'
+                                            query += ' AND title LIKE "%' + search_value + '%"';
                                             break;
-
                                         case 'ends with':
                                         case 'not ends with':
-                                            query += ' AND name LIKE "%' + search_value + '";'
+                                            query += ' AND title LIKE "%' + search_value + '"';
                                             break;
-
                                         default:
-                                            query += ' AND name LIKE "%' + search_value + '%";'
+                                            query += ' AND title LIKE "%' + search_value + '%"';
                                             break;
                                     }
-                                    //Ti.API.info(query);
-                                    var possible_tids = db_display.execute(query);
-                                    var possible_tids_arr = [];
-                                    while (possible_tids.isValidRow()) {
-                                        possible_tids_arr.push(possible_tids.fieldByName('tid'));
-                                        possible_tids.next();
+                                    
+                                    db = Omadi.utils.openMainDatabase();
+                                    result = db.execute(query);
+                                    
+                                    possibleValues = [];
+                                    while (result.isValidRow()) {
+                                        possibleValues.push(result.fieldByName('nid'));
+                                        result.next();
                                     }
-
+                                    result.close();
+                                    db.close();
+    
                                     switch(search_operator) {
                                         case 'not starts with':
                                         case 'not ends with':
                                         case 'not like':
-                                            if (node_values[0] == 0) {
+                                            if (nodeDBValues[0] == 0) {
                                                 row_matches[criteria_index] = true;
                                             }
                                             else {
                                                 row_matches[criteria_index] = true;
-                                                for (idx in node_values) {
-                                                    node_value = node_values[idx];
-                                                    if (in_array(node_value, possible_tids_arr)) {
+                                                for (i = 0; i < nodeDBValues.length; i++) {
+                                                    node_value = nodeDBValues[i];
+                                                    if (in_array(node_value, possibleValues)) {
                                                         row_matches[criteria_index] = false;
                                                     }
                                                 }
                                             }
                                             break;
-
                                         default:
-                                            for (idx in node_values) {
-                                                node_value = node_values[idx];
-                                                if (in_array(node_value, possible_tids_arr)) {
+                                            for (i = 0; i < nodeDBValues.length; i++) {
+                                                node_value = nodeDBValues[i];
+                                                if (in_array(node_value, possibleValues)) {
                                                     row_matches[criteria_index] = true;
                                                 }
                                             }
                                             break;
                                     }
-                                }
-
-                                break;
-
-                            case 'omadi_time':
-                                // TODO: Add the omadi_time field here
-                                break;
-
-                            case 'image':
-                                // Do nothing
-                                break;
-
+    
+                                    break;
+                                    
+                                case 'user_reference':
+                                    //Ti.API.info('here--------A.43');
+                                    // if ((field_name == 'uid' || field_name == 'created' || field_name == 'changed_uid') && win.nid != null & win.nid != "") {
+                                        // var node = db_display.execute('SELECT ' + field_name + ' from node WHERE nid="' + win.nid + '";');
+                                        // if (field_name == 'uid') {
+                                            // field_name = 'author_uid';
+                                        // }
+                                        // node_values.push(node.fieldByName(field_name));
+                                    // }
+                                    // else {
+                                        // //Ti.API.info('here--------A.44');
+                                        // for (idx in entity[field_name]) {
+                                            // var elements = entity[field_name][idx];
+                                            // //Ti.API.info('here--------A.45' + elements);
+                                            // if (elements['uid'] != null && elements['uid'] != "") {
+                                                // //Ti.API.info('here--------A.43' + elements['uid']);
+                                                // node_values.push(elements['value']);
+                                            // }
+                                        // }
+//     
+                                    // }
+                                    if (search_value == 'current_user') {
+                                        search_value = Omadi.utils.getUid();
+                                    }
+                                    // Make sure the search value is an array
+                                    searchValues = [];
+                                    if (!isArray(search_value)) {
+                                        //Ti.API.info('here--------A.44' + search_value);
+                                        for (i in search_value) {
+                                            if (search_value.hasOwnProperty(i)) {
+                                                //Ti.API.info('here--------A.46' + key);
+                                                searchValues[i] = i;
+                                            }
+                                        }
+                                        search_value = searchValues;
+                                    }
+    
+                                    if (search_operator != null && search_operator == '!=') {
+                                        //Ti.API.info('here--------A.47' + search_value['__null']);
+                                        row_matches[criteria_index] = true;
+                                        if (search_value.__null == '__null' && (nodeDBValues.length == 0 || nodeDBValues[0] == null || nodeDBValues[0] == 0)) {
+                                            //Ti.API.info('here--------A.48');
+                                            row_matches[criteria_index] = false;
+                                        }
+                                        else {
+                                            //Ti.API.info('here--------A.49');
+                                            for (i = 0; i < search_value.length; i++) {
+                                                //Ti.API.info('here--------A.50' + search_value[idx] + row_matches[criteria_index] + criteria_index);
+                                                chosen_value = search_value[i];
+                                                if (in_array(chosen_value, nodeDBValues)) {
+                                                    //Ti.API.info('here--------A.51' + chosen_value);
+                                                    row_matches[criteria_index] = false;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    else {
+                                        //Ti.API.info('here--------A.52');
+                                        if (search_value.__null == '__null' && (nodeDBValues.length == 0 || nodeDBValues[0] == null || nodeDBValues[0] == 0)) {
+                                            //Ti.API.info('here--------A.53');
+                                            row_matches[criteria_index] = true;
+                                        }
+                                        else {
+                                            //Ti.API.info('here--------A.54');
+                                            for (i = 0; i < search_value.length; i++) {
+                                                //Ti.API.info('here--------A.55' + search_value[idx]);
+                                                chosen_value = search_value[i];
+                                                if (in_array(chosen_value, nodeDBValues)) {
+                                                    //Ti.API.info('here--------A.56' + chosen_value);
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    break;
+                                    
+                                case 'taxonomy_term_reference':
+    
+                                    // for (idx in entity[field_name]) {
+                                        // elements = entity[field_name][idx];
+                                        // if (elements['tid'] == 0) {
+                                            // node_values.push(elements['tid']);
+                                        // }
+                                    // }
+    
+                                    if (search_field.widget.type == 'options_select' || search_field.widget.type == 'violation_select') {
+                                        // Make sure the search value is an array
+                                        searchValues = [];
+                                        if (!isArray(search_value)) {
+                                            //Ti.API.info('here--------A.44' + search_value);
+                                            for (i in search_value) {
+                                                if (search_value.hasOwnProperty(i)) {
+                                                    //Ti.API.info('here--------A.46' + key);
+                                                    searchValues[i] = i;
+                                                }
+                                            }
+                                            search_value = searchValues;
+                                        }
+    
+                                        if (search_operator != null && search_operator == '!=') {
+    
+                                            row_matches[criteria_index] = true;
+                                            if (search_value.__null == '__null' && (nodeDBValues.length == 0 || nodeDBValues[0] == null || nodeDBValues[0] == 0)) {
+                                                row_matches[criteria_index] = false;
+                                            }
+                                            else {
+                                                for (i = 0; i < search_value.length; i++) {
+                                                    chosen_value = search_value[i];
+                                                    if (in_array(chosen_value, nodeDBValues)) {
+                                                        row_matches[criteria_index] = false;
+                                                    }
+                                                }
+    
+                                            }
+                                        }
+                                        else {
+                                            if (search_value.__null == '__null' && (nodeDBValues.length == 0 || nodeDBValues[0] == null || nodeDBValues[0] == 0)) {
+                                                row_matches[criteria_index] = true;
+                                            }
+                                            else {
+                                                for (i = 0; i < search_value.length; i++) {
+                                                    chosen_value = search_value[i];
+                                                    if (in_array(chosen_value, nodeDBValues)) {
+                                                        row_matches[criteria_index] = true;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    else {
+                                        
+                                        db = Omadi.utils.openMainDatabase();
+                                        result = db.execute('SELECT vid from vocabulary WHERE machine_name="' + search_field.settings.vocabulary + '";');
+                                        
+                                        
+                                        query = 'SELECT tid from term_data WHERE vid=' + result.fieldByName('vid');
+                                        switch(search_operator) {
+                                            case 'starts with':
+                                            case 'not starts with':
+                                                query += ' AND name LIKE "' + search_value + '%"';
+                                                break;
+    
+                                            case 'ends with':
+                                            case 'not ends with':
+                                                query += ' AND name LIKE "%' + search_value + '"';
+                                                break;
+    
+                                            default:
+                                                query += ' AND name LIKE "%' + search_value + '%"';
+                                                break;
+                                        }
+                                        
+                                        result.close();
+                                        
+                                        //Ti.API.info(query);
+                                        result = db.execute(query);
+                                        possibleValues = [];
+                                        while (result.isValidRow()) {
+                                            possibleValues.push(result.fieldByName('tid'));
+                                            result.next();
+                                        }
+    
+                                        switch(search_operator) {
+                                            case 'not starts with':
+                                            case 'not ends with':
+                                            case 'not like':
+                                                if (nodeDBValues[0] == 0) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                else {
+                                                    row_matches[criteria_index] = true;
+                                                    for (i = 0; i < nodeDBValues.length; i ++) {
+                                                        node_value = nodeDBValues[i];
+                                                        if (in_array(node_value, possibleValues)) {
+                                                            row_matches[criteria_index] = false;
+                                                        }
+                                                    }
+                                                }
+                                                break;
+    
+                                            default:
+                                                for (i = 0; i < nodeDBValues.length; i ++) {
+                                                    node_value = nodeDBValues[i];
+                                                    if (in_array(node_value, possibleValues)) {
+                                                        row_matches[criteria_index] = true;
+                                                    }
+                                                }
+                                                break;
+                                        }
+                                    }
+    
+                                    break;
+    
+                                case 'omadi_time':
+                                    // TODO: Add the omadi_time field here
+                                    break;
+    
+                                case 'image':
+                                    // Do nothing
+                                    break;
+    
+                            }
+    
                         }
-
+    
                     }
-
                 }
             }
 
-            if (count_arr_obj(criteria['search_criteria']) == 1) {
+            if (count_arr_obj(criteria.search_criteria) == 1) {
                 //Ti.API.info('here--------A.57' + row_matches[criteria_index]);
-                var retval = row_matches[criteria_index];
+                retval = row_matches[criteria_index];
             }
             else {
                 //Ti.API.info('here--------A.58');
                 // Group each criteria row into groups of ors with the matching result of each or
-                var and_groups = new Array();
-                var and_group_index = 0;
-                and_groups[and_group_index] = new Array();
+                and_groups = [];
+                and_group_index = 0;
+                and_groups[and_group_index] = [];
                 //print_r($criteria['search_criteria']);
-                for (criteria_index in criteria['search_criteria']) {
-                    //Ti.API.info('here--------A.59' + criteria_index);
-                    criteria_row = criteria['search_criteria'][criteria_index];
-                    if (criteria_index == 0) {
-                        //Ti.API.info('here--------A.60' + row_matches[criteria_index]);
-                        //and_groups[and_group_index][0] = row_matches[criteria_index];
-                        and_groups[and_group_index].push(row_matches[criteria_index]);
-                    }
-                    else {
-                        //Ti.API.info('here--------A.61');
-                        if (criteria_row['row_operator'] == null || criteria_row['row_operator'] != 'or') {
-                            //Ti.API.info('here--------A.62');
-                            and_group_index++;
-                            and_groups[and_group_index] = new Array();
+                for (criteria_index in criteria.search_criteria) {
+                    if(criteria.search_criteria.hasOwnProperty(criteria_index)){
+                        //Ti.API.info('here--------A.59' + criteria_index);
+                        criteria_row = criteria.search_criteria[criteria_index];
+                        if (criteria_index == 0) {
+                            //Ti.API.info('here--------A.60' + row_matches[criteria_index]);
+                            //and_groups[and_group_index][0] = row_matches[criteria_index];
+                            and_groups[and_group_index].push(row_matches[criteria_index]);
                         }
-                        //Ti.API.info('here--------A.63' + row_matches[criteria_index]);
-                        and_groups[and_group_index].push(row_matches[criteria_index]);
-                        //and_groups[and_group_index][0] = row_matches[criteria_index];
+                        else {
+                            //Ti.API.info('here--------A.61');
+                            if (criteria_row.row_operator == null || criteria_row.row_operator != 'or') {
+                                //Ti.API.info('here--------A.62');
+                                and_group_index++;
+                                and_groups[and_group_index] = [];
+                            }
+                            //Ti.API.info('here--------A.63' + row_matches[criteria_index]);
+                            and_groups[and_group_index].push(row_matches[criteria_index]);
+                            //and_groups[and_group_index][0] = row_matches[criteria_index];
+                        }
                     }
                 }
 
                 // Get the final result, making sure each and group is TRUE
                 retval = true;
                 //Ti.API.info('here--------A.64' + and_groups.length);
-                for (idx in and_groups) {
+                for (i = 0; i < and_groups.length; i ++) {
                     //Ti.API.info('here--------A.65');
-                    and_group = and_groups[idx];
+                    and_group = and_groups[i];
                     and_group_match = false;
-                    for (idx1 in and_group) {
+                    for (j = 0; j < and_group.length; j ++) {
                         //Ti.API.info('here--------A.66' + and_group[idx1]);
-                        or_match = and_group[idx1];
+                       
                         // Make sure at least one item in an and group is true (or the only item is true)
-                        if (or_match) {
+                        if (and_group[j]) {
                             //Ti.API.info('here--------A.67');
                             and_group_match = true;
                             break;
@@ -2059,6 +2076,752 @@ function list_search_node_matches_search_criteria(win, db_display, entity, crite
     }
     return true;
 }
+
+// function list_search_node_matches_search_criteria(win, db_display, entity, criteria, content) {
+    // try {
+        // var user;
+        // var row_matches = [];
+        // if (criteria.search_criteria != null && criteria.search_criteria != "") {
+            // //Ti.API.info('here--------A.1');
+            // var instances = omadi_fields_get_fields(win, db_display);
+            // //Ti.API.info('here--------A.2');
+            // criteria.search_criteria.sort(search_criteria_search_order);
+            // var criteria_index;
+            // for (criteria_index in criteria.search_criteria) {
+                // //Ti.API.info('here--------A.3' + criteria.search_criteria[criteria_index]);
+                // var criteria_row = criteria.search_criteria[criteria_index];
+                // row_matches[criteria_index] = false;
+                // var field_name = criteria_row.field_name;
+                // //Ti.API.info('here--------A.4' + field_name);
+                // if (instances[field_name] != null) {
+                    // var search_field = instances[field_name];
+                    // //Ti.API.info('here--------A.5' + search_field['type']);
+                    // var node_values = [];
+                    // if (search_field['type'] == 'datestamp') {
+                        // //Ti.API.info('here--------A.6' + search_field['type']);
+                        // if ((field_name == 'uid' || field_name == 'created' || field_name == 'changed_uid') && win.nid != null & win.nid != "") {
+                            // var node = db_display.execute('SELECT ' + field_name + ' from node WHERE nid="' + win.nid + '";');
+                            // if (field_name == 'uid') {
+                                // field_name = 'author_uid';
+                            // }
+                            // node_values.push(node.fieldByName(field_name));
+                        // }
+                        // else {
+                            // //Ti.API.info('here--------A.7');
+                            // if (entity[field_name] != null) {
+                                // //Ti.API.info('here--------A.8');
+                                // for (idx in entity[field_name]) {
+                                    // //Ti.API.info('here--------A.9' + entity[field_name][idx]);
+                                    // var elements = entity[field_name][idx];
+                                    // if (elements['value'] != null && elements['value'] != "") {
+                                        // //Ti.API.info('here--------A.10' + elements['value']);
+                                        // node_values.push(elements['value']);
+                                    // }
+                                // }
+                            // }
+                            // else {
+                                // // No match, so move on
+                                // continue;
+                            // }
+                        // }
+// 
+                        // var search_value = criteria_row.value;
+                        // var search_operator = criteria_row.operator;
+                        // //Ti.API.info('here--------A.11' + search_value + "," + search_operator);
+// 
+                        // if (in_array(search_operator, Array('after-time', 'before-time', 'between-time'))) {
+                            // //Ti.API.info('here--------A.12');
+                            // var search_time_value = Number(search_value.time);
+                            // //Ti.API.info('here--------A.12' + search_time_value);
+                            // var compare_times = new Array();
+                            // var value_index;
+                            // for (value_index in node_values) {
+                                // compare_times[value_index] = search_time_value + mktime(0, 0, 0, date('n', Number(node_values[value_index])), date('j', Number(node_values[value_index])), date('Y', Number(node_values[value_index])));
+                                // //Ti.API.info('here--------A.13' + compare_times[value_index] + "," + node_values[value_index]);
+                            // }
+// 
+                            // if (search_operator == 'after-time') {
+                                // //Ti.API.info('here--------A.14' + search_operator);
+                                // var value_index;
+                                // for (value_index in node_values) {
+                                    // //Ti.API.info('here--------A.15' + node_values[value_index] + "," + compare_times[value_index]);
+                                    // if (node_values[value_index] > compare_times[value_index]) {
+                                        // //Ti.API.info('here--------A.16');
+                                        // row_matches[criteria_index] = true;
+                                    // }
+                                // }
+                            // }
+                            // else if (search_operator == 'before-time') {
+                                // //Ti.API.info('here--------A.17');
+                                // var value_index;
+                                // for (value_index in node_values) {
+                                    // //Ti.API.info('here--------A.18');
+                                    // if (node_values[value_index] < compare_times[value_index]) {
+                                        // //Ti.API.info('here--------A.19');
+                                        // row_matches[criteria_index] = true;
+                                    // }
+                                // }
+                            // }
+                            // else if (search_operator == 'between-time') {
+                                // //Ti.API.info('here--------A.20');
+                                // var search_time_value2 = search_value.time2;
+                                // //Ti.API.info('here--------A.21');
+                                // var compare_times2 = new Array();
+                                // var value_index;
+                                // for (value_index in node_values) {
+// 
+                                    // compare_times2[value_index] = search_time_value2 + mktime(0, 0, 0, date('n', Number(node_values[value_index])), date('j', Number(node_values[value_index])), date('Y', Number(node_values[value_index])));
+                                    // //Ti.API.info('here--------A.22' + compare_times2[value_index] + "," + node_values[value_index]);
+                                // }
+// 
+                                // if (search_time_value < search_time_value2) {
+                                    // //Ti.API.info('here--------A.23');
+                                    // // Like between 5:00PM - 8:00PM
+                                    // var value_index;
+                                    // for (value_index in node_values) {
+                                        // //Ti.API.info('here--------A.24');
+                                        // if (node_values[value_index] >= compare_times[value_index] && node_values[value_index] < compare_times2[value_index]) {
+                                            // //Ti.API.info('here--------A.25');
+                                            // row_matches[criteria_index] = true;
+                                        // }
+                                    // }
+                                // }
+                                // else {
+                                    // //Ti.API.info('here--------A.25----1');
+                                    // // Like between 8:00PM - 4:00AM
+                                    // var value_index;
+                                    // for (value_index in node_values) {
+                                        // //Ti.API.info('here--------A.26');
+                                        // if (node_values[value_index] >= compare_times[value_index] || node_values[value_index] < compare_times2[value_index]) {
+                                            // //Ti.API.info('here--------A.26---1');
+                                            // row_matches[criteria_index] = true;
+                                        // }
+                                    // }
+                                // }
+                            // }
+                        // }
+                        // else if (search_operator == '__blank') {
+                            // //Ti.API.info('here--------A.26---2');
+                            // row_matches[criteria_index] = true;
+                            // var value_index;
+                            // for (value_index in node_values) {
+                                // //Ti.API.info('here--------A.26---3');
+                                // node_value = node_values[value_index];
+                                // if (node_value != null && node_value != "") {
+                                    // //Ti.API.info('here--------A.26---4');
+                                    // row_matches[criteria_index] = false;
+                                // }
+// 
+                            // }
+                        // }
+                        // else if (search_operator == '__filled') {
+                            // //Ti.API.info('here--------A.26---5');
+                            // var value_index;
+                            // for (value_index in node_values) {
+                                // //Ti.API.info('here--------A.26---6');
+                                // node_value = node_values[value_index];
+                                // if (node_value != null && node_value != "") {
+                                    // //Ti.API.info('here--------A.26---7');
+                                    // row_matches[criteria_index] = true;
+                                // }
+// 
+                            // }
+                        // }
+                        // else if (search_operator == 'weekday') {
+                            // //Ti.API.info('here--------A.27' + search_value.weekday);
+                            // var weekdays = search_value.weekday;
+                            // if (!isArray(search_value.weekday)) {
+                                // //Ti.API.info('here--------A.28' + search_value.weekday);
+                                // weekdays = [];
+                                // var key;
+                                // for (key in search_value.weekday) {
+                                    // //Ti.API.info('here--------A.29' + search_value.weekday);
+                                    // if (search_value.weekday.hasOwnProperty(key)) {
+                                        // //Ti.API.info('here--------A.30' + key);
+                                        // weekdays.push(key);
+                                    // }
+                                // }
+                            // }
+// 
+                            // var value_index;
+                            // for (value_index in node_values) {
+                                // //Ti.API.info('here--------A.31' + node_values[value_index] + ", " + date('w', Number(node_values[value_index])), weekdays);
+                                // if (in_array(date('w', Number(node_values[value_index])), weekdays)) {
+                                    // //Ti.API.info('here--------A.32' + date('w', Number(node_values[value_index])), weekdays);
+                                    // row_matches[criteria_index] = true;
+                                // }
+                            // }
+                        // }
+                    // }
+// 
+                    // /* TODO ---- In Future
+// 
+                    // else
+// 
+                     // if(search_field['settings']['parts'] != null) {
+// 
+                     // if(search_field['type'] == 'location') {
+                     // for(part in search_field['settings']['parts']) {
+                     // search_value = isset($form_state['values']['search'][$search_field['field_name']][$part]) ? $form_state['values']['search'][$search_field['field_name']][$part] : $form_state['values']['search']['more_fields'][$search_field['field_name']][$part];
+                     // $query->condition('l_' . $search_field['field_name'] . '.' . $part, '%' . $search_value . '%', 'LIKE');
+                     // $search_fields[$search_key][$part]['default_value'] = $search_value;
+                     // }
+                     // object_lists_add_location_column($query, FALSE, $search_field, $id, $node_table);
+                     // } else {
+                     // for(part in search_field['settings']['parts']) {
+                     // $search_value = isset($form_state['values']['search'][$search_field['field_name']][$part]) ? $form_state['values']['search'][$search_field['field_name']][$part] : $form_state['values']['search']['more_fields'][$search_field['field_name']][$part];
+                     // $query->condition($search_field['field_name'] . '.' . $search_field['field_name'] . '_' . $part, '%' . $search_value . '%', 'LIKE');
+                     // $search_fields[$search_key][$part]['default_value'] = $search_value;
+                     // }
+                     // object_lists_add_parts_column($query, FALSE, $search_field, $id, $node_table);
+                     // }
+// 
+                     // }
+                     // */
+// 
+                    // else {
+                        // //Ti.API.info('here--------A.33');
+                        // // if(entity[field_name] == null) {
+                        // // entity[field_name] = null;
+                        // // }
+                        // search_value = criteria_row.value != null && criteria_row.value != "" ? criteria_row.value : null;
+                        // search_operator = criteria_row.operator;
+                        // //Ti.API.info('here--------A.34' + search_value + "," + search_operator);
+                        // switch(search_field['type']) {
+                            // case 'text':
+                            // case 'text_long':
+                            // case 'email':
+                            // case 'link_field':
+                            // case 'phone':
+                                // for (idx in entity[field_name]) {
+                                    // var elements = entity[field_name][idx];
+                                    // if (elements['value'] != null && elements['value'] != "") {
+                                        // node_values.push(elements['value']);
+                                    // }
+                                // }
+                                // var value_index;
+                                // for (value_index in node_values) {
+                                    // node_value = node_values[value_index];
+                                    // switch(search_operator) {
+                                        // case 'not like':
+                                            // if (strpos(node_value, search_value) === false) {
+                                                // row_matches[criteria_index] = true;
+                                            // }
+                                            // break;
+// 
+                                        // case 'starts with':
+                                            // if (strpos(node_value, search_value) === 0) {
+                                                // row_matches[criteria_index] = true;
+                                            // }
+                                            // break;
+// 
+                                        // case 'ends with':
+                                            // if (strpos(node_value, search_value) === node_value.length - search_value.length) {
+                                                // row_matches[criteria_index] = true;
+                                            // }
+                                            // break;
+// 
+                                        // case 'not starts with':
+                                            // if (strpos(node_value, search_value) !== 0) {
+                                                // row_matches[criteria_index] = true;
+                                            // }
+                                            // break;
+// 
+                                        // case 'not ends with':
+                                            // if (strpos(node_value, search_value) !== node_value.length - search_value.length) {
+                                                // row_matches[criteria_index] = true;
+                                            // }
+                                            // break;
+// 
+                                        // default:
+                                            // if (strpos(node_value, search_value) !== false) {
+                                                // row_matches[criteria_index] = true;
+                                            // }
+                                            // break;
+                                    // }
+                                // }
+// 
+                                // break;
+                            // case 'list_boolean':
+                                // for (idx in entity[field_name]) {
+                                    // var elements = entity[field_name][idx];
+                                    // node_values.push(elements['value']);
+                                // }
+// 
+                                // if (search_operator == '__filled') {
+                                    // var value_index;
+                                    // for (value_index in node_values) {
+                                        // node_value = node_values[value_index];
+                                        // if (node_value != 0) {
+                                            // row_matches[criteria_index] = true;
+                                        // }
+// 
+                                    // }
+                                // }
+                                // else {
+                                    // if (node_values == null && node_values == "") {
+                                        // row_matches[criteria_index] = true;
+                                    // }
+                                    // else {
+                                        // var value_index;
+                                        // for (value_index in node_values) {
+                                            // node_value = node_values[value_index];
+                                            // if (node_value == 0) {
+                                                // row_matches[criteria_index] = true;
+                                            // }
+                                        // }
+                                    // }
+                                // }
+// 
+                                // break;
+                            // case 'calculation_field':
+                                // //Ti.API.info('here--------A.35---1');
+                                // var calculation_values = _calculation_field_get_values(win, db_display, content[entity[field_name][0]['reffer_index']], entity);
+                                // //Ti.API.info('here--------A.35' + calculation_values);
+                                // node_values.push(calculation_values[0].final_value);
+// 
+                                // var value_index;
+                                // for (value_index in node_values) {
+                                    // node_value = node_values[value_index];
+                                    // //Ti.API.info('here--------A.36' + node_value);
+                                    // switch(search_operator) {
+// 
+                                        // case '>':
+                                            // //Ti.API.info('here--------A.37' + node_value + "," + search_value);
+                                            // if (node_value > search_value) {
+                                                // row_matches[criteria_index] = true;
+                                            // }
+                                            // break;
+                                        // case '>=':
+                                            // //Ti.API.info('here--------A.38' + node_value + "," + search_value);
+                                            // if (node_value >= search_value) {
+                                                // row_matches[criteria_index] = true;
+                                            // }
+                                            // break;
+                                        // case '!=':
+                                            // //Ti.API.info('here--------A.39' + node_value + "," + search_value);
+                                            // if (node_value != search_value) {
+                                                // row_matches[criteria_index] = true;
+                                            // }
+                                            // break;
+                                        // case '<':
+                                            // //Ti.API.info('here--------A.40' + node_value + "," + search_value);
+                                            // if (node_value < search_value) {
+                                                // row_matches[criteria_index] = true;
+                                            // }
+                                            // break;
+                                        // case '<=':
+                                            // //Ti.API.info('here--------A.41' + node_value + "," + search_value);
+                                            // if (node_value <= search_value) {
+                                                // row_matches[criteria_index] = true;
+                                            // }
+                                            // break;
+                                        // default:
+                                            // //Ti.API.info('here--------A.42' + node_value + "," + search_value);
+                                            // if (node_value == search_value) {
+                                                // row_matches[criteria_index] = true;
+                                            // }
+                                            // break;
+                                    // }
+                                // }
+                                // break;
+                            // case 'number_integer':
+                            // case 'number_decimal':
+                            // case 'auto_increment':
+                                // for (idx in entity[field_name]) {
+                                    // var elements = entity[field_name][idx];
+                                    // if (elements['value'] != null && elements['value'] != "") {
+                                        // node_values.push(elements['value']);
+                                    // }
+                                // }
+// 
+                                // var value_index;
+                                // for (value_index in node_values) {
+                                    // node_value = node_values[value_index];
+                                    // switch(search_operator) {
+// 
+                                        // case '>':
+                                            // if (node_value > search_value) {
+                                                // row_matches[criteria_index] = true;
+                                            // }
+                                            // break;
+                                        // case '>=':
+                                            // if (node_value >= search_value) {
+                                                // row_matches[criteria_index] = true;
+                                            // }
+                                            // break;
+                                        // case '!=':
+                                            // if (node_value != search_value) {
+                                                // row_matches[criteria_index] = true;
+                                            // }
+                                            // break;
+                                        // case '<':
+                                            // if (node_value < search_value) {
+                                                // row_matches[criteria_index] = true;
+                                            // }
+                                            // break;
+                                        // case '<=':
+                                            // if (node_value <= search_value) {
+                                                // row_matches[criteria_index] = true;
+                                            // }
+                                            // break;
+// 
+                                        // default:
+                                            // if (node_value == search_value) {
+                                                // row_matches[criteria_index] = true;
+                                            // }
+                                            // break;
+                                    // }
+                                // }
+// 
+                                // break;
+// 
+                            // case 'omadi_reference':
+                                // for (idx in entity[field_name]) {
+                                    // var elements = entity[field_name][idx];
+                                    // if (elements['nid'] != null && elements['nid'] != "") {
+                                        // node_values.push(elements['nid']);
+                                    // }
+                                // }
+// 
+                                // var reference_types = JSON.parse(search_field['settings'])['reference_types'];
+                                // var array_filter = '';
+                                // var reference_types_arr = [];
+                                // var key;
+                                // for (key in reference_types) {
+                                    // reference_types_arr.push(reference_types[key]);
+                                // }
+// 
+                                // var reference_types_idx;
+                                // for ( reference_types_idx = 0; reference_types_idx < reference_types_arr.length; reference_types_idx++) {
+                                    // if (reference_types_idx == reference_types_arr.length - 1) {
+                                        // array_filter += '\'' + reference_types_arr[reference_types_idx] + '\'';
+                                    // }
+                                    // else {
+                                        // array_filter += '\'' + reference_types_arr[reference_types_idx] + '\',';
+                                    // }
+                                // }
+                                // var query = 'SELECT nid from node WHERE table_name IN (' + array_filter + ')';
+                                // switch(search_operator) {
+                                    // case 'starts with':
+                                    // case 'not starts with':
+                                        // query += ' AND title LIKE "%' + search_value + '%";'
+                                        // break;
+                                    // case 'ends with':
+                                    // case 'not ends with':
+                                        // query += ' AND title LIKE "%' + search_value + '";'
+                                        // break;
+                                    // default:
+                                        // query += ' AND title LIKE "%' + search_value + '%";'
+                                        // break;
+                                // }
+// 
+                                // var possible_nids = db_display.execute(query);
+                                // var possible_nids_arr = [];
+                                // while (possible_nids.isValidRow()) {
+                                    // possible_nids_arr.push(possible_nids.fieldByName('nid'));
+                                    // possible_nids.next();
+                                // }
+// 
+                                // switch(search_operator) {
+                                    // case 'not starts with':
+                                    // case 'not ends with':
+                                    // case 'not like':
+                                        // if (node_values[0] == 0) {
+                                            // row_matches[criteria_index] = true;
+                                        // }
+                                        // else {
+                                            // row_matches[criteria_index] = true;
+                                            // for (idx in node_values) {
+                                                // node_value = node_values[idx];
+                                                // if (in_array(node_value, possible_nids_arr)) {
+                                                    // row_matches[criteria_index] = false;
+                                                // }
+                                            // }
+                                        // }
+                                        // break;
+                                    // default:
+                                        // for (idx in node_values) {
+                                            // node_value = node_values[idx];
+                                            // if (in_array(node_value, possible_nids_arr)) {
+                                                // row_matches[criteria_index] = true;
+                                            // }
+                                        // }
+                                        // break;
+                                // }
+// 
+                                // break;
+                            // case 'user_reference':
+                                // //Ti.API.info('here--------A.43');
+                                // if ((field_name == 'uid' || field_name == 'created' || field_name == 'changed_uid') && win.nid != null & win.nid != "") {
+                                    // var node = db_display.execute('SELECT ' + field_name + ' from node WHERE nid="' + win.nid + '";');
+                                    // if (field_name == 'uid') {
+                                        // field_name = 'author_uid';
+                                    // }
+                                    // node_values.push(node.fieldByName(field_name));
+                                // }
+                                // else {
+                                    // //Ti.API.info('here--------A.44');
+                                    // for (idx in entity[field_name]) {
+                                        // var elements = entity[field_name][idx];
+                                        // //Ti.API.info('here--------A.45' + elements);
+                                        // if (elements['uid'] != null && elements['uid'] != "") {
+                                            // //Ti.API.info('here--------A.43' + elements['uid']);
+                                            // node_values.push(elements['value']);
+                                        // }
+                                    // }
+// 
+                                // }
+                                // if (search_value == 'current_user') {
+                                    // search_value = win.uid;
+                                // }
+                                // // Make sure the search value is an array
+                                // var search_value_arr = [];
+                                // if (!isArray(search_value)) {
+                                    // //Ti.API.info('here--------A.44' + search_value);
+                                    // var key;
+                                    // for (key in search_value) {
+                                        // //Ti.API.info('here--------A.45' + key);
+                                        // if (search_value.hasOwnProperty(key)) {
+                                            // //Ti.API.info('here--------A.46' + key);
+                                            // search_value_arr[key] = key;
+                                        // }
+                                    // }
+                                    // search_value = search_value_arr;
+                                // }
+// 
+                                // if (search_operator != null && search_operator == '!=') {
+                                    // //Ti.API.info('here--------A.47' + search_value['__null']);
+                                    // row_matches[criteria_index] = true;
+                                    // if (search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
+                                        // //Ti.API.info('here--------A.48');
+                                        // row_matches[criteria_index] = false;
+                                    // }
+                                    // else {
+                                        // //Ti.API.info('here--------A.49');
+                                        // for (idx in search_value) {
+                                            // //Ti.API.info('here--------A.50' + search_value[idx] + row_matches[criteria_index] + criteria_index);
+                                            // chosen_value = search_value[idx];
+                                            // if (in_array(chosen_value, node_values)) {
+                                                // //Ti.API.info('here--------A.51' + chosen_value);
+                                                // row_matches[criteria_index] = false;
+                                            // }
+                                        // }
+                                    // }
+                                // }
+                                // else {
+                                    // //Ti.API.info('here--------A.52');
+                                    // if (search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
+                                        // //Ti.API.info('here--------A.53');
+                                        // row_matches[criteria_index] = true;
+                                    // }
+                                    // else {
+                                        // //Ti.API.info('here--------A.54');
+                                        // for (idx in search_value) {
+                                            // //Ti.API.info('here--------A.55' + search_value[idx]);
+                                            // chosen_value = search_value[idx];
+                                            // if (in_array(chosen_value, node_values)) {
+                                                // //Ti.API.info('here--------A.56' + chosen_value);
+                                                // row_matches[criteria_index] = true;
+                                            // }
+                                        // }
+                                    // }
+                                // }
+                                // break;
+                            // case 'taxonomy_term_reference':
+// 
+                                // for (idx in entity[field_name]) {
+                                    // elements = entity[field_name][idx];
+                                    // if (elements['tid'] == 0) {
+                                        // node_values.push(elements['tid']);
+                                    // }
+                                // }
+// 
+                                // if (JSON.parse(search_field['widget']).type == 'options_select' || JSON.parse(search_field['widget']).type == 'violation_select') {
+                                    // // Make sure the search value is an array
+                                    // var search_value_arr = [];
+                                    // if (!isArray(search_value)) {
+                                        // var key;
+                                        // for (key in search_value) {
+                                            // if (search_value.hasOwnProperty(key)) {
+                                                // search_value_arr[key] = key;
+                                            // }
+                                        // }
+                                        // search_value = search_value_arr;
+                                    // }
+// 
+                                    // if (search_operator != null && search_operator == '!=') {
+// 
+                                        // row_matches[criteria_index] = true;
+                                        // if (search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
+                                            // row_matches[criteria_index] = false;
+                                        // }
+                                        // else {
+                                            // for (idx in search_value) {
+                                                // chosen_value = search_value[idx];
+                                                // if (in_array(chosen_value, node_values)) {
+                                                    // row_matches[criteria_index] = false;
+                                                // }
+                                            // }
+// 
+                                        // }
+                                    // }
+                                    // else {
+                                        // if (search_value['__null'] == '__null' && (node_values == null || node_values[0] == null)) {
+                                            // row_matches[criteria_index] = true;
+                                        // }
+                                        // else {
+                                            // for (idx in search_value) {
+                                                // chosen_value = search_value[idx];
+                                                // if (in_array(chosen_value, node_values)) {
+                                                    // row_matches[criteria_index] = true;
+                                                // }
+                                            // }
+                                        // }
+                                    // }
+                                // }
+                                // else {
+                                    // var machine_name = JSON.parse(search_field['settings']).vocabulary;
+                                    // var vocabulary = db_display.execute('SELECT vid from vocabulary WHERE machine_name="' + machine_name + '";');
+                                    // var query = 'SELECT tid from term_data WHERE vid=' + vocabulary.fieldByName('vid');
+                                    // switch(search_operator) {
+                                        // case 'starts with':
+                                        // case 'not starts with':
+                                            // query += ' AND name LIKE "' + search_value + '%";'
+                                            // break;
+// 
+                                        // case 'ends with':
+                                        // case 'not ends with':
+                                            // query += ' AND name LIKE "%' + search_value + '";'
+                                            // break;
+// 
+                                        // default:
+                                            // query += ' AND name LIKE "%' + search_value + '%";'
+                                            // break;
+                                    // }
+                                    // //Ti.API.info(query);
+                                    // var possible_tids = db_display.execute(query);
+                                    // var possible_tids_arr = [];
+                                    // while (possible_tids.isValidRow()) {
+                                        // possible_tids_arr.push(possible_tids.fieldByName('tid'));
+                                        // possible_tids.next();
+                                    // }
+// 
+                                    // switch(search_operator) {
+                                        // case 'not starts with':
+                                        // case 'not ends with':
+                                        // case 'not like':
+                                            // if (node_values[0] == 0) {
+                                                // row_matches[criteria_index] = true;
+                                            // }
+                                            // else {
+                                                // row_matches[criteria_index] = true;
+                                                // for (idx in node_values) {
+                                                    // node_value = node_values[idx];
+                                                    // if (in_array(node_value, possible_tids_arr)) {
+                                                        // row_matches[criteria_index] = false;
+                                                    // }
+                                                // }
+                                            // }
+                                            // break;
+// 
+                                        // default:
+                                            // for (idx in node_values) {
+                                                // node_value = node_values[idx];
+                                                // if (in_array(node_value, possible_tids_arr)) {
+                                                    // row_matches[criteria_index] = true;
+                                                // }
+                                            // }
+                                            // break;
+                                    // }
+                                // }
+// 
+                                // break;
+// 
+                            // case 'omadi_time':
+                                // // TODO: Add the omadi_time field here
+                                // break;
+// 
+                            // case 'image':
+                                // // Do nothing
+                                // break;
+// 
+                        // }
+// 
+                    // }
+// 
+                // }
+            // }
+// 
+            // if (count_arr_obj(criteria['search_criteria']) == 1) {
+                // //Ti.API.info('here--------A.57' + row_matches[criteria_index]);
+                // var retval = row_matches[criteria_index];
+            // }
+            // else {
+                // //Ti.API.info('here--------A.58');
+                // // Group each criteria row into groups of ors with the matching result of each or
+                // var and_groups = new Array();
+                // var and_group_index = 0;
+                // and_groups[and_group_index] = new Array();
+                // //print_r($criteria['search_criteria']);
+                // for (criteria_index in criteria['search_criteria']) {
+                    // //Ti.API.info('here--------A.59' + criteria_index);
+                    // criteria_row = criteria['search_criteria'][criteria_index];
+                    // if (criteria_index == 0) {
+                        // //Ti.API.info('here--------A.60' + row_matches[criteria_index]);
+                        // //and_groups[and_group_index][0] = row_matches[criteria_index];
+                        // and_groups[and_group_index].push(row_matches[criteria_index]);
+                    // }
+                    // else {
+                        // //Ti.API.info('here--------A.61');
+                        // if (criteria_row['row_operator'] == null || criteria_row['row_operator'] != 'or') {
+                            // //Ti.API.info('here--------A.62');
+                            // and_group_index++;
+                            // and_groups[and_group_index] = new Array();
+                        // }
+                        // //Ti.API.info('here--------A.63' + row_matches[criteria_index]);
+                        // and_groups[and_group_index].push(row_matches[criteria_index]);
+                        // //and_groups[and_group_index][0] = row_matches[criteria_index];
+                    // }
+                // }
+// 
+                // // Get the final result, making sure each and group is TRUE
+                // retval = true;
+                // //Ti.API.info('here--------A.64' + and_groups.length);
+                // for (idx in and_groups) {
+                    // //Ti.API.info('here--------A.65');
+                    // and_group = and_groups[idx];
+                    // and_group_match = false;
+                    // for (idx1 in and_group) {
+                        // //Ti.API.info('here--------A.66' + and_group[idx1]);
+                        // or_match = and_group[idx1];
+                        // // Make sure at least one item in an and group is true (or the only item is true)
+                        // if (or_match) {
+                            // //Ti.API.info('here--------A.67');
+                            // and_group_match = true;
+                            // break;
+                        // }
+                    // }
+// 
+                    // // If one and group doesn't match the whole return value of this function is false
+                    // if (!and_group_match) {
+                        // //Ti.API.info('here--------A.68');
+                        // retval = false;
+                        // break;
+                    // }
+                // }
+            // }
+            // //Ti.API.info('here--------A.69' + retval);
+            // return retval;
+        // }
+// 
+        // // No conditions exist, so the row matches
+// 
+    // }
+    // catch(e) {
+    // }
+    // return true;
+// }
 
 function rules_field_format_readable_time_rules(timeValue) {
     var timeStrings = [];

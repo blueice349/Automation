@@ -107,8 +107,9 @@ Omadi.widgets.image = {
         
         if(isArray(dbValue)){
             for (i = 0; i < dbValue.length; i++) {
-                 widgetView.add(Omadi.widgets.image.getImageView(widgetView, i, Ti.UI.currentWindow.nid, dbValue[i]));
-                 
+                 if(dbValue[i] !== null){
+                    widgetView.add(Omadi.widgets.image.getImageView(widgetView, i, Ti.UI.currentWindow.nid, dbValue[i]));
+                 }
                 // //var updated = false
                 // if ((img < decodedValues.length) && (decodedValues[img] != "") && (decodedValues[img] != null) && decodedValues[img] != 'null' && decodedValues[img] != 'undefined') {
                     // var vl_to_field = decodedValues[img];

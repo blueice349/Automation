@@ -195,6 +195,8 @@ function draftNavButtons() {"use strict";
 
             if (e.row.nid != null) {
 
+                var draftsWindow = Omadi.utils.cloneObject(curWin);
+                
                 var formWindow = Ti.UI.createWindow({
                     navBarHidden: true,
                     title: e.row.title,
@@ -218,16 +220,24 @@ function draftNavButtons() {"use strict";
                 // //Sets a mode to fields edition
                 // win_new.mode = 1;
 
+                formWindow.addEventListener('close', function(){
+                   Ti.UI.currentWindow.close(); 
+                });
+                
                 formWindow.open();
-                // setTimeout(function() {
-                    // create_or_edit_node.loadUI();
-                // }, 100);
+                
+                
+                setTimeout(function() {
+                    Ti.UI.currentWindow.hide();
+                }, 3000);
 
                 //Omadi.data.setUpdating(false);
 
                 //if (PLATFORM === 'android') {
                 //    curWin.close();
                 //}
+                
+                
 
                 //curWin.close();
                 resultsNames.close();
@@ -237,7 +247,7 @@ function draftNavButtons() {"use strict";
         listTableView.addEventListener('longclick', function(e) {
             //Hide keyboard when returning
 
-            Ti.API.info('Size : ' + e.section.rowCount);
+            //Ti.API.info('Size : ' + e.section.rowCount);
 
             if (e.row.nid != null) {
                 Ti.API.info('DELETE');

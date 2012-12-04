@@ -1,7 +1,5 @@
-Ti.include('/lib/functions.js');
-Ti.include('/lib/encoder_base_64.js');
-Ti.include('/main_windows/create_or_edit_node.js');
-Ti.include('/lib/display_functions.js');
+
+Ti.include("/lib/widgets.js");
 
 /*jslint eqeq:true, plusplus: true*/
 
@@ -175,7 +173,7 @@ while (result.isValidRow()) {
 
 result.close();
 
-var fields_result = db.execute('SELECT label, weight, type, field_name, widget, settings, required FROM fields WHERE bundle = "' + curWin.type + '" ORDER BY weight ASC, id ASC');
+var fields_result = db.execute('SELECT label, weight, type, field_name, widget, settings, required FROM fields WHERE bundle = "' + curWin.type + '" AND disabled = 0 ORDER BY weight ASC, id ASC');
 var savedValues = [];
 
 var instances = {};
@@ -203,7 +201,7 @@ while (fields_result.isValidRow()) {
 
     instances[field_desc.field_name] = field_desc;
 
-    Ti.API.info(field_desc.field_name);
+    //Ti.API.info(field_desc.field_name);
     //Ti.API.info(field_desc.settings.region);
 
     for (region_name in regions) {
@@ -285,8 +283,8 @@ function doFieldOutput(fieldObj) {"use strict";
 
         if (fieldObj.type === 'calculation_field') {
 
-            if (fieldObj.settings.hidden != 1) {
-                tableView = getCalculationTableView(node, fieldObj);
+            if (fieldObj.settings.hidden == 0) {
+                tableView = Omadi.widgets.calculation_field.getTableView(node, fieldObj);
 
                 if (tableView.singleValue) {
                     valueView.add(tableView);
@@ -641,12 +639,12 @@ function doRegionOutput(regionObj) {"use strict";
 
 ( function() {"use strict";
         /*jslint vars: true */
-
+        /*global loadNode*/
 
         node = loadNode(curWin.nid);
 
-        Ti.API.debug("node: " + curWin.nid);
-        Ti.API.debug(node.author_uid);
+        //Ti.API.debug("node: " + curWin.nid);
+        //Ti.API.debug(node.author_uid);
 
         var regionName;
 
@@ -2144,7 +2142,9 @@ if (PLATFORM === 'android' && isEditEnabled == true) {
             //======================================
             // MENU - EVENTS
             //======================================
-
+            
+            form_part = (parseInt(node_form.fieldByName('form_part'), 10) + 1);
+            
             menu_zero.addEventListener("click", function(e) {
                 //Next window to be opened
                 var formWindow = Ti.UI.createWindow({
@@ -2152,7 +2152,8 @@ if (PLATFORM === 'android' && isEditEnabled == true) {
                     title: curWin.title,
                     type: curWin.type,
                     nid: curWin.nid,
-                    url: '/main_windows/form.js'
+                    url: '/main_windows/form.js',
+                    form_part: form_part
                 });
                 
 
@@ -2232,14 +2233,15 @@ if (PLATFORM !== 'android') {
 // return arrImages;
 // }
 
-function openEditScreen(part) {
+function openEditScreen(part) {"use strict";
     //Next window to be opened
     var formWindow = Ti.UI.createWindow({
         navBarHidden: true,
         title: curWin.title,
         type: curWin.type,
         nid: curWin.nid,
-        url: '/main_windows/form.js'
+        url: '/main_windows/form.js',
+        form_part: part
     });//create_or_edit_node.getWindow();
     // win_new.title = (PLATFORM == 'android') ? curWin.title + '-' + curWin.nameSelected : curWin.title;
     // win_new.type = curWin.type;
@@ -2265,588 +2267,194 @@ function openEditScreen(part) {
     //setTimeout(function() {
     //    create_or_edit_node.loadUI();
     //}, 100);
-    if(PLATFORM == 'android'){
-        curWin.close();
-    }
-    else{
-        //curWin.hide();
-    }
+    // if(PLATFORM == 'android'){
+        // curWin.close();
+    // }
+    // else{
+        curWin.hide();
+    //}
     
     //lastWindow.close();
 }
 
-function createEntity() {
+// function createEntity() {
+// 
+    // var entity = [];
+// 
+    // for ( idx = 0; idx < content.length; idx++) {
+        // if (!content[idx]) {
+            // continue;
+        // }
+        // var private_index = 0;
+        // if (entity[c_field_name[idx]] == null) {
+            // entity[c_field_name[idx]] = new Array();
+        // }
+        // else {
+            // private_index = entity[c_field_name[idx]].length;
+        // }
+// 
+        // entity[c_field_name[idx]][private_index] = new Array();
+// 
+        // entity[c_field_name[idx]][private_index]['value'] = c_content[idx];
+        // entity[c_field_name[idx]][private_index]['nid'] = c_content[idx];
+        // entity[c_field_name[idx]][private_index]['uid'] = c_content[idx];
+        // entity[c_field_name[idx]][private_index]['tid'] = c_content[idx];
+        // entity[c_field_name[idx]][private_index]['field_name'] = c_field_name[idx];
+        // entity[c_field_name[idx]][private_index]['field_type'] = c_type[idx];
+        // entity[c_field_name[idx]][private_index]['reffer_index'] = idx;
+    // }
+// 
+    // return entity;
+// }
 
-    var entity = [];
 
-    for ( idx = 0; idx < content.length; idx++) {
-        if (!content[idx]) {
-            continue;
-        }
-        var private_index = 0;
-        if (entity[c_field_name[idx]] == null) {
-            entity[c_field_name[idx]] = new Array();
-        }
-        else {
-            private_index = entity[c_field_name[idx]].length;
-        }
 
-        entity[c_field_name[idx]][private_index] = new Array();
 
-        entity[c_field_name[idx]][private_index]['value'] = c_content[idx];
-        entity[c_field_name[idx]][private_index]['nid'] = c_content[idx];
-        entity[c_field_name[idx]][private_index]['uid'] = c_content[idx];
-        entity[c_field_name[idx]][private_index]['tid'] = c_content[idx];
-        entity[c_field_name[idx]][private_index]['field_name'] = c_field_name[idx];
-        entity[c_field_name[idx]][private_index]['field_type'] = c_type[idx];
-        entity[c_field_name[idx]][private_index]['reffer_index'] = idx;
-    }
-
-    return entity;
-}
-
-function calculationFieldGetValues(node, instance) {
-    //Ti.API.info('here--------0.1' + instance.field_name + ", mode: " + win.mode);
-    var entity;
-    var calculated_field_cache = [];
-    var final_value = 0;
-    if (instance.settings.calculation.items != null && !instance.disabled) {
-        var row_values = [];
-        if (instance.value != null && instance.value != "") {
-            cached_final_value = instance.value;
-        }
-        else {
-            cached_final_value = 0;
-        }
-
-        usort(instance.settings.calculation.items, '_calculation_field_sort_on_weight');
-
-        var idx;
-        for (idx in instance.settings.calculation.items) {
-            var calculation_row = instance.settings.calculation.items[idx];
-            var value = 0;
-            var field_1_multiplier = 0;
-            var field_2_multiplier = 0;
-            var numeric_multiplier = 0;
-            calculated_field_cache = new Array();
-            if (calculation_row.field_name_1 != null && node[calculation_row.field_name_1] != null && instances[calculation_row.field_name_1] != null && instances[calculation_row.field_name_1].type == 'calculation_field') {
-                // Make sure a dependency calculation is made first
-                // TODO: Statically cache these values for future use by other calculation fields
-                // TODO: Make sure an infinite loop doesn't occur
-                //Ti.API.info('here--------0.2');
-                required_instance_final_values = calculationFieldGetValues(node, instances[calculation_row.field_name_1]);
-                //content[entity[calculation_row.field_name_1][0]['reffer_index']], node, content);
-                //Ti.API.info('here--------0.3' + required_instance_final_values[0].final_value);
-                calculated_field_cache[calculation_row.field_name_1] = required_instance_final_values[0].final_value;
-            }
-
-            if (calculation_row.field_name_1 != null && calculation_row.field_name_1 != "") {
-                //Ti.API.info('here--------0.4' + calculation_row.field_name_1 + "," + calculated_field_cache[calculation_row.field_name_1]);
-                if (calculated_field_cache[calculation_row.field_name_1] != null) {
-                    //Ti.API.info('here--------0.5' + calculated_field_cache[calculation_row.field_name_1]);
-                    field_1_multiplier = calculated_field_cache[calculation_row.field_name_1];
-                }
-                else if (calculation_row.type == 'parent_field_value') {
-                    //Ti.API.info('here--------0.6' + calculation_row.parent_field);
-                    parent_field = calculation_row.parent_field;
-                    if (node[parent_field] != null && node[parent_field].dbValues[0] != null) {
-                        parent_node = loadNode(node[parent_field].dbValues[0]);
-                        if (parent_node && parent_node[calculation_row.field_name_1].dbValues[0] != null) {
-                            field_1_multiplier = parent_node[calculation_row.field_name_1].dbValues[0];
-                            //Ti.API.info('here--------0.7' + field_1_multiplier);
-                        }
-                    }
-                }
-                else if (node[calculation_row.field_name_1] != null && node[calculation_row.field_name_1].dbValues[0] != null) {
-                    field_1_multiplier = node[calculation_row.field_name_1].dbValues[0];
-                    //Ti.API.info('here--------0.8' + field_1_multiplier);
-                }
-                if (calculation_row.datestamp_end_field != null && calculation_row.datestamp_end_field != "") {
-                    //Ti.API.info('here--------0.9' + field_1_multiplier);
-                    start_timestamp = field_1_multiplier;
-                    // Set this end value to 0 in case the terminating datestamp field is empty
-                    field_1_multiplier = 0;
-                    if (node[calculation_row.datestamp_end_field] != null && node[calculation_row.datestamp_end_field].dbValues[0] != null) {
-                        end_timestamp = node[calculation_row.datestamp_end_field].dbValues[0];
-                        //Ti.API.info('here--------0.10' + end_timestamp);
-                        if (calculation_row.type == 'time-only') {
-                            //Ti.API.info('here--------0.11' + calculation_row.type);
-                            if (end_timestamp < start_timestamp) {
-                                //Ti.API.info('here--------0.12' + start_timestamp);
-                                end_timestamp += (24 * 3600);
-                            }
-                        }
-
-                        difference = end_timestamp - start_timestamp;
-
-                        switch(calculation_row.datestamp_interval) {
-                            case 'minute':
-                                field_1_multiplier = difference / 60;
-                                //Ti.API.info('here--------0.13' + field_1_multiplier);
-                                break;
-                            case 'hour':
-                                field_1_multiplier = difference / 3600;
-                                //Ti.API.info('here--------0.14' + field_1_multiplier);
-                                break;
-                            case 'day':
-                                field_1_multiplier = difference / (3600 * 24);
-                                //Ti.API.info('here--------0.15' + field_1_multiplier);
-                                break;
-                            case 'week':
-                                field_1_multiplier = difference / (3600 * 24 * 7);
-                                //Ti.API.info('here--------0.16' + field_1_multiplier);
-                                break;
-                        }
-                        if (calculation_row.type == 'time') {
-                            //Ti.API.info('here--------0.17' + calculation_row.type);
-                            if (calculation_row.interval_rounding == 'up') {
-                                field_1_multiplier = Math.ceil(field_1_multiplier);
-                                //Ti.API.info('here--------0.18' + field_1_multiplier);
-                            }
-                            else if (calculation_row.interval_rounding == 'down') {
-                                field_1_multiplier = Math.floor(field_1_multiplier);
-                                //Ti.API.info('here--------0.19' + field_1_multiplier);
-                            }
-                            else if (calculation_row.interval_rounding == 'integer') {
-                                field_1_multiplier = Math.round(field_1_multiplier);
-                                //Ti.API.info('here--------0.20' + field_1_multiplier);
-                            }
-                            else if (calculation_row.interval_rounding == 'increment-at-time') {
-                                //Ti.API.info('here--------0.21' + calculation_row.increment_at_time);
-                                at_time = calculation_row.increment_at_time;
-                                start_timestamp = Number(start_timestamp);
-                                relative_increment_time = at_time = mktime(0, 0, 0, date('n', start_timestamp), date('j', start_timestamp), date('Y', start_timestamp));
-                                //Ti.API.info('here--------0.22' + relative_increment_time + "," + end_timestamp);
-                                day_count = 0;
-                                if (relative_increment_time < start_timestamp) {
-                                    relative_increment_time += (3600 * 24);
-                                    //Ti.API.info('here--------0.23' + relative_increment_time);
-                                }
-
-                                while (relative_increment_time <= end_timestamp) {
-                                    day_count++;
-                                    relative_increment_time += (3600 * 24);
-                                    //	Ti.API.info('here--------0.24' + relative_increment_time );
-                                }
-
-                                field_1_multiplier = day_count;
-                            }
-                        }
-                    }
-                }
-
-            }
-
-            if (calculation_row.field_name_2 != null && calculation_row.field_name_2 != "") {
-                //Ti.API.info('here--------1' + calculation_row.field_name_2);
-                if (calculated_field_cache[calculation_row.field_name_1] != null) {
-                    field_2_multiplier = calculated_field_cache[calculation_row.field_name_2];
-                    //Ti.API.info('here--------2' + field_2_multiplier);
-                }
-                else if (calculation_row.type == 'parent_field_value') {
-                    parent_field = calculation_row.parent_field;
-                    //Ti.API.info('here--------3' + parent_field);
-                    if (node[parent_field] != null && node[parent_field].dbValues[0] != null) {
-                        parent_node = loadNode(node[parent_field].dbValues[0]);
-                        //Ti.API.info('here--------4' + parent_field);
-                        if (parent_node && parent_node[calculation_row.field_name_2].dbValues[0] != null) {
-                            field_2_multiplier = parent_node[calculation_row.field_name_2].dbValues[0];
-                            //Ti.API.info('here--------5' + field_2_multiplier);
-                        }
-                    }
-                }
-                else if (node[calculation_row.field_name_2] != null && node[calculation_row.field_name_2].dbValues[0] != null) {
-                    field_2_multiplier = node[calculation_row.field_name_2].dbValues[0];
-                    //Ti.API.info('here--------6' + field_2_multiplier);
-                }
-            }
-
-            if (calculation_row.numeric_multiplier != null && calculation_row.numeric_multiplier != "") {
-                numeric_multiplier = Number(calculation_row.numeric_multiplier);
-                //Ti.API.info('here--------7' + numeric_multiplier);
-            }
-
-            var zero = false;
-
-            if (calculation_row.criteria != null && calculation_row.criteria.search_criteria != null) {
-                //Ti.API.info('here--------8' + calculation_row.criteria);
-                //if (!list_search_node_matches_search_criteria(win, db_display, entity, calculation_row.criteria, content)) {
-                //Ti.API.info('here--------9');
-                //zero = true;
-                //}
-            }
-
-            var value = 0;
-            if (field_1_multiplier == 0 && calculation_row.field_name_1 != null && calculation_row.field_name_1 != "") {
-                //Ti.API.info('here--------10');
-                zero = true;
-            }
-            else if (value == 0 && field_1_multiplier != 0) {
-                //Ti.API.info('here--------11');
-                value = field_1_multiplier;
-            }
-
-            if (field_2_multiplier == 0 && calculation_row.field_name_2 != null && calculation_row.field_name_2 != "") {
-                //Ti.API.info('here--------12');
-                zero = true;
-            }
-            else if (value == 0 && field_2_multiplier != 0) {
-                //Ti.API.info('here--------13');
-                value = Number(field_2_multiplier);
-            }
-            else if (value != 0 && field_2_multiplier != 0) {
-                //Ti.API.info('here--------14');
-                value *= Number(field_2_multiplier);
-            }
-
-            if (value == 0 && numeric_multiplier != 0) {
-                //Ti.API.info('here--------15');
-                value = Number(numeric_multiplier);
-            }
-            else if (value != 0 && numeric_multiplier != 0) {
-                //Ti.API.info('here--------16');
-                value *= Number(numeric_multiplier);
-            }
-
-            // if(calculation_row.type!=null && calculation_row.type=='static'){
-            // Ti.API.info('here--------17' );
-            // zero = false;
-            // }
-            if (zero) {
-                //Ti.API.info('here--------18');
-                value = 0;
-            }
-
-            row_values.push({
-                'row_label' : (calculation_row.row_label != null && calculation_row.row_label != "") ? calculation_row.row_label : '',
-                'value' : value
-            });
-            //alert('field_1_multiplier : ' + field_1_multiplier);
-            //alert('field_2_multiplier : ' + field_2_multiplier);
-            //alert('numeric_multiplier : ' + numeric_multiplier);
-            //alert('Value : ' + value);
-            final_value += Number(value);
-            //Ti.API.info('here--------19' + final_value);
-        }
-        //	alert("final value: " + final_value);
-        return [{
-            'cached_final_value' : cached_final_value,
-            'final_value' : final_value,
-            'rows' : row_values,
-        }];
-
-    }
-    return [];
-}
-
-function getCalculationTableView(node, instance) {
-    //var entity = createEntity();
-    //var instance = instances[field_name];
-    var result = calculationFieldGetValues(node, instance);
-    var row_values = result[0].rows;
-    //var heightView = 0;
-
-    //var widthCellView = Ti.Platform.displayCaps.platformWidth;
-    //var content;
-
-    var tableView = Ti.UI.createView({
-        width : '100%',
-        layout : 'vertical',
-        height : Ti.UI.SIZE
-    });
-
-    if (row_values.length > 1) {
-        var cal_value = 0;
-        var cal_value_str = "";
-        var isNegative = false;
-
-        for ( idx = 0; idx < row_values.length; idx++) {
-            cal_value = row_values[idx].value;
-            
-            if(cal_value === null){
-                cal_value = 0;
-            }
-            else if(typeof cal_value === 'string'){
-                cal_value = parseFloat(cal_value);
-            }
-            //typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
-            //Check type of the data
-            isNegative = (cal_value < 0) ? true : false;
-            // Is negative. And if it is -ve then write in this value in (brackets).
-            cal_value_str = applyNumberFormat(instance, cal_value);
-            cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
-            // Adding brackets over -ve value.
-
-            var row = Ti.UI.createView({
-                height : Ti.UI.SIZE,
-                width : '100%',
-                top : 0,
-                backgroundColor : '#ccc'
-            });
-
-            var row_label = Ti.UI.createLabel({
-                text : row_values[idx].row_label + "  ",
-                textAlign : Ti.UI.TEXT_ALIGNMENT_RIGHT,
-                width : '59.5%',
-                font : {
-                    fontSize : '15dp'
-                },
-                left : 0,
-                top : '1dp',
-                color : '#545454',
-                wordWrap : false,
-                ellipsize : true,
-                backgroundColor : '#f3f3f3'
-            });
-
-            var value = Ti.UI.createLabel({
-                text : "  " + cal_value_str,
-                textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
-                width : '40%',
-                font : {
-                    fontFamily : 'Helvetica Neue',
-                    fontSize : '15dp'
-                },
-                top : '1dp',
-                right : 0,
-                color : '#424242',
-                wordWrap : false,
-                ellipsize : true,
-                backgroundColor : '#fff'
-            });
-
-            row.add(row_label);
-            row.add(value);
-            tableView.add(row);
-        }
-
-        cal_value = result[0].final_value;
-        typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
-        isNegative = (cal_value < 0) ? true : false;
-        // Is negative. And if it is -ve then write in this value in (brackets).
-        cal_value_str = applyNumberFormat(instance, cal_value);
-        cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
-        // Adding brackets over -ve value.
-
-        var row = Ti.UI.createView({
-            height : Ti.UI.SIZE,
-            width : '100%',
-            backgroundColor : '#ccc'
-        });
-
-        var row_label = Ti.UI.createLabel({
-            text : instance.label + "  ",
-            textAlign : Ti.UI.TEXT_ALIGNMENT_RIGHT,
-            width : '59.5%',
-            left : 0,
-            top : '1dp',
-            font : {
-                fontSize : '16dp',
-                fontWeight : 'bold'
-            },
-            color : '#246',
-            backgroundColor : '#ddd',
-            height : '30dp'
-        });
-
-        var value = Ti.UI.createLabel({
-            text : "  " + cal_value_str,
-            textAlign : 'left',
-            width : '40%',
-            right : 0,
-            top : '1dp',
-            font : {
-                fontSize : '16dp',
-                fontWeight : 'bold'
-            },
-            color : '#424242',
-            wordWrap : false,
-            ellipsize : true,
-            backgroundColor : '#eee',
-            height : '30dp'
-        });
-        row.add(row_label);
-        row.add(value);
-        tableView.add(row);
-        tableView.singleValue = false;
-    }
-    else {
-
-        Ti.API.info(row_values.length + " rows");
-        cal_value = (row_values.length == 1) ? result[0].final_value : 0;
-        typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
-        isNegative = (cal_value < 0) ? true : false;
-        // Is negative. And if it is -ve then write in this value in (brackets).
-        cal_value_str = applyNumberFormat(instance, cal_value);
-        cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
-        // Adding brackets over -ve value.
-
-        var value = Ti.UI.createLabel({
-            text : "  " + cal_value_str,
-            textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
-            left : 0,
-            font : {
-                fontSize : '16dp'
-            },
-            color : '#666',
-            height : Ti.UI.SIZE,
-            wordWrap : false,
-            ellipsize : true
-        });
-
-        tableView.add(value);
-        tableView.singleValue = true;
-        //heightView += heightCellView;
-    }
-    //content.height = heightView;
-
-    return tableView;
-}
-
-function createCalculationTableFormat(content, db, contentArr) {
-    var entity = createEntity();
-    var result = _calculation_field_get_values(curWin, db, content, entity, contentArr);
-    var row_values = result[0].rows;
-    var heightView = 0;
-    var heightCellView = 40;
-    var widthCellView = Ti.Platform.displayCaps.platformWidth - 30
-    if (row_values.length > 1) {
-        var cal_value = 0;
-        var cal_value_str = "";
-        var isNegative = false;
-        for ( idx = 0; idx < row_values.length; idx++) {
-            cal_value = row_values[idx].value;
-            typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
-            //Check type of the data
-            isNegative = (cal_value < 0) ? true : false;
-            // Is negative. And if it is -ve then write in this value in (brackets).
-            cal_value_str = applyNumberFormat(content, cal_value);
-            cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
-            // Adding brackets over -ve value.
-
-            var row = Ti.UI.createView({
-                layout : 'horizontal',
-                height : heightCellView,
-                width : widthCellView,
-                top : 1
-            });
-            var row_label = Ti.UI.createLabel({
-                text : row_values[idx].row_label + ":  ",
-                textAlign : 'right',
-                width : widthCellView / 2 - 1,
-                font : {
-                    fontFamily : 'Helvetica Neue',
-                    fontSize : 14
-                },
-                color : '#545454',
-                height : heightCellView,
-                wordWrap : false,
-                ellipsize : true,
-                backgroundColor : '#FFF'
-
-            });
-            var value = Ti.UI.createLabel({
-                text : "  " + cal_value_str,
-                textAlign : 'left',
-                width : widthCellView / 2,
-                left : 1,
-                font : {
-                    fontFamily : 'Helvetica Neue',
-                    fontSize : 14
-                },
-                color : '#424242',
-                height : heightCellView,
-                wordWrap : false,
-                ellipsize : true,
-                backgroundColor : '#FFF'
-            });
-            row.add(row_label);
-            row.add(value);
-            content.add(row);
-            heightView += heightCellView + 1;
-        }
-
-        cal_value = result[0].final_value;
-        typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
-        isNegative = (cal_value < 0) ? true : false;
-        // Is negative. And if it is -ve then write in this value in (brackets).
-        cal_value_str = applyNumberFormat(content, cal_value);
-        cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
-        // Adding brackets over -ve value.
-
-        var row = Ti.UI.createView({
-            layout : 'horizontal',
-            height : heightCellView,
-            width : widthCellView,
-            top : 1
-        });
-        var row_label = Ti.UI.createLabel({
-            text : "Total: ",
-            textAlign : 'right',
-            width : widthCellView / 2 - 1,
-            top : 0,
-            color : 'white',
-            font : {
-                fontFamily : 'Helvetica Neue',
-                fontSize : 14
-            },
-            color : '#545454',
-            height : heightCellView,
-            backgroundColor : '#FFF'
-        });
-        var value = Ti.UI.createLabel({
-            text : "  " + cal_value_str,
-            textAlign : 'left',
-            width : widthCellView / 2,
-            top : 0,
-            left : 1,
-            color : 'white',
-            font : {
-                fontFamily : 'Helvetica Neue',
-                fontSize : 14,
-                fontWeight : 'bold'
-            },
-            color : '#424242',
-            height : heightCellView,
-            wordWrap : false,
-            ellipsize : true,
-            backgroundColor : '#FFF'
-        });
-        //	row.add(row_label);
-        //row.add(value);
-        //	content.add(row);
-        heightView += heightCellView + 1;
-
-    }
-    else {
-        cal_value = (row_values.length == 1) ? result[0].final_value : 0;
-        typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
-        isNegative = (cal_value < 0) ? true : false;
-        // Is negative. And if it is -ve then write in this value in (brackets).
-        cal_value_str = applyNumberFormat(content, cal_value);
-        cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
-        // Adding brackets over -ve value.
-        var value = Ti.UI.createLabel({
-            text : "  " + cal_value_str,
-            textAlign : 'left',
-            width : widthCellView / 2,
-            top : 0,
-            left : 1,
-            color : 'white',
-            font : {
-                fontFamily : 'Helvetica Neue',
-                fontSize : 14,
-            },
-            color : '#000',
-            height : heightCellView,
-            wordWrap : false,
-            ellipsize : true,
-        });
-        content.add(value);
-        heightView += heightCellView;
-    }
-    content.height = heightView;
-}
+// 
+// function createCalculationTableFormat(content, db, contentArr) {
+    // var entity = createEntity();
+    // var result = _calculation_field_get_values(curWin, db, content, entity, contentArr);
+    // var row_values = result[0].rows;
+    // var heightView = 0;
+    // var heightCellView = 40;
+    // var widthCellView = Ti.Platform.displayCaps.platformWidth - 30
+    // if (row_values.length > 1) {
+        // var cal_value = 0;
+        // var cal_value_str = "";
+        // var isNegative = false;
+        // for ( idx = 0; idx < row_values.length; idx++) {
+            // cal_value = row_values[idx].value;
+            // typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
+            // //Check type of the data
+            // isNegative = (cal_value < 0) ? true : false;
+            // // Is negative. And if it is -ve then write in this value in (brackets).
+            // cal_value_str = applyNumberFormat(content, cal_value);
+            // cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
+            // // Adding brackets over -ve value.
+// 
+            // var row = Ti.UI.createView({
+                // layout : 'horizontal',
+                // height : heightCellView,
+                // width : widthCellView,
+                // top : 1
+            // });
+            // var row_label = Ti.UI.createLabel({
+                // text : row_values[idx].row_label + ":  ",
+                // textAlign : 'right',
+                // width : widthCellView / 2 - 1,
+                // font : {
+                    // fontFamily : 'Helvetica Neue',
+                    // fontSize : 14
+                // },
+                // color : '#545454',
+                // height : heightCellView,
+                // wordWrap : false,
+                // ellipsize : true,
+                // backgroundColor : '#FFF'
+// 
+            // });
+            // var value = Ti.UI.createLabel({
+                // text : "  " + cal_value_str,
+                // textAlign : 'left',
+                // width : widthCellView / 2,
+                // left : 1,
+                // font : {
+                    // fontFamily : 'Helvetica Neue',
+                    // fontSize : 14
+                // },
+                // color : '#424242',
+                // height : heightCellView,
+                // wordWrap : false,
+                // ellipsize : true,
+                // backgroundColor : '#FFF'
+            // });
+            // row.add(row_label);
+            // row.add(value);
+            // content.add(row);
+            // heightView += heightCellView + 1;
+        // }
+// 
+        // cal_value = result[0].final_value;
+        // typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
+        // isNegative = (cal_value < 0) ? true : false;
+        // // Is negative. And if it is -ve then write in this value in (brackets).
+        // cal_value_str = applyNumberFormat(content, cal_value);
+        // cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
+        // // Adding brackets over -ve value.
+// 
+        // var row = Ti.UI.createView({
+            // layout : 'horizontal',
+            // height : heightCellView,
+            // width : widthCellView,
+            // top : 1
+        // });
+        // var row_label = Ti.UI.createLabel({
+            // text : "Total: ",
+            // textAlign : 'right',
+            // width : widthCellView / 2 - 1,
+            // top : 0,
+            // color : 'white',
+            // font : {
+                // fontFamily : 'Helvetica Neue',
+                // fontSize : 14
+            // },
+            // color : '#545454',
+            // height : heightCellView,
+            // backgroundColor : '#FFF'
+        // });
+        // var value = Ti.UI.createLabel({
+            // text : "  " + cal_value_str,
+            // textAlign : 'left',
+            // width : widthCellView / 2,
+            // top : 0,
+            // left : 1,
+            // color : 'white',
+            // font : {
+                // fontFamily : 'Helvetica Neue',
+                // fontSize : 14,
+                // fontWeight : 'bold'
+            // },
+            // color : '#424242',
+            // height : heightCellView,
+            // wordWrap : false,
+            // ellipsize : true,
+            // backgroundColor : '#FFF'
+        // });
+        // //	row.add(row_label);
+        // //row.add(value);
+        // //	content.add(row);
+        // heightView += heightCellView + 1;
+// 
+    // }
+    // else {
+        // cal_value = (row_values.length == 1) ? result[0].final_value : 0;
+        // typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
+        // isNegative = (cal_value < 0) ? true : false;
+        // // Is negative. And if it is -ve then write in this value in (brackets).
+        // cal_value_str = applyNumberFormat(content, cal_value);
+        // cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
+        // // Adding brackets over -ve value.
+        // var value = Ti.UI.createLabel({
+            // text : "  " + cal_value_str,
+            // textAlign : 'left',
+            // width : widthCellView / 2,
+            // top : 0,
+            // left : 1,
+            // color : 'white',
+            // font : {
+                // fontFamily : 'Helvetica Neue',
+                // fontSize : 14,
+            // },
+            // color : '#000',
+            // height : heightCellView,
+            // wordWrap : false,
+            // ellipsize : true,
+        // });
+        // content.add(value);
+        // heightView += heightCellView;
+    // }
+    // content.height = heightView;
+// }
 
 function bottomButtons1(actualWindow) {"use strict";
     var back, space, label, edit;

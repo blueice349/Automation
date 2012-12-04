@@ -230,8 +230,8 @@ Omadi.data.saveNode = function(node){"use strict";
     
     db = Omadi.utils.openMainDatabase();
     
-    Ti.API.error(node.nid);
-    Ti.API.error(Ti.UI.currentWindow.nid);
+    //Ti.API.error(node.nid);
+    //Ti.API.error(Ti.UI.currentWindow.nid);
     
     if (node.nid == 'new') {
         node.nid = Omadi.data.getNewNodeNid();
@@ -342,9 +342,9 @@ Omadi.data.saveNode = function(node){"use strict";
                         case 'number_decimal':
                         case 'number_integer':
                         case 'list_boolean':
+                        case 'calculation_field':
                         
                             if(Omadi.utils.isEmpty(value_to_insert) && value_to_insert != 0){
-                                value_to_insert = "null";
                                 insertValues.push('null');
                             }
                             else{
@@ -354,7 +354,7 @@ Omadi.data.saveNode = function(node){"use strict";
                             break;
                          
                         default:
-                        
+                            
                             insertValues.push('"' + value_to_insert.replace('"', "'") + '"');
                             break;
                     }
@@ -480,7 +480,7 @@ function loadNode(nid) {"use strict";
                 for (field_name in instances) {
                     if (instances.hasOwnProperty(field_name)) {
     
-                        dbValue = result.fieldByName(field_name, Ti.Database.FIELD_TYPE_STRING);
+                        dbValue = result.fieldByName(field_name, Ti.Database.FIELD_TYPE_STRING); 
                         
                         //Ti.API.error(field_name + ": " + dbValue);
     
@@ -532,7 +532,7 @@ function loadNode(nid) {"use strict";
                                     node[real_field_name].parts = {};
                                     node[real_field_name].dbValues = [];
                                     // Just make sure one and only one value gets saved to the expanded fieldname so it gets displayed once
-                                    node[field_name].dbValues.push("Parts Field");
+                                    //node[field_name].dbValues.push("Parts Field");
                                 }
     
                                 if (dbValue === null) {
@@ -545,6 +545,7 @@ function loadNode(nid) {"use strict";
                                 };
                                 //Ti.API.info('HERE HERE: ' + field_name + " " + real_field_name + " " + dbValue);
                                 node[real_field_name].dbValues.push(dbValue);
+                                node[field_name].dbValues.push(dbValue);
                             }
                             else {
                                 
@@ -567,7 +568,7 @@ function loadNode(nid) {"use strict";
                                         
                                     case 'number_integer':
                                     case 'list_boolean':
-                                        if(!Omadi.utils.isEmpty(dbValue) || dbValue == 0){
+                                        if(!Omadi.utils.isEmpty(dbValue) || dbValue === "0"){
                                             dbValue = parseInt(dbValue, 10);
                                             node[field_name].dbValues.push(dbValue);
                                         }
@@ -581,7 +582,20 @@ function loadNode(nid) {"use strict";
                                     
                                         //Ti.API.error("CRAPPPPP: " + dbValue);
                                         
-                                        if(!Omadi.utils.isEmpty(dbValue) || dbValue == 0){
+                                        if(!Omadi.utils.isEmpty(dbValue) || dbValue === "0"){
+                                            dbValue = parseFloat(dbValue);
+                                            node[field_name].dbValues.push(dbValue);
+                                        }
+                                        else{
+                                            node[field_name].dbValues.push(null);
+                                        }
+                                        
+                                        break;
+                                        
+                                    case 'calculation_field':
+                                        
+                                        node[field_name].origValues = [];
+                                        if(!Omadi.utils.isEmpty(dbValue) || dbValue === "0"){
                                             dbValue = parseFloat(dbValue);
                                             node[field_name].dbValues.push(dbValue);
                                         }
@@ -760,6 +774,14 @@ function loadNode(nid) {"use strict";
                                 }
                                 subResult.close();
                                 break;
+                                
+                            case 'calculation_field':
+                                // The text value is used to store the original value for comparison
+                                // A little hackish, but there is no other use for a text value in calculation_fields
+                                for ( i = 0; i < node[field_name].dbValues.length; i++) {
+                                    
+                                    node[field_name].textValues[i] = node[field_name].dbValues[i];
+                                }
     
                         }
                     }
@@ -1202,7 +1224,13 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) { "use stric
                                 switch(instances[field_name].type){
                                     case 'number_integer':
                                     case 'number_decimal':
-                                    
+                                    case 'omadi_reference':
+                                    case 'taxonomy_term_reference':
+                                    case 'user_reference':
+                                    case 'list_boolean':
+                                    case 'datestamp':
+                                    case 'omadi_time':
+                                    case 'image':
                                         value = json.insert[i][field_name];
         
                                         if (isNumber(value)) {
