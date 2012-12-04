@@ -3,8 +3,6 @@
 
 Omadi.widgets.rules_field = {
     
-    //TODO: write a validation function for rules_fields
-    
     getFieldView: function(node, instance){"use strict";
         //this.base = Omadi.widgets.base.init(in_instance);
         instance.elements = [];

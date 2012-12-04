@@ -999,22 +999,21 @@ function validateRestrictions(node){"use strict";
     account = null;
     license_plate = null;
     
-    if(typeof node.vin !== 'undefined'){
+    if(typeof node.vin !== 'undefined' && node.vin.dbValues.length > 0){
         vin = node.vin.dbValues[0].toUpperCase();
     }
     
-    if(typeof node.license_plate___plate !== 'undefined'){
+    if(typeof node.license_plate___plate !== 'undefined' && node.license_plate___plate.dbValues.length > 0){
         license_plate = node.license_plate___plate.dbValues[0].toUpperCase();
     }
     
-    if(typeof node.enforcement_account !== 'undefined'){
+    if(typeof node.enforcement_account !== 'undefined' && node.enforcement_account.dbValues.length > 0){
         nid = node.enforcement_account.dbValues[0];
         account = node.enforcement_account.textValues[0];
     }
     
     if(nid !== null && nid > 0){
         timestamp = Omadi.utils.getUTCTimestamp();
-        
         
         query = 'SELECT restriction_license_plate___plate, vin, restrict_entire_account, restriction_start_date, restriction_end_date ';
         query += ' FROM restriction WHERE restriction_account="' + nid + '"';
@@ -1040,7 +1039,7 @@ function validateRestrictions(node){"use strict";
         result.close();
             
         for(i = 0; i < restrictions.length; i ++){
-           //Ti.API.info(JSON.stringify(restrictions[i]));
+           Ti.API.info(JSON.stringify(restrictions[i]));
             if(restrictions[i].restrict_entire_account == 1){
                 form_errors.push("No parking enforcement is allowed for \"" + account + "\" right now due to a restriction.");
             }

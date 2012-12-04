@@ -561,20 +561,17 @@ function loadNode(nid) {"use strict";
                                             dbValue = parseInt(dbValue, 10);
                                             node[field_name].dbValues.push(dbValue);
                                         }
-                                        else{
-                                            node[field_name].dbValues.push(null);
-                                        }
+                                        
                                         break;
                                         
                                     case 'number_integer':
                                     case 'list_boolean':
+                                    case 'auto_increment':
                                         if(!Omadi.utils.isEmpty(dbValue) || dbValue === "0"){
                                             dbValue = parseInt(dbValue, 10);
                                             node[field_name].dbValues.push(dbValue);
                                         }
-                                        else{
-                                            node[field_name].dbValues.push(null);
-                                        }
+                                       
                                         break;
                                     
                                     
@@ -586,9 +583,7 @@ function loadNode(nid) {"use strict";
                                             dbValue = parseFloat(dbValue);
                                             node[field_name].dbValues.push(dbValue);
                                         }
-                                        else{
-                                            node[field_name].dbValues.push(null);
-                                        }
+                                        
                                         
                                         break;
                                         
@@ -598,9 +593,6 @@ function loadNode(nid) {"use strict";
                                         if(!Omadi.utils.isEmpty(dbValue) || dbValue === "0"){
                                             dbValue = parseFloat(dbValue);
                                             node[field_name].dbValues.push(dbValue);
-                                        }
-                                        else{
-                                            node[field_name].dbValues.push(null);
                                         }
                                         
                                         break;
@@ -1232,9 +1224,18 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) { "use stric
                                     case 'omadi_time':
                                     case 'image':
                                         value = json.insert[i][field_name];
-        
-                                        if (isNumber(value)) {
+                                        
+                                        if (typeof value === 'number') {
                                             values.push(value);
+                                        }
+                                        else if(typeof value === 'string'){
+                                            value = parseInt(value, 10);
+                                            if(isNaN(value)){
+                                                values.push('null');
+                                            }
+                                            else{
+                                                values.push(value);
+                                            }
                                         }
                                         else if ( value instanceof Array) {
                                             value = treatArray(value, 1);

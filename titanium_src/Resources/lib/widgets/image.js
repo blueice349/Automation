@@ -89,8 +89,6 @@ Omadi.widgets.image = {
         settings = instance.settings;
         Ti.API.debug("Creating image field");
         
-        
-        
         widgetView = Ti.UI.createScrollView({
             width : Ti.Platform.displayCaps.platformWidth - 30,
             contentWidth : 'auto',
@@ -107,9 +105,9 @@ Omadi.widgets.image = {
         
         if(isArray(dbValue)){
             for (i = 0; i < dbValue.length; i++) {
-                 if(dbValue[i] !== null){
-                    widgetView.add(Omadi.widgets.image.getImageView(widgetView, i, Ti.UI.currentWindow.nid, dbValue[i]));
-                 }
+                 
+                widgetView.add(Omadi.widgets.image.getImageView(widgetView, i, Ti.UI.currentWindow.nid, dbValue[i]));
+                 
                 // //var updated = false
                 // if ((img < decodedValues.length) && (decodedValues[img] != "") && (decodedValues[img] != null) && decodedValues[img] != 'null' && decodedValues[img] != 'undefined') {
                     // var vl_to_field = decodedValues[img];
