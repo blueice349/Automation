@@ -822,7 +822,7 @@ loginWin.orientationModes = [ Titanium.UI.PORTRAIT ];
 
 //When back button on the phone is pressed, it informs the user (message at the bottom)
 // that he is already in the first menu
-loginWin.addEventListener('android:back', function() {
+loginWin.addEventListener('android:back', function() {"use strict";
 	Ti.API.info("Shouldn't go back");
 	label_error.text = "You can't go back, this is the first menu";
 });
@@ -835,7 +835,7 @@ Ti.App.Properties.removeProperty('logStatus');
 //Close database
 db.close();
 
-if(PLATFORM == 'android') {
+if(PLATFORM === 'android') {
 	portal.backgroundImage = usernameField.backgroundImage = passwordField.backgroundImage = 'images/textfield.png';
 	loginButton.backgroundImage = '';
 	loginButton.backgroundColor = 'white';
@@ -850,10 +850,10 @@ if(PLATFORM == 'android') {
 //Make everthing happen:
 loginWin.open();
 if ( (PLATFORM !== 'android') && (Ti.Platform.displayCaps.platformHeight > 500)){
-	i_scroll_page.top = '200dp'
+	i_scroll_page.top = '200dp';
 }
 
-Ti.App.addEventListener('free_login', function(){
+Ti.App.addEventListener('loggingOut', function(){"use strict";
 	loginWin.touchEnabled = true;	
 });
 

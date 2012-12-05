@@ -162,29 +162,67 @@ Omadi.widgets.getTextValues = function(fieldWrapper){"use strict";
     return textValues;
 };
 
-Omadi.widgets.setValueWidgetProperty = function(field_name, property, value){"use strict";
+Omadi.widgets.setValueWidgetProperty = function(field_name, property, value, setIndex){"use strict";
     var i, j, k, children, subChildren, subSubChildren;
     /*global fieldWrappers*/
+   
+    if(typeof setIndex === 'undefined'){
+        // setIndex == -1 means that the value should be set for all elements, even when there are multiples
+        setIndex = -1;
+    }
     
     children = fieldWrappers[field_name].getChildren();
     
-    for(i = 0; i < children.length; i ++){
-        if(typeof children[i].dbValue !== 'undefined'){
-            fieldWrappers[field_name].children[i][property] = value;
-        }
-        
-        if(children[i].getChildren().length > 0){
-            subChildren = children[i].getChildren();
-            for(j = 0; j < subChildren.length; j ++){
-                if(typeof subChildren[j].dbValue !== 'undefined'){
-                    fieldWrappers[field_name].children[i].children[j][property] = value;
+    if(setIndex == -1){
+        for(i = 0; i < children.length; i ++){
+            if(typeof children[i].dbValue !== 'undefined'){
+                fieldWrappers[field_name].children[i][property] = value;
+            }
+            
+            if(children[i].getChildren().length > 0){
+                subChildren = children[i].getChildren();
+                for(j = 0; j < subChildren.length; j ++){
+                    if(typeof subChildren[j].dbValue !== 'undefined'){
+                        fieldWrappers[field_name].children[i].children[j][property] = value;
+                    }
+                    
+                    if(subChildren[j].getChildren().length > 0){
+                        subSubChildren = subChildren[j].getChildren();
+                        for(k = 0; k < subSubChildren.length; k ++){
+                            if(typeof subSubChildren[k].dbValue !== 'undefined'){
+                                fieldWrappers[field_name].children[i].children[j].children[k][property] = value;
+                            }
+                        }
+                    }
                 }
-                
-                if(subChildren[j].getChildren().length > 0){
-                    subSubChildren = subChildren[j].getChildren();
-                    for(k = 0; k < subSubChildren.length; k ++){
-                        if(typeof subSubChildren[k].dbValue !== 'undefined'){
-                            fieldWrappers[field_name].children[i].children[j].children[k][property] = value;
+            }
+        }
+    }
+    else{
+        for(i = 0; i < children.length; i ++){
+            if(typeof children[i].dbValue !== 'undefined'){
+                if(i == setIndex){
+                    fieldWrappers[field_name].children[i][property] = value;
+                }
+            }
+            
+            if(children[i].getChildren().length > 0){
+                subChildren = children[i].getChildren();
+                for(j = 0; j < subChildren.length; j ++){
+                    if(typeof subChildren[j].dbValue !== 'undefined'){
+                        if(j == setIndex){
+                            fieldWrappers[field_name].children[i].children[j][property] = value;
+                        }
+                    }
+                    
+                    if(subChildren[j].getChildren().length > 0){
+                        subSubChildren = subChildren[j].getChildren();
+                        for(k = 0; k < subSubChildren.length; k ++){
+                            if(typeof subSubChildren[k].dbValue !== 'undefined'){
+                                if(k == setIndex){
+                                    fieldWrappers[field_name].children[i].children[j].children[k][property] = value;
+                                }
+                            }
                         }
                     }
                 }

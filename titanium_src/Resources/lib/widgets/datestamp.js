@@ -102,7 +102,9 @@ Omadi.widgets.datestamp = {
             }
         }
         
-        if(typeof settings.time !== 'undefined' && settings.time){
+        Ti.API.debug(settings);
+        
+        if(typeof settings.time !== 'undefined' && (settings.time == 1 || typeof settings.granularity.hour !== 'undefined')){
             showTime = true;
         }
         else{

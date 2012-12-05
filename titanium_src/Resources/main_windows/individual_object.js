@@ -21,6 +21,10 @@ curWin.addEventListener('android:back', function() {"use strict";
     curWin.close();
 });
 
+Ti.App.addEventListener('loggingOut', function(){"use strict";
+    Ti.UI.currentWindow.close();
+});
+
 function form_min(min) {"use strict";
     if (min < 10) {
         return '0' + min;
@@ -177,6 +181,10 @@ var fields_result = db.execute('SELECT label, weight, type, field_name, widget, 
 var savedValues = [];
 
 var instances = {};
+var settings, i, j;
+
+var omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
+var roles = omadi_session_details.user.roles;
 
 while (fields_result.isValidRow()) {
     if (fields_result.fieldByName('type') == 'file') {
@@ -198,6 +206,36 @@ while (fields_result.isValidRow()) {
         widget : JSON.parse(fields_result.fieldByName('widget')),
         required : fields_result.fieldByName('required')
     };
+    
+    
+    settings = field_desc.settings;
+    
+    field_desc.can_view = false;
+    field_desc.can_edit = false;
+        
+    if (settings.enforce_permissions != null && settings.enforce_permissions == 1) {
+        for (i in settings.permissions) {
+            if(settings.permissions.hasOwnProperty(i)){
+                for (j in roles) {
+                    if(roles.hasOwnProperty(j)){
+                        if (i == j) {
+                            var stringifyObj = JSON.stringify(settings.permissions[i]);
+                            if (stringifyObj.indexOf('update') >= 0 || settings.permissions[i].all_permissions) {
+                                field_desc.can_edit = true;
+                            }
+
+                            if (stringifyObj.indexOf('view') >= 0 || settings.permissions[i].all_permissions) {
+                                field_desc.can_view = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else {
+        field_desc.can_view = field_desc.can_edit = true;
+    }
 
     instances[field_desc.field_name] = field_desc;
 
@@ -232,351 +270,354 @@ var results = db.execute('SELECT * FROM ' + curWin.type + ' WHERE  nid = ' + cur
 function doFieldOutput(fieldObj) {"use strict";
     /*global getCalculationTableView*/
     var i, rowView, valueView, valueLabel, labelView, labelLabel, fieldIsHidden, tableView, fileId, contentImage, field_parts, part;
-
+    
+    
     if ( typeof node[fieldObj.field_name] !== 'undefined') {
-        rowView = Ti.UI.createView({
-            width : '100%',
-            top : 0,
-            height : Ti.UI.SIZE,
-            borderWidth : '1dp',
-            borderColor : '#ccc'
-        });
-
-        labelView = Ti.UI.createView({
-            width : "40%",
-            height : '40dp',
-            top : 0,
-            left : 0,
-            backgroundColor : '#ddd'
-            // backgroundGradient: {
-            // type: 'linear',
-            // startPoint: { x: '50%', y: '0%' },
-            // endPoint: { x: '50%', y: '100%' },
-            // colors: [ { color: '#bbb', offset: 0.0}, { color: '#ddd', offset: 1.0 } ]
-            // }
-        });
-
-        labelLabel = Ti.UI.createLabel({
-            text : fieldObj.label,
-            right : '5dp',
-            top : '10dp',
-            textAlign : Ti.UI.TEXT_ALIGNMENT_RIGHT,
-            font : {
-                fontSize : '16dp',
-                fontWeight : 'bold'
-            },
-            ellipsize : true,
-            wordWrap : false,
-            color : "#246"
-        });
-
-        labelView.add(labelLabel);
-
-        valueView = Ti.UI.createView({
-            width : "59%",
-            right : 0,
-            height : Ti.UI.SIZE,
-            layout : 'vertical'
-        });
-
-        fieldIsHidden = false;
-
-        if (fieldObj.type === 'calculation_field') {
-
-            if (fieldObj.settings.hidden == 0) {
-                tableView = Omadi.widgets.calculation_field.getTableView(node, fieldObj);
-
-                if (tableView.singleValue) {
-                    valueView.add(tableView);
-                    rowView.add(labelView);
-                    rowView.add(valueView);
+        if(fieldObj.can_view){
+            rowView = Ti.UI.createView({
+                width : '100%',
+                top : 0,
+                height : Ti.UI.SIZE,
+                borderWidth : '1dp',
+                borderColor : '#ccc'
+            });
+    
+            labelView = Ti.UI.createView({
+                width : "40%",
+                height : '40dp',
+                top : 0,
+                left : 0,
+                backgroundColor : '#ddd'
+                // backgroundGradient: {
+                // type: 'linear',
+                // startPoint: { x: '50%', y: '0%' },
+                // endPoint: { x: '50%', y: '100%' },
+                // colors: [ { color: '#bbb', offset: 0.0}, { color: '#ddd', offset: 1.0 } ]
+                // }
+            });
+    
+            labelLabel = Ti.UI.createLabel({
+                text : fieldObj.label,
+                right : '5dp',
+                top : '10dp',
+                textAlign : Ti.UI.TEXT_ALIGNMENT_RIGHT,
+                font : {
+                    fontSize : '16dp',
+                    fontWeight : 'bold'
+                },
+                ellipsize : true,
+                wordWrap : false,
+                color : "#246"
+            });
+    
+            labelView.add(labelLabel);
+    
+            valueView = Ti.UI.createView({
+                width : "59%",
+                right : 0,
+                height : Ti.UI.SIZE,
+                layout : 'vertical'
+            });
+    
+            fieldIsHidden = false;
+    
+            if (fieldObj.type === 'calculation_field') {
+    
+                if (fieldObj.settings.hidden == 0) {
+                    tableView = Omadi.widgets.calculation_field.getTableView(node, fieldObj);
+    
+                    if (tableView.singleValue) {
+                        valueView.add(tableView);
+                        rowView.add(labelView);
+                        rowView.add(valueView);
+                    }
+                    else {
+                        //labelView.width = '100%';
+                        //labelLabel.setTextAlign(Ti.UI.TEXT_ALIGNMENT_CENTER);
+                        //labelLabel.setWidth('100%');
+                        //labelView.height = '25dp';
+                        //labelLabel.top = '2dp';
+    
+                        //viewContent.add(labelView);
+                        viewContent.add(tableView);
+                    }
                 }
                 else {
-                    //labelView.width = '100%';
-                    //labelLabel.setTextAlign(Ti.UI.TEXT_ALIGNMENT_CENTER);
-                    //labelLabel.setWidth('100%');
-                    //labelView.height = '25dp';
-                    //labelLabel.top = '2dp';
-
-                    //viewContent.add(labelView);
-                    viewContent.add(tableView);
+                    fieldIsHidden = true;
                 }
             }
-            else {
-                fieldIsHidden = true;
-            }
-        }
-        else if (fieldObj.type === 'rules_field') {
-            rowView.add(labelView);
-            
-            valueView = Omadi.widgets.rules_field.getNewElement(node, fieldObj);
-            valueView.setWidth("59%");
-            valueView.setRight(0);
-            
-            rowView.add(valueView);
+            else if (fieldObj.type === 'rules_field') {
+                rowView.add(labelView);
                 
-        }
-        else if (fieldObj.type == 'metadata') {
-            valueLabel = Ti.UI.createLabel({
-                text : fieldObj.textValue,
-                textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
-                wordWrap : true,
-                height : Ti.UI.SIZE,
-                width : '100%',
-                font : {
-                    fontSize : '14dp'
-                },
-                left : '5dp',
-                color : '#666'
-            });
-
-            labelView.height = Ti.UI.SIZE;
-            labelLabel.top = 0;
-            labelLabel.color = '#666';
-            labelLabel.font = {
-                fontSize : '14dp',
-                fontWeight : 'bold'
-            };
-
-            valueView.add(valueLabel);
-            rowView.add(labelView);
-            rowView.add(valueView);
-        }
-        else {
-
-            if (fieldObj.type === 'image') {
-                valueView = Ti.UI.createScrollView({
-                    contentWidth : 'auto',
-                    contentHeight : 100,
-                    arrImages : null,
-                    scrollType : "horizontal",
-                    layout : 'horizontal',
-                    right : 0,
-                    width : '60%',
-                    height : 100
+                valueView = Omadi.widgets.rules_field.getNewElement(node, fieldObj);
+                valueView.setWidth("59%");
+                valueView.setRight(0);
+                
+                rowView.add(valueView);
+                    
+            }
+            else if (fieldObj.type == 'metadata') {
+                valueLabel = Ti.UI.createLabel({
+                    text : fieldObj.textValue,
+                    textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
+                    wordWrap : true,
+                    height : Ti.UI.SIZE,
+                    width : '100%',
+                    font : {
+                        fontSize : '14dp'
+                    },
+                    left : '5dp',
+                    color : '#666'
                 });
-
-                for ( i = 0; i < node[fieldObj.field_name].dbValues.length; i += 1) {
-
-                    if (node[fieldObj.field_name].dbValues[i] > 0) {
-                        fileId = node[fieldObj.field_name].dbValues[i];
-                        contentImage = Ti.UI.createImageView({
-                            height : 100,
-                            width : 100,
-                            left : 0,
-                            top : 0,
-                            image : '../images/photo-loading.png',
-                            borderColor : '#333',
-                            borderWidth : '2dp',
-                            imageVal : fileId,
-                            bigImg : null
-                        });
-
-                        contentImage.addEventListener('click', function(e) {
-                            Omadi.display.displayLargeImage(e.source, curWin.nid, e.source.imageVal);
-                        });
-                        valueView.add(contentImage);
-                        Omadi.display.setImageViewThumbnail(contentImage, node.nid, fileId);
-
-                    }
-                }
-
-                for ( i = 0; i < node[fieldObj.field_name].imageData.length; i += 1) {
-
-                    if (node[fieldObj.field_name].imageData[i] > "") {
-                        fileId = node[fieldObj.field_name].dbValues[i];
-                        contentImage = Ti.UI.createImageView({
-                            height : 100,
-                            width : 100,
-                            left : 0,
-                            top : 0,
-                            image : node[fieldObj.field_name].imageData[i],
-                            borderColor : '#333',
-                            borderWidth : '2dp',
-                            bigImg : node[fieldObj.field_name].imageData[i],
-                            isImage : true
-                        });
-
-                        contentImage.addEventListener('click', function(e) {
-                            // //Following method will open camera to capture the image.
-                            Omadi.display.displayLargeImage(e.source, curWin.nid, e.source.imageVal);
-                        });
-                        valueView.add(contentImage);
-                    }
-                }
-
-                if (valueView.getChildren().length === 0) {
-                    valueView.height = 0;
-                }
+    
+                labelView.height = Ti.UI.SIZE;
+                labelLabel.top = 0;
+                labelLabel.color = '#666';
+                labelLabel.font = {
+                    fontSize : '14dp',
+                    fontWeight : 'bold'
+                };
+    
+                valueView.add(valueLabel);
+                rowView.add(labelView);
+                rowView.add(valueView);
             }
             else {
-
-                fieldIsHidden = false;
-
-                for ( i = 0; i < node[fieldObj.field_name].textValues.length; i += 1) {
-
-                    valueLabel = Ti.UI.createLabel({
-                        text : node[fieldObj.field_name].textValues[i],
-                        textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
-                        wordWrap : true,
-                        height : Ti.UI.SIZE,
-                        width : '100%',
-                        font : {
-                            fontSize : '16dp'
-                        },
-                        left : '5dp',
-                        color : '#666'
+    
+                if (fieldObj.type === 'image') {
+                    valueView = Ti.UI.createScrollView({
+                        contentWidth : 'auto',
+                        contentHeight : 100,
+                        arrImages : null,
+                        scrollType : "horizontal",
+                        layout : 'horizontal',
+                        right : 0,
+                        width : '60%',
+                        height : 100
                     });
-
-                    switch(fieldObj.type) {
-                        case 'text':
-                        case 'text_long':
-                        case 'list_boolean':
-                        case 'user_reference':
-                        case 'taxonomy_term_reference':
-                        case 'number_integer':
-                        case 'number_decimal':
-                            break;
-
-                        case 'phone':
-                            valueLabel.color = '#369';
-                            if(node[fieldObj.field_name].textValues[i] != null){
-                                valueLabel.number = node[fieldObj.field_name].textValues[i].replace(/\D/g, '');
-                            }
-                            valueLabel.addEventListener('click', function(e) {
-                                //highlightMe(e.source.id);
-                                Titanium.Platform.openURL('tel:' + e.source.number);
+    
+                    for ( i = 0; i < node[fieldObj.field_name].dbValues.length; i += 1) {
+    
+                        if (node[fieldObj.field_name].dbValues[i] > 0) {
+                            fileId = node[fieldObj.field_name].dbValues[i];
+                            contentImage = Ti.UI.createImageView({
+                                height : 100,
+                                width : 100,
+                                left : 0,
+                                top : 0,
+                                image : '../images/photo-loading.png',
+                                borderColor : '#333',
+                                borderWidth : '2dp',
+                                imageVal : fileId,
+                                bigImg : null
                             });
-                            break;
-
-                        case 'link_field':
-
-                            valueLabel.color = '#369';
-                            valueLabel.addEventListener('click', function(e) {
-                                Titanium.Platform.openURL(e.source.text);
+    
+                            contentImage.addEventListener('click', function(e) {
+                                Omadi.display.displayLargeImage(e.source, curWin.nid, e.source.imageVal);
                             });
-                            break;
-
-                        case 'email':
-                            valueLabel.color = '#369';
-                            valueLabel.addEventListener('click', function(e) {
-                                var emailDialog = Titanium.UI.createEmailDialog();
-                                emailDialog.subject = node.title;
-                                emailDialog.toRecipients = [e.source.text];
-                                emailDialog.open();
-                            });
-                            break;
-
-                        case 'omadi_reference':
-
-                            if ( typeof node[fieldObj.field_name].nodeTypes[i] !== 'undefined') {
-                                valueLabel.color = '#369';
-                                valueLabel.type = node[fieldObj.field_name].nodeTypes[i];
-                                valueLabel.nid = node[fieldObj.field_name].dbValues[i];
-
-                                valueLabel.addEventListener('click', function(e) {
-                                    var newWin = Ti.UI.createWindow({
-                                        fullscreen : false,
-                                        navBarHidden : true,
-                                        title : e.source.text,
-                                        url : "individual_object.js",
-                                        type : e.source.type,
-                                        nid : e.source.nid
-                                    });
-
-                                    newWin.open();
-                                });
-                            }
-
-                            break;
-
-                        case 'location':
-
-                            field_parts = fieldObj.field_name.split("___");
-                            //var part;
-                            valueLabel.text = "";
-                            //node[field_parts[0]].dbValues.join(', ');
-                          
-
-                            if (node[field_parts[0]].parts.street.textValue > "") {
-                                valueLabel.text += node[field_parts[0]].parts.street.textValue;
-                            }
-                            if (valueLabel.text > "") {
-                                valueLabel.text += "\n";
-                            }
-                            if (node[field_parts[0]].parts.city.textValue > "") {
-                                valueLabel.text += node[field_parts[0]].parts.city.textValue;
-                            }
-
-                            if (node[field_parts[0]].parts.province.textValue > "") {
-                                if (node[field_parts[0]].parts.city.textValue > "") {
-                                    valueLabel.text += ', ';
-                                }
-                                valueLabel.text += node[field_parts[0]].parts.province.textValue;
-                            }
-
-                            if (node[field_parts[0]].parts.postal_code.textValue > "") {
-                                valueLabel.text += " " + node[field_parts[0]].parts.postal_code.textValue;
-                            }
-
-                            break;
-
-                        case 'vehicle_fields':
-
-                            field_parts = fieldObj.field_name.split("___");
-                            valueLabel.text = node[field_parts[0]].parts.make.textValue + " " + node[field_parts[0]].parts.model.textValue;
-
-                            break;
-
-                        case 'license_plate':
-
-                            field_parts = fieldObj.field_name.split("___");
-                            valueLabel.text = "(" + node[field_parts[0]].parts.state.textValue + ") " + node[field_parts[0]].parts.plate.textValue;
-
-                            break;
-
-                        // case 'rules_field':
-                        //
-                        // if (c_content[count] != false && c_content[count] != "false" && c_content[count] != 0 && JSON.parse(c_content[count]).length > 0) {
-                        // label[count] = Ti.UI.createLabel({
-                        // text : c_label[count],
-                        // width : "100%",
-                        // textAlign : 'left',
-                        // left : 5,
-                        // touchEnabled : false,
-                        // field : true,
-                        // top : 0,
-                        // height : 40,
-                        // wordWrap : false,
-                        // ellipsize : true
-                        // });
-                        // content[count] = Ti.UI.createView({
-                        // width : Ti.Platform.displayCaps.platformWidth - 30,
-                        // field_type : c_type[count],
-                        // field_name : c_field_name[count],
-                        // cardinality : settings.cardinality,
-                        // reffer_index : count,
-                        // settings : settings,
-                        // value : JSON.parse(c_content[count]),
-                        // layout : 'vertical',
-                        // widget : JSON.parse(c_widget[count])
-                        // });
-                        // count++;
-                        // }
-                        // break;
-
+                            valueView.add(contentImage);
+                            Omadi.display.setImageViewThumbnail(contentImage, node.nid, fileId);
+    
+                        }
                     }
-
-                    valueView.add(valueLabel);
+    
+                    for ( i = 0; i < node[fieldObj.field_name].imageData.length; i += 1) {
+    
+                        if (node[fieldObj.field_name].imageData[i] > "") {
+                            fileId = node[fieldObj.field_name].dbValues[i];
+                            contentImage = Ti.UI.createImageView({
+                                height : 100,
+                                width : 100,
+                                left : 0,
+                                top : 0,
+                                image : node[fieldObj.field_name].imageData[i],
+                                borderColor : '#333',
+                                borderWidth : '2dp',
+                                bigImg : node[fieldObj.field_name].imageData[i],
+                                isImage : true
+                            });
+    
+                            contentImage.addEventListener('click', function(e) {
+                                // //Following method will open camera to capture the image.
+                                Omadi.display.displayLargeImage(e.source, curWin.nid, e.source.imageVal);
+                            });
+                            valueView.add(contentImage);
+                        }
+                    }
+    
+                    if (valueView.getChildren().length === 0) {
+                        valueView.height = 0;
+                    }
                 }
+                else {
+    
+                    fieldIsHidden = false;
+    
+                    for ( i = 0; i < node[fieldObj.field_name].textValues.length; i += 1) {
+    
+                        valueLabel = Ti.UI.createLabel({
+                            text : node[fieldObj.field_name].textValues[i],
+                            textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
+                            wordWrap : true,
+                            height : Ti.UI.SIZE,
+                            width : '100%',
+                            font : {
+                                fontSize : '16dp'
+                            },
+                            left : '5dp',
+                            color : '#666'
+                        });
+    
+                        switch(fieldObj.type) {
+                            case 'text':
+                            case 'text_long':
+                            case 'list_boolean':
+                            case 'user_reference':
+                            case 'taxonomy_term_reference':
+                            case 'number_integer':
+                            case 'number_decimal':
+                                break;
+    
+                            case 'phone':
+                                valueLabel.color = '#369';
+                                if(node[fieldObj.field_name].textValues[i] != null){
+                                    valueLabel.number = node[fieldObj.field_name].textValues[i].replace(/\D/g, '');
+                                }
+                                valueLabel.addEventListener('click', function(e) {
+                                    //highlightMe(e.source.id);
+                                    Titanium.Platform.openURL('tel:' + e.source.number);
+                                });
+                                break;
+    
+                            case 'link_field':
+    
+                                valueLabel.color = '#369';
+                                valueLabel.addEventListener('click', function(e) {
+                                    Titanium.Platform.openURL(e.source.text);
+                                });
+                                break;
+    
+                            case 'email':
+                                valueLabel.color = '#369';
+                                valueLabel.addEventListener('click', function(e) {
+                                    var emailDialog = Titanium.UI.createEmailDialog();
+                                    emailDialog.subject = node.title;
+                                    emailDialog.toRecipients = [e.source.text];
+                                    emailDialog.open();
+                                });
+                                break;
+    
+                            case 'omadi_reference':
+    
+                                if ( typeof node[fieldObj.field_name].nodeTypes[i] !== 'undefined') {
+                                    valueLabel.color = '#369';
+                                    valueLabel.type = node[fieldObj.field_name].nodeTypes[i];
+                                    valueLabel.nid = node[fieldObj.field_name].dbValues[i];
+    
+                                    valueLabel.addEventListener('click', function(e) {
+                                        var newWin = Ti.UI.createWindow({
+                                            fullscreen : false,
+                                            navBarHidden : true,
+                                            title : e.source.text,
+                                            url : "individual_object.js",
+                                            type : e.source.type,
+                                            nid : e.source.nid
+                                        });
+    
+                                        newWin.open();
+                                    });
+                                }
+    
+                                break;
+    
+                            case 'location':
+    
+                                field_parts = fieldObj.field_name.split("___");
+                                //var part;
+                                valueLabel.text = "";
+                                //node[field_parts[0]].dbValues.join(', ');
+                              
+    
+                                if (node[field_parts[0]].parts.street.textValue > "") {
+                                    valueLabel.text += node[field_parts[0]].parts.street.textValue;
+                                }
+                                if (valueLabel.text > "") {
+                                    valueLabel.text += "\n";
+                                }
+                                if (node[field_parts[0]].parts.city.textValue > "") {
+                                    valueLabel.text += node[field_parts[0]].parts.city.textValue;
+                                }
+    
+                                if (node[field_parts[0]].parts.province.textValue > "") {
+                                    if (node[field_parts[0]].parts.city.textValue > "") {
+                                        valueLabel.text += ', ';
+                                    }
+                                    valueLabel.text += node[field_parts[0]].parts.province.textValue;
+                                }
+    
+                                if (node[field_parts[0]].parts.postal_code.textValue > "") {
+                                    valueLabel.text += " " + node[field_parts[0]].parts.postal_code.textValue;
+                                }
+    
+                                break;
+    
+                            case 'vehicle_fields':
+    
+                                field_parts = fieldObj.field_name.split("___");
+                                valueLabel.text = node[field_parts[0]].parts.make.textValue + " " + node[field_parts[0]].parts.model.textValue;
+    
+                                break;
+    
+                            case 'license_plate':
+    
+                                field_parts = fieldObj.field_name.split("___");
+                                valueLabel.text = "(" + node[field_parts[0]].parts.state.textValue + ") " + node[field_parts[0]].parts.plate.textValue;
+    
+                                break;
+    
+                            // case 'rules_field':
+                            //
+                            // if (c_content[count] != false && c_content[count] != "false" && c_content[count] != 0 && JSON.parse(c_content[count]).length > 0) {
+                            // label[count] = Ti.UI.createLabel({
+                            // text : c_label[count],
+                            // width : "100%",
+                            // textAlign : 'left',
+                            // left : 5,
+                            // touchEnabled : false,
+                            // field : true,
+                            // top : 0,
+                            // height : 40,
+                            // wordWrap : false,
+                            // ellipsize : true
+                            // });
+                            // content[count] = Ti.UI.createView({
+                            // width : Ti.Platform.displayCaps.platformWidth - 30,
+                            // field_type : c_type[count],
+                            // field_name : c_field_name[count],
+                            // cardinality : settings.cardinality,
+                            // reffer_index : count,
+                            // settings : settings,
+                            // value : JSON.parse(c_content[count]),
+                            // layout : 'vertical',
+                            // widget : JSON.parse(c_widget[count])
+                            // });
+                            // count++;
+                            // }
+                            // break;
+    
+                        }
+    
+                        valueView.add(valueLabel);
+                    }
+                }
+    
+                rowView.add(labelView);
+                rowView.add(valueView);
             }
-
-            rowView.add(labelView);
-            rowView.add(valueView);
-        }
-        
-        if(!fieldIsHidden){
-            viewContent.add(rowView);
+            
+            if(!fieldIsHidden){
+                viewContent.add(rowView);
+            }
         }
     }
     else {
@@ -717,13 +758,15 @@ function doRegionOutput(regionObj) {"use strict";
             type : 'metadata',
             label : 'Created By',
             field_name : 'author_uid',
-            textValue : usernames[node.author_uid]
+            textValue : usernames[node.author_uid],
+            can_view: true
         });
         metaDataFields.push({
             type : 'metadata',
             label : 'Created Time',
             field_name : 'created',
-            textValue : Omadi.utils.formatDate(node.created, true)
+            textValue : Omadi.utils.formatDate(node.created, true),
+            can_view: true
         });
 
         if (node.created !== node.changed) {
@@ -731,13 +774,15 @@ function doRegionOutput(regionObj) {"use strict";
                 type : 'metadata',
                 label : 'Last Updated By',
                 field_name : 'author_uid',
-                textValue : usernames[node.author_uid]
+                textValue : usernames[node.author_uid],
+                can_view: true
             });
             metaDataFields.push({
                 type : 'metadata',
                 label : 'Last Updated Time',
                 field_name : 'changed',
-                textValue : Omadi.utils.formatDate(node.changed, true)
+                textValue : Omadi.utils.formatDate(node.changed, true),
+                can_view: true
             });
         }
 

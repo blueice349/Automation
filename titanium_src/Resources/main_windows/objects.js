@@ -15,6 +15,9 @@ win_new;
 
 curWin = Ti.UI.currentWindow;
 
+Ti.App.addEventListener('loggingOut', function(){"use strict";
+    Ti.UI.currentWindow.close();
+});
 
 function openCreateNodeScreen(){
 	"use strict";
@@ -998,10 +1001,6 @@ function homeButtonPressed(e){
                             
                             ev.source.eventRow.setBackgroundColor('#fff');
                             
-                            win_new.addEventListener("open", function(e){
-                                Omadi.service.setNodeViewed(ev.source.eventRow.nid);
-                            });
-                            
                             //Avoiding memory leaking
                             win_new.open();
                         }
@@ -1040,9 +1039,6 @@ function homeButtonPressed(e){
 
                             ev.source.eventRow.setBackgroundColor('#fff');
                             
-                            win_new.addEventListener("open", function(e){
-                                Omadi.service.setNodeViewed(ev.source.eventRow.nid);
-                            });
                                 
                             win_new.open();
                             //setTimeout(function() {

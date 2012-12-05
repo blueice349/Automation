@@ -17,6 +17,10 @@ var actIndAlert;
 var refresh_image;
 var toolbar;
 
+Ti.App.addEventListener('loggingOut', function(){"use strict";
+    Ti.UI.currentWindow.close();
+});
+
 
 message_center.get_win = function() {
 	win = Titanium.UI.createWindow({

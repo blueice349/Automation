@@ -25,6 +25,11 @@ Ti.include('/lib/functions.js');
 	curWin.backgroundColor = '#EEEEEE';
 	curWin.orientationModes = [Titanium.UI.PORTRAIT];
 	
+	
+	Ti.App.addEventListener('loggingOut', function(){"use strict";
+        Ti.UI.currentWindow.close();
+    });
+	
 	if(Titanium.Platform.name !== 'android') {
 		backButton = Ti.UI.createButton({
 			title : 'Back',

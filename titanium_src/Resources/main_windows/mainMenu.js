@@ -1,7 +1,7 @@
 //Ti.include('/main_windows/create_or_edit_node.js');
 Ti.include('/main_windows/message_center.js');
 
-/*jslint eqeq:true, plusplus: true, vars: true, nomen: true*/
+/*jslint eqeq:true, plusplus: true, nomen: true*/
 /*global installMe*/
 
 //Current window's instance
@@ -59,49 +59,41 @@ function unlock_screen() {"use strict";
     databaseStatusView.focusable = true;
 }
 
-function checkUpdate(evt) {"use strict";
-
+function checkUpdate(useProgressBar) {"use strict";
+    var db, result;
     //Ti.API.info('******* Called checkupate => ' + evt);
 
     //if ((Omadi.data.isUpdating() === false) && (Titanium.Network.online)) {
         //Sets status to 'updating'
         //Omadi.data.setUpdating(true);
         
-
-        var db_up = Omadi.utils.openMainDatabase();
-
-        
-        var up_flag = db_up.execute('SELECT * FROM node WHERE flag_is_updated=1');
-        //updatedTime = updatedTime.fieldByName('timestamp');
-        if (up_flag.rowCount > 0) {
-            //Ti.API.info("Fired nodes update");
-            //Ti.API.info('installMe( ' + curWin + ' , ' + updatedTime + ' , ' + pb + ' , ' + listView + ', ' + null + ' , POST  )');
-            //db_up.close();
-            //installMe(curWin, pb, listView, null, 'POST', null);
-            Omadi.service.sendUpdates(0, 'data', function(){
-                var useProgressBar = false;
-
-                if (curWin.isTopWindow || evt == 'from_menu') {
-                    useProgressBar = true;//new Omadi.display.ProgressBar(0, 100);
-                }
-                Omadi.service.fetchUpdates(useProgressBar);
-            });
-        }
-        else {
-            
-            var useProgressBar = false;
-
-            if (curWin.isTopWindow || evt == 'from_menu') {
-                useProgressBar = true;//new Omadi.display.ProgressBar(0, 100);
-            }
-            Omadi.service.fetchUpdates(useProgressBar);
-
-        }
-        up_flag.close();
-        db_up.close();
-        
-        
-        Omadi.service.uploadFile();
+    if(typeof useProgressBar === 'undefined'){
+        useProgressBar = false;
+    }
+    else{
+        useProgressBar = true;
+    }
+    
+    if(typeof curWin.isTopWindow !== 'undefined' && curWin.isTopWindow){
+        useProgressBar = true;
+    }
+    
+    db = Omadi.utils.openMainDatabase();
+    result = db.execute('SELECT * FROM node WHERE flag_is_updated=1');
+    //updatedTime = updatedTime.fieldByName('timestamp');
+    if (result.rowCount > 0) {
+        //Ti.API.info("Fired nodes update");
+        //Ti.API.info('installMe( ' + curWin + ' , ' + updatedTime + ' , ' + pb + ' , ' + listView + ', ' + null + ' , POST  )');
+        //db_up.close();
+        //installMe(curWin, pb, listView, null, 'POST', null);
+        Omadi.service.sendUpdates();
+    }
+    result.close();
+    db.close();
+    
+    Omadi.service.fetchUpdates(useProgressBar);
+    
+    Omadi.service.uploadFile();
     // }
     // else {
         // if (evt == 'from_menu') {
@@ -364,11 +356,6 @@ var networkStatusLabel = Ti.UI.createLabel({
 
 networkStatusView.add(networkStatusLabel);
 
-
-
-
-
-
 displayBundleList();
 
 if (PLATFORM == 'android') {
@@ -390,6 +377,17 @@ Ti.App.addEventListener("doneSendingPhotos", function(){"use strict";
 Ti.App.addEventListener("sendingData", function(e){"use strict";
     networkStatusLabel.setText(e.message);
     networkStatusView.show();
+});
+
+Ti.App.addEventListener('loggingOut', function(){"use strict";
+    Ti.UI.currentWindow.close();
+});
+
+Ti.Network.addEventListener('change', function(e) {"use strict";
+    var isOnline = e.online;
+    if(isOnline){
+        checkUpdate();
+    }
 });
 
 //Go to contact.js when contact's button is clicked
@@ -542,26 +540,9 @@ var a = Titanium.UI.createAlertDialog({
     buttonNames : ['OK']
 });
 
-refresh_image.addEventListener('click', function(e) {
-    checkUpdate('from_menu');
-});
+refresh_image.addEventListener('click', checkUpdate);
 
-offImage.addEventListener('click', function(e) {
-    // window container
-    // indLog = Titanium.UI.createWindow({
-    // navBarHidden : true,
-    // url: 'logDecision.js',
-    // title:'Omadi CRM',
-    // fullscreen: false,
-    // backgroundColor: '#EEEEEE'
-    // });
-    //
-    // //Setting both windows with login values:
-    // indLog.log		 = curWin.log;
-    // indLog.result	 = curWin.result;
-    // indLog._parent	 = curWin;
-
-    //indLog.open();
+offImage.addEventListener('click', function(e) {"use strict";
 
     var verifyLogout = Titanium.UI.createAlertDialog({
         title : 'Logout?',
@@ -572,17 +553,14 @@ offImage.addEventListener('click', function(e) {
 
     verifyLogout.addEventListener('click', function(e) {
         if (e.index !== e.source.cancel) {
-            Ti.API.info('The yes button was clicked.');
-
             Omadi.service.logout();
         }
     });
 
     verifyLogout.show();
-
 });
 
-curWin.addEventListener('close', function() {
+curWin.addEventListener('close', function() {"use strict";
     Ti.API.info('Closing main menu');
 });
 
@@ -702,7 +680,7 @@ if (PLATFORM === 'android') {
 
 //Check behind the courtins if there is a new version - 5 minutes
 //setInterval( checkUpdate('auto') , 10000);
-Ti.App.syncInterval = setInterval(function() {
+Ti.App.syncInterval = setInterval(checkUpdate, 300000);
     // Ti.API.info('========= Automated Update Check running ========= ');
 // 
     // if (!Omadi.utils.isLoggedIn()) {
@@ -738,8 +716,8 @@ Ti.App.syncInterval = setInterval(function() {
         // Ti.API.info('========= Database was opened, another update is running or you\'re offline ========= ');
     // }
     
-    checkUpdate();
-}, 300000);
+    //checkUpdate();
+//}, 300000);
 
 Ti.App.addEventListener("updateUI", function() {
     // TODO: refresh table data

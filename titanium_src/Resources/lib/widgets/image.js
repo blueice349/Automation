@@ -105,9 +105,9 @@ Omadi.widgets.image = {
         
         if(isArray(dbValue)){
             for (i = 0; i < dbValue.length; i++) {
-                 
-                widgetView.add(Omadi.widgets.image.getImageView(widgetView, i, Ti.UI.currentWindow.nid, dbValue[i]));
-                 
+                if(dbValue[i] > 0){
+                    widgetView.add(Omadi.widgets.image.getImageView(widgetView, i, Ti.UI.currentWindow.nid, dbValue[i]));
+                }
                 // //var updated = false
                 // if ((img < decodedValues.length) && (decodedValues[img] != "") && (decodedValues[img] != null) && decodedValues[img] != 'null' && decodedValues[img] != 'undefined') {
                     // var vl_to_field = decodedValues[img];
@@ -170,7 +170,7 @@ Omadi.widgets.image = {
         //function createImage(o_index, arrImages, data, scrollView, updated) {
         var imageView, fidIsData = false;
         
-        Ti.API.debug("IMAGE FID: " + fid);
+        //Ti.API.debug("IMAGE FID: " + fid);
         
         if(fid !== null && typeof fid !== 'number'){
             fidIsData = true;
@@ -457,7 +457,7 @@ Omadi.widgets.image = {
             // }
             // else {
                 
-            imageView.dbValue = -1;
+            imageView.dbValue = '-1';
             
             db = Omadi.utils.openMainDatabase();
             db.execute('INSERT INTO _photos (nid, timestamp, file_data , field_name, file_name, delta) VALUES ("0","' + Omadi.utils.getUTCTimestamp() + '", "' + encodedImage + '", "' + imageView.instance.field_name + '", "' + imageName + '", ' + imageView.imageIndex + ')');

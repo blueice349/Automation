@@ -59,6 +59,10 @@ function draftNavButtons() {"use strict";
         //Omadi.data.setUpdating(false);
         curWin.close();
     });
+    
+    Ti.App.addEventListener('loggingOut', function(){"use strict";
+        Ti.UI.currentWindow.close();
+    });
 
     //Lock database for background updates
 

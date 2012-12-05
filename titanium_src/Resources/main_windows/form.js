@@ -443,48 +443,65 @@ function bottomButtons() {"use strict";
 
 var fieldViews = {};
 var instances = {};
-
-
 var win = Ti.UI.currentWindow;
-
 win.setBackgroundColor("#eee");
 win.nodeSaved = false;
+var resultView, viewContent;
+var menu;
+var fieldWrappers = {};
+var regionViews = {};
+var regions = {};
 
 //Ti.API.error("WIN NID: " + win.nid);
 
-if(win.nid < 0){
-    //Ti.API.error("WIN NID: " + win.nid);
-    
-    Ti.App.addEventListener('switchedItUp', function(e){"use strict";
-       //alert("it switched"); 
-       Ti.API.error(JSON.stringify(e));
-       
-       if(Ti.UI.currentWindow.nid == e.negativeNid){
-           
-           Ti.UI.currentWindow.nid = e.positiveNid;
-           Ti.UI.currentWindow.node.nid = e.positiveNid;
-           Ti.API.error("new nid: " + Ti.UI.currentWindow.nid);
-       }
-    });
-}
-
-var resultView, viewContent;
-
-var menu;
-
-
-var fieldWrappers = {};
-var regionViews = {};
-
-var regions = {};
-
-
 (function(){"use strict";
     
-    
+
     /*jslint vars: true, eqeq: true*/
    /*global Omadi,PLATFORM, loadNode */
    
+   
+    if(win.nid < 0){
+        //Ti.API.error("WIN NID: " + win.nid);
+        
+        Ti.App.addEventListener('switchedItUp', function(e){
+           //alert("it switched"); 
+           //Ti.API.error(JSON.stringify(e));
+       
+           if(Ti.UI.currentWindow.nid == e.negativeNid){
+               
+               Ti.UI.currentWindow.nid = e.positiveNid;
+               Ti.UI.currentWindow.node.nid = e.positiveNid;
+               //Ti.API.error("new nid: " + Ti.UI.currentWindow.nid);
+           }
+        });
+    }
+    
+    Ti.App.addEventListener('photoUploaded', function(e){
+        var nid, delta, fid, field_name, dbValues;
+        
+        nid = parseInt(e.nid, 10);
+        delta = parseInt(e.delta, 10);
+        field_name = e.field_name;
+        fid = parseInt(e.fid, 10);
+        
+        if(Ti.UI.currentWindow.nid == nid){
+            if(typeof fieldWrappers[field_name] !== 'undefined'){
+                //alert("Just saved delta " + delta);
+                Omadi.widgets.setValueWidgetProperty(field_name, 'dbValue', fid, delta);
+                Omadi.widgets.setValueWidgetProperty(field_name, 'fid', fid, delta);
+            }
+        }
+    });
+    
+    Ti.App.addEventListener('loggingOut', function(){
+        Ti.UI.currentWindow.close();
+    });
+    
+    
+    if(win.nid != "new" && win.nid > 0){
+        Omadi.service.setNodeViewed(win.nid);
+    }
    
    // win = Titanium.UI.createWindow({
         // fullscreen : false,
@@ -619,7 +636,7 @@ var regions = {};
         if(regions.hasOwnProperty(region_name)){
             region = regions[region_name];
             
-            if(typeof region.settings.form_part !== 'undefined'){
+            if(typeof region.settings !== 'undefined' && region.settings != null && typeof region.settings.form_part !== 'undefined'){
                 region_form_part = parseInt(region.settings.form_part, 10);
             }
             else{
@@ -799,7 +816,8 @@ function formToNode(){"use strict";
        }
    }
    catch(ex){
-       alert("Bundling Data: " + ex);
+       Omadi.service.sendErrorReport("Bundling node from form: " + ex);
+       alert("There was a problem bundling the submitted data. The cause of the error was sent for analysis.");
    }
    
    return node;
@@ -890,7 +908,9 @@ function validateRequired(node, instance){"use strict";
                 case 'image':
                 case 'datestamp':
                 case 'omadi_time':
-                    isEmpty = Omadi.utils.isEmpty(dbValues[i]);
+                    if(!Omadi.utils.isEmpty(dbValues[i])){
+                        isEmpty = false;
+                    }
                     break;
                 
                 case 'omadi_reference':
@@ -1008,15 +1028,15 @@ function validateRestrictions(node){"use strict";
     account = null;
     license_plate = null;
     
-    if(typeof node.vin !== 'undefined' && node.vin.dbValues.length > 0){
+    if(typeof node.vin !== 'undefined' && typeof node.vin.dbValues !== 'undefined' && node.vin.dbValues.length > 0){
         vin = node.vin.dbValues[0].toUpperCase();
     }
     
-    if(typeof node.license_plate___plate !== 'undefined' && node.license_plate___plate.dbValues.length > 0){
+    if(typeof node.license_plate___plate !== 'undefined' && typeof node.license_plate___plate.dbValues !== 'undefined' && node.license_plate___plate.dbValues.length > 0){
         license_plate = node.license_plate___plate.dbValues[0].toUpperCase();
     }
     
-    if(typeof node.enforcement_account !== 'undefined' && node.enforcement_account.dbValues.length > 0){
+    if(typeof node.enforcement_account !== 'undefined' && typeof node.enforcement_account.dbValues !== 'undefined' && node.enforcement_account.dbValues.length > 0){
         nid = node.enforcement_account.dbValues[0];
         account = node.enforcement_account.textValues[0];
     }
@@ -1111,7 +1131,8 @@ function validate_form_data(node){"use strict";
         }
     }
     catch(ex){
-        alert("Validating form: " + ex);
+        //alert("This alert should NOT have an effect on your data saving. Please report the following: " + ex);
+        Omadi.service.sendErrorReport("Exception in form validation: " + ex);
     }
     
     return form_errors;

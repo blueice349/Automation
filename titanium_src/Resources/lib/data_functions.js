@@ -1318,8 +1318,8 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) { "use stric
                         
                         
                         // Make sure we don't add a duplicate from doing a next_part action directly after a node save
-                        if(typeof Ti.UI.currentWindow.nid !== 'undefined' && Ti.UI.currentWindow.nid == json.insert[i].__negative_nid){
-                            Ti.API.error("SWITCHING UP THE NID from " + json.insert[i].__negative_nid + " to " + json.insert[i].nid);
+                        //if(typeof Ti.UI.currentWindow.nid !== 'undefined' && Ti.UI.currentWindow.nid == json.insert[i].__negative_nid){
+                        //    Ti.API.error("SWITCHING UP THE NID from " + json.insert[i].__negative_nid + " to " + json.insert[i].nid);
                             
                             Ti.App.fireEvent('switchedItUp', {
                                 negativeNid: json.insert[i].__negative_nid,
@@ -1329,7 +1329,7 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) { "use stric
                             
                             //Ti.UI.currentWindow.nid = json.insert[i].nid;
                             //Ti.UI.currentWindow.node = loadNode(json.insert[i].nid);
-                        }
+                        //}
                         //Ti.fire negativeNodesSavedFromServer';
                         //Ti.API.fireEvent('negativeNodesSavedFromServer', {
                         //   negativeNid: json.insert[i].__negative_nid,
