@@ -1,10 +1,10 @@
 /*jslint eqeq:true, plusplus: true*/
 /*global PLATFORM,setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
 
-Omadi.widgets.datestamp = {
+Omadi.widgets.omadi_time = {
     
     getFieldView: function(node, instance){"use strict";
-        
+        //this.base = Omadi.widgets.base.init(in_instance);
         instance.elements = [];
         
         var settings = instance.settings, fieldView, i, j, element, addAnotherItemButton = null;
@@ -38,7 +38,7 @@ Omadi.widgets.datestamp = {
         
         // Add the actual fields
         for(i = 0; i < instance.numVisibleFields; i ++){
-            element = Omadi.widgets.datestamp.getNewElement(node, instance,  i);
+            element = Omadi.widgets.omadi_time.getNewElement(node, instance,  i);
             instance.elements.push(element);
             fieldView.add(element);
             fieldView.add(Omadi.widgets.getSpacerView());
@@ -84,14 +84,7 @@ Omadi.widgets.datestamp = {
         
         Ti.API.debug(settings);
         
-        if(typeof settings.time !== 'undefined' && (settings.time == 1 || typeof settings.granularity.hour !== 'undefined')){
-            showTime = true;
-        }
-        else{
-            showTime = false;
-        }
-        
-        Ti.API.debug("Creating datestamp field");
+        Ti.API.debug("Creating omadi_time field");
         
         jsDate = new Date();
         
@@ -102,10 +95,14 @@ Omadi.widgets.datestamp = {
         else if(settings.default_value == 'now'){
 
             dbValue = Math.ceil(jsDate.getTime() / 1000);
+            
             textValue = Omadi.utils.formatDate(dbValue, showTime);
+            
+            Ti.API.debug("set to NOW");
         }
         
         widgetView = Titanium.UI.createButton({
+            //borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
             style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             width : Ti.Platform.displayCaps.platformWidth - 30,
             title : textValue,
@@ -124,9 +121,14 @@ Omadi.widgets.datestamp = {
             textValue: textValue,
             value : textValue,
             
-            jsDate: jsDate,
-            showTime: showTime
+            jsDate: jsDate
         });
+        
+        
+        //widgetView.hintText = '(000) 000-0000 x0000';
+        
+        
+        //hintText : instance.label,
         
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
         
@@ -149,7 +151,7 @@ Omadi.widgets.datestamp = {
         
         widgetView.addEventListener('click', function(e) {
             if (e.source.instance.can_edit) {
-                Omadi.widgets.datestamp.displayPicker(e.source);
+                Omadi.widgets.omadi_time.displayPicker(e.source);
             }
         });
         
@@ -157,7 +159,7 @@ Omadi.widgets.datestamp = {
     },
     displayPicker: function(widgetView){"use strict";
         
-        var dateWindow, titleLabel, minDate, opacView, maxDate, widgetDate, okButton,clearButton, wrapperView, buttonView, topButtonsView, widgetYear, date_picker, time_picker, doneButton, cancelButton;
+        var dateWindow, titleLabel, minDate, opacView, widgetDate, okButton, clearButton, wrapperView, buttonView, topButtonsView, time_picker, doneButton, cancelButton;
         
         if (PLATFORM == 'android') {
             Ti.UI.Android.hideSoftKeyboard();
@@ -318,140 +320,56 @@ Omadi.widgets.datestamp = {
         });
         
         topButtonsView.add(cancelButton);
-        
         topButtonsView.add(clearButton);
         cancelButton.addEventListener('click', function() {
            
         });
         
         widgetDate = widgetView.jsDate;
-        widgetYear = widgetDate.getFullYear();
 
-        //Min
-        minDate = new Date();
-        minDate.setFullYear(widgetYear - 5);
-        minDate.setMonth(0);
-        minDate.setDate(1);
-
-        //Max
-        maxDate = new Date();
-        maxDate.setFullYear(widgetYear + 5);
-        maxDate.setMonth(11);
-        maxDate.setDate(31);
-        
-        
-        date_picker = Titanium.UI.createPicker({
+        time_picker = Titanium.UI.createPicker({
             useSpinner : true,
             borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
             value : widgetDate,
             font : {
                 fontSize : 18
             },
-            type : Ti.UI.PICKER_TYPE_DATE,
-            minDate : minDate,
-            maxDate : maxDate,
+            type : Ti.UI.PICKER_TYPE_TIME,
             color : '#000000',
+            timezone : null,
             widgetView: widgetView,
             height: Ti.UI.SIZE,
             width: '100%'
+            //format24 : (omadi_time_format == 'g:iA' ? false : true)
         });
         
-        wrapperView.add(date_picker);
-        
-        if(widgetView.showTime){
-            time_picker = Titanium.UI.createPicker({
-                useSpinner : true,
-                borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                value : widgetDate,
-                font : {
-                    fontSize : 18
-                },
-                type : Ti.UI.PICKER_TYPE_TIME,
-                color : '#000000',
-                timezone : null,
-                widgetView: widgetView,
-                height: Ti.UI.SIZE,
-                width: '100%'
-                //format24 : (omadi_time_format == 'g:iA' ? false : true)
-            });
-            
-            time_picker.addEventListener('change', function(e) {
-                e.source.date_picker.value = e.value;
-                //changedTime = e.value;
-                e.source.widgetView.tempDate = e.value;
-            });
-            
-            //time_picker.selectionIndicator = true;
-            time_picker.date_picker = date_picker;
-            date_picker.time_picker = time_picker;
-            
-            wrapperView.add(time_picker);
-        }
-            
-       
-        
-        date_picker.addEventListener('change', function(e) {
-            if(e.source.widgetView.showTime && typeof e.source.time_picker !== 'undefined'){
-                e.source.time_picker.value = e.value;
-            }
-            //changedDate = e.value;
-            //widgetDate = e.value;
+        time_picker.addEventListener('change', function(e) {
             e.source.widgetView.tempDate = e.value;
+            Ti.API.debug(e.value);
         });
 
+        wrapperView.add(time_picker);
+  
         okButton.addEventListener('click', function(e) {
             /*global setConditionallyRequiredLabels*/
-           
-            // if (PLATFORM == "android") {
-                // widgetView.jsDate.setDate(changedDate.getDate());
-                // widgetView.jsDate.setMonth(changedDate.getMonth());
-                // widgetView.jsDate.setFullYear(changedDate.getFullYear());
-                // widgetView.jsDate.setHours(changedTime.getHours());
-                // widgetView.jsDate.setMinutes(changedTime.getMinutes());
-                // widgetView.jsDate.setSeconds(changedTime.getSeconds());
-            // }
-            // else {
-                //widgetView.jsDate = iOSDateCal;
-            //}
-            
             var newDate, i, callback;
             
             if(typeof e.source.widgetView.tempDate === 'undefined'){
                 e.source.widgetView.tempDate = e.source.widgetView.jsDate;
             }
-            
-           
                 
             newDate = e.source.widgetView.tempDate;
             e.source.widgetView.jsDate = newDate;
-            e.source.widgetView.dbValue = Math.ceil(newDate.getTime() / 1000);
-            e.source.widgetView.textValue = Omadi.utils.formatDate(e.source.widgetView.dbValue, e.source.widgetView.showTime);
-//              
+            e.source.widgetView.textValue = Omadi.utils.PHPFormatDate(Math.ceil(newDate.getTime() / 1000), 'g:i A');
+            e.source.widgetView.dbValue = Omadi.widgets.omadi_time.dateToSeconds(e.source.widgetView.textValue);
+            
+            //Ti.API.error(e.source.widgetView.dbValue);
+            
             e.source.widgetView.setTitle(e.source.widgetView.textValue);
-            
-            if(e.source.widgetView.onChangeCallbacks.length > 0){
-                for(i = 0; i < e.source.widgetView.onChangeCallbacks.length; i ++){
-                    callback = e.source.widgetView.onChangeCallbacks[i];
-                    callback(e.source.widgetView.onChangeCallbackArgs[i]);
-                }
-            }
-            
-            // obj.value = obj.currentDate.getTime();
-
-            // var f_minute = obj.currentDate.getMinutes();
-            // var f_hour = obj.currentDate.getHours();
-            // var f_date = obj.currentDate.getDate();
-            // var f_month = months_set[obj.currentDate.getMonth()];
-            // var f_year = obj.currentDate.getFullYear();
-//     
-            // obj.text = date(omadi_time_format, obj.currentDate) + " - " + f_month + " / " + f_date + " / " + f_year;
-            // changedContentValue(obj);
-            // setRulesField(obj);
             
             if(e.source.widgetView.check_conditional_fields.length > 0){
                 setConditionallyRequiredLabels(e.source.widgetView.instance, e.source.widgetView.check_conditional_fields);
             }
-            
             
             dateWindow.close();
         });
@@ -472,17 +390,35 @@ Omadi.widgets.datestamp = {
         });
 
         cancelButton.addEventListener('click', function() {
-            // if (obj.value == null) {
-                // obj.update_it = false;
-            // }
             dateWindow.close();
         });
-        //}
-
         
         dateWindow.add(wrapperView);
         
         dateWindow.open();
         
+    },
+    dateToSeconds: function(time_text){"use strict";
+        
+        var is_pm, is_am, time_split, seconds;
+        
+        time_text = time_text.toUpperCase();
+  
+        is_pm = (time_text.indexOf('PM') !== -1);
+        is_am = (time_text.indexOf('AM') !== -1);
+  
+        time_text = Omadi.utils.trimWhiteSpace(time_text.replace(/(AM|PM)/g, ''));
+  
+        time_split = time_text.split(':'); // splite time string into hours & minutes
+        seconds = (3600 * parseInt(time_split[0], 10)) + (parseInt(time_split[1], 10) * 60);  // hours + min
+  
+        if(is_pm && time_split[0] != 12){
+            seconds += (12 * 3600);
+        }
+        else if(is_am && time_split[0] == 12){
+            seconds -= (12 * 3600);
+        }
+  
+        return seconds;
     }
 };
