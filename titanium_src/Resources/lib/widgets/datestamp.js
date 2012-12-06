@@ -371,8 +371,8 @@ Omadi.widgets.datestamp = {
                 timezone : null,
                 widgetView: widgetView,
                 height: Ti.UI.SIZE,
-                width: '100%'
-                //format24 : (omadi_time_format == 'g:iA' ? false : true)
+                width: '100%',
+                format24 : (Omadi.utils.getTimeFormat().indexOf('H') !== -1 ? true : false)  // Only available on Android
             });
             
             time_picker.addEventListener('change', function(e) {

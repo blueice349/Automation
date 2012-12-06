@@ -51,6 +51,17 @@ Omadi.utils.getUid = function(){"use strict";
     return parseInt(loginJson.user.uid, 10);
 };
 
+Omadi.utils.getTimeFormat = function(){"use strict";
+    var format, loginJson = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
+    format = 'g:iA';
+    
+    if(typeof loginJson.user.time_format === 'string'){
+        format = loginJson.user.time_format;
+    }
+    
+    return format;
+};
+
 Omadi.utils.cloneObject = function(obj){"use strict";
     var clone = {}, i;
     
@@ -206,7 +217,6 @@ Omadi.utils.isLoggedIn = function() {"use strict";
     return true;
 };
 
-
 Omadi.utils.PHPFormatDate = function(timestamp, format){"use strict";
     return (new Date(timestamp * 1000)).format(format);
 };
@@ -215,7 +225,7 @@ Omadi.utils.formatDate = function(timestamp, showTime){"use strict";
     
     var format = "D, M j, Y";
     if(showTime){
-        format += ' - g:i A';
+        format += ' - ' + Omadi.utils.getTimeFormat();
     }
     
     return (new Date(timestamp * 1000)).format(format);

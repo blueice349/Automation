@@ -475,7 +475,7 @@ listView.addEventListener('click', function(e) {
 
 var label_top = Titanium.UI.createLabel({
     color : '#FFFFFF',
-    text : '' + name,
+    text : name + ''.toString(),
     textAlign : 'left',
     width : '70%',
     left : '5%',

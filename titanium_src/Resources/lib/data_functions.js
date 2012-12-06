@@ -752,7 +752,7 @@ function loadNode(nid) {"use strict";
                             case 'omadi_time':
     
                                 for ( i = 0; i < node[field_name].dbValues.length; i ++) {
-                                    node[field_name].textValues[i] = display_omadi_time01(node[field_name].dbValues[i]);
+                                    node[field_name].textValues[i] = Omadi.widgets.omadi_time.secondsToString(node[field_name].dbValues[i]);
                                 }
                                 break;
     
