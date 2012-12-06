@@ -417,14 +417,16 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         
     var popupWin, opacView, coItemSelected, wrapperView, descriptionView, headerView, ico_sel, label_sel, listView, descriptionLabel, 
         i, j, color_set, color_unset, cancelButton, itemLabel, itemRow, bottomButtonsView, okButton, options, data, dbValues, 
-        descriptionText, selectedIndexes, scrollView;
+        descriptionText, selectedIndexes, scrollView, screenHeight, listHeight;
     
     
     if(buttonView.instance.widget.type == 'violation_select' && buttonView.options.length == 0){
         alert("No violations are enforceable for a " + Ti.UI.currentWindow.type + " at the selected account and time.");
     }
     else{
-    
+        
+        screenHeight = Ti.Platform.displayCaps.platformHeight;
+        
         if (PLATFORM == 'android') {
             Ti.UI.Android.hideSoftKeyboard();
             Ti.API.debug("hide keyboard in open_mult_selector");
@@ -466,7 +468,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
             height : 50,
             backgroundColor : '#444'
         });
-        wrapperView.add(headerView);
+        //wrapperView.add(headerView);
     
         label_sel = Ti.UI.createLabel({
             text : 'Select ' + buttonView.view_title,
@@ -483,23 +485,28 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         
         options = buttonView.options;
         
-        scrollView = Ti.UI.createScrollView({
-            height: Ti.UI.SIZE,
-            width: '100%',
-            contentHeight: 'auto' 
-        });
+        // scrollView = Ti.UI.createScrollView({
+            // height: Ti.UI.SIZE,
+            // width: '100%',
+            // contentHeight: 'auto',
+            // showVerticalScrollIndicator: true 
+        // });
+        
+        listHeight = options.length * 31;
+        
+        if(listHeight > screenHeight - 60){
+        
+            listHeight = screenHeight - 60;
+        }
         
         listView = Titanium.UI.createTableView({
             data : [],
-            scrollable : false,
-            height: Ti.UI.SIZE,
-            options: options,
-            footerView: Ti.UI.createView({
-                height: 125
-            })
+            scrollable : true,
+            height: listHeight,
+            options: options
         });
         
-        scrollView.add(listView);
+        //scrollView.add(listView);
         
         dbValues = buttonView.dbValue;
         
@@ -537,7 +544,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         
         listView.setData(data);
         
-        wrapperView.add(scrollView);
+        
     
         listView.addEventListener('click', function(e) {
             if (!e.rowData.selected) {
@@ -579,56 +586,44 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
                 }
                 
                 descriptionLabel.setText(descriptionText);
-                buttonView.descriptionLabel.setText(descriptionText);
             }
-    
-            // if (coItemSelected == 1) {
-                // if (buttonView.from_cond_vs != null && obj.from_cond_vs == true) {
-                    // listView.height = '66.5%';
-                    // descriptionLabel.visible = true;
-                    // var i_sel;
-                    // for ( i_sel = 0; i_sel < listView.data[0].rows.length; i_sel++) {
-                        // if (listView.data[0].rows[i_sel].selected == true) {
-                            // descriptionLabel.text = (listView.data[0].rows[i_sel].desc != null && listView.data[0].rows[i_sel].desc != "") ? listView.data[0].rows[i_sel].desc : 'No Description';
-                            // break;
-                        // }
-                    // }
-                // }
-            // }
-            // else if (coItemSelected > 1) {
-                // if (obj.from_cond_vs != null && obj.from_cond_vs == true) {
-                    // listView.height = '66.5%';
-                    // descriptionLabel.visible = true;
-                    // descriptionLabel.text = 'Multiple violations selected';
-                // }
-            // }
-            // else if (coItemSelected == 0) {
-                // if (obj.from_cond_vs != null && obj.from_cond_vs == true) {
-                    // listView.height = '73%';
-                    // descriptionLabel.visible = false;
-                    // descriptionLabel.text = '';
-                // }
-            // }
-    
-            //Ti.API.info('Field set to ' + listView.data[0].rows[e.index].selected);
         });
         
         bottomButtonsView = Ti.UI.createView({
-            height : 70,
+            bottom: 0,
+            height : 44,
             width : '100%',
-            backgroundColor : '#AAA'
+            backgroundGradient : {
+                type : 'linear',
+                startPoint : {
+                    x : '50%',
+                    y : '0%'
+                },
+                endPoint : {
+                    x : '50%',
+                    y : '100%'
+                },
+                colors : [{
+                    color : '#ccc',
+                    offset : 0.0
+                }, {
+                    color : '#999',
+                    offset : 1.0
+                }]
+            }
         });
         
         //Ti.API.info("widget: " + JSON.stringify(buttonView.instance.settings));
-        
+        descriptionView = Ti.UI.createView({
+            width: '100%',
+            height: Ti.UI.SIZE,
+            backgroundColor: '#eee',
+            borderColor: '#999',
+            borderWidth: 1
+        });
+            
         if(buttonView.instance.widget.type == 'violation_select'){
-            descriptionView = Ti.UI.createView({
-                width: '100%',
-                height: Ti.UI.SIZE,
-                backgroundColor: '#eee',
-                borderColor: '#999',
-                borderWidth: 1
-            });
+            
             
             
             if(coItemSelected == 1){
@@ -652,7 +647,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
                 ellipsize : false,
                 wordWrap : true,
                 font : {
-                    fontSize : 20
+                    fontSize : 14
                 },
                 color : '#000',
                 height : Ti.UI.SIZE,
@@ -663,19 +658,44 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
             });
             
             descriptionView.add(descriptionLabel);
-            wrapperView.add(descriptionView);
         }
         
-        wrapperView.add(bottomButtonsView);
+        
     
         okButton = Ti.UI.createButton({
-            title : 'OK',
-            width : '40%',
-            top : '3',
-            bottom : '5',
-            left : '6%',
+            title : 'Done',
+            top : 7,
+            bottom : 7,
+            right : 10,
+            width: 80,
             listView: listView,
-            buttonView: buttonView
+            buttonView: buttonView,
+            style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+            color: '#fff',
+            borderRadius: 5,
+            font: {
+                fontSize: 14
+            },
+            borderWidth: 1,
+            borderColor: '#555',
+            backgroundGradient : {
+                type : 'linear',
+                startPoint : {
+                    x : '50%',
+                    y : '0%'
+                },
+                endPoint : {
+                    x : '50%',
+                    y : '100%'
+                },
+                colors : [{
+                    color : '#999',
+                    offset : 0.0
+                }, {
+                    color : '#444',
+                    offset : 1.0
+                }]
+            }
         });
         bottomButtonsView.add(okButton);
         
@@ -714,6 +734,10 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
             //buttonView.setText(textValue);
             e.source.buttonView.setTitle(textValue);
             
+            if(descriptionView != null){                
+                e.source.buttonView.descriptionLabel.setText(descriptionLabel.text);
+            }
+            
             
             if(e.source.buttonView.check_conditional_fields.length > 0){
                 
@@ -746,16 +770,48 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
     
         cancelButton = Ti.UI.createButton({
             title : 'Cancel',
-            width : '40%',
-            top : '3',
-            bottom : '5',
-            right : '6%'
+            width: 80,
+            top : 7,
+            bottom : 7,
+            left : 10,
+            listView: listView,
+            buttonView: buttonView,
+            style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+            color: '#fff',
+            borderRadius: 5,
+            font: {
+                fontSize: 14
+            },
+            borderWidth: 1,
+            borderColor: '#555',
+            backgroundGradient : {
+                type : 'linear',
+                startPoint : {
+                    x : '50%',
+                    y : '0%'
+                },
+                endPoint : {
+                    x : '50%',
+                    y : '100%'
+                },
+                colors : [{
+                    color : '#999',
+                    offset : 0.0
+                }, {
+                    color : '#444',
+                    offset : 1.0
+                }]
+            }
         });
+        
         bottomButtonsView.add(cancelButton);
         cancelButton.addEventListener('click', function() {
             popupWin.close();
         });
-    
+        
+        wrapperView.add(bottomButtonsView);
+        wrapperView.add(descriptionView);
+        wrapperView.add(listView);
         
         popupWin.open();
     }

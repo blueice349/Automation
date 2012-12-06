@@ -1441,71 +1441,9 @@ function changeViolationFieldOptions(violation_field_name){"use strict";
             }
         }
     }
-    
-    //options = [];
-    
-    
 
-    // return;
-    // var violation_timestamp = rules_violation_time_field_name.value;
-    // violation_time = violation_timestamp;
-    // var node_type = win.type;
-// 
-    // if (data != false && data != null && data != "" && data.length > 0) {
-        // var tids = [];
-        // var used_tids = [];
-        // var all_others_row = [];
-// 
-        // var data_idx;
-        // for (data_idx in data) {
-            // var dataRow = data[data_idx];
-            // if (!isNaN(dataRow['tid'])) {
-                // if (dataRow['node_types'][node_type] != null && dataRow['node_types'][node_type] != "") {
-                    // if (rules_field_passed_time_check(dataRow['time_rules'], violation_timestamp)) {
-// 
-                        // if (tids[dataRow['tid']] == null) {
-                            // tids[dataRow['tid']] = new Array();
-                        // }
-                        // tids[dataRow['tid']].push(violations_terms[dataRow['tid']][0]);
-                    // }
-                // }
-                // if (used_tids[dataRow['tid']] == null) {
-                    // used_tids[dataRow['tid']] = new Array();
-                // }
-                // used_tids[dataRow['tid']].push(dataRow['tid']);
-            // }
-            // else if (dataRow['tid'] == 'ALL') {
-                // all_others_row.push(dataRow);
-            // }
-            // if (descripitons[dataRow['tid']] == null) {
-                // descripitons[dataRow['tid']] = new Array();
-            // }
-            // descripitons[dataRow['tid']].push(dataRow['description']);
-        // }
-// 
-        // if (all_others_row.length > 0) {
-            // if (all_others_row[0]['node_types'][node_type] != null && all_others_row[0]['node_types'][node_type] != "") {
-                // if (rules_field_passed_time_check(all_others_row[0]['time_rules'], violation_timestamp)) {
-                    // var violations_term_idx;
-                    // for (violations_terms_idx in violations_terms) {
-                        // var violation_term = violations_terms[violations_terms_idx][0].tid;
-                        // if (used_tids[violation_term] == null || used_tids[violation_term] == "") {
-                            // if (tids[violation_term] == null) {
-                                // tids[violation_term] = new Array();
-                            // }
-                            // tids[violation_term].push(violations_terms[violations_terms_idx][0]);
-                        // }
-                    // }
-                // }
-            // }
-        // }
-        // violations_terms = tids;
-        // fromViolationRules = true;
-    // }
-            
-            
-
-    Omadi.widgets.setValueWidgetProperty(violation_field_name, 'options', options);
+    /*** FINALLY SET THE ALLOWABLE VIOLATION OPTIONS FOR THE WIDGET ***/
+    Omadi.widgets.setValueWidgetProperty(violation_field_name, ['options'], options);
 }
 
 
