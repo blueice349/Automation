@@ -48,7 +48,7 @@ Omadi.widgets.taxonomy_term_reference = {
     },
     getNewElement: function(node, instance, index){"use strict";
         
-        var settings, widgetView, dbValue, textValue, i, options, textOptions;
+        var settings, widgetView, dbValue, textValue, i, options, textOptions, wrapperView, descriptionText, descriptionLabel;
         
         if(instance.settings.cardinality == -1){
             dbValue = [];
@@ -84,6 +84,24 @@ Omadi.widgets.taxonomy_term_reference = {
         Ti.API.debug("Creating taxonomy_term_reference field");
         
         options = Omadi.widgets.taxonomy_term_reference.getOptions(instance);
+        
+        descriptionText = "";
+        descriptionLabel = Ti.UI.createLabel({
+            height: Ti.UI.SIZE,
+            width: '100%',
+            text: descriptionText,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+            font: {
+                fontSize: 14
+            },
+            color: '#444'
+        });
+        
+        wrapperView = Ti.UI.createView({
+           layout: 'vertical',
+           height: Ti.UI.SIZE,
+           width: '100%' 
+        });
         
         widgetView = Titanium.UI.createButton({
             //borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
@@ -126,7 +144,8 @@ Omadi.widgets.taxonomy_term_reference = {
             textValue: textValue,
             value : textValue,
             
-            view_title : instance.label
+            view_title : instance.label,
+            descriptionLabel: descriptionLabel
         });
         
         if(instance.numVisibleFields > 1){
@@ -213,10 +232,14 @@ Omadi.widgets.taxonomy_term_reference = {
             }
         }
         
-        return widgetView;
+        wrapperView.add(widgetView);
+        wrapperView.add(descriptionLabel);
+        
+        return wrapperView;
 
     },
     getOptions: function(instance){"use strict";
+    
         var db, result, vid, options;
         db = Omadi.utils.openMainDatabase();
         
@@ -224,7 +247,7 @@ Omadi.widgets.taxonomy_term_reference = {
         vid = result.fieldByName('vid');
         result.close();
         
-        result = db.execute("SELECT * FROM term_data WHERE vid='" + vid + "' GROUP BY name ORDER BY CAST(`weight` AS INTEGER) ASC");
+        result = db.execute("SELECT name, tid, description FROM term_data WHERE vid='" + vid + "' GROUP BY name ORDER BY CAST(`weight` AS INTEGER) ASC");
 
         options = [];
         
@@ -238,7 +261,8 @@ Omadi.widgets.taxonomy_term_reference = {
         while (result.isValidRow()) {
             options.push({
                 title : result.fieldByName('name'),
-                dbValue : result.fieldByName('tid')
+                dbValue : result.fieldByName('tid'),
+                description: result.fieldByName('description')
             });
             result.next();
         }

@@ -171,26 +171,45 @@ Omadi.widgets.setValueWidgetProperty = function(field_name, property, value, set
         setIndex = -1;
     }
     
+    if(typeof property === 'string'){
+        property = [property];
+    }
+    
     children = fieldWrappers[field_name].getChildren();
     
     if(setIndex == -1){
         for(i = 0; i < children.length; i ++){
             if(typeof children[i].dbValue !== 'undefined'){
-                fieldWrappers[field_name].children[i][property] = value;
+                if(property.length == 1){
+                    fieldWrappers[field_name].children[i][property[0]] = value;
+                }
+                else if(property.length == 2){
+                    fieldWrappers[field_name].children[i][property[0]][property[1]] = value;
+                }
             }
             
             if(children[i].getChildren().length > 0){
                 subChildren = children[i].getChildren();
                 for(j = 0; j < subChildren.length; j ++){
                     if(typeof subChildren[j].dbValue !== 'undefined'){
-                        fieldWrappers[field_name].children[i].children[j][property] = value;
+                        if(property.length == 1){
+                            fieldWrappers[field_name].children[i].children[j][property[0]] = value;
+                        }
+                        else if(property.length == 2){
+                            fieldWrappers[field_name].children[i].children[j][property[0]][property[1]] = value;
+                        }
                     }
                     
                     if(subChildren[j].getChildren().length > 0){
                         subSubChildren = subChildren[j].getChildren();
                         for(k = 0; k < subSubChildren.length; k ++){
                             if(typeof subSubChildren[k].dbValue !== 'undefined'){
-                                fieldWrappers[field_name].children[i].children[j].children[k][property] = value;
+                                if(property.length == 1){
+                                    fieldWrappers[field_name].children[i].children[j].children[k][property[0]] = value;
+                                }
+                                else if(property.length == 2){
+                                    fieldWrappers[field_name].children[i].children[j].children[k][property[0]][property[1]] = value;
+                                }
                             }
                         }
                     }
@@ -202,7 +221,12 @@ Omadi.widgets.setValueWidgetProperty = function(field_name, property, value, set
         for(i = 0; i < children.length; i ++){
             if(typeof children[i].dbValue !== 'undefined'){
                 if(i == setIndex){
-                    fieldWrappers[field_name].children[i][property] = value;
+                    if(property.length == 1){
+                        fieldWrappers[field_name].children[i][property[0]] = value;
+                    }
+                    else if(property.length == 2){
+                        fieldWrappers[field_name].children[i][property[0]][property[1]] = value;
+                    }
                 }
             }
             
@@ -211,7 +235,12 @@ Omadi.widgets.setValueWidgetProperty = function(field_name, property, value, set
                 for(j = 0; j < subChildren.length; j ++){
                     if(typeof subChildren[j].dbValue !== 'undefined'){
                         if(j == setIndex){
-                            fieldWrappers[field_name].children[i].children[j][property] = value;
+                            if(property.length == 1){
+                                fieldWrappers[field_name].children[i].children[j][property[0]] = value;
+                            }
+                            else if(property.length == 2){
+                                fieldWrappers[field_name].children[i].children[j][property[0]][property[1]] = value;
+                            }
                         }
                     }
                     
@@ -220,7 +249,12 @@ Omadi.widgets.setValueWidgetProperty = function(field_name, property, value, set
                         for(k = 0; k < subSubChildren.length; k ++){
                             if(typeof subSubChildren[k].dbValue !== 'undefined'){
                                 if(k == setIndex){
-                                    fieldWrappers[field_name].children[i].children[j].children[k][property] = value;
+                                    if(property.length == 1){
+                                        fieldWrappers[field_name].children[i].children[j].children[k][property[0]] = value;
+                                    }
+                                    else if(property.length == 2){
+                                        fieldWrappers[field_name].children[i].children[j].children[k][property[0]][property[1]] = value;
+                                    }
                                 }
                             }
                         }
@@ -382,7 +416,8 @@ Omadi.widgets.label = {
 Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         
     var popupWin, opacView, coItemSelected, wrapperView, descriptionView, headerView, ico_sel, label_sel, listView, descriptionLabel, 
-        i, j, color_set, color_unset, cancelButton, itemLabel, itemRow, bottomButtonsView, okButton, options, data, dbValues;
+        i, j, color_set, color_unset, cancelButton, itemLabel, itemRow, bottomButtonsView, okButton, options, data, dbValues, 
+        descriptionText, selectedIndexes, scrollView;
     
     
     if(buttonView.instance.widget.type == 'violation_select' && buttonView.options.length == 0){
@@ -422,12 +457,12 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
             borderRadius : 10,
             borderWidth : 2,
             borderColor : '#FFFFFF',
-            opacity: 1
+            opacity: 1,
+            layout: 'vertical'
         });
         popupWin.add(wrapperView);
     
         headerView = Ti.UI.createView({
-            top : 0,
             height : 50,
             backgroundColor : '#444'
         });
@@ -448,15 +483,23 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         
         options = buttonView.options;
         
+        scrollView = Ti.UI.createScrollView({
+            height: Ti.UI.SIZE,
+            width: '100%',
+            contentHeight: 'auto' 
+        });
+        
         listView = Titanium.UI.createTableView({
             data : [],
-            scrollable : true,
+            scrollable : false,
+            height: Ti.UI.SIZE,
             options: options,
-            top: 50,
             footerView: Ti.UI.createView({
                 height: 125
             })
         });
+        
+        scrollView.add(listView);
         
         dbValues = buttonView.dbValue;
         
@@ -470,6 +513,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
     
         
         data = [];
+        selectedIndexes = [];
         
         for(i = 0; i < options.length; i ++){
     
@@ -486,13 +530,14 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
     
             if (options[i].selected) {
                 coItemSelected++;
+                selectedIndexes.push(i);
             }
             data.push(itemRow);
         }
         
         listView.setData(data);
         
-        wrapperView.add(listView);
+        wrapperView.add(scrollView);
     
         listView.addEventListener('click', function(e) {
             if (!e.rowData.selected) {
@@ -500,6 +545,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
                 e.row.setBackgroundColor(color_set);
                 e.row.setColor('#fff');
                 coItemSelected++;
+                selectedIndexes.push(e.index);
                 //e.rowData.listView.options[e.index].selected = true;
             }
             else {
@@ -508,7 +554,32 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
                 e.row.setBackgroundColor(color_unset);
                 e.row.setColor('#000');
                 coItemSelected--;
+                selectedIndexes.splice(selectedIndexes.indexOf(e.index), 1);
                 //e.rowData.listView.options[e.index].selected = false;
+            }
+            
+            if(descriptionView != null){
+                if(coItemSelected == 1){
+                    //Ti.API.debug(selectedIndexes);
+                    //Ti.API.debug(options);
+                    if(options[selectedIndexes[0]].description > ""){
+                        
+                        descriptionText = options[selectedIndexes[0]].description;
+                    }
+                    else{
+                        descriptionText = "";
+                    }
+                    
+                }
+                else if(coItemSelected == 0){
+                    descriptionText = "";
+                }
+                else{
+                    descriptionText = "";
+                }
+                
+                descriptionLabel.setText(descriptionText);
+                buttonView.descriptionLabel.setText(descriptionText);
             }
     
             // if (coItemSelected == 1) {
@@ -543,7 +614,6 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         });
         
         bottomButtonsView = Ti.UI.createView({
-            bottom : 0,
             height : 70,
             width : '100%',
             backgroundColor : '#AAA'
@@ -551,26 +621,43 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         
         //Ti.API.info("widget: " + JSON.stringify(buttonView.instance.settings));
         
-        if(false && buttonView.instance.widget.type == 'violation_select'){
+        if(buttonView.instance.widget.type == 'violation_select'){
             descriptionView = Ti.UI.createView({
                 width: '100%',
                 height: Ti.UI.SIZE,
                 backgroundColor: '#eee',
                 borderColor: '#999',
-                borderWidth: 1,
-                bottom: 70
+                borderWidth: 1
             });
+            
+            
+            if(coItemSelected == 1){
+                
+                if(options[selectedIndexes[0]].description > ""){
+                        
+                    descriptionText = options[selectedIndexes[0]].description;
+                }
+                else{
+                    descriptionText = "";
+                }
+            }
+            else if(coItemSelected == 0){
+                descriptionText = "";
+            }
+            else{
+                descriptionText = "";
+            }
             
             descriptionLabel = Titanium.UI.createLabel({
                 ellipsize : false,
                 wordWrap : true,
                 font : {
-                    fontsize : 12
+                    fontSize : 20
                 },
-                color : 'black',
+                color : '#000',
                 height : Ti.UI.SIZE,
                 width: '100%',
-                text: 'Description: None',
+                text: descriptionText,
                 left: 10,
                 right: 10
             });

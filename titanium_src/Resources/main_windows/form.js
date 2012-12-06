@@ -1277,9 +1277,10 @@ function sort_by_weight(a, b) {"use strict";
 }
 
 function changeViolationFieldOptions(violation_field_name){"use strict";
-    var db, result, options, textOptions, i, violation_instance, parentNid, parentNidDBValues, reference_field_name, 
+    var db, result, options, textOptions, i, j, violation_instance, parentNid, parentNidDBValues, reference_field_name, 
         rules_parent_field_name, parentNodeType, rulesData, dataRow, node_type, tids, used_tids, all_others_row,
-        rules_violation_time_field_name, violationTimestampValues, violation_timestamp, violationTerms, violation_term;
+        rules_violation_time_field_name, violationTimestampValues, violation_timestamp, violationTerms, violation_term, 
+        descriptions, violationDBValues, isViolationValid, textValues, violationTextValues;
     
     /*global rules_field_passed_time_check*/
     
@@ -1309,6 +1310,7 @@ function changeViolationFieldOptions(violation_field_name){"use strict";
         violation_timestamp = violationTimestampValues[0];
     }
     
+    descriptions = [];
     //Ti.API.error(violation_timestamp);
     
     if(parentNidDBValues.length > 0){
@@ -1352,10 +1354,11 @@ function changeViolationFieldOptions(violation_field_name){"use strict";
                         else if (dataRow.tid == 'ALL') {
                             all_others_row.push(dataRow);
                         }
-                        //if (descripitons[dataRow.tid] == null) {
-                        //    descripitons[dataRow.tid] = [];
-                       // }
-                        //descripitons[dataRow.tid].push(dataRow.description);
+                        
+                        if (dataRow.description != null) {
+                            descriptions[dataRow.tid] = dataRow.description;
+                        }
+                        
                     }
                 }
         
@@ -1364,7 +1367,7 @@ function changeViolationFieldOptions(violation_field_name){"use strict";
                         if (rules_field_passed_time_check(all_others_row[0].time_rules, violation_timestamp)) {
                             for (i in violationTerms) {
                                 if(violationTerms.hasOwnProperty(i)){
-                                    violation_term = violationTerms[i][0].tid;
+                                    violation_term = violationTerms[i].tid;
                                     if (typeof used_tids[violation_term] === 'undefined') {
                                         //if (tids[violation_term] == null) {
                                             tids[violation_term] = true;
@@ -1381,10 +1384,60 @@ function changeViolationFieldOptions(violation_field_name){"use strict";
                 
                 for(i in tids){
                     if(tids.hasOwnProperty(i)){
+                        if(typeof descriptions[i] !== 'undefined'){
+                            violationTerms[i].description = descriptions[i];
+                        }
+                        
+                        //Ti.API.info(descriptions);
                         options.push(violationTerms[i]);
                         //Ti.API.error(JSON.stringify(violationTerms[i]));
                     }
                 }  
+                
+                /**** START SETTING CURRENT FORM DEFAULT VALUES *****/
+                
+                violationDBValues = Omadi.widgets.getDBValues(fieldWrappers[violation_field_name]);
+                violationTextValues = Omadi.widgets.getTextValues(fieldWrappers[violation_field_name]);
+                //Ti.API.debug(violationDBValues);
+                
+                // Get rid of any violations that don't apply to this property
+                if(violationDBValues.length > 0){
+                    for(i = violationDBValues.length - 1; i >= 0; i --){
+                        isViolationValid = false;
+                        for(j = 0; j < options.length; j ++){
+                            if(violationDBValues[i] == options[j].dbValue){
+                                isViolationValid = true;
+                                break;
+                            }
+                        }
+                        if(!isViolationValid){
+                            violationDBValues.splice(i, 1);
+                            violationTextValues.splice(i, 1);
+                        }
+                    }
+                }
+                
+                //Ti.API.debug(violationDBValues);
+                
+                // Set the violations to possibly fewer violations
+                Omadi.widgets.setValueWidgetProperty(violation_field_name, ['dbValue'], violationDBValues);
+                
+                // Set the textValues for the widget
+                Omadi.widgets.setValueWidgetProperty(violation_field_name, ['textValue'], violationTextValues);
+                Omadi.widgets.setValueWidgetProperty(violation_field_name, ['title'], violationTextValues.join(", "));
+                
+                
+                // Set the description for the selected violation if one exists
+                if(violationDBValues.length == 1){
+                    if(typeof violationTerms[violationDBValues[0]].description !== 'undefined'){
+                        Omadi.widgets.setValueWidgetProperty(violation_field_name, ['descriptionLabel', 'text'], violationTerms[violationDBValues[0]].description);
+                    }
+                }
+                else{
+                    Omadi.widgets.setValueWidgetProperty(violation_field_name, ['descriptionLabel', 'text'], "");
+                }
+                
+                /**** END SETTING CURRENT FORM DEFAULT VALUES *****/
             }
         }
     }
@@ -1512,6 +1565,9 @@ function setupViolationField(){"use strict";
                             //content[_reffer_index].rulesFieldArr = _rulesFieldArr;
                         }
                     }
+                    
+                    // Initialize the field for default values
+                    changeViolationFieldOptions(field_name);
                 }
             }
         }
