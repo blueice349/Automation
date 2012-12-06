@@ -35,14 +35,14 @@ function form_min(min) {"use strict";
 var db = Omadi.utils.openMainDatabase();
 
 //The view where the results are presented
-var resultView = Ti.UI.createView({
+var formWrapperView = Ti.UI.createView({
     top : '0',
     height : '100%',
     width : '100%',
     backgroundColor : '#EEEEEE'
 });
 
-curWin.add(resultView);
+curWin.add(formWrapperView);
 
 //Header where the selected name is presented
 // var header = Ti.UI.createView({
@@ -52,7 +52,7 @@ curWin.add(resultView);
 // backgroundColor: '#585858',
 // zIndex: 11
 // });
-// resultView.add(header);
+// formWrapperView.add(header);
 //
 // //Label containing the selected name
 // var labelNameContent = Ti.UI.createLabel({
@@ -70,7 +70,7 @@ curWin.add(resultView);
 // header.add(labelNameContent);
 
 if (PLATFORM == 'android') {
-    var viewContent = Ti.UI.createScrollView({
+    var scrollView = Ti.UI.createScrollView({
         contentHeight : 'auto',
         backgroundColor : '#EEEEEE',
         showHorizontalScrollIndicator : false,
@@ -80,7 +80,7 @@ if (PLATFORM == 'android') {
     });
 }
 else {
-    var viewContent = Ti.UI.createScrollView({
+    var scrollView = Ti.UI.createScrollView({
         top : "45dp",
         contentHeight : 'auto',
         backgroundColor : '#EEEEEE',
@@ -92,7 +92,7 @@ else {
     });
 }
 
-resultView.add(viewContent);
+formWrapperView.add(scrollView);
 
 //Populate array with field name and configs
 var regions = {};
@@ -338,8 +338,8 @@ function doFieldOutput(fieldObj) {"use strict";
                         //labelView.height = '25dp';
                         //labelLabel.top = '2dp';
     
-                        //viewContent.add(labelView);
-                        viewContent.add(tableView);
+                        //scrollView.add(labelView);
+                        scrollView.add(tableView);
                     }
                 }
                 else {
@@ -616,7 +616,7 @@ function doFieldOutput(fieldObj) {"use strict";
             }
             
             if(!fieldIsHidden){
-                viewContent.add(rowView);
+                scrollView.add(rowView);
             }
         }
     }
@@ -628,7 +628,7 @@ function doFieldOutput(fieldObj) {"use strict";
 function doRegionOutput(regionObj) {"use strict";
     var i, partsFieldsDone = {}, field_name, field_parts;
 
-    viewContent.add(Ti.UI.createLabel({
+    scrollView.add(Ti.UI.createLabel({
         text : regionObj.label.toUpperCase(),
         color : '#ddd',
         font : {
@@ -705,7 +705,7 @@ function doRegionOutput(regionObj) {"use strict";
             }
         }
 
-        viewContent.add(Ti.UI.createLabel({
+        scrollView.add(Ti.UI.createLabel({
             text : 'METADATA',
             color : '#ddd',
             font : {
@@ -2081,13 +2081,13 @@ function doRegionOutput(regionObj) {"use strict";
 // }
 // cell[i].add(content[i]);
 //
-// viewContent.add(cell[i]);
+// scrollView.add(cell[i]);
 //
 // border[i] = Ti.UI.createView({
 // backgroundColor : "#C8C9C9",
 // height : 2,
 // });
-// viewContent.add(border[i]);
+// scrollView.add(border[i]);
 // index_fields++;
 // }
 // //Regions
@@ -2104,7 +2104,7 @@ function doRegionOutput(regionObj) {"use strict";
 // });
 //
 // cell[i].add(label[i]);
-// viewContent.add(cell[i]);
+// scrollView.add(cell[i]);
 //
 // border[i] = Ti.UI.createView({
 // backgroundColor : "#000",
@@ -2117,7 +2117,7 @@ function doRegionOutput(regionObj) {"use strict";
 // }
 // }
 //
-// viewContent.add(border[i]);
+// scrollView.add(border[i]);
 // Ti.API.info('Added region: ' + label[i].ref);
 // index_fields++;
 // }
@@ -2156,7 +2156,7 @@ function doRegionOutput(regionObj) {"use strict";
 // text : 'Well, this is embarrassing but it seems that you\'ve found a bug, please submit it to us, here are some things you should inform:\n    NID = ' + curWin.nid + '\n   	Omadi_reference = ' + bug[0] + ' \nWe will fix it as soon as possible'
 // });
 //
-// viewContent.add(cell);
+// scrollView.add(cell);
 // }
 // }
 // }

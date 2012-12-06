@@ -29,20 +29,8 @@ Omadi.widgets.license_plate = {
         instance.elements.push(element);
         fieldView.add(element);
         fieldView.add(Omadi.widgets.getSpacerView());
-
-        
-        //No data checkbox functionality
-        //noDataCheckbox(reffer_index, regionView, top);
-        //if (content[reffer_index].noDataView != null) {
-        //    top += 40;
-       // }
        
-       //fieldViews[this.instance.field_name] = this.fieldView;
-       
-       //this.fieldView = fieldView;
-       //this.initialized = true;
-       
-       return fieldView;
+        return fieldView;
     },
     getNewElement: function(node, instance, index){"use strict";
         
@@ -103,10 +91,6 @@ Omadi.widgets.license_plate = {
             }
         }
         
-        //node[real_field_name].parts[part]
-        
-        
-        
         settings = instance.settings;
         Ti.API.debug("Creating license_plate " + part + " field");
         
@@ -139,7 +123,6 @@ Omadi.widgets.license_plate = {
             
             widgetView.addEventListener('focus', function(e) {
                 e.source.touched = true;
-                //adjustView(e.source.my_index, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
             });
             
             
@@ -158,7 +141,6 @@ Omadi.widgets.license_plate = {
                 if(e.source.check_conditional_fields.length > 0){
                     setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
                 }
-                // changedContentValue(e.source);
                 // noDataChecboxEnableDisable(e.source, e.source.reffer_index);
             });
         }

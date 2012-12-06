@@ -646,8 +646,8 @@ create_or_edit_node.loadUI = function() {
                     e.source.viewContainer.height = e.source.viewContainer.calculatedHeight;
                     var top = 0;
                     var i;
-                    for ( i = 0; i < viewContent.getChildren().length; i++) {
-                        var v = viewContent.getChildren()[i];
+                    for ( i = 0; i < scrollView.getChildren().length; i++) {
+                        var v = scrollView.getChildren()[i];
                         var isLabel = false;
                         if (PLATFORM == 'android') {
                             if ( v instanceof Ti.UI.Label) {
@@ -680,8 +680,8 @@ create_or_edit_node.loadUI = function() {
                     e.source.viewContainer.hide();
                     var top = 0;
                     var i;
-                    for ( i = 0; i < viewContent.getChildren().length; i++) {
-                        var v = viewContent.getChildren()[i];
+                    for ( i = 0; i < scrollView.getChildren().length; i++) {
+                        var v = scrollView.getChildren()[i];
                         var isLabel = false;
                         if (PLATFORM == 'android') {
                             if ( v instanceof Ti.UI.Label) {
@@ -709,10 +709,10 @@ create_or_edit_node.loadUI = function() {
                     }
                 }
 
-                if (viewContent.getChildren() != null) {
+                if (scrollView.getChildren() != null) {
                     var i;
-                    for ( i = viewContent.getChildren().length - 1; i >= 0; i--) {
-                        var v = viewContent.getChildren()[i];
+                    for ( i = scrollView.getChildren().length - 1; i >= 0; i--) {
+                        var v = scrollView.getChildren()[i];
                         var isLabel = false;
                         if (PLATFORM == 'android') {
                             if ( v instanceof Ti.UI.Label) {
@@ -4260,7 +4260,7 @@ create_or_edit_node.loadUI = function() {
                                                     e.source.autocomplete_table.scrollToTop(0, {
                                                         animated : false
                                                     });
-                                                    viewContent.scrollTo(0, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
+                                                    scrollView.scrollTo(0, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
                                                     if (table_data.length > 0) {
                                                         e.source.autocomplete_table.visible = true;
                                                     }
@@ -4482,7 +4482,7 @@ create_or_edit_node.loadUI = function() {
                                                 e.source.autocomplete_table.scrollToTop(0, {
                                                     animated : false
                                                 });
-                                                viewContent.scrollTo(0, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
+                                                scrollView.scrollTo(0, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
                                                 if (table_data.length > 0) {
                                                     e.source.autocomplete_table.visible = true;
                                                 }
@@ -4794,7 +4794,7 @@ create_or_edit_node.loadUI = function() {
                                 // e.source.autocomplete_table.scrollToTop(0, {
                                 // animated : false
                                 // });
-                                // viewContent.scrollTo(0, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
+                                // scrollView.scrollTo(0, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
                                 // if (table_data.length > 0) {
                                 // e.source.autocomplete_table.visible = true;
                                 // } else {
@@ -5000,7 +5000,7 @@ create_or_edit_node.loadUI = function() {
                                                 e.source.autocomplete_table.scrollToTop(0, {
                                                     animated : false
                                                 });
-                                                viewContent.scrollTo(0, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
+                                                scrollView.scrollTo(0, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
                                                 if (table_data.length > 0) {
                                                     e.source.autocomplete_table.visible = true;
                                                 }
@@ -6657,7 +6657,7 @@ create_or_edit_node.loadUI = function() {
                                             // e.source.autocomplete_table.scrollToTop(0, {
                                                 // animated : false
                                             // });
-                                            // viewContent.scrollTo(0, (e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue)));
+                                            // scrollView.scrollTo(0, (e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue)));
                                             // if (table_data.length > 0) {
                                                 // e.source.autocomplete_table.visible = true;
                                             // }
@@ -7200,13 +7200,13 @@ create_or_edit_node.loadUI = function() {
             regionView.expanded = false;
             regionView.hide();
 
-            if (viewContent.max_form_part != null) {
-                if (regionView.form_part > viewContent.max_form_part) {
-                    viewContent.max_form_part = regionView.form_part;
+            if (scrollView.max_form_part != null) {
+                if (regionView.form_part > scrollView.max_form_part) {
+                    scrollView.max_form_part = regionView.form_part;
                 }
             }
             else {
-                viewContent.max_form_part = regionView.form_part;
+                scrollView.max_form_part = regionView.form_part;
             }
 
             // Ti.API.info("expandedRegion = " + expandedRegion + "\ni = " + regionCount);
@@ -7224,9 +7224,9 @@ create_or_edit_node.loadUI = function() {
             y = y + regionView.height + 10;
 
             if (isAnyEnabledField == true) {
-                viewContent.add(regionHeader);
-                viewContent.add(arrow_img);
-                viewContent.add(regionView);
+                scrollView.add(regionHeader);
+                scrollView.add(arrow_img);
+                scrollView.add(regionView);
             }
         }
         regions.next();
@@ -7240,10 +7240,10 @@ create_or_edit_node.loadUI = function() {
     db_display.close();
 
     var top = 0;
-    if (viewContent.getChildren() != null) {
+    if (scrollView.getChildren() != null) {
         var i;
-        for ( i = 0; i < viewContent.getChildren().length; i++) {
-            var v = viewContent.getChildren()[i];
+        for ( i = 0; i < scrollView.getChildren().length; i++) {
+            var v = scrollView.getChildren()[i];
             var isLabel = false;
             if (PLATFORM == 'android') {
                 if ( v instanceof Ti.UI.Label) {
@@ -7257,7 +7257,7 @@ create_or_edit_node.loadUI = function() {
             }
 
             if (isLabel) {
-                if (v.viewContainer.form_part == viewContent.max_form_part || v.viewContainer.always_expanded == 1) {
+                if (v.viewContainer.form_part == scrollView.max_form_part || v.viewContainer.always_expanded == 1) {
                     v.viewContainer.height = v.viewContainer.calculatedHeight;
                     v.viewContainer.expanded = true;
                     v.arrow.image = "/images/light_arrow_down.png";
@@ -7284,10 +7284,10 @@ create_or_edit_node.loadUI = function() {
         }
     }
 
-    if (viewContent.getChildren() != null) {
+    if (scrollView.getChildren() != null) {
         var i;
-        for ( i = viewContent.getChildren().length; i >= 0; i--) {
-            var v = viewContent.getChildren()[i];
+        for ( i = scrollView.getChildren().length; i >= 0; i--) {
+            var v = scrollView.getChildren()[i];
             var isLabel = false;
             if (PLATFORM == 'android') {
                 if ( v instanceof Ti.UI.Label) {

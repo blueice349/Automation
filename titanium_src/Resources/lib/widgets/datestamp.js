@@ -203,7 +203,7 @@ Omadi.widgets.datestamp = {
     },
     displayPicker: function(widgetView){"use strict";
         
-        var dateWindow, titleLabel, minDate, maxDate, widgetDate, wrapperView, buttonView, widgetYear, date_picker, time_picker, doneButton, cancelButton;
+        var dateWindow, titleLabel, minDate, opacView, maxDate, widgetDate, okButton, wrapperView, buttonView, topButtonsView, widgetYear, date_picker, time_picker, doneButton, cancelButton;
         
         if (PLATFORM == 'android') {
             Ti.UI.Android.hideSoftKeyboard();
@@ -211,31 +211,149 @@ Omadi.widgets.datestamp = {
         }
         
         dateWindow = Ti.UI.createWindow({
-            backgroundColor : "#eee",
-            opacity : 1
+            
         });
+        
+        opacView = Ti.UI.createView({
+            left : 0,
+            right : 0,
+            top : 0,
+            bottom : 0,
+            backgroundColor : '#000000',
+            opacity : 0.5
+        });
+        
+        dateWindow.add(opacView);
     
         wrapperView = Ti.UI.createView({
             layout: 'vertical',
-            height: Ti.API.SIZE
+            height: Ti.UI.SIZE,
+            width: Ti.UI.SIZE,
+            opacity: 1
         });
         //Ti.API.info('====>> Widget settings = ' + widget.settings['time']);
     
-        titleLabel = Ti.UI.createLabel({
-            width : '100%',
-            height : 50,
-            backgroundColor : '#ccc',
-            color : '#000',
-            textAlign : 'center',
-            font : {
-                fontWeight : 'bold',
-                fontSize: 24
-            },
-            text : "Set " + widgetView.instance.label
+        // titleLabel = Ti.UI.createLabel({
+            // width : '100%',
+            // height : 50,
+            // backgroundColor : '#ccc',
+            // color : '#000',
+            // textAlign : 'center',
+            // font : {
+                // fontWeight : 'bold',
+                // fontSize: 24
+            // },
+            // text : "Set " + widgetView.instance.label
+        // });
+        // wrapperView.add(titleLabel);
+       topButtonsView = Ti.UI.createView({
+            bottom: 0,
+            height : 44,
+            backgroundGradient : {
+                type : 'linear',
+                startPoint : {
+                    x : '50%',
+                    y : '0%'
+                },
+                endPoint : {
+                    x : '50%',
+                    y : '100%'
+                },
+                colors : [{
+                    color : '#ccc',
+                    offset : 0.0
+                }, {
+                    color : '#999',
+                    offset : 1.0
+                }]
+            }
         });
-        wrapperView.add(titleLabel);
+        
+        wrapperView.add(topButtonsView);
+        
+        
+        okButton = Ti.UI.createButton({
+            title : 'Done',
+            top : 7,
+            bottom : 7,
+            right : 10,
+            width: 80,
+            widgetView: widgetView,
+            style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+            color: '#fff',
+            borderRadius: 5,
+            font: {
+                fontSize: 14
+            },
+            borderWidth: 1,
+            borderColor: '#555',
+            backgroundGradient : {
+                type : 'linear',
+                startPoint : {
+                    x : '50%',
+                    y : '0%'
+                },
+                endPoint : {
+                    x : '50%',
+                    y : '100%'
+                },
+                colors : [{
+                    color : '#999',
+                    offset : 0.0
+                }, {
+                    color : '#444',
+                    offset : 1.0
+                }]
+            }
+        });
+        topButtonsView.add(okButton);
+        
+        okButton.addEventListener('click', function(e) {
+            
     
-      
+        });
+    
+        cancelButton = Ti.UI.createButton({
+            title : 'Cancel',
+            width: 80,
+            top : 7,
+            bottom : 7,
+            left : 10,
+            widgetView: widgetView,
+            style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+            color: '#fff',
+            borderRadius: 5,
+            font: {
+                fontSize: 14
+            },
+            borderWidth: 1,
+            borderColor: '#555',
+            backgroundGradient : {
+                type : 'linear',
+                startPoint : {
+                    x : '50%',
+                    y : '0%'
+                },
+                endPoint : {
+                    x : '50%',
+                    y : '100%'
+                },
+                colors : [{
+                    color : '#999',
+                    offset : 0.0
+                }, {
+                    color : '#444',
+                    offset : 1.0
+                }]
+            }
+        });
+        
+        topButtonsView.add(cancelButton);
+        cancelButton.addEventListener('click', function() {
+           
+        });
+        
+        
   
         widgetDate = widgetView.jsDate;
         widgetYear = widgetDate.getFullYear();
@@ -255,7 +373,8 @@ Omadi.widgets.datestamp = {
         maxDate.setFullYear(widgetYear + 5);
         maxDate.setMonth(11);
         maxDate.setDate(31);
-
+        
+        
         date_picker = Titanium.UI.createPicker({
             useSpinner : true,
             borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
@@ -270,15 +389,6 @@ Omadi.widgets.datestamp = {
             widgetView: widgetView,
             height: Ti.UI.SIZE,
             width: '100%'
-        });
-        
-        date_picker.addEventListener('change', function(e) {
-            if(e.source.widgetView.showTime){
-                e.source.time_picker.value = e.value;
-            }
-            //changedDate = e.value;
-            //widgetDate = e.value;
-            e.source.widgetView.tempDate = e.value;
         });
         
         wrapperView.add(date_picker);
@@ -311,38 +421,45 @@ Omadi.widgets.datestamp = {
             date_picker.time_picker = time_picker;
             
             wrapperView.add(time_picker);
-        }   
-        else{
-            date_picker.bottom = 30;
-        } 
+        }
+            
+       
         
-        
-        buttonView = Ti.UI.createView({
-            height: 70,
-            width: '100%'    
+        date_picker.addEventListener('change', function(e) {
+            if(e.source.widgetView.showTime && typeof e.source.time_picker !== 'undefined'){
+                e.source.time_picker.value = e.value;
+            }
+            //changedDate = e.value;
+            //widgetDate = e.value;
+            e.source.widgetView.tempDate = e.value;
         });
         
-        doneButton = Ti.UI.createButton({
-            title : 'Done',
-            bottom : 10,
-            width : '35%',
-            left : '10%',
-            height : 50,
-            widgetView: widgetView
-        });
+        // buttonView = Ti.UI.createView({
+            // height: 70,
+            // width: '100%'    
+        // });
+//         
+        // doneButton = Ti.UI.createButton({
+            // title : 'Done',
+            // bottom : 10,
+            // width : '35%',
+            // left : '10%',
+            // height : 50,
+            // widgetView: widgetView
+        // });
+// 
+        // cancelButton = Ti.UI.createButton({
+            // title : 'Cancel',
+            // bottom : 10,
+            // width : '35%',
+            // left : '55%',
+            // height : 50
+        // });
+// 
+        // buttonView.add(doneButton);
+        // buttonView.add(cancelButton);
 
-        cancelButton = Ti.UI.createButton({
-            title : 'Cancel',
-            bottom : 10,
-            width : '35%',
-            left : '55%',
-            height : 50
-        });
-
-        buttonView.add(doneButton);
-        buttonView.add(cancelButton);
-
-        doneButton.addEventListener('click', function(e) {
+        okButton.addEventListener('click', function(e) {
             
             // if (PLATFORM == "android") {
                 // widgetView.jsDate.setDate(changedDate.getDate());
@@ -397,8 +514,7 @@ Omadi.widgets.datestamp = {
             dateWindow.close();
         });
         //}
-        
-        wrapperView.add(buttonView);
+
         
         dateWindow.add(wrapperView);
         

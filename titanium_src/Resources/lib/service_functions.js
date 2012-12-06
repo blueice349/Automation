@@ -748,8 +748,6 @@ Omadi.service.uploadFile = function() {"use strict";
                 // Set the photo to uploading status
                 mainDB.execute("UPDATE _photos SET uploading = " + nowTimestamp + " WHERE id = " + id);
                 
-                mainDB.close();
-                
                 imageData = file_data;
                 //imageData = file_data;
                 
@@ -984,6 +982,7 @@ Omadi.service.uploadFile = function() {"use strict";
                 }
                 //alert("time_stamp_sent_to_server");
             }
+            mainDB.close();
         }
         catch(ex) {
             Ti.API.error("==== ERROR ===" + ex);

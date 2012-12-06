@@ -446,7 +446,7 @@ var instances = {};
 var win = Ti.UI.currentWindow;
 win.setBackgroundColor("#eee");
 win.nodeSaved = false;
-var resultView, viewContent;
+var formWrapperView, scrollView, scrollPositionY = 0;
 var menu;
 var fieldWrappers = {};
 var regionViews = {};
@@ -516,16 +516,16 @@ var regions = {};
 
     if (PLATFORM === 'android') {
         //The view where the results are presented
-        resultView = Ti.UI.createView({
+        formWrapperView = Ti.UI.createView({
             top : 0,
             height : '100%',
             width : '100%',
             backgroundColor : '#EEEEEE',
             opacity : 1
         });
-        win.add(resultView);
+        win.add(formWrapperView);
 
-        viewContent = Ti.UI.createScrollView({
+        scrollView = Ti.UI.createScrollView({
             bottom : 0,
             contentHeight : 'auto',
             backgroundColor : '#EEEEEE',
@@ -542,17 +542,17 @@ var regions = {};
     else {
 
         //The view where the results are presented
-        resultView = Ti.UI.createView({
-            top : '50dp',
+        formWrapperView = Ti.UI.createView({
+            top : 45,
             height : Ti.UI.SIZE,
             width : '100%',
             bottom : 0,
             backgroundColor : '#EEEEEE',
             opacity : 1
         });
-        win.add(resultView);
+        win.add(formWrapperView);
 
-        viewContent = Ti.UI.createScrollView({
+        scrollView = Ti.UI.createScrollView({
             contentHeight : 'auto',
             backgroundColor : '#EEEEEE',
             showHorizontalScrollIndicator : false,
@@ -565,13 +565,14 @@ var regions = {};
             top: 0
         });
     }
-
-    resultView.add(viewContent);
-
-   
     
-   
-   //viewContent is the parent container
+    scrollView.addEventListener('scroll', function(e){
+        scrollPositionY = e.y;
+    });
+
+    formWrapperView.add(scrollView);
+
+   //scrollView is the parent container
    
     instances = Omadi.data.getFields(win.type);
     var field_name;
@@ -685,7 +686,7 @@ var regions = {};
                 
                 regionWrappers[region_name] = regionWrapperView;
                 
-                viewContent.add(regionWrapperView);
+                scrollView.add(regionWrapperView);
             }
         }
     }
@@ -774,7 +775,7 @@ var regions = {};
     for(region_name in regionViews){
         if(regionViews.hasOwnProperty(region_name)){
             if(regionViews[region_name].getChildren().length == 0){
-                viewContent.remove(regionWrappers[region_name]);
+                scrollView.remove(regionWrappers[region_name]);
             }
         }
     }
@@ -1367,7 +1368,7 @@ function changeViolationFieldOptions(violation_field_name){"use strict";
                         if (rules_field_passed_time_check(all_others_row[0].time_rules, violation_timestamp)) {
                             for (i in violationTerms) {
                                 if(violationTerms.hasOwnProperty(i)){
-                                    violation_term = violationTerms[i].tid;
+                                    violation_term = violationTerms[i].dbValue;
                                     if (typeof used_tids[violation_term] === 'undefined') {
                                         //if (tids[violation_term] == null) {
                                             tids[violation_term] = true;
@@ -1397,8 +1398,20 @@ function changeViolationFieldOptions(violation_field_name){"use strict";
                 /**** START SETTING CURRENT FORM DEFAULT VALUES *****/
                 
                 violationDBValues = Omadi.widgets.getDBValues(fieldWrappers[violation_field_name]);
-                violationTextValues = Omadi.widgets.getTextValues(fieldWrappers[violation_field_name]);
+                //violationTextValues = Omadi.widgets.getTextValues(fieldWrappers[violation_field_name]);
                 //Ti.API.debug(violationDBValues);
+                violationTextValues = [];
+                for(i = 0; i < violationDBValues.length; i ++){
+                    for(j in violationTerms){
+                        if(violationTerms.hasOwnProperty(j)){
+                            
+                            if(violationTerms[j].dbValue == violationDBValues[i]){
+                                violationTextValues[i] = violationTerms[j].title;
+                            }
+                        }
+                    }
+                }
+                
                 
                 // Get rid of any violations that don't apply to this property
                 if(violationDBValues.length > 0){
@@ -1417,14 +1430,15 @@ function changeViolationFieldOptions(violation_field_name){"use strict";
                     }
                 }
                 
-                //Ti.API.debug(violationDBValues);
+                //Ti.API.debug(violationTextValues);
                 
                 // Set the violations to possibly fewer violations
                 Omadi.widgets.setValueWidgetProperty(violation_field_name, ['dbValue'], violationDBValues);
                 
                 // Set the textValues for the widget
+                violationTextValues = violationTextValues.join(', ');
                 Omadi.widgets.setValueWidgetProperty(violation_field_name, ['textValue'], violationTextValues);
-                Omadi.widgets.setValueWidgetProperty(violation_field_name, ['title'], violationTextValues.join(", "));
+                Omadi.widgets.setValueWidgetProperty(violation_field_name, ['title'], violationTextValues);
                 
                 
                 // Set the description for the selected violation if one exists
@@ -1954,8 +1968,8 @@ function getRegionHeaderView(region, expanded){"use strict";
             
             regionView.finishLayout();
             
-            // for ( i = 0; i < viewContent.getChildren().length; i++) {
-                // v = viewContent.getChildren()[i];
+            // for ( i = 0; i < scrollView.getChildren().length; i++) {
+                // v = scrollView.getChildren()[i];
                 // isLabel = false;
                 // if (PLATFORM == 'android') {
                     // if ( v instanceof Ti.UI.Label) {
@@ -1996,8 +2010,8 @@ function getRegionHeaderView(region, expanded){"use strict";
             //e.source.viewContainer.height = 0;
             //e.source.viewContainer.hide();
             
-            // for ( i = 0; i < viewContent.getChildren().length; i++) {
-                // v = viewContent.getChildren()[i];
+            // for ( i = 0; i < scrollView.getChildren().length; i++) {
+                // v = scrollView.getChildren()[i];
                 // isLabel = false;
                 // if (PLATFORM == 'android') {
                     // if ( v instanceof Ti.UI.Label) {
@@ -2025,10 +2039,10 @@ function getRegionHeaderView(region, expanded){"use strict";
             // }
         }
 
-        // if (viewContent.getChildren() != null) {
+        // if (scrollView.getChildren() != null) {
 // 
-            // for ( i = viewContent.getChildren().length - 1; i >= 0; i--) {
-                // v = viewContent.getChildren()[i];
+            // for ( i = scrollView.getChildren().length - 1; i >= 0; i--) {
+                // v = scrollView.getChildren()[i];
                 // isLabel = false;
                 // if (PLATFORM == 'android') {
                     // if ( v instanceof Ti.UI.Label) {

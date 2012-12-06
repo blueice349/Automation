@@ -415,9 +415,9 @@ Omadi.widgets.label = {
 
 Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         
-    var popupWin, opacView, coItemSelected, wrapperView, descriptionView, headerView, ico_sel, label_sel, listView, descriptionLabel, 
-        i, j, color_set, color_unset, cancelButton, itemLabel, itemRow, bottomButtonsView, okButton, options, data, dbValues, 
-        descriptionText, selectedIndexes, scrollView, screenHeight, listHeight;
+    var popupWin, opacView, numItemsSelected, wrapperView, descriptionView, listView, descriptionLabel, 
+        i, j, color_set, color_unset, cancelButton, itemLabel, itemRow, topButtonsView, okButton, options, data, dbValues, 
+        descriptionText, selectedIndexes, screenHeight, listHeight;
     
     
     if(buttonView.instance.widget.type == 'violation_select' && buttonView.options.length == 0){
@@ -448,7 +448,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
             opacity : 0.5
         });
         
-        coItemSelected = 0;
+        numItemsSelected = 0;
         popupWin.add(opacView);
     
         wrapperView = Ti.UI.createView({
@@ -463,40 +463,14 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
             layout: 'vertical'
         });
         popupWin.add(wrapperView);
-    
-        headerView = Ti.UI.createView({
-            height : 50,
-            backgroundColor : '#444'
-        });
-        //wrapperView.add(headerView);
-    
-        label_sel = Ti.UI.createLabel({
-            text : 'Select ' + buttonView.view_title,
-            color : '#FFF',
-            font : {
-                fontSize : '18dp',
-                fontWeight : 'bold'
-            },
-            left : 10,
-            wordWrap : false,
-            ellipsize : true
-        });
-        headerView.add(label_sel);
         
         options = buttonView.options;
         
-        // scrollView = Ti.UI.createScrollView({
-            // height: Ti.UI.SIZE,
-            // width: '100%',
-            // contentHeight: 'auto',
-            // showVerticalScrollIndicator: true 
-        // });
+        listHeight = options.length * 32;
         
-        listHeight = options.length * 31;
+        if(listHeight > screenHeight - 65){
         
-        if(listHeight > screenHeight - 60){
-        
-            listHeight = screenHeight - 60;
+            listHeight = screenHeight - 65;
         }
         
         listView = Titanium.UI.createTableView({
@@ -536,7 +510,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
             });
     
             if (options[i].selected) {
-                coItemSelected++;
+                numItemsSelected++;
                 selectedIndexes.push(i);
             }
             data.push(itemRow);
@@ -551,7 +525,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
                 e.rowData.selected = true;
                 e.row.setBackgroundColor(color_set);
                 e.row.setColor('#fff');
-                coItemSelected++;
+                numItemsSelected++;
                 selectedIndexes.push(e.index);
                 //e.rowData.listView.options[e.index].selected = true;
             }
@@ -560,13 +534,13 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
                 //listView.data[0].rows[e.index].backgroundColor = color_unset;
                 e.row.setBackgroundColor(color_unset);
                 e.row.setColor('#000');
-                coItemSelected--;
+                numItemsSelected--;
                 selectedIndexes.splice(selectedIndexes.indexOf(e.index), 1);
                 //e.rowData.listView.options[e.index].selected = false;
             }
             
             if(descriptionView != null){
-                if(coItemSelected == 1){
+                if(numItemsSelected == 1){
                     //Ti.API.debug(selectedIndexes);
                     //Ti.API.debug(options);
                     if(options[selectedIndexes[0]].description > ""){
@@ -578,7 +552,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
                     }
                     
                 }
-                else if(coItemSelected == 0){
+                else if(numItemsSelected == 0){
                     descriptionText = "";
                 }
                 else{
@@ -589,7 +563,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
             }
         });
         
-        bottomButtonsView = Ti.UI.createView({
+        topButtonsView = Ti.UI.createView({
             bottom: 0,
             height : 44,
             width : '100%',
@@ -624,9 +598,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
             
         if(buttonView.instance.widget.type == 'violation_select'){
             
-            
-            
-            if(coItemSelected == 1){
+            if(numItemsSelected == 1){
                 
                 if(options[selectedIndexes[0]].description > ""){
                         
@@ -636,7 +608,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
                     descriptionText = "";
                 }
             }
-            else if(coItemSelected == 0){
+            else if(numItemsSelected == 0){
                 descriptionText = "";
             }
             else{
@@ -660,8 +632,6 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
             descriptionView.add(descriptionLabel);
         }
         
-        
-    
         okButton = Ti.UI.createButton({
             title : 'Done',
             top : 7,
@@ -697,7 +667,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
                 }]
             }
         });
-        bottomButtonsView.add(okButton);
+        topButtonsView.add(okButton);
         
         okButton.addEventListener('click', function(e) {
             /*global setConditionallyRequiredLabels*/
@@ -734,7 +704,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
             //buttonView.setText(textValue);
             e.source.buttonView.setTitle(textValue);
             
-            if(descriptionView != null){                
+            if(descriptionLabel != null){                
                 e.source.buttonView.descriptionLabel.setText(descriptionLabel.text);
             }
             
@@ -743,27 +713,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
                 
                 setConditionallyRequiredLabels(e.source.buttonView.instance, e.source.buttonView.check_conditional_fields);
             }
-           // }
-            // else {
-                // buttonView.value = valid_return;
-                // if (valid_return.length == 1) {
-                    // buttonView.text = valid_return[0].title;
-                    // if (obj.from_cond_vs != null && obj.from_cond_vs == true) {
-                        // obj.descriptionLabel.visible = true;
-                        // obj.descriptionLabel.text = (valid_return[0].desc != null && valid_return[0].desc != "") ? valid_return[0].desc : 'No Description';
-                    // }
-    //     
-                // }
-                // else {
-                    // obj.text = obj.view_title + " [" + valid_return.length + "]";
-                    // if (obj.from_cond_vs != null && obj.from_cond_vs == true) {
-                        // obj.descriptionLabel.visible = true;
-                        // obj.descriptionLabel.text = 'Multiple violations selected';
-                    // }
-                // }
-            // }
-    //     
-            // obj.itens = aux_ret;
+
             popupWin.close();
     
         });
@@ -804,12 +754,12 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
             }
         });
         
-        bottomButtonsView.add(cancelButton);
+        topButtonsView.add(cancelButton);
         cancelButton.addEventListener('click', function() {
             popupWin.close();
         });
         
-        wrapperView.add(bottomButtonsView);
+        wrapperView.add(topButtonsView);
         wrapperView.add(descriptionView);
         wrapperView.add(listView);
         

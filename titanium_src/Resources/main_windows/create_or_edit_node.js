@@ -27,9 +27,9 @@
 // 
 // //Current window's instance
 // var win = Ti.UI.currentWindow;
-// var viewContent;
+// var scrollView;
 // var title_head;
-// var resultView;
+// var formWrapperView;
 // var _lb_color = "#4C5A88";
 // var OFF_BY = 5 * 60;
 // var db_display;
@@ -53,16 +53,16 @@
 // 
     // if (PLATFORM === 'android') {
         // //The view where the results are presented
-        // resultView = Ti.UI.createView({
+        // formWrapperView = Ti.UI.createView({
             // top : 0,
             // height : '100%',
             // width : '100%',
             // backgroundColor : '#EEEEEE',
             // opacity : 1
         // });
-        // win.add(resultView);
+        // win.add(formWrapperView);
 // 
-        // viewContent = Ti.UI.createScrollView({
+        // scrollView = Ti.UI.createScrollView({
             // bottom : 0,
             // contentHeight : 'auto',
             // backgroundColor : '#EEEEEE',
@@ -76,7 +76,7 @@
     // else {
 // 
         // //The view where the results are presented
-        // resultView = Ti.UI.createView({
+        // formWrapperView = Ti.UI.createView({
             // top : '50dp',
             // height : '100%',
             // width : '100%',
@@ -84,9 +84,9 @@
             // backgroundColor : '#EEEEEE',
             // opacity : 1
         // });
-        // win.add(resultView);
+        // win.add(formWrapperView);
 // 
-        // viewContent = Ti.UI.createScrollView({
+        // scrollView = Ti.UI.createScrollView({
             // contentHeight : 'auto',
             // //height : "98%",
             // backgroundColor : '#EEEEEE',
@@ -98,7 +98,7 @@
         // });
     // }
 // 
-    // resultView.add(viewContent);
+    // formWrapperView.add(scrollView);
 // 
     // win.addEventListener('close', function() {
         // if (win.mode == 0) {
@@ -415,14 +415,14 @@
 // function adjustView(counter, top) {
 // 
     // try {
-        // Ti.API.info("Offset = " + viewContent.getContentOffset().y + " count = " + counter + " top = " + top);
-        // viewContent.setContentOffset({
-            // x : viewContent.getContentOffset().x,
+        // Ti.API.info("Offset = " + scrollView.getContentOffset().y + " count = " + counter + " top = " + top);
+        // scrollView.setContentOffset({
+            // x : scrollView.getContentOffset().x,
             // y : top
         // }, {
             // animated : true
         // })
-        // Ti.API.info("New offset: " + viewContent.getContentOffset().y);
+        // Ti.API.info("New offset: " + scrollView.getContentOffset().y);
     // }
     // catch(ev) {
     // }
@@ -1386,20 +1386,20 @@
     // Ti.API.info('Part is: ' + part);
     // Ti.API.info(win.title + ' - ' + win.type + ' - ' + win.uid + ' - ' + win.nameSelected + ' - ' + win.nid);
     // Omadi.display.hideLoadingIndicator();
-    // win.remove(resultView);
+    // win.remove(formWrapperView);
 // 
     // if (PLATFORM == 'android') {
         // //The view where the results are presented
-        // resultView = Ti.UI.createView({
+        // formWrapperView = Ti.UI.createView({
             // top : 0,
             // height : '100%',
             // width : '100%',
             // backgroundColor : '#EEEEEE',
             // opacity : 1
         // });
-        // win.add(resultView);
+        // win.add(formWrapperView);
 // 
-        // viewContent = Ti.UI.createScrollView({
+        // scrollView = Ti.UI.createScrollView({
             // bottom : 0,
             // contentHeight : 'auto',
             // //top : "11%",
@@ -1414,7 +1414,7 @@
     // else {
 // 
         // //The view where the results are presented
-        // resultView = Ti.UI.createView({
+        // formWrapperView = Ti.UI.createView({
             // top : "8%",
             // height : '92%',
             // width : '100%',
@@ -1422,9 +1422,9 @@
             // backgroundColor : '#EEEEEE',
             // opacity : 1
         // });
-        // win.add(resultView);
+        // win.add(formWrapperView);
 // 
-        // viewContent = Ti.UI.createScrollView({
+        // scrollView = Ti.UI.createScrollView({
             // contentHeight : 'auto',
             // //height : "98%",
             // backgroundColor : '#EEEEEE',
@@ -1436,7 +1436,7 @@
         // });
     // }
 // 
-    // resultView.add(viewContent);
+    // formWrapperView.add(scrollView);
 // 
     // win.mode = 1;
     // /*
@@ -2156,7 +2156,7 @@
         // bottomButtons(win);
     // }
 //    
-   // //viewContent is the parent container
+   // //scrollView is the parent container
 //    
     // var instances = Omadi.data.getFields(win.type);
     // var field_name;
@@ -2229,7 +2229,7 @@
                // height: Ti.UI.SIZE
             // });
 //             
-            // viewContent.add(fieldView);
+            // scrollView.add(fieldView);
 //             
 //             
             // switch(instance.type){

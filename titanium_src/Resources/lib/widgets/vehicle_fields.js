@@ -99,12 +99,7 @@ Omadi.widgets.vehicle_fields = {
             }
             result.close();
         }
-        //else {// model part
-            
-            
-            //dataItems = get_models(keep_from_make);
-        //}
-        
+       
         db.close();
         
         widgetView = Ti.UI.createTextField({
@@ -170,8 +165,6 @@ Omadi.widgets.vehicle_fields = {
             textField: widgetView
         });
         
-        
-        
         widgetView.autocomplete_table = autocomplete_table;
         
         autocomplete_table.addEventListener('click', function(e) {
@@ -207,8 +200,13 @@ Omadi.widgets.vehicle_fields = {
         }
         
         widgetView.addEventListener('focus', function(e) {
+            var calculatedTop;
+            /*global scrollView, scrollPositionY*/
             e.source.touched = true;
-            //adjustView(e.source.my_index, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
+            if(typeof scrollView !== 'undefined'){
+                calculatedTop = e.source.convertPointToView({x:0,y:0}, scrollView);
+                scrollView.scrollTo(0, calculatedTop.y - 18 + scrollPositionY);
+            }
         });
         
         widgetView.addEventListener('blur', function(e){
@@ -232,7 +230,6 @@ Omadi.widgets.vehicle_fields = {
                 
                 e.source.textValue = e.source.dbValue = e.source.value;
                 
-                //changedContentValue(e.source);
                 //Ti.API.info('value: ' + e.source.lastValue + " " + e.source.value);
                 if (e.source.lastValue != e.source.value && e.source.value != '') {
                     
@@ -241,7 +238,7 @@ Omadi.widgets.vehicle_fields = {
                     }
                     else{
                         possibleValues = [];
-                        //makeValue = 
+                       
                         makeValues = getFormFieldValues(e.source.real_field_name + '___make');
                         
                         if(typeof makeValues.dbValues !== 'undefined'){
@@ -271,13 +268,6 @@ Omadi.widgets.vehicle_fields = {
                         }
                     }
                     
-                    //var func = function setValueF(value_f, nid) {
-                    //    e.source.value = value_f;
-                    //    e.source.nid = nid;
-                        //Ti.API.info('Value: ' + value_f + ' NID: ' + nid);
-                    //};
-    
-                  
                     tableData = [];
 
                     for (i = 0; i < possibleValues.length; i++) {
@@ -288,7 +278,7 @@ Omadi.widgets.vehicle_fields = {
                             
                             //Create partial matching row
                             row = Ti.UI.createTableViewRow({
-                                height : 40,
+                                height : 38,
                                 title : possibleValues[i],
                                 color : '#000000',
                                 autocomplete_table : e.source.autocomplete_table,
@@ -306,8 +296,6 @@ Omadi.widgets.vehicle_fields = {
                     }
                     
                     e.source.autocomplete_table.setData(tableData);
-                    //e.source.autocomplete_table.borderWidth = 1;
-                    
                     
                     if (tableData.length == 0) {
                         e.source.autocomplete_table.setBorderWidth(0);
@@ -316,16 +304,9 @@ Omadi.widgets.vehicle_fields = {
                     }
                     else{
                         e.source.autocomplete_table.setBorderWidth(1);
-                        e.source.autocomplete_table.setHeight(40 * tableData.length);
+                        e.source.autocomplete_table.setHeight(38 * tableData.length);
                         e.source.autocomplete_table.setVisible(true);
                     }
-                    
-                    //e.source.autocomplete_table.scrollToTop(0, {
-                    //    animated : false
-                    //});
-                    
-                    //viewContent.scrollTo(0, e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue));
-    
                 }
                 else {
                     e.source.autocomplete_table.setBorderWidth(0);
@@ -339,7 +320,7 @@ Omadi.widgets.vehicle_fields = {
             if(e.source.check_conditional_fields.length > 0){
                 setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
             }
-            // changedContentValue(e.source);
+            
             // noDataChecboxEnableDisable(e.source, e.source.reffer_index);
         });
         
@@ -560,7 +541,7 @@ Omadi.widgets.vehicle_fields = {
                 // e.source.autocomplete_table.scrollToTop(0, {
                     // animated : false
                 // });
-                // viewContent.scrollTo(0, (e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue)));
+                // scrollView.scrollTo(0, (e.source.regionView.top + e.source.top - ((PLATFORM == 'android') ? heightTextField : heightValue)));
                 // if (table_data.length > 0) {
                     // e.source.autocomplete_table.visible = true;
                 // }
