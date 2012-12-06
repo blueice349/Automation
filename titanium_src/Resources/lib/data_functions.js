@@ -29,15 +29,27 @@ Omadi.data.setUpdating = function(updating){ "use strict";
 
 Omadi.data.setLastUpdateTimestamp = function(sync_timestamp){ "use strict";
     
-    var listDB = Omadi.utils.openMainDatabase();
-    listDB.execute('UPDATE updated SET timestamp =' + sync_timestamp + ' WHERE rowid=1');
-    listDB.close();
+    var db = Omadi.utils.openMainDatabase();
+   
+    db.execute('UPDATE updated SET timestamp =' + sync_timestamp + ' WHERE rowid=1');
 
-    Ti.App.Properties.setDouble("sync_timestamp", sync_timestamp);
+    db.close();
+
+    //Ti.App.Properties.setDouble("sync_timestamp", sync_timestamp);
 };
 
 Omadi.data.getLastUpdateTimestamp = function(){ "use strict";
-    return Ti.App.Properties.getDouble("sync_timestamp", 0);
+
+    var result, timestamp = 0, db = Omadi.utils.openMainDatabase();
+    result = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
+    if(result.isValidRow()){
+        timestamp = result.field(0, Ti.Database.FIELD_TYPE_INT);
+    }
+    result.close();
+    db.close();
+    
+    return timestamp;
+    //return Ti.App.Properties.getDouble("sync_timestamp", 0);
 };
 
 Omadi.data.getBundle = function(type){

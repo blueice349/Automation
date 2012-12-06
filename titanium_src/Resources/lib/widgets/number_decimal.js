@@ -126,27 +126,15 @@ Omadi.widgets.number_decimal = {
             dbValue: dbValue,
             textValue: textValue,
             value : textValue
-            
-                        
-            // field_type : instance.type,
-            // field_name : instance.field_name,
-            // required : instance.required,
-            // is_title : instance.is_title,
-            // composed_obj : false,
-            // cardinality : settings.cardinality,
-            // reffer_index : reffer_index,
-            // settings : settings,
-            // changedFlag : 0,
-            // real_ind : count
         });
         
+        if (settings.max != null) {
+            widgetView.maxValue = settings.max;
+        }
         
-        
-        
-        //widgetView.hintText = '(000) 000-0000 x0000';
-        
-        
-        //hintText : instance.label,
+        if (settings.min != null) {
+            widgetView.minValue = settings.min;
+        }
         
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
         
@@ -175,7 +163,7 @@ Omadi.widgets.number_decimal = {
             /*global setConditionallyRequiredLabels*/
             /*jslint regexp: true*/
             
-            e.source.value = e.source.value.replace(/[^0-9\.]/g, '');
+            e.source.value = e.source.value.replace(/[^0-9\.\-]/g, '');
             if(e.source.value.length > 0){
                 e.source.dbValue = parseFloat(e.source.value);
             }

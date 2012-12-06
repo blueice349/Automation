@@ -165,15 +165,19 @@ Omadi.widgets.number_integer = {
             }
         }
     
-        if (settings.min_length && settings.min_length != null && settings.min_length != "null") {
-            widgetView.minLength = settings.min_length;
+        if (settings.max != null) {
+            widgetView.maxValue = settings.max;
+        }
+        
+        if (settings.min != null) {
+            widgetView.minValue = settings.min;
         }
         
         widgetView.addEventListener('change', function(e) {
             /*global setConditionallyRequiredLabels*/
             /*jslint regexp: true*/
            
-            e.source.value = e.source.value.replace(/[^0-9]/g, '');
+            e.source.value = e.source.value.replace(/[^0-9\-]/g, '');
             if(e.source.value.length > 0){
                 e.source.dbValue = parseInt(e.source.value, 10);
             }

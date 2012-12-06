@@ -256,7 +256,7 @@ Omadi.widgets.user_reference = {
         if(referenceable_roles.length > 0){
             db = Omadi.utils.openMainDatabase();
 
-            result = db.execute("SELECT u.username, u.realname, u.uid FROM user u JOIN user_roles r ON r.uid = u.uid WHERE u.uid NOT IN (0,1) AND rid IN (" + referenceable_roles.join(",") + ") GROUP BY u.uid ORDER BY u.realname ASC");
+            result = db.execute("SELECT u.username, u.realname, u.uid FROM user u JOIN user_roles r ON r.uid = u.uid WHERE u.uid NOT IN (0,1) AND u.status = 1 AND rid IN (" + referenceable_roles.join(",") + ") GROUP BY u.uid ORDER BY u.realname ASC");
             
             if(instance.settings.cardinality != -1 && instance.required == 0){
                 options.push({

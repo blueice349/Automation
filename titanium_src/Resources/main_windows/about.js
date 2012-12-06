@@ -26,7 +26,7 @@ Ti.include('/lib/functions.js');
 	curWin.orientationModes = [Titanium.UI.PORTRAIT];
 	
 	
-	Ti.App.addEventListener('loggingOut', function(){"use strict";
+	Ti.App.addEventListener('loggingOut', function(){
         Ti.UI.currentWindow.close();
     });
 	
@@ -84,6 +84,7 @@ Ti.include('/lib/functions.js');
 	curWin.add(versionLbl);
 	
 	lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp(); 
+	//Ti.API.error(lastSyncTimestamp);
 	lastSyncText = "Last synched: ";
 	
 	if(lastSyncTimestamp !== 0){

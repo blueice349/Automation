@@ -66,11 +66,11 @@ Omadi.utils.cloneObject = function(obj){"use strict";
 };
 
 // Takes a timestamp from the past and returns a string with the amount of time elapsed
-Omadi.utils.getTimeAgoStr = function(timestamp) {'use strict';
+Omadi.utils.getTimeAgoStr = function(unix_timestamp) {'use strict';
 
     var d_lastSync, d_now, timeDiff, days, hours, minutes, seconds, timeStr;
 
-    d_lastSync = new Date(timestamp);
+    d_lastSync = new Date(unix_timestamp * 1000);
     d_now = new Date();
 
     timeDiff = d_now - d_lastSync;

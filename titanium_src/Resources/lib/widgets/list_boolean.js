@@ -25,7 +25,6 @@ Omadi.widgets.list_boolean = {
         
         instance.fieldView = fieldView;
         
-        
         setConditionallyRequiredLabelForInstance(node, instance);
       
         instance.numVisibleFields = 1;
@@ -116,7 +115,7 @@ Omadi.widgets.list_boolean = {
         widgetView.addEventListener('click', function(e) {
             /*global setConditionallyRequiredLabels*/
             
-            if (!e.source.value) {
+            if (e.source.value == 0) {
                 e.source.setBackgroundImage('/images/selected_test.png');
                 e.source.borderWidth = 2;
                 e.source.value = true;

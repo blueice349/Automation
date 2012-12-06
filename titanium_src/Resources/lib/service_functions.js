@@ -129,8 +129,9 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
             
                             //Ti.API.info("Max itens: " + parseInt(json.total_item_count));
             
-                            mainDB.execute('UPDATE updated SET "timestamp"=' + json.request_time + ' WHERE "rowid"=1');
+                            //mainDB.execute('UPDATE updated SET "timestamp"=' + json.request_time + ' WHERE "rowid"=1');
                             Omadi.data.setLastUpdateTimestamp(json.request_time);
+                            //Ti.API.error(json.request_time);
             
                             //If mainDB is already last version
                             if (json.total_item_count == 0) {
@@ -211,7 +212,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
             
                             mainDB.close();
                             // Set the last timestamp
-                            Omadi.data.setLastUpdateTimestamp(json.request_time);
+                            //Omadi.data.setLastUpdateTimestamp(json.request_time);
                         }
                         else {
                             if (progress != null) {

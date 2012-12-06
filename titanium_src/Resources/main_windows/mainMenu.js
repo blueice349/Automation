@@ -565,17 +565,14 @@ curWin.addEventListener('close', function() {"use strict";
 });
 
 //First time install
-var db = Omadi.utils.openMainDatabase();
-var updatedTime = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
-var lastSyncTimestamp = updatedTime.fieldByName('timestamp');
 
-if(lastSyncTimestamp === null){
+var lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp();
+
+if(lastSyncTimestamp == 0){
+    var db = Omadi.utils.openMainDatabase();
     db.execute("INSERT INTO updated SET timestamp=0, updating=0");
+    db.close();
 }
-
-db.close();
-
-Omadi.data.setLastUpdateTimestamp(lastSyncTimestamp);
 
 if (lastSyncTimestamp == 0) {
     isFirstTime = true;
@@ -586,14 +583,12 @@ else {
     checkUpdate('from_menu');
 }
 
-updatedTime.close();
-
 //Sets only portrait mode
 curWin.orientationModes = [Titanium.UI.PORTRAIT];
 
 //When back button on the phone is pressed, it alerts the user (pop up box)
 // that he needs to log out in order to go back to the root window
-curWin.addEventListener('android:back', function() {
+curWin.addEventListener('android:back', function() {"use strict";
     var verifyLogout = Titanium.UI.createAlertDialog({
         title : 'Logout?',
         message : 'Are you sure you want to logout?',

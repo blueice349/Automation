@@ -631,6 +631,8 @@ var regions = {};
     var region;
     var region_form_part = 0;
     var hasViolationField = false;
+    var regionWrapperView;
+    var regionWrappers = {};
     
     for(region_name in regions){
         if(regions.hasOwnProperty(region_name)){
@@ -654,8 +656,14 @@ var regions = {};
                 
                 regionHeaderView = getRegionHeaderView(region, expanded);
                 
-                viewContent.add(regionHeaderView);
-                viewContent.add(Ti.UI.createView({
+                regionWrapperView = Ti.UI.createView({
+                    height: Ti.UI.SIZE,
+                    width: '100%',
+                    layout: 'vertical'
+                });
+                
+                regionWrapperView.add(regionHeaderView);
+                regionWrapperView.add(Ti.UI.createView({
                     height: 10,
                     width: '100%'
                 }));
@@ -673,10 +681,17 @@ var regions = {};
                 
                 regionViews[region_name] = regionView;
                 
-                viewContent.add(regionView);
+                regionWrapperView.add(regionView);
+                
+                regionWrappers[region_name] = regionWrapperView;
+                
+                viewContent.add(regionWrapperView);
             }
         }
     }
+    
+    var omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
+    var roles = omadi_session_details.user.roles;
     
     for(field_name in instances){
         if(instances.hasOwnProperty(field_name)){
@@ -690,8 +705,6 @@ var regions = {};
             instance.can_view = false;
             instance.can_edit = false;
                 
-            var omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
-            var roles = omadi_session_details.user.roles;
             if (settings.enforce_permissions != null && settings.enforce_permissions == 1) {
                 for (i in settings.permissions) {
                     if(settings.permissions.hasOwnProperty(i)){
@@ -756,6 +769,15 @@ var regions = {};
             }
         }
     }   
+    
+    // Remove empty regions
+    for(region_name in regionViews){
+        if(regionViews.hasOwnProperty(region_name)){
+            if(regionViews[region_name].getChildren().length == 0){
+                viewContent.remove(regionWrappers[region_name]);
+            }
+        }
+    }
     
     Ti.App.fireEvent("formFullyLoaded");
     
@@ -867,10 +889,50 @@ function validateMaxLength(node, instance){"use strict";
             if(maxLength >= 0){
                 for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
                     if (node[instance.field_name].dbValues[i].length > maxLength) {
-                        form_errors.push(instance.label + " cannot have more than " + maxLength + " characters");
+                        form_errors.push(instance.label + " cannot have more than " + maxLength + " characters.");
                     }  
                 }
             }
+        }
+    }
+    
+    
+    return form_errors;
+}
+
+function validateMaxValue(node, instance){"use strict";
+    var maxValue, form_errors = [], i;
+    
+    if (node[instance.field_name].dbValues.length > 0) {
+        if (instance.settings.max != null) {
+            maxValue = parseFloat(instance.settings.max);
+            
+            for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
+                if (node[instance.field_name].dbValues[i] !== null && node[instance.field_name].dbValues[i] > maxValue) {
+                    form_errors.push(instance.label + " cannot be greater than " + maxValue + ".");
+                }  
+            }
+            
+        }
+    }
+    
+    
+    return form_errors;
+}
+
+function validateMinValue(node, instance){"use strict";
+    var minValue, form_errors = [], i;
+    
+    if (node[instance.field_name].dbValues.length > 0) {
+        if (instance.settings.min != null) {
+            minValue = parseFloat(instance.settings.min);
+            
+            for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
+                if (node[instance.field_name].dbValues[i] !== null && node[instance.field_name].dbValues[i] < minValue) {
+                    form_errors.push(instance.label + " cannot be less than " + minValue + ".");
+                }  
+            }
+            
         }
     }
     
@@ -1122,6 +1184,15 @@ function validate_form_data(node){"use strict";
                             switch(instance.type){
                                 case 'text':
                                     form_errors = form_errors.concat(validateMaxLength(node, instance));
+                                    break;
+                            }
+                            
+                            /*** MIN/MAX VALUE VALIDATION ***/
+                            switch(instance.type){
+                                case 'number_integer':
+                                case 'number_decimal':
+                                    form_errors = form_errors.concat(validateMinValue(node, instance));
+                                    form_errors = form_errors.concat(validateMaxValue(node, instance));
                                     break;
                             }
                         }
