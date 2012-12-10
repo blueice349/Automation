@@ -7,7 +7,7 @@ Omadi.widgets.auto_increment = {
         //this.base = Omadi.widgets.base.init(in_instance);
         instance.elements = [];
         
-        var settings = instance.settings, fieldView, i, j, element, addAnotherItemButton = null;
+        var settings = instance.settings, fieldView, i, j, element, addAnotherItemButton = null, labelView;
         
         fieldView = Ti.UI.createView({
            width: '100%',
@@ -17,13 +17,15 @@ Omadi.widgets.auto_increment = {
         });
         
         instance.fieldView = fieldView;
+        labelView = Omadi.widgets.label.getRegularLabelView(instance);
         
-        fieldView.add(Omadi.widgets.label.getRegularLabelView(instance));
+        fieldView.add(labelView);
         setConditionallyRequiredLabelForInstance(node, instance);
        
         instance.numVisibleFields = 1;
         
         element = Omadi.widgets.auto_increment.getNewElement(node, instance);
+        
         instance.elements.push(element);
         fieldView.add(element);
         fieldView.add(Omadi.widgets.getSpacerView());

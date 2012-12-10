@@ -103,7 +103,6 @@ Omadi.widgets.phone = {
         Ti.API.debug("Creating phone field");
         
         widgetView = Ti.UI.createTextField({
-            autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_WORDS,
             autocorrect: false,
             editable : instance.can_edit,
             enabled : instance.can_edit,
@@ -118,6 +117,7 @@ Omadi.widgets.phone = {
                 fontSize: Omadi.widgets.fontSize
             },
             returnKeyType : Ti.UI.RETURNKEY_DONE,
+            keyboardType: Ti.UI.KEYBOARD_NUMBERS_PUNCTUATION,
             
             instance: instance,
             dbValue: dbValue,

@@ -74,7 +74,7 @@ Omadi.widgets.rules_field = {
                             
                             for (i = 0; i < nodeValue.length; i++) {
                                 
-                                Ti.API.debug(JSON.stringify(nodeValue[i]));
+                                //Ti.API.debug(JSON.stringify(nodeValue[i]));
                                 
                                 violation_name = '- ALL OTHER VIOLATIONS -';
                                 if (!isNaN(nodeValue[i].tid)) {

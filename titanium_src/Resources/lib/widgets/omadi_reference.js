@@ -140,10 +140,12 @@ Omadi.widgets.omadi_reference = {
             
             Omadi.widgets.omadi_reference.setChildDefaultValues(e.source.textField);
             
-            if(e.source.textField.onChangeCallbacks.length > 0){
-                for(i = 0; i < e.source.textField.onChangeCallbacks.length; i ++){
-                    var callback = e.source.textField.onChangeCallbacks[i];
-                    callback(e.source.textField.onChangeCallbackArgs[i]);
+            if(typeof e.source.textField.onChangeCallbacks !== 'undefined'){
+                if(e.source.textField.onChangeCallbacks.length > 0){
+                    for(i = 0; i < e.source.textField.onChangeCallbacks.length; i ++){
+                        var callback = e.source.textField.onChangeCallbacks[i];
+                        callback(e.source.textField.onChangeCallbackArgs[i]);
+                    }
                 }
             }
         });        

@@ -3306,7 +3306,7 @@
         // cal_value = result[0].final_value;
         // typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
         // isNegative = (cal_value < 0) ? true : false;
-        // var cal_value_str = applyNumberFormat(single_content, cal_value);
+        // var cal_value_str = Omadi.utils.applyNumberFormat(single_content, cal_value);
         // cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
         // label[single_content.reffer_index].text = single_content.label + ": " + cal_value_str;
 // 
@@ -3405,7 +3405,7 @@
                 // //Check type of the data
                 // isNegative = (cal_value < 0) ? true : false;
                 // // Is negative. And if it is -ve then write in this value in (brackets).
-                // cal_value_str = applyNumberFormat(singel_content, cal_value);
+                // cal_value_str = Omadi.utils.applyNumberFormat(singel_content, cal_value);
                 // cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
                 // // Adding brackets over -ve value.
 // 
@@ -3417,7 +3417,7 @@
             // cal_value = result[0].final_value;
             // typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
             // isNegative = (cal_value < 0) ? true : false;
-            // cal_value_str = applyNumberFormat(singel_content, cal_value);
+            // cal_value_str = Omadi.utils.applyNumberFormat(singel_content, cal_value);
             // cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
 // 
             // var row = total_rows[row_values.length];
@@ -3431,7 +3431,7 @@
                 // cal_value = (cal_value == null || cal_value == "") ? 0 : Number(cal_value);
                 // typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
                 // isNegative = (cal_value < 0) ? true : false;
-                // cal_value_str = applyNumberFormat(singel_content, cal_value);
+                // cal_value_str = Omadi.utils.applyNumberFormat(singel_content, cal_value);
                 // cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
 // 
                 // var row = total_rows[row_values.length + 1];
@@ -3444,7 +3444,7 @@
             // cal_value = result[0].final_value;
             // typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
             // isNegative = (cal_value < 0) ? true : false;
-            // var cal_value_str = applyNumberFormat(singel_content, cal_value);
+            // var cal_value_str = Omadi.utils.applyNumberFormat(singel_content, cal_value);
             // cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
             // label[singel_content.reffer_index].text = singel_content.label + ": " + cal_value_str;
             // ;
@@ -3456,7 +3456,7 @@
                     // cal_value = (cal_value == null || cal_value == "") ? 0 : Number(cal_value);
                     // typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
                     // isNegative = (cal_value < 0) ? true : false;
-                    // cal_value_str = applyNumberFormat(singel_content, cal_value);
+                    // cal_value_str = Omadi.utils.applyNumberFormat(singel_content, cal_value);
                     // cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
 // 
                     // label[singel_content.reffer_index].text += "; Orig: " + cal_value_str;
@@ -3683,7 +3683,7 @@
     // }
 // }
 // 
-// function applyNumberFormat(single_content, cal_value) {
+// function Omadi.utils.applyNumberFormat(single_content, cal_value) {
     // var cal_value_str = '';
     // if (single_content.settings != null && single_content.settings.number_format != null && single_content.settings.number_format != "") {
         // switch (single_content.settings.number_format) {
@@ -3778,7 +3778,7 @@
     // //Check type of the data
     // isNegative = (cal_value < 0) ? true : false;
     // // Is negative. And if it is -ve then write in this value in (brackets).
-    // var cal_value_str = applyNumberFormat(single_content, cal_value);
+    // var cal_value_str = Omadi.utils.applyNumberFormat(single_content, cal_value);
     // cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
     // // Adding brackets over -ve value.
 // 

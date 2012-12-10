@@ -2382,7 +2382,7 @@ function openEditScreen(part) {"use strict";
             // //Check type of the data
             // isNegative = (cal_value < 0) ? true : false;
             // // Is negative. And if it is -ve then write in this value in (brackets).
-            // cal_value_str = applyNumberFormat(content, cal_value);
+            // cal_value_str = Omadi.utils.applyNumberFormat(content, cal_value);
             // cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
             // // Adding brackets over -ve value.
 // 
@@ -2432,7 +2432,7 @@ function openEditScreen(part) {"use strict";
         // typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
         // isNegative = (cal_value < 0) ? true : false;
         // // Is negative. And if it is -ve then write in this value in (brackets).
-        // cal_value_str = applyNumberFormat(content, cal_value);
+        // cal_value_str = Omadi.utils.applyNumberFormat(content, cal_value);
         // cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
         // // Adding brackets over -ve value.
 // 
@@ -2485,7 +2485,7 @@ function openEditScreen(part) {"use strict";
         // typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
         // isNegative = (cal_value < 0) ? true : false;
         // // Is negative. And if it is -ve then write in this value in (brackets).
-        // cal_value_str = applyNumberFormat(content, cal_value);
+        // cal_value_str = Omadi.utils.applyNumberFormat(content, cal_value);
         // cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
         // // Adding brackets over -ve value.
         // var value = Ti.UI.createLabel({

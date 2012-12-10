@@ -1,8 +1,7 @@
 Ti.include('/lib/functions.js');
-Ti.include('/main_windows/create_or_edit_node.js');
 
 /*jslint eqeq: true, vars: true, nomen: true, plusplus: true*/
-/*global PLATFORM, Omadi, sortTableView, create_or_edit_node*/
+/*global PLATFORM, Omadi*/
 
 var curWin = Ti.UI.currentWindow;
 var listTableView = null;
@@ -60,7 +59,7 @@ function draftNavButtons() {"use strict";
         curWin.close();
     });
     
-    Ti.App.addEventListener('loggingOut', function(){"use strict";
+    Ti.App.addEventListener('loggingOut', function(){
         Ti.UI.currentWindow.close();
     });
 
@@ -86,7 +85,7 @@ function draftNavButtons() {"use strict";
             if (!_arr_tables[resultsNames.fieldByName('table_name')]) {
 
                 if (i != 0) {
-                    aux_data.sort(sortTableView);
+                    aux_data.sort(Omadi.utils.sortByName);
 
                     for ( _i = 0; _i < aux_data.length; _i++) {
                         section.add(aux_data[_i]);
@@ -129,7 +128,7 @@ function draftNavButtons() {"use strict";
             resultsNames.next();
 
             if (!resultsNames.isValidRow()) {
-                aux_data.sort(sortTableView);
+                aux_data.sort(Omadi.utils.sortByName);
                 for ( _i = 0; _i < aux_data.length; _i++) {
                     section.add(aux_data[_i]);
                 }
@@ -156,7 +155,6 @@ function draftNavButtons() {"use strict";
         curWin.add(empty);
        
     }
-    //Shows the contacts
     else {
 
         //Search bar definition
@@ -172,7 +170,11 @@ function draftNavButtons() {"use strict";
             top : '3%',
             search : search,
             height : '91%',
-            separatorColor : '#E6E6E6'
+            separatorColor : '#E6E6E6',
+            footerView: Ti.UI.createView({
+                height: 50,
+                width: '100%'
+            })
         });
 
         listTableView.addEventListener('focus', function(e) {
@@ -181,7 +183,7 @@ function draftNavButtons() {"use strict";
         });
 
         //Sort the array (A>B>C>...>Z):
-        data.sort(sortTableView);
+        data.sort(Omadi.utils.sortByName);
 
         search.addEventListener('return', function(e) {
             search.blur();

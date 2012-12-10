@@ -4,38 +4,43 @@
 
 Omadi.widgets.calculation_field = {
     
-    //TODO: write a validation function for calculation_fields
-    
     getFieldView: function(node, instance){"use strict";
         //this.base = Omadi.widgets.base.init(in_instance);
         instance.elements = [];
         
-        var settings = instance.settings, fieldView, i, j, element, addAnotherItemButton = null;
+        var settings = instance.settings, fieldView, i, j, element, addAnotherItemButton = null, labelView;
         
-        if(settings.hidden == 0){
-            fieldView = Ti.UI.createView({
-               width: '100%',
-               layout: 'vertical',
-               height: Ti.UI.SIZE,
-               instance: instance
-            });
+        fieldView = Ti.UI.createView({
+           width: '100%',
+           layout: 'vertical',
+           height: Ti.UI.SIZE,
+           instance: instance
+        });
+        
+        instance.fieldView = fieldView;
+        labelView = Omadi.widgets.label.getRegularLabelView(instance);
+        
+        if(settings.hidden == 1){
+            labelView.setVisible(false);
+            labelView.setHeight(0);
             
-            instance.fieldView = fieldView;
-            
-            fieldView.add(Omadi.widgets.label.getRegularLabelView(instance));
-            setConditionallyRequiredLabelForInstance(node, instance);
-            
-            instance.numVisibleFields = 1;
-                   
-            //widgetView = this._getUIComponent(instance); 
-            element = Omadi.widgets.calculation_field.getNewElement(node, instance);
-            instance.elements.push(element);
-            fieldView.add(element);
-            fieldView.add(Omadi.widgets.getSpacerView());
-            
-            return fieldView;
+            fieldView.setVisible(false);
+            fieldView.setHeight(0);
         }
-        return null;
+        
+        fieldView.add(labelView);
+        
+        setConditionallyRequiredLabelForInstance(node, instance);
+        
+        instance.numVisibleFields = 1;
+               
+        //widgetView = this._getUIComponent(instance); 
+        element = Omadi.widgets.calculation_field.getNewElement(node, instance);
+        instance.elements.push(element);
+        fieldView.add(element);
+        fieldView.add(Omadi.widgets.getSpacerView());
+        
+        return fieldView;
     },
     getNewElement: function(node, instance){"use strict";
         
@@ -99,7 +104,7 @@ Omadi.widgets.calculation_field = {
             parent_field, start_timestamp, end_timestamp, difference, at_time, relative_increment_time, day_count, 
             parent_node, zero;
         
-        /*global list_search_node_matches_search_criteria, usort, loadNode, mktime, date, applyNumberFormat*/
+        /*global list_search_node_matches_search_criteria, usort, loadNode, mktime, date*/
         
         instances = Omadi.data.getFields(node.type);
         //Ti.API.info('here--------0.1' + instance.field_name + ", mode: " + win.mode);
@@ -130,7 +135,7 @@ Omadi.widgets.calculation_field = {
                     if (calculation_row.field_name_1 != null && node[calculation_row.field_name_1] != null && instances[calculation_row.field_name_1] != null && instances[calculation_row.field_name_1].type == 'calculation_field') {
                         // Make sure a dependency calculation is made first
                         // TODO: Statically cache these values for future use by other calculation fields
-                        // TODO: Make sure an infinite loop doesn't occur
+                       
                         //Ti.API.info('here--------0.2');
                         required_instance_final_values = Omadi.widgets.calculation_field.getRowValues(node, instances[calculation_row.field_name_1]);
                         //content[entity[calculation_row.field_name_1][0]['reffer_index']], node, content);
@@ -394,7 +399,7 @@ Omadi.widgets.calculation_field = {
                 //Check type of the data
                 isNegative = (cal_value < 0) ? true : false;
                 // Is negative. And if it is -ve then write in this value in (brackets).
-                cal_value_str = applyNumberFormat(instance, cal_value);
+                cal_value_str = Omadi.utils.applyNumberFormat(instance, cal_value);
                 cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
                 // Adding brackets over -ve value.
     
@@ -451,7 +456,7 @@ Omadi.widgets.calculation_field = {
             
             isNegative = (cal_value < 0) ? true : false;
             // Is negative. And if it is -ve then write in this value in (brackets).
-            cal_value_str = applyNumberFormat(instance, cal_value);
+            cal_value_str = Omadi.utils.applyNumberFormat(instance, cal_value);
             cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
             // Adding brackets over -ve value.
     
@@ -507,7 +512,7 @@ Omadi.widgets.calculation_field = {
                 
                 isNegative = (cal_value < 0) ? true : false;
                 // Is negative. And if it is -ve then write in this value in (brackets).
-                cal_value_str = applyNumberFormat(instance, cal_value);
+                cal_value_str = Omadi.utils.applyNumberFormat(instance, cal_value);
                 cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
                 
                 row = Ti.UI.createView({
@@ -568,7 +573,7 @@ Omadi.widgets.calculation_field = {
             
             isNegative = (cal_value < 0) ? true : false;
             // Is negative. And if it is -ve then write in this value in (brackets).
-            cal_value_str = applyNumberFormat(instance, cal_value);
+            cal_value_str = Omadi.utils.applyNumberFormat(instance, cal_value);
             cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
             // Adding brackets over -ve value.
             
@@ -599,7 +604,7 @@ Omadi.widgets.calculation_field = {
                 
                 isNegative = (cal_value < 0) ? true : false;
                 // Is negative. And if it is -ve then write in this value in (brackets).
-                cal_value_str = applyNumberFormat(instance, cal_value);
+                cal_value_str = Omadi.utils.applyNumberFormat(instance, cal_value);
                 cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
                 
                 value.add(Ti.UI.createLabel({

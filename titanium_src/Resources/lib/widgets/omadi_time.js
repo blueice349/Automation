@@ -84,8 +84,6 @@ Omadi.widgets.omadi_time = {
             }
         }
 
-        Ti.API.debug(settings);
-
         Ti.API.debug("Creating omadi_time field");
 
         jsDate = new Date();
@@ -96,11 +94,9 @@ Omadi.widgets.omadi_time = {
             midnight = mktime(0, 0, 0, date('n', nowTimestamp), date('j', nowTimestamp), date('Y', nowTimestamp));
 
             jsDate.setTime((midnight + dbValue) * 1000);
-            //midnight = mktime(0,0,0, jsDate.getFullYear(), jsDate.getMonth(), jsDate.)
         }
 
         widgetView = Titanium.UI.createButton({
-            //borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
             style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             width : Ti.Platform.displayCaps.platformWidth - 30,
             title : textValue,
@@ -121,10 +117,6 @@ Omadi.widgets.omadi_time = {
 
             jsDate : jsDate
         });
-
-        //widgetView.hintText = '(000) 000-0000 x0000';
-
-        //hintText : instance.label,
 
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
 
@@ -316,9 +308,6 @@ Omadi.widgets.omadi_time = {
 
         topButtonsView.add(cancelButton);
         topButtonsView.add(clearButton);
-        cancelButton.addEventListener('click', function() {
-
-        });
 
         widgetDate = widgetView.jsDate;
 
@@ -340,7 +329,6 @@ Omadi.widgets.omadi_time = {
 
         time_picker.addEventListener('change', function(e) {
             e.source.widgetView.tempDate = e.value;
-            Ti.API.debug(e.value);
         });
 
         wrapperView.add(time_picker);

@@ -1455,7 +1455,9 @@ function changeViolationFieldOptions(violation_field_name){"use strict";
             }
         }
     }
-
+    
+    db.close();
+    
     /*** FINALLY SET THE ALLOWABLE VIOLATION OPTIONS FOR THE WIDGET ***/
     Omadi.widgets.setValueWidgetProperty(violation_field_name, ['options'], options);
 }

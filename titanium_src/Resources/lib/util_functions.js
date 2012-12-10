@@ -5,7 +5,7 @@ var Omadi = Omadi || {};
 Omadi.utils = Omadi.utils || {};
 
 Omadi.DOMAIN_NAME = domainName;
-Omadi.DB_VERSION = "omadiDb1678";
+Omadi.DB_VERSION = "omadiDb1679";
 
 Omadi.utils.openListDatabase = function() {"use strict";
     var db = Ti.Database.install('/database/db_list.sqlite', Omadi.DB_VERSION + "_list");
@@ -348,8 +348,26 @@ Omadi.utils.trimWhiteSpace = function(string) {"use strict";
     return string.replace(/^\s+|\s+$/g, "");
 };
 
-function applyNumberFormat(single_content, cal_value) {
-    var cal_value_str = '';
+
+Omadi.utils.sortByName = function(a, b) {"use strict";
+    if (a.name < b.name){
+        return -1;
+    }
+    if (a.name > b.name){
+        return 1;
+    }
+    // a must be equal to b
+    return 0;
+};
+
+Omadi.utils.applyNumberFormat = function(single_content, cal_value) {"use strict";
+    var NUMBER_FORMAT_CURRENCY = 'currency',
+        NUMBER_FORMAT_INTEGER = 'integer',
+        NUMBER_FORMAT_DECIMAL_0 = 'one decimal',
+        NUMBER_FORMAT_DECIMAL_00 = 'two decimal',
+        NUMBER_FORMAT_DECIMAL_000 = 'three decimal',
+        cal_value_str = '';
+    
     if (single_content.settings != null && single_content.settings.number_format != null && single_content.settings.number_format != "") {
         switch (single_content.settings.number_format) {
             case NUMBER_FORMAT_CURRENCY:
@@ -433,7 +451,7 @@ function applyNumberFormat(single_content, cal_value) {
     }
     return cal_value_str;
 
-}
+};
 
 
 

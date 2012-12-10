@@ -30,10 +30,19 @@ Omadi.data.setUpdating = function(updating){ "use strict";
 Omadi.data.setLastUpdateTimestamp = function(sync_timestamp){ "use strict";
     
     var db = Omadi.utils.openMainDatabase();
-   
-    db.execute('UPDATE updated SET timestamp =' + sync_timestamp + ' WHERE rowid=1');
-
-    db.close();
+    
+    try{
+        if(typeof sync_timestamp == 'undefined'){
+            sync_timestamp = 0;
+        }
+        db.execute('UPDATE updated SET timestamp =' + sync_timestamp + ' WHERE rowid=1');
+    }
+    catch(nothing){
+        
+    }
+    finally{
+        db.close();
+    }
 
     //Ti.App.Properties.setDouble("sync_timestamp", sync_timestamp);
 };
@@ -248,16 +257,16 @@ Omadi.data.saveNode = function(node){"use strict";
     
     //Ti.API.error(node.nid);
     //Ti.API.error(Ti.UI.currentWindow.nid);
+    node.title = Omadi.data.getNodeTitle(node);
     
     if (node.nid == 'new') {
         node.nid = Omadi.data.getNewNodeNid();
+        node.sync_hash = Ti.Utils.md5HexDigest(JSON.stringify(node) + (new Date()).getTime());
     }
     
     //else if(node.nid < 0 && Ti.UI.currentWindow.nid > 0){
     //    node.nid = Ti.UI.currentWindow.nid;
    // }
-    
-    node.title = Omadi.data.getNodeTitle(node);
     
     try{
         
@@ -394,8 +403,7 @@ Omadi.data.saveNode = function(node){"use strict";
                     db.execute('UPDATE node SET changed="' + node.changed + '", changed_uid=' + node.changed_uid + ', title="' + node.title + '" , flag_is_updated=3, table_name="' + node.type + '", form_part =' + node.form_part + ', no_data_fields=\'' + node.no_data + '\', viewed=\'1\' WHERE nid=' + node.nid);
                 }
                 else {
-                    db.execute('INSERT INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name , form_part, no_data_fields, viewed ) VALUES (' + node.nid + ', ' + node.created + ', ' + node.changed + ', "' + node.title + '" , ' + node.author_uid + ',' + node.changed_uid + ', 3 , "' + node.type + '", ' + node.form_part + ', \'' + node.no_data + '\', \'1\')');
-        
+                    db.execute('INSERT INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name , form_part, no_data_fields, viewed, sync_hash) VALUES (' + node.nid + ', ' + node.created + ', ' + node.changed + ', "' + node.title + '" , ' + node.author_uid + ',' + node.changed_uid + ', 3 , "' + node.type + '", ' + node.form_part + ', \'' + node.no_data + '\', \'1\', \'' + node.sync_hash + '\')');
                 }
             }
             else if (node.nid > 0) {
@@ -404,7 +412,7 @@ Omadi.data.saveNode = function(node){"use strict";
             }
             else {
                 //Ti.API.info('INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '", ' + win.region_form + ', \'' + no_data_fields_content + '\')');
-                db.execute('INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed) VALUES (' + node.nid + ', ' + node.created + ', ' + node.changed + ', "' + node.title + '" , ' + node.author_uid + ',' + node.changed_uid + ', 1 , "' + node.type + '"  , ' + node.form_part + ', \'' + node.no_data + '\', \'1\')');
+                db.execute('INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash) VALUES (' + node.nid + ', ' + node.created + ', ' + node.changed + ', "' + node.title + '" , ' + node.author_uid + ',' + node.changed_uid + ', 1 , "' + node.type + '"  , ' + node.form_part + ', \'' + node.no_data + '\', \'1\', \'' + node.sync_hash + '\')');
             }
             
             db.execute('UPDATE _photos SET nid=' + node.nid + ' WHERE nid = 0');
@@ -421,6 +429,14 @@ Omadi.data.saveNode = function(node){"use strict";
     catch(ex2){
         alert("Error saving to " + node.type + " table: " + ex2 + " : " + query);
         //TODO: send the error to the server for analysis
+    }
+    finally{
+        try{
+            db.close();
+        }
+        catch(nothing){
+            
+        }
     }
     
     //if (title_to_node == "") {
@@ -442,7 +458,7 @@ Omadi.data.saveNode = function(node){"use strict";
         // no_data_fields_content = "{" + no_data_fields_content + "}"
 
     
-    db.close();
+    
     
     return node;
 };
@@ -466,7 +482,7 @@ function loadNode(nid) {"use strict";
         db = Omadi.utils.openMainDatabase();
         
     
-        result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed FROM node WHERE  nid = ' + nid);
+        result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed, sync_hash FROM node WHERE  nid = ' + nid);
     
         if (result.isValidRow()) {
     
@@ -483,6 +499,7 @@ function loadNode(nid) {"use strict";
             node.perm_edit = result.fieldByName('perm_edit', Ti.Database.FIELD_TYPE_INT);
             node.perm_delete = result.fieldByName('perm_delete', Ti.Database.FIELD_TYPE_INT);
             node.viewed = result.fieldByName('viewed', Ti.Database.FIELD_TYPE_STRING);
+            node.sync_hash = result.fieldByName('sync_hash', Ti.Database.FIELD_TYPE_STRING);
         }
         result.close();
         
@@ -1156,7 +1173,7 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) { "use stric
     /*jslint nomen: true*/
     /*global treatArray, isNumber*/
 
-    var closeDB, instances, queries, i, field_name, query, fieldNames, no_data, values, value, notifications = {};
+    var closeDB, instances, queries, i, field_name, query, fieldNames, no_data, values, value, notifications = {}, numSets;
     closeDB = false;
     queries = [];
      
@@ -1173,14 +1190,7 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) { "use stric
             if (json.insert.length) {
                 
                 for ( i = 0; i < json.insert.length; i++) {
-                    
-                    //Ti.API.debug("node #" + i);
-                    
-                    // Original query
-                    //var aux_column = ind_column;
-                    
-                    Titanium.App.Properties.setString("new_node_id", json.insert[i].nid);
-                    
+                                      
                     //Insert into node table
                     if ((json.insert[i].title === null) || (json.insert[i].title == 'undefined') || (json.insert[i].title === false)){
                         json.insert[i].title = "No Title";
@@ -1333,10 +1343,10 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) { "use stric
                         //if(typeof Ti.UI.currentWindow.nid !== 'undefined' && Ti.UI.currentWindow.nid == json.insert[i].__negative_nid){
                         //    Ti.API.error("SWITCHING UP THE NID from " + json.insert[i].__negative_nid + " to " + json.insert[i].nid);
                             
-                            Ti.App.fireEvent('switchedItUp', {
-                                negativeNid: json.insert[i].__negative_nid,
-                                positiveNid: json.insert[i].nid
-                            });
+                        Ti.App.fireEvent('switchedItUp', {
+                            negativeNid: json.insert[i].__negative_nid,
+                            positiveNid: json.insert[i].nid
+                        });
                             
                             
                             //Ti.UI.currentWindow.nid = json.insert[i].nid;
@@ -1353,22 +1363,36 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) { "use stric
             }
         }
     
-    
+        closeDB = false;
         if(typeof mainDB === 'undefined'){
             mainDB = Omadi.utils.openMainDatabase();
             closeDB = true;
         }
         //mainDB.execute("BEGIN IMMEDIATE TRANSACTION");
         
+        numSets = 0;
+        
         mainDB.execute("BEGIN IMMEDIATE TRANSACTION");
-        for(i = 0; i < queries.length; i ++){
-            mainDB.execute(queries[i]);
+        
+        if(progress != null){
+            for(i = 0; i < queries.length; i ++){
+                mainDB.execute(queries[i]);
+                if(i % 3 == 0){
+                    progress.set();
+                    numSets ++;
+                }
+            }
+        }
+        else{
+            for(i = 0; i < queries.length; i ++){
+                mainDB.execute(queries[i]);
+            }
         }
         
         mainDB.execute("COMMIT TRANSACTION");
         
         if(progress != null && typeof json.insert != 'undefined'){
-            for(i = 0; i < json.insert.length; i ++){
+            for(i = numSets; i < json.insert.length; i ++){
                 progress.set();
             }
         }
@@ -1380,8 +1404,13 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) { "use stric
         alert("Saving Form Data: " + ex);
     }
     finally{
-        if(closeDB){
-            mainDB.close();
+        try{
+            if(closeDB){
+                mainDB.close();
+            }
+        }
+        catch(nothing){
+            
         }
     }
 

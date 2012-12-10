@@ -388,8 +388,6 @@ Omadi.widgets.datestamp = {
             wrapperView.add(time_picker);
         }
             
-       
-        
         date_picker.addEventListener('change', function(e) {
             if(e.source.widgetView.showTime && typeof e.source.time_picker !== 'undefined'){
                 e.source.time_picker.value = e.value;
@@ -429,10 +427,12 @@ Omadi.widgets.datestamp = {
 //              
             e.source.widgetView.setTitle(e.source.widgetView.textValue);
             
-            if(e.source.widgetView.onChangeCallbacks.length > 0){
-                for(i = 0; i < e.source.widgetView.onChangeCallbacks.length; i ++){
-                    callback = e.source.widgetView.onChangeCallbacks[i];
-                    callback(e.source.widgetView.onChangeCallbackArgs[i]);
+            if(typeof e.source.widgetView.onChangeCallbacks !== 'undefined'){
+                if(e.source.widgetView.onChangeCallbacks.length > 0){
+                    for(i = 0; i < e.source.widgetView.onChangeCallbacks.length; i ++){
+                        callback = e.source.widgetView.onChangeCallbacks[i];
+                        callback(e.source.widgetView.onChangeCallbackArgs[i]);
+                    }
                 }
             }
             

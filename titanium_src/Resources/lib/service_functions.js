@@ -119,7 +119,8 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                                     //phisically removes the file
                                     dbFile.deleteFile();
                                 }
-            
+                                
+                                // Reset the database
                                 mainDB = Omadi.utils.openMainDatabase();
             
                                 gpsDB = Omadi.utils.openGPSDatabase();
@@ -196,8 +197,6 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                                     }
                                 }
             
-                                Titanium.App.Properties.setString("new_node_id", null);
-            
                                 Ti.App.fireEvent("syncInstallComplete");
             
                                 Ti.API.info("SUCCESS");
@@ -209,7 +208,6 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                                 Omadi.service.uploadFile();
             
                             }
-            
                             mainDB.close();
                             // Set the last timestamp
                             //Omadi.data.setLastUpdateTimestamp(json.request_time);
@@ -307,12 +305,16 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                     catch(ex){
                         alert("Saving Sync Data: " + ex);
                     }
+                    finally{
+                        try{
+                            mainDB.close();
+                        }
+                        catch(nothing){
+                            
+                        }
+                    }
         
                     Omadi.data.setUpdating(false);
-                    
-                    if(typeof json.node_type !== 'undefined' && (typeof json.node_type.insert !== 'undefined' || typeof json.node_type['delete'] !== 'undefined')){
-                        Ti.App.fireEvent("updateUI");
-                    }
                 };
         
                 //Connection error:
@@ -426,38 +428,18 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
 
 Omadi.service.sendUpdates = function() { "use strict";
     /*jslint eqeq: true*/
-    
-    //showNotification();
-    //Install new updates using pagination
-    //Load existing data with pagination
-    //function installMe(win, progress, menu, img, type_request, mode, close_parent, _node_name) {
-    //var mode = 0;
+
     if (Ti.Network.online) {
         
         if (!Ti.App.Properties.getBool("isSendingData", false)) {
     
             Ti.App.Properties.setBool("isSendingData", true);
-            //newNotificationCount = 0;
-    
-            //var timeIndex = Ti.App.Properties.getInt('sync_timestamp');
     
             var http = Ti.Network.createHTTPClient();
-            //Ti.API.info('Log type : ' + http);
-    
-            //Timeout until error:
-            http.setTimeout(15000);
-    
-            //Ti.API.info("Mode: " + mode);
-            //Ti.API.info("Menu: " + menu);
-            //Ti.API.info("TIME: " + timeIndex);
-            //Ti.API.info("Type: " + type_request);
-    
+            http.setTimeout(60000);
             http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync.json');
-    
-            //Header parameters
+            
             http.setRequestHeader("Content-Type", "application/json");
-            //http.node_type = node_type;
-    
             Omadi.utils.setCookieHeader(http);
     
             //When connected
@@ -478,8 +460,6 @@ Omadi.service.sendUpdates = function() { "use strict";
                     if (json.terms) {
                         Omadi.data.processTermsJson(json.terms, subDB, null);
                     }
-    
-                    Titanium.App.Properties.setString("new_node_id", null);
                     
                     for(nameTable in json.node){
                         if(json.node.hasOwnProperty(nameTable)){
@@ -627,20 +607,11 @@ Omadi.service.sendUpdates = function() { "use strict";
                 Ti.UI.currentWindow.close();
                 /*** IMPORTANT: CANNOT DO ANYTHING AFTER THE WINDOW IS CLOSED ***/
             };
-    
-            //app_timestamp = Math.round(+new Date().getTime() / 1000);
-            //Ti.API.info('App Time: ' + app_timestamp);
-    
-    
-            if (Ti.Network.online) {
-                Ti.App.fireEvent("sendingData",{
-                    message: 'Saving data to server...'
-                });
-                http.send(Omadi.service.getUpdatedNodeJSON());
-            }
-            else {
-                Ti.App.Properties.setBool("isSendingData", false);
-            }
+           
+            Ti.App.fireEvent("sendingData",{
+                message: 'Saving data to server...'
+            });
+            http.send(Omadi.service.getUpdatedNodeJSON());
         }
     }
 };
@@ -655,11 +626,10 @@ Omadi.service.logout = function() { "use strict";
     Ti.App.fireEvent('loggingOut');
 
     http = Ti.Network.createHTTPClient();
-
     http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync/logout.json');
 
     //Timeout until error:
-    http.setTimeout(10000);
+    http.setTimeout(15000);
 
     //Header parameters
     http.setRequestHeader("Content-Type", "application/json");
@@ -717,11 +687,14 @@ Omadi.service.uploadFile = function() {"use strict";
                 isUploading = true;
             }
             result.close();
+            mainDB.close();
+            
             // Make sure no images are currently uploading
             // Maximum of 90 seconds apart for images uploading
             if(!isUploading || (nowTimestamp - lastUploadStartTimestamp) > 90){  
                 
                 count = 0;
+                mainDB = Omadi.utils.openMainDatabase();
                 result = mainDB.execute("SELECT nid, id, file_data, file_name, field_name, delta, timestamp FROM _photos WHERE nid > 0 AND uploading = 0 ORDER BY delta ASC");
                 
                 while (result.isValidRow()) {
@@ -743,250 +716,232 @@ Omadi.service.uploadFile = function() {"use strict";
                 result.close();
                 
                 // Reset all photos to not uploading in case there was an error previously
-                mainDB.execute("UPDATE _photos SET uploading = 0");
+                mainDB.execute("UPDATE _photos SET uploading = 0 WHERE uploading <> 0");
                 
-                // Set the photo to uploading status
-                mainDB.execute("UPDATE _photos SET uploading = " + nowTimestamp + " WHERE id = " + id);
+                if(count > 0){
+                    // Set the photo to uploading status
+                    mainDB.execute("UPDATE _photos SET uploading = " + nowTimestamp + " WHERE id = " + id);
+                }
+                   
+                mainDB.close();
                 
-                imageData = file_data;
-                //imageData = file_data;
-                
-                if(nid > 0){
-                        
-                    http = Ti.Network.createHTTPClient();
-                    http.setTimeout(30000);
-                    http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/upload.json');
-                    http.nid = nid;
-                    http.photoId = id;
-            
-                    //Ti.API.info("Uploading to " + domainName);
-                    http.setRequestHeader("Content-Type", "application/json");
-                    Omadi.utils.setCookieHeader(http);
+                if(count > 0){
                     
-                    http.onload = function(e) {
-                        var json, subDB, subResult, uploadMore = false, fieldSettings, tableName, decoded_values, decoded, content;
-                        //Ti.API.info('UPLOAD FILE: =========== Success ========' + this.responseText);
-                        json = JSON.parse(this.responseText);
-            
-                        if (json.nid) {
-                            subDB = Omadi.utils.openMainDatabase();
+                    imageData = file_data;
+                    //imageData = file_data;
+                    
+                    if(nid > 0){
                             
-                            //subResult = subDB.execute("SELECT * FROM _photos WHERE nid> 0;");
-                            
-            
-                            // Updating status
-                            subResult = subDB.execute("SELECT table_name FROM node WHERE nid=" + json.nid + ";");
-                            tableName = subResult.fieldByName('table_name');
-                            subResult.close();
-                            
-                            subResult = subDB.execute("SELECT settings FROM fields WHERE bundle='" + tableName + "' and type='image' and field_name='" + json.field_name + "';");
-                            fieldSettings = JSON.parse(subResult.fieldByName('settings'));
-                            subResult.close();
-                            
-                            if (fieldSettings.cardinality > 1 || fieldSettings.cardinality < 0) {
-                                subResult = subDB.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + json.nid + ' AND field_name = \'' + json.field_name + '\'');
-                                decoded_values = [];
-                                if (subResult.rowCount > 0) {
-                                    decoded = subResult.fieldByName('encoded_array');
-                                    if (decoded != null || decoded != "") {
-                                        decoded = Base64.decode(decoded);
-                                        Ti.API.info('Decoded array is equals to: ' + decoded);
-                                        decoded = decoded.toString();
-                                        decoded_values = decoded.split("j8Oc2s1E");
-                                    }
-                                }
+                        http = Ti.Network.createHTTPClient();
+                        http.setTimeout(30000);
+                        http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/upload.json');
+                        http.nid = nid;
+                        http.photoId = id;
+                
+                        //Ti.API.info("Uploading to " + domainName);
+                        http.setRequestHeader("Content-Type", "application/json");
+                        Omadi.utils.setCookieHeader(http);
+                        
+                        http.onload = function(e) {
+                            var json, subDB, subResult, uploadMore = false, fieldSettings, tableName, decoded_values, decoded, content;
+                            //Ti.API.info('UPLOAD FILE: =========== Success ========' + this.responseText);
+                            json = JSON.parse(this.responseText);
+                
+                            if (json.nid) {
+                                subDB = Omadi.utils.openMainDatabase();
+                                
+                                // Updating status
+                                subResult = subDB.execute("SELECT table_name FROM node WHERE nid=" + json.nid + ";");
+                                tableName = subResult.fieldByName('table_name');
                                 subResult.close();
-            
-                                if (json.delta < decoded_values.length) {
-                                    decoded_values[json.delta] = json.file_id;
+                                
+                                subResult = subDB.execute("SELECT settings FROM fields WHERE bundle='" + tableName + "' and type='image' and field_name='" + json.field_name + "';");
+                                fieldSettings = JSON.parse(subResult.fieldByName('settings'));
+                                subResult.close();
+                                
+                                if (fieldSettings.cardinality > 1 || fieldSettings.cardinality < 0) {
+                                    subResult = subDB.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + json.nid + ' AND field_name = \'' + json.field_name + '\'');
+                                    decoded_values = [];
+                                    if (subResult.rowCount > 0) {
+                                        decoded = subResult.fieldByName('encoded_array');
+                                        if (decoded != null || decoded != "") {
+                                            decoded = Base64.decode(decoded);
+                                            Ti.API.info('Decoded array is equals to: ' + decoded);
+                                            decoded = decoded.toString();
+                                            decoded_values = decoded.split("j8Oc2s1E");
+                                        }
+                                    }
+                                    subResult.close();
+                
+                                    if (json.delta < decoded_values.length) {
+                                        decoded_values[json.delta] = json.file_id;
+                                    }
+                                    else {
+                                        decoded_values.push(json.file_id);
+                                    }
+                                    
+                                    content = Base64.encode(decoded_values.join("j8Oc2s1E"));
+                                    
+                                    subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='7411317618171051229', " + json.field_name + "___file_id='7411317618171051229', " + json.field_name + "___status='7411317618171051229' WHERE nid='" + json.nid + "'");
+                                    subDB.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + json.nid + ', \'' + json.field_name + "___file_id" + '\',  \'' + content + '\' )');
+                                    subDB.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + json.nid + ', \'' + json.field_name + '\',  \'' + content + '\' )');
                                 }
                                 else {
-                                    decoded_values.push(json.file_id);
+                                    subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='" + json.file_id + "', " + json.field_name + "___file_id='" + json.file_id + "', " + json.field_name + "___status='uploaded' WHERE nid='" + json.nid + "'");
+                                }
+                                //Deleting file after upload.
+                                subDB.execute("DELETE FROM _photos WHERE nid=" + json.nid + " and delta=" + json.delta + " and field_name='" + json.field_name + "'");
+                                
+                                subResult = subDB.execute("SELECT id FROM _photos WHERE nid > 0 AND tries = 0");
+                                uploadMore = (subResult.rowCount > 0 ? true : false);
+                                subResult.close();
+                                
+                                subDB.close();
+                                
+                                Ti.App.fireEvent('photoUploaded', {
+                                    nid: json.nid,
+                                    delta: json.delta,
+                                    field_name: json.field_name,
+                                    fid: json.file_id
+                                });
+                                
+                                if (uploadMore) {
+                                    Omadi.service.uploadFile();
+                                }
+                                else{
+                                    Ti.App.fireEvent("doneSendingPhotos");
+                                }
+                            }
+                        };
+                
+                        http.onerror = function(e) {
+                            var subDB, dialog, message, subResult, numTries, blob, photoId, nid, uploadMore, imageView;
+                           
+                            photoId = this.photoId;
+                            nid = this.nid;
+                            
+                            Omadi.service.sendErrorReport("Photo upload failed: " + nid);
+                            
+                            subDB = Omadi.utils.openMainDatabase();
+                            subResult = subDB.execute("SELECT tries, file_data FROM _photos WHERE id=" + photoId);
+                            
+                            subDB.execute("UPDATE _photos SET uploading = 0 WHERE id = " + photoId);
+                            
+                            if (subResult.rowCount > 0) {
+                                numTries = subResult.fieldByName('tries', Ti.Database.FIELD_TYPE_INT);
+                                
+                                if(numTries >= 4){
+                                    
+                                    try{
+                                        blob = Ti.Utils.base64decode(subResult.fieldByName('file_data'));
+                                        // Make a temporary imageView so the blob can be created.
+                                        // It doesn't work with the blog from the base64decode
+                                        imageView = Ti.UI.createImageView({
+                                           image: blob 
+                                        });
+                                        
+                                        // TODO: SAVE the photo to Android filesystem
+                                        if(PLATFORM === 'android'){
+                                            
+                                          
+                                            Ti.API.error("ADD THIS IN FOR ANDROID PHOTO SAVING ON FILESYSTEM ON DEVICE"); 
+                                        }
+                                        else{
+                                            
+                                            Omadi.service.sendErrorReport("going to save to photo gallery: " + photoId);
+                                            Titanium.Media.saveToPhotoGallery(imageView.toImage(), {
+                                                success: function(e){
+                                                    //Omadi.service.sendErrorReport("saved to photo gallery: " + photoId);
+                                                    
+                                                    dialog = Titanium.UI.createAlertDialog({
+                                                        title : 'Photo Upload Problem',
+                                                        message : "There was a problem uploading a photo for node #" + nid + " after 5 tries. The photo was saved to this device's gallery.",
+                                                        buttonNames : ['OK']
+                                                    });
+                                                    dialog.show();
+                                                    
+                                                    Omadi.service.sendErrorReport("Saved to photo gallery: " + nid);
+                                                    
+                                                    Omadi.data.deletePhotoUpload(photoId);
+                                                },
+                                                error: function(e){
+                                                    Omadi.service.sendErrorReport("Did not save to photo gallery: " + photoId);
+                                                    dialog = Titanium.UI.createAlertDialog({
+                                                        title : 'Corrupted Photo',
+                                                        message : "There was a problem uploading a photo for node #" + nid + ", and the photo could not be saved to this device's gallery. Unfortunately, the photo cannot be reclaimed.",
+                                                        buttonNames : ['OK']
+                                                    });
+                                                    dialog.show();
+                                                    
+                                                    Omadi.service.sendErrorReport("Failed saving to photo gallery: nid: " + nid);
+                                                    
+                                                    Omadi.data.deletePhotoUpload(photoId);
+                                                }
+                                            });   
+                                        }
+                                    }
+                                    catch(ex){
+                                        Omadi.service.sendErrorReport("Did not save to photo gallery exception: " + photoId + ", ex: " + ex);
+                                        dialog = Titanium.UI.createAlertDialog({
+                                            title : 'Corrupted Photo',
+                                            message : "There was a problem uploading a photo for node #" + nid + ", and the photo could not be saved to this device's gallery.",
+                                            buttonNames : ['OK']
+                                        });
+                                        dialog.show();
+                                    }
                                 }
                                 
-                                content = Base64.encode(decoded_values.join("j8Oc2s1E"));
                                 
-                                subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='7411317618171051229', " + json.field_name + "___file_id='7411317618171051229', " + json.field_name + "___status='7411317618171051229' WHERE nid='" + json.nid + "'");
-                                subDB.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + json.nid + ', \'' + json.field_name + "___file_id" + '\',  \'' + content + '\' )');
-                                subDB.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + json.nid + ', \'' + json.field_name + '\',  \'' + content + '\' )');
+                                subDB.execute("UPDATE _photos SET tries = (tries + 1) where id=" + photoId);
                             }
-                            else {
-                                subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='" + json.file_id + "', " + json.field_name + "___file_id='" + json.file_id + "', " + json.field_name + "___status='uploaded' WHERE nid='" + json.nid + "'");
-                            }
-                            //Deleting file after upload.
-                            subDB.execute("DELETE FROM _photos WHERE nid=" + json.nid + " and delta=" + json.delta + " and field_name='" + json.field_name + "'");
                             
-                            subResult = subDB.execute("SELECT id FROM _photos WHERE nid > 0 AND tries = 0");
+                            
+                            subResult = subDB.execute("SELECT id FROM _photos WHERE nid > 0");
                             uploadMore = (subResult.rowCount > 0 ? true : false);
                             subResult.close();
                             
                             subDB.close();
                             
-                            Ti.App.fireEvent('photoUploaded', {
-                                nid: json.nid,
-                                delta: json.delta,
-                                field_name: json.field_name,
-                                fid: json.file_id
-                            });
-                            
                             if (uploadMore) {
-                                Omadi.service.uploadFile();
+                                setTimeout(Omadi.service.uploadFile, 15000);
                             }
-                            else{
-                                Ti.App.fireEvent("doneSendingPhotos");
-                            }
-                        }
-                  
-                    };
-            
-                    http.onerror = function(e) {
-                        var subDB, dialog, message, subResult, numTries, blob, photoId, nid, uploadMore, imageView;
-                        
-                        
-                        //Ti.API.error('UPLOAD FILE: =========== Error in uploading ========' + this.error + this.status);
-                        
-                        //if (this.status == '406') {
-                         //   subDB = Omadi.utils.openMainDatabase();
-                        //    subDB.execute("DELETE FROM _photos WHERE nid=" + this.nid + " and id=" + this.id + ";");
-                        //    subDB.close();
+                           
+                            Ti.App.fireEvent("doneSendingPhotos");
                             
-                       // }
-                       
-                        photoId = this.photoId;
-                        nid = this.nid;
                         
-                        Omadi.service.sendErrorReport("Photo upload failed: " + nid);
-                        
-                        subDB = Omadi.utils.openMainDatabase();
-                        subResult = subDB.execute("SELECT tries, file_data FROM _photos WHERE id=" + photoId);
-                        
-                        subDB.execute("UPDATE _photos SET uploading = 0 WHERE id = " + photoId);
-                        
-                        if (subResult.rowCount > 0) {
-                            numTries = subResult.fieldByName('tries', Ti.Database.FIELD_TYPE_INT);
+                            // if(this.error.toString().indexOf('Timeout') !== -1){
+                                // message = "A photo failed to upload.  Please check your Internet connection. Once you connect, the photo will be automatically uploaded.";
+                            // }
+                            // else{
+                                // message = 'There was a problem uploading your photo. Details: ' + this.status + " " + this.error;
+                            // }
                             
-                            if(numTries >= 4){
-                                
-                                try{
-                                    blob = Ti.Utils.base64decode(subResult.fieldByName('file_data'));
-                                    // Make a temporary imageView so the blob can be created.
-                                    // It doesn't work with the blog from the base64decode
-                                    imageView = Ti.UI.createImageView({
-                                       image: blob 
-                                    });
-                                    
-                                    // TODO: SAVE the photo to Android filesystem
-                                    if(PLATFORM === 'android'){
-                                        
-                                        // Titanium.Media.saveToPhotoGallery(blob, {
-                                            // success: function(){
-                //                                     
-                                            // },
-                                            // error: function(){
-                //                                     
-                                            // }
-                                        // });  
-                                        Ti.API.error("ADD THIS IN FOR ANDROID PHOTO SAVING ON FILESYSTEM ON DEVICE"); 
-                                    }
-                                    else{
-                                        
-                                        Omadi.service.sendErrorReport("going to save to photo gallery: " + photoId);
-                                        Titanium.Media.saveToPhotoGallery(imageView.toImage(), {
-                                            success: function(e){
-                                                //Omadi.service.sendErrorReport("saved to photo gallery: " + photoId);
-                                                
-                                                dialog = Titanium.UI.createAlertDialog({
-                                                    title : 'Photo Upload Problem',
-                                                    message : "There was a problem uploading a photo for node #" + nid + " after 5 tries. The photo was saved to this device's gallery.",
-                                                    buttonNames : ['OK']
-                                                });
-                                                dialog.show();
-                                                
-                                                Omadi.service.sendErrorReport("Saved to photo gallery: " + nid);
-                                                
-                                                Omadi.data.deletePhotoUpload(photoId);
-                                            },
-                                            error: function(e){
-                                                Omadi.service.sendErrorReport("Did not save to photo gallery: " + photoId);
-                                                dialog = Titanium.UI.createAlertDialog({
-                                                    title : 'Corrupted Photo',
-                                                    message : "There was a problem uploading a photo for node #" + nid + ", and the photo could not be saved to this device's gallery. Unfortunately, the photo cannot be reclaimed.",
-                                                    buttonNames : ['OK']
-                                                });
-                                                dialog.show();
-                                                
-                                                Omadi.service.sendErrorReport("Failed saving to photo gallery: nid: " + nid);
-                                                
-                                                Omadi.data.deletePhotoUpload(photoId);
-                                            }
-                                        });   
-                                    }
-                                }
-                                catch(ex){
-                                    Omadi.service.sendErrorReport("Did not save to photo gallery exception: " + photoId + ", ex: " + ex);
-                                    dialog = Titanium.UI.createAlertDialog({
-                                        title : 'Corrupted Photo',
-                                        message : "There was a problem uploading a photo for node #" + nid + ", and the photo could not be saved to this device's gallery.",
-                                        buttonNames : ['OK']
-                                    });
-                                    dialog.show();
-                                }
-                            }
-                            
-                            
-                            subDB.execute("UPDATE _photos SET tries = (tries + 1) where id=" + photoId);
-                        }
+                        };
+                
                         
+                        //if (PLATFORM == 'android') {
+                        //    http.send('{"file_data"    :"' + fileUploadTable.fieldByName('file_data') + '", "filename" :"' + fileUploadTable.fieldByName('file_name') + '", "nid"      :"' + fileUploadTable.fieldByName('nid') + '", "field_name":"' + fileUploadTable.fieldByName('field_name') + '", "delta":"' + fileUploadTable.fieldByName('delta') + '","timestamp":"' + fileUploadTable.fieldByName('timestamp') + '"}');
+                        //}
+                        //else {
+                         Ti.App.fireEvent("sendingData",{
+                            message: 'Uploading photos to server. ' + count + ' to go...'
+                         });  
                         
-                        subResult = subDB.execute("SELECT id FROM _photos WHERE nid > 0");
-                        uploadMore = (subResult.rowCount > 0 ? true : false);
-                        subResult.close();
-                        
-                        subDB.close();
-                        
-                        if (uploadMore) {
-                            setTimeout(Omadi.service.uploadFile, 15000);
-                        }
-                       
-                        Ti.App.fireEvent("doneSendingPhotos");
-                        
-                    
-                        // if(this.error.toString().indexOf('Timeout') !== -1){
-                            // message = "A photo failed to upload.  Please check your Internet connection. Once you connect, the photo will be automatically uploaded.";
-                        // }
-                        // else{
-                            // message = 'There was a problem uploading your photo. Details: ' + this.status + " " + this.error;
-                        // }
-                        
-                    };
-            
-                    
-                    //if (PLATFORM == 'android') {
-                    //    http.send('{"file_data"    :"' + fileUploadTable.fieldByName('file_data') + '", "filename" :"' + fileUploadTable.fieldByName('file_name') + '", "nid"      :"' + fileUploadTable.fieldByName('nid') + '", "field_name":"' + fileUploadTable.fieldByName('field_name') + '", "delta":"' + fileUploadTable.fieldByName('delta') + '","timestamp":"' + fileUploadTable.fieldByName('timestamp') + '"}');
-                    //}
-                    //else {
-                     Ti.App.fireEvent("sendingData",{
-                        message: 'Uploading photos to server. ' + count + ' to go...'
-                     });  
-                    
-                    http.send(JSON.stringify({
-                        file_data : imageData,
-                        filename : file_name, 
-                        nid : nid, 
-                        field_name : field_name, 
-                        delta : delta, 
-                        timestamp : timestamp
-                    }));
-                        //alert("time_stamp_send_to_sever_in_ios");
-            
+                        http.send(JSON.stringify({
+                            file_data : imageData,
+                            filename : file_name, 
+                            nid : nid, 
+                            field_name : field_name, 
+                            delta : delta, 
+                            timestamp : timestamp
+                        }));
+                            //alert("time_stamp_send_to_sever_in_ios");
+                    }
                 }
-                //alert("time_stamp_sent_to_server");
             }
-            mainDB.close();
         }
         catch(ex) {
-            Ti.API.error("==== ERROR ===" + ex);
-            alert("There was an error uploading your photo. Details: " + ex);
+            //alert("There was an error uploading your photo. Details: ");
             Omadi.service.sendErrorReport("Exception uploading photo: " + ex);
         }
     }
@@ -994,11 +949,12 @@ Omadi.service.uploadFile = function() {"use strict";
 
 
 Omadi.service.sendErrorReport = function(message){"use strict";
-    var http;
+    var http, uid;
     
+    uid = Omadi.utils.getUid();
     http = Ti.Network.createHTTPClient();
     http.setTimeout(30000);
-    http.open('GET', Omadi.DOMAIN_NAME + '/error.json?message=' + message);
+    http.open('GET', Omadi.DOMAIN_NAME + '/error.json?domain=' + Omadi.DOMAIN_NAME + '&uid=' + uid + '&message=' + message);
     //http.setRequestHeader("Content-Type", "application/json");
     //Omadi.utils.setCookieHeader(http);
     
@@ -1014,6 +970,7 @@ Omadi.service.getUpdatedNodeJSON = function() { "use strict";
     var db, result, obj, nid, tid, nids, node, instances, field_name, i, v_result;
     
     try{
+        db = Omadi.utils.openMainDatabase();
         //Initial JSON values:
         //var current_timestamp = Math.round(new Date() / 1000);
         //json = '{ "timestamp" : "' + Omadi.utils.getUTCTimestamp() + '", "data" : { ';
@@ -1024,7 +981,7 @@ Omadi.service.getUpdatedNodeJSON = function() { "use strict";
         
         nids = [];
         
-        db = Omadi.utils.openMainDatabase();
+        
         result = db.execute("SELECT nid FROM node WHERE flag_is_updated=1");
           
         while(result.isValidRow()){
@@ -1058,10 +1015,6 @@ Omadi.service.getUpdatedNodeJSON = function() { "use strict";
         }
         result.close();
         
-        db.close();
-        
-        
-        
         if(nids.length > 0){
             obj.data.node = {};
             
@@ -1078,6 +1031,7 @@ Omadi.service.getUpdatedNodeJSON = function() { "use strict";
                 obj.data.node[nid].type = node.type;
                 obj.data.node[nid].form_part = node.form_part;
                 obj.data.node[nid].no_data_fields = node.no_data_fields;
+                obj.data.node[nid].sync_hash = node.sync_hash;
                 
                 for(field_name in instances){
                     if(instances.hasOwnProperty(field_name)){
@@ -1100,12 +1054,19 @@ Omadi.service.getUpdatedNodeJSON = function() { "use strict";
         return JSON.stringify(obj);
     }
     catch(ex){
-        db = Omadi.utils.openMainDatabase();
+        
         result = db.execute("UPDATE node SET flag_is_updated = 3 WHERE flag_is_updated = 1");
-        db.close();
         
         alert("There was a problem packaging your data, so it has been saved as a draft.");
         Omadi.service.sendErrorReport("Exception in JSON creation: " + ex);
+    }
+    finally{
+        try{
+            db.close();
+        }
+        catch(nothing){
+            Ti.API.error("db would not close");
+        }
     }
 };
 

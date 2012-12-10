@@ -37,7 +37,7 @@ function updateCurrentLocationiOS(e) {
 	altitude = e.location.altitude;
 	
 	//Ti.API.info('=====>>> Speed ' + speed*2.23693629+' Miles/H');
-	Ti.API.info('LOCATION: ' + longitude + ', ' + latitude + ': ' + accuracy);
+	Ti.API.info('LOCATION: ' + latitude + ', ' + longitude + ': ' + accuracy);
 
 	if(latitude !== 0 && longitude !== 0) {
 	    timestamp = Omadi.utils.getUTCTimestamp();
@@ -64,19 +64,19 @@ function updateCurrentLocationiOS(e) {
 
 function getGPSCoordinateiOS() {
     "use strict";
-    var stop = Ti.App.Properties.getBool('stopGPS', false);
-    if (stop){
-        Ti.API.info("STOPPING MOVEMENT UPDATES");
-        movement.stopMovementUpdates();
-    }
-    else{
+    //var stop = Ti.App.Properties.getBool('stopGPS', false);
+    //if (stop){
+       // Ti.API.info("STOPPING MOVEMENT UPDATES");
+        //movement.stopMovementUpdates();
+    //}
+    //else{
         updateCurrentLocationiOS(movement.currentMovement);
-    }
+   // }
 }
 
 
-function iOSStartGPS(){
-    "use strict";
+function iOSStartGPS(){"use strict";
+
     if(PLATFORM !== 'android'){
         movement.startMovementUpdates({
         location : true,
@@ -93,6 +93,7 @@ function iOSStartGPS(){
             Ti.API.info("STOPPING IOS GPS INTERVALS");
             clearInterval(gpsInterval);
             clearInterval(uploadInterval);
+            movement.stopMovementUpdates();
         });
     }
 }

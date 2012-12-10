@@ -819,6 +819,8 @@ function homeButtonPressed(e){
 	    
 	   search.addEventListener('change', function(e) {
 			//e.value; // search string as user types
+			Ti.API.info("in change");
+			
             var filterData = [];
             var i;
             for(i = 0; i < tableData.length; i++) {
@@ -910,6 +912,10 @@ function homeButtonPressed(e){
 			//search.blur();
 			if(e.row.nid == 0){
 				search.setValue("");
+				search.fireEvent("change");
+				search.blur();
+				search.fireEvent("cancel");
+				search.fireEvent("return");
 			}
 			else{
 				//bottomButtons1(e.row.nid, curWin, e);

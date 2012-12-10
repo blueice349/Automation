@@ -9,11 +9,6 @@ Ti.include('/lib/data_functions.js');
 Ti.include('/lib/display_functions.js');
 
 var PLATFORM = Ti.Platform.name;
-var NUMBER_FORMAT_CURRENCY = 'currency';
-var NUMBER_FORMAT_INTEGER = 'integer';
-var NUMBER_FORMAT_DECIMAL_0 = 'one decimal';
-var NUMBER_FORMAT_DECIMAL_00 = 'two decimal';
-var NUMBER_FORMAT_DECIMAL_000 = 'three decimal';
 var ROLE_ID_ADMIN = 3;
 var app_timestamp = 0;
 var omadi_time_format = Ti.App.Properties.getString("Omadi_time_format", 'g:iA');
@@ -116,22 +111,6 @@ function notifyIOS(msg, update_time) {
 
 }
 
-/**
- * Function Name: sortTableView( a, b)
- * Purpouse: Sort arrays
- * Parameters:
- * 	a:   Previous object in the array.
- *  b: 	 Next object in the array.
- * Variables: none
- */
-function sortTableView(a, b) {
-    if (a.name < b.name)
-        return -1;
-    if (a.name > b.name)
-        return 1;
-    // a must be equal to b
-    return 0;
-};
 
 
 //
@@ -1957,6 +1936,8 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                             possibleValues.push(result.fieldByName('tid'));
                                             result.next();
                                         }
+                                        result.close();
+                                        db.close();
     
                                         switch(search_operator) {
                                             case 'not starts with':

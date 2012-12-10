@@ -21,7 +21,7 @@ Omadi.location.uploadGPSCoordinates = function(){
 	
 	/*global PLATFORM,createNotification*/
 	
-	Ti.API.info('################################## CALLED ANDROID UPDATE FUNCTION ################################## '+ Omadi.location.is_GPS_uploading());
+	//Ti.API.info('################################## CALLED ANDROID UPDATE FUNCTION ################################## '+ Omadi.location.is_GPS_uploading());
 	
 	if (!Omadi.location.is_GPS_uploading() && Omadi.utils.isLoggedIn()){
 		
@@ -160,6 +160,8 @@ Omadi.location.uploadSuccess = function(e) {
 		
 		sqlArray = [];
 		nids = [];
+		
+		//Ti.API.debug(responseObj);
 		
 		if (responseObj.alert) {
 			for (i in responseObj.alert) {
