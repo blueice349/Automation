@@ -113,40 +113,28 @@ Omadi.widgets.text = {
             borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
             textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
             width : Ti.Platform.displayCaps.platformWidth - 30,
+            height: Ti.UI.SIZE,
             color : '#000000',
             font: {
                 fontSize: Omadi.widgets.fontSize
             },
             returnKeyType : Ti.UI.RETURNKEY_DONE,
+            backgroundColor: '#fff',
+            borderRadius: 10,
+            borderColor: '#999',
+            borderWidth: 1,
             
             instance: instance,
             dbValue: dbValue,
             textValue: textValue,
             value : textValue
-                        
-            // field_type : instance.type,
-            // field_name : instance.field_name,
-            // required : instance.required,
-            // is_title : instance.is_title,
-            // composed_obj : false,
-            // cardinality : settings.cardinality,
-            // reffer_index : reffer_index,
-            // settings : settings,
-            // changedFlag : 0,
-            // real_ind : count
         });
         
         if(instance.numVisibleFields > 1){
             widgetView.hintText = '#' + (index + 1) + " " + instance.label;
         }
         
-        //hintText : instance.label,
-        
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
-        
-        if (PLATFORM == 'android') {
-            widgetView.backgroundImage = '/images/textfield.png';
-        }
         
         if (!instance.can_edit) {
             widgetView.backgroundImage = '';

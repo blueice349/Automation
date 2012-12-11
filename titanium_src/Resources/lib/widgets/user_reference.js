@@ -104,14 +104,15 @@ Omadi.widgets.user_reference = {
             textOptions.push(options[i].title);
         }
         
-        widgetView = Titanium.UI.createButton({
+        widgetView = Titanium.UI.createLabel({
             //borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
             style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             width : Ti.Platform.displayCaps.platformWidth - 30,
             options : options,
             textOptions: textOptions,
-            title : textValue,
+            text : textValue,
             height: 35,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
             font : {
                 fontSize : Omadi.widgets.fontSize
             },
@@ -138,8 +139,9 @@ Omadi.widgets.user_reference = {
                     offset : 1.0
                 }]
             },
+            borderRadius: 10,
             borderColor: '#999',
-            borderRadius: 5,
+            borderWidth: 1,
             
             instance: instance,
             dbValue: dbValue,
@@ -191,7 +193,7 @@ Omadi.widgets.user_reference = {
                                 textValue = "";
                             }
                             ev.source.widgetView.textValue = textValue;
-                            ev.source.widgetView.setTitle(textValue);
+                            ev.source.widgetView.setText(textValue);
                             ev.source.widgetView.value = ev.source.widgetView.dbValue = ev.source.widgetView.options[ev.index].dbValue;
                         }
                         
@@ -206,12 +208,7 @@ Omadi.widgets.user_reference = {
             });
         }
         
-
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
-        
-        if (PLATFORM == 'android') {
-            widgetView.backgroundImage = '/images/textfield.png';
-        }
         
         if (!instance.can_edit) {
             widgetView.backgroundImage = '';

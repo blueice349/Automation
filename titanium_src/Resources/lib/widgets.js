@@ -275,59 +275,73 @@ Omadi.widgets.setValues = function(field_name, defaultValues){"use strict";
     
     /*global fieldWrappers */
     
-    fieldWrapper = fieldWrappers[field_name];
-    children = fieldWrapper.getChildren();
+    //fieldWrapper = fieldWrappers[field_name];
+    //children = fieldWrapper.getChildren();
     
-    actualWidget = null;
     
-    // Find the textValue up to 3 levels deep in the UI elements
+    Omadi.widgets.setValueWidgetProperty(field_name, ['textValue'], defaultValues.textValues[0], -1);
+    Omadi.widgets.setValueWidgetProperty(field_name, ['dbValue'], defaultValues.dbValues[0], -1);
     
-    for(i = 0; i < children.length; i ++){
-        Ti.API.info("what");
-        if(typeof children[i].textValue !== 'undefined'){
-            actualWidget = children[i];
-            break;
-        }
-        else if(children[i].getChildren().length > 0){
-            subChildren = children[i].getChildren();
-            for(j = 0; j < subChildren.length; j ++){
-                Ti.API.info("who");
-                if(typeof subChildren[j].textValue !== 'undefined'){
-                    actualWidget = subChildren[j];
-                    break;
-                }
-                else if(subChildren[j].getChildren().length > 0){
-                    subSubChildren = subChildren[j].getChildren();
-                    for(k = 0; k < subSubChildren.length; k ++){
-                        Ti.API.info("when");
-                        if(typeof subSubChildren[k].textValue !== 'undefined'){
-                            actualWidget = subSubChildren[k];
-                            break;
-                        }
-                    }
-                }
-                if(actualWidget !== null){
-                    break;
-                }
-            }
-        }
-        if(actualWidget !== null){
-            break;
-        }
+    if(instances[field_name].type == 'taxonomy_term_reference'){
+        //actualWidget.setText(defaultValues.textValues[0]);
+        Omadi.widgets.setValueWidgetProperty(field_name, ['text'], defaultValues.textValues[0], -1);
+    }
+    else{
+        //actualWidget.setValue(defaultValues.textValues[0]);
+        Omadi.widgets.setValueWidgetProperty(field_name, ['value'], defaultValues.textValues[0], -1);
     }
     
-    if(actualWidget !== null){
+    // actualWidget = null;
+//     
+    // // Find the textValue up to 3 levels deep in the UI elements
+//     
+    // for(i = 0; i < children.length; i ++){
+//         
+        // if(typeof children[i].textValue !== 'undefined'){
+            // actualWidget = children[i];
+            // break;
+        // }
+        // else if(children[i].getChildren().length > 0){
+            // subChildren = children[i].getChildren();
+            // for(j = 0; j < subChildren.length; j ++){
+//                 
+                // if(typeof subChildren[j].textValue !== 'undefined'){
+                    // actualWidget = subChildren[j];
+                    // fieldWrappers[field_name].children[i].children[j].setText(defaultValues.textValues[0]);
+                    // break;
+                // }
+                // else if(subChildren[j].getChildren().length > 0){
+                    // subSubChildren = subChildren[j].getChildren();
+                    // for(k = 0; k < subSubChildren.length; k ++){
+//                         
+                        // if(typeof subSubChildren[k].textValue !== 'undefined'){
+                            // actualWidget = subSubChildren[k];
+                            // break;
+                        // }
+                    // }
+                // }
+                // if(actualWidget !== null){
+                    // break;
+                // }
+            // }
+        // }
+        // if(actualWidget !== null){
+            // break;
+        // }
+    // }
     
-        actualWidget.textValue = defaultValues.textValues[0];
-        actualWidget.dbValue = defaultValues.dbValues[0];
-        
-        if(actualWidget.instance.type == 'taxonomy_term_reference'){
-            actualWidget.setTitle(defaultValues.textValues[0]);
-        }
-        else{
-            actualWidget.setValue(defaultValues.textValues[0]);
-        }
-    }
+    // if(actualWidget !== null){
+//     
+        // actualWidget.textValue = defaultValues.textValues[0];
+        // actualWidget.dbValue = defaultValues.dbValues[0];
+//         
+        // if(actualWidget.instance.type == 'taxonomy_term_reference'){
+            // actualWidget.setText(defaultValues.textValues[0]);
+        // }
+        // else{
+            // actualWidget.setValue(defaultValues.textValues[0]);
+        // }
+    // }
 };
 
 Omadi.widgets.shared = {
@@ -420,7 +434,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         
     var popupWin, opacView, numItemsSelected, wrapperView, descriptionView, listView, descriptionLabel, 
         i, j, color_set, color_unset, cancelButton, itemLabel, itemRow, topButtonsView, okButton, options, data, dbValues, 
-        descriptionText, selectedIndexes, screenHeight, listHeight;
+        descriptionText, selectedIndexes, screenHeight, listHeight, label;
     
     
     if(buttonView.instance.widget.type == 'violation_select' && buttonView.options.length == 0){
@@ -488,9 +502,13 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         dbValues = buttonView.dbValue;
         
         for(i = 0; i < options.length; i ++){
+            options[i].isSelected = false;
+        }
+        
+        for(i = 0; i < options.length; i ++){
             for(j = 0; j < dbValues.length; j ++){
                 if(dbValues[j] == options[i].dbValue){
-                    options[i].selected = true;
+                    options[i].isSelected = true;
                 }
             }
         }
@@ -500,19 +518,35 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         selectedIndexes = [];
         
         for(i = 0; i < options.length; i ++){
-    
+            
+            // This label must be added for the Android label color to change
+            // Otherwise, setcolor is not defined for the row
+            label = Ti.UI.createLabel({
+                text: options[i].title,
+                width: '100%',
+                height: Ti.UI.FILL,
+                color: (options[i].isSelected ? '#fff' : '#000'),
+                left: 10,
+                font: {
+                    fontSize: 16,
+                    fontWeight: 'bold'
+                }
+            });
+            
             itemRow = Ti.UI.createTableViewRow({
                 height : 30,
-                title : options[i].title,
-                selected : options[i].selected,
+                isSelected : options[i].isSelected,
                 dbValue : options[i].dbValue,
+                textValue: options[i].title,
                 description : options[i].description,
-                backgroundColor : (options[i].selected ? color_set : color_unset),
-                color: (options[i].selected ? '#fff' : '#000'),
-                listView: listView
+                backgroundColor : (options[i].isSelected ? color_set : color_unset),
+                listView: listView,
+                label: label
             });
+            
+            itemRow.add(label);
     
-            if (options[i].selected) {
+            if (options[i].isSelected) {
                 numItemsSelected++;
                 selectedIndexes.push(i);
             }
@@ -521,22 +555,23 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         
         listView.setData(data);
         
-        
-    
         listView.addEventListener('click', function(e) {
-            if (!e.rowData.selected) {
-                e.rowData.selected = true;
+            Ti.API.debug(e.row.isSelected);
+            
+            if (!e.row.isSelected) {
+                e.rowData.listView.data[0].rows[e.index].isSelected = true;
+                e.row.label.setColor('#fff');
                 e.row.setBackgroundColor(color_set);
-                e.row.setColor('#fff');
+                
                 numItemsSelected++;
                 selectedIndexes.push(e.index);
                 //e.rowData.listView.options[e.index].selected = true;
             }
             else {
-                e.rowData.selected = false;
+                e.rowData.listView.data[0].rows[e.index].isSelected = false;
                 //listView.data[0].rows[e.index].backgroundColor = color_unset;
                 e.row.setBackgroundColor(color_unset);
-                e.row.setColor('#000');
+                e.row.label.setColor('#000');
                 numItemsSelected--;
                 selectedIndexes.splice(selectedIndexes.indexOf(e.index), 1);
                 //e.rowData.listView.options[e.index].selected = false;
@@ -688,9 +723,9 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
             for (i = 0; i < listView.data[0].rows.length; i++) {
                 
                 
-                if (listView.data[0].rows[i].selected) {
+                if (listView.data[0].rows[i].isSelected) {
                     
-                    textValues.push(listView.data[0].rows[i].title);
+                    textValues.push(listView.data[0].rows[i].textValue);
                     dbValues.push(listView.data[0].rows[i].dbValue);
                     
                 }
@@ -705,7 +740,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
             e.source.buttonView.dbValue = dbValues;
             e.source.buttonView.textValue = textValue;
             //buttonView.setText(textValue);
-            e.source.buttonView.setTitle(textValue);
+            e.source.buttonView.setText(textValue);
             
             if(descriptionLabel != null){                
                 e.source.buttonView.descriptionLabel.setText(descriptionLabel.text);

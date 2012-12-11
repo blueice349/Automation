@@ -96,19 +96,21 @@ Omadi.widgets.omadi_time = {
             jsDate.setTime((midnight + dbValue) * 1000);
         }
 
-        widgetView = Titanium.UI.createButton({
+        widgetView = Titanium.UI.createLabel({
             style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             width : Ti.Platform.displayCaps.platformWidth - 30,
-            title : textValue,
+            text : textValue,
             height : 35,
             font : {
                 fontSize : Omadi.widgets.fontSize
             },
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
             color : '#000000',
             selectionIndicator : true,
-            backgroundColor : '#fff',
-            borderColor : '#999',
-            borderRadius : 5,
+            backgroundColor: '#fff',
+            borderRadius: 10,
+            borderColor: '#999',
+            borderWidth: 1,
 
             instance : instance,
             dbValue : dbValue,
@@ -119,10 +121,6 @@ Omadi.widgets.omadi_time = {
         });
 
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
-
-        if (PLATFORM == 'android') {
-            widgetView.backgroundImage = '/images/textfield.png';
-        }
 
         if (!instance.can_edit) {
             widgetView.backgroundImage = '';
@@ -348,7 +346,7 @@ Omadi.widgets.omadi_time = {
 
             //Ti.API.error(e.source.widgetView.dbValue);
 
-            e.source.widgetView.setTitle(e.source.widgetView.textValue);
+            e.source.widgetView.setText(e.source.widgetView.textValue);
 
             if (e.source.widgetView.check_conditional_fields.length > 0) {
                 setConditionallyRequiredLabels(e.source.widgetView.instance, e.source.widgetView.check_conditional_fields);
@@ -363,7 +361,7 @@ Omadi.widgets.omadi_time = {
             e.source.widgetView.dbValue = null;
             e.source.widgetView.textValue = "";
 
-            e.source.widgetView.setTitle(e.source.widgetView.textValue);
+            e.source.widgetView.setText(e.source.widgetView.textValue);
 
             if (e.source.widgetView.check_conditional_fields.length > 0) {
                 setConditionallyRequiredLabels(e.source.widgetView.instance, e.source.widgetView.check_conditional_fields);

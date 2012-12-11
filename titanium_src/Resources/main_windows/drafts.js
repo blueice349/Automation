@@ -9,7 +9,7 @@ var win_new;
 
 function draftNavButtons() {"use strict";
     if (listTableView !== null) {
-        listTableView.top = '40';
+        listTableView.top = 40;
     }
     var back = Ti.UI.createButton({
         title : 'Back',
@@ -41,7 +41,6 @@ function draftNavButtons() {"use strict";
         borderBottom : true
     });
     curWin.add(toolbar);
-
 }
 
 (function() {"use strict";
@@ -147,7 +146,7 @@ function draftNavButtons() {"use strict";
             text : 'No drafts have been saved',
             color : '#999',
             font : {
-                fontSize : '22dp',
+                fontSize : 22,
                 fontWeight : 'bold'
             }
         });

@@ -97,10 +97,15 @@ Omadi.widgets.omadi_reference = {
             borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
             textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
             width : Ti.Platform.displayCaps.platformWidth - 30,
+            height: Ti.UI.SIZE,
             color : '#000000',
             font: {
                 fontSize: Omadi.widgets.fontSize
             },
+            backgroundColor: '#fff',
+            borderRadius: 10,
+            borderColor: '#999',
+            borderWidth: 1,
             returnKeyType : Ti.UI.RETURNKEY_DONE,
             
             instance: instance,
@@ -151,10 +156,6 @@ Omadi.widgets.omadi_reference = {
         });        
         
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
-        
-        if (PLATFORM == 'android') {
-            widgetView.backgroundImage = '/images/textfield.png';
-        }
         
         if (!instance.can_edit) {
             widgetView.backgroundImage = '';
@@ -320,6 +321,8 @@ Omadi.widgets.omadi_reference = {
         //Ti.API.debug(widgetView.dbValue);
         
         //instances = Omadi.data.getFields(Ti.UI.currentWindow.type);
+        
+        Ti.API.debug("Setting default value");
         
         if(widgetView.dbValue > 0){
             if(widgetView.defaultValueChildFields.length > 0){

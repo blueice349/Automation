@@ -115,12 +115,17 @@ Omadi.widgets.number_decimal = {
             borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
             textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
             width : Ti.Platform.displayCaps.platformWidth - 30,
+            height: Ti.UI.SIZE,
             color : '#000000',
             font: {
                 fontSize: Omadi.widgets.fontSize
             },
             returnKeyType : Ti.UI.RETURNKEY_DONE,
             keyboardType: Ti.UI.KEYBOARD_NUMBERS_PUNCTUATION,
+            backgroundColor: '#fff',
+            borderRadius: 10,
+            borderColor: '#999',
+            borderWidth: 1,
             
             instance: instance,
             dbValue: dbValue,
@@ -137,10 +142,6 @@ Omadi.widgets.number_decimal = {
         }
         
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
-        
-        if (PLATFORM == 'android') {
-            widgetView.backgroundImage = '/images/textfield.png';
-        }
         
         if (!instance.can_edit) {
             widgetView.backgroundImage = '';

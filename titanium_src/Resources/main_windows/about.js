@@ -65,18 +65,18 @@ Ti.include('/lib/functions.js');
 	
 	logo = Ti.UI.createImageView({
 		image : '/images/logo.png',
-		top : "50dp",
-		width : "200dp",
-		height : "114dp"
+		top : 50,
+		width : 200,
+		height : 114
 	});
 	
 	curWin.add(logo);
 	
 	versionLbl = Ti.UI.createLabel({
-		width : 'auto',
-		height : 'auto',
-		top : "180dp",
-		left : "10dp",
+		width : Ti.UI.SIZE,
+		height : Ti.UI.SIZE,
+		top : 180,
+		left : 10,
 		text : 'Application version : ' + Ti.App.version,
 		color : '#000'
 	});
@@ -95,10 +95,10 @@ Ti.include('/lib/functions.js');
 	}
 	
 	syncLabel = Ti.UI.createLabel({
-		width : 'auto',
-		height : 'auto',
-		top : "220dp",
-		left : "10dp",
+		width : Ti.UI.SIZE,
+		height : Ti.UI.SIZE,
+		top : 220,
+		left : 10,
 		text : lastSyncText,
 		color : '#000'
 	});
@@ -106,15 +106,15 @@ Ti.include('/lib/functions.js');
 	curWin.add(syncLabel);
 	
 	buttonView = Ti.UI.createView({
-		top : "280dp",
-		width : "285dp",
-		height : "50dp"
+		top : 280,
+		width : 285,
+		height : 50
 	});
 	
 	updateButton = Ti.UI.createButton({
-		left : "0dp",
-		width : "122dp",
-		height : "50dp",
+		left : 0,
+		width : 122,
+		height : 50,
 		title : 'Sync Data'
 	});
 	updateButton.addEventListener('click', function() {
@@ -125,9 +125,9 @@ Ti.include('/lib/functions.js');
 	buttonView.add(updateButton);
 	
 	reinitializeBtn = Ti.UI.createButton({
-		left : "130dp",
-		width : "153dp",
-		height : "50dp",
+		left : 130,
+		width : 153,
+		height : 50,
 		title : 'Reset All Data'
 	});
 	

@@ -21,7 +21,7 @@ var isFirstTime = false;
 
 var databaseStatusView = Titanium.UI.createView({
     backgroundColor : '#000',
-    height : '60dp',
+    height : 45,
     width : '100%',
     bottom : 0,
     layout : 'horizontal',
@@ -46,17 +46,17 @@ Ti.App.Properties.setObject('userRoles', roles);
 Ti.App.addEventListener("syncInstallComplete", displayBundleList);
 
 var loggedView = Titanium.UI.createView({
-    top : '0px',
+    top : 0,
     backgroundColor : '#111',
-    height : '50dp',
+    height : 45,
     width : '100%',
-    opacity : 0.99
+    opacity : 1
 });
 
 var networkStatusView = Ti.UI.createView({
     zIndex: 1000,
     top: 0,
-    height: '50dp',
+    height: 45,
     width: '100%',
     backgroundColor: '#111',
     visible: false
@@ -69,7 +69,7 @@ var networkStatusLabel = Ti.UI.createLabel({
        fontSize: 16
    },
    width: '100%',
-   height: '50dp',
+   height: 45,
    textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
 });
 
@@ -80,19 +80,19 @@ var label_top = Titanium.UI.createLabel({
     width : '70%',
     left : '5%',
     horizontalAlign : 'left',
-    height : 'auto',
+    height : Ti.UI.SIZE,
     font : {
-        fontSize : "15dp"
+        fontSize : 16
     }
 });
 
 var offImage = Titanium.UI.createLabel({
     text : 'Log Out',
-    width : '70dp',
+    width : 70,
     horizontalAlign : 'right',
     textAlign : 'center',
-    right : '50dp',
-    height : '30dp',
+    right : 50,
+    height : 30,
     backgroundGradient : {
         type : 'linear',
         startPoint : {
@@ -121,9 +121,9 @@ var offImage = Titanium.UI.createLabel({
 
 var refresh_image = Ti.UI.createImageView({
     image : '/images/refresh.png',
-    right : '9dp',
-    width : '32dp',
-    height : 'auto'
+    right : 9,
+    width : 32,
+    height : 32
 });
 
 var a = Titanium.UI.createAlertDialog({
@@ -257,7 +257,7 @@ function displayBundleList() {"use strict";
                 else{
                     
                     row_t = Ti.UI.createTableViewRow({
-                        height : "45dp",
+                        height : 45,
                         display : display,
                         name : display,
                         desc : description,
@@ -269,10 +269,10 @@ function displayBundleList() {"use strict";
                     });
         
                     icon = Titanium.UI.createImageView({
-                        width : "32dp",
-                        height : "32dp",
-                        top : "6dp",
-                        left : "5dp",
+                        width : 32,
+                        height : 32,
+                        top : 6,
+                        left : 5,
                         image : '/images/icons/' + name_table.toLowerCase() + '.png',
                         desc : description
                     });
@@ -284,12 +284,12 @@ function displayBundleList() {"use strict";
                     titleLabel = Titanium.UI.createLabel({
                         text : display,
                         font : {
-                            fontSize : "20dp"
+                            fontSize : 20
                         },
                         width : '82%',
                         textAlign : 'left',
-                        left : "42dp",
-                        height : 'auto',
+                        left : 42,
+                        height : Ti.UI.SIZE,
                         color : '#000',
                         desc : description
                     });
@@ -297,9 +297,9 @@ function displayBundleList() {"use strict";
                     plusButton = Titanium.UI.createButton({
                         backgroundImage : '/images/plus_btn.png',
                         backgroundSelectedImage : '/images/plus_btn_selected.png',
-                        width : "54dp",
-                        height : "38dp",
-                        right : "1dp",
+                        width : 54,
+                        height : 38,
+                        right : 1,
                         is_plus : true
                     });
         
@@ -407,7 +407,7 @@ function setupAndroidMenu(){"use strict";
             title : 'Display drafts',
             order : 1
         });
-        menu_draft.setIcon("/images/draft.png");
+        menu_draft.setIcon("/images/drafts_android.png");
 
         menu_about = menu.add({
             title : 'About',
@@ -507,19 +507,19 @@ function setupBottomButtons(){"use strict";
     });
     
     //View settings (Draft/ Alert/ Home)
-    draftsView.height = alertsView.height = '60dp';
+    draftsView.height = alertsView.height = 45;
     draftsView.layout = alertsView.layout = 'vertical';
     
     //Label settings (Draft/ Alert/ Home)
     draftsLabel.color = alertsLabel.color = '#FFFFFF';
-    draftsLabel.height = alertsLabel.height = '21dp';
-    draftsLabel.width = alertsLabel.width = 'auto';
+    draftsLabel.height = alertsLabel.height = 21;
+    draftsLabel.width = alertsLabel.width = Ti.UI.SIZE;
     draftsLabel.textAlign = alertsLabel.textAlign = 'center';
     
     //Image view setting (Draft/ Alert/ Home)
-    alertsImg.height = draftsImg.height = '30dp';
-    alertsImg.width = draftsImg.width = '30dp';
-    draftsImg.top = alertsImg.top = '2dp';
+    alertsImg.height = draftsImg.height = 22;
+    alertsImg.width = draftsImg.width = 22;
+    draftsImg.top = alertsImg.top = 2;
     
     
     
@@ -527,7 +527,7 @@ function setupBottomButtons(){"use strict";
         draftsView.width = alertsView.width = Ti.Platform.displayCaps.platformWidth / 3;
     
         actionsView = Ti.UI.createView({
-            height : 'auto',
+            height : Ti.UI.SIZE,
             width : Ti.Platform.displayCaps.platformWidth / 3,
             layout : 'vertical'
         });
@@ -535,18 +535,18 @@ function setupBottomButtons(){"use strict";
     
         actionsImg = Ti.UI.createImageView({
             image : '/images/actions.png',
-            width : '30dp',
-            height : '30dp',
-            top : '2dp'
+            width : 22,
+            height : 22,
+            top : 2
         });
         actionsLabel = Ti.UI.createLabel({
             text : 'Actions',
             color : '#FFFFFF',
-            height : '21dp',
-            width : 'auto',
+            height : 21,
+            width : Ti.UI.SIZE,
             textAlign : 'center',
             font : {
-                fontSize : '14dp'
+                fontSize : 14
             }
         });
         actionsView.add(actionsImg);
@@ -611,15 +611,18 @@ function setupBottomButtons(){"use strict";
    
     listView = Titanium.UI.createTableView({
         data : [],
-        top : 50,
-        bottom: 60,
+        top : 45,
+        bottom: 45,
         scrollable : true,
-        separatorColor : '#BDBDBD',
-        footerView: Ti.UI.createView({
-            height: 50,
-            width: '100%'
-        })
+        separatorColor : '#BDBDBD'
     });
+    
+    if(PLATFORM !== 'android'){
+        listView.footerView = Ti.UI.createView({
+            height: 45,
+            width: '100%'
+        });
+    }
     
     curWin.add(listView);
     
@@ -721,7 +724,8 @@ function setupBottomButtons(){"use strict";
                     fullscreen : false,
                     url : 'objects.js',
                     type : e.row.name_table,
-                    backgroundColor : '#EEEEEE'
+                    backgroundColor : '#EEEEEE',
+                    show_plus: e.row.show_plus
                 });
                 
                 curWin.isTopWindow = false;

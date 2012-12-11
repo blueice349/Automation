@@ -579,8 +579,8 @@ function scrollBoxesToTop(){"use strict";
         termsWrapper = Ti.UI.createView({
             layout : 'horizontal',
             height : '30dp',
-            top : '17dp',
-            width : 'auto',
+            top : 15,
+            width : Ti.UI.SIZE,
             left : '33%',
             right : '33%'
         });
@@ -588,8 +588,8 @@ function scrollBoxesToTop(){"use strict";
     }
     else {
         termsView = Ti.UI.createView({
-            width : '24dp',
-            height : '24dp',
+            width : 24,
+            height : 24,
             borderRadius : 5,
             borderWidth : 1,
             selected : false,
@@ -599,40 +599,39 @@ function scrollBoxesToTop(){"use strict";
     
         termsIAgreeLabel = Ti.UI.createLabel({
             text : 'I agree to the',
-            color : '#495A8B',
-            left : '5dp',
-            height : '30dp',
+            color : '#666',
+            height : 30,
             font : {
-                fontSize : '13dp'
+                fontSize : 13
             },
-            width : '85dp'
+            left: 10,
+            width : Ti.UI.SIZE
         });
     
         termsOfServiceLabel = Ti.UI.createLabel({
             text : ' Terms of Service',
             color : '#495A8B',
             font : {
-                fontSize : '12dp'
+                fontSize : 13
             },
-            height : '30dp',
-            textAlign : 'left',
-            width : (PLATFORM == 'android') ? '105dp' : '110dp'
+            height : 30,
+            textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
+            width : Ti.UI.SIZE,
+            right: 0
         });
     
         underlineView = Ti.UI.createView({
-            height : '1dp',
+            height : 1,
             backgroundColor : '#495A8B',
-            width : '109dp',
-            left : '165dp'
+            width : 0,
+            visible: false
         });
     
         termsWrapper = Ti.UI.createView({
             layout : 'horizontal',
-            height : '30dp',
-            top : '15dp',
-            width : 'auto',
-            left : Math.round((Ti.Platform.displayCaps.platformWidth * 15) / 100),
-            right : Math.round((Ti.Platform.displayCaps.platformWidth * 15) / 100)
+            height : 26,
+            top : 15,
+            width : Ti.UI.SIZE
         });
     
     }
@@ -686,13 +685,13 @@ function scrollBoxesToTop(){"use strict";
     termsWrapper.add(termsIAgreeLabel);
     termsWrapper.add(termsOfServiceLabel);
     scrollView.add(termsWrapper);
-    scrollView.add(underlineView);
+    //scrollView.add(underlineView);
     
     loginButton = Titanium.UI.createButton({
         title : 'Log In',
         width : 200,
         height : 45,
-        top : 20,
+        top : 10,
         style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
         backgroundGradient : {
             type : 'linear',
@@ -728,7 +727,7 @@ function scrollBoxesToTop(){"use strict";
     
     block_i = Ti.UI.createView({
         top : '20dp',
-        height : '500dp'
+        height : '50dp'
     });
     scrollView.add(block_i);
     
@@ -739,8 +738,6 @@ function scrollBoxesToTop(){"use strict";
         passwordField.blur();
         usernameField.blur();
     
-        
-        
         if (portal.value == ""){
             alert("You must enter a valid client account in the top box.");
         }
@@ -781,7 +778,7 @@ function scrollBoxesToTop(){"use strict";
             //Send info
             //xhr.send('{"username":"' + parms.username + '","password":"'+parms["password"] +'","device_id":"'+parms["device_id"] +'","app_version":"'+parms["app_version"] +'","device_data": '+JSON.stringify(parms["device_data"]) +' }');
     
-            xhr.send({
+            xhr.send(JSON.stringify({
                 username : usernameField.value,
                 password : passwordField.value,
                 device_id : Ti.Platform.getId(),
@@ -796,7 +793,7 @@ function scrollBoxesToTop(){"use strict";
                     primary_language : Ti.Platform.locale,
                     processor_count : Ti.Platform.processorCount
                 })
-            });
+            }));
     
             //Ti.API.info('{"username":"'+parms["username"]+'","password":"'+parms["password"] +'","device_id":"'+parms["device_id"] +'","app_version":"'+parms["app_version"] +'","device_data":'+JSON.stringify(parms["device_data"]) +' }');
             //Ti.API.info('"model": '+ Titanium.Platform.model +', "version": '+Titanium.Platform.version+', "architecture": '+Titanium.Platform.architecture+', "platform": '+Titanium.Platform.name+', "os_type": '+Titanium.Platform.ostype+', "screen_density": '+Titanium.Platform.displayCaps.density+', "primary_language": '+Titanium.Platform.locale+', "processor_count": '+Titanium.Platform.processorCount );

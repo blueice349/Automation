@@ -109,8 +109,6 @@ Omadi.widgets.text_long = {
             hintText : instance.label,
             keepScreenOn: true,
             suppessReturn: false,
-            borderColor: '#999',
-            borderWidth: 1,
             textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
             width : Ti.Platform.displayCaps.platformWidth - 30,
             height : 100,
@@ -119,29 +117,18 @@ Omadi.widgets.text_long = {
                 fontSize: Omadi.widgets.fontSize
             },
             returnKeyType : Ti.UI.RETURNKEY_DONE,
+            backgroundColor: '#fff',
+            borderRadius: 10,
+            borderColor: '#999',
+            borderWidth: 1,
             
             instance: instance,
             dbValue: dbValue,
             textValue: textValue,
             value : textValue
-                        
-            // field_type : instance.type,
-            // field_name : instance.field_name,
-            // required : instance.required,
-            // is_title : instance.is_title,
-            // composed_obj : false,
-            // cardinality : settings.cardinality,
-            // reffer_index : reffer_index,
-            // settings : settings,
-            // changedFlag : 0,
-            // real_ind : count
         });
         
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
-        
-        if (PLATFORM == 'android') {
-            widgetView.backgroundImage = '/images/textfield.png';
-        }
         
         if (!instance.can_edit) {
             widgetView.backgroundImage = '';

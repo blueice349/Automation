@@ -115,13 +115,14 @@ Omadi.widgets.location = {
                 options.push(states[i].title);
             }
             
-            widgetView = Titanium.UI.createButton({
+            widgetView = Titanium.UI.createLabel({
                 //borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
                 style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
                 width : Ti.Platform.displayCaps.platformWidth - 30,
                 options : options,
                 states : states,
-                title : textValue,
+                text : textValue,
+                textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
                 height: 35,
                 font : {
                     fontSize : Omadi.widgets.fontSize
@@ -149,8 +150,10 @@ Omadi.widgets.location = {
                         offset : 1.0
                     }]
                 },
+                backgroundColor: '#fff',
+                borderRadius: 10,
                 borderColor: '#999',
-                borderRadius: 5,
+                borderWidth: 1,
                 
                 instance: instance,
                 dbValue: dbValue,
@@ -170,7 +173,7 @@ Omadi.widgets.location = {
 
                 postDialog.addEventListener('click', function(ev) {
                     if (ev.index >= 0) {
-                        ev.source.widgetView.title = ev.source.widgetView.textValue = ev.source.options[ev.index];
+                        ev.source.widgetView.text = ev.source.widgetView.textValue = ev.source.options[ev.index];
                         ev.source.widgetView.value = ev.source.widgetView.dbValue = ev.source.widgetView.states[ev.index].usps;
                     }
                     //changedContentValue(e.source);
@@ -190,11 +193,16 @@ Omadi.widgets.location = {
                 borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
                 textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
                 width : Ti.Platform.displayCaps.platformWidth - 30,
+                height: Ti.UI.SIZE,
                 color : '#000000',
                 font: {
                     fontSize: Omadi.widgets.fontSize
                 },
                 returnKeyType : Ti.UI.RETURNKEY_DONE,
+                backgroundColor: '#fff',
+                borderRadius: 10,
+                borderColor: '#999',
+                borderWidth: 1,
                 
                 instance: instance,
                 dbValue: dbValue,
@@ -222,10 +230,6 @@ Omadi.widgets.location = {
         }
 
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
-        
-        if (PLATFORM == 'android') {
-            widgetView.backgroundImage = '/images/textfield.png';
-        }
         
         if (!instance.can_edit) {
             widgetView.backgroundImage = '';

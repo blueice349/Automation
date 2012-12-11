@@ -105,19 +105,21 @@ Omadi.widgets.datestamp = {
             textValue = Omadi.utils.formatDate(dbValue, showTime);
         }
         
-        widgetView = Titanium.UI.createButton({
+        widgetView = Titanium.UI.createLabel({
             style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             width : Ti.Platform.displayCaps.platformWidth - 30,
-            title : textValue,
+            text : textValue,
             height: 35,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
             font : {
                 fontSize : Omadi.widgets.fontSize
             },
             color : '#000000',
             selectionIndicator : true,
-            backgroundColor : '#fff',
+            backgroundColor: '#fff',
+            borderRadius: 10,
             borderColor: '#999',
-            borderRadius: 5,
+            borderWidth: 1,
             
             instance: instance,
             dbValue: dbValue,
@@ -129,10 +131,6 @@ Omadi.widgets.datestamp = {
         });
         
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
-        
-        if (PLATFORM == 'android') {
-            widgetView.backgroundImage = '/images/textfield.png';
-        }
         
         if (!instance.can_edit) {
             widgetView.backgroundImage = '';
@@ -353,7 +351,8 @@ Omadi.widgets.datestamp = {
             color : '#000000',
             widgetView: widgetView,
             height: Ti.UI.SIZE,
-            width: '100%'
+            width: '100%',
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
         });
         
         wrapperView.add(date_picker);
@@ -372,6 +371,7 @@ Omadi.widgets.datestamp = {
                 widgetView: widgetView,
                 height: Ti.UI.SIZE,
                 width: '100%',
+                textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
                 format24 : (Omadi.utils.getTimeFormat().indexOf('H') !== -1 ? true : false)  // Only available on Android
             });
             
@@ -425,7 +425,7 @@ Omadi.widgets.datestamp = {
             e.source.widgetView.dbValue = Math.ceil(newDate.getTime() / 1000);
             e.source.widgetView.textValue = Omadi.utils.formatDate(e.source.widgetView.dbValue, e.source.widgetView.showTime);
 //              
-            e.source.widgetView.setTitle(e.source.widgetView.textValue);
+            e.source.widgetView.setText(e.source.widgetView.textValue);
             
             if(typeof e.source.widgetView.onChangeCallbacks !== 'undefined'){
                 if(e.source.widgetView.onChangeCallbacks.length > 0){
@@ -462,7 +462,7 @@ Omadi.widgets.datestamp = {
             e.source.widgetView.dbValue = null;
             e.source.widgetView.textValue = "";
             
-            e.source.widgetView.setTitle(e.source.widgetView.textValue);
+            e.source.widgetView.setText(e.source.widgetView.textValue);
             
             if(e.source.widgetView.check_conditional_fields.length > 0){
                 setConditionallyRequiredLabels(e.source.widgetView.instance, e.source.widgetView.check_conditional_fields);

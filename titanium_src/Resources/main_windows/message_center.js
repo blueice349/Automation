@@ -21,7 +21,7 @@ accountMessage.listView = null;
 accountWindow.isOpened = false;
 
 var actIndAlert;
-var refresh_image;
+var refreshImg;
 var toolbar; 
 
 var showLoading = function() {"use strict";
@@ -34,7 +34,7 @@ var showLoading = function() {"use strict";
         items.push(actIndAlert);
         toolbar.setItems(items);
         actIndAlert.show();
-        refresh_image.hide();
+        refreshImg.hide();
     }
 };
 
@@ -45,10 +45,10 @@ var hideLoading = function() {"use strict";
     else {
         var items = toolbar.getItems();
         items.pop();
-        items.push(refresh_image);
+        items.push(refreshImg);
         toolbar.setItems(items);
         actIndAlert.hide();
-        refresh_image.show();
+        refreshImg.show();
 
     }
 };
@@ -83,7 +83,7 @@ function loadAccAlertData() {"use strict";
                 height :  Ti.UI.SIZE,
                 
                 font : {
-                    fontSize : '16dp',
+                    fontSize : 16,
                     fontWeight : 'bold'
                 },
                 left : "2%",
@@ -97,7 +97,7 @@ function loadAccAlertData() {"use strict";
                 height : Ti.UI.SIZE,
                 
                 font : {
-                    fontSize : '16dp'
+                    fontSize : 16
                 },
                 left : "2%",
                 right : "2%",
@@ -118,13 +118,13 @@ function loadAccAlertData() {"use strict";
             });
             //Ti.API.info("NID: " + result.fieldByName('ref_nid'));
             rowWrapper.add(Ti.UI.createView({
-                height: '10dp',
+                height: 10,
                 width: '100%'
             }));
             rowWrapper.add(t_lb);
             rowWrapper.add(n_lb);
             rowWrapper.add(Ti.UI.createView({
-                height: '10dp',
+                height: 10,
                 width: '100%'
             }));
 
@@ -148,8 +148,7 @@ function alertNavButtons(lv_listTableView, currentWin, type) {"use strict";
     var backButton, space, label;
     
     if (lv_listTableView) {
-        lv_listTableView.top = '40';
-        lv_listTableView.height = '97%';
+        lv_listTableView.top = 40;
     }
     backButton = Ti.UI.createButton({
         title : 'Back',
@@ -169,7 +168,7 @@ function alertNavButtons(lv_listTableView, currentWin, type) {"use strict";
         color : '#fff',
         ellipsize : true,
         wordwrap : false,
-        width : '200',
+        width : 200,
         focusable : false,
         touchEnabled : false,
         style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
@@ -181,14 +180,14 @@ function alertNavButtons(lv_listTableView, currentWin, type) {"use strict";
         label.title = 'Location Alerts';
     }
 
-    refresh_image = Ti.UI.createImageView({
+    refreshImg = Ti.UI.createImageView({
         image : '/images/refresh.png',
-        right : '9dp',
-        width : '32dp',
-        height : 'auto'
+        right : 9,
+        width : 32,
+        height : Ti.UI.SIZE
     });
 
-    refresh_image.addEventListener('click', function(e) {
+    refreshImg.addEventListener('click', function(e) {
         showLoading();
         //_upload_gps_locations();
         Omadi.location.uploadGPSCoordinates();
@@ -196,7 +195,7 @@ function alertNavButtons(lv_listTableView, currentWin, type) {"use strict";
 
     // create and add toolbar
     toolbar = Ti.UI.iOS.createToolbar({
-        items : [backButton, space, label, space, actIndAlert, refresh_image],
+        items : [backButton, space, label, space, actIndAlert, refreshImg],
         top : 0,
         borderTop : false,
         borderBottom : true
@@ -205,27 +204,49 @@ function alertNavButtons(lv_listTableView, currentWin, type) {"use strict";
     currentWin.add(toolbar);
 }
 
-function alertNavButtons_android(lv_listTableView, win, type) {"use strict";
-    var baseHeader, label;
+function alertNavButtons_android(lv_listTableView, currentWindow, type) {"use strict";
+    var headerView, label;
     
     if (lv_listTableView) {
-        lv_listTableView.top = '50';
-        lv_listTableView.bottom = '6%';
+        lv_listTableView.top = 40;
+        lv_listTableView.bottom = 0;
     }
-    baseHeader = Ti.UI.createView({
+    
+    headerView = Ti.UI.createView({
         top : 0,
-        height : 50,
-        backgroundImage : '/images/header.png'
+        height : 40,
+        width: '100%',
+        backgroundGradient : {
+            type : 'linear',
+            startPoint : {
+                x : '50%',
+                y : '0%'
+            },
+            endPoint : {
+                x : '50%',
+                y : '100%'
+            },
+            colors : [{
+                color : '#ccc',
+                offset : 0.0
+            }, {
+                color : '#ddd',
+                offset : 0.25
+            }, {
+                color : '#aaa',
+                offset : 1.0
+            }]
+        }
     });
 
     label = Titanium.UI.createLabel({
-        color : '#fff',
+        color : '#666',
         ellipsize : true,
         wordwrap : false,
         left : 0,
         right : 41,
         font : {
-            fontSize : '18sp',
+            fontSize : 16,
             fontWeight : 'bold'
         },
         textAlign : 'center'
@@ -235,25 +256,25 @@ function alertNavButtons_android(lv_listTableView, win, type) {"use strict";
         label.text = type;
     }
     else {
-        label.text = 'Alert List';
+        label.text = 'Location Alerts';
     }
 
-    refresh_image = Ti.UI.createImageView({
+    refreshImg = Ti.UI.createImageView({
         image : '/images/refresh.png',
-        right : '9dp',
-        width : '32dp',
-        height : 'auto'
+        right : 9,
+        width : 32,
+        height : 32
     });
 
-    refresh_image.addEventListener('click', function(e) {
+    refreshImg.addEventListener('click', function(e) {
         showLoading();
         //_upload_gps_locations();
         Omadi.location.uploadGPSCoordinates();
     });
 
-    baseHeader.add(label);
-    baseHeader.add(refresh_image);
-    curWin.add(baseHeader);
+    headerView.add(label);
+    headerView.add(refreshImg);
+    currentWindow.add(headerView);
 }
 
 function loadData() {"use strict";
@@ -331,13 +352,13 @@ function loadData() {"use strict";
     else {
         listTableView.hide();
         empty = Titanium.UI.createLabel({
-            height : 'auto',
-            width : 'auto',
+            height : Ti.UI.SIZE,
+            width : Ti.UI.SIZE,
             top : '50%',
             color : '#999',
             font : {
                 fontWeight : 'bold',
-                fontSize : '22dp'
+                fontSize : 22
             },
             text : 'No location alerts were found'
         });
@@ -356,19 +377,11 @@ function opnAccountAlertsList(e) {"use strict";
         isOpened : false
     });
     accountWindow.isOpened = true;
-    
-    
-    // accountMessage.search = Ti.UI.createSearchBar({
-    // hintText : 'Search...',
-    // autocorrect : false,
-    // barColor : '#000'
-    // });
 
-    //Contat list container
+
     accountMessage.listView = Titanium.UI.createTableView({
-        top : '0',
-        bottom : '0',
-        //search : accountMessage.search,
+        top : 0,
+        bottom : 0,
         separatorColor : '#BDBDBD',
         backgroundColor : '#fff',
         footerView: Ti.UI.createView({
@@ -479,16 +492,20 @@ function opnAccountAlertsList(e) {"use strict";
     
     //Contat list container
     listTableView = Titanium.UI.createTableView({
-        top : '0',
-        bottom : '0',
+        top : 0,
+        bottom : 0,
         //search : search,
         separatorColor : '#BDBDBD',
-        backgroundColor : '#fff',
-        footerView: Ti.UI.createView({
+        backgroundColor : '#fff'
+    });
+    
+    if(PLATFORM !== 'android'){
+        listTableView.footerView = Ti.UI.createView({
             height: 50,
             width: '100%'
-        })
-    });
+        });
+    }
+    
     curWin.add(listTableView);
     
     if (PLATFORM === 'android') {
@@ -500,10 +517,10 @@ function opnAccountAlertsList(e) {"use strict";
     }
     else {
         actIndAlert = Ti.UI.createActivityIndicator({
-            height : '32dp',
-            width : '32dp',
+            height : 32,
+            width : 32,
             style : Ti.UI.iPhone.ActivityIndicatorStyle.DARK,
-            right : '12dp'
+            right : 12
         });
     }
     
