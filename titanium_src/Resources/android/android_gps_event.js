@@ -118,14 +118,10 @@ function updateCurrentLocation(e) {
 		// latitude = curr.location.latitude;
 		// accuracy = curr.location.longitude;
 	// }
-// 	
+
 	var timestamp = new Date().getTime();
 	timestamp = Math.round(timestamp / 1000);
 	
-	Ti.API.debug('LOCATION: ' + longitude + ', ' + latitude + ': ' + accuracy);
-	//Ti.API.debug('LOCATION: Latitude ' + latitude);
-	//Ti.API.debug('LOCATION: Accuracy ' + accuracy);
-	//Ti.API.debug('LOCATION: Timestamp ' + timestamp);
 
 	if(latitude != 0 && longitude != 0) {
 		if(accuracy > 200) {
@@ -133,8 +129,9 @@ function updateCurrentLocation(e) {
 			var time_past = time_now - Ti.App.Properties.getString("last_alert_popup");
 			if(time_past > time_interval_for_alerts) {
 				notifyIOS('Your GPS is getting inaccurate data. Please make sure the sky is visible. Current GPS accuracy is ' + accuracy + ' meters.', true);
-			} else {
-				Ti.API.info('NOT SHOWN - Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is ' + accuracy + ' meters');
+			} 
+			else {
+				//Ti.API.info('NOT SHOWN - Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is ' + accuracy + ' meters');
 			}
 		}
 		

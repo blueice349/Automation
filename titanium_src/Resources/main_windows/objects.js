@@ -3,7 +3,7 @@
 //Ti.include('/main_windows/create_or_edit_node.js');
 Ti.include('/lib/functions.js');
 	
-/*global PLATFORM,create_or_edit_node*/
+/*global PLATFORM,create_or_edit_node, Omadi*/
 
 var bundle,
 curWin,
@@ -19,8 +19,8 @@ Ti.App.addEventListener('loggingOut', function(){"use strict";
     Ti.UI.currentWindow.close();
 });
 
-function openCreateNodeScreen(){
-	"use strict";
+function openCreateNodeScreen(){"use strict";
+
 	var formWindow = Ti.UI.createWindow({
 	    navBarHidden: true,
 	    title: "New " + bundle.label,
@@ -39,6 +39,14 @@ function openCreateNodeScreen(){
 	// win_new.url = '/main_windows/form.js';
 	// win_new.top = 0; 
 	// win_new.bottom = 0;
+	
+	
+	formWindow.addEventListener('open', function(){
+	    Omadi.display.doneLoading();
+	});
+	
+	Omadi.display.loading();
+	
 	formWindow.open();
 	//setTimeout(function(){
 //		create_or_edit_node.loadUI();
@@ -1035,6 +1043,11 @@ function homeButtonPressed(e){
 
                             ev.source.eventRow.setBackgroundColor('#fff');
                             
+                            win_new.addEventListener('open', function(){
+                               Omadi.display.doneLoading(); 
+                            });
+                            
+                            Omadi.display.loading();
                                 
                             win_new.open();
                             //setTimeout(function() {

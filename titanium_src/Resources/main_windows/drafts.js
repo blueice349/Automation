@@ -144,7 +144,6 @@ function draftNavButtons() {"use strict";
         empty = Titanium.UI.createLabel({
             height : Ti.UI.FILL,
             width : '100%',
-            top : '50%',
             text : 'No drafts have been saved',
             color : '#999',
             font : {
@@ -209,6 +208,9 @@ function draftNavButtons() {"use strict";
 
                 //draftsWindow = Omadi.utils.cloneObject(curWin);
                 
+                Omadi.display.loading();
+                
+                
                 formWindow = Ti.UI.createWindow({
                     navBarHidden: true,
                     type: e.row.node_type,
@@ -239,6 +241,8 @@ function draftNavButtons() {"use strict";
                 });
                 
                 
+                formWindow.open();
+                
                 if(PLATFORM === 'android'){
                     Ti.UI.currentWindow.close();
                 }
@@ -249,12 +253,11 @@ function draftNavButtons() {"use strict";
                     
                 }
 
-                Omadi.display.loading();
                 
                 
-                Ti.API.debug("Openeing form window");
+                //Ti.API.debug("Openeing form window");
                 
-                formWindow.open();
+                
             }
         });
 

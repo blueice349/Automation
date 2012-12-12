@@ -411,15 +411,15 @@ function validateRestrictions(node){"use strict";
     account = null;
     license_plate = null;
     
-    if(typeof node.vin !== 'undefined' && typeof node.vin.dbValues !== 'undefined' && node.vin.dbValues.length > 0){
+    if(typeof node.vin !== 'undefined' && typeof node.vin.dbValues !== 'undefined' && node.vin.dbValues.length > 0 && node.vin.dbValues[0] != null){
         vin = node.vin.dbValues[0].toUpperCase();
     }
     
-    if(typeof node.license_plate___plate !== 'undefined' && typeof node.license_plate___plate.dbValues !== 'undefined' && node.license_plate___plate.dbValues.length > 0){
+    if(typeof node.license_plate___plate !== 'undefined' && typeof node.license_plate___plate.dbValues !== 'undefined' && node.license_plate___plate.dbValues.length > 0 && node.license_plate___plate.dbValues[0] != null){
         license_plate = node.license_plate___plate.dbValues[0].toUpperCase();
     }
     
-    if(typeof node.enforcement_account !== 'undefined' && typeof node.enforcement_account.dbValues !== 'undefined' && node.enforcement_account.dbValues.length > 0){
+    if(typeof node.enforcement_account !== 'undefined' && typeof node.enforcement_account.dbValues !== 'undefined' && node.enforcement_account.dbValues.length > 0 && node.enforcement_account.dbValues[0] != null){
         nid = node.enforcement_account.dbValues[0];
         account = node.enforcement_account.textValues[0];
     }
@@ -455,10 +455,10 @@ function validateRestrictions(node){"use strict";
             if(restrictions[i].restrict_entire_account == 1){
                 form_errors.push("No parking enforcement is allowed for \"" + account + "\" right now due to a restriction.");
             }
-            else if(restrictions[i].license_plate > '' && license_plate == restrictions[i].license_plate.toUpperCase()){
+            else if(restrictions[i].license_plate != null && license_plate == restrictions[i].license_plate.toUpperCase()){
                 form_errors.push("The license plate \"" + license_plate + "\" is currently restricted for \"" + account + "\".");
             }
-            else if(restrictions[i].vin > '' && vin == restrictions[i].vin.toUpperCase()){
+            else if(restrictions[i].vin != null && vin == restrictions[i].vin.toUpperCase()){
                 form_errors.push("The VIN \"" + vin + "\" is currently restricted for \"" + account + "\".");
             }
         }
@@ -738,6 +738,8 @@ function save_form_data(saveType) {"use strict";
     
     //Ti.API.debug("FULL FORM NODE: " + JSON.stringify(node));
     
+    Ti.API.debug("Saving with type " + saveType);
+    
     if(saveType == 'draft'){
         node._isDraft = true;
     }
@@ -763,7 +765,7 @@ function save_form_data(saveType) {"use strict";
     }
     else{
         //return;
-        
+        Omadi.display.loading("Saving...");
         try{
             
             //Ti.API.info("--------------------Inside save_form_data--------------------");
@@ -1187,23 +1189,7 @@ function save_form_data(saveType) {"use strict";
                 // }
                 
                 if(node._saved === true){
-                    
-                    
-                    
                     if(Ti.Network.online){
-                    
-                    
-                        //if (_flag_info == "normal") {
-                            //Ti.API.info('Submitting, mode=' + win.mode);
-                            //Omadi.service.sendUpdates();
-                            //update_node(win.mode, win.type.toUpperCase());  
-                        //}
-                        //else {
-                           // Ti.API.info('Submitting and preparing next part reload');
-                            //Omadi.service.sendUpdates();
-                            // TODO: send the user to the next form part
-                            //update_node(win.mode, win.type.toUpperCase(), _flag_info);
-                       // }
                        
                        if (saveType === "next_part") {
                             

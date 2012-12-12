@@ -713,7 +713,10 @@ function setupBottomButtons(){"use strict";
             
             formWindow.addEventListener('open', function() {
                 unlock_screen();
+                Omadi.display.doneLoading();
             });
+            
+            Omadi.display.loading();
     
             formWindow.open();
         }
