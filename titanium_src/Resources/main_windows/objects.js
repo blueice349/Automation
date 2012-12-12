@@ -174,7 +174,8 @@ function homeButtonPressed(e){
                 if(field_name === 'form_part'){
                     filterFields.push({
                         label: 'Form Part',
-                        type: 'metadata'
+                        type: 'metadata',
+                        field_name: 'form_part'
                     });
                 }
                 else{
@@ -183,6 +184,8 @@ function homeButtonPressed(e){
             }
 		}
 	}
+	
+	Ti.API.debug("Filter Fields: " + JSON.stringify(filterFields));
 
 	var tableData = [];
 	var tableIndex = 0;
@@ -197,6 +200,9 @@ function homeButtonPressed(e){
 	
 	if(filterValues.length < filterFields.length && !showFinalResults){
 		lastFilterField = filterFields[filterValues.length];
+		
+		Ti.API.debug("Filtering by " + lastFilterField.field_name);
+		
 		if(typeof lastFilterField.field_name !== 'undefined'){
             field_name = lastFilterField.field_name;
             sql = "SELECT DISTINCT " + field_name + " AS value FROM " + curWin.type + " type  INNER JOIN node n ON n.nid = type.nid";
@@ -221,13 +227,9 @@ function homeButtonPressed(e){
 			field_name = filterFields[i].field_name;
 			//Ti.API.info("FILTER FIELD NAME: " + field_name);
 			
-			
 			if(typeof filterValues[i] != 'undefined' && filterValues[i].value !== false){
 				Ti.API.info("FILTER VALUE BELOW: " + i + ": " + filterValues[i].value );
 				var filterValue = filterValues[i].value;
-				
-				//Ti.API.info("FILTER VALUE 4: " + i + " " + filterValue);
-				// Filter with the current filter
 				
 				// Show all results with filters applied
 				if(filterValue === null){
@@ -243,13 +245,10 @@ function homeButtonPressed(e){
 		}
 	}
 	
-	
 	if(conditions.length > 0){
 		sql += " WHERE ";
 		sql += conditions.join(" AND ");
 	}
-	
-	
 	
 	if(showFinalResults){
 		sql += " ORDER BY ";

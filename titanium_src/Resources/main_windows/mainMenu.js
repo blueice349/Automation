@@ -824,7 +824,7 @@ function setupBottomButtons(){"use strict";
             //Remove the database
             db.remove();
             db.close();
-        } 
+        }
         else {
             dbFile = db.getFile();
             db.close();

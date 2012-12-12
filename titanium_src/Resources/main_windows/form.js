@@ -411,11 +411,11 @@ function validateRestrictions(node){"use strict";
     account = null;
     license_plate = null;
     
-    if(typeof node.vin !== 'undefined' && typeof node.vin.dbValues !== 'undefined' && node.vin.dbValues.length > 0 && node.vin.dbValues[0] != null){
+    if(typeof node.vin !== 'undefined' && typeof node.vin.dbValues !== 'undefined' && node.vin.dbValues.length > 0 && node.vin.dbValues[0] != null && node.vin.dbValues[0] != ""){
         vin = node.vin.dbValues[0].toUpperCase();
     }
     
-    if(typeof node.license_plate___plate !== 'undefined' && typeof node.license_plate___plate.dbValues !== 'undefined' && node.license_plate___plate.dbValues.length > 0 && node.license_plate___plate.dbValues[0] != null){
+    if(typeof node.license_plate___plate !== 'undefined' && typeof node.license_plate___plate.dbValues !== 'undefined' && node.license_plate___plate.dbValues.length > 0 && node.license_plate___plate.dbValues[0] != null && node.license_plate___plate.dbValues[0] != ""){
         license_plate = node.license_plate___plate.dbValues[0].toUpperCase();
     }
     
@@ -451,7 +451,7 @@ function validateRestrictions(node){"use strict";
         result.close();
             
         for(i = 0; i < restrictions.length; i ++){
-           Ti.API.info(JSON.stringify(restrictions[i]));
+          // Ti.API.info(JSON.stringify(restrictions[i]));
             if(restrictions[i].restrict_entire_account == 1){
                 form_errors.push("No parking enforcement is allowed for \"" + account + "\" right now due to a restriction.");
             }

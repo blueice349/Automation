@@ -355,6 +355,7 @@ Omadi.widgets.datestamp = {
             textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
         });
         
+        widgetView.date_picker = date_picker;
         wrapperView.add(date_picker);
         
         if(widgetView.showTime){
@@ -375,29 +376,47 @@ Omadi.widgets.datestamp = {
                 format24 : (Omadi.utils.getTimeFormat().indexOf('H') !== -1 ? true : false)  // Only available on Android
             });
             
-            time_picker.addEventListener('change', function(e) {
-                e.source.date_picker.value = e.value;
-                //changedTime = e.value;
-                e.source.widgetView.tempDate = e.value;
-            });
+                // time_picker.addEventListener('change', function(e) {
+                    // //if(e.value != e.source.lastValue){
+                    // //    e.source.lastValue = e.value;
+    //                     
+                        // //e.source.date_picker.setValue(e.value);
+                        // //e.source.widgetView.tempDate = e.value;
+                    // //}
+                    // Ti.API.debug(e.value.format('M j, Y - H:i'));
+                    // //e.source.updatedAt = (new Date()).getTime();
+                    // e.source.updatedWidget = 'time';
+                // });
+    //             
+                // //time_picker.selectionIndicator = true;
+                // time_picker.date_picker = date_picker;
+                // date_picker.time_picker = time_picker;
             
-            //time_picker.selectionIndicator = true;
-            time_picker.date_picker = date_picker;
-            date_picker.time_picker = time_picker;
+            widgetView.time_picker = time_picker;
             
             wrapperView.add(time_picker);
+            
+            
         }
             
-        date_picker.addEventListener('change', function(e) {
-            if(e.source.widgetView.showTime && typeof e.source.time_picker !== 'undefined'){
-                e.source.time_picker.value = e.value;
-            }
-            //changedDate = e.value;
-            //widgetDate = e.value;
-            e.source.widgetView.tempDate = e.value;
-        });
+        // date_picker.addEventListener('change', function(e) {
+            // //if(e.source.lastValue != e.value){
+            // //    e.source.lastValue = e.value;
+//                 
+                // //if(e.source.widgetView.showTime && typeof e.source.time_picker !== 'undefined'){
+                // //    e.source.time_picker.setValue(e.value);
+                // //}
+            // //    e.source.updatedAt = (new Date()).getTime();
+            // //    e.source.widgetView.tempDate = e.value;
+           // // }
+//            
+           // Ti.API.debug(e.value.format('M j, Y - H:i'));
+//            
+           // e.source.updatedWidget = 'date';
+        // });
 
         okButton.addEventListener('click', function(e) {
+            var year, month, date, hour, minute, second, newDate, i, callback, timePickerValue, datePickerValue;
             /*global setConditionallyRequiredLabels*/
            
             // if (PLATFORM == "android") {
@@ -412,16 +431,46 @@ Omadi.widgets.datestamp = {
                 //widgetView.jsDate = iOSDateCal;
             //}
             
-            var newDate, i, callback;
+            
             
             if(typeof e.source.widgetView.tempDate === 'undefined'){
                 e.source.widgetView.tempDate = e.source.widgetView.jsDate;
             }
             
-           
+            // year = 0;
+            // month = 0;
+            // date = 0;
+            // hour = 0;
+            // minute = 0;
+            // second = 0;
+            
+            datePickerValue = e.source.widgetView.date_picker.getValue();
+            
+            if(e.source.widgetView.showTime){
+                timePickerValue = e.source.widgetView.time_picker.getValue();
                 
-            newDate = e.source.widgetView.tempDate;
+                datePickerValue.setHours(timePickerValue.getHours());
+                datePickerValue.setMinutes(timePickerValue.getMinutes());
+            }
+            else{
+                datePickerValue.setHours(0);
+                datePickerValue.setMinutes(0);
+            }
+            
+            datePickerValue.setSeconds(0);
+            
+           // year = datePickerValue.getYear();
+           // date = datePickerValue.getDate();
+            //month = datePickerValue.getMonth();
+            
+            //newDate = mktime(hour, minute, second, month, date, year);
+            
+            //newDate = e.source.widgetView.tempDate;
+            
+            newDate = datePickerValue;
             e.source.widgetView.jsDate = newDate;
+            
+            
             e.source.widgetView.dbValue = Math.ceil(newDate.getTime() / 1000);
             e.source.widgetView.textValue = Omadi.utils.formatDate(e.source.widgetView.dbValue, e.source.widgetView.showTime);
 //              

@@ -325,9 +325,11 @@ Omadi.widgets.omadi_time = {
             format24 : (Omadi.utils.getTimeFormat().indexOf('H') !== -1 ? true : false)  // Only available on Android
         });
 
-        time_picker.addEventListener('change', function(e) {
-            e.source.widgetView.tempDate = e.value;
-        });
+        // time_picker.addEventListener('change', function(e) {
+            // e.source.widgetView.tempDate = e.value;
+        // });
+        
+        widgetView.time_picker = time_picker;
 
         wrapperView.add(time_picker);
 
@@ -335,11 +337,11 @@ Omadi.widgets.omadi_time = {
             /*global setConditionallyRequiredLabels*/
             var newDate, i, callback;
 
-            if ( typeof e.source.widgetView.tempDate === 'undefined') {
-                e.source.widgetView.tempDate = e.source.widgetView.jsDate;
-            }
+            // if ( typeof e.source.widgetView.tempDate === 'undefined') {
+                // e.source.widgetView.tempDate = e.source.widgetView.jsDate;
+            // }
 
-            newDate = e.source.widgetView.tempDate;
+            newDate = e.source.widgetView.time_picker.getValue();
             e.source.widgetView.jsDate = newDate;
             e.source.widgetView.textValue = Omadi.utils.PHPFormatDate(Math.ceil(newDate.getTime() / 1000), 'g:i A');
             e.source.widgetView.dbValue = Omadi.widgets.omadi_time.dateToSeconds(e.source.widgetView.textValue);
