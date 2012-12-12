@@ -157,23 +157,33 @@ Omadi.widgets.number_integer = {
         }
         
         widgetView.addEventListener('change', function(e) {
+            var tempValue;
             /*global setConditionallyRequiredLabels*/
             /*jslint regexp: true*/
-           
-            e.source.value = e.source.value.replace(/[^0-9\-]/g, '');
-            if(e.source.value.length > 0){
-                e.source.dbValue = parseInt(e.source.value, 10);
-            }
-            else{
-                e.source.dbValue = null;
-            }
+            if(e.source.lastValue != e.source.value){
+                tempValue = e.source.value.replace(/[^0-9\-]/g, '');
+                if(tempValue != e.source.value){
+                    e.source.value = tempValue;
+                    if(PLATFORM === 'android'){
+                        e.source.setSelection(e.source.value.length, e.source.value.length);
+                    }
+                }
             
-            e.source.textValue = e.source.value;
-            
-            if(e.source.check_conditional_fields.length > 0){
-                setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+                if(e.source.value.length > 0){
+                    e.source.dbValue = parseInt(e.source.value, 10);
+                }
+                else{
+                    e.source.dbValue = null;
+                }
+                
+                e.source.textValue = e.source.value;
+                
+                if(e.source.check_conditional_fields.length > 0){
+                    setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+                }
+                
+                e.source.lastValue = e.source.value;
             }
-            // noDataChecboxEnableDisable(e.source, e.source.reffer_index);
         });
         
         return widgetView;

@@ -146,7 +146,6 @@ Omadi.widgets.user_reference = {
             instance: instance,
             dbValue: dbValue,
             textValue: textValue,
-            value : textValue,
             
             view_title : instance.label
         });

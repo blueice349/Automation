@@ -72,7 +72,7 @@ Omadi.widgets.image = {
     getNewElement: function(node, instance){"use strict";
         /*global isArray*/
        
-        var settings, widgetView, dbValue, imageData, i, numImagesShowing = 0;
+        var settings, widgetView, dbValue, imageData, i, numImagesShowing = 0, contentWidth;
         
         dbValue = [];
         imageData = [];
@@ -91,11 +91,11 @@ Omadi.widgets.image = {
         
         widgetView = Ti.UI.createScrollView({
             width : Ti.Platform.displayCaps.platformWidth - 30,
-            contentWidth : 'auto',
+            //contentWidth : 'auto',// Don't set contentWidth to anything here.  It is set further down
             contentHeight : 100,
             height : 100,
             arrImages : null,
-            scrollType : "horizontal",
+            scrollType : 'horizontal',
             layout : 'horizontal',
 
             instance: instance
@@ -106,6 +106,7 @@ Omadi.widgets.image = {
         if(isArray(dbValue)){
             for (i = 0; i < dbValue.length; i++) {
                 if(dbValue[i] > 0){
+                    Ti.API.debug("Adding image to scroll view");
                     widgetView.add(Omadi.widgets.image.getImageView(widgetView, i, Ti.UI.currentWindow.nid, dbValue[i]));
                 }
                 // //var updated = false
@@ -134,11 +135,17 @@ Omadi.widgets.image = {
             numImagesShowing += imageData.length;
         }
         
+        contentWidth = numImagesShowing * 110;
         
         
         if(instance.settings.cardinality == -1 || (numImagesShowing < instance.settings.cardinality)){
+            Ti.API.debug("Adding blank image");
             widgetView.add(Omadi.widgets.image.getImageView(widgetView, numImagesShowing, null, null));
+            
+            contentWidth += 110;
         }
+        
+        widgetView.contentWidth = contentWidth;
         // else{
             // for(i = numImagesShowing; i < instance.settings.cardinality; i ++){
                 // widgetView.add(Omadi.widgets.image.getImageView(widgetView, i, null, null));
@@ -245,20 +252,155 @@ Omadi.widgets.image = {
     },
     openCamera: function(imageView){"use strict";
         // // To open camera
-
+        /*global cameraAndroid*/
+       
         if (PLATFORM === 'android') {
-            // if (Ti.Media.isCameraSupported) {
-                // camera.openCamera({
-                    // "event" : e.source,
-                    // "callbackFnc" : function(e) {
-                        // openAndroidCamera(e);
-                    // }
-                // });
-            // }
-            // else {
-                // alert('No Camera in device');
-            // }
-            Ti.API.error("ADD IN ANDROID CAMERA FUNCTIONALITY");
+            if (Ti.Media.isCameraSupported) {
+                
+                
+                cameraAndroid.openCamera({
+                    "event" : imageView,
+                    "callbackFnc" : function(event) {
+                        Omadi.display.loading();
+                        // setTimeout(function(evt) {
+                            // var actInd, imagescr;
+//                             
+                            // actInd = Ti.UI.createActivityIndicator();
+                            // try {
+                                // actInd.font = {
+                                    // fontFamily : 'Helvetica Neue',
+                                    // fontSize : 15,
+                                    // fontWeight : 'bold'
+                                // };
+                                // actInd.color = 'white';
+                                // actInd.message = 'Please wait...';
+                                // actInd.show();
+                                // imagescr = Ti.Utils.base64decode(e.media);
+//                                 
+                                // e.source.image = imagescr;
+                                // e.source.isImage = true;
+                                // e.source.bigImg = imagescr;
+                                // e.source.mimeType = "/jpeg";
+                                // if (e.source.cardinality > 1 || e.source.cardinality < 0) {
+                                    // if (e.source.cardinality < 1) {
+                                        // arrImages = createImage(e.source.scrollView.addButton.o_index, e.source.scrollView.arrImages, defaultImageVal, e.source.scrollView, false);
+                                        // e.source.scrollView.arrImages = arrImages;
+                                        // e.source.scrollView.addButton.o_index += 1;
+                                        // newSource = arrImages.length - 1;
+                                    // }
+                                    // else {
+                                        // if (e.source.private_index == e.source.cardinality - 1) {
+                                            // return;
+                                        // }
+                                        // newSource = (e.source.private_index == e.source.cardinality - 1) ? 0 : e.source.private_index + 1;
+                                    // }
+                                    // saveImageInDb(e.source, e.source.scrollView.field_name);
+                                    // e.source = e.source.scrollView.arrImages[newSource];
+                                    // actInd.hide();
+                                    // openCamera(e)
+                                // }
+                                // else {
+                                    // actInd.hide();
+                                    // saveImageInDb(e.source, e.source.field_name);
+                                // }
+//                     
+                            // }
+                            // catch(eve) {
+                                // actInd.hide();
+                            // }
+                        // }, 200);
+                        
+                        var newImageView, tmpImageView, blob, maxDiff, newHeight, newWidth;
+    
+                        //Ti.API.info("MIME TYPE: " + event.media.mimeType);
+                        // If image size greater than 1MB we will reduce th image else take as it is.
+                        //if (event.media.length > IMAGE_MAX_BYTES) {
+                        //    imageView.image = Omadi.display.getImageViewFromData(event.media, 500, 700).image;
+                       // }
+                       // else {
+                            imageView.image = Ti.Utils.base64decode(event.media);
+                       // }
+                        
+                        imageView.bigImg = imageView.image;
+                        imageView.mimeType = event.media.mimeType;
+                        imageView.fullImageLoaded = true;
+                        
+                        Ti.API.debug("index: " + imageView.imageIndex);
+    
+                        if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
+                            newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null);
+                            imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
+                            imageView.parentView.add(newImageView);
+                            newImageView.fireEvent('click');   
+                        }
+                       
+                            // if (e.source.cardinality < 1) {
+                                // arrImages = createImage(e.source.scrollView.addButton.o_index, e.source.scrollView.arrImages, defaultImageVal, e.source.scrollView, false);
+                                // e.source.scrollView.arrImages = arrImages;
+                                // e.source.scrollView.addButton.o_index += 1;
+                                // newSource = arrImages.length - 1;
+                            // }
+                            // else {
+                                // if (e.source.private_index == e.source.cardinality - 1) {
+                                    // return;
+                                // }
+                                // newSource = (e.source.private_index == e.source.cardinality - 1) ? 0 : e.source.private_index + 1;
+                            // }
+                            // saveImageInDb(e.source, e.source.scrollView.field_name);
+                            // e.source = e.source.scrollView.arrImages[newSource];
+                            // actInd.hide();
+                            // Ti.Media.hideCamera();
+                            // openCamera(e);
+                        // }
+                        // else {
+                            // actInd.hide();
+                            
+                       //alert("success");
+                       //Ti.Media.hideCamera();
+                       
+                       
+                       blob = imageView.image;
+                       
+                       /*
+                       try{
+                           
+                           if (blob.getLength() > IMAGE_MAX_BYTES) {
+                            //imageView.image = Omadi.display.getImageViewFromData(event.media, 1200, 800).image;
+                               
+                                //var ratio
+                                if(blob.height > 1000 || blob.width > 1000) {
+                                    
+                                    maxDiff = blob.height - 1000;
+                                    if(blob.width - 1000 > maxDiff){
+                                        // Width is bigger
+                                        newWidth = 1000;
+                                        newHeight = (1000 / blob.width) * blob.height;
+                                    }
+                                    else{
+                                        // Height is bigger
+                                        newHeight = 1000;
+                                        newWidth = (1000 / blob.height) * blob.width;
+                                    }
+                                    
+                                    blob = blob.imageAsResized(newWidth, newHeight);
+                                } 
+                            }
+                        }
+                        catch(ex){
+                            alert("Error resizing the photo: " + ex);
+                        }*/
+                       
+                        
+                       
+                        Omadi.widgets.image.saveImageInDb(imageView, blob);
+                        
+                        Omadi.display.doneLoading();
+                    }
+                });
+            }
+            else {
+                alert('No Camera in device');
+            }
         }
         else {
             try {
@@ -338,6 +480,7 @@ Omadi.widgets.image = {
     
                         if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
                             newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null);
+                            imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
                             imageView.parentView.add(newImageView);
                             newImageView.fireEvent('click');   
                         }
@@ -440,12 +583,11 @@ Omadi.widgets.image = {
         try{
             nid = 0;
             
-        
             encodedImage = Ti.Utils.base64encode(blob);
             //encodedImage = imageView.bigImg;
             mime = imageView.mimeType;
             
-            imageName = 'image.' + mime.substring(mime.indexOf('/') + 1, mime.length);
+            imageName = 'image.jpg';//' + mime.substring(mime.indexOf('/') + 1, mime.length);
             
             //var is_exists = db_toSaveImage.execute('SELECT delta, nid FROM _photos WHERE nid=' + file_upload_nid + ' and delta=' + currentImageView.private_index + ' and field_name="' + field_name + '";');
             // if (is_exists.rowCount > 0) {

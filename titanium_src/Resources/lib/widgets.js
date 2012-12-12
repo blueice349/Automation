@@ -271,77 +271,86 @@ Omadi.widgets.setValueWidgetProperty = function(field_name, property, value, set
 
 
 Omadi.widgets.setValues = function(field_name, defaultValues){"use strict";
-    var children, subChildren, subSubChildren, i, j, k, fieldWrapper, actualWidget;
+    //var children, subChildren, subSubChildren, i, j, k, fieldWrapper, actualWidget;
     
-    /*global fieldWrappers */
+    /*global fieldWrappers, instances */
     
     //fieldWrapper = fieldWrappers[field_name];
     //children = fieldWrapper.getChildren();
     
     
-    Omadi.widgets.setValueWidgetProperty(field_name, ['textValue'], defaultValues.textValues[0], -1);
-    Omadi.widgets.setValueWidgetProperty(field_name, ['dbValue'], defaultValues.dbValues[0], -1);
+    Omadi.widgets.setValueWidgetProperty(field_name, ['textValue'], defaultValues.textValues[0]);
+    Omadi.widgets.setValueWidgetProperty(field_name, ['dbValue'], defaultValues.dbValues[0]);
     
     if(instances[field_name].type == 'taxonomy_term_reference'){
         //actualWidget.setText(defaultValues.textValues[0]);
-        Omadi.widgets.setValueWidgetProperty(field_name, ['text'], defaultValues.textValues[0], -1);
+        Omadi.widgets.setValueWidgetProperty(field_name, ['text'], defaultValues.textValues[0]);
     }
     else{
         //actualWidget.setValue(defaultValues.textValues[0]);
-        Omadi.widgets.setValueWidgetProperty(field_name, ['value'], defaultValues.textValues[0], -1);
+        Omadi.widgets.setValueWidgetProperty(field_name, ['value'], defaultValues.textValues[0]);
     }
     
-    // actualWidget = null;
-//     
-    // // Find the textValue up to 3 levels deep in the UI elements
-//     
-    // for(i = 0; i < children.length; i ++){
-//         
-        // if(typeof children[i].textValue !== 'undefined'){
-            // actualWidget = children[i];
-            // break;
-        // }
-        // else if(children[i].getChildren().length > 0){
-            // subChildren = children[i].getChildren();
-            // for(j = 0; j < subChildren.length; j ++){
-//                 
-                // if(typeof subChildren[j].textValue !== 'undefined'){
-                    // actualWidget = subChildren[j];
-                    // fieldWrappers[field_name].children[i].children[j].setText(defaultValues.textValues[0]);
-                    // break;
-                // }
-                // else if(subChildren[j].getChildren().length > 0){
-                    // subSubChildren = subChildren[j].getChildren();
-                    // for(k = 0; k < subSubChildren.length; k ++){
-//                         
-                        // if(typeof subSubChildren[k].textValue !== 'undefined'){
-                            // actualWidget = subSubChildren[k];
-                            // break;
-                        // }
-                    // }
-                // }
-                // if(actualWidget !== null){
-                    // break;
-                // }
-            // }
-        // }
-        // if(actualWidget !== null){
-            // break;
-        // }
-    // }
+
+};
+
+Omadi.widgets.getValueWidget = function(field_name){"use strict";
+    var actualWidget = null, i, j, k, children, fieldWrapper, subChildren, subSubChildren;
     
-    // if(actualWidget !== null){
-//     
-        // actualWidget.textValue = defaultValues.textValues[0];
-        // actualWidget.dbValue = defaultValues.dbValues[0];
-//         
-        // if(actualWidget.instance.type == 'taxonomy_term_reference'){
-            // actualWidget.setText(defaultValues.textValues[0]);
-        // }
-        // else{
-            // actualWidget.setValue(defaultValues.textValues[0]);
-        // }
-    // }
+    fieldWrapper = fieldWrappers[field_name];
+    children = fieldWrapper.getChildren();
+       
+    for(i = 0; i < children.length; i ++){
+         
+        if(typeof children[i].textValue !== 'undefined'){
+            actualWidget = children[i];
+            break;
+        }
+        else if(children[i].getChildren().length > 0){
+            subChildren = children[i].getChildren();
+            for(j = 0; j < subChildren.length; j ++){
+                
+                if(typeof subChildren[j].textValue !== 'undefined'){
+                    actualWidget = subChildren[j];
+                    break;
+                }
+                else if(subChildren[j].getChildren().length > 0){
+                    subSubChildren = subChildren[j].getChildren();
+                    for(k = 0; k < subSubChildren.length; k ++){
+                        
+                        if(typeof subSubChildren[k].textValue !== 'undefined'){
+                            actualWidget = subSubChildren[k];
+                            break;
+                        }
+                    }
+                }
+                if(actualWidget !== null){
+                    break;
+                }
+            }
+        }
+        if(actualWidget !== null){
+            break;
+        }
+    }
+    
+    return actualWidget;
+};
+
+Omadi.widgets.blurFields = function(){"use strict";
+    var field_name, widget;
+    
+    for(field_name in fieldWrappers){
+        if(fieldWrappers.hasOwnProperty(field_name)){
+            
+            widget = Omadi.widgets.getValueWidget(field_name);
+            
+            if(widget instanceof Ti.UI.TextField || widget instanceof Ti.UI.TextArea){
+                Ti.API.debug('is a textfield');
+                widget.blur();
+            }
+        }
+    }  
 };
 
 Omadi.widgets.shared = {
@@ -577,7 +586,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
                 //e.rowData.listView.options[e.index].selected = false;
             }
             
-            if(descriptionView != null){
+            if(descriptionLabel != null){
                 if(numItemsSelected == 1){
                     //Ti.API.debug(selectedIndexes);
                     //Ti.API.debug(options);

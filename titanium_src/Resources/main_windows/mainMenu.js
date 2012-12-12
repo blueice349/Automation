@@ -9,7 +9,6 @@ curWin.backgroundColor = '#eee';
 
 var toolActInd = Ti.UI.createActivityIndicator();
 toolActInd.font = {
-    fontFamily : 'Helvetica Neue',
     fontSize : 15,
     fontWeight : 'bold'
 };
@@ -364,11 +363,7 @@ function openDraftWindow() {"use strict";
     draftWindow = Titanium.UI.createWindow({
         title : 'Drafts',
         navBarHidden : true,
-        fullscreen : false,
-        url : 'drafts.js',
-        type : 'draft',
-        uid : jsonLogin.user.uid,
-        backgroundColor : '#EEE'
+        url : 'drafts.js'
     });
     
     curWin.isTopWindow = false;
@@ -662,7 +657,11 @@ function setupBottomButtons(){"use strict";
     
     setupBottomButtons();
 
-    Ti.App.addEventListener("doneSendingData", function(){
+    Ti.App.addEventListener("doneSendingData", function(e){
+        if(typeof e.contextWindow !== 'undefined'){
+            e.contextWindow.close();
+        }
+        
         networkStatusView.hide();
         Omadi.service.uploadFile();
     });
@@ -677,6 +676,7 @@ function setupBottomButtons(){"use strict";
     });
     
     Ti.App.addEventListener('loggingOut', function(){
+        clearInterval(Ti.App.syncInterval);
         Ti.UI.currentWindow.close();
     });
     
@@ -704,6 +704,7 @@ function setupBottomButtons(){"use strict";
         
         if (e.source.is_plus) {
             formWindow = Ti.UI.createWindow({
+                navBarHidden: true,
                 title: "New " + e.row.display,
                 type: e.row.name_table,
                 nid: 'new',
@@ -742,6 +743,12 @@ function setupBottomButtons(){"use strict";
                    curWin.isTopWindow = true; 
                    unlock_screen();
                    Ti.API.debug("Closed");
+                });
+                
+                Omadi.display.loading();
+                
+                nextWindow.addEventListener('open', function(){
+                   Omadi.display.doneLoading();
                 });
     
                 nextWindow.open();

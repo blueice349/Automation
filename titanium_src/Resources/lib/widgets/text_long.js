@@ -5,7 +5,6 @@ Omadi.widgets.text_long = {
     
     
     getFieldView: function(node, instance){"use strict";
-        //this.base = Omadi.widgets.base.init(in_instance);
         instance.elements = [];
         
         var settings = instance.settings, fieldView, i, j, element, addAnotherItemButton = null;
@@ -22,9 +21,6 @@ Omadi.widgets.text_long = {
         fieldView.add(Omadi.widgets.label.getRegularLabelView(instance));
         setConditionallyRequiredLabelForInstance(node, instance);
        
-        //Add fields:
-        //regionView.add(label[count]);
-        //var reffer_index = count;
         Ti.API.debug(instance.numVisibleFields);
         
         if(typeof instance.numVisibleFields === 'undefined'){
@@ -44,7 +40,6 @@ Omadi.widgets.text_long = {
         
         // Add the actual fields
         for(i = 0; i < instance.numVisibleFields; i ++){
-            //widgetView = this._getUIComponent(instance); 
             element = Omadi.widgets.text_long.getNewElement(node, instance,  i);
             instance.elements.push(element);
             fieldView.add(element);
@@ -67,18 +62,6 @@ Omadi.widgets.text_long = {
             fieldView.add(addAnotherItemButton);
             fieldView.add(Omadi.widgets.getSpacerView());
         }
-
-        
-        //No data checkbox functionality
-        //noDataCheckbox(reffer_index, regionView, top);
-        //if (content[reffer_index].noDataView != null) {
-        //    top += 40;
-       // }
-       
-       //fieldViews[this.instance.field_name] = this.fieldView;
-       
-       //this.fieldView = fieldView;
-       //this.initialized = true;
        
        return fieldView;
     },
@@ -106,7 +89,6 @@ Omadi.widgets.text_long = {
             editable : instance.can_edit,
             enabled : instance.can_edit,
             ellipsize: false,
-            hintText : instance.label,
             keepScreenOn: true,
             suppessReturn: false,
             textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,

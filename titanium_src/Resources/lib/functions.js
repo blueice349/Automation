@@ -72,9 +72,9 @@ function notifyIOS(msg, update_time) {
     // to put it back to the left side of the window
     slide_it_top.duration = 400;
     var win = Titanium.UI.createWindow({
-        height : "50dp",
+        height : 50,
         width : "100%",
-        top : "-50dp",
+        top : -50,
         navBarHidden : true,
         zIndex : -1000
     });
@@ -103,7 +103,7 @@ function notifyIOS(msg, update_time) {
 
     setTimeout(function() {
         var slide_it_out = Titanium.UI.createAnimation();
-        slide_it_out.top = "-50dp";
+        slide_it_out.top = -50;
         // to put it back to the left side of the window
         slide_it_out.duration = 400;
         win.close(slide_it_out);

@@ -32,6 +32,50 @@ function form_min(min) {"use strict";
     return min;
 }
 
+function openEditScreen(part) {"use strict";
+    //Next window to be opened
+    var formWindow = Ti.UI.createWindow({
+        navBarHidden: true,
+        title: curWin.title,
+        type: curWin.type,
+        nid: curWin.nid,
+        url: '/main_windows/form.js',
+        form_part: part
+    });//create_or_edit_node.getWindow();
+    // win_new.title = (PLATFORM == 'android') ? curWin.title + '-' + curWin.nameSelected : curWin.title;
+    // win_new.type = curWin.type;
+    // win_new.listView = curWin.listView;
+    // win_new.up_node = curWin.up_node;
+    // win_new.uid = curWin.uid;
+    // win_new.region_form = part;
+    // win_new.movement = curWin.movement;
+    // win_new.url = "/main_windows/form.js";
+// 
+    // //Passing parameters
+    // win_new.nid = curWin.nid;
+    // win_new.nameSelected = curWin.nameSelected;
+// 
+    // //Sets a mode to fields edition
+    // win_new.mode = 1;
+
+    //formWindow.;
+    
+    //var lastWindow = Omadi.utils.cloneObject(Ti.UI.currentWindow);
+    
+    formWindow.open();
+    //setTimeout(function() {
+    //    create_or_edit_node.loadUI();
+    //}, 100);
+    // if(PLATFORM == 'android'){
+        // curWin.close();
+    // }
+    // else{
+        curWin.hide();
+    //}
+    
+    //lastWindow.close();
+}
+
 var db = Omadi.utils.openMainDatabase();
 
 //The view where the results are presented
@@ -81,7 +125,7 @@ if (PLATFORM == 'android') {
 }
 else {
     var scrollView = Ti.UI.createScrollView({
-        top : "45dp",
+        top : 45,
         contentHeight : 'auto',
         backgroundColor : '#EEEEEE',
         showHorizontalScrollIndicator : false,
@@ -265,11 +309,42 @@ while (fields_result.isValidRow()) {
 
 var results = db.execute('SELECT * FROM ' + curWin.type + ' WHERE  nid = ' + curWin.nid);
 
+function displayLargeImage(e){"use strict";
+    Omadi.display.displayLargeImage(e.source, curWin.nid, e.source.imageVal);
+}
 
+function openTelephone(e){"use strict";
+    Ti.Platform.openURL('tel:' + e.source.number);                       
+}
+
+function openURL(e){"use strict";
+    Ti.Platform.openURL(e.source.text);
+}
+
+function openOmadiReferenceWindow(e){"use strict";
+    
+    var newWin = Ti.UI.createWindow({
+        navBarHidden : true,
+        title : e.source.text,
+        url : "individual_object.js",
+        type : e.source.type,
+        nid : e.source.nid
+    });
+
+    newWin.open();
+}
+
+function openEmailDialog(e){"use strict";
+    var emailDialog = Titanium.UI.createEmailDialog();
+    emailDialog.subject = node.title;
+    emailDialog.toRecipients = [e.source.text];
+    emailDialog.open();
+}
 
 function doFieldOutput(fieldObj) {"use strict";
     /*global getCalculationTableView*/
-    var i, rowView, valueView, valueLabel, labelView, labelLabel, fieldIsHidden, tableView, fileId, contentImage, field_parts, part;
+    var i, rowView, valueView, valueLabel, labelView, labelLabel, fieldIsHidden, tableView, fileId, 
+        contentImage, field_parts, part, contentWidth;
     
     
     if ( typeof node[fieldObj.field_name] !== 'undefined') {
@@ -278,13 +353,13 @@ function doFieldOutput(fieldObj) {"use strict";
                 width : '100%',
                 top : 0,
                 height : Ti.UI.SIZE,
-                borderWidth : '1dp',
+                borderWidth : 1,
                 borderColor : '#ccc'
             });
     
             labelView = Ti.UI.createView({
                 width : "40%",
-                height : '40dp',
+                height : 40,
                 top : 0,
                 left : 0,
                 backgroundColor : '#ddd'
@@ -298,11 +373,11 @@ function doFieldOutput(fieldObj) {"use strict";
     
             labelLabel = Ti.UI.createLabel({
                 text : fieldObj.label,
-                right : '5dp',
-                top : '10dp',
+                right : 5,
+                top : 10,
                 textAlign : Ti.UI.TEXT_ALIGNMENT_RIGHT,
                 font : {
-                    fontSize : '16dp',
+                    fontSize : 16,
                     fontWeight : 'bold'
                 },
                 ellipsize : true,
@@ -335,8 +410,8 @@ function doFieldOutput(fieldObj) {"use strict";
                         //labelView.width = '100%';
                         //labelLabel.setTextAlign(Ti.UI.TEXT_ALIGNMENT_CENTER);
                         //labelLabel.setWidth('100%');
-                        //labelView.height = '25dp';
-                        //labelLabel.top = '2dp';
+                        //labelView.height = 25;
+                        //labelLabel.top = 2;
     
                         //scrollView.add(labelView);
                         scrollView.add(tableView);
@@ -364,9 +439,9 @@ function doFieldOutput(fieldObj) {"use strict";
                     height : Ti.UI.SIZE,
                     width : '100%',
                     font : {
-                        fontSize : '14dp'
+                        fontSize : 14
                     },
-                    left : '5dp',
+                    left : 5,
                     color : '#666'
                 });
     
@@ -374,7 +449,7 @@ function doFieldOutput(fieldObj) {"use strict";
                 labelLabel.top = 0;
                 labelLabel.color = '#666';
                 labelLabel.font = {
-                    fontSize : '14dp',
+                    fontSize : 14,
                     fontWeight : 'bold'
                 };
     
@@ -386,7 +461,6 @@ function doFieldOutput(fieldObj) {"use strict";
     
                 if (fieldObj.type === 'image') {
                     valueView = Ti.UI.createScrollView({
-                        contentWidth : 'auto',
                         contentHeight : 100,
                         arrImages : null,
                         scrollType : "horizontal",
@@ -395,6 +469,8 @@ function doFieldOutput(fieldObj) {"use strict";
                         width : '60%',
                         height : 100
                     });
+                    
+                    contentWidth = 0;
     
                     for ( i = 0; i < node[fieldObj.field_name].dbValues.length; i += 1) {
     
@@ -403,21 +479,20 @@ function doFieldOutput(fieldObj) {"use strict";
                             contentImage = Ti.UI.createImageView({
                                 height : 100,
                                 width : 100,
-                                left : 0,
+                                left : 10,
                                 top : 0,
                                 image : '../images/photo-loading.png',
                                 borderColor : '#333',
-                                borderWidth : '2dp',
+                                borderWidth : 2,
                                 imageVal : fileId,
                                 bigImg : null
                             });
     
-                            contentImage.addEventListener('click', function(e) {
-                                Omadi.display.displayLargeImage(e.source, curWin.nid, e.source.imageVal);
-                            });
+                            contentImage.addEventListener('click', displayLargeImage);
+                            
                             valueView.add(contentImage);
                             Omadi.display.setImageViewThumbnail(contentImage, node.nid, fileId);
-    
+                            contentWidth += 110;
                         }
                     }
     
@@ -428,22 +503,22 @@ function doFieldOutput(fieldObj) {"use strict";
                             contentImage = Ti.UI.createImageView({
                                 height : 100,
                                 width : 100,
-                                left : 0,
+                                left : 10,
                                 top : 0,
                                 image : node[fieldObj.field_name].imageData[i],
                                 borderColor : '#333',
-                                borderWidth : '2dp',
+                                borderWidth : 2,
                                 bigImg : node[fieldObj.field_name].imageData[i],
                                 isImage : true
                             });
     
-                            contentImage.addEventListener('click', function(e) {
-                                // //Following method will open camera to capture the image.
-                                Omadi.display.displayLargeImage(e.source, curWin.nid, e.source.imageVal);
-                            });
+                            contentImage.addEventListener('click', displayLargeImage);
                             valueView.add(contentImage);
+                            contentWidth += 110;
                         }
                     }
+                    
+                    valueView.setContentWidth(contentWidth);
     
                     if (valueView.getChildren().length === 0) {
                         valueView.height = 0;
@@ -462,9 +537,9 @@ function doFieldOutput(fieldObj) {"use strict";
                             height : Ti.UI.SIZE,
                             width : '100%',
                             font : {
-                                fontSize : '16dp'
+                                fontSize : 16
                             },
-                            left : '5dp',
+                            left : 5,
                             color : '#666'
                         });
     
@@ -483,28 +558,18 @@ function doFieldOutput(fieldObj) {"use strict";
                                 if(node[fieldObj.field_name].textValues[i] != null){
                                     valueLabel.number = node[fieldObj.field_name].textValues[i].replace(/\D/g, '');
                                 }
-                                valueLabel.addEventListener('click', function(e) {
-                                    //highlightMe(e.source.id);
-                                    Titanium.Platform.openURL('tel:' + e.source.number);
-                                });
+                                valueLabel.addEventListener('click', openTelephone);
                                 break;
     
                             case 'link_field':
     
                                 valueLabel.color = '#369';
-                                valueLabel.addEventListener('click', function(e) {
-                                    Titanium.Platform.openURL(e.source.text);
-                                });
+                                valueLabel.addEventListener('click', openURL);
                                 break;
     
                             case 'email':
                                 valueLabel.color = '#369';
-                                valueLabel.addEventListener('click', function(e) {
-                                    var emailDialog = Titanium.UI.createEmailDialog();
-                                    emailDialog.subject = node.title;
-                                    emailDialog.toRecipients = [e.source.text];
-                                    emailDialog.open();
-                                });
+                                valueLabel.addEventListener('click', openEmailDialog);
                                 break;
     
                             case 'omadi_reference':
@@ -514,18 +579,7 @@ function doFieldOutput(fieldObj) {"use strict";
                                     valueLabel.type = node[fieldObj.field_name].nodeTypes[i];
                                     valueLabel.nid = node[fieldObj.field_name].dbValues[i];
     
-                                    valueLabel.addEventListener('click', function(e) {
-                                        var newWin = Ti.UI.createWindow({
-                                            fullscreen : false,
-                                            navBarHidden : true,
-                                            title : e.source.text,
-                                            url : "individual_object.js",
-                                            type : e.source.type,
-                                            nid : e.source.nid
-                                        });
-    
-                                        newWin.open();
-                                    });
+                                    valueLabel.addEventListener('click', openOmadiReferenceWindow);
                                 }
     
                                 break;
@@ -632,13 +686,13 @@ function doRegionOutput(regionObj) {"use strict";
         text : regionObj.label.toUpperCase(),
         color : '#ddd',
         font : {
-            fontSize : '20dp',
+            fontSize : 20,
             fontWeight : 'bold'
         },
         textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER,
         width : '100%',
         touchEnabled : false,
-        height : '40dp',
+        height : 40,
         backgroundGradient : {
             type : 'linear',
             startPoint : {
@@ -709,13 +763,13 @@ function doRegionOutput(regionObj) {"use strict";
             text : 'METADATA',
             color : '#ddd',
             font : {
-                fontSize : '16dp',
+                fontSize : 16,
                 fontWeight : 'bold'
             },
             textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER,
             width : '100%',
             touchEnabled : false,
-            height : '25dp',
+            height : 25,
             backgroundGradient : {
                 type : 'linear',
                 startPoint : {
@@ -1542,7 +1596,7 @@ function doRegionOutput(regionObj) {"use strict";
 // // text : c_label[count].toUpperCase(),
 // // color : '#ddd',
 // // font : {
-// // fontSize : '22dp',
+// // fontSize : 22,
 // // fontWeight : 'bold'
 // // },
 // // textAlign : 'center',
@@ -2147,19 +2201,6 @@ function doRegionOutput(regionObj) {"use strict";
 // // }
 // // }
 //
-// } else {
-// var cell = Ti.UI.createLabel({
-// height : 'auto',
-// top : '30%',
-// textAlign : 'center',
-// width : '80%',
-// text : 'Well, this is embarrassing but it seems that you\'ve found a bug, please submit it to us, here are some things you should inform:\n    NID = ' + curWin.nid + '\n   	Omadi_reference = ' + bug[0] + ' \nWe will fix it as soon as possible'
-// });
-//
-// scrollView.add(cell);
-// }
-// }
-// }
 
 
 
@@ -2168,38 +2209,37 @@ function doRegionOutput(regionObj) {"use strict";
 //======================================
 if (PLATFORM === 'android' && isEditEnabled == true) {
     var activity = curWin.activity;
-    activity.onCreateOptionsMenu = function(e) {
+    activity.onCreateOptionsMenu = function(e) {"use strict";
+        var db, result, bundle, menu_zero, form_part, menu_edit;
         //======================================
         // MENU - UI
         //======================================
 
-        var menu = e.menu;
-        var db_act = Omadi.utils.openMainDatabase();
 
-        var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + curWin.type + '"');
-        var _data = JSON.parse(json_data.fieldByName('_data'));
+        db = Omadi.utils.openMainDatabase();
+        bundle = Omadi.data.getBundle(curWin.type);
 
-        var node_form = db_act.execute('SELECT form_part FROM node WHERE nid=' + curWin.nid);
+        //var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + curWin.type + '"');
+        //var _data = JSON.parse(json_data.fieldByName('_data'));
 
-        Ti.API.info('Form node part = ' + node_form.fieldByName('form_part'));
+        result = db.execute('SELECT form_part FROM node WHERE nid=' + curWin.nid);
+        form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
+        
+        result.close();
+        db.close();
+        
+        //Ti.API.info('Form node part = ' + node_form.fieldByName('form_part'));
         //Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
 
-        if (_data.form_parts != null && _data.form_parts != "" && (_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2)) {
-            Ti.API.info("Title = " + _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
+        if (bundle.data.form_parts != null && bundle.data.form_parts != "" && (bundle.data.form_parts.parts.length >= form_part + 2)) {
+            //Ti.API.info("Title = " + _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
 
-            var menu_zero = menu.add({
-                title : _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label,
+            menu_zero = e.menu.add({
+                title : bundle.data.form_parts.parts[form_part + 1].label,
                 order : 0
             });
 
             menu_zero.setIcon("/images/drop.png");
-
-            //======================================
-            // MENU - EVENTS
-            //======================================
-            
-            form_part = (parseInt(node_form.fieldByName('form_part'), 10) + 1);
-            
             menu_zero.addEventListener("click", function(e) {
                 //Next window to be opened
                 var formWindow = Ti.UI.createWindow({
@@ -2208,41 +2248,26 @@ if (PLATFORM === 'android' && isEditEnabled == true) {
                     type: curWin.type,
                     nid: curWin.nid,
                     url: '/main_windows/form.js',
-                    form_part: form_part
+                    form_part: form_part + 1
                 });
                 
 
                 formWindow.open();
-                
-                if(PLATFORM == 'android'){
-                    curWin.close();
-                }
-                else{
-                    //curWin.hide();
-                }
-
+                curWin.close();
             });
         }
 
-        var menu_edit = menu.add({
+        menu_edit = e.menu.add({
             title : 'Edit',
             order : 1
         });
 
         menu_edit.setIcon("/images/edit.png");
-
-        //======================================
-        // MENU - EVENTS
-        //======================================
-
-        var _aux_node_part = node_form.fieldByName('form_part');
+        
         menu_edit.addEventListener("click", function(e) {
-            openEditScreen(_aux_node_part);
+            openEditScreen(form_part);
         });
-
-        json_data.close();
-        db_act.close();
-    }
+    };
 }
 
 results.close();
@@ -2253,25 +2278,7 @@ if (PLATFORM !== 'android') {
     bottomButtons1(curWin);
 }
 
-// function createImage1(arrImages, data, scrollView, updated) {
-// contentImage = Ti.UI.createImageView({
-// height			: '100',
-// width			: '100',
-// left			: 5,
-// size: {
-// height		: '100',
-// width		: '100'
-// },
-// top				:5,
-// bottom			:5,
-// image			: '../images/photo-loading.png',
-// imageVal		: data,
-// bigImg 			: null,
-// mimeType		: null,
-// label			: scrollView.field_name,
-// isUpdated		: updated
-// });
-//
+
 //
 // if(updated == true) {
 // contentImage.image = data;
@@ -2287,49 +2294,7 @@ if (PLATFORM !== 'android') {
 // return arrImages;
 // }
 
-function openEditScreen(part) {"use strict";
-    //Next window to be opened
-    var formWindow = Ti.UI.createWindow({
-        navBarHidden: true,
-        title: curWin.title,
-        type: curWin.type,
-        nid: curWin.nid,
-        url: '/main_windows/form.js',
-        form_part: part
-    });//create_or_edit_node.getWindow();
-    // win_new.title = (PLATFORM == 'android') ? curWin.title + '-' + curWin.nameSelected : curWin.title;
-    // win_new.type = curWin.type;
-    // win_new.listView = curWin.listView;
-    // win_new.up_node = curWin.up_node;
-    // win_new.uid = curWin.uid;
-    // win_new.region_form = part;
-    // win_new.movement = curWin.movement;
-    // win_new.url = "/main_windows/form.js";
-// 
-    // //Passing parameters
-    // win_new.nid = curWin.nid;
-    // win_new.nameSelected = curWin.nameSelected;
-// 
-    // //Sets a mode to fields edition
-    // win_new.mode = 1;
 
-    //formWindow.;
-    
-    //var lastWindow = Omadi.utils.cloneObject(Ti.UI.currentWindow);
-    
-    formWindow.open();
-    //setTimeout(function() {
-    //    create_or_edit_node.loadUI();
-    //}, 100);
-    // if(PLATFORM == 'android'){
-        // curWin.close();
-    // }
-    // else{
-        curWin.hide();
-    //}
-    
-    //lastWindow.close();
-}
 
 // function createEntity() {
 // 
@@ -2511,7 +2476,7 @@ function openEditScreen(part) {"use strict";
 // }
 
 function bottomButtons1(actualWindow) {"use strict";
-    var back, space, label, edit;
+    var back, space, label, edit, arr, toolbar;
     
     back = Ti.UI.createButton({
         title : 'Back',
@@ -2540,39 +2505,44 @@ function bottomButtons1(actualWindow) {"use strict";
     });
 
     edit.addEventListener('click', function() {
-        var db_act = Omadi.utils.openMainDatabase();
+        var db, result, bundle, btn_tt, btn_id, form_part, postDialog;
+        
+        bundle = Omadi.data.getBundle(curWin.type);
+        
+        db = Omadi.utils.openMainDatabase();
+        result = db.execute('SELECT form_part FROM node WHERE nid=' + curWin.nid);
+        form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
+        result.close();
+        db.close();
+        //Ti.API.info('Form node part = ' + node_form.fieldByName('form_part'));
 
-        var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + curWin.type + '"');
-        var _data = JSON.parse(json_data.fieldByName('_data'));
-
-        var node_form = db_act.execute('SELECT form_part FROM node WHERE nid=' + curWin.nid);
-
-        Ti.API.info('Form node part = ' + node_form.fieldByName('form_part'));
-
-        var btn_tt = [];
-        var btn_id = [];
-        if (_data.form_parts != null && _data.form_parts != "") {
-            Ti.API.info('Form table part = ' + _data.form_parts.parts.length);
-            if (_data.form_parts.parts.length >= parseInt(node_form.fieldByName('form_part')) + 2) {
-                Ti.API.info("Title = " + _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
-                btn_tt.push(_data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
-                btn_id.push(node_form.fieldByName('form_part') + 1);
+        btn_tt = [];
+        btn_id = [];
+        
+        if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
+            //Ti.API.info('Form table part = ' + bundle.data.form_parts.parts.length);
+            if (bundle.data.form_parts.parts.length >= form_part + 2) {
+                //Ti.API.info("Title = " + _data.form_parts.parts[node_form.fieldByName('form_part') + 1].label);
+                btn_tt.push(bundle.data.form_parts.parts[form_part + 1].label);
+                btn_id.push(form_part + 1);
             }
         }
 
         btn_tt.push('Edit');
         btn_id.push(node_form.fieldByName('form_part'));
-        json_data.close();
-        db_act.close();
+        
+        //json_data.close();
+        //db_act.close();
+        
         btn_tt.push('Cancel');
 
-        var postDialog = Titanium.UI.createOptionDialog();
+        postDialog = Titanium.UI.createOptionDialog();
         postDialog.options = btn_tt;
         postDialog.show();
 
         postDialog.addEventListener('click', function(ev) {
             if (ev.index == btn_tt.length - 1) {
-
+                Ti.API.info("Fix this logic");
             }
             else if (ev.index != -1) {
                 openEditScreen(btn_id[ev.index]);
@@ -2582,10 +2552,10 @@ function bottomButtons1(actualWindow) {"use strict";
     });
 
     //Check is node editable or not
-    var arr = (isEditEnabled == true) ? [back, space, label, space, edit] : ((Ti.Platform.osname == 'ipad') ? [back, space, label, space] : [back, label, space])
+    arr = (isEditEnabled == true) ? [back, space, label, space, edit] : ((Ti.Platform.osname == 'ipad') ? [back, space, label, space] : [back, label, space]);
 
     // create and add toolbar
-    var toolbar = Ti.UI.iOS.createToolbar({
+    toolbar = Ti.UI.iOS.createToolbar({
         items : arr,
         top : 0,
         borderTop : false,
@@ -2593,5 +2563,5 @@ function bottomButtons1(actualWindow) {"use strict";
     });
     curWin.add(toolbar);
 
-};
+}
 

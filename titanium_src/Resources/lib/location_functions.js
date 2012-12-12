@@ -108,7 +108,7 @@ Omadi.location.uploadGPSCoordinates = function(){
 				Ti.Geolocation.getCurrentPosition(Omadi.location.currentPositionCallback);
 				Ti.API.debug("FETCHING CURRENT POSITION");
 				
-				createNotification("No coordinates saved... " + Omadi.utils.formatDate('g:i a', Number(Omadi.utils.getUTCTimestamp())));
+				createNotification("No coordinates saved... " + Omadi.utils.PHPFormatDate(Number(Omadi.utils.getUTCTimestamp()), 'g:i a'));
 				
 			}
 		} 
@@ -206,15 +206,14 @@ Omadi.location.uploadSuccess = function(e) {
 		
 		Omadi.location.unset_GPS_uploading();
 		
-		createNotification("Uploaded GPS at " + Omadi.utils.formatDate('g:i a', Number(Omadi.utils.getUTCTimestamp())));
+		createNotification("Uploaded GPS at " + Omadi.utils.PHPFormatDate(Number(Omadi.utils.getUTCTimestamp()), 'g:i a'));
 		
 	}
 	
 	Omadi.location.unset_GPS_uploading();
 };
 
-Omadi.location.uploadError = function(e) {
-	"use strict";
+Omadi.location.uploadError = function(e) {"use strict";
 	var db = Omadi.utils.openGPSDatabase();
 	db.execute("UPDATE user_location SET status =\"notUploaded\"");
 	Ti.API.error("Error found for GPS uploading: " + e.status);

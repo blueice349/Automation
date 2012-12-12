@@ -531,7 +531,9 @@ Omadi.service.sendUpdates = function() { "use strict";
                 // }
                 
                 Ti.App.Properties.setBool("isSendingData", false);
-                Ti.App.fireEvent("doneSendingData");
+                Ti.App.fireEvent("doneSendingData", {
+                    contextWindow: Ti.UI.currentWindow
+                });
             };
     
             //Connection error:

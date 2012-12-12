@@ -65,7 +65,9 @@ Omadi.widgets.calculation_field = {
             instance: instance
         });
         
+        //Ti.API.debug('before table');
         calculationTableView = Omadi.widgets.calculation_field.getTableView(node, instance);
+        //Ti.API.debug('after table');
         widgetView.add(calculationTableView);
         
         if(settings.include_recalculate_button == 1){
@@ -89,10 +91,6 @@ Omadi.widgets.calculation_field = {
             
             widgetView.add(recalculateButton);
         }
-        
-        Ti.App.addEventListener("formFullyLoaded", function(e){
-            Omadi.widgets.shared.redraw(instance);
-        });
         
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
         
@@ -346,6 +344,7 @@ Omadi.widgets.calculation_field = {
     },
     getTableView: function(node, instance) {"use strict";
         var result, row_values, tableView, cal_value, cal_value_str, isNegative, row, row_label, value, idx, dbValue, origValue;
+        /*global isNumber*/
         
         dbValue = null;
         origValue = null;
@@ -378,7 +377,9 @@ Omadi.widgets.calculation_field = {
             width : '100%',
             layout : 'vertical',
             height : Ti.UI.SIZE,
-            textValue: origValue
+            textValue: origValue,
+            dbValue: null
+            //dbValue: dbValue // Do not put the dbValue here.  It is set below depending on the layout
         });
     
         if (row_values.length > 1) {
@@ -415,10 +416,10 @@ Omadi.widgets.calculation_field = {
                     textAlign : Ti.UI.TEXT_ALIGNMENT_RIGHT,
                     width : '59.5%',
                     font : {
-                        fontSize : '15dp'
+                        fontSize : 15
                     },
                     left : 0,
-                    top : '1dp',
+                    top : 1,
                     color : '#545454',
                     wordWrap : false,
                     ellipsize : true,
@@ -431,9 +432,9 @@ Omadi.widgets.calculation_field = {
                     width : '40%',
                     font : {
                         fontFamily : 'Helvetica Neue',
-                        fontSize : '15dp'
+                        fontSize : 15
                     },
-                    top : '1dp',
+                    top : 1,
                     right : 0,
                     color : '#424242',
                     wordWrap : false,
@@ -452,6 +453,10 @@ Omadi.widgets.calculation_field = {
             } 
             
             // Set the calculated dbValue for the view
+            if(!isNumber(cal_value)){
+                cal_value = 0;
+            }
+            
             tableView.dbValue = cal_value;
             
             isNegative = (cal_value < 0) ? true : false;
@@ -471,14 +476,14 @@ Omadi.widgets.calculation_field = {
                 textAlign : Ti.UI.TEXT_ALIGNMENT_RIGHT,
                 width : '59.5%',
                 left : 0,
-                top : '1dp',
+                top : 1,
                 font : {
-                    fontSize : '16dp',
+                    fontSize : 16,
                     fontWeight : 'bold'
                 },
                 color : '#246',
                 backgroundColor : '#ddd',
-                height : '30dp'
+                height : 30
             });
     
             value = Ti.UI.createLabel({
@@ -486,16 +491,16 @@ Omadi.widgets.calculation_field = {
                 textAlign : 'left',
                 width : '40%',
                 right : 0,
-                top : '1dp',
+                top : 1,
                 font : {
-                    fontSize : '16dp',
+                    fontSize : 16,
                     fontWeight : 'bold'
                 },
                 color : '#424242',
                 wordWrap : false,
                 ellipsize : true,
                 backgroundColor : '#eee',
-                height : '30dp'
+                height : 30
             });
             
             
@@ -526,14 +531,14 @@ Omadi.widgets.calculation_field = {
                     textAlign : Ti.UI.TEXT_ALIGNMENT_RIGHT,
                     width : '59.5%',
                     left : 0,
-                    top : '1dp',
+                    top : 1,
                     font : {
-                        fontSize : '16dp',
+                        fontSize : 16,
                         fontWeight : 'bold'
                     },
                     color : '#900',
                     backgroundColor : '#ddd',
-                    height : '30dp'
+                    height : 30
                 });
         
                 value = Ti.UI.createLabel({
@@ -541,16 +546,16 @@ Omadi.widgets.calculation_field = {
                     textAlign : 'left',
                     width : '40%',
                     right : 0,
-                    top : '1dp',
+                    top : 1,
                     font : {
-                        fontSize : '16dp',
+                        fontSize : 16,
                         fontWeight : 'bold'
                     },
                     color : '#424242',
                     wordWrap : false,
                     ellipsize : true,
                     backgroundColor : '#eee',
-                    height : '30dp'
+                    height : 30
                 });
                 
                 row.add(row_label);
@@ -566,6 +571,9 @@ Omadi.widgets.calculation_field = {
             cal_value = (row_values.length == 1) ? result[0].final_value : 0;
             if(typeof (cal_value) == 'string'){
                 cal_value = parseFloat(cal_value);
+            }
+            if(!isNumber(cal_value)){
+                cal_value = 0;
             }
             
             // Set the calculated dbValue for the view
@@ -589,7 +597,7 @@ Omadi.widgets.calculation_field = {
                     textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
                     left : 0,
                     font : {
-                        fontSize : '16dp'
+                        fontSize : 16
                     },
                     color : '#666',
                     height : Ti.UI.SIZE,
@@ -612,7 +620,7 @@ Omadi.widgets.calculation_field = {
                     textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
                     left : 0,
                     font : {
-                        fontSize : '16dp',
+                        fontSize : 16,
                         fontWeight: 'bold'
                     },
                     color : '#900',
@@ -630,7 +638,7 @@ Omadi.widgets.calculation_field = {
                     textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
                     left : 0,
                     font : {
-                        fontSize : '16dp'
+                        fontSize : 16
                     },
                     color : '#666',
                     height : Ti.UI.SIZE,

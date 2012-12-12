@@ -91,13 +91,9 @@ Omadi.widgets.list_boolean = {
             widgetView.setBackgroundImage('/images/selected_test.png');
         }
         
-        //hintText : instance.label,
         
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
         
-        if (PLATFORM == 'android') {
-            widgetView.backgroundImage = '/images/textfield.png';
-        }
         
         if (!instance.can_edit) {
             widgetView.backgroundImage = '';

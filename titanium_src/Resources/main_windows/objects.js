@@ -145,27 +145,17 @@ function homeButtonPressed(e){
 	
 	Ti.API.info("OPENED NEW LIST WINDOW");
 	
-	//Current window's instance
-	
-	
-	//Sets only portrait mode
 	curWin.orientationModes = [Titanium.UI.PORTRAIT];
 	curWin.setBackgroundColor("#eee");
     curWin.addEventListener('android:back', backButtonPressed);
-	
 	
 	filterValues = curWin.filterValues;
 	if(typeof filterValues !== "object"){
         filterValues = [];
     }
 
-	//for(i in filterValues){
-	//	Ti.API.info('FILTER VALUE TOP: ' + i + ": "+ filterValues[i].value);	
-	//}
-	
 	filterFields = [];
 	
-
 	if (typeof bundle.data.mobile !== 'undefined' && typeof bundle.data.mobile.filters !== 'undefined' && typeof bundle.data.mobile.filters.fields !== 'undefined' && bundle.data.mobile.filters.fields.length > 0) {
 		
 		for(i in bundle.data.mobile.filters.fields){
@@ -182,15 +172,9 @@ function homeButtonPressed(e){
                 else{
                     filterFields.push(instances[field_name]);
                 }
-                
-                //Ti.API.info('mobile filter field: ' + field_name);
             }
 		}
 	}
-	
-	
-	//Ti.API.info(filterFields.length);
-    //Ti.API.info(filterValues.length);
 
 	var tableData = [];
 	var tableIndex = 0;
@@ -882,25 +866,31 @@ function homeButtonPressed(e){
 	else{
         showAllButton.addEventListener('click', function(e){
         
-        var newWin = Ti.UI.createWindow({
-            backgroundColor: '#FFF',
-            title:'Results',
-            url: 'objects.js',
-            navBarHidden: true,
-            type: curWin.type,
-            showFinalResults: true,
-            uid: curWin.uid,
-            show_plus: curWin.show_plus
-        });
-        
-        var filterValues = curWin.filterValues;
-        
-        if(typeof filterValues != "object"){
-            filterValues = [];
-        }
-        
-        newWin.filterValues = filterValues;
-        newWin.addEventListener('open', windowOpened);
+            var newWin = Ti.UI.createWindow({
+                backgroundColor: '#FFF',
+                title:'Results',
+                url: 'objects.js',
+                navBarHidden: true,
+                type: curWin.type,
+                showFinalResults: true,
+                uid: curWin.uid,
+                show_plus: curWin.show_plus
+            });
+            
+            var filterValues = curWin.filterValues;
+            
+            if(typeof filterValues != "object"){
+                filterValues = [];
+            }
+            
+            newWin.filterValues = filterValues;
+            newWin.addEventListener('open', windowOpened);
+            
+            Omadi.display.loading();
+            newWin.addEventListener('close', function(){
+               Omadi.display.doneLoading(); 
+            });
+            
             newWin.open();
         });
     }
@@ -1103,6 +1093,11 @@ function homeButtonPressed(e){
 			// Remove the listener to close the first window
 			//e.row.cWin.removeEventListener('android:back', backButtonPressed);
 			newWin.addEventListener('open', windowOpened);
+			
+			Omadi.display.loading();
+			newWin.addEventListener('close', function(){
+			   Omadi.display.doneLoading(); 
+			});
 			
 			newWin.open();
 		});

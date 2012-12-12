@@ -472,7 +472,8 @@ Omadi.data.deletePhotoUpload = function(id){"use strict";
 function loadNode(nid) {"use strict";
     /*global display_omadi_time01,timeConverter*/
 
-    var db, node, result, subResult, field_name, dbValue, tempDBValues, textValue, subValue, decoded, i, real_field_name, part, field_parts, widget, instances;
+    var db, node, result, subResult, field_name, dbValue, tempDBValues, textValue, subValue, 
+        decoded, i, real_field_name, part, field_parts, widget, instances, tempValue;
     
     node = {
         form_part: 0
@@ -514,10 +515,6 @@ function loadNode(nid) {"use strict";
                     if (instances.hasOwnProperty(field_name)) {
     
                         dbValue = result.fieldByName(field_name, Ti.Database.FIELD_TYPE_STRING); 
-                        
-                        //Ti.API.error(field_name + ": " + dbValue);
-    
-                        //Ti.API.info("INPUT FIELD NAME: " + field_name);
     
                         node[field_name] = {};
                         node[field_name].textValues = [];
@@ -525,26 +522,57 @@ function loadNode(nid) {"use strict";
     
                         if (dbValue === '7411317618171051229' || dbValue === 7411317618171051229) {
     
-                            node[field_name].dbValues = getDecodedResults(db, node.nid, field_name);
+                            tempDBValues = getDecodedResults(db, node.nid, field_name);
                             
-                            switch(instances[field_name].type){
-                                case 'image':
-                                case 'omadi_reference':
-                                case 'user_reference':
-                                case 'taxonomy_term_reference':
-                                case 'file':
-                                case 'datestamp':
-                                case 'omadi_time':
+                            for(i = 0; i < tempDBValues.length; i ++){
+                                tempValue = tempDBValues[i];
                                 
-                                    tempDBValues = [];
-                                    for(i = 0; i < node[field_name].dbValues.length; i ++){
-                                        if(!Omadi.utils.isEmpty(node[field_name].dbValues[i])){
-                                            tempDBValues.push(parseInt(node[field_name].dbValues[i], 10));
+                                switch(instances[field_name].type){
+                                    case 'number_integer':
+                                    case 'list_boolean':
+                                    case 'auto_increment':
+                                        if(!Omadi.utils.isEmpty(tempValue) || tempValue === "0"){
+                                            tempValue = parseInt(tempValue, 10);
+                                            node[field_name].dbValues.push(tempValue);
                                         }
-                                    }
-                                    
-                                    node[field_name].dbValues = tempDBValues;
-                                    break;
+                                       
+                                        break;
+                                        
+                                    case 'image':
+                                    case 'omadi_reference':
+                                    case 'user_reference':
+                                    case 'taxonomy_term_reference':
+                                    case 'file':
+                                    case 'datestamp':
+                                    case 'omadi_time':
+                                        if(!Omadi.utils.isEmpty(tempValue)){
+                                            tempValue = parseInt(tempValue, 10);
+                                            node[field_name].dbValues.push(tempValue);
+                                        }
+                                        
+                                        break;
+                                        
+                                    case 'number_decimal':
+                                        if(!Omadi.utils.isEmpty(tempValue) || tempValue === "0"){
+                                            tempValue = parseFloat(tempValue);
+                                            node[field_name].dbValues.push(tempValue);
+                                        }
+                                        
+                                        break;
+                                        
+                                    case 'calculation_field':
+                                        node[field_name].origValues = [];
+                                        if(!Omadi.utils.isEmpty(tempValue) || tempValue === "0"){
+                                            tempValue = parseFloat(tempValue);
+                                            node[field_name].dbValues.push(tempValue);
+                                        }
+                                        
+                                        break;
+                                        
+                                    default:
+                                        node[field_name].dbValues.push(tempValue);
+                                        break;
+                                }
                             }
                         }
                         else {
@@ -616,7 +644,6 @@ function loadNode(nid) {"use strict";
                                             dbValue = parseFloat(dbValue);
                                             node[field_name].dbValues.push(dbValue);
                                         }
-                                        
                                         
                                         break;
                                         

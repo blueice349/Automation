@@ -143,6 +143,14 @@ Omadi.widgets.omadi_reference = {
             e.source.autocomplete_table.setBorderWidth(0);
             e.source.autocomplete_table.setVisible(false);
             
+            if(PLATFORM === 'android'){
+                // Make sure the cursor is at the end of the text
+                e.source.textField.setSelection(e.source.textField.value.length, e.source.textField.value.length);
+            }
+            
+            // Pretend like this is just loaded - mainly a fix for android, but makes sense for both 
+            e.source.textField.touched = false;
+            
             Omadi.widgets.omadi_reference.setChildDefaultValues(e.source.textField);
             
             if(typeof e.source.textField.onChangeCallbacks !== 'undefined'){
@@ -174,15 +182,8 @@ Omadi.widgets.omadi_reference = {
             widgetView.minLength = settings.min_length;
         }
         
-        widgetView.addEventListener('focus', function(e) {
-            var calculatedTop;
-            /*global scrollView, scrollPositionY*/
-            e.source.touched = true;
-            if(typeof scrollView !== 'undefined'){
-                calculatedTop = e.source.convertPointToView({x:0,y:0}, scrollView);
-                scrollView.scrollTo(0, calculatedTop.y - 18 + scrollPositionY);
-            }
-        });
+        widgetView.addEventListener('focus', Omadi.widgets.omadi_reference.scrollUp);
+        widgetView.addEventListener('click', Omadi.widgets.omadi_reference.scrollUp);
         
         widgetView.addEventListener('blur', function(e){
             e.source.autocomplete_table.setBorderWidth(0);
@@ -196,7 +197,7 @@ Omadi.widgets.omadi_reference = {
             var possibleValues, tableData, i, regEx, row, upperCaseValue, callback;
             
             if (e.source.touched === true) {
-                Ti.API.info("changed");
+                //Ti.API.info("changed");
                 
                 e.source.dbValue = null;
                 e.source.textValue = e.source.value;
@@ -283,6 +284,15 @@ Omadi.widgets.omadi_reference = {
         
         return wrapper;
     },
+    scrollUp: function(e){"use strict";
+        var calculatedTop;
+        /*global scrollView, scrollPositionY*/
+        e.source.touched = true;
+        if(typeof scrollView !== 'undefined'){
+            calculatedTop = e.source.convertPointToView({x:0,y:0}, scrollView);
+            scrollView.scrollTo(0, calculatedTop.y - 18 + scrollPositionY);
+        }  
+    },
     setupParentDefaultFields: function(omadi_reference_instance){"use strict";
         var instances, field_name, instance, parentFieldName, childFieldNames = [];
         
@@ -322,7 +332,7 @@ Omadi.widgets.omadi_reference = {
         
         //instances = Omadi.data.getFields(Ti.UI.currentWindow.type);
         
-        Ti.API.debug("Setting default value");
+        //Ti.API.debug("Setting default value");
         
         if(widgetView.dbValue > 0){
             if(widgetView.defaultValueChildFields.length > 0){

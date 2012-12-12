@@ -8,8 +8,8 @@ Omadi.display.showBigImage = function(imageView) {
 	imageWin = Ti.UI.createWindow({
 		backgroundColor : '#00000000'
 	});
-	
-	imageWin.orientation = [Ti.UI.PORTRAIT];
+
+    imageWin.setOrientationModes([Ti.UI.PORTRAIT]);
 
 	background = Ti.UI.createView({
 		backgroundColor : 'black',
@@ -180,7 +180,7 @@ Omadi.display.removeNotifications = function() { "use strict";
 };
 
 
-var loadingIndicatorWindow, loadingActivityIndicator;
+var loadingIndicatorWindow, loadingActivityIndicator, indicator;
 
 Omadi.display.hideLoadingIndicator = function() { "use strict";
     Ti.API.info("hiding indicator");
@@ -189,6 +189,36 @@ Omadi.display.hideLoadingIndicator = function() { "use strict";
         loadingActivityIndicator.hide();
         loadingIndicatorWindow.close();
    // }
+};
+
+Omadi.display.loading = function(message){"use strict";
+
+    if(typeof message === 'undefined'){
+        message = 'Loading...';
+    }
+    
+    if(PLATFORM === 'android'){
+        indicator = Titanium.UI.createActivityIndicator({
+            height : Ti.UI.SIZE,
+            message : message,
+            width : Ti.UI.SIZE,
+            color : '#fff'
+        });
+        
+        indicator.show();
+        
+        Ti.App.addEventListener('displayDoneLoading', function(){
+            indicator.hide();
+        });
+    }
+};
+
+Omadi.display.doneLoading = function(){"use strict";
+    if(PLATFORM === 'android'){
+        indicator.hide();
+    }
+    
+    Ti.App.fireEvent("displayDoneLoading");
 };
 
 Omadi.display.showLoadingIndicator = function(show, timeout) {"use strict";
@@ -279,7 +309,7 @@ Omadi.display.ProgressBar = function(current, max) {"use strict";
 
     // black view
     this.progressView = Titanium.UI.createView({
-        height : '50dp',
+        height : 45,
         width : '100%',
         backgroundColor : '#111',
         opacity : 1,

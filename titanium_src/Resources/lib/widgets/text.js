@@ -159,20 +159,25 @@ Omadi.widgets.text = {
         
         widgetView.addEventListener('change', function(e) {
             /*global setConditionallyRequiredLabels*/
-            if(PLATFORM === 'android' && typeof e.source.maxLength !== 'undefined'){
-                if(e.source.value.length > e.source.maxLength){
-                    e.source.value = e.source.value.substring(0, e.source.maxLength);
-                }
-            }
-           
-            e.source.dbValue = e.source.value;
-            e.source.textValue = e.source.value;
             
-            if(e.source.check_conditional_fields.length > 0){
-                setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+            if(e.source.lastValue != e.source.value){
+                
+                if(PLATFORM === 'android' && typeof e.source.maxLength !== 'undefined'){
+                    if(e.source.value.length > e.source.maxLength){
+                        e.source.value = e.source.value.substring(0, e.source.maxLength);
+                        e.source.setSelection(e.source.value.length, e.source.value.length);
+                    }
+                }
+           
+                e.source.dbValue = e.source.value;
+                e.source.textValue = e.source.value;
+                
+                if(e.source.check_conditional_fields.length > 0){
+                    setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+                }
+                
+                e.source.lastValue = e.source.value;
             }
-            // changedContentValue(e.source);
-            // noDataChecboxEnableDisable(e.source, e.source.reffer_index);
         });
         
         return widgetView;

@@ -132,21 +132,36 @@ Omadi.widgets.license_plate = {
             
             
             widgetView.addEventListener('change', function(e) {
+                var tempValue;
+                /*jslint regexp: true*/
                 /*global setConditionallyRequiredLabels*/
-               
-                if(PLATFORM === 'android'){
-                    if(e.source.value.length > e.source.maxLength){
-                        e.source.value = e.source.value.substring(0, e.source.maxLength);
+                 
+                if(e.source.lastValue != e.source.value){
+                    
+                    tempValue = e.source.value.replace(/[^0-9a-zA-Z]/g, '');
+                    if(tempValue != e.source.value){
+                        e.source.value = tempValue;
+                        if(PLATFORM === 'android'){
+                            e.source.setSelection(e.source.value.length, e.source.value.length);
+                        }
                     }
+                    
+                    if(PLATFORM === 'android'){
+                        if(e.source.value.length > e.source.maxLength){
+                            e.source.value = e.source.value.substring(0, e.source.maxLength);
+                            e.source.setSelection(e.source.value.length, e.source.value.length);
+                        }
+                    }
+                   
+                    e.source.dbValue = e.source.value;
+                    e.source.textValue = e.source.value;
+                    
+                    if(e.source.check_conditional_fields.length > 0){
+                        setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+                    }
+                    
+                    e.source.lastValue = e.source.value;
                 }
-               
-                e.source.dbValue = e.source.value;
-                e.source.textValue = e.source.value;
-                
-                if(e.source.check_conditional_fields.length > 0){
-                    setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
-                }
-                // noDataChecboxEnableDisable(e.source, e.source.reffer_index);
             });
         }
         else{ // state

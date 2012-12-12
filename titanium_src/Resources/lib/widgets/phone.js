@@ -150,15 +150,27 @@ Omadi.widgets.phone = {
         }
         
         widgetView.addEventListener('change', function(e) {
+            var tempValue;
+            /*jslint regexp: true*/
             /*global setConditionallyRequiredLabels*/
-            e.source.dbValue = e.source.value;
-            e.source.textValue = e.source.value;
-            
-            if(e.source.check_conditional_fields.length > 0){
-                setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+           
+            if(e.source.lastValue != e.source.value){
+                tempValue = e.source.value.replace(/[^0-9\-\(\)\. ex]/g, '');
+                if(tempValue != e.source.value){
+                    e.source.value = tempValue;
+                    if(PLATFORM === 'android'){
+                        e.source.setSelection(e.source.value.length, e.source.value.length);
+                    }
+                }
+                e.source.dbValue = e.source.value;
+                e.source.textValue = e.source.value;
+                
+                if(e.source.check_conditional_fields.length > 0){
+                    setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+                }
+                
+                e.source.lastValue = e.source.value;
             }
-            // changedContentValue(e.source);
-            // noDataChecboxEnableDisable(e.source, e.source.reffer_index);
         });
         
         return widgetView;

@@ -313,7 +313,7 @@ function scrollBoxesToTop(){"use strict";
         top : 0,
         height : 'auto',
         width : 'auto',
-        right : '10dp',
+        right : 10,
         textAlign : 'right',
         text : Titanium.App.version,
         color : '#354350',
@@ -345,7 +345,7 @@ function scrollBoxesToTop(){"use strict";
     //Web site picker
     logo = Titanium.UI.createImageView({
         width : 200,
-        top : '25dp',
+        top : 25,
         height : 114,
         image : '/images/logo.png'
     });
@@ -365,7 +365,11 @@ function scrollBoxesToTop(){"use strict";
         softKeyboardOnFocus : (PLATFORM == 'android') ? Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS : '',
         borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
         autocapitalization : Ti.UI.TEXT_AUTOCAPITALIZATION_NONE,
-        autocorrect : false
+        autocorrect : false,
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        borderColor: '#999',
+        borderWidth: 1
     });
     //Adds picker to root window
     scrollView.add(portal);
@@ -388,7 +392,11 @@ function scrollBoxesToTop(){"use strict";
         softKeyboardOnFocus : (PLATFORM == 'android') ? Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS : '',
         borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
         autocapitalization : Ti.UI.TEXT_AUTOCAPITALIZATION_NONE,
-        autocorrect : false
+        autocorrect : false,
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        borderColor: '#999',
+        borderWidth: 1
     });
     
     //Adds text field "username" to the interface
@@ -407,7 +415,11 @@ function scrollBoxesToTop(){"use strict";
         softKeyboardOnFocus : (PLATFORM == 'android') ? Ti.UI.Android.SOFT_KEYBOARD_DEFAULT_ON_FOCUS : '',
         borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
         autocapitalization : Ti.UI.TEXT_AUTOCAPITALIZATION_NONE,
-        autocorrect : false
+        autocorrect : false,
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        borderColor: '#999',
+        borderWidth: 1
     });
     
     scrollView.add(passwordField);
@@ -468,7 +480,7 @@ function scrollBoxesToTop(){"use strict";
         if (PLATFORM != 'android') {
             scrollView.setContentOffset({
                 x : scrollView.getContentOffset().x,
-                y : "25dp"
+                y : 25
             }, {
                 animated : true
             });
@@ -476,8 +488,8 @@ function scrollBoxesToTop(){"use strict";
     });
     
     messageView = Titanium.UI.createView({
-        bottom : '0px',
-        height : '10%',
+        bottom : 0,
+        height : Ti.UI.SIZE,
         width : '100%',
         borderRadius : 0,
         backgroundGradient : {
@@ -539,8 +551,8 @@ function scrollBoxesToTop(){"use strict";
     
     if (Ti.Platform.osname == 'ipad') {
         termsView = Ti.UI.createView({
-            width : '24dp',
-            height : '24dp',
+            width : 24,
+            height : 24,
             borderRadius : 5,
             borderWidth : 1,
             selected : false,
@@ -551,34 +563,34 @@ function scrollBoxesToTop(){"use strict";
         termsIAgreeLabel = Ti.UI.createLabel({
             text : 'I agree to the',
             color : '#495A8B',
-            left : '5dp',
-            height : '30dp',
+            left : 5,
+            height : 30,
             font : {
-                fontSize : '14dp'
+                fontSize : 14
             },
-            width : '85dp'
+            width : 85
         });
     
         termsOfServiceLabel = Ti.UI.createLabel({
             text : ' Terms of Service',
             color : '#495A8B',
             font : {
-                fontSize : '14dp'
+                fontSize : 14
             },
-            height : '30dp',
-            width : '120dp'
+            height : 30,
+            width : 120
         });
     
         underlineView = Ti.UI.createView({
-            height : '1dp',
+            height : 1,
             backgroundColor : '#495A8B',
-            width : '109dp',
-            left : '370dp'
+            width : 109,
+            left : 370
         });
     
         termsWrapper = Ti.UI.createView({
             layout : 'horizontal',
-            height : '30dp',
+            height : 30,
             top : 15,
             width : Ti.UI.SIZE,
             left : '33%',
@@ -717,7 +729,8 @@ function scrollBoxesToTop(){"use strict";
         color: '#fff',
         font: {
             fontWeight: 'bold',
-            fontSize: 20
+            fontSize: 20,
+            fontFamily: 'Arial'
         },
         borderRadius: 10
     });
@@ -726,8 +739,8 @@ function scrollBoxesToTop(){"use strict";
     scrollView.add(loginButton);
     
     block_i = Ti.UI.createView({
-        top : '20dp',
-        height : '50dp'
+        top : 20,
+        height : 50
     });
     scrollView.add(block_i);
     
@@ -896,23 +909,10 @@ function scrollBoxesToTop(){"use strict";
     
     Ti.App.Properties.removeProperty('logStatus');
     
-    if (PLATFORM === 'android') {
-        portal.backgroundImage = usernameField.backgroundImage = passwordField.backgroundImage = 'images/textfield.png';
-        loginButton.backgroundImage = '';
-        loginButton.backgroundColor = 'white';
-        loginButton.backgroundSelectedColor = '#2E64FE';
-        loginButton.borderColor = 'gray';
-        loginButton.borderRadius = 10;
-        loginButton.color = 'black';
-        loginButton.height = '50';
-        loginButton.borderWidth = 1;
-    }
-    
-    
     loginWin.open();
     
     if ((PLATFORM !== 'android') && (Ti.Platform.displayCaps.platformHeight > 500)) {
-        scrollView.top = '200dp';
+        scrollView.top = 200;
     }
     
     Ti.App.addEventListener('loggingOut', function() {

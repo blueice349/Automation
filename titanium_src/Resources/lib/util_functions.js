@@ -218,7 +218,9 @@ Omadi.utils.isLoggedIn = function() {"use strict";
 };
 
 Omadi.utils.PHPFormatDate = function(timestamp, format){"use strict";
-    return (new Date(timestamp * 1000)).format(format);
+    var jsDate = new Date();
+    jsDate.setTime(timestamp * 1000);
+    return jsDate.format(format);
 };
 
 Omadi.utils.formatDate = function(timestamp, showTime){"use strict";
