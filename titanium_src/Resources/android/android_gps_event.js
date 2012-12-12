@@ -1,18 +1,8 @@
+/*jslint eqeq: true*/
+
 Ti.include("/lib/functions.js");
 
-var time_interval_for_alerts = 120;
 
-// state vars used by resume/pause
-var db_coord_name = Titanium.App.Properties.getString("databaseVersion") + "_" + Omadi.utils.getMainDBName() + "_GPS";
-var location_obj = [];
-var dist_filter = 50;
-var last_db_timestamp = 0;
-var curr;
-//var stop = false;
-//var uploading = false;
-var latitude;
-var longitude;
-var accuracy;
 
  // Ti.Geolocation.preferredProvider = Ti.Geolocation.PROVIDER_GPS;
  // Ti.Geolocation.purpose = "Omadi GPS Tracking";
@@ -49,13 +39,14 @@ movement = require('com.omadi.gps');
 // };
 
 
-var interval;
 
-
-function saveGPS(){
+function saveGPS(){"use strict";
 	
 	var stopGPS = Ti.App.Properties.getBool('stopGPS', false);
-	Ti.API.info("stopGPS: " + stopGPS);
+	
+	/*global updateCurrentLocation, Omadi*/
+	
+	//Ti.API.info("stopGPS: " + stopGPS);
 	
 	if(stopGPS){
 		Ti.API.info("TRYING TO STOP GPS NOW!!!");
@@ -65,6 +56,8 @@ function saveGPS(){
 			}
 			//clearInterval(interval);
 			Titanium.Android.currentService.stop();
+			
+			//Omadi.display.removeNotifications();
 		}
 		catch(ex){
 			Ti.API.error("Stopping gps service: " + ex);
@@ -107,38 +100,25 @@ function saveGPS(){
 	}
 }
 
-function updateCurrentLocation(e) {
-	curr = e;
-	//if(PLATFORM == 'android'){
-		longitude = curr.longitude;
-		latitude = curr.latitude;
-		accuracy = curr.accuracy;
-	// }else{
-		// longitude = curr.location.longitude;
-		// latitude = curr.location.latitude;
-		// accuracy = curr.location.longitude;
-	// }
-
-	var timestamp = new Date().getTime();
-	timestamp = Math.round(timestamp / 1000);
+function updateCurrentLocation(e) {"use strict";
 	
+	var timestamp, time_passed, db;
+	
+	/*global notifyIOS*/
 
-	if(latitude != 0 && longitude != 0) {
-		if(accuracy > 200) {
-			var time_now = Math.round(new Date().getTime() / 1000);
-			var time_past = time_now - Ti.App.Properties.getString("last_alert_popup");
-			if(time_past > time_interval_for_alerts) {
-				notifyIOS('Your GPS is getting inaccurate data. Please make sure the sky is visible. Current GPS accuracy is ' + accuracy + ' meters.', true);
-			} 
-			else {
-				//Ti.API.info('NOT SHOWN - Omadi GPS Tracking is not working, please make sure the sky is visible. Current GPS accuracy is ' + accuracy + ' meters');
+	timestamp = Omadi.utils.getUTCTimestamp();
+
+	if(e.latitude != 0 && e.longitude != 0) {
+		if(e.accuracy > 200) {
+			time_passed = timestamp - Ti.App.Properties.getString("last_alert_popup");
+			if(time_passed > 120) {
+				notifyIOS('Your GPS is getting inaccurate data. Please make sure the sky is visible. Current GPS accuracy is ' + e.accuracy + ' meters.', true);
 			}
 		}
 		
-		var db_coord = Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
-		
-		db_coord.execute("INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + longitude + "','" + latitude + "'," + timestamp + ", 'notUploaded')");
-		db_coord.close();
+		db = Omadi.utils.openGPSDatabase();
+		db.execute("INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + e.longitude + "','" + e.latitude + "'," + timestamp + ", 'notUploaded')");
+		db.close();
 		
 	}
 	//setTimeout(s, 5000);

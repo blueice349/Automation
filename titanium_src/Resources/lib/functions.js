@@ -33,31 +33,42 @@ function DPUnitsToPixels(TheDPUnits) {"use strict";
     return (TheDPUnits * (Titanium.Platform.displayCaps.dpi / 160));
 }
 
-function createNotification(message) {
-
-    if (PLATFORM === 'android') {
-        var mainIntent = Titanium.Android.createIntent({
-            className : 'org.appcelerator.titanium.TiActivity',
-            packageName : 'com.omadi.crm',
-            flags : Titanium.Android.FLAG_ACTIVITY_CLEAR_TOP | Titanium.Android.FLAG_ACTIVITY_SINGLE_TOP
-        });
-
-        var pending = Titanium.Android.createPendingIntent({
-            activity : Titanium.Android.currentActivity,
-            intent : mainIntent,
-            type : Titanium.Android.PENDING_INTENT_FOR_ACTIVITY,
-            flags : Titanium.Android.FLAG_UPDATE_CURRENT
-        });
-
-        var notification = Titanium.Android.createNotification({
-            icon : 0x7f020000,
-            contentTitle : 'Omadi CRM',
-            contentText : message,
-            tickerText : 'Omadi GPS Service',
-            contentIntent : pending,
-            flags : Titanium.Android.FLAG_ONGOING_EVENT | Titanium.Android.FLAG_NO_CLEAR
-        });
-        Titanium.Android.NotificationManager.notify(42, notification);
+function createNotification(message) {"use strict";
+    var mainIntent, pending, notification;
+    /*jslint bitwise: true*/
+    try{
+        if(Omadi.utils.isLoggedIn() && !Ti.App.Properties.getBool('stopGPS', false) ){
+            if (PLATFORM === 'android') {
+                mainIntent = Titanium.Android.createIntent({
+                    className : 'org.appcelerator.titanium.TiActivity',
+                    packageName : 'com.omadi.crm',
+                    flags : Titanium.Android.FLAG_ACTIVITY_CLEAR_TOP | Titanium.Android.FLAG_ACTIVITY_SINGLE_TOP
+                });
+        
+                pending = Titanium.Android.createPendingIntent({
+                    activity : Titanium.Android.currentActivity,
+                    intent : mainIntent,
+                    type : Titanium.Android.PENDING_INTENT_FOR_ACTIVITY,
+                    flags : Titanium.Android.FLAG_UPDATE_CURRENT
+                });
+        
+                notification = Titanium.Android.createNotification({
+                    icon : 0x7f020000,
+                    contentTitle : 'Omadi CRM',
+                    contentText : message,
+                    tickerText : 'Omadi GPS Service',
+                    contentIntent : pending,
+                    flags : Titanium.Android.FLAG_ONGOING_EVENT | Titanium.Android.FLAG_NO_CLEAR
+                });
+                Titanium.Android.NotificationManager.notify(42, notification);
+            }
+        }
+        else{
+            //Ti.Android.NotificationManager.cancel(42);
+        }
+    }
+    catch(nothing){
+        
     }
 }
 

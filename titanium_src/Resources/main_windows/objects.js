@@ -217,16 +217,16 @@ function homeButtonPressed(e){
 	
 	if(filterFields.length > 0){
 		for(i = 0; i < filterFields.length; i ++){
-		    Ti.API.info(i);
+		    //Ti.API.info(i);
 			field_name = filterFields[i].field_name;
-			Ti.API.info("FILTER FIELD NAME: " + field_name);
+			//Ti.API.info("FILTER FIELD NAME: " + field_name);
 			
 			
 			if(typeof filterValues[i] != 'undefined' && filterValues[i].value !== false){
 				Ti.API.info("FILTER VALUE BELOW: " + i + ": " + filterValues[i].value );
 				var filterValue = filterValues[i].value;
 				
-				Ti.API.info("FILTER VALUE 4: " + i + " " + filterValue);
+				//Ti.API.info("FILTER VALUE 4: " + i + " " + filterValue);
 				// Filter with the current filter
 				
 				// Show all results with filters applied

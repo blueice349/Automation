@@ -160,7 +160,7 @@ function createAndroidNotifications(){"use strict";
                 Ti.API.error('BLANK SCREEN');
                 alert('BLANK SCREEN');
                 //createNotification("BLANK SCREEN ...");
-                Omadi.display.removeNotifications();
+                //Omadi.display.removeNotifications();
             }
             
             ostate = "pause";
@@ -796,7 +796,7 @@ function scrollBoxesToTop(){"use strict";
                 password : passwordField.value,
                 device_id : Ti.Platform.getId(),
                 app_version : Ti.App.version,
-                device_data : JSON.stringify({
+                device_data : {
                     model : Ti.Platform.model,
                     version : Ti.Platform.version,
                     architecture : Ti.Platform.architecture,
@@ -805,7 +805,7 @@ function scrollBoxesToTop(){"use strict";
                     screen_density : Ti.Platform.displayCaps.density,
                     primary_language : Ti.Platform.locale,
                     processor_count : Ti.Platform.processorCount
-                })
+                }
             }));
     
             //Ti.API.info('{"username":"'+parms["username"]+'","password":"'+parms["password"] +'","device_id":"'+parms["device_id"] +'","app_version":"'+parms["app_version"] +'","device_data":'+JSON.stringify(parms["device_data"]) +' }');
@@ -919,6 +919,8 @@ function scrollBoxesToTop(){"use strict";
         loginWin.touchEnabled = true;
         Ti.API.debug("logged out");
         scrollView.scrollTo(0, 0);
+        
+        //setTimeout(Omadi.display.removeNotifications, 30000);
     });
     
     if (Omadi.utils.isLoggedIn() === true) {

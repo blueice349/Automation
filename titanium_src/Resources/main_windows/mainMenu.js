@@ -169,8 +169,6 @@ function checkUpdate(useProgressBar) {"use strict";
     db.close();
     
     Omadi.service.fetchUpdates(useProgressBar);
-    
-    Omadi.service.uploadFile();
 }
 
 function displayBundleList() {"use strict";

@@ -465,7 +465,7 @@ Omadi.data.saveNode = function(node){"use strict";
 
 Omadi.data.deletePhotoUpload = function(id){"use strict";
     var db = Omadi.utils.openMainDatabase();
-    db.execute("DELETE FROM _photos WHERE id = " + id);s
+    db.execute("DELETE FROM _photos WHERE id = " + id);
     db.close();
 };
 

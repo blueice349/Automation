@@ -175,7 +175,12 @@ Omadi.display.setImageViewThumbnail = function(imageView, nid, file_id) {
 Omadi.display.removeNotifications = function() { "use strict";
     /*global PLATFORM*/
     if(PLATFORM === 'android'){
-        Titanium.Android.NotificationManager.cancelAll();
+        try{
+            Ti.Android.NotificationManager.cancel(42);
+        }
+        catch(nothing){
+            
+        }
     }
 };
 

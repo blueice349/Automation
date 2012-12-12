@@ -1201,32 +1201,58 @@ function save_form_data(saveType) {"use strict";
                                 form_part: node.form_part + 1
                             });
                             
+                            Omadi.display.loading();
+                            formWin.addEventListener('open', Omadi.display.doneLoading);
+                            
                             formWin.open();
                         }
                         
                         // Send a clone of the object so the window will close after the network returns a response
                         Omadi.service.sendUpdates();
+                        
+                        if(PLATFORM === 'android'){
+                            //Ti.UI.currentWindow.close();
+                            //Ti.UI.currentWindow.setOpacity(0);
+                            Ti.UI.currentWindow.close();
+                        }
+                        else{
+                            Ti.UI.currentWindow.hide();
+                        }
                     }
                     else{
-                        alert('Alert management of this ' + node.type.toUpperCase() + ' immediately. You do not have an Internet connection right now.  Your data was saved and will be synched when you connect to the Internet.');
-                        //close_me_delay();
-                    }
-                
-                    //Omadi.display.hideLoadingIndicator();
-                    Ti.API.debug("Hide form window");
-                    if(PLATFORM === 'android'){
-                        //Ti.UI.currentWindow.close();
-                        //Ti.UI.currentWindow.setOpacity(0);
-                        Ti.UI.currentWindow.close();
-                    }
-                    else{
-                        Ti.UI.currentWindow.hide();
+                        dialog = Titanium.UI.createAlertDialog({
+                            title : 'Form Validation',
+                            buttonNames : ['OK'],
+                            message: 'Alert management of this ' + node.type.toUpperCase() + ' immediately. You do not have an Internet connection right now.  Your data was saved and will be synched when you connect to the Internet.'
+                        });
+                        
+                        dialog.show();
+                        
+                        dialog.addEventListener('click', function(ev) {
+                            
+                            
+                            if (saveType === "next_part") {
+                            
+                                formWin = Ti.UI.createWindow({
+                                    navBarHidden: true,
+                                    url: '/main_windows/form.js',
+                                    type: win.type,
+                                    nid: node.nid,
+                                    form_part: node.form_part + 1
+                                });
+                                
+                                Omadi.display.loading();
+                                formWin.addEventListener('open', Omadi.display.doneLoading);
+                                
+                                formWin.open();
+                            }
+                            
+                            Ti.UI.currentWindow.close();
+                        });
                     }
                     
-                   
-                    //Ti.UI.currentWindow.setVisible(false);
+                    
                 }
-           // }
         }
         catch(ex){
             alert("Saving to mobile database: " + ex);

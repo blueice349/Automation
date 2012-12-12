@@ -205,10 +205,12 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                                 }
             
                                 //Omadi.data.setUpdating(false);
-                                Omadi.service.uploadFile();
+                                
             
                             }
                             mainDB.close();
+                            
+                            
                             // Set the last timestamp
                             //Omadi.data.setLastUpdateTimestamp(json.request_time);
                         }
@@ -301,6 +303,8 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                                 dialog.show();
                             }
                         }
+                        
+                        
                     }
                     catch(ex){
                         alert("Saving Sync Data: " + ex);
@@ -315,6 +319,8 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                     }
         
                     Omadi.data.setUpdating(false);
+                    
+                    Omadi.service.uploadFile();
                 };
         
                 //Connection error:
@@ -413,6 +419,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                     }
         
                     Omadi.data.setUpdating(false);
+                    Omadi.service.uploadFile();
         
                     Ti.API.error("Services are down");
                 };
@@ -661,12 +668,14 @@ Omadi.service.logout = function() { "use strict";
     db.close();
     
     //Omadi.display.hideLoadingIndicator();
-    Omadi.display.removeNotifications();
+    
     
     Ti.UI.currentWindow.hide();
 
     Ti.App.Properties.setBool("stopGPS", true);
     Ti.App.Properties.setBool("quitApp", true);
+    
+    Omadi.display.removeNotifications();
 };
 
 
@@ -697,7 +706,7 @@ Omadi.service.uploadFile = function() {"use strict";
                 
                 count = 0;
                 mainDB = Omadi.utils.openMainDatabase();
-                result = mainDB.execute("SELECT nid, id, file_data, file_name, field_name, delta, timestamp FROM _photos WHERE nid > 0 AND uploading = 0 ORDER BY delta ASC");
+                result = mainDB.execute("SELECT nid, id, file_data, file_name, field_name, delta, timestamp FROM _photos WHERE nid > 0 ORDER BY delta ASC");
                 
                 while (result.isValidRow()) {
                     //Only upload those images that have positive nids

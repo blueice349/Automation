@@ -206,11 +206,17 @@ Omadi.location.uploadSuccess = function(e) {
 		
 		Omadi.location.unset_GPS_uploading();
 		
-		createNotification("Uploaded GPS at " + Omadi.utils.PHPFormatDate(Number(Omadi.utils.getUTCTimestamp()), 'g:i a'));
+		//if(!Ti.App.Properties.getBool('stopGPS', false) && Omadi.utils.isLoggedIn()){
+		      createNotification("Uploaded GPS at " + Omadi.utils.PHPFormatDate(Number(Omadi.utils.getUTCTimestamp()), 'g:i a'));
+		//}
 		
 	}
 	
 	Omadi.location.unset_GPS_uploading();
+	
+	// if(Ti.App.Properties.getBool('stopGPS', false) || !Omadi.utils.isLoggedIn()){
+        // setTimeout(Omadi.display.removeNotifications, 1000);
+    // }
 };
 
 Omadi.location.uploadError = function(e) {"use strict";
