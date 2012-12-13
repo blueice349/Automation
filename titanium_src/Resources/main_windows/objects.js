@@ -13,6 +13,15 @@ filterValues,
 filterFields, 
 win_new;
 
+var filterTableView;
+var itemsPerPage = 40;
+var numPagesLoaded = 0;
+ var showFinalResults = false;
+ var tableData = [];
+ var loadingMoreLabel, loadingMoreView;
+ var num_records = -1;
+ var titleSearch = "";
+
 curWin = Ti.UI.currentWindow;
 
 Ti.App.addEventListener('loggingOut', function(){"use strict";
@@ -136,15 +145,342 @@ function homeButtonPressed(e){
 // function getFinalResults(filterFields, filterValues){
 //     
 // }
+
+function getDataSQL(getCount){"use strict";
+    var lastFilterField, sql, field_name, i, filterValue, conditions;
+    
+    conditions = [];
+    
+    if(filterValues.length < filterFields.length && !showFinalResults){
+        lastFilterField = filterFields[filterValues.length];
+        
+        Ti.API.debug("Filtering by " + lastFilterField.field_name);
+        
+        if(typeof lastFilterField.field_name !== 'undefined'){
+            field_name = lastFilterField.field_name;
+            sql = "SELECT DISTINCT " + field_name + " AS value FROM " + curWin.type + " type  INNER JOIN node n ON n.nid = type.nid";
+        }
+        else{
+            if(getCount){
+                sql = "SELECT COUNT(*) FROM node n INNER JOIN " + curWin.type + " type ON type.nid = n.nid ";
+            }
+            else{
+                sql = "SELECT n.title, n.nid, n.viewed FROM node n INNER JOIN " + curWin.type + " type ON type.nid = n.nid ";
+            }
+            showFinalResults = true;
+        }
+    }
+    else{//(filterValues.length == filterFields.length){
+        if(getCount){
+            sql = "SELECT COUNT(*) FROM node n INNER JOIN " + curWin.type + " type ON type.nid = n.nid ";
+        }
+        else{
+            sql = "SELECT n.title, n.nid, n.viewed FROM node n INNER JOIN " + curWin.type + " type ON type.nid = n.nid ";
+        }
+        
+        showFinalResults = true;
+    }
+    
+    if(filterFields.length > 0){
+        for(i = 0; i < filterFields.length; i ++){
+            //Ti.API.info(i);
+            field_name = filterFields[i].field_name;
+            //Ti.API.info("FILTER FIELD NAME: " + field_name);
+            
+            if(typeof filterValues[i] != 'undefined' && filterValues[i].value !== false){
+                Ti.API.info("FILTER VALUE BELOW: " + i + ": " + filterValues[i].value );
+                filterValue = filterValues[i].value;
+                
+                // Show all results with filters applied
+                if(filterValue === null){
+                    conditions.push(field_name + ' IS NULL');
+                }
+                else if(filterValue === ""){
+                    conditions.push(field_name + " = ''");
+                }
+                else{
+                    conditions.push(field_name + ' = ' + filterValue);
+                }   
+            }
+        }
+    }
+    
+    if(typeof titleSearch === 'string' && titleSearch.length > 0){
+        conditions.push("n.title LIKE '%" + titleSearch + "%'");
+    }
+    
+    if(conditions.length > 0){
+        sql += " WHERE ";
+        sql += conditions.join(" AND ");
+    }
+    
+    if(showFinalResults){
+        sql += " ORDER BY ";
+        
+        if(typeof bundle.data.mobile !== 'undefined' && typeof bundle.data.mobile.sort_field !== 'undefined'){
+            sql += "n." + bundle.data.mobile.sort_field + " " + bundle.data.mobile.sort_direction;
+        }
+        else{
+            sql += "n.title ASC";
+        }
+        
+        sql += " LIMIT " + itemsPerPage + " OFFSET " + (itemsPerPage * numPagesLoaded);
+    }
+    
+    Ti.API.info("FILTER SQL: " + sql);
+    
+    return sql;
+}
+
+
+
+function setTableData(){"use strict";
+    
+    var lastFilterField, field_name, sql, i, filterValue, row, titleParts, label1, label2,
+        db, db_result, title, separator, whiteSpaceTest, backgroundColor, numTitleRows, fullWidth,
+        text_values, text_value, values, safeValues, subResult, tableIndex, resultCount, appendData, 
+        countSQL;
+    
+    tableIndex = 0;
+    appendData = [];
+    
+    sql = getDataSQL();
+    
+    if(showFinalResults){
+        db = Omadi.utils.openMainDatabase();
+        
+        if(numPagesLoaded === 0){
+            countSQL = getDataSQL(true);
+            db_result = db.execute(countSQL);
+            num_records = db_result.field(0, Ti.Database.FIELD_TYPE_INT);
+            db_result.close();
+        }
+        
+        db_result = db.execute(sql);
+        
+        resultCount = 0;
+        while(db_result.isValidRow()){
+            resultCount ++;
+            
+            //Ti.API.info("FILTER FINAL RESULT: " + db_result.fieldByName('nid'));
+            //Ti.API.info("FILTER FINAL RESULT: " + db_result.fieldByName('title'));
+            
+            title = db_result.fieldByName('title');
+            title = Omadi.utils.trimWhiteSpace(title);
+            
+            if(title.length == 0){
+                title = '- No Title -';
+            }
+            
+            separator = ' - ';
+            if(typeof bundle.data.title_fields !== 'undefined' && typeof bundle.data.title_fields.separator !== 'undefined'){
+                separator = bundle.data.title_fields.separator;
+            }
+            
+            whiteSpaceTest = Omadi.utils.trimWhiteSpace(separator);
+            backgroundColor = '#eee';
+            if(db_result.fieldByName('viewed') > 0){
+                backgroundColor = '#fff';
+            }
+            
+            row = Ti.UI.createTableViewRow({
+                hasChild: false,
+                searchValue: db_result.fieldByName('title'),
+                color: '#000',
+                nid: db_result.fieldByName('nid'),
+                backgroundColor: backgroundColor
+            });
+            
+            if(whiteSpaceTest.length > 0){
+                titleParts = title.split(separator);
+                numTitleRows = Math.ceil(titleParts.length / 2);
+                fullWidth = (titleParts.length === 1);
+                
+                for(i = 0; i <= numTitleRows; i ++){
+                    
+                    // Add label1 before label2 so the white background will go over the right label if it's extra long
+                    label1 = Ti.UI.createLabel({
+                        height : 20,
+                        text : titleParts[i*2],
+                        color: '#000',
+                        top: (i * 20 + 5),
+                        left: 5,
+                        zIndex: 1,
+                        width: (fullWidth ? '100%' : '45%'),
+                        font: {fontSize: 14},
+                        wordWrap: false,
+                        ellipsize: true
+                    });
+                    
+                    row.add(label1);
+                    
+                    if(typeof titleParts[i*2+1] != 'undefined'){
+                        label2 = Ti.UI.createLabel({
+                            height : 20,
+                            text : titleParts[i*2+1],
+                            color: '#666',
+                            top: (i * 20 + 5),
+                            left: '54%',
+                            width: '45%',
+                            font: {fontSize: 14},
+                            wordWrap: false,
+                            ellipsize: true
+                        });
+                        
+                        row.add(label2);
+                    }
+                }
+                row.height = (numTitleRows * 20) + 10;
+    
+            }
+            else{
+                row.height = 50;
+                row.title = row.searchValue;
+            }
+            
+            appendData[tableIndex] = row;
+            tableIndex++;
+            
+            db_result.next();
+        }
+        db_result.close();
+        db.close();
+    }
+    else{
+        
+        text_values = [];
+        values = [];
+        
+        db = Omadi.utils.openMainDatabase();
+        db_result = db.execute(sql);
+        
+        while(db_result.isValidRow()){
+            
+            values.push(db_result.fieldByName('value'));
+            
+            Ti.API.info("FILTER: " + db_result.fieldByName('value'));
+            
+            db_result.next();
+        }
+        db_result.close();
+        
+        
+        
+        sql = "SELECT ";
+        
+        lastFilterField = filterFields[filterValues.length];
+        
+        safeValues = [];
+        
+        for(i = 0; i < values.length; i ++){
+            if(values[i] > ''){
+                safeValues.push(values[i]);
+            }
+            else{
+                text_values[values[i]] = '- Not Set -';
+            }
+        }
+        
+
+        //db = Omadi.utils.openMainDatabase();
+        
+        if(lastFilterField.type == 'taxonomy_term_reference'){
+            subResult = db.execute("SELECT tid AS value, name AS text_value FROM term_data WHERE tid IN (" + safeValues.join(",") + ")");
+            while(subResult.isValidRow()){
+                text_values[subResult.fieldByName('value')] = subResult.fieldByName('text_value');          
+                //Ti.API.info("FILTER: " + subResult.fieldByName('text_value'));
+                subResult.next();
+            }
+            
+            subResult.close();
+        }
+        else if(lastFilterField.type == 'omadi_reference'){
+            subResult = db.execute("SELECT nid AS value, title AS text_value FROM node WHERE nid IN (" + safeValues.join(",") + ")");
+            while(subResult.isValidRow()){
+                text_values[subResult.fieldByName('value')] = subResult.fieldByName('text_value');          
+                //Ti.API.info("FILTER: " + subResult.fieldByName('text_value'));
+                subResult.next();
+            }
+            
+            subResult.close();
+        }
+        else if(lastFilterField.type == 'user_reference'){
+            subResult = db.execute("SELECT uid AS value, realname AS text_value FROM user WHERE uid IN (" + safeValues.join(",") + ")");
+            while(subResult.isValidRow()){
+                text_values[subResult.fieldByName('value')] = subResult.fieldByName('text_value');          
+                //Ti.API.info("FILTER: " + subResult.fieldByName('text_value'));
+                subResult.next();
+            }
+            
+            subResult.close();
+        }
+        else if(lastFilterField.field_name == 'form_part'){
+            
+            if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
+                Ti.API.info('Form table part = ' + bundle.data.form_parts.parts.length);
+                if (bundle.data.form_parts.parts.length > 0) {
+                    for(i in bundle.data.form_parts.parts){
+                        if(bundle.data.form_parts.parts.hasOwnProperty(i)){
+                            text_values[i] = bundle.data.form_parts.parts[i].label;
+                        }
+                        //Ti.API.info("FILTER: " + bundle.data.form_parts.parts[i].label);
+                    }
+                }
+            }
+        }
+        db.close();
+    
+        tableIndex = 0;
+        for(i = 0; i < values.length; i ++){
+        
+            //var text_value = '- Empty - ';
+            //if(value > 0){
+            text_value = text_values[values[i]];
+            //}
+            
+            appendData[tableIndex] = Ti.UI.createTableViewRow({
+                height : 50,
+                hasChild : true,
+                title : text_value,
+                color: '#000',
+                filterValue: values[i],
+                filterValueText: text_value
+            });
+            tableIndex++;
+        }   
+        
+        if(field_name != 'form_part'){
+            appendData.sort(sortByTitle);
+        }
+    }
+    
+    if(!showFinalResults || resultCount < itemsPerPage){
+        filterTableView.setFooterTitle(null);
+    }
+    
+    if(numPagesLoaded === 0){
+        filterTableView.setData(appendData);
+    }
+    else{
+        filterTableView.appendRow(appendData);
+    }
+}
 	
 
-(function(){
-	"use strict";
+(function(){"use strict";
 	/*global Omadi*/
 	/*jslint vars: true*/
 	
-	var i, filterField, field_name;
-	var db, db_result;
+	var i, filterField, field_name, db, db_result, sql, lastFilterField;
+   
+    
+    filterTableView = Titanium.UI.createTableView({
+        separatorColor: '#BDBDBD',
+        top: 60,
+        height: Ti.UI.SIZE,
+        footerTitle: "Loading More Rows...",
+        data: []
+    }); 
 	
 	Omadi.data.setUpdating(true);
 	
@@ -158,6 +494,7 @@ function homeButtonPressed(e){
     curWin.addEventListener('android:back', backButtonPressed);
 	
 	filterValues = curWin.filterValues;
+	
 	if(typeof filterValues !== "object"){
         filterValues = [];
     }
@@ -187,287 +524,31 @@ function homeButtonPressed(e){
 	
 	Ti.API.debug("Filter Fields: " + JSON.stringify(filterFields));
 
-	var tableData = [];
-	var tableIndex = 0;
 	
-	var showFinalResults = false;
 	if(typeof curWin.showFinalResults != 'undefined'){
 		showFinalResults = curWin.showFinalResults;
 	}
 	
-	var sql;
-	var lastFilterField;
-	
-	if(filterValues.length < filterFields.length && !showFinalResults){
-		lastFilterField = filterFields[filterValues.length];
-		
-		Ti.API.debug("Filtering by " + lastFilterField.field_name);
-		
-		if(typeof lastFilterField.field_name !== 'undefined'){
-            field_name = lastFilterField.field_name;
-            sql = "SELECT DISTINCT " + field_name + " AS value FROM " + curWin.type + " type  INNER JOIN node n ON n.nid = type.nid";
-        }
-        else{
-            sql = "SELECT n.title, n.nid, n.viewed FROM node n INNER JOIN " + curWin.type + " type ON type.nid = n.nid ";
-        
-            showFinalResults = true;
-        }
-	}
-	else{//(filterValues.length == filterFields.length){
-		sql = "SELECT n.title, n.nid, n.viewed FROM node n INNER JOIN " + curWin.type + " type ON type.nid = n.nid ";
-		
-		showFinalResults = true;
-	}
-	
-	var conditions = [];
-	
-	if(filterFields.length > 0){
-		for(i = 0; i < filterFields.length; i ++){
-		    //Ti.API.info(i);
-			field_name = filterFields[i].field_name;
-			//Ti.API.info("FILTER FIELD NAME: " + field_name);
-			
-			if(typeof filterValues[i] != 'undefined' && filterValues[i].value !== false){
-				Ti.API.info("FILTER VALUE BELOW: " + i + ": " + filterValues[i].value );
-				var filterValue = filterValues[i].value;
-				
-				// Show all results with filters applied
-				if(filterValue === null){
-					conditions.push(field_name + ' IS NULL');
-				}
-				else if(filterValue === ""){
-					conditions.push(field_name + " = ''");
-				}
-				else{
-					conditions.push(field_name + ' = ' + filterValue);
-				}	
-			}
-		}
-	}
-	
-	if(conditions.length > 0){
-		sql += " WHERE ";
-		sql += conditions.join(" AND ");
-	}
-	
-	if(showFinalResults){
-		sql += " ORDER BY ";
-		
-		if(typeof bundle.data.mobile !== 'undefined' && typeof bundle.data.mobile.sort_field !== 'undefined'){
-			sql += "n." + bundle.data.mobile.sort_field + " " + bundle.data.mobile.sort_direction;
-		}
-		else{
-			sql += "n.title ASC";
-		}
-	}
-	
-	Ti.API.info("FILTER SQL: " + sql);
-	
-	if(showFinalResults){
-	    db = Omadi.utils.openMainDatabase();
-        db_result = db.execute(sql);
-		while(db_result.isValidRow()){
-			
-			//Ti.API.info("FILTER FINAL RESULT: " + db_result.fieldByName('nid'));
-			//Ti.API.info("FILTER FINAL RESULT: " + db_result.fieldByName('title'));
-			
-			var title = db_result.fieldByName('title');
-			
-			title = Omadi.utils.trimWhiteSpace(title);
-			
-			if(title.length == 0){
-				title = '- No Title -';
-			}
-			
-			var separator = ' - ';
-			if(typeof bundle.data.title_fields !== 'undefined' && typeof bundle.data.title_fields.separator !== 'undefined'){
-				separator = bundle.data.title_fields.separator;
-			}
-			
-			var whiteSpaceTest = Omadi.utils.trimWhiteSpace(separator);
-			var backgroundColor = '#eee';
-			if(db_result.fieldByName('viewed') > 0){
-				backgroundColor = '#fff';
-			}
-			var row = Ti.UI.createTableViewRow({
-				hasChild: false,
-				searchValue: db_result.fieldByName('title'),
-				color: '#000',
-				nid: db_result.fieldByName('nid'),
-				backgroundColor: backgroundColor
-			});
-			
-			if(whiteSpaceTest.length > 0){
-				var titleParts = title.split(separator);
-				var numTitleRows = Math.ceil(titleParts.length / 2);
-				for(i = 0; i <= numTitleRows; i ++){
-					
-					// Add label1 before label2 so the white background will go over the right label if it's extra long
-					var label1 = Ti.UI.createLabel({
-						height : 20,
-						text : titleParts[i*2],
-						color: '#000',
-						top: (i * 20 + 5),
-						left: 5,
-						zIndex: 1,
-						width: '45%',
-						font: {fontSize: 14},
-						wordWrap: false,
-						ellipsize: true
-					});
-					
-					row.add(label1);
-					
-					if(typeof titleParts[i*2+1] != 'undefined'){
-						var label2 = Ti.UI.createLabel({
-							height : 20,
-							text : titleParts[i*2+1],
-							color: '#666',
-							top: (i * 20 + 5),
-							left: '54%',
-							width: '45%',
-							font: {fontSize: 14},
-							wordWrap: false,
-							ellipsize: true
-						});
-						
-						row.add(label2);
-					}
-				}
-				row.height = (numTitleRows * 20) + 10;
-	
-			}
-			else{
-				row.height = 50;
-				row.title = row.searchValue;
-			}
-			
-			tableData[tableIndex] = row;
-			tableIndex++;
-			
-			db_result.next();
-		}
-		db_result.close();
-		db.close();
-	}
-	else{
-		
-		var text_values = [];
-		var values = [];
-		
-		db = Omadi.utils.openMainDatabase();
-        db_result = db.execute(sql);
-		while(db_result.isValidRow()){
-			
-			values.push(db_result.fieldByName('value'));
-			
-			Ti.API.info("FILTER: " + db_result.fieldByName('value'));
-			
-			db_result.next();
-		}
-		db_result.close();
-		
-		
-		
-		sql = "SELECT ";
-		
-		lastFilterField = filterFields[filterValues.length];
-		
-		var safeValues = [];
-		
-		for(i = 0; i < values.length; i ++){
-			if(values[i] > ''){
-				safeValues.push(values[i]);
-			}
-			else{
-				text_values[values[i]] = '- Not Set -';
-			}
-		}
-		
-		var subResult;
-		//db = Omadi.utils.openMainDatabase();
-		
-		if(lastFilterField.type == 'taxonomy_term_reference'){
-			subResult = db.execute("SELECT tid AS value, name AS text_value FROM term_data WHERE tid IN (" + safeValues.join(",") + ")");
-			while(subResult.isValidRow()){
-				text_values[subResult.fieldByName('value')] = subResult.fieldByName('text_value');			
-				//Ti.API.info("FILTER: " + subResult.fieldByName('text_value'));
-				subResult.next();
-			}
-			
-			subResult.close();
-		}
-		else if(lastFilterField.type == 'omadi_reference'){
-			subResult = db.execute("SELECT nid AS value, title AS text_value FROM node WHERE nid IN (" + safeValues.join(",") + ")");
-			while(subResult.isValidRow()){
-				text_values[subResult.fieldByName('value')] = subResult.fieldByName('text_value');			
-				//Ti.API.info("FILTER: " + subResult.fieldByName('text_value'));
-				subResult.next();
-			}
-			
-			subResult.close();
-		}
-		else if(lastFilterField.type == 'user_reference'){
-			subResult = db.execute("SELECT uid AS value, realname AS text_value FROM user WHERE uid IN (" + safeValues.join(",") + ")");
-			while(subResult.isValidRow()){
-				text_values[subResult.fieldByName('value')] = subResult.fieldByName('text_value');			
-				//Ti.API.info("FILTER: " + subResult.fieldByName('text_value'));
-				subResult.next();
-			}
-			
-			subResult.close();
-		}
-		else if(lastFilterField.field_name == 'form_part'){
-			
-			if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
-				Ti.API.info('Form table part = ' + bundle.data.form_parts.parts.length);
-				if (bundle.data.form_parts.parts.length > 0) {
-					for(i in bundle.data.form_parts.parts){
-					    if(bundle.data.form_parts.parts.hasOwnProperty(i)){
-						    text_values[i] = bundle.data.form_parts.parts[i].label;
-						}
-						//Ti.API.info("FILTER: " + bundle.data.form_parts.parts[i].label);
-					}
-				}
-			}
-		}
-		db.close();
-	
-		tableIndex = 0;
-		for(i = 0; i < values.length; i ++){
-		
-			//var text_value = '- Empty - ';
-			//if(value > 0){
-			var text_value = text_values[values[i]];
-			//}
-			
-			tableData[tableIndex] = Ti.UI.createTableViewRow({
-                height : 50,
-                hasChild : true,
-                title : text_value,
-                color: '#000',
-                filterValue: values[i],
-                filterValueText: text_value
-            });
-			tableIndex++;
-		}	
-		
-		if(field_name != 'form_part'){
-			tableData.sort(sortByTitle);
-		}
-	}
-	
-	
-	var filterTableView = Titanium.UI.createTableView({
-		data : tableData,
-		separatorColor: '#BDBDBD',
-		top: 60,
-		height: Ti.UI.SIZE
-	});	
 	
 	if(PLATFORM === 'android'){
 	    filterTableView.top = 45;
 	}
+
+	
+	filterTableView.addEventListener('scroll', function(e){
+	    if(PLATFORM === 'android'){
+	        if(e.firstVisibleItem > (itemsPerPage * numPagesLoaded)){
+	            numPagesLoaded ++;
+	            
+	            setTableData();
+	        }
+	    } 
+	    else{
+	        Ti.API.error("ADD IN iOS scroll functionality");
+	    }
+	});
+	
+	setTableData();
 	
 	
 	var topBar = Titanium.UI.createView({
@@ -479,10 +560,10 @@ function homeButtonPressed(e){
 	
 	var labelText = '';
 	if(Ti.Platform.osname == 'iphone'){
-		labelText += 'Found (' + tableData.length + ')';
+		labelText += 'Found (' + num_records + ')';
 	}
 	else{
-		labelText += bundle.label + " List " + (showFinalResults ? '(' + tableData.length + ')' : '');
+		labelText += bundle.label + " List " + (showFinalResults ? '(' + num_records + ')' : '');
 	}
 	
 	var listLabel = Ti.UI.createLabel({
@@ -525,8 +606,6 @@ function homeButtonPressed(e){
             focusable: false
         });
 	}
-
-	
 	
 	var barHeight;
 	
@@ -789,7 +868,7 @@ function homeButtonPressed(e){
 		filterTableView.top = (barHeight + 25);
 	}
 	
-	if(tableData.length){
+	if(filterTableView.getData().length){
 		curWin.add(filterTableView);
 	}
 	else{
@@ -812,38 +891,43 @@ function homeButtonPressed(e){
 			//e.value; // search string as user types
 			Ti.API.info("in change");
 			
-            var filterData = [];
-            var i;
-            for(i = 0; i < tableData.length; i++) {
-                var rg = new RegExp(e.source.value, 'i');
-                if(tableData[i].searchValue.search(rg) != -1) {
-                    filterData.push(tableData[i]);
-                }
-            }
-            
+			titleSearch = e.source.value;
+			numPagesLoaded = 0;
+			
+			setTableData();
+			
+            // var filterData = [];
+            // var i;
+            // for(i = 0; i < tableData.length; i++) {
+                // var rg = new RegExp(e.source.value, 'i');
+                // if(tableData[i].searchValue.search(rg) != -1) {
+                    // filterData.push(tableData[i]);
+                // }
+            // }
+//             
             var labelText = '';
             if(Ti.Platform.osname == 'iphone'){
-                labelText += 'Found (' + filterData.length + ')';
+                labelText += 'Found (' + num_records + ')';
             }
             else{
-                labelText += bundle.label + " List " + (showFinalResults ? '(' + filterData.length + ')' : '');
+                labelText += bundle.label + " List " + (showFinalResults ? '(' + num_records + ')' : '');
             }
             
             listLabel.setText(labelText);
             
-            if(filterData.length == 0){
-                var row = Ti.UI.createTableViewRow({
-                    height : 50,
-                    hasChild : false,
-                    title : 'No Results (Touch to Reset)',
-                    color: '#900',
-                    nid: 0,
-                    font: {fontWeight: 'bold', fontSize: 16}
-                });
-                filterData.push(row);
-            }
-            
-            filterTableView.setData(filterData);
+            // if(filterData.length == 0){
+                // var row = Ti.UI.createTableViewRow({
+                    // height : 50,
+                    // hasChild : false,
+                    // title : 'No Results (Touch to Reset)',
+                    // color: '#900',
+                    // nid: 0,
+                    // font: {fontWeight: 'bold', fontSize: 16}
+                // });
+                // filterTableView..push(row);
+            // }
+//             
+            //filterTableView.setData(filterData);
         });
         
         search.addEventListener('return', function(e) {

@@ -1,6 +1,6 @@
 Omadi.data = Omadi.data || {};
 
-/*jslint plusplus: true, eqeq: true*/
+/*jslint plusplus: true, eqeq: true, nomen: true*/
 
 Omadi.data.isUpdating = function(){ "use strict";
     
@@ -82,50 +82,57 @@ Omadi.data.getBundle = function(type){
     return bundle;
 };
 
-Omadi.data.getFields = function(type){
-    "use strict";
-    
+var _staticFields = {};
+Omadi.data.getFields = function(type){"use strict";
     var db, result, instances, field_name, nameParts;
     
-    instances = {};
-    db = Omadi.utils.openMainDatabase();
-    result = db.execute("SELECT type, field_name, label, description, bundle, weight, required, widget, settings, disabled, region, fid FROM fields WHERE bundle = '" + type + "' and disabled = 0 ORDER BY weight");
-    
-    while(result.isValidRow()){
-        field_name = result.fieldByName('field_name'); 
-        instances[field_name] = {
-            type: result.fieldByName('type'),
-            field_name: result.fieldByName('field_name'),
-            label: result.fieldByName('label'),
-            description: result.fieldByName('description'),
-            bundle: result.fieldByName('bundle'),
-            weight: result.fieldByName('weight'),
-            required: result.fieldByName('required'),
-            widget: result.fieldByName('widget'),
-            settings: JSON.parse(result.fieldByName('settings')),
-            disabled: result.fieldByName('disabled'),
-            region: result.fieldByName('region'),
-            fid: result.fieldByName('fid')
-        };
-        
-        if(typeof instances[field_name].widget === 'string'){
-            instances[field_name].widget = JSON.parse(instances[field_name].widget);
-        }
-        
-        if(field_name.indexOf("___") !== -1){
-            nameParts = field_name.split("___");
-            instances[field_name].part = nameParts[1];
-            instances[field_name].partLabel = instances[field_name].settings.parts[nameParts[1]];
-        }
-        else{
-            instances[field_name].part = null;
-            instances[field_name].partLabel = null;
-        }
-        
-        result.next();   
+    if(typeof _staticFields[type] !== 'undefined'){
+        instances = _staticFields[type];
     }
-    result.close();
-    db.close();
+    else{
+    
+        instances = {};
+        db = Omadi.utils.openMainDatabase();
+        result = db.execute("SELECT type, field_name, label, description, bundle, weight, required, widget, settings, disabled, region, fid FROM fields WHERE bundle = '" + type + "' and disabled = 0 ORDER BY weight");
+        
+        while(result.isValidRow()){
+            field_name = result.fieldByName('field_name'); 
+            instances[field_name] = {
+                type: result.fieldByName('type'),
+                field_name: result.fieldByName('field_name'),
+                label: result.fieldByName('label'),
+                description: result.fieldByName('description'),
+                bundle: result.fieldByName('bundle'),
+                weight: result.fieldByName('weight'),
+                required: result.fieldByName('required'),
+                widget: result.fieldByName('widget'),
+                settings: JSON.parse(result.fieldByName('settings')),
+                disabled: result.fieldByName('disabled'),
+                region: result.fieldByName('region'),
+                fid: result.fieldByName('fid')
+            };
+            
+            if(typeof instances[field_name].widget === 'string'){
+                instances[field_name].widget = JSON.parse(instances[field_name].widget);
+            }
+            
+            if(field_name.indexOf("___") !== -1){
+                nameParts = field_name.split("___");
+                instances[field_name].part = nameParts[1];
+                instances[field_name].partLabel = instances[field_name].settings.parts[nameParts[1]];
+            }
+            else{
+                instances[field_name].part = null;
+                instances[field_name].partLabel = null;
+            }
+            
+            result.next();   
+        }
+        result.close();
+        db.close();
+        
+        _staticFields[type] = instances;
+    }
     
     return instances;
 };

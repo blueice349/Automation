@@ -78,15 +78,16 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                     try{
                         //Parses response into strings
                         //Ti.API.info("Onload reached - Here follows the json: ");
-                        Ti.API.info(this.responseText.substr(0, 200));
-            
+                        
                         if (this.responseText !== null && this.responseText !== "null" && this.responseText !== "" && isJsonString(this.responseText) === true) {
-            
+                            
+                            Ti.API.info(this.responseText.substring(0, 200));
+                            
                             json = JSON.parse(this.responseText.replace(/'/gi, '\''));
-            
+                            
                             if (json.request_time && json.request_time !== null && json.request_time !== "") {
                                 GMT_OFFSET = Number(json.request_time - app_timestamp);
-                                Ti.API.info(GMT_OFFSET + "  === " + json.request_time + " === " + app_timestamp);
+                                //Ti.API.info(GMT_OFFSET + "  === " + json.request_time + " === " + app_timestamp);
                                 Ti.App.Properties.setString("timestamp_offset", GMT_OFFSET);
                             }
             
@@ -97,7 +98,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                                 progress.set_max(parseInt(json.total_item_count, 10));
                             }
             
-                            Ti.API.info("Delete all value: " + json.delete_all);
+                            //Ti.API.info("Delete all value: " + json.delete_all);
             
                             mainDB = Omadi.utils.openMainDatabase();
                             //Check this function

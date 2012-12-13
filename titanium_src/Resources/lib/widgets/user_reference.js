@@ -117,6 +117,8 @@ Omadi.widgets.user_reference = {
                 fontSize : Omadi.widgets.fontSize
             },
             color : '#000000',
+            ellipsize: true,
+            wordWrap: false,
             selectionIndicator : true,
             backgroundGradient : {
                 type : 'linear',
