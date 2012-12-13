@@ -5,7 +5,7 @@ Omadi.location.currentPositionCallback = function(e) {
 	"use strict";
 	var coords = e.coords, db;
 	
-	if(coords.longitude !== 0 && coords.latitude !== 0){
+	if(typeof coords.longitude !== 'undefined' && coords.longitude !== 0 && coords.latitude !== 0){
 		db = Omadi.utils.openGPSDatabase();//Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
 		db.execute("INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + coords.longitude + "', '" + coords.latitude + "', " + (coords.timestamp/1000) + ", 'notUploaded')");
 		db.close();
@@ -176,12 +176,8 @@ Omadi.location.uploadSuccess = function(e) {
 						if(responseObj.alert[i].alerts.hasOwnProperty(j)){
 							if (responseObj.alert[i].alerts[j]) {
 								//Ti.API.info("Alert Message: " + responseObj.alert[_i].alerts[_y].message);
-								sqlArray.push('INSERT OR REPLACE INTO alerts (subject, ref_nid, alert_id, location_nid, location_label, message, timestamp) VALUES ( "' + responseObj.alert[i].alerts[j].subject + '", ' + responseObj.alert[i].alerts[j].reference_id + ', ' + responseObj.alert[i].alerts[j].alert_id + ', ' + responseObj.alert[i].alerts[j].location_nid + ', "' + responseObj.alert[i].alerts[j].location_label + '", "' + responseObj.alert[i].alerts[j].message + '" , ' + now_timestamp + ' )');
+								sqlArray.push("INSERT OR REPLACE INTO alerts (subject, ref_nid, alert_id, location_nid, location_label, message, timestamp) VALUES ( '" + responseObj.alert[i].alerts[j].subject.replace(/[']/g, "''") + "', " + responseObj.alert[i].alerts[j].reference_id + ', ' + responseObj.alert[i].alerts[j].alert_id + ', ' + responseObj.alert[i].alerts[j].location_nid + ", '" + responseObj.alert[i].alerts[j].location_label.replace(/[']/g, "''") + "', '" + responseObj.alert[i].alerts[j].message.replace(/[']/g, "''") + "' , " + now_timestamp + ")");
 							} 
-							else {
-								//Ti.API.info("Alert Message: " + responseObj.alert[_i].alerts.message);
-								sqlArray.push('INSERT OR REPLACE INTO alerts (subject, ref_nid, alert_id, location_nid, location_label, message, timestamp) VALUES ( "' + responseObj.alert[i].alerts.subject + '", ' + responseObj.alert[i].alerts.reference_id + ', ' + responseObj.alert[i].alerts.alert_id + ', ' + responseObj.alert[i].alerts.location_nid + ', "' + responseObj.alert[i].alerts.location_label + '", "' + responseObj.alert[i].alerts.message + '" , ' + now_timestamp + ' )');
-							}
 						}
 					}
 				}

@@ -463,6 +463,138 @@ Omadi.data.saveNode = function(node){"use strict";
     return node;
 };
 
+Omadi.data.saveFailedUpload = function(photoId){"use strict";
+
+    var imageDir, imageFile, filename, imageView, blob, db, result, dialog, nid, field_name, delta;
+    
+    /*global PLATFORM*/
+   
+    db = Omadi.utils.openMainDatabase();
+    result = db.execute("SELECT * FROM _photos WHERE id = " + photoId);
+    
+    try{
+        
+        if(result.isValidRow()){
+            
+            blob = Ti.Utils.base64decode(result.fieldByName('file_data'));
+            nid = result.fieldByName('nid');
+            field_name = result.fieldByName('field_name');
+            delta = result.fieldByName('delta');
+            
+            // Make a temporary imageView so the blob can be created.
+            // It doesn't work with the blog from the base64decode
+            imageView = Ti.UI.createImageView({
+               image: blob 
+            });
+            
+            Omadi.service.sendErrorReport("going to save to photo gallery: " + photoId);
+            
+            if(PLATFORM === 'android'){
+                if(Ti.Filesystem.isExternalStoragePresent( )){
+                    
+                    filename = 'Omadi_' + nid + '_' + field_name + '_' + delta + '.jpg';
+                                     
+                    imageDir = Ti.Filesystem.getFile(Ti.Filesystem.externalStorageDirectory, 'failed_uploads');
+                    if (! imageDir.exists()) {
+                        imageDir.createDirectory();
+                    }
+                    
+                    // .resolve() provides the resolved native path for the directory.
+                    imageFile  = Ti.Filesystem.getFile(imageDir.resolve(), filename);
+                    
+                    Ti.API.info("ImageFile path is: " + imageFile.resolve());
+                    
+                    if (imageFile.write(imageView.toBlob())) {
+                   
+                        dialog = Titanium.UI.createAlertDialog({
+                            title : 'Photo Upload Problem',
+                            message : "There was a problem uploading a photo for node #" + nid + " after 5 tries. The photo was saved to this device's filesystem at " + imageFile.getNativePath(),
+                            buttonNames : ['OK']
+                        });
+                        dialog.show();
+                        
+                        Omadi.service.sendErrorReport("Saved to photo gallery: " + nid);
+                        
+                        Omadi.data.deletePhotoUpload(photoId);
+                    }
+                    else{
+                        Omadi.service.sendErrorReport("Did not save to photo gallery: " + photoId);
+                        dialog = Titanium.UI.createAlertDialog({
+                            title : 'Corrupted Photo',
+                            message : "There was a problem uploading a photo for node #" + nid + ", and the photo could not be saved to this device's gallery. Unfortunately, the photo cannot be reclaimed.",
+                            buttonNames : ['OK']
+                        });
+                        dialog.show();
+                        
+                        Omadi.data.deletePhotoUpload(photoId);
+                    }
+                    
+                    // dispose of file handles
+                    imageFile = null;
+                    imageDir = null;
+                }
+                else{
+                    Omadi.service.sendErrorReport("Device does not have external storage on: " + photoId);
+                    dialog = Titanium.UI.createAlertDialog({
+                        title : 'Insert SD Card',
+                        message : "There was a problem uploading a photo. You can either insert an SD card and have the photo saved to the SD card, or you can delete the photo permanently.",
+                        buttonNames : ['Delete','Insert SD Card']
+                    });
+                    
+                    dialog.addEventListener('click', function(e) {
+                        if (e.index == 0) {
+                            Omadi.data.deletePhotoUpload(photoId);
+                        }
+                        else if(e.index == 1){
+                            db.execute("UPDATE _photos SET tries = -100");
+                        }
+                    });
+                    dialog.show();
+                }
+            }
+            else{
+                Titanium.Media.saveToPhotoGallery(imageView.toImage(), {
+                    success: function(e){
+                        dialog = Titanium.UI.createAlertDialog({
+                            title : 'Photo Upload Problem',
+                            message : "There was a problem uploading a photo for node #" + nid + " after 5 tries. The photo was saved to this device's gallery.",
+                            buttonNames : ['OK']
+                        });
+                        dialog.show();
+                        
+                        Omadi.service.sendErrorReport("Saved to photo gallery: " + nid);
+                        
+                        Omadi.data.deletePhotoUpload(photoId);
+                    },
+                    error: function(e){
+                        Omadi.service.sendErrorReport("Did not save to photo gallery: " + photoId);
+                        dialog = Titanium.UI.createAlertDialog({
+                            title : 'Corrupted Photo',
+                            message : "There was a problem uploading a photo for node #" + nid + ", and the photo could not be saved to this device's gallery. Unfortunately, the photo cannot be reclaimed.",
+                            buttonNames : ['OK']
+                        });
+                        dialog.show();
+                        
+                        Omadi.data.deletePhotoUpload(photoId);
+                    }
+                });   
+            }
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Did not save to photo gallery exception: " + photoId + ", ex: " + ex);
+        dialog = Titanium.UI.createAlertDialog({
+            title : 'Corrupted Photo',
+            message : "There was a problem uploading a photo for node #" + nid + ", and the photo could not be saved to this device's gallery.",
+            buttonNames : ['OK']
+        });
+        dialog.show();
+    }
+    
+    result.close();
+    db.close();
+};
+
 Omadi.data.deletePhotoUpload = function(id){"use strict";
     var db = Omadi.utils.openMainDatabase();
     db.execute("DELETE FROM _photos WHERE id = " + id);

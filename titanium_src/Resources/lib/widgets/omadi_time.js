@@ -320,7 +320,7 @@ Omadi.widgets.omadi_time = {
             color : '#000000',
             timezone : null,
             widgetView : widgetView,
-            height : Ti.UI.SIZE,
+            height : Ti.UI.SIZE, 
             width : '100%',
             format24 : (Omadi.utils.getTimeFormat().indexOf('H') !== -1 ? true : false)  // Only available on Android
         });

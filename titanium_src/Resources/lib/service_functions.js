@@ -678,12 +678,11 @@ Omadi.service.logout = function() { "use strict";
     Omadi.display.removeNotifications();
 };
 
-
-
 Omadi.service.uploadFile = function() {"use strict";
     /*jslint eqeq:true, plusplus: true*/
     /*global Base64*/
-    var http, mainDB, result, nid = 0, id = 0, count, file_data, isUploading, nowTimestamp, lastUploadStartTimestamp, file_name, field_name, delta, timestamp, tmpImageView, blobImage, maxDiff, imageData;    
+    var http, mainDB, result, nid = 0, id = 0, count, file_data, isUploading, nowTimestamp, lastUploadStartTimestamp, 
+        file_name, field_name, delta, timestamp, tmpImageView, blobImage, maxDiff, imageData, tries;    
     
     if(Ti.Network.online){
         try {
@@ -696,6 +695,7 @@ Omadi.service.uploadFile = function() {"use strict";
             if(result.isValidRow()){
                 lastUploadStartTimestamp = result.field(0, Ti.Database.FIELD_TYPE_INT);
                 isUploading = true;
+                Ti.API.debug("A photo is currently uploading");
             }
             result.close();
             mainDB.close();
@@ -706,11 +706,15 @@ Omadi.service.uploadFile = function() {"use strict";
                 
                 count = 0;
                 mainDB = Omadi.utils.openMainDatabase();
-                result = mainDB.execute("SELECT nid, id, file_data, file_name, field_name, delta, timestamp FROM _photos WHERE nid > 0 ORDER BY delta ASC");
+                result = mainDB.execute("SELECT nid, id, file_data, file_name, field_name, delta, timestamp, tries FROM _photos WHERE nid > 0 ORDER BY delta ASC");
                 
                 while (result.isValidRow()) {
                     //Only upload those images that have positive nids
-                    if (count == 0 && result.fieldByName('nid') > 0) {
+                    
+                    if(result.fieldByName('tries', Ti.Database.FIELD_TYPE_INT) < 0){
+                        Omadi.data.saveFailedUpload(result.fieldByName('id'));
+                    }
+                    else if (nid == 0 && result.fieldByName('nid') > 0) {
                         nid = result.fieldByName('nid');
                         id = result.fieldByName('id');
                         file_data = result.fieldByName('file_data');
@@ -718,6 +722,7 @@ Omadi.service.uploadFile = function() {"use strict";
                         field_name = result.fieldByName('field_name');
                         delta = result.fieldByName('delta');
                         timestamp = result.fieldByName('timestamp');
+                        tries = result.fieldByName('tries');
                     }
                     
                     count ++;
@@ -725,6 +730,8 @@ Omadi.service.uploadFile = function() {"use strict";
                     result.next();
                 }
                 result.close();
+                
+                Ti.API.debug("Current upload is for nid " + nid + " field " + field_name + " delta " + delta + " and tries=" + tries);
                 
                 // Reset all photos to not uploading in case there was an error previously
                 mainDB.execute("UPDATE _photos SET uploading = 0 WHERE uploading <> 0");
@@ -748,6 +755,8 @@ Omadi.service.uploadFile = function() {"use strict";
                         http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/upload.json');
                         http.nid = nid;
                         http.photoId = id;
+                        http.delta = delta;
+                        http.field_name = field_name;
                 
                         //Ti.API.info("Uploading to " + domainName);
                         http.setRequestHeader("Content-Type", "application/json");
@@ -756,6 +765,8 @@ Omadi.service.uploadFile = function() {"use strict";
                         http.onload = function(e) {
                             var json, subDB, subResult, uploadMore = false, fieldSettings, tableName, decoded_values, decoded, content;
                             //Ti.API.info('UPLOAD FILE: =========== Success ========' + this.responseText);
+                            Ti.API.debug("Photo upload succeeded");
+                            
                             json = JSON.parse(this.responseText);
                 
                             if (json.nid) {
@@ -826,10 +837,15 @@ Omadi.service.uploadFile = function() {"use strict";
                         };
                 
                         http.onerror = function(e) {
-                            var subDB, dialog, message, subResult, numTries, blob, photoId, nid, uploadMore, imageView;
-                           
+                            var subDB, dialog, message, subResult, numTries, blob, photoId, 
+                                nid, uploadMore, imageView, delta, field_name, filename, imageFile, imageDir;
+                            
+                            Ti.API.debug("Photo upload failed");
+                            
                             photoId = this.photoId;
                             nid = this.nid;
+                            delta = this.delta;
+                            field_name = this.field_name;
                             
                             Omadi.service.sendErrorReport("Photo upload failed: " + nid);
                             
@@ -843,63 +859,7 @@ Omadi.service.uploadFile = function() {"use strict";
                                 
                                 if(numTries >= 4){
                                     
-                                    try{
-                                        blob = Ti.Utils.base64decode(subResult.fieldByName('file_data'));
-                                        // Make a temporary imageView so the blob can be created.
-                                        // It doesn't work with the blog from the base64decode
-                                        imageView = Ti.UI.createImageView({
-                                           image: blob 
-                                        });
-                                        
-                                        // TODO: SAVE the photo to Android filesystem
-                                        if(PLATFORM === 'android'){
-                                            
-                                          
-                                            Ti.API.error("ADD THIS IN FOR ANDROID PHOTO SAVING ON FILESYSTEM ON DEVICE"); 
-                                        }
-                                        else{
-                                            
-                                            Omadi.service.sendErrorReport("going to save to photo gallery: " + photoId);
-                                            Titanium.Media.saveToPhotoGallery(imageView.toImage(), {
-                                                success: function(e){
-                                                    //Omadi.service.sendErrorReport("saved to photo gallery: " + photoId);
-                                                    
-                                                    dialog = Titanium.UI.createAlertDialog({
-                                                        title : 'Photo Upload Problem',
-                                                        message : "There was a problem uploading a photo for node #" + nid + " after 5 tries. The photo was saved to this device's gallery.",
-                                                        buttonNames : ['OK']
-                                                    });
-                                                    dialog.show();
-                                                    
-                                                    Omadi.service.sendErrorReport("Saved to photo gallery: " + nid);
-                                                    
-                                                    Omadi.data.deletePhotoUpload(photoId);
-                                                },
-                                                error: function(e){
-                                                    Omadi.service.sendErrorReport("Did not save to photo gallery: " + photoId);
-                                                    dialog = Titanium.UI.createAlertDialog({
-                                                        title : 'Corrupted Photo',
-                                                        message : "There was a problem uploading a photo for node #" + nid + ", and the photo could not be saved to this device's gallery. Unfortunately, the photo cannot be reclaimed.",
-                                                        buttonNames : ['OK']
-                                                    });
-                                                    dialog.show();
-                                                    
-                                                    Omadi.service.sendErrorReport("Failed saving to photo gallery: nid: " + nid);
-                                                    
-                                                    Omadi.data.deletePhotoUpload(photoId);
-                                                }
-                                            });   
-                                        }
-                                    }
-                                    catch(ex){
-                                        Omadi.service.sendErrorReport("Did not save to photo gallery exception: " + photoId + ", ex: " + ex);
-                                        dialog = Titanium.UI.createAlertDialog({
-                                            title : 'Corrupted Photo',
-                                            message : "There was a problem uploading a photo for node #" + nid + ", and the photo could not be saved to this device's gallery.",
-                                            buttonNames : ['OK']
-                                        });
-                                        dialog.show();
-                                    }
+                                    Omadi.data.saveFailedUpload(photoId);
                                 }
                                 
                                 
@@ -971,8 +931,6 @@ Omadi.service.sendErrorReport = function(message){"use strict";
     
     http.send();
 };
-
-
 
 Omadi.service.getUpdatedNodeJSON = function() { "use strict";
     /*jslint eqeq:true,plusplus:true*/
