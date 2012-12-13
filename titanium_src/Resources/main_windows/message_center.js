@@ -417,17 +417,8 @@ function opnAccountAlertsList(e) {"use strict";
         dialog.addEventListener('click', function(dialog_e) {
             
             if (dialog_e.index != dialog_e.source.cancel) {
-                Ti.API.info('LOCATION ALERT: Opening node if it exists: ' + n_nid);
-                //Next window to be opened
-                var win_new = Titanium.UI.createWindow({
-                    navBarHidden : true,
-                    title : type_vl.charAt(0).toUpperCase() + type_vl.slice(1),
-                    type : type_vl,
-                    url : 'individual_object.js',
-                    nid: n_nid
-                });
-
-                win_new.open();
+                
+                Omadi.display.openViewWindow(type_vl, n_nid);
             }
         });
     });

@@ -112,7 +112,7 @@ function get_android_menu(menu_exists) {"use strict";
         });
     
         menu_third.addEventListener("click", function(e) {
-            win.close();
+            cancelOpt();
         });
     };
 }
@@ -1192,19 +1192,7 @@ function save_form_data(saveType) {"use strict";
                     if(Ti.Network.online){
                        
                        if (saveType === "next_part") {
-                            
-                            formWin = Ti.UI.createWindow({
-                                navBarHidden: true,
-                                url: '/main_windows/form.js',
-                                type: win.type,
-                                nid: node.nid,
-                                form_part: node.form_part + 1
-                            });
-                            
-                            Omadi.display.loading();
-                            formWin.addEventListener('open', Omadi.display.doneLoading);
-                            
-                            formWin.open();
+                            Omadi.display.openFormWindow(win.type, node.nid, node.form_part + 1);                            
                         }
                         
                         // Send a clone of the object so the window will close after the network returns a response
@@ -1232,19 +1220,7 @@ function save_form_data(saveType) {"use strict";
                             
                             
                             if (saveType === "next_part") {
-                            
-                                formWin = Ti.UI.createWindow({
-                                    navBarHidden: true,
-                                    url: '/main_windows/form.js',
-                                    type: win.type,
-                                    nid: node.nid,
-                                    form_part: node.form_part + 1
-                                });
-                                
-                                Omadi.display.loading();
-                                formWin.addEventListener('open', Omadi.display.doneLoading);
-                                
-                                formWin.open();
+                                Omadi.display.openFormWindow(win.type, node.nid, node.form_part + 1);
                             }
                             
                             Ti.UI.currentWindow.close();

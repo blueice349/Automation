@@ -205,59 +205,7 @@ function draftNavButtons() {"use strict";
             //Hide keyboard when returning
 
             if (e.row.nid != null) {
-
-                //draftsWindow = Omadi.utils.cloneObject(curWin);
-                
-                Omadi.display.loading();
-                
-                
-                formWindow = Ti.UI.createWindow({
-                    navBarHidden: true,
-                    type: e.row.node_type,
-                    nid: e.row.nid,
-                    url: '/main_windows/form.js',
-                    form_part: e.row.form_part
-                });
-                
-                //Ti.API.debug(e.row._type);
-                // win_new.title = e.row.title;
-                // win_new.type = e.row._type;
-                // win_new.listView = curWin.listView;
-                // win_new.up_node = curWin.up_node;
-                // win_new.uid = curWin.uid;
-                // win_new.region_form = e.row.form_part;
-// 
-                // //Passing parameters
-                // win_new.nid = e.row.nid;
-                // win_new.nameSelected = e.row.name;
-// 
-                // //Sets a mode to fields edition
-                // win_new.mode = 1;
-
-                formWindow.addEventListener('close', function(){
-                   Ti.UI.currentWindow.close(); 
-                   Ti.API.debug("form window closed");
-                   Omadi.display.doneLoading();
-                });
-                
-                
-                formWindow.open();
-                
-                if(PLATFORM === 'android'){
-                    Ti.UI.currentWindow.close();
-                }
-                else{
-                    setTimeout(function() {
-                        Ti.UI.currentWindow.hide();
-                    }, 3000);
-                    
-                }
-
-                
-                
-                //Ti.API.debug("Openeing form window");
-                
-                
+                Omadi.display.openFormWindow(e.row.node_type, e.row.nid, e.row.form_part);
             }
         });
 

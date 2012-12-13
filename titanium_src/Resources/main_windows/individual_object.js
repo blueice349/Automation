@@ -32,50 +32,6 @@ function form_min(min) {"use strict";
     return min;
 }
 
-function openEditScreen(part) {"use strict";
-    //Next window to be opened
-    var formWindow = Ti.UI.createWindow({
-        navBarHidden: true,
-        title: curWin.title,
-        type: curWin.type,
-        nid: curWin.nid,
-        url: '/main_windows/form.js',
-        form_part: part
-    });//create_or_edit_node.getWindow();
-    // win_new.title = (PLATFORM == 'android') ? curWin.title + '-' + curWin.nameSelected : curWin.title;
-    // win_new.type = curWin.type;
-    // win_new.listView = curWin.listView;
-    // win_new.up_node = curWin.up_node;
-    // win_new.uid = curWin.uid;
-    // win_new.region_form = part;
-    // win_new.movement = curWin.movement;
-    // win_new.url = "/main_windows/form.js";
-// 
-    // //Passing parameters
-    // win_new.nid = curWin.nid;
-    // win_new.nameSelected = curWin.nameSelected;
-// 
-    // //Sets a mode to fields edition
-    // win_new.mode = 1;
-
-    //formWindow.;
-    
-    //var lastWindow = Omadi.utils.cloneObject(Ti.UI.currentWindow);
-    
-    formWindow.open();
-    //setTimeout(function() {
-    //    create_or_edit_node.loadUI();
-    //}, 100);
-    // if(PLATFORM == 'android'){
-        // curWin.close();
-    // }
-    // else{
-        curWin.hide();
-    //}
-    
-    //lastWindow.close();
-}
-
 var db = Omadi.utils.openMainDatabase();
 
 //The view where the results are presented
@@ -88,30 +44,6 @@ var formWrapperView = Ti.UI.createView({
 
 curWin.add(formWrapperView);
 
-//Header where the selected name is presented
-// var header = Ti.UI.createView({
-// top: '0',
-// height: '35',
-// width: '100%',
-// backgroundColor: '#585858',
-// zIndex: 11
-// });
-// formWrapperView.add(header);
-//
-// //Label containing the selected name
-// var labelNameContent = Ti.UI.createLabel({
-// text: curWin.nameSelected,
-// height: 'auto',
-// width:  '90%',
-// font: {fontSize: 18,  fontWeight: "bold"},
-// color: '#000',
-// textAlign: 'center',
-// touchEnabled: false,
-// ellipsize: true,
-// wordWrap: false
-// });
-//
-// header.add(labelNameContent);
 
 if (PLATFORM == 'android') {
     var scrollView = Ti.UI.createScrollView({
@@ -319,19 +251,6 @@ function openTelephone(e){"use strict";
 
 function openURL(e){"use strict";
     Ti.Platform.openURL(e.source.text);
-}
-
-function openOmadiReferenceWindow(e){"use strict";
-    
-    var newWin = Ti.UI.createWindow({
-        navBarHidden : true,
-        title : e.source.text,
-        url : "individual_object.js",
-        type : e.source.type,
-        nid : e.source.nid
-    });
-
-    newWin.open();
 }
 
 function openEmailDialog(e){"use strict";
@@ -579,7 +498,9 @@ function doFieldOutput(fieldObj) {"use strict";
                                     valueLabel.type = node[fieldObj.field_name].nodeTypes[i];
                                     valueLabel.nid = node[fieldObj.field_name].dbValues[i];
     
-                                    valueLabel.addEventListener('click', openOmadiReferenceWindow);
+                                    valueLabel.addEventListener('click', function(e){
+                                        Omadi.display.openViewWindow(e.source.type, e.source.nid);
+                                    });
                                 }
     
                                 break;
@@ -2241,19 +2162,7 @@ if (PLATFORM === 'android' && isEditEnabled == true) {
 
             menu_zero.setIcon("/images/drop.png");
             menu_zero.addEventListener("click", function(e) {
-                //Next window to be opened
-                var formWindow = Ti.UI.createWindow({
-                    navBarHidden: true,
-                    title: curWin.title,
-                    type: curWin.type,
-                    nid: curWin.nid,
-                    url: '/main_windows/form.js',
-                    form_part: form_part + 1
-                });
-                
-
-                formWindow.open();
-                curWin.close();
+                Omadi.display.openFormWindow(curWin.type, curWin.nid, form_part + 1);
             });
         }
 
@@ -2265,7 +2174,7 @@ if (PLATFORM === 'android' && isEditEnabled == true) {
         menu_edit.setIcon("/images/edit.png");
         
         menu_edit.addEventListener("click", function(e) {
-            openEditScreen(form_part);
+            Omadi.display.openFormWindow(curWin.type, curWin.nid, form_part);
         });
     };
 }
@@ -2545,7 +2454,7 @@ function bottomButtons1(actualWindow) {"use strict";
                 Ti.API.info("Fix this logic");
             }
             else if (ev.index != -1) {
-                openEditScreen(btn_id[ev.index]);
+                Omadi.display.openFormWindow(curWin.type, curWin.nid, btn_id[ev.index]);
             }
         });
 

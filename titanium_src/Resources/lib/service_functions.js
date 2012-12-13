@@ -205,15 +205,8 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                                     progress.close();
                                 }
             
-                                //Omadi.data.setUpdating(false);
-                                
-            
                             }
                             mainDB.close();
-                            
-                            
-                            // Set the last timestamp
-                            //Omadi.data.setLastUpdateTimestamp(json.request_time);
                         }
                         else {
                             if (progress != null) {
@@ -261,18 +254,20 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
             
                                 dialog.addEventListener('click', function(e) {
                                     if (e.index !== e.source.cancel) {
-                                        var win_new = Titanium.UI.createWindow({
-                                            navBarHidden : true,
-                                            title : 'Notifications',
-                                            fullscreen : false,
-                                            url : 'objects.js',
-                                            type : 'notification',
-                                            //uid : jsonLogin.user.uid,
-                                            backgroundColor : '#EEEEEE',
-                                            show_plus : false
-                                        });
-            
-                                        win_new.open();
+                                        // var win_new = Titanium.UI.createWindow({
+                                            // navBarHidden : true,
+                                            // title : 'Notifications',
+                                            // fullscreen : false,
+                                            // url : 'objects.js',
+                                            // type : 'notification',
+                                            // //uid : jsonLogin.user.uid,
+                                            // backgroundColor : '#EEEEEE',
+                                            // show_plus : false
+                                        // });
+//             
+                                        // win_new.open();
+                                        
+                                        Omadi.display.openListWindow('notification', false, [], [], true);
                                     }
                                 });
             
@@ -288,16 +283,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
             
                                 dialog.addEventListener('click', function(e) {
                                     if (e.index !== e.source.cancel) {
-                                        var win_new = Titanium.UI.createWindow({
-                                            fullscreen : false,
-                                            navBarHidden : true,
-                                            title : 'Read Notification',
-                                            type : 'notification',
-                                            url : 'individual_object.js',
-                                            nid : newNotifications.nid
-                                        });
-            
-                                        win_new.open();
+                                        Omadi.display.openViewWindow('notification', newNotifications.nid);
                                     }
                                 });
             
@@ -841,14 +827,14 @@ Omadi.service.uploadFile = function() {"use strict";
                             var subDB, dialog, message, subResult, numTries, blob, photoId, 
                                 nid, uploadMore, imageView, delta, field_name, filename, imageFile, imageDir;
                             
-                            Ti.API.debug("Photo upload failed");
+                            Ti.API.error("Photo upload failed");
                             
                             photoId = this.photoId;
                             nid = this.nid;
                             delta = this.delta;
                             field_name = this.field_name;
                             
-                            Omadi.service.sendErrorReport("Photo upload failed: " + nid);
+                            //Omadi.service.sendErrorReport("Photo upload failed: " + nid);
                             
                             subDB = Omadi.utils.openMainDatabase();
                             subResult = subDB.execute("SELECT tries, file_data FROM _photos WHERE id=" + photoId);

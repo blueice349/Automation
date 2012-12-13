@@ -111,8 +111,8 @@ function updateCurrentLocation(e) {"use strict";
 	if(e.latitude != 0 && e.longitude != 0) {
 		if(e.accuracy > 200) {
 			time_passed = timestamp - Ti.App.Properties.getString("last_alert_popup");
-			if(time_passed > 120) {
-				notifyIOS('Your GPS is getting inaccurate data. Please make sure the sky is visible. Current GPS accuracy is ' + e.accuracy + ' meters.', true);
+			if(time_passed > 300) {
+				notifyIOS('Your GPS is getting inaccurate data. Please make sure the sky is visible. Current GPS accuracy is ' + Math.round(e.accuracy) + ' meters.', true);
 			}
 		}
 		

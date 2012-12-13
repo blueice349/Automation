@@ -341,44 +341,6 @@ function displayBundleList() {"use strict";
     db.close();
 }
 
-function openDraftWindow() {"use strict";
-    
-    var draftWindow, activityIndicator;
-    
-    lock_screen();
-    activityIndicator = Ti.UI.createActivityIndicator();
-    toolActInd.font = {
-        fontFamily : 'Helvetica Neue',
-        fontSize : 15,
-        fontWeight : 'bold'
-    };
-
-    toolActInd.color = 'white';
-    toolActInd.message = 'Loading...';
-    toolActInd.show();
-
-    Ti.API.info('Opening drafts');
-    draftWindow = Titanium.UI.createWindow({
-        title : 'Drafts',
-        navBarHidden : true,
-        url : 'drafts.js'
-    });
-    
-    curWin.isTopWindow = false;
-                
-    draftWindow.addEventListener("close", function(){
-       curWin.isTopWindow = true; 
-    });
-
-    draftWindow.addEventListener('open', function() {
-        unlock_screen();
-    });
-
-    draftWindow.open();
-    toolActInd.hide();
-}
-
-
 function setupAndroidMenu(){"use strict";
 
     var activity = Ti.Android.currentActivity;
@@ -409,22 +371,7 @@ function setupAndroidMenu(){"use strict";
         menu_about.setIcon("/images/about.png");
 
         menu_about.addEventListener("click", function(e) {
-            
-            var about_win = Ti.UI.createWindow({
-                title : 'About',
-                navBarHidden : true,
-                fullscreen : false,
-                backgroundColor : '#EEEEEE',
-                url : 'about.js'
-            });
-           
-            curWin.isTopWindow = false;
-            
-            about_win.addEventListener("close", function(){
-               curWin.isTopWindow = true; 
-            });
-            
-            about_win.open();
+            Omadi.display.openAboutWindow();
         });
 
         menuItem.addEventListener("click", function(e) {
@@ -432,7 +379,7 @@ function setupAndroidMenu(){"use strict";
         });
 
         menu_draft.addEventListener('click', function() {
-            openDraftWindow();
+            Omadi.display.openDraftsWindow();
         });
     };
 }
@@ -468,7 +415,10 @@ function setupBottomButtons(){"use strict";
            navBarHidden: true,
            url: '/main_windows/message_center.js'
         });
-    
+        
+        Omadi.display.loading();
+        
+        alertsWindow.addEventListener('open', Omadi.display.doneLoading);
         alertsWindow.open();
     });
     
@@ -496,7 +446,7 @@ function setupBottomButtons(){"use strict";
     draftsView.add(draftsImg);
     draftsView.add(draftsLabel);
     draftsView.addEventListener('click', function() {
-        openDraftWindow();
+        Omadi.display.openDraftsWindow();
     });
     
     //View settings (Draft/ Alert/ Home)
@@ -555,37 +505,8 @@ function setupBottomButtons(){"use strict";
                 if (ev.index == 0) {
                     checkUpdate('from_menu');
                 }
-                //
-                //else
-                // if (ev.index == 1) {
-                // var nav_win = Ti.UI.createWindow({
-                // title : 'Navigation',
-                // //navBarHidden : false,
-                // modal : true,
-                // backgroundColor : 'black',
-                // url : 'navigation.js'
-                // });
-                // nav_win.open();
-                // }
-                // else if (ev.index == 1) {
-                    // openDraftWindow();
-                // }
                 else if (ev.index == 1) {
-                    var about_win = Ti.UI.createWindow({
-                        title : 'About',
-                        navBarHidden : true,
-                        fullscreen : false,
-                        backgroundColor : 'black',
-                        url : 'about.js'
-                    });
-                    
-                    curWin.isTopWindow = false;
-                    
-                    about_win.addEventListener("close", function(){
-                       curWin.isTopWindow = true; 
-                    });
-                    
-                    about_win.open();
+                    Omadi.display.openAboutWindow();
                 }
             });
         });
@@ -688,7 +609,7 @@ function setupBottomButtons(){"use strict";
     listView.addEventListener('click', function(e) {
         var nextWindow;
         
-        lock_screen();
+        //lock_screen();
         Ti.API.info("row click on table view. index = " + e.index + ", row_desc = " + e.row.description + ", section = " + e.section + ", source_desc=" + e.source.description);
     
         if (e.row.app_permissions.can_view == false && e.source.is_plus != true) {
@@ -701,63 +622,17 @@ function setupBottomButtons(){"use strict";
         Omadi.data.setUpdating(true);
         
         if (e.source.is_plus) {
-            formWindow = Ti.UI.createWindow({
-                navBarHidden: true,
-                title: "New " + e.row.display,
-                type: e.row.name_table,
-                nid: 'new',
-                url: '/main_windows/form.js'
-            });
-            
-            formWindow.addEventListener('open', function() {
-                unlock_screen();
-                Omadi.display.doneLoading();
-            });
-            
-            Omadi.display.loading();
-    
-            formWindow.open();
+            Omadi.display.openFormWindow(e.row.name_table, 'new', 0);
         }
         else {
             if (e.row.app_permissions.can_view == true) {
-                nextWindow = Titanium.UI.createWindow({
-                    navBarHidden : true,
-                    title : e.row.display,
-                    fullscreen : false,
-                    url : 'objects.js',
-                    type : e.row.name_table,
-                    backgroundColor : '#EEEEEE',
-                    show_plus: e.row.show_plus
-                });
                 
-                curWin.isTopWindow = false;
-                
-                nextWindow.app_permissions = e.row.app_permissions;
-                
-                nextWindow.addEventListener('focus', function() {
-                    unlock_screen();
-                });
-                
-                unlock_screen();
-                
-                nextWindow.addEventListener('close', function(){
-                   curWin.isTopWindow = true; 
-                   unlock_screen();
-                   Ti.API.debug("Closed");
-                });
-                
-                Omadi.display.loading();
-                
-                nextWindow.addEventListener('open', function(){
-                   Omadi.display.doneLoading();
-                });
-    
-                nextWindow.open();
+                Omadi.display.openListWindow(e.row.name_table, e.row.show_plus, [], [], false);
+              
             }
             else {
                 alert("You don't have access to view the " + e.row.display + " list.");
-                unlock_screen();
-                
+                //unlock_screen();
             }
         }
         

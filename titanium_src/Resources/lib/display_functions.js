@@ -39,6 +39,79 @@ Omadi.display.showBigImage = function(imageView) {
 	}
 };
 
+Omadi.display.openListWindow = function(type, show_plus, filterValues, nestedWindows, showFinalResults){"use strict";
+    var listWindow = Titanium.UI.createWindow({
+        navBarHidden : true,
+        url : 'objects.js',
+        type : type,
+        show_plus : show_plus,
+        filterValues: filterValues,
+        nestedWindows: nestedWindows,
+        showFinalResults: showFinalResults
+    });
+    
+    Omadi.display.loading();
+    listWindow.addEventListener('open', Omadi.display.doneLoading);
+
+    listWindow.open();
+};
+
+Omadi.display.openAboutWindow = function(){"use strict";
+    var aboutWindow = Ti.UI.createWindow({
+        title : 'About',
+        navBarHidden : true,
+        url : 'about.js'
+    });
+    
+    Omadi.display.loading();
+    aboutWindow.addEventListener('open', Omadi.display.doneLoading);
+    
+    aboutWindow.open();
+};
+
+Omadi.display.openDraftsWindow = function(){"use strict";
+    var draftsWindow = Titanium.UI.createWindow({
+        title : 'Drafts',
+        navBarHidden : true,
+        url : 'drafts.js'
+    });
+
+    Omadi.display.loading();
+    draftsWindow.addEventListener('open', Omadi.display.doneLoading);
+    
+    draftsWindow.open();
+};
+
+Omadi.display.openViewWindow = function(type, nid){"use strict";
+    var viewWindow = Titanium.UI.createWindow({
+        navBarHidden : true,
+        type : type,
+        url : 'individual_object.js',
+        nid : nid
+    });
+    
+    viewWindow.addEventListener('open', Omadi.display.doneLoading);
+    Omadi.display.loading();
+        
+    viewWindow.open();
+};
+
+Omadi.display.openFormWindow = function(type, nid, form_part){"use strict";
+
+    var formWindow = Ti.UI.createWindow({
+        navBarHidden: true,
+        url: '/main_windows/form.js',
+        type: type,
+        nid: nid,
+        form_part: form_part
+    });
+    
+    formWindow.addEventListener('open', Omadi.display.doneLoading);
+    Omadi.display.loading();
+        
+    formWindow.open();
+};
+
 
 Omadi.display.displayLargeImage = function(imageView, nid, file_id) {
 	"use strict";

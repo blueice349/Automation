@@ -23,44 +23,12 @@ var numPagesLoaded = 0;
  var titleSearch = "";
 
 curWin = Ti.UI.currentWindow;
+curWin.setBackgroundColor('#eee');
 
 Ti.App.addEventListener('loggingOut', function(){"use strict";
     Ti.UI.currentWindow.close();
 });
 
-function openCreateNodeScreen(){"use strict";
-
-	var formWindow = Ti.UI.createWindow({
-	    navBarHidden: true,
-	    title: "New " + bundle.label,
-	    type: curWin.type,
-	    nid: "new",
-	    url: '/main_windows/form.js'
-	});//create_or_edit_node.getWindow();
-	// win_new.navBarHidden = true;
-	// win_new.title = "New " + bundle.label;
-	// win_new.type = curWin.type;
-	// win_new.uid = curWin.uid;
-	// win_new.mode = 0;
-	// win_new.region_form = 0;
-	// win_new.backgroundColor = "#EEEEEE";
-	// win_new.nameSelected = 'Fill Details...';
-	// win_new.url = '/main_windows/form.js';
-	// win_new.top = 0; 
-	// win_new.bottom = 0;
-	
-	
-	formWindow.addEventListener('open', function(){
-	    Omadi.display.doneLoading();
-	});
-	
-	Omadi.display.loading();
-	
-	formWindow.open();
-	//setTimeout(function(){
-//		create_or_edit_node.loadUI();
-//	}, 100);
-}
 
 
 // function openEditScreen(part, nid, e){
@@ -444,7 +412,8 @@ function setTableData(){"use strict";
                 title : text_value,
                 color: '#000',
                 filterValue: values[i],
-                filterValueText: text_value
+                filterValueText: text_value,
+                backgroundColor: '#fff'
             });
             tableIndex++;
         }   
@@ -454,9 +423,18 @@ function setTableData(){"use strict";
         }
     }
     
-    if(!showFinalResults || resultCount < itemsPerPage){
-        filterTableView.setFooterTitle(null);
+   // Ti.API.debug("Num possible: " + (numPagesLoaded + 1) * itemsPerPage);
+    Ti.API.debug("Num Records: " + num_records);
+    
+    if(showFinalResults){
+        // if(num_records <= (numPagesLoaded + 1) * itemsPerPage){
+            // filterTableView.setFooterTitle("End of data rows");
+        // }
+        // else{
+            // filterTableView.setFooterTitle("Loading More Rows...");
+        // }
     }
+    
     
     if(numPagesLoaded === 0){
         filterTableView.setData(appendData);
@@ -478,8 +456,8 @@ function setTableData(){"use strict";
         separatorColor: '#BDBDBD',
         top: 60,
         height: Ti.UI.SIZE,
-        footerTitle: "Loading More Rows...",
-        data: []
+        data: [],
+        backgroundColor: '#eee'
     }); 
 	
 	Omadi.data.setUpdating(true);
@@ -738,7 +716,7 @@ function setTableData(){"use strict";
 		});
 		
 		plusButton.addEventListener('click', function() {
-			openCreateNodeScreen();
+			Omadi.display.openFormWindow(curWin.type, 'new', 0);
 		}); 
 		
 		items.push(back);
@@ -817,7 +795,7 @@ function setTableData(){"use strict";
 				
 				newItem.setIcon("/images/plus_btn.png");
 				newItem.addEventListener("click", function(e) {
-					openCreateNodeScreen();
+					Omadi.display.openFormWindow(curWin.type, 'new', 0);
 				});
 			}
 		};
@@ -956,33 +934,8 @@ function setTableData(){"use strict";
     }
 	else{
         showAllButton.addEventListener('click', function(e){
-        
-            var newWin = Ti.UI.createWindow({
-                backgroundColor: '#FFF',
-                title:'Results',
-                url: 'objects.js',
-                navBarHidden: true,
-                type: curWin.type,
-                showFinalResults: true,
-                uid: curWin.uid,
-                show_plus: curWin.show_plus
-            });
-            
-            var filterValues = curWin.filterValues;
-            
-            if(typeof filterValues != "object"){
-                filterValues = [];
-            }
-            
-            newWin.filterValues = filterValues;
-            newWin.addEventListener('open', windowOpened);
-            
-            Omadi.display.loading();
-            newWin.addEventListener('close', function(){
-               Omadi.display.doneLoading(); 
-            });
-            
-            newWin.open();
+
+            Omadi.display.openListWindow(curWin.type, curWin.show_plus, filterValues, [], true);
         });
     }
 	
@@ -1036,25 +989,8 @@ function setTableData(){"use strict";
 				subDB.close();
 				
 				if(!isEditEnabled){
-				    var win_new = Titanium.UI.createWindow({
-                        fullscreen : false,
-                        navBarHidden : true,
-                        title: bundle.label,
-                        type: curWin.type,
-                        url : 'individual_object.js',
-                        //up_node: curWin.up_node,
-                        uid: curWin.uid,
-                        region_form: e.row.form_part,
-                        backgroundColor: '#000',
-                        nid: e.row.nid
-                    });
-                    
-                    //Passing parameters
-                    //win_new.nid             = e.row.nid;
-                    //win_new.nameSelected    = e.row.name;
-                    
-                    e.row.setBackgroundColor('#fff');
-                    win_new.open();
+				    e.row.setBackgroundColor('#fff');
+				    Omadi.display.openViewWindow(curWin.type, e.row.nid);
 				}
 				else{
 				
@@ -1073,69 +1009,15 @@ function setTableData(){"use strict";
                     
                     postDialog.addEventListener('click', function(ev) {
                         if (ev.index === btn_tt.length - 2 ){
-                            //Next window to be opened 
-                            win_new = Titanium.UI.createWindow({
-                                navBarHidden : true,
-                                title: bundle.label,
-                                type: curWin.type,
-                                url : 'individual_object.js',
-                                up_node: curWin.up_node,
-                                uid: curWin.uid,
-                                region_form: ev.source.eventRow.form_part,
-                                backgroundColor: '#000',
-                                nid: ev.source.eventRow.nid
-                            });
-                            
                             ev.source.eventRow.setBackgroundColor('#fff');
-                            
-                            //Avoiding memory leaking
-                            win_new.open();
+                            Omadi.display.openViewWindow(curWin.type, ev.source.eventRow.nid);
                         }
                         else if (ev.index === btn_tt.length - 1){
                             Ti.API.info("Cancelled");
                         }
                         else if (ev.index !== -1 && isEditEnabled === true){
-                            //openEditScreen(btn_id[ev.index], _nid, e);
-                        
-                            win_new = Ti.UI.createWindow({
-                                navBarHidden: true,
-                                url: '/main_windows/form.js',
-                                title: bundle.label,
-                                type: curWin.type,
-                                nid: ev.source.eventRow.nid,
-                                form_part: btn_id[ev.index]
-                            });//create_or_edit_node.getWindow();
-                            
-                            
-                            
-                            // win_new.type = curWin.type;
-                            // win_new.listView = curWin.listView;
-                            // win_new.up_node = curWin.up_node;
-                            // win_new.uid = curWin.uid;
-                            // win_new.region_form = btn_id[ev.index];
-//                             
-                            // win_new.top = 0; 
-                            // win_new.bottom = 0;
-                            // //Passing parameters
-                            // win_new.nid = ev.source.eventRow.nid;
-                            // win_new.nameSelected = ev.source.eventRow.name;
-//                             
-                            // //Sets a mode to fields edition
-                            // win_new.mode = 1;
-                            
-
                             ev.source.eventRow.setBackgroundColor('#fff');
-                            
-                            win_new.addEventListener('open', function(){
-                               Omadi.display.doneLoading(); 
-                            });
-                            
-                            Omadi.display.loading();
-                                
-                            win_new.open();
-                            //setTimeout(function() {
-                            //    create_or_edit_node.loadUI();
-                            //}, 100);
+                            Omadi.display.openFormWindow(curWin.type, ev.source.eventRow.nid, btn_id[ev.index]);
                         }
                     });	
                 }
@@ -1154,15 +1036,15 @@ function setTableData(){"use strict";
 			
 			//Titanium.App.Properties.setString("filterValue1",e.row.filterValue);
 			
-			var newWin = Ti.UI.createWindow({
-			    backgroundColor: '#FFF',
-			    title:'Results',
-			    url: 'objects.js',
-			    navBarHidden: true,
-			    type: curWin.type,
-			    uid: curWin.uid,
-			    show_plus: curWin.show_plus
-			});
+			
+			// var newWin = Ti.UI.createWindow({
+			    // title:'Results',
+			    // url: 'objects.js',
+			    // navBarHidden: true,
+			    // type: curWin.type,
+			    // uid: curWin.uid,
+			    // show_plus: curWin.show_plus
+			// });
 			
 			var filterValues = curWin.filterValues;
 			
@@ -1184,18 +1066,7 @@ function setTableData(){"use strict";
 			}
 			nestedWindows.push(curWin);
 			
-			newWin.filterValues = filterValues;
-			newWin.nestedWindows = nestedWindows;
-			// Remove the listener to close the first window
-			//e.row.cWin.removeEventListener('android:back', backButtonPressed);
-			newWin.addEventListener('open', windowOpened);
-			
-			Omadi.display.loading();
-			newWin.addEventListener('close', function(){
-			   Omadi.display.doneLoading(); 
-			});
-			
-			newWin.open();
+			Omadi.display.openListWindow(curWin.type, curWin.show_plus, filterValues, nestedWindows, false);
 		});
 		
 	}
