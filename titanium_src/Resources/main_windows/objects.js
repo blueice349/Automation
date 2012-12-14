@@ -438,14 +438,14 @@ function setTableData(){"use strict";
    // Ti.API.debug("Num possible: " + (numPagesLoaded + 1) * itemsPerPage);
     Ti.API.debug("Num Records: " + num_records);
     
-    //if(showFinalResults){
-        // if(num_records <= (numPagesLoaded + 1) * itemsPerPage){
-            // filterTableView.setFooterTitle("End of data rows");
-        // }
-        // else{
-            // filterTableView.setFooterTitle("Loading More Rows...");
-        // }
-   // }
+    if(showFinalResults){
+        if(num_records <= (numPagesLoaded + 1) * itemsPerPage){
+            filterTableView.setFooterTitle(null);
+        }
+        else{
+            filterTableView.setFooterTitle("Loading More Rows...");
+        }
+   }
     
     
     if(numPagesLoaded === 0){
@@ -533,7 +533,7 @@ function setTableData(){"use strict";
 	    } 
 	    else{
 	        Ti.API.debug(e.contentOffset.y + " " + e.contentSize.height);
-	        if(!settingTableData && e.contentOffset.y + 1600 > e.contentSize.height){
+	        if(!settingTableData && e.contentOffset.y + (Ti.Platform.displayCaps.getPlatformHeight() * 3) > e.contentSize.height){
 	            settingTableData = true;
 	            numPagesLoaded ++;
 	            setTableData();
@@ -542,7 +542,7 @@ function setTableData(){"use strict";
 	            // If this isn't here, 3-5 pages will be loaded at once
 	            setTimeout(function(){
 	                settingTableData = false;
-	            }, 100);
+	            }, 4000);
 	        }
 	    }
 	});

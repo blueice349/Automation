@@ -136,6 +136,19 @@ Omadi.display.openFormWindow = function(type, nid, form_part){"use strict";
     return formWindow;
 };
 
+Omadi.display.openMainMenuWindow = function(){"use strict";
+    var mainMenuWindow = Titanium.UI.createWindow({
+        url : '/main_windows/mainMenu.js',
+        navBarHidden : true
+    });
+    
+    mainMenuWindow.addEventListener('open', Omadi.display.doneLoading);
+    Omadi.display.loading();
+    
+    mainMenuWindow.open();  
+    return mainMenuWindow;
+};
+
 
 Omadi.display.displayLargeImage = function(imageView, nid, file_id) {
 	"use strict";
@@ -294,31 +307,51 @@ Omadi.display.hideLoadingIndicator = function() { "use strict";
 };
 
 Omadi.display.loading = function(message){"use strict";
-
+    
     if(typeof message === 'undefined'){
         message = 'Loading...';
     }
     
-    if(PLATFORM === 'android'){
-        indicator = Titanium.UI.createActivityIndicator({
-            height : Ti.UI.SIZE,
-            message : message,
-            width : Ti.UI.SIZE,
-            color : '#fff'
+    // if(PLATFORM === 'android'){
+        // indicator = Titanium.UI.createActivityIndicator({
+            // height : Ti.UI.SIZE,
+            // message : message,
+            // width : Ti.UI.SIZE,
+            // color : '#fff'
+        // });
+//         
+        // indicator.show();
+//         
+        // Ti.App.addEventListener('displayDoneLoading', function(){
+            // indicator.hide();
+        // });
+    // }
+    // else{
+        indicator = Ti.UI.createLabel({
+           top: 0,
+           bottom: 0,
+           left: 0,
+           right: 0,
+           opacity: 0.85,
+           backgroundColor: '#fff',
+           zIndex: 1000,
+           color: '#666',
+           text: message,
+           font: {
+               fontWeight: 'bold',
+               fontSize: 35
+           },
+           textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
         });
         
-        indicator.show();
-        
-        Ti.App.addEventListener('displayDoneLoading', function(){
-            indicator.hide();
-        });
-    }
+        Ti.UI.currentWindow.add(indicator);
+    //}
 };
 
 Omadi.display.doneLoading = function(){"use strict";
-    if(PLATFORM === 'android'){
+    //if(PLATFORM === 'android'){
         indicator.hide();
-    }
+    //}
     
     Ti.App.fireEvent("displayDoneLoading");
 };

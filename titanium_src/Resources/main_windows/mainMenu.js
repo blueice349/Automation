@@ -497,8 +497,8 @@ function setupBottomButtons(){"use strict";
     
         actionsView.addEventListener('click', function() {
             var postDialog = Titanium.UI.createOptionDialog();
-            postDialog.options = ['Sync Data', 'About', 'cancel'];
-            postDialog.cancel = 4;
+            postDialog.options = ['Sync Data', 'About', 'Cancel'];
+            //postDialog.cancel = 2;
             postDialog.show();
     
             postDialog.addEventListener('click', function(ev) {
@@ -511,7 +511,6 @@ function setupBottomButtons(){"use strict";
             });
         });
     }
-    
     
     
     curWin.add(databaseStatusView);

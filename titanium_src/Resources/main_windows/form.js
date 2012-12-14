@@ -906,6 +906,8 @@ function save_form_data(saveType) {"use strict";
         catch(ex){
             alert("Saving to mobile database: " + ex);
         }
+        
+        Omadi.display.doneLoading();
     }
 }
 

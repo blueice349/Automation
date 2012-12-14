@@ -20,38 +20,38 @@ accountWindow = {};
 accountMessage.listView = null;
 accountWindow.isOpened = false;
 
-var actIndAlert;
+//var actIndAlert;
 var refreshImg;
 var toolbar; 
 
-var showLoading = function() {"use strict";
-    if (PLATFORM === 'android') {
-        actIndAlert.show();
-    }
-    else {
-        var items = toolbar.getItems();
-        items.pop();
-        items.push(actIndAlert);
-        toolbar.setItems(items);
-        actIndAlert.show();
-        refreshImg.hide();
-    }
-};
-
-var hideLoading = function() {"use strict";
-    if (PLATFORM === 'android') {
-        actIndAlert.hide();
-    }
-    else {
-        var items = toolbar.getItems();
-        items.pop();
-        items.push(refreshImg);
-        toolbar.setItems(items);
-        actIndAlert.hide();
-        refreshImg.show();
-
-    }
-};
+// var showLoading = function() {"use strict";
+    // if (PLATFORM === 'android') {
+        // actIndAlert.show();
+    // }
+    // else {
+        // var items = toolbar.getItems();
+        // items.pop();
+        // items.push(actIndAlert);
+        // toolbar.setItems(items);
+        // actIndAlert.show();
+        // refreshImg.hide();
+    // }
+// };
+// 
+// var hideLoading = function() {"use strict";
+    // if (PLATFORM === 'android') {
+        // actIndAlert.hide();
+    // }
+    // else {
+        // var items = toolbar.getItems();
+        // items.pop();
+        // items.push(refreshImg);
+        // toolbar.setItems(items);
+        // actIndAlert.hide();
+        // refreshImg.show();
+// 
+    // }
+// };
 
 
 function loadAccAlertData() {"use strict";
@@ -188,14 +188,15 @@ function alertNavButtons(lv_listTableView, currentWin, type) {"use strict";
     });
 
     refreshImg.addEventListener('click', function(e) {
-        showLoading();
+        
+        Omadi.display.loading("Refreshing...");
         //_upload_gps_locations();
         Omadi.location.uploadGPSCoordinates();
     });
 
     // create and add toolbar
     toolbar = Ti.UI.iOS.createToolbar({
-        items : [backButton, space, label, space, actIndAlert, refreshImg],
+        items : [backButton, space, label, space, refreshImg],
         top : 0,
         borderTop : false,
         borderBottom : true
@@ -267,8 +268,8 @@ function alertNavButtons_android(lv_listTableView, currentWindow, type) {"use st
     });
 
     refreshImg.addEventListener('click', function(e) {
-        showLoading();
-        //_upload_gps_locations();
+        Omadi.display.loading("Refreshing...");
+        
         Omadi.location.uploadGPSCoordinates();
     });
 
@@ -499,21 +500,21 @@ function opnAccountAlertsList(e) {"use strict";
     
     curWin.add(listTableView);
     
-    if (PLATFORM === 'android') {
-        actIndAlert = Ti.UI.createActivityIndicator({
-            message : 'Updating Alerts...',
-            color : '#fff'
-        });
-        curWin.add(actIndAlert);
-    }
-    else {
-        actIndAlert = Ti.UI.createActivityIndicator({
-            height : 32,
-            width : 32,
-            style : Ti.UI.iPhone.ActivityIndicatorStyle.DARK,
-            right : 12
-        });
-    }
+    // if (PLATFORM === 'android') {
+        // // actIndAlert = Ti.UI.createActivityIndicator({
+            // // message : 'Updating Alerts...',
+            // // color : '#fff'
+        // // });
+        // // curWin.add(actIndAlert);
+    // }
+    // else {
+        // actIndAlert = Ti.UI.createActivityIndicator({
+            // height : 32,
+            // width : 32,
+            // style : Ti.UI.iPhone.ActivityIndicatorStyle.DARK,
+            // right : 12
+        // });
+    // }
     
     //When back button on the phone is pressed, it opens mainMenu.js and close the current window
     curWin.addEventListener('android:back', function() {
@@ -559,7 +560,7 @@ function opnAccountAlertsList(e) {"use strict";
     loadData();
 
     Ti.App.addEventListener('refresh_UI_Alerts', function(e) {
-        hideLoading();
+        Omadi.display.doneLoading();
         //if (curWin && curWin.is_opened === true) {
         //    
         //    if (e.status == 'fail') {
@@ -575,7 +576,7 @@ function opnAccountAlertsList(e) {"use strict";
     });
     
     curWin.is_opened = true;
-    showLoading();
+    Omadi.display.loading("Refreshing...");
     Omadi.location.uploadGPSCoordinates();
     
 }());
