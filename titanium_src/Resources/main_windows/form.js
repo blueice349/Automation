@@ -222,41 +222,72 @@ function validateMaxLength(node, instance){"use strict";
 }
 
 function validateMaxValue(node, instance){"use strict";
-    var maxValue, form_errors = [], i;
+    var maxValue, absoluteMaxValue, form_errors = [], i;
+    
+    absoluteMaxValue = (instance.type == 'number_integer') ? 2147483647 : 99999999;
     
     if (node[instance.field_name].dbValues.length > 0) {
-        if (instance.settings.max != null) {
+        if (instance.settings.max != null && instance.settings.max.length > 0) {
             maxValue = parseFloat(instance.settings.max);
-            
-            for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
-                if (node[instance.field_name].dbValues[i] !== null && node[instance.field_name].dbValues[i] > maxValue) {
-                    form_errors.push(instance.label + " cannot be greater than " + maxValue + ".");
-                }  
+            if(maxValue > absoluteMaxValue){
+                maxValue = absoluteMaxValue;
             }
-            
+        }
+        else{
+            maxValue = absoluteMaxValue;
+        }
+        
+        Ti.API.debug("Max value : " + maxValue);
+        
+        for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
+            if (node[instance.field_name].dbValues[i] !== null && node[instance.field_name].dbValues[i] > maxValue) {
+                form_errors.push(instance.label + " cannot be greater than " + maxValue + ".");
+            }  
         }
     }
-    
     
     return form_errors;
 }
 
 function validateMinValue(node, instance){"use strict";
-    var minValue, form_errors = [], i;
+    var minValue, absoluteMinValue, form_errors = [], i;
+    
+    absoluteMinValue = (instance.type == 'number_integer') ? -2147483648 : -99999999;
     
     if (node[instance.field_name].dbValues.length > 0) {
-        if (instance.settings.min != null) {
+        if (instance.settings.min != null && instance.settings.min.length > 0) {
             minValue = parseFloat(instance.settings.min);
-            
-            for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
-                if (node[instance.field_name].dbValues[i] !== null && node[instance.field_name].dbValues[i] < minValue) {
-                    form_errors.push(instance.label + " cannot be less than " + minValue + ".");
-                }  
+            if(minValue < absoluteMinValue){
+                minValue = absoluteMinValue;
             }
-            
+        }
+        else{
+            minValue = absoluteMinValue;
+        }
+        
+        for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
+            if (node[instance.field_name].dbValues[i] !== null && node[instance.field_name].dbValues[i] < minValue) {
+                form_errors.push(instance.label + " cannot be less than " + minValue + ".");
+            }  
         }
     }
     
+    return form_errors;
+}
+
+function validatePhone(node, instance){"use strict";
+    var form_errors = [], i, regExp;
+    
+   
+    
+    if (node[instance.field_name].dbValues.length > 0) {
+        
+        for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
+            if (!Omadi.utils.isEmpty(node[instance.field_name].dbValues[i]) && !node[instance.field_name].dbValues[i].match(/\D*(\d*)\D*[2-9][0-8]\d\D*[2-9]\d{2}\D*\d{4}\D*\d*\D*/g)) {
+                form_errors.push(instance.label + " is not a valid North American phone number. 10 digits are required.");
+            }  
+        }
+    }
     
     return form_errors;
 }
@@ -307,26 +338,19 @@ function validateRequired(node, instance){"use strict";
                     break;
                     
                 case 'list_boolean': 
+                case 'calculation_field':
                     isEmpty = false;
                     break;
                 
                 default: 
-                    Ti.API.error("Missing field type def in validate_form_data");
+                    Ti.API.error("Missing field type def in validate_form_data for field_name " + instance.field_name);
                     break;
             }
         }
     }
     
-    //Ti.API.info(instance.required + '+');
-    
-    //=========================================
-    //---- Check for required fields ----------
-    //=========================================
     if (((instance.is_title === true) || (instance.isRequired) || instance.isConditionallyRequired) && instance.can_view == true){
         
-        
-         // TODO: something with no data checkboxes
-         
          if(isEmpty){
              if(instance.partLabel === null){
                  form_errors.push(instance.label + " is required");
@@ -335,66 +359,6 @@ function validateRequired(node, instance){"use strict";
                  form_errors.push(instance.label + " " + instance.partLabel + " is required");
              }
          }
-         
-         if (instance.field_type == 'image') {
-            Ti.API.error("TODO: in image validation");
-            // var is_images_query = 'SELECT id FROM _photos WHERE nid=0 ';
-            // if (win.nid != null && win.nid != "") {
-                // is_images_query += ' OR nid=' + win.nid + ' ';
-            // }
-            // is_images_query += ' AND field_name="' + field_name + '"';
-            // //Ti.API.info(is_images_query);
-//     
-            // var is_images = db_check_restrictions.execute(is_images_query);
-            // var crdnlty = content[x].cardinality;
-            // //if cardinality is unlimited or one than only one image can be work for required
-            // //But if cardinality is greater than 1 then required that number of images
-            // if (win.mode == 1) {
-                // if (crdnlty > 1 || crdnlty < 0) {
-                    // var arrImages = content[x].arrImages;
-                    // var imageOdometer = 0;
-                    // for ( i_idx = 0; i_idx < arrImages.length; i_idx++) {
-                        // if (arrImages[i_idx].imageVal != defaultImageVal || arrImages[i_idx].bigImg != null || arrImages[i_idx].bigImg != "") {
-                            // imageOdometer++;
-                        // }
-                    // }
-                    // if ((crdnlty < 1 && imageOdometer == 0) || (crdnlty > 1 && imageOdometer != is_images.rowCount)) {
-                        // string_text += label[content[x].reffer_index].text + "\n";
-                        // //count_fields++;
-                    // }
-                // }
-                // else {
-                    // if (content[x].imageVal == defaultImageVal && is_images.rowCount == 0) {
-                        // string_text += label[content[x].reffer_index].text + "\n";
-                        // //count_fields++;
-                    // }
-                // }
-            // }
-            // else {
-                // if ((crdnlty <= 1 && is_images.rowCount == 0) || (crdnlty > 1 && crdnlty != is_images.rowCount)) {
-                    // string_text += label[content[x].reffer_index].text + "\n";
-                    // //count_fields++;
-                // }
-            // }
-            // is_images.close();
-            // continue;
-        }
-        //count_fields++;
-        
-         
-            //if(node[field_name].no_data_checkbox == null || node[field_name].no_data_checkbox == "" || node[field_name].no_data_checkbox == false) {
-                //Check for image field
-               
-                
-                
-                //if (content[x].cardinality > 1) {
-                //    string_text += "#" + content[x].private_index + " " + label[content[x].reffer_index].text + "\n";
-               // }
-               // else {
-               ////     string_text += label[content[x].reffer_index].text + "\n";
-               // }
-           // }
-        
     }
     
     return form_errors;
@@ -469,6 +433,8 @@ function validateRestrictions(node){"use strict";
 }
 
 
+
+
 function validate_form_data(node){"use strict";
     
     var field_name, instance, values, form_errors, isEmpty, i, region_name;
@@ -517,6 +483,10 @@ function validate_form_data(node){"use strict";
                                     form_errors = form_errors.concat(validateMaxValue(node, instance));
                                     break;
                             }
+                            
+                            if(instance.type == 'phone'){
+                                form_errors = form_errors.concat(validatePhone(node, instance));
+                            }
                         }
                     }
                 }
@@ -524,7 +494,6 @@ function validate_form_data(node){"use strict";
         }
     }
     catch(ex){
-        //alert("This alert should NOT have an effect on your data saving. Please report the following: " + ex);
         Omadi.service.sendErrorReport("Exception in form validation: " + ex);
     }
     
@@ -594,8 +563,6 @@ function getRegionHeaderView(region, expanded){"use strict";
     });
     
     regionHeader.arrow = arrow_img;
-    //regionHeader.viewContainer = regionView;
-    
     
     regionHeader.addEventListener('click', function(e) {
         
@@ -604,9 +571,6 @@ function getRegionHeaderView(region, expanded){"use strict";
         e.source.expanded = !e.source.expanded;
         
         if (e.source.expanded === true) {
-            //e.source.viewContainer.height = e.source.viewContainer.calculatedHeight;
-            //top = 0;
-            
             
             regionView = regionViews[e.source.region_name];
             regionView.startLayout();
@@ -616,35 +580,6 @@ function getRegionHeaderView(region, expanded){"use strict";
             e.source.arrow.setImage("/images/light_arrow_down.png");
             
             regionView.finishLayout();
-            
-            // for ( i = 0; i < scrollView.getChildren().length; i++) {
-                // v = scrollView.getChildren()[i];
-                // isLabel = false;
-                // if (PLATFORM == 'android') {
-                    // if ( v instanceof Ti.UI.Label) {
-                        // isLabel = true;
-                    // }
-                // }
-                // else {
-                    // if (v == '[object TiUILabel]') {
-                        // isLabel = true;
-                    // }
-                // }
-                // if (isLabel) {
-                    // //v.top = top;
-                    // //v.arrow.top = top + 5;
-                    // if (v.viewContainer.expanded === true) {
-                        // v.arrow.image = "/images/light_arrow_down.png";
-                    // }
-                    // else {
-                        // v.arrow.image = "/images/light_arrow_left.png";
-                    // }
-                    // //top = top + 40;
-                    // //v.viewContainer.top = top;
-                    // //top = top + v.viewContainer.height + 10;
-                    // //e.source.viewContainer.show();
-                // }
-            // }
         }
         else {
             
@@ -656,64 +591,7 @@ function getRegionHeaderView(region, expanded){"use strict";
             e.source.arrow.setImage("/images/light_arrow_left.png");
             
             regionView.finishLayout();
-            //e.source.viewContainer.height = 0;
-            //e.source.viewContainer.hide();
-            
-            // for ( i = 0; i < scrollView.getChildren().length; i++) {
-                // v = scrollView.getChildren()[i];
-                // isLabel = false;
-                // if (PLATFORM == 'android') {
-                    // if ( v instanceof Ti.UI.Label) {
-                        // isLabel = true;
-                    // }
-                // }
-                // else {
-                    // if (v == '[object TiUILabel]') {
-                        // isLabel = true;
-                    // }
-                // }
-                // if (isLabel) {
-                    // //v.top = top;
-                    // //v.arrow.top = top + 5;
-                    // if (v.viewContainer.expanded === true) {
-                        // v.arrow.image = "/images/light_arrow_down.png";
-                    // }
-                    // else {
-                        // v.arrow.image = "/images/light_arrow_left.png";
-                    // }
-                    // //top = top + 40;
-                    // //v.viewContainer.top = top;
-                    // //top = top + v.viewContainer.height + 10;
-                // }
-            // }
         }
-
-        // if (scrollView.getChildren() != null) {
-// 
-            // for ( i = scrollView.getChildren().length - 1; i >= 0; i--) {
-                // v = scrollView.getChildren()[i];
-                // isLabel = false;
-                // if (PLATFORM == 'android') {
-                    // if ( v instanceof Ti.UI.Label) {
-                        // isLabel = true;
-                    // }
-                // }
-                // else {
-                    // if (v == '[object TiUILabel]') {
-                        // isLabel = true;
-                    // }
-                // }
-// 
-                // if (isLabel == true && v.viewContainer.expanded == true) {
-                    // //v.viewContainer.height = v.viewContainer.height + 30;
-                    // //(getScreenHeight() * 0.3);
-                    // break;
-                // }
-                // else if (isLabel == true && v.viewContainer.expanded == false) {
-                    // break;
-                // }
-            // }
-        // }
     });
     
     regionHeaderWrapper.add(regionHeader);
@@ -721,9 +599,6 @@ function getRegionHeaderView(region, expanded){"use strict";
     
     return regionHeaderWrapper;
 }
-
-
-
 
 
 function save_form_data(saveType) {"use strict";
@@ -788,27 +663,7 @@ function save_form_data(saveType) {"use strict";
                 // }
             // }
 //             
-            //this is used for checking restrictions in db against all nid on this form
-            // TODO: Check for restrictions and other field-specific values
-            // var db_check_restrictions = Omadi.utils.openMainDatabase();
-    //     
-            // var restrictions = new Array();
-    //     
-            // Ti.API.info("--------------------content array length : " + content.length + " --------------------");
-    //     
-            // /*
-             // for (var k = 0; k < content.length; k++) {
-             // Ti.API.info(k+" <<<===>>> "+content[k].value);
-             // if (content[k].value && content[k].value != null ){
-             // var __tmp = content[k].value.toString();
-             // __tmp = __tmp.replace(/'/gi, '\'');
-             // content[k].value = __tmp;
-             // Ti.API.info(__tmp+' - '+content[k].value);
-             // }
-             // }
-             // */
-            // var x;
-            // for (x in content) {
+            
     //     
                 // try {
                     // Ti.API.info(label[x].text + ' is required: ' + content[x].required + ' = ' + content[x].value);
@@ -869,188 +724,9 @@ function save_form_data(saveType) {"use strict";
                         // break;
                     // }
                 // }
-                // else if (content[x].field_type == 'omadi_reference') {//for preparing the list of restrictions
-                    // Ti.API.info("-------------------- omadi_refrence = " + content[x].value + " ... NID:  " + content[x].nid + "--------------------");
-                    // if (content[x].nid != null) {
-                        // var d = new Date();
-                        // var utcDate = Date.parse(d.toUTCString());
-                        // var result = db_check_restrictions.execute('SELECT restriction_license_plate___plate, vin, restrict_entire_account, vehicle___make, vehicle___model, vehicle_color FROM restriction where restriction_account="' + content[x].nid + '" AND ((restriction_start_date < ' + utcDate / 1000 + ' OR restriction_start_date IS NULL) AND (restriction_end_date > ' + utcDate / 1000 + ' OR restriction_end_date IS NULL))');
-    //     
-                        // while (result.isValidRow()) {
-                            // var restriction = {
-                                // license_plate : result.fieldByName('restriction_license_plate___plate'),
-                                // vehicle_make : result.fieldByName('vehicle___make'),
-                                // vehicle_model : result.fieldByName('vehicle___model'),
-                                // vehicle_color : result.fieldByName('vehicle_color'),
-                                // restrict_entire_account : result.fieldByName('restrict_entire_account'),
-                                // vin : result.fieldByName('vin')
-                            // };
-                            // restrictions.push(restriction);
-                            // result.next();
-                        // }
-                        // result.close();
-                    // }
-                    // Ti.API.info("--------------------Restrictions array length : " + restrictions.length + "--------------------");
-                // }
-        
-                // if (((content[x].is_title === true) || (content[x].required == 'true') || (content[x].required === true) || (content[x].required == '1') || (content[x].required == 1) ) && ((content[x].value == '') || (content[x].value == null)) && (content[x].no_data_checkbox == null || content[x].no_data_checkbox == "" || content[x].no_data_checkbox == false) && content[x].enabled == true) {
-                    // //Check for image field
-                    // if (content[x].field_type == 'image') {
-                        // var is_images_query = 'SELECT id FROM _photos WHERE nid=0 ';
-                        // if (win.nid != null && win.nid != "") {
-                            // is_images_query += ' OR nid=' + win.nid + ' ';
-                        // }
-                        // is_images_query += ' AND field_name="' + content[x].field_name + '";';
-                        // Ti.API.info(is_images_query);
-    //     
-                        // var is_images = db_check_restrictions.execute(is_images_query);
-                        // var crdnlty = content[x].cardinality;
-                        // //if cardinality is unlimited or one than only one image can be work for required
-                        // //But if cardinality is greater than 1 then required that number of images
-                        // if (win.mode == 1) {
-                            // if (crdnlty > 1 || crdnlty < 0) {
-                                // var arrImages = content[x].arrImages;
-                                // var imageOdometer = 0;
-                                // for ( i_idx = 0; i_idx < arrImages.length; i_idx++) {
-                                    // if (arrImages[i_idx].imageVal != defaultImageVal || arrImages[i_idx].bigImg != null || arrImages[i_idx].bigImg != "") {
-                                        // imageOdometer++;
-                                    // }
-                                // }
-                                // if ((crdnlty < 1 && imageOdometer == 0) || (crdnlty > 1 && imageOdometer != is_images.rowCount)) {
-                                    // string_text += label[content[x].reffer_index].text + "\n";
-                                    // count_fields++;
-                                // }
-                            // }
-                            // else {
-                                // if (content[x].imageVal == defaultImageVal && is_images.rowCount == 0) {
-                                    // string_text += label[content[x].reffer_index].text + "\n";
-                                    // count_fields++;
-                                // }
-                            // }
-                        // }
-                        // else {
-                            // if ((crdnlty <= 1 && is_images.rowCount == 0) || (crdnlty > 1 && crdnlty != is_images.rowCount)) {
-                                // string_text += label[content[x].reffer_index].text + "\n";
-                                // count_fields++;
-                            // }
-                        // }
-                        // is_images.close();
-                        // continue;
-                    // }
-                    // count_fields++;
-                    // if (content[x].cardinality > 1) {
-                        // string_text += "#" + content[x].private_index + " " + label[content[x].reffer_index].text + "\n";
-                    // }
-                    // else {
-                        // string_text += label[content[x].reffer_index].text + "\n";
-                    // }
-                // }
-            //}
-        
-            // var k;
-            // for ( k = 0; k <= content.length; k++) {
-                // if (!content[k]) {
-                    // continue;
-                // }
-    //     
-                // if ((win.mode == 0 || _flag_info == 'draft')) {
-                    // //validating license plate and vin value entered by user against restritions
-                    // var r;
-                    // for (r in restrictions) {
-                        // var accountRestricted = restrictions[r].restrict_entire_account;
-                        // if (content[k].field_name == 'license_plate___plate') {
-                            // if (accountRestricted != null && accountRestricted == "1" && accountRestricted != "") {
-                                // a.message = "The selected account is restricted from any parking enforcement activity.";
-                                // a.show();
-                                // return;
-                            // }
-                            // else {
-                                // var license_plate = content[k].value;
-                                // var restricted_license_plate = restrictions[r].license_plate;
-                                // if (license_plate != null && restricted_license_plate != null && license_plate != "" && restricted_license_plate != "") {
-                                    // license_plate = license_plate.toLowerCase().replace(/o/g, '0');
-                                    // restricted_license_plate = restricted_license_plate.toLowerCase().replace(/o/g, '0');
-                                    // Ti.API.info('1 License Plate: ' + license_plate + ' ---- Restriction License Plate: ' + restricted_license_plate);
-                                    // if (license_plate.toString() == restricted_license_plate.toString()) {
-                                        // var colorName = "";
-                                        // var resMsg = "";
-                                        // if (restrictions[r].vehicle_color != null && restrictions[r].vehicle_color != "") {
-                                            // var term_data = db_check_restrictions.execute("SELECT name FROM term_data WHERE tid = " + restrictions[r].vehicle_color);
-                                            // colorName = term_data.getFieldByName('name');
-                                            // term_data.close();
-                                        // }
-                                        // resMsg = colorName + " " + restrictions[r].vehicle_make + " " + restrictions[r].vehicle_model;
-                                        // resMsg += ((resMsg.trim() != "") ? " - " : "");
-                                        // resMsg += restrictions[r].license_plate + " is currently restricted for the account entered.";
-    //     
-                                        // a.message = resMsg;
-                                        // a.show();
-                                        // return;
-                                    // }
-                                // }
-                            // }
-    //     
-                        // }
-    //     
-                        // if (content[k].field_name == 'vin') {
-                            // if (accountRestricted != null && accountRestricted == "1") {
-                                // a.message = "Do not enforce any violations on this property. It is restricted by management.";
-                                // a.show();
-                                // return;
-                            // }
-                            // else {
-                                // var vin = content[k].value;
-                                // var restricted_vin = restrictions[r].vin;
-                                // if (vin != null && vin != "" && restricted_vin != null && restricted_vin != "") {
-                                    // Ti.API.info('VIN: ' + vin + ' RS_VIN: ' + restricted_vin);
-                                    // if (vin == restricted_vin) {
-                                        // var colorName = "";
-                                        // var resMsg = "";
-                                        // if (restrictions[r].vehicle_color != null && restrictions[r].vehicle_color != "") {
-                                            // var term_data = db_check_restrictions.execute("SELECT name FROM term_data WHERE tid = " + restrictions[r].vehicle_color);
-                                            // colorName = term_data.getFieldByName('name');
-                                            // term_data.close();
-                                        // }
-                                        // resMsg = colorName + " " + restrictions[r].vehicle_make + " " + restrictions[r].vehicle_model;
-                                        // resMsg += ((resMsg.trim() != "") ? " - " : "");
-                                        // resMsg += restrictions[r].vin + " is currently restricted for the account entered.";
-    //     
-                                        // a.message = resMsg;
-                                        // a.show();
-                                        // return;
-                                    // }
-                                // }
-                            // }
-    //     
-                        // }
-                    // }
-                // }
-    //     
-            // }
-        
-            //db_check_restrictions.close();
-            
-           
-            
-            // if ((count_fields > 0) && (_flag_info != "draft")) {
-                // if (count_fields == 1) {
-                    // if (win.mode == 0) {
-                        // dialog.message = 'The field "' + string_text + '" is empty, please fill it out in order to save this node';
-                    // }
-                    // else {
-                        // dialog.message = 'The field "' + string_text + '" is empty, please fill it out in order to update this node';
-                    // }
-                // }
-                // else {
-                    // dialog.message = 'The following fields are required and are empty:\n' + string_text;
-                // }
-                // dialog.show();
-            // }
-            // else if (value_err > 0) {
-                // dialog.message = string_err;
-                // dialog.show();
-            // }
-            
+       
+               
+      
             //TODO: fix the below
             /*else if (pass_it === false && Ti.App.Properties.getString("timestamp_offset") > OFF_BY) {
         
@@ -1199,8 +875,6 @@ function save_form_data(saveType) {"use strict";
                         Omadi.service.sendUpdates();
                         
                         if(PLATFORM === 'android'){
-                            //Ti.UI.currentWindow.close();
-                            //Ti.UI.currentWindow.setOpacity(0);
                             Ti.UI.currentWindow.close();
                         }
                         else{
@@ -1218,7 +892,6 @@ function save_form_data(saveType) {"use strict";
                         
                         dialog.addEventListener('click', function(ev) {
                             
-                            
                             if (saveType === "next_part") {
                                 Omadi.display.openFormWindow(win.type, node.nid, node.form_part + 1);
                             }
@@ -1227,7 +900,7 @@ function save_form_data(saveType) {"use strict";
                         });
                     }
                     
-                    
+                    Ti.App.fireEvent("savedNode");
                 }
         }
         catch(ex){

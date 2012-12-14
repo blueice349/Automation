@@ -133,17 +133,17 @@ var a = Titanium.UI.createAlertDialog({
 var lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp();
 
 
-function lock_screen() {"use strict";
+//function lock_screen() {"use strict";
     //curWin.touchEnabled = false;
     //databaseStatusView.touchEnabled = false;
     //databaseStatusView.focusable = false;
-}
+//}
 
-function unlock_screen() {"use strict";
-    curWin.touchEnabled = true;
-    databaseStatusView.touchEnabled = true;
-    databaseStatusView.focusable = true;
-}
+//function unlock_screen() {"use strict";
+    //curWin.touchEnabled = true;
+    //databaseStatusView.touchEnabled = true;
+    //databaseStatusView.focusable = true;
+//}
 
 function checkUpdate(useProgressBar) {"use strict";
     var db, result;
@@ -577,10 +577,7 @@ function setupBottomButtons(){"use strict";
     setupBottomButtons();
 
     Ti.App.addEventListener("doneSendingData", function(e){
-        if(typeof e.contextWindow !== 'undefined'){
-            e.contextWindow.close();
-        }
-        
+        Ti.API.debug("Done Sending data event received");
         networkStatusView.hide();
         Omadi.service.uploadFile();
     });
@@ -608,14 +605,11 @@ function setupBottomButtons(){"use strict";
     
     listView.addEventListener('click', function(e) {
         var nextWindow;
-        
-        //lock_screen();
+
         Ti.API.info("row click on table view. index = " + e.index + ", row_desc = " + e.row.description + ", section = " + e.section + ", source_desc=" + e.source.description);
     
         if (e.row.app_permissions.can_view == false && e.source.is_plus != true) {
             alert("You don't have access to view the " + e.row.display + " list.");
-            unlock_screen();
-            //Omadi.data.setUpdating(false);
             return;
         }
     
@@ -628,11 +622,9 @@ function setupBottomButtons(){"use strict";
             if (e.row.app_permissions.can_view == true) {
                 
                 Omadi.display.openListWindow(e.row.name_table, e.row.show_plus, [], [], false);
-              
             }
             else {
                 alert("You don't have access to view the " + e.row.display + " list.");
-                //unlock_screen();
             }
         }
         

@@ -873,11 +873,7 @@ function scrollBoxesToTop(){"use strict";
     
                 loginJSON = JSON.parse(this.responseText);
                 if ( typeof loginJSON.new_app !== 'undefined' && loginJSON.new_app.length > 0) {
-                    dialog = Ti.UI.createAlertDialog({
-                        message : loginJSON.new_app,
-                        ok : 'OK',
-                        title : 'Updated App'
-                    }).show();
+                    Omadi.display.newAppAvailable(loginJSON.new_app);
                 }
             };
     

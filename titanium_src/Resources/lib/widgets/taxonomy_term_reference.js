@@ -63,6 +63,9 @@ Omadi.widgets.taxonomy_term_reference = {
                     if(textValue.length > 0){
                         textValue = textValue.join(', ');
                     }
+                    else{
+                        textValue = "";
+                    }
                 }
             }
         }

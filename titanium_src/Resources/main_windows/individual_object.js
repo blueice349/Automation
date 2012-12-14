@@ -2,6 +2,7 @@
 Ti.include("/lib/widgets.js");
 
 /*jslint eqeq:true, plusplus: true*/
+/*global PLATFORM*/
 
 var domainName = Ti.App.Properties.getString("domainName");
 
@@ -23,6 +24,17 @@ curWin.addEventListener('android:back', function() {"use strict";
 
 Ti.App.addEventListener('loggingOut', function(){"use strict";
     Ti.UI.currentWindow.close();
+});
+
+Ti.App.addEventListener("savedNode", function(){"use strict";
+    if(PLATFORM === 'android'){
+        Ti.UI.currentWindow.close();
+    }
+    else{
+        Ti.UI.currentWindow.hide();
+        // Close the window after the maximum timeout for a node save
+        setTimeout(Ti.UI.currentWindow.close, 65000);
+    }
 });
 
 function form_min(min) {"use strict";
@@ -258,6 +270,10 @@ function openEmailDialog(e){"use strict";
     emailDialog.subject = node.title;
     emailDialog.toRecipients = [e.source.text];
     emailDialog.open();
+}
+
+function openOmadiReferenceWindow(e){"use strict";
+    Omadi.display.openViewWindow(e.source.type, e.source.nid);
 }
 
 function doFieldOutput(fieldObj) {"use strict";
@@ -498,9 +514,7 @@ function doFieldOutput(fieldObj) {"use strict";
                                     valueLabel.type = node[fieldObj.field_name].nodeTypes[i];
                                     valueLabel.nid = node[fieldObj.field_name].dbValues[i];
     
-                                    valueLabel.addEventListener('click', function(e){
-                                        Omadi.display.openViewWindow(e.source.type, e.source.nid);
-                                    });
+                                    valueLabel.addEventListener('click', openOmadiReferenceWindow);
                                 }
     
                                 break;
@@ -2125,9 +2139,6 @@ function doRegionOutput(regionObj) {"use strict";
 
 
 
-//======================================
-// MENU
-//======================================
 if (PLATFORM === 'android' && isEditEnabled == true) {
     var activity = curWin.activity;
     activity.onCreateOptionsMenu = function(e) {"use strict";
@@ -2438,7 +2449,7 @@ function bottomButtons1(actualWindow) {"use strict";
         }
 
         btn_tt.push('Edit');
-        btn_id.push(node_form.fieldByName('form_part'));
+        btn_id.push(form_part);
         
         //json_data.close();
         //db_act.close();

@@ -21,12 +21,24 @@ var numPagesLoaded = 0;
  var loadingMoreLabel, loadingMoreView;
  var num_records = -1;
  var titleSearch = "";
+ var settingTableData = false;
 
 curWin = Ti.UI.currentWindow;
 curWin.setBackgroundColor('#eee');
 
 Ti.App.addEventListener('loggingOut', function(){"use strict";
     Ti.UI.currentWindow.close();
+});
+
+Ti.App.addEventListener("savedNode", function(){"use strict";
+    if(PLATFORM === 'android'){
+        Ti.UI.currentWindow.close();
+    }
+    else{
+        Ti.UI.currentWindow.hide();
+        // Close the window after the maximum timeout for a node save
+        setTimeout(Ti.UI.currentWindow.close, 65000);
+    }
 });
 
 
@@ -426,14 +438,14 @@ function setTableData(){"use strict";
    // Ti.API.debug("Num possible: " + (numPagesLoaded + 1) * itemsPerPage);
     Ti.API.debug("Num Records: " + num_records);
     
-    if(showFinalResults){
+    //if(showFinalResults){
         // if(num_records <= (numPagesLoaded + 1) * itemsPerPage){
             // filterTableView.setFooterTitle("End of data rows");
         // }
         // else{
             // filterTableView.setFooterTitle("Loading More Rows...");
         // }
-    }
+   // }
     
     
     if(numPagesLoaded === 0){
@@ -450,7 +462,7 @@ function setTableData(){"use strict";
 	/*jslint vars: true*/
 	
 	var i, filterField, field_name, db, db_result, sql, lastFilterField;
-   
+    
     
     filterTableView = Titanium.UI.createTableView({
         separatorColor: '#BDBDBD',
@@ -502,32 +514,40 @@ function setTableData(){"use strict";
 	
 	Ti.API.debug("Filter Fields: " + JSON.stringify(filterFields));
 
-	
 	if(typeof curWin.showFinalResults != 'undefined'){
 		showFinalResults = curWin.showFinalResults;
 	}
-	
 	
 	if(PLATFORM === 'android'){
 	    filterTableView.top = 45;
 	}
 
-	
 	filterTableView.addEventListener('scroll', function(e){
 	    if(PLATFORM === 'android'){
-	        if(e.firstVisibleItem > (itemsPerPage * numPagesLoaded)){
-	            numPagesLoaded ++;
-	            
-	            setTableData();
+	        if(!settingTableData && e.firstVisibleItem > (itemsPerPage * numPagesLoaded)){
+	            settingTableData = true;
+                numPagesLoaded ++;
+                setTableData();
+                settingTableData = false;
 	        }
 	    } 
 	    else{
-	        Ti.API.error("ADD IN iOS scroll functionality");
+	        Ti.API.debug(e.contentOffset.y + " " + e.contentSize.height);
+	        if(!settingTableData && e.contentOffset.y + 1600 > e.contentSize.height){
+	            settingTableData = true;
+	            numPagesLoaded ++;
+	            setTableData();
+	            
+	            // Add in a small delay for the contentSize.height to catchup with rendering
+	            // If this isn't here, 3-5 pages will be loaded at once
+	            setTimeout(function(){
+	                settingTableData = false;
+	            }, 100);
+	        }
 	    }
 	});
 	
 	setTableData();
-	
 	
 	var topBar = Titanium.UI.createView({
 	   backgroundColor:'#666',

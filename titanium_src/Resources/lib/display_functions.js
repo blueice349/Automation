@@ -39,6 +39,20 @@ Omadi.display.showBigImage = function(imageView) {
 	}
 };
 
+Omadi.display.newAppAvailable = function(message){"use strict";
+    var dialog, now = Omadi.utils.getUTCTimestamp();
+    
+    if(now - Ti.App.Properties.getDouble("lastAppUpdateNotification", 0) > 3600){
+        dialog = Ti.UI.createAlertDialog({
+            message : message,
+            ok : 'OK',
+            title : 'Updated App'
+        }).show();
+        
+        Ti.App.Properties.setDouble("lastAppUpdateNotification", now);
+    }
+};
+
 Omadi.display.openListWindow = function(type, show_plus, filterValues, nestedWindows, showFinalResults){"use strict";
     var listWindow = Titanium.UI.createWindow({
         navBarHidden : true,
@@ -54,6 +68,8 @@ Omadi.display.openListWindow = function(type, show_plus, filterValues, nestedWin
     listWindow.addEventListener('open', Omadi.display.doneLoading);
 
     listWindow.open();
+    
+    return listWindow;
 };
 
 Omadi.display.openAboutWindow = function(){"use strict";
@@ -67,6 +83,8 @@ Omadi.display.openAboutWindow = function(){"use strict";
     aboutWindow.addEventListener('open', Omadi.display.doneLoading);
     
     aboutWindow.open();
+    
+    return aboutWindow;
 };
 
 Omadi.display.openDraftsWindow = function(){"use strict";
@@ -80,6 +98,8 @@ Omadi.display.openDraftsWindow = function(){"use strict";
     draftsWindow.addEventListener('open', Omadi.display.doneLoading);
     
     draftsWindow.open();
+    
+    return draftsWindow;
 };
 
 Omadi.display.openViewWindow = function(type, nid){"use strict";
@@ -94,6 +114,8 @@ Omadi.display.openViewWindow = function(type, nid){"use strict";
     Omadi.display.loading();
         
     viewWindow.open();
+    
+    return viewWindow;
 };
 
 Omadi.display.openFormWindow = function(type, nid, form_part){"use strict";
@@ -110,6 +132,8 @@ Omadi.display.openFormWindow = function(type, nid, form_part){"use strict";
     Omadi.display.loading();
         
     formWindow.open();
+    
+    return formWindow;
 };
 
 

@@ -291,7 +291,10 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                             }
                         }
                         
-                        
+                        if(typeof json.new_app !== 'undefined' && json.new_app.length > 0){
+                            Ti.API.debug("New App: " + json.new_app);
+                            Omadi.display.newAppAvailable(json.new_app);
+                        }
                     }
                     catch(ex){
                         alert("Saving Sync Data: " + ex);
@@ -517,17 +520,9 @@ Omadi.service.sendUpdates = function() { "use strict";
                         Omadi.service.logout();
                     });
                 }
-    
-                //Ti.API.debug("at the bottom after sync has returned");
-                
-                // if ( typeof sendUpdatesCallback !== 'undefined') {
-                    // //sendUpdatesCallback();
-                // }
                 
                 Ti.App.Properties.setBool("isSendingData", false);
-                Ti.App.fireEvent("doneSendingData", {
-                    contextWindow: Ti.UI.currentWindow
-                });
+                Ti.App.fireEvent("doneSendingData");
             };
     
             //Connection error:

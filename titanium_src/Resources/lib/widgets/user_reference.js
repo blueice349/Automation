@@ -65,6 +65,9 @@ Omadi.widgets.user_reference = {
                     if(textValue.length > 0){
                         textValue = textValue.join(', ');
                     }
+                    else{
+                        textValue = "";
+                    }
                 }
             }
             
@@ -96,6 +99,8 @@ Omadi.widgets.user_reference = {
         
         
         Ti.API.debug("Creating user_reference field");
+        Ti.API.debug(textValue);
+        Ti.API.debug(dbValue);
         
         options = Omadi.widgets.user_reference.getOptions(instance);
         textOptions = [];

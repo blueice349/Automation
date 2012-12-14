@@ -65,6 +65,17 @@ function draftNavButtons() {"use strict";
     Ti.App.addEventListener('loggingOut', function(){
         Ti.UI.currentWindow.close();
     });
+    
+    Ti.App.addEventListener("savedNode", function(){
+        if(PLATFORM === 'android'){
+            Ti.UI.currentWindow.close();
+        }
+        else{
+            Ti.UI.currentWindow.hide();
+            // Close the window after the maximum timeout for a node save
+            setTimeout(Ti.UI.currentWindow.close, 65000);
+        }
+    });
 
     //Lock database for background updates
 
