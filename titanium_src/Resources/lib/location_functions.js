@@ -19,7 +19,7 @@ Omadi.location.uploadGPSCoordinates = function(){
 	
 	var db, result, json, http, i, locationItems;
 	
-	/*global PLATFORM,createNotification*/
+	/*global createNotification*/
 	
 	//Ti.API.info('################################## CALLED ANDROID UPDATE FUNCTION ################################## '+ Omadi.location.is_GPS_uploading());
 	

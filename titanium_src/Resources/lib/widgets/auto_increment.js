@@ -1,5 +1,5 @@
 /*jslint eqeq:true, plusplus: true*/
-/*global PLATFORM,setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
+/*global setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
 
 Omadi.widgets.auto_increment = {
     

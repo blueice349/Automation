@@ -1,7 +1,7 @@
 
 Ti.include("/lib/widgets.js");
 
-/*global Omadi, PLATFORM*/
+/*global Omadi*/
 /*jslint eqeq: true, plusplus: true*/
 
 Ti.API.info("Form Window Opened");
@@ -19,9 +19,8 @@ var regions = {};
 var node;
 var cameraAndroid;
 
-if (PLATFORM === 'android') {
+if (Ti.App.isAndroid) {
     cameraAndroid = require('com.omadi.camera');
-    //camera.addEventListener("successCameraCapture", function(e){openAndroidCamera(e);});
 }
 
 
@@ -49,7 +48,7 @@ function cancelOpt() {"use strict";
 
 function get_android_menu(menu_exists) {"use strict";
     /*jslint eqeq: true */
-   /*global Omadi, PLATFORM, save_form_data*/
+   /*global Omadi, save_form_data*/
    
     win.activity.onCreateOptionsMenu = function(e) {
         var db, result, menu_zero, bundle, btn_tt, btn_id, menu_first, menu_second, menu_third;
@@ -292,6 +291,38 @@ function validatePhone(node, instance){"use strict";
     return form_errors;
 }
 
+function validateEmail(node, instance){"use strict";
+    
+    var form_errors = [], i, regExp;
+    
+    if (node[instance.field_name].dbValues.length > 0) {
+        
+        for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
+            if (!Omadi.utils.isEmpty(node[instance.field_name].dbValues[i]) && !node[instance.field_name].dbValues[i].match(/^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,4}$/i)) {
+                form_errors.push(instance.label + " is not a valid email address.");
+            }  
+        }
+    }
+    
+    return form_errors;
+}
+
+// function validateURL(node, instance){"use strict";
+    // //TODO: validate URLs
+    // var form_errors = [], i, regExp;
+//     
+    // if (node[instance.field_name].dbValues.length > 0) {
+//         
+        // for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
+            // if (!Omadi.utils.isEmpty(node[instance.field_name].dbValues[i]) && !node[instance.field_name].dbValues[i].match(/^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,4}$/i)) {
+                // form_errors.push(instance.label + " is not a valid email address.");
+            // }  
+        // }
+    // }
+//     
+    // return form_errors;
+// }
+
 function validateRequired(node, instance){"use strict";
     var isEmpty, form_errors = [], dbValues = [], i;
     
@@ -484,8 +515,12 @@ function validate_form_data(node){"use strict";
                                     break;
                             }
                             
-                            if(instance.type == 'phone'){
+                            if(instance.type === 'phone'){
                                 form_errors = form_errors.concat(validatePhone(node, instance));
+                            }
+                            
+                            if(instance.type === 'email'){
+                                form_errors = form_errors.concat(validateEmail(node, instance));
                             }
                         }
                     }
@@ -603,15 +638,12 @@ function getRegionHeaderView(region, expanded){"use strict";
 
 function save_form_data(saveType) {"use strict";
     /*jslint nomen: true*/
-   /*global treatArray, update_node, close_me, reload_me, close_me_delay*/
     var node, form_errors, string_text, string_err, count_fields, value_err, now, field_name, dialog,
         oldVal, file_upload_nid, has_bug, no_data_fields_content, instance, insertValues, mode_msg, 
         no_data_fields, db_put, need_at, quotes, nid, new_nid, query, _array_value, x_j, 
         title_to_node, j, field_names, content_s, value_to_insert, formWin;
     
     node = formToNode();
-    
-    //Ti.API.debug("FULL FORM NODE: " + JSON.stringify(node));
     
     Ti.API.debug("Saving with type " + saveType);
     
@@ -642,91 +674,7 @@ function save_form_data(saveType) {"use strict";
         //return;
         Omadi.display.loading("Saving...");
         try{
-            
-            //Ti.API.info("--------------------Inside save_form_data--------------------");
-            //dialog = Titanium.UI.createAlertDialog({
-            //    title : 'Omadi',
-            //    buttonNames : ['OK']
-            //});
-        
-            // string_text = "";
-            // string_err = "";
-            // count_fields = 0;
-            // value_err = 0;
-//             
-            // if (pass_it === false) {
-                // now = Math.round(new Date().getTime() / 1000);
-            // }
-            // else {
-                // if (new_time != null) {
-                    // now = new_time;
-                // }
-            // }
-//             
-            
-    //     
-                // try {
-                    // Ti.API.info(label[x].text + ' is required: ' + content[x].required + ' = ' + content[x].value);
-                // }
-                // catch(e) {
-                    // Ti.API.info('!!!!! ERROR !!!!! ' + e);
-                // }
-                // //Regular expression for license Plate
-                // if (content[x].field_type == 'license_plate') {
-    //     
-                    // if (content[x].value != null && content[x].value != "") {
-                        // content[x].value = content[x].value.replace(/[^[0-9A-Z]/g, '', content[x].value);
-                    // }
-                // }
-    //     
-                // if (content[x].field_type == 'number_integer') {
-    //     
-                    // if (content[x].value != null && content[x].value != "") {
-                        // if (content[x].value >= (2147483647)) {
-                            // content[x].value = null;
-                            // alert("The Maximum for this field is 2147483647 ")
-                        // }
-                        // else if (content[x].value <= (-2147483647)) {
-                            // content[x].value = null;
-                            // alert("The Minimum for this field is 2147483647 ")
-                        // }
-                    // }
-                // }
-    //     
-                // if (content[x].field_type == 'number_integer' || content[x].field_type == 'number_decimal') {
-                    // var minRange = (content[x].field_type == 'number_integer') ? -2147483648 : -99999999;
-                    // var maxRange = (content[x].field_type == 'number_integer') ? 2147483647 : 99999999;
-    //     
-                    // if (content[x].value != null && content[x].value != "") {
-                        // if (content[x].value >= maxRange) {
-                            // content[x].value = null;
-                            // alert("The Maximum for this field is" + maxRange)
-                        // }
-                        // else if (content[x].value <= minRange) {
-                            // content[x].value = null;
-                            // alert("The Minimum for this field is " + minRange)
-                        // }
-                    // }
-                // }
-    //     
-                // // Regular expression for phone
-                // if (content[x].field_type == 'phone') {
-                    // if (content[x].value != "" && content[x].value != null) {
-                        // var str = content[x].value.trim();
-                        // var regExp = /\D*(\d*)\D*[2-9][0-8]\d\D*[2-9]\d{2}\D*\d{4}\D*\d*\D*/g
-                        // var match = regExp.test(str);
-                        // regExp.exec(str)
-                        // var matchVal = regExp.exec(str);
-                        // if (match == false || (matchVal[1] != '' && matchVal[1] != null)) {
-                            // value_err++;
-                            // string_err += content[x].value + ' is not a valid North American phone number.' + '\nPhone numbers should only contain numbers, +, -, (, ) and spaces and be like 999-999-9999. Please enter a valid ten-digit phone number.';
-                        // }
-                        // break;
-                    // }
-                // }
-       
-               
-      
+
             //TODO: fix the below
             /*else if (pass_it === false && Ti.App.Properties.getString("timestamp_offset") > OFF_BY) {
         
@@ -735,72 +683,14 @@ function save_form_data(saveType) {"use strict";
         
                 var server_time = new Date(actual_time);
         
-                var _a = Titanium.UI.createAlertDialog({
-                    title : 'Omadi',
-                    buttonNames : ['Yes', 'No'],
-                    message : 'Your device\'s clock is off a little bit. Please adjust your clock to ' + timeConverter(server_time, "1") + '. Do you want to save this form now using the correct time?',
-                    cancel : 1
-                });
-                _a.show();
-        
-                _a.addEventListener('click', function(e) {
-                    if (e.index != e.cancel) {
-                        var _i;
-                        for (_i in content) {
-                            Ti.API.info("Field: " + content[_i].field_type);
-                            if (content[_i].field_type == "datestamp" || content[_i].field_type == "omadi_time") {
-                                var tp = content[_i].value;
-                                content[_i].value = parseInt(content[_i].value) + parseInt(Ti.App.Properties.getString("timestamp_offset") * 1000);
-                                alert(tp + '  =  ' + content[_i].value);
-                                Ti.API.info(tp + '  =  ' + content[_i].value);
-                            }
-                        }
-                        try {
-                            save_form_data(_flag_info, true, actual_time);
-                        }
-                        catch(e) {
-                            alert('Error Tracking 9: ' + e);
-                            //To catch error to resolve issue #916
-                        }
-                    }
-                    else {
-                        try {
-                            save_form_data(_flag_info, true, null);
-                        }
-                        catch(e) {
-                            alert('Error Tracking 10: ' + e);
-                            //To catch error to resolve issue #916
-                        }
-                    }
-                });
-        
             }*/
-            //else {
-               
+         
                 
                 mode_msg = '';
                 no_data_fields = [];
                 
                
-                
-                //Ti.API.debug("showing indicator");
-                
-                //Omadi.display.showLoadingIndicator(mode_msg);
-                
-                
-                //
-                //Retrieve objects that need quotes:
-                //
-                // need_at = db_put.execute("SELECT field_name FROM fields WHERE bundle = '" + win.type + "' AND ( type='number_integer' OR type='number_decimal' ) ");
-                // quotes = [];
-                // while (need_at.isValidRow()) {
-                    // quotes[need_at.fieldByName('field_name')] = true;
-                    // need_at.next();
-                // }
-                // need_at.close();
-                
-                //var saved = false;
-                
+               
                 node = Omadi.data.saveNode(node);
                 
                 if(node._saved === true){
@@ -810,60 +700,7 @@ function save_form_data(saveType) {"use strict";
                 // Setup the current node and nid in the window so a duplicate won't be made for this window
                 Ti.UI.currentWindow.node = node;
                 Ti.UI.currentWindow.nid = node.nid;
-                
-                
-                //has_bug = false;
-                //try {
-                    //Ti.API.info('Title: ' + title_to_node);
-                    
-        
-                    //If Images captured and not yet uploaded then store in file_uploaded_queue
-                    
-                    // TODO: restore image functionality
-                    // for ( j = 0; j <= content.length; j++) {
-                        // if (!content[j]) {
-                            // continue;
-                        // }
-                        // if (content[j].field_type == 'image' && win.mode == 1) {
-                            // db_put.execute('UPDATE ' + win.type + ' SET ' + content[j].field_name + '="' + oldVal.fieldByName(content[j].field_name) + '", ' + content[j].field_name + '___file_id="' + oldVal.fieldByName(content[j].field_name + '___file_id') + '", ' + content[j].field_name + '___status="' + oldVal.fieldByName(content[j].field_name + '___status') + '" WHERE nid=' + file_upload_nid + ';');
-                        // }
-                    // }
-        
-                   
-        
-                 
-                   
-                // }
-                // catch(e) {
-                    // Ti.API.error("Error----------" + e);
-//         
-                    // if (_flag_info == 'draft') {
-//                         
-                        // alert('An error has occurred when we tried to save this node as a draft, please try again');
-                    // }
-                    // else if (win.mode == 1) {
-//                         
-                       // alert('An error has occurred when we tried to update this new node, please try again');
-                    // }
-                    // else {
-//                         
-                        // alert('An error has occurred when we tried to create this new node, please try again');
-                    // }
-//                    
-                // }
-
-        
-                //Ti.API.info('========= Updating new info running ========= ' + _flag_info);
-                
-                //var alertMessage = "";
-                // if(has_bug){
-                    // alert("There was a problem saving your data. Please try again. If this error continues, please report the problem.");
-                // }
-                // else if(_flag_info == 'draft'){
-                    // alert('The ' + win.title + ' was saved as a draft.');
-                    // close_me();
-                // }
-                
+          
                 if(node._saved === true){
                     if(Ti.Network.online){
                        
@@ -874,7 +711,7 @@ function save_form_data(saveType) {"use strict";
                         // Send a clone of the object so the window will close after the network returns a response
                         Omadi.service.sendUpdates();
                         
-                        if(PLATFORM === 'android'){
+                        if(Ti.App.isAndroid){
                             Ti.UI.currentWindow.close();
                         }
                         else{
@@ -914,7 +751,7 @@ function save_form_data(saveType) {"use strict";
 
 function bottomButtons() {"use strict";
     /*jslint eqeq: true, vars: true*/
-   /*global Omadi, PLATFORM*/
+   /*global Omadi*/
     
     try {
         
@@ -1358,7 +1195,7 @@ function recalculateCalculationFields(){"use strict";
 (function(){"use strict";
     
     /*jslint vars: true, eqeq: true*/
-   /*global Omadi,PLATFORM, loadNode */
+   /*global Omadi, loadNode */
    
    
     win.addEventListener("android:back", cancelOpt);
@@ -1407,7 +1244,7 @@ function recalculateCalculationFields(){"use strict";
     
     win.setOrientationModes([Ti.UI.PORTRAIT]);
 
-    if (PLATFORM === 'android') {
+    if (Ti.App.isAndroid) {
         //The view where the results are presented
         formWrapperView = Ti.UI.createView({
             top : 0,
@@ -1511,7 +1348,7 @@ function recalculateCalculationFields(){"use strict";
     
     win.node = node;
     
-    if (PLATFORM === 'android') {
+    if (Ti.App.isAndroid) {
         get_android_menu();
     }
     else {

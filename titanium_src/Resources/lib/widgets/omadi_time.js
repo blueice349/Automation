@@ -1,5 +1,5 @@
 /*jslint eqeq:true, plusplus: true*/
-/*global PLATFORM,setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
+/*global setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
 
 Omadi.widgets.omadi_time = {
 
@@ -130,7 +130,7 @@ Omadi.widgets.omadi_time = {
             widgetView.color = '#848484';
             widgetView.paddingLeft = 3;
             widgetView.paddingRight = 3;
-            if (PLATFORM == 'android') {
+            if (Ti.App.isAndroid) {
                 widgetView.softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
             }
         }
@@ -147,7 +147,7 @@ Omadi.widgets.omadi_time = {
 
         var dateWindow, titleLabel, minDate, opacView, widgetDate, okButton, clearButton, wrapperView, buttonView, topButtonsView, time_picker, doneButton, cancelButton;
 
-        if (PLATFORM == 'android') {
+        if (Ti.App.isAndroid) {
             Ti.UI.Android.hideSoftKeyboard();
         }
 

@@ -1,5 +1,5 @@
 /*jslint eqeq:true, plusplus: true*/
-/*global PLATFORM,setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
+/*global setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
 
 Omadi.widgets.text_long = {
     
@@ -120,7 +120,7 @@ Omadi.widgets.text_long = {
             widgetView.color = '#848484';
             widgetView.paddingLeft = 3;
             widgetView.paddingRight = 3;
-            if (PLATFORM == 'android') {
+            if (Ti.App.isAndroid) {
                 widgetView.softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
             }
         }

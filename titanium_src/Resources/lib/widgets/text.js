@@ -1,5 +1,5 @@
 /*jslint eqeq:true, plusplus: true*/
-/*global PLATFORM,setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
+/*global setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
 
 Omadi.widgets.text = {
     
@@ -144,7 +144,7 @@ Omadi.widgets.text = {
             widgetView.color = '#848484';
             widgetView.paddingLeft = 3;
             widgetView.paddingRight = 3;
-            if (PLATFORM == 'android') {
+            if (Ti.App.isAndroid) {
                 widgetView.softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
             }
         }
@@ -162,7 +162,7 @@ Omadi.widgets.text = {
             
             if(e.source.lastValue != e.source.value){
                 
-                if(PLATFORM === 'android' && typeof e.source.maxLength !== 'undefined'){
+                if(Ti.App.isAndroid && typeof e.source.maxLength !== 'undefined'){
                     if(e.source.value.length > e.source.maxLength){
                         e.source.value = e.source.value.substring(0, e.source.maxLength);
                         e.source.setSelection(e.source.value.length, e.source.value.length);

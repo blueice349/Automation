@@ -1,43 +1,41 @@
 /*jslint eqeq:true, plusplus: true*/
-/*global PLATFORM,setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
+/*global setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
 
 Omadi.widgets.license_plate = {
-    
-    // TODO: add validation for plate and state, remove spaces, capitalize all, don't send more than 10 chars
-    
-    getFieldView: function(node, instance){"use strict";
+
+    getFieldView : function(node, instance) {"use strict";
         //this.base = Omadi.widgets.base.init(in_instance);
         instance.elements = [];
-        
+
         var settings = instance.settings, fieldView, i, j, element, addAnotherItemButton = null;
-        
+
         fieldView = Ti.UI.createView({
-           width: '100%',
-           layout: 'vertical',
-           height: Ti.UI.SIZE,
-           instance: instance
+            width : '100%',
+            layout : 'vertical',
+            height : Ti.UI.SIZE,
+            instance : instance
         });
-        
+
         instance.fieldView = fieldView;
-        
+
         fieldView.add(Omadi.widgets.label.getRegularLabelView(instance));
         setConditionallyRequiredLabelForInstance(node, instance);
-       
+
         instance.numVisibleFields = 1;
-              
-        element = Omadi.widgets.license_plate.getNewElement(node, instance,  0);
+
+        element = Omadi.widgets.license_plate.getNewElement(node, instance, 0);
         instance.elements.push(element);
         fieldView.add(element);
         fieldView.add(Omadi.widgets.getSpacerView());
-       
+
         return fieldView;
     },
-    getNewElement: function(node, instance, index){"use strict";
-        
+    getNewElement : function(node, instance, index) {"use strict";
+
         var settings, widgetView, dbValue, textValue, part, nameParts, real_field_name, i, options, states;
-        
+
         nameParts = instance.field_name.split('___');
-        
+
         if (nameParts[1]) {
             part = nameParts[1];
             real_field_name = nameParts[0];
@@ -45,145 +43,134 @@ Omadi.widgets.license_plate = {
         else {
             Ti.API.error("There should be parts to this vehicle field!!!");
         }
-        
-        //i_name = i_name.charAt(0).toUpperCase() + i_name.slice(1);
-        
-        //if (part == "make") {
-            //var _make_ref = reffer_index;
-        //}
-        
-        //label[count].text += (' ' + i_name);
-        
-        
-        if(part == 'plate'){
+
+        if (part == 'plate') {
             dbValue = "";
             textValue = "";
-            if(typeof node[real_field_name] !== 'undefined'){
-                if(typeof node[real_field_name].parts[part].textValue !== 'undefined'){
+            if ( typeof node[real_field_name] !== 'undefined') {
+                if ( typeof node[real_field_name].parts[part].textValue !== 'undefined') {
                     dbValue = textValue = node[real_field_name].parts[part].textValue;
                 }
             }
         }
-        else{
-            
+        else {
+
             states = Omadi.widgets.license_plate.getStates();
             dbValue = "";
             textValue = "- None -";
-            if(typeof node[real_field_name] !== 'undefined'){
-                if(typeof node[real_field_name].parts[part].textValue !== 'undefined'){
+            if ( typeof node[real_field_name] !== 'undefined') {
+                if ( typeof node[real_field_name].parts[part].textValue !== 'undefined') {
                     dbValue = node[real_field_name].parts[part].textValue;
                 }
             }
-            
-            if(dbValue === ""){
-                if(typeof instance.settings.state_default_value !== 'undefined'){
+
+            if (dbValue === "") {
+                if ( typeof instance.settings.state_default_value !== 'undefined') {
                     dbValue = instance.settings.state_default_value;
                 }
             }
-            
-            if(dbValue > ""){
-                for(i = 0; i < states.length; i ++){
-                    if(states[i].usps == dbValue){
+
+            if (dbValue > "") {
+                for ( i = 0; i < states.length; i++) {
+                    if (states[i].usps == dbValue) {
                         textValue = states[i].title;
                         break;
                     }
                 }
             }
         }
-        
+
         settings = instance.settings;
         Ti.API.debug("Creating license_plate " + part + " field");
-        
+
         if (part == "plate") {
-           
+
             widgetView = Ti.UI.createTextField({
-                autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_ALL,
-                autocorrect: false,
+                autocapitalization : Ti.UI.TEXT_AUTOCAPITALIZATION_ALL,
+                autocorrect : false,
                 editable : instance.can_edit,
                 enabled : instance.can_edit,
-                ellipsize: false,
-                keepScreenOn: true,
-                suppessReturn: false,
+                ellipsize : false,
+                keepScreenOn : true,
+                suppessReturn : false,
                 borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
                 textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
                 width : Ti.Platform.displayCaps.platformWidth - 30,
-                height: Ti.UI.SIZE,
+                height : Ti.UI.SIZE,
                 color : '#000000',
-                font: {
-                    fontSize: Omadi.widgets.fontSize
+                font : {
+                    fontSize : Omadi.widgets.fontSize
                 },
                 returnKeyType : Ti.UI.RETURNKEY_DONE,
-                backgroundColor: '#fff',
-                borderRadius: 10,
-                borderColor: '#999',
-                borderWidth: 1,
-                
-                instance: instance,
-                dbValue: dbValue,
-                textValue: textValue,
+                backgroundColor : '#fff',
+                borderRadius : 10,
+                borderColor : '#999',
+                borderWidth : 1,
+
+                instance : instance,
+                dbValue : dbValue,
+                textValue : textValue,
                 value : textValue,
-                real_field_name: real_field_name,
-                maxLength: 10
+                real_field_name : real_field_name,
+                maxLength : 10
             });
-            
+
             widgetView.addEventListener('focus', function(e) {
                 e.source.touched = true;
             });
-            
-            
+
             widgetView.addEventListener('change', function(e) {
                 var tempValue;
                 /*jslint regexp: true*/
                 /*global setConditionallyRequiredLabels*/
-                 
-                if(e.source.lastValue != e.source.value){
-                    
+
+                if (e.source.lastValue != e.source.value) {
+
                     tempValue = e.source.value.replace(/[^0-9a-zA-Z]/g, '');
-                    if(tempValue != e.source.value){
+                    if (tempValue != e.source.value) {
                         e.source.value = tempValue;
-                        if(PLATFORM === 'android'){
+                        if (Ti.App.isAndroid) {
                             e.source.setSelection(e.source.value.length, e.source.value.length);
                         }
                     }
-                    
-                    if(PLATFORM === 'android'){
-                        if(e.source.value.length > e.source.maxLength){
+
+                    if (Ti.App.isAndroid) {
+                        if (e.source.value.length > e.source.maxLength) {
                             e.source.value = e.source.value.substring(0, e.source.maxLength);
                             e.source.setSelection(e.source.value.length, e.source.value.length);
                         }
                     }
-                   
+
                     e.source.dbValue = e.source.value;
                     e.source.textValue = e.source.value;
-                    
-                    if(e.source.check_conditional_fields.length > 0){
+
+                    if (e.source.check_conditional_fields.length > 0) {
                         setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
                     }
-                    
+
                     e.source.lastValue = e.source.value;
                 }
             });
         }
-        else{ // state
-            
+        else {// state
+
             options = [];
-            
-            for (i = 0; i < states.length; i ++) {
+
+            for ( i = 0; i < states.length; i++) {
                 options.push(states[i].title);
             }
-            
+
             widgetView = Titanium.UI.createLabel({
-                //borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+                style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
                 width : Ti.Platform.displayCaps.platformWidth - 30,
                 options : options,
                 states : states,
                 text : textValue,
-                height: 35,
+                height : 35,
                 font : {
                     fontSize : Omadi.widgets.fontSize
                 },
-                textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+                textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER,
                 color : '#000000',
                 selectionIndicator : true,
                 backgroundGradient : {
@@ -207,21 +194,19 @@ Omadi.widgets.license_plate = {
                         offset : 1.0
                     }]
                 },
-                backgroundColor: '#fff',
-                borderRadius: 10,
-                borderColor: '#999',
-                borderWidth: 1,
-                
-                instance: instance,
-                dbValue: dbValue,
-                textValue: textValue,
+                backgroundColor : '#fff',
+                borderRadius : 10,
+                borderColor : '#999',
+                borderWidth : 1,
+
+                instance : instance,
+                dbValue : dbValue,
+                textValue : textValue,
                 value : textValue,
-                real_field_name: real_field_name
+                real_field_name : real_field_name
             });
-            
+
             widgetView.addEventListener('click', function(e) {
-                //Ti.API.info('USPS: '+e.row.usps);
-                //e.source.value = e.row.usps;
                 var postDialog = Titanium.UI.createOptionDialog();
                 postDialog.options = e.source.options;
                 postDialog.cancel = -1;
@@ -233,14 +218,12 @@ Omadi.widgets.license_plate = {
                         ev.source.widgetView.text = ev.source.widgetView.textValue = ev.source.options[ev.index];
                         ev.source.widgetView.value = ev.source.widgetView.dbValue = ev.source.widgetView.states[ev.index].usps;
                     }
-                    //changedContentValue(e.source);
-                    //noDataChecboxEnableDisable(e.source, e.source.reffer_index);
                 });
             });
         }
 
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
-        
+
         if (!instance.can_edit) {
             widgetView.backgroundImage = '';
             widgetView.backgroundColor = '#BDBDBD';
@@ -249,16 +232,16 @@ Omadi.widgets.license_plate = {
             widgetView.color = '#848484';
             widgetView.paddingLeft = 3;
             widgetView.paddingRight = 3;
-            
-            if (PLATFORM == 'android') {
+
+            if (Ti.App.isAndroid) {
                 widgetView.softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
             }
         }
-        
+
         return widgetView;
 
     },
-    getStates: function(){"use strict";
+    getStates : function() {"use strict";
         var states = [];
         states.push({
             title : " - None - ",
@@ -468,10 +451,8 @@ Omadi.widgets.license_plate = {
             title : "Other",
             usps : "-"
         });
-        
+
         return states;
     }
 };
 
-
-                          

@@ -1,6 +1,6 @@
 Ti.include('/lib/functions.js');
 
-/*global PLATFORM, Omadi*/
+/*global  Omadi*/
 
 (function(){
 	'use strict';

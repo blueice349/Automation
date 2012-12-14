@@ -17,7 +17,7 @@ var uploadInterval;
 
 var movement;
 
-if(PLATFORM !== 'android'){
+if(Ti.App.isIOS){
     movement =  require('com.omadi.ios_gps');
 }
 
@@ -77,7 +77,7 @@ function getGPSCoordinateiOS() {
 
 function iOSStartGPS(){"use strict";
 
-    if(PLATFORM !== 'android'){
+    if(Ti.App.isIOS){
         movement.startMovementUpdates({
         location : true,
         locationAccuracy : movement.LOCATION_ACCURACY_BEST_FOR_NAVIGATION

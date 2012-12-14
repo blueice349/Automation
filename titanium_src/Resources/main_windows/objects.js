@@ -3,7 +3,7 @@
 //Ti.include('/main_windows/create_or_edit_node.js');
 Ti.include('/lib/functions.js');
 	
-/*global PLATFORM,create_or_edit_node, Omadi*/
+/*global create_or_edit_node, Omadi*/
 
 var bundle,
 curWin,
@@ -31,7 +31,7 @@ Ti.App.addEventListener('loggingOut', function(){"use strict";
 });
 
 Ti.App.addEventListener("savedNode", function(){"use strict";
-    if(PLATFORM === 'android'){
+    if(Ti.App.isAndroid){
         Ti.UI.currentWindow.close();
     }
     else{
@@ -85,7 +85,7 @@ function windowOpened(e){
 	
 	Ti.API.info("window opened");
 	//search.blur();
-	//if(PLATFORM === 'android'){
+	//if(Ti.App.isAndroid){
 		//Ti.UI.Android.hideSoftKeyboard();
 	//}
 	//Ti.API.debug("hide keyboard in windowOpened");
@@ -100,7 +100,7 @@ function windowOpened(e){
 function backButtonPressed(e){
      "use strict"; 
      //Ti.API.info("Went to final results: " + e.source.showFinalResults);
-     if(PLATFORM === 'android'){
+     if(Ti.App.isAndroid){
          if(!e.source.showFinalResults && filterValues.length){
             filterValues.pop();
          }
@@ -518,12 +518,12 @@ function setTableData(){"use strict";
 		showFinalResults = curWin.showFinalResults;
 	}
 	
-	if(PLATFORM === 'android'){
+	if(Ti.App.isAndroid){
 	    filterTableView.top = 45;
 	}
 
 	filterTableView.addEventListener('scroll', function(e){
-	    if(PLATFORM === 'android'){
+	    if(Ti.App.isAndroid){
 	        if(!settingTableData && e.firstVisibleItem > (itemsPerPage * numPagesLoaded)){
 	            settingTableData = true;
                 numPagesLoaded ++;
@@ -571,7 +571,7 @@ function setTableData(){"use strict";
 		color: '#ccc'
 	});
 	
-	if(PLATFORM == 'android'){
+	if(Ti.App.isAndroid){
 		listLabel.top = 4;
 		listLabel.left = 10;
 	}
@@ -582,7 +582,7 @@ function setTableData(){"use strict";
 		right: 10,
 		width: 100,
 		height: 35,
-		style: (PLATFORM != 'android' ? Titanium.UI.iPhone.SystemButtonStyle.BORDERED : ''),
+		style: (Ti.App.isIOS ? Titanium.UI.iPhone.SystemButtonStyle.BORDERED : ''),
 		backgroundGradient: {
 	        type: 'linear',
 	        startPoint: { x: '50%', y: '0%' },
@@ -607,7 +607,7 @@ function setTableData(){"use strict";
 	
 	var barHeight;
 	
-	if(PLATFORM == 'android'){
+	if(Ti.App.isAndroid){
 	    
 	    topBar.add(listLabel); // IMPORTANT!! This took way too long to figure out... Do not add this to iOS, or the app will crash at random
 		
@@ -649,20 +649,20 @@ function setTableData(){"use strict";
 		if(showFinalResults){
 			filterLabel.top = 5;
 			filterLabel.right = 10;
-			if(PLATFORM == 'android'){
+			if(Ti.App.isAndroid){
 				barHeight = 15 + (filterValues.length * 14);
 			}
 		}
 		else{
 			filterLabel.top = 25;
-			if(PLATFORM === 'android'){
+			if(Ti.App.isAndroid){
 				filterLabel.left = 10;
 			}
 			else{
 				filterLabel.left = 80;
 			}
 			
-			if(PLATFORM === 'android'){
+			if(Ti.App.isAndroid){
 				barHeight = 30 + (filterValues.length * 14);
 				if(barHeight < 45){
 					barHeight = 45;
@@ -676,7 +676,7 @@ function setTableData(){"use strict";
 	}
 	
 	/*** ADD the IOS top navigation bar ***/
-	if(PLATFORM != 'android'){
+	if(Ti.App.isIOS){
 		
 		// var iOSBackButton = Ti.UI.createButton({
 			// title : 'Back',
@@ -786,7 +786,7 @@ function setTableData(){"use strict";
 		});
 		curWin.add(toolbar);
 	}
-	else{ // PLATFORM == 'android'
+	else{ // Ti.App.isAndroid
 		curWin.add(topBar);
 		if(!showFinalResults){
 			topBar.add(showAllButton);
@@ -1097,7 +1097,7 @@ function setTableData(){"use strict";
 	
 	
 
-	//if(PLATFORM === 'android'){
+	//if(Ti.App.isAndroid){
 		// bottomBack(curWin, "Back" , "enable", true);
 		// if (listTableView != null ){
 			// listTableView.bottom = '6%'	

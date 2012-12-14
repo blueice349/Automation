@@ -1,7 +1,7 @@
 Ti.include('/lib/functions.js');
 
 /*jslint eqeq: true, plusplus: true*/
-/*global PLATFORM, Omadi*/
+/*global  Omadi*/
 
 var curWin = Ti.UI.currentWindow;
 curWin.setBackgroundColor('#eee');
@@ -67,7 +67,7 @@ function draftNavButtons() {"use strict";
     });
     
     Ti.App.addEventListener("savedNode", function(){
-        if(PLATFORM === 'android'){
+        if(Ti.App.isAndroid){
             Ti.UI.currentWindow.close();
         }
         else{
@@ -185,7 +185,7 @@ function draftNavButtons() {"use strict";
             separatorColor : '#E6E6E6'
         });
         
-        if(PLATFORM !== 'android'){
+        if(Ti.App.isIOS){
             listTableView.footerView = Ti.UI.createView({
                 height: 50,
                 width: '100%'
@@ -269,7 +269,7 @@ function draftNavButtons() {"use strict";
 
     db.close();
 
-    if (PLATFORM !== 'android') {
+    if (Ti.App.isIOS) {
         draftNavButtons();
     }
 }());

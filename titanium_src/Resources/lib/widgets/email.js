@@ -1,9 +1,7 @@
 /*jslint eqeq:true, plusplus: true*/
-/*global PLATFORM,setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
+/*global setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
 
 Omadi.widgets.email = {
-    
-    //TODO: write a validation function for email fields
     
     getFieldView: function(node, instance){"use strict";
         //this.base = Omadi.widgets.base.init(in_instance);
@@ -23,9 +21,6 @@ Omadi.widgets.email = {
         fieldView.add(Omadi.widgets.label.getRegularLabelView(instance));
         setConditionallyRequiredLabelForInstance(node, instance);
        
-        //Add fields:
-        //regionView.add(label[count]);
-        //var reffer_index = count;
         Ti.API.debug(instance.numVisibleFields);
         
         if(typeof instance.numVisibleFields === 'undefined'){
@@ -140,7 +135,7 @@ Omadi.widgets.email = {
             widgetView.color = '#848484';
             widgetView.paddingLeft = 3;
             widgetView.paddingRight = 3;
-            if (PLATFORM == 'android') {
+            if (Ti.App.isAndroid) {
                 widgetView.softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
             }
         }

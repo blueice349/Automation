@@ -25,7 +25,7 @@ Ti.include('/lib/widgets/auto_increment.js');
 Ti.include('/lib/widgets/omadi_time.js');
 
 /*jslint eqeq: true, plusplus: true, nomen: true*/
-/*global PLATFORM, Omadi*/
+/*global  Omadi*/
 
 Omadi.widgets.getFieldView = function (node, instance){"use strict";
     var fieldView = null;
@@ -453,7 +453,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         
         screenHeight = Ti.Platform.displayCaps.platformHeight;
         
-        if (PLATFORM == 'android') {
+        if (Ti.App.isAndroid) {
             Ti.UI.Android.hideSoftKeyboard();
             Ti.API.debug("hide keyboard in open_mult_selector");
         }

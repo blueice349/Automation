@@ -1,5 +1,4 @@
 /*jslint eqeq:true, plusplus: true*/
-/*global PLATFORM*/
 
 var Omadi = Omadi || {};
 Omadi.utils = Omadi.utils || {};
@@ -9,7 +8,7 @@ Omadi.DB_VERSION = "omadiDb1680";
 
 Omadi.utils.openListDatabase = function() {"use strict";
     var db = Ti.Database.install('/database/db_list.sqlite', Omadi.DB_VERSION + "_list");
-    if (PLATFORM !== 'android') {
+    if (Ti.App.isIOS) {
         db.file.setRemoteBackup(false);
     }
     return db;
@@ -28,7 +27,7 @@ Omadi.utils.getMainDBName = function() {"use strict";
 
 Omadi.utils.openMainDatabase = function() {"use strict";
     var db = Ti.Database.install('/database/db.sqlite', Omadi.DB_VERSION + "_" + Omadi.utils.getMainDBName());
-    if (PLATFORM !== 'android') {
+    if (Ti.App.isIOS) {
         db.file.setRemoteBackup(false);
     }
     return db;
@@ -36,7 +35,7 @@ Omadi.utils.openMainDatabase = function() {"use strict";
 
 Omadi.utils.openGPSDatabase = function() {"use strict";
     var db = Ti.Database.install('/database/gps_coordinates.sqlite', Omadi.DB_VERSION + "_" + Omadi.utils.getMainDBName() + "_GPS");
-    if (PLATFORM !== 'android') {
+    if (Ti.App.isIOS) {
         db.file.setRemoteBackup(false);
     }
     return db;
@@ -152,7 +151,7 @@ Omadi.utils.setCookieHeader = function(http) {"use strict";
     db.close();
 
     if(cookie > ""){
-        if (PLATFORM === 'android') {
+        if (Ti.App.isAndroid) {
             http.setRequestHeader("Cookie", cookie);
             // Set cookies
         }

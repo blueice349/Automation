@@ -174,7 +174,7 @@ function checkUpdate(useProgressBar) {"use strict";
 function displayBundleList() {"use strict";
     var db, result, dataRows, name_table, i, j, k, display, description, flag_display, is_disabled, data, show_plus, 
         app_permissions, permissionsString, row_t, icon, titleLabel, plusButton;
-    /*global ROLE_ID_ADMIN, PLATFORM*/
+    /*global ROLE_ID_ADMIN*/
     
     db = Omadi.utils.openMainDatabase();
     result = db.execute('SELECT * FROM bundles');
@@ -301,7 +301,7 @@ function displayBundleList() {"use strict";
                     });
         
                     if (show_plus === false) {
-                        if (PLATFORM === 'android') {
+                        if (Ti.App.isAndroid) {
                             plusButton.visible = false;
                         }
                         else {
@@ -317,7 +317,7 @@ function displayBundleList() {"use strict";
                     dataRows.sort(Omadi.utils.sortByName);
                     listView.setData(dataRows);
         
-                    // if (PLATFORM == 'android') {
+                    // if (Ti.App.isAndroid) {
                         // row_t.addEventListener('longclick', function(e) {
                             // if (e.source.desc != null && e.source.desc != "") {
                                 // alert(e.source.desc);
@@ -466,7 +466,7 @@ function setupBottomButtons(){"use strict";
     
     
     
-    if (PLATFORM !== 'android') {
+    if (Ti.App.isIOS) {
         draftsView.width = alertsView.width = Ti.Platform.displayCaps.platformWidth / 3;
     
         actionsView = Ti.UI.createView({
@@ -520,7 +520,6 @@ function setupBottomButtons(){"use strict";
 (function(){"use strict";
     var db, formWindow, time_format;
     
-    /*global PLATFORM*/
    
     listView = Titanium.UI.createTableView({
         data : [],
@@ -530,7 +529,7 @@ function setupBottomButtons(){"use strict";
         separatorColor : '#BDBDBD'
     });
     
-    if(PLATFORM !== 'android'){
+    if(Ti.App.isIOS){
         listView.footerView = Ti.UI.createView({
             height: 45,
             width: '100%'
@@ -569,7 +568,7 @@ function setupBottomButtons(){"use strict";
     //Sets only portrait mode
     curWin.orientationModes = [Titanium.UI.PORTRAIT];
     
-    if (PLATFORM === 'android') {
+    if (Ti.App.isAndroid) {
         setupAndroidMenu();
     }
     
@@ -686,7 +685,7 @@ function setupBottomButtons(){"use strict";
         //If delete_all is present, delete all contents:
         db = Omadi.utils.openMainDatabase();
         
-        if(PLATFORM === "android") {
+        if(Ti.App.isAndroid) {
             //Remove the database
             db.remove();
             db.close();

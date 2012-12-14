@@ -24,7 +24,7 @@ Omadi.service.setNodeViewed = function(nid) {"use strict";
 
 Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
     var http, app_timestamp, progress = null;
-    /*global isJsonString,PLATFORM*/
+    /*global isJsonString*/
     /*jslint eqeq:true*/
     try {
         
@@ -109,7 +109,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
             
                                 //If delete_all is present, delete all contents:
             
-                                if (PLATFORM === "android") {
+                                if (Ti.App.isAndroid) {
                                     //Remove the mainDB
                                     mainDB.remove();
                                     mainDB.close();
@@ -386,7 +386,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                         });
         
                         dialog.addEventListener('click', function(e) {
-                            if (PLATFORM == "android") {
+                            if (Ti.App.isAndroid) {
                                 if (e.index != 1) {
                                     setTimeout(function() {
                                         Omadi.service.fetchUpdates(true);
@@ -468,7 +468,7 @@ Omadi.service.sendUpdates = function() { "use strict";
     
                     //Ti.API.info("updated file upload table");
                     // if (mode === 1) {
-                        // if (PLATFORM === 'android') {
+                        // if (Ti.App.isAndroid) {
                             // Ti.UI.createNotification({
                                 // message : 'The ' + this.node_type + ' was updated successfully',
                                 // duration : Ti.UI.NOTIFICATION_DURATION_LONG
@@ -484,7 +484,7 @@ Omadi.service.sendUpdates = function() { "use strict";
 //     
                     // }
                     // else if (mode === 0) {
-                        // if (PLATFORM === 'android') {
+                        // if (Ti.App.isAndroid) {
                             // Ti.UI.createNotification({
                                 // message : 'The ' + this.node_type + ' was created successfully.',
                                 // duration : Ti.UI.NOTIFICATION_DURATION_LONG
@@ -573,7 +573,7 @@ Omadi.service.sendUpdates = function() { "use strict";
                     // alert('Error: ' + e.error);
                 // }
                 // else if (mode == 1) {
-                    // if (PLATFORM == 'android') {
+                    // if (Ti.App.isAndroid) {
                         // Ti.UI.createNotification({
                             // //message : 'An error happened while we tried to connect to the server in order to transfer the recently saved node, please make a manual update',
                             // message : 'Error :: ' + e.error, //Change message for testing purpose
@@ -872,7 +872,7 @@ Omadi.service.uploadFile = function() {"use strict";
                         };
                 
                         
-                        //if (PLATFORM == 'android') {
+                        //if (Ti.App.isAndroid) {
                         //    http.send('{"file_data"    :"' + fileUploadTable.fieldByName('file_data') + '", "filename" :"' + fileUploadTable.fieldByName('file_name') + '", "nid"      :"' + fileUploadTable.fieldByName('nid') + '", "field_name":"' + fileUploadTable.fieldByName('field_name') + '", "delta":"' + fileUploadTable.fieldByName('delta') + '","timestamp":"' + fileUploadTable.fieldByName('timestamp') + '"}');
                         //}
                         //else {

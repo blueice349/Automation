@@ -1,11 +1,9 @@
-
 /*jslint eqeq:true, plusplus: true*/
-/*global PLATFORM,setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
+/*global setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
 
 Omadi.widgets.calculation_field = {
-    
+    calculated_field_cache: [],
     getFieldView: function(node, instance){"use strict";
-        //this.base = Omadi.widgets.base.init(in_instance);
         instance.elements = [];
         
         var settings = instance.settings, fieldView, i, j, element, addAnotherItemButton = null, labelView;
@@ -34,7 +32,6 @@ Omadi.widgets.calculation_field = {
         
         instance.numVisibleFields = 1;
                
-        //widgetView = this._getUIComponent(instance); 
         element = Omadi.widgets.calculation_field.getNewElement(node, instance);
         instance.elements.push(element);
         fieldView.add(element);
@@ -97,7 +94,7 @@ Omadi.widgets.calculation_field = {
         return widgetView;
     },
     getRowValues: function(node, instance){"use strict";
-        var entity, calculated_field_cache, final_value, row_values, idx, calculation_row, value, field_1_multiplier,
+        var entity, final_value, row_values, idx, calculation_row, value, field_1_multiplier,
             field_2_multiplier, numeric_multiplier, cached_final_value, instances, required_instance_final_values,
             parent_field, start_timestamp, end_timestamp, difference, at_time, relative_increment_time, day_count, 
             parent_node, zero;
@@ -105,9 +102,6 @@ Omadi.widgets.calculation_field = {
         /*global list_search_node_matches_search_criteria, usort, loadNode, mktime, date*/
         
         instances = Omadi.data.getFields(node.type);
-        //Ti.API.info('here--------0.1' + instance.field_name + ", mode: " + win.mode);
-        
-        calculated_field_cache = [];
         final_value = 0;
         
         if (instance.settings.calculation.items != null && !instance.disabled) {
@@ -128,52 +122,42 @@ Omadi.widgets.calculation_field = {
                     field_1_multiplier = 0;
                     field_2_multiplier = 0;
                     numeric_multiplier = 0;
-                    calculated_field_cache = [];
+
                     
                     if (calculation_row.field_name_1 != null && node[calculation_row.field_name_1] != null && instances[calculation_row.field_name_1] != null && instances[calculation_row.field_name_1].type == 'calculation_field') {
                         // Make sure a dependency calculation is made first
-                        // TODO: Statically cache these values for future use by other calculation fields
-                       
-                        //Ti.API.info('here--------0.2');
                         required_instance_final_values = Omadi.widgets.calculation_field.getRowValues(node, instances[calculation_row.field_name_1]);
-                        //content[entity[calculation_row.field_name_1][0]['reffer_index']], node, content);
-                        //Ti.API.info('here--------0.3' + required_instance_final_values[0].final_value);
-                        calculated_field_cache[calculation_row.field_name_1] = required_instance_final_values[0].final_value;
+                        Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_1] = required_instance_final_values[0].final_value;
                     }
         
                     if (calculation_row.field_name_1 != null && calculation_row.field_name_1 != "") {
-                        //Ti.API.info('here--------0.4' + calculation_row.field_name_1 + "," + calculated_field_cache[calculation_row.field_name_1]);
-                        if (calculated_field_cache[calculation_row.field_name_1] != null) {
-                            //Ti.API.info('here--------0.5' + calculated_field_cache[calculation_row.field_name_1]);
-                            field_1_multiplier = calculated_field_cache[calculation_row.field_name_1];
+                        
+                        if (Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_1] != null) {
+                            
+                            field_1_multiplier = Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_1];
                         }
                         else if (calculation_row.type == 'parent_field_value') {
-                            //Ti.API.info('here--------0.6' + calculation_row.parent_field);
                             parent_field = calculation_row.parent_field;
                             if (node[parent_field] != null && node[parent_field].dbValues[0] != null) {
                                 parent_node = loadNode(node[parent_field].dbValues[0]);
                                 if (parent_node && parent_node[calculation_row.field_name_1].dbValues[0] != null) {
                                     field_1_multiplier = parent_node[calculation_row.field_name_1].dbValues[0];
-                                    //Ti.API.info('here--------0.7' + field_1_multiplier);
                                 }
                             }
                         }
                         else if (node[calculation_row.field_name_1] != null && node[calculation_row.field_name_1].dbValues[0] != null) {
                             field_1_multiplier = node[calculation_row.field_name_1].dbValues[0];
-                            //Ti.API.info('here--------0.8' + field_1_multiplier);
                         }
                         if (calculation_row.datestamp_end_field != null && calculation_row.datestamp_end_field != "") {
-                            //Ti.API.info('here--------0.9' + field_1_multiplier);
+
                             start_timestamp = field_1_multiplier;
-                            // Set this end value to 0 in case the terminating datestamp field is empty
                             field_1_multiplier = 0;
+                            
                             if (node[calculation_row.datestamp_end_field] != null && node[calculation_row.datestamp_end_field].dbValues[0] != null) {
+                                
                                 end_timestamp = node[calculation_row.datestamp_end_field].dbValues[0];
-                                //Ti.API.info('here--------0.10' + end_timestamp);
                                 if (calculation_row.type == 'time-only') {
-                                    //Ti.API.info('here--------0.11' + calculation_row.type);
                                     if (end_timestamp < start_timestamp) {
-                                        //Ti.API.info('here--------0.12' + start_timestamp);
                                         end_timestamp += (24 * 3600);
                                     }
                                 }
@@ -183,51 +167,42 @@ Omadi.widgets.calculation_field = {
                                 switch(calculation_row.datestamp_interval) {
                                     case 'minute':
                                         field_1_multiplier = difference / 60;
-                                        //Ti.API.info('here--------0.13' + field_1_multiplier);
                                         break;
                                     case 'hour':
                                         field_1_multiplier = difference / 3600;
-                                        //Ti.API.info('here--------0.14' + field_1_multiplier);
                                         break;
                                     case 'day':
                                         field_1_multiplier = difference / (3600 * 24);
-                                        //Ti.API.info('here--------0.15' + field_1_multiplier);
                                         break;
                                     case 'week':
                                         field_1_multiplier = difference / (3600 * 24 * 7);
-                                        //Ti.API.info('here--------0.16' + field_1_multiplier);
                                         break;
                                 }
                                 if (calculation_row.type == 'time') {
-                                    //Ti.API.info('here--------0.17' + calculation_row.type);
+
                                     if (calculation_row.interval_rounding == 'up') {
                                         field_1_multiplier = Math.ceil(field_1_multiplier);
-                                        //Ti.API.info('here--------0.18' + field_1_multiplier);
                                     }
                                     else if (calculation_row.interval_rounding == 'down') {
                                         field_1_multiplier = Math.floor(field_1_multiplier);
-                                        //Ti.API.info('here--------0.19' + field_1_multiplier);
                                     }
                                     else if (calculation_row.interval_rounding == 'integer') {
                                         field_1_multiplier = Math.round(field_1_multiplier);
-                                        //Ti.API.info('here--------0.20' + field_1_multiplier);
                                     }
                                     else if (calculation_row.interval_rounding == 'increment-at-time') {
-                                        //Ti.API.info('here--------0.21' + calculation_row.increment_at_time);
+                                        
                                         at_time = calculation_row.increment_at_time;
                                         start_timestamp = Number(start_timestamp);
                                         relative_increment_time = at_time = mktime(0, 0, 0, date('n', start_timestamp), date('j', start_timestamp), date('Y', start_timestamp));
-                                        //Ti.API.info('here--------0.22' + relative_increment_time + "," + end_timestamp);
+                                        
                                         day_count = 0;
                                         if (relative_increment_time < start_timestamp) {
                                             relative_increment_time += (3600 * 24);
-                                            //Ti.API.info('here--------0.23' + relative_increment_time);
                                         }
         
                                         while (relative_increment_time <= end_timestamp) {
                                             day_count++;
                                             relative_increment_time += (3600 * 24);
-                                            //  Ti.API.info('here--------0.24' + relative_increment_time );
                                         }
         
                                         field_1_multiplier = day_count;
@@ -239,83 +214,65 @@ Omadi.widgets.calculation_field = {
                     }
         
                     if (calculation_row.field_name_2 != null && calculation_row.field_name_2 != "") {
-                        //Ti.API.info('here--------1' + calculation_row.field_name_2);
-                        if (calculated_field_cache[calculation_row.field_name_1] != null) {
-                            field_2_multiplier = calculated_field_cache[calculation_row.field_name_2];
-                            //Ti.API.info('here--------2' + field_2_multiplier);
+                        
+                        if (Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_1] != null) {
+                            field_2_multiplier = Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_2];
                         }
                         else if (calculation_row.type == 'parent_field_value') {
                             parent_field = calculation_row.parent_field;
-                            //Ti.API.info('here--------3' + parent_field);
+                            
                             if (node[parent_field] != null && node[parent_field].dbValues[0] != null) {
                                 parent_node = loadNode(node[parent_field].dbValues[0]);
-                                //Ti.API.info('here--------4' + parent_field);
+                                
                                 if (parent_node && parent_node[calculation_row.field_name_2].dbValues[0] != null) {
                                     field_2_multiplier = parent_node[calculation_row.field_name_2].dbValues[0];
-                                    //Ti.API.info('here--------5' + field_2_multiplier);
                                 }
                             }
                         }
                         else if (node[calculation_row.field_name_2] != null && node[calculation_row.field_name_2].dbValues[0] != null) {
                             field_2_multiplier = node[calculation_row.field_name_2].dbValues[0];
-                            //Ti.API.info('here--------6' + field_2_multiplier);
                         }
                     }
         
                     if (calculation_row.numeric_multiplier != null && calculation_row.numeric_multiplier != "") {
                         numeric_multiplier = Number(calculation_row.numeric_multiplier);
-                        //Ti.API.info('here--------7' + numeric_multiplier);
                     }
         
                     zero = false;
         
                     if (calculation_row.criteria != null && calculation_row.criteria.search_criteria != null) {
-                        //Ti.API.info('here--------8' + calculation_row.criteria);
+                        
                         if (!list_search_node_matches_search_criteria(node, calculation_row.criteria)) {
-                            //Ti.API.info('here--------9');
                             zero = true;
                         }
-                        //Ti.API.error("Add in criteria check");
                     }
         
                     value = 0;
                     if (field_1_multiplier == 0 && calculation_row.field_name_1 != null && calculation_row.field_name_1 != "") {
-                        //Ti.API.info('here--------10');
                         zero = true;
                     }
                     else if (value == 0 && field_1_multiplier != 0) {
-                        //Ti.API.info('here--------11');
                         value = field_1_multiplier;
                     }
         
                     if (field_2_multiplier == 0 && calculation_row.field_name_2 != null && calculation_row.field_name_2 != "") {
-                        //Ti.API.info('here--------12');
                         zero = true;
                     }
                     else if (value == 0 && field_2_multiplier != 0) {
-                        //Ti.API.info('here--------13');
                         value = Number(field_2_multiplier);
                     }
                     else if (value != 0 && field_2_multiplier != 0) {
-                        //Ti.API.info('here--------14');
                         value *= Number(field_2_multiplier);
                     }
         
                     if (value == 0 && numeric_multiplier != 0) {
-                        //Ti.API.info('here--------15');
                         value = Number(numeric_multiplier);
                     }
                     else if (value != 0 && numeric_multiplier != 0) {
-                        //Ti.API.info('here--------16');
                         value *= Number(numeric_multiplier);
                     }
         
-                    // if(calculation_row.type!=null && calculation_row.type=='static'){
-                    // Ti.API.info('here--------17' );
-                    // zero = false;
-                    // }
                     if (zero) {
-                        //Ti.API.info('here--------18');
                         value = 0;
                     }
         
@@ -323,15 +280,11 @@ Omadi.widgets.calculation_field = {
                         'row_label' : (calculation_row.row_label != null && calculation_row.row_label != "") ? calculation_row.row_label : '',
                         'value' : value
                     });
-                    //alert('field_1_multiplier : ' + field_1_multiplier);
-                    //alert('field_2_multiplier : ' + field_2_multiplier);
-                    //alert('numeric_multiplier : ' + numeric_multiplier);
-                    //alert('Value : ' + value);
+                   
                     final_value += Number(value);
-                //Ti.API.info('here--------19' + final_value);
                 }
             }
-            //  alert("final value: " + final_value);
+            
             return [{
                 'cached_final_value' : cached_final_value,
                 'final_value' : final_value,
@@ -359,19 +312,9 @@ Omadi.widgets.calculation_field = {
             }
         }
         
-        //Ti.API.error(dbValue);
-        //Ti.API.error(origValue);
         
-        //var entity = createEntity();
-        //var instance = instances[field_name];
         result = Omadi.widgets.calculation_field.getRowValues(node, instance);
         row_values = result[0].rows;
-        //var heightView = 0;
-        
-        //Ti.API.debug(JSON.stringify(result));
-    
-        //var widthCellView = Ti.Platform.displayCaps.platformWidth;
-        //var content;
     
         tableView = Ti.UI.createView({
             width : '100%',
@@ -379,7 +322,6 @@ Omadi.widgets.calculation_field = {
             height : Ti.UI.SIZE,
             textValue: origValue,
             dbValue: null
-            //dbValue: dbValue // Do not put the dbValue here.  It is set below depending on the layout
         });
     
         if (row_values.length > 1) {
@@ -396,13 +338,11 @@ Omadi.widgets.calculation_field = {
                 else if(typeof cal_value === 'string'){
                     cal_value = parseFloat(cal_value);
                 }
-                //typeof (cal_value) == 'number' ? null : typeof (cal_value) == 'string' ? cal_value = parseFloat(cal_value) : null;
-                //Check type of the data
+                
                 isNegative = (cal_value < 0) ? true : false;
                 // Is negative. And if it is -ve then write in this value in (brackets).
                 cal_value_str = Omadi.utils.applyNumberFormat(instance, cal_value);
                 cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
-                // Adding brackets over -ve value.
     
                 row = Ti.UI.createView({
                     height : Ti.UI.SIZE,
@@ -649,9 +589,7 @@ Omadi.widgets.calculation_field = {
                 tableView.add(value);
             }
             tableView.singleValue = true;
-            //heightView += heightCellView;
         }
-        //content.height = heightView;
     
         return tableView;
     }

@@ -1,7 +1,7 @@
 //Common used functions
 Ti.include('/lib/functions.js');
 
-/*global PLATFORM, Omadi*/
+/*global  Omadi*/
 /*jslint eqeq: true, plusplus: true*/
 
 var domainName = Titanium.App.Properties.getString("domainName");
@@ -25,7 +25,7 @@ var refreshImg;
 var toolbar; 
 
 // var showLoading = function() {"use strict";
-    // if (PLATFORM === 'android') {
+    // if (Ti.App.isAndroid) {
         // actIndAlert.show();
     // }
     // else {
@@ -39,7 +39,7 @@ var toolbar;
 // };
 // 
 // var hideLoading = function() {"use strict";
-    // if (PLATFORM === 'android') {
+    // if (Ti.App.isAndroid) {
         // actIndAlert.hide();
     // }
     // else {
@@ -436,7 +436,7 @@ function opnAccountAlertsList(e) {"use strict";
     // accountMessage.search.blur();
     // });
 
-    if (PLATFORM === 'android') {
+    if (Ti.App.isAndroid) {
         alertNavButtons_android(accountMessage.listView, accountWindow, accountWindow.title);
     }
     else {
@@ -458,7 +458,7 @@ function opnAccountAlertsList(e) {"use strict";
     // });
 
     accountWindow.open();
-    if (PLATFORM == 'android') {
+    if (Ti.App.isAndroid) {
         Ti.UI.Android.hideSoftKeyboard();
     }
     
@@ -491,7 +491,7 @@ function opnAccountAlertsList(e) {"use strict";
         backgroundColor : '#fff'
     });
     
-    if(PLATFORM !== 'android'){
+    if(Ti.App.isIOS){
         listTableView.footerView = Ti.UI.createView({
             height: 50,
             width: '100%'
@@ -500,7 +500,7 @@ function opnAccountAlertsList(e) {"use strict";
     
     curWin.add(listTableView);
     
-    // if (PLATFORM === 'android') {
+    // if (Ti.App.isAndroid) {
         // // actIndAlert = Ti.UI.createActivityIndicator({
             // // message : 'Updating Alerts...',
             // // color : '#fff'
@@ -548,7 +548,7 @@ function opnAccountAlertsList(e) {"use strict";
         }
     });
     
-    if (PLATFORM === 'android') {
+    if (Ti.App.isAndroid) {
         alertNavButtons_android(listTableView, curWin);
         //bottomBack_release(win, "Back", "enable");
     }

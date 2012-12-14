@@ -1,5 +1,5 @@
 /*jslint eqeq:true, plusplus: true*/
-/*global PLATFORM,setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
+/*global setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
 
 Omadi.widgets.rules_field = {
     
@@ -158,7 +158,7 @@ Omadi.widgets.rules_field = {
             closeButton, headerRow, forms, desc, detail_row, dttm, formsView, formsViewLabel,
             detailsVal, forms_str, i, dttmViewLabel, dttmView, descView, descViewLabel;
             
-        if (PLATFORM == 'android') {
+        if (Ti.App.isAndroid) {
             Ti.UI.Android.hideSoftKeyboard();
             //Ti.API.info("hide keyboard in row click listener");
         }

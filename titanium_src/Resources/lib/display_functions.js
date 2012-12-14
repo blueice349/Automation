@@ -283,8 +283,8 @@ Omadi.display.setImageViewThumbnail = function(imageView, nid, file_id) {
 
 
 Omadi.display.removeNotifications = function() { "use strict";
-    /*global PLATFORM*/
-    if(PLATFORM === 'android'){
+    
+    if(Ti.App.isAndroid){
         try{
             Ti.Android.NotificationManager.cancel(42);
         }
@@ -312,7 +312,7 @@ Omadi.display.loading = function(message){"use strict";
         message = 'Loading...';
     }
     
-    // if(PLATFORM === 'android'){
+    // if(Ti.App.isAndroid){
         // indicator = Titanium.UI.createActivityIndicator({
             // height : Ti.UI.SIZE,
             // message : message,
@@ -349,7 +349,7 @@ Omadi.display.loading = function(message){"use strict";
 };
 
 Omadi.display.doneLoading = function(){"use strict";
-    //if(PLATFORM === 'android'){
+    //if(Ti.App.isAndroid){
         indicator.hide();
     //}
     
@@ -357,7 +357,7 @@ Omadi.display.doneLoading = function(){"use strict";
 };
 
 Omadi.display.showLoadingIndicator = function(show, timeout) {"use strict";
-    /*global PLATFORM*/
+   
     var indView, message;
     
     if(typeof timeout === 'undefined'){
@@ -385,7 +385,7 @@ Omadi.display.showLoadingIndicator = function(show, timeout) {"use strict";
     // loading indicator
     loadingActivityIndicator = Titanium.UI.createActivityIndicator({
         height : '7%',
-        message : (PLATFORM === 'android') ? show : '',
+        message : (Ti.App.isAndroid) ? show : '',
         width : '30%',
         color : '#fff'
     });
@@ -469,7 +469,7 @@ Omadi.display.ProgressBar = function(current, max) {"use strict";
         value : 0,
         color : '#fff',
         message : 'Downloading ...',
-        style : (PLATFORM !== 'android') ? Titanium.UI.iPhone.ProgressBarStyle.PLAIN : ''
+        style : (Ti.App.isIOS) ? Titanium.UI.iPhone.ProgressBarStyle.PLAIN : ''
     });
 
     this.pb_install = Titanium.UI.createProgressBar({
@@ -480,7 +480,7 @@ Omadi.display.ProgressBar = function(current, max) {"use strict";
         value : 0,
         color : '#fff',
         message : 'Installing ...',
-        style : (PLATFORM !== 'android') ? Titanium.UI.iPhone.ProgressBarStyle.PLAIN : ''
+        style : (Ti.App.isIOS) ? Titanium.UI.iPhone.ProgressBarStyle.PLAIN : ''
     });
 
     this.progressView.add(this.pb_download);
