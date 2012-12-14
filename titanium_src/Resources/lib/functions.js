@@ -1350,6 +1350,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
 
 
 function omadi_time_seconds_to_string(seconds, format) {
+    
     var am_pm = (strpos(format, 'H') === false);
 
     var hours = Math.floor(seconds / 3600);

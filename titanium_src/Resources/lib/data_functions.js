@@ -1700,7 +1700,9 @@ Omadi.data.processTermsJson = function(json, mainDB, progress){ "use strict";
 
 Omadi.data.processNodeTypeJson = function(json, mainDB, progress){ "use strict";
     /*global ROLE_ID_ADMIN */
-    var queries, roles, i, type, perm_idx, role_idx, bundle_result, app_permissions, title_fields, data, display, description, display_on_menu, disabled, is_disabled, permission_string;
+    var queries, roles, i, type, perm_idx, role_idx, bundle_result, app_permissions, title_fields, data, 
+        display, description, disabled, is_disabled, permission_string;
+        
     try{
         //Node types creation:
         queries = [];
@@ -1731,60 +1733,59 @@ Omadi.data.processNodeTypeJson = function(json, mainDB, progress){ "use strict";
                         data = json.insert[i].data;
                         display = json.insert[i].name.toUpperCase();//n_bund.fieldByName("display_name").toUpperCase();
                         description = json.insert[i].description;//n_bund.fieldByName("description");
-                        display_on_menu = false;
                         disabled = json.insert[i].disabled;
                         is_disabled = (disabled == 1 ? true : false); //n_bund.fieldByName("disabled");
                        
                         app_permissions = {
-                            can_create : false,
-                            can_update : false,
-                            all_permissions : false,
-                            can_view : false
+                            can_create : 0,
+                            can_update : 0,
+                            all_permissions : 0,
+                            can_view : 0
                         };
     
                         //var node_type_json = JSON.parse(_nd);
     
                         if (data.no_mobile_display != null && data.no_mobile_display == 1) {
-                            //n_bund.next();
-                            //continue;
                             is_disabled = true;
                         }
                         
-                        if(typeof roles !== 'undefined'){
-                          
-                            if (roles.hasOwnProperty(ROLE_ID_ADMIN)) {
-                                app_permissions.can_create = true;
-                                app_permissions.all_permissions = true;
-                                app_permissions.can_update = true;
-                                app_permissions.can_view = true;
-                            }
-                            else {
-                                
-                                for (perm_idx in data.permissions) {
-                                    if(data.permissions.hasOwnProperty(perm_idx)){
-                                        for (role_idx in roles) {
-                                            if(roles.hasOwnProperty(role_idx)){
-                                                if (perm_idx == role_idx) {
-                                                    
-                                                    //Ti.API.error(data.permissions[perm_idx]);
-                                                    permission_string = JSON.stringify(data.permissions[perm_idx]);
-                                                    
-                                                    if (data.permissions[perm_idx].all_permissions) {
-                                                        app_permissions.all_permissions = true;
-                                                        app_permissions.can_update = true;
-                                                        app_permissions.can_view = true;
-                                                    }
-                                                    else{
-                                                        if (data.permissions[perm_idx]["can create"]) {
-                                                            app_permissions.can_create = true;
+                        if(!is_disabled){
+                            if(typeof roles !== 'undefined'){
+                              
+                                if (roles.hasOwnProperty(ROLE_ID_ADMIN)) {
+                                    app_permissions.can_create = 1;
+                                    app_permissions.all_permissions = 1;
+                                    app_permissions.can_update = 1;
+                                    app_permissions.can_view = 1;
+                                }
+                                else {
+                                    
+                                    for (perm_idx in data.permissions) {
+                                        if(data.permissions.hasOwnProperty(perm_idx)){
+                                            for (role_idx in roles) {
+                                                if(roles.hasOwnProperty(role_idx)){
+                                                    if (perm_idx == role_idx) {
+                                                        
+                                                        permission_string = JSON.stringify(data.permissions[perm_idx]);
+                                                        
+                                                        if (data.permissions[perm_idx].all_permissions) {
+                                                            app_permissions.all_permissions = 1;
+                                                            app_permissions.can_update = 1;
+                                                            app_permissions.can_view = 1;
+                                                            app_permissions.can_create = 1;
                                                         }
-                    
-                                                        if (permission_string.indexOf('update') >= 0 || data.permissions[perm_idx].all_permissions) {
-                                                            app_permissions.can_update = true;
-                                                        }
-                    
-                                                        if (permission_string.indexOf('view') >= 0 || data.permissions[perm_idx].all_permissions) {
-                                                            app_permissions.can_view = true;
+                                                        else{
+                                                            if (data.permissions[perm_idx]["can create"]) {
+                                                                app_permissions.can_create = 1;
+                                                            }
+                        
+                                                            if (permission_string.indexOf('update') >= 0) {
+                                                                app_permissions.can_update = 1;
+                                                            }
+                        
+                                                            if (permission_string.indexOf('view') >= 0) {
+                                                                app_permissions.can_view = 1;
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -1795,11 +1796,7 @@ Omadi.data.processNodeTypeJson = function(json, mainDB, progress){ "use strict";
                             }
                         }
                         
-                        if(!is_disabled && (app_permissions.can_view || app_permissions.can_create)){
-                            display_on_menu = true;
-                        }
-                        
-                        queries.push("INSERT OR REPLACE INTO bundles (bundle_name, display_name, description, title_fields, _data , disabled, display_on_menu) VALUES ('" + dbEsc(type) + "', '" + dbEsc(display) + "','" + dbEsc(description) + "','" + dbEsc(JSON.stringify(title_fields)) + "','" + dbEsc(JSON.stringify(data)) + "','" + disabled + "','" + display_on_menu + "')");
+                        queries.push("INSERT OR REPLACE INTO bundles (bundle_name, display_name, description, title_fields, _data, can_create, can_view) VALUES ('" + dbEsc(type) + "', '" + dbEsc(display) + "','" + dbEsc(description) + "','" + dbEsc(JSON.stringify(title_fields)) + "','" + dbEsc(JSON.stringify(data)) + "'," + app_permissions.can_create + "," + app_permissions.can_view + ")");
                   
                     }
                 }

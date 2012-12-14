@@ -198,13 +198,12 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                                     }
                                 }
             
-                                Ti.App.fireEvent("syncInstallComplete");
-            
-                                Ti.API.info("SUCCESS");
+                                //Ti.API.info("SUCCESS");
                                 if (progress != null) {
                                     progress.close();
                                 }
-            
+                                
+                                Ti.App.fireEvent("syncInstallComplete");
                             }
                             mainDB.close();
                         }

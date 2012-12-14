@@ -1,4 +1,3 @@
-
 Ti.include('/lib/functions.js');
 
 /*jslint eqeq:true, plusplus: true, nomen: true*/
@@ -40,7 +39,6 @@ Ti.API.debug(jsonLogin);
 var name = jsonLogin.user.realname;
 var roles = jsonLogin.user.roles;
 
-
 Ti.App.Properties.setObject('userRoles', roles);
 Ti.App.addEventListener("syncInstallComplete", displayBundleList);
 
@@ -53,23 +51,23 @@ var loggedView = Titanium.UI.createView({
 });
 
 var networkStatusView = Ti.UI.createView({
-    zIndex: 1000,
-    top: 0,
-    height: 45,
-    width: '100%',
-    backgroundColor: '#111',
-    visible: false
+    zIndex : 1000,
+    top : 0,
+    height : 45,
+    width : '100%',
+    backgroundColor : '#111',
+    visible : false
 });
 
 var networkStatusLabel = Ti.UI.createLabel({
-   text: 'Testing...',
-   color: '#fff',
-   font: {
-       fontSize: 16
-   },
-   width: '100%',
-   height: 45,
-   textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+    text : 'Testing...',
+    color : '#fff',
+    font : {
+        fontSize : 16
+    },
+    width : '100%',
+    height : 45,
+    textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
 });
 
 var label_top = Titanium.UI.createLabel({
@@ -132,33 +130,32 @@ var a = Titanium.UI.createAlertDialog({
 
 var lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp();
 
-
 //function lock_screen() {"use strict";
-    //curWin.touchEnabled = false;
-    //databaseStatusView.touchEnabled = false;
-    //databaseStatusView.focusable = false;
+//curWin.touchEnabled = false;
+//databaseStatusView.touchEnabled = false;
+//databaseStatusView.focusable = false;
 //}
 
 //function unlock_screen() {"use strict";
-    //curWin.touchEnabled = true;
-    //databaseStatusView.touchEnabled = true;
-    //databaseStatusView.focusable = true;
+//curWin.touchEnabled = true;
+//databaseStatusView.touchEnabled = true;
+//databaseStatusView.focusable = true;
 //}
 
 function checkUpdate(useProgressBar) {"use strict";
     var db, result;
-        
-    if(typeof useProgressBar === 'undefined'){
+
+    if ( typeof useProgressBar === 'undefined') {
         useProgressBar = false;
     }
-    else{
+    else {
         useProgressBar = true;
     }
-    
-    if(typeof curWin.isTopWindow !== 'undefined' && curWin.isTopWindow){
+
+    if ( typeof curWin.isTopWindow !== 'undefined' && curWin.isTopWindow) {
         useProgressBar = true;
     }
-    
+
     db = Omadi.utils.openMainDatabase();
     result = db.execute('SELECT * FROM node WHERE flag_is_updated=1');
 
@@ -167,189 +164,100 @@ function checkUpdate(useProgressBar) {"use strict";
     }
     result.close();
     db.close();
-    
+
     Omadi.service.fetchUpdates(useProgressBar);
 }
 
 function displayBundleList() {"use strict";
-    var db, result, dataRows, name_table, i, j, k, display, description, flag_display, is_disabled, data, show_plus, 
-        app_permissions, permissionsString, row_t, icon, titleLabel, plusButton;
+    var db, result, dataRows, name_table, i, j, k, display, description, row_t, icon, titleLabel, plusButton, can_view, can_create;
     /*global ROLE_ID_ADMIN*/
-    
+
     db = Omadi.utils.openMainDatabase();
     result = db.execute('SELECT * FROM bundles');
 
     dataRows = [];
 
     while (result.isValidRow()) {
-        
+
         name_table = result.fieldByName("bundle_name");
         display = result.fieldByName("display_name").toUpperCase();
         description = result.fieldByName("description");
-        flag_display = result.fieldByName("display_on_menu");
-        is_disabled = result.fieldByName("disabled");
-        data = result.fieldByName("_data");
-        show_plus = false;
-        app_permissions = {
-            "can_create" : false,
-            "can_update" : false,
-            "all_permissions" : false,
-            "can_view" : false
-        };
+        can_view = result.fieldByName("can_view", Ti.Database.FIELD_TYPE_INT);
+        can_create = result.fieldByName("can_create", Ti.Database.FIELD_TYPE_INT);
 
-        data = JSON.parse(data);
-        if (data.no_mobile_display != null && data.no_mobile_display == 1 && data.no_mobile_display == '1') {
-            //result.next();
-            Ti.API.info("Not displaying " + name_table);
-        }
-        else{
+        if (can_view === 1) {
 
-            if (roles.hasOwnProperty(ROLE_ID_ADMIN)) {
-                show_plus = true;
-                app_permissions.can_create = true;
-                app_permissions.all_permissions = true;
-                app_permissions.can_update = true;
-                app_permissions.can_view = true;
+            row_t = Ti.UI.createTableViewRow({
+                height : 45,
+                display : display,
+                name : display,
+                desc : description,
+                name_table : name_table,
+                show_plus : (can_create === 1 ? true : false)
+            });
+
+            icon = Titanium.UI.createImageView({
+                width : 32,
+                height : 32,
+                top : 6,
+                left : 5,
+                image : '/images/icons/' + name_table.toLowerCase() + '.png',
+                desc : description
+            });
+
+            if (icon.toBlob() == null || icon.toBlob().length == 0) {
+                icon.image = '/images/icons/settings.png';
             }
-            else {
-                for (i in data.permissions) {
-                    if(data.permissions.hasOwnProperty(i)){
-                        for (j in roles) {
-                            if(roles.hasOwnProperty(j)){
-                                if (i == j) {
-                                    //Ti.API.info("====>> " + i);
-                                    permissionsString = JSON.stringify(data.permissions[i]);
-                                    if (data.permissions[i]['can create'] || data.permissions[i].all_permissions) {
-                                        show_plus = true;
-                                        app_permissions.can_create = true;
-                                    }
-            
-                                    if (data.permissions[i].all_permissions) {
-                                        app_permissions.all_permissions = true;
-                                        app_permissions.can_update = true;
-                                        app_permissions.can_view = true;
-                                        break;
-                                    }
-            
-                                    if (permissionsString.indexOf('update') >= 0 || data.permissions[i].all_permissions) {
-                                        app_permissions.can_update = true;
-                                    }
-            
-                                    if (permissionsString.indexOf('view') >= 0 || data.permissions[i].all_permissions) {
-                                        app_permissions.can_view = true;
-                                    }
-            
-                                }
-                            }
-                        }
-                    }
-                }
+
+            titleLabel = Titanium.UI.createLabel({
+                text : display,
+                font : {
+                    fontSize : 20
+                },
+                width : '82%',
+                textAlign : 'left',
+                left : 42,
+                height : Ti.UI.SIZE,
+                color : '#000',
+                desc : description
+            });
+
+            row_t.add(icon);
+            row_t.add(titleLabel);
+
+            if (can_create === 1) {
+                plusButton = Titanium.UI.createButton({
+                    backgroundImage : '/images/plus_btn.png',
+                    backgroundSelectedImage : '/images/plus_btn_selected.png',
+                    width : 54,
+                    height : 38,
+                    right : 1,
+                    is_plus : true
+                });
+                row_t.add(plusButton);
             }
-    
-            if (flag_display == 'true' && (is_disabled != 1 && is_disabled != "1" && is_disabled != "true" && is_disabled != true)) {
-    
-                if (app_permissions.can_view == false && app_permissions.can_create == false) {
-                    Ti.API.info("No permissions for " + name_table);
-                }
-                else{
-                    
-                    row_t = Ti.UI.createTableViewRow({
-                        height : 45,
-                        display : display,
-                        name : display,
-                        desc : description,
-                        name_table : name_table,
-                        show_plus : show_plus,
-                        app_permissions : app_permissions,
-                        selectionStyle : app_permissions.can_view ? 1 : 0,
-                        backgroundSelectedColor : app_permissions.can_view ? '#BDBDBD' : '#00000000'
-                    });
-        
-                    icon = Titanium.UI.createImageView({
-                        width : 32,
-                        height : 32,
-                        top : 6,
-                        left : 5,
-                        image : '/images/icons/' + name_table.toLowerCase() + '.png',
-                        desc : description
-                    });
-        
-                    if (icon.toBlob() == null || icon.toBlob().length == 0) {
-                        icon.image = '/images/icons/settings.png';
-                    }
-        
-                    titleLabel = Titanium.UI.createLabel({
-                        text : display,
-                        font : {
-                            fontSize : 20
-                        },
-                        width : '82%',
-                        textAlign : 'left',
-                        left : 42,
-                        height : Ti.UI.SIZE,
-                        color : '#000',
-                        desc : description
-                    });
-        
-                    plusButton = Titanium.UI.createButton({
-                        backgroundImage : '/images/plus_btn.png',
-                        backgroundSelectedImage : '/images/plus_btn_selected.png',
-                        width : 54,
-                        height : 38,
-                        right : 1,
-                        is_plus : true
-                    });
-        
-                    if (show_plus === false) {
-                        if (Ti.App.isAndroid) {
-                            plusButton.visible = false;
-                        }
-                        else {
-                            plusButton.hide();
-                        }
-                    }
-        
-                    row_t.add(icon);
-                    row_t.add(titleLabel);
-                    row_t.add(plusButton);
-        
-                    dataRows.push(row_t);
-                    dataRows.sort(Omadi.utils.sortByName);
-                    listView.setData(dataRows);
-        
-                    // if (Ti.App.isAndroid) {
-                        // row_t.addEventListener('longclick', function(e) {
-                            // if (e.source.desc != null && e.source.desc != "") {
-                                // alert(e.source.desc);
-                            // }
-                        // });
-                    // }
-                    // else {
-                        // row_t.addEventListener('longpress', function(e) {
-                            // if (e.source.desc != null && e.source.desc != "") {
-                                // alert(e.source.desc);
-                            // }
-                        // });
-                    // }
-                }
-            }
+
+            dataRows.push(row_t);
+
         }
         result.next();
     }
     result.close();
 
     db.close();
+
+    dataRows.sort(Omadi.utils.sortByName);
+    listView.setData(dataRows);
 }
 
-function setupAndroidMenu(){"use strict";
+function setupAndroidMenu() {"use strict";
 
     var activity = Ti.Android.currentActivity;
-    
-    
+
     activity.onCreateOptionsMenu = function(e) {
-    
+
         var menu, menuItem, menu_draft, menu_about;
-        
+
         menu = e.menu;
 
         menuItem = menu.add({
@@ -384,7 +292,7 @@ function setupAndroidMenu(){"use strict";
     };
 }
 
-function setupBottomButtons(){"use strict";
+function setupBottomButtons() {"use strict";
     var alertsView, alertsImg, alertsLabel, draftsView, draftsImg, draftsLabel, actionsView, actionsImg, actionsLabel;
 
     alertsView = Ti.UI.createView({
@@ -393,7 +301,7 @@ function setupBottomButtons(){"use strict";
         width : '50%'
     });
     databaseStatusView.add(alertsView);
-    
+
     alertsImg = Ti.UI.createImageView({
         image : '/images/msg3.png'
     });
@@ -405,35 +313,35 @@ function setupBottomButtons(){"use strict";
         height : Ti.UI.SIZE,
         bottom : 0
     });
-    
+
     alertsView.add(alertsImg);
     alertsView.add(alertsLabel);
     alertsView.addEventListener('click', function() {
         var alertsWindow;
-        
+
         alertsWindow = Ti.UI.createWindow({
-           navBarHidden: true,
-           url: '/main_windows/message_center.js'
+            navBarHidden : true,
+            url : '/main_windows/message_center.js'
         });
-        
+
         Omadi.display.loading();
-        
+
         alertsWindow.addEventListener('open', Omadi.display.doneLoading);
         alertsWindow.open();
     });
-    
+
     draftsView = Ti.UI.createView({
         backgroundSelectedColor : 'orange',
         focusable : true,
         width : '50%'
     });
-    
+
     databaseStatusView.add(draftsView);
-    
+
     draftsImg = Ti.UI.createImageView({
         image : '/images/drafts.png'
     });
-    
+
     draftsLabel = Ti.UI.createLabel({
         text : 'Drafts',
         font : {
@@ -442,40 +350,38 @@ function setupBottomButtons(){"use strict";
         height : Ti.UI.SIZE,
         bottom : 0
     });
-    
+
     draftsView.add(draftsImg);
     draftsView.add(draftsLabel);
     draftsView.addEventListener('click', function() {
         Omadi.display.openDraftsWindow();
     });
-    
+
     //View settings (Draft/ Alert/ Home)
     draftsView.height = alertsView.height = 45;
     draftsView.layout = alertsView.layout = 'vertical';
-    
+
     //Label settings (Draft/ Alert/ Home)
     draftsLabel.color = alertsLabel.color = '#FFFFFF';
     draftsLabel.height = alertsLabel.height = 21;
     draftsLabel.width = alertsLabel.width = Ti.UI.SIZE;
     draftsLabel.textAlign = alertsLabel.textAlign = 'center';
-    
+
     //Image view setting (Draft/ Alert/ Home)
     alertsImg.height = draftsImg.height = 22;
     alertsImg.width = draftsImg.width = 22;
     draftsImg.top = alertsImg.top = 2;
-    
-    
-    
+
     if (Ti.App.isIOS) {
         draftsView.width = alertsView.width = Ti.Platform.displayCaps.platformWidth / 3;
-    
+
         actionsView = Ti.UI.createView({
             height : Ti.UI.SIZE,
             width : Ti.Platform.displayCaps.platformWidth / 3,
             layout : 'vertical'
         });
         databaseStatusView.add(actionsView);
-    
+
         actionsImg = Ti.UI.createImageView({
             image : '/images/actions.png',
             width : 22,
@@ -494,13 +400,13 @@ function setupBottomButtons(){"use strict";
         });
         actionsView.add(actionsImg);
         actionsView.add(actionsLabel);
-    
+
         actionsView.addEventListener('click', function() {
             var postDialog = Titanium.UI.createOptionDialog();
             postDialog.options = ['Sync Data', 'About', 'Cancel'];
             //postDialog.cancel = 2;
             postDialog.show();
-    
+
             postDialog.addEventListener('click', function(ev) {
                 if (ev.index == 0) {
                     checkUpdate('from_menu');
@@ -511,218 +417,194 @@ function setupBottomButtons(){"use strict";
             });
         });
     }
-    
-    
+
     curWin.add(databaseStatusView);
 }
 
+( function() {"use strict";
+        var db, formWindow, time_format;
 
-(function(){"use strict";
-    var db, formWindow, time_format;
-    
-   
-    listView = Titanium.UI.createTableView({
-        data : [],
-        top : 45,
-        bottom: 45,
-        scrollable : true,
-        separatorColor : '#BDBDBD'
-    });
-    
-    if(Ti.App.isIOS){
-        listView.footerView = Ti.UI.createView({
-            height: 45,
-            width: '100%'
+        listView = Titanium.UI.createTableView({
+            data : [],
+            top : 45,
+            bottom : 45,
+            scrollable : true,
+            separatorColor : '#BDBDBD'
         });
-    }
-    
-    curWin.add(listView);
-    
-    networkStatusView.add(networkStatusLabel);
 
-    displayBundleList();
-    
-    loggedView.add(refresh_image);
-
-    loggedView.add(label_top);
-    loggedView.add(offImage);
-    
-    curWin.add(loggedView);
-    curWin.add(networkStatusView);
-    
-    if(lastSyncTimestamp == 0){
-        db = Omadi.utils.openMainDatabase();
-        db.execute("INSERT INTO updated (timestamp, updating) VALUES (0, 0)");
-        db.close();
-    }
-    
-    if (lastSyncTimestamp == 0) {
-        isFirstTime = true;
-        checkUpdate('from_menu');
-    }
-    else {
-        isFirstTime = false;
-        checkUpdate('from_menu');
-    }
-    
-    //Sets only portrait mode
-    curWin.orientationModes = [Titanium.UI.PORTRAIT];
-    
-    if (Ti.App.isAndroid) {
-        setupAndroidMenu();
-    }
-    
-    setupBottomButtons();
-
-    Ti.App.addEventListener("doneSendingData", function(e){
-        Ti.API.debug("Done Sending data event received");
-        networkStatusView.hide();
-        Omadi.service.uploadFile();
-    });
-    
-    Ti.App.addEventListener("doneSendingPhotos", function(){
-        networkStatusView.hide();
-    });
-    
-    Ti.App.addEventListener("sendingData", function(e){
-        networkStatusLabel.setText(e.message);
-        networkStatusView.show();
-    });
-    
-    Ti.App.addEventListener('loggingOut', function(){
-        clearInterval(Ti.App.syncInterval);
-        Ti.UI.currentWindow.close();
-    });
-    
-    Ti.Network.addEventListener('change', function(e) {
-        var isOnline = e.online;
-        if(isOnline){
-            checkUpdate();
+        if (Ti.App.isIOS) {
+            listView.footerView = Ti.UI.createView({
+                height : 45,
+                width : '100%'
+            });
         }
-    });
-    
-    listView.addEventListener('click', function(e) {
-        var nextWindow;
 
-        Ti.API.info("row click on table view. index = " + e.index + ", row_desc = " + e.row.description + ", section = " + e.section + ", source_desc=" + e.source.description);
-    
-        if (e.row.app_permissions.can_view == false && e.source.is_plus != true) {
-            alert("You don't have access to view the " + e.row.display + " list.");
-            return;
+        curWin.add(listView);
+
+        networkStatusView.add(networkStatusLabel);
+
+        displayBundleList();
+
+        loggedView.add(refresh_image);
+
+        loggedView.add(label_top);
+        loggedView.add(offImage);
+
+        curWin.add(loggedView);
+        curWin.add(networkStatusView);
+
+        if (lastSyncTimestamp == 0) {
+            db = Omadi.utils.openMainDatabase();
+            db.execute("INSERT INTO updated (timestamp, updating) VALUES (0, 0)");
+            db.close();
         }
-    
-        Omadi.data.setUpdating(true);
-        
-        if (e.source.is_plus) {
-            Omadi.display.openFormWindow(e.row.name_table, 'new', 0);
+
+        if (lastSyncTimestamp == 0) {
+            isFirstTime = true;
+            checkUpdate('from_menu');
         }
         else {
-            if (e.row.app_permissions.can_view == true) {
-                
-                Omadi.display.openListWindow(e.row.name_table, e.row.show_plus, [], [], false);
+            isFirstTime = false;
+            checkUpdate('from_menu');
+        }
+
+        //Sets only portrait mode
+        curWin.orientationModes = [Titanium.UI.PORTRAIT];
+
+        if (Ti.App.isAndroid) {
+            setupAndroidMenu();
+        }
+
+        setupBottomButtons();
+
+        Ti.App.addEventListener("doneSendingData", function(e) {
+            Ti.API.debug("Done Sending data event received");
+            networkStatusView.hide();
+            Omadi.service.uploadFile();
+        });
+
+        Ti.App.addEventListener("doneSendingPhotos", function() {
+            networkStatusView.hide();
+        });
+
+        Ti.App.addEventListener("sendingData", function(e) {
+            networkStatusLabel.setText(e.message);
+            networkStatusView.show();
+        });
+
+        Ti.App.addEventListener('loggingOut', function() {
+            clearInterval(Ti.App.syncInterval);
+            Ti.UI.currentWindow.close();
+        });
+
+        Ti.Network.addEventListener('change', function(e) {
+            var isOnline = e.online;
+            if (isOnline) {
+                checkUpdate();
+            }
+        });
+
+        listView.addEventListener('click', function(e) {
+            var nextWindow;
+
+            Omadi.data.setUpdating(true);
+
+            if (e.source.is_plus) {
+                Omadi.display.openFormWindow(e.row.name_table, 'new', 0);
             }
             else {
-                alert("You don't have access to view the " + e.row.display + " list.");
+                Omadi.display.openListWindow(e.row.name_table, e.row.show_plus, [], [], false);
             }
-        }
-        
-        Omadi.data.setUpdating(false);
-    });
-    
-    refresh_image.addEventListener('click', checkUpdate);
 
-    offImage.addEventListener('click', function(e) {
-    
-        var verifyLogout = Titanium.UI.createAlertDialog({
-            title : 'Logout?',
-            message : 'Are you sure you want to logout?',
-            buttonNames : ['Yes', 'No'],
-            cancel : 1
+            Omadi.data.setUpdating(false);
         });
-    
-        verifyLogout.addEventListener('click', function(e) {
-            if (e.index !== e.source.cancel) {
-                Omadi.service.logout();
+
+        refresh_image.addEventListener('click', checkUpdate);
+
+        offImage.addEventListener('click', function(e) {
+
+            var verifyLogout = Titanium.UI.createAlertDialog({
+                title : 'Logout?',
+                message : 'Are you sure you want to logout?',
+                buttonNames : ['Yes', 'No'],
+                cancel : 1
+            });
+
+            verifyLogout.addEventListener('click', function(e) {
+                if (e.index !== e.source.cancel) {
+                    Omadi.service.logout();
+                }
+            });
+
+            verifyLogout.show();
+        });
+
+        curWin.addEventListener('close', function() {
+            Ti.API.info('Closing main menu');
+        });
+
+        //When back button on the phone is pressed, it alerts the user (pop up box)
+        // that he needs to log out in order to go back to the root window
+        curWin.addEventListener('android:back', function() {
+            var verifyLogout = Titanium.UI.createAlertDialog({
+                title : 'Logout?',
+                message : 'Are you sure you want to logout?',
+                buttonNames : ['Yes', 'No'],
+                cancel : 1
+            });
+
+            verifyLogout.addEventListener('click', function(e) {
+                if (e.index !== e.source.cancel) {
+                    Ti.API.info('The yes button was clicked.');
+
+                    Omadi.service.logout();
+                }
+            });
+
+            verifyLogout.show();
+        });
+
+        Ti.App.syncInterval = setInterval(checkUpdate, 300000);
+
+        Ti.App.addEventListener('full_update_from_menu', function() {
+            var dbFile, db;
+
+            Omadi.data.setUpdating(true);
+
+            Omadi.data.setLastUpdateTimestamp(0);
+            //If delete_all is present, delete all contents:
+            db = Omadi.utils.openMainDatabase();
+
+            if (Ti.App.isAndroid) {
+                //Remove the database
+                db.remove();
+                db.close();
             }
-        });
-    
-        verifyLogout.show();
-    });
-    
-    curWin.addEventListener('close', function() {
-        Ti.API.info('Closing main menu');
-    });
-    
-    //When back button on the phone is pressed, it alerts the user (pop up box)
-    // that he needs to log out in order to go back to the root window
-    curWin.addEventListener('android:back', function() {
-        var verifyLogout = Titanium.UI.createAlertDialog({
-            title : 'Logout?',
-            message : 'Are you sure you want to logout?',
-            buttonNames : ['Yes', 'No'],
-            cancel : 1
-        });
-    
-        verifyLogout.addEventListener('click', function(e) {
-            if (e.index !== e.source.cancel) {
-                Ti.API.info('The yes button was clicked.');
-    
-                Omadi.service.logout();
+            else {
+                dbFile = db.getFile();
+                db.close();
+                //phisically removes the file
+                dbFile.deleteFile();
             }
-        });
-    
-        verifyLogout.show();
-    });
-    
-    Ti.App.syncInterval = setInterval(checkUpdate, 300000);
-    
-    Ti.App.addEventListener('full_update_from_menu', function() {
-        var dbFile, db;
-        
-        Omadi.data.setUpdating(true);  
-        
-        Omadi.data.setLastUpdateTimestamp(0);
-        //If delete_all is present, delete all contents:
-        db = Omadi.utils.openMainDatabase();
-        
-        if(Ti.App.isAndroid) {
-            //Remove the database
-            db.remove();
+
+            // Install database with an empty version
+            db = Omadi.utils.openMainDatabase();
             db.close();
-        }
-        else {
-            dbFile = db.getFile();
+
+            // Clear out the GPS database alerts
+            db = Omadi.utils.openGPSDatabase();
+            db.execute('DELETE FROM alerts');
             db.close();
-            //phisically removes the file
-            dbFile.deleteFile();
-        }
-        
-        // Install database with an empty version
-        db = Omadi.utils.openMainDatabase();
-        db.close();
-        
-        // Clear out the GPS database alerts
-        db = Omadi.utils.openGPSDatabase();
-        db.execute('DELETE FROM alerts');
-        db.close();
-        
-        listView.setData([]);
-        
-        Omadi.data.setUpdating(false);   
-        checkUpdate('from_menu');
-    });
-    
-    Ti.App.addEventListener('normal_update_from_menu', function() {
-        checkUpdate('from_menu');
-    });
-        
-}());
 
+            listView.setData([]);
 
+            Omadi.data.setUpdating(false);
+            checkUpdate('from_menu');
+        });
 
+        Ti.App.addEventListener('normal_update_from_menu', function() {
+            checkUpdate('from_menu');
+        });
 
-
-
-
-
+    }());
 

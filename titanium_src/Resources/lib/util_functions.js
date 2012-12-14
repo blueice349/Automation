@@ -4,7 +4,7 @@ var Omadi = Omadi || {};
 Omadi.utils = Omadi.utils || {};
 
 Omadi.DOMAIN_NAME = domainName;
-Omadi.DB_VERSION = "omadiDb1680";
+Omadi.DB_VERSION = "omadiDb1681";
 
 Omadi.utils.openListDatabase = function() {"use strict";
     var db = Ti.Database.install('/database/db_list.sqlite', Omadi.DB_VERSION + "_list");
@@ -59,20 +59,6 @@ Omadi.utils.getTimeFormat = function(){"use strict";
     }
     
     return format;
-};
-
-Omadi.utils.cloneObject = function(obj){"use strict";
-    var clone = {}, i;
-    
-    for(i in obj) {
-        if(typeof obj[i] == "object"){
-            clone[i] = Omadi.utils.cloneObject(obj[i]);
-        }
-        else{
-            clone[i] = obj[i];
-        }
-    }
-    return clone;
 };
 
 // Takes a timestamp from the past and returns a string with the amount of time elapsed

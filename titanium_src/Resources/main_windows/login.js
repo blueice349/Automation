@@ -107,15 +107,10 @@ function createAndroidNotifications() {"use strict";
         });
         Titanium.Android.stopService(intent2);
 
-        //createNotification("Omadi is running ...");
+        
         ostate = null;
         //MANAGE APP LIFECYCLE
         registerState = function(state) {
-            if (ostate == "start" && state == "pause") {
-                //BLANK SCREEN!!!
-                Ti.API.error('BLANK SCREEN');
-                alert('BLANK SCREEN');
-            }
             ostate = state;
         };
 
@@ -137,13 +132,7 @@ function createAndroidNotifications() {"use strict";
         };
 
         registerPause = function() {
-            if (ostate == "start") {
-                //BLANK SCREEN!!!
-                Ti.API.error('BLANK SCREEN');
-                alert('BLANK SCREEN');
-                //createNotification("BLANK SCREEN ...");
-                //Omadi.display.removeNotifications();
-            }
+            
 
             ostate = "pause";
         };
@@ -715,7 +704,10 @@ function scrollBoxesToTop() {"use strict";
             passwordField.blur();
             usernameField.blur();
 
-            if (portal.value == "") {
+            if (!Ti.Network.online) {
+                alert("You do not have a network connection. You cannot login until you connect to the Internet.");
+            }
+            else if (portal.value == "") {
                 alert("You must enter a valid client account in the top box.");
             }
             else if (usernameField.value == "") {
@@ -724,58 +716,19 @@ function scrollBoxesToTop() {"use strict";
             else if (passwordField.value == "") {
                 alert("A valid password is required.");
             }
-            //No internet connection
-            else if (!(Titanium.Network.online)) {
-                alert("You do not have a network connection. You cannot login until you connect to the Internet.");
-            }
             else if (termsView.selected === false) {
                 alert("You must to agree to the Terms of Service before using the app.");
             }
-            //Everything ok, so let's login:
             else {
-
-                //Omadi.display.showLoadingIndicator('Logging you in...');
 
                 Omadi.display.loading("Logging you in...");
                 //Create internet connection
                 var xhr = Ti.Network.createHTTPClient();
-                // var parms = {
-                // username: usernameField.value,
-                // password: passwordField.value,
-                // device_id: Titanium.Platform.getId(),
-                // app_version: Titanium.App.version,
-                // //device_data: '{ "model": "'+Titanium.Platform.model+'", "version": "'+Titanium.Platform.version+'", "architecture": "'+Titanium.Platform.architecture+'", "platform": "'+Titanium.Platform.name+'", "os_type": "'+Titanium.Platform.ostype+'" }'
-                // device_data: { "model": Titanium.Platform.model, "version": Titanium.Platform.version, "architecture": Titanium.Platform.architecture, "platform": Titanium.Platform.name, "os_type": Titanium.Platform.ostype, "screen_density":Titanium.Platform.displayCaps.density, "primary_language": Titanium.Platform.locale, "processor_count": Titanium.Platform.processorCount }
-                // };
-
-                //10 seconds till die
+               
                 xhr.setTimeout(10000);
 
                 xhr.open('POST', 'https://' + portal.value + '.omadi.com/js-sync/sync/login.json');
                 xhr.setRequestHeader("Content-Type", "application/json");
-
-                //Send info
-                //xhr.send('{"username":"' + parms.username + '","password":"'+parms["password"] +'","device_id":"'+parms["device_id"] +'","app_version":"'+parms["app_version"] +'","device_data": '+JSON.stringify(parms["device_data"]) +' }');
-
-                xhr.send(JSON.stringify({
-                    username : usernameField.value,
-                    password : passwordField.value,
-                    device_id : Ti.Platform.getId(),
-                    app_version : Ti.App.version,
-                    device_data : {
-                        model : Ti.Platform.model,
-                        version : Ti.Platform.version,
-                        architecture : Ti.Platform.architecture,
-                        platform : Ti.Platform.name,
-                        os_type : Ti.Platform.ostype,
-                        screen_density : Ti.Platform.displayCaps.density,
-                        primary_language : Ti.Platform.locale,
-                        processor_count : Ti.Platform.processorCount
-                    }
-                }));
-
-                //Ti.API.info('{"username":"'+parms["username"]+'","password":"'+parms["password"] +'","device_id":"'+parms["device_id"] +'","app_version":"'+parms["app_version"] +'","device_data":'+JSON.stringify(parms["device_data"]) +' }');
-                //Ti.API.info('"model": '+ Titanium.Platform.model +', "version": '+Titanium.Platform.version+', "architecture": '+Titanium.Platform.architecture+', "platform": '+Titanium.Platform.name+', "os_type": '+Titanium.Platform.ostype+', "screen_density": '+Titanium.Platform.displayCaps.density+', "primary_language": '+Titanium.Platform.locale+', "processor_count": '+Titanium.Platform.processorCount );
 
                 // When infos are retrieved:
                 xhr.onload = function(e) {
@@ -799,8 +752,6 @@ function scrollBoxesToTop() {"use strict";
 
                     list_result.close();
 
-                    //Ti.API.info('DB NAME_APP: db_' + portal.value + '_' + usernameField.value + ' ');
-
                     db_list.execute("BEGIN IMMEDIATE TRANSACTION");
                     db_list.execute('UPDATE history SET domain = "' + portal.value + '", username = "' + usernameField.value + '", password = "' + passwordField.value + '", db_name="db_' + portal.value + '_' + usernameField.value + '" WHERE "id_hist"=1');
                     db_list.execute("COMMIT TRANSACTION");
@@ -812,10 +763,6 @@ function scrollBoxesToTop() {"use strict";
 
                     Omadi.display.doneLoading();
                     Omadi.display.openMainMenuWindow();
-
-                    //Ti.API.info(this.responseText);
-
-                    //var loginJSON = JSON.parse(this.responseText);
 
                     cookie = this.getResponseHeader('Set-Cookie');
 
@@ -850,12 +797,34 @@ function scrollBoxesToTop() {"use strict";
 
                     if (this.status == 401) {
                         label_error.text = "Check your username and password. Then try again.";
-                        alert("Make sure your client account, username, and password are correct. Then try logging in again.");
+                        alert("Make sure client account, username and password are correct.");
+                    }
+                    else if(this.error.indexOf("imeout") !== -1){
+                        alert("There was a network error. Make sure you're connected to the Internet.");
+                        label_error.text = "Network timeout. Please try again.";
                     }
                     else {
-                        label_error.text = "An error has occurred, please try again";
+                        alert("An unknown error occurred. Please try logging in again.");
+                        label_error.text = "An error has occurred. Please try again.";
                     }
                 };
+                
+                xhr.send(JSON.stringify({
+                    username : usernameField.value,
+                    password : passwordField.value,
+                    device_id : Ti.Platform.getId(),
+                    app_version : Ti.App.version,
+                    device_data : {
+                        model : Ti.Platform.model,
+                        version : Ti.Platform.version,
+                        architecture : Ti.Platform.architecture,
+                        platform : Ti.Platform.name,
+                        os_type : Ti.Platform.ostype,
+                        screen_density : Ti.Platform.displayCaps.density,
+                        primary_language : Ti.Platform.locale,
+                        processor_count : Ti.Platform.processorCount
+                    }
+                }));
             }
         });
 
