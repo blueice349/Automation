@@ -104,58 +104,14 @@ Omadi.widgets.user_reference = {
         for ( i = 0; i < options.length; i++) {
             textOptions.push(options[i].title);
         }
-
-        widgetView = Titanium.UI.createLabel({
-
-            style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
-            width : Ti.Platform.displayCaps.platformWidth - 30,
-            options : options,
-            textOptions : textOptions,
-            text : textValue,
-            height : 35,
-            textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER,
-            font : {
-                fontSize : Omadi.widgets.fontSize
-            },
-            color : '#000000',
-            ellipsize : true,
-            wordWrap : false,
-            selectionIndicator : true,
-            backgroundGradient : {
-                type : 'linear',
-                startPoint : {
-                    x : '50%',
-                    y : '0%'
-                },
-                endPoint : {
-                    x : '50%',
-                    y : '100%'
-                },
-                colors : [{
-                    color : '#f3f3f3',
-                    offset : 0.0
-                }, {
-                    color : '#f9f9f9',
-                    offset : 0.4
-                }, {
-                    color : '#bbb',
-                    offset : 1.0
-                }]
-            },
-            borderRadius : 10,
-            borderColor : '#999',
-            borderWidth : 1,
-
-            instance : instance,
-            dbValue : dbValue,
-            textValue : textValue,
-
-            view_title : instance.label
-        });
-
-        if (instance.numVisibleFields > 1) {
-            widgetView.hintText = '#' + (index + 1) + " " + instance.label;
-        }
+        
+        widgetView = Omadi.widgets.getLabelField(instance);
+        widgetView.setText(textValue);
+        widgetView.textValue = textValue;
+        widgetView.dbValue = dbValue;
+        widgetView.options = options;
+        widgetView.textOptions = textOptions;
+        widgetView.view_title = instance.label;
 
         if (instance.can_edit) {
             widgetView.addEventListener('click', function(e) {
@@ -198,20 +154,6 @@ Omadi.widgets.user_reference = {
         }
 
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
-
-        if (!instance.can_edit) {
-            widgetView.backgroundImage = '';
-            widgetView.backgroundColor = '#BDBDBD';
-            widgetView.borderColor = 'gray';
-            widgetView.borderRadius = 10;
-            widgetView.color = '#848484';
-            widgetView.paddingLeft = 3;
-            widgetView.paddingRight = 3;
-
-            if (Ti.App.isAndroid) {
-                widgetView.softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-            }
-        }
 
         return widgetView;
 

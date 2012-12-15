@@ -53,7 +53,8 @@ Omadi.widgets.image = {
 
         widgetView = Ti.UI.createScrollView({
             width : Ti.Platform.displayCaps.platformWidth - 30,
-            //contentWidth : 'auto',// Don't set contentWidth to anything here.  It is set further down
+            //***** Don't set contentWidth to anything here.  It is set further down ******/
+            //contentWidth : 'auto',
             contentHeight : 100,
             height : 100,
             arrImages : null,
@@ -83,8 +84,8 @@ Omadi.widgets.image = {
 
         contentWidth = numImagesShowing * 110;
 
-        if (instance.settings.cardinality == -1 || (numImagesShowing < instance.settings.cardinality)) {
-            Ti.API.debug("Adding blank image");
+        if (instance.can_edit && (instance.settings.cardinality == -1 || (numImagesShowing < instance.settings.cardinality))) {
+            
             widgetView.add(Omadi.widgets.image.getImageView(widgetView, numImagesShowing, null, null));
 
             contentWidth += 110;
@@ -138,6 +139,7 @@ Omadi.widgets.image = {
             imageView.bigImg = fid;
             imageView.fullImageLoaded = true;
             imageView.isImageData = true;
+            imageView.dbValue = -1;
         }
         else if ( typeof fid === 'number') {
             Omadi.display.setImageViewThumbnail(imageView, nid, fid);

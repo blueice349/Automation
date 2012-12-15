@@ -13,7 +13,7 @@ Omadi.service.setNodeViewed(curWin.nid);
 
 curWin.backgroundColor = "#EEEEEE";
 //Sets only portrait mode
-curWin.orientationModes = [Titanium.UI.PORTRAIT];
+//curWin.orientationModes = [Titanium.UI.PORTRAIT];
 var movement = curWin.movement;
 
 //When back button on the phone is pressed, it opens mainMenu.js and close the current window

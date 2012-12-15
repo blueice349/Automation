@@ -5,7 +5,7 @@ Omadi.location.currentPositionCallback = function(e) {
 	"use strict";
 	var coords = e.coords, db;
 	
-	if(typeof coords.longitude !== 'undefined' && coords.longitude !== 0 && coords.latitude !== 0){
+	if(typeof coords !== 'undefined' && typeof coords.longitude !== 'undefined' && coords.longitude !== 0 && coords.latitude !== 0){
 		db = Omadi.utils.openGPSDatabase();//Ti.Database.install('/database/gps_coordinates.sqlite', db_coord_name);
 		db.execute("INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + coords.longitude + "', '" + coords.latitude + "', " + (coords.timestamp/1000) + ", 'notUploaded')");
 		db.close();

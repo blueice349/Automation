@@ -84,36 +84,16 @@ Omadi.widgets.license_plate = {
         Ti.API.debug("Creating license_plate " + part + " field");
 
         if (part == "plate") {
-
-            widgetView = Ti.UI.createTextField({
-                autocapitalization : Ti.UI.TEXT_AUTOCAPITALIZATION_ALL,
-                autocorrect : false,
-                editable : instance.can_edit,
-                enabled : instance.can_edit,
-                ellipsize : false,
-                keepScreenOn : true,
-                suppessReturn : false,
-                borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-                textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
-                width : Ti.Platform.displayCaps.platformWidth - 30,
-                height : Ti.UI.SIZE,
-                color : '#000000',
-                font : {
-                    fontSize : Omadi.widgets.fontSize
-                },
-                returnKeyType : Ti.UI.RETURNKEY_DONE,
-                backgroundColor : '#fff',
-                borderRadius : 10,
-                borderColor : '#999',
-                borderWidth : 1,
-
-                instance : instance,
-                dbValue : dbValue,
-                textValue : textValue,
-                value : textValue,
-                real_field_name : real_field_name,
-                maxLength : 10
-            });
+            
+            
+            widgetView = Omadi.widgets.getTextField(instance);
+            
+            widgetView.dbValue = dbValue;
+            widgetView.textValue = textValue;
+            widgetView.setValue(textValue);
+            widgetView.maxLength = 10;
+            widgetView.setAutocapitalization(Ti.UI.TEXT_AUTOCAPITALIZATION_ALL);
+            widgetView.real_field_name = real_field_name;
 
             widgetView.addEventListener('focus', function(e) {
                 e.source.touched = true;
@@ -159,52 +139,14 @@ Omadi.widgets.license_plate = {
             for ( i = 0; i < states.length; i++) {
                 options.push(states[i].title);
             }
-
-            widgetView = Titanium.UI.createLabel({
-                style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
-                width : Ti.Platform.displayCaps.platformWidth - 30,
-                options : options,
-                states : states,
-                text : textValue,
-                height : 35,
-                font : {
-                    fontSize : Omadi.widgets.fontSize
-                },
-                textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER,
-                color : '#000000',
-                selectionIndicator : true,
-                backgroundGradient : {
-                    type : 'linear',
-                    startPoint : {
-                        x : '50%',
-                        y : '0%'
-                    },
-                    endPoint : {
-                        x : '50%',
-                        y : '100%'
-                    },
-                    colors : [{
-                        color : '#f3f3f3',
-                        offset : 0.0
-                    }, {
-                        color : '#f9f9f9',
-                        offset : 0.4
-                    }, {
-                        color : '#ccc',
-                        offset : 1.0
-                    }]
-                },
-                backgroundColor : '#fff',
-                borderRadius : 10,
-                borderColor : '#999',
-                borderWidth : 1,
-
-                instance : instance,
-                dbValue : dbValue,
-                textValue : textValue,
-                value : textValue,
-                real_field_name : real_field_name
-            });
+            
+            widgetView = Omadi.widgets.getLabelField(instance);
+            widgetView.setText(textValue);
+            widgetView.textValue = textValue;
+            widgetView.dbValue = dbValue;
+            widgetView.options = options;
+            widgetView.states = states;
+            widgetView.real_field_name = real_field_name;
 
             widgetView.addEventListener('click', function(e) {
                 var postDialog = Titanium.UI.createOptionDialog();
@@ -215,28 +157,15 @@ Omadi.widgets.license_plate = {
 
                 postDialog.addEventListener('click', function(ev) {
                     if (ev.index >= 0) {
-                        ev.source.widgetView.text = ev.source.widgetView.textValue = ev.source.options[ev.index];
-                        ev.source.widgetView.value = ev.source.widgetView.dbValue = ev.source.widgetView.states[ev.index].usps;
+                        ev.source.widgetView.textValue = ev.source.options[ev.index];
+                        ev.source.widgetView.dbValue = ev.source.widgetView.states[ev.index].usps;
+                        ev.source.widgetView.setText(ev.source.options[ev.index]);
                     }
                 });
             });
         }
 
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
-
-        if (!instance.can_edit) {
-            widgetView.backgroundImage = '';
-            widgetView.backgroundColor = '#BDBDBD';
-            widgetView.borderColor = 'gray';
-            widgetView.borderRadius = 10;
-            widgetView.color = '#848484';
-            widgetView.paddingLeft = 3;
-            widgetView.paddingRight = 3;
-
-            if (Ti.App.isAndroid) {
-                widgetView.softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-            }
-        }
 
         return widgetView;
 

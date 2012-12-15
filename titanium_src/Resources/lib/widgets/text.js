@@ -21,10 +21,7 @@ Omadi.widgets.text = {
         
         fieldView.add(Omadi.widgets.label.getRegularLabelView(instance));
         setConditionallyRequiredLabelForInstance(node, instance);
-       
-        //Add fields:
-        //regionView.add(label[count]);
-        //var reffer_index = count;
+    
         Ti.API.debug(instance.numVisibleFields);
         
         if(typeof instance.numVisibleFields === 'undefined'){
@@ -44,7 +41,6 @@ Omadi.widgets.text = {
         
         // Add the actual fields
         for(i = 0; i < instance.numVisibleFields; i ++){
-            //widgetView = this._getUIComponent(instance); 
             element = Omadi.widgets.text.getNewElement(node, instance,  i);
             instance.elements.push(element);
             fieldView.add(element);
@@ -67,18 +63,6 @@ Omadi.widgets.text = {
             fieldView.add(addAnotherItemButton);
             fieldView.add(Omadi.widgets.getSpacerView());
         }
-
-        
-        //No data checkbox functionality
-        //noDataCheckbox(reffer_index, regionView, top);
-        //if (content[reffer_index].noDataView != null) {
-        //    top += 40;
-       // }
-       
-       //fieldViews[this.instance.field_name] = this.fieldView;
-       
-       //this.fieldView = fieldView;
-       //this.initialized = true;
        
        return fieldView;
     },
@@ -101,53 +85,14 @@ Omadi.widgets.text = {
         settings = instance.settings;
         Ti.API.debug("Creating text field");
         
+        widgetView = Omadi.widgets.getTextField(instance);
         
-        widgetView = Ti.UI.createTextField({
-            autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_WORDS,
-            autocorrect: false,
-            editable : instance.can_edit,
-            enabled : instance.can_edit,
-            ellipsize: false,
-            keepScreenOn: true,
-            suppessReturn: false,
-            borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-            textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
-            width : Ti.Platform.displayCaps.platformWidth - 30,
-            height: Ti.UI.SIZE,
-            color : '#000000',
-            font: {
-                fontSize: Omadi.widgets.fontSize
-            },
-            returnKeyType : Ti.UI.RETURNKEY_DONE,
-            backgroundColor: '#fff',
-            borderRadius: 10,
-            borderColor: '#999',
-            borderWidth: 1,
-            
-            instance: instance,
-            dbValue: dbValue,
-            textValue: textValue,
-            value : textValue
-        });
-        
-        if(instance.numVisibleFields > 1){
-            widgetView.hintText = '#' + (index + 1) + " " + instance.label;
-        }
+        widgetView.dbValue = dbValue;
+        widgetView.textValue = textValue;
+        widgetView.setValue(textValue);
+        widgetView.setAutocapitalization(Ti.UI.TEXT_AUTOCAPITALIZATION_WORDS);
         
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
-        
-        if (!instance.can_edit) {
-            widgetView.backgroundImage = '';
-            widgetView.backgroundColor = '#BDBDBD';
-            widgetView.borderColor = 'gray';
-            widgetView.borderRadius = 10;
-            widgetView.color = '#848484';
-            widgetView.paddingLeft = 3;
-            widgetView.paddingRight = 3;
-            if (Ti.App.isAndroid) {
-                widgetView.softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-            }
-        }
     
         if (settings.min_length && settings.min_length != null && settings.min_length != "null") {
             widgetView.minLength = settings.min_length;

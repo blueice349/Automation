@@ -104,7 +104,7 @@ Omadi.data.getFields = function(type){"use strict";
     
         instances = {};
         db = Omadi.utils.openMainDatabase();
-        result = db.execute("SELECT type, field_name, label, description, bundle, weight, required, widget, settings, disabled, region, fid FROM fields WHERE bundle = '" + type + "' and disabled = 0 ORDER BY weight");
+        result = db.execute("SELECT type, field_name, label, description, bundle, weight, required, widget, settings, disabled, region, fid, can_view, can_edit FROM fields WHERE bundle = '" + type + "' and disabled = 0 ORDER BY weight");
         
         while(result.isValidRow()){
             field_name = result.fieldByName('field_name'); 
@@ -120,7 +120,9 @@ Omadi.data.getFields = function(type){"use strict";
                 settings: JSON.parse(result.fieldByName('settings')),
                 disabled: result.fieldByName('disabled'),
                 region: result.fieldByName('region'),
-                fid: result.fieldByName('fid')
+                fid: result.fieldByName('fid'),
+                can_view: (result.fieldByName('can_view', Ti.Database.FIELD_TYPE_INT) === 1 ? true: false),
+                can_edit: (result.fieldByName('can_edit', Ti.Database.FIELD_TYPE_INT) === 1 ? true: false)
             };
             
             if(typeof instances[field_name].widget === 'string'){
@@ -255,7 +257,7 @@ Omadi.data.saveNode = function(node){"use strict";
    /*jslint nomen: true*/
     node._saved = false;
     
-    Ti.API.debug("STARTED SAVING NODE: " + JSON.stringify(node));
+    //Ti.API.debug("STARTED SAVING NODE: " + JSON.stringify(node).substring(0, 200));
     
     instances = Omadi.data.getFields(node.type);
     
@@ -1018,10 +1020,15 @@ Omadi.data.processVehicleJson = function(json, mainDB, progress){"use strict";
 
 Omadi.data.processFieldsJson = function(json, mainDB, progress){ "use strict";
    
-    var result, fid, field_exists, field_type, db_type, field_name, label, widgetString, settingsString, region, i, part, queries, description, bundle, weight, required, disabled;
+    var result, fid, field_exists, field_type, db_type, field_name, label, widgetString, settingsString, 
+        region, part, queries, description, bundle, weight, required, disabled, can_view, can_edit, 
+        settings, omadi_session_details, roles, permissionsString, permIdx, roleIdx, i;
     try{
         queries = [];
-    
+        
+        omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
+        roles = omadi_session_details.user.roles;
+        
         if (json.insert) {
 
             if (json.insert.length) {
@@ -1031,10 +1038,11 @@ Omadi.data.processFieldsJson = function(json, mainDB, progress){ "use strict";
                     if (progress != null) {
                         progress.set();
                     }
-
+                    
+                    settings = json.insert[i].settings;
                     widgetString = JSON.stringify(json.insert[i].widget);
                     
-                    settingsString = JSON.stringify(json.insert[i].settings);
+                    settingsString = JSON.stringify(settings);
     
                     fid = json.insert[i].fid;
                     field_type = json.insert[i].type;
@@ -1046,6 +1054,34 @@ Omadi.data.processFieldsJson = function(json, mainDB, progress){ "use strict";
                     required = json.insert[i].required;
                     disabled = json.insert[i].disabled;
                     region = json.insert[i].settings.region;
+                    
+                    
+                    can_view = 0;
+                    can_edit = 0;
+                        
+                    if (settings.enforce_permissions != null && settings.enforce_permissions == 1) {
+                        for (permIdx in settings.permissions) {
+                            if(settings.permissions.hasOwnProperty(permIdx)){
+                                for (roleIdx in roles) {
+                                    if(roles.hasOwnProperty(roleIdx)){
+                                        if (permIdx == roleIdx) {
+                                            permissionsString = JSON.stringify(settings.permissions[permIdx]);
+                                            if (permissionsString.indexOf('update') >= 0 || settings.permissions[permIdx].all_permissions) {
+                                                can_edit = 1;
+                                            }
+                
+                                            if (permissionsString.indexOf('view') >= 0 || settings.permissions[permIdx].all_permissions) {
+                                                can_view = 1;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        can_view = can_edit = 1;
+                    }
                     
                     result = mainDB.execute('SELECT COUNT(*) FROM fields WHERE fid = ' + fid);
 
@@ -1107,29 +1143,27 @@ Omadi.data.processFieldsJson = function(json, mainDB, progress){ "use strict";
                                 queries.push('ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '\' ' + db_type);
                             }
                         }
-                        //else {
-                            //Ti.API.info('=====================>>>>> Avoiding fields creation for table: ' + bundle);
-                        //}
+                       
                         result.close();
                         
                         //Multiple parts
                         if (json.insert[i].settings.parts) {
                             for (part in json.insert[i].settings.parts) {
                                 if(json.insert[i].settings.parts.hasOwnProperty(part)){
-                                    queries.push("INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings) VALUES (" + fid + ",'" + dbEsc(field_type) + "','" + dbEsc(field_name + "___" + part) + "','" + dbEsc(label) + "','" + dbEsc(description) + "','" + dbEsc(bundle) + "','" + dbEsc(region) + "'," + weight + ", '" + dbEsc(required) + "' ,  '" + dbEsc(disabled) + "' , '" + dbEsc(widgetString) + "','" + dbEsc(settingsString) + "' )");
+                                    queries.push("INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings, can_view, can_edit) VALUES (" + fid + ",'" + dbEsc(field_type) + "','" + dbEsc(field_name + "___" + part) + "','" + dbEsc(label) + "','" + dbEsc(description) + "','" + dbEsc(bundle) + "','" + dbEsc(region) + "'," + weight + ", '" + dbEsc(required) + "' ,  '" + dbEsc(disabled) + "' , '" + dbEsc(widgetString) + "','" + dbEsc(settingsString) + "'," + can_view + ", " + can_edit + ")");
                                 }
                             }
                         }
                         //Normal field
                         else {
-                            queries.push("INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings) VALUES (" + fid + ",'" + dbEsc(field_type) + "','" + dbEsc(field_name) + "','" + dbEsc(label) + "','" + dbEsc(description) + "','" + dbEsc(bundle) + "','" + dbEsc(region) + "'," + weight + ",'" + dbEsc(required) + "','" + dbEsc(disabled) + "','" + dbEsc(widgetString) + "','" + dbEsc(settingsString) + "' )");
+                            queries.push("INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings, can_view, can_edit) VALUES (" + fid + ",'" + dbEsc(field_type) + "','" + dbEsc(field_name) + "','" + dbEsc(label) + "','" + dbEsc(description) + "','" + dbEsc(bundle) + "','" + dbEsc(region) + "'," + weight + ",'" + dbEsc(required) + "','" + dbEsc(disabled) + "','" + dbEsc(widgetString) + "','" + dbEsc(settingsString) + "'," + can_view + ", " + can_edit + ")");
                         }
                         
                     }
                     else {
                         // The structure exists.... just update the fields table values
                         // This will work for fields with parts, as they are indexed by the same fid
-                        queries.push("UPDATE fields SET type='" + dbEsc(field_type) + "', label='" + dbEsc(label) + "', description='" + dbEsc(description) + "', bundle='" + dbEsc(bundle) + "', region='" + dbEsc(region) + "', weight=" + weight + ", required='" + dbEsc(required) + "', disabled='" + dbEsc(disabled) + "', widget='" + dbEsc(widgetString) + "', settings='" + dbEsc(settingsString) + "'  WHERE fid=" + fid);
+                        queries.push("UPDATE fields SET type='" + dbEsc(field_type) + "', label='" + dbEsc(label) + "', description='" + dbEsc(description) + "', bundle='" + dbEsc(bundle) + "', region='" + dbEsc(region) + "', weight=" + weight + ", required='" + dbEsc(required) + "', disabled='" + dbEsc(disabled) + "', widget='" + dbEsc(widgetString) + "', settings='" + dbEsc(settingsString) + "', can_view=" + can_view + ", can_edit=" + can_edit + "  WHERE fid=" + fid);
                     }
                 }
             }
@@ -1458,7 +1492,7 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) { "use stric
         if(progress != null){
             for(i = 0; i < queries.length; i ++){
                 mainDB.execute(queries[i]);
-                if(i % 3 == 0){
+                if(i % 4 == 0){
                     progress.set();
                     numSets ++;
                 }
@@ -1797,7 +1831,6 @@ Omadi.data.processNodeTypeJson = function(json, mainDB, progress){ "use strict";
                         }
                         
                         queries.push("INSERT OR REPLACE INTO bundles (bundle_name, display_name, description, title_fields, _data, can_create, can_view) VALUES ('" + dbEsc(type) + "', '" + dbEsc(display) + "','" + dbEsc(description) + "','" + dbEsc(JSON.stringify(title_fields)) + "','" + dbEsc(JSON.stringify(data)) + "'," + app_permissions.can_create + "," + app_permissions.can_view + ")");
-                  
                     }
                 }
             }

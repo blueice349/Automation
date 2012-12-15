@@ -75,35 +75,16 @@ Omadi.widgets.vehicle_fields = {
 
         db.close();
 
-        widgetView = Ti.UI.createTextField({
-            autocapitalization : Ti.UI.TEXT_AUTOCAPITALIZATION_WORDS,
-            autocorrect : false,
-            editable : instance.can_edit,
-            enabled : instance.can_edit,
-            ellipsize : false,
-            keepScreenOn : true,
-            suppessReturn : false,
-            borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-            textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
-            width : Ti.Platform.displayCaps.platformWidth - 30,
-            height : Ti.UI.SIZE,
-            color : '#000000',
-            font : {
-                fontSize : Omadi.widgets.fontSize
-            },
-            returnKeyType : Ti.UI.RETURNKEY_DONE,
-            backgroundColor : '#fff',
-            borderRadius : 10,
-            borderColor : '#999',
-            borderWidth : 1,
 
-            instance : instance,
-            dbValue : dbValue,
-            textValue : textValue,
-            value : textValue,
-            possibleValues : possibleValues,
-            real_field_name : real_field_name
-        });
+        widgetView = Omadi.widgets.getTextField(instance);
+
+        widgetView.dbValue = dbValue;
+        widgetView.textValue = textValue;
+        widgetView.setValue(textValue);
+        widgetView.setAutocapitalization(Ti.UI.TEXT_AUTOCAPITALIZATION_WORDS);
+        widgetView.real_field_name = real_field_name;
+        widgetView.possibleValues = possibleValues;
+        widgetView.lastValue = textValue;
 
         if (part == 'make') {
             widgetView.maxLength = 18;

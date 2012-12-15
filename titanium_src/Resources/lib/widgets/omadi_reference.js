@@ -76,39 +76,18 @@ Omadi.widgets.omadi_reference = {
             result.close();
             db.close();
         }
+        
+        widgetView = Omadi.widgets.getTextField(instance);
 
-        widgetView = Ti.UI.createTextField({
-            autocapitalization : Ti.UI.TEXT_AUTOCAPITALIZATION_WORDS,
-            autocorrect : false,
-            editable : instance.can_edit,
-            enabled : instance.can_edit,
-            ellipsize : false,
-            keepScreenOn : true,
-            suppessReturn : false,
-            borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-            textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
-            width : Ti.Platform.displayCaps.platformWidth - 30,
-            height : Ti.UI.SIZE,
-            color : '#000000',
-            font : {
-                fontSize : Omadi.widgets.fontSize
-            },
-            backgroundColor : '#fff',
-            borderRadius : 10,
-            borderColor : '#999',
-            borderWidth : 1,
-            returnKeyType : Ti.UI.RETURNKEY_DONE,
-
-            instance : instance,
-            dbValue : dbValue,
-            textValue : textValue,
-            value : textValue,
-            lastValue : textValue,
-            touched : false,
-            possibleValues : possibleValues,
-            defaultValueChildFields : [],
-            onChangeCallbacks : []
-        });
+        widgetView.dbValue = dbValue;
+        widgetView.textValue = textValue;
+        widgetView.setValue(textValue);
+        widgetView.setAutocapitalization(Ti.UI.TEXT_AUTOCAPITALIZATION_WORDS);
+        widgetView.lastValue = textValue;
+        widgetView.touched = false;
+        widgetView.possibleValues = possibleValues;
+        widgetView.defaultValueChildFields = [];
+        widgetView.onChangeCallbacks = [];
 
         widgetView.defaultValueChildFields = Omadi.widgets.omadi_reference.setupParentDefaultFields(instance);
 
@@ -155,19 +134,6 @@ Omadi.widgets.omadi_reference = {
         });
 
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
-
-        if (!instance.can_edit) {
-            widgetView.backgroundImage = '';
-            widgetView.backgroundColor = '#BDBDBD';
-            widgetView.borderColor = 'gray';
-            widgetView.borderRadius = 10;
-            widgetView.color = '#848484';
-            widgetView.paddingLeft = 3;
-            widgetView.paddingRight = 3;
-            if (Ti.App.isAndroid) {
-                widgetView.softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-            }
-        }
 
         if (settings.min_length && settings.min_length != null && settings.min_length != "null") {
             widgetView.minLength = settings.min_length;

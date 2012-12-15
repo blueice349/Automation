@@ -2,90 +2,87 @@
 /*global setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
 
 Omadi.widgets.rules_field = {
-    
-    getFieldView: function(node, instance){"use strict";
-        //this.base = Omadi.widgets.base.init(in_instance);
+
+    getFieldView : function(node, instance) {"use strict";
+        
         instance.elements = [];
-        
+
         var settings = instance.settings, fieldView, i, j, element, addAnotherItemButton = null;
-        
+
         fieldView = Ti.UI.createView({
-           width: '100%',
-           layout: 'vertical',
-           height: Ti.UI.SIZE,
-           instance: instance
+            width : '100%',
+            layout : 'vertical',
+            height : Ti.UI.SIZE,
+            instance : instance
         });
-        
+
         instance.fieldView = fieldView;
-        
+
         fieldView.add(Omadi.widgets.label.getRegularLabelView(instance));
         setConditionallyRequiredLabelForInstance(node, instance);
-       
+
         instance.numVisibleFields = 1;
-        
+
         element = Omadi.widgets.rules_field.getNewElement(node, instance);
         instance.elements.push(element);
         fieldView.add(element);
         fieldView.add(Omadi.widgets.getSpacerView());
-       
-       return fieldView;
+
+        return fieldView;
     },
-    getNewElement: function(node, instance){"use strict";
+    getNewElement : function(node, instance) {"use strict";
         var widget, settings, nodeValue, i, key, violation_name, db, result, formTypes, row, view;
         /*global isArray*/
         Ti.API.debug("Creating rules_field field");
-        
+
         Ti.API.debug(JSON.stringify(instance.widget));
-        
-        //return;
+
         nodeValue = null;
-        if(typeof instance.widget === 'object' && typeof instance.widget.type !== 'undefined'){
+        if ( typeof instance.widget === 'object' && typeof instance.widget.type !== 'undefined') {
             widget = instance.widget;
         }
-        else{
+        else {
             widget = JSON.parse(instance.widget);
         }
-        
+
         settings = instance.settings;
-        
-        if(typeof node[instance.field_name] !== 'undefined' && typeof node[instance.field_name].dbValues !== 'undefined' && typeof node[instance.field_name].dbValues[0] !== 'undefined'){
+
+        if ( typeof node[instance.field_name] !== 'undefined' && typeof node[instance.field_name].dbValues !== 'undefined' && typeof node[instance.field_name].dbValues[0] !== 'undefined') {
             nodeValue = node[instance.field_name].dbValues[0];
         }
-    
+
         view = Ti.UI.createView({
-           height: Ti.UI.SIZE,
-           width : Ti.Platform.displayCaps.platformWidth - 30,
-           layout: 'vertical' 
+            height : Ti.UI.SIZE,
+            width : Ti.Platform.displayCaps.platformWidth - 30,
+            layout : 'vertical',
+            dbValue : nodeValue
         });
-        
-        if(nodeValue !== null){
-            
+
+        if (nodeValue !== null) {
+
             switch(widget.type) {
                 case 'rules_field_violations':
                     nodeValue = JSON.parse(nodeValue);
-                    if (nodeValue instanceof Array) {
-                        
+                    if ( nodeValue instanceof Array) {
+
                         if (nodeValue.length > 0) {
-                            
+
                             Ti.API.debug(JSON.stringify(nodeValue));
-                            
+
                             db = Omadi.utils.openMainDatabase();
-                            
-                            
-                            for (i = 0; i < nodeValue.length; i++) {
-                                
-                                //Ti.API.debug(JSON.stringify(nodeValue[i]));
-                                
+
+                            for ( i = 0; i < nodeValue.length; i++) {
+
                                 violation_name = '- ALL OTHER VIOLATIONS -';
                                 if (!isNaN(nodeValue[i].tid)) {
                                     result = db.execute('SELECT name FROM term_data WHERE tid=' + nodeValue[i].tid);
                                     violation_name = result.fieldByName('name');
                                     result.close();
                                 }
-        
+
                                 formTypes = [];
                                 if (!isArray(nodeValue[i].node_types)) {
-                                   
+
                                     for (key in nodeValue[i].node_types) {
                                         if (nodeValue[i].node_types.hasOwnProperty(key)) {
                                             result = db.execute('SELECT display_name FROM bundles WHERE bundle_name="' + key + '"');
@@ -94,25 +91,25 @@ Omadi.widgets.rules_field = {
                                         }
                                     }
                                 }
-        
+
                                 row = Ti.UI.createView({
                                     layout : 'horizontal',
                                     height : Ti.UI.SIZE,
-                                    width: '100%'
+                                    width : '100%'
                                 });
-                                
+
                                 row.image = Ti.UI.createImageView({
-                                    image : '../images/arrow.png',
+                                    image : '/images/arrow.png',
                                     height : 23,
                                     width : 23,
                                     details : nodeValue[i],
                                     formTypes : formTypes,
                                     text : violation_name
                                 });
-                                
+
                                 row.label = Ti.UI.createLabel({
                                     text : violation_name,
-                                    height: Ti.UI.SIZE,
+                                    height : Ti.UI.SIZE,
                                     color : '#000',
                                     font : {
                                         fontSize : 15,
@@ -123,46 +120,44 @@ Omadi.widgets.rules_field = {
                                     details : nodeValue[i],
                                     formTypes : formTypes
                                 });
-        
+
                                 row.add(row.image);
                                 row.add(row.label);
-                                
+
                                 row.addEventListener('click', Omadi.widgets.rules_field.showDetail);
-                                
+
                                 view.add(row);
                             }
-                            
+
                             db.close();
                         }
                     }
                     break;
             }
         }
-        
-        if(view.getChildren().length == 0){
+
+        if (view.getChildren().length == 0) {
             view.add(Ti.UI.createLabel({
-                text: "All Violations Enforceable - 24/7",
-                width: '100%',
-                textAlign: Ti.UI.TEXT_ALIGNMENT_LEFT,
-                font: {
-                    fontSize: 16
+                text : "All Violations Enforceable - 24/7",
+                width : '100%',
+                textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
+                font : {
+                    fontSize : 16
                 },
-                color: '#666'
+                color : '#666'
             }));
         }
-        
+
         return view;
     },
-    showDetail: function(e){"use strict";
-        var detail_popup, translucent, table_format_bg, headerRow0, headerRowLabel, 
-            closeButton, headerRow, forms, desc, detail_row, dttm, formsView, formsViewLabel,
-            detailsVal, forms_str, i, dttmViewLabel, dttmView, descView, descViewLabel;
-            
+    showDetail : function(e) {"use strict";
+        var detail_popup, translucent, table_format_bg, headerRow0, headerRowLabel, headerRow, forms, desc, detail_row, dttm, formsView, formsViewLabel, detailsVal, forms_str, i, dttmViewLabel, dttmView, descView, descViewLabel;
+
         if (Ti.App.isAndroid) {
             Ti.UI.Android.hideSoftKeyboard();
             //Ti.API.info("hide keyboard in row click listener");
         }
-        
+
         detail_popup = Ti.UI.createView({
             backgroundColor : '#00000000'
         });
@@ -191,37 +186,26 @@ Omadi.widgets.rules_field = {
             height : 30,
             width : Ti.Platform.displayCaps.platformWidth - 8,
             layout : 'horizontal',
-            backgroundImage : '../images/header.png'
+            backgroundImage : '/images/header.png'
         });
-        
+
         headerRowLabel = Ti.UI.createLabel({
             text : e.source.text,
-            left : 5,
-            height : 30,
-            width : Ti.Platform.displayCaps.platformWidth - 40,
+            height : Ti.UI.SIZE,
+            width : '100%',
             color : '#fff',
+            top : 5,
             font : {
-                fontFamily : 'Helvetica Neue',
-                fontSize : 15,
+                fontSize : 18,
                 fontWeight : 'bold'
-
             },
             ellipsize : true,
-            wordWrap : false
+            wordWrap : false,
+            textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
         });
-        
-        closeButton = Ti.UI.createImageView({
-            height : 30,
-            width : 25,
-            top : 0,
-            image : '../images/close.png'
-        });
+
         table_format_bg.add(headerRow0);
         headerRow0.add(headerRowLabel);
-        headerRow0.add(closeButton);
-        closeButton.addEventListener('click', function(ent) {
-            Ti.UI.currentWindow.remove(detail_popup);
-        });
 
         headerRow = Ti.UI.createView({
             top : 33,
@@ -235,10 +219,9 @@ Omadi.widgets.rules_field = {
             text : 'Forms',
             height : 38,
             width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
-            backgroundImage : '../images/header.png',
+            backgroundImage : '/images/header.png',
             font : {
-                fontFamily : 'Helvetica Neue',
-                fontSize : 13,
+                fontSize : 16,
                 fontWeight : 'bold'
             },
             color : '#fff',
@@ -250,10 +233,9 @@ Omadi.widgets.rules_field = {
             text : 'Date/Time Rules',
             height : 38,
             width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
-            backgroundImage : '../images/header.png',
+            backgroundImage : '/images/header.png',
             font : {
-                fontFamily : 'Helvetica Neue',
-                fontSize : 13,
+                fontSize : 16,
                 fontWeight : 'bold'
             },
             left : 1,
@@ -266,10 +248,10 @@ Omadi.widgets.rules_field = {
             text : 'Description',
             height : 38,
             width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
-            backgroundImage : '../images/header.png',
+            backgroundImage : '/images/header.png',
             font : {
                 fontFamily : 'Helvetica Neue',
-                fontSize : 13,
+                fontSize : 16,
                 fontWeight : 'bold'
             },
             left : 1.5,
@@ -296,20 +278,21 @@ Omadi.widgets.rules_field = {
         detail_row.add(formsView);
         formsViewLabel = Ti.UI.createLabel({
             top : 0,
-            height : 'auto',
-            width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
+            left : 5,
+            right : 5,
+            height : Ti.UI.SIZE,
             color : '#1c1c1c',
             font : {
                 fontFamily : 'Helvetica Neue',
-                fontSize : 13
+                fontSize : 16
             },
-            textAlign : 'left'
+            textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT
         });
         formsView.add(formsViewLabel);
 
         detailsVal = e.source.details;
         forms_str = '- All -';
-        
+
         if (e.source.formTypes.length < 4 && e.source.formTypes.length > 0) {
             forms_str = '';
             for ( i = 0; i < e.source.formTypes.length; i++) {
@@ -323,7 +306,7 @@ Omadi.widgets.rules_field = {
         formsViewLabel.text = forms_str;
 
         dttmView = Ti.UI.createScrollView({
-            height : '170',
+            height : 170,
             contentHeight : 'auto',
             scrollType : 'vertical',
             showVerticalScrollIndicator : true,
@@ -333,20 +316,21 @@ Omadi.widgets.rules_field = {
         detail_row.add(dttmView);
         dttmViewLabel = Ti.UI.createLabel({
             top : 0,
+            left : 5,
+            right : 5,
             text : Omadi.widgets.rules_field.getTimeRulesText(detailsVal.time_rules),
-            height : 'auto',
-            width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
+            height : Ti.UI.SIZE,
             color : '#1c1c1c',
             font : {
                 fontFamily : 'Helvetica Neue',
-                fontSize : 13
+                fontSize : 16
             },
-            textAlign : 'left'
+            textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT
         });
         dttmView.add(dttmViewLabel);
 
         descView = Ti.UI.createScrollView({
-            height : '175',
+            height : 175,
             contentHeight : 'auto',
             scrollType : 'vertical',
             showVerticalScrollIndicator : true,
@@ -356,29 +340,29 @@ Omadi.widgets.rules_field = {
         detail_row.add(descView);
         descViewLabel = Ti.UI.createLabel({
             top : 0,
+            left : 5,
+            right : 5,
             text : detailsVal.description,
-            height : 'auto',
-            width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
+            height : Ti.UI.SIZE,
             color : '#1c1c1c',
             font : {
-                fontFamily : 'Helvetica Neue',
-                fontSize : 13
+                fontSize : 16
             },
-            textAlign : 'left'
+            textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT
         });
         descView.add(descViewLabel);
 
         Ti.UI.currentWindow.add(detail_popup);
+
         translucent.addEventListener('click', function(ent) {
             Ti.UI.currentWindow.remove(detail_popup);
-        });  
+        });
     },
-    getTimeRulesText: function(timeValue){"use strict";
-        var timeStrings = [], dayStrings = [], times = [], returnVal, rows, i, row, values, day,
-            time, timeString, startDay, currentDay, lastConsecutive, dayPatrolStrings, day_index;
-    
+    getTimeRulesText : function(timeValue) {"use strict";
+        var timeStrings = [], dayStrings = [], times = [], returnVal, rows, i, row, values, day, time, timeString, startDay, currentDay, lastConsecutive, dayPatrolStrings, day_index;
+
         /*global count_arr_obj, omadi_time_seconds_to_string*/
-     
+
         dayStrings.push('Sun');
         dayStrings.push('Mon');
         dayStrings.push('Tue');
@@ -386,13 +370,13 @@ Omadi.widgets.rules_field = {
         dayStrings.push('Thu');
         dayStrings.push('Fri');
         dayStrings.push('Sat');
-    
-        returnVal = 'No Rules';
-    
+
+        returnVal = '24/7';
+
         if (timeValue > '') {
             rows = timeValue.split(';');
             for (i in rows) {
-                if(rows.hasOwnProperty(i)){
+                if (rows.hasOwnProperty(i)) {
                     row = rows[i];
                     values = row.split('|');
                     if (values[0] == '1') {
@@ -400,37 +384,37 @@ Omadi.widgets.rules_field = {
                             if (times['All Day'] == null) {
                                 times['All Day'] = [];
                             }
-        
+
                             times['All Day'].push(i);
                         }
                         else {
                             if (times[omadi_time_seconds_to_string(values[2], 'h:iA') + '-' + omadi_time_seconds_to_string(values[3], 'h:iA')] == null) {
                                 times[omadi_time_seconds_to_string(values[2], 'h:iA') + '-' + omadi_time_seconds_to_string(values[3], 'h:iA')] = [];
                             }
-        
+
                             times[omadi_time_seconds_to_string(values[2], 'h:iA') + '-' + omadi_time_seconds_to_string(values[3], 'h:iA')].push(i);
                         }
                     }
                 }
             }
-    
+
             if (times['All Day'] != null && count_arr_obj(times['All Day']) == 7) {
                 // This is equivalent to no rules, so fall through
                 Ti.API.info("NO RULES");
             }
             else {
-                
+
                 for (i in times) {
-                    if(times.hasOwnProperty(i)){
+                    if (times.hasOwnProperty(i)) {
                         time = times[i];
                         timeString = '';
                         startDay = -1;
                         currentDay = -2;
                         lastConsecutive = -1;
                         dayPatrolStrings = [];
-        
+
                         for (day_index in time) {
-                            if(time.hasOwnProperty(day_index)){
+                            if (time.hasOwnProperty(day_index)) {
                                 day = time[day_index];
                                 currentDay = Number(day);
                                 if (startDay == -1) {
@@ -452,7 +436,7 @@ Omadi.widgets.rules_field = {
                                 lastConsecutive = currentDay;
                             }
                         }
-        
+
                         if (lastConsecutive == currentDay) {
                             if (startDay != lastConsecutive) {
                                 dayPatrolStrings.push(dayStrings[startDay] + '-' + dayStrings[lastConsecutive]);
@@ -461,17 +445,17 @@ Omadi.widgets.rules_field = {
                                 dayPatrolStrings.push(dayStrings[startDay]);
                             }
                         }
-        
+
                         timeString += dayPatrolStrings.join(',') + ' (' + i + ')';
-        
+
                         timeStrings.push(timeString);
                     }
                 }
-    
+
                 returnVal = timeStrings.join('; ');
             }
         }
-    
+
         return returnVal;
     }
 };

@@ -438,6 +438,118 @@ Omadi.widgets.label = {
     }
 };
 
+Omadi.widgets.getLabelField = function(instance){"use strict";
+    
+    var labelView = Titanium.UI.createLabel({
+        backgroundGradient : {
+            type : 'linear',
+            startPoint : {
+                x : '50%',
+                y : '0%'
+            },
+            endPoint : {
+                x : '50%',
+                y : '100%'
+            },
+            colors : [{
+                color : '#f3f3f3',
+                offset : 0.0
+            }, {
+                color : '#f9f9f9',
+                offset : 0.4
+            }, {
+                color : '#bbb',
+                offset : 1.0
+            }]
+        },
+        borderRadius : 10,
+        borderColor : '#999',
+        borderWidth : 1,
+        color : '#000',
+        textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER,
+        font : {
+            fontSize : Omadi.widgets.fontSize
+        },
+        right: 15,
+        left: 15,
+        height: 35,
+        
+        // Android options
+        ellipsize : true,
+        wordWrap : false,
+        
+        // custom options
+        instance : instance
+    });
+    
+    if (!instance.can_edit) {
+        labelView.setBackgroundGradient(null);
+        labelView.setBackgroundColor('#ccc');
+        labelView.setColor('#666');
+    }
+        
+    return labelView;
+};
+
+Omadi.widgets.getTextField = function(instance){"use strict";
+    
+    var textField = Ti.UI.createTextField({
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        borderColor: '#999',
+        borderWidth: 1,
+        textAlign: Ti.UI.TEXT_ALIGNMENT_LEFT,
+        right: 15,
+        left: 15,
+        height: 35,
+        color: '#000',
+        autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_NONE,
+        autocorrect: false,
+        editable: instance.can_edit,
+        enabled: instance.can_edit,
+        font: {
+            fontSize: Omadi.widgets.fontSize
+        },
+        returnKeyType: Ti.UI.RETURNKEY_DONE,
+        
+        // Android options
+        keepScreenOn: true,
+        ellipsize: false,
+        focusable: true,
+        
+        // iOS options
+        borderStyle: Ti.UI.INPUT_BORDERSTYLE_ROUNDED,
+        suppressReturn: false,
+        
+        // Custom variables
+        instance: instance
+    });
+    
+    if(Ti.App.isAndroid){
+        textField.setHeight(Ti.UI.SIZE);
+    }
+    else{
+        textField.setHeight(35);
+    }
+
+    if (!instance.can_edit) {
+        
+        textField.setBackgroundColor('#ccc');
+        textField.setColor('#666');
+        
+        if (Ti.App.isAndroid) {
+            textField.setSoftKeyboardOnFocus(Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS);
+        }
+        else{
+            textField.setBorderStyle(Ti.UI.INPUT_BORDERSTYLE_NONE);
+            textField.setPaddingLeft(7);
+            textField.setPaddingRight(7);
+        }
+    }
+    
+    return textField;
+};
+
 
 Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         

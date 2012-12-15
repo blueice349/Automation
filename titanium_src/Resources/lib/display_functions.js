@@ -295,7 +295,8 @@ Omadi.display.removeNotifications = function() { "use strict";
 };
 
 
-var loadingIndicatorWindow, loadingActivityIndicator, indicator;
+var loadingIndicatorWindow, loadingActivityIndicator, 
+indicator = null;
 
 Omadi.display.hideLoadingIndicator = function() { "use strict";
     Ti.API.info("hiding indicator");
@@ -345,15 +346,20 @@ Omadi.display.loading = function(message){"use strict";
         });
         
         Ti.UI.currentWindow.add(indicator);
+        
+        indicator.addEventListener('longpress', function(e){
+           //e.source.hide(); 
+        });
     //}
 };
 
 Omadi.display.doneLoading = function(){"use strict";
-    //if(Ti.App.isAndroid){
-        indicator.hide();
-    //}
     
-    Ti.App.fireEvent("displayDoneLoading");
+    if(indicator !== null){
+        indicator.hide();
+        
+        //Ti.App.fireEvent("displayDoneLoading");
+    }
 };
 
 Omadi.display.showLoadingIndicator = function(show, timeout) {"use strict";

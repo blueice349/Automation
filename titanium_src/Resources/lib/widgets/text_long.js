@@ -84,26 +84,34 @@ Omadi.widgets.text_long = {
         settings = instance.settings;
         
         widgetView = Ti.UI.createTextArea({
-            autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_SENTENCES,
-            autocorrect: true,
-            editable : instance.can_edit,
-            enabled : instance.can_edit,
-            ellipsize: false,
-            keepScreenOn: true,
-            suppessReturn: false,
-            textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
-            width : Ti.Platform.displayCaps.platformWidth - 30,
-            height : 100,
-            color : '#000000',
-            font: {
-                fontSize: Omadi.widgets.fontSize
-            },
-            returnKeyType : Ti.UI.RETURNKEY_DONE,
             backgroundColor: '#fff',
             borderRadius: 10,
             borderColor: '#999',
             borderWidth: 1,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_LEFT,
+            right: 15,
+            left: 15,
+            height: 110,
+            color: '#000',
+            autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_SENTENCES,
+            autocorrect: true,
+            editable: instance.can_edit,
+            enabled: instance.can_edit,
+            font: {
+                fontSize: Omadi.widgets.fontSize
+            },
+            returnKeyType: Ti.UI.RETURNKEY_DONE,
             
+            // Android options
+            keepScreenOn: true,
+            ellipsize: false,
+            focusable: true,
+            
+            // iOS options
+            borderStyle: Ti.UI.INPUT_BORDERSTYLE_ROUNDED,
+            suppressReturn: false,
+            
+            // Custom variables            
             instance: instance,
             dbValue: dbValue,
             textValue: textValue,
@@ -113,15 +121,17 @@ Omadi.widgets.text_long = {
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
         
         if (!instance.can_edit) {
-            widgetView.backgroundImage = '';
-            widgetView.backgroundColor = '#BDBDBD';
-            widgetView.borderColor = 'gray';
-            widgetView.borderRadius = 10;
-            widgetView.color = '#848484';
-            widgetView.paddingLeft = 3;
-            widgetView.paddingRight = 3;
+        
+            widgetView.setBackgroundColor('#ccc');
+            widgetView.setColor('#666');
+            
             if (Ti.App.isAndroid) {
-                widgetView.softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+                widgetView.setSoftKeyboardOnFocus(Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS);
+            }
+            else{
+                widgetView.setBorderStyle(Ti.UI.INPUT_BORDERSTYLE_NONE);
+                widgetView.setPaddingLeft(7);
+                widgetView.setPaddingRight(7);
             }
         }
     

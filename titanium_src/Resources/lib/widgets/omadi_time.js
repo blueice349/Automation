@@ -95,45 +95,15 @@ Omadi.widgets.omadi_time = {
 
             jsDate.setTime((midnight + dbValue) * 1000);
         }
-
-        widgetView = Titanium.UI.createLabel({
-            style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
-            width : Ti.Platform.displayCaps.platformWidth - 30,
-            text : textValue,
-            height : 35,
-            font : {
-                fontSize : Omadi.widgets.fontSize
-            },
-            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
-            color : '#000000',
-            selectionIndicator : true,
-            backgroundColor: '#fff',
-            borderRadius: 10,
-            borderColor: '#999',
-            borderWidth: 1,
-
-            instance : instance,
-            dbValue : dbValue,
-            textValue : textValue,
-            value : textValue,
-
-            jsDate : jsDate
-        });
-
+        
+        
+        widgetView = Omadi.widgets.getLabelField(instance);
+        widgetView.setText(textValue);
+        widgetView.textValue = textValue;
+        widgetView.dbValue = dbValue;
+        widgetView.jsDate = jsDate;
+        
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
-
-        if (!instance.can_edit) {
-            widgetView.backgroundImage = '';
-            widgetView.backgroundColor = '#BDBDBD';
-            widgetView.borderColor = 'gray';
-            widgetView.borderRadius = 10;
-            widgetView.color = '#848484';
-            widgetView.paddingLeft = 3;
-            widgetView.paddingRight = 3;
-            if (Ti.App.isAndroid) {
-                widgetView.softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
-            }
-        }
 
         widgetView.addEventListener('click', function(e) {
             if (e.source.instance.can_edit) {
@@ -204,7 +174,6 @@ Omadi.widgets.omadi_time = {
             bottom : 7,
             right : 10,
             width : 80,
-            widgetView : widgetView,
             style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             color : '#fff',
             borderRadius : 5,
@@ -325,28 +294,25 @@ Omadi.widgets.omadi_time = {
             format24 : (Omadi.utils.getTimeFormat().indexOf('H') !== -1 ? true : false)  // Only available on Android
         });
 
-        // time_picker.addEventListener('change', function(e) {
-            // e.source.widgetView.tempDate = e.value;
-        // });
+        // This sounds really stupid - and it is! If this onchange listener isn't in place, 
+        // then the date won't actually be recorded
+        time_picker.addEventListener('change', function(e) {
+            // Empty, but necessary
+        });
         
-        widgetView.time_picker = time_picker;
-
+        okButton.time_picker = time_picker;
+        okButton.widgetView = widgetView;
+        
         wrapperView.add(time_picker);
 
         okButton.addEventListener('click', function(e) {
             /*global setConditionallyRequiredLabels*/
             var newDate, i, callback;
 
-            // if ( typeof e.source.widgetView.tempDate === 'undefined') {
-                // e.source.widgetView.tempDate = e.source.widgetView.jsDate;
-            // }
-
-            newDate = e.source.widgetView.time_picker.getValue();
+            newDate = e.source.time_picker.getValue();
             e.source.widgetView.jsDate = newDate;
             e.source.widgetView.textValue = Omadi.utils.PHPFormatDate(Math.ceil(newDate.getTime() / 1000), 'g:i A');
             e.source.widgetView.dbValue = Omadi.widgets.omadi_time.dateToSeconds(e.source.widgetView.textValue);
-
-            //Ti.API.error(e.source.widgetView.dbValue);
 
             e.source.widgetView.setText(e.source.widgetView.textValue);
 
