@@ -1,9 +1,8 @@
 /*jslint eqeq:true, plusplus: true*/ 
 
-//Ti.include('/main_windows/create_or_edit_node.js');
 Ti.include('/lib/functions.js');
 	
-/*global create_or_edit_node, Omadi*/
+/*global Omadi*/
 
 var bundle,
 curWin,
@@ -987,6 +986,7 @@ function setTableData(){"use strict";
 				var btn_tt = [];
 				var btn_id = [];
 				var isEditEnabled = false;
+				var to_type, to_bundle;
 				
 				if(result){
 					if(result.fieldByName('perm_edit') == 1){
@@ -1008,19 +1008,31 @@ function setTableData(){"use strict";
 				
 				subDB.close();
 				
+				btn_tt.push('View');
+                btn_id.push('_view');
+				
+				if(typeof bundle.data.custom_copy !== 'undefined'){
+                    for(to_type in bundle.data.custom_copy){
+                        if(bundle.data.custom_copy.hasOwnProperty(to_type)){
+                            to_bundle = Omadi.data.getBundle(to_type);
+                            if(to_bundle){
+                                btn_tt.push("Copy to " + to_bundle.label);
+                                btn_id.push(to_type);
+                                isEditEnabled = true;
+                            }
+                        }
+                    }
+                }
+                
+				
 				if(!isEditEnabled){
 				    e.row.setBackgroundColor('#fff');
 				    Omadi.display.openViewWindow(curWin.type, e.row.nid);
 				}
 				else{
-				
-                    btn_tt.push('View');
-                    btn_id.push(0);
-                    
-                    //json_data.close();
                     
                     btn_tt.push('Cancel');
-                    btn_id.push(0);
+                    btn_id.push('_cancel');
                     
                     var postDialog = Titanium.UI.createOptionDialog();
                     postDialog.options = btn_tt;
@@ -1028,16 +1040,18 @@ function setTableData(){"use strict";
                     postDialog.show();
                     
                     postDialog.addEventListener('click', function(ev) {
-                        if (ev.index === btn_tt.length - 2 ){
+                        var form_part = btn_id[ev.index];
+                        
+                        if(form_part == '_cancel'){
+                            Ti.API.info("Cancelled");
+                        }
+                        else if(form_part == '_view'){
                             ev.source.eventRow.setBackgroundColor('#fff');
                             Omadi.display.openViewWindow(curWin.type, ev.source.eventRow.nid);
                         }
-                        else if (ev.index === btn_tt.length - 1){
-                            Ti.API.info("Cancelled");
-                        }
                         else if (ev.index !== -1 && isEditEnabled === true){
                             ev.source.eventRow.setBackgroundColor('#fff');
-                            Omadi.display.openFormWindow(curWin.type, ev.source.eventRow.nid, btn_id[ev.index]);
+                            Omadi.display.openFormWindow(curWin.type, ev.source.eventRow.nid, form_part);
                         }
                     });	
                 }

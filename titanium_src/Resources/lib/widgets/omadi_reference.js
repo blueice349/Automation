@@ -147,6 +147,30 @@ Omadi.widgets.omadi_reference = {
             e.source.autocomplete_table.setHeight(0);
             e.source.autocomplete_table.setVisible(false);
         });
+        
+        // widgetView.addEventListener("customCopy", function(){
+            // var callback;
+//             
+            // Omadi.widgets.omadi_reference.setChildDefaultValues(widgetView);
+            // if (widgetView.onChangeCallbacks.length > 0) {
+                // for ( i = 0; i < widgetView.onChangeCallbacks.length; i++) {
+                    // callback = widgetView.onChangeCallbacks[i];
+                    // callback(widgetView.onChangeCallbackArgs[i]);
+                // }
+            // }
+        // });
+        
+        Ti.App.addEventListener("customCopy", function(){
+            var i, callback;
+            
+            Omadi.widgets.omadi_reference.setChildDefaultValues(widgetView);
+            if (widgetView.onChangeCallbacks.length > 0) {
+                for ( i = 0; i < widgetView.onChangeCallbacks.length; i++) {
+                    callback = widgetView.onChangeCallbacks[i];
+                    callback(widgetView.onChangeCallbackArgs[i]);
+                }
+            }
+        });
 
         widgetView.addEventListener('change', function(e) {
             /*global setConditionallyRequiredLabels*/

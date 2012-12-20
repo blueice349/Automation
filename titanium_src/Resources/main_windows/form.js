@@ -1206,6 +1206,40 @@ function recalculateCalculationFields(){"use strict";
 
 //Ti.API.error("WIN NID: " + win.nid);
 
+function loadCustomCopyNode(originalNode, from_type, to_type){"use strict";
+    var fromBundle, newNode, to_field_name, from_field_name;
+    
+    fromBundle = Omadi.data.getBundle(from_type);
+    
+    newNode = {
+        created : Omadi.utils.getUTCTimestamp(),
+        author_uid: Omadi.utils.getUid(),
+        form_part: 0,
+        nid: 'new',
+        type: to_type,
+        changed: Omadi.utils.getUTCTimestamp(),
+        changed_uid: Omadi.utils.getUid(),
+        origNid: originalNode.nid
+    };
+    
+    if(originalNode){
+        if(typeof fromBundle.data.custom_copy !== 'undefined'){
+            if(typeof fromBundle.data.custom_copy[to_type] !== 'undefined'){
+                for(to_field_name in fromBundle.data.custom_copy[to_type]){
+                    if(fromBundle.data.custom_copy[to_type].hasOwnProperty(to_field_name)){
+                        from_field_name = fromBundle.data.custom_copy[to_type][to_field_name];
+                        if(typeof originalNode[from_field_name] !== 'undefined'){
+                            newNode[to_field_name] = originalNode[from_field_name];
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    return newNode;
+}
+
 (function(){"use strict";
     
     /*jslint vars: true, eqeq: true*/
@@ -1318,7 +1352,6 @@ function recalculateCalculationFields(){"use strict";
 
    //scrollView is the parent container
    
-    instances = Omadi.data.getFields(win.type);
     var field_name;
     var instance;
     var i, j;
@@ -1346,6 +1379,8 @@ function recalculateCalculationFields(){"use strict";
     var region_name;
     var regionHeaderView;
     var regionView;
+    var tempFormPart;
+    
     
     if(win.nid == 'new'){
         node = getNewNode();
@@ -1357,10 +1392,62 @@ function recalculateCalculationFields(){"use strict";
     Ti.API.debug("LOADED NODE: " + JSON.stringify(node));
     
     if(typeof win.form_part !== 'undefined'){
-        node.form_part = win.form_part;
+        tempFormPart = parseInt(win.form_part, 10);
+        if(win.form_part == tempFormPart){
+            node.form_part = win.form_part;
+        }
+        else{
+            // This is a copy to form, the form_part passed in is which type to copy to
+            Ti.API.info("This is a custom copy to " + win.form_part);
+            node = loadCustomCopyNode(node, win.type, win.form_part);
+            
+            win.origNid = node.origNid; 
+            win.type = node.type;
+            win.nid = 'new';
+            win.form_part = 0;    
+            
+            Ti.App.addEventListener("formFullyLoaded", function(){
+                Ti.App.fireEvent("customCopy");
+                // var field_name, children, subChildren, subSubChildren, i, j, k, callback, widgetView;
+//                
+//                 
+                // for(field_name in instances){
+                    // if(instances.hasOwnProperty(field_name)){
+                        // if(instances[field_name].type == 'omadi_reference'){
+                            // if(typeof fieldWrappers[field_name] !== 'undefined'){
+//                                  
+                                // children = fieldWrappers[field_name].getChildren();
+                                // for(i = 0; i < children.length; i ++){
+//                                     
+                                    // subChildren = children[i].getChildren();
+                                    // for(j = 0; j < subChildren.length; j ++){
+                                        // Ti.API.debug("looking for widget");
+                                        // Ti.API.debug(subChildren[j]);
+                                        // if(typeof subChildren[j].dbValue !== 'undefined'){
+                                            // Ti.API.debug("found widget");
+//                                             
+                                            // widgetView = fieldWrappers[field_name].children[i].children[j];
+//                                             
+                                            // Omadi.widgets.omadi_reference.setChildDefaultValues(widgetView);
+                                            // if (widgetView.onChangeCallbacks.length > 0) {
+                                                // for ( k = 0; k < widgetView.onChangeCallbacks.length; k++) {
+                                                    // callback = widgetView.onChangeCallbacks[k];
+                                                    // callback(widgetView.onChangeCallbackArgs[k]);
+                                                // }
+                                            // }
+                                        // }
+                                    // }
+                                // }
+                            // }
+                        // }
+                    // }
+                // }
+            });     
+        }
     }
     
     win.node = node;
+    instances = Omadi.data.getFields(win.type);
     
     if (Ti.App.isAndroid) {
         get_android_menu();

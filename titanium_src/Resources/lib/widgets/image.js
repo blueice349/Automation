@@ -34,7 +34,7 @@ Omadi.widgets.image = {
     getNewElement : function(node, instance) {"use strict";
         /*global isArray*/
 
-        var settings, widgetView, dbValue, imageData, i, numImagesShowing = 0, contentWidth;
+        var settings, widgetView, dbValue, imageData, i, numImagesShowing = 0, contentWidth, imageNid;
 
         dbValue = [];
         imageData = [];
@@ -63,12 +63,18 @@ Omadi.widgets.image = {
 
             instance : instance
         });
+        
+        imageNid = Ti.UI.currentWindow.nid;
+        if(typeof Ti.UI.currentWindow.origNid !== 'undefined'){
+            imageNid = Ti.UI.currentWindow.origNid;
+        }
 
         if (isArray(dbValue)) {
             for ( i = 0; i < dbValue.length; i++) {
                 if (dbValue[i] > 0) {
                     Ti.API.debug("Adding image to scroll view");
-                    widgetView.add(Omadi.widgets.image.getImageView(widgetView, i, Ti.UI.currentWindow.nid, dbValue[i]));
+                     
+                    widgetView.add(Omadi.widgets.image.getImageView(widgetView, i, imageNid, dbValue[i]));
                 }
             }
             numImagesShowing = dbValue.length;
@@ -77,7 +83,7 @@ Omadi.widgets.image = {
         if (isArray(imageData)) {
 
             for ( i = 0; i < imageData.length; i++) {
-                widgetView.add(Omadi.widgets.image.getImageView(widgetView, numImagesShowing + i, Ti.UI.currentWindow.nid, imageData[i]));
+                widgetView.add(Omadi.widgets.image.getImageView(widgetView, numImagesShowing + i, imageNid, imageData[i]));
             }
             numImagesShowing += imageData.length;
         }

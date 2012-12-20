@@ -695,10 +695,21 @@ function doRegionOutput(regionObj) {"use strict";
     }());
 
 
+var androidMenuItemData = [];
+
+function openAndroidMenuItem(e){"use strict";
+    var itemIndex, itemData;
+    
+    itemIndex = e.source.getOrder();
+    itemData = androidMenuItemData[itemIndex];
+    
+    Omadi.display.openFormWindow(itemData.type, itemData.nid, itemData.form_part);
+}
+
 if (Ti.App.isAndroid && isEditEnabled == true) {
     var activity = curWin.activity;
     activity.onCreateOptionsMenu = function(e) {"use strict";
-        var db, result, bundle, menu_zero, form_part, menu_edit;
+        var db, result, bundle, menu_zero, form_part, menu_edit, customCopy, to_type, to_bundle, order;
      
 
         db = Omadi.utils.openMainDatabase();
@@ -711,30 +722,67 @@ if (Ti.App.isAndroid && isEditEnabled == true) {
         result.close();
         db.close();
 
+        order = 0;
 
         if (bundle.data.form_parts != null && bundle.data.form_parts != "" && (bundle.data.form_parts.parts.length >= form_part + 2)) {
 
             menu_zero = e.menu.add({
                 title : bundle.data.form_parts.parts[form_part + 1].label,
-                order : 0
+                order : order
             });
+            
+            androidMenuItemData[order] = {
+                type: curWin.type,
+                nid: curWin.nid,
+                form_part: form_part + 1  
+            };
 
             menu_zero.setIcon("/images/drop.png");
-            menu_zero.addEventListener("click", function(e) {
-                Omadi.display.openFormWindow(curWin.type, curWin.nid, form_part + 1);
-            });
+            menu_zero.addEventListener("click", openAndroidMenuItem);
+            
+            order++;
         }
 
         menu_edit = e.menu.add({
             title : 'Edit',
-            order : 1
+            order : order
         });
-
-        menu_edit.setIcon("/images/edit.png");
         
-        menu_edit.addEventListener("click", function(e) {
-            Omadi.display.openFormWindow(curWin.type, curWin.nid, form_part);
-        });
+        androidMenuItemData[order] = {
+            type: curWin.type,
+            nid: curWin.nid,
+            form_part: form_part
+        };
+        
+        menu_edit.setIcon("/images/edit.png");
+        menu_edit.addEventListener("click", openAndroidMenuItem);
+        
+        order++;
+        
+        if(typeof bundle.data.custom_copy !== 'undefined'){
+            for(to_type in bundle.data.custom_copy){
+                if(bundle.data.custom_copy.hasOwnProperty(to_type)){
+                    to_bundle = Omadi.data.getBundle(to_type);
+                    if(to_bundle){
+                        customCopy = e.menu.add({
+                            title : "Copy to " + to_bundle.label,
+                            order : order
+                        });
+                        customCopy.setIcon("/images/drop.png");
+                        
+                        androidMenuItemData[order] = {
+                            type: curWin.type,
+                            nid: curWin.nid,
+                            form_part: to_type 
+                        };
+            
+                        customCopy.addEventListener("click", openAndroidMenuItem);
+                        
+                        order ++;
+                    }
+                }
+            }
+        }
     };
 }
 
@@ -743,10 +791,10 @@ fields_result.close();
 db.close();
 
 if (Ti.App.isIOS) {
-    bottomButtons1(curWin);
+    iOSActionMenu(curWin);
 }
 
-function bottomButtons1(actualWindow) {"use strict";
+function iOSActionMenu(actualWindow) {"use strict";
     var back, space, label, edit, arr, toolbar;
     
     back = Ti.UI.createButton({
@@ -776,7 +824,7 @@ function bottomButtons1(actualWindow) {"use strict";
     });
 
     edit.addEventListener('click', function() {
-        var db, result, bundle, btn_tt, btn_id, form_part, postDialog;
+        var db, result, bundle, btn_tt, btn_id, form_part, postDialog, to_type, to_bundle;
         
         bundle = Omadi.data.getBundle(curWin.type);
         
@@ -801,6 +849,20 @@ function bottomButtons1(actualWindow) {"use strict";
 
         btn_tt.push('Edit');
         btn_id.push(form_part);
+
+
+        if(typeof bundle.data.custom_copy !== 'undefined'){
+            for(to_type in bundle.data.custom_copy){
+                if(bundle.data.custom_copy.hasOwnProperty(to_type)){
+                    to_bundle = Omadi.data.getBundle(to_type);
+                    if(to_bundle){
+                        btn_tt.push("Copy to " + to_bundle.label);
+                        btn_id.push(to_type);
+                    }
+                }
+            }
+        }
+        
 
         btn_tt.push('Cancel');
 

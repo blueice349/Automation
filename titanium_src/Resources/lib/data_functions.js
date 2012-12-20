@@ -1288,223 +1288,238 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) { "use stric
     /*jslint nomen: true*/
     /*global treatArray, isNumber*/
 
-    var closeDB, instances, queries, i, field_name, query, fieldNames, no_data, values, value, notifications = {}, numSets;
+    var closeDB, instances, queries, i, field_name, query, fieldNames, no_data, values, value, notifications = {}, numSets, result;
     closeDB = false;
     queries = [];
      
     try{
        
         instances = Omadi.data.getFields(type);
-       
-        //Insert
-        if (json.insert) {
+        
+        // Make sure the node type still exists
+        result = mainDB.execute("SELECT COUNT(*) FROM bundles WHERE bundle_name='" + type + "'");
+        if(result.field(0, Ti.Database.FIELD_TYPE_INT) > 0){
             
-            Ti.API.debug("inserting " + type + " nodes");
-    
-            //Multiple objects
-            if (json.insert.length) {
+            //Insert
+            if (json.insert) {
                 
-                for ( i = 0; i < json.insert.length; i++) {
-                                      
-                    //Insert into node table
-                    if ((json.insert[i].title === null) || (json.insert[i].title == 'undefined') || (json.insert[i].title === false)){
-                        json.insert[i].title = "No Title";
-                    }
-    
-                    //'update' is a flag to decide whether the node needs to be synced to the server or not
-                    no_data = '';
-                    if (!(json.insert[i].no_data_fields instanceof Array)) {
-                        no_data = JSON.stringify(json.insert[i].no_data_fields);
-                    }
-    
-                    queries.push(Omadi.data.getNodeTableInsertStatement({
-                        nid : json.insert[i].nid,
-                        perm_edit : json.insert[i].perm_edit,
-                        perm_delete : json.insert[i].perm_delete,
-                        created : json.insert[i].created,
-                        changed : json.insert[i].changed,
-                        title : json.insert[i].title,
-                        author_uid : json.insert[i].author_uid,
-                        flag_is_updated : 0,
-                        table_name : type,
-                        form_part : json.insert[i].form_part,
-                        changed_uid : json.insert[i].changed_uid,
-                        no_data_fields : no_data,
-                        viewed : json.insert[i].viewed
-                    }));
-    
-                    query = 'INSERT OR REPLACE  INTO ' + type + ' (nid, ';
+                Ti.API.debug("inserting " + type + " nodes");
+        
+                //Multiple objects
+                if (json.insert.length) {
                     
-                    fieldNames = [];
-                    for(field_name in instances){
-                        if(instances.hasOwnProperty(field_name)){
-                            fieldNames.push("`" + field_name + "`");
+                    for ( i = 0; i < json.insert.length; i++) {
+                                          
+                        //Insert into node table
+                        if ((json.insert[i].title === null) || (json.insert[i].title == 'undefined') || (json.insert[i].title === false)){
+                            json.insert[i].title = "No Title";
                         }
-                    }
-                    
-                    query += fieldNames.join(',');
-                    query += ') VALUES (' + json.insert[i].nid + ',';
-                    
-                    values = [];
-                    
-                    for(field_name in instances){
-                        if(instances.hasOwnProperty(field_name)){
-                            if ((json.insert[i][field_name] == null ) || (json.insert[i][field_name] == "undefined" )) {
-                                values.push("null");
+        
+                        //'update' is a flag to decide whether the node needs to be synced to the server or not
+                        no_data = '';
+                        if (!(json.insert[i].no_data_fields instanceof Array)) {
+                            no_data = JSON.stringify(json.insert[i].no_data_fields);
+                        }
+        
+                        queries.push(Omadi.data.getNodeTableInsertStatement({
+                            nid : json.insert[i].nid,
+                            perm_edit : json.insert[i].perm_edit,
+                            perm_delete : json.insert[i].perm_delete,
+                            created : json.insert[i].created,
+                            changed : json.insert[i].changed,
+                            title : json.insert[i].title,
+                            author_uid : json.insert[i].author_uid,
+                            flag_is_updated : 0,
+                            table_name : type,
+                            form_part : json.insert[i].form_part,
+                            changed_uid : json.insert[i].changed_uid,
+                            no_data_fields : no_data,
+                            viewed : json.insert[i].viewed
+                        }));
+        
+                        query = 'INSERT OR REPLACE  INTO ' + type + ' (nid, ';
+                        
+                        fieldNames = [];
+                        for(field_name in instances){
+                            if(instances.hasOwnProperty(field_name)){
+                                fieldNames.push("`" + field_name + "`");
                             }
-                            else{
-                                
-                                switch(instances[field_name].type){
-                                    case 'number_integer':
-                                    case 'number_decimal':
-                                    case 'omadi_reference':
-                                    case 'taxonomy_term_reference':
-                                    case 'user_reference':
-                                    case 'list_boolean':
-                                    case 'datestamp':
-                                    case 'omadi_time':
-                                    case 'image':
-                                        value = json.insert[i][field_name];
-                                        
-                                        if (typeof value === 'number') {
-                                            values.push(value);
-                                        }
-                                        else if(typeof value === 'string'){
-                                            value = parseInt(value, 10);
-                                            if(isNaN(value)){
-                                                values.push('null');
-                                            }
-                                            else{
+                        }
+                        
+                        query += fieldNames.join(',');
+                        query += ') VALUES (' + json.insert[i].nid + ',';
+                        
+                        values = [];
+                        
+                        for(field_name in instances){
+                            if(instances.hasOwnProperty(field_name)){
+                                if ((json.insert[i][field_name] == null ) || (json.insert[i][field_name] == "undefined" )) {
+                                    values.push("null");
+                                }
+                                else{
+                                    
+                                    switch(instances[field_name].type){
+                                        case 'number_integer':
+                                        case 'number_decimal':
+                                        case 'omadi_reference':
+                                        case 'taxonomy_term_reference':
+                                        case 'user_reference':
+                                        case 'list_boolean':
+                                        case 'datestamp':
+                                        case 'omadi_time':
+                                        case 'image':
+                                            value = json.insert[i][field_name];
+                                            
+                                            if (typeof value === 'number') {
                                                 values.push(value);
                                             }
-                                        }
-                                        else if ( value instanceof Array) {
-                                            value = treatArray(value, 1);
-        
-                                            // table structure:
-                                            // incremental, node_id, field_name, value
-                                            queries.push('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + json.insert[i].nid + ', \'' + field_name + '\',  \'' + value + '\' )');
-                                           
-                                            // Code must to be a number since this database field accepts only integers numbers
-                                            // Token to indentify array of numbers is 7411176117105122
-                                            values.push("7411317618171051229");
-                                        }
-                                        else {
-                                            
-                                            values.push("null");
-                                        }
-                                        break;
-                                        
-                                    default:
-                                        value = json.insert[i][field_name];
-                                        
-                                        if (value instanceof Array) {
-                                            if (instances[field_name].type === 'rules_field') {
-                                                values.push("'" + dbEsc(JSON.stringify(value)) + "'");
+                                            else if(typeof value === 'string'){
+                                                value = parseInt(value, 10);
+                                                if(isNaN(value)){
+                                                    values.push('null');
+                                                }
+                                                else{
+                                                    values.push(value);
+                                                }
                                             }
-                                            else {
-                                                value = treatArray(value, 2);
-        
+                                            else if ( value instanceof Array) {
+                                                value = treatArray(value, 1);
+            
                                                 // table structure:
                                                 // incremental, node_id, field_name, value
                                                 queries.push('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + json.insert[i].nid + ', \'' + field_name + '\',  \'' + value + '\' )');
-                                                
+                                               
                                                 // Code must to be a number since this database field accepts only integers numbers
                                                 // Token to indentify array of numbers is 7411176117105122
-                                                values.push('"7411317618171051229"');
-        
+                                                values.push("7411317618171051229");
                                             }
-                                        }
-                                        else {
-                                            values.push("'" + dbEsc(value) + "'");
-                                        }
-                                        
-                                        break;
+                                            else {
+                                                
+                                                values.push("null");
+                                            }
+                                            break;
+                                            
+                                        default:
+                                            value = json.insert[i][field_name];
+                                            
+                                            if (value instanceof Array) {
+                                                if (instances[field_name].type === 'rules_field') {
+                                                    values.push("'" + dbEsc(JSON.stringify(value)) + "'");
+                                                }
+                                                else {
+                                                    value = treatArray(value, 2);
+            
+                                                    // table structure:
+                                                    // incremental, node_id, field_name, value
+                                                    queries.push('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + json.insert[i].nid + ', \'' + field_name + '\',  \'' + value + '\' )');
+                                                    
+                                                    // Code must to be a number since this database field accepts only integers numbers
+                                                    // Token to indentify array of numbers is 7411176117105122
+                                                    values.push('"7411317618171051229"');
+            
+                                                }
+                                            }
+                                            else {
+                                                values.push("'" + dbEsc(value) + "'");
+                                            }
+                                            
+                                            break;
+                                    }
                                 }
                             }
                         }
+                        
+                        query += values.join(",");
+                        query += ')';
+                        
+                        //Ti.API.debug(query);
+                         
+                        queries.push(query);
+                        
+                        
+                        if(type == 'notification' && json.insert[i].viewed == 0){
+                            notifications = Ti.App.Properties.getObject('newNotifications', {
+                                count: 0,
+                                nid: 0
+                            });
+                            
+                            Ti.App.Properties.setObject('newNotifications', {
+                                count: notifications.count + 1,
+                                nid: json.insert[i].nid
+                            });
+                        }
+                        
+                        if(typeof json.insert[i].__negative_nid !== 'undefined'){
+                            Ti.API.debug("Deleting nid: " + json.insert[i].__negative_nid);
+                            
+                            queries.push('DELETE FROM ' + type + ' WHERE nid=' + json.insert[i].__negative_nid);
+                            queries.push('DELETE FROM node WHERE nid=' + json.insert[i].__negative_nid);
+                            
+                            queries.push("UPDATE _photos SET nid =" + json.insert[i].nid + " WHERE nid=" + json.insert[i].__negative_nid);
+                            
+                            
+                            // Make sure we don't add a duplicate from doing a next_part action directly after a node save
+                            //if(typeof Ti.UI.currentWindow.nid !== 'undefined' && Ti.UI.currentWindow.nid == json.insert[i].__negative_nid){
+                            //    Ti.API.error("SWITCHING UP THE NID from " + json.insert[i].__negative_nid + " to " + json.insert[i].nid);
+                                
+                            Ti.App.fireEvent('switchedItUp', {
+                                negativeNid: json.insert[i].__negative_nid,
+                                positiveNid: json.insert[i].nid
+                            });
+                                
+                                
+                                //Ti.UI.currentWindow.nid = json.insert[i].nid;
+                                //Ti.UI.currentWindow.node = loadNode(json.insert[i].nid);
+                            //}
+                            //Ti.fire negativeNodesSavedFromServer';
+                            //Ti.API.fireEvent('negativeNodesSavedFromServer', {
+                            //   negativeNid: json.insert[i].__negative_nid,
+                            //   positiveNid: json.insert[i].nid
+                            //});
+                            
+                        } 
                     }
-                    
-                    query += values.join(",");
-                    query += ')';
-                    
-                    //Ti.API.debug(query);
-                     
-                    queries.push(query);
-                    
-                    
-                    if(type == 'notification' && json.insert[i].viewed == 0){
-                        notifications = Ti.App.Properties.getObject('newNotifications', {
-                            count: 0,
-                            nid: 0
-                        });
-                        
-                        Ti.App.Properties.setObject('newNotifications', {
-                            count: notifications.count + 1,
-                            nid: json.insert[i].nid
-                        });
-                    }
-                    
-                    if(typeof json.insert[i].__negative_nid !== 'undefined'){
-                        Ti.API.debug("Deleting nid: " + json.insert[i].__negative_nid);
-                        
-                        queries.push('DELETE FROM ' + type + ' WHERE nid=' + json.insert[i].__negative_nid);
-                        queries.push('DELETE FROM node WHERE nid=' + json.insert[i].__negative_nid);
-                        
-                        queries.push("UPDATE _photos SET nid =" + json.insert[i].nid + " WHERE nid=" + json.insert[i].__negative_nid);
-                        
-                        
-                        // Make sure we don't add a duplicate from doing a next_part action directly after a node save
-                        //if(typeof Ti.UI.currentWindow.nid !== 'undefined' && Ti.UI.currentWindow.nid == json.insert[i].__negative_nid){
-                        //    Ti.API.error("SWITCHING UP THE NID from " + json.insert[i].__negative_nid + " to " + json.insert[i].nid);
-                            
-                        Ti.App.fireEvent('switchedItUp', {
-                            negativeNid: json.insert[i].__negative_nid,
-                            positiveNid: json.insert[i].nid
-                        });
-                            
-                            
-                            //Ti.UI.currentWindow.nid = json.insert[i].nid;
-                            //Ti.UI.currentWindow.node = loadNode(json.insert[i].nid);
-                        //}
-                        //Ti.fire negativeNodesSavedFromServer';
-                        //Ti.API.fireEvent('negativeNodesSavedFromServer', {
-                        //   negativeNid: json.insert[i].__negative_nid,
-                        //   positiveNid: json.insert[i].nid
-                        //});
-                        
-                    } 
                 }
             }
-        }
+            
+            if(json['delete']){
+                if (json['delete'].length) {
+                    for ( i = 0; i < json['delete'].length; i++) {
+                        queries.push("DELETE FROM node WHERE nid = " + json['delete'][i].nid);
+                        queries.push("DELETE FROM " + type + " WHERE nid = " + json['delete'][i].nid);
+                    }
+                }
+            }
+        
     
-        closeDB = false;
-        if(typeof mainDB === 'undefined'){
-            mainDB = Omadi.utils.openMainDatabase();
-            closeDB = true;
-        }
-        //mainDB.execute("BEGIN IMMEDIATE TRANSACTION");
-        
-        numSets = 0;
-        
-        mainDB.execute("BEGIN IMMEDIATE TRANSACTION");
-        
-        if(progress != null){
-            for(i = 0; i < queries.length; i ++){
-                mainDB.execute(queries[i]);
-                if(i % 4 == 0){
-                    progress.set();
-                    numSets ++;
+            closeDB = false;
+            if(typeof mainDB === 'undefined'){
+                mainDB = Omadi.utils.openMainDatabase();
+                closeDB = true;
+            }
+            //mainDB.execute("BEGIN IMMEDIATE TRANSACTION");
+            
+            numSets = 0;
+            
+            mainDB.execute("BEGIN IMMEDIATE TRANSACTION");
+            
+            if(progress != null){
+                for(i = 0; i < queries.length; i ++){
+                    mainDB.execute(queries[i]);
+                    if(i % 4 == 0){
+                        progress.set();
+                        numSets ++;
+                    }
                 }
             }
-        }
-        else{
-            for(i = 0; i < queries.length; i ++){
-                mainDB.execute(queries[i]);
+            else{
+                for(i = 0; i < queries.length; i ++){
+                    mainDB.execute(queries[i]);
+                }
             }
+            
+            mainDB.execute("COMMIT TRANSACTION");
         }
-        
-        mainDB.execute("COMMIT TRANSACTION");
         
         if(progress != null && typeof json.insert != 'undefined'){
             for(i = numSets; i < json.insert.length; i ++){
