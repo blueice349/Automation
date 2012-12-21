@@ -1,5 +1,7 @@
 Omadi.display = Omadi.display || {};
 
+/*jslint eqeq:true*/
+
 Omadi.display.showBigImage = function(imageView) {
 	"use strict";
 	
@@ -149,6 +151,96 @@ Omadi.display.openMainMenuWindow = function(){"use strict";
     return mainMenuWindow;
 };
 
+/** Dispaly an option dialog to select view, edit, next_part, etc.  
+ *  The only requirement is that each row has the nid set for the node
+ *  so that e.row.nid can be referenced
+ *  Also, the row is set to a background color of #fff when going to view or form
+ */ 
+Omadi.display.showDialogFormOptions = function(e){"use strict";
+    var db, result, options, form_parts, to_type, to_bundle, isEditEnabled, form_part, 
+        node_type, bundle, hasCustomCopy, postDialog;
+    
+    db = Omadi.utils.openMainDatabase();
+    result = db.execute('SELECT table_name, form_part, perm_edit FROM node WHERE nid=' + e.row.nid);
+    
+    isEditEnabled = false;
+    hasCustomCopy = false;
+    options = [];
+    form_parts = [];
+    
+    if(result.fieldByName('perm_edit', Ti.Database.FIELD_TYPE_INT) === 1){
+        isEditEnabled = true;   
+    }
+    
+    form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
+    node_type = result.fieldByName('table_name');
+    
+    result.close();
+    db.close();
+    
+    bundle = Omadi.data.getBundle(node_type);
+    
+    if(isEditEnabled){
+        if(bundle.data.form_parts != null && bundle.data.form_parts != ""){
+            if(bundle.data.form_parts.parts.length >= form_part + 2) { 
+               
+                options.push(bundle.data.form_parts.parts[form_part + 1].label);
+                form_parts.push(form_part + 1);
+            }
+        }
+        
+        options.push('Edit');
+        form_parts.push(form_part);
+    }
+    
+    options.push('View');
+    form_parts.push('_view');
+    
+    if(typeof bundle.data.custom_copy !== 'undefined'){
+        for(to_type in bundle.data.custom_copy){
+            if(bundle.data.custom_copy.hasOwnProperty(to_type)){
+                to_bundle = Omadi.data.getBundle(to_type);
+                if(to_bundle){
+                    options.push("Copy to " + to_bundle.label);
+                    form_parts.push(to_type);
+                    hasCustomCopy = true;
+                }
+            }
+        }
+    }
+    
+    
+    if(!isEditEnabled && !hasCustomCopy){
+        e.row.setBackgroundColor('#fff');
+        Omadi.display.openViewWindow(node_type, e.row.nid);
+    }
+    else{
+        
+        options.push('Cancel');
+        form_parts.push('_cancel');
+        
+        postDialog = Titanium.UI.createOptionDialog();
+        postDialog.options = options;
+        postDialog.eventRow = e.row;
+        postDialog.show();
+        
+        postDialog.addEventListener('click', function(ev) {
+            var form_part = form_parts[ev.index];
+            
+            if(form_part == '_cancel'){
+                Ti.API.info("Cancelled");
+            }
+            else if(form_part == '_view'){
+                ev.source.eventRow.setBackgroundColor('#fff');
+                Omadi.display.openViewWindow(node_type, e.row.nid);
+            }
+            else if (ev.index !== -1 && isEditEnabled === true){
+                ev.source.eventRow.setBackgroundColor('#fff');
+                Omadi.display.openFormWindow(node_type, e.row.nid, form_part);
+            }
+        }); 
+    }
+};
 
 Omadi.display.displayLargeImage = function(imageView, nid, file_id) {
 	"use strict";

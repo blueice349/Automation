@@ -293,17 +293,24 @@ function setupAndroidMenu() {"use strict";
 }
 
 function setupBottomButtons() {"use strict";
-    var alertsView, alertsImg, alertsLabel, draftsView, draftsImg, draftsLabel, actionsView, actionsImg, actionsLabel;
+    var alertsView, alertsImg, alertsLabel, draftsView, draftsImg, draftsLabel, 
+        actionsView, actionsImg, actionsLabel, recentView, recentLabel, recentImg;
 
     alertsView = Ti.UI.createView({
         backgroundSelectedColor : 'orange',
         focusable : true,
-        width : '50%'
+        width : '33%',
+        height: 45,
+        layout: 'vertical',
+        color: '#fff'
     });
     databaseStatusView.add(alertsView);
 
     alertsImg = Ti.UI.createImageView({
-        image : '/images/msg3.png'
+        image : '/images/msg3.png',
+        height: 22,
+        width: 22,
+        top: 2
     });
     alertsLabel = Ti.UI.createLabel({
         text : 'Alerts',
@@ -311,7 +318,10 @@ function setupBottomButtons() {"use strict";
             fontSize : 14
         },
         height : Ti.UI.SIZE,
-        bottom : 0
+        bottom : 0,
+        color: '#fff',
+        width: Ti.UI.SIZE,
+        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });
 
     alertsView.add(alertsImg);
@@ -333,13 +343,19 @@ function setupBottomButtons() {"use strict";
     draftsView = Ti.UI.createView({
         backgroundSelectedColor : 'orange',
         focusable : true,
-        width : '50%'
+        width : '33%',
+        height: 45,
+        layout: 'vertical',
+        color: '#fff'
     });
 
     databaseStatusView.add(draftsView);
 
     draftsImg = Ti.UI.createImageView({
-        image : '/images/drafts.png'
+        image : '/images/drafts.png',
+        height: 22,
+        width: 22,
+        top: 2
     });
 
     draftsLabel = Ti.UI.createLabel({
@@ -348,7 +364,10 @@ function setupBottomButtons() {"use strict";
             fontSize : 14
         },
         height : Ti.UI.SIZE,
-        bottom : 0
+        bottom : 0,
+        color: '#fff',
+        width: Ti.UI.SIZE,
+        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });
 
     draftsView.add(draftsImg);
@@ -357,27 +376,57 @@ function setupBottomButtons() {"use strict";
         Omadi.display.openDraftsWindow();
     });
 
-    //View settings (Draft/ Alert/ Home)
-    draftsView.height = alertsView.height = 45;
-    draftsView.layout = alertsView.layout = 'vertical';
+    recentView = Ti.UI.createView({
+        backgroundSelectedColor : 'orange',
+        focusable : true,
+        width : '33%',
+        height: 45,
+        layout: 'vertical',
+        color: '#fff'
+    });
+    databaseStatusView.add(recentView);
+    
+    recentImg = Ti.UI.createImageView({
+        image : '/images/clock.png',
+        height: 22,
+        width: 22,
+        top: 2
+    });
+    recentLabel = Ti.UI.createLabel({
+        text : 'Recent',
+        font : {
+            fontSize : 14
+        },
+        height : Ti.UI.SIZE,
+        bottom : 0,
+        color: '#fff',
+        width: Ti.UI.SIZE,
+        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+    });
 
-    //Label settings (Draft/ Alert/ Home)
-    draftsLabel.color = alertsLabel.color = '#FFFFFF';
-    draftsLabel.height = alertsLabel.height = 21;
-    draftsLabel.width = alertsLabel.width = Ti.UI.SIZE;
-    draftsLabel.textAlign = alertsLabel.textAlign = 'center';
+    recentView.add(recentImg);
+    recentView.add(recentLabel);
+    recentView.addEventListener('click', function() {
+        var recentWindow;
 
-    //Image view setting (Draft/ Alert/ Home)
-    alertsImg.height = draftsImg.height = 22;
-    alertsImg.width = draftsImg.width = 22;
-    draftsImg.top = alertsImg.top = 2;
+        recentWindow = Ti.UI.createWindow({
+            navBarHidden : true,
+            url : '/main_windows/recent.js'
+        });
+
+        Omadi.display.loading();
+
+        recentWindow.addEventListener('open', Omadi.display.doneLoading);
+        recentWindow.open();
+    });
+
 
     if (Ti.App.isIOS) {
-        draftsView.width = alertsView.width = Ti.Platform.displayCaps.platformWidth / 3;
+        draftsView.width = alertsView.width = recentView.width = Ti.Platform.displayCaps.platformWidth / 4;
 
         actionsView = Ti.UI.createView({
             height : Ti.UI.SIZE,
-            width : Ti.Platform.displayCaps.platformWidth / 3,
+            width : Ti.Platform.displayCaps.platformWidth / 4,
             layout : 'vertical'
         });
         databaseStatusView.add(actionsView);

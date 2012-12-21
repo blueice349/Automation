@@ -1,60 +1,119 @@
 /*jslint eqeq:true, plusplus: true*/ 
 
 Ti.include('/lib/functions.js');
-    
-/*global Omadi*/
 
 var curWin = Ti.UI.currentWindow;
+var tabGroup;
 
-function getRecentNodeData(){"use strict";
-    var db, result, nodes = [];
+function createiOSToolbar(){"use strict";
+    var back, space, toolbar, items, titleLabel;
     
-    db = Omadi.utils.openMainDatabase();
-    result = db.execute("SELECT title, table_name, nid, viewed FROM node ORDER BY viewed DESC LIMIT 25");
-    
-    while(result.isValidRow()){
+    if(Ti.App.isIOS){
         
-        nodes.push({
-           title: result.fieldByName('title'),
-           type: result.fieldByName('table_name'),
-           nid: result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT),
-           viewed: result.fieldByName('viewed', Ti.Database.FIELD_TYPE_INT)
+        back = Ti.UI.createButton({
+            title : 'Back',
+            style : Ti.UI.iPhone.SystemButtonStyle.BORDERED
         });
         
-        result.next();
-    }
-    db.close();
-    
-    return nodes;
-}
-
-(function(){"use strict";
-    var i, tableView, nodeData, row, titleLabel, tableData = [];
-    
-    nodeData = getRecentNodeData();
-    
-    tableView = Ti.UI.createTableView({
-        width: '100%',
-        bottom: 0
-    });
-    
-    for(i = 0; i < nodeData.length; i ++){
-        row = Ti.UI.createTableViewRow({
-            width: '100%',
-            height: Ti.UI.SIZE
+        back.addEventListener('click', function() {
+            curWin.close();
+            tabGroup.close();
+        });
+        
+        space = Ti.UI.createButton({
+            systemButton: Ti.UI.iPhone.SystemButton.FLEXIBLE_SPACE
         });
         
         titleLabel = Ti.UI.createLabel({
-            text: nodeData[i].title 
+            text: 'Recent Items',
+            color: '#666',
+            font: {
+                fontSize: 16,
+                fontWeight: 'bold'
+            }
         });
         
-        row.add(titleLabel);
+        items = [back, space, titleLabel, space];
         
-        tableData.add(row);
+        // create and add toolbar
+        toolbar = Ti.UI.iOS.createToolbar({
+            items: items,
+            top: 0,
+            borderTop: false,
+            borderBottom: false,
+            zIndex: 1,
+            height: 45
+        });
+        curWin.add(toolbar);
     }
+}
+
+(function(){"use strict";
+    var tableView, recentlySavedTab, recentlySavedWindow, recentlyViewedTab, recentlyViewedWindow;
     
-    tableView.setData(tableData);
+    curWin.addEventListener("android:back", function(){
+       curWin.close(); 
+    });
     
-    curWin.add(tableView);
+    Ti.App.addEventListener('loggingOut', function(){
+        Ti.UI.currentWindow.close();
+    });
+    
+    Ti.App.addEventListener("savedNode", function(){
+        if(Ti.App.isAndroid){
+            Ti.UI.currentWindow.close();
+        }
+        else{
+            Ti.UI.currentWindow.hide();
+            // Close the window after the maximum timeout for a node save
+            setTimeout(Ti.UI.currentWindow.close, 65000);
+        }
+    });
+    
+    createiOSToolbar();
+    
+    recentlySavedWindow = Ti.UI.createWindow({
+       url: 'recentTable.js',
+       orderField: 'changed' 
+    });
+    
+    recentlySavedTab = Ti.UI.createTab({
+        window: recentlySavedWindow,
+        title: 'Recently Saved',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0
+    });
+    
+    recentlyViewedWindow = Ti.UI.createWindow({
+       url: 'recentTable.js',
+       orderField: 'viewed' 
+    });
+    
+    recentlyViewedTab = Ti.UI.createTab({
+        //window: recentlySavedWindow,
+        title: 'Recently Viewed',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0
+    });
+    
+    tabGroup = Ti.UI.createTabGroup({
+       top: 0,
+       bottom: 0,
+       left: 0,
+       right: 0,
+       width: '100%'
+    });
+    
+    tabGroup.addTab(recentlySavedTab);
+    tabGroup.addTab(recentlyViewedTab);
+    
+    tabGroup.open();
+    //curWin.add(tabGroup);
     
 }());
+
+
