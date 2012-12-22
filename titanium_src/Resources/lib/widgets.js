@@ -432,7 +432,7 @@ Omadi.widgets.label = {
                 fontWeight : 'bold'
             },
             textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
-            width : '96%',
+            left: 16,
             touchEnabled : false,
             height : Ti.UI.SIZE
         });
