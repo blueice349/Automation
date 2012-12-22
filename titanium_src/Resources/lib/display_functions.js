@@ -200,7 +200,7 @@ Omadi.display.showDialogFormOptions = function(e){"use strict";
         for(to_type in bundle.data.custom_copy){
             if(bundle.data.custom_copy.hasOwnProperty(to_type)){
                 to_bundle = Omadi.data.getBundle(to_type);
-                if(to_bundle){
+                if(to_bundle && to_bundle.can_create == 1){
                     options.push("Copy to " + to_bundle.label);
                     form_parts.push(to_type);
                     hasCustomCopy = true;
@@ -239,6 +239,35 @@ Omadi.display.showDialogFormOptions = function(e){"use strict";
                 Omadi.display.openFormWindow(node_type, e.row.nid, form_part);
             }
         }); 
+    }
+};
+
+Omadi.display.getNodeTypeImagePath = function(type){"use strict";
+    switch(type){
+        case 'lead':
+        case 'contact':
+        case 'account':
+        case 'boot':
+        case 'tow':
+        case 'drop_fee':
+        case 'incident_report':
+        case 'notification':
+        case 'pd':
+        case 'potential':
+        case 'restriction':
+        case 'service':
+        case 'tag':
+        case 'task':
+        case 'cod':
+        case 'cash_call':
+        case 'hourly':
+        case 'repo':
+        case 'ticket':
+        
+            return '/images/icons/' + type + ".png";
+            
+        default:
+            return '/images/icons/settings.png';
     }
 };
 
@@ -399,50 +428,52 @@ Omadi.display.hideLoadingIndicator = function() { "use strict";
    // }
 };
 
+// Omadi.display.currentOrientaion = 0;
+// 
+// Ti.Gesture.addEventListener('orientationchange', function(e) {"use strict";
+    // Omadi.display.currentOrientaion = e.orientation;
+// });
+
 Omadi.display.loading = function(message){"use strict";
+    var height, width;
     
     if(typeof message === 'undefined'){
         message = 'Loading...';
     }
     
-    // if(Ti.App.isAndroid){
-        // indicator = Titanium.UI.createActivityIndicator({
-            // height : Ti.UI.SIZE,
-            // message : message,
-            // width : Ti.UI.SIZE,
-            // color : '#fff'
-        // });
-//         
-        // indicator.show();
-//         
-        // Ti.App.addEventListener('displayDoneLoading', function(){
-            // indicator.hide();
-        // });
+    // Ti.Gesture.fireEvent('orientationchange');
+//     
+    // if(Omadi.display.currentOrientation == Ti.UI.PORTRAIT || Omadi.display.currentOrientation == Ti.UI.UPSIDE_PORTRAIT){
+        // height = Math.max(Ti.Platform.displayCaps.getPlatformHeight(), Ti.Platform.displayCaps.getPlatformWidth());
+        // width = Math.min(Ti.Platform.displayCaps.getPlatformHeight(), Ti.Platform.displayCaps.getPlatformWidth());
     // }
     // else{
-        indicator = Ti.UI.createLabel({
-           top: 0,
-           bottom: 0,
-           left: 0,
-           right: 0,
-           opacity: 0.85,
-           backgroundColor: '#fff',
-           zIndex: 1000,
-           color: '#666',
-           text: message,
-           font: {
-               fontWeight: 'bold',
-               fontSize: 35
-           },
-           textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
-        });
-        
-        Ti.UI.currentWindow.add(indicator);
-        
-        indicator.addEventListener('longpress', function(e){
-           //e.source.hide(); 
-        });
-    //}
+        // height = Math.min(Ti.Platform.displayCaps.getPlatformHeight(), Ti.Platform.displayCaps.getPlatformWidth());
+        // width = Math.max(Ti.Platform.displayCaps.getPlatformHeight(), Ti.Platform.displayCaps.getPlatformWidth());
+    // }
+    
+    indicator = Ti.UI.createLabel({
+       top: 0,
+       bottom: 0,
+       left: 0,
+       right: 0,
+       opacity: 0.85,
+       backgroundColor: '#fff',
+       zIndex: 1000,
+       color: '#666',
+       text: message,
+       font: {
+           fontWeight: 'bold',
+           fontSize: 35
+       },
+       textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+    });
+    
+    Ti.UI.currentWindow.add(indicator);
+    
+    indicator.addEventListener('longpress', function(e){
+       //e.source.hide(); 
+    });
 };
 
 Omadi.display.doneLoading = function(){"use strict";

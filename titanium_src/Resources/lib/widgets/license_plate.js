@@ -105,8 +105,11 @@ Omadi.widgets.license_plate = {
                 /*global setConditionallyRequiredLabels*/
 
                 if (e.source.lastValue != e.source.value) {
-
-                    tempValue = e.source.value.replace(/[^0-9a-zA-Z]/g, '');
+                    tempValue = "";
+                    if(e.source.value !== null){
+                        tempValue = (e.source.value + "".toString()).replace(/[^0-9a-zA-Z]/g, '');
+                    }
+                    
                     if (tempValue != e.source.value) {
                         e.source.value = tempValue;
                         if (Ti.App.isAndroid) {

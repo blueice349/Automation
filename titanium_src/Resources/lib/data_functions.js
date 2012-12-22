@@ -72,18 +72,19 @@ Omadi.data.getLastUpdateTimestamp = function(){ "use strict";
     //return Ti.App.Properties.getDouble("sync_timestamp", 0);
 };
 
-Omadi.data.getBundle = function(type){
-    "use strict";
+Omadi.data.getBundle = function(type){"use strict";
     var db, result, bundle;
     
     db = Omadi.utils.openMainDatabase();
-    result = db.execute('SELECT _data, display_name FROM bundles WHERE bundle_name="' + type + '"');
+    result = db.execute('SELECT _data, display_name, can_create, can_view FROM bundles WHERE bundle_name="' + type + '"');
     
     if(result.isValidRow()){
         bundle = {
             type: type,
             data: JSON.parse(result.fieldByName('_data')),
-            label: result.fieldByName('display_name')
+            label: result.fieldByName('display_name'),
+            can_create: result.fieldByName('can_create', Ti.Database.FIELD_TYPE_INT),
+            can_view: result.fieldByName('can_view', Ti.Database.FIELD_TYPE_INT)
         };
     }
     
@@ -377,26 +378,26 @@ Omadi.data.saveNode = function(node){"use strict";
         query += ")";  
     
     
-        Ti.API.error(query);
+        //Ti.API.error(query);
         
         db.execute(query);
         
         try{
             if (node._isDraft) {
                 if (node.nid > 0) {
-                    db.execute('UPDATE node SET changed="' + node.changed + '", changed_uid=' + node.changed_uid + ', title="' + node.title + '" , flag_is_updated=3, table_name="' + node.type + '", form_part =' + node.form_part + ', no_data_fields=\'' + node.no_data + '\', viewed=\'1\' WHERE nid=' + node.nid);
+                    db.execute('UPDATE node SET changed="' + node.changed + '", changed_uid=' + node.changed_uid + ', title="' + node.title + '" , flag_is_updated=3, table_name="' + node.type + '", form_part =' + node.form_part + ', no_data_fields=\'' + node.no_data + '\', viewed=' + node.viewed + ' WHERE nid=' + node.nid);
                 }
                 else {
-                    db.execute('INSERT INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name , form_part, no_data_fields, viewed, sync_hash) VALUES (' + node.nid + ', ' + node.created + ', ' + node.changed + ', "' + node.title + '" , ' + node.author_uid + ',' + node.changed_uid + ', 3 , "' + node.type + '", ' + node.form_part + ', \'' + node.no_data + '\', \'1\', \'' + node.sync_hash + '\')');
+                    db.execute('INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name , form_part, no_data_fields, viewed, sync_hash) VALUES (' + node.nid + ', ' + node.created + ', ' + node.changed + ', "' + node.title + '" , ' + node.author_uid + ',' + node.changed_uid + ', 3 , "' + node.type + '", ' + node.form_part + ', \'' + node.no_data + '\', ' + node.viewed + ', \'' + node.sync_hash + '\')');
                 }
             }
             else if (node.nid > 0) {
                // Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\'' + no_data_fields_content + '\' WHERE nid=' + win.nid);
-                db.execute('UPDATE node SET changed="' + node.changed + '", changed_uid=' + node.changed_uid + ', title="' + node.title + '" , flag_is_updated=1, table_name="' + node.type + '", form_part =' + node.form_part + ', no_data_fields=\'' + node.no_data + '\', viewed=\'1\' WHERE nid=' + node.nid);
+                db.execute('UPDATE node SET changed="' + node.changed + '", changed_uid=' + node.changed_uid + ', title="' + node.title + '" , flag_is_updated=1, table_name="' + node.type + '", form_part =' + node.form_part + ', no_data_fields=\'' + node.no_data + '\', viewed=' + node.viewed + ' WHERE nid=' + node.nid);
             }
             else {
                 //Ti.API.info('INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '", ' + win.region_form + ', \'' + no_data_fields_content + '\')');
-                db.execute('INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash) VALUES (' + node.nid + ', ' + node.created + ', ' + node.changed + ', "' + node.title + '" , ' + node.author_uid + ',' + node.changed_uid + ', 1 , "' + node.type + '"  , ' + node.form_part + ', \'' + node.no_data + '\', \'1\', \'' + node.sync_hash + '\')');
+                db.execute('INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash) VALUES (' + node.nid + ', ' + node.created + ', ' + node.changed + ', "' + node.title + '" , ' + node.author_uid + ',' + node.changed_uid + ', 1 , "' + node.type + '"  , ' + node.form_part + ', \'' + node.no_data + '\', ' + node.viewed + ', \'' + node.sync_hash + '\')');
             }
             
             db.execute('UPDATE _photos SET nid=' + node.nid + ' WHERE nid = 0');

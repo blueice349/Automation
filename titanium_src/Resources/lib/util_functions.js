@@ -66,24 +66,28 @@ Omadi.utils.getTimeAgoStr = function(unix_timestamp) {'use strict';
 
     var d_lastSync, d_now, timeDiff, days, hours, minutes, seconds, timeStr;
 
-    d_lastSync = new Date(unix_timestamp * 1000);
-    d_now = new Date();
+    d_now = (new Date()).getTime() / 1000;
 
-    timeDiff = d_now - d_lastSync;
+    timeDiff = d_now - parseInt(unix_timestamp, 10);
+    
+    if(timeDiff === 0){
+        return '0 seconds ago';
+    }
+    
     // time difference in ms
-    days = parseInt(timeDiff / (1000 * 60 * 60 * 24), 10);
+    days = Math.floor(timeDiff / (3600 * 24));
     //get days
-    timeDiff = Math.round(timeDiff % (1000 * 60 * 60 * 24));
+    timeDiff = Math.round(timeDiff % (3600 * 24));
 
-    hours = parseInt(timeDiff / (1000 * 60 * 60), 10);
+    hours = Math.floor(timeDiff / 3600);
     // get hours
-    timeDiff = Math.round(timeDiff % (1000 * 60 * 60));
+    timeDiff = Math.round(timeDiff % (3600));
 
-    minutes = parseInt(timeDiff / (1000 * 60), 10);
+    minutes = Math.floor(timeDiff / 60);
     // get minutes
-    timeDiff = Math.round(timeDiff % (1000 * 60));
+    timeDiff = Math.round(timeDiff % (60));
 
-    seconds = parseInt(timeDiff / 1000, 10);
+    seconds = Math.floor(timeDiff);
     // get seconds
 
     timeStr = "";

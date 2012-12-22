@@ -18,6 +18,7 @@ var regionViews = {};
 var regions = {};
 var node;
 var cameraAndroid;
+var wrapperView;
 
 if (Ti.App.isAndroid) {
     cameraAndroid = require('com.omadi.camera');
@@ -77,7 +78,7 @@ function get_android_menu(menu_exists) {"use strict";
         
     
         btn_tt.push('Save');
-        btn_tt.push('Draft');
+        btn_tt.push('Save as Draft');
         btn_tt.push('Cancel');
     
         menu_first = menu.add({
@@ -87,7 +88,7 @@ function get_android_menu(menu_exists) {"use strict";
         menu_first.setIcon("/images/save.png");
     
         menu_second = menu.add({
-            title : 'Draft',
+            title : 'Save as Draft',
             order : 2
         });
         menu_second.setIcon("/images/drafts_android.png");
@@ -719,6 +720,8 @@ function save_form_data(saveType) {"use strict";
         node._isDraft = false;
     }
     
+    node.viewed = Omadi.utils.getUTCTimestamp();
+    
     form_errors = [];
     
     if(node._isDraft === false){
@@ -749,7 +752,7 @@ function save_form_data(saveType) {"use strict";
                 var server_time = new Date(actual_time);
         
             }*/
-
+            
             doFormSave(node, saveType);
         }
         catch(ex){
@@ -763,7 +766,7 @@ function save_form_data(saveType) {"use strict";
 
 
 
-function bottomButtons() {"use strict";
+function addiOSToolbar() {"use strict";
     /*jslint eqeq: true, vars: true*/
    /*global Omadi*/
     
@@ -794,9 +797,13 @@ function bottomButtons() {"use strict";
             style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
         });
 
-        actions.addEventListener('click', function() {
+        actions.addEventListener('click', function(e) {
             var bundle;
-    
+            
+            if(typeof Omadi.widgets.currentlyFocusedField !== 'undefined'){
+                Omadi.widgets.currentlyFocusedField.blur();
+            }
+            
             bundle = Omadi.data.getBundle(node.type);
             var btn_tt = [];
             var btn_id = [];
@@ -814,7 +821,7 @@ function bottomButtons() {"use strict";
                 }
             }
            
-            btn_tt.push('Draft');
+            btn_tt.push('Save as Draft');
             btn_tt.push('Cancel');
 
             var postDialog = Titanium.UI.createOptionDialog();
@@ -855,9 +862,11 @@ function bottomButtons() {"use strict";
             items : [back, space, label, space, actions],
             top : 0,
             borderTop : false,
-            borderBottom : true
+            borderBottom : false,
+            height: Ti.UI.SIZE
         });
-        Ti.UI.currentWindow.add(toolbar);
+        
+        wrapperView.add(toolbar);
         
     }
     catch(evt) {
@@ -1018,8 +1027,6 @@ function changeViolationFieldOptions(violation_field_name){"use strict";
                     }
                 }
                 
-                //Ti.API.debug(violationTextValues);
-                
                 // Set the violations to possibly fewer violations
                 Omadi.widgets.setValueWidgetProperty(violation_field_name, ['dbValue'], violationDBValues);
                 
@@ -1065,47 +1072,19 @@ function setupViolationField(){"use strict";
             if(typeof instance.widget !== 'undefined' && instance.widget.type == 'violation_select'){
                 
                 widget = instance.widget;
-                Ti.API.error(JSON.stringify(widget));
                 
                 if(typeof fieldWrappers[field_name] !== 'undefined'){
                     //valueWidget = Omadi.widgets.getValueWidget(field_name);
                     
-                    
                     if (widget.rules_field_name != null && widget.rules_field_name != "") {
-                        Ti.API.error(JSON.stringify(widget.rules_field_name));
-                        
+                       
                         Omadi.widgets.setValueWidgetProperty(widget.rules_field_name, 'onChangeCallbacks', [changeViolationFieldOptions]);
                         Omadi.widgets.setValueWidgetProperty(widget.rules_field_name, 'onChangeCallbackArgs', [[field_name]]);
                         
-                        //referenceWidget.onChangeCallbacks.push(changeViolationFieldOptions);
-                        
-                        //var _reffer_index = entityArr[content_widget['rules_field_name']][0]['reffer_index'];
-                        //var _rulesFieldArr;
-                        //if (content[_reffer_index].rulesFieldArr == null) {
-                        //    _rulesFieldArr = [];
-                        //    content[_reffer_index].rulesFieldArr = _rulesFieldArr;
-                        //}
-                        //_rulesFieldArr = content[_reffer_index].rulesFieldArr;
-                        //_rulesFieldArr.push(content[j].reffer_index);
-                        //content[_reffer_index].rulesFieldArr = _rulesFieldArr;
-                        
                         if (widget.rules_violation_time_field_name != null && widget.rules_violation_time_field_name != "") {
-                            Ti.API.error(JSON.stringify(widget.rules_violation_time_field_name));
                             
                             Omadi.widgets.setValueWidgetProperty(widget.rules_violation_time_field_name, 'onChangeCallbacks', [changeViolationFieldOptions]);
                             Omadi.widgets.setValueWidgetProperty(widget.rules_violation_time_field_name, 'onChangeCallbackArgs', [[field_name]]);
-                            
-                            //referenceWidget.onChangeCallbacks.push(changeViolationFieldOptions);
-                            
-                            //var _reffer_index = entityArr[content_widget['rules_field_name']][0]['reffer_index'];
-                            //var _rulesFieldArr;
-                            //if (content[_reffer_index].rulesFieldArr == null) {
-                            //    _rulesFieldArr = [];
-                            //    content[_reffer_index].rulesFieldArr = _rulesFieldArr;
-                            //}
-                            //_rulesFieldArr = content[_reffer_index].rulesFieldArr;
-                            //_rulesFieldArr.push(content[j].reffer_index);
-                            //content[_reffer_index].rulesFieldArr = _rulesFieldArr;
                         }
                     }
                     
@@ -1115,78 +1094,6 @@ function setupViolationField(){"use strict";
             }
         }
     }
-    
-    // return;
-    // if (content[j].widgetObj != null && content[j].widgetObj.type == 'violation_select') {
-        // var content_widget = content[j].widgetObj;
-        // // if (content_widget['rules_field_name'] != null && content_widget['rules_field_name'] != "") {
-            // // var _reffer_index = entityArr[content_widget['rules_field_name']][0]['reffer_index'];
-            // // var _rulesFieldArr;
-            // // if (content[_reffer_index].rulesFieldArr == null) {
-                // // _rulesFieldArr = [];
-                // // content[_reffer_index].rulesFieldArr = _rulesFieldArr;
-            // // }
-            // // _rulesFieldArr = content[_reffer_index].rulesFieldArr;
-            // // _rulesFieldArr.push(content[j].reffer_index);
-            // // content[_reffer_index].rulesFieldArr = _rulesFieldArr;
-        // // }
-// 
-        // if (content_widget['rules_violation_time_field_name'] != null && content_widget['rules_violation_time_field_name'] != "") {
-            // var _reffer_index = entityArr[content_widget['rules_violation_time_field_name']][0]['reffer_index'];
-            // var _rulesFieldArr;
-            // if (content[_reffer_index].rulesFieldArr == null) {
-                // _rulesFieldArr = [];
-                // content[_reffer_index].rulesFieldArr = _rulesFieldArr;
-            // }
-            // _rulesFieldArr = content[_reffer_index].rulesFieldArr;
-            // _rulesFieldArr.push(content[j].reffer_index);
-            // content[_reffer_index].rulesFieldArr = _rulesFieldArr;
-        // }
-// 
-        // if (win.mode == 1) {
-            // if (content_widget['rules_field_name'] != null && content_widget['rules_violation_time_field_name'] != null && content_widget['rules_field_name'] != "" && content_widget['rules_violation_time_field_name'] != "") {
-                // var title = '';
-                // var value = content[j].value;
-                // if (content[j].settings.cardinality > 1 || content[j].settings.cardinality == 1) {
-                    // title = content[j].title;
-                // }
-                // else if (content[j].settings.cardinality == -1) {
-                    // title = content[j].text;
-                // }
-                // setParticularRulesField(content[j]);
-                // content[j].value = value;
-                // if (content[j].settings.cardinality > 1 || content[j].settings.cardinality == 1) {
-                    // content[j].title = title;
-                // }
-                // else if (content[j].settings.cardinality == -1) {
-                    // content[j].text = title;
-                    // //for(var itens_idx =0; itens_idx<content[j].itens.length; itens_idx++){
-                    // //for(var value_idx=0; value_idx < content[j].value.length ; value_idx++){
-                    // //alert(content[j].itens[itens_idx][0].v_into);
-                    // //alert(content[j].value[value_idx][0].v_into);
-                    // //if(content[j].itens[itens_idx].v_into == content[j].value[value_idx].v_into){
-                    // //content[j].itens[itens_idx].is_set = true;
-                    // //}
-                    // //}
-                    // //}
-                    // var itens = content[j].itens;
-                    // var value = content[j].value;
-                    // var itens_idx;
-                    // for (itens_idx in itens) {
-                        // var value_idx;
-                        // for (value_idx in value) {
-                            // if (itens[itens_idx].v_info == value[value_idx].v_info) {
-                                // itens[itens_idx].is_set = true;
-                            // }
-                        // }
-                    // }
-                    // content[j].itens = itens;
-                // }
-// 
-            // }
-        // }
-// 
-    // }
 }
 
 
@@ -1204,7 +1111,6 @@ function recalculateCalculationFields(){"use strict";
     }
 }
 
-//Ti.API.error("WIN NID: " + win.nid);
 
 function loadCustomCopyNode(originalNode, from_type, to_type){"use strict";
     var fromBundle, newNode, to_field_name, from_field_name;
@@ -1240,361 +1146,17 @@ function loadCustomCopyNode(originalNode, from_type, to_type){"use strict";
     return newNode;
 }
 
-(function(){"use strict";
-    
-    /*jslint vars: true, eqeq: true*/
-   /*global Omadi, loadNode */
-   
-   
-    win.addEventListener("android:back", cancelOpt);
-   
-    if(win.nid < 0){
-        //Ti.API.error("WIN NID: " + win.nid);
-        
-        Ti.App.addEventListener('switchedItUp', function(e){
-           //alert("it switched"); 
-           //Ti.API.error(JSON.stringify(e));
-       
-           if(Ti.UI.currentWindow.nid == e.negativeNid){
-               
-               Ti.UI.currentWindow.nid = e.positiveNid;
-               Ti.UI.currentWindow.node.nid = e.positiveNid;
-               //Ti.API.error("new nid: " + Ti.UI.currentWindow.nid);
-           }
-        });
-    }
-    
-    Ti.App.addEventListener('photoUploaded', function(e){
-        var nid, delta, fid, field_name, dbValues;
-        
-        nid = parseInt(e.nid, 10);
-        delta = parseInt(e.delta, 10);
-        field_name = e.field_name;
-        fid = parseInt(e.fid, 10);
-        
-        if(Ti.UI.currentWindow.nid == nid){
-            if(typeof fieldWrappers[field_name] !== 'undefined'){
-                //alert("Just saved delta " + delta);
-                Omadi.widgets.setValueWidgetProperty(field_name, 'dbValue', fid, delta);
-                Omadi.widgets.setValueWidgetProperty(field_name, 'fid', fid, delta);
-            }
-        }
-    });
-    
-    Ti.App.addEventListener('loggingOut', function(){
-        Ti.UI.currentWindow.close();
-    });
-    
-    
-    if(win.nid != "new" && win.nid > 0){
-        Omadi.service.setNodeViewed(win.nid);
-    }
-    
-    win.setOrientationModes([Ti.UI.PORTRAIT]);
-
-    if (Ti.App.isAndroid) {
-        //The view where the results are presented
-        formWrapperView = Ti.UI.createView({
-            top : 0,
-            height : '100%',
-            width : '100%',
-            backgroundColor : '#EEEEEE',
-            opacity : 1
-        });
-        win.add(formWrapperView);
-
-        scrollView = Ti.UI.createScrollView({
-            bottom : 0,
-            contentHeight : 'auto',
-            backgroundColor : '#EEEEEE',
-            showHorizontalScrollIndicator : false,
-            showVerticalScrollIndicator : true,
-            opacity : 1,
-            scrollType : "vertical",
-            zIndex : 10,
-            layout: 'vertical',
-            height: Ti.UI.SIZE,
-            top: 0
-        });
-    }
-    else {
-
-        //The view where the results are presented
-        formWrapperView = Ti.UI.createView({
-            top : 45,
-            height : Ti.UI.SIZE,
-            width : '100%',
-            bottom : 0,
-            backgroundColor : '#EEEEEE',
-            opacity : 1
-        });
-        win.add(formWrapperView);
-
-        scrollView = Ti.UI.createScrollView({
-            contentHeight : 'auto',
-            backgroundColor : '#EEEEEE',
-            showHorizontalScrollIndicator : false,
-            showVerticalScrollIndicator : true,
-            opacity : 1,
-            scrollType : "vertical",
-            zIndex : 10,
-            layout: 'vertical',
-            height: Ti.UI.SIZE,
-            top: 0
-        });
-    }
-    
-    scrollView.addEventListener('scroll', function(e){
-        scrollPositionY = e.y;
-    });
-
-    formWrapperView.add(scrollView);
-
-   //scrollView is the parent container
-   
-    var field_name;
+var field_name;
     var instance;
     var i, j;
-    
-    
-    //db_display = Omadi.utils.openMainDatabase();
-    
-    // regions = db_display.execute('SELECT * FROM regions WHERE node_type = "' + win.type + '" ORDER BY weight ASC');
-    // if (win.mode == 1) {
-        // var node_table = db_display.execute('SELECT * FROM node WHERE nid=' + win.nid);
-        // if (node_table.rowCount > 0) {
-            // var no_data_fields = node_table.fieldByName('no_data_fields');
-            // if (no_data_fields != null && no_data_fields != "") {
-                // no_data_fields = JSON.parse(no_data_fields);
-                // var key;
-                // for (key in no_data_fields) {
-                    // if (no_data_fields.hasOwnProperty(key)) {
-                        // no_data_fieldsArr.push(key);
-                    // }
-                // }
-            // }
-        // }
-    // }
-
     var region_name;
     var regionHeaderView;
     var regionView;
     var tempFormPart;
+    var widgetView;
     
-    
-    if(win.nid == 'new'){
-        node = getNewNode();
-    }
-    else{
-        node = loadNode(win.nid);
-    }
-    
-    Ti.API.debug("LOADED NODE: " + JSON.stringify(node));
-    
-    if(typeof win.form_part !== 'undefined'){
-        tempFormPart = parseInt(win.form_part, 10);
-        if(win.form_part == tempFormPart){
-            node.form_part = win.form_part;
-        }
-        else{
-            // This is a copy to form, the form_part passed in is which type to copy to
-            Ti.API.info("This is a custom copy to " + win.form_part);
-            node = loadCustomCopyNode(node, win.type, win.form_part);
-            
-            win.origNid = node.origNid; 
-            win.type = node.type;
-            win.nid = 'new';
-            win.form_part = 0;    
-            
-            Ti.App.addEventListener("formFullyLoaded", function(){
-                Ti.App.fireEvent("customCopy");
-                // var field_name, children, subChildren, subSubChildren, i, j, k, callback, widgetView;
-//                
-//                 
-                // for(field_name in instances){
-                    // if(instances.hasOwnProperty(field_name)){
-                        // if(instances[field_name].type == 'omadi_reference'){
-                            // if(typeof fieldWrappers[field_name] !== 'undefined'){
-//                                  
-                                // children = fieldWrappers[field_name].getChildren();
-                                // for(i = 0; i < children.length; i ++){
-//                                     
-                                    // subChildren = children[i].getChildren();
-                                    // for(j = 0; j < subChildren.length; j ++){
-                                        // Ti.API.debug("looking for widget");
-                                        // Ti.API.debug(subChildren[j]);
-                                        // if(typeof subChildren[j].dbValue !== 'undefined'){
-                                            // Ti.API.debug("found widget");
-//                                             
-                                            // widgetView = fieldWrappers[field_name].children[i].children[j];
-//                                             
-                                            // Omadi.widgets.omadi_reference.setChildDefaultValues(widgetView);
-                                            // if (widgetView.onChangeCallbacks.length > 0) {
-                                                // for ( k = 0; k < widgetView.onChangeCallbacks.length; k++) {
-                                                    // callback = widgetView.onChangeCallbacks[k];
-                                                    // callback(widgetView.onChangeCallbackArgs[k]);
-                                                // }
-                                            // }
-                                        // }
-                                    // }
-                                // }
-                            // }
-                        // }
-                    // }
-                // }
-            });     
-        }
-    }
-    
-    win.node = node;
-    instances = Omadi.data.getFields(win.type);
-    
-    if (Ti.App.isAndroid) {
-        get_android_menu();
-    }
-    else {
-        bottomButtons();
-    }
-    
-    regions = Omadi.data.getRegions(win.type);
-    var region;
-    var region_form_part = 0;
-    var hasViolationField = false;
-    var regionWrapperView;
-    var regionWrappers = {};
-    
-    for(region_name in regions){
-        if(regions.hasOwnProperty(region_name)){
-            region = regions[region_name];
-            
-            if(typeof region.settings !== 'undefined' && region.settings != null && typeof region.settings.form_part !== 'undefined'){
-                region_form_part = parseInt(region.settings.form_part, 10);
-            }
-            else{
-                region_form_part = 0;
-            }
-           
-            if(region_form_part <= node.form_part){
-                
-                var expanded = true;
-                if(region_form_part < node.form_part){
-                    expanded = false;
-                }
-                
-                regionHeaderView = getRegionHeaderView(region, expanded);
-                
-                regionWrapperView = Ti.UI.createView({
-                    height: Ti.UI.SIZE,
-                    width: '100%',
-                    layout: 'vertical'
-                });
-                
-                regionWrapperView.add(regionHeaderView);
-                regionWrapperView.add(Ti.UI.createView({
-                    height: 10,
-                    width: '100%'
-                }));
-                
-                regionView = Ti.UI.createView({
-                    width : '100%',
-                    backgroundColor : '#eee',
-                    height: Ti.UI.SIZE,
-                    layout: 'vertical'
-                });
-                
-                if(expanded === false){
-                    regionView.visible = false;
-                    regionView.height = 5;
-                }
-                
-                regionViews[region_name] = regionView;
-                
-                regionWrapperView.add(regionView);
-                
-                regionWrappers[region_name] = regionWrapperView;
-                
-                scrollView.add(regionWrapperView);
-            }
-        }
-    }
-    
-    var omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
-    var roles = omadi_session_details.user.roles;
-    
-    for(field_name in instances){
-        if(instances.hasOwnProperty(field_name)){
-            
-            instance = instances[field_name];        
-            
-            var settings = instance.settings;
-            var isRequired = instance.required;
-            var labelColor = "#246";
-            
-            if(instance.required == 1){
-                instance.isRequired = true;
-            }
-            else{
-                instance.isRequired = false;
-            }
-            
-            region_name = instance.region;
-            
-            // Make sure the region is visible
-            if(typeof regionViews[region_name] !== 'undefined'){
-                
-                if (instance.disabled == 0 && instance.can_view) {
-                    
-                    var fieldWrapper = Ti.UI.createView({
-                       width: '100%',
-                       height: Ti.UI.SIZE, 
-                       instance: instance
-                    });
-                    
-                    var fieldView = Omadi.widgets.getFieldView(node, instance);
-                    if(fieldView !== null){
-                        fieldView.wrapper = fieldWrapper;
-                           
-                        fieldWrapper.add(fieldView);
-                        fieldWrappers[instance.field_name] = fieldWrapper;
-                        regionViews[region_name].add(fieldWrapper);
-                        
-                        if(instance.widget.type == 'violation_select'){
-                            hasViolationField = true;
-                        }
-                    }
-                    else{
-                        Ti.API.error("Could not add field type " + instance.type);
-                    }
-                }
-            }
-        }
-    }   
-    
-    // Remove empty regions
-    for(region_name in regionViews){
-        if(regionViews.hasOwnProperty(region_name)){
-            if(regionViews[region_name].getChildren().length == 0){
-                scrollView.remove(regionWrappers[region_name]);
-            }
-        }
-    }
-    
-    Ti.App.fireEvent("formFullyLoaded");
-    
-    setTimeout(function(){
-        
-        scrollView.scrollTo(0, 0);
-        
-       // Omadi.widgets.blurFields();
-    }, 1000);
-    
-    recalculateCalculationFields();
-    
-    if(hasViolationField){
-        setupViolationField();
-    }
-    
-}());
+
+
 
 
 function getFormFieldValues(field_name){"use strict";
@@ -1967,4 +1529,317 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
     }
 }
 
+
+(function(){"use strict";
+    var field_name;
+    
+    /*jslint vars: true, eqeq: true*/
+   /*global Omadi, loadNode */
+   
+    if(win.nid == 'new'){
+        node = getNewNode();
+    }
+    else{
+        node = loadNode(win.nid);
+    }
+    
+    Ti.API.debug("LOADED NODE: " + JSON.stringify(node));
+   
+    win.addEventListener("android:back", cancelOpt);
+   
+    if(win.nid < 0){
+        //Ti.API.error("WIN NID: " + win.nid);
+        
+        Ti.App.addEventListener('switchedItUp', function(e){
+           //alert("it switched"); 
+           //Ti.API.error(JSON.stringify(e));
+       
+           if(Ti.UI.currentWindow.nid == e.negativeNid){
+               
+               Ti.UI.currentWindow.nid = e.positiveNid;
+               Ti.UI.currentWindow.node.nid = e.positiveNid;
+               //Ti.API.error("new nid: " + Ti.UI.currentWindow.nid);
+           }
+        });
+    }
+    
+    Ti.App.addEventListener('photoUploaded', function(e){
+        var nid, delta, fid, field_name, dbValues;
+        
+        nid = parseInt(e.nid, 10);
+        delta = parseInt(e.delta, 10);
+        field_name = e.field_name;
+        fid = parseInt(e.fid, 10);
+        
+        if(Ti.UI.currentWindow.nid == nid){
+            if(typeof fieldWrappers[field_name] !== 'undefined'){
+                //alert("Just saved delta " + delta);
+                Omadi.widgets.setValueWidgetProperty(field_name, 'dbValue', fid, delta);
+                Omadi.widgets.setValueWidgetProperty(field_name, 'fid', fid, delta);
+            }
+        }
+    });
+    
+    Ti.App.addEventListener('loggingOut', function(){
+        Ti.UI.currentWindow.close();
+    });
+    
+    
+    if(win.nid != "new" && win.nid > 0){
+        Omadi.service.setNodeViewed(win.nid);
+    }
+    
+    win.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
+    wrapperView = Ti.UI.createView({
+       layout: 'vertical',
+       bottom: 0,
+       top: 0,
+       right: 0,
+       left: 0 
+    });
+    
+    
+    if (Ti.App.isAndroid) {
+        get_android_menu();
+    }
+    else {
+        addiOSToolbar();
+    }
+    
+    // if (Ti.App.isAndroid) {
+        // //The view where the results are presented
+        // formWrapperView = Ti.UI.createView({
+            // top : 0,
+            // height : '100%',
+            // width : '100%',
+            // backgroundColor : '#EEEEEE',
+            // opacity : 1
+        // });
+        // win.add(formWrapperView);
+// 
+        // scrollView = Ti.UI.createScrollView({
+            // bottom : 0,
+            // contentHeight : 'auto',
+            // backgroundColor : '#EEEEEE',
+            // showHorizontalScrollIndicator : false,
+            // showVerticalScrollIndicator : true,
+            // opacity : 1,
+            // scrollType : "vertical",
+            // zIndex : 10,
+            // layout: 'vertical',
+            // height: Ti.UI.SIZE,
+            // top: 0
+        // });
+    // }
+    // else {
+// 
+        // //The view where the results are presented
+        // formWrapperView = Ti.UI.createView({
+            // top : 45,
+            // height : Ti.UI.FILL,
+            // width : '100%'
+        // });
+        // //win.add(formWrapperView);
+
+        scrollView = Ti.UI.createScrollView({
+            contentHeight : 'auto',
+            showHorizontalScrollIndicator : false,
+            showVerticalScrollIndicator : true,
+            scrollType : 'vertical',
+            layout: 'vertical',
+            height: Ti.UI.FILL,
+            width: '100%'
+        });
+        
+        wrapperView.add(scrollView);
+        
+        
+   // }
+    
+    win.add(wrapperView);
+    
+    scrollView.addEventListener('scroll', function(e){
+        scrollPositionY = e.y;
+    });
+
+
+    if(typeof win.form_part !== 'undefined'){
+        tempFormPart = parseInt(win.form_part, 10);
+        if(win.form_part == tempFormPart){
+            node.form_part = win.form_part;
+        }
+        else{
+            // This is a copy to form, the form_part passed in is which type to copy to
+            Ti.API.info("This is a custom copy to " + win.form_part);
+            node = loadCustomCopyNode(node, win.type, win.form_part);
+            
+            win.origNid = node.origNid; 
+            win.type = node.type;
+            win.nid = 'new';
+            win.form_part = 0;    
+            
+            Ti.App.addEventListener("formFullyLoaded", function(){
+                var field_name;
+                
+                Ti.App.fireEvent("customCopy");
+                
+                for(field_name in instances){
+                    if(instances.hasOwnProperty(field_name)){
+                        widgetView = Omadi.widgets.getValueWidget(field_name);
+                        
+                        if(widgetView && typeof widgetView.check_conditional_fields !== 'undefined'){
+                            setConditionallyRequiredLabels(instances[field_name], widgetView.check_conditional_fields);
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
+    win.node = node;
+    instances = Omadi.data.getFields(win.type);
+    
+    
+    
+    regions = Omadi.data.getRegions(win.type);
+    var region;
+    var region_name;
+    var region_form_part = 0;
+    var hasViolationField = false;
+    var regionWrapperView;
+    var regionWrappers = {};
+    
+    for(region_name in regions){
+        if(regions.hasOwnProperty(region_name)){
+            region = regions[region_name];
+            
+            if(typeof region.settings !== 'undefined' && region.settings != null && typeof region.settings.form_part !== 'undefined'){
+                region_form_part = parseInt(region.settings.form_part, 10);
+            }
+            else{
+                region_form_part = 0;
+            }
+           
+            if(region_form_part <= node.form_part){
+                
+                var expanded = true;
+                if(region_form_part < node.form_part){
+                    expanded = false;
+                }
+                
+                regionHeaderView = getRegionHeaderView(region, expanded);
+                
+                regionWrapperView = Ti.UI.createView({
+                    height: Ti.UI.SIZE,
+                    width: '100%',
+                    layout: 'vertical'
+                });
+                
+                regionWrapperView.add(regionHeaderView);
+                regionWrapperView.add(Ti.UI.createView({
+                    height: 10,
+                    width: '100%'
+                }));
+                
+                regionView = Ti.UI.createView({
+                    width : '100%',
+                    backgroundColor : '#eee',
+                    height: Ti.UI.SIZE,
+                    layout: 'vertical'
+                });
+                
+                if(expanded === false){
+                    regionView.visible = false;
+                    regionView.height = 5;
+                }
+                
+                regionViews[region_name] = regionView;
+                
+                regionWrapperView.add(regionView);
+                
+                regionWrappers[region_name] = regionWrapperView;
+                
+                scrollView.add(regionWrapperView);
+            }
+        }
+    }
+    
+    var omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
+    var roles = omadi_session_details.user.roles;
+    //var field_name;
+    
+    for(field_name in instances){
+        if(instances.hasOwnProperty(field_name)){
+            
+            instance = instances[field_name];        
+            
+            var settings = instance.settings;
+            var isRequired = instance.required;
+            var labelColor = "#246";
+            
+            if(instance.required == 1){
+                instance.isRequired = true;
+            }
+            else{
+                instance.isRequired = false;
+            }
+            
+            region_name = instance.region;
+            
+            // Make sure the region is visible
+            if(typeof regionViews[region_name] !== 'undefined'){
+                
+                if (instance.disabled == 0 && instance.can_view) {
+                    
+                    var fieldWrapper = Ti.UI.createView({
+                       width: '100%',
+                       height: Ti.UI.SIZE, 
+                       instance: instance
+                    });
+                    
+                    var fieldView = Omadi.widgets.getFieldView(node, instance);
+                    if(fieldView !== null){
+                        fieldView.wrapper = fieldWrapper;
+                           
+                        fieldWrapper.add(fieldView);
+                        fieldWrappers[instance.field_name] = fieldWrapper;
+                        regionViews[region_name].add(fieldWrapper);
+                        
+                        if(instance.widget.type == 'violation_select'){
+                            hasViolationField = true;
+                        }
+                    }
+                    else{
+                        Ti.API.error("Could not add field type " + instance.type);
+                    }
+                }
+            }
+        }
+    }   
+    
+    // Remove empty regions
+    for(region_name in regionViews){
+        if(regionViews.hasOwnProperty(region_name)){
+            if(regionViews[region_name].getChildren().length == 0){
+                scrollView.remove(regionWrappers[region_name]);
+            }
+        }
+    }
+    
+    Ti.App.fireEvent("formFullyLoaded");
+    
+    setTimeout(function(){
+        
+        scrollView.scrollTo(0, 0);
+        
+       // Omadi.widgets.blurFields();
+    }, 1000);
+    
+    recalculateCalculationFields();
+    
+    if(hasViolationField){
+        setupViolationField();
+    }
+    
+}());
 

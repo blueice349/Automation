@@ -21,8 +21,6 @@ Omadi.widgets.number_integer = {
         fieldView.add(Omadi.widgets.label.getRegularLabelView(instance));
         setConditionallyRequiredLabelForInstance(node, instance);
 
-        Ti.API.debug(instance.numVisibleFields);
-
         if ( typeof instance.numVisibleFields === 'undefined') {
 
             if (settings.cardinality == -1) {
@@ -106,8 +104,13 @@ Omadi.widgets.number_integer = {
             var tempValue;
             /*global setConditionallyRequiredLabels*/
             /*jslint regexp: true*/
+           
             if (e.source.lastValue != e.source.value) {
-                tempValue = e.source.value.replace(/[^0-9\-]/g, '');
+                tempValue = "";
+                if(e.source.value !== null){
+                    tempValue = (e.source.value + "".toString()).replace(/[^0-9\-]/g, '');
+                }
+                
                 if (tempValue != e.source.value) {
                     e.source.value = tempValue;
                     if (Ti.App.isAndroid) {

@@ -3,6 +3,7 @@
 
 // this sets the background color of every
 Ti.UI.currentWindow.setBackgroundColor('#eee');
+Ti.UI.currentWindow.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
 
 //Common used functions
 Ti.include('/lib/encoder_base_64.js');
@@ -828,8 +829,7 @@ function scrollBoxesToTop() {"use strict";
             }
         });
 
-        // Always show the window in portrait orientation
-        Ti.UI.currentWindow.orientationModes = [Titanium.UI.PORTRAIT];
+        
 
         //When back button on the phone is pressed, it informs the user (message at the bottom)
         // that he is already in the first menu

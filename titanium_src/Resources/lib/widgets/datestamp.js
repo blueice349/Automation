@@ -82,9 +82,9 @@ Omadi.widgets.datestamp = {
             }
         }
 
-        Ti.API.debug(settings);
+        Ti.API.debug("Datestamp settings: " + settings.time);
 
-        if ( typeof settings.time !== 'undefined' && (settings.time == 1 || typeof settings.granularity.hour !== 'undefined')) {
+        if (settings.time == 1 || typeof settings.granularity.hour !== 'undefined') {
             showTime = true;
         }
         else {

@@ -5,6 +5,7 @@ Ti.include('/lib/functions.js');
 var curWin = Ti.UI.currentWindow;
 curWin.isTopWindow = true;
 curWin.backgroundColor = '#eee';
+curWin.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
 
 var toolActInd = Ti.UI.createActivityIndicator();
 toolActInd.font = {
@@ -201,13 +202,9 @@ function displayBundleList() {"use strict";
                 height : 32,
                 top : 6,
                 left : 5,
-                image : '/images/icons/' + name_table.toLowerCase() + '.png',
+                image : Omadi.display.getNodeTypeImagePath(name_table),
                 desc : description
             });
-
-            if (icon.toBlob() == null || icon.toBlob().length == 0) {
-                icon.image = '/images/icons/settings.png';
-            }
 
             titleLabel = Titanium.UI.createLabel({
                 text : display,
@@ -422,11 +419,11 @@ function setupBottomButtons() {"use strict";
 
 
     if (Ti.App.isIOS) {
-        draftsView.width = alertsView.width = recentView.width = Ti.Platform.displayCaps.platformWidth / 4;
+        draftsView.width = alertsView.width = recentView.width = '25%';
 
         actionsView = Ti.UI.createView({
             height : Ti.UI.SIZE,
-            width : Ti.Platform.displayCaps.platformWidth / 4,
+            width : '25%',
             layout : 'vertical'
         });
         databaseStatusView.add(actionsView);
@@ -516,9 +513,6 @@ function setupBottomButtons() {"use strict";
             isFirstTime = false;
             checkUpdate('from_menu');
         }
-
-        //Sets only portrait mode
-        curWin.orientationModes = [Titanium.UI.PORTRAIT];
 
         if (Ti.App.isAndroid) {
             setupAndroidMenu();

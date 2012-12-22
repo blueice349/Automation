@@ -53,7 +53,7 @@ Omadi.widgets.rules_field = {
 
         view = Ti.UI.createView({
             height : Ti.UI.SIZE,
-            width : Ti.Platform.displayCaps.platformWidth - 30,
+            width : '96%',
             layout : 'vertical',
             dbValue : nodeValue
         });

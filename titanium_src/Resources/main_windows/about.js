@@ -5,7 +5,8 @@ Ti.include('/lib/functions.js');
 (function(){
 	'use strict';
 	
-	var curWin, 
+	var curWin,
+	wrapperView, 
 	backButton, 
 	space, 
 	aboutLabel, 
@@ -18,13 +19,23 @@ Ti.include('/lib/functions.js');
 	buttonView,
 	updateButton,
 	reinitializeBtn,
-	dialog;
+	dialog,
+	scrollView;
 	
 	
 	curWin = Ti.UI.currentWindow;
-	curWin.backgroundColor = '#EEEEEE';
-	curWin.orientationModes = [Titanium.UI.PORTRAIT];
+	curWin.backgroundColor = '#eee';
+	curWin.setOrientationModes([Titanium.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
 	
+	wrapperView = Ti.UI.createView({
+	   layout: 'vertical',
+	   bottom: 0,
+	   top: 0,
+	   right: 0,
+	   left: 0 
+	});
+	
+	curWin.add(wrapperView);
 	
 	Ti.App.addEventListener('loggingOut', function(){
         Ti.UI.currentWindow.close();
@@ -55,33 +66,42 @@ Ti.include('/lib/functions.js');
 	
 		// create and add toolbar
 		toolbar = Titanium.UI.iOS.createToolbar({
-			items : [backButton, aboutLabel, space],
+			items : [backButton, space, aboutLabel, space],
 			top : 0,
 			borderTop : false,
 			borderBottom : true
 		});
-		curWin.add(toolbar);
+		wrapperView.add(toolbar);
 	}
+	
+	scrollView = Ti.UI.createScrollView({
+	    scrollType: 'vertical',
+	    height: Ti.UI.FILL,
+	    width: '100%',
+	    layout: 'vertical'
+	});
+	
+	wrapperView.add(scrollView);
 	
 	logo = Ti.UI.createImageView({
 		image : '/images/logo.png',
-		top : 50,
+		top : 10,
 		width : 200,
 		height : 114
 	});
 	
-	curWin.add(logo);
+	scrollView.add(logo);
 	
 	versionLbl = Ti.UI.createLabel({
 		width : Ti.UI.SIZE,
 		height : Ti.UI.SIZE,
-		top : 180,
+		top : 10,
 		left : 10,
 		text : 'Application version : ' + Ti.App.version,
 		color : '#000'
 	});
 	
-	curWin.add(versionLbl);
+	scrollView.add(versionLbl);
 	
 	lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp(); 
 	//Ti.API.error(lastSyncTimestamp);
@@ -97,16 +117,16 @@ Ti.include('/lib/functions.js');
 	syncLabel = Ti.UI.createLabel({
 		width : Ti.UI.SIZE,
 		height : Ti.UI.SIZE,
-		top : 220,
+		top : 5,
 		left : 10,
 		text : lastSyncText,
 		color : '#000'
 	});
 	
-	curWin.add(syncLabel);
+	scrollView.add(syncLabel);
 	
 	buttonView = Ti.UI.createView({
-		top : 280,
+		top : 10,
 		width : 285,
 		height : 50
 	});
@@ -155,6 +175,6 @@ Ti.include('/lib/functions.js');
 	
 	buttonView.add(reinitializeBtn);
 	
-	curWin.add(buttonView);
+	scrollView.add(buttonView);
 
 }());

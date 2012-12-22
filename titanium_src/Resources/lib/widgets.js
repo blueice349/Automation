@@ -178,11 +178,17 @@ Omadi.widgets.setValueWidgetProperty = function(field_name, property, value, set
         property = [property];
     }
     
+    // Android has a problem with an integer being set for a value or text... cast it to a string
+    if(property[0] == 'value' || property[0] == 'text'){
+        value = value + "".toString();
+    }
+    
     children = fieldWrappers[field_name].getChildren();
     
     if(setIndex == -1){
         for(i = 0; i < children.length; i ++){
             if(typeof children[i].dbValue !== 'undefined'){
+               
                 if(property.length == 1){
                     fieldWrappers[field_name].children[i][property[0]] = value;
                 }
@@ -195,6 +201,7 @@ Omadi.widgets.setValueWidgetProperty = function(field_name, property, value, set
                 subChildren = children[i].getChildren();
                 for(j = 0; j < subChildren.length; j ++){
                     if(typeof subChildren[j].dbValue !== 'undefined'){
+                        //Ti.API.debug(field_name + " " + property[0] + " sub children");
                         if(property.length == 1){
                             fieldWrappers[field_name].children[i].children[j][property[0]] = value;
                         }
@@ -207,7 +214,9 @@ Omadi.widgets.setValueWidgetProperty = function(field_name, property, value, set
                         subSubChildren = subChildren[j].getChildren();
                         for(k = 0; k < subSubChildren.length; k ++){
                             if(typeof subSubChildren[k].dbValue !== 'undefined'){
+                                //Ti.API.debug(field_name + " " + property[0] + " sub sub children");
                                 if(property.length == 1){
+                                    //Ti.API.debug('value: ' + value);
                                     fieldWrappers[field_name].children[i].children[j].children[k][property[0]] = value;
                                 }
                                 else if(property.length == 2){
@@ -275,51 +284,51 @@ Omadi.widgets.setValues = function(field_name, defaultValues){"use strict";
     
     /*global fieldWrappers, instances */
     
-    //fieldWrapper = fieldWrappers[field_name];
-    //children = fieldWrapper.getChildren();
-    
-    
     Omadi.widgets.setValueWidgetProperty(field_name, ['textValue'], defaultValues.textValues[0]);
     Omadi.widgets.setValueWidgetProperty(field_name, ['dbValue'], defaultValues.dbValues[0]);
     
     if(instances[field_name].type == 'taxonomy_term_reference'){
-        //actualWidget.setText(defaultValues.textValues[0]);
         Omadi.widgets.setValueWidgetProperty(field_name, ['text'], defaultValues.textValues[0]);
     }
     else{
-        //actualWidget.setValue(defaultValues.textValues[0]);
         Omadi.widgets.setValueWidgetProperty(field_name, ['value'], defaultValues.textValues[0]);
     }
-    
-
 };
 
 Omadi.widgets.getValueWidget = function(field_name){"use strict";
     var actualWidget = null, i, j, k, children, fieldWrapper, subChildren, subSubChildren;
     
-    fieldWrapper = fieldWrappers[field_name];
-    children = fieldWrapper.getChildren();
-       
-    for(i = 0; i < children.length; i ++){
-         
-        if(typeof children[i].textValue !== 'undefined'){
-            actualWidget = children[i];
-            break;
-        }
-        else if(children[i].getChildren().length > 0){
-            subChildren = children[i].getChildren();
-            for(j = 0; j < subChildren.length; j ++){
-                
-                if(typeof subChildren[j].textValue !== 'undefined'){
-                    actualWidget = subChildren[j];
+    if(typeof fieldWrappers[field_name] !== 'undefined'){
+        fieldWrapper = fieldWrappers[field_name];
+        
+        if(typeof fieldWrapper.children !== 'undefined'){
+            children = fieldWrapper.getChildren();
+               
+            for(i = 0; i < children.length; i ++){
+                 
+                if(typeof children[i].dbValue !== 'undefined'){
+                    actualWidget = children[i];
                     break;
                 }
-                else if(subChildren[j].getChildren().length > 0){
-                    subSubChildren = subChildren[j].getChildren();
-                    for(k = 0; k < subSubChildren.length; k ++){
+                else if(children[i].getChildren().length > 0){
+                    subChildren = children[i].getChildren();
+                    for(j = 0; j < subChildren.length; j ++){
                         
-                        if(typeof subSubChildren[k].textValue !== 'undefined'){
-                            actualWidget = subSubChildren[k];
+                        if(typeof subChildren[j].dbValue !== 'undefined'){
+                            actualWidget = subChildren[j];
+                            break;
+                        }
+                        else if(subChildren[j].getChildren().length > 0){
+                            subSubChildren = subChildren[j].getChildren();
+                            for(k = 0; k < subSubChildren.length; k ++){
+                                
+                                if(typeof subSubChildren[k].dbValue !== 'undefined'){
+                                    actualWidget = subSubChildren[k];
+                                    break;
+                                }
+                            }
+                        }
+                        if(actualWidget !== null){
                             break;
                         }
                     }
@@ -329,11 +338,7 @@ Omadi.widgets.getValueWidget = function(field_name){"use strict";
                 }
             }
         }
-        if(actualWidget !== null){
-            break;
-        }
     }
-    
     return actualWidget;
 };
 
@@ -427,7 +432,7 @@ Omadi.widgets.label = {
                 fontWeight : 'bold'
             },
             textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
-            width : Ti.Platform.displayCaps.platformWidth - 30,
+            width : '96%',
             touchEnabled : false,
             height : Ti.UI.SIZE
         });
@@ -519,7 +524,7 @@ Omadi.widgets.getTextField = function(instance){"use strict";
         
         // iOS options
         borderStyle: Ti.UI.INPUT_BORDERSTYLE_ROUNDED,
-        suppressReturn: false,
+        suppressReturn: true,
         
         // Custom variables
         instance: instance
@@ -546,6 +551,12 @@ Omadi.widgets.getTextField = function(instance){"use strict";
             textField.setPaddingRight(7);
         }
     }
+    
+    textField.addEventListener('focus', function(e){
+        Omadi.widgets.currentlyFocusedField = e.source; 
+    });
+    
+    //Ti.App.addEventListener('customCopy')
     
     return textField;
 };

@@ -112,7 +112,11 @@ Omadi.widgets.number_decimal = {
             /*jslint regexp: true*/
 
             if (e.source.lastValue != e.source.value) {
-                tempValue = e.source.value.replace(/[^0-9\.\-]/g, '');
+                tempValue = "";
+                if(e.source.value !== null){
+                    tempValue = (e.source.value + "".toString()).replace(/[^0-9\.\-]/g, '');
+                }
+                
                 if (tempValue != e.source.value) {
                     e.source.value = tempValue;
                     if (Ti.App.isAndroid) {

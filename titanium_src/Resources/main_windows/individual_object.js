@@ -12,8 +12,7 @@ var curWin = Ti.UI.currentWindow;
 Omadi.service.setNodeViewed(curWin.nid);
 
 curWin.backgroundColor = "#EEEEEE";
-//Sets only portrait mode
-//curWin.orientationModes = [Titanium.UI.PORTRAIT];
+curWin.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
 var movement = curWin.movement;
 
 //When back button on the phone is pressed, it opens mainMenu.js and close the current window
@@ -763,12 +762,12 @@ if (Ti.App.isAndroid && isEditEnabled == true) {
             for(to_type in bundle.data.custom_copy){
                 if(bundle.data.custom_copy.hasOwnProperty(to_type)){
                     to_bundle = Omadi.data.getBundle(to_type);
-                    if(to_bundle){
+                    if(to_bundle && to_bundle.can_create == 1){
                         customCopy = e.menu.add({
                             title : "Copy to " + to_bundle.label,
                             order : order
                         });
-                        customCopy.setIcon("/images/drop.png");
+                        customCopy.setIcon(Omadi.display.getNodeTypeImagePath(to_type));
                         
                         androidMenuItemData[order] = {
                             type: curWin.type,

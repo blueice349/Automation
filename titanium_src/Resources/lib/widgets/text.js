@@ -64,7 +64,7 @@ Omadi.widgets.text = {
             fieldView.add(Omadi.widgets.getSpacerView());
         }
        
-       return fieldView;
+        return fieldView;
     },
     getNewElement: function(node, instance, index){"use strict";
         

@@ -12,7 +12,7 @@ Omadi.widgets.list_boolean = {
         wrapper = Ti.UI.createView({
             layout : 'vertical',
             height : Ti.UI.SIZE,
-            width : Ti.Platform.displayCaps.platformWidth - 30
+            width : '96%'
         });
 
         fieldView = Ti.UI.createView({
@@ -33,9 +33,11 @@ Omadi.widgets.list_boolean = {
         fieldView.add(element);
 
         labelView = Omadi.widgets.label.getRegularLabelView(instance);
-        labelView.setWidth(labelView.width - 100);
+        labelView.setWidth('80%');
+        
         labelView.setEllipsize(false);
         labelView.setWordWrap(true);
+        
         labelView.setHeight(Ti.UI.SIZE);
 
         fieldView.add(Ti.UI.createView({

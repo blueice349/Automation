@@ -7,15 +7,26 @@ Ti.include('/lib/functions.js');
 var domainName = Titanium.App.Properties.getString("domainName");
 var message_center = {};
 var curWin = Ti.UI.currentWindow;
-curWin.setBackgroundColor("#eee");
+var wrapperView;
 
+curWin.setBackgroundColor("#eee");
+Ti.UI.currentWindow.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
+wrapperView = Ti.UI.createView({
+   layout: 'vertical',
+   bottom: 0,
+   top: 0,
+   right: 0,
+   left: 0 
+});
 
 curWin.is_opened = false;
 var listTableView;
 //var search;
 
 var accountMessage = {};
-accountWindow = {};
+var accountWindow = {};
+var accountWrapperView;
+
 //accountMessage.search = null;
 accountMessage.listView = null;
 accountWindow.isOpened = false;
@@ -144,18 +155,14 @@ function loadAccAlertData() {"use strict";
     db.close();
 }
 
-function alertNavButtons(lv_listTableView, currentWin, type) {"use strict";
-    var backButton, space, label;
+function alertNavButtons(currentWin, currentWinWrapper, type) {"use strict";
+    var backButton, space, label, items;
     
-    if (lv_listTableView) {
-        lv_listTableView.top = 40;
-    }
     backButton = Ti.UI.createButton({
         title : 'Back',
         style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
     });
     backButton.addEventListener('click', function() {
-        //Omadi.data.setUpdating(false);
         currentWin.close();
     });
 
@@ -173,6 +180,7 @@ function alertNavButtons(lv_listTableView, currentWin, type) {"use strict";
         touchEnabled : false,
         style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
     });
+    
     if (type != null) {
         label.title = type;
     }
@@ -190,28 +198,34 @@ function alertNavButtons(lv_listTableView, currentWin, type) {"use strict";
     refreshImg.addEventListener('click', function(e) {
         
         Omadi.display.loading("Refreshing...");
-        //_upload_gps_locations();
         Omadi.location.uploadGPSCoordinates();
     });
-
+    
+    items = [backButton, space, label, space];
+    
+    if(!currentWin.isChild){
+        items.push(refreshImg);
+    }
+    
     // create and add toolbar
     toolbar = Ti.UI.iOS.createToolbar({
-        items : [backButton, space, label, space, refreshImg],
+        items : items,
         top : 0,
         borderTop : false,
-        borderBottom : true
+        borderBottom : false,
+        height: Ti.UI.SIZE
     });
 
-    currentWin.add(toolbar);
+    currentWinWrapper.add(toolbar);
 }
 
-function alertNavButtons_android(lv_listTableView, currentWindow, type) {"use strict";
+function alertNavButtons_android(lv_listTableView, currentWindow, currentWindowWrapper, type) {"use strict";
     var headerView, label;
     
-    if (lv_listTableView) {
-        lv_listTableView.top = 40;
-        lv_listTableView.bottom = 0;
-    }
+    // if (lv_listTableView) {
+        // lv_listTableView.top = 40;
+        // lv_listTableView.bottom = 0;
+    // }
     
     headerView = Ti.UI.createView({
         top : 0,
@@ -274,8 +288,11 @@ function alertNavButtons_android(lv_listTableView, currentWindow, type) {"use st
     });
 
     headerView.add(label);
-    headerView.add(refreshImg);
-    currentWindow.add(headerView);
+    
+    if(!currentWindow.isChild){
+        headerView.add(refreshImg);
+    }
+    currentWindowWrapper.add(headerView);
 }
 
 function loadData() {"use strict";
@@ -363,7 +380,7 @@ function loadData() {"use strict";
             },
             text : 'No location alerts were found'
         });
-        curWin.add(empty);
+        wrapperView.add(empty);
     }
     db.close();
 
@@ -373,12 +390,28 @@ function opnAccountAlertsList(e) {"use strict";
     
     accountWindow = Ti.UI.createWindow({
         navBarHidden : true,
-        //title : e.row.lbl + " - Alert List",
+        title : e.row.lbl,
         nid : e.row.nid,
-        isOpened : false
+        isOpened : true,
+        isChild: true
     });
-    accountWindow.isOpened = true;
-
+    
+    accountWrapperView = Ti.UI.createView({
+       layout: 'vertical',
+       bottom: 0,
+       top: 0,
+       right: 0,
+       left: 0 
+    });
+    
+    accountWindow.add(accountWrapperView);
+    
+    if (Ti.App.isAndroid) {
+        alertNavButtons_android(accountMessage.listView, accountWindow, accountWrapperView, accountWindow.title);
+    }
+    else {
+        alertNavButtons(accountWindow, accountWrapperView, accountWindow.title);
+    }
 
     accountMessage.listView = Titanium.UI.createTableView({
         top : 0,
@@ -391,7 +424,7 @@ function opnAccountAlertsList(e) {"use strict";
         })
     });
     
-    accountWindow.add(accountMessage.listView);
+    accountWrapperView.add(accountMessage.listView);
     
     accountMessage.listView.addEventListener('click', function(row_e) {
         var db, result, n_nid, type_vl, region_f, name_s, dialog;
@@ -423,25 +456,6 @@ function opnAccountAlertsList(e) {"use strict";
             }
         });
     });
-
-    // accountMessage.listView.addEventListener('focus', function(e) {
-    // accountMessage.search.blur();
-    // });
-    //
-    // accountMessage.search.addEventListener('return', function(e) {
-    // accountMessage.search.blur();
-    // });
-    //
-    // accountMessage.search.addEventListener('cancel', function(e) {
-    // accountMessage.search.blur();
-    // });
-
-    if (Ti.App.isAndroid) {
-        alertNavButtons_android(accountMessage.listView, accountWindow, accountWindow.title);
-    }
-    else {
-        alertNavButtons(accountMessage.listView, accountWindow, accountWindow.title);
-    }
     
     accountWindow.addEventListener('android:back', function() {
         accountWindow.close();
@@ -451,12 +465,7 @@ function opnAccountAlertsList(e) {"use strict";
         accountWindow.isOpened = false;
     });
 
-    // accountWindow.addEventListener('focus', function() {
-    // setTimeout(function() {
-    // accountMessage.search.blur();
-    // }, 110);
-    // });
-
+  
     accountWindow.open();
     if (Ti.App.isAndroid) {
         Ti.UI.Android.hideSoftKeyboard();
@@ -468,25 +477,41 @@ function opnAccountAlertsList(e) {"use strict";
 
 ( function() {"use strict";
 
-    //Sets only portrait mode
-    curWin.orientationModes = [Titanium.UI.PORTRAIT];
     
     Ti.App.addEventListener('loggingOut', function() {
         Ti.UI.currentWindow.close();
     });
+
+    Ti.App.addEventListener("savedNode", function(){
+        if(Ti.App.isAndroid){
+            
+            if(accountWindow.isOpened){
+                accountWindow.close();
+            }
+            
+            Ti.UI.currentWindow.close();
+        }
+        else{
+            
+            if(accountWindow.isOpened){
+                accountWindow.close();
+            }
+            
+            Ti.UI.currentWindow.hide();
+            // Close the window after the maximum timeout for a node save
+            setTimeout(Ti.UI.currentWindow.close, 65000);
+        }
+    });
     
-    //Search bar definition
-    // search = Ti.UI.createSearchBar({
-    // hintText : 'Search...',
-    // autocorrect : false,
-    // barColor : '#000'
-    // });
+    if (Ti.App.isAndroid) {
+        alertNavButtons_android(listTableView, curWin, wrapperView);
+    }
+    else {
+        alertNavButtons(curWin, wrapperView);
+    }
     
-    //Contat list container
     listTableView = Titanium.UI.createTableView({
-        top : 0,
-        bottom : 0,
-        //search : search,
+        height: Ti.UI.FILL,
         separatorColor : '#BDBDBD',
         backgroundColor : '#fff'
     });
@@ -498,23 +523,7 @@ function opnAccountAlertsList(e) {"use strict";
         });
     }
     
-    curWin.add(listTableView);
-    
-    // if (Ti.App.isAndroid) {
-        // // actIndAlert = Ti.UI.createActivityIndicator({
-            // // message : 'Updating Alerts...',
-            // // color : '#fff'
-        // // });
-        // // curWin.add(actIndAlert);
-    // }
-    // else {
-        // actIndAlert = Ti.UI.createActivityIndicator({
-            // height : 32,
-            // width : 32,
-            // style : Ti.UI.iPhone.ActivityIndicatorStyle.DARK,
-            // right : 12
-        // });
-    // }
+    wrapperView.add(listTableView);
     
     //When back button on the phone is pressed, it opens mainMenu.js and close the current window
     curWin.addEventListener('android:back', function() {
@@ -548,13 +557,7 @@ function opnAccountAlertsList(e) {"use strict";
         }
     });
     
-    if (Ti.App.isAndroid) {
-        alertNavButtons_android(listTableView, curWin);
-        //bottomBack_release(win, "Back", "enable");
-    }
-    else {
-        alertNavButtons(listTableView, curWin);
-    }
+    
     
     curWin.is_opened = true;
     loadData();
@@ -574,6 +577,8 @@ function opnAccountAlertsList(e) {"use strict";
            // }
        // }
     });
+    
+    curWin.add(wrapperView);
     
     curWin.is_opened = true;
     Omadi.display.loading("Refreshing...");

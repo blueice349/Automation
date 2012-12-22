@@ -57,7 +57,7 @@ Omadi.widgets.auto_increment = {
         
         widgetView = Ti.UI.createLabel({
             textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
-            width : Ti.Platform.displayCaps.platformWidth - 30,
+            width : '92%',
             height: Ti.UI.SIZE,
             color : '#000000',
             font: {
