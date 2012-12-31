@@ -402,63 +402,67 @@ function validateRestrictions(node){"use strict";
     restrictions = [];
     form_errors = [];
     
-    nid = null;
-    vin = null;
-    account = null;
-    license_plate = null;
+    // Only check on creation
+    if(node.nid === 'new'){
     
-    if(typeof node.vin !== 'undefined' && typeof node.vin.dbValues !== 'undefined' && node.vin.dbValues.length > 0 && node.vin.dbValues[0] != null && node.vin.dbValues[0] != ""){
-        vin = node.vin.dbValues[0].toUpperCase();
-    }
-    
-    if(typeof node.license_plate___plate !== 'undefined' && typeof node.license_plate___plate.dbValues !== 'undefined' && node.license_plate___plate.dbValues.length > 0 && node.license_plate___plate.dbValues[0] != null && node.license_plate___plate.dbValues[0] != ""){
-        license_plate = node.license_plate___plate.dbValues[0].toUpperCase();
-    }
-    
-    if(typeof node.enforcement_account !== 'undefined' && typeof node.enforcement_account.dbValues !== 'undefined' && node.enforcement_account.dbValues.length > 0 && node.enforcement_account.dbValues[0] != null){
-        nid = node.enforcement_account.dbValues[0];
-        account = node.enforcement_account.textValues[0];
-    }
-    
-    if(nid !== null && nid > 0){
-        timestamp = Omadi.utils.getUTCTimestamp();
+        nid = null;
+        vin = null;
+        account = null;
+        license_plate = null;
         
-        query = 'SELECT restriction_license_plate___plate, vin, restrict_entire_account, restriction_start_date, restriction_end_date ';
-        query += ' FROM restriction WHERE restriction_account="' + nid + '"';
-        query += ' AND ((restriction_start_date < ' + timestamp + ' OR restriction_start_date IS NULL) ';
-        query += ' AND (restriction_end_date > ' + timestamp + ' OR restriction_end_date IS NULL))';
-        
-        //Ti.API.error(query);
-        
-        db = Omadi.utils.openMainDatabase();
-        result = db.execute(query);
-    
-        while (result.isValidRow()) {
-            
-            restrictions.push({
-                license_plate : result.fieldByName('restriction_license_plate___plate'),
-                restrict_entire_account : result.fieldByName('restrict_entire_account'),
-                startTime: result.fieldByName('restriction_start_date'),
-                endTime: result.fieldByName('restriction_end_date'),
-                vin : result.fieldByName('vin')
-            });
-            result.next();
+        if(typeof node.vin !== 'undefined' && typeof node.vin.dbValues !== 'undefined' && node.vin.dbValues.length > 0 && node.vin.dbValues[0] != null && node.vin.dbValues[0] != ""){
+            vin = node.vin.dbValues[0].toUpperCase();
         }
-        result.close();
-            
-        for(i = 0; i < restrictions.length; i ++){
-          // Ti.API.info(JSON.stringify(restrictions[i]));
-            if(restrictions[i].restrict_entire_account == 1){
-                form_errors.push("No parking enforcement is allowed for \"" + account + "\" right now due to a restriction.");
-            }
-            else if(restrictions[i].license_plate != null && license_plate == restrictions[i].license_plate.toUpperCase()){
-                form_errors.push("The license plate \"" + license_plate + "\" is currently restricted for \"" + account + "\".");
-            }
-            else if(restrictions[i].vin != null && vin == restrictions[i].vin.toUpperCase()){
-                form_errors.push("The VIN \"" + vin + "\" is currently restricted for \"" + account + "\".");
-            }
+        
+        if(typeof node.license_plate___plate !== 'undefined' && typeof node.license_plate___plate.dbValues !== 'undefined' && node.license_plate___plate.dbValues.length > 0 && node.license_plate___plate.dbValues[0] != null && node.license_plate___plate.dbValues[0] != ""){
+            license_plate = node.license_plate___plate.dbValues[0].toUpperCase();
         }
-        db.close();
+        
+        if(typeof node.enforcement_account !== 'undefined' && typeof node.enforcement_account.dbValues !== 'undefined' && node.enforcement_account.dbValues.length > 0 && node.enforcement_account.dbValues[0] != null){
+            nid = node.enforcement_account.dbValues[0];
+            account = node.enforcement_account.textValues[0];
+        }
+        
+        if(nid !== null && nid > 0){
+            timestamp = Omadi.utils.getUTCTimestamp();
+            
+            query = 'SELECT restriction_license_plate___plate, vin, restrict_entire_account, restriction_start_date, restriction_end_date ';
+            query += ' FROM restriction WHERE restriction_account="' + nid + '"';
+            query += ' AND ((restriction_start_date < ' + timestamp + ' OR restriction_start_date IS NULL) ';
+            query += ' AND (restriction_end_date > ' + timestamp + ' OR restriction_end_date IS NULL))';
+            
+            //Ti.API.error(query);
+            
+            db = Omadi.utils.openMainDatabase();
+            result = db.execute(query);
+        
+            while (result.isValidRow()) {
+                
+                restrictions.push({
+                    license_plate : result.fieldByName('restriction_license_plate___plate'),
+                    restrict_entire_account : result.fieldByName('restrict_entire_account'),
+                    startTime: result.fieldByName('restriction_start_date'),
+                    endTime: result.fieldByName('restriction_end_date'),
+                    vin : result.fieldByName('vin')
+                });
+                result.next();
+            }
+            result.close();
+                
+            for(i = 0; i < restrictions.length; i ++){
+              // Ti.API.info(JSON.stringify(restrictions[i]));
+                if(restrictions[i].restrict_entire_account == 1){
+                    form_errors.push("No parking enforcement is allowed for \"" + account + "\" right now due to a restriction.");
+                }
+                else if(restrictions[i].license_plate != null && license_plate == restrictions[i].license_plate.toUpperCase()){
+                    form_errors.push("The license plate \"" + license_plate + "\" is currently restricted for \"" + account + "\".");
+                }
+                else if(restrictions[i].vin != null && vin == restrictions[i].vin.toUpperCase()){
+                    form_errors.push("The VIN \"" + vin + "\" is currently restricted for \"" + account + "\".");
+                }
+            }
+            db.close();
+        }
     }
     
     return form_errors;

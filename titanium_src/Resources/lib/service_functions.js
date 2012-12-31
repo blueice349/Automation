@@ -675,10 +675,16 @@ Omadi.service.uploadFile = function() {"use strict";
                 result.close();
 
                 Ti.API.debug("Current upload is for nid " + nid + " field " + field_name + " delta " + delta + " and tries=" + tries);
-
+                
                 // Reset all photos to not uploading in case there was an error previously
                 mainDB.execute("UPDATE _photos SET uploading = 0 WHERE uploading <> 0");
 
+                if(file_data == null){
+                    mainDB.execute("DELETE FROM _photos WHERE id=" + id + " LIMIT 1");
+                    return;
+                }
+                
+                
                 if (count > 0) {
                     // Set the photo to uploading status
                     mainDB.execute("UPDATE _photos SET uploading = " + nowTimestamp + " WHERE id = " + id);
@@ -686,7 +692,7 @@ Omadi.service.uploadFile = function() {"use strict";
 
                 mainDB.close();
 
-                if (count > 0) {
+                if (count > 0 && file_data != null) {
 
                     imageData = file_data;
                     //imageData = file_data;

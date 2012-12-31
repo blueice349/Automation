@@ -171,7 +171,9 @@ function scrollBoxesToTop() {"use strict";
 
 ( function() {"use strict";
 
-        var termsView, termsIAgreeLabel, termsOfServiceLabel, underlineView, termsWrapper, loginButton, block_i, db, result, label_error, messageView, passwordField, usernameField, version_label, logo, savedPortal, savedUsername, domainName;
+        var termsView, termsIAgreeLabel, termsOfServiceLabel, termsWrapper, loginButton, 
+            block_i, db, result, passwordField, usernameField, version_label, 
+            logo, savedPortal, savedUsername, domainName;
         /*global clearCache*/
 
         Omadi.location.unset_GPS_uploading();
@@ -442,165 +444,108 @@ function scrollBoxesToTop() {"use strict";
             }
         });
 
-        messageView = Titanium.UI.createView({
-            bottom : 0,
-            height : Ti.UI.SIZE,
-            width : '100%',
-            borderRadius : 0,
-            backgroundGradient : {
-                type : 'linear',
-                colors : [{
-                    color : '#FFF',
-                    offset : 0.0
-                }, {
-                    color : '#AAA',
-                    offset : 1.0
-                }],
-                startPoint : {
-                    x : 0,
-                    y : 0
-                },
-                endPoint : {
-                    x : 0,
-                    y : 100
-                },
-                backFillStart : false
-            }
-        });
+        // messageView = Titanium.UI.createView({
+            // bottom : 0,
+            // height : Ti.UI.SIZE,
+            // width : '100%',
+            // borderRadius : 0,
+            // backgroundGradient : {
+                // type : 'linear',
+                // colors : [{
+                    // color : '#FFF',
+                    // offset : 0.0
+                // }, {
+                    // color : '#AAA',
+                    // offset : 1.0
+                // }],
+                // startPoint : {
+                    // x : 0,
+                    // y : 0
+                // },
+                // endPoint : {
+                    // x : 0,
+                    // y : 100
+                // },
+                // backFillStart : false
+            // }
+        // });
 
         //Decides wether logStatus is set or not
         // If it is set, print: Inform your credentials
         // Otherwise, print the content of logStatus
-        if ((Ti.App.Properties.getString('logStatus') == null) || (Ti.App.Properties.getString('logStatus') == "")) {
-            label_error = Titanium.UI.createLabel({
-                color : '#4B5C8C',
-                //text:'Please login - Version '+Titanium.App.version,
-                text : 'Please login',
-                font : {
-                    fontWeight : 'bold'
-                },
-                height : 'auto',
-                width : 'auto',
-                textAlign : 'center'
-            });
-        }
-        else {
-            label_error = Titanium.UI.createLabel({
-                color : '#4B5C8C',
-                font : {
-                    fontWeight : 'bold'
-                },
-                text : Ti.App.Properties.getString('logStatus'),
-                height : 'auto',
-                width : 'auto',
-                textAlign : 'center'
-            });
-        }
-        label_error.backgroundColor = "transparent";
-        // Adds label_error to the messageView
-        messageView.add(label_error);
+        // if ((Ti.App.Properties.getString('logStatus') == null) || (Ti.App.Properties.getString('logStatus') == "")) {
+            // label_error = Titanium.UI.createLabel({
+                // color : '#4B5C8C',
+                // //text:'Please login - Version '+Titanium.App.version,
+                // text : 'Please login',
+                // font : {
+                    // fontWeight : 'bold'
+                // },
+                // height : 'auto',
+                // width : 'auto',
+                // textAlign : 'center'
+            // });
+        // }
+        // else {
+            // label_error = Titanium.UI.createLabel({
+                // color : '#4B5C8C',
+                // font : {
+                    // fontWeight : 'bold'
+                // },
+                // text : Ti.App.Properties.getString('logStatus'),
+                // height : 'auto',
+                // width : 'auto',
+                // textAlign : 'center'
+            // });
+        // }
+        // label_error.backgroundColor = "transparent";
+        // // Adds label_error to the messageView
+        // messageView.add(label_error);
 
         //Adds messageView to root window
-        Ti.UI.currentWindow.add(messageView);
+        //Ti.UI.currentWindow.add(messageView);
 
-        if (Ti.Platform.osname == 'ipad') {
-            termsView = Ti.UI.createView({
-                width : 24,
-                height : 24,
-                borderRadius : 5,
-                borderWidth : 1,
-                selected : false,
-                borderColor : '#495A8B',
-                backgroundColor : '#FFF'
-            });
+        
+        termsView = Ti.UI.createView({
+            width : 24,
+            height : 24,
+            borderRadius : 5,
+            borderWidth : 1,
+            selected : false,
+            borderColor : '#495A8B',
+            backgroundColor : '#FFF'
+        });
 
-            termsIAgreeLabel = Ti.UI.createLabel({
-                text : 'I agree to the',
-                color : '#495A8B',
-                left : 5,
-                height : 30,
-                font : {
-                    fontSize : 14
-                },
-                width : 85
-            });
+        termsIAgreeLabel = Ti.UI.createLabel({
+            text : 'I agree to the',
+            color : '#666',
+            height : 30,
+            font : {
+                fontSize : 13
+            },
+            left : 10,
+            width : Ti.UI.SIZE
+        });
 
-            termsOfServiceLabel = Ti.UI.createLabel({
-                text : ' Terms of Service',
-                color : '#495A8B',
-                font : {
-                    fontSize : 14
-                },
-                height : 30,
-                width : 120
-            });
+        termsOfServiceLabel = Ti.UI.createLabel({
+            text : ' Terms of Service',
+            color : '#495A8B',
+            font : {
+                fontSize : 13
+            },
+            height : 30,
+            textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
+            width : Ti.UI.SIZE,
+            right : 0
+        });
 
-            underlineView = Ti.UI.createView({
-                height : 1,
-                backgroundColor : '#495A8B',
-                width : 109,
-                left : 370
-            });
-
-            termsWrapper = Ti.UI.createView({
-                layout : 'horizontal',
-                height : 30,
-                top : 15,
-                width : Ti.UI.SIZE,
-                left : '33%',
-                right : '33%'
-            });
-
-        }
-        else {
-            termsView = Ti.UI.createView({
-                width : 24,
-                height : 24,
-                borderRadius : 5,
-                borderWidth : 1,
-                selected : false,
-                borderColor : '#495A8B',
-                backgroundColor : '#FFF'
-            });
-
-            termsIAgreeLabel = Ti.UI.createLabel({
-                text : 'I agree to the',
-                color : '#666',
-                height : 30,
-                font : {
-                    fontSize : 13
-                },
-                left : 10,
-                width : Ti.UI.SIZE
-            });
-
-            termsOfServiceLabel = Ti.UI.createLabel({
-                text : ' Terms of Service',
-                color : '#495A8B',
-                font : {
-                    fontSize : 13
-                },
-                height : 30,
-                textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
-                width : Ti.UI.SIZE,
-                right : 0
-            });
-
-            underlineView = Ti.UI.createView({
-                height : 1,
-                backgroundColor : '#495A8B',
-                width : 0,
-                visible : false
-            });
-
-            termsWrapper = Ti.UI.createView({
-                layout : 'horizontal',
-                height : 26,
-                top : 15,
-                width : Ti.UI.SIZE
-            });
-
-        }
+        termsWrapper = Ti.UI.createView({
+            layout : 'horizontal',
+            height : 27,
+            top : 15,
+            width : Ti.UI.SIZE
+        });
+        
 
         termsView.addEventListener('click', function(e) {
             if (e.source.selected === false) {
@@ -625,24 +570,57 @@ function scrollBoxesToTop() {"use strict";
         });
 
         termsOfServiceLabel.addEventListener('click', function() {
-            var win, webView, backButton;
+            var win, webView, toolbar, space, titleLabel, backButton;
 
-            win = Ti.UI.createWindow();
+            win = Ti.UI.createWindow({
+                layout: 'vertical',
+                navBarHidden: true
+            });
+            
             webView = Ti.UI.createWebView({
-                url : 'https://omadi.com/terms.txt'
+                url : 'https://omadi.com/terms.txt',
+                height : Ti.UI.FILL
             });
-
-            backButton = Ti.UI.createButton({
-                title : 'Back',
-                bottom : 0,
-                right : 0,
-                style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-            });
-            backButton.addEventListener('click', function() {
-                win.close();
-            });
-
-            webView.add(backButton);
+            
+            if(Ti.App.isAndroid){
+                win.addEventListener("android:back", function(e){
+                    win.close();
+                });
+            }
+            else{
+                backButton = Ti.UI.createButton({
+                    title : 'Back',
+                    style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+                });
+                
+                backButton.addEventListener('click', function() {
+                    win.close();
+                });
+                
+                space = Titanium.UI.createButton({
+                    systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+                });
+                
+                titleLabel = Titanium.UI.createButton({
+                    title : "Terms of Service",
+                    color : '#fff',
+                    ellipsize : true,
+                    wordwrap : false,
+                    width : Ti.UI.SIZE,
+                    focusable : false,
+                    touchEnabled : false,
+                    style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+                });
+            
+                toolbar = Titanium.UI.iOS.createToolbar({
+                    items : [backButton, space, titleLabel, space],
+                    top : 0,
+                    borderTop : false,
+                    borderBottom : false
+                });
+                win.add(toolbar);
+            }
+            
             win.add(webView);
             win.open();
         });
@@ -651,7 +629,6 @@ function scrollBoxesToTop() {"use strict";
         termsWrapper.add(termsIAgreeLabel);
         termsWrapper.add(termsOfServiceLabel);
         scrollView.add(termsWrapper);
-        //scrollView.add(underlineView);
 
         loginButton = Titanium.UI.createButton({
             title : 'Log In',
@@ -785,10 +762,10 @@ function scrollBoxesToTop() {"use strict";
 
                     startGPSService();
 
-                    loginJSON = JSON.parse(this.responseText);
-                    if ( typeof loginJSON.new_app !== 'undefined' && loginJSON.new_app.length > 0) {
-                        Omadi.display.newAppAvailable(loginJSON.new_app);
-                    }
+                    //loginJSON = JSON.parse(this.responseText);
+                    // if ( typeof loginJSON.new_app !== 'undefined' && loginJSON.new_app.length > 0) {
+                        // Omadi.display.newAppAvailable(loginJSON.new_app);
+                    // }
                 };
 
                 //If username and pass wrong:
@@ -797,16 +774,16 @@ function scrollBoxesToTop() {"use strict";
                     Omadi.display.doneLoading();
 
                     if (this.status == 401) {
-                        label_error.text = "Check your username and password. Then try again.";
+                        //label_error.text = "Check your username and password. Then try again.";
                         alert("Make sure client account, username and password are correct.");
                     }
                     else if(this.error.indexOf("imeout") !== -1){
                         alert("There was a network error. Make sure you're connected to the Internet.");
-                        label_error.text = "Network timeout. Please try again.";
+                        //label_error.text = "Network timeout. Please try again.";
                     }
                     else {
                         alert("An unknown error occurred. Please try logging in again.");
-                        label_error.text = "An error has occurred. Please try again.";
+                        //label_error.text = "An error has occurred. Please try again.";
                     }
                 };
                 
@@ -835,7 +812,7 @@ function scrollBoxesToTop() {"use strict";
         // that he is already in the first menu
         Ti.UI.currentWindow.addEventListener('android:back', function() {
             Ti.API.info("Shouldn't go back");
-            label_error.text = "You can't go back, this is the first menu";
+            //label_error.text = "You can't go back, this is the first menu";
         });
 
         Ti.App.Properties.removeProperty('logStatus');

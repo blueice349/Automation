@@ -27,6 +27,7 @@ Omadi.location.uploadGPSCoordinates = function(){
 		
 		if (!Ti.Network.getOnline()) {
 			Ti.API.info('We are offline');
+			Ti.App.fireEvent('refresh_UI_Alerts', {status: 'success'});
 		}
 		else {
 			Omadi.location.set_GPS_uploading();
@@ -118,23 +119,19 @@ Omadi.location.uploadGPSCoordinates = function(){
 	}
 };
 
-Omadi.location.is_GPS_uploading = function(){
-	"use strict";
+Omadi.location.is_GPS_uploading = function(){"use strict";
 	return Ti.App.Properties.getBool("isGPSUploading", false);
 };
 
-Omadi.location.set_GPS_uploading = function(){
-	"use strict";	
+Omadi.location.set_GPS_uploading = function(){"use strict";	
 	Ti.App.Properties.setBool("isGPSUploading", true);
 };
 
-Omadi.location.unset_GPS_uploading = function(){
-	"use strict";
+Omadi.location.unset_GPS_uploading = function(){"use strict";
 	Ti.App.Properties.setBool("isGPSUploading", false);
 };
 
-Omadi.location.uploadSuccess = function(e) {
-	"use strict";
+Omadi.location.uploadSuccess = function(e) {"use strict";
 	/*global isJsonString*/
 	
 	var i, j, responseObj, db, sqlArray, nids, now_timestamp;
@@ -198,18 +195,18 @@ Omadi.location.uploadSuccess = function(e) {
 		db.execute("COMMIT TRANSACTION");
 		//Ti.API.info('Finished inserting');
 		db.close();
-		Ti.App.fireEvent('refresh_UI_Alerts', {status: 'success'});
 		
-		Omadi.location.unset_GPS_uploading();
+		
 		
 		//if(!Ti.App.Properties.getBool('stopGPS', false) && Omadi.utils.isLoggedIn()){
-		      createNotification("Uploaded GPS at " + Omadi.utils.PHPFormatDate(Number(Omadi.utils.getUTCTimestamp()), 'g:i a'));
+	   createNotification("Uploaded GPS at " + Omadi.utils.PHPFormatDate(Number(Omadi.utils.getUTCTimestamp()), 'g:i a'));
 		//}
 		
 	}
 	
 	Omadi.location.unset_GPS_uploading();
 	
+	Ti.App.fireEvent('refresh_UI_Alerts', {status: 'success'});
 	// if(Ti.App.Properties.getBool('stopGPS', false) || !Omadi.utils.isLoggedIn()){
         // setTimeout(Omadi.display.removeNotifications, 1000);
     // }
@@ -218,8 +215,10 @@ Omadi.location.uploadSuccess = function(e) {
 Omadi.location.uploadError = function(e) {"use strict";
 	var db = Omadi.utils.openGPSDatabase();
 	db.execute("UPDATE user_location SET status =\"notUploaded\"");
-	Ti.API.error("Error found for GPS uploading: " + e.status);
+	Ti.API.error("Error found for GPS uploading: " + e.error + " " + e.status);
 	db.close();
-	Ti.App.fireEvent('refresh_UI_Alerts', {status: 'fail'});
+	
 	Omadi.location.unset_GPS_uploading();
+	
+	Ti.App.fireEvent('refresh_UI_Alerts', {status: 'fail'});
 };

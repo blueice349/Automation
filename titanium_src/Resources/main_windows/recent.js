@@ -30,6 +30,10 @@ function getRecentNodeData(orderField){"use strict";
    
     // Don't allow any drafts to be seen right now because it messes up some of the action options
     sql += " WHERE flag_is_updated IN (0,1) ";
+    
+    if(orderField == 'viewed'){
+        sql += " AND viewed > 0 ";
+    }
    
     sql += " ORDER BY " + orderField + " DESC LIMIT 40";
     result = db.execute(sql);

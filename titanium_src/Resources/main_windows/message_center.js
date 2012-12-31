@@ -8,6 +8,7 @@ var domainName = Titanium.App.Properties.getString("domainName");
 var message_center = {};
 var curWin = Ti.UI.currentWindow;
 var wrapperView;
+var empty = null;
 
 curWin.setBackgroundColor("#eee");
 Ti.UI.currentWindow.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
@@ -296,10 +297,10 @@ function alertNavButtons_android(lv_listTableView, currentWindow, currentWindowW
 }
 
 function loadData() {"use strict";
-    var empty, db, result, obj_cnt, insert_it, i, data, fullName, row;
+    var db, result, obj_cnt, insert_it, i, data, fullName, row;
 
     db = Omadi.utils.openGPSDatabase();
-    result = db.execute('SELECT *, COUNT(*) term_count FROM alerts GROUP BY location_nid ORDER BY timestamp DESC');
+    result = db.execute('SELECT location_label, location_nid, COUNT(*) term_count FROM alerts GROUP BY location_nid ORDER BY timestamp DESC');
 
     obj_cnt = [];
 
@@ -363,24 +364,36 @@ function loadData() {"use strict";
         // }, 110 );
         // });
     }
-
+    
     if (data.length > 0) {
         listTableView.setData(data);
+        listTableView.setHeight(Ti.UI.FILL);
+        listTableView.show();
+        
+        if(empty !== null){
+            empty.setHeight(0);
+            empty.hide();
+        }
     }
     else {
         listTableView.hide();
-        empty = Titanium.UI.createLabel({
-            height : Ti.UI.SIZE,
-            width : Ti.UI.SIZE,
-            top : '50%',
-            color : '#999',
-            font : {
-                fontWeight : 'bold',
-                fontSize : 22
-            },
-            text : 'No location alerts were found'
-        });
-        wrapperView.add(empty);
+        listTableView.height = 0;
+        
+        if(empty === null){
+            empty = Titanium.UI.createLabel({
+                height : Ti.UI.FILL,
+                width : Ti.UI.SIZE,
+                color : '#999',
+                font : {
+                    fontWeight : 'bold',
+                    fontSize : 22
+                },
+                text : 'No location alerts were found'
+            });
+            wrapperView.add(empty);
+        }
+        empty.setHeight(Ti.UI.FILL);
+        empty.show();
     }
     db.close();
 

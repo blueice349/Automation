@@ -100,7 +100,7 @@ Omadi.widgets.text_long = {
             font: {
                 fontSize: Omadi.widgets.fontSize
             },
-            returnKeyType: Ti.UI.RETURNKEY_DONE,
+            returnKeyType: Ti.UI.RETURNKEY_DEFAULT,
             
             // Android options
             keepScreenOn: true,

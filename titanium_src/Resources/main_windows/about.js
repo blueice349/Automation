@@ -41,7 +41,7 @@ Ti.include('/lib/functions.js');
         Ti.UI.currentWindow.close();
     });
 	
-	if(Titanium.Platform.name !== 'android') {
+	if(Ti.App.isIOS) {
 		backButton = Ti.UI.createButton({
 			title : 'Back',
 			style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
