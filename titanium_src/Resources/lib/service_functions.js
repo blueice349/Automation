@@ -678,21 +678,20 @@ Omadi.service.uploadFile = function() {"use strict";
                 
                 // Reset all photos to not uploading in case there was an error previously
                 mainDB.execute("UPDATE _photos SET uploading = 0 WHERE uploading <> 0");
-
-                if(file_data == null){
-                    mainDB.execute("DELETE FROM _photos WHERE id=" + id + " LIMIT 1");
-                    return;
-                }
-                
                 
                 if (count > 0) {
+                    if((file_data == null || file_data.length) < 10 && id > 0){
+                        mainDB.execute("DELETE FROM _photos WHERE id=" + id);
+                        return;
+                    }
+                    
                     // Set the photo to uploading status
                     mainDB.execute("UPDATE _photos SET uploading = " + nowTimestamp + " WHERE id = " + id);
                 }
 
                 mainDB.close();
 
-                if (count > 0 && file_data != null) {
+                if (count > 0) {
 
                     imageData = file_data;
                     //imageData = file_data;

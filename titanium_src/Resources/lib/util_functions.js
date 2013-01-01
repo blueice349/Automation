@@ -50,6 +50,25 @@ Omadi.utils.getUid = function(){"use strict";
     return parseInt(loginJson.user.uid, 10);
 };
 
+Omadi.utils.getRealname = function(uid){"use strict";
+    var db, result, realname;
+    
+    realname = "";
+    
+    db = Omadi.utils.openMainDatabase();
+    result = db.execute("SELECT username, realname FROM user WHERE uid = " + uid);
+    if(result.isValidRow()){
+        realname = result.fieldByName('realname');
+        if(realname.length == 0){
+            realname = result.fieldByName('username');
+        }
+    }
+    result.close();
+    db.close();
+    
+    return realname;
+};
+
 Omadi.utils.getTimeFormat = function(){"use strict";
     var format, loginJson = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
     format = 'g:iA';

@@ -346,7 +346,7 @@ function doFieldOutput(fieldObj) {"use strict";
                         scrollType : "horizontal",
                         layout : 'horizontal',
                         right : 0,
-                        width : '60%',
+                        width : '100%',
                         height : 100
                     });
                     
@@ -403,6 +403,15 @@ function doFieldOutput(fieldObj) {"use strict";
                     if (valueView.getChildren().length === 0) {
                         valueView.height = 0;
                     }
+                    else{
+                        labelView.setWidth('100%');
+                        labelLabel.setTextAlign(Ti.UI.TEXT_ALIGNMENT_LEFT);
+                        labelLabel.setLeft(5);
+                    }
+                    
+                    rowView.add(valueView);
+                    
+                    scrollView.add(labelView);
                 }
                 else {
     
@@ -515,10 +524,10 @@ function doFieldOutput(fieldObj) {"use strict";
     
                         valueView.add(valueLabel);
                     }
+                    
+                    rowView.add(labelView);
+                    rowView.add(valueView);
                 }
-    
-                rowView.add(labelView);
-                rowView.add(valueView);
             }
             
             if(!fieldIsHidden){

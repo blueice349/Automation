@@ -222,7 +222,7 @@ Omadi.data.getNewNodeNid = function(){"use strict";
 };
 
 Omadi.data.getNodeTitle = function(node){"use strict";
-    var title, bundle, index, field_name, titleValues = [], spacer = ' - ';
+    var title, bundle, index, field_name, titleValues = [], spacer = ' - ', realname, db, result;
     
     title = "- No Title -";
     
@@ -232,7 +232,18 @@ Omadi.data.getNodeTitle = function(node){"use strict";
         for(index in bundle.data.title_fields){
             if(bundle.data.title_fields.hasOwnProperty(index)){
                 field_name = bundle.data.title_fields[index];
-                if(typeof node[field_name] !== 'undefined' && typeof node[field_name].textValues !== 'undefined' && typeof node[field_name].textValues[0] !== 'undefined'){
+                
+                if(field_name == 'uid'){
+                    field_name = 'author_uid';
+                }
+                
+                if((field_name == 'author_uid' || field_name == 'changed_uid') && typeof node.changed_uid !== 'undefined'){
+                    titleValues.push(Omadi.utils.getRealname(node[field_name]));
+                }
+                else if((field_name == 'created' || field_name == 'changed') && typeof node[field_name] !== 'undefined'){
+                    titleValues.push(Omadi.utils.formatDate(node[field_name], true));
+                }
+                else if(typeof node[field_name] !== 'undefined' && typeof node[field_name].textValues !== 'undefined' && typeof node[field_name].textValues[0] !== 'undefined'){
                     titleValues.push(node[field_name].textValues[0]);
                 }
             }
@@ -385,19 +396,18 @@ Omadi.data.saveNode = function(node){"use strict";
         try{
             if (node._isDraft) {
                 if (node.nid > 0) {
-                    db.execute('UPDATE node SET changed="' + node.changed + '", changed_uid=' + node.changed_uid + ', title="' + node.title + '" , flag_is_updated=3, table_name="' + node.type + '", form_part =' + node.form_part + ', no_data_fields=\'' + node.no_data + '\', viewed=' + node.viewed + ' WHERE nid=' + node.nid);
+                    db.execute("UPDATE node SET changed=" + node.changed + ", changed_uid=" + node.changed_uid + ", title='" + dbEsc(node.title) + "', flag_is_updated=3, table_name='" + node.type + "', form_part=" + node.form_part + ", no_data_fields='" + node.no_data + "',viewed=" + node.viewed + " WHERE nid=" + node.nid);
                 }
                 else {
-                    db.execute('INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name , form_part, no_data_fields, viewed, sync_hash) VALUES (' + node.nid + ', ' + node.created + ', ' + node.changed + ', "' + node.title + '" , ' + node.author_uid + ',' + node.changed_uid + ', 3 , "' + node.type + '", ' + node.form_part + ', \'' + node.no_data + '\', ' + node.viewed + ', \'' + node.sync_hash + '\')');
+                    db.execute("INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash) VALUES (" + node.nid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",3,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "')");
                 }
             }
             else if (node.nid > 0) {
-               // Ti.API.info('UPDATE node SET changed="' + _now + '", title="' + title_to_node + '" , flag_is_updated=1, table_name="' + win.type + '", form_part =' + win.region_form + ', no_data_fields=\'' + no_data_fields_content + '\' WHERE nid=' + win.nid);
-                db.execute('UPDATE node SET changed="' + node.changed + '", changed_uid=' + node.changed_uid + ', title="' + node.title + '" , flag_is_updated=1, table_name="' + node.type + '", form_part =' + node.form_part + ', no_data_fields=\'' + node.no_data + '\', viewed=' + node.viewed + ' WHERE nid=' + node.nid);
+                db.execute("UPDATE node SET changed=" + node.changed + ", changed_uid=" + node.changed_uid + ", title='" + dbEsc(node.title) + "', flag_is_updated=1, table_name='" + node.type + "', form_part=" + node.form_part + ", no_data_fields='" + node.no_data + "',viewed=" + node.viewed + " WHERE nid=" + node.nid);
             }
             else {
-                //Ti.API.info('INSERT OR REPLACE INTO node (nid , created , changed , title , author_uid , flag_is_updated, table_name, form_part, no_data_fields ) VALUES (' + new_nid + ', ' + _now + ', 0, "' + title_to_node + '" , ' + win.uid + ', 1 , "' + win.type + '", ' + win.region_form + ', \'' + no_data_fields_content + '\')');
-                db.execute('INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash) VALUES (' + node.nid + ', ' + node.created + ', ' + node.changed + ', "' + node.title + '" , ' + node.author_uid + ',' + node.changed_uid + ', 1 , "' + node.type + '"  , ' + node.form_part + ', \'' + node.no_data + '\', ' + node.viewed + ', \'' + node.sync_hash + '\')');
+                // Give all permissions for this node. Once it comes back, the correct permissions will be there.  If it never gets uploaded, the user should be able to do whatever they want with that info.
+                db.execute("INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete) VALUES (" + node.nid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",1,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1)");
             }
             
             db.execute('UPDATE _photos SET nid=' + node.nid + ' WHERE nid = 0');

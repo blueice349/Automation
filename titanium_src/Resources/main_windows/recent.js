@@ -142,7 +142,7 @@ function createiOSToolbar(){"use strict";
         
         back.addEventListener('click', function() {
             curWin.close();
-            tabGroup.close();
+            //tabGroup.close();
         });
         
         space = Ti.UI.createButton({
@@ -345,8 +345,6 @@ function createAndroidTabs(){"use strict";
     
     wrapperView.add(search);
     
-  
-    
     tableView = Ti.UI.createTableView({
         width: '100%',
         bottom: 0,
@@ -365,10 +363,10 @@ function createAndroidTabs(){"use strict";
     
     tableView.addEventListener('click', function(e) {
             
-        if(e.row.nid > 0){
+        //if(e.row.nid > 0){
            
            Omadi.display.showDialogFormOptions(e);
-        }
+        //}
     });
         
     tableView.setData(getTableViewData('changed'));  
