@@ -99,7 +99,7 @@ Omadi.widgets.calculation_field = {
             parent_field, start_timestamp, end_timestamp, difference, at_time, relative_increment_time, day_count, 
             parent_node, zero;
         
-        /*global list_search_node_matches_search_criteria, usort, loadNode, mktime, date*/
+        /*global list_search_node_matches_search_criteria, loadNode, mktime, date*/
         
         instances = Omadi.data.getFields(node.type);
         final_value = 0;
@@ -113,7 +113,7 @@ Omadi.widgets.calculation_field = {
                 cached_final_value = 0;
             }
     
-            usort(instance.settings.calculation.items, '_calculation_field_sort_on_weight');
+            instance.settings.calculation.items = instance.settings.calculation.items.sort(Omadi.utils.sortByWeight);
 
             for (idx in instance.settings.calculation.items) {
                 if(instance.settings.calculation.items.hasOwnProperty(idx)){
@@ -193,7 +193,8 @@ Omadi.widgets.calculation_field = {
                                         
                                         at_time = calculation_row.increment_at_time;
                                         start_timestamp = Number(start_timestamp);
-                                        relative_increment_time = at_time = mktime(0, 0, 0, date('n', start_timestamp), date('j', start_timestamp), date('Y', start_timestamp));
+                                        relative_increment_time = at_time = mktime(0,0,0, Omadi.utils.PHPFormatDate('n', start_timestamp), Omadi.utils.PHPFormatDate('j', start_timestamp), Omadi.utils.PHPFormatDate('Y', start_timestamp));
+                                        //relative_increment_time = at_time = mktime(0, 0, 0, date('n', start_timestamp), date('j', start_timestamp), date('Y', start_timestamp));
                                         
                                         day_count = 0;
                                         if (relative_increment_time < start_timestamp) {

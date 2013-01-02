@@ -225,7 +225,7 @@ Omadi.utils.isLoggedIn = function() {"use strict";
     return true;
 };
 
-Omadi.utils.PHPFormatDate = function(timestamp, format){"use strict";
+Omadi.utils.PHPFormatDate = function(format, timestamp){"use strict";
     var jsDate = new Date();
     jsDate.setTime(timestamp * 1000);
     return jsDate.format(format);
@@ -364,6 +364,17 @@ Omadi.utils.sortByName = function(a, b) {"use strict";
         return -1;
     }
     if (a.name > b.name){
+        return 1;
+    }
+    // a must be equal to b
+    return 0;
+};
+
+Omadi.utils.sortByWeight = function(a, b) {"use strict";
+    if (parseInt(a.weight, 10) < parseInt(b.weight, 10)){
+        return -1;
+    }
+    if (parseInt(a.weight, 10) > parseInt(b.weight, 10)){
         return 1;
     }
     // a must be equal to b

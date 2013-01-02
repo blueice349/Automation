@@ -91,7 +91,8 @@ Omadi.widgets.omadi_time = {
         if (dbValue !== null) {
             nowTimestamp = Math.round(jsDate.getTime() / 1000);
 
-            midnight = mktime(0, 0, 0, date('n', nowTimestamp), date('j', nowTimestamp), date('Y', nowTimestamp));
+            //midnight = mktime(0, 0, 0, date('n', nowTimestamp), date('j', nowTimestamp), date('Y', nowTimestamp));
+            midnight = mktime(0, 0, 0, Omadi.utils.PHPFormatDate('n', nowTimestamp), Omadi.utils.PHPFormatDate('j', nowTimestamp), Omadi.utils.PHPFormatDate('Y', nowTimestamp));
 
             jsDate.setTime((midnight + dbValue) * 1000);
         }
@@ -311,7 +312,7 @@ Omadi.widgets.omadi_time = {
 
             newDate = e.source.time_picker.getValue();
             e.source.widgetView.jsDate = newDate;
-            e.source.widgetView.textValue = Omadi.utils.PHPFormatDate(Math.ceil(newDate.getTime() / 1000), 'g:i A');
+            e.source.widgetView.textValue = Omadi.utils.PHPFormatDate('g:i A', Math.ceil(newDate.getTime() / 1000));
             e.source.widgetView.dbValue = Omadi.widgets.omadi_time.dateToSeconds(e.source.widgetView.textValue);
 
             e.source.widgetView.setText(e.source.widgetView.textValue);

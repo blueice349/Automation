@@ -361,8 +361,6 @@ Omadi.widgets.rules_field = {
     getTimeRulesText : function(timeValue) {"use strict";
         var timeStrings = [], dayStrings = [], times = [], returnVal, rows, i, row, values, day, time, timeString, startDay, currentDay, lastConsecutive, dayPatrolStrings, day_index;
 
-        /*global count_arr_obj, omadi_time_seconds_to_string*/
-
         dayStrings.push('Sun');
         dayStrings.push('Mon');
         dayStrings.push('Tue');
@@ -388,17 +386,17 @@ Omadi.widgets.rules_field = {
                             times['All Day'].push(i);
                         }
                         else {
-                            if (times[omadi_time_seconds_to_string(values[2], 'h:iA') + '-' + omadi_time_seconds_to_string(values[3], 'h:iA')] == null) {
-                                times[omadi_time_seconds_to_string(values[2], 'h:iA') + '-' + omadi_time_seconds_to_string(values[3], 'h:iA')] = [];
+                            if (times[Omadi.widgets.omadi_time.secondsToString(values[2]) + '-' + Omadi.widgets.omadi_time.secondsToString(values[3])] == null) {
+                                times[Omadi.widgets.omadi_time.secondsToString(values[2]) + '-' + Omadi.widgets.omadi_time.secondsToString(values[3])] = [];
                             }
 
-                            times[omadi_time_seconds_to_string(values[2], 'h:iA') + '-' + omadi_time_seconds_to_string(values[3], 'h:iA')].push(i);
+                            times[Omadi.widgets.omadi_time.secondsToString(values[2]) + '-' + Omadi.widgets.omadi_time.secondsToString(values[3])].push(i);
                         }
                     }
                 }
             }
 
-            if (times['All Day'] != null && count_arr_obj(times['All Day']) == 7) {
+            if (times['All Day'] != null && times['All Day'].length == 7) {
                 // This is equivalent to no rules, so fall through
                 Ti.API.info("NO RULES");
             }

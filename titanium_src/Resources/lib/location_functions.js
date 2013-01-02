@@ -109,7 +109,7 @@ Omadi.location.uploadGPSCoordinates = function(){
 				Ti.Geolocation.getCurrentPosition(Omadi.location.currentPositionCallback);
 				Ti.API.debug("FETCHING CURRENT POSITION");
 				
-				createNotification("No coordinates saved... " + Omadi.utils.PHPFormatDate(Number(Omadi.utils.getUTCTimestamp()), 'g:i a'));
+				createNotification("No coordinates saved... " + Omadi.utils.PHPFormatDate('g:i a', Number(Omadi.utils.getUTCTimestamp())));
 				
 			}
 		} 
@@ -199,7 +199,7 @@ Omadi.location.uploadSuccess = function(e) {"use strict";
 		
 		
 		//if(!Ti.App.Properties.getBool('stopGPS', false) && Omadi.utils.isLoggedIn()){
-	   createNotification("Uploaded GPS at " + Omadi.utils.PHPFormatDate(Number(Omadi.utils.getUTCTimestamp()), 'g:i a'));
+	   createNotification("Uploaded GPS at " + Omadi.utils.PHPFormatDate('g:i a', Number(Omadi.utils.getUTCTimestamp())));
 		//}
 		
 	}
