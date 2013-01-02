@@ -23,13 +23,13 @@ Ti.include('/lib/widgets/calculation_field.js');
 Ti.include('/lib/widgets/rules_field.js');
 Ti.include('/lib/widgets/auto_increment.js');
 Ti.include('/lib/widgets/omadi_time.js');
+Ti.include('/lib/widgets/file.js');
 
 /*jslint eqeq: true, plusplus: true, nomen: true*/
 /*global  Omadi*/
 
 Omadi.widgets.getFieldView = function (node, instance){"use strict";
     var fieldView = null;
-    
     
     switch(instance.type){
         case 'text':
@@ -72,6 +72,8 @@ Omadi.widgets.getFieldView = function (node, instance){"use strict";
             fieldView = Omadi.widgets.auto_increment.getFieldView(node, instance); break;
         case 'omadi_time':
             fieldView = Omadi.widgets.omadi_time.getFieldView(node, instance); break;
+        case 'file':
+            fieldView = Omadi.widgets.file.getFieldView(node, instance); break;
     }
     
     return fieldView;

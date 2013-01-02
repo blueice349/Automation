@@ -306,26 +306,21 @@ Omadi.widgets.omadi_reference = {
     },
     setChildDefaultValues : function(widgetView) {"use strict";
         var parentFieldName, defaultValueField, childFieldValues, parentNode, instance, instances, defaultValues, field_name, childFieldName, i, childInstance;
-        /*global getFormFieldValues, loadNode, setValues*/
-        Ti.API.info("What???");
+        /*global getFormFieldValues*/
         
         if (widgetView.dbValue > 0) {
             if (widgetView.defaultValueChildFields.length > 0) {
-                Ti.API.debug("has child fields");
+                
                 Ti.API.debug(widgetView.dbValue);
                 
-                parentNode = loadNode(widgetView.dbValue);
+                parentNode = Omadi.data.nodeLoad(widgetView.dbValue);
                 Ti.API.debug(parentNode.nid);
                 
                 for ( i = 0; i < widgetView.defaultValueChildFields.length; i++) {
                     childFieldName = widgetView.defaultValueChildFields[i].childFieldName;
                     defaultValueField = widgetView.defaultValueChildFields[i].defaultValueField;
-                    
-                    
-                    
                     childFieldValues = getFormFieldValues(childFieldName);
                     
-                    Ti.API.debug("child field values: " + childFieldValues);
                     if ( typeof childFieldValues.dbValues === 'undefined' || childFieldValues.dbValues.length == 0 || childFieldValues.dbValues[0] == null || childFieldValues.dbValues[0] == "") {
 
                         if ( typeof parentNode[defaultValueField] !== 'undefined') {

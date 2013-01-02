@@ -1,4 +1,4 @@
-/*global Omadi*/
+/*global Omadi, dbEsc*/
 
 Omadi.service = Omadi.service || {};
 
@@ -711,7 +711,8 @@ Omadi.service.uploadFile = function() {"use strict";
                         Omadi.utils.setCookieHeader(http);
 
                         http.onload = function(e) {
-                            var json, subDB, subResult, uploadMore = false, fieldSettings, tableName, decoded_values, decoded, content;
+                            var json, subDB, subResult, uploadMore = false, fieldSettings, tableName, 
+                                decoded_values, decoded, content, multipleValue, dbValue, jsonArray;
                             //Ti.API.info('UPLOAD FILE: =========== Success ========' + this.responseText);
                             Ti.API.debug("Photo upload succeeded");
 
@@ -730,35 +731,53 @@ Omadi.service.uploadFile = function() {"use strict";
                                 subResult.close();
 
                                 if (fieldSettings.cardinality > 1 || fieldSettings.cardinality < 0) {
-                                    subResult = subDB.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + json.nid + ' AND field_name = \'' + json.field_name + '\'');
-                                    decoded_values = [];
-                                    if (subResult.rowCount > 0) {
-                                        decoded = subResult.fieldByName('encoded_array');
-                                        if (decoded != null || decoded != "") {
-                                            decoded = Base64.decode(decoded);
-                                            Ti.API.info('Decoded array is equals to: ' + decoded);
-                                            decoded = decoded.toString();
-                                            decoded_values = decoded.split("j8Oc2s1E");
+                                    // subResult = subDB.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + json.nid + ' AND field_name = \'' + json.field_name + '\'');
+                                    // decoded_values = [];
+                                    // if (subResult.rowCount > 0) {
+                                        // decoded = subResult.fieldByName('encoded_array');
+                                        // if (decoded != null || decoded != "") {
+                                            // decoded = Base64.decode(decoded);
+                                            // Ti.API.info('Decoded array is equals to: ' + decoded);
+                                            // decoded = decoded.toString();
+                                            // decoded_values = decoded.split("j8Oc2s1E");
+                                        // }
+                                    // }
+                                    // subResult.close();
+// 
+                                    // if (json.delta < decoded_values.length) {
+                                        // decoded_values[json.delta] = json.file_id;
+                                    // }
+                                    // else {
+                                        // decoded_values.push(json.file_id);
+                                    // }
+//                                     
+                                    
+                                    
+                                    //content = Base64.encode(decoded_values.join("j8Oc2s1E"));
+
+                                    //subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='7411317618171051229', " + json.field_name + "___file_id='7411317618171051229', " + json.field_name + "___status='7411317618171051229' WHERE nid='" + json.nid + "'");
+                                    //subDB.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + json.nid + ', \'' + json.field_name + "___file_id" + '\',  \'' + content + '\' )');
+                                    //subDB.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + json.nid + ', \'' + json.field_name + '\',  \'' + content + '\' )');
+                                   
+                                    subResult = subDB.execute("SELECT " + json.field_name + " FROM " + tableName + " WHERE nid=" + json.nid);
+                                    
+                                    jsonArray = []; 
+                                    
+                                    if(subResult.isValidRow()){
+                                        multipleValue = Omadi.utils.getParsedJSON(subResult.fieldByName(json.field_name));
+                                        if(Omadi.utils.isArray(multipleValue)){
+                                            jsonArray = multipleValue;                                       
                                         }
                                     }
-                                    subResult.close();
-
-                                    if (json.delta < decoded_values.length) {
-                                        decoded_values[json.delta] = json.file_id;
-                                    }
-                                    else {
-                                        decoded_values.push(json.file_id);
-                                    }
-
-                                    content = Base64.encode(decoded_values.join("j8Oc2s1E"));
-
-                                    subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='7411317618171051229', " + json.field_name + "___file_id='7411317618171051229', " + json.field_name + "___status='7411317618171051229' WHERE nid='" + json.nid + "'");
-                                    subDB.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + json.nid + ', \'' + json.field_name + "___file_id" + '\',  \'' + content + '\' )');
-                                    subDB.execute('INSERT OR REPLACE INTO array_base ( node_id, field_name, encoded_array ) VALUES ( ' + json.nid + ', \'' + json.field_name + '\',  \'' + content + '\' )');
+                                    
+                                    jsonArray[parseInt(json.delta, 10)] = json.file_id;
+                                    
+                                    subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='" + dbEsc(JSON.stringify(jsonArray)) + "' WHERE nid=" + json.nid);
                                 }
                                 else {
-                                    subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='" + json.file_id + "', " + json.field_name + "___file_id='" + json.file_id + "', " + json.field_name + "___status='uploaded' WHERE nid='" + json.nid + "'");
+                                    subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='" + json.file_id + "' WHERE nid='" + json.nid + "'");
                                 }
+                                
                                 //Deleting file after upload.
                                 subDB.execute("DELETE FROM _photos WHERE nid=" + json.nid + " and delta=" + json.delta + " and field_name='" + json.field_name + "'");
 
@@ -876,7 +895,7 @@ Omadi.service.sendErrorReport = function(message) {"use strict";
 
 Omadi.service.getUpdatedNodeJSON = function() {"use strict";
     /*jslint eqeq:true,plusplus:true*/
-    /*global isNumber,loadNode*/
+    /*global isNumber*/
 
     var db, result, obj, nid, tid, nids, node, instances, field_name, i, v_result;
 
@@ -930,7 +949,7 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
 
             for ( i = 0; i < nids.length; i++) {
                 nid = nids[i];
-                node = loadNode(nid);
+                node = Omadi.data.nodeLoad(nid);
 
                 instances = Omadi.data.getFields(node.type);
 

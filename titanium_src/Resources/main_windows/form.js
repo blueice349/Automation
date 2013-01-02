@@ -1247,7 +1247,7 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
     
    
     /*jslint nomen: true*/
-    /*global search_criteria_search_order, isArray, labelViews*/
+    /*global search_criteria_search_order, labelViews*/
    
     //var entityArr = createEntityMultiple();
     
@@ -1332,7 +1332,7 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
                         case 'user_reference':
     
                             search_values = [];
-                            if (!isArray(search_value)) {
+                            if (!Omadi.utils.isArray(search_value)) {
                                 for (i in search_value) {
                                     if (search_value.hasOwnProperty(i)) {
                                         search_values.push(i);
@@ -1535,13 +1535,13 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
     var field_name;
     
     /*jslint vars: true, eqeq: true*/
-   /*global Omadi, loadNode */
+   /*global Omadi*/
    
     if(win.nid == 'new'){
         node = getNewNode();
     }
     else{
-        node = loadNode(win.nid);
+        node = Omadi.data.nodeLoad(win.nid);
     }
     
     Ti.API.debug("LOADED NODE: " + JSON.stringify(node));

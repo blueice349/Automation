@@ -32,7 +32,6 @@ Omadi.widgets.rules_field = {
     },
     getNewElement : function(node, instance) {"use strict";
         var widget, settings, nodeValue, i, key, violation_name, db, result, formTypes, row, view;
-        /*global isArray*/
         Ti.API.debug("Creating rules_field field");
 
         Ti.API.debug(JSON.stringify(instance.widget));
@@ -81,7 +80,7 @@ Omadi.widgets.rules_field = {
                                 }
 
                                 formTypes = [];
-                                if (!isArray(nodeValue[i].node_types)) {
+                                if (!Omadi.utils.isArray(nodeValue[i].node_types)) {
 
                                     for (key in nodeValue[i].node_types) {
                                         if (nodeValue[i].node_types.hasOwnProperty(key)) {

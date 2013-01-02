@@ -32,8 +32,6 @@ Omadi.widgets.image = {
         return fieldView;
     },
     getNewElement : function(node, instance) {"use strict";
-        /*global isArray*/
-
         var settings, widgetView, dbValue, imageData, i, numImagesShowing = 0, contentWidth, imageNid;
 
         dbValue = [];
@@ -69,7 +67,7 @@ Omadi.widgets.image = {
             imageNid = Ti.UI.currentWindow.origNid;
         }
 
-        if (isArray(dbValue)) {
+        if (Omadi.utils.isArray(dbValue)) {
             for ( i = 0; i < dbValue.length; i++) {
                 if (dbValue[i] > 0) {
                     Ti.API.debug("Adding image to scroll view");
@@ -80,7 +78,7 @@ Omadi.widgets.image = {
             numImagesShowing = dbValue.length;
         }
 
-        if (isArray(imageData)) {
+        if (Omadi.utils.isArray(imageData)) {
 
             for ( i = 0; i < imageData.length; i++) {
                 widgetView.add(Omadi.widgets.image.getImageView(widgetView, numImagesShowing + i, imageNid, imageData[i]));
@@ -359,89 +357,3 @@ Omadi.widgets.image = {
     }
 };
 
-// regionView.add(content[count]);
-// var decodedValues = [];
-// if (win.mode == 1) {
-// var val = db_display.execute('SELECT * FROM ' + win.type + ' WHERE nid=' + win.nid + ';');
-// if (val.fieldByName(field_arr[index_label][index_size].field_name + '___file_id') == '7411317618171051229' || val.fieldByName(field_arr[index_label][index_size].field_name + '___file_id') == 7411317618171051229) {
-// array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '___file_id\'');
-// }
-// else {
-// array_cont = db_display.execute('SELECT encoded_array FROM array_base WHERE node_id = ' + win.nid + ' AND field_name = \'' + field_arr[index_label][index_size].field_name + '\'');
-// }
-// if (array_cont.rowCount > 0) {
-// //Decode the stored array:
-// var decoded = array_cont.fieldByName('encoded_array');
-// decoded = Base64.decode(decoded);
-// decoded = decoded.toString();
-// decodedValues = decoded.split("j8Oc2s1E");
-// }
-// val = db_display.execute('SELECT * FROM _photos WHERE nid=' + win.nid + ' AND field_name ="' + field_arr[index_label][index_size].field_name + '";');
-// if (val.rowCount > 0) {
-// while (val.isValidRow()) {
-// isUpdated[val.fieldByName('delta')] = true;
-// decodedValues[val.fieldByName('delta')] = Ti.Utils.base64decode(val.fieldByName('file_data'));
-// val.next();
-// }
-// }
-// }
-// var arrImages = [];
-
-// if (settings.cardinality < 0) {
-// o_index = 0;
-
-// for ( img = 0; img < decodedValues.length; img++) {
-// var updated = false
-// if ((img < decodedValues.length) && (decodedValues[img] != "") && (decodedValues[img] != null) && decodedValues[img] != 'null' && decodedValues[img] != 'undefined') {
-// var vl_to_field = decodedValues[img];
-// if (isUpdated[img] == true) {
-// updated = isUpdated[img];
-// }
-// }
-// else {
-// continue;
-// }
-// arrImages = createImage(o_index, arrImages, vl_to_field, content[count], updated);
-// o_index += 1;
-// }
-// if (decodedValues.length == 0 || o_index == 0) {
-// arrImages = createImage(o_index, arrImages, defaultImageVal, content[count], false);
-// o_index += 1;
-// }
-//
-// //--------- Add Button
-// addButton = Ti.UI.createButton({
-// right : '5',
-// title : '+',
-// top : reserveTop,
-// height : 40,
-// width : 40,
-// scrollView : content[count],
-// o_index : o_index
-// });
-// regionView.add(addButton);
-// addButton.addEventListener('click', function(e) {
-// arrImages = createImage(e.source.o_index, arrImages, defaultImageVal, e.source.scrollView, false);
-// e.source.scrollView.arrImages = arrImages
-// e.source.o_index += 1;
-// });
-// content[count].addButton = addButton;
-
-// }
-// else {
-// var o_index;
-// for ( o_index = 0; o_index < settings.cardinality; o_index++) {
-// var updated = false;
-// if ((o_index < decodedValues.length) && (decodedValues[o_index] != "") && (decodedValues[o_index] != null) && decodedValues[o_index] != 'null' && decodedValues[o_index] != 'undefined') {
-// var vl_to_field = decodedValues[o_index];
-// if (isUpdated[o_index] == true) {
-// updated = isUpdated[o_index];
-// }
-// }
-// else {
-// var vl_to_field = defaultImageVal;
-// }
-// arrImages = createImage(o_index, arrImages, vl_to_field, content[count], updated);
-// }
-// }
-// content[count].arrImages = arrImages;

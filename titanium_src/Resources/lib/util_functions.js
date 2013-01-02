@@ -4,7 +4,7 @@ var Omadi = Omadi || {};
 Omadi.utils = Omadi.utils || {};
 
 Omadi.DOMAIN_NAME = domainName;
-Omadi.DB_VERSION = "omadiDb1682";
+Omadi.DB_VERSION = "omadiDb1683";
 
 Omadi.utils.openListDatabase = function() {"use strict";
     var db = Ti.Database.install('/database/db_list.sqlite', Omadi.DB_VERSION + "_list");
@@ -241,6 +241,27 @@ Omadi.utils.formatDate = function(timestamp, showTime){"use strict";
     return (new Date(timestamp * 1000)).format(format);
 };
 
+Omadi.utils.isArray = function(input) {"use strict";
+    return typeof (input) == 'object' && ( input instanceof Array);
+};
+
+Omadi.utils.getParsedJSON = function(str){"use strict";
+    var retval;
+    
+    if (str == "" || str == null) {
+        return str;
+    }
+   
+    try {
+        retval = JSON.parse(str);
+    }
+    catch (e) {
+        return false;
+    }
+    
+    return retval;
+};
+
 Omadi.utils.isEmpty = function(number){"use strict";
     if(typeof number === 'undefined'){
         return true;
@@ -382,96 +403,40 @@ Omadi.utils.sortByWeight = function(a, b) {"use strict";
 };
 
 Omadi.utils.applyNumberFormat = function(single_content, cal_value) {"use strict";
-    var NUMBER_FORMAT_CURRENCY = 'currency',
-        NUMBER_FORMAT_INTEGER = 'integer',
-        NUMBER_FORMAT_DECIMAL_0 = 'one decimal',
-        NUMBER_FORMAT_DECIMAL_00 = 'two decimal',
-        NUMBER_FORMAT_DECIMAL_000 = 'three decimal',
-        cal_value_str = '';
+    
+    var cal_value_str = '';
     
     if (single_content.settings != null && single_content.settings.number_format != null && single_content.settings.number_format != "") {
         switch (single_content.settings.number_format) {
-            case NUMBER_FORMAT_CURRENCY:
-                cal_value_str = Math.abs(cal_value).toCurrency({
-                    "thousands_separator" : ",",
-                    "currency_symbol" : "$",
-                    "symbol_position" : "front",
-                    "use_fractions" : {
-                        "fractions" : 2,
-                        "fraction_separator" : "."
-                    }
-                });
+            case 'currency':
+                cal_value_str = '$' + (Math.round(Math.abs(cal_value) * 100) / 100).toFixed(2);
                 break;
-            case NUMBER_FORMAT_INTEGER:
-                cal_value_str = Math.abs(cal_value).toCurrency({
-                    "thousands_separator" : ",",
-                    "currency_symbol" : "",
-                    "symbol_position" : "front",
-                    "use_fractions" : {
-                        "fractions" : 0,
-                        "fraction_separator" : "."
-                    }
-                });
+                
+            case 'integer':
+                cal_value_str = Math.round(Math.abs(cal_value)).toFixed(0);
                 break;
-            case NUMBER_FORMAT_DECIMAL_0:
-                cal_value_str = Math.abs(cal_value).toCurrency({
-                    "thousands_separator" : ",",
-                    "currency_symbol" : "",
-                    "symbol_position" : "front",
-                    "use_fractions" : {
-                        "fractions" : 1,
-                        "fraction_separator" : "."
-                    }
-                });
+                
+            case 'one decimal':
+                cal_value_str = (Math.round(Math.abs(cal_value) * 10) / 10).toFixed(1);
                 break;
-            case NUMBER_FORMAT_DECIMAL_00:
-                cal_value_str = Math.abs(cal_value).toCurrency({
-                    "thousands_separator" : ",",
-                    "currency_symbol" : "",
-                    "symbol_position" : "front",
-                    "use_fractions" : {
-                        "fractions" : 2,
-                        "fraction_separator" : "."
-                    }
-                });
+                
+            case 'two decimal':
+                cal_value_str = (Math.round(Math.abs(cal_value) * 100) / 100).toFixed(2);
                 break;
-            case NUMBER_FORMAT_DECIMAL_000:
-                cal_value_str = Math.abs(cal_value).toCurrency({
-                    "thousands_separator" : ",",
-                    "currency_symbol" : "",
-                    "symbol_position" : "front",
-                    "use_fractions" : {
-                        "fractions" : 3,
-                        "fraction_separator" : "."
-                    }
-                });
+                
+            case 'three decimal':
+                cal_value_str = (Math.round(Math.abs(cal_value) * 1000) / 1000).toFixed(3);
                 break;
+                
             default:
-                cal_value_str = Math.abs(cal_value).toCurrency({
-                    "thousands_separator" : ",",
-                    "currency_symbol" : "",
-                    "symbol_position" : "front",
-                    "use_fractions" : {
-                        "fractions" : 2,
-                        "fraction_separator" : "."
-                    }
-                });
-
+                cal_value_str = (Math.round(Math.abs(cal_value) * 100) / 100).toFixed(2);
+                break;
         }
     }
     else {
-        cal_value_str = Math.abs(cal_value).toCurrency({
-            "thousands_separator" : ",",
-            "currency_symbol" : "",
-            "symbol_position" : "front",
-            "use_fractions" : {
-                "fractions" : 2,
-                "fraction_separator" : "."
-            }
-        });
+        cal_value_str = (Math.round(Math.abs(cal_value) * 100) / 100).toFixed(2);
     }
     return cal_value_str;
-
 };
 
 

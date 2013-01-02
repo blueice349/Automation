@@ -67,7 +67,7 @@ Omadi.widgets.omadi_time = {
 
         var settings, widgetView, dbValue, textValue, showTime, jsDate, midnight, nowTimestamp;
 
-        /*global mktime, date*/
+        /*global mktime*/
 
         settings = instance.settings;
 
@@ -90,13 +90,9 @@ Omadi.widgets.omadi_time = {
 
         if (dbValue !== null) {
             nowTimestamp = Math.round(jsDate.getTime() / 1000);
-
-            //midnight = mktime(0, 0, 0, date('n', nowTimestamp), date('j', nowTimestamp), date('Y', nowTimestamp));
             midnight = mktime(0, 0, 0, Omadi.utils.PHPFormatDate('n', nowTimestamp), Omadi.utils.PHPFormatDate('j', nowTimestamp), Omadi.utils.PHPFormatDate('Y', nowTimestamp));
-
             jsDate.setTime((midnight + dbValue) * 1000);
         }
-        
         
         widgetView = Omadi.widgets.getLabelField(instance);
         widgetView.setText(textValue);

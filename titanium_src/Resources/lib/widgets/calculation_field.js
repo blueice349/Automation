@@ -99,7 +99,7 @@ Omadi.widgets.calculation_field = {
             parent_field, start_timestamp, end_timestamp, difference, at_time, relative_increment_time, day_count, 
             parent_node, zero;
         
-        /*global list_search_node_matches_search_criteria, loadNode, mktime, date*/
+        /*global list_search_node_matches_search_criteria,mktime*/
         
         instances = Omadi.data.getFields(node.type);
         final_value = 0;
@@ -139,7 +139,7 @@ Omadi.widgets.calculation_field = {
                         else if (calculation_row.type == 'parent_field_value') {
                             parent_field = calculation_row.parent_field;
                             if (node[parent_field] != null && node[parent_field].dbValues[0] != null) {
-                                parent_node = loadNode(node[parent_field].dbValues[0]);
+                                parent_node = Omadi.data.nodeLoad(node[parent_field].dbValues[0]);
                                 if (parent_node && parent_node[calculation_row.field_name_1].dbValues[0] != null) {
                                     field_1_multiplier = parent_node[calculation_row.field_name_1].dbValues[0];
                                 }
@@ -194,7 +194,6 @@ Omadi.widgets.calculation_field = {
                                         at_time = calculation_row.increment_at_time;
                                         start_timestamp = Number(start_timestamp);
                                         relative_increment_time = at_time = mktime(0,0,0, Omadi.utils.PHPFormatDate('n', start_timestamp), Omadi.utils.PHPFormatDate('j', start_timestamp), Omadi.utils.PHPFormatDate('Y', start_timestamp));
-                                        //relative_increment_time = at_time = mktime(0, 0, 0, date('n', start_timestamp), date('j', start_timestamp), date('Y', start_timestamp));
                                         
                                         day_count = 0;
                                         if (relative_increment_time < start_timestamp) {
@@ -223,7 +222,7 @@ Omadi.widgets.calculation_field = {
                             parent_field = calculation_row.parent_field;
                             
                             if (node[parent_field] != null && node[parent_field].dbValues[0] != null) {
-                                parent_node = loadNode(node[parent_field].dbValues[0]);
+                                parent_node = Omadi.data.nodeLoad(node[parent_field].dbValues[0]);
                                 
                                 if (parent_node && parent_node[calculation_row.field_name_2].dbValues[0] != null) {
                                     field_2_multiplier = parent_node[calculation_row.field_name_2].dbValues[0];

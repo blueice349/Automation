@@ -601,9 +601,8 @@ function doRegionOutput(regionObj) {"use strict";
 
 ( function() {"use strict";
         /*jslint vars: true */
-        /*global loadNode*/
 
-        node = loadNode(curWin.nid);
+        node = Omadi.data.nodeLoad(curWin.nid);
 
 
         var regionName;
