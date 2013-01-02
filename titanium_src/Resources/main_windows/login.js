@@ -758,7 +758,7 @@ function scrollBoxesToTop() {"use strict";
 
                     db_list.close();
                     passwordField.value = "";
-                    Ti.UI.currentWindow.touchEnabled = false;
+                    //Ti.UI.currentWindow.touchEnabled = false;
 
                     startGPSService();
 
@@ -822,7 +822,7 @@ function scrollBoxesToTop() {"use strict";
         }
 
         Ti.App.addEventListener('loggingOut', function() {
-            Ti.UI.currentWindow.touchEnabled = true;
+            //Ti.UI.currentWindow.touchEnabled = true;
             Ti.API.debug("logged out");
             scrollView.scrollTo(0, 0);
 
@@ -840,7 +840,7 @@ function scrollBoxesToTop() {"use strict";
             setProperties(domainName, Ti.Utils.base64decode(result.fieldByName("login_json")));
             db.close();
 
-            Ti.UI.currentWindow.touchEnabled = false;
+            //Ti.UI.currentWindow.touchEnabled = false;
 
             Omadi.display.openMainMenuWindow();
 

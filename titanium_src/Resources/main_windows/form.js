@@ -117,16 +117,13 @@ function get_android_menu(menu_exists) {"use strict";
     };
 }
 
-
-
-
 function getNewNode(){"use strict";
 
     var node = {};
     
     if(typeof Ti.UI.currentWindow.node !== 'undefined'){
         node = Ti.UI.currentWindow.node;
-        Ti.API.error("node exists in window: " + node.nid);
+        Ti.API.debug("node exists in window: " + node.nid);
     }
     else{
         node.created = Omadi.utils.getUTCTimestamp();
@@ -792,7 +789,7 @@ function addiOSToolbar() {"use strict";
             color : Omadi.widgets.label.color,
             ellipsize : true,
             wordwrap : false,
-            width : 200,
+            width : Ti.UI.FILL,
             style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
         });
 

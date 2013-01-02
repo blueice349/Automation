@@ -266,10 +266,9 @@ Omadi.data.saveNode = function(node){"use strict";
         instance, value_to_insert, has_data, content_s;
         
     /*global treatArray*/
-   /*jslint nomen: true*/
+    /*jslint nomen: true*/
+   
     node._saved = false;
-    
-    //Ti.API.debug("STARTED SAVING NODE: " + JSON.stringify(node).substring(0, 200));
     
     instances = Omadi.data.getFields(node.type);
     
@@ -283,7 +282,8 @@ Omadi.data.saveNode = function(node){"use strict";
         }
     }
     
-    db = Omadi.utils.openMainDatabase();
+    // For autocomplete widgets
+    node = Omadi.widgets.taxonomy_term_reference.addNewTerms(node);
    
     node.title = Omadi.data.getNodeTitle(node);
     
@@ -292,6 +292,7 @@ Omadi.data.saveNode = function(node){"use strict";
         node.sync_hash = Ti.Utils.md5HexDigest(JSON.stringify(node) + (new Date()).getTime());
     }
     
+    db = Omadi.utils.openMainDatabase(); 
     try{
         
         query = "INSERT OR REPLACE INTO " + node.type + " (nid, ";
@@ -316,7 +317,7 @@ Omadi.data.saveNode = function(node){"use strict";
                         has_data = false;
                         
                         for(k = 0; k < node[field_name].dbValues.length; k ++){
-                            if(node[field_name].dbValues[k] > ""){
+                            if(node[field_name].dbValues[k] !== null){
                                 has_data = true;
                             }
                         }
@@ -332,7 +333,6 @@ Omadi.data.saveNode = function(node){"use strict";
                             // Token to indentify array of numbers is 7411317618171051229
                             value_to_insert = '7411317618171051229';
                         }
-                        //}
                     }
                     else{ 
                         if(node[field_name].dbValues.length == 1){
@@ -341,7 +341,6 @@ Omadi.data.saveNode = function(node){"use strict";
                     }
                 }
                
-                
                 if(value_to_insert === null){
                     insertValues.push('null');
                 }
@@ -1900,4 +1899,22 @@ Omadi.data.processNodeTypeJson = function(json, mainDB, progress){ "use strict";
     catch(ex){
         alert("Installing form types: " + ex);
     }
+};
+
+Omadi.data.loadTerm = function(tid){"use strict";
+    var db, result, term;
+    term = {};
+    
+    db = Omadi.utils.openMainDatabase();
+    result = db.execute("SELECT tid, vid, name, weight FROM term_data WHERE tid = " + tid);
+    if(result.isValidRow()){
+        term.tid = result.fieldByName('tid', Ti.Database.FIELD_TYPE_INT);
+        term.vid = result.fieldByName('vid', Ti.Database.FIELD_TYPE_INT);
+        term.name = result.fieldByName('name', Ti.Database.FIELD_TYPE_STRING);
+        term.weight = result.fieldByName('weight', Ti.Database.FIELD_TYPE_INT);
+    }
+    result.close();
+    db.close();
+    
+    return term;
 };

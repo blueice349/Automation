@@ -1,5 +1,5 @@
 /*jslint eqeq: true, plusplus: true */
-/*global Omadi*/
+/*global Omadi, dbEsc*/
 
 var domainName = Ti.App.Properties.getString("domainName");
 
@@ -29,22 +29,22 @@ weekday[6] = "Saturday";
 function createNotification(message) {"use strict";
     var mainIntent, pending, notification;
     /*jslint bitwise: true*/
-    try{
-        if(Omadi.utils.isLoggedIn() && !Ti.App.Properties.getBool('stopGPS', false) ){
+    try {
+        if (Omadi.utils.isLoggedIn() && !Ti.App.Properties.getBool('stopGPS', false)) {
             if (Ti.App.isAndroid) {
                 mainIntent = Titanium.Android.createIntent({
                     className : 'org.appcelerator.titanium.TiActivity',
                     packageName : 'com.omadi.crm',
                     flags : Titanium.Android.FLAG_ACTIVITY_CLEAR_TOP | Titanium.Android.FLAG_ACTIVITY_SINGLE_TOP
                 });
-        
+
                 pending = Titanium.Android.createPendingIntent({
                     activity : Titanium.Android.currentActivity,
                     intent : mainIntent,
                     type : Titanium.Android.PENDING_INTENT_FOR_ACTIVITY,
                     flags : Titanium.Android.FLAG_UPDATE_CURRENT
                 });
-        
+
                 notification = Titanium.Android.createNotification({
                     icon : 0x7f020000,
                     contentTitle : 'Omadi CRM',
@@ -57,8 +57,8 @@ function createNotification(message) {"use strict";
             }
         }
     }
-    catch(nothing){
-        
+    catch(nothing) {
+
     }
 }
 
@@ -245,7 +245,6 @@ function _calculation_field_sort_on_weight(a, b) {
     return 0;
 }
 
-
 // PHP equivelent function in javaScript----START
 function mktime() {
     var no, ma = 0, mb = 0, i = 0, d = new Date(), argv = arguments, argc = argv.length;
@@ -298,7 +297,6 @@ function mktime() {
 
     return Math.floor(d.getTime() / 1000);
 }
-
 
 function date(format, timestamp) {
 
@@ -659,112 +657,97 @@ function usort(inputArr, sorter) {
     return strictForIn || populateArr;
 }
 
-
-
 function list_search_node_matches_search_criteria(node, criteria) {"use strict";
 
-    var user, row_matches, instances, i, j, criteria_index, criteria_row, field_name, search_field, search_value, search_operator, search_time_value,
-        compare_times, value_index, nodeDBValues, nodeTextValues, search_time_value2, compare_times2, node_value, weekdays, 
-        reference_types, db, result, query, possibleValues, searchValues, chosen_value, retval, and_groups, and_group, and_group_index,
-        and_group_match;
-    
+    var user, row_matches, instances, i, j, criteria_index, criteria_row, field_name, search_field, search_value, search_operator, search_time_value, compare_times, value_index, nodeDBValues, nodeTextValues, search_time_value2, compare_times2, node_value, weekdays, reference_types, db, result, query, possibleValues, searchValues, chosen_value, retval, and_groups, and_group, and_group_index, and_group_match;
+
     /*jslint nomen: true*/
-   
+
     try {
-      
+
         row_matches = [];
-        if (typeof criteria.search_criteria !== 'undefined' && criteria.search_criteria != "") {
-            
+        if ( typeof criteria.search_criteria !== 'undefined' && criteria.search_criteria != "") {
+
             instances = Omadi.data.getFields(node.type);
-            
-            
-            
+
             for (criteria_index in criteria.search_criteria) {
-                if(criteria.search_criteria.hasOwnProperty(criteria_index)){
-                    
+                if (criteria.search_criteria.hasOwnProperty(criteria_index)) {
+
                     criteria_row = criteria.search_criteria[criteria_index];
                     row_matches[criteria_index] = false;
                     field_name = criteria_row.field_name;
                     nodeDBValues = node[field_name].dbValues;
                     nodeTextValues = node[field_name].textValues;
-                    
-                    
-                    
+
                     if (instances[field_name] != null) {
                         search_field = instances[field_name];
-                        
 
                         if (search_field.type == 'datestamp') {
-                           
+
                             search_value = criteria_row.value;
                             search_operator = criteria_row.operator + "".toString();
-                            
-    
+
                             if (['after-time', 'before-time', 'between-time'].indexOf(search_operator) != -1) {
-                                
+
                                 search_time_value = Number(search_value.time);
-                                
                                 compare_times = [];
-                                
-                                for (i = 0; i < nodeDBValues.length; i ++) {
+
+                                for ( i = 0; i < nodeDBValues.length; i++) {
                                     compare_times[i] = search_time_value + mktime(0, 0, 0, date('n', Number(nodeDBValues[i])), date('j', Number(nodeDBValues[i])), date('Y', Number(nodeDBValues[i])));
-                                    
                                 }
-    
+
                                 if (search_operator == 'after-time') {
-                                    
-                                   
-                                    for (i = 0; i < nodeDBValues.length; i++) {
-                                        
+
+                                    for ( i = 0; i < nodeDBValues.length; i++) {
+
                                         if (nodeDBValues[i] > compare_times[i]) {
-                                            
+
                                             row_matches[criteria_index] = true;
                                         }
                                     }
                                 }
                                 else if (search_operator == 'before-time') {
-                                    
-                                    
-                                    for (i = 0; i < nodeDBValues.length; i++) {
-                                        
+
+                                    for ( i = 0; i < nodeDBValues.length; i++) {
+
                                         if (nodeDBValues[i] < compare_times[i]) {
-                                            
+
                                             row_matches[criteria_index] = true;
                                         }
                                     }
                                 }
                                 else if (search_operator == 'between-time') {
-                                    
+
                                     search_time_value2 = search_value.time2;
-                                    
+
                                     compare_times2 = [];
-                                    
-                                    for (i = 0; i < nodeDBValues.length; i++) {
-    
+
+                                    for ( i = 0; i < nodeDBValues.length; i++) {
+
                                         compare_times2[i] = search_time_value2 + mktime(0, 0, 0, date('n', Number(nodeDBValues[i])), date('j', Number(nodeDBValues[i])), date('Y', Number(nodeDBValues[i])));
-                                        
+
                                     }
-    
+
                                     if (search_time_value < search_time_value2) {
-                                        
+
                                         // Like between 5:00PM - 8:00PM
 
-                                        for (i = 0; i < nodeDBValues.length; i++) {
-                                            
+                                        for ( i = 0; i < nodeDBValues.length; i++) {
+
                                             if (nodeDBValues[i] >= compare_times[i] && nodeDBValues[i] < compare_times2[i]) {
-                                                
+
                                                 row_matches[criteria_index] = true;
                                             }
                                         }
                                     }
                                     else {
-                                        
+
                                         // Like between 8:00PM - 4:00AM
 
-                                        for (i = 0; i < nodeDBValues.length; i++) {
-                                            
+                                        for ( i = 0; i < nodeDBValues.length; i++) {
+
                                             if (nodeDBValues[i] >= compare_times[i] || nodeDBValues[i] < compare_times2[i]) {
-                                                
+
                                                 row_matches[criteria_index] = true;
                                             }
                                         }
@@ -772,64 +755,64 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                 }
                             }
                             else if (search_operator == '__blank') {
-                                
+
                                 row_matches[criteria_index] = true;
-                               
-                                for (i = 0; i < nodeDBValues.length; i++) {
-                                    
+
+                                for ( i = 0; i < nodeDBValues.length; i++) {
+
                                     node_value = nodeDBValues[i];
                                     if (node_value != null && node_value != "") {
-                                        
+
                                         row_matches[criteria_index] = false;
                                     }
-    
+
                                 }
                             }
                             else if (search_operator == '__filled') {
-                                
-                                
-                                for (i = 0; i < nodeDBValues.length; i++) {
-                                    
+
+                                for ( i = 0; i < nodeDBValues.length; i++) {
+
                                     node_value = nodeDBValues[i];
                                     if (node_value != null && node_value != "") {
-                                        
+
                                         row_matches[criteria_index] = true;
                                     }
-    
+
                                 }
                             }
                             else if (search_operator == 'weekday') {
-                                
+
                                 weekdays = search_value.weekday;
                                 if (!isArray(search_value.weekday)) {
-                                    
+
                                     weekdays = [];
-                                   
+
                                     for (i in search_value.weekday) {
-                                        if(search_value.weekday.hasOwnProperty(i)){
-                                            
+                                        if (search_value.weekday.hasOwnProperty(i)) {
+
                                             weekdays.push(i);
                                         }
                                     }
                                 }
-    
-                                
-                                for (i = 0; i < nodeDBValues.length; i++) {
-                                    
+
+                                for ( i = 0; i < nodeDBValues.length; i++) {
+
                                     if (in_array(date('w', Number(nodeDBValues[i])), weekdays)) {
-                                        
+
                                         row_matches[criteria_index] = true;
                                     }
                                 }
                             }
                         }
-    
+
                         /* TODO ---- In Future
-    
+
+
                         else
-    
+
+
                          if(search_field['settings']['parts'] != null) {
-    
+
                          if(search_field['type'] == 'location') {
                          for(part in search_field['settings']['parts']) {
                          search_value = isset($form_state['values']['search'][$search_field['field_name']][$part]) ? $form_state['values']['search'][$search_field['field_name']][$part] : $form_state['values']['search']['more_fields'][$search_field['field_name']][$part];
@@ -845,24 +828,30 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                          }
                          object_lists_add_parts_column($query, FALSE, $search_field, $id, $node_table);
                          }
-    
+
                          }
                          */
-    
+
                         else {
-                            
+
                             search_value = criteria_row.value != null && criteria_row.value != "" ? criteria_row.value : null;
                             search_operator = criteria_row.operator;
-                            
+
                             switch(search_field.type) {
                                 case 'text':
                                 case 'text_long':
+                                case 'phone':
                                 case 'email':
                                 case 'link_field':
-                                case 'phone':
-                                   
-                                   
-                                    for (i = 0; i < nodeDBValues.length; i++) {
+
+                                    // Check for empty values
+                                    if (nodeDBValues.length === 0) {
+                                        if (Omadi.utils.isEmpty(search_value) && search_operator === '=') {
+                                            row_matches[criteria_index] = true;
+                                        }
+                                    }
+
+                                    for ( i = 0; i < nodeDBValues.length; i++) {
                                         node_value = nodeDBValues[i];
                                         switch(search_operator) {
                                             case 'not like':
@@ -870,31 +859,43 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                                     row_matches[criteria_index] = true;
                                                 }
                                                 break;
-    
+
                                             case 'starts with':
                                                 if (strpos(node_value, search_value) === 0) {
                                                     row_matches[criteria_index] = true;
                                                 }
                                                 break;
-    
+
                                             case 'ends with':
                                                 if (strpos(node_value, search_value) === node_value.length - search_value.length) {
                                                     row_matches[criteria_index] = true;
                                                 }
                                                 break;
-    
+
                                             case 'not starts with':
                                                 if (strpos(node_value, search_value) !== 0) {
                                                     row_matches[criteria_index] = true;
                                                 }
                                                 break;
-    
+
                                             case 'not ends with':
                                                 if (strpos(node_value, search_value) !== node_value.length - search_value.length) {
                                                     row_matches[criteria_index] = true;
                                                 }
                                                 break;
-    
+
+                                            case '=':
+                                                if (node_value == search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+
+                                            case '!=':
+                                                if (node_value != search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+
                                             default:
                                                 if (strpos(node_value, search_value) !== false) {
                                                     row_matches[criteria_index] = true;
@@ -902,13 +903,13 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                                 break;
                                         }
                                     }
-    
                                     break;
+
                                 case 'list_boolean':
-                                   
+
                                     if (search_operator == '__filled') {
-                                       
-                                        for (i = 0; i < nodeDBValues.length; i++) {
+
+                                        for ( i = 0; i < nodeDBValues.length; i++) {
                                             node_value = nodeDBValues[i];
                                             if (node_value != 0) {
                                                 row_matches[criteria_index] = true;
@@ -920,7 +921,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                             row_matches[criteria_index] = true;
                                         }
                                         else {
-                                            for (i = 0; i < nodeDBValues.length; i++) {
+                                            for ( i = 0; i < nodeDBValues.length; i++) {
                                                 node_value = nodeDBValues[i];
                                                 if (node_value == 0) {
                                                     row_matches[criteria_index] = true;
@@ -928,47 +929,48 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                             }
                                         }
                                     }
-    
+
                                     break;
+
                                 case 'calculation_field':
-                                    
-                                    for (i = 0; i < nodeDBValues.length; i++) {
+
+                                    for ( i = 0; i < nodeDBValues.length; i++) {
                                         node_value = nodeDBValues[i];
-                                       
+
                                         switch(search_operator) {
-    
+
                                             case '>':
-                                                
+
                                                 if (node_value > search_value) {
                                                     row_matches[criteria_index] = true;
                                                 }
                                                 break;
                                             case '>=':
-                                                
+
                                                 if (node_value >= search_value) {
                                                     row_matches[criteria_index] = true;
                                                 }
                                                 break;
                                             case '!=':
-                                                
+
                                                 if (node_value != search_value) {
                                                     row_matches[criteria_index] = true;
                                                 }
                                                 break;
                                             case '<':
-                                                
+
                                                 if (node_value < search_value) {
                                                     row_matches[criteria_index] = true;
                                                 }
                                                 break;
                                             case '<=':
-                                                
+
                                                 if (node_value <= search_value) {
                                                     row_matches[criteria_index] = true;
                                                 }
                                                 break;
                                             default:
-                                                
+
                                                 if (node_value == search_value) {
                                                     row_matches[criteria_index] = true;
                                                 }
@@ -979,12 +981,11 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                 case 'number_integer':
                                 case 'number_decimal':
                                 case 'auto_increment':
-                                    
-    
-                                    for (i = 0; i < nodeDBValues.length; i++) {
+
+                                    for ( i = 0; i < nodeDBValues.length; i++) {
                                         node_value = nodeDBValues[i];
                                         switch(search_operator) {
-    
+
                                             case '>':
                                                 if (node_value > search_value) {
                                                     row_matches[criteria_index] = true;
@@ -1010,7 +1011,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                                     row_matches[criteria_index] = true;
                                                 }
                                                 break;
-    
+
                                             default:
                                                 if (node_value == search_value) {
                                                     row_matches[criteria_index] = true;
@@ -1018,39 +1019,41 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                                 break;
                                         }
                                     }
-    
+
                                     break;
-    
+
                                 case 'omadi_reference':
-                                    
-    
+
                                     reference_types = [];
-                                    
+
                                     for (i in search_field.settings.reference_types) {
-                                        if(search_field.settings.reference_types.hasOwnProperty(i)){
+                                        if (search_field.settings.reference_types.hasOwnProperty(i)) {
                                             reference_types.push(search_field.settings.reference_types[i]);
                                         }
                                     }
-    
 
                                     query = 'SELECT nid from node WHERE table_name IN (' + reference_types.join(',') + ')';
                                     switch(search_operator) {
                                         case 'starts with':
                                         case 'not starts with':
-                                            query += ' AND title LIKE "%' + search_value + '%"';
+                                            query += " AND title LIKE '%" + dbEsc(search_value) + "%'";
                                             break;
                                         case 'ends with':
                                         case 'not ends with':
-                                            query += ' AND title LIKE "%' + search_value + '"';
+                                            query += " AND title LIKE '%" + dbEsc(search_value) + "'";
+                                            break;
+                                        case '=':
+                                        case '!=':
+                                            query += " AND title='" + dbEsc(search_value) + "'";
                                             break;
                                         default:
-                                            query += ' AND title LIKE "%' + search_value + '%"';
+                                            query += " AND title LIKE '%" + dbEsc(search_value) + "'%";
                                             break;
                                     }
-                                    
+
                                     db = Omadi.utils.openMainDatabase();
                                     result = db.execute(query);
-                                    
+
                                     possibleValues = [];
                                     while (result.isValidRow()) {
                                         possibleValues.push(result.fieldByName('nid'));
@@ -1058,17 +1061,24 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                     }
                                     result.close();
                                     db.close();
-    
+                                    
+                                    if(nodeDBValues.length == 0){
+                                        if(Omadi.utils.isEmpty(search_value) && search_operator === '='){
+                                            row_matches[criteria_index] = true;
+                                        }
+                                    }
+
                                     switch(search_operator) {
                                         case 'not starts with':
                                         case 'not ends with':
                                         case 'not like':
+                                        case '!=':
                                             if (nodeDBValues[0] == 0) {
                                                 row_matches[criteria_index] = true;
                                             }
                                             else {
                                                 row_matches[criteria_index] = true;
-                                                for (i = 0; i < nodeDBValues.length; i++) {
+                                                for ( i = 0; i < nodeDBValues.length; i++) {
                                                     node_value = nodeDBValues[i];
                                                     if (in_array(node_value, possibleValues)) {
                                                         row_matches[criteria_index] = false;
@@ -1077,7 +1087,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                             }
                                             break;
                                         default:
-                                            for (i = 0; i < nodeDBValues.length; i++) {
+                                            for ( i = 0; i < nodeDBValues.length; i++) {
                                                 node_value = nodeDBValues[i];
                                                 if (in_array(node_value, possibleValues)) {
                                                     row_matches[criteria_index] = true;
@@ -1085,99 +1095,96 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                             }
                                             break;
                                     }
-    
+
                                     break;
-                                    
+
                                 case 'user_reference':
-                                    
-                                   
+
                                     if (search_value == 'current_user') {
                                         search_value = Omadi.utils.getUid();
                                     }
                                     // Make sure the search value is an array
                                     searchValues = [];
                                     if (!isArray(search_value)) {
-                                        
+
                                         for (i in search_value) {
                                             if (search_value.hasOwnProperty(i)) {
-                                                
+
                                                 searchValues[i] = i;
                                             }
                                         }
                                         search_value = searchValues;
                                     }
-    
+
                                     if (search_operator != null && search_operator == '!=') {
-                                        
+
                                         row_matches[criteria_index] = true;
                                         if (search_value.__null == '__null' && (nodeDBValues.length == 0 || nodeDBValues[0] == null || nodeDBValues[0] == 0)) {
-                                            
+
                                             row_matches[criteria_index] = false;
                                         }
                                         else {
-                                            
-                                            for (i = 0; i < search_value.length; i++) {
-                                               
+
+                                            for ( i = 0; i < search_value.length; i++) {
+
                                                 chosen_value = search_value[i];
                                                 if (in_array(chosen_value, nodeDBValues)) {
-                                                    
+
                                                     row_matches[criteria_index] = false;
                                                 }
                                             }
                                         }
                                     }
                                     else {
-                                        
+
                                         if (search_value.__null == '__null' && (nodeDBValues.length == 0 || nodeDBValues[0] == null || nodeDBValues[0] == 0)) {
-                                            
+
                                             row_matches[criteria_index] = true;
                                         }
                                         else {
-                                            
-                                            for (i = 0; i < search_value.length; i++) {
-                                                
+
+                                            for ( i = 0; i < search_value.length; i++) {
+
                                                 chosen_value = search_value[i];
                                                 if (in_array(chosen_value, nodeDBValues)) {
-                                                    
+
                                                     row_matches[criteria_index] = true;
                                                 }
                                             }
                                         }
                                     }
                                     break;
-                                    
+
                                 case 'taxonomy_term_reference':
-    
-                                 
-    
+
                                     if (search_field.widget.type == 'options_select' || search_field.widget.type == 'violation_select') {
                                         // Make sure the search value is an array
                                         searchValues = [];
                                         if (!isArray(search_value)) {
-                                            
+
                                             for (i in search_value) {
                                                 if (search_value.hasOwnProperty(i)) {
-                                                    
+
                                                     searchValues[i] = i;
                                                 }
                                             }
                                             search_value = searchValues;
                                         }
-    
+
                                         if (search_operator != null && search_operator == '!=') {
-    
+
                                             row_matches[criteria_index] = true;
                                             if (search_value.__null == '__null' && (nodeDBValues.length == 0 || nodeDBValues[0] == null || nodeDBValues[0] == 0)) {
                                                 row_matches[criteria_index] = false;
                                             }
                                             else {
-                                                for (i = 0; i < search_value.length; i++) {
+                                                for ( i = 0; i < search_value.length; i++) {
                                                     chosen_value = search_value[i];
                                                     if (in_array(chosen_value, nodeDBValues)) {
                                                         row_matches[criteria_index] = false;
                                                     }
                                                 }
-    
+
                                             }
                                         }
                                         else {
@@ -1185,7 +1192,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                                 row_matches[criteria_index] = true;
                                             }
                                             else {
-                                                for (i = 0; i < search_value.length; i++) {
+                                                for ( i = 0; i < search_value.length; i++) {
                                                     chosen_value = search_value[i];
                                                     if (in_array(chosen_value, nodeDBValues)) {
                                                         row_matches[criteria_index] = true;
@@ -1195,31 +1202,29 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                         }
                                     }
                                     else {
-                                        
+
                                         db = Omadi.utils.openMainDatabase();
                                         result = db.execute('SELECT vid from vocabulary WHERE machine_name="' + search_field.settings.vocabulary + '";');
-                                        
-                                        
+
                                         query = 'SELECT tid from term_data WHERE vid=' + result.fieldByName('vid');
                                         switch(search_operator) {
                                             case 'starts with':
                                             case 'not starts with':
-                                                query += ' AND name LIKE "' + search_value + '%"';
+                                                query += " AND name LIKE '" + dbEsc(search_value) + "%'";
                                                 break;
-    
+
                                             case 'ends with':
                                             case 'not ends with':
-                                                query += ' AND name LIKE "%' + search_value + '"';
+                                                query += " AND name LIKE '%" + dbEsc(search_value) + "'";
                                                 break;
-    
+
                                             default:
-                                                query += ' AND name LIKE "%' + search_value + '%"';
+                                                query += " AND name LIKE '%" + dbEsc(search_value) + "%'";
                                                 break;
                                         }
-                                        
+
                                         result.close();
-                                        
-                                        
+
                                         result = db.execute(query);
                                         possibleValues = [];
                                         while (result.isValidRow()) {
@@ -1228,7 +1233,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                         }
                                         result.close();
                                         db.close();
-    
+
                                         switch(search_operator) {
                                             case 'not starts with':
                                             case 'not ends with':
@@ -1238,7 +1243,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                                 }
                                                 else {
                                                     row_matches[criteria_index] = true;
-                                                    for (i = 0; i < nodeDBValues.length; i ++) {
+                                                    for ( i = 0; i < nodeDBValues.length; i++) {
                                                         node_value = nodeDBValues[i];
                                                         if (in_array(node_value, possibleValues)) {
                                                             row_matches[criteria_index] = false;
@@ -1246,9 +1251,9 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                                     }
                                                 }
                                                 break;
-    
+
                                             default:
-                                                for (i = 0; i < nodeDBValues.length; i ++) {
+                                                for ( i = 0; i < nodeDBValues.length; i++) {
                                                     node_value = nodeDBValues[i];
                                                     if (in_array(node_value, possibleValues)) {
                                                         row_matches[criteria_index] = true;
@@ -1257,72 +1262,70 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                                 break;
                                         }
                                     }
-    
+
                                     break;
-    
+
                                 case 'omadi_time':
                                     // TODO: Add the omadi_time field here
                                     break;
-    
+
                                 case 'image':
                                     // Do nothing
                                     break;
-    
+
                             }
-    
+
                         }
-    
+
                     }
                 }
             }
 
             if (count_arr_obj(criteria.search_criteria) == 1) {
-                
+
                 retval = row_matches[criteria_index];
             }
             else {
-                
+
                 // Group each criteria row into groups of ors with the matching result of each or
                 and_groups = [];
                 and_group_index = 0;
                 and_groups[and_group_index] = [];
-                
+
                 for (criteria_index in criteria.search_criteria) {
-                    if(criteria.search_criteria.hasOwnProperty(criteria_index)){
-                        
+                    if (criteria.search_criteria.hasOwnProperty(criteria_index)) {
+
                         criteria_row = criteria.search_criteria[criteria_index];
                         if (criteria_index == 0) {
-                            
-                            
+
                             and_groups[and_group_index].push(row_matches[criteria_index]);
                         }
                         else {
-                            
+
                             if (criteria_row.row_operator == null || criteria_row.row_operator != 'or') {
-                                
+
                                 and_group_index++;
                                 and_groups[and_group_index] = [];
                             }
-                            
+
                             and_groups[and_group_index].push(row_matches[criteria_index]);
-                            
+
                         }
                     }
                 }
 
                 // Get the final result, making sure each and group is TRUE
                 retval = true;
-                
-                for (i = 0; i < and_groups.length; i ++) {
-                    
+
+                for ( i = 0; i < and_groups.length; i++) {
+
                     and_group = and_groups[i];
                     and_group_match = false;
-                    for (j = 0; j < and_group.length; j ++) {
-                        
-                       
+                    for ( j = 0; j < and_group.length; j++) {
+
                         // Make sure at least one item in an and group is true (or the only item is true)
                         if (and_group[j]) {
-                            
+
                             and_group_match = true;
                             break;
                         }
@@ -1330,13 +1333,13 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
 
                     // If one and group doesn't match the whole return value of this function is false
                     if (!and_group_match) {
-                        
+
                         retval = false;
                         break;
                     }
                 }
             }
-            
+
             return retval;
         }
 
@@ -1348,9 +1351,8 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
     return true;
 }
 
-
 function omadi_time_seconds_to_string(seconds, format) {
-    
+
     var am_pm = (strpos(format, 'H') === false);
 
     var hours = Math.floor(seconds / 3600);
@@ -1393,13 +1395,13 @@ function omadi_time_seconds_to_string(seconds, format) {
 }
 
 function rules_field_passed_time_check(time_rule, timestamp) {"use strict";
-    
+
     var retval, timestamp_day, timestamp_midnight, days, day_rule, values, start_time, end_time;
-    
+
     retval = false;
-    
+
     timestamp_day = Number(date('w', Number(timestamp)));
-    
+
     Ti.API.debug(timestamp_day);
 
     if (time_rule != '' && time_rule != null) {
