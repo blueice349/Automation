@@ -92,9 +92,13 @@ Omadi.widgets.file = {
         widgetView.setBackgroundColor(null);
         widgetView.setBackgroundGradient(null);
         widgetView.setBorderWidth(0);
+        widgetView.nid = node.nid;
        
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
-
+        
+        widgetView.addEventListener('click', function(e){
+            Omadi.display.displayFile(e.source.nid, e.source.dbValue, e.source.textValue);
+        });
 
         return widgetView;
     }

@@ -886,16 +886,20 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                 subResult = db.execute("SELECT " + field_name + "___filename AS filename FROM " + node.type + " WHERE nid=" + node.nid);
                                 if (subResult.rowCount > 0) {
                                     textValue = [];
-                                    tempDBValues = Omadi.utils.getParsedJSON(subResult.fieldByName("filename"));
+                                    origDBValue = subResult.fieldByName("filename");
+                                    tempDBValues = Omadi.utils.getParsedJSON(origDBValue);
+                                    //Ti.API.debug(tempDBValues);
                                     if(Omadi.utils.isArray(tempDBValues)){
                                         textValue = tempDBValues;
                                     }
                                     else{
-                                        textValue.push(tempDBValues);
+                                        textValue.push(origDBValue);
                                     }
+                                    //Ti.API.debug(textValue);
                                     
                                     for ( i = 0; i < node[field_name].dbValues.length; i++) {
                                         if (!Omadi.utils.isEmpty(node[field_name].dbValues[i])) {
+                                            
                                             if(typeof textValue[i] !== 'undefined'){
                                                 node[field_name].textValues[i] = textValue[i];
                                             }
