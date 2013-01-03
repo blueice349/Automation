@@ -2,18 +2,17 @@
 <<<<<<<=HEAD
 >>>>>>>=12oct09
 eclipse.preferences.version=1
-provisioning_profiles/development/1C2C2F44-A209-4F48-BCAF-0A0D16290BFC/appid=com.omadi.crm
-provisioning_profiles/development/1C2C2F44-A209-4F48-BCAF-0A0D16290BFC/filepath=/Users/chris/Library/MobileDevice/Provisioning Profiles/1C2C2F44-A209-4F48-BCAF-0A0D16290BFC.mobileprovision
-provisioning_profiles/development/1C2C2F44-A209-4F48-BCAF-0A0D16290BFC/name=omadi_crm_distribution1
-provisioning_profiles/development/1C2C2F44-A209-4F48-BCAF-0A0D16290BFC/uuid=1C2C2F44-A209-4F48-BCAF-0A0D16290BFC
 provisioning_profiles/development/2F0CA729-6050-44CD-99CD-F500928241EE/appid=com.omadi.crm
 provisioning_profiles/development/2F0CA729-6050-44CD-99CD-F500928241EE/filepath=/Users/chris/Library/MobileDevice/Provisioning Profiles/2F0CA729-6050-44CD-99CD-F500928241EE.mobileprovision
 provisioning_profiles/development/2F0CA729-6050-44CD-99CD-F500928241EE/name=omadi_development_profile
 provisioning_profiles/development/2F0CA729-6050-44CD-99CD-F500928241EE/uuid=2F0CA729-6050-44CD-99CD-F500928241EE
+<<<<<<< HEAD
 provisioning_profiles/development/68AC393D-6B92-483A-8168-391A3B7442FE/appid=com.omadi.crm
 provisioning_profiles/development/68AC393D-6B92-483A-8168-391A3B7442FE/filepath=/Users/chris/Library/MobileDevice/Provisioning Profiles/68AC393D-6B92-483A-8168-391A3B7442FE.mobileprovision
 provisioning_profiles/development/68AC393D-6B92-483A-8168-391A3B7442FE/name=omadi_crm_distribution
 provisioning_profiles/development/68AC393D-6B92-483A-8168-391A3B7442FE/uuid=68AC393D-6B92-483A-8168-391A3B7442FE
+=======
+>>>>>>> new_android
 provisioning_profiles/development/82F7AF33-A8B5-4564-BF80-FA1BE83A91E2/appid=com.omadi.crm
 provisioning_profiles/development/82F7AF33-A8B5-4564-BF80-FA1BE83A91E2/filepath=/Users/chris/Library/MobileDevice/Provisioning Profiles/82F7AF33-A8B5-4564-BF80-FA1BE83A91E2.mobileprovision
 provisioning_profiles/development/82F7AF33-A8B5-4564-BF80-FA1BE83A91E2/name=Omadi_Devloper_Profile_12oct31

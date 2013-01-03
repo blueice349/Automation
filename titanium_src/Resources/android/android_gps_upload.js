@@ -1,9 +1,10 @@
 
 Ti.include("/lib/functions.js");
 
-if(Ti.App.Properties.getBool('stopGPS', false) || !isLogged()){
+if(Ti.App.Properties.getBool('stopGPS', false) || !Omadi.utils.isLoggedIn()){
 	try{
 		Titanium.Android.currentService.stop();
+		//setTimeout(Omadi.display.removeNotifications, 1000);
 	}
 	catch(ex){
 		Ti.API.error("Error stopping gps upload service: " + ex);
@@ -11,7 +12,7 @@ if(Ti.App.Properties.getBool('stopGPS', false) || !isLogged()){
 }
 else{
 
-	uploadGPSCoordinates();
+	Omadi.location.uploadGPSCoordinates();
 }
 
 

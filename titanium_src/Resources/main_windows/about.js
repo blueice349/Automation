@@ -1,11 +1,12 @@
 Ti.include('/lib/functions.js');
 
-/*global isUpdating, getTimeAgoStr, openMainDatabase, openGPSDatabase, PLATFORM*/
+/*global  Omadi*/
 
 (function(){
 	'use strict';
 	
-	var curWin, 
+	var curWin,
+	wrapperView, 
 	backButton, 
 	space, 
 	aboutLabel, 
@@ -18,15 +19,29 @@ Ti.include('/lib/functions.js');
 	buttonView,
 	updateButton,
 	reinitializeBtn,
-	dialog, 
-	db;
+	dialog,
+	scrollView;
 	
 	
 	curWin = Ti.UI.currentWindow;
-	curWin.backgroundColor = '#EEEEEE';
-	curWin.orientationModes = [Titanium.UI.PORTRAIT];
+	curWin.backgroundColor = '#eee';
+	curWin.setOrientationModes([Titanium.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
 	
-	if(Titanium.Platform.name !== 'android') {
+	wrapperView = Ti.UI.createView({
+	   layout: 'vertical',
+	   bottom: 0,
+	   top: 0,
+	   right: 0,
+	   left: 0 
+	});
+	
+	curWin.add(wrapperView);
+	
+	Ti.App.addEventListener('loggingOut', function(){
+        Ti.UI.currentWindow.close();
+    });
+	
+	if(Ti.App.isIOS) {
 		backButton = Ti.UI.createButton({
 			title : 'Back',
 			style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
@@ -51,65 +66,75 @@ Ti.include('/lib/functions.js');
 	
 		// create and add toolbar
 		toolbar = Titanium.UI.iOS.createToolbar({
-			items : [backButton, aboutLabel, space],
+			items : [backButton, space, aboutLabel, space],
 			top : 0,
 			borderTop : false,
 			borderBottom : true
 		});
-		curWin.add(toolbar);
+		wrapperView.add(toolbar);
 	}
+	
+	scrollView = Ti.UI.createScrollView({
+	    scrollType: 'vertical',
+	    height: Ti.UI.FILL,
+	    width: '100%',
+	    layout: 'vertical'
+	});
+	
+	wrapperView.add(scrollView);
 	
 	logo = Ti.UI.createImageView({
 		image : '/images/logo.png',
-		top : "50dp",
-		width : "200dp",
-		height : "114dp"
+		top : 10,
+		width : 200,
+		height : 114
 	});
 	
-	curWin.add(logo);
+	scrollView.add(logo);
 	
 	versionLbl = Ti.UI.createLabel({
-		width : 'auto',
-		height : 'auto',
-		top : "180dp",
-		left : "10dp",
+		width : Ti.UI.SIZE,
+		height : Ti.UI.SIZE,
+		top : 10,
+		left : 10,
 		text : 'Application version : ' + Ti.App.version,
 		color : '#000'
 	});
 	
-	curWin.add(versionLbl);
+	scrollView.add(versionLbl);
 	
-	lastSyncTimestamp = Titanium.App.Properties.getDouble("lastSynced", 0);
+	lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp(); 
+	//Ti.API.error(lastSyncTimestamp);
 	lastSyncText = "Last synched: ";
 	
 	if(lastSyncTimestamp !== 0){
-		lastSyncText += getTimeAgoStr(lastSyncTimestamp);
+		lastSyncText += Omadi.utils.getTimeAgoStr(lastSyncTimestamp);
 	} 
 	else{
 		lastSyncText += 'NA';
 	}
 	
 	syncLabel = Ti.UI.createLabel({
-		width : 'auto',
-		height : 'auto',
-		top : "220dp",
-		left : "10dp",
+		width : Ti.UI.SIZE,
+		height : Ti.UI.SIZE,
+		top : 5,
+		left : 10,
 		text : lastSyncText,
 		color : '#000'
 	});
 	
-	curWin.add(syncLabel);
+	scrollView.add(syncLabel);
 	
 	buttonView = Ti.UI.createView({
-		top : "280dp",
-		width : "285dp",
-		height : "50dp"
+		top : 10,
+		width : 285,
+		height : 50
 	});
 	
 	updateButton = Ti.UI.createButton({
-		left : "0dp",
-		width : "122dp",
-		height : "50dp",
+		left : 0,
+		width : 122,
+		height : 50,
 		title : 'Sync Data'
 	});
 	updateButton.addEventListener('click', function() {
@@ -120,9 +145,9 @@ Ti.include('/lib/functions.js');
 	buttonView.add(updateButton);
 	
 	reinitializeBtn = Ti.UI.createButton({
-		left : "130dp",
-		width : "153dp",
-		height : "50dp",
+		left : 130,
+		width : 153,
+		height : 50,
 		title : 'Reset All Data'
 	});
 	
@@ -136,32 +161,9 @@ Ti.include('/lib/functions.js');
 	
 		dialog.addEventListener('click', function(e) {
 			if(e.index === 0) {
-				if (!isUpdating()){
+				if (!Omadi.data.isUpdating()){
 					
-					//If delete_all is present, delete all contents:
-					db = openMainDatabase();
-					
-					if(PLATFORM === "android") {
-						//Remove the database
-						db.remove();
-						db.close();
-					} else {
-						var db_file = db.getFile();
-						db.close();
-						//phisically removes the file
-						db_file.deleteFile();
-					}
-					
-					// Install database with an empty version
-					db = openMainDatabase();
-					db.close();
-					
-					// Clear out the GPS database alerts
-					db = openGPSDatabase();
-					db.execute('DELETE FROM alerts');
-					db.close();
-					
-					Ti.App.fireEvent('update_from_menu');
+					Ti.App.fireEvent('full_update_from_menu');
 					dialog.hide(); 
 					curWin.close();
 				} 
@@ -173,6 +175,6 @@ Ti.include('/lib/functions.js');
 	
 	buttonView.add(reinitializeBtn);
 	
-	curWin.add(buttonView);
+	scrollView.add(buttonView);
 
 }());
