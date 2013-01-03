@@ -651,7 +651,7 @@ function doFormSave(node, saveType){"use strict";
         Omadi.display.doneLoading();
         Omadi.display.loading("Saving...");
         
-        node = Omadi.data.saveNode(node);
+        node = Omadi.data.nodeSave(node);
                     
         if(node._saved === true){
             Ti.UI.currentWindow.nodeSaved = true;

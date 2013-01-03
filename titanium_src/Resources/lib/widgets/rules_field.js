@@ -61,7 +61,10 @@ Omadi.widgets.rules_field = {
 
             switch(widget.type) {
                 case 'rules_field_violations':
-                    nodeValue = JSON.parse(nodeValue);
+                    if(typeof nodeValue === 'string'){
+                        nodeValue = JSON.parse(nodeValue);
+                    }
+                    
                     if ( nodeValue instanceof Array) {
 
                         if (nodeValue.length > 0) {

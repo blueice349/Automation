@@ -83,27 +83,18 @@ Omadi.widgets.file = {
         settings = instance.settings;
         Ti.API.debug("Creating file field");
 
-        widgetView = Omadi.widgets.getTextField(instance);
+        widgetView = Omadi.widgets.getLabelField(instance);
 
         widgetView.dbValue = dbValue;
         widgetView.textValue = textValue;
-        widgetView.setValue(textValue);
-        
-        // Got to be at least a@a.co, additional validation is happening later
-        widgetView.minLength = 6;
+        widgetView.setText(textValue);
+        widgetView.setTextAlign(Ti.UI.TEXT_ALIGNMENT_LEFT);
+        widgetView.setBackgroundColor(null);
+        widgetView.setBackgroundGradient(null);
+        widgetView.setBorderWidth(0);
        
-
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
 
-        widgetView.addEventListener('change', function(e) {
-            /*global setConditionallyRequiredLabels*/
-            e.source.dbValue = e.source.value;
-            e.source.textValue = e.source.value;
-
-            if (e.source.check_conditional_fields.length > 0) {
-                setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
-            }
-        });
 
         return widgetView;
     }
