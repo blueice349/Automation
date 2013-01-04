@@ -3,10 +3,7 @@
 
 Omadi.widgets.link_field = {
 
-    //TODO: write a validation function for link_fields
-
     getFieldView : function(node, instance) {"use strict";
-        //this.base = Omadi.widgets.base.init(in_instance);
         instance.elements = [];
 
         var settings = instance.settings, fieldView, i, j, element, addAnotherItemButton = null;

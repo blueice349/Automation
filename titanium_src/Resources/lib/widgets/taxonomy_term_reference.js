@@ -3,8 +3,6 @@
 
 Omadi.widgets.taxonomy_term_reference = {
 
-    // TODO: add autocomplete widget
-
     getFieldView : function(node, instance) {"use strict";
 
         instance.elements = [];

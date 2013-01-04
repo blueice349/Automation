@@ -839,10 +839,11 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                     break;
 
                                 case 'omadi_time':
-                                    // TODO: Add the omadi_time field here
+                                    // TODO: Add the omadi_time field here - not done on web yet either
                                     break;
 
                                 case 'image':
+                                case 'file':
                                     // Do nothing
                                     break;
 

@@ -86,24 +86,15 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                                 Ti.App.Properties.setString("timestamp_offset", GMT_OFFSET);
                             }
 
-                            //Set our maximum
-                            //Ti.API.info("######## CHECK ########  " + parseInt(json.total_item_count));
-                            if (progress !== null) {
-                                //Set max value for progress bar
-                                progress.set_max(parseInt(json.total_item_count, 10));
-                            }
-
-                            //Ti.API.info("Delete all value: " + json.delete_all);
-
-                            mainDB = Omadi.utils.openMainDatabase();
-                            //Check this function
+                            
+                    
                             if (json.delete_all === true || json.delete_all === "true") {
                                 Ti.API.info("=================== ############ ===================");
                                 Ti.API.info("Reseting mainDB, delete_all is required");
                                 Ti.API.info("=================== ############ ===================");
 
                                 //If delete_all is present, delete all contents:
-
+                                mainDB = Omadi.utils.openMainDatabase();
                                 if (Ti.App.isAndroid) {
                                     //Remove the mainDB
                                     mainDB.remove();
@@ -118,6 +109,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
 
                                 // Reset the database
                                 mainDB = Omadi.utils.openMainDatabase();
+                                mainDB.close();
 
                                 gpsDB = Omadi.utils.openGPSDatabase();
                                 gpsDB.execute('DELETE FROM alerts');
@@ -130,12 +122,13 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                             Omadi.data.setLastUpdateTimestamp(json.request_time);
                             //Ti.API.error(json.request_time);
 
+                            Ti.API.info("Total items to install: " + json.total_item_count);
+                            
+                            mainDB = Omadi.utils.openMainDatabase();
                             //If mainDB is already last version
                             if (json.total_item_count == 0) {
-                                Ti.API.info('######### Request time : ' + json.sync_timestamp);
                                 //mainDB.execute('UPDATE updated SET "timestamp"=' + json.request_time + ' WHERE "rowid"=1');
 
-                                Ti.API.info("SUCCESS -> No items ");
                                 if (progress != null) {
                                     progress.set();
                                     progress.close();
@@ -143,7 +136,12 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
 
                             }
                             else {
-
+                                
+                                if (progress !== null) {
+                                    //Set max value for progress bar
+                                    progress.set_max(parseInt(json.total_item_count, 10));
+                                }
+                                
                                 if (Omadi.data.getLastUpdateTimestamp() === 0) {
                                     mainDB.execute('UPDATE updated SET "url"="' + Omadi.DOMAIN_NAME + '" WHERE "rowid"=1');
                                 }
@@ -152,37 +150,44 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
 
                                 //Omadi.data.setLastUpdateTimestamp(json.request_time);
 
-                                //Ti.API.info("COUNT: " + json.total_item_count);
-
                                 if ( typeof json.vehicles !== 'undefined') {
+                                    Ti.API.debug("Installing vehicles");
                                     Omadi.data.processVehicleJson(json.vehicles, mainDB, progress);
                                 }
-
+                                
                                 if ( typeof json.node_type !== 'undefined') {
+                                    Ti.API.debug("Installing bundles");
                                     Omadi.data.processNodeTypeJson(json.node_type, mainDB, progress);
                                 }
-
+                                
                                 if ( typeof json.fields !== 'undefined') {
+                                    Ti.API.debug("Installing fields");
                                     Omadi.data.processFieldsJson(json.fields, mainDB, progress);
                                 }
-
+                                
                                 if ( typeof json.regions !== 'undefined') {
+                                    Ti.API.debug("Installing regions");
                                     Omadi.data.processRegionsJson(json.regions, mainDB, progress);
                                 }
-
+                                
                                 if ( typeof json.vocabularies !== 'undefined') {
+                                    Ti.API.debug("Installing vocabularies");
                                     Omadi.data.processVocabulariesJson(json.vocabularies, mainDB, progress);
                                 }
-
+                                
                                 if ( typeof json.terms !== 'undefined') {
+                                    Ti.API.debug("Installing terms");
                                     Omadi.data.processTermsJson(json.terms, mainDB, progress);
                                 }
-
+                                
                                 if ( typeof json.users !== 'undefined') {
+                                    Ti.API.debug("Installing users");
                                     Omadi.data.processUsersJson(json.users, mainDB, progress);
                                 }
-
+                                
+                                
                                 if ( typeof json.node !== 'undefined') {
+                                    Ti.API.debug("Installing nodes");
                                     for (tableName in json.node) {
                                         if (json.node.hasOwnProperty(tableName)) {
                                             if (json.node.hasOwnProperty(tableName)) {

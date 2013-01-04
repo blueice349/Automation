@@ -150,6 +150,14 @@ Omadi.utils.getTimeAgoStr = function(unix_timestamp) {'use strict';
 };
 
 Omadi.utils.setCookieHeader = function(http) {"use strict";
+    var cookie = Omadi.utils.getCookie();
+
+    if(cookie > ""){
+        http.setRequestHeader("Cookie", cookie);
+    }
+};
+
+Omadi.utils.getCookie = function(){"use strict";
     var db, result, cookie;
 
     db = Omadi.utils.openListDatabase();
@@ -158,23 +166,15 @@ Omadi.utils.setCookieHeader = function(http) {"use strict";
     //Ti.API.info("FOUND COOKIE = " + cookie);
     result.close();
     db.close();
-
-    if(cookie > ""){
-        if (Ti.App.isAndroid) {
-            http.setRequestHeader("Cookie", cookie);
-            // Set cookies
-        }
-        else {
-            
-            if(cookie.indexOf(';') != -1){
-                cookie = cookie.split(';');
-                cookie = cookie[0];
-            }
-            //Ti.API.error(cookie[0]);
-            http.setRequestHeader("Cookie", cookie);
-            // Set cookies
+    
+    if (Ti.App.isIOS) {
+        if(cookie.indexOf(';') != -1){
+            cookie = cookie.split(';');
+            cookie = cookie[0];
         }
     }
+    
+    return cookie;
 };
 
 /* Date Format 1.2.3

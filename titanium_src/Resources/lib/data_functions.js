@@ -434,12 +434,16 @@ Omadi.data.nodeSave = function(node) {"use strict";
     return node;
 };
 
-Omadi.data.saveFailedUpload = function(photoId) {"use strict";
+Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
 
     var imageDir, imageFile, filename, imageView, blob, db, result, dialog, nid, field_name, delta;
 
     db = Omadi.utils.openMainDatabase();
     result = db.execute("SELECT * FROM _photos WHERE id = " + photoId);
+    
+    if(typeof showMessage === 'undefined'){
+        showMessage = true;
+    }
 
     try {
 
@@ -455,13 +459,15 @@ Omadi.data.saveFailedUpload = function(photoId) {"use strict";
             imageView = Ti.UI.createImageView({
                 image : blob
             });
-
-            Omadi.service.sendErrorReport("going to save to photo gallery: " + photoId);
+            
+            if(showMessage){
+                Omadi.service.sendErrorReport("going to save to photo gallery: " + photoId);
+            }
 
             if (Ti.App.isAndroid) {
                 if (Ti.Filesystem.isExternalStoragePresent()) {
 
-                    filename = 'Omadi_' + nid + '_' + field_name + '_' + delta + '.jpg';
+                    filename = 'Omadi_' + nid + '_' + field_name + '_' + delta + '_' + Omadi.utils.getUTCTimestamp() + '.jpg';
 
                     imageDir = Ti.Filesystem.getFile(Ti.Filesystem.externalStorageDirectory, 'failed_uploads');
                     if (! imageDir.exists()) {
@@ -474,19 +480,22 @@ Omadi.data.saveFailedUpload = function(photoId) {"use strict";
                     Ti.API.info("ImageFile path is: " + imageFile.resolve());
 
                     if (imageFile.write(imageView.toBlob())) {
-
-                        dialog = Titanium.UI.createAlertDialog({
-                            title : 'Photo Upload Problem',
-                            message : "There was a problem uploading a photo for node #" + nid + " after 5 tries. The photo was saved to this device's filesystem at " + imageFile.getNativePath(),
-                            buttonNames : ['OK']
-                        });
-                        dialog.show();
-
-                        Omadi.service.sendErrorReport("Saved to photo gallery: " + nid);
+                        
+                        if(showMessage){
+                            dialog = Ti.UI.createAlertDialog({
+                                title : 'Photo Upload Problem',
+                                message : "There was a problem uploading a photo for node #" + nid + " after 5 tries. The photo was saved to this device's filesystem at " + imageFile.getNativePath(),
+                                buttonNames : ['OK']
+                            });
+                            dialog.show();
+    
+                            Omadi.service.sendErrorReport("Saved to photo gallery: " + nid);
+                        }
 
                         Omadi.data.deletePhotoUpload(photoId);
                     }
                     else {
+                        
                         Omadi.service.sendErrorReport("Did not save to photo gallery: " + photoId);
                         dialog = Titanium.UI.createAlertDialog({
                             title : 'Corrupted Photo',
@@ -507,7 +516,7 @@ Omadi.data.saveFailedUpload = function(photoId) {"use strict";
                     dialog = Titanium.UI.createAlertDialog({
                         title : 'Insert SD Card',
                         message : "There was a problem uploading a photo. You can either insert an SD card and have the photo saved to the SD card, or you can delete the photo permanently.",
-                        buttonNames : ['Delete', 'Insert SD Card']
+                        buttonNames : ['Delete', 'Inserted SD Card']
                     });
 
                     dialog.addEventListener('click', function(e) {
@@ -515,7 +524,7 @@ Omadi.data.saveFailedUpload = function(photoId) {"use strict";
                             Omadi.data.deletePhotoUpload(photoId);
                         }
                         else if (e.index == 1) {
-                            db.execute("UPDATE _photos SET tries = -100");
+                            Omadi.data.saveFailedUpload(photoId); 
                         }
                     });
                     dialog.show();
@@ -524,15 +533,18 @@ Omadi.data.saveFailedUpload = function(photoId) {"use strict";
             else {
                 Titanium.Media.saveToPhotoGallery(imageView.toImage(), {
                     success : function(e) {
-                        dialog = Titanium.UI.createAlertDialog({
-                            title : 'Photo Upload Problem',
-                            message : "There was a problem uploading a photo for node #" + nid + " after 5 tries. The photo was saved to this device's gallery.",
-                            buttonNames : ['OK']
-                        });
-                        dialog.show();
-
-                        Omadi.service.sendErrorReport("Saved to photo gallery: " + nid);
-
+                        
+                        if(showMessage){
+                            dialog = Titanium.UI.createAlertDialog({
+                                title : 'Photo Upload Problem',
+                                message : "There was a problem uploading a photo for node #" + nid + " after 5 tries. The photo was saved to this device's gallery.",
+                                buttonNames : ['OK']
+                            });
+                            dialog.show();
+    
+                            Omadi.service.sendErrorReport("Saved to photo gallery: " + nid);
+                        }
+                        
                         Omadi.data.deletePhotoUpload(photoId);
                     },
                     error : function(e) {
@@ -1104,7 +1116,6 @@ Omadi.data.processFieldsJson = function(json, mainDB, progress) {"use strict";
                                 queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "' " + db_type);
                                 
                                 if (json.insert[i].type == 'file') {
-                                    Ti.API.error("adding file");
                                     queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___filename' " + db_type);
                                 }
                             }
@@ -1343,7 +1354,6 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                                         values.push("null");
                                     }
                                     else{
-                                        Ti.API.error("Adding filename");
                                         value = json.insert[i][field_name + "___filename"];
     
                                         if ( value instanceof Array) {

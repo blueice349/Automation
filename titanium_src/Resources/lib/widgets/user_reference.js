@@ -3,8 +3,6 @@
 
 Omadi.widgets.user_reference = {
 
-    // TODO: add parent default value
-
     getFieldView : function(node, instance) {"use strict";
         //this.base = Omadi.widgets.base.init(in_instance);
         instance.elements = [];

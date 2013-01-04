@@ -551,30 +551,12 @@ Omadi.display.showLoadingIndicator = function(show, timeout) {"use strict";
     }, timeout);
 };
 
-//
-// The progress bar for every install/update
-//
-// 1st param : sets the first value of the progress bar (instance of this object)
-// 2nd param : Maximum the progress bar can reach
-//
-
 Omadi.display.ProgressBar = function(current, max) {"use strict";
     /*jslint plusplus: true*/
 
     this.current = current;
     this.max = max;
 
-    //var progressView, pb_download, pb_install;
-
-    //var a1 = Titanium.UI.createAnimation();
-    //a1.top = -1 * Ti.Platform.displayCaps.platformHeight * 0.14;
-    //a1.duration = 1000;
-
-    //var a2 = Titanium.UI.createAnimation();
-    //a2.top = 0;
-    //a2.duration = 1000;
-
-    // black view
     this.progressView = Titanium.UI.createView({
         height : 45,
         width : '100%',
@@ -586,18 +568,11 @@ Omadi.display.ProgressBar = function(current, max) {"use strict";
 
     Ti.UI.currentWindow.add(this.progressView);
 
-    //If bar is not hiding change this to be incorporated at mainMenu.js
-    //loggedView.animate(a1);
-
-    //setTimeout(function() {
-    //    indView.animate(a2);
-    //}, 500);
-
     this.pb_download = Titanium.UI.createProgressBar({
-        width : "70%",
+        width : "96%",
         min : 0,
         max : 1,
-        top : '5%',
+        top : 0,
         value : 0,
         color : '#fff',
         message : 'Downloading ...',
@@ -605,10 +580,10 @@ Omadi.display.ProgressBar = function(current, max) {"use strict";
     });
 
     this.pb_install = Titanium.UI.createProgressBar({
-        width : "70%",
+        width : "96%",
         min : 0,
         max : 100,
-        top : '5%',
+        top : 0,
         value : 0,
         color : '#fff',
         message : 'Installing ...',
@@ -626,7 +601,6 @@ Omadi.display.ProgressBar = function(current, max) {"use strict";
         this.progressView.add(this.pb_install);
         this.pb_install.show();
         this.max = value;
-        //Ti.API.info("Changed max");
     };
 
     this.set = function() {
@@ -653,11 +627,6 @@ Omadi.display.ProgressBar = function(current, max) {"use strict";
 
     this.close = function() {
         Ti.UI.currentWindow.remove(this.progressView);
-        //indView.animate(a1);
-        //setTimeout(function() {
-        //    Ti.UI.currentWindow.remove(indView);
-        //    loggedView.animate(a2);
-        //}, 700);
     };
 };
 

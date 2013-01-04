@@ -610,14 +610,13 @@ function setupBottomButtons() {"use strict";
         Ti.App.syncInterval = setInterval(checkUpdate, 300000);
 
         Ti.App.addEventListener('full_update_from_menu', function() {
-            var dbFile, db;
-
+            var dbFile, db, result;
+            
             Omadi.data.setUpdating(true);
-
+            
             Omadi.data.setLastUpdateTimestamp(0);
             //If delete_all is present, delete all contents:
-            db = Omadi.utils.openMainDatabase();
-
+            
             if (Ti.App.isAndroid) {
                 //Remove the database
                 db.remove();

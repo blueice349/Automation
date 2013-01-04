@@ -232,6 +232,10 @@ function openOmadiReferenceWindow(e){"use strict";
     Omadi.display.openViewWindow(e.source.type, e.source.nid);
 }
 
+function openFileViewer(e){"use strict";
+    Omadi.display.displayFile(curWin.nid, e.source.dbValue, e.source.textValue);
+}
+
 function doFieldOutput(fieldObj) {"use strict";
     /*global getCalculationTableView*/
     var i, rowView, valueView, valueLabel, labelView, labelLabel, fieldIsHidden, tableView, fileId, 
@@ -459,6 +463,15 @@ function doFieldOutput(fieldObj) {"use strict";
                             case 'email':
                                 valueLabel.color = '#369';
                                 valueLabel.addEventListener('click', openEmailDialog);
+                                break;
+                                
+                            case 'file':
+                                valueLabel.color = '#369';
+                                valueLabel.dbValue = node[fieldObj.field_name].dbValues[i];
+                                valueLabel.textValue = node[fieldObj.field_name].textValues[i];
+                                valueLabel.addEventListener('click', openFileViewer);
+                                valueLabel.wordWrap = false;
+                                valueLabel.ellipsize = true;
                                 break;
     
                             case 'omadi_reference':

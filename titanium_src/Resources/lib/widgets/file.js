@@ -40,36 +40,20 @@ Omadi.widgets.file = {
         // Add the actual fields
         for ( i = 0; i < instance.numVisibleFields; i++) {
             element = Omadi.widgets.file.getNewElement(node, instance, i);
-            instance.elements.push(element);
-            fieldView.add(element);
-            fieldView.add(Omadi.widgets.getSpacerView());
-        }
-
-        if (settings.cardinality == -1) {
-            addAnotherItemButton = Ti.UI.createButton({
-                title : 'Add another item',
-                right : 15,
-                instance : instance
-            });
-
-            addAnotherItemButton.addEventListener('click', function(e) {
-                var instance = e.source.instance;
-                instance.numVisibleFields++;
-                Omadi.widgets.shared.redraw(instance);
-            });
-
-            fieldView.add(addAnotherItemButton);
-            fieldView.add(Omadi.widgets.getSpacerView());
+            if(element){
+                instance.elements.push(element);
+                fieldView.add(element);
+                fieldView.add(Omadi.widgets.getSpacerView());
+            }
         }
 
         return fieldView;
     },
     getNewElement : function(node, instance, index) {"use strict";
-
         var settings, widgetView, dbValue, textValue;
 
-        dbValue = "";
-        textValue = "";
+        dbValue = null;
+        textValue = "- No file -";
         if ( typeof node[instance.field_name] !== 'undefined') {
             if ( typeof node[instance.field_name].dbValues !== 'undefined' && typeof node[instance.field_name].dbValues[index] !== 'undefined') {
                 dbValue = node[instance.field_name].dbValues[index];
@@ -79,27 +63,41 @@ Omadi.widgets.file = {
                 textValue = node[instance.field_name].textValues[index];
             }
         }
-
-        settings = instance.settings;
-        Ti.API.debug("Creating file field");
-
-        widgetView = Omadi.widgets.getLabelField(instance);
-
-        widgetView.dbValue = dbValue;
-        widgetView.textValue = textValue;
-        widgetView.setText(textValue);
-        widgetView.setTextAlign(Ti.UI.TEXT_ALIGNMENT_LEFT);
-        widgetView.setBackgroundColor(null);
-        widgetView.setBackgroundGradient(null);
-        widgetView.setBorderWidth(0);
-        widgetView.nid = node.nid;
-       
-        widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
         
-        widgetView.addEventListener('click', function(e){
-            Omadi.display.displayFile(e.source.nid, e.source.dbValue, e.source.textValue);
-        });
-
-        return widgetView;
+        if(index == 0 || dbValue !== null){
+            settings = instance.settings;
+            Ti.API.debug("Creating file field");
+    
+            widgetView = Omadi.widgets.getLabelField(instance);
+            
+            widgetView.dbValue = dbValue;
+            widgetView.textValue = textValue;
+            widgetView.setText(textValue);
+            widgetView.textAlign = Ti.UI.TEXT_ALIGNMENT_LEFT;
+            widgetView.backgroundColor = 'transparent';
+            widgetView.backgroundGradient = null;
+            widgetView.borderWidth = 0;
+            widgetView.font.fontWeight = 'bold';
+            widgetView.borderColor = 'transparent';
+            widgetView.borderRadius = 0;
+            widgetView.borderStyle = null;
+            if(dbValue === null){
+                widgetView.color = "#999";
+            }
+            else{
+                widgetView.color = '#369';
+            }
+            widgetView.nid = node.nid;
+            widgetView.height = Ti.UI.SIZE;
+           
+            widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
+            
+            widgetView.addEventListener('click', function(e){
+                Omadi.display.displayFile(e.source.nid, e.source.dbValue, e.source.textValue);
+            });
+    
+            return widgetView;
+        }
+        return null;
     }
 };

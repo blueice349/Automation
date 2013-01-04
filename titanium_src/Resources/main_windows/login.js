@@ -773,7 +773,7 @@ function scrollBoxesToTop() {"use strict";
                     //Ti.API.info("status is: " + this.status);
                     Omadi.display.doneLoading();
 
-                    if (this.status == 401) {
+                    if (this.status == 401 || this.status == 404) {
                         //label_error.text = "Check your username and password. Then try again.";
                         alert("Make sure client account, username and password are correct.");
                     }
@@ -782,7 +782,7 @@ function scrollBoxesToTop() {"use strict";
                         //label_error.text = "Network timeout. Please try again.";
                     }
                     else {
-                        alert("An unknown error occurred. Please try logging in again.");
+                        alert("There was a problem logging you in. Please try again.");
                         //label_error.text = "An error has occurred. Please try again.";
                     }
                 };

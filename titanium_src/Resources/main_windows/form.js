@@ -1402,52 +1402,6 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
                                 }
                             }
                             break;
-    
-                        // case 'calculation_field':
-                        // //TODO: finish this
-                            // Ti.API.error("no calculation_field in conditional");
-                            // for (idx1 in entityArr[field_name]) {
-                                // var elements = entityArr[field_name][idx1];
-                                // node_values.push(elements['value']);
-                            // }
-                            // node_value = node_values[0];
-                            // switch(search_operator) {
-//     
-                                // case '>':
-                                    // if (node_value > search_value) {
-                                        // row_matches[row_idx] = true;
-                                    // }
-                                    // break;
-                                // case '>=':
-                                    // if (node_value >= search_value) {
-                                        // row_matches[row_idx] = true;
-                                    // }
-                                    // break;
-                                // case '!=':
-                                    // if (node_value != search_value) {
-                                        // row_matches[row_idx] = true;
-                                    // }
-                                    // break;
-                                // case '<':
-                                    // if (node_value < search_value) {
-                                        // row_matches[row_idx] = true;
-                                    // }
-                                    // break;
-                                // case '<=':
-                                    // if (node_value <= search_value) {
-                                        // row_matches[row_idx] = true;
-                                    // }
-                                    // break;
-//     
-                                // default:
-                                    // if (node_value == search_value) {
-                                        // row_matches[row_idx] = true;
-                                    // }
-                                    // break;
-                            // }
-//     
-                          //  break;
-    
                     }
                 }
             }
