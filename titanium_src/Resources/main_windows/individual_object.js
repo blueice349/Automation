@@ -239,7 +239,7 @@ function openFileViewer(e){"use strict";
 function doFieldOutput(fieldObj) {"use strict";
     /*global getCalculationTableView*/
     var i, rowView, valueView, valueLabel, labelView, labelLabel, fieldIsHidden, tableView, fileId, 
-        contentImage, field_parts, part, contentWidth;
+        contentImage, field_parts, part, contentWidth, dotIndex, extension;
     
     
     if ( typeof node[fieldObj.field_name] !== 'undefined') {
@@ -466,10 +466,19 @@ function doFieldOutput(fieldObj) {"use strict";
                                 break;
                                 
                             case 'file':
-                                valueLabel.color = '#369';
+                                
+                                valueLabel.height = 40;
                                 valueLabel.dbValue = node[fieldObj.field_name].dbValues[i];
                                 valueLabel.textValue = node[fieldObj.field_name].textValues[i];
-                                valueLabel.addEventListener('click', openFileViewer);
+                                
+                                if(Omadi.display.getFileViewType(valueLabel.textValue) !== null){
+                                    valueLabel.addEventListener('click', openFileViewer);
+                                    valueLabel.color = '#369';
+                                }
+                                else{
+                                    valueLabel.color = '#999';
+                                }
+                                
                                 valueLabel.wordWrap = false;
                                 valueLabel.ellipsize = true;
                                 break;

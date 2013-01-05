@@ -166,31 +166,13 @@ Ti.include('/lib/functions.js');
 				if (!Omadi.data.isUpdating()){
 					
 					dialog.hide(); 
-                    
-                    
-                    if(!Ti.Network.online){
-                        alert("You do not have an Internet connection right now, so new data will not be downloaded until you connect.");
-                    }
-                    
-                    db = Omadi.utils.openMainDatabase();
-            
-                    result = db.execute("SELECT id FROM _photos");
-                    if(result.rowCount > 0){
-                        alert("One or more photos were not uploaded to the server, so they will be stored on this device now.");
-                        
-                        while(result.isValidRow()){
-                            
-                            Omadi.data.saveFailedUpload(result.fieldByName('id', Ti.Database.FIELD_TYPE_INT), false); 
-                            
-                            result.next();
-                        }
-                    }
-                    result.close();
-                    db.close();
+					
+					
+					curWin.close();
                     
 					Ti.App.fireEvent('full_update_from_menu');
 					
-					curWin.close();
+					
 				} 
 			}
 		});

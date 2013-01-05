@@ -467,7 +467,7 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
             if (Ti.App.isAndroid) {
                 if (Ti.Filesystem.isExternalStoragePresent()) {
 
-                    filename = 'Omadi_' + nid + '_' + field_name + '_' + delta + '_' + Omadi.utils.getUTCTimestamp() + '.jpg';
+                    filename = 'O_' + nid + '_' + field_name + '_' + delta + '_' + Omadi.utils.getUTCTimestamp() + '.jpg';
 
                     imageDir = Ti.Filesystem.getFile(Ti.Filesystem.externalStorageDirectory, 'failed_uploads');
                     if (! imageDir.exists()) {
@@ -1339,7 +1339,6 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                                         values.push("null");
                                     }
                                     else{
-                                        Ti.API.error("Adding fid");
                                         value = json.insert[i][field_name + "___fid"];
     
                                         if ( value instanceof Array) {

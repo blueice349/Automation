@@ -1,6 +1,112 @@
 /*global Omadi, dbEsc*/
+/*jslint eqeq: true, plusplus: true*/
 
 Omadi.service = Omadi.service || {};
+
+Omadi.service.refreshSession = function(){"use strict";
+    var http;
+    
+    if(Ti.App.isIOS){
+        // The cookie only needs to be refreshed for iOS right now.
+        // Android has a little less security when setting cookies
+        // This was implemented solely for the purpose of using the webview in the fileViewer.js file
+        // Without getting a Set-Cookie header in a response at some point, iOS will not allow an unknown cookie to be sent
+        // Therefore, this needed to be added
+        
+        if(Ti.Network.online && !Ti.App.Properties.getBool("sessionRefreshed", false)){
+            if (!Omadi.data.isUpdating()) {
+                Omadi.data.setUpdating(true);
+                
+                http = Ti.Network.createHTTPClient();
+                http.setTimeout(10000);
+                http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync/refreshSession.json');
+            
+                Omadi.utils.setCookieHeader(http);
+                http.setRequestHeader("Content-Type", "application/json");
+                
+                http.onload = function(e){
+                    var db_list, cookie, list_result;
+                    
+                    db_list = Omadi.utils.openListDatabase();
+                    
+                    cookie = this.getResponseHeader('Set-Cookie');
+            
+                    list_result = db_list.execute('SELECT COUNT(*) AS count FROM login WHERE id_log=1');
+                    if (list_result.fieldByName('count') > 0) {
+                        db_list.execute("BEGIN IMMEDIATE TRANSACTION");
+                        db_list.execute("UPDATE login SET is_logged = 'true', cookie = '" + dbEsc(cookie) + "' WHERE id_log=1");
+                        db_list.execute("COMMIT TRANSACTION");
+                    }
+                    list_result.close();
+            
+                    db_list.close();
+                    
+                    Omadi.data.setUpdating(false);
+                    
+                    Ti.App.Properties.setBool("sessionRefreshed", true);
+                };
+                
+                http.onerror = function(e){
+                    var dialog;
+                    
+                    Omadi.data.setUpdating(false);
+                    
+                    if (this.status == 403) {
+                        dialog = Titanium.UI.createAlertDialog({
+                            title : 'Omadi',
+                            buttonNames : ['OK'],
+                            message : "You were logged out while refreshing your session. Please log back in."
+                        });
+            
+                        dialog.addEventListener('click', function(e) {
+                            var db_func = Omadi.utils.openListDatabase();
+                            db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+                            db_func.close();
+                        });
+            
+                        Omadi.service.logout();
+                        dialog.show();
+                    }
+                    else if (this.status == 401) {
+                        dialog = Titanium.UI.createAlertDialog({
+                            title : 'Omadi',
+                            buttonNames : ['OK'],
+                            message : "Your session is no longer valid, and it could not be refreshed. Please log back in."
+                        });
+            
+                        dialog.addEventListener('click', function(e) {
+            
+                            var db_func = Omadi.utils.openListDatabase();
+                            db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+                            db_func.close();
+            
+                        });
+            
+                        Omadi.service.logout();
+                        dialog.show();
+                    }
+                    else{
+                        setTimeout(Omadi.service.refreshSession, 40000);
+                    }
+                };
+            
+                http.send();
+            }
+            else{
+                setTimeout(Omadi.service.refreshSession, 10000);
+            }
+        }
+        else{
+            
+            Ti.Network.addEventListener('change', function(e) {
+                var isOnline = e.online;
+                if (isOnline && !Ti.App.Properties.getBool("sessionRefreshed", false)) {
+                    Omadi.service.refreshSession();
+                }
+            });
+        }
+    }
+};
 
 Omadi.service.setNodeViewed = function(nid) {"use strict";
 
@@ -54,7 +160,6 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                 };
 
                 //Opens address to retrieve list
-
                 if (Omadi.data.getLastUpdateTimestamp() === 0) {
                     Ti.API.info("DOING A FULL INSTALL");
                     http.open('GET', Omadi.DOMAIN_NAME + '/js-sync/download.json?sync_timestamp=0');
@@ -76,7 +181,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                         //Parses response into strings
                         if (this.responseText !== null && isJsonString(this.responseText) === true) {
 
-                            Ti.API.info(this.responseText.substring(0, 200));
+                            Ti.API.info(this.responseText.substring(0, 3000));
 
                             json = JSON.parse(this.responseText);
 
@@ -619,7 +724,7 @@ Omadi.service.logout = function() {"use strict";
 
     //Omadi.display.hideLoadingIndicator();
 
-    Ti.UI.currentWindow.hide();
+    //Ti.UI.currentWindow.hide();
 
     Ti.App.Properties.setBool("stopGPS", true);
     Ti.App.Properties.setBool("quitApp", true);

@@ -1,5 +1,5 @@
-/*jslint eqeq: true*/
-/*global Omadi*/
+/*jslint eqeq: true, plusplus: true*/
+/*global Omadi, dbEsc*/
 
 // this sets the background color of every
 Ti.UI.currentWindow.setBackgroundColor('#eee');
@@ -173,7 +173,7 @@ function scrollBoxesToTop() {"use strict";
 
         var termsView, termsIAgreeLabel, termsOfServiceLabel, termsWrapper, loginButton, 
             block_i, db, result, passwordField, usernameField, version_label, 
-            logo, savedPortal, savedUsername, domainName;
+            logo, savedPortal, savedUsername, domainName, elements, i;
         /*global clearCache*/
 
         Omadi.location.unset_GPS_uploading();
@@ -286,29 +286,50 @@ function scrollBoxesToTop() {"use strict";
         });
         Ti.UI.currentWindow.add(version_label);
 
-        scrollView = Titanium.UI.createScrollView({
-            contentWidth : 'auto',
-            contentHeight : 'auto',
-            showVerticalScrollIndicator : true,
-            showHorizontalScrollIndicator : false,
-            scrollType : 'vertical',
-            width : '100%',
-            contentOffset : {
-                x : 0,
-                y : 0
-            },
-            top : 0,
-            left : 0,
-            height : Ti.UI.SIZE,
-            layout : 'vertical',
-            zIndex : 0
-        });
+        if(Ti.Platform.osname === 'ipad'){
+            // Get rid of the scrollview for ipad and just put all the elements on the window
+            // The iPad does some stupid things with small content in a large screen
+            // The logo gets hidden when in landscape mode and the keyboard is up
+
+            scrollView = Ti.UI.createView({
+               layout: 'vertical',
+               width: '100%',
+               top: 0,
+               bottom: 0,
+               left: 0,
+               right: 0
+            });
+        }
+        else{
+            scrollView = Titanium.UI.createScrollView({
+                showVerticalScrollIndicator : true,
+                showHorizontalScrollIndicator : false,
+                scrollType : 'vertical',
+                width : '100%',
+                top : 0,
+                left : 0,
+                bottom: 0,
+                right: 0,
+                layout : 'vertical',
+                zIndex : 0
+            });
+            
+            scrollView.addEventListener('scroll', function(e) {
+                scrollPositionY = e.y;
+            });
+            
+            Ti.App.addEventListener('loggingOut', function() {
+                Ti.API.debug("logged out");
+                scrollView.scrollTo(0, 0);
+            });
+        }
+        
         Ti.UI.currentWindow.add(scrollView);
 
         //Web site picker
         logo = Titanium.UI.createImageView({
             width : 200,
-            top : 25,
+            top : 20,
             height : 114,
             image : '/images/logo.png'
         });
@@ -384,9 +405,7 @@ function scrollBoxesToTop() {"use strict";
 
         scrollView.add(passwordField);
 
-        scrollView.addEventListener('scroll', function(e) {
-            scrollPositionY = e.y;
-        });
+        
 
         usernameField.addEventListener('return', function() {
             passwordField.focus();
@@ -409,102 +428,8 @@ function scrollBoxesToTop() {"use strict";
         });
 
         Ti.UI.currentWindow.addEventListener('focus', function() {
-            var db, result, new_color;
-
-            db = Omadi.utils.openMainDatabase();
-            result = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
-
-            new_color = "#000000";
-            if (result.fieldByName('timestamp') != 0) {
-                //  locked_field = false;
-                new_color = "#999999";
-                termsView.selected = true;
-                termsView.backgroundImage = '/images/selected_test.png';
-            }
-            else {
-                termsView.selected = false;
-                termsView.backgroundImage = null;
-            }
-
-            result.close();
-            db.close();
-
-            portal.color = new_color;
-            usernameField.color = new_color;
             passwordField.value = "";
-
-            //iOS only
-            if (Ti.App.isIOS) {
-                scrollView.setContentOffset({
-                    x : scrollView.getContentOffset().x,
-                    y : 25
-                }, {
-                    animated : true
-                });
-            }
         });
-
-        // messageView = Titanium.UI.createView({
-            // bottom : 0,
-            // height : Ti.UI.SIZE,
-            // width : '100%',
-            // borderRadius : 0,
-            // backgroundGradient : {
-                // type : 'linear',
-                // colors : [{
-                    // color : '#FFF',
-                    // offset : 0.0
-                // }, {
-                    // color : '#AAA',
-                    // offset : 1.0
-                // }],
-                // startPoint : {
-                    // x : 0,
-                    // y : 0
-                // },
-                // endPoint : {
-                    // x : 0,
-                    // y : 100
-                // },
-                // backFillStart : false
-            // }
-        // });
-
-        //Decides wether logStatus is set or not
-        // If it is set, print: Inform your credentials
-        // Otherwise, print the content of logStatus
-        // if ((Ti.App.Properties.getString('logStatus') == null) || (Ti.App.Properties.getString('logStatus') == "")) {
-            // label_error = Titanium.UI.createLabel({
-                // color : '#4B5C8C',
-                // //text:'Please login - Version '+Titanium.App.version,
-                // text : 'Please login',
-                // font : {
-                    // fontWeight : 'bold'
-                // },
-                // height : 'auto',
-                // width : 'auto',
-                // textAlign : 'center'
-            // });
-        // }
-        // else {
-            // label_error = Titanium.UI.createLabel({
-                // color : '#4B5C8C',
-                // font : {
-                    // fontWeight : 'bold'
-                // },
-                // text : Ti.App.Properties.getString('logStatus'),
-                // height : 'auto',
-                // width : 'auto',
-                // textAlign : 'center'
-            // });
-        // }
-        // label_error.backgroundColor = "transparent";
-        // // Adds label_error to the messageView
-        // messageView.add(label_error);
-
-        //Adds messageView to root window
-        //Ti.UI.currentWindow.add(messageView);
-
         
         termsView = Ti.UI.createView({
             width : 24,
@@ -546,7 +471,6 @@ function scrollBoxesToTop() {"use strict";
             width : Ti.UI.SIZE
         });
         
-
         termsView.addEventListener('click', function(e) {
             if (e.source.selected === false) {
                 e.source.selected = true;
@@ -714,7 +638,7 @@ function scrollBoxesToTop() {"use strict";
 
                     db_list = Omadi.utils.openListDatabase();
 
-                    list_result = db_list.execute('SELECT domain FROM domains WHERE domain=\'' + portal.value + '\'');
+                    list_result = db_list.execute("SELECT domain FROM domains WHERE domain='" + dbEsc(portal.value) + "'");
 
                     if (list_result.rowCount > 0) {
                         //Exists
@@ -724,14 +648,14 @@ function scrollBoxesToTop() {"use strict";
                         db_list.execute("BEGIN IMMEDIATE TRANSACTION");
                         //Create another database
                         Ti.API.info('database does not exist, creating a new one');
-                        db_list.execute('INSERT INTO domains (domain, db_name) VALUES ("' + portal.value + '", "db_' + portal.value + '_' + usernameField.value + '" )');
+                        db_list.execute("INSERT INTO domains (domain, db_name) VALUES ('" + dbEsc(portal.value) + "','" + dbEsc("db_" + portal.value + '_' + usernameField.value) + "')");
                         db_list.execute("COMMIT TRANSACTION");
                     }
 
                     list_result.close();
 
                     db_list.execute("BEGIN IMMEDIATE TRANSACTION");
-                    db_list.execute('UPDATE history SET domain = "' + portal.value + '", username = "' + usernameField.value + '", password = "' + passwordField.value + '", db_name="db_' + portal.value + '_' + usernameField.value + '" WHERE "id_hist"=1');
+                    db_list.execute("UPDATE history SET domain = '" + dbEsc(portal.value) + "', username = '" + dbEsc(usernameField.value) + "', db_name='" + dbEsc("db_" + portal.value + '_' + usernameField.value) + "' WHERE id_hist=1");
                     db_list.execute("COMMIT TRANSACTION");
 
                     //Passes parameter to the second window:
@@ -747,25 +671,19 @@ function scrollBoxesToTop() {"use strict";
                     list_result = db_list.execute('SELECT COUNT(*) AS count FROM login WHERE id_log=1');
                     if (list_result.fieldByName('count') > 0) {
                         db_list.execute("BEGIN IMMEDIATE TRANSACTION");
-                        db_list.execute('UPDATE login SET picked = "' + domainName + '", login_json = "' + Ti.Utils.base64encode(this.responseText) + '", is_logged = "true", cookie = "' + cookie + '", logged_time = "' + Omadi.utils.getUTCTimestamp() + '" WHERE "id_log"=1');
+                        db_list.execute("UPDATE login SET picked = '" + dbEsc(domainName) + "', login_json = '" + dbEsc(Ti.Utils.base64encode(this.responseText)) + "', is_logged = 'true', cookie = '" + dbEsc(cookie) + "', logged_time = '" + Omadi.utils.getUTCTimestamp() + "' WHERE id_log=1");
                         db_list.execute("COMMIT TRANSACTION");
                     }
                     else {
                         db_list.execute("BEGIN IMMEDIATE TRANSACTION");
-                        db_list.execute('INSERT INTO login SET picked = "' + domainName + '", login_json = "' + Ti.Utils.base64encode(this.responseText) + '", is_logged = "true", cookie = "' + cookie + '", logged_time = "' + Omadi.utils.getUTCTimestamp() + '", id_log=1');
+                        db_list.execute("INSERT INTO login SET picked = '" + dbEsc(domainName) + "', login_json = '" + dbEsc(Ti.Utils.base64encode(this.responseText)) + "', is_logged = 'true', cookie = '" + dbEsc(cookie) + "', logged_time = '" + Omadi.utils.getUTCTimestamp() + "', id_log=1");
                         db_list.execute("COMMIT TRANSACTION");
                     }
 
                     db_list.close();
                     passwordField.value = "";
-                    //Ti.UI.currentWindow.touchEnabled = false;
 
                     startGPSService();
-
-                    //loginJSON = JSON.parse(this.responseText);
-                    // if ( typeof loginJSON.new_app !== 'undefined' && loginJSON.new_app.length > 0) {
-                        // Omadi.display.newAppAvailable(loginJSON.new_app);
-                    // }
                 };
 
                 //If username and pass wrong:
@@ -806,41 +724,22 @@ function scrollBoxesToTop() {"use strict";
             }
         });
 
-        
-
-        //When back button on the phone is pressed, it informs the user (message at the bottom)
-        // that he is already in the first menu
         Ti.UI.currentWindow.addEventListener('android:back', function() {
-            Ti.API.info("Shouldn't go back");
-            //label_error.text = "You can't go back, this is the first menu";
+            Ti.UI.currentWindow.close();
         });
 
         Ti.App.Properties.removeProperty('logStatus');
 
-        if ((Ti.App.isIOS) && (Ti.Platform.displayCaps.platformHeight > 500)) {
-            scrollView.top = 200;
-        }
-
-        Ti.App.addEventListener('loggingOut', function() {
-            //Ti.UI.currentWindow.touchEnabled = true;
-            Ti.API.debug("logged out");
-            scrollView.scrollTo(0, 0);
-
-            //setTimeout(Omadi.display.removeNotifications, 30000);
-        });
-
         if (Omadi.utils.isLoggedIn() === true) {
             //Already logged in
-
-            //Omadi.display.loading("Loading...");
-
+            Ti.App.Properties.setBool("sessionRefreshed", false);
+            Omadi.service.refreshSession();
+            
             db = Omadi.utils.openListDatabase();
             result = db.execute('SELECT * FROM login WHERE "id_log"=1');
             domainName = result.fieldByName("picked");
             setProperties(domainName, Ti.Utils.base64decode(result.fieldByName("login_json")));
             db.close();
-
-            //Ti.UI.currentWindow.touchEnabled = false;
 
             Omadi.display.openMainMenuWindow();
 

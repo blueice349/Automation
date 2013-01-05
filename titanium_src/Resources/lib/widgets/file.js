@@ -81,21 +81,23 @@ Omadi.widgets.file = {
             widgetView.borderColor = 'transparent';
             widgetView.borderRadius = 0;
             widgetView.borderStyle = null;
-            if(dbValue === null){
-                widgetView.color = "#999";
-            }
-            else{
+            widgetView.height = 40;
+            
+            if(Omadi.display.getFileViewType(textValue) !== null){
+                widgetView.addEventListener('click', function(e){
+                    Omadi.display.displayFile(e.source.nid, e.source.dbValue, e.source.textValue);
+                });
                 widgetView.color = '#369';
             }
+            else{
+                widgetView.color = '#999';
+            }
+            
             widgetView.nid = node.nid;
             widgetView.height = Ti.UI.SIZE;
            
             widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
             
-            widgetView.addEventListener('click', function(e){
-                Omadi.display.displayFile(e.source.nid, e.source.dbValue, e.source.textValue);
-            });
-    
             return widgetView;
         }
         return null;

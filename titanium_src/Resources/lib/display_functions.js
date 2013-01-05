@@ -40,6 +40,82 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
     }
 };
 
+Omadi.display.getFileViewType = function(filename){"use strict";
+
+    var iOSWebviewExtensions = [], extension, htmlExtensions = [], dotIndex,
+        imageExtensions = [], androidDownloadExtensions = [], textExtensions = [], viewType = null;
+    
+    dotIndex = filename.lastIndexOf('.');
+    extension = "";
+    if(dotIndex !== -1 && dotIndex !== filename.length - 1){
+        extension = filename.substring(dotIndex + 1).toLowerCase();
+    }
+    
+    textExtensions.push("txt");
+    textExtensions.push("xml");
+    
+    htmlExtensions.push("html");
+    htmlExtensions.push("htm");
+    
+    imageExtensions.push("jpg");
+    imageExtensions.push("jpeg");
+    imageExtensions.push("gif");
+    imageExtensions.push("png");
+    imageExtensions.push("bmp");
+    
+    androidDownloadExtensions.push("tiff");
+    androidDownloadExtensions.push("doc");
+    androidDownloadExtensions.push("docx");
+    androidDownloadExtensions.push("xls");
+    androidDownloadExtensions.push("xlsx");
+    androidDownloadExtensions.push("csv");
+    androidDownloadExtensions.push("tsv");
+    androidDownloadExtensions.push("pdf");
+    androidDownloadExtensions.push("ppt");
+    androidDownloadExtensions.push("pptx");
+    androidDownloadExtensions.push("odt");
+    androidDownloadExtensions.push("ods");
+    androidDownloadExtensions.push("odp");
+    androidDownloadExtensions.push("eps");
+    androidDownloadExtensions.push("zip");
+    androidDownloadExtensions.push("tar");
+    androidDownloadExtensions.push("tgz");
+    androidDownloadExtensions.push("rtf");
+    
+    
+    iOSWebviewExtensions.push("html");
+    iOSWebviewExtensions.push("htm");
+    iOSWebviewExtensions.push("doc");
+    iOSWebviewExtensions.push("docx");
+    iOSWebviewExtensions.push("xls");
+    iOSWebviewExtensions.push("xlsx");
+    iOSWebviewExtensions.push("csv");
+    iOSWebviewExtensions.push("tsv");
+    iOSWebviewExtensions.push("ppt");
+    iOSWebviewExtensions.push("pptx");
+    iOSWebviewExtensions.push("rtf");
+    iOSWebviewExtensions.push("pdf");
+    iOSWebviewExtensions.push("tiff");
+    
+    if(imageExtensions.indexOf(extension) !== -1){
+        viewType = 'image';
+    }
+    else if(htmlExtensions.indexOf(extension) !== -1){
+        viewType = 'html';
+    }
+    else if(Ti.App.isIOS && iOSWebviewExtensions.indexOf(extension) !== -1){
+        viewType = 'iOSWebview';
+    }
+    else if(textExtensions.indexOf(extension) !== -1){
+        viewType = 'text';
+    }
+    else if(Ti.App.isAndroid && androidDownloadExtensions.indexOf(extension) !== -1){
+        viewType = 'download';
+    }
+    
+    return viewType;
+};
+
 Omadi.display.newAppAvailable = function(message) {"use strict";
     var dialog, now = Omadi.utils.getUTCTimestamp();
 
@@ -270,23 +346,28 @@ Omadi.display.getNodeTypeImagePath = function(type) {"use strict";
 
 Omadi.display.displayFile = function(nid, fid, title) {"use strict";
     var http, webview, newWin;
-
-    if (nid > 0 && fid > 0) {
-        Omadi.display.loading();
-
-        newWin = Titanium.UI.createWindow({
-            navBarHidden: true,
-            nid: nid,
-            fid: fid,
-            title: title,
-            url: '/main_windows/fileViewer.js'
-        });
-        
-        newWin.addEventListener('open', function(){
-           Omadi.display.doneLoading(); 
-        });
-        
-        newWin.open();
+    
+    if(Ti.Network.online){
+        if (nid > 0 && fid > 0) {
+            Omadi.display.loading();
+    
+            newWin = Titanium.UI.createWindow({
+                navBarHidden: true,
+                nid: nid,
+                fid: fid,
+                title: title,
+                url: '/main_windows/fileViewer.js'
+            });
+            
+            newWin.addEventListener('open', function(){
+               Omadi.display.doneLoading(); 
+            });
+            
+            newWin.open();
+        }
+    }
+    else{
+        alert("You are not connected to the Internet, so the file cannot be downloaded.");
     }
 };
 

@@ -157,9 +157,13 @@ Omadi.utils.setCookieHeader = function(http) {"use strict";
     }
 };
 
-Omadi.utils.getCookie = function(){"use strict";
+Omadi.utils.getCookie = function(fullCookie){"use strict";
     var db, result, cookie;
 
+    if(typeof fullCookie === 'undefined'){
+        fullCookie = false;
+    }
+    
     db = Omadi.utils.openListDatabase();
     result = db.execute('SELECT * FROM login WHERE rowid=1');
     cookie = result.fieldByName("cookie", Ti.Database.FIELD_TYPE_STRING);
@@ -167,7 +171,7 @@ Omadi.utils.getCookie = function(){"use strict";
     result.close();
     db.close();
     
-    if (Ti.App.isIOS) {
+    if (Ti.App.isIOS && !fullCookie) {
         if(cookie.indexOf(';') != -1){
             cookie = cookie.split(';');
             cookie = cookie[0];
