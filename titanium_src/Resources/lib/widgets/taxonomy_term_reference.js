@@ -243,6 +243,8 @@ Omadi.widgets.taxonomy_term_reference = {
                     setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
                 }
             });
+            
+            descriptionLabel.setHeight(0);
         }
         else{
             widgetView = Omadi.widgets.getLabelField(instance);
@@ -254,49 +256,49 @@ Omadi.widgets.taxonomy_term_reference = {
             widgetView.setText(textValue);
             widgetView.textValue = textValue;
             widgetView.dbValue = dbValue;
-        }
-
-        if (instance.can_edit) {
-            widgetView.addEventListener('click', function(e) {
-                /*global setConditionallyRequiredLabels*/
-                var i, postDialog, textOptions;
-
-                if (instance.settings.cardinality == -1) {
-
-                    Omadi.widgets.getMultipleSelector(e.source);
-                }
-                else {
-
-                    textOptions = [];
-                    for ( i = 0; i < e.source.options.length; i++) {
-                        textOptions.push(e.source.options[i].title);
+            
+            if (instance.can_edit) {
+                widgetView.addEventListener('click', function(e) {
+                    /*global setConditionallyRequiredLabels*/
+                    var i, postDialog, textOptions;
+    
+                    if (instance.settings.cardinality == -1) {
+    
+                        Omadi.widgets.getMultipleSelector(e.source);
                     }
-
-                    postDialog = Titanium.UI.createOptionDialog();
-                    postDialog.options = textOptions;
-                    postDialog.cancel = -1;
-                    postDialog.widgetView = e.source;
-                    postDialog.show();
-
-                    postDialog.addEventListener('click', function(ev) {
-                        if (ev.index >= 0) {
-                            var textValue = ev.source.options[ev.index];
-
-                            if (textValue == '- None -') {
-                                textValue = "";
+                    else {
+    
+                        textOptions = [];
+                        for ( i = 0; i < e.source.options.length; i++) {
+                            textOptions.push(e.source.options[i].title);
+                        }
+    
+                        postDialog = Titanium.UI.createOptionDialog();
+                        postDialog.options = textOptions;
+                        postDialog.cancel = -1;
+                        postDialog.widgetView = e.source;
+                        postDialog.show();
+    
+                        postDialog.addEventListener('click', function(ev) {
+                            if (ev.index >= 0) {
+                                var textValue = ev.source.options[ev.index];
+    
+                                if (textValue == '- None -') {
+                                    textValue = "";
+                                }
+                                ev.source.widgetView.textValue = textValue;
+                                ev.source.widgetView.setText(textValue);
+                                ev.source.widgetView.value = ev.source.widgetView.dbValue = ev.source.widgetView.options[ev.index].dbValue;
                             }
-                            ev.source.widgetView.textValue = textValue;
-                            ev.source.widgetView.setText(textValue);
-                            ev.source.widgetView.value = ev.source.widgetView.dbValue = ev.source.widgetView.options[ev.index].dbValue;
-                        }
-
-                        if (ev.source.widgetView.check_conditional_fields.length > 0) {
-
-                            setConditionallyRequiredLabels(ev.source.widgetView.instance, ev.source.widgetView.check_conditional_fields);
-                        }
-                    });
-                }
-            });
+    
+                            if (ev.source.widgetView.check_conditional_fields.length > 0) {
+    
+                                setConditionallyRequiredLabels(ev.source.widgetView.instance, ev.source.widgetView.check_conditional_fields);
+                            }
+                        });
+                    }
+                });
+            }
         }
 
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);

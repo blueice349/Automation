@@ -870,7 +870,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                 for ( i = 0; i < node[field_name].dbValues.length; i++) {
                                     if (!Omadi.utils.isEmpty(node[field_name].dbValues[i])) {
                                         node[field_name].dbValues[i] = parseInt(node[field_name].dbValues[i], 10);
-                                        node[field_name].textValues[i] = Omadi.utils.formatDate(node[field_name].dbValues[i], instances[field_name].settings.time);
+                                        node[field_name].textValues[i] = Omadi.utils.formatDate(node[field_name].dbValues[i], (instances[field_name].settings.time == 1 || typeof instances[field_name].settings.granularity.hour !== 'undefined'));
                                     }
                                     else {
                                         node[field_name].dbValues[i] = null;
@@ -1421,7 +1421,7 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
 
                         query += values.join(",");
                         query += ')';
-
+                    
                         //Ti.API.debug(query);
 
                         queries.push(query);
@@ -1502,8 +1502,6 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                 progress.set();
             }
         }
-        //mainDB.execute("COMMIT TRANSACTION");
-
     }
     catch(ex) {
         Ti.API.error("Saving Node Data from JSON: " + ex);

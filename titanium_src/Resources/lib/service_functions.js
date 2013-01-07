@@ -940,7 +940,7 @@ Omadi.service.uploadFile = function() {"use strict";
                         //}
                         //else {
                         Ti.App.fireEvent("sendingData", {
-                            message : 'Uploading photos to server. ' + count + ' to go...'
+                            message : 'Uploading photos. ' + count + ' to go...'
                         });
 
                         http.send(JSON.stringify({

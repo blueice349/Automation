@@ -84,7 +84,7 @@ function deleteAndroidFile(filePath){"use strict";
     
     url = Omadi.DOMAIN_NAME + '/sync/file/' + curWin.nid + '/' + curWin.fid;
     
-    wrapper = Ti.UI.createView({
+    wrapper = Ti.UI.createScrollView({
         top: 0,
         bottom: 0,
         left: 0,
@@ -252,7 +252,7 @@ function deleteAndroidFile(filePath){"use strict";
                         wrapper.add(openFileButton);
                         
                         wrapper.add(Ti.UI.createLabel({
-                            text: "If you don't need to view this file again, you can save space on your device by deleting it now.",
+                            text: "If you don't need to view this file again, you can save space on your device by deleting it after you're done with it.",
                             color: "#666",
                             font: {
                                 fontSize: 16
@@ -269,6 +269,7 @@ function deleteAndroidFile(filePath){"use strict";
                             height: 45,
                             width: Ti.UI.SIZE,
                             top: 20,
+                            bottom: 20,
                             backgroundGradient : {
                                 type : 'linear',
                                 startPoint : {

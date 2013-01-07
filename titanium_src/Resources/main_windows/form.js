@@ -790,7 +790,7 @@ function addiOSToolbar() {"use strict";
         var label = Titanium.UI.createButton({
             title : (node.nid == 'new' ? 'New ' : 'Update ') + bundle.label,
             color : Omadi.widgets.label.color,
-            width : Ti.UI.SIZE,
+            width : 200,
             style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
         });
 
