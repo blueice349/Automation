@@ -123,7 +123,6 @@ Omadi.widgets.calculation_field = {
                     field_2_multiplier = 0;
                     numeric_multiplier = 0;
 
-                    
                     if (calculation_row.field_name_1 != null && node[calculation_row.field_name_1] != null && instances[calculation_row.field_name_1] != null && instances[calculation_row.field_name_1].type == 'calculation_field') {
                         // Make sure a dependency calculation is made first
                         required_instance_final_values = Omadi.widgets.calculation_field.getRowValues(node, instances[calculation_row.field_name_1]);
@@ -239,36 +238,40 @@ Omadi.widgets.calculation_field = {
                     }
         
                     zero = false;
-        
+                    
                     if (calculation_row.criteria != null && calculation_row.criteria.search_criteria != null) {
-                        
                         if (!list_search_node_matches_search_criteria(node, calculation_row.criteria)) {
                             zero = true;
                         }
                     }
         
                     value = 0;
-                    if (field_1_multiplier == 0 && calculation_row.field_name_1 != null && calculation_row.field_name_1 != "") {
-                        zero = true;
+                    
+                    if(typeof calculation_row.field_name_1 !== 'undefined' && !Omadi.utils.isEmpty(calculation_row.field_name_1)){
+                        if (!field_1_multiplier) {
+                            zero = true;
+                        }
+                        else if (!value && field_1_multiplier) {
+                            value = Number(field_1_multiplier);
+                        }
                     }
-                    else if (value == 0 && field_1_multiplier != 0) {
-                        value = field_1_multiplier;
+                    
+                    if(typeof calculation_row.field_name_2 !== 'undefined' && !Omadi.utils.isEmpty(calculation_row.field_name_2)){
+                        if (!field_2_multiplier) {
+                            zero = true;
+                        }
+                        else if (!value && field_2_multiplier) {
+                            value = Number(field_2_multiplier);
+                        }
+                        else if (value && field_2_multiplier) {
+                            value *= Number(field_2_multiplier);
+                        }
                     }
         
-                    if (field_2_multiplier == 0 && calculation_row.field_name_2 != null && calculation_row.field_name_2 != "") {
-                        zero = true;
-                    }
-                    else if (value == 0 && field_2_multiplier != 0) {
-                        value = Number(field_2_multiplier);
-                    }
-                    else if (value != 0 && field_2_multiplier != 0) {
-                        value *= Number(field_2_multiplier);
-                    }
-        
-                    if (value == 0 && numeric_multiplier != 0) {
+                    if (!value && numeric_multiplier) {
                         value = Number(numeric_multiplier);
                     }
-                    else if (value != 0 && numeric_multiplier != 0) {
+                    else if (value && numeric_multiplier) {
                         value *= Number(numeric_multiplier);
                     }
         
@@ -331,6 +334,8 @@ Omadi.widgets.calculation_field = {
     
             for ( idx = 0; idx < row_values.length; idx++) {
                 cal_value = row_values[idx].value;
+                
+                Ti.API.debug(cal_value);
                 
                 if(cal_value === null){
                     cal_value = 0;

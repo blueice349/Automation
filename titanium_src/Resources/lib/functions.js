@@ -683,26 +683,27 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                         for (i in search_value) {
                                             if (search_value.hasOwnProperty(i)) {
 
-                                                searchValues[i] = i;
+                                                searchValues.push(i);
                                             }
                                         }
                                         search_value = searchValues;
                                     }
 
                                     if (search_operator != null && search_operator == '!=') {
-
+                                        
                                         row_matches[criteria_index] = true;
-                                        if (search_value.__null == '__null' && (nodeDBValues.length == 0 || nodeDBValues[0] == null || nodeDBValues[0] == 0)) {
-
+                                        Ti.API.info(nodeDBValues);
+                                        
+                                        if (search_value.indexOf('__null') !== -1 && (nodeDBValues.length == 0 || nodeDBValues[0] == null || nodeDBValues[0] == 0)) {
+                                            Ti.API.info(search_value.__null);
+                                            Ti.API.info(nodeDBValues[0]);
+                                            
                                             row_matches[criteria_index] = false;
                                         }
                                         else {
-
                                             for ( i = 0; i < search_value.length; i++) {
-
                                                 chosen_value = search_value[i];
                                                 if (in_array(chosen_value, nodeDBValues)) {
-
                                                     row_matches[criteria_index] = false;
                                                 }
                                             }
@@ -710,7 +711,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                     }
                                     else {
 
-                                        if (search_value.__null == '__null' && (nodeDBValues.length == 0 || nodeDBValues[0] == null || nodeDBValues[0] == 0)) {
+                                        if (search_value.indexOf('__null') !== -1 && (nodeDBValues.length == 0 || nodeDBValues[0] == null || nodeDBValues[0] == 0)) {
 
                                             row_matches[criteria_index] = true;
                                         }
@@ -738,7 +739,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                             for (i in search_value) {
                                                 if (search_value.hasOwnProperty(i)) {
 
-                                                    searchValues[i] = i;
+                                                    searchValues.push(i);
                                                 }
                                             }
                                             search_value = searchValues;
@@ -747,7 +748,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                         if (search_operator != null && search_operator == '!=') {
 
                                             row_matches[criteria_index] = true;
-                                            if (search_value.__null == '__null' && (nodeDBValues.length == 0 || nodeDBValues[0] == null || nodeDBValues[0] == 0)) {
+                                            if (search_value.indexOf('__null') !== -1 && (nodeDBValues.length == 0 || nodeDBValues[0] == null || nodeDBValues[0] == 0)) {
                                                 row_matches[criteria_index] = false;
                                             }
                                             else {
@@ -761,7 +762,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                             }
                                         }
                                         else {
-                                            if (search_value.__null == '__null' && (nodeDBValues.length == 0 || nodeDBValues[0] == null || nodeDBValues[0] == 0)) {
+                                            if (search_value.indexOf('__null') !== -1 && (nodeDBValues.length == 0 || nodeDBValues[0] == null || nodeDBValues[0] == 0)) {
                                                 row_matches[criteria_index] = true;
                                             }
                                             else {
@@ -854,10 +855,16 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                     }
                 }
             }
+            
+            Ti.API.debug(criteria.search_criteria);
+            Ti.API.debug(criteria.search_criteria.length);
+            
 
-            if (criteria.search_criteria.length == 1) {
+            if (Omadi.utils.count(criteria.search_criteria) == 1) {
 
                 retval = row_matches[criteria_index];
+                
+                Ti.API.debug("RETVAL: " + retval);
             }
             else {
 
@@ -890,6 +897,8 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
 
                 // Get the final result, making sure each and group is TRUE
                 retval = true;
+                
+                
 
                 for ( i = 0; i < and_groups.length; i++) {
 
@@ -922,6 +931,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
     }
     catch(e) {
     }
+    
     return true;
 }
 

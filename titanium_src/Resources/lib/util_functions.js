@@ -406,41 +406,55 @@ Omadi.utils.sortByWeight = function(a, b) {"use strict";
     return 0;
 };
 
-Omadi.utils.applyNumberFormat = function(single_content, cal_value) {"use strict";
+Omadi.utils.count = function(obj){"use strict";
+    var count = 0, i;
     
-    var cal_value_str = '';
+    if(typeof obj === 'object'){
+        for(i in obj){
+            if(obj.hasOwnProperty(i)){
+                count ++;
+            }
+        }
+    }
     
-    if (single_content.settings != null && single_content.settings.number_format != null && single_content.settings.number_format != "") {
-        switch (single_content.settings.number_format) {
+    return count;
+};
+
+Omadi.utils.applyNumberFormat = function(instance, value) {"use strict";
+    
+    var value_str = '';
+    
+    if (instance.settings != null && instance.settings.number_format != null && instance.settings.number_format != "") {
+        switch (instance.settings.number_format) {
             case 'currency':
-                cal_value_str = '$' + (Math.round(Math.abs(cal_value) * 100) / 100).toFixed(2);
+                value_str = '$' + (Math.round(Math.abs(value) * 100) / 100).toFixed(2);
                 break;
                 
             case 'integer':
-                cal_value_str = Math.round(Math.abs(cal_value)).toFixed(0);
+                value_str = Math.round(Math.abs(value)).toFixed(0);
                 break;
                 
             case 'one decimal':
-                cal_value_str = (Math.round(Math.abs(cal_value) * 10) / 10).toFixed(1);
+                value_str = (Math.round(Math.abs(value) * 10) / 10).toFixed(1);
                 break;
                 
             case 'two decimal':
-                cal_value_str = (Math.round(Math.abs(cal_value) * 100) / 100).toFixed(2);
+                value_str = (Math.round(Math.abs(value) * 100) / 100).toFixed(2);
                 break;
                 
             case 'three decimal':
-                cal_value_str = (Math.round(Math.abs(cal_value) * 1000) / 1000).toFixed(3);
+                value_str = (Math.round(Math.abs(value) * 1000) / 1000).toFixed(3);
                 break;
                 
             default:
-                cal_value_str = (Math.round(Math.abs(cal_value) * 100) / 100).toFixed(2);
+                value_str = (Math.round(Math.abs(value) * 100) / 100).toFixed(2);
                 break;
         }
     }
     else {
-        cal_value_str = (Math.round(Math.abs(cal_value) * 100) / 100).toFixed(2);
+        value_str = (Math.round(Math.abs(value) * 100) / 100).toFixed(2);
     }
-    return cal_value_str;
+    return value_str;
 };
 
 

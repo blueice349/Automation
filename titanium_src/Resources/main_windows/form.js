@@ -775,7 +775,8 @@ function addiOSToolbar() {"use strict";
         
         var back = Ti.UI.createButton({
             title : 'Back',
-            style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+            style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED,
+            zIndex: 10
         });
         back.addEventListener('click', function() {
             cancelOpt();
@@ -795,7 +796,8 @@ function addiOSToolbar() {"use strict";
 
         var actions = Ti.UI.createButton({
             title : 'Actions',
-            style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+            style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED,
+            zIndex: 10
         });
 
         actions.addEventListener('click', function(e) {
