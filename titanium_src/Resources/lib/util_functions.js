@@ -420,6 +420,16 @@ Omadi.utils.count = function(obj){"use strict";
     return count;
 };
 
+Omadi.utils.inArray = function(val, haystack) {"use strict";
+    var i;
+    for (i = 0; i < haystack.length; i++) {
+        if (haystack[i] == val) {
+            return true;
+        }
+    }
+    return false;
+};
+
 Omadi.utils.applyNumberFormat = function(instance, value) {"use strict";
     
     var value_str = '';

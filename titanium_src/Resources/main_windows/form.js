@@ -775,8 +775,7 @@ function addiOSToolbar() {"use strict";
         
         var back = Ti.UI.createButton({
             title : 'Back',
-            style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED,
-            zIndex: 10
+            style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
         });
         back.addEventListener('click', function() {
             cancelOpt();
@@ -785,19 +784,19 @@ function addiOSToolbar() {"use strict";
         var space = Titanium.UI.createButton({
             systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
         });
+        
+        var bundle = Omadi.data.getBundle(node.type);
+        
         var label = Titanium.UI.createButton({
-            title : node.title,
+            title : (node.nid == 'new' ? 'New ' : 'Update ') + bundle.label,
             color : Omadi.widgets.label.color,
-            ellipsize : true,
-            wordwrap : false,
-            width : Ti.UI.FILL,
+            width : Ti.UI.SIZE,
             style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
         });
 
         var actions = Ti.UI.createButton({
             title : 'Actions',
-            style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED,
-            zIndex: 10
+            style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
         });
 
         actions.addEventListener('click', function(e) {

@@ -215,15 +215,7 @@ function mktime() {"use strict";
     return Math.floor(d.getTime() / 1000);
 }
 
-var in_array = function(p_val, haystack) {"use strict";
-    var i;
-    for (i = 0; i < haystack.length; i++) {
-        if (haystack[i] == p_val) {
-            return true;
-        }
-    }
-    return false;
-};
+
 
 function strpos(haystack, needle, offset) {"use strict";
     var i = (haystack + ''.toString()).indexOf(needle, (offset || 0));
@@ -370,9 +362,10 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
 
                                 for ( i = 0; i < nodeDBValues.length; i++) {
 
-                                    if (in_array(Omadi.utils.PHPFormatDate('w', Number(nodeDBValues[i])))) {
+                                    if (Omadi.utils.inArray(Omadi.utils.PHPFormatDate('w', Number(nodeDBValues[i])), weekdays)) {
 
                                         row_matches[criteria_index] = true;
+                                        Ti.API.debug("IS WEEKDAY MATCH");
                                     }
                                 }
                             }
@@ -653,7 +646,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                                 row_matches[criteria_index] = true;
                                                 for ( i = 0; i < nodeDBValues.length; i++) {
                                                     node_value = nodeDBValues[i];
-                                                    if (in_array(node_value, possibleValues)) {
+                                                    if (Omadi.utils.inArray(node_value, possibleValues)) {
                                                         row_matches[criteria_index] = false;
                                                     }
                                                 }
@@ -662,7 +655,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                         default:
                                             for ( i = 0; i < nodeDBValues.length; i++) {
                                                 node_value = nodeDBValues[i];
-                                                if (in_array(node_value, possibleValues)) {
+                                                if (Omadi.utils.inArray(node_value, possibleValues)) {
                                                     row_matches[criteria_index] = true;
                                                 }
                                             }
@@ -692,18 +685,15 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                     if (search_operator != null && search_operator == '!=') {
                                         
                                         row_matches[criteria_index] = true;
-                                        Ti.API.info(nodeDBValues);
-                                        
+
                                         if (search_value.indexOf('__null') !== -1 && (nodeDBValues.length == 0 || nodeDBValues[0] == null || nodeDBValues[0] == 0)) {
-                                            Ti.API.info(search_value.__null);
-                                            Ti.API.info(nodeDBValues[0]);
-                                            
+
                                             row_matches[criteria_index] = false;
                                         }
                                         else {
                                             for ( i = 0; i < search_value.length; i++) {
                                                 chosen_value = search_value[i];
-                                                if (in_array(chosen_value, nodeDBValues)) {
+                                                if (Omadi.utils.inArray(chosen_value, nodeDBValues)) {
                                                     row_matches[criteria_index] = false;
                                                 }
                                             }
@@ -720,7 +710,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                             for ( i = 0; i < search_value.length; i++) {
 
                                                 chosen_value = search_value[i];
-                                                if (in_array(chosen_value, nodeDBValues)) {
+                                                if (Omadi.utils.inArray(chosen_value, nodeDBValues)) {
 
                                                     row_matches[criteria_index] = true;
                                                 }
@@ -754,7 +744,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                             else {
                                                 for ( i = 0; i < search_value.length; i++) {
                                                     chosen_value = search_value[i];
-                                                    if (in_array(chosen_value, nodeDBValues)) {
+                                                    if (Omadi.utils.inArray(chosen_value, nodeDBValues)) {
                                                         row_matches[criteria_index] = false;
                                                     }
                                                 }
@@ -768,7 +758,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                             else {
                                                 for ( i = 0; i < search_value.length; i++) {
                                                     chosen_value = search_value[i];
-                                                    if (in_array(chosen_value, nodeDBValues)) {
+                                                    if (Omadi.utils.inArray(chosen_value, nodeDBValues)) {
                                                         row_matches[criteria_index] = true;
                                                     }
                                                 }
@@ -819,7 +809,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                                     row_matches[criteria_index] = true;
                                                     for ( i = 0; i < nodeDBValues.length; i++) {
                                                         node_value = nodeDBValues[i];
-                                                        if (in_array(node_value, possibleValues)) {
+                                                        if (Omadi.utils.inArray(node_value, possibleValues)) {
                                                             row_matches[criteria_index] = false;
                                                         }
                                                     }
@@ -829,7 +819,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                             default:
                                                 for ( i = 0; i < nodeDBValues.length; i++) {
                                                     node_value = nodeDBValues[i];
-                                                    if (in_array(node_value, possibleValues)) {
+                                                    if (Omadi.utils.inArray(node_value, possibleValues)) {
                                                         row_matches[criteria_index] = true;
                                                     }
                                                 }
@@ -856,15 +846,9 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                 }
             }
             
-            Ti.API.debug(criteria.search_criteria);
-            Ti.API.debug(criteria.search_criteria.length);
-            
-
             if (Omadi.utils.count(criteria.search_criteria) == 1) {
 
                 retval = row_matches[criteria_index];
-                
-                Ti.API.debug("RETVAL: " + retval);
             }
             else {
 

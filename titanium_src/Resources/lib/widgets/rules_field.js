@@ -398,7 +398,7 @@ Omadi.widgets.rules_field = {
                 }
             }
 
-            if (times['All Day'] != null && times['All Day'].length == 7) {
+            if (times['All Day'] != null && Omadi.utils.count(times['All Day']) == 7) {
                 // This is equivalent to no rules, so fall through
                 Ti.API.info("NO RULES");
             }
