@@ -60,9 +60,9 @@ function startGPSService() {"use strict";
             url : 'android_gps_event.js'
         });
 
-        //intent.putExtra('interval', 5000);
-
         intent.putExtra('interval', 5000);
+
+        //intent.putExtra('interval', 5000);
         Ti.App.service1 = Titanium.Android.createService(intent);
 
         Ti.App.service1.start();
