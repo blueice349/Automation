@@ -48,7 +48,7 @@ function saveGPS(){"use strict";
 	
 	//Ti.API.info("stopGPS: " + stopGPS);
 	
-	if(stopGPS && false){
+	if(stopGPS){
 		Ti.API.info("TRYING TO STOP GPS NOW!!!");
 		try{
 			if(movement){

@@ -65,11 +65,13 @@ Omadi.widgets.rules_field = {
                         nodeValue = JSON.parse(nodeValue);
                     }
                     
+                    //Ti.API.debug(nodeValue);
+                    
                     if ( nodeValue instanceof Array) {
 
                         if (nodeValue.length > 0) {
 
-                            Ti.API.debug(JSON.stringify(nodeValue));
+                            //Ti.API.debug(JSON.stringify(nodeValue));
 
                             db = Omadi.utils.openMainDatabase();
 

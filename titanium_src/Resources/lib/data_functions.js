@@ -668,6 +668,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                         else {
 
                             jsonValue = Omadi.utils.getParsedJSON(origDBValue);
+                            Ti.API.info(origDBValue);
                             tempDBValues = [];
 
                             if (Omadi.utils.isArray(jsonValue)) {
@@ -680,6 +681,8 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                             for ( i = 0; i < tempDBValues.length; i++) {
 
                                 dbValue = tempDBValues[i];
+                                
+                                //Ti.API.debug(dbValue);
 
                                 switch(instances[field_name].type) {
                                     case 'image':
@@ -721,6 +724,10 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                             dbValue = parseFloat(dbValue);
                                             node[field_name].dbValues.push(dbValue);
                                         }
+                                        break;
+                                        
+                                    case 'rules_field':
+                                        node[field_name].dbValues.push(Omadi.utils.getParsedJSON(origDBValue));
                                         break;
 
                                     default:
