@@ -468,7 +468,15 @@ function setupBottomButtons() {"use strict";
 }
 
 ( function() {"use strict";
-        var db, formWindow, time_format;
+        var db, formWindow, time_format, askAboutInspection;
+        
+        //askAboutInspection = false;
+        
+        if(typeof curWin.fromSavedCookie !== 'undefined' && curWin.fromSavedCookie){
+            //askAboutInspection = true;   
+            
+            alert("do an inspection");
+        }
 
         listView = Titanium.UI.createTableView({
             data : [],

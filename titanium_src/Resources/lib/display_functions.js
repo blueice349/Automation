@@ -213,11 +213,21 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
     return formWindow;
 };
 
-Omadi.display.openMainMenuWindow = function() {"use strict";
-    var mainMenuWindow = Titanium.UI.createWindow({
+Omadi.display.openMainMenuWindow = function(options) {"use strict";
+    var mainMenuWindow, i;
+    
+    mainMenuWindow = Titanium.UI.createWindow({
         url : '/main_windows/mainMenu.js',
         navBarHidden : true
     });
+    
+    if(typeof options !== 'undefined'){
+        for(i in options){
+            if(options.hasOwnProperty(i)){
+                mainMenuWindow[i] = options[i];
+            }
+        }
+    }
 
     mainMenuWindow.addEventListener('open', Omadi.display.doneLoading);
     Omadi.display.loading();
@@ -336,6 +346,7 @@ Omadi.display.getNodeTypeImagePath = function(type) {"use strict";
         case 'hourly':
         case 'repo':
         case 'ticket':
+        case 'inspection':
 
             return '/images/icons/' + type + ".png";
 

@@ -664,7 +664,9 @@ function scrollBoxesToTop() {"use strict";
                     setProperties(domainName, this.responseText);
 
                     Omadi.display.doneLoading();
-                    Omadi.display.openMainMenuWindow();
+                    Omadi.display.openMainMenuWindow({
+                        fromSavedCookie: false
+                    });
 
                     cookie = this.getResponseHeader('Set-Cookie');
 
@@ -741,7 +743,9 @@ function scrollBoxesToTop() {"use strict";
             setProperties(domainName, Ti.Utils.base64decode(result.fieldByName("login_json")));
             db.close();
 
-            Omadi.display.openMainMenuWindow();
+            Omadi.display.openMainMenuWindow({
+                fromSavedCookie: true
+            });
 
             startGPSService();
         }
