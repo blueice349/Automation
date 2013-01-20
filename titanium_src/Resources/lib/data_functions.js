@@ -1432,7 +1432,10 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                         //Ti.API.debug(query);
 
                         queries.push(query);
-
+                        
+                        Ti.API.debug(type);
+                        Ti.API.debug(json.insert[i].viewed);
+                        
                         if (type == 'notification' && json.insert[i].viewed == 0) {
                             notifications = Ti.App.Properties.getObject('newNotifications', {
                                 count : 0,
@@ -1443,6 +1446,8 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                                 count : notifications.count + 1,
                                 nid : json.insert[i].nid
                             });
+                            
+                            Ti.API.debug("hello");
                         }
 
                         if ( typeof json.insert[i].__negative_nid !== 'undefined') {
@@ -1696,7 +1701,7 @@ Omadi.data.processTermsJson = function(json, mainDB, progress) {"use strict";
                         //Increment Progress Bar
                         progress.set();
                     }
-                    queries.push("UPDATE term_data SET name='" + dbEsc(json.update[i].name) + ", description='" + dbEsc(json.update[i].description) + "', weight='" + dbEsc(json.update[i].weight) + "', vid=" + json.update[i].vid + ' WHERE tid=' + json.update[i].tid);
+                    queries.push("UPDATE term_data SET name='" + dbEsc(json.update[i].name) + "', description='" + dbEsc(json.update[i].description) + "', weight='" + dbEsc(json.update[i].weight) + "', vid=" + json.update[i].vid + ' WHERE tid=' + json.update[i].tid);
                 }
             }
         }

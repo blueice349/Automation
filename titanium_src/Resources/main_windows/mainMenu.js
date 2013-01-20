@@ -467,16 +467,41 @@ function setupBottomButtons() {"use strict";
     curWin.add(databaseStatusView);
 }
 
+function askToDoInspection(){"use strict";
+    var dialog, bundle;
+    /*global roles, ROLE_ID_FIELD*/
+    
+    if(typeof curWin.fromSavedCookie !== 'undefined' && !curWin.fromSavedCookie){
+        
+        bundle = Omadi.data.getBundle('inspection');
+        if(bundle && bundle.can_create == 1){
+            if(typeof roles[ROLE_ID_FIELD] !== 'undefined' && roles[ROLE_ID_FIELD] > ''){
+    
+                dialog = Ti.UI.createAlertDialog({
+                   title: 'Driver\'s Inspection Report',
+                   message: 'Do you want to create an inspection report now?',
+                   buttonNames: ['Yes', 'No'] 
+                });
+                
+                dialog.addEventListener('click', function(e){
+                   if(e.index == 0){
+                       Omadi.display.openFormWindow('inspection', 'new', 0);
+                   } 
+                   else{
+                       e.source.close();
+                   }
+                });
+                
+                dialog.show();
+            }
+        }
+    }
+}
+
 ( function() {"use strict";
         var db, formWindow, time_format, askAboutInspection;
         
-        //askAboutInspection = false;
-        
-        if(typeof curWin.fromSavedCookie !== 'undefined' && curWin.fromSavedCookie){
-            //askAboutInspection = true;   
-            
-            alert("do an inspection");
-        }
+        askToDoInspection();
 
         listView = Titanium.UI.createTableView({
             data : [],

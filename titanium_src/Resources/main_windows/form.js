@@ -785,14 +785,40 @@ function addiOSToolbar() {"use strict";
             systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
         });
         
+        var icon = Ti.UI.createImageView({
+            image: Omadi.display.getNodeTypeImagePath(win.type),
+            height: 30,
+            width: 30
+        });
+        
         var bundle = Omadi.data.getBundle(node.type);
+        
+        var labelScrollView = Ti.UI.createScrollView({
+            layout: 'horizontal',
+            width: Ti.UI.FILL,
+            height: Ti.UI.SIZE
+        });
         
         var label = Titanium.UI.createButton({
             title : (node.nid == 'new' ? 'New ' : 'Update ') + bundle.label,
-            color : Omadi.widgets.label.color,
-            width : 200,
+            right: 5,
+            font: {
+                fontWeight: 'bold'
+            },
+           //width : 200,
             style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
         });
+        
+        
+        labelScrollView.add(label);
+        labelScrollView.add(icon);
+        
+        if(Ti.Platform.osname == 'ipad'){
+            label.color = '#666';
+        }
+        else{
+            label.color = '#fff';   
+        }
 
         var actions = Ti.UI.createButton({
             title : 'Actions',
@@ -861,7 +887,7 @@ function addiOSToolbar() {"use strict";
 
         // create and add toolbar
         var toolbar = Ti.UI.iOS.createToolbar({
-            items : [back, space, label, space, actions],
+            items : [back, space, labelScrollView, space, actions],
             top : 0,
             borderTop : false,
             borderBottom : false,
@@ -1287,7 +1313,7 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
                        values = node[field_name].dbValues;
                     }
                     
-                    //Ti.API.debug(JSON.stringify(values));
+                    Ti.API.debug(JSON.stringify(values));
               
         
                     switch(instances[field_name].type) {
@@ -1349,7 +1375,27 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
                             }
                             
                             
-                            if (search_operator != null && search_operator == '!=') {
+                            if (search_operator == '__blank') {
+                                row_matches[row_idx] = true;
+                                if(values.length > 0){
+                                    for(i = 0; i < values.length; i ++){
+                                        if(values[i] > 0){
+                                            row_matches[row_idx] = false;
+                                        }
+                                    }
+                                }
+                            }
+                            else if (search_operator == '__filled') {
+                                row_matches[row_idx] = false;
+                                if(values.length > 0){
+                                    for(i = 0; i < values.length; i ++){
+                                        if(values[i] > 0){
+                                            row_matches[row_idx] = true;
+                                        }
+                                    }
+                                }
+                            }
+                            else if (search_operator == '!=') {
                                 row_matches[row_idx] = true;
                                 if (search_value.__null == '__null' && (values.length === 0 || values[0] == null)) {
                                     row_matches[row_idx] = false;

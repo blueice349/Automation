@@ -12,6 +12,11 @@ Ti.include('/lib/data_functions.js');
 Ti.include('/lib/display_functions.js');
 
 var ROLE_ID_ADMIN = 3;
+var ROLE_ID_MANAGER = 4;
+var ROLE_ID_SALES = 5;
+var ROLE_ID_FIELD = 6;
+var ROLE_ID_CLIENT = 7;
+
 var app_timestamp = 0;
 
 var newNotificationCount = 0;
@@ -55,7 +60,7 @@ function createNotification(message) {"use strict";
 
 function notifyIOS(msg, update_time) {"use strict";
     var time, slide_it_top, win, view, label, slide_it_out;
-    
+
     if (update_time === true) {
         time = Math.round(new Date().getTime() / 1000);
         Ti.App.Properties.setString("last_alert_popup", time);
@@ -140,20 +145,20 @@ function isJsonString(str) {"use strict";
     if (str == "" || str == null) {
         return false;
     }
-   
+
     try {
         JSON.parse(str);
     }
     catch (e) {
         return false;
     }
-    
+
     return true;
 }
 
 function clearCache() {"use strict";
     var path, cookies;
-    
+
     path = Ti.Filesystem.getFile(Titanium.Filesystem.applicationDirectory).getParent();
     cookies = Ti.Filesystem.getFile(path + '/Library/Cookies', 'Cookies.binarycookies');
     if (cookies.exists()) {
@@ -203,19 +208,17 @@ function mktime() {"use strict";
         if (isNaN(no)) {
             return false;
         }
-        
+
         // arg is number, let's manipulate date object
         if (!dateManip[i](no)) {
             // failed
             return false;
         }
-        
+
     }
 
     return Math.floor(d.getTime() / 1000);
 }
-
-
 
 function strpos(haystack, needle, offset) {"use strict";
     var i = (haystack + ''.toString()).indexOf(needle, (offset || 0));
@@ -335,7 +338,6 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                             }
                             else if (search_operator == '__filled') {
 
-
                                 for ( i = 0; i < nodeDBValues.length; i++) {
                                     node_value = nodeDBValues[i];
                                     if (node_value != null && node_value != "") {
@@ -417,9 +419,26 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                         }
                                     }
 
+                                    if (search_operator == '__blank') {
+                                        row_matches[criteria_index] = true;
+                                        if (nodeDBValues.length > 0) {
+                                            for ( i = 0; i < nodeDBValues.length; i++) {
+                                                if (nodeDBValues[i] !== null && nodeDBValues[i] > '') {
+                                                    row_matches[criteria_index] = false;
+                                                }
+                                            }
+                                        }
+                                    }
+
                                     for ( i = 0; i < nodeDBValues.length; i++) {
                                         node_value = nodeDBValues[i];
                                         switch(search_operator) {
+                                            case '__filled':
+                                                if (node_value !== null && node_value > '') {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+
                                             case 'not like':
                                                 if (strpos(node_value, search_value) === false) {
                                                     row_matches[criteria_index] = true;
@@ -546,6 +565,63 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                     break;
                                 case 'number_integer':
                                 case 'number_decimal':
+                                    
+                                    if (search_operator == '__blank') {
+                                        row_matches[criteria_index] = true;
+                                        if (nodeDBValues.length > 0) {
+                                            for ( i = 0; i < nodeDBValues.length; i++) {
+                                                if (nodeDBValues[i] !== null && nodeDBValues[i] > '') {
+                                                    row_matches[criteria_index] = false;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    for ( i = 0; i < nodeDBValues.length; i++) {
+                                        node_value = nodeDBValues[i];
+                                        switch(search_operator) {
+                                            case '__filled':
+                                                if (node_value !== null && node_value > '') {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                                
+                                            case '>':
+                                                if (node_value > search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                            case '>=':
+                                                if (node_value >= search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                            case '!=':
+                                                if (node_value != search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                            case '<':
+                                                if (node_value < search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                            case '<=':
+                                                if (node_value <= search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+
+                                            default:
+                                                if (node_value == search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                        }
+                                    }
+
+                                    break;
+
                                 case 'auto_increment':
 
                                     for ( i = 0; i < nodeDBValues.length; i++) {
@@ -590,76 +666,97 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
 
                                 case 'omadi_reference':
 
-                                    reference_types = [];
-
-                                    for (i in search_field.settings.reference_types) {
-                                        if (search_field.settings.reference_types.hasOwnProperty(i)) {
-                                            reference_types.push(search_field.settings.reference_types[i]);
-                                        }
-                                    }
-
-                                    query = 'SELECT nid from node WHERE table_name IN (' + reference_types.join(',') + ')';
-                                    switch(search_operator) {
-                                        case 'starts with':
-                                        case 'not starts with':
-                                            query += " AND title LIKE '%" + dbEsc(search_value) + "%'";
-                                            break;
-                                        case 'ends with':
-                                        case 'not ends with':
-                                            query += " AND title LIKE '%" + dbEsc(search_value) + "'";
-                                            break;
-                                        case '=':
-                                        case '!=':
-                                            query += " AND title='" + dbEsc(search_value) + "'";
-                                            break;
-                                        default:
-                                            query += " AND title LIKE '%" + dbEsc(search_value) + "'%";
-                                            break;
-                                    }
-
-                                    db = Omadi.utils.openMainDatabase();
-                                    result = db.execute(query);
-
-                                    possibleValues = [];
-                                    while (result.isValidRow()) {
-                                        possibleValues.push(result.fieldByName('nid'));
-                                        result.next();
-                                    }
-                                    result.close();
-                                    db.close();
-                                    
-                                    if(nodeDBValues.length == 0){
-                                        if(Omadi.utils.isEmpty(search_value) && search_operator === '='){
-                                            row_matches[criteria_index] = true;
-                                        }
-                                    }
-
-                                    switch(search_operator) {
-                                        case 'not starts with':
-                                        case 'not ends with':
-                                        case 'not like':
-                                        case '!=':
-                                            if (nodeDBValues[0] == 0) {
-                                                row_matches[criteria_index] = true;
-                                            }
-                                            else {
-                                                row_matches[criteria_index] = true;
-                                                for ( i = 0; i < nodeDBValues.length; i++) {
-                                                    node_value = nodeDBValues[i];
-                                                    if (Omadi.utils.inArray(node_value, possibleValues)) {
-                                                        row_matches[criteria_index] = false;
-                                                    }
+                                    if (search_operator == '__blank') {
+                                        row_matches[criteria_index] = true;
+                                        if (nodeDBValues.length > 0) {
+                                            for ( i = 0; i < nodeDBValues.length; i++) {
+                                                if (nodeDBValues[i] !== null && nodeDBValues[i] > '') {
+                                                    row_matches[criteria_index] = false;
                                                 }
                                             }
-                                            break;
-                                        default:
+                                        }
+                                    }
+                                    else if (search_operator == '__filled') {
+                                        if (nodeDBValues.length > 0) {
                                             for ( i = 0; i < nodeDBValues.length; i++) {
-                                                node_value = nodeDBValues[i];
-                                                if (Omadi.utils.inArray(node_value, possibleValues)) {
+                                                if (nodeDBValues[i] !== null && nodeDBValues[i] > '') {
                                                     row_matches[criteria_index] = true;
                                                 }
                                             }
-                                            break;
+                                        }
+                                    }
+                                    else{
+                                        reference_types = [];
+    
+                                        for (i in search_field.settings.reference_types) {
+                                            if (search_field.settings.reference_types.hasOwnProperty(i)) {
+                                                reference_types.push(search_field.settings.reference_types[i]);
+                                            }
+                                        }
+    
+                                        query = 'SELECT nid from node WHERE table_name IN (' + reference_types.join(',') + ')';
+                                        switch(search_operator) {
+                                            case 'starts with':
+                                            case 'not starts with':
+                                                query += " AND title LIKE '%" + dbEsc(search_value) + "%'";
+                                                break;
+                                            case 'ends with':
+                                            case 'not ends with':
+                                                query += " AND title LIKE '%" + dbEsc(search_value) + "'";
+                                                break;
+                                            case '=':
+                                            case '!=':
+                                                query += " AND title='" + dbEsc(search_value) + "'";
+                                                break;
+                                            default:
+                                                query += " AND title LIKE '%" + dbEsc(search_value) + "'%";
+                                                break;
+                                        }
+    
+                                        db = Omadi.utils.openMainDatabase();
+                                        result = db.execute(query);
+    
+                                        possibleValues = [];
+                                        while (result.isValidRow()) {
+                                            possibleValues.push(result.fieldByName('nid'));
+                                            result.next();
+                                        }
+                                        result.close();
+                                        db.close();
+    
+                                        if (nodeDBValues.length == 0) {
+                                            if (Omadi.utils.isEmpty(search_value) && search_operator === '=') {
+                                                row_matches[criteria_index] = true;
+                                            }
+                                        }
+    
+                                        switch(search_operator) {
+                                            case 'not starts with':
+                                            case 'not ends with':
+                                            case 'not like':
+                                            case '!=':
+                                                if (nodeDBValues[0] == 0) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                else {
+                                                    row_matches[criteria_index] = true;
+                                                    for ( i = 0; i < nodeDBValues.length; i++) {
+                                                        node_value = nodeDBValues[i];
+                                                        if (Omadi.utils.inArray(node_value, possibleValues)) {
+                                                            row_matches[criteria_index] = false;
+                                                        }
+                                                    }
+                                                }
+                                                break;
+                                            default:
+                                                for ( i = 0; i < nodeDBValues.length; i++) {
+                                                    node_value = nodeDBValues[i];
+                                                    if (Omadi.utils.inArray(node_value, possibleValues)) {
+                                                        row_matches[criteria_index] = true;
+                                                    }
+                                                }
+                                                break;
+                                        }
                                     }
 
                                     break;
@@ -681,9 +778,29 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                         }
                                         search_value = searchValues;
                                     }
+                                    
+                                    
+                                    if (search_operator == '__blank') {
+                                        row_matches[criteria_index] = true;
+                                        if (nodeDBValues.length > 0) {
+                                            for ( i = 0; i < nodeDBValues.length; i++) {
+                                                if (nodeDBValues[i] !== null && nodeDBValues[i] > '') {
+                                                    row_matches[criteria_index] = false;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    else if (search_operator == '__filled') {
+                                        if (nodeDBValues.length > 0) {
+                                            for ( i = 0; i < nodeDBValues.length; i++) {
+                                                if (nodeDBValues[i] !== null && nodeDBValues[i] > '') {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    else if (search_operator == '!=') {
 
-                                    if (search_operator != null && search_operator == '!=') {
-                                        
                                         row_matches[criteria_index] = true;
 
                                         if (search_value.indexOf('__null') !== -1 && (nodeDBValues.length == 0 || nodeDBValues[0] == null || nodeDBValues[0] == 0)) {
@@ -735,7 +852,26 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                             search_value = searchValues;
                                         }
 
-                                        if (search_operator != null && search_operator == '!=') {
+                                        if (search_operator == '__blank') {
+                                            row_matches[criteria_index] = true;
+                                            if (nodeDBValues.length > 0) {
+                                                for ( i = 0; i < nodeDBValues.length; i++) {
+                                                    if (nodeDBValues[i] !== null && nodeDBValues[i] > '') {
+                                                        row_matches[criteria_index] = false;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        else if (search_operator == '__filled') {
+                                            if (nodeDBValues.length > 0) {
+                                                for ( i = 0; i < nodeDBValues.length; i++) {
+                                                    if (nodeDBValues[i] !== null && nodeDBValues[i] > '') {
+                                                        row_matches[criteria_index] = true;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        else if (search_operator == '!=') {
 
                                             row_matches[criteria_index] = true;
                                             if (search_value.indexOf('__null') !== -1 && (nodeDBValues.length == 0 || nodeDBValues[0] == null || nodeDBValues[0] == 0)) {
@@ -766,64 +902,85 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                         }
                                     }
                                     else {
-
-                                        db = Omadi.utils.openMainDatabase();
-                                        result = db.execute('SELECT vid from vocabulary WHERE machine_name="' + search_field.settings.vocabulary + '";');
-
-                                        query = 'SELECT tid from term_data WHERE vid=' + result.fieldByName('vid');
-                                        switch(search_operator) {
-                                            case 'starts with':
-                                            case 'not starts with':
-                                                query += " AND name LIKE '" + dbEsc(search_value) + "%'";
-                                                break;
-
-                                            case 'ends with':
-                                            case 'not ends with':
-                                                query += " AND name LIKE '%" + dbEsc(search_value) + "'";
-                                                break;
-
-                                            default:
-                                                query += " AND name LIKE '%" + dbEsc(search_value) + "%'";
-                                                break;
-                                        }
-
-                                        result.close();
-
-                                        result = db.execute(query);
-                                        possibleValues = [];
-                                        while (result.isValidRow()) {
-                                            possibleValues.push(result.fieldByName('tid'));
-                                            result.next();
-                                        }
-                                        result.close();
-                                        db.close();
-
-                                        switch(search_operator) {
-                                            case 'not starts with':
-                                            case 'not ends with':
-                                            case 'not like':
-                                                if (nodeDBValues[0] == 0) {
-                                                    row_matches[criteria_index] = true;
-                                                }
-                                                else {
-                                                    row_matches[criteria_index] = true;
-                                                    for ( i = 0; i < nodeDBValues.length; i++) {
-                                                        node_value = nodeDBValues[i];
-                                                        if (Omadi.utils.inArray(node_value, possibleValues)) {
-                                                            row_matches[criteria_index] = false;
-                                                        }
+                                        
+                                        if (search_operator == '__blank') {
+                                            row_matches[criteria_index] = true;
+                                            if (nodeDBValues.length > 0) {
+                                                for ( i = 0; i < nodeDBValues.length; i++) {
+                                                    if (nodeDBValues[i] !== null && nodeDBValues[i] > '') {
+                                                        row_matches[criteria_index] = false;
                                                     }
                                                 }
-                                                break;
-
-                                            default:
+                                            }
+                                        }
+                                        else if (search_operator == '__filled') {
+                                            if (nodeDBValues.length > 0) {
                                                 for ( i = 0; i < nodeDBValues.length; i++) {
-                                                    node_value = nodeDBValues[i];
-                                                    if (Omadi.utils.inArray(node_value, possibleValues)) {
+                                                    if (nodeDBValues[i] !== null && nodeDBValues[i] > '') {
                                                         row_matches[criteria_index] = true;
                                                     }
                                                 }
-                                                break;
+                                            }
+                                        }
+                                        else{
+                                            db = Omadi.utils.openMainDatabase();
+                                            result = db.execute('SELECT vid from vocabulary WHERE machine_name="' + search_field.settings.vocabulary + '";');
+    
+                                            query = 'SELECT tid from term_data WHERE vid=' + result.fieldByName('vid');
+                                            switch(search_operator) {
+                                                case 'starts with':
+                                                case 'not starts with':
+                                                    query += " AND name LIKE '" + dbEsc(search_value) + "%'";
+                                                    break;
+    
+                                                case 'ends with':
+                                                case 'not ends with':
+                                                    query += " AND name LIKE '%" + dbEsc(search_value) + "'";
+                                                    break;
+    
+                                                default:
+                                                    query += " AND name LIKE '%" + dbEsc(search_value) + "%'";
+                                                    break;
+                                            }
+    
+                                            result.close();
+    
+                                            result = db.execute(query);
+                                            possibleValues = [];
+                                            while (result.isValidRow()) {
+                                                possibleValues.push(result.fieldByName('tid'));
+                                                result.next();
+                                            }
+                                            result.close();
+                                            db.close();
+    
+                                            switch(search_operator) {
+                                                case 'not starts with':
+                                                case 'not ends with':
+                                                case 'not like':
+                                                    if (nodeDBValues[0] == 0) {
+                                                        row_matches[criteria_index] = true;
+                                                    }
+                                                    else {
+                                                        row_matches[criteria_index] = true;
+                                                        for ( i = 0; i < nodeDBValues.length; i++) {
+                                                            node_value = nodeDBValues[i];
+                                                            if (Omadi.utils.inArray(node_value, possibleValues)) {
+                                                                row_matches[criteria_index] = false;
+                                                            }
+                                                        }
+                                                    }
+                                                    break;
+    
+                                                default:
+                                                    for ( i = 0; i < nodeDBValues.length; i++) {
+                                                        node_value = nodeDBValues[i];
+                                                        if (Omadi.utils.inArray(node_value, possibleValues)) {
+                                                            row_matches[criteria_index] = true;
+                                                        }
+                                                    }
+                                                    break;
+                                            }
                                         }
                                     }
 
@@ -845,7 +1002,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                     }
                 }
             }
-            
+
             if (Omadi.utils.count(criteria.search_criteria) == 1) {
 
                 retval = row_matches[criteria_index];
@@ -881,8 +1038,6 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
 
                 // Get the final result, making sure each and group is TRUE
                 retval = true;
-                
-                
 
                 for ( i = 0; i < and_groups.length; i++) {
 
@@ -915,7 +1070,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
     }
     catch(e) {
     }
-    
+
     return true;
 }
 
