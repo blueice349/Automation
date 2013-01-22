@@ -82,8 +82,9 @@ Omadi.service.refreshSession = function() {"use strict";
 
                         });
 
-                        Omadi.service.logout();
                         dialog.show();
+                        Omadi.service.logout();
+                        
                     }
                     else {
                         setTimeout(Omadi.service.refreshSession, 40000);
@@ -370,8 +371,9 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                             //win.close();
                         });
 
-                        Omadi.service.logout();
                         dialog.show();
+                        Omadi.service.logout();
+                        
                     }
                     else if (this.status == 401) {
                         dialog = Titanium.UI.createAlertDialog({
@@ -388,8 +390,9 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
 
                         });
 
-                        Omadi.service.logout();
                         dialog.show();
+                        
+                        Omadi.service.logout();
                     }
                     // Only show the dialog if this is not a background update
                     else if (progress != null) {
@@ -629,6 +632,8 @@ Omadi.service.sendUpdates = function() {"use strict";
                 message : 'Saving data to server...'
             });
             http.send(Omadi.service.getUpdatedNodeJSON());
+            
+            //Ti.UI.currentWindow.fireEvent("startedSendingData");
         }
     }
 };
@@ -637,7 +642,8 @@ Omadi.service.logout = function() {"use strict";
 
     var http, db;
     /*jslint eqeq: true*/
-
+    Ti.API.info("Logging Out");
+    
     Ti.App.fireEvent('upload_gps_locations');
     Ti.App.fireEvent('stop_gps');
     Ti.App.fireEvent('loggingOut');
@@ -683,6 +689,8 @@ Omadi.service.logout = function() {"use strict";
     Ti.App.Properties.setBool("quitApp", true);
 
     Omadi.display.removeNotifications();
+    
+    //Ti.App.removeEventListener();
 };
 
 Omadi.service.uploadFile = function() {"use strict";

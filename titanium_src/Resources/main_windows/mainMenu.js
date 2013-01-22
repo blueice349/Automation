@@ -17,6 +17,7 @@ toolActInd.message = 'Loading...';
 
 var version = 'Omadi Inc';
 var isFirstTime = false;
+var alertQueue = [];
 
 var databaseStatusView = Titanium.UI.createView({
     backgroundColor : '#000',
@@ -509,52 +510,8 @@ function setupBottomButtons() {"use strict";
     curWin.add(databaseStatusView);
 }
 
-function askToDoInspection(){"use strict";
-    var dialog, bundle;
-    /*global roles, ROLE_ID_FIELD*/
-    
-    if(typeof curWin.fromSavedCookie !== 'undefined' && !curWin.fromSavedCookie){
-        
-        bundle = Omadi.data.getBundle('inspection');
-        if(bundle && bundle.can_create == 1){
-            if(typeof roles[ROLE_ID_FIELD] !== 'undefined' && roles[ROLE_ID_FIELD] > ''){
-                
-                Ti.App.Properties.setBool("inspectionAlertShowing", true);
-                
-                dialog = Ti.UI.createAlertDialog({
-                   title: 'Driver\'s Inspection Report',
-                   message: 'Do you want to create an inspection report now?',
-                   buttonNames: ['Yes', 'No'] 
-                });
-                
-                dialog.addEventListener('click', function(e){
-                   
-                   Ti.App.Properties.setBool("inspectionAlertShowing", false);
-                   
-                   if(e.index == 0){
-                       Omadi.display.openFormWindow('inspection', 'new', 0);
-                   }
-                   else{
-                       Omadi.display.showNewNotificationDialog();
-                   }
-                });
-                
-                dialog.show();
-            }
-        }
-    }
-}
-
 ( function() {"use strict";
-        var db, formWindow, time_format, askAboutInspection, dialog;
-        
-        if(typeof curWin.fromSavedCookie !== 'undefined' && !curWin.fromSavedCookie){
-            
-            
-            Omadi.bundles.timecard.askClockIn();
-            
-            askToDoInspection();
-        }
+        var db, formWindow, time_format, askAboutInspection, dialog, i, showingAlert;
 
         listView = Titanium.UI.createTableView({
             data : [],
@@ -722,6 +679,7 @@ function askToDoInspection(){"use strict";
     
                 verifyLogout.addEventListener('click', function(e) {
                     if (e.index == 0) {
+                         Ti.API.info('Logging out from Regular logout dialog');
                         Omadi.service.logout();
                     }
                 });
@@ -746,7 +704,7 @@ function askToDoInspection(){"use strict";
 
             verifyLogout.addEventListener('click', function(e) {
                 if (e.index !== e.source.cancel) {
-                    Ti.API.info('The yes button was clicked.');
+                    Ti.API.info('Android logging out with back button');
 
                     Omadi.service.logout();
                 }
@@ -815,6 +773,29 @@ function askToDoInspection(){"use strict";
         Ti.App.addEventListener('normal_update_from_menu', function() {
             checkUpdate('from_menu');
         });
+        
+        if(typeof curWin.fromSavedCookie !== 'undefined' && !curWin.fromSavedCookie){
+            Omadi.bundles.timecard.askClockIn();
+            Omadi.bundles.inspection.askToDoInspection();
+        }
+        
+        if(alertQueue.length > 0){
+            for(i = 0; i < alertQueue.length; i ++){
+                
+                if(i == 0){
+                    alertQueue[i].show();
+                    showingAlert = i;
+                }
+                
+                if(alertQueue.length > i + 1){
+                    alertQueue[i].queueIndex = i;
+                    alertQueue[i].addEventListener('click', function(e){
+                        alertQueue[e.source.queueIndex+1].show();
+                        showingAlert = e.source.queueIndex + 1; 
+                    });
+                }
+            }
+        }
 
     }());
 

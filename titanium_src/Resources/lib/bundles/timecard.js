@@ -18,6 +18,7 @@ Omadi.bundles.timecard.askClockOutLogout = function(){"use strict";
                 Omadi.bundles.timecard.doClockOut(true);
             }
             else if (e.index == 1) {
+                Ti.API.info("Logging out from 3-button timecard dialog.");
                 Omadi.service.logout();
             }
         });
@@ -32,6 +33,7 @@ Omadi.bundles.timecard.askClockOutLogout = function(){"use strict";
 
         verifyLogout.addEventListener('click', function(e) {
             if (e.index == 0) {
+                Ti.API.info("Logging out from timecard regular logout.");
                 Omadi.service.logout();
             }
         });
@@ -42,6 +44,7 @@ Omadi.bundles.timecard.askClockOutLogout = function(){"use strict";
 
 Omadi.bundles.timecard.askClockIn = function(){"use strict";
     var dialog;
+    /*global alertQueue*/
     
     if(Omadi.bundles.timecard.userShouldClockInOut()){
 
@@ -60,7 +63,12 @@ Omadi.bundles.timecard.askClockIn = function(){"use strict";
                }
             });
             
-            dialog.show(); 
+            if(typeof alertQueue !== 'undefined'){
+                alertQueue.push(dialog);
+            }
+            else{
+                dialog.show(); 
+            }
         }
     }
     
@@ -81,11 +89,14 @@ Omadi.bundles.timecard.isUserClockedIn = function(){"use strict";
         lastClockOutTime = lastNode.clock_out_time.dbValues[0];
     }
     
+    
+    
     // The User is currently clocked in
     if(lastNode && !lastClockOutTime){
+        Ti.API.debug("Clocked IN");
         return true;
     }
-    
+    Ti.API.debug("Clocked OUT");
     return false;
 };
 
@@ -155,7 +166,7 @@ Omadi.bundles.timecard.getLastClockInNid = function(){"use strict";
     return nid;
 };
 
-Omadi.bundles.timecard.doClockOut = function(logout) {"use strict";
+Omadi.bundles.timecard.doClockOut = function(logoutNext) {"use strict";
     var now, lastNid, lastNode;
     
     lastNid = Omadi.bundles.timecard.getLastClockInNid();
@@ -170,18 +181,29 @@ Omadi.bundles.timecard.doClockOut = function(logout) {"use strict";
     lastNode.viewed = now;
     lastNode.form_part = 1;
     
-    if(logout){
+    Omadi.data.trySaveNode(lastNode);
+    
+    //Ti.API.debug("LOgoutnext: " + logoutNext);
+    
+    if(logoutNext){
     
         if(Ti.Network.online){
-            Ti.App.addEventListener("doneSendingData", function(){
-                 Omadi.service.logout();
-            });
+            Ti.App.addEventListener("doneSendingData", Omadi.bundles.timecard.logout);
         }
         else{
+            Ti.API.info("Logging out from do clock out without a network connection");
             alert("Your timecard was saved successfully, but you do not have a connection to the Internet, so your clock out will not be synched online until you connect to the Internet.");
             Omadi.service.logout();
         }
     }
-
-    Omadi.data.trySaveNode(lastNode);
 };
+
+Omadi.bundles.timecard.logout = function(){"use strict";
+    Ti.API.info("Logging out from do clock out after data was sent");
+    
+    Ti.App.removeEventListener('doneSendingData', Omadi.bundles.timecard.logout);
+   
+    Omadi.service.logout();
+};
+
+
