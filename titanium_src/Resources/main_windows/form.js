@@ -19,6 +19,7 @@ var regions = {};
 var node;
 var cameraAndroid;
 var wrapperView;
+var isFormWindow = true;
 
 if (Ti.App.isAndroid) {
     cameraAndroid = require('com.omadi.camera');
@@ -637,71 +638,6 @@ function getRegionHeaderView(region, expanded){"use strict";
     return regionHeaderWrapper;
 }
 
-function doFormSave(node, saveType){"use strict";
-    var dialog;
-    /*jslint nomen: true*/
-   
-    if(Omadi.data.isUpdating()){
-        Omadi.display.loading("Waiting...");
-        setTimeout(function(){
-            doFormSave(node, saveType);
-        }, 1000);
-    }
-    else{
-        Omadi.display.doneLoading();
-        Omadi.display.loading("Saving...");
-        
-        node = Omadi.data.nodeSave(node);
-                    
-        if(node._saved === true){
-            Ti.UI.currentWindow.nodeSaved = true;
-        }
-        
-        // Setup the current node and nid in the window so a duplicate won't be made for this window
-        Ti.UI.currentWindow.node = node;
-        Ti.UI.currentWindow.nid = node.nid;
-      
-        if(node._saved === true){
-            if(Ti.Network.online){
-                   
-                if (saveType === "next_part") {
-                    Omadi.display.openFormWindow(win.type, node.nid, node.form_part + 1);                            
-                }
-                
-                // Send a clone of the object so the window will close after the network returns a response
-                Omadi.service.sendUpdates();
-                
-                if(Ti.App.isAndroid){
-                    Ti.UI.currentWindow.close();
-                }
-                else{
-                    Ti.UI.currentWindow.hide();
-                }
-            }
-            else{
-                dialog = Titanium.UI.createAlertDialog({
-                    title : 'Form Validation',
-                    buttonNames : ['OK'],
-                    message: 'Alert management of this ' + node.type.toUpperCase() + ' immediately. You do not have an Internet connection right now.  Your data was saved and will be synched when you connect to the Internet.'
-                });
-                
-                dialog.show();
-                
-                dialog.addEventListener('click', function(ev) {
-                    
-                    if (saveType === "next_part") {
-                        Omadi.display.openFormWindow(win.type, node.nid, node.form_part + 1);
-                    }
-                    
-                    Ti.UI.currentWindow.close();
-                });
-            }
-            
-            Ti.App.fireEvent("savedNode");
-        }
-    }
-}
-
 
 function save_form_data(saveType) {"use strict";
     /*jslint nomen: true*/
@@ -754,7 +690,7 @@ function save_form_data(saveType) {"use strict";
         
             }*/
             
-            doFormSave(node, saveType);
+            Omadi.data.trySaveNode(node, saveType);
         }
         catch(ex){
             alert("Saving to mobile database: " + ex);
@@ -1725,7 +1661,10 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
             if(region_form_part <= node.form_part){
                 
                 var expanded = true;
-                if(region_form_part < node.form_part){
+                if(typeof region.settings.always_expanded && region.settings.always_expanded == 1){
+                    expanded = true;
+                }
+                else if(region_form_part < node.form_part){
                     expanded = false;
                 }
                 

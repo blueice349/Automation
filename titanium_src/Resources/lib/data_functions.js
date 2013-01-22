@@ -153,14 +153,20 @@ Omadi.data.getFields = function(type) {"use strict";
 
 Omadi.data.getRegions = function(type) {"use strict";
 
-    var db, result, regions, region_name;
+    var db, result, regions, region_name, region_settings;
 
     regions = {};
     db = Omadi.utils.openMainDatabase();
     result = db.execute("SELECT rid, node_type, label, region_name, weight, settings FROM regions WHERE node_type = '" + type + "' ORDER BY weight ASC");
-
+    
     while (result.isValidRow()) {
         region_name = result.fieldByName('region_name');
+        
+        //Ti.API.debug(region_name);
+        region_settings = result.fieldByName('settings');
+        
+        //Ti.API.debug(region_settings);
+        
         regions[region_name] = {
             rid : result.fieldByName('rid'),
             node_type : result.fieldByName('node_type'),
@@ -208,8 +214,8 @@ Omadi.data.getNodeTitle = function(node) {"use strict";
     title = "- No Title -";
 
     bundle = Omadi.data.getBundle(node.type);
-
-    if ( typeof bundle.data.title_fields !== 'undefined') {
+    
+    if (bundle && typeof bundle.data.title_fields !== 'undefined') {
         for (index in bundle.data.title_fields) {
             if (bundle.data.title_fields.hasOwnProperty(index)) {
                 field_name = bundle.data.title_fields[index];
@@ -242,6 +248,84 @@ Omadi.data.getNodeTitle = function(node) {"use strict";
     return title;
 };
 
+
+Omadi.data.trySaveNode = function(node, saveType){"use strict";
+    var dialog;
+    /*jslint nomen: true*/
+    
+    if(typeof saveType === 'undefined'){
+        saveType = 'regular';
+    }
+    
+    if(Omadi.data.isUpdating()){
+        Omadi.display.loading("Waiting...");
+        setTimeout(function(){
+            Omadi.data.trySaveNode(node, saveType);
+        }, 1000);
+    }
+    else{
+        
+        Omadi.display.doneLoading();
+        Omadi.display.loading("Saving...");
+        
+        node = Omadi.data.nodeSave(node);
+                    
+        if(node._saved === true){
+            Ti.UI.currentWindow.nodeSaved = true;
+        }
+        
+        // Setup the current node and nid in the window so a duplicate won't be made for this window
+        Ti.UI.currentWindow.node = node;
+        Ti.UI.currentWindow.nid = node.nid;
+        
+        Omadi.display.doneLoading();
+        
+        if(node._saved === true){
+            
+            if(Ti.Network.online){
+                
+                if (saveType === "next_part") {
+                    Omadi.display.openFormWindow(node.type, node.nid, node.form_part + 1);                            
+                }
+                
+                // Send a clone of the object so the window will close after the network returns a response
+                Omadi.service.sendUpdates();
+                
+                if(Ti.UI.currentWindow.url.indexOf('form.js') !== -1){
+                    if(Ti.App.isAndroid){
+                        Ti.UI.currentWindow.close();
+                    }
+                    else{
+                        Ti.UI.currentWindow.hide();
+                    }
+                }
+            }
+            else{
+                if(Ti.UI.currentWindow.url.indexOf('form.js') !== -1){
+                    dialog = Titanium.UI.createAlertDialog({
+                        title : 'Form Validation',
+                        buttonNames : ['OK'],
+                        message: 'Alert management of this ' + node.type.toUpperCase() + ' immediately. You do not have an Internet connection right now.  Your data was saved and will be synched when you connect to the Internet.'
+                    });
+                    
+                    dialog.show();
+                    
+                    dialog.addEventListener('click', function(ev) {
+                        
+                        if (saveType === "next_part") {
+                            Omadi.display.openFormWindow(node.type, node.nid, node.form_part + 1);
+                        }
+                        
+                        Ti.UI.currentWindow.close();
+                    });
+                }
+            }
+            
+            Ti.App.fireEvent("savedNode");
+        }
+    } 
+};
+
 Omadi.data.nodeSave = function(node) {"use strict";
     var query, field_name, fieldNames, instances, result, db, smallestNid, insertValues, j, k, 
         instance, value_to_insert, has_data, content_s;
@@ -267,8 +351,10 @@ Omadi.data.nodeSave = function(node) {"use strict";
         }
     }
 
-    // For autocomplete widgets
-    node = Omadi.widgets.taxonomy_term_reference.addNewTerms(node);
+    if(typeof Omadi.widgets !== 'undefined'){
+        // For autocomplete widgets
+        node = Omadi.widgets.taxonomy_term_reference.addNewTerms(node);
+    }
 
     node.title = Omadi.data.getNodeTitle(node);
 
@@ -1433,9 +1519,6 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
 
                         queries.push(query);
                         
-                        Ti.API.debug(type);
-                        Ti.API.debug(json.insert[i].viewed);
-                        
                         if (type == 'notification' && json.insert[i].viewed == 0) {
                             notifications = Ti.App.Properties.getObject('newNotifications', {
                                 count : 0,
@@ -1446,8 +1529,6 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                                 count : notifications.count + 1,
                                 nid : json.insert[i].nid
                             });
-                            
-                            Ti.API.debug("hello");
                         }
 
                         if ( typeof json.insert[i].__negative_nid !== 'undefined') {
@@ -1629,7 +1710,7 @@ Omadi.data.processRegionsJson = function(json, mainDB, progress) {"use strict";
                     if (progress != null) {
                         progress.set();
                     }
-                    queries.push("UPDATE regions SET node_type='" + dbEsc(json.update[i].node_type) + "', label='" + dbEsc(json.update[i].label) + "', region_name='" + dbEsc(json.update[i].region_name) + "', weight=" + json.update[i].weight + ", settings='" + dbEsc(json.update[i].settings) + "' WHERE rid=" + json.update[i].rid);
+                    queries.push("UPDATE regions SET node_type='" + dbEsc(json.update[i].node_type) + "', label='" + dbEsc(json.update[i].label) + "', region_name='" + dbEsc(json.update[i].region_name) + "', weight=" + json.update[i].weight + ", settings='" + dbEsc(JSON.stringify(json.update[i].settings)) + "' WHERE rid=" + json.update[i].rid);
                 }
             }
         }

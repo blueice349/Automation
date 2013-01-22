@@ -325,51 +325,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                             Ti.API.error("Bad response text: " + this.responseText);
                         }
 
-                        newNotifications = Ti.App.Properties.getObject('newNotifications', {
-                            count : 0,
-                            nid : 0
-                        });
-
-                        if (newNotifications.count > 0) {
-
-                            Ti.App.Properties.setObject('newNotifications', {
-                                count : 0,
-                                nid : 0
-                            });
-
-                            if (newNotifications.count > 1) {
-                                dialog = Titanium.UI.createAlertDialog({
-                                    title : '(' + newNotifications.count + ') New Notifications',
-                                    message : 'View the notification list?',
-                                    buttonNames : ['Take Me There', 'View Later'],
-                                    cancel : 1
-                                });
-
-                                dialog.addEventListener('click', function(e) {
-                                    if (e.index !== e.source.cancel) {
-                                        Omadi.display.openListWindow('notification', false, [], [], true);
-                                    }
-                                });
-
-                                dialog.show();
-                            }
-                            else {
-                                dialog = Titanium.UI.createAlertDialog({
-                                    title : 'New Notification',
-                                    message : 'Read the notification now?',
-                                    buttonNames : ['Read Now', 'Read Later'],
-                                    cancel : 1
-                                });
-
-                                dialog.addEventListener('click', function(e) {
-                                    if (e.index !== e.source.cancel) {
-                                        Omadi.display.openViewWindow('notification', newNotifications.nid);
-                                    }
-                                });
-
-                                dialog.show();
-                            }
-                        }
+                        Omadi.display.showNewNotificationDialog();
 
                     }
                     catch(ex) {

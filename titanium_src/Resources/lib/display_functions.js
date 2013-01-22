@@ -158,7 +158,6 @@ Omadi.display.openAboutWindow = function() {"use strict";
 
     Omadi.display.loading();
     aboutWindow.addEventListener('open', Omadi.display.doneLoading);
-
     aboutWindow.open();
 
     return aboutWindow;
@@ -204,7 +203,8 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
         nid : nid,
         form_part : form_part
     });
-
+    
+    formWindow.addEventListener('close', Omadi.display.showNewNotificationDialog);
     formWindow.addEventListener('open', Omadi.display.doneLoading);
     Omadi.display.loading();
 
@@ -228,12 +228,65 @@ Omadi.display.openMainMenuWindow = function(options) {"use strict";
             }
         }
     }
-
+    
     mainMenuWindow.addEventListener('open', Omadi.display.doneLoading);
     Omadi.display.loading();
 
     mainMenuWindow.open();
     return mainMenuWindow;
+};
+
+Omadi.display.showNewNotificationDialog = function(){"use strict";
+    var newNotifications, dialog, inspectionAlertShowing;
+    
+    newNotifications = Ti.App.Properties.getObject('newNotifications', {
+        count : 0,
+        nid : 0
+    });
+    
+    inspectionAlertShowing = Ti.App.Properties.getBool("inspectionAlertShowing", false);
+    Ti.API.debug("inspection: " + inspectionAlertShowing);
+    
+    if (newNotifications.count > 0 && !inspectionAlertShowing) {
+
+        Ti.App.Properties.setObject('newNotifications', {
+            count : 0,
+            nid : 0
+        });
+
+        if (newNotifications.count > 1) {
+            dialog = Titanium.UI.createAlertDialog({
+                title : '(' + newNotifications.count + ') New Notifications',
+                message : 'View the notification list?',
+                buttonNames : ['Take Me There', 'View Later'],
+                cancel : 1
+            });
+
+            dialog.addEventListener('click', function(e) {
+                if (e.index !== e.source.cancel) {
+                    Omadi.display.openListWindow('notification', false, [], [], true);
+                }
+            });
+
+            dialog.show();
+        }
+        else {
+            dialog = Titanium.UI.createAlertDialog({
+                title : 'New Notification',
+                message : 'Read the notification now?',
+                buttonNames : ['Read Now', 'Read Later'],
+                cancel : 1
+            });
+
+            dialog.addEventListener('click', function(e) {
+                if (e.index !== e.source.cancel) {
+                    Omadi.display.openViewWindow('notification', newNotifications.nid);
+                }
+            });
+
+            dialog.show();
+        }
+    }
 };
 
 /** Dispaly an option dialog to select view, edit, next_part, etc.
@@ -347,6 +400,7 @@ Omadi.display.getNodeTypeImagePath = function(type) {"use strict";
         case 'repo':
         case 'ticket':
         case 'inspection':
+        case 'timecard':
 
             return '/images/icons/' + type + ".png";
 

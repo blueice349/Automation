@@ -476,7 +476,9 @@ function askToDoInspection(){"use strict";
         bundle = Omadi.data.getBundle('inspection');
         if(bundle && bundle.can_create == 1){
             if(typeof roles[ROLE_ID_FIELD] !== 'undefined' && roles[ROLE_ID_FIELD] > ''){
-    
+                
+                Ti.App.Properties.setBool("inspectionAlertShowing", true);
+                
                 dialog = Ti.UI.createAlertDialog({
                    title: 'Driver\'s Inspection Report',
                    message: 'Do you want to create an inspection report now?',
@@ -484,11 +486,14 @@ function askToDoInspection(){"use strict";
                 });
                 
                 dialog.addEventListener('click', function(e){
+                   
+                   Ti.App.Properties.setBool("inspectionAlertShowing", false);
+                   
                    if(e.index == 0){
                        Omadi.display.openFormWindow('inspection', 'new', 0);
-                   } 
+                   }
                    else{
-                       e.source.close();
+                       Omadi.display.showNewNotificationDialog();
                    }
                 });
                 
@@ -498,8 +503,54 @@ function askToDoInspection(){"use strict";
     }
 }
 
+function askClockIn(){"use strict";
+    var dialog, bundle, node, now;
+    /*global roles, ROLE_ID_FIELD*/
+    
+    if(typeof curWin.fromSavedCookie !== 'undefined' && !curWin.fromSavedCookie){
+        
+        bundle = Omadi.data.getBundle('timecard');
+        if(bundle && bundle.can_create == 1){
+            
+            dialog = Ti.UI.createAlertDialog({
+               title: 'Clock In',
+               message: 'Do you want to clock in now?',
+               buttonNames: ['Yes', 'No'] 
+            });
+            
+            dialog.addEventListener('click', function(e){
+
+               if(e.index == 0){
+                   now = Omadi.utils.getUTCTimestamp();
+                   node = {
+                        nid: 'new',
+                        clock_in_time: {
+                            dbValues: [now]
+                        },
+                        created: now,
+                        changed: now,
+                        author_uid: Omadi.utils.getUid(),
+                        changed_uid: Omadi.utils.getUid(),
+                        table_name: 'timecard',
+                        type: 'timecard',
+                        no_data_fields: '',
+                        viewed: now,
+                        form_part: 0
+                   };
+                   
+                   Omadi.data.trySaveNode(node);
+               }
+            });
+            
+            dialog.show();
+        }
+    }
+}
+
 ( function() {"use strict";
         var db, formWindow, time_format, askAboutInspection;
+        
+        askClockIn();
         
         askToDoInspection();
 

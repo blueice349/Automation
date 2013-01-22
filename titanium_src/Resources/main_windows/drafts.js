@@ -78,6 +78,7 @@ function addiOSToolbar() {"use strict";
     });
     
     Ti.App.addEventListener("savedNode", function(){
+        
         if(Ti.App.isAndroid){
             Ti.UI.currentWindow.close();
         }

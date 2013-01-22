@@ -111,7 +111,10 @@ roles = omadi_session_details.user.roles;
 var result = db.execute('SELECT * FROM regions WHERE node_type = "' + curWin.type + '" ORDER BY weight ASC');
 
 while (result.isValidRow()) {
-    var reg_settings = JSON.parse(result.fieldByName('settings'));
+    var reg_settings = result.fieldByName('settings');
+    
+    reg_settings = JSON.parse(reg_settings);
+    
 
     if (reg_settings != null && parseInt(reg_settings.form_part, 10) > node_form.fieldByName('form_part')) {
         Ti.API.info('Region : ' + result.fieldByName('label') + ' won\'t appear');
