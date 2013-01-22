@@ -112,10 +112,52 @@ var offImage = Titanium.UI.createLabel({
             offset : 1.0
         }]
     },
+    font: {
+        fontSize: 14,
+        fontWeight: 'bold' 
+    },
     borderRadius : 5,
     color : '#000',
     style : Ti.UI.iPhone.SystemButtonStyle.PLAIN
 });
+
+var clockInOutButton = Ti.UI.createLabel({
+    text : 'Clock In/Out',
+    width : 70,
+    horizontalAlign : 'right',
+    textAlign : 'center',
+    right : 130,
+    height : 30,
+    backgroundGradient : {
+        type : 'linear',
+        startPoint : {
+            x : '50%',
+            y : '0%'
+        },
+        endPoint : {
+            x : '50%',
+            y : '100%'
+        },
+        colors : [{
+            color : '#aaa',
+            offset : 0.0
+        }, {
+            color : '#888',
+            offset : 0.25
+        }, {
+            color : '#aaa',
+            offset : 1.0
+        }]
+    },
+    font: {
+        fontSize: 14  
+    },
+    borderRadius : 5,
+    color : '#000',
+    style : Ti.UI.iPhone.SystemButtonStyle.PLAIN
+});
+
+
 
 var refresh_image = Ti.UI.createImageView({
     image : '/images/refresh.png',
@@ -503,56 +545,16 @@ function askToDoInspection(){"use strict";
     }
 }
 
-function askClockIn(){"use strict";
-    var dialog, bundle, node, now;
-    /*global roles, ROLE_ID_FIELD*/
-    
-    if(typeof curWin.fromSavedCookie !== 'undefined' && !curWin.fromSavedCookie){
-        
-        bundle = Omadi.data.getBundle('timecard');
-        if(bundle && bundle.can_create == 1){
-            
-            dialog = Ti.UI.createAlertDialog({
-               title: 'Clock In',
-               message: 'Do you want to clock in now?',
-               buttonNames: ['Yes', 'No'] 
-            });
-            
-            dialog.addEventListener('click', function(e){
-
-               if(e.index == 0){
-                   now = Omadi.utils.getUTCTimestamp();
-                   node = {
-                        nid: 'new',
-                        clock_in_time: {
-                            dbValues: [now]
-                        },
-                        created: now,
-                        changed: now,
-                        author_uid: Omadi.utils.getUid(),
-                        changed_uid: Omadi.utils.getUid(),
-                        table_name: 'timecard',
-                        type: 'timecard',
-                        no_data_fields: '',
-                        viewed: now,
-                        form_part: 0
-                   };
-                   
-                   Omadi.data.trySaveNode(node);
-               }
-            });
-            
-            dialog.show();
-        }
-    }
-}
-
 ( function() {"use strict";
-        var db, formWindow, time_format, askAboutInspection;
+        var db, formWindow, time_format, askAboutInspection, dialog;
         
-        askClockIn();
-        
-        askToDoInspection();
+        if(typeof curWin.fromSavedCookie !== 'undefined' && !curWin.fromSavedCookie){
+            
+            
+            Omadi.bundles.timecard.askClockIn();
+            
+            askToDoInspection();
+        }
 
         listView = Titanium.UI.createTableView({
             data : [],
@@ -579,7 +581,50 @@ function askClockIn(){"use strict";
 
         loggedView.add(label_top);
         loggedView.add(offImage);
-
+        
+        if(Omadi.bundles.timecard.userShouldClockInOut()){
+            
+            if(Omadi.bundles.timecard.isUserClockedIn()){
+                clockInOutButton.setText("Clock Out");
+            }
+            else{
+                clockInOutButton.setText("Clock In");
+            }
+            
+            clockInOutButton.addEventListener('click', function(e){
+                if(Omadi.bundles.timecard.isUserClockedIn()){
+                    dialog = Ti.UI.createAlertDialog({
+                        title: "Verify Clock Out",
+                        buttonNames: ['Clock Out', 'Cancel']
+                    });
+                    
+                    dialog.addEventListener('click', function(e){
+                        if(e.index == 0){
+                            Omadi.bundles.timecard.doClockOut(false);
+                            clockInOutButton.setText("Clock In");
+                        } 
+                    });
+                }
+                else{
+                    dialog = Ti.UI.createAlertDialog({
+                        title: "Verify Clock In",
+                        buttonNames: ['Clock In', 'Cancel']
+                    });
+                    
+                    dialog.addEventListener('click', function(e){
+                        if(e.index == 0){
+                            Omadi.bundles.timecard.doClockIn();
+                            clockInOutButton.setText("Clock Out");
+                        } 
+                    });
+                }
+                
+                dialog.show();
+            });
+            
+            loggedView.add(clockInOutButton);
+        }
+        
         curWin.add(loggedView);
         curWin.add(networkStatusView);
 
@@ -623,6 +668,18 @@ function askClockIn(){"use strict";
             clearInterval(Ti.App.syncInterval);
             Ti.UI.currentWindow.close();
         });
+        
+        Ti.App.addEventListener('savedNode', function() {
+            if(Omadi.bundles.timecard.userShouldClockInOut()){
+            
+                if(Omadi.bundles.timecard.isUserClockedIn()){
+                    clockInOutButton.setText("Clock Out");
+                }
+                else{
+                    clockInOutButton.setText("Clock In");
+                }
+            }
+        });
 
         Ti.Network.addEventListener('change', function(e) {
             var isOnline = e.online;
@@ -649,21 +706,28 @@ function askClockIn(){"use strict";
         refresh_image.addEventListener('click', checkUpdate);
 
         offImage.addEventListener('click', function(e) {
+            var verifyLogout;
 
-            var verifyLogout = Titanium.UI.createAlertDialog({
-                title : 'Logout?',
-                message : 'Are you sure you want to logout?',
-                buttonNames : ['Yes', 'No'],
-                cancel : 1
-            });
-
-            verifyLogout.addEventListener('click', function(e) {
-                if (e.index !== e.source.cancel) {
-                    Omadi.service.logout();
-                }
-            });
-
-            verifyLogout.show();
+            if(Omadi.bundles.timecard.userShouldClockInOut()){
+                
+                Omadi.bundles.timecard.askClockOutLogout();
+            }
+            else{
+                
+                verifyLogout = Ti.UI.createAlertDialog({
+                    title : 'Logout?',
+                    message : 'Are you sure you want to logout?',
+                    buttonNames : ['Yes', 'No']
+                });
+    
+                verifyLogout.addEventListener('click', function(e) {
+                    if (e.index == 0) {
+                        Omadi.service.logout();
+                    }
+                });
+                
+                verifyLogout.show();
+            }
         });
 
         curWin.addEventListener('close', function() {

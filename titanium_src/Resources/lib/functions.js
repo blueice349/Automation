@@ -10,6 +10,7 @@ Ti.include('/lib/encoder_base_64.js');
 Ti.include('/lib/util_functions.js');
 Ti.include('/lib/data_functions.js');
 Ti.include('/lib/display_functions.js');
+Ti.include('/lib/bundle_functions.js');
 
 var ROLE_ID_ADMIN = 3;
 var ROLE_ID_MANAGER = 4;

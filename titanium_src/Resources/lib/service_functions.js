@@ -3,34 +3,34 @@
 
 Omadi.service = Omadi.service || {};
 
-Omadi.service.refreshSession = function(){"use strict";
+Omadi.service.refreshSession = function() {"use strict";
     var http;
-    
-    if(Ti.App.isIOS){
+
+    if (Ti.App.isIOS) {
         // The cookie only needs to be refreshed for iOS right now.
         // Android has a little less security when setting cookies
         // This was implemented solely for the purpose of using the webview in the fileViewer.js file
         // Without getting a Set-Cookie header in a response at some point, iOS will not allow an unknown cookie to be sent
         // Therefore, this needed to be added
-        
-        if(Ti.Network.online && !Ti.App.Properties.getBool("sessionRefreshed", false)){
+
+        if (Ti.Network.online && !Ti.App.Properties.getBool("sessionRefreshed", false)) {
             if (!Omadi.data.isUpdating()) {
                 Omadi.data.setUpdating(true);
-                
+
                 http = Ti.Network.createHTTPClient();
                 http.setTimeout(10000);
                 http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync/refreshSession.json');
-            
+
                 Omadi.utils.setCookieHeader(http);
                 http.setRequestHeader("Content-Type", "application/json");
-                
-                http.onload = function(e){
+
+                http.onload = function(e) {
                     var db_list, cookie, list_result;
-                    
+
                     db_list = Omadi.utils.openListDatabase();
-                    
+
                     cookie = this.getResponseHeader('Set-Cookie');
-            
+
                     list_result = db_list.execute('SELECT COUNT(*) AS count FROM login WHERE id_log=1');
                     if (list_result.fieldByName('count') > 0) {
                         db_list.execute("BEGIN IMMEDIATE TRANSACTION");
@@ -38,32 +38,32 @@ Omadi.service.refreshSession = function(){"use strict";
                         db_list.execute("COMMIT TRANSACTION");
                     }
                     list_result.close();
-            
+
                     db_list.close();
-                    
+
                     Omadi.data.setUpdating(false);
-                    
+
                     Ti.App.Properties.setBool("sessionRefreshed", true);
                 };
-                
-                http.onerror = function(e){
+
+                http.onerror = function(e) {
                     var dialog;
-                    
+
                     Omadi.data.setUpdating(false);
-                    
+
                     if (this.status == 403) {
                         dialog = Titanium.UI.createAlertDialog({
                             title : 'Omadi',
                             buttonNames : ['OK'],
                             message : "You were logged out while refreshing your session. Please log back in."
                         });
-            
+
                         dialog.addEventListener('click', function(e) {
                             var db_func = Omadi.utils.openListDatabase();
                             db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
                             db_func.close();
                         });
-            
+
                         Omadi.service.logout();
                         dialog.show();
                     }
@@ -73,31 +73,31 @@ Omadi.service.refreshSession = function(){"use strict";
                             buttonNames : ['OK'],
                             message : "Your session is no longer valid, and it could not be refreshed. Please log back in."
                         });
-            
+
                         dialog.addEventListener('click', function(e) {
-            
+
                             var db_func = Omadi.utils.openListDatabase();
                             db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
                             db_func.close();
-            
+
                         });
-            
+
                         Omadi.service.logout();
                         dialog.show();
                     }
-                    else{
+                    else {
                         setTimeout(Omadi.service.refreshSession, 40000);
                     }
                 };
-            
+
                 http.send();
             }
-            else{
+            else {
                 setTimeout(Omadi.service.refreshSession, 10000);
             }
         }
-        else{
-            
+        else {
+
             Ti.Network.addEventListener('change', function(e) {
                 var isOnline = e.online;
                 if (isOnline && !Ti.App.Properties.getBool("sessionRefreshed", false)) {
@@ -191,8 +191,6 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                                 Ti.App.Properties.setString("timestamp_offset", GMT_OFFSET);
                             }
 
-                            
-                    
                             if (json.delete_all === true || json.delete_all === "true") {
                                 Ti.API.info("=================== ############ ===================");
                                 Ti.API.info("Reseting mainDB, delete_all is required");
@@ -228,7 +226,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                             //Ti.API.error(json.request_time);
 
                             Ti.API.info("Total items to install: " + json.total_item_count);
-                            
+
                             mainDB = Omadi.utils.openMainDatabase();
                             //If mainDB is already last version
                             if (json.total_item_count == 0) {
@@ -241,12 +239,12 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
 
                             }
                             else {
-                                
+
                                 if (progress !== null) {
                                     //Set max value for progress bar
                                     progress.set_max(parseInt(json.total_item_count, 10));
                                 }
-                                
+
                                 if (Omadi.data.getLastUpdateTimestamp() === 0) {
                                     mainDB.execute('UPDATE updated SET "url"="' + Omadi.DOMAIN_NAME + '" WHERE "rowid"=1');
                                 }
@@ -259,38 +257,37 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                                     Ti.API.debug("Installing vehicles");
                                     Omadi.data.processVehicleJson(json.vehicles, mainDB, progress);
                                 }
-                                
+
                                 if ( typeof json.node_type !== 'undefined') {
                                     Ti.API.debug("Installing bundles");
                                     Omadi.data.processNodeTypeJson(json.node_type, mainDB, progress);
                                 }
-                                
+
                                 if ( typeof json.fields !== 'undefined') {
                                     Ti.API.debug("Installing fields");
                                     Omadi.data.processFieldsJson(json.fields, mainDB, progress);
                                 }
-                                
+
                                 if ( typeof json.regions !== 'undefined') {
                                     Ti.API.debug("Installing regions");
                                     Omadi.data.processRegionsJson(json.regions, mainDB, progress);
                                 }
-                                
+
                                 if ( typeof json.vocabularies !== 'undefined') {
                                     Ti.API.debug("Installing vocabularies");
                                     Omadi.data.processVocabulariesJson(json.vocabularies, mainDB, progress);
                                 }
-                                
+
                                 if ( typeof json.terms !== 'undefined') {
                                     Ti.API.debug("Installing terms");
                                     Omadi.data.processTermsJson(json.terms, mainDB, progress);
                                 }
-                                
+
                                 if ( typeof json.users !== 'undefined') {
                                     Ti.API.debug("Installing users");
                                     Omadi.data.processUsersJson(json.users, mainDB, progress);
                                 }
-                                
-                                
+
                                 if ( typeof json.node !== 'undefined') {
                                     Ti.API.debug("Installing nodes");
                                     for (tableName in json.node) {
@@ -741,16 +738,16 @@ Omadi.service.uploadFile = function() {"use strict";
                 result.close();
 
                 Ti.API.debug("Current upload is for nid " + nid + " field " + field_name + " delta " + delta + " and tries=" + tries);
-                
+
                 // Reset all photos to not uploading in case there was an error previously
                 mainDB.execute("UPDATE _photos SET uploading = 0 WHERE uploading <> 0");
-                
+
                 if (count > 0) {
-                    if((file_data == null || file_data.length) < 10 && id > 0){
+                    if ((file_data == null || file_data.length) < 10 && id > 0) {
                         mainDB.execute("DELETE FROM _photos WHERE id=" + id);
                         return;
                     }
-                    
+
                     // Set the photo to uploading status
                     mainDB.execute("UPDATE _photos SET uploading = " + nowTimestamp + " WHERE id = " + id);
                 }
@@ -777,8 +774,7 @@ Omadi.service.uploadFile = function() {"use strict";
                         Omadi.utils.setCookieHeader(http);
 
                         http.onload = function(e) {
-                            var json, subDB, subResult, uploadMore = false, fieldSettings, tableName, 
-                                decoded_values, decoded, content, multipleValue, dbValue, jsonArray;
+                            var json, subDB, subResult, uploadMore = false, fieldSettings, tableName, decoded_values, decoded, content, multipleValue, dbValue, jsonArray;
                             //Ti.API.info('UPLOAD FILE: =========== Success ========' + this.responseText);
                             Ti.API.debug("Photo upload succeeded");
 
@@ -797,26 +793,26 @@ Omadi.service.uploadFile = function() {"use strict";
                                 subResult.close();
 
                                 if (fieldSettings.cardinality > 1 || fieldSettings.cardinality < 0) {
-                                   
+
                                     subResult = subDB.execute("SELECT " + json.field_name + " FROM " + tableName + " WHERE nid=" + json.nid);
-                                    
-                                    jsonArray = []; 
-                                    
-                                    if(subResult.isValidRow()){
+
+                                    jsonArray = [];
+
+                                    if (subResult.isValidRow()) {
                                         multipleValue = Omadi.utils.getParsedJSON(subResult.fieldByName(json.field_name));
-                                        if(Omadi.utils.isArray(multipleValue)){
-                                            jsonArray = multipleValue;                                       
+                                        if (Omadi.utils.isArray(multipleValue)) {
+                                            jsonArray = multipleValue;
                                         }
                                     }
-                                    
+
                                     jsonArray[parseInt(json.delta, 10)] = json.file_id;
-                                    
+
                                     subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='" + dbEsc(JSON.stringify(jsonArray)) + "' WHERE nid=" + json.nid);
                                 }
                                 else {
                                     subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='" + json.file_id + "' WHERE nid='" + json.nid + "'");
                                 }
-                                
+
                                 //Deleting file after upload.
                                 subDB.execute("DELETE FROM _photos WHERE nid=" + json.nid + " and delta=" + json.delta + " and field_name='" + json.field_name + "'");
 
@@ -1037,5 +1033,4 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
         }
     }
 };
-
 
