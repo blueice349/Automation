@@ -244,8 +244,8 @@ Omadi.display.showNewNotificationDialog = function(){"use strict";
         nid : 0
     });
     
-    inspectionAlertShowing = Ti.App.Properties.getBool("inspectionAlertShowing", false);
-    Ti.API.debug("inspection: " + inspectionAlertShowing);
+    //inspectionAlertShowing = Ti.App.Properties.getBool("inspectionAlertShowing", false);
+    //Ti.API.debug("inspection: " + inspectionAlertShowing);
     
     if (newNotifications.count > 0 && !inspectionAlertShowing) {
 

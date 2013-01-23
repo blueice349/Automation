@@ -510,6 +510,37 @@ function setupBottomButtons() {"use strict";
     curWin.add(databaseStatusView);
 }
 
+function showNextAlertInQueue(e){"use strict";
+
+    alertQueue[e.source.queueIndex+1].show();
+}
+
+function showLogoutDialog(){"use strict";
+    var verifyLogout;
+    
+    if(Omadi.bundles.timecard.userShouldClockInOut()){
+        
+        Omadi.bundles.timecard.askClockOutLogout();
+    }
+    else{
+        
+        verifyLogout = Ti.UI.createAlertDialog({
+            title : 'Logout?',
+            message : 'Are you sure you want to logout?',
+            buttonNames : ['Yes', 'No']
+        });
+
+        verifyLogout.addEventListener('click', function(e) {
+            if (e.index == 0) {
+                 Ti.API.info('Logging out from Regular logout dialog');
+                Omadi.service.logout();
+            }
+        });
+        
+        verifyLogout.show();
+    }
+}
+
 ( function() {"use strict";
         var db, formWindow, time_format, askAboutInspection, dialog, i, showingAlert;
 
@@ -664,27 +695,12 @@ function setupBottomButtons() {"use strict";
 
         offImage.addEventListener('click', function(e) {
             var verifyLogout;
-
-            if(Omadi.bundles.timecard.userShouldClockInOut()){
-                
-                Omadi.bundles.timecard.askClockOutLogout();
+            
+            if(Omadi.bundles.inspection.userShouldDoInspection()){
+                Omadi.bundles.inspection.askToCreateInspection();
             }
             else{
-                
-                verifyLogout = Ti.UI.createAlertDialog({
-                    title : 'Logout?',
-                    message : 'Are you sure you want to logout?',
-                    buttonNames : ['Yes', 'No']
-                });
-    
-                verifyLogout.addEventListener('click', function(e) {
-                    if (e.index == 0) {
-                         Ti.API.info('Logging out from Regular logout dialog');
-                        Omadi.service.logout();
-                    }
-                });
-                
-                verifyLogout.show();
+                showLogoutDialog();
             }
         });
 
@@ -776,7 +792,7 @@ function setupBottomButtons() {"use strict";
         
         if(typeof curWin.fromSavedCookie !== 'undefined' && !curWin.fromSavedCookie){
             Omadi.bundles.timecard.askClockIn();
-            Omadi.bundles.inspection.askToDoInspection();
+            Omadi.bundles.inspection.askToReviewLastInspection();
         }
         
         if(alertQueue.length > 0){
@@ -784,15 +800,11 @@ function setupBottomButtons() {"use strict";
                 
                 if(i == 0){
                     alertQueue[i].show();
-                    showingAlert = i;
                 }
                 
                 if(alertQueue.length > i + 1){
                     alertQueue[i].queueIndex = i;
-                    alertQueue[i].addEventListener('click', function(e){
-                        alertQueue[e.source.queueIndex+1].show();
-                        showingAlert = e.source.queueIndex + 1; 
-                    });
+                    alertQueue[i].addEventListener('click', showNextAlertInQueue);
                 }
             }
         }

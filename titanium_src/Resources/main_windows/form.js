@@ -1444,21 +1444,24 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
                 //Ti.API.error(JSON.stringify(and_groups));
             }
             
-            if (makeRequired) {
-                if (!instance.isConditionallyRequired) {
-                    labelViews[instance.field_name].text = '*' + labelViews[instance.field_name].text;
-                    labelViews[instance.field_name].color = 'red';
-                    //instance.required = true;
+            if(typeof labelViews[instance.field_name] !== 'undefined'){
+            
+                if (makeRequired) {
+                    if (!instance.isConditionallyRequired) {
+                        labelViews[instance.field_name].text = '*' + labelViews[instance.field_name].text;
+                        labelViews[instance.field_name].color = 'red';
+                        //instance.required = true;
+                    }
+                    instance.isConditionallyRequired = true;
                 }
-                instance.isConditionallyRequired = true;
-            }
-            else {
-                if (instance.isConditionallyRequired) {
-                    labelViews[instance.field_name].text = labelViews[instance.field_name].text.substring(1, labelViews[instance.field_name].text.length);
-                    labelViews[instance.field_name].color = Omadi.widgets.label.color;
-                    ///instance.required = false;
+                else {
+                    if (instance.isConditionallyRequired) {
+                        labelViews[instance.field_name].text = labelViews[instance.field_name].text.substring(1, labelViews[instance.field_name].text.length);
+                        labelViews[instance.field_name].color = Omadi.widgets.label.color;
+                        ///instance.required = false;
+                    }
+                    instance.isConditionallyRequired = false;
                 }
-                instance.isConditionallyRequired = false;
             }
         }
     }
