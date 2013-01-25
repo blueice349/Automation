@@ -3,7 +3,7 @@
 Omadi.bundles.inspection = {};
 
 Omadi.bundles.inspection.askToReviewLastInspection = function(){"use strict";
-    var dialog, bundle;
+    var dialog, bundle, newWin;
     /*global roles, ROLE_ID_FIELD, alertQueue*/
     
     bundle = Omadi.data.getBundle('inspection');
@@ -19,7 +19,19 @@ Omadi.bundles.inspection.askToReviewLastInspection = function(){"use strict";
             dialog.addEventListener('click', function(e){
                
                if(e.index == 0){
-                   Omadi.display.openListWindow('inspection', false, [], [], false);
+                   
+                   newWin = Omadi.display.openListWindow('inspection', false, [], [], false);
+                   
+                   if(typeof alertQueue !== 'undefined'){
+                       newWin.addEventListener('close', function(){
+                            Ti.App.fireEvent('showNextAlertInQueue'); 
+                       });
+                   }
+               }
+               else{
+                   if(typeof alertQueue !== 'undefined'){
+                        Ti.App.fireEvent('showNextAlertInQueue');
+                   }
                }
             });
             

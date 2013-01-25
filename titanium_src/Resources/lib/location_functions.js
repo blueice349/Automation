@@ -14,15 +14,13 @@ Omadi.location.currentPositionCallback = function(e) {
 	}
 };
 
-Omadi.location.uploadGPSCoordinates = function(){
-	"use strict";
-	
+Omadi.location.uploadGPSCoordinates = function(){"use strict";
 	var db, result, json, http, i, locationItems;
 	
 	/*global createNotification*/
-	
-	//Ti.API.info('################################## CALLED ANDROID UPDATE FUNCTION ################################## '+ Omadi.location.is_GPS_uploading());
-	
+    
+    Ti.API.debug("GPS Uploading: " + Omadi.location.is_GPS_uploading());
+    
 	if (!Omadi.location.is_GPS_uploading() && Omadi.utils.isLoggedIn()){
 		
 		if (!Ti.Network.getOnline()) {
@@ -54,7 +52,7 @@ Omadi.location.uploadGPSCoordinates = function(){
 			
 			if (result.rowCount > 0) {
 				for (i = 0; i < result.rowCount; i+=1) {
-					db.execute("UPDATE user_location SET status =\"json\" WHERE ulid=" + result.fieldByName('ulid'));
+					db.execute("UPDATE user_location SET status='sendingLocation' WHERE ulid=" + result.fieldByName('ulid'));
 					
 					locationItems.unshift({
 						lat: result.fieldByName('latitude'),
@@ -153,7 +151,7 @@ Omadi.location.uploadSuccess = function(e) {"use strict";
 		}
 		
 		db = Omadi.utils.openGPSDatabase();
-		db.execute('DELETE FROM user_location WHERE status="json"');
+		db.execute("DELETE FROM user_location WHERE status='sending'");
 		
 		sqlArray = [];
 		nids = [];

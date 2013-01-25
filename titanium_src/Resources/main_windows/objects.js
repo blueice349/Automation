@@ -35,14 +35,14 @@ Ti.App.addEventListener('loggingOut', function() {"use strict";
 });
 
 Ti.App.addEventListener("savedNode", function() {"use strict";
-    if (Ti.App.isAndroid) {
+    //if (Ti.App.isAndroid) {
         Ti.UI.currentWindow.close();
-    }
-    else {
-        Ti.UI.currentWindow.hide();
+    //}
+    //else {
+    //    Ti.UI.currentWindow.hide();
         // Close the window after the maximum timeout for a node save
-        setTimeout(Ti.UI.currentWindow.close, 65000);
-    }
+    //    Ti.UI.currentWindow.close
+    //}
 });
 
 function sortByTitle(a, b) {"use strict";

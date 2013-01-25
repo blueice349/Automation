@@ -237,7 +237,9 @@ Omadi.display.openMainMenuWindow = function(options) {"use strict";
 };
 
 Omadi.display.showNewNotificationDialog = function(){"use strict";
-    var newNotifications, dialog, inspectionAlertShowing;
+    var newNotifications, dialog, inspectionAlertShowing, newWin;
+    
+    /*global alertQueue*/
     
     newNotifications = Ti.App.Properties.getObject('newNotifications', {
         count : 0,
@@ -264,11 +266,26 @@ Omadi.display.showNewNotificationDialog = function(){"use strict";
 
             dialog.addEventListener('click', function(e) {
                 if (e.index !== e.source.cancel) {
-                    Omadi.display.openListWindow('notification', false, [], [], true);
+                    newWin = Omadi.display.openListWindow('notification', false, [], [], true);
+                    if(typeof alertQueue !== 'undefined'){
+                        newWin.addEventListener('close', function(){
+                            Ti.App.fireEvent('showNextAlertInQueue');
+                        });
+                   }
+                }
+                else{
+                    if(typeof alertQueue !== 'undefined'){
+                        Ti.App.fireEvent('showNextAlertInQueue');
+                    }
                 }
             });
-
-            dialog.show();
+            
+            if(typeof alertQueue !== 'undefined'){
+                alertQueue.push(dialog);
+            }
+            else{
+                dialog.show();
+            }
         }
         else {
             dialog = Titanium.UI.createAlertDialog({
@@ -280,11 +297,26 @@ Omadi.display.showNewNotificationDialog = function(){"use strict";
 
             dialog.addEventListener('click', function(e) {
                 if (e.index !== e.source.cancel) {
-                    Omadi.display.openViewWindow('notification', newNotifications.nid);
+                    newWin = Omadi.display.openViewWindow('notification', newNotifications.nid);
+                    if(typeof alertQueue !== 'undefined'){
+                        newWin.addEventListener('close', function(){
+                            Ti.App.fireEvent('showNextAlertInQueue');
+                        });
+                    }
+                }
+                else{
+                    if(typeof alertQueue !== 'undefined'){
+                        Ti.App.fireEvent('showNextAlertInQueue');
+                    }
                 }
             });
-
-            dialog.show();
+            
+            if(typeof alertQueue !== 'undefined'){
+                alertQueue.push(dialog);
+            }
+            else{
+                dialog.show();
+            }
         }
     }
 };

@@ -1,5 +1,9 @@
 Ti.include('/lib/functions.js');
 
+if(Ti.App.isIOS){
+    Ti.include('/lib/iOS/backgroundLocation.js');
+}
+
 /*jslint eqeq:true, plusplus: true, nomen: true*/
 
 var curWin = Ti.UI.currentWindow;
@@ -18,6 +22,7 @@ toolActInd.message = 'Loading...';
 var version = 'Omadi Inc';
 var isFirstTime = false;
 var alertQueue = [];
+var currentAlertIndex = 0;
 
 var databaseStatusView = Titanium.UI.createView({
     backgroundColor : '#000',
@@ -511,8 +516,12 @@ function setupBottomButtons() {"use strict";
 }
 
 function showNextAlertInQueue(e){"use strict";
-
-    alertQueue[e.source.queueIndex+1].show();
+    var alert;
+    
+    if(alertQueue.length){
+        alert = alertQueue.shift();
+        alert.show();
+    }
 }
 
 function showLogoutDialog(){"use strict";
@@ -795,19 +804,27 @@ function showLogoutDialog(){"use strict";
             Omadi.bundles.inspection.askToReviewLastInspection();
         }
         
-        if(alertQueue.length > 0){
-            for(i = 0; i < alertQueue.length; i ++){
-                
-                if(i == 0){
-                    alertQueue[i].show();
-                }
-                
-                if(alertQueue.length > i + 1){
-                    alertQueue[i].queueIndex = i;
-                    alertQueue[i].addEventListener('click', showNextAlertInQueue);
-                }
-            }
+        if(alertQueue.length){
+            var firstAlert = alertQueue.shift();
+            firstAlert.show();
         }
+        
+        Ti.App.addEventListener('showNextAlertInQueue', showNextAlertInQueue);
+                    
+        // if(alertQueue.length > 0){
+            // for(i = 0; i < alertQueue.length; i ++){
+//                 
+                // if(i == 0){
+                    // alertQueue[i].show();
+                    // currentAlertIndex = 0;
+                // }
+//                 
+                // if(alertQueue.length > i + 1){
+                    // //alertQueue[i].queueIndex = i;
+                    // alertQueue[i].addEventListener('showNextAlertInQueue', showNextAlertInQueue);
+                // }
+            // }
+        // }
 
     }());
 
