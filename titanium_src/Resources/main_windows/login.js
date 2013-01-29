@@ -60,7 +60,7 @@ function startGPSService() {"use strict";
             url : 'android_gps_event.js'
         });
 
-        intent.putExtra('interval', 5000);
+        //intent.putExtra('interval', 20000);
 
         //intent.putExtra('interval', 5000);
         Ti.App.service1 = Titanium.Android.createService(intent);
@@ -70,23 +70,23 @@ function startGPSService() {"use strict";
 
         //Ti.App.Properties.setObject('AndroidGPSService1', service);
 
-        intent2 = Titanium.Android.createServiceIntent({
-            url : 'android_gps_upload.js'
-        });
-
-        intent2.putExtra('interval', 120000);
-
-        Ti.App.service2 = Titanium.Android.createService(intent2);
-        Ti.App.service2.isStarted = false;
-
-        // Start the GPS upload 30 seconds after the program starts
-        setTimeout(function() {
-            if (!Ti.App.Properties.getBool('stopGPS', false)) {
-                Ti.App.service2.start();
-                Ti.App.service2.isStarted = true;
-            }
-            //Ti.App.Properties.setObject('AndroidGPSService2', service2);
-        }, 30000);
+        // intent2 = Titanium.Android.createServiceIntent({
+            // url : 'android_gps_upload.js'
+        // });
+// 
+        // intent2.putExtra('interval', 120000);
+// 
+        // Ti.App.service2 = Titanium.Android.createService(intent2);
+        // Ti.App.service2.isStarted = false;
+// 
+        // // Start the GPS upload 30 seconds after the program starts
+        // setTimeout(function() {
+            // if (!Ti.App.Properties.getBool('stopGPS', false)) {
+                // Ti.App.service2.start();
+                // Ti.App.service2.isStarted = true;
+            // }
+            // //Ti.App.Properties.setObject('AndroidGPSService2', service2);
+        // }, 30000);
 
         createNotification("No coordinates uploaded so far");
 
@@ -183,9 +183,33 @@ function scrollBoxesToTop() {"use strict";
             iOSGPS = require('com.omadi.ios_gps');
             Ti.App.Properties.setBool('deviceHasFlash', iOSGPS.isFlashAvailableInCamera());
         }
+        else{
+            Ti.Geolocation.Android.manualMode = true;
+            var gpsProvider = Ti.Geolocation.Android.createLocationProvider({
+                name: Ti.Geolocation.PROVIDER_GPS,
+                minUpdateTime: 20, 
+                minUpdateDistance: 5
+            });
+            
+            Ti.Geolocation.Android.addLocationProvider(gpsProvider);
+            
+            var gpsRule = Ti.Geolocation.Android.createLocationRule({
+                provider: Ti.Geolocation.PROVIDER_GPS,
+                // Updates should be accurate to 100m
+                accuracy: 1000,
+                // Updates should be no older than 5m
+                maxAge: 25000,
+                // But  no more frequent than once per 10 seconds
+                minAge: 10000
+            });
+            
+            Ti.Geolocation.Android.addLocationRule(gpsRule);
+            
+        }
 
         Ti.App.Properties.setBool('stopGPS', false);
         Ti.App.Properties.setBool('quitApp', false);
+        Ti.App.Properties.setBool('insertingGPS', false);
 
         Omadi.data.setUpdating(false);
 

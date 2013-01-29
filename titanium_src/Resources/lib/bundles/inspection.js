@@ -11,8 +11,8 @@ Omadi.bundles.inspection.askToReviewLastInspection = function(){"use strict";
         if(Omadi.bundles.timecard.userDrivesATruck()){
             
             dialog = Ti.UI.createAlertDialog({
-               title: 'Review Inspection Log',
-               message: 'Do you want to review the vehicle inspection log?',
+               title: 'Review Last Inspection',
+               message: 'Sign Pre-Shift Form?',
                buttonNames: ['Yes', 'No']
             });
             
@@ -104,7 +104,7 @@ Omadi.bundles.inspection.askToCreateInspection = function(){"use strict";
 
         dialog = Ti.UI.createAlertDialog({
            title: 'DOT Inspection Report',
-           message: 'Do you want to fill out a DOT vehicle inspection report?',
+           message: 'Fill Out Post-Shift Form?',
            buttonNames: ['Yes', 'No'] 
         });
         

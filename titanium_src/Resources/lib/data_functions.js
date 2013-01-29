@@ -547,7 +547,7 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
             });
             
             if(showMessage){
-                Omadi.service.sendErrorReport("going to save to photo gallery: " + photoId);
+                Omadi.service.sendErrorReport("going to save to photo gallery_nid_" + nid + "_field_name_" + field_name + "_delta_" + delta + "_photoId_" + photoId);
             }
 
             if (Ti.App.isAndroid) {

@@ -1,6 +1,54 @@
 Ti.include('/lib/functions.js');
 
-if(Ti.App.isIOS){
+var alarmModule;
+var alarmManager;
+
+if (Ti.App.isAndroid) {
+    // alarmModule = require('bencoding.alarmmanager');
+    // alarmManager = alarmModule.createAlarmManager();
+    // // alarmManager.addAlarmNotification({
+        // // requestCode : 41, //Request ID used to identify a specific alarm. Provide the same requestCode twice to update
+        // // //icon : Ti.Android.R.drawable.star_on, //Optional icon must be a resource id or url
+        // // second : 10, //Set the number of minutes until the alarm should go off
+        // // contentTitle : 'Alarm #1', //Set the title of the Notification that will appear
+        // // contentText : 'Alarm & Notify Basic', //Set the body of the notification that will apear
+        // // playSound : true, //On notification play the default sound ( by default off )
+        // // vibrate : true, //On notification vibrate device ( by default off )
+        // // showLights : true, //On notification show the device lights ( by default off )
+        // // repeat: 10000
+    // // });
+//     
+    // alarmManager.addAlarmService({
+            // //The full name for the service to be called. Find this in your AndroidManifest.xml Titanium creates
+            // requestCode: 42,
+            // service:'com.omadi.crm.Android_gps_eventService',
+            // second:15, //Set the number of minutes until the alarm should go off
+            // repeat:10000 // Create an interval service that runs each minute
+    // });
+    
+    alarmModule = require('bencoding.alarmmanager');
+    alarmManager = alarmModule.createAlarmManager();
+    // alarmManager.addAlarmNotification({
+        // requestCode : 41, //Request ID used to identify a specific alarm. Provide the same requestCode twice to update
+        // //icon : Ti.Android.R.drawable.star_on, //Optional icon must be a resource id or url
+        // second : 10, //Set the number of minutes until the alarm should go off
+        // contentTitle : 'Alarm #1', //Set the title of the Notification that will appear
+        // contentText : 'Alarm & Notify Basic', //Set the body of the notification that will apear
+        // playSound : true, //On notification play the default sound ( by default off )
+        // vibrate : true, //On notification vibrate device ( by default off )
+        // showLights : true, //On notification show the device lights ( by default off )
+        // repeat: 10000
+    // });
+    
+    alarmManager.addAlarmService({
+        //The full name for the service to be called. Find this in your AndroidManifest.xml Titanium creates
+        requestCode : 42,
+        service : 'com.omadi.crm.Android_gps_eventService',
+        minute : 1, //Set the number of minutes until the alarm should go off
+        repeat : 60000 // Create an interval service that runs each minute
+    });
+}
+else if (Ti.App.isIOS) {
     Ti.include('/lib/iOS/backgroundLocation.js');
 }
 
@@ -118,9 +166,9 @@ var offImage = Titanium.UI.createLabel({
             offset : 1.0
         }]
     },
-    font: {
-        fontSize: 14,
-        fontWeight: 'bold' 
+    font : {
+        fontSize : 14,
+        fontWeight : 'bold'
     },
     borderRadius : 5,
     color : '#000',
@@ -155,15 +203,13 @@ var clockInOutButton = Ti.UI.createLabel({
             offset : 1.0
         }]
     },
-    font: {
-        fontSize: 14  
+    font : {
+        fontSize : 14
     },
     borderRadius : 5,
     color : '#000',
     style : Ti.UI.iPhone.SystemButtonStyle.PLAIN
 });
-
-
 
 var refresh_image = Ti.UI.createImageView({
     image : '/images/refresh.png',
@@ -338,24 +384,23 @@ function setupAndroidMenu() {"use strict";
 }
 
 function setupBottomButtons() {"use strict";
-    var alertsView, alertsImg, alertsLabel, draftsView, draftsImg, draftsLabel, 
-        actionsView, actionsImg, actionsLabel, recentView, recentLabel, recentImg;
+    var alertsView, alertsImg, alertsLabel, draftsView, draftsImg, draftsLabel, actionsView, actionsImg, actionsLabel, recentView, recentLabel, recentImg;
 
     alertsView = Ti.UI.createView({
         backgroundSelectedColor : 'orange',
         focusable : true,
         width : '33%',
-        height: 45,
-        layout: 'vertical',
-        color: '#fff'
+        height : 45,
+        layout : 'vertical',
+        color : '#fff'
     });
     databaseStatusView.add(alertsView);
 
     alertsImg = Ti.UI.createImageView({
         image : '/images/msg3.png',
-        height: 22,
-        width: 22,
-        top: 2
+        height : 22,
+        width : 22,
+        top : 2
     });
     alertsLabel = Ti.UI.createLabel({
         text : 'Alerts',
@@ -364,9 +409,9 @@ function setupBottomButtons() {"use strict";
         },
         height : Ti.UI.SIZE,
         bottom : 0,
-        color: '#fff',
-        width: Ti.UI.SIZE,
-        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+        color : '#fff',
+        width : Ti.UI.SIZE,
+        textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
     });
 
     alertsView.add(alertsImg);
@@ -389,18 +434,18 @@ function setupBottomButtons() {"use strict";
         backgroundSelectedColor : 'orange',
         focusable : true,
         width : '33%',
-        height: 45,
-        layout: 'vertical',
-        color: '#fff'
+        height : 45,
+        layout : 'vertical',
+        color : '#fff'
     });
 
     databaseStatusView.add(draftsView);
 
     draftsImg = Ti.UI.createImageView({
         image : '/images/drafts.png',
-        height: 22,
-        width: 22,
-        top: 2
+        height : 22,
+        width : 22,
+        top : 2
     });
 
     draftsLabel = Ti.UI.createLabel({
@@ -410,9 +455,9 @@ function setupBottomButtons() {"use strict";
         },
         height : Ti.UI.SIZE,
         bottom : 0,
-        color: '#fff',
-        width: Ti.UI.SIZE,
-        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+        color : '#fff',
+        width : Ti.UI.SIZE,
+        textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
     });
 
     draftsView.add(draftsImg);
@@ -425,17 +470,17 @@ function setupBottomButtons() {"use strict";
         backgroundSelectedColor : 'orange',
         focusable : true,
         width : '33%',
-        height: 45,
-        layout: 'vertical',
-        color: '#fff'
+        height : 45,
+        layout : 'vertical',
+        color : '#fff'
     });
     databaseStatusView.add(recentView);
-    
+
     recentImg = Ti.UI.createImageView({
         image : '/images/clock.png',
-        height: 22,
-        width: 22,
-        top: 2
+        height : 22,
+        width : 22,
+        top : 2
     });
     recentLabel = Ti.UI.createLabel({
         text : 'Recent',
@@ -444,9 +489,9 @@ function setupBottomButtons() {"use strict";
         },
         height : Ti.UI.SIZE,
         bottom : 0,
-        color: '#fff',
-        width: Ti.UI.SIZE,
-        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+        color : '#fff',
+        width : Ti.UI.SIZE,
+        textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
     });
 
     recentView.add(recentImg);
@@ -464,7 +509,6 @@ function setupBottomButtons() {"use strict";
         recentWindow.addEventListener('open', Omadi.display.doneLoading);
         recentWindow.open();
     });
-
 
     if (Ti.App.isIOS) {
         draftsView.width = alertsView.width = recentView.width = '25%';
@@ -515,24 +559,24 @@ function setupBottomButtons() {"use strict";
     curWin.add(databaseStatusView);
 }
 
-function showNextAlertInQueue(e){"use strict";
+function showNextAlertInQueue(e) {"use strict";
     var alert;
-    
-    if(alertQueue.length){
+
+    if (alertQueue.length) {
         alert = alertQueue.shift();
         alert.show();
     }
 }
 
-function showLogoutDialog(){"use strict";
+function showLogoutDialog() {"use strict";
     var verifyLogout;
-    
-    if(Omadi.bundles.timecard.userShouldClockInOut()){
-        
+
+    if (Omadi.bundles.timecard.userShouldClockInOut()) {
+
         Omadi.bundles.timecard.askClockOutLogout();
     }
-    else{
-        
+    else {
+
         verifyLogout = Ti.UI.createAlertDialog({
             title : 'Logout?',
             message : 'Are you sure you want to logout?',
@@ -541,11 +585,11 @@ function showLogoutDialog(){"use strict";
 
         verifyLogout.addEventListener('click', function(e) {
             if (e.index == 0) {
-                 Ti.API.info('Logging out from Regular logout dialog');
+                Ti.API.info('Logging out from Regular logout dialog');
                 Omadi.service.logout();
             }
         });
-        
+
         verifyLogout.show();
     }
 }
@@ -578,50 +622,50 @@ function showLogoutDialog(){"use strict";
 
         loggedView.add(label_top);
         loggedView.add(offImage);
-        
-        if(Omadi.bundles.timecard.userShouldClockInOut()){
-            
-            if(Omadi.bundles.timecard.isUserClockedIn()){
+
+        if (Omadi.bundles.timecard.userShouldClockInOut()) {
+
+            if (Omadi.bundles.timecard.isUserClockedIn()) {
                 clockInOutButton.setText("Clock Out");
             }
-            else{
+            else {
                 clockInOutButton.setText("Clock In");
             }
-            
-            clockInOutButton.addEventListener('click', function(e){
-                if(Omadi.bundles.timecard.isUserClockedIn()){
+
+            clockInOutButton.addEventListener('click', function(e) {
+                if (Omadi.bundles.timecard.isUserClockedIn()) {
                     dialog = Ti.UI.createAlertDialog({
-                        title: "Verify Clock Out",
-                        buttonNames: ['Clock Out', 'Cancel']
+                        title : "Verify Clock Out",
+                        buttonNames : ['Clock Out', 'Cancel']
                     });
-                    
-                    dialog.addEventListener('click', function(e){
-                        if(e.index == 0){
+
+                    dialog.addEventListener('click', function(e) {
+                        if (e.index == 0) {
                             Omadi.bundles.timecard.doClockOut(false);
                             clockInOutButton.setText("Clock In");
-                        } 
+                        }
                     });
                 }
-                else{
+                else {
                     dialog = Ti.UI.createAlertDialog({
-                        title: "Verify Clock In",
-                        buttonNames: ['Clock In', 'Cancel']
+                        title : "Verify Clock In",
+                        buttonNames : ['Clock In', 'Cancel']
                     });
-                    
-                    dialog.addEventListener('click', function(e){
-                        if(e.index == 0){
+
+                    dialog.addEventListener('click', function(e) {
+                        if (e.index == 0) {
                             Omadi.bundles.timecard.doClockIn();
                             clockInOutButton.setText("Clock Out");
-                        } 
+                        }
                     });
                 }
-                
+
                 dialog.show();
             });
-            
+
             loggedView.add(clockInOutButton);
         }
-        
+
         curWin.add(loggedView);
         curWin.add(networkStatusView);
 
@@ -665,14 +709,14 @@ function showLogoutDialog(){"use strict";
             clearInterval(Ti.App.syncInterval);
             Ti.UI.currentWindow.close();
         });
-        
+
         Ti.App.addEventListener('savedNode', function() {
-            if(Omadi.bundles.timecard.userShouldClockInOut()){
-            
-                if(Omadi.bundles.timecard.isUserClockedIn()){
+            if (Omadi.bundles.timecard.userShouldClockInOut()) {
+
+                if (Omadi.bundles.timecard.isUserClockedIn()) {
                     clockInOutButton.setText("Clock Out");
                 }
-                else{
+                else {
                     clockInOutButton.setText("Clock In");
                 }
             }
@@ -704,11 +748,11 @@ function showLogoutDialog(){"use strict";
 
         offImage.addEventListener('click', function(e) {
             var verifyLogout;
-            
-            if(Omadi.bundles.inspection.userShouldDoInspection()){
+
+            if (Omadi.bundles.inspection.userShouldDoInspection()) {
                 Omadi.bundles.inspection.askToCreateInspection();
             }
-            else{
+            else {
                 showLogoutDialog();
             }
         });
@@ -742,32 +786,32 @@ function showLogoutDialog(){"use strict";
 
         Ti.App.addEventListener('full_update_from_menu', function() {
             var dbFile, db, result;
-            
+
             Omadi.data.setUpdating(true);
-            
+
             Omadi.data.setLastUpdateTimestamp(0);
             //If delete_all is present, delete all contents:
-            
-            if(!Ti.Network.online){
+
+            if (!Ti.Network.online) {
                 alert("You do not have an Internet connection right now, so new data will not be downloaded until you connect.");
             }
-            
+
             db = Omadi.utils.openMainDatabase();
-    
+
             result = db.execute("SELECT id FROM _photos");
-            if(result.rowCount > 0){
+            if (result.rowCount > 0) {
                 alert("One or more photos were not uploaded to the server, so they will be stored on this device now.");
-                
-                while(result.isValidRow()){
-                    
-                    Omadi.data.saveFailedUpload(result.fieldByName('id', Ti.Database.FIELD_TYPE_INT), false); 
-                    
+
+                while (result.isValidRow()) {
+
+                    Omadi.data.saveFailedUpload(result.fieldByName('id', Ti.Database.FIELD_TYPE_INT), false);
+
                     result.next();
                 }
             }
             result.close();
             db.close();
-            
+
             if (Ti.App.isAndroid) {
                 //Remove the database
                 db.remove();
@@ -798,33 +842,35 @@ function showLogoutDialog(){"use strict";
         Ti.App.addEventListener('normal_update_from_menu', function() {
             checkUpdate('from_menu');
         });
-        
-        if(typeof curWin.fromSavedCookie !== 'undefined' && !curWin.fromSavedCookie){
+
+        if ( typeof curWin.fromSavedCookie !== 'undefined' && !curWin.fromSavedCookie) {
             Omadi.bundles.timecard.askClockIn();
             Omadi.bundles.inspection.askToReviewLastInspection();
         }
-        
-        if(alertQueue.length){
+
+        if (alertQueue.length) {
             var firstAlert = alertQueue.shift();
             firstAlert.show();
         }
-        
+
         Ti.App.addEventListener('showNextAlertInQueue', showNextAlertInQueue);
-                    
+
         // if(alertQueue.length > 0){
-            // for(i = 0; i < alertQueue.length; i ++){
-//                 
-                // if(i == 0){
-                    // alertQueue[i].show();
-                    // currentAlertIndex = 0;
-                // }
-//                 
-                // if(alertQueue.length > i + 1){
-                    // //alertQueue[i].queueIndex = i;
-                    // alertQueue[i].addEventListener('showNextAlertInQueue', showNextAlertInQueue);
-                // }
-            // }
+        // for(i = 0; i < alertQueue.length; i ++){
+        //
+        // if(i == 0){
+        // alertQueue[i].show();
+        // currentAlertIndex = 0;
         // }
+        //
+        // if(alertQueue.length > i + 1){
+        // //alertQueue[i].queueIndex = i;
+        // alertQueue[i].addEventListener('showNextAlertInQueue', showNextAlertInQueue);
+        // }
+        // }
+        // }
+        
+        
 
     }());
 

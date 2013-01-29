@@ -4,7 +4,8 @@
 var available = require('bencoding.basicgeo').createAvailability();
 
 var saveCoordinate = function(e){"use strict";
-    var timestamp, longitude, latitude, accuracy, speed, altitude, timePassed, db, result, uploadToServer, numCoordinates;
+    var timestamp, longitude, latitude, accuracy, speed, altitude, timePassed, db, result, 
+        uploadToServer, numCoordinates, lastBackgroundGPSTimestamp, now;
     /*global Omadi*/
     
     JSON.stringify(e);
@@ -21,27 +22,43 @@ var saveCoordinate = function(e){"use strict";
         Ti.API.info('BACKGROUND LOCATION: ' + latitude + ', ' + longitude + ': ' + accuracy);
     
         if(latitude !== 0 && longitude !== 0) {
-            timestamp = Math.floor(e.coords.timestamp / 1000);
+            timestamp = Omadi.utils.getUTCTimestamp();
             
             
             // TODO: Don't insert a coordinate unless it's been at least 15 seconds from the last one
             // TODO: Add in the accuracy of the coordinates to the database to send to server for analysis
-            db = Omadi.utils.openGPSDatabase();
-            db.execute("INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + longitude + "','" + latitude + "'," + timestamp + ", 'notUploaded')");
             
-            result = db.execute("SELECT COUNT(*) FROM user_location WHERE status = 'notUploaded' AND timestamp < " + (Omadi.utils.getUTCTimestamp() - 120));
+            now = timestamp;
             
-            uploadToServer = false;
-            if(result.isValidRow() && result.field(0, Ti.Database.FIELD_TYPE_INT) > 0){
-                uploadToServer = true;
-                numCoordinates = result.field(0, Ti.Database.FIELD_TYPE_INT);
-            }
+            lastBackgroundGPSTimestamp = Ti.App.Properties.getDouble("lastTimestamp", 0);
             
-            db.close();
-            
-            if(uploadToServer){
-                Ti.API.info('Uploading in background: ' + numCoordinates);
-                Omadi.location.uploadGPSCoordinates();
+            if(now - 15 > lastBackgroundGPSTimestamp){
+                
+                if(!Ti.App.Properties.getBool("insertingGPS", false)){
+                    Ti.App.Properties.setBool("insertingGPS", true);
+                    
+                    Ti.App.Properties.setDouble("lastTimestamp", now);
+                    
+                    db = Omadi.utils.openGPSDatabase();
+                    db.execute("INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + longitude + "','" + latitude + "'," + timestamp + ", 'notUploaded')");
+                    
+                    result = db.execute("SELECT COUNT(*) FROM user_location WHERE status = 'notUploaded' AND timestamp < " + (now - 120));
+                    
+                    uploadToServer = false;
+                    if(result.isValidRow() && result.field(0, Ti.Database.FIELD_TYPE_INT) > 0){
+                        uploadToServer = true;
+                        numCoordinates = result.field(0, Ti.Database.FIELD_TYPE_INT);
+                    }
+                    
+                    db.close();
+                    
+                    Ti.App.Properties.setBool("insertingGPS", false);
+                    
+                    if(uploadToServer){
+                        Ti.API.info('Uploading in background: ' + numCoordinates);
+                        Omadi.location.uploadGPSCoordinates();
+                    }
+                }
             }
         }
     }
