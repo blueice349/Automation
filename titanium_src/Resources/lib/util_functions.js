@@ -50,6 +50,10 @@ Omadi.utils.getUid = function(){"use strict";
     return parseInt(loginJson.user.uid, 10);
 };
 
+Omadi.utils.getClientAccount = function(){"use strict";
+    return Ti.App.Properties.getString('clientAccount', '');
+};
+
 Omadi.utils.getRealname = function(uid){"use strict";
     var db, result, realname;
     

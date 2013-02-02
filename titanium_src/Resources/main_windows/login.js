@@ -12,10 +12,19 @@ Ti.include('/main_windows/ios_geolocation.js');
 
 Ti.API.info("Starting App.");
 
-var iOSGPS, scrollView, scrollPositionY = 0, portal;
+var iOSGPS, scrollView, scrollPositionY = 0, portal, sound;
 
 function setProperties(domainName, jsonString) {"use strict";
-
+    /*jslint regexp:true*/
+   
+    var clientAccount = '', matches;
+    matches = domainName.match(/https:\/\/(.+?)\.omadi\.com/);
+    
+    if(matches.length){
+        clientAccount = matches[1];
+    }
+    
+    Ti.App.Properties.setString('clientAccount', clientAccount);
     Ti.App.Properties.setString("domainName", domainName);
     Ti.App.Properties.setString('Omadi_session_details', jsonString);
 }
@@ -49,48 +58,7 @@ function startGPSService() {"use strict";
     }
     else {
 
-        Ti.API.info("Starting Android services.");
-
-        Ti.App.Properties.setBool('stopGPS', false);
-
-        //movement.startGPSTracking();
-
-        //Initialize the GPS background service
-        intent = Titanium.Android.createServiceIntent({
-            url : 'android_gps_event.js'
-        });
-
-        //intent.putExtra('interval', 20000);
-
-        //intent.putExtra('interval', 5000);
-        Ti.App.service1 = Titanium.Android.createService(intent);
-
-        Ti.App.service1.start();
-        Ti.App.service1.isStarted = true;
-
-        //Ti.App.Properties.setObject('AndroidGPSService1', service);
-
-        // intent2 = Titanium.Android.createServiceIntent({
-            // url : 'android_gps_upload.js'
-        // });
-// 
-        // intent2.putExtra('interval', 120000);
-// 
-        // Ti.App.service2 = Titanium.Android.createService(intent2);
-        // Ti.App.service2.isStarted = false;
-// 
-        // // Start the GPS upload 30 seconds after the program starts
-        // setTimeout(function() {
-            // if (!Ti.App.Properties.getBool('stopGPS', false)) {
-                // Ti.App.service2.start();
-                // Ti.App.service2.isStarted = true;
-            // }
-            // //Ti.App.Properties.setObject('AndroidGPSService2', service2);
-        // }, 30000);
-
-        createNotification("No coordinates uploaded so far");
-
-        //Titanium.Android.startService(intent);
+        Omadi.background.android.startGPSService();
     }
 }
 
@@ -183,29 +151,31 @@ function scrollBoxesToTop() {"use strict";
             iOSGPS = require('com.omadi.ios_gps');
             Ti.App.Properties.setBool('deviceHasFlash', iOSGPS.isFlashAvailableInCamera());
         }
-        else{
-            Ti.Geolocation.Android.manualMode = true;
-            var gpsProvider = Ti.Geolocation.Android.createLocationProvider({
-                name: Ti.Geolocation.PROVIDER_GPS,
-                minUpdateTime: 20, 
-                minUpdateDistance: 5
-            });
+        
+        
+       // else{
+            // Ti.Geolocation.Android.manualMode = true;
+            // var gpsProvider = Ti.Geolocation.Android.createLocationProvider({
+                // name: Ti.Geolocation.PROVIDER_GPS,
+                // minUpdateTime: 20, 
+                // minUpdateDistance: 5
+            // });
+//             
+            // Ti.Geolocation.Android.addLocationProvider(gpsProvider);
+//             
+            // var gpsRule = Ti.Geolocation.Android.createLocationRule({
+                // provider: Ti.Geolocation.PROVIDER_GPS,
+                // // Updates should be accurate to 100m
+                // accuracy: 1000,
+                // // Updates should be no older than 5m
+                // maxAge: 25000,
+                // // But  no more frequent than once per 10 seconds
+                // minAge: 10000
+            // });
+//             
+            // Ti.Geolocation.Android.addLocationRule(gpsRule);
             
-            Ti.Geolocation.Android.addLocationProvider(gpsProvider);
-            
-            var gpsRule = Ti.Geolocation.Android.createLocationRule({
-                provider: Ti.Geolocation.PROVIDER_GPS,
-                // Updates should be accurate to 100m
-                accuracy: 1000,
-                // Updates should be no older than 5m
-                maxAge: 25000,
-                // But  no more frequent than once per 10 seconds
-                minAge: 10000
-            });
-            
-            Ti.Geolocation.Android.addLocationRule(gpsRule);
-            
-        }
+       // }
 
         Ti.App.Properties.setBool('stopGPS', false);
         Ti.App.Properties.setBool('quitApp', false);
@@ -247,20 +217,20 @@ function scrollBoxesToTop() {"use strict";
                         }, 15000);
                     }
 
-                    if ( typeof Ti.App.service2 !== 'undefined') {
-                        try {
-                            if (Ti.App.service2.isStarted) {
-                                Ti.App.service2.stop();
-                                Ti.API.info("Stopped service 2.");
-                            }
-                            else {
-                                Ti.API.info("Service 2 was never started");
-                            }
-                        }
-                        catch(ex) {
-                            Ti.API.error("Could not stop service 2 or already stopped.");
-                        }
-                    }
+                    // if ( typeof Ti.App.service2 !== 'undefined') {
+                        // try {
+                            // if (Ti.App.service2.isStarted) {
+                                // Ti.App.service2.stop();
+                                // Ti.API.info("Stopped service 2.");
+                            // }
+                            // else {
+                                // Ti.API.info("Service 2 was never started");
+                            // }
+                        // }
+                        // catch(ex) {
+                            // Ti.API.error("Could not stop service 2 or already stopped.");
+                        // }
+                    // }
 
                     // try {
                     // movement.stopGPSTracking();
@@ -693,6 +663,8 @@ function scrollBoxesToTop() {"use strict";
                     });
 
                     cookie = this.getResponseHeader('Set-Cookie');
+                    
+                    //Ti.API.info("Login Details: " + this.responseText);
 
                     list_result = db_list.execute('SELECT COUNT(*) AS count FROM login WHERE id_log=1');
                     if (list_result.fieldByName('count') > 0) {
@@ -773,6 +745,6 @@ function scrollBoxesToTop() {"use strict";
 
             startGPSService();
         }
-
+        
     }());
 

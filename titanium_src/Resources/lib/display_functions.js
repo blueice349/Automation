@@ -239,7 +239,7 @@ Omadi.display.openMainMenuWindow = function(options) {"use strict";
 Omadi.display.showNewNotificationDialog = function(){"use strict";
     var newNotifications, dialog, inspectionAlertShowing, newWin;
     
-    /*global alertQueue*/
+    /*global alertQueue, useAlertQueue*/
     
     newNotifications = Ti.App.Properties.getObject('newNotifications', {
         count : 0,
@@ -280,7 +280,7 @@ Omadi.display.showNewNotificationDialog = function(){"use strict";
                 }
             });
             
-            if(typeof alertQueue !== 'undefined'){
+            if(typeof alertQueue !== 'undefined' && useAlertQueue){
                 alertQueue.push(dialog);
             }
             else{
@@ -311,7 +311,7 @@ Omadi.display.showNewNotificationDialog = function(){"use strict";
                 }
             });
             
-            if(typeof alertQueue !== 'undefined'){
+            if(typeof alertQueue !== 'undefined' && useAlertQueue){
                 alertQueue.push(dialog);
             }
             else{
@@ -433,6 +433,7 @@ Omadi.display.getNodeTypeImagePath = function(type) {"use strict";
         case 'ticket':
         case 'inspection':
         case 'timecard':
+        case 'permit_request':
 
             return '/images/icons/' + type + ".png";
 

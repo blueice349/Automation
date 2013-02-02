@@ -1,54 +1,6 @@
 Ti.include('/lib/functions.js');
 
-var alarmModule;
-var alarmManager;
-
-if (Ti.App.isAndroid) {
-    // alarmModule = require('bencoding.alarmmanager');
-    // alarmManager = alarmModule.createAlarmManager();
-    // // alarmManager.addAlarmNotification({
-        // // requestCode : 41, //Request ID used to identify a specific alarm. Provide the same requestCode twice to update
-        // // //icon : Ti.Android.R.drawable.star_on, //Optional icon must be a resource id or url
-        // // second : 10, //Set the number of minutes until the alarm should go off
-        // // contentTitle : 'Alarm #1', //Set the title of the Notification that will appear
-        // // contentText : 'Alarm & Notify Basic', //Set the body of the notification that will apear
-        // // playSound : true, //On notification play the default sound ( by default off )
-        // // vibrate : true, //On notification vibrate device ( by default off )
-        // // showLights : true, //On notification show the device lights ( by default off )
-        // // repeat: 10000
-    // // });
-//     
-    // alarmManager.addAlarmService({
-            // //The full name for the service to be called. Find this in your AndroidManifest.xml Titanium creates
-            // requestCode: 42,
-            // service:'com.omadi.crm.Android_gps_eventService',
-            // second:15, //Set the number of minutes until the alarm should go off
-            // repeat:10000 // Create an interval service that runs each minute
-    // });
-    
-    alarmModule = require('bencoding.alarmmanager');
-    alarmManager = alarmModule.createAlarmManager();
-    // alarmManager.addAlarmNotification({
-        // requestCode : 41, //Request ID used to identify a specific alarm. Provide the same requestCode twice to update
-        // //icon : Ti.Android.R.drawable.star_on, //Optional icon must be a resource id or url
-        // second : 10, //Set the number of minutes until the alarm should go off
-        // contentTitle : 'Alarm #1', //Set the title of the Notification that will appear
-        // contentText : 'Alarm & Notify Basic', //Set the body of the notification that will apear
-        // playSound : true, //On notification play the default sound ( by default off )
-        // vibrate : true, //On notification vibrate device ( by default off )
-        // showLights : true, //On notification show the device lights ( by default off )
-        // repeat: 10000
-    // });
-    
-    alarmManager.addAlarmService({
-        //The full name for the service to be called. Find this in your AndroidManifest.xml Titanium creates
-        requestCode : 42,
-        service : 'com.omadi.crm.Android_gps_eventService',
-        minute : 1, //Set the number of minutes until the alarm should go off
-        repeat : 60000 // Create an interval service that runs each minute
-    });
-}
-else if (Ti.App.isIOS) {
+if (Ti.App.isIOS) {
     Ti.include('/lib/iOS/backgroundLocation.js');
 }
 
@@ -71,6 +23,7 @@ var version = 'Omadi Inc';
 var isFirstTime = false;
 var alertQueue = [];
 var currentAlertIndex = 0;
+var useAlertQueue = true;
 
 var databaseStatusView = Titanium.UI.createView({
     backgroundColor : '#000',
@@ -237,31 +190,7 @@ var lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp();
 //databaseStatusView.focusable = true;
 //}
 
-function checkUpdate(useProgressBar) {"use strict";
-    var db, result;
 
-    if ( typeof useProgressBar === 'undefined') {
-        useProgressBar = false;
-    }
-    else {
-        useProgressBar = true;
-    }
-
-    if ( typeof curWin.isTopWindow !== 'undefined' && curWin.isTopWindow) {
-        useProgressBar = true;
-    }
-
-    db = Omadi.utils.openMainDatabase();
-    result = db.execute('SELECT * FROM node WHERE flag_is_updated=1');
-
-    if (result.rowCount > 0) {
-        Omadi.service.sendUpdates();
-    }
-    result.close();
-    db.close();
-
-    Omadi.service.fetchUpdates(useProgressBar);
-}
 
 function displayBundleList() {"use strict";
     var db, result, dataRows, name_table, i, j, k, display, description, row_t, icon, titleLabel, plusButton, can_view, can_create;
@@ -374,7 +303,7 @@ function setupAndroidMenu() {"use strict";
         });
 
         menuItem.addEventListener("click", function(e) {
-            checkUpdate('from_menu');
+            Omadi.service.checkUpdate('from_menu');
         });
 
         menu_draft.addEventListener('click', function() {
@@ -547,7 +476,7 @@ function setupBottomButtons() {"use strict";
 
             postDialog.addEventListener('click', function(ev) {
                 if (ev.index == 0) {
-                    checkUpdate('from_menu');
+                    Omadi.service.checkUpdate('from_menu');
                 }
                 else if (ev.index == 1) {
                     Omadi.display.openAboutWindow();
@@ -565,6 +494,9 @@ function showNextAlertInQueue(e) {"use strict";
     if (alertQueue.length) {
         alert = alertQueue.shift();
         alert.show();
+    }
+    else{
+        useAlertQueue = false;
     }
 }
 
@@ -595,7 +527,7 @@ function showLogoutDialog() {"use strict";
 }
 
 ( function() {"use strict";
-        var db, formWindow, time_format, askAboutInspection, dialog, i, showingAlert;
+        var db, formWindow, time_format, askAboutInspection, dialog, i, showingAlert, firstAlert;
 
         listView = Titanium.UI.createTableView({
             data : [],
@@ -677,11 +609,11 @@ function showLogoutDialog() {"use strict";
 
         if (lastSyncTimestamp == 0) {
             isFirstTime = true;
-            checkUpdate('from_menu');
+            Omadi.service.checkUpdate('from_menu');
         }
         else {
             isFirstTime = false;
-            checkUpdate('from_menu');
+            Omadi.service.checkUpdate('from_menu');
         }
 
         if (Ti.App.isAndroid) {
@@ -706,7 +638,9 @@ function showLogoutDialog() {"use strict";
         });
 
         Ti.App.addEventListener('loggingOut', function() {
-            clearInterval(Ti.App.syncInterval);
+            //if(Ti.App.isIOS){
+                clearInterval(Ti.App.syncInterval);
+            //}
             Ti.UI.currentWindow.close();
         });
 
@@ -725,7 +659,7 @@ function showLogoutDialog() {"use strict";
         Ti.Network.addEventListener('change', function(e) {
             var isOnline = e.online;
             if (isOnline) {
-                checkUpdate();
+                Omadi.service.checkUpdate();
             }
         });
 
@@ -744,7 +678,7 @@ function showLogoutDialog() {"use strict";
             Omadi.data.setUpdating(false);
         });
 
-        refresh_image.addEventListener('click', checkUpdate);
+        refresh_image.addEventListener('click', Omadi.service.checkUpdate);
 
         offImage.addEventListener('click', function(e) {
             var verifyLogout;
@@ -782,7 +716,12 @@ function showLogoutDialog() {"use strict";
             verifyLogout.show();
         });
 
-        Ti.App.syncInterval = setInterval(checkUpdate, 300000);
+        //if(Ti.App.isAndroid){
+        //    Omadi.background.android.startUpdateService();
+        //}
+        //else{
+            Ti.App.syncInterval = setInterval(Omadi.service.checkUpdate, 300000);
+        //}
 
         Ti.App.addEventListener('full_update_from_menu', function() {
             var dbFile, db, result;
@@ -836,11 +775,11 @@ function showLogoutDialog() {"use strict";
             listView.setData([]);
 
             Omadi.data.setUpdating(false);
-            checkUpdate('from_menu');
+            Omadi.service.checkUpdate('from_menu');
         });
 
         Ti.App.addEventListener('normal_update_from_menu', function() {
-            checkUpdate('from_menu');
+            Omadi.service.checkUpdate('from_menu');
         });
 
         if ( typeof curWin.fromSavedCookie !== 'undefined' && !curWin.fromSavedCookie) {
@@ -849,8 +788,11 @@ function showLogoutDialog() {"use strict";
         }
 
         if (alertQueue.length) {
-            var firstAlert = alertQueue.shift();
+            firstAlert = alertQueue.shift();
             firstAlert.show();
+        }
+        else{
+            useAlertQueue = false;
         }
 
         Ti.App.addEventListener('showNextAlertInQueue', showNextAlertInQueue);
@@ -870,7 +812,13 @@ function showLogoutDialog() {"use strict";
         // }
         // }
         
+        Omadi.push_notifications.init();
         
+        if(Ti.App.isIOS){
+            Ti.App.addEventListener('resume', function(){
+                Omadi.service.checkUpdate(); 
+            });
+        }
 
     }());
 

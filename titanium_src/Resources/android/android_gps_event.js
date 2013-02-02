@@ -40,46 +40,48 @@ Ti.Geolocation.Android.addLocationRule(gpsRuleNetword);
 
 Ti.Geolocation.addEventListener('location', updateCurrentLocation);
 
-function saveGPS() {"use strict";
+Ti.App.addEventListener("stopGPS", stopGPS);
 
-    var stopGPS = Ti.App.Properties.getBool('stopGPS', false);
-
-    /*global updateCurrentLocation, Omadi*/
-
-    //Ti.API.info("stopGPS: " + stopGPS);
-
-    if (stopGPS) {
-        Ti.API.info("TRYING TO STOP GPS NOW!!!");
-        try {
-            // if (movement) {
-                // movement.stopGPSTracking();
-            // }
-            
-            Titanium.Android.currentService.stop();
-
-            //Omadi.display.removeNotifications();
-        }
-        catch(ex) {
-            Ti.API.error("Stopping gps service: " + ex);
-        }
+function stopGPS(){"use strict";
+    Ti.Geolocation.removeEventListener('location', updateCurrentLocation);
+    
+    Ti.API.info("TRYING TO STOP GPS NOW!!!");
+    try {
+        Titanium.Android.currentService.stop();
     }
-    else {
-
-        // movement.startGPSTracking();
-// 
-        // movement.currentMovement({
-            // "updateLatLng" : function(e) {
-                // updateCurrentLocation(e);
-            // }
-        // });
+    catch(ex) {
+        Ti.API.error("Stopping gps service: " + ex);
     }
 }
+
+// function saveGPS() {"use strict";
+// 
+    // var stopGPS = Ti.App.Properties.getBool('stopGPS', false);
+// 
+    // /*global updateCurrentLocation, Omadi*/
+// 
+    // //Ti.API.info("stopGPS: " + stopGPS);
+// 
+    // if (stopGPS) {
+//         
+    // }
+    // else {
+// 
+        // // movement.startGPSTracking();
+// // 
+        // // movement.currentMovement({
+            // // "updateLatLng" : function(e) {
+                // // updateCurrentLocation(e);
+            // // }
+        // // });
+    // }
+// }
 
 function updateCurrentLocation(e) {"use strict";
 
     var timestamp, time_passed, db;
 
-    /*global notifyIOS*/
+    /*global notifyIOS, Omadi*/
     
     Ti.API.debug(JSON.stringify(e));
     

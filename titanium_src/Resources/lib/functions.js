@@ -12,6 +12,12 @@ Ti.include('/lib/data_functions.js');
 Ti.include('/lib/display_functions.js');
 Ti.include('/lib/bundle_functions.js');
 
+if(Ti.App.isAndroid){
+    Ti.include('/lib/android/background.js');
+}
+
+Ti.include('/lib/push_notifications.js');
+
 var ROLE_ID_ADMIN = 3;
 var ROLE_ID_MANAGER = 4;
 var ROLE_ID_SALES = 5;

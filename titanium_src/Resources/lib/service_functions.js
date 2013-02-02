@@ -642,10 +642,20 @@ Omadi.service.logout = function() {"use strict";
 
     var http, db;
     /*jslint eqeq: true*/
+    /*global Cloud*/
     Ti.API.info("Logging Out");
     
     Ti.App.fireEvent('upload_gps_locations');
     Ti.App.fireEvent('stop_gps');
+    
+    if(Ti.App.isAndroid){
+        Omadi.background.android.stopGPSService();
+        Omadi.background.android.stopUpdateService();
+    }
+    
+    // Logout of Appcelerator cloud services
+    Omadi.push_notifications.logoutUser();
+    
     Ti.App.fireEvent('loggingOut');
 
     http = Ti.Network.createHTTPClient();
@@ -1041,4 +1051,32 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
         }
     }
 };
+
+Omadi.service.checkUpdate = function(useProgressBar){"use strict";
+    var db, result;
+    Ti.API.info("Checking for sync updates.");
+    
+    if ( typeof useProgressBar === 'undefined') {
+        useProgressBar = false;
+    }
+    else {
+        useProgressBar = true;
+    }
+
+    if ( typeof Ti.UI.currentWindow.isTopWindow !== 'undefined' && Ti.UI.currentWindow.isTopWindow) {
+        useProgressBar = true;
+    }
+
+    db = Omadi.utils.openMainDatabase();
+    result = db.execute('SELECT * FROM node WHERE flag_is_updated=1');
+
+    if (result.rowCount > 0) {
+        Omadi.service.sendUpdates();
+    }
+    result.close();
+    db.close();
+
+    Omadi.service.fetchUpdates(useProgressBar);
+};
+
 
