@@ -1,6 +1,29 @@
 /*jslint eqeq:true, plusplus: true*/
 Omadi.location = Omadi.location || {};
 
+Omadi.location.getLastLocation = function(){"use strict";
+    var db, result, location = {};
+    
+    db = Omadi.utils.openGPSDatabase();
+    
+    result = db.execute("SELECT longitude, latitude, accuracy FROM user_location ORDER BY timestamp DESC LIMIT 1");
+    
+    if(result.isValidRow()){
+        location.latitude = result.fieldByName('latitude');
+        location.longitude = result.fieldByName('longitude');
+        location.accuracy = result.fieldByName('accuracy');
+    }
+    else{
+        location.latitude = 0;
+        location.longitude = 0;
+        location.accuracy = 0;
+    }
+    
+    db.close();
+    
+    return location;
+};
+
 Omadi.location.currentPositionCallback = function(e) {"use strict";
     var coords = e.coords, db;
 
@@ -141,7 +164,7 @@ Omadi.location.unset_GPS_uploading = function() {"use strict";
 Omadi.location.uploadSuccess = function(e) {"use strict";
     /*global isJsonString*/
 
-    var i, j, responseObj, db, sqlArray, nids, now_timestamp;
+    var i, j, responseObj, db, sqlArray, nids, now_timestamp, result;
 
     //Parses response into strings
     //Ti.API.info('onLoad for GPS coordiates reached! Here is the reply: ');
@@ -160,7 +183,10 @@ Omadi.location.uploadSuccess = function(e) {"use strict";
         }
 
         db = Omadi.utils.openGPSDatabase();
-        db.execute("DELETE FROM user_location WHERE status='sending'");
+        db.execute("UPDATE user_location SET status='sent' WHERE status='sending'");
+        
+        // Delete any locations that are over 15 minutes old and the upload succeeded
+        db.execute("DELETE FROM user_location WHERE timestamp < " + (now_timestamp - (60 * 15)));
 
         sqlArray = [];
         nids = [];

@@ -4,7 +4,7 @@ Omadi.push_notifications = {};
 /*jslint eqeq:true*/
 
 var Cloud = require('ti.cloud');
-Cloud.debug = true;  
+//Cloud.debug = true;  
 
 Ti.App.Properties.setString("device_token",'');
 
@@ -145,7 +145,7 @@ Omadi.push_notifications.createUser = function(){"use strict";
             Ti.API.info("ACS User created successfully");
             Omadi.push_notifications.setupACSPush();
             Omadi.push_notifications.linkACSUserId();
-        } 
+        }
         else {
            alert('There was a problem setting up push notifications. Please try again by logging back in.');
            Omadi.service.sendErrorReport('onACSCreateUser' + JSON.stringify(e));

@@ -337,7 +337,7 @@ Omadi.widgets.image = {
         }
     },
     saveImageInDb : function(imageView, blob) {"use strict";
-        var nid, db, encodedImage, mime, imageName;
+        var nid, db, encodedImage, mime, imageName, timestamp, fieldName, imageIndex, location;
 
         try {
             nid = 0;
@@ -345,11 +345,18 @@ Omadi.widgets.image = {
             mime = imageView.mimeType;
             imageName = 'image.jpg';
             imageView.dbValue = '-1';
+            
+            timestamp = Omadi.utils.getUTCTimestamp();
+            fieldName = imageView.instance.field_name;
+            imageIndex = imageView.imageIndex;
+            
+            location = Omadi.location.getLastLocation();
 
             db = Omadi.utils.openMainDatabase();
-            db.execute('INSERT INTO _photos (nid, timestamp, file_data , field_name, file_name, delta) VALUES ("0","' + Omadi.utils.getUTCTimestamp() + '", "' + encodedImage + '", "' + imageView.instance.field_name + '", "' + imageName + '", ' + imageView.imageIndex + ')');
-
+            db.execute("INSERT INTO _photos (nid, timestamp, file_data , field_name, file_name, delta, latitude, longitude, accuracy) VALUES ('0','" + timestamp + "','" + encodedImage + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + ")");
             db.close();
+            
+            
         }
         catch(ex) {
             alert("Problem saving the photo to the database: " + ex);

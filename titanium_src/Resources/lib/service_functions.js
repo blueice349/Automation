@@ -706,7 +706,9 @@ Omadi.service.logout = function() {"use strict";
 Omadi.service.uploadFile = function() {"use strict";
     /*jslint eqeq:true, plusplus: true*/
     /*global Base64*/
-    var http, mainDB, result, nid = 0, id = 0, count, file_data, isUploading, nowTimestamp, lastUploadStartTimestamp, file_name, field_name, delta, timestamp, tmpImageView, blobImage, maxDiff, imageData, tries;
+    var http, mainDB, result, nid = 0, id = 0, count, file_data, isUploading, nowTimestamp, 
+        lastUploadStartTimestamp, file_name, field_name, delta, timestamp, tmpImageView, 
+        blobImage, maxDiff, imageData, tries, latitude, longitude, accuracy;
 
     if (Ti.Network.online) {
         try {
@@ -730,15 +732,15 @@ Omadi.service.uploadFile = function() {"use strict";
 
                 count = 0;
                 mainDB = Omadi.utils.openMainDatabase();
-                result = mainDB.execute("SELECT nid, id, file_data, file_name, field_name, delta, timestamp, tries FROM _photos WHERE nid > 0 ORDER BY delta ASC");
-
+                result = mainDB.execute("SELECT nid, id, file_data, file_name, field_name, delta, timestamp, tries, latitude, longitude, accuracy FROM _photos WHERE nid > 0 ORDER BY delta ASC");
+                
                 while (result.isValidRow()) {
                     //Only upload those images that have positive nids
-
+                    
                     if (result.fieldByName('tries', Ti.Database.FIELD_TYPE_INT) < 0) {
                         Omadi.data.saveFailedUpload(result.fieldByName('id'));
                     }
-                    else if (nid == 0 && result.fieldByName('nid') > 0) {
+                    else if (nid == 0 && result.fieldByName('nid') > 0){
                         nid = result.fieldByName('nid');
                         id = result.fieldByName('id');
                         file_data = result.fieldByName('file_data');
@@ -747,19 +749,22 @@ Omadi.service.uploadFile = function() {"use strict";
                         delta = result.fieldByName('delta');
                         timestamp = result.fieldByName('timestamp');
                         tries = result.fieldByName('tries');
+                        latitude = result.fieldByName('latitude');
+                        longitude = result.fieldByName('longitude');
+                        accuracy = result.fieldByName('accuracy');
                     }
 
                     count++;
-
                     result.next();
                 }
+                
                 result.close();
 
                 Ti.API.debug("Current upload is for nid " + nid + " field " + field_name + " delta " + delta + " and tries=" + tries);
 
                 // Reset all photos to not uploading in case there was an error previously
                 mainDB.execute("UPDATE _photos SET uploading = 0 WHERE uploading <> 0");
-
+                
                 if (count > 0) {
                     if ((file_data == null || file_data.length) < 10 && id > 0) {
                         mainDB.execute("DELETE FROM _photos WHERE id=" + id);
@@ -919,7 +924,10 @@ Omadi.service.uploadFile = function() {"use strict";
                             nid : nid,
                             field_name : field_name,
                             delta : delta,
-                            timestamp : timestamp
+                            timestamp : timestamp,
+                            latitude : latitude,
+                            longitude : longitude,
+                            accuracy : accuracy
                         }));
                         //alert("time_stamp_send_to_sever_in_ios");
                     }
