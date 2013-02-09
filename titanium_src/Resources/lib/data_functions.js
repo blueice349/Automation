@@ -284,12 +284,17 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
             
             if(Ti.Network.online){
                 
+                
                 if (saveType === "next_part") {
                     Omadi.display.openFormWindow(node.type, node.nid, node.form_part + 1);                            
                 }
                 
+                //alert("Node Saved");
+                
                 // Send a clone of the object so the window will close after the network returns a response
                 Omadi.service.sendUpdates();
+                
+                //alert("Updates Sent");
                 
                 if(Ti.UI.currentWindow.url.indexOf('form.js') !== -1){
                     if(Ti.App.isAndroid){
@@ -299,6 +304,8 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
                         Ti.UI.currentWindow.hide();
                     }
                 }
+                
+                //alert('Window hidden');
             }
             else{
                 if(Ti.UI.currentWindow.url.indexOf('form.js') !== -1){

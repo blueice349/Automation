@@ -4,7 +4,7 @@ var Omadi = Omadi || {};
 Omadi.utils = Omadi.utils || {};
 
 Omadi.DOMAIN_NAME = domainName;
-Omadi.DB_VERSION = "omadiDb1684";
+Omadi.DB_VERSION = "omadiDb1686";
 
 Omadi.utils.openListDatabase = function() {"use strict";
     var db = Ti.Database.install('/database/db_list.sqlite', Omadi.DB_VERSION + "_list");
@@ -51,7 +51,16 @@ Omadi.utils.getUid = function(){"use strict";
 };
 
 Omadi.utils.getClientAccount = function(){"use strict";
-    return Ti.App.Properties.getString('clientAccount', '');
+    var db, result, clientAccount = null;
+    
+    db = Omadi.utils.openListDatabase();
+    result = db.execute("SELECT client_account FROM history LIMIT 1");
+    if(result.isValidRow()){
+        clientAccount = result.fieldByName('client_account');
+    }
+    db.close();
+    
+    return clientAccount;
 };
 
 Omadi.utils.getRealname = function(uid){"use strict";
@@ -114,6 +123,7 @@ Omadi.utils.getTimeAgoStr = function(unix_timestamp) {'use strict';
     // get seconds
 
     timeStr = "";
+    
     if (days !== 0) {
         timeStr += days + ' day';
         if (days > 1) {
@@ -148,6 +158,9 @@ Omadi.utils.getTimeAgoStr = function(unix_timestamp) {'use strict';
 
     if (timeStr !== '') {
         timeStr += 'ago';
+    }
+    else{
+        timeStr = "Just Now";
     }
 
     return timeStr;

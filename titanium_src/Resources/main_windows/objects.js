@@ -82,7 +82,9 @@ function getDataSQL(getCount) {"use strict";
     var lastFilterField, sql, field_name, i, filterValue, conditions;
 
     conditions = [];
-
+    
+    Ti.API.debug(filterValues);
+    
     if (filterValues.length < filterFields.length && !showFinalResults) {
         lastFilterField = filterFields[filterValues.length];
 
@@ -112,6 +114,8 @@ function getDataSQL(getCount) {"use strict";
 
         showFinalResults = true;
     }
+    
+    Ti.API.debug(filterValues);
 
     if (filterFields.length > 0) {
         for ( i = 0; i < filterFields.length; i++) {
@@ -172,7 +176,8 @@ function setTableData() {"use strict";
 
     tableIndex = 0;
     appendData = [];
-
+    
+    Ti.API.debug(filterValues);
     sql = getDataSQL();
 
     if (showFinalResults) {
@@ -483,6 +488,8 @@ function setTableData() {"use strict";
                 }
             }
         });
+        
+        Ti.API.debug(filterValues);
 
         setTableData();
 

@@ -20,7 +20,8 @@ Ti.include('/lib/functions.js');
 	updateButton,
 	reinitializeBtn,
 	dialog,
-	scrollView;
+	scrollView,
+	termsOfServiceLabel;
 	
 	
 	curWin = Ti.UI.currentWindow;
@@ -85,7 +86,7 @@ Ti.include('/lib/functions.js');
 	
 	logo = Ti.UI.createImageView({
 		image : '/images/logo.png',
-		top : 10,
+		top : 50,
 		width : 200,
 		height : 114
 	});
@@ -96,16 +97,30 @@ Ti.include('/lib/functions.js');
 		width : Ti.UI.SIZE,
 		height : Ti.UI.SIZE,
 		top : 10,
-		left : 10,
-		text : 'Application version : ' + Ti.App.version,
-		color : '#000'
+		text : 'App Version ' + Ti.App.version,
+		color : '#666',
+		font: {
+		    fontSize: 14
+		}
 	});
+	
+	termsOfServiceLabel = Ti.UI.createLabel({
+        text : ' Terms of Service',
+        color : '#495A8B',
+        font : {
+            fontSize : 14
+        },
+        top: 20,
+        width : Ti.UI.SIZE
+    });
+    
+    termsOfServiceLabel.addEventListener('click', Omadi.display.openTermsOfService);
 	
 	scrollView.add(versionLbl);
 	
 	lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp(); 
 	//Ti.API.error(lastSyncTimestamp);
-	lastSyncText = "Last synched: ";
+	lastSyncText = "Synced ";
 	
 	if(lastSyncTimestamp !== 0){
 		lastSyncText += Omadi.utils.getTimeAgoStr(lastSyncTimestamp);
@@ -118,70 +133,76 @@ Ti.include('/lib/functions.js');
 		width : Ti.UI.SIZE,
 		height : Ti.UI.SIZE,
 		top : 5,
-		left : 10,
 		text : lastSyncText,
-		color : '#000'
+		color : '#666',
+        font: {
+            fontSize: 14
+        }
 	});
 	
 	scrollView.add(syncLabel);
 	
-	buttonView = Ti.UI.createView({
-		top : 10,
-		width : 285,
-		height : 50
-	});
 	
-	updateButton = Ti.UI.createButton({
-		left : 0,
-		width : 122,
-		height : 50,
-		title : 'Sync Data'
-	});
-	updateButton.addEventListener('click', function() {
-		Ti.App.fireEvent('normal_update_from_menu');
-		curWin.close();
-	});
+	scrollView.add(termsOfServiceLabel);
+	// buttonView = Ti.UI.createView({
+		// top : 10,
+		// width : 285,
+		// height : 50
+	// });
 	
-	buttonView.add(updateButton);
-	
-	reinitializeBtn = Ti.UI.createButton({
-		left : 130,
-		width : 153,
-		height : 50,
-		title : 'Reset All Data'
-	});
-	
-	reinitializeBtn.addEventListener('click', function() {
-		dialog = Ti.UI.createAlertDialog({
-			cancel : 1,
-			buttonNames : ['Yes', 'No'],
-			message : 'Are you sure you want to reset the database?',
-			title : 'Re-initialize Alert!'
-		});
-	
-		dialog.addEventListener('click', function(e) {
-		    var db, result;
-		    
-			if(e.index === 0) {
-				if (!Omadi.data.isUpdating()){
-					
-					dialog.hide(); 
-					
-					
-					curWin.close();
-                    
-					Ti.App.fireEvent('full_update_from_menu');
-					
-					
-				} 
-			}
-		});
-		
-		dialog.show();
-	});
-	
-	buttonView.add(reinitializeBtn);
-	
-	scrollView.add(buttonView);
+
+        // updateButton = Ti.UI.createButton({
+        // left : 0,
+        // width : 122,
+        // height : 50,
+        // title : 'Sync Data'
+        // });
+        // updateButton.addEventListener('click', function() {
+        // Ti.App.fireEvent('normal_update_from_menu');
+        // curWin.close();
+        // });
+        //
+        // buttonView.add(updateButton);
+        //
+        // reinitializeBtn = Ti.UI.createButton({
+        // left : 130,
+        // width : 153,
+        // height : 50,
+        // title : 'Reset All Data'
+        // });
+        //
+        // reinitializeBtn.addEventListener('click', function() {
+        // dialog = Ti.UI.createAlertDialog({
+        // cancel : 1,
+        // buttonNames : ['Yes', 'No'],
+        // message : 'Are you sure you want to reset the database?',
+        // title : 'Re-initialize Alert!'
+        // });
+        //
+        // dialog.addEventListener('click', function(e) {
+        // var db, result;
+        //
+        // if(e.index === 0) {
+        // if (!Omadi.data.isUpdating()){
+        //
+        // dialog.hide();
+        //
+        //
+        // curWin.close();
+        //
+        // Ti.App.fireEvent('full_update_from_menu');
+        //
+        //
+        // }
+        // }
+        // });
+        //
+        // dialog.show();
+        // });
+        //
+        // buttonView.add(reinitializeBtn);
+        //
+        // scrollView.add(buttonView);
+
 
 }());

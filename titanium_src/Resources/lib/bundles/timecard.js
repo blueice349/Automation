@@ -58,13 +58,14 @@ Omadi.bundles.timecard.askClockIn = function(){"use strict";
             });
             
             dialog.addEventListener('click', function(e){
+               dialog.hide();
                
                if(e.index == 0){
                    Omadi.bundles.timecard.doClockIn();
                }
                
                if(typeof alertQueue !== 'undefined'){
-                    Ti.App.fireEvent('showNextAlertInQueue');
+                   Ti.App.fireEvent('showNextAlertInQueue');
                }
             });
             

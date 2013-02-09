@@ -339,6 +339,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                     }
 
                     Omadi.data.setUpdating(false);
+                    Ti.App.fireEvent('finishedDataSync');
 
                     Omadi.service.uploadFile();
                 };
@@ -346,7 +347,9 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                 //Connection error:
                 http.onerror = function(e) {
                     var dialog, message, errorDescription;
-
+                    
+                    Ti.App.fireEvent('finishedDataSync');
+                    
                     Ti.API.error('Code status: ' + e.error);
                     Ti.API.error('CODE ERROR = ' + this.status);
                     //Ti.API.info("Progress bar = " + progress);
@@ -455,16 +458,69 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
     }
 };
 
+Omadi.service.setSendingData = function(isSendingData){"use strict";
+    var db;
+    
+    db = Omadi.utils.openListDatabase();
+    db.execute("UPDATE history SET is_sending_data = " + (isSendingData ? 1 : 0) + " WHERE id_hist = 1");
+    db.close();
+};
+
+Omadi.service.isSendingData = function(){"use strict";
+    var db, result, isSendingData;
+    
+    isSendingData = false;
+    
+    db = Omadi.utils.openListDatabase();
+    result = db.execute("SELECT is_sending_data FROM history WHERE id_hist = 1");
+    if(result.isValidRow()){
+        isSendingData = (result.fieldByName('is_sending_data', Ti.Database.FIELD_TYPE_INT) == 1);
+    }
+    result.close();
+    db.close();
+    
+    return isSendingData;
+};
+
+Omadi.service.sendUpdateRetries = 0;
 Omadi.service.sendUpdates = function() {"use strict";
     /*jslint eqeq: true*/
+    var isSendingData, http, secondsLeft;
 
     if (Ti.Network.online) {
-
-        if (!Ti.App.Properties.getBool("isSendingData", false)) {
-
-            Ti.App.Properties.setBool("isSendingData", true);
-
-            var http = Ti.Network.createHTTPClient();
+        //alert("Has network");
+        
+        isSendingData = Omadi.service.isSendingData();
+        //alert("Is Sending Data: " + isSendingData);
+        
+        if (isSendingData) {
+            
+            if(Omadi.service.sendUpdateRetries < 10){
+                setTimeout(Omadi.service.sendUpdates, 1000);
+                
+                secondsLeft = 10 - Omadi.service.sendUpdateRetries;
+                if(secondsLeft < 0){
+                    secondsLeft = 0;
+                }
+                
+                Ti.App.fireEvent("sendingData", {
+                    message : 'Waiting to send data... ' + secondsLeft
+                });
+            }
+            else{
+                
+                isSendingData = Omadi.service.setSendingData(false);
+                Omadi.service.sendUpdates();
+            }
+            Omadi.service.sendUpdateRetries ++;
+        }
+        else{
+            
+            Omadi.service.setSendingData(true);
+            
+            //alert("Going to send data");
+            
+            http = Ti.Network.createHTTPClient();
             http.setTimeout(60000);
             http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync.json');
 
@@ -474,7 +530,8 @@ Omadi.service.sendUpdates = function() {"use strict";
             //When connected
             http.onload = function(e) {
                 var subDB, dialog, json, nameTable;
-
+                
+                //alert("Data Received");
                 //Parses response into strings
                 //Ti.API.info("Onload reached - Here follows the json: ");
                 //Ti.API.info(this.responseText.substr(0, 200));
@@ -498,45 +555,14 @@ Omadi.service.sendUpdates = function() {"use strict";
 
                     subDB.close();
 
-                    //Ti.API.info("updated file upload table");
-                    // if (mode === 1) {
-                    // if (Ti.App.isAndroid) {
-                    // Ti.UI.createNotification({
-                    // message : 'The ' + this.node_type + ' was updated successfully',
-                    // duration : Ti.UI.NOTIFICATION_DURATION_LONG
-                    // }).show();
-                    // }
-                    // else {
-                    // alert('The ' + this.node_type + ' was updated successfully');
-                    // }
-                    // //Just to make sure mainDB keeps locked
-                    //
-                    // //close_parent(false);
-                    // //Omadi.service.uploadFile(win);
-                    //
-                    // }
-                    // else if (mode === 0) {
-                    // if (Ti.App.isAndroid) {
-                    // Ti.UI.createNotification({
-                    // message : 'The ' + this.node_type + ' was created successfully.',
-                    // duration : Ti.UI.NOTIFICATION_DURATION_LONG
-                    // }).show();
-                    // }
-                    // else {
-                    // alert('The ' + this.node_type + ' was created successfully.');
-                    // }
-                    // //Just to make sure mainDB keeps locked
-                    //
-                    // //close_parent(false);
-                    // //Omadi.service.uploadFile(win);
-                    // }
-
                 }
                 else {
+                    
+                    if(Ti.App.isAndroid){
+                        Ti.Media.vibrate();
+                    }
 
-                    Titanium.Media.vibrate();
-
-                    dialog = Titanium.UI.createAlertDialog({
+                    dialog = Ti.UI.createAlertDialog({
                         title : 'Omadi',
                         buttonNames : ['OK'],
                         message : "The server disconnected you. Please login again."
@@ -552,8 +578,8 @@ Omadi.service.sendUpdates = function() {"use strict";
                         Omadi.service.logout();
                     });
                 }
-
-                Ti.App.Properties.setBool("isSendingData", false);
+                
+                Omadi.service.setSendingData(false);
                 Ti.App.fireEvent("doneSendingData");
             };
 
@@ -563,8 +589,13 @@ Omadi.service.sendUpdates = function() {"use strict";
                 Ti.API.error('Code status: ' + e.error);
                 Ti.API.error('CODE ERROR = ' + this.status);
                 //Ti.API.info("Progress bar = " + progress);
-
-                Titanium.Media.vibrate();
+                
+                
+                //alert("Data Received with error");
+                
+                if(Ti.App.isAndroid){
+                    Titanium.Media.vibrate();
+                }
 
                 if (this.status == 403 || this.status == 401) {
                     dialog = Titanium.UI.createAlertDialog({
@@ -596,33 +627,9 @@ Omadi.service.sendUpdates = function() {"use strict";
 
                     Omadi.service.sendErrorReport('500 error on send update');
                 }
-
-                Ti.App.Properties.setBool("isSendingData", false);
+                
+                Omadi.service.setSendingData(false);
                 Ti.App.fireEvent("doneSendingData");
-
-                // if (mode == 0) {
-                // alert('Error: ' + e.error);
-                // }
-                // else if (mode == 1) {
-                // if (Ti.App.isAndroid) {
-                // Ti.UI.createNotification({
-                // //message : 'An error happened while we tried to connect to the server in order to transfer the recently saved node, please make a manual update',
-                // message : 'Error :: ' + e.error, //Change message for testing purpose
-                // duration : Ti.UI.NOTIFICATION_DURATION_LONG
-                // }).show();
-                // }
-                // else {
-                // //alert('An error happened while we tried to connect to the server in order to transfer the recently saved node, please make a manual update');
-                // alert('Error :: ' + e.error);
-                // //Change message for testing purpose
-                // }
-                // }
-
-                //Ti.API.info("Services are down");
-
-                // if ( typeof sendUpdatesCallback != 'undefined') {
-                // sendUpdatesCallback("There was a problem synching your data to the Internet, but your data is saved in the mobile app and will be synched when problems with Omadi services have been resolved.");
-                // }
 
                 Ti.UI.currentWindow.close();
                 /*** IMPORTANT: CANNOT DO ANYTHING AFTER THE WINDOW IS CLOSED ***/
@@ -631,9 +638,12 @@ Omadi.service.sendUpdates = function() {"use strict";
             Ti.App.fireEvent("sendingData", {
                 message : 'Saving data to server...'
             });
+            
+            //alert("Before packaging");
+            
             http.send(Omadi.service.getUpdatedNodeJSON());
             
-            //Ti.UI.currentWindow.fireEvent("startedSendingData");
+            //alert("Data Sent");
         }
     }
 };
@@ -650,8 +660,10 @@ Omadi.service.logout = function() {"use strict";
     
     if(Ti.App.isAndroid){
         Omadi.background.android.stopGPSService();
-        Omadi.background.android.stopUpdateService();
+        //Omadi.background.android.stopUpdateService();
     }
+    
+    Omadi.bundles.companyVehicle.exitVehicle();
     
     // Logout of Appcelerator cloud services
     Omadi.push_notifications.logoutUser();
@@ -961,6 +973,7 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
     var db, result, obj, nid, tid, nids, node, instances, field_name, i, v_result;
 
     try {
+        
         db = Omadi.utils.openMainDatabase();
         //Initial JSON values:
         //var current_timestamp = Math.round(new Date() / 1000);
@@ -971,7 +984,7 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
         };
 
         nids = [];
-
+ 
         result = db.execute("SELECT nid FROM node WHERE flag_is_updated=1");
 
         while (result.isValidRow()) {
@@ -980,7 +993,7 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
         }
 
         result.close();
-
+        
         result = db.execute('SELECT * FROM term_data WHERE tid < 0 ORDER BY tid DESC');
         if (result.rowCount > 0) {
             obj.data.term = {};
@@ -1004,6 +1017,8 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
             }
         }
         result.close();
+        // Make sure the db is closed before odeLoad is called or any other function that opens the db
+        db.close();
 
         if (nids.length > 0) {
             obj.data.node = {};
@@ -1040,22 +1055,34 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
                 }
             }
         }
-
+        
         return JSON.stringify(obj);
     }
     catch(ex) {
-
-        result = db.execute("UPDATE node SET flag_is_updated = 3 WHERE flag_is_updated = 1");
-
-        alert("There was a problem packaging your data, so it has been saved as a draft.");
-        Omadi.service.sendErrorReport("Exception in JSON creation: " + ex);
-    }
-    finally {
+        
         try {
             db.close();
         }
-        catch(nothing) {
+        catch(nothing1){
             Ti.API.error("db would not close");
+            Omadi.service.sendErrorReport("DB WOULD NOT CLOSE");
+        }
+        
+        db = Omadi.utils.openMainDatabase();
+        result = db.execute("UPDATE node SET flag_is_updated = 3 WHERE flag_is_updated = 1");
+        db.close();
+        
+        alert("There was a problem packaging your data, so it has been saved as a draft.");
+        Omadi.service.sendErrorReport("Exception in JSON creation: " + ex);
+    }
+    finally{
+        // If there was an error before the db was closed above, close it now so the app doesn't freeze
+        try {
+            db.close();
+        }
+        catch(nothing2) {
+            Ti.API.error("db would not close");
+            Omadi.service.sendErrorReport("DB WOULD NOT CLOSE");
         }
     }
 };

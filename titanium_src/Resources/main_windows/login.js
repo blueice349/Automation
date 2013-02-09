@@ -16,15 +16,7 @@ var iOSGPS, scrollView, scrollPositionY = 0, portal, sound;
 
 function setProperties(domainName, jsonString) {"use strict";
     /*jslint regexp:true*/
-   
-    var clientAccount = '', matches;
-    matches = domainName.match(/https:\/\/(.+?)\.omadi\.com/);
     
-    if(matches.length){
-        clientAccount = matches[1];
-    }
-    
-    Ti.App.Properties.setString('clientAccount', clientAccount);
     Ti.App.Properties.setString("domainName", domainName);
     Ti.App.Properties.setString('Omadi_session_details', jsonString);
 }
@@ -135,6 +127,20 @@ function scrollBoxesToTop() {"use strict";
             scrollView.scrollTo(0, calculatedTop.y + scrollPositionY - 10);
         }
     }
+}
+
+function setClientAccount(domainName, db){"use strict";
+    /*jslint regexp: true*/
+    var clientAccount, matches;
+   
+    clientAccount = '';
+    matches = domainName.match(/https:\/\/(.+?)\.omadi\.com/);
+    
+    if(matches.length){
+        clientAccount = matches[1];
+    }
+    
+    db.execute("UPDATE history SET client_account='" + dbEsc(clientAccount) + "' WHERE id_hist=1");
 }
 
 ( function() {"use strict";
@@ -488,59 +494,7 @@ function scrollBoxesToTop() {"use strict";
         });
 
         termsOfServiceLabel.addEventListener('click', function() {
-            var win, webView, toolbar, space, titleLabel, backButton;
-
-            win = Ti.UI.createWindow({
-                layout: 'vertical',
-                navBarHidden: true
-            });
-            
-            webView = Ti.UI.createWebView({
-                url : 'https://omadi.com/terms.txt',
-                height : Ti.UI.FILL
-            });
-            
-            if(Ti.App.isAndroid){
-                win.addEventListener("android:back", function(e){
-                    win.close();
-                });
-            }
-            else{
-                backButton = Ti.UI.createButton({
-                    title : 'Back',
-                    style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-                });
-                
-                backButton.addEventListener('click', function() {
-                    win.close();
-                });
-                
-                space = Titanium.UI.createButton({
-                    systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
-                });
-                
-                titleLabel = Titanium.UI.createButton({
-                    title : "Terms of Service",
-                    color : '#fff',
-                    ellipsize : true,
-                    wordwrap : false,
-                    width : Ti.UI.SIZE,
-                    focusable : false,
-                    touchEnabled : false,
-                    style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
-                });
-            
-                toolbar = Titanium.UI.iOS.createToolbar({
-                    items : [backButton, space, titleLabel, space],
-                    top : 0,
-                    borderTop : false,
-                    borderBottom : false
-                });
-                win.add(toolbar);
-            }
-            
-            win.add(webView);
-            win.open();
+            Omadi.display.openTermsOfService();
         });
 
         termsWrapper.add(termsView);
@@ -656,6 +610,8 @@ function scrollBoxesToTop() {"use strict";
                     domainName = 'https://' + portal.value + '.omadi.com';
 
                     setProperties(domainName, this.responseText);
+                    
+                    setClientAccount(domainName, db_list);
 
                     Omadi.display.doneLoading();
                     Omadi.display.openMainMenuWindow({
@@ -737,6 +693,7 @@ function scrollBoxesToTop() {"use strict";
             result = db.execute('SELECT * FROM login WHERE "id_log"=1');
             domainName = result.fieldByName("picked");
             setProperties(domainName, Ti.Utils.base64decode(result.fieldByName("login_json")));
+            setClientAccount(domainName, db);
             db.close();
 
             Omadi.display.openMainMenuWindow({

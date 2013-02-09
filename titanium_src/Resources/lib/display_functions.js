@@ -40,6 +40,41 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
     }
 };
 
+Omadi.display.showLogoutDialog = function(){"use strict";
+    var verifyLogout;
+
+    if (Omadi.bundles.timecard.userShouldClockInOut()) {
+
+        Omadi.bundles.timecard.askClockOutLogout();
+    }
+    else {
+
+        verifyLogout = Ti.UI.createAlertDialog({
+            title : 'Logout?',
+            message : 'Are you sure you want to logout?',
+            buttonNames : ['Yes', 'No']
+        });
+
+        verifyLogout.addEventListener('click', function(e) {
+            if (e.index == 0) {
+                Ti.API.info('Logging out from Regular logout dialog');
+                Omadi.service.logout();
+            }
+        });
+
+        verifyLogout.show();
+    }
+};
+
+Omadi.display.logoutButtonPressed = function(){"use strict";
+    if (Omadi.bundles.inspection.userShouldDoInspection()) {
+        Omadi.bundles.inspection.askToCreateInspection();
+    }
+    else {
+        Omadi.display.showLogoutDialog();
+    }
+};
+
 Omadi.display.getFileViewType = function(filename){"use strict";
 
     var iOSWebviewExtensions = [], extension, htmlExtensions = [], dotIndex,
@@ -147,6 +182,20 @@ Omadi.display.openListWindow = function(type, show_plus, filterValues, nestedWin
     listWindow.open();
 
     return listWindow;
+};
+
+Omadi.display.openActionsWindow = function() {"use strict";
+    var actionsWindow = Ti.UI.createWindow({
+        title : 'Actions',
+        navBarHidden : true,
+        url : 'actions.js'
+    });
+
+    Omadi.display.loading();
+    actionsWindow.addEventListener('open', Omadi.display.doneLoading);
+    actionsWindow.open();
+
+    return actionsWindow;
 };
 
 Omadi.display.openAboutWindow = function() {"use strict";
@@ -411,6 +460,7 @@ Omadi.display.showDialogFormOptions = function(e) {"use strict";
 };
 
 Omadi.display.getNodeTypeImagePath = function(type) {"use strict";
+
     switch(type) {
         case 'lead':
         case 'contact':
@@ -434,6 +484,7 @@ Omadi.display.getNodeTypeImagePath = function(type) {"use strict";
         case 'inspection':
         case 'timecard':
         case 'permit_request':
+        case 'company_vehicle':
 
             return '/images/icons/' + type + ".png";
 
@@ -542,6 +593,64 @@ Omadi.display.getImageViewFromData = function(blobImage, maxWidth, maxHeight) {"
         Ti.API.error("Error in reduce Image Size");
     }
 
+};
+
+Omadi.display.openTermsOfService = function(){"use strict";
+
+    var win, webView, toolbar, space, titleLabel, backButton;
+
+    win = Ti.UI.createWindow({
+        layout: 'vertical',
+        navBarHidden: true
+    });
+    
+    webView = Ti.UI.createWebView({
+        url : 'https://omadi.com/terms.txt',
+        height : Ti.UI.FILL
+    });
+    
+    if(Ti.App.isAndroid){
+        win.addEventListener("android:back", function(e){
+            win.close();
+        });
+    }
+    else{
+        backButton = Ti.UI.createButton({
+            title : 'Back',
+            style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+        });
+        
+        backButton.addEventListener('click', function() {
+            win.close();
+        });
+        
+        space = Titanium.UI.createButton({
+            systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+        });
+        
+        titleLabel = Titanium.UI.createButton({
+            title : "Terms of Service",
+            color : '#fff',
+            ellipsize : true,
+            wordwrap : false,
+            width : Ti.UI.SIZE,
+            focusable : false,
+            touchEnabled : false,
+            style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+        });
+    
+        toolbar = Titanium.UI.iOS.createToolbar({
+            items : [backButton, space, titleLabel, space],
+            top : 0,
+            borderTop : false,
+            borderBottom : false
+        });
+        win.add(toolbar);
+    }
+    
+    win.add(webView);
+    win.open();
+    
 };
 
 // Download Image from the server

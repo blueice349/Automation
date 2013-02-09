@@ -26,7 +26,7 @@ var currentAlertIndex = 0;
 var useAlertQueue = true;
 
 var databaseStatusView = Titanium.UI.createView({
-    backgroundColor : '#000',
+    backgroundColor : '#333',
     height : 45,
     width : '100%',
     bottom : 0,
@@ -34,9 +34,8 @@ var databaseStatusView = Titanium.UI.createView({
     zIndex : 100
 });
 
-//Common used functions
 Omadi.data.setUpdating(false);
-Ti.App.Properties.setBool("isSendingData", false);
+Omadi.service.setSendingData(false);
 
 var listView;
 
@@ -52,7 +51,7 @@ Ti.App.addEventListener("syncInstallComplete", displayBundleList);
 
 var loggedView = Titanium.UI.createView({
     top : 0,
-    backgroundColor : '#111',
+    backgroundColor : '#333',
     height : 45,
     width : '100%',
     opacity : 1
@@ -128,8 +127,8 @@ var offImage = Titanium.UI.createLabel({
     style : Ti.UI.iPhone.SystemButtonStyle.PLAIN
 });
 
-var clockInOutButton = Ti.UI.createLabel({
-    text : 'Clock In/Out',
+var actionsButton = Ti.UI.createLabel({
+    text : 'Actions',
     width : 70,
     horizontalAlign : 'right',
     textAlign : 'center',
@@ -146,21 +145,22 @@ var clockInOutButton = Ti.UI.createLabel({
             y : '100%'
         },
         colors : [{
-            color : '#aaa',
+            color : '#468',
             offset : 0.0
         }, {
-            color : '#888',
+            color : '#68a',
             offset : 0.25
         }, {
-            color : '#aaa',
+            color : '#246',
             offset : 1.0
         }]
     },
     font : {
-        fontSize : 14
+        fontSize : 14,
+        fontWeight: 'bold'
     },
     borderRadius : 5,
-    color : '#000',
+    color : '#eee',
     style : Ti.UI.iPhone.SystemButtonStyle.PLAIN
 });
 
@@ -439,90 +439,67 @@ function setupBottomButtons() {"use strict";
         recentWindow.open();
     });
 
-    if (Ti.App.isIOS) {
-        draftsView.width = alertsView.width = recentView.width = '25%';
-
-        actionsView = Ti.UI.createView({
-            height : Ti.UI.SIZE,
-            width : '25%',
-            layout : 'vertical'
-        });
-        databaseStatusView.add(actionsView);
-
-        actionsImg = Ti.UI.createImageView({
-            image : '/images/actions.png',
-            width : 22,
-            height : 22,
-            top : 2
-        });
-        actionsLabel = Ti.UI.createLabel({
-            text : 'Actions',
-            color : '#FFFFFF',
-            height : 21,
-            width : Ti.UI.SIZE,
-            textAlign : 'center',
-            font : {
-                fontSize : 14
-            }
-        });
-        actionsView.add(actionsImg);
-        actionsView.add(actionsLabel);
-
-        actionsView.addEventListener('click', function() {
-            var postDialog = Titanium.UI.createOptionDialog();
-            postDialog.options = ['Sync Data', 'About', 'Cancel'];
-            //postDialog.cancel = 2;
-            postDialog.show();
-
-            postDialog.addEventListener('click', function(ev) {
-                if (ev.index == 0) {
-                    Omadi.service.checkUpdate('from_menu');
-                }
-                else if (ev.index == 1) {
-                    Omadi.display.openAboutWindow();
-                }
-            });
-        });
-    }
+    // if (Ti.App.isIOS) {
+        // draftsView.width = alertsView.width = recentView.width = '25%';
+// 
+        // actionsView = Ti.UI.createView({
+            // height : Ti.UI.SIZE,
+            // width : '25%',
+            // layout : 'vertical'
+        // });
+        // databaseStatusView.add(actionsView);
+// 
+        // actionsImg = Ti.UI.createImageView({
+            // image : '/images/actions.png',
+            // width : 22,
+            // height : 22,
+            // top : 2
+        // });
+        // actionsLabel = Ti.UI.createLabel({
+            // text : 'Actions',
+            // color : '#FFFFFF',
+            // height : 21,
+            // width : Ti.UI.SIZE,
+            // textAlign : 'center',
+            // font : {
+                // fontSize : 14
+            // }
+        // });
+        // actionsView.add(actionsImg);
+        // actionsView.add(actionsLabel);
+// 
+        // actionsView.addEventListener('click', function() {
+            // var postDialog = Titanium.UI.createOptionDialog();
+            // postDialog.options = ['Sync Data', 'About', 'Cancel'];
+            // //postDialog.cancel = 2;
+            // postDialog.show();
+// 
+            // postDialog.addEventListener('click', function(ev) {
+                // if (ev.index == 0) {
+                    // Omadi.service.checkUpdate('from_menu');
+                // }
+                // else if (ev.index == 1) {
+                    // Omadi.display.openAboutWindow();
+                // }
+            // });
+        // });
+    // }
 
     curWin.add(databaseStatusView);
 }
 
 function showNextAlertInQueue(e) {"use strict";
-    var alert;
-
+    
     if (alertQueue.length) {
-        alert = alertQueue.shift();
-        alert.show();
+        // Add a small break for the OS to catch up with things
+        // If the break isn't there, the UI doesn't finish updates every time on iOS
+        setTimeout(function(){
+            var alert = alertQueue.shift();
+            alert.show();
+        }, 250);
     }
     else{
         useAlertQueue = false;
-    }
-}
-
-function showLogoutDialog() {"use strict";
-    var verifyLogout;
-
-    if (Omadi.bundles.timecard.userShouldClockInOut()) {
-
-        Omadi.bundles.timecard.askClockOutLogout();
-    }
-    else {
-
-        verifyLogout = Ti.UI.createAlertDialog({
-            title : 'Logout?',
-            message : 'Are you sure you want to logout?',
-            buttonNames : ['Yes', 'No']
-        });
-
-        verifyLogout.addEventListener('click', function(e) {
-            if (e.index == 0) {
-                Ti.API.info('Logging out from Regular logout dialog');
-                Omadi.service.logout();
-            }
-        });
-
-        verifyLogout.show();
     }
 }
 
@@ -554,49 +531,22 @@ function showLogoutDialog() {"use strict";
 
         loggedView.add(label_top);
         loggedView.add(offImage);
-
-        if (Omadi.bundles.timecard.userShouldClockInOut()) {
-
-            if (Omadi.bundles.timecard.isUserClockedIn()) {
-                clockInOutButton.setText("Clock Out");
-            }
-            else {
-                clockInOutButton.setText("Clock In");
-            }
-
-            clockInOutButton.addEventListener('click', function(e) {
-                if (Omadi.bundles.timecard.isUserClockedIn()) {
-                    dialog = Ti.UI.createAlertDialog({
-                        title : "Verify Clock Out",
-                        buttonNames : ['Clock Out', 'Cancel']
-                    });
-
-                    dialog.addEventListener('click', function(e) {
-                        if (e.index == 0) {
-                            Omadi.bundles.timecard.doClockOut(false);
-                            clockInOutButton.setText("Clock In");
-                        }
-                    });
-                }
-                else {
-                    dialog = Ti.UI.createAlertDialog({
-                        title : "Verify Clock In",
-                        buttonNames : ['Clock In', 'Cancel']
-                    });
-
-                    dialog.addEventListener('click', function(e) {
-                        if (e.index == 0) {
-                            Omadi.bundles.timecard.doClockIn();
-                            clockInOutButton.setText("Clock Out");
-                        }
-                    });
-                }
-
-                dialog.show();
-            });
-
-            loggedView.add(clockInOutButton);
-        }
+        
+        loggedView.add(actionsButton);
+        
+        actionsButton.addEventListener('click', function(){
+           
+           Omadi.display.openActionsWindow();
+           
+           // if (Omadi.bundles.timecard.userShouldClockInOut()) {
+               // if (Omadi.bundles.timecard.isUserClockedIn()){
+                   // options.push('Clock Out');
+               // }
+               // else{
+                   // options.push('Clock In');
+               // }
+           // }
+        });
 
         curWin.add(loggedView);
         curWin.add(networkStatusView);
@@ -624,6 +574,7 @@ function showLogoutDialog() {"use strict";
 
         Ti.App.addEventListener("doneSendingData", function(e) {
             Ti.API.debug("Done Sending data event received");
+            
             networkStatusView.hide();
             Omadi.service.uploadFile();
         });
@@ -642,18 +593,6 @@ function showLogoutDialog() {"use strict";
                 clearInterval(Ti.App.syncInterval);
             //}
             Ti.UI.currentWindow.close();
-        });
-
-        Ti.App.addEventListener('savedNode', function() {
-            if (Omadi.bundles.timecard.userShouldClockInOut()) {
-
-                if (Omadi.bundles.timecard.isUserClockedIn()) {
-                    clockInOutButton.setText("Clock Out");
-                }
-                else {
-                    clockInOutButton.setText("Clock In");
-                }
-            }
         });
 
         Ti.Network.addEventListener('change', function(e) {
@@ -677,18 +616,13 @@ function showLogoutDialog() {"use strict";
 
             Omadi.data.setUpdating(false);
         });
-
+        
         refresh_image.addEventListener('click', Omadi.service.checkUpdate);
-
+        
         offImage.addEventListener('click', function(e) {
-            var verifyLogout;
+            
+            Omadi.display.logoutButtonPressed();
 
-            if (Omadi.bundles.inspection.userShouldDoInspection()) {
-                Omadi.bundles.inspection.askToCreateInspection();
-            }
-            else {
-                showLogoutDialog();
-            }
         });
 
         curWin.addEventListener('close', function() {
@@ -698,22 +632,8 @@ function showLogoutDialog() {"use strict";
         //When back button on the phone is pressed, it alerts the user (pop up box)
         // that he needs to log out in order to go back to the root window
         curWin.addEventListener('android:back', function() {
-            var verifyLogout = Titanium.UI.createAlertDialog({
-                title : 'Logout?',
-                message : 'Are you sure you want to logout?',
-                buttonNames : ['Yes', 'No'],
-                cancel : 1
-            });
-
-            verifyLogout.addEventListener('click', function(e) {
-                if (e.index !== e.source.cancel) {
-                    Ti.API.info('Android logging out with back button');
-
-                    Omadi.service.logout();
-                }
-            });
-
-            verifyLogout.show();
+            
+            Omadi.display.logoutButtonPressed();
         });
 
         //if(Ti.App.isAndroid){
@@ -783,7 +703,17 @@ function showLogoutDialog() {"use strict";
         });
 
         if ( typeof curWin.fromSavedCookie !== 'undefined' && !curWin.fromSavedCookie) {
+            
+            // The option dialog should go after clock in, but some of the options
+            // are blocked because of the alert dialog being show in askclockin
+            // It is 
+            
+            
             Omadi.bundles.timecard.askClockIn();
+            
+            Omadi.bundles.companyVehicle.askAboutVehicle();
+            //Omadi.bundles.timecard.askClockIn();
+            
             Omadi.bundles.inspection.askToReviewLastInspection();
         }
 

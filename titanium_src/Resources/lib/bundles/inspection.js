@@ -3,12 +3,12 @@
 Omadi.bundles.inspection = {};
 
 Omadi.bundles.inspection.askToReviewLastInspection = function(){"use strict";
-    var dialog, bundle, newWin;
+    var dialog, bundle, newWin, vehicle_nid, vehicle_name, hasFilter;
     /*global roles, ROLE_ID_FIELD, alertQueue*/
     
     bundle = Omadi.data.getBundle('inspection');
     if(bundle && bundle.can_create == 1){
-        if(Omadi.bundles.timecard.userDrivesATruck()){
+        if(Omadi.bundles.inspection.userDrivesATruck()){
             
             dialog = Ti.UI.createAlertDialog({
                title: 'Review Last Inspection',
@@ -20,7 +20,34 @@ Omadi.bundles.inspection.askToReviewLastInspection = function(){"use strict";
                
                if(e.index == 0){
                    
-                   newWin = Omadi.display.openListWindow('inspection', false, [], [], false);
+                   vehicle_nid = Omadi.bundles.companyVehicle.getCurrentVehicleNid();
+                   
+                   hasFilter = false;
+                   
+                   if(typeof bundle.data.mobile !== 'undefined' && 
+                        typeof bundle.data.mobile.filters !== 'undefined' && 
+                        typeof bundle.data.mobile.filters.fields !== 'undefined' && 
+                        typeof bundle.data.mobile.filters.fields[0] !== 'undefined' &&
+                        typeof bundle.data.mobile.filters.fields[0].field_name !== 'undefined' &&
+                        bundle.data.mobile.filters.fields[0].field_name == 'truck_reference'){
+                            hasFilter = true;
+                        } 
+                   
+                   if(vehicle_nid > 0 && hasFilter){
+                       
+                       vehicle_name = Omadi.bundles.companyVehicle.getCurrentVehicleName();
+                       
+                       var filterValues = [];
+                       filterValues.push({
+                           value: vehicle_nid,
+                           text: vehicle_name
+                       });
+                       
+                       newWin = Omadi.display.openListWindow('inspection', false, filterValues, [], true);
+                   }
+                   else{
+                       newWin = Omadi.display.openListWindow('inspection', false, [], [], false);    
+                   }
                    
                    if(typeof alertQueue !== 'undefined'){
                        newWin.addEventListener('close', function(){
@@ -45,7 +72,7 @@ Omadi.bundles.inspection.askToReviewLastInspection = function(){"use strict";
     }
 };
 
-Omadi.bundles.timecard.userDrivesATruck = function(){"use strict";
+Omadi.bundles.inspection.userDrivesATruck = function(){"use strict";
     var loginDetails, bundle;
     
     loginDetails = JSON.parse(Ti.App.Properties.getString("Omadi_session_details"));
@@ -67,7 +94,7 @@ Omadi.bundles.inspection.userShouldDoInspection = function(){"use strict";
     
     bundle = Omadi.data.getBundle('inspection');
     if(bundle && bundle.can_create == 1){
-        if(Omadi.bundles.timecard.userDrivesATruck()){
+        if(Omadi.bundles.inspection.userDrivesATruck()){
             uid = Omadi.utils.getUid();
             now = Omadi.utils.getUTCTimestamp();
             db = Omadi.utils.openMainDatabase();
@@ -98,7 +125,7 @@ Omadi.bundles.inspection.userShouldDoInspection = function(){"use strict";
 
 Omadi.bundles.inspection.askToCreateInspection = function(){"use strict";
     var dialog, bundle;
-    /*global roles, ROLE_ID_FIELD, alertQueue, showLogoutDialog*/
+    /*global roles, ROLE_ID_FIELD, alertQueue*/
     
     //if(Omadi.bundles.inspection.userShouldDoInspection()){
 
@@ -113,8 +140,8 @@ Omadi.bundles.inspection.askToCreateInspection = function(){"use strict";
            if(e.index == 0){
                Omadi.display.openFormWindow('inspection', 'new', 0);
            }
-           else if(typeof showLogoutDialog !== 'undefined'){
-               showLogoutDialog();
+           else{
+               Omadi.display.showLogoutDialog();
            }
         });
         
