@@ -6,19 +6,30 @@ Omadi.push_notifications = {};
 var Cloud = require('ti.cloud');
 //Cloud.debug = true;
 
+Omadi.push_notifications.setUserDeviceToken = function(token){"use strict";
+    var db = Omadi.utils.openListDatabase();
+    db.execute("UPDATE history SET device_token='" + dbEsc(token) + "' WHERE id_hist=1");
+    db.close();
+};
+
+Omadi.push_notifications.getUserDeviceToken = function(){"use strict";
+    var db = Omadi.utils.openListDatabase(), result, token = null;
+    result = db.execute("SELECT device_token FROM history WHERE id_hist=1");
+    if(result.isValidRow()){
+        token = result.field(0);
+    }
+    result.close();
+    db.close();
+    
+    return token;
+};
+
 Omadi.push_notifications.registeriOS = function() {"use strict";
 
     Titanium.Network.registerForPushNotifications({
         types : [Titanium.Network.NOTIFICATION_TYPE_BADGE, Titanium.Network.NOTIFICATION_TYPE_ALERT, Titanium.Network.NOTIFICATION_TYPE_SOUND],
         success : function(e) {
-            var db, userDeviceToken;
-
-            userDeviceToken = e.deviceToken;
-
-            db = Omadi.utils.openListDatabase();
-            db.execute("UPDATE history SET device_token='" + dbEsc(userDeviceToken) + "' WHERE id_hist=1");
-            db.close();
-
+            Omadi.push_notifications.setUserDeviceToken(e.deviceToken);
             Ti.App.fireEvent('iOSRegistered');
         },
         error : function(e) {
@@ -105,7 +116,7 @@ Omadi.push_notifications.logoutUser = function() {"use strict";
 
 Omadi.push_notifications.setupACSPush = function() {"use strict";
 
-    var type, userDeviceToken = Omadi.push_notifications.getDeviceToken();
+    var type, userDeviceToken = Omadi.push_notifications.getUserDeviceToken();
 
     if (Ti.App.isAndroid) {
         type = 'android';

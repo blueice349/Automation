@@ -266,7 +266,7 @@ function addCompanyVehicle(){"use strict";
         }
         else{
             text.setText('You are in ' + currentVehicle + '.');
-            button.setTitle("Get Out of Vehicle");
+            button.setTitle("Done With Vehicle");
         }
 
         button.addEventListener('click', function(e) {
@@ -286,7 +286,7 @@ function addCompanyVehicle(){"use strict";
              
              var vehicle_name = Omadi.bundles.companyVehicle.getCurrentVehicleName();
              if(vehicle_name !== null){
-                 button.setTitle("Get Out of Vehicle");
+                 button.setTitle("Done With Vehicle");
                  text.setText('You are in ' + vehicle_name + '.');
              }
         });
