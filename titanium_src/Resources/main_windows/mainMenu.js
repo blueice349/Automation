@@ -313,7 +313,10 @@ function setupAndroidMenu() {"use strict";
 }
 
 function setupBottomButtons() {"use strict";
-    var alertsView, alertsImg, alertsLabel, draftsView, draftsImg, draftsLabel, actionsView, actionsImg, actionsLabel, recentView, recentLabel, recentImg;
+    var alertsView, alertsImg, alertsLabel, draftsView, draftsImg, draftsLabel, 
+        actionsView, actionsImg, actionsLabel, 
+        recentView, recentLabel, recentImg,
+        tagsReadyView, tagsReadyImg, tagsReadyLabel, tagBundle;
 
     alertsView = Ti.UI.createView({
         backgroundSelectedColor : 'orange',
@@ -438,53 +441,59 @@ function setupBottomButtons() {"use strict";
         recentWindow.addEventListener('open', Omadi.display.doneLoading);
         recentWindow.open();
     });
-
-    // if (Ti.App.isIOS) {
-        // draftsView.width = alertsView.width = recentView.width = '25%';
-// 
-        // actionsView = Ti.UI.createView({
-            // height : Ti.UI.SIZE,
-            // width : '25%',
-            // layout : 'vertical'
-        // });
-        // databaseStatusView.add(actionsView);
-// 
-        // actionsImg = Ti.UI.createImageView({
-            // image : '/images/actions.png',
-            // width : 22,
-            // height : 22,
-            // top : 2
-        // });
-        // actionsLabel = Ti.UI.createLabel({
-            // text : 'Actions',
-            // color : '#FFFFFF',
-            // height : 21,
-            // width : Ti.UI.SIZE,
-            // textAlign : 'center',
-            // font : {
-                // fontSize : 14
-            // }
-        // });
-        // actionsView.add(actionsImg);
-        // actionsView.add(actionsLabel);
-// 
-        // actionsView.addEventListener('click', function() {
-            // var postDialog = Titanium.UI.createOptionDialog();
-            // postDialog.options = ['Sync Data', 'About', 'Cancel'];
-            // //postDialog.cancel = 2;
-            // postDialog.show();
-// 
-            // postDialog.addEventListener('click', function(ev) {
-                // if (ev.index == 0) {
-                    // Omadi.service.checkUpdate('from_menu');
-                // }
-                // else if (ev.index == 1) {
-                    // Omadi.display.openAboutWindow();
-                // }
-            // });
-        // });
-    // }
-
+    
+    tagBundle = Omadi.data.getBundle('tag');
+    
+    if(tagBundle){
+        tagsReadyView = Ti.UI.createView({
+            backgroundSelectedColor : 'orange',
+            focusable : true,
+            width : '25%',
+            height : 45,
+            layout : 'vertical',
+            color : '#fff'
+        });
+        databaseStatusView.add(tagsReadyView);
+    
+        tagsReadyImg = Ti.UI.createImageView({
+            image : '/images/tags_ready.png',
+            height : 22,
+            width : 22,
+            top : 2
+        });
+        tagsReadyLabel = Ti.UI.createLabel({
+            text : 'Expired Tags',
+            font : {
+                fontSize : 14
+            },
+            height : Ti.UI.SIZE,
+            bottom : 0,
+            color : '#fff',
+            width : Ti.UI.SIZE,
+            textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
+        });
+    
+        tagsReadyView.add(tagsReadyImg);
+        tagsReadyView.add(tagsReadyLabel);
+        tagsReadyView.addEventListener('click', function() {
+            var tagsReadyWindow;
+    
+            tagsReadyWindow = Ti.UI.createWindow({
+                navBarHidden : true,
+                url : '/main_windows/tags_ready.js'
+            });
+    
+            Omadi.display.loading();
+    
+            tagsReadyWindow.addEventListener('open', Omadi.display.doneLoading);
+            tagsReadyWindow.open();
+        });
+        
+        recentView.width = '25%';
+        draftsView.width = '25%';
+        alertsView.width = '25%';
+    }
+    
     curWin.add(databaseStatusView);
 }
 

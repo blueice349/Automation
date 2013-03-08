@@ -73,7 +73,7 @@ Omadi.data.getLastUpdateTimestamp = function() {"use strict";
 };
 
 Omadi.data.getBundle = function(type) {"use strict";
-    var db, result, bundle;
+    var db, result, bundle = null;
 
     db = Omadi.utils.openMainDatabase();
     result = db.execute('SELECT _data, display_name, can_create, can_view FROM bundles WHERE bundle_name="' + type + '"');
@@ -1117,7 +1117,14 @@ Omadi.data.processFieldsJson = function(json, mainDB, progress) {"use strict";
                     if (progress != null) {
                         progress.set();
                     }
-
+                    
+                    if(json.insert[i].type == 'fake'){
+                        
+                    }
+                    else{
+                        
+                    }
+                    
                     settings = json.insert[i].settings;
                     widgetString = JSON.stringify(json.insert[i].widget);
 

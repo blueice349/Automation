@@ -1,9 +1,15 @@
 Omadi.push_notifications = {};
 
 /*jslint eqeq:true*/
-/*global dbEsc, alertQueue*/
+/*global dbEsc, alertQueue, useAlertQueue*/
 
 var Cloud = require('ti.cloud');
+
+var CloudPush;
+
+if(Ti.App.isAndroid){
+    CloudPush = require('ti.cloudpush');
+}
 //Cloud.debug = true;
 
 Omadi.push_notifications.setUserDeviceToken = function(token){"use strict";
@@ -22,6 +28,70 @@ Omadi.push_notifications.getUserDeviceToken = function(){"use strict";
     db.close();
     
     return token;
+};
+
+Omadi.push_notifications.registerAndroid = function() {"use strict";
+    
+    CloudPush.retrieveDeviceToken({
+        success: function(e){
+            Omadi.push_notifications.setUserDeviceToken(e.deviceToken);
+            CloudPush.enabled = true;
+            CloudPush.focusAppOnPush = true;
+            Ti.App.fireEvent('androidRegistered');
+        },
+        error: function(e){
+            var dialog = Ti.UI.createAlertDialog({
+                message : "There was a problem enabling push notifications."
+            });
+            
+            if ( typeof alertQueue !== 'undefined') {
+                alertQueue.push(dialog);
+            }
+            else {
+                dialog.show();
+            }
+            //alert("There was a problem enabling push notifications.");
+            Omadi.service.sendErrorReport('onAndroidRegister' + JSON.stringify(e));
+        }
+    });
+    
+    CloudPush.addEventListener('callback', function(e){
+        var sound, dialog, payload;
+        
+        Ti.API.debug(JSON.stringify(e));
+        
+        sound = Ti.Media.createSound({
+            url : Titanium.Filesystem.getFile(Titanium.Filesystem.resourcesDirectory, "sounds/notificationBeep.wav"),
+            volume : 1.0
+        });
+
+
+// {"type":"callback",
+// "source":{"showTrayNotification":true,"enabled":true,"focusAppOnPush":false,"showAppOnTrayClick":true,"showTrayNotificationsWhenFocused":false,"invocationAPIs":[],"apiName":"Cloudpush","_events":{"callback":{}}},
+// "payload":"{\"fetchUpdates\":1,\"android\":{\"sound\":\"sounds\\/notificationBeep.wav\",\"alert\":\"You have a new notification.\"},\"volume\":1}"}
+
+        sound.play();
+        
+        payload = JSON.parse(e.payload);
+        
+        if (payload.fetchUpdates == 1) {
+            Omadi.service.fetchUpdates();
+        }
+
+        if (payload.showAlert == 1) {
+            dialog = Ti.UI.createAlertDialog({
+                message : payload.alert,
+                title : payload.title
+            });
+
+            if ( typeof alertQueue !== 'undefined' && useAlertQueue) {
+                alertQueue.push(dialog);
+            }
+            else {
+                dialog.show();
+            }
+        }
+    });
 };
 
 Omadi.push_notifications.registeriOS = function() {"use strict";
@@ -67,7 +137,7 @@ Omadi.push_notifications.registeriOS = function() {"use strict";
                     title : e.data.title
                 });
 
-                if ( typeof alertQueue !== 'undefined') {
+                if ( typeof alertQueue !== 'undefined' && useAlertQueue) {
                     alertQueue.push(dialog);
                 }
                 else {
@@ -213,8 +283,14 @@ Omadi.push_notifications.createUser = function() {"use strict";
 };
 
 Omadi.push_notifications.init = function() {"use strict";
-
-    if (Ti.App.isIOS) {
+    
+    if(Ti.App.isAndroid){
+        Omadi.push_notifications.registerAndroid();
+        Ti.App.addEventListener('androidRegistered', function() {
+            Omadi.push_notifications.loginUser();
+        });
+    }
+    else {
         Omadi.push_notifications.registeriOS();
         Ti.App.addEventListener('iOSRegistered', function() {
             Omadi.push_notifications.loginUser();

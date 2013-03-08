@@ -7,8 +7,10 @@ Omadi.background.android = {};
 Omadi.background.android.startGPSServiceAlarm = function(){"use strict";
    var alarmModule, alarmManager;
    
-    alarmModule = require('bencoding.alarmmanager');
-    alarmManager = alarmModule.createAlarmManager();
+    // alarmModule = require('bencoding.alarmmanager');
+    // alarmManager = alarmModule.createAlarmManager();
+   
+   
     // alarmManager.addAlarmNotification({
         // requestCode : 41, //Request ID used to identify a specific alarm. Provide the same requestCode twice to update
         // //icon : Ti.Android.R.drawable.star_on, //Optional icon must be a resource id or url
@@ -21,13 +23,13 @@ Omadi.background.android.startGPSServiceAlarm = function(){"use strict";
         // repeat: 10000
     // });
     
-    alarmManager.addAlarmService({
-        //The full name for the service to be called. Find this in your AndroidManifest.xml Titanium creates
-        requestCode : 47,
-        service : 'com.omadi.crm.Android_gps_eventService',
-        minute : 1, //Set the number of minutes until the alarm should go off
-        repeat : 60000 // Create an interval service that runs each minute
-    });
+    // alarmManager.addAlarmService({
+        // //The full name for the service to be called. Find this in your AndroidManifest.xml Titanium creates
+        // requestCode : 47,
+        // service : 'com.omadi.crm.Android_gps_eventService',
+        // minute : 1, //Set the number of minutes until the alarm should go off
+        // repeat : 60000 // Create an interval service that runs each minute
+    // });
 };
 
 Omadi.background.android.startGPSService = function(){"use strict";
@@ -87,9 +89,10 @@ Omadi.background.android.stopGPSService = function(){"use strict";
     
     Ti.App.fireEvent("stopGPS"); 
     
-    alarmModule = require('bencoding.alarmmanager');
-    alarmManager = alarmModule.createAlarmManager();
-    alarmManager.cancelAlarmNotification(47);
+    // alarmModule = require('bencoding.alarmmanager');
+    // alarmManager = alarmModule.createAlarmManager();
+    // alarmManager.cancelAlarmNotification(47);
+    
 };
 
 

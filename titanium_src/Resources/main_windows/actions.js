@@ -77,13 +77,14 @@ function addClockInClockOut() {"use strict";
         
         wrapper = Ti.UI.createView({
            height: Ti.UI.SIZE,
-           width: '100%',
-           layout: 'horizontal'
+           width: Ti.UI.FILL
         });
         
         textButton = Ti.UI.createView({
             layout: 'vertical',
-            height: Ti.UI.SIZE
+            height: Ti.UI.SIZE,
+            left: 48,
+            right: 0
         });
         
         text = Ti.UI.createLabel({
@@ -187,30 +188,34 @@ function addClockInClockOut() {"use strict";
         });
         
         wrapper.add(image);
+        wrapper.add(textButton);
         
         textButton.add(text);
         textButton.add(button);
         
-        wrapper.add(textButton);
+        
         currentWinWrapper.add(wrapper);
         addSeparator();
     }
 }
 
 function addCompanyVehicle(){"use strict";
-    var wrapper, button, dialog, image, text, textButton, currentVehicle;
+    var wrapper, button, dialog, image, text, textButton, currentVehicle, companyVehicleBundle;
     
-    if (Omadi.bundles.inspection.userDrivesATruck()) {
+    companyVehicleBundle = Omadi.data.getBundle('company_vehicle');
+    
+    if (companyVehicleBundle && Omadi.bundles.inspection.userDrivesATruck()) {
         
         wrapper = Ti.UI.createView({
            height: Ti.UI.SIZE,
-           width: '100%',
-           layout: 'horizontal'
+           width: Ti.UI.FILL
         });
         
         textButton = Ti.UI.createView({
             layout: 'vertical',
-            height: Ti.UI.SIZE
+            height: Ti.UI.SIZE,
+            left: 48,
+            right: 0
         });
         
         text = Ti.UI.createLabel({
@@ -316,13 +321,14 @@ function addDeleteAll(){"use strict";
    
     wrapper = Ti.UI.createView({
        height: Ti.UI.SIZE,
-       width: '100%',
-       layout: 'horizontal'
+       width: Ti.UI.FILL
     });
     
     textButton = Ti.UI.createView({
         layout: 'vertical',
-        height: Ti.UI.SIZE
+        height: Ti.UI.SIZE,
+        left: 48,
+        right: 0
     });
     
     button = Ti.UI.createButton({
@@ -411,13 +417,14 @@ function addRefresh(){"use strict";
   
     wrapper = Ti.UI.createView({
        height: Ti.UI.SIZE,
-       width: '100%',
-       layout: 'horizontal'
+       width: Ti.UI.FILL
     });
     
     textButton = Ti.UI.createView({
         layout: 'vertical',
-        height: Ti.UI.SIZE
+        height: Ti.UI.SIZE,
+        left: 48,
+        right: 0
     });
     
     text = Ti.UI.createLabel({
@@ -516,13 +523,14 @@ function addLogout(){"use strict";
     
     wrapper = Ti.UI.createView({
        height: Ti.UI.SIZE,
-       width: '100%',
-       layout: 'horizontal'
+       width: Ti.UI.FILL
     });
     
     textButton = Ti.UI.createView({
         layout: 'vertical',
-        height: Ti.UI.SIZE
+        height: Ti.UI.SIZE,
+        left: 48,
+        right: 0
     });
     
     button = Ti.UI.createButton({
@@ -590,13 +598,14 @@ function addAbout(){"use strict";
    
     wrapper = Ti.UI.createView({
        height: Ti.UI.SIZE,
-       width: '100%',
-       layout: 'horizontal'
+       width: Ti.UI.FILL
     });
     
     textButton = Ti.UI.createView({
         layout: 'vertical',
-        height: Ti.UI.SIZE
+        height: Ti.UI.SIZE,
+        left: 48,
+        right: 0
     });
     
     button = Ti.UI.createButton({

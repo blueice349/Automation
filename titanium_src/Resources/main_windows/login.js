@@ -124,7 +124,10 @@ function scrollBoxesToTop() {"use strict";
                 x : 0,
                 y : 0
             }, scrollView);
-            scrollView.scrollTo(0, calculatedTop.y + scrollPositionY - 10);
+            
+            if(typeof calculatedTop.y !== 'undefined'){
+                scrollView.scrollTo(0, calculatedTop.y + scrollPositionY - 10);
+            }
         }
     }
 }
@@ -649,7 +652,7 @@ function setClientAccount(domainName, db){"use strict";
                         //label_error.text = "Check your username and password. Then try again.";
                         alert("Make sure client account, username and password are correct.");
                     }
-                    else if(this.error.indexOf("imeout") !== -1){
+                    else if(this.error && this.error.indexOf("imeout") !== -1){
                         alert("There was a network error. Make sure you're connected to the Internet.");
                         //label_error.text = "Network timeout. Please try again.";
                     }
