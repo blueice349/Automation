@@ -268,6 +268,11 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                                     Ti.API.debug("Installing fields");
                                     Omadi.data.processFieldsJson(json.fields, mainDB, progress);
                                 }
+                                
+                                if ( typeof json.fake_fields !== 'undefined') {
+                                    Ti.API.debug("Installing fake fields");
+                                    Omadi.data.processFakeFieldsJson(json.fake_fields, mainDB, progress);
+                                }
 
                                 if ( typeof json.regions !== 'undefined') {
                                     Ti.API.debug("Installing regions");

@@ -151,6 +151,35 @@ Omadi.data.getFields = function(type) {"use strict";
     return instances;
 };
 
+var _staticFakeFields = {};
+Omadi.data.getFakeFields = function(type){"use strict";
+    var db, result, fakeFields, field_name, nameParts;
+
+    if ( typeof _staticFakeFields[type] !== 'undefined') {
+        fakeFields = _staticFakeFields[type];
+    }
+    else {
+
+        fakeFields = {};
+        db = Omadi.utils.openMainDatabase();
+        result = db.execute("SELECT field_name FROM fake_fields WHERE bundle = '" + type + "'");
+
+        while (result.isValidRow()) {
+            field_name = result.fieldByName('field_name');
+            
+            fakeFields[field_name] = field_name;
+
+            result.next();
+        }
+        result.close();
+        db.close();
+
+        _staticFakeFields[type] = fakeFields;
+    }
+
+    return fakeFields;
+};
+
 Omadi.data.getRegions = function(type) {"use strict";
 
     var db, result, regions, region_name, region_settings;
@@ -1099,6 +1128,57 @@ Omadi.data.processVehicleJson = function(json, mainDB, progress) {"use strict";
     }
 };
 
+Omadi.data.processFakeFieldsJson = function(json, mainDB, progress) {"use strict";
+    var result, field_exists, queries, i, field_name, bundle;
+    
+    try {
+        queries = [];
+
+        if (json.insert) {
+
+            if (json.insert.length) {
+
+                for ( i = 0; i < json.insert.length; i++) {
+
+                    if (progress != null) {
+                        progress.set();
+                    }
+                    
+                    field_name = json.insert[i].field_name;
+                    bundle = json.insert[i].bundle;
+    
+                    result = mainDB.execute("SELECT COUNT(*) FROM fake_fields WHERE field_name='" + field_name + "' AND bundle='" + bundle + "'");
+                    
+                    field_exists = false;
+                    if (result.field(0, Ti.Database.FIELD_TYPE_INT) > 0) {
+                        field_exists = true;
+                    }
+                
+                    result.close();
+                    
+                    if(!field_exists){
+                        queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "' TEXT"); 
+                        queries.push("INSERT INTO fake_fields (bundle, field_name) VALUES ('" + bundle + "','" + field_name + "')");
+                           
+                    }
+                }
+            }
+        }
+        
+        if (queries.length > 0) {
+
+            mainDB.execute("BEGIN IMMEDIATE TRANSACTION");
+            for ( i = 0; i < queries.length; i++) {
+                mainDB.execute(queries[i]);
+            }
+            mainDB.execute("COMMIT TRANSACTION");
+        }
+    }
+    catch(ex){
+        alert("Saving extra fields: " + ex);
+    }
+};
+
 Omadi.data.processFieldsJson = function(json, mainDB, progress) {"use strict";
 
     var result, fid, field_exists, field_type, db_type, field_name, label, widgetString, settingsString, region, part, queries, description, bundle, weight, required, disabled, can_view, can_edit, settings, omadi_session_details, roles, permissionsString, permIdx, roleIdx, i;
@@ -1118,136 +1198,142 @@ Omadi.data.processFieldsJson = function(json, mainDB, progress) {"use strict";
                         progress.set();
                     }
                     
+                    field_name = json.insert[i].field_name;
+                    bundle = json.insert[i].bundle;
+                    
                     if(json.insert[i].type == 'fake'){
+                        
                         
                     }
                     else{
-                        
-                    }
                     
-                    settings = json.insert[i].settings;
-                    widgetString = JSON.stringify(json.insert[i].widget);
-
-                    settingsString = JSON.stringify(settings);
-
-                    fid = json.insert[i].fid;
-                    field_type = json.insert[i].type;
-                    field_name = json.insert[i].field_name;
-                    label = json.insert[i].label;
-                    description = json.insert[i].description;
-                    bundle = json.insert[i].bundle;
-                    weight = json.insert[i].weight;
-                    required = json.insert[i].required;
-                    disabled = json.insert[i].disabled;
-                    region = json.insert[i].settings.region;
-
-                    can_view = 0;
-                    can_edit = 0;
-
-                    if (settings.enforce_permissions != null && settings.enforce_permissions == 1) {
-                        for (permIdx in settings.permissions) {
-                            if (settings.permissions.hasOwnProperty(permIdx)) {
-                                for (roleIdx in roles) {
-                                    if (roles.hasOwnProperty(roleIdx)) {
-                                        if (permIdx == roleIdx) {
-                                            permissionsString = JSON.stringify(settings.permissions[permIdx]);
-                                            if (permissionsString.indexOf('update') >= 0 || settings.permissions[permIdx].all_permissions) {
-                                                can_edit = 1;
-                                            }
-
-                                            if (permissionsString.indexOf('view') >= 0 || settings.permissions[permIdx].all_permissions) {
-                                                can_view = 1;
+                        settings = json.insert[i].settings;
+                        widgetString = JSON.stringify(json.insert[i].widget);
+    
+                        settingsString = JSON.stringify(settings);
+    
+                        fid = json.insert[i].fid;
+                        field_type = json.insert[i].type;
+                        
+                        label = json.insert[i].label;
+                        description = json.insert[i].description;
+                        
+                        weight = json.insert[i].weight;
+                        required = json.insert[i].required;
+                        disabled = json.insert[i].disabled;
+                        region = json.insert[i].settings.region;
+    
+                        can_view = 0;
+                        can_edit = 0;
+    
+                        if (settings.enforce_permissions != null && settings.enforce_permissions == 1) {
+                            for (permIdx in settings.permissions) {
+                                if (settings.permissions.hasOwnProperty(permIdx)) {
+                                    for (roleIdx in roles) {
+                                        if (roles.hasOwnProperty(roleIdx)) {
+                                            if (permIdx == roleIdx) {
+                                                permissionsString = JSON.stringify(settings.permissions[permIdx]);
+                                                if (permissionsString.indexOf('update') >= 0 || settings.permissions[permIdx].all_permissions) {
+                                                    can_edit = 1;
+                                                }
+    
+                                                if (permissionsString.indexOf('view') >= 0 || settings.permissions[permIdx].all_permissions) {
+                                                    can_view = 1;
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-                    else {
-                        can_view = can_edit = 1;
-                    }
+                        else {
+                            can_view = can_edit = 1;
+                        }
+                    
 
-                    result = mainDB.execute('SELECT COUNT(*) FROM fields WHERE fid = ' + fid);
+                        result = mainDB.execute('SELECT COUNT(*) FROM fields WHERE fid = ' + fid);
+    
+                        field_exists = false;
+                        if (result.field(0, Ti.Database.FIELD_TYPE_INT) > 0) {
+                            field_exists = true;
+                        }
+    
+                        result.close();
+                    
+                    
 
-                    field_exists = false;
-                    if (result.field(0, Ti.Database.FIELD_TYPE_INT) > 0) {
-                        field_exists = true;
-                    }
-
-                    result.close();
-
-                    if (!field_exists) {
-
-                        //switch(json.insert[i].type) {
-                        //    // case "taxonomy_term_reference":
-                        // case "user_reference":
-                        // case "datestamp":
-                        // case "omadi_time":
-                        // case "number_integer":
-                        // case "omadi_reference":
-                        // case "list_boolean":
-                        // if(Ti.App.isAndroid){
-                        // db_type = "INTEGER";
-                        // }
-                        // else{
-                        // db_type = 'TEXT';
-                        // }
-                        // break;
-                        // case "number_decimal":
-                        // db_type = "REAL";
-                        // break;
-
-                        //default:
-                        db_type = "TEXT";
-                        //    break;
-                        // }
-
-                        //Check if it is a valid bundle (automatically inserted through the API):
-                        result = mainDB.execute("SELECT * FROM bundles WHERE bundle_name='" + bundle + "'");
-                        if (result.isValidRow()) {
-                            if (json.insert[i].settings.parts) {
-                                for (part in json.insert[i].settings.parts) {
-                                    if (json.insert[i].settings.parts.hasOwnProperty(part)) {
-                                        queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___" + part + "' " + db_type);
+                        if (!field_exists) {
+    
+                            //switch(json.insert[i].type) {
+                            //    // case "taxonomy_term_reference":
+                            // case "user_reference":
+                            // case "datestamp":
+                            // case "omadi_time":
+                            // case "number_integer":
+                            // case "omadi_reference":
+                            // case "list_boolean":
+                            // if(Ti.App.isAndroid){
+                            // db_type = "INTEGER";
+                            // }
+                            // else{
+                            // db_type = 'TEXT';
+                            // }
+                            // break;
+                            // case "number_decimal":
+                            // db_type = "REAL";
+                            // break;
+    
+                            //default:
+                            db_type = "TEXT";
+                            //    break;
+                            // }
+    
+                            //Check if it is a valid bundle (automatically inserted through the API):
+                            result = mainDB.execute("SELECT * FROM bundles WHERE bundle_name='" + bundle + "'");
+                            if (result.isValidRow()) {
+                                if (json.insert[i].settings.parts) {
+                                    for (part in json.insert[i].settings.parts) {
+                                        if (json.insert[i].settings.parts.hasOwnProperty(part)) {
+                                            queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___" + part + "' " + db_type);
+                                        }
+                                    }
+                                }
+                                else {
+                                    //if (json.insert[i].type == 'image') {
+                                    //queries.push('ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___file_id' + '\' ' + db_type);
+                                    //queries.push('ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___status' + '\' ' + db_type);
+                                    //}
+                                    
+    
+                                    queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "' " + db_type);
+                                    
+                                    if (json.insert[i].type == 'file') {
+                                        queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___filename' " + db_type);
                                     }
                                 }
                             }
+    
+                            result.close();
+    
+                            //Multiple parts
+                            if (json.insert[i].settings.parts) {
+                                for (part in json.insert[i].settings.parts) {
+                                    if (json.insert[i].settings.parts.hasOwnProperty(part)) {
+                                        queries.push("INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings, can_view, can_edit) VALUES (" + fid + ",'" + dbEsc(field_type) + "','" + dbEsc(field_name + "___" + part) + "','" + dbEsc(label) + "','" + dbEsc(description) + "','" + dbEsc(bundle) + "','" + dbEsc(region) + "'," + weight + ", '" + dbEsc(required) + "' ,  '" + dbEsc(disabled) + "' , '" + dbEsc(widgetString) + "','" + dbEsc(settingsString) + "'," + can_view + ", " + can_edit + ")");
+                                    }
+                                }
+                            }
+                            //Normal field
                             else {
-                                //if (json.insert[i].type == 'image') {
-                                //queries.push('ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___file_id' + '\' ' + db_type);
-                                //queries.push('ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___status' + '\' ' + db_type);
-                                //}
-                                
-
-                                queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "' " + db_type);
-                                
-                                if (json.insert[i].type == 'file') {
-                                    queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___filename' " + db_type);
-                                }
+                                queries.push("INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings, can_view, can_edit) VALUES (" + fid + ",'" + dbEsc(field_type) + "','" + dbEsc(field_name) + "','" + dbEsc(label) + "','" + dbEsc(description) + "','" + dbEsc(bundle) + "','" + dbEsc(region) + "'," + weight + ",'" + dbEsc(required) + "','" + dbEsc(disabled) + "','" + dbEsc(widgetString) + "','" + dbEsc(settingsString) + "'," + can_view + ", " + can_edit + ")");
                             }
+    
                         }
-
-                        result.close();
-
-                        //Multiple parts
-                        if (json.insert[i].settings.parts) {
-                            for (part in json.insert[i].settings.parts) {
-                                if (json.insert[i].settings.parts.hasOwnProperty(part)) {
-                                    queries.push("INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings, can_view, can_edit) VALUES (" + fid + ",'" + dbEsc(field_type) + "','" + dbEsc(field_name + "___" + part) + "','" + dbEsc(label) + "','" + dbEsc(description) + "','" + dbEsc(bundle) + "','" + dbEsc(region) + "'," + weight + ", '" + dbEsc(required) + "' ,  '" + dbEsc(disabled) + "' , '" + dbEsc(widgetString) + "','" + dbEsc(settingsString) + "'," + can_view + ", " + can_edit + ")");
-                                }
-                            }
-                        }
-                        //Normal field
                         else {
-                            queries.push("INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings, can_view, can_edit) VALUES (" + fid + ",'" + dbEsc(field_type) + "','" + dbEsc(field_name) + "','" + dbEsc(label) + "','" + dbEsc(description) + "','" + dbEsc(bundle) + "','" + dbEsc(region) + "'," + weight + ",'" + dbEsc(required) + "','" + dbEsc(disabled) + "','" + dbEsc(widgetString) + "','" + dbEsc(settingsString) + "'," + can_view + ", " + can_edit + ")");
+                            // The structure exists.... just update the fields table values
+                            // This will work for fields with parts, as they are indexed by the same fid
+                            queries.push("UPDATE fields SET type='" + dbEsc(field_type) + "', label='" + dbEsc(label) + "', description='" + dbEsc(description) + "', bundle='" + dbEsc(bundle) + "', region='" + dbEsc(region) + "', weight=" + weight + ", required='" + dbEsc(required) + "', disabled='" + dbEsc(disabled) + "', widget='" + dbEsc(widgetString) + "', settings='" + dbEsc(settingsString) + "', can_view=" + can_view + ", can_edit=" + can_edit + "  WHERE fid=" + fid);
                         }
-
-                    }
-                    else {
-                        // The structure exists.... just update the fields table values
-                        // This will work for fields with parts, as they are indexed by the same fid
-                        queries.push("UPDATE fields SET type='" + dbEsc(field_type) + "', label='" + dbEsc(label) + "', description='" + dbEsc(description) + "', bundle='" + dbEsc(bundle) + "', region='" + dbEsc(region) + "', weight=" + weight + ", required='" + dbEsc(required) + "', disabled='" + dbEsc(disabled) + "', widget='" + dbEsc(widgetString) + "', settings='" + dbEsc(settingsString) + "', can_view=" + can_view + ", can_edit=" + can_edit + "  WHERE fid=" + fid);
                     }
                 }
             }
@@ -1370,13 +1456,14 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
     /*jslint nomen: true*/
     /*global treatArray, isNumber*/
 
-    var closeDB, instances, queries, i, j, field_name, query, fieldNames, no_data, values, value, notifications = {}, numSets, result;
+    var closeDB, instances, fakeFields, queries, i, j, field_name, query, fieldNames, no_data, values, value, notifications = {}, numSets, result;
     closeDB = false;
     queries = [];
 
     try {
 
         instances = Omadi.data.getFields(type);
+        fakeFields = Omadi.data.getFakeFields(type);
 
         // Make sure the node type still exists
         result = mainDB.execute("SELECT COUNT(*) FROM bundles WHERE bundle_name='" + type + "'");
@@ -1431,7 +1518,15 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                                 }
                             }
                         }
+                        
+                        for(field_name in fakeFields){
+                            if(fakeFields.hasOwnProperty(field_name)){
+                                fieldNames.push("`" + field_name + "`");
+                            }
+                        }
 
+                        //Ti.API.error(fieldNames);
+                        
                         query += fieldNames.join(',');
                         query += ') VALUES (' + json.insert[i].nid + ',';
 
@@ -1522,6 +1617,21 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                                             }
                                             break;
                                     }
+                                }
+                            }
+                        }
+                        
+                        for(field_name in fakeFields){
+                            if(fakeFields.hasOwnProperty(field_name)){
+                                
+                                if(typeof json.insert[i][field_name] !== 'undefined'){
+                                    value = json.insert[i][field_name];
+                                    values.push("'" + dbEsc(value) + "'");
+                                    Ti.API.error("*" + value);
+                                }
+                                else{
+                                    //Ti.API.error("nope");
+                                   values.push("null");
                                 }
                             }
                         }

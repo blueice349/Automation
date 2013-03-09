@@ -2,7 +2,6 @@
 /*global Omadi */
 
 Ti.include('/lib/functions.js');
-Ti.include('/lib/bundles/tag.js');
 
 var curWin = Ti.UI.currentWindow;
 var wrapperView;
