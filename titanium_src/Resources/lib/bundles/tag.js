@@ -3,6 +3,22 @@
 
 Omadi.bundles.tag = {};
 
+Omadi.bundles.tag.hasSavedTags = function(){"use strict";
+    var db, result, retval = false;
+    
+    db = Omadi.utils.openMainDatabase();
+    
+    result = db.execute("SELECT COUNT(*) FROM node WHERE table_name = 'tag'");
+    
+    if(result.isValidRow()){
+        retval = (result.field(0, Ti.Database.FIELD_TYPE_INT) > 0);
+    }
+    
+    db.close();
+    
+    return retval;
+};
+
 Omadi.bundles.tag.getExpiredTags = function(){"use strict";
     /*global list_search_node_matches_search_criteria*/
     var expired, db, result, sql, nowTimestamp, nids, restricted, i, j, ready, isReady, nodes, node, 
@@ -16,7 +32,7 @@ Omadi.bundles.tag.getExpiredTags = function(){"use strict";
     finalReady = [];
     tagBundle = Omadi.data.getBundle('tag');
     
-    Ti.API.error(tagBundle);
+    //Ti.API.error(tagBundle);
     
     db = Omadi.utils.openMainDatabase();
     
@@ -25,7 +41,7 @@ Omadi.bundles.tag.getExpiredTags = function(){"use strict";
     sql += "LEFT JOIN account ON account.nid = tag.enforcement_account ";
     sql += "WHERE n.table_name = 'tag' ";
     sql += "AND ((tag.in_how_many_days_does_tag_exp * 3600) + tag.enforcement_start_timestamp) < " + nowTimestamp + " ";
-    sql += "AND (account.tow_tag_without_approval = '1' OR (tag._tag_ready_timestamp > 0 AND tag._tag_ready_timestamp < " + nowTimestamp + ")) ";
+    sql += "AND ((account.tow_tag_without_approval = 1) OR (tag._tag_ready_timestamp > 0 AND tag._tag_ready_timestamp < " + nowTimestamp + ")) ";
     
     result = db.execute(sql);
     
@@ -41,6 +57,8 @@ Omadi.bundles.tag.getExpiredTags = function(){"use strict";
         
         result.next();
     }
+    
+    Ti.API.debug(nids);
     
     result.close();
     
@@ -75,7 +93,7 @@ Omadi.bundles.tag.getExpiredTags = function(){"use strict";
                 if(!list_search_node_matches_search_criteria(node, tagBundle.data.node_type_specific.criteria)){
                     finalReady.push(ready[i]);
                 }
-            }  
+            }
             
             ready = finalReady;
         }
@@ -87,7 +105,7 @@ Omadi.bundles.tag.getExpiredTags = function(){"use strict";
                 finalReady = [];
                 
                 communityViolations = tagBundle.data.node_type_specific.select_community_violations;
-                Ti.API.error(communityViolations);
+                //Ti.API.error(communityViolations);
                 
                 userUid = Omadi.utils.getUid();
                 
@@ -116,12 +134,12 @@ Omadi.bundles.tag.getExpiredTags = function(){"use strict";
                         }
                     }
                     
-                    Ti.API.debug(ready[i].nid);
-                    Ti.API.debug(node.violation);
+                    //Ti.API.debug(ready[i].nid);
+                    //Ti.API.debug(node.violation);
                     
                     if(foundCommunity){
                         
-                        Ti.API.error("found community" + ready[i].nid);
+                        //Ti.API.error("found community" + ready[i].nid);
                         finalReady.push(ready[i]);
                     }
                     else if(typeof node.driver_1 !== 'undefined' && typeof node.driver_1.dbValues !== 'undefined' && typeof node.driver_1.dbValues[0] !== 'undefined'){

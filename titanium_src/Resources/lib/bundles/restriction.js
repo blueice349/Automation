@@ -61,21 +61,27 @@ Omadi.bundles.restriction.getRestricted = function(nids){"use strict";
                     accountNid = node.enforcement_account.dbValues[0];
                 }
                 
-                licensePlate = "";
+                licensePlate = null;
                 if(typeof node.license_plate___plate !== 'undefined' && typeof node.license_plate___plate.dbValues !== 'undefined' && typeof node.license_plate___plate.dbValues[0] !== 'undefined'){
                     licensePlate = node.license_plate___plate.dbValues[0].toUpperCase();
+                    if(licensePlate.length == 0){
+                        licensePlate = null;
+                    }
                 }
                 
-                vin = "";
+                vin = null;
                 if(typeof node.vin !== 'undefined' && typeof node.vin.dbValues !== 'undefined' && typeof node.vin.dbValues[0] !== 'undefined'){
                     vin = node.vin.dbValues[0].toUpperCase();
+                    if(vin.length == 0){
+                        vin = null;
+                    }
                 }
                 
                 for(j = 0; j < restrictions.length; j ++){
                     
                     if(restrictions[j].restriction_account == accountNid){
                         
-                        if(restrictions[j].restrict_entire_account == 1){
+                        if(restrictions[j].restrict_entire_account == '1'){
                             restricted.push(node.nid);
                         }
                         else if(restrictions[j].license_plate != null && licensePlate == restrictions[j].license_plate){

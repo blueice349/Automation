@@ -442,9 +442,8 @@ function setupBottomButtons() {"use strict";
         recentWindow.open();
     });
     
-    tagBundle = Omadi.data.getBundle('tag');
-    
-    if(tagBundle){
+    if(Omadi.bundles.tag.hasSavedTags()){
+        
         tagsReadyView = Ti.UI.createView({
             backgroundSelectedColor : 'orange',
             focusable : true,

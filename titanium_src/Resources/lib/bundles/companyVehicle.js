@@ -158,24 +158,31 @@ Omadi.bundles.companyVehicle.exitVehicle = function(){"use strict";
             };
         
             http.onerror = function(e) {
-                Omadi.display.doneLoading();
                 
-                Ti.App.fireEvent('exitedVehicle');
-                
-                Ti.API.error(JSON.stringify(e));
-                dialog = Ti.UI.createOptionDialog({
-                    message : 'Exiting the vehicle was not saved. Please try again.',
-                    buttonNames: ['OK']
-                });
-                
-                if ( typeof alertQueue !== 'undefined') {
-                    alertQueue.push(dialog);
+                try{
+                    Omadi.display.doneLoading();
+                    
+                    Ti.App.fireEvent('exitedVehicle');
+                    
+                    //Ti.API.error(JSON.stringify(e));
+                    dialog = Ti.UI.createOptionDialog({
+                        message : 'Exiting the vehicle was not saved. Please try again.',
+                        buttonNames: ['OK']
+                    });
+                    
+                    if ( typeof alertQueue !== 'undefined') {
+                        alertQueue.push(dialog);
+                    }
+                    else {
+                        dialog.show();
+                    }
+                    
+                    Omadi.service.sendErrorReport('Could not exit vehicle' + JSON.stringify(e));
                 }
-                else {
-                    dialog.show();
+                catch(ex){
+                    
+                    Omadi.service.sendErrorReport('Exception exiting vehicle' + JSON.stringify(ex));
                 }
-                
-                Omadi.service.sendErrorReport('Could not exit vehicle' + JSON.stringify(e));
             };
         
             http.send();
