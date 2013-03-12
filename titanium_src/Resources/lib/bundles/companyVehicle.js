@@ -26,8 +26,6 @@ Omadi.bundles.companyVehicle.askAboutVehicle = function() {"use strict";
         });
 
         dialog.addEventListener('click', function(e) {
-
-            //dialog.hide();
             
             if (e.index == e.source.options.length - 1) {
                 if(Omadi.bundles.companyVehicle.getCurrentVehicleNid() > 0){
@@ -155,10 +153,14 @@ Omadi.bundles.companyVehicle.exitVehicle = function(){"use strict";
                 db.close();
                 
                 Ti.App.fireEvent('companyVehicleSelected');
+                
+                Ti.App.fireEvent('exitedVehicle');
             };
         
             http.onerror = function(e) {
                 Omadi.display.doneLoading();
+                
+                Ti.App.fireEvent('exitedVehicle');
                 
                 Ti.API.error(JSON.stringify(e));
                 dialog = Ti.UI.createOptionDialog({

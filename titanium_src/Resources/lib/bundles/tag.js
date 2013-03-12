@@ -4,12 +4,19 @@
 Omadi.bundles.tag = {};
 
 Omadi.bundles.tag.getExpiredTags = function(){"use strict";
-    var expired, db, result, sql, nowTimestamp, nids, restricted, i, j, ready, isReady;
+    /*global list_search_node_matches_search_criteria*/
+    var expired, db, result, sql, nowTimestamp, nids, restricted, i, j, ready, isReady, nodes, node, 
+    tagBundle, searchFieldName, criteriaRow, finalReady, communityViolations, v_idx, 
+    community_idx, foundCommunity, userUid;
     
     nowTimestamp = Omadi.utils.getUTCTimestamp();
     expired = [];
     nids = [];
     ready = [];
+    finalReady = [];
+    tagBundle = Omadi.data.getBundle('tag');
+    
+    Ti.API.error(tagBundle);
     
     db = Omadi.utils.openMainDatabase();
     
@@ -52,6 +59,80 @@ Omadi.bundles.tag.getExpiredTags = function(){"use strict";
         
         if(isReady){
             ready.push(expired[i]);
+        }
+    }
+    
+    nodes = [];
+    
+    if(typeof tagBundle.data.node_type_specific !== 'undefined'){
+        
+        if(typeof tagBundle.data.node_type_specific.criteria !== 'undefined' && typeof tagBundle.data.node_type_specific.criteria.search_criteria !== 'undefined'){
+            
+            for(i = 0; i < ready.length; i ++){
+                node = Omadi.data.nodeLoad(ready[i].nid);
+                nodes[ready[i].nid] = node;
+                
+                if(!list_search_node_matches_search_criteria(node, tagBundle.data.node_type_specific.criteria)){
+                    finalReady.push(ready[i]);
+                }
+            }  
+            
+            ready = finalReady;
+        }
+         
+               
+        if(typeof tagBundle.data.node_type_specific.community_violation_type !== 'undefined' && tagBundle.data.node_type_specific.community_violation_type == 'select_community'){
+            
+            if(typeof tagBundle.data.node_type_specific.select_community_violations !== 'undefined'){
+                finalReady = [];
+                
+                communityViolations = tagBundle.data.node_type_specific.select_community_violations;
+                Ti.API.error(communityViolations);
+                
+                userUid = Omadi.utils.getUid();
+                
+                for(i = 0; i < ready.length; i ++){
+                    if(typeof nodes[ready[i].nid] === 'undefined'){
+                        nodes[ready[i].nid] = Omadi.data.nodeLoad(ready[i].nid);
+                    }
+                    node = nodes[ready[i].nid];
+                    foundCommunity = false;
+                    
+                    if(typeof node.violation !== 'undefined' && typeof node.violation.dbValues !== 'undefined'){    
+                        for(v_idx = 0; v_idx < node.violation.dbValues.length; v_idx ++){
+                            for(community_idx in communityViolations){
+                                if(communityViolations.hasOwnProperty(community_idx)){
+                                    
+                                    if(communityViolations[community_idx] == node.violation.dbValues[v_idx]){
+                                        foundCommunity = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            if(foundCommunity){
+                                break;
+                            }
+                        }
+                    }
+                    
+                    Ti.API.debug(ready[i].nid);
+                    Ti.API.debug(node.violation);
+                    
+                    if(foundCommunity){
+                        
+                        Ti.API.error("found community" + ready[i].nid);
+                        finalReady.push(ready[i]);
+                    }
+                    else if(typeof node.driver_1 !== 'undefined' && typeof node.driver_1.dbValues !== 'undefined' && typeof node.driver_1.dbValues[0] !== 'undefined'){
+                        if(node.driver_1.dbValues[0] == userUid){
+                            finalReady.push(ready[i]);
+                        }
+                    }
+                } 
+                
+                ready = finalReady;
+            }
         }
     }
     

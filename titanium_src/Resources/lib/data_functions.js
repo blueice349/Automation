@@ -790,7 +790,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                         else {
 
                             jsonValue = Omadi.utils.getParsedJSON(origDBValue);
-                            Ti.API.info(origDBValue);
+                            //Ti.API.info(origDBValue);
                             tempDBValues = [];
 
                             if (Omadi.utils.isArray(jsonValue)) {
@@ -1221,7 +1221,13 @@ Omadi.data.processFieldsJson = function(json, mainDB, progress) {"use strict";
                         weight = json.insert[i].weight;
                         required = json.insert[i].required;
                         disabled = json.insert[i].disabled;
-                        region = json.insert[i].settings.region;
+                        
+                        if(typeof json.insert[i].settings.region !== 'undefined'){
+                            region = json.insert[i].settings.region;
+                        }
+                        else{
+                            region = "";
+                        }
     
                         can_view = 0;
                         can_edit = 0;

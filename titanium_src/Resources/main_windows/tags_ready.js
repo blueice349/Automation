@@ -121,17 +121,6 @@ function addiOSToolbar() {"use strict";
         right: 0    
     });
     
-    tableView = Ti.UI.createTableView({
-        separatorColor : '#ccc',
-        data : data,
-        backgroundColor : '#eee',
-        scrollable: true
-    });
-    
-    tableView.addEventListener('click', function(e) {
-        Omadi.display.showDialogFormOptions(e);
-    });
-    
     if(Ti.App.isAndroid){
         Ti.API.error("Add android menu");
     }
@@ -139,7 +128,35 @@ function addiOSToolbar() {"use strict";
         addiOSToolbar();
     }
     
-    wrapperView.add(tableView);
+    if(data.length){
+        tableView = Ti.UI.createTableView({
+            separatorColor : '#ccc',
+            data : data,
+            backgroundColor : '#eee',
+            scrollable: true,
+            
+        });
+        
+        tableView.addEventListener('click', function(e) {
+            Omadi.display.showDialogFormOptions(e);
+        });
+        
+        wrapperView.add(tableView);
+    }
+    else{
+        wrapperView.add(Ti.UI.createLabel({
+            text: 'No tags are ready for you',
+            font: {
+                fontSize: 20,
+                fontWeight: 'bold'
+            },
+            color: '#999',
+            height: Ti.UI.FILL,
+            width: Ti.UI.FILL,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+            backgroundColor: '#eee'
+        }));
+    }
     
     curWin.add(wrapperView);
 }());

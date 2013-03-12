@@ -363,7 +363,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                         progress.close();
                     }
 
-                    Titanium.Media.vibrate();
+                    //Titanium.Media.vibrate();
 
                     if (this.status == 403) {
                         dialog = Titanium.UI.createAlertDialog({
@@ -403,13 +403,13 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                         Omadi.service.logout();
                     }
                     // Only show the dialog if this is not a background update
-                    else if (progress != null) {
+                    else if (useProgressBar) {
 
                         errorDescription = "Error description: " + e.error;
-                        if (errorDescription.indexOf('connection failure') !== -1) {
+                        if (errorDescription.indexOf('connection failure') != -1) {
                             errorDescription = '';
                         }
-                        else if (errorDescription.indexOf("imeout") !== -1) {
+                        else if (errorDescription.indexOf("imeout") != -1) {
                             errorDescription = 'Error: Timeout. Please check your Internet connection.';
                         }
 
@@ -455,6 +455,9 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                 };
 
                 http.send();
+            }
+            else if(useProgressBar){
+                alert("You do not have an Internet connection.");
             }
         }
     }
@@ -668,10 +671,35 @@ Omadi.service.logout = function() {"use strict";
         //Omadi.background.android.stopUpdateService();
     }
     
-    Omadi.bundles.companyVehicle.exitVehicle();
+    if(Omadi.bundles.companyVehicle.getCurrentVehicleNid > 0){
+        
+        Ti.App.addEventListener('exitedVehicle', Omadi.service.sendLogoutRequest);
+        
+        Omadi.bundles.companyVehicle.exitVehicle();
+    }
+    else{
+        Omadi.service.sendLogoutRequest();
+    }
+};
+
+Omadi.service.doPostLogoutOperations = function(){"use strict";
+    var db;
     
     // Logout of Appcelerator cloud services
     Omadi.push_notifications.logoutUser();
+    
+    db = Omadi.utils.openListDatabase();
+    db.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+    db.close();
+
+    Ti.App.Properties.setBool("stopGPS", true);
+    Ti.App.Properties.setBool("quitApp", true);
+
+    Omadi.display.removeNotifications();
+};
+
+Omadi.service.sendLogoutRequest = function(){"use strict";
+    var http;
     
     Ti.App.fireEvent('loggingOut');
 
@@ -688,6 +716,7 @@ Omadi.service.logout = function() {"use strict";
     http.onload = function(e) {
         Ti.App.Properties.setString('logStatus', "You have successfully logged out");
         //Ti.API.info('From Functions ... Value is : ' + Ti.App.Properties.getString('logStatus'));
+        Omadi.service.doPostLogoutOperations();
     };
 
     http.onerror = function(e) {
@@ -700,24 +729,11 @@ Omadi.service.logout = function() {"use strict";
             Ti.API.info("Failed to log out");
             //alert("Failed to log out, please try again");
         }
+        
+        Omadi.service.doPostLogoutOperations();
     };
 
-    http.send();
-
-    db = Omadi.utils.openListDatabase();
-    db.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
-    db.close();
-
-    //Omadi.display.hideLoadingIndicator();
-
-    //Ti.UI.currentWindow.hide();
-
-    Ti.App.Properties.setBool("stopGPS", true);
-    Ti.App.Properties.setBool("quitApp", true);
-
-    Omadi.display.removeNotifications();
-    
-    //Ti.App.removeEventListener();
+    http.send();  
 };
 
 Omadi.service.uploadFile = function() {"use strict";
@@ -1099,13 +1115,13 @@ Omadi.service.checkUpdate = function(useProgressBar){"use strict";
     if ( typeof useProgressBar === 'undefined') {
         useProgressBar = false;
     }
-    else {
-        useProgressBar = true;
-    }
-
-    if ( typeof Ti.UI.currentWindow.isTopWindow !== 'undefined' && Ti.UI.currentWindow.isTopWindow) {
-        useProgressBar = true;
-    }
+    // else {
+        // useProgressBar = true;
+    // }
+// 
+    // if ( typeof Ti.UI.currentWindow.isTopWindow !== 'undefined' && Ti.UI.currentWindow.isTopWindow) {
+        // useProgressBar = true;
+    // }
 
     db = Omadi.utils.openMainDatabase();
     result = db.execute('SELECT * FROM node WHERE flag_is_updated=1');
