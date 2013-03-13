@@ -285,16 +285,21 @@ Omadi.push_notifications.createUser = function() {"use strict";
 Omadi.push_notifications.init = function() {"use strict";
     
     if(Ti.App.isAndroid){
+        
+        if(typeof Ti.App.registeredPushListener === 'undefined'){
+            Ti.App.registeredPushListener = true;
+            Ti.App.addEventListener('androidRegistered', Omadi.push_notifications.loginUser);
+        }
+        
         Omadi.push_notifications.registerAndroid();
-        Ti.App.addEventListener('androidRegistered', function() {
-            Omadi.push_notifications.loginUser();
-        });
     }
     else {
+        
+        if(typeof Ti.App.registeredPushListener === 'undefined'){
+            Ti.App.registeredPushListener = true;
+            Ti.App.addEventListener('iOSRegistered', Omadi.push_notifications.loginUser);
+        }
         Omadi.push_notifications.registeriOS();
-        Ti.App.addEventListener('iOSRegistered', function() {
-            Omadi.push_notifications.loginUser();
-        });
     }
 };
 
@@ -345,16 +350,21 @@ Omadi.push_notifications.sendACSUserId = function(acsUserID) {"use strict";
     };
 
     http.onerror = function(e) {
-        var dialog = Ti.UI.createAlertDialog({
-            message : 'There was a problem setting up push notifications. Please try again by logging back in.'
-        });
-        if ( typeof alertQueue !== 'undefined') {
-            alertQueue.push(dialog);
+        try{
+            var dialog = Ti.UI.createAlertDialog({
+                message : 'There was a problem setting up push notifications. Please try again by logging back in.'
+            });
+            if ( typeof alertQueue !== 'undefined') {
+                alertQueue.push(dialog);
+            }
+            else {
+                dialog.show();
+            }
+            Omadi.service.sendErrorReport('onACSLink' + JSON.stringify(e));
         }
-        else {
-            dialog.show();
+        catch(ex){
+            Omadi.service.sendErrorReport('onACSLink Exception' + JSON.stringify(ex));
         }
-        Omadi.service.sendErrorReport('onACSSLink' + JSON.stringify(e));
     };
 
     http.send(JSON.stringify({

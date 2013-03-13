@@ -503,7 +503,9 @@ function showNextAlertInQueue(e) {"use strict";
         // If the break isn't there, the UI doesn't finish updates every time on iOS
         setTimeout(function(){
             var alert = alertQueue.shift();
-            alert.show();
+            if(alert){
+                alert.show();
+            }
         }, 250);
     }
     else{
@@ -749,7 +751,7 @@ function showNextAlertInQueue(e) {"use strict";
         // }
         // }
         // }
-        
+        Ti.API.debug("before init");
         Omadi.push_notifications.init();
         
         if(Ti.App.isIOS){
