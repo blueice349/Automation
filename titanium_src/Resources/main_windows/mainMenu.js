@@ -637,6 +637,10 @@ function showNextAlertInQueue(e) {"use strict";
         Ti.App.addEventListener("sendingData", function(e) {
             networkStatusLabel.setText(e.message);
             networkStatusView.show();
+            
+            setTimeout(function(){
+                networkStatusView.hide();
+            }, 15000);
         });
 
         Ti.App.addEventListener('loggingOut', function() {

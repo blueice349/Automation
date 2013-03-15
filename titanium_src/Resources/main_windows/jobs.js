@@ -44,42 +44,14 @@ function addiOSToolbar() {"use strict";
     wrapperView.add(toolbar);
 }
 
-
-(function(){"use strict";
-    var newJobs, data, i, row, textView, rowImg, titleLabel, backgroundColor, 
-        newJobsSection, sections, currentUserJobsSection, currentUserJobs, 
-        dispatchBundle, separator, whiteSpaceTest;
+function refreshJobsTable(){"use strict";
+    var newJobsSection, currentUserJobsSection, sections, newJobs, backgroundColor, row, textView,
+        i, rowImg, titleLabel, currentUserJobs, dispatchBundle;
     
     dispatchBundle = Omadi.data.getBundle('dispatch');
     newJobs = Omadi.bundles.dispatch.getNewJobs();
     currentUserJobs = Omadi.bundles.dispatch.getCurrentUserJobs();
     sections = [];
-    
-    Ti.App.addEventListener("savedNode", function(){
-        
-        if(Ti.App.isAndroid){
-            Ti.UI.currentWindow.close();
-        }
-        else{
-            Ti.UI.currentWindow.hide();
-            // Close the window after the maximum timeout for a node save
-            setTimeout(Ti.UI.currentWindow.close, 65000);
-        }
-    });
-    
-    Ti.App.addEventListener('finishedDataSync', function(){
-        
-        Omadi.display.openJobsWindow();
-        
-        if(Ti.App.isAndroid){
-            Ti.UI.currentWindow.close();
-        }
-        else{
-            Ti.UI.currentWindow.hide();
-            // Close the window after the maximum timeout for a node save
-            setTimeout(Ti.UI.currentWindow.close, 65000);
-        }
-    });
     
     newJobsSection = Ti.UI.createTableViewSection({
         headerView: Ti.UI.createLabel({
@@ -284,16 +256,44 @@ function addiOSToolbar() {"use strict";
     }
     else{
         currentUserJobsSection.add(Ti.UI.createTableViewRow({
-            title: 'You have no open jobs'
+            title: 'You have no open jobs',
+            color: '#000'
         }));
     }
+    
+    tableView.setData(sections);
+}
+
+
+(function(){"use strict";
+    var newJobs, data, i, row, textView, rowImg, titleLabel, backgroundColor, 
+        newJobsSection, sections, currentUserJobsSection, currentUserJobs, 
+        dispatchBundle, separator, whiteSpaceTest;
+    
+    Ti.App.addEventListener("savedNode", function(){
+        
+        if(Ti.App.isAndroid){
+            Ti.UI.currentWindow.close();
+        }
+        else{
+            Ti.UI.currentWindow.hide();
+            // Close the window after the maximum timeout for a node save
+            setTimeout(Ti.UI.currentWindow.close, 65000);
+        }
+    });
+    
+    Ti.App.addEventListener('finishedDataSync', function(){
+        
+        refreshJobsTable();
+    });
+    
     
     wrapperView = Ti.UI.createView({
         layout: 'vertical',
         top: 0,
         bottom: 0,
         left: 0,
-        right: 0    
+        right: 0
     });
     
     if(Ti.App.isAndroid){
@@ -305,10 +305,11 @@ function addiOSToolbar() {"use strict";
     
     tableView = Ti.UI.createTableView({
         separatorColor : '#ccc',
-        data : sections,
         backgroundColor : '#eee',
         scrollable: true
     });
+    
+    refreshJobsTable();
     
     tableView.addEventListener('click', function(e) {
         if(e.row.type == 'newJob'){

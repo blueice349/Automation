@@ -116,7 +116,13 @@ Omadi.bundles.dispatch.getStatusOptions = function(nid){"use strict";
     excludeStatuses = [];
     
     if(typeof dispatchBundle.data.node_type_specific !== 'undefined' && typeof dispatchBundle.data.node_type_specific.dispatch_status_terms !== 'undefined'){
-        dispatchStatusTids = JSON.parse(dispatchBundle.data.node_type_specific.dispatch_status_terms);
+        
+        if(typeof dispatchBundle.data.node_type_specific.dispatch_status_terms == 'string'){
+            dispatchStatusTids = JSON.parse(dispatchBundle.data.node_type_specific.dispatch_status_terms);
+        }
+        else{
+            dispatchStatusTids = dispatchBundle.data.node_type_specific.dispatch_status_terms;
+        }
         
         currentStatus = null;
         
@@ -386,7 +392,13 @@ Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
     if(dispatchBundle){
         jobDoneTid = 0;
         if(typeof dispatchBundle.data.node_type_specific !== 'undefined' && typeof dispatchBundle.data.node_type_specific.dispatch_status_terms !== 'undefined'){
-            dispatchStatusTids = JSON.parse(dispatchBundle.data.node_type_specific.dispatch_status_terms);
+            if(typeof dispatchBundle.data.node_type_specific.dispatch_status_terms === 'string'){
+                dispatchStatusTids = JSON.parse(dispatchBundle.data.node_type_specific.dispatch_status_terms);
+            }
+            else{
+                dispatchStatusTids = dispatchBundle.data.node_type_specific.dispatch_status_terms;
+            }
+            
             if(typeof dispatchStatusTids['job complete'] !== 'undefined' && dispatchStatusTids['job complete']){
                 jobDoneTid = dispatchStatusTids['job complete'];
             }

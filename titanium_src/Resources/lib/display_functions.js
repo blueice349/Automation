@@ -399,96 +399,98 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
         extraOptions = [];
     }
     
-    db = Omadi.utils.openMainDatabase();
-    result = db.execute('SELECT table_name, form_part, perm_edit FROM node WHERE nid=' + e.row.nid);
-    
-    isEditEnabled = false;
-    hasCustomCopy = false;
-    options = [];
-    form_parts = [];
-    
-    if(extraOptions.length){
-        for(i = 0; i < extraOptions.length; i ++){
-            options.push(extraOptions[i].text);
-            form_parts.push('_extra_' + i);
-        }
-    }
-
-    if (result.fieldByName('perm_edit', Ti.Database.FIELD_TYPE_INT) === 1) {
-        isEditEnabled = true;
-    }
-
-    form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
-    node_type = result.fieldByName('table_name');
-
-    result.close();
-    db.close();
-
-    bundle = Omadi.data.getBundle(node_type);
-
-    if (isEditEnabled) {
-        if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
-            if (bundle.data.form_parts.parts.length >= form_part + 2) {
-
-                options.push(bundle.data.form_parts.parts[form_part + 1].label);
-                form_parts.push(form_part + 1);
+    if(e.row.nid){
+        db = Omadi.utils.openMainDatabase();
+        result = db.execute('SELECT table_name, form_part, perm_edit FROM node WHERE nid=' + e.row.nid);
+        
+        isEditEnabled = false;
+        hasCustomCopy = false;
+        options = [];
+        form_parts = [];
+        
+        if(extraOptions.length){
+            for(i = 0; i < extraOptions.length; i ++){
+                options.push(extraOptions[i].text);
+                form_parts.push('_extra_' + i);
             }
         }
-
-        options.push('Edit');
-        form_parts.push(form_part);
-    }
-
-    options.push('View');
-    form_parts.push('_view');
-
-    if ( typeof bundle.data.custom_copy !== 'undefined') {
-        for (to_type in bundle.data.custom_copy) {
-            if (bundle.data.custom_copy.hasOwnProperty(to_type)) {
-                to_bundle = Omadi.data.getBundle(to_type);
-                if (to_bundle && to_bundle.can_create == 1) {
-                    options.push("Copy to " + to_bundle.label);
-                    form_parts.push(to_type);
-                    hasCustomCopy = true;
+    
+        if (result.fieldByName('perm_edit', Ti.Database.FIELD_TYPE_INT) === 1) {
+            isEditEnabled = true;
+        }
+    
+        form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
+        node_type = result.fieldByName('table_name');
+    
+        result.close();
+        db.close();
+    
+        bundle = Omadi.data.getBundle(node_type);
+    
+        if (isEditEnabled) {
+            if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
+                if (bundle.data.form_parts.parts.length >= form_part + 2) {
+    
+                    options.push(bundle.data.form_parts.parts[form_part + 1].label);
+                    form_parts.push(form_part + 1);
+                }
+            }
+    
+            options.push('Edit');
+            form_parts.push(form_part);
+        }
+    
+        options.push('View');
+        form_parts.push('_view');
+    
+        if ( typeof bundle.data.custom_copy !== 'undefined') {
+            for (to_type in bundle.data.custom_copy) {
+                if (bundle.data.custom_copy.hasOwnProperty(to_type)) {
+                    to_bundle = Omadi.data.getBundle(to_type);
+                    if (to_bundle && to_bundle.can_create == 1) {
+                        options.push("Copy to " + to_bundle.label);
+                        form_parts.push(to_type);
+                        hasCustomCopy = true;
+                    }
                 }
             }
         }
-    }
-
-    if (!isEditEnabled && !hasCustomCopy) {
-        e.row.setBackgroundColor('#fff');
-        Omadi.display.openViewWindow(node_type, e.row.nid);
-    }
-    else {
-
-        options.push('Cancel');
-        form_parts.push('_cancel');
-
-        postDialog = Titanium.UI.createOptionDialog();
-        postDialog.options = options;
-        postDialog.eventRow = e.row;
-        postDialog.show();
-
-        postDialog.addEventListener('click', function(ev) {
-            var form_part = form_parts[ev.index];
-
-            if (form_part == '_cancel') {
-                Ti.API.info("Cancelled");
-            }
-            else if (form_part == '_view') {
-                ev.source.eventRow.setBackgroundColor('#fff');
-                Omadi.display.openViewWindow(node_type, e.row.nid);
-            }
-            else if(form_part.toString().indexOf('_extra_') == 0){
-                extraOptionIndex = parseInt(form_part.substring(7), 10);
-                extraOptionCallback = extraOptions[extraOptionIndex].callback;
-                extraOptionCallback(extraOptions[extraOptionIndex].callbackArgs);
-            }
-            else if (ev.index !== -1 && isEditEnabled === true) {
-                ev.source.eventRow.setBackgroundColor('#fff');
-                Omadi.display.openFormWindow(node_type, e.row.nid, form_part);
-            }
-        });
+    
+        if (!isEditEnabled && !hasCustomCopy) {
+            e.row.setBackgroundColor('#fff');
+            Omadi.display.openViewWindow(node_type, e.row.nid);
+        }
+        else {
+    
+            options.push('Cancel');
+            form_parts.push('_cancel');
+    
+            postDialog = Titanium.UI.createOptionDialog();
+            postDialog.options = options;
+            postDialog.eventRow = e.row;
+            postDialog.show();
+    
+            postDialog.addEventListener('click', function(ev) {
+                var form_part = form_parts[ev.index];
+    
+                if (form_part == '_cancel') {
+                    Ti.API.info("Cancelled");
+                }
+                else if (form_part == '_view') {
+                    ev.source.eventRow.setBackgroundColor('#fff');
+                    Omadi.display.openViewWindow(node_type, e.row.nid);
+                }
+                else if(form_part.toString().indexOf('_extra_') == 0){
+                    extraOptionIndex = parseInt(form_part.substring(7), 10);
+                    extraOptionCallback = extraOptions[extraOptionIndex].callback;
+                    extraOptionCallback(extraOptions[extraOptionIndex].callbackArgs);
+                }
+                else if (ev.index !== -1 && isEditEnabled === true) {
+                    ev.source.eventRow.setBackgroundColor('#fff');
+                    Omadi.display.openFormWindow(node_type, e.row.nid, form_part);
+                }
+            });
+        }
     }
 };
 
