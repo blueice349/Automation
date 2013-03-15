@@ -76,12 +76,13 @@ Omadi.data.getBundle = function(type) {"use strict";
     var db, result, bundle = null;
 
     db = Omadi.utils.openMainDatabase();
-    result = db.execute('SELECT _data, display_name, can_create, can_view FROM bundles WHERE bundle_name="' + type + '"');
+    result = db.execute('SELECT _data, display_name, can_create, can_view, child_forms FROM bundles WHERE bundle_name="' + type + '"');
 
     if (result.isValidRow()) {
         bundle = {
             type : type,
             data : JSON.parse(result.fieldByName('_data')),
+            child_forms : JSON.parse(result.fieldByName('child_forms')),
             label : result.fieldByName('display_name'),
             can_create : result.fieldByName('can_create', Ti.Database.FIELD_TYPE_INT),
             can_view : result.fieldByName('can_view', Ti.Database.FIELD_TYPE_INT)
@@ -1242,9 +1243,12 @@ Omadi.data.processFetchedJson = function(json, progress){"use strict";
             Omadi.display.newAppAvailable(json.new_app);
         }
         
-
-        Omadi.display.showNewNotificationDialog();
-
+        if(!Ti.App.Properties.getBool("doingFullReset", false)){
+            Omadi.bundles.dispatch.showNewDispatchJobs();
+            Omadi.display.showNewNotificationDialog();
+        }
+        
+        Ti.App.Properties.setBool("doingFullReset", false);
     }
     catch(ex) {
         alert("Saving Sync Data: " + ex);
@@ -1809,6 +1813,10 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                                 nid : json.insert[i].nid
                             });
                         }
+                        else if(type == 'dispatch' && json.insert[i].viewed == 0){
+                            Ti.App.Properties.setBool('newDispatchJob', true);
+                        }
+                        
 
                         if ( typeof json.insert[i].__negative_nid !== 'undefined') {
                             Ti.API.debug("Deleting nid: " + json.insert[i].__negative_nid);
@@ -2093,7 +2101,9 @@ Omadi.data.processTermsJson = function(json, mainDB, progress) {"use strict";
 
 Omadi.data.processNodeTypeJson = function(json, mainDB, progress) {"use strict";
     /*global ROLE_ID_ADMIN */
-    var queries, roles, i, type, perm_idx, role_idx, bundle_result, app_permissions, title_fields, data, display, description, disabled, is_disabled, permission_string;
+    var queries, roles, i, type, perm_idx, role_idx, bundle_result, 
+        app_permissions, title_fields, data, display, description, 
+        disabled, is_disabled, permission_string, childForms;
 
     try {
         //Node types creation:
@@ -2123,6 +2133,12 @@ Omadi.data.processNodeTypeJson = function(json, mainDB, progress) {"use strict";
 
                         title_fields = json.insert[i].data.title_fields;
                         data = json.insert[i].data;
+                        
+                        childForms = '';
+                        if(typeof json.insert[i].child_forms !== 'undefined'){
+                            childForms = json.insert[i].child_forms;
+                        }
+                        
                         display = json.insert[i].name.toUpperCase();
                         //n_bund.fieldByName("display_name").toUpperCase();
                         description = json.insert[i].description;
@@ -2191,7 +2207,7 @@ Omadi.data.processNodeTypeJson = function(json, mainDB, progress) {"use strict";
                             }
                         }
 
-                        queries.push("INSERT OR REPLACE INTO bundles (bundle_name, display_name, description, title_fields, _data, can_create, can_view) VALUES ('" + dbEsc(type) + "', '" + dbEsc(display) + "','" + dbEsc(description) + "','" + dbEsc(JSON.stringify(title_fields)) + "','" + dbEsc(JSON.stringify(data)) + "'," + app_permissions.can_create + "," + app_permissions.can_view + ")");
+                        queries.push("INSERT OR REPLACE INTO bundles (bundle_name, display_name, description, title_fields, _data, can_create, can_view, child_forms) VALUES ('" + dbEsc(type) + "', '" + dbEsc(display) + "','" + dbEsc(description) + "','" + dbEsc(JSON.stringify(title_fields)) + "','" + dbEsc(JSON.stringify(data)) + "'," + app_permissions.can_create + "," + app_permissions.can_view + ",'" + dbEsc(JSON.stringify(childForms)) + "')");
                     }
                 }
             }

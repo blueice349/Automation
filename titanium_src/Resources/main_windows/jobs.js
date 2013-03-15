@@ -47,8 +47,10 @@ function addiOSToolbar() {"use strict";
 
 (function(){"use strict";
     var newJobs, data, i, row, textView, rowImg, titleLabel, backgroundColor, 
-        newJobsSection, sections, currentUserJobsSection, currentUserJobs;
+        newJobsSection, sections, currentUserJobsSection, currentUserJobs, 
+        dispatchBundle, separator, whiteSpaceTest;
     
+    dispatchBundle = Omadi.data.getBundle('dispatch');
     newJobs = Omadi.bundles.dispatch.getNewJobs();
     currentUserJobs = Omadi.bundles.dispatch.getCurrentUserJobs();
     sections = [];
@@ -158,7 +160,16 @@ function addiOSToolbar() {"use strict";
     sections.push(newJobsSection);
     sections.push(currentUserJobsSection);
     
+    // separator = ' - ';
+    // if ( typeof dispatchBundle.data.title_fields !== 'undefined' && typeof dispatchBundle.data.title_fields.separator !== 'undefined') {
+        // separator = dispatchBundle.data.title_fields.separator;
+    // }
+//     
+    // whiteSpaceTest = Omadi.utils.trimWhiteSpace(separator);
+
+    
     if(newJobs.length){
+        
         for(i = 0; i < newJobs.length; i ++){
             
             backgroundColor = '#eee';
@@ -204,19 +215,22 @@ function addiOSToolbar() {"use strict";
             
             row.add(rowImg);
             textView.add(titleLabel);
+            
             //textView.add(timeLabel);
             row.add(textView);
-            
             newJobsSection.add(row);
         }
     }
     else{
+        
         newJobsSection.add(Ti.UI.createTableViewRow({
-            title: 'No new jobs available'
+            title: 'No new jobs available',
+            color: '#000'
         }));
     }
     
     if(currentUserJobs.length){
+        
         for(i = 0; i < currentUserJobs.length; i ++){
             
             backgroundColor = '#eee';
@@ -289,7 +303,6 @@ function addiOSToolbar() {"use strict";
         addiOSToolbar();
     }
     
-    
     tableView = Ti.UI.createTableView({
         separatorColor : '#ccc',
         data : sections,
@@ -316,6 +329,8 @@ function addiOSToolbar() {"use strict";
     
     wrapperView.add(tableView);
    
-    
     curWin.add(wrapperView);
+    
 }());
+
+

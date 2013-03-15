@@ -604,6 +604,8 @@ function showNextAlertInQueue(e) {"use strict";
             db = Omadi.utils.openMainDatabase();
             db.execute("INSERT INTO updated (timestamp, updating) VALUES (0, 0)");
             db.close();
+            
+            Ti.App.Properties.setBool("doingFullReset", true);
         }
 
         if (lastSyncTimestamp == 0) {
@@ -694,7 +696,9 @@ function showNextAlertInQueue(e) {"use strict";
 
         Ti.App.addEventListener('full_update_from_menu', function() {
             var dbFile, db, result;
-
+            
+            Ti.App.Properties.setBool("doingFullReset", true);
+            
             Omadi.data.setUpdating(true);
 
             Omadi.data.setLastUpdateTimestamp(0);

@@ -231,7 +231,7 @@ Omadi.display.openJobsWindow = function() {"use strict";
     var jobsWindow = Titanium.UI.createWindow({
         title : 'Jobs',
         navBarHidden : true,
-        url : 'jobs.js'
+        url : '/main_windows/jobs.js'
     });
 
     Omadi.display.loading();
@@ -479,7 +479,7 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
                 ev.source.eventRow.setBackgroundColor('#fff');
                 Omadi.display.openViewWindow(node_type, e.row.nid);
             }
-            else if(form_part.indexOf('_extra_') == 0){
+            else if(form_part.toString().indexOf('_extra_') == 0){
                 extraOptionIndex = parseInt(form_part.substring(7), 10);
                 extraOptionCallback = extraOptions[extraOptionIndex].callback;
                 extraOptionCallback(extraOptions[extraOptionIndex].callbackArgs);

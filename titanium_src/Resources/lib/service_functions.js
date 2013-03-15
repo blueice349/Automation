@@ -192,8 +192,8 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                             progress.close();
                         }
             
-                        Titanium.Media.vibrate();
-                        Ti.API.error("Bad response text: " + this.responseText);
+                        //Titanium.Media.vibrate();
+                        Omadi.service.sendErrorReport("Bad response text for regular fetch update: " + this.responseText);
                     }                    
 
                     Omadi.data.setUpdating(false);

@@ -1077,7 +1077,7 @@ function recalculateCalculationFields(){"use strict";
 
 
 function loadCustomCopyNode(originalNode, from_type, to_type){"use strict";
-    var fromBundle, newNode, to_field_name, from_field_name;
+    var fromBundle, newNode, to_field_name, from_field_name, index;
     
     fromBundle = Omadi.data.getBundle(from_type);
     
@@ -1107,6 +1107,24 @@ function loadCustomCopyNode(originalNode, from_type, to_type){"use strict";
         }
     }
     
+    // If there is also a child/parent relationship with the forms, add the parent reference to the child node
+    if(typeof fromBundle.child_forms !== 'undefined' && fromBundle.child_forms.length){
+        for(index in fromBundle.child_forms){
+            if(fromBundle.child_forms.hasOwnProperty(index)){
+                
+                if(fromBundle.child_forms[index].child_node_type == to_type){
+                    
+                    newNode[fromBundle.child_forms[index].child_field_name] = {};
+                    newNode[fromBundle.child_forms[index].child_field_name].dbValues = [];
+                    newNode[fromBundle.child_forms[index].child_field_name].textValues = [];
+                    newNode[fromBundle.child_forms[index].child_field_name].dbValues.push(originalNode.nid);
+                    newNode[fromBundle.child_forms[index].child_field_name].textValues.push(originalNode.title);
+                    break;
+                }
+            }
+        }
+    }
+    
     return newNode;
 }
 
@@ -1118,10 +1136,7 @@ var field_name;
     var regionView;
     var tempFormPart;
     var widgetView;
-    
-
-
-
+   
 
 function getFormFieldValues(field_name){"use strict";
     var retval = {};

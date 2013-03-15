@@ -4,6 +4,15 @@
 
 Omadi.bundles.dispatch = {};
 
+Omadi.bundles.dispatch.showNewDispatchJobs = function(){"use strict";
+      if(Ti.App.Properties.getBool('newDispatchJob', false)){
+          Ti.App.Properties.setBool('newDispatchJob', false);
+          
+          Omadi.display.openJobsWindow();
+          
+      }
+};
+
 Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
     
     var http, dialog, nid = 0;
@@ -27,8 +36,7 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
         }
         else{
             
-            Omadi.display.loading();
-            
+            Omadi.display.loading('Accepting...');
             Omadi.data.setUpdating(true);
             
             http = Ti.Network.createHTTPClient();
@@ -37,24 +45,24 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
         
             http.setRequestHeader("Content-Type", "application/json");
             Omadi.utils.setCookieHeader(http);
-        
+            
             http.onload = function(e) {
                 var json;
                 
                 Omadi.display.doneLoading();
-                Ti.API.debug(JSON.stringify(e));
-                Ti.API.debug(this.responseText);
-                alert("job accepted");
                 
                 if (this.responseText !== null && isJsonString(this.responseText) === true) {
             
-                        json = JSON.parse(this.responseText);            
-                        Omadi.data.processFetchedJson(json, null);
+                    json = JSON.parse(this.responseText);            
+                    Omadi.data.processFetchedJson(json, null);
+                    
+                    if(!json.dispatch_accept_job.success){
+                        alert(json.dispatch_accept_job.text);
+                    }
                 }
                 else {
-        
-                    Titanium.Media.vibrate();
-                    Ti.API.error("Bad response text: " + this.responseText);
+                    alert("The job was not accepted because an unknown error occurred.");
+                    Omadi.service.sendErrorReport("Bad response text for accept job: " + this.responseText);
                 }                    
 
                 Omadi.data.setUpdating(false);
@@ -66,7 +74,6 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
                 
                 Omadi.display.doneLoading();
     
-                Ti.API.error(JSON.stringify(e));
                 dialog = Ti.UI.createAlertDialog({
                     message : 'An error occured. Please try again.',
                     buttonNames: ['OK']
@@ -81,7 +88,6 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
                 
                 Omadi.service.sendErrorReport('Could not accept job' + JSON.stringify(e));
             };
-            Ti.API.debug(nid);
             
             http.send(JSON.stringify({
                 nid: nid
@@ -94,10 +100,71 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
     }    
 };
 
-Omadi.bundles.dispatch.getStatusOptions = function(){"use strict";
-    var options, db, result, termResult, vid;
+Omadi.bundles.dispatch.getStatusOptions = function(nid){"use strict";
+    var options, db, result, termResult, vid, dispatchBundle, node, i,
+        excludeTids, excludeStatuses, dispatchStatusTids, 
+        currentStatusTid, currentStatus, status, useTid, tid;
     
     options = [];
+    
+    node = Omadi.data.nodeLoad(nid);
+    currentStatusTid = node.dispatch_status.dbValues[0];
+    
+    dispatchBundle = Omadi.data.getBundle('dispatch');
+    
+    excludeTids = [];
+    excludeStatuses = [];
+    
+    if(typeof dispatchBundle.data.node_type_specific !== 'undefined' && typeof dispatchBundle.data.node_type_specific.dispatch_status_terms !== 'undefined'){
+        dispatchStatusTids = JSON.parse(dispatchBundle.data.node_type_specific.dispatch_status_terms);
+        
+        currentStatus = null;
+        
+        for(status in dispatchStatusTids){
+            if(dispatchStatusTids.hasOwnProperty(status)){
+                
+                if(dispatchStatusTids[status] == currentStatusTid){
+                    currentStatus = status;
+                    break;
+                }
+            }
+        }
+        
+        if(currentStatus !== null){
+            switch(currentStatus){
+                case 'job complete':
+                    excludeStatuses.push('job complete');
+                    /* falls through */
+                case 'arrived at destination':
+                    excludeStatuses.push('arrived at destination');
+                    /* falls through */
+                case 'towing vehicle':
+                    excludeStatuses.push('towing vehicle');
+                    /* falls through */
+                case 'arrived at job':
+                    excludeStatuses.push('arrived at job');
+                    /* falls through */
+                case 'driving to job':
+                    excludeStatuses.push('driving to job');
+                    /* falls through */
+                case 'dispatch job accepted':
+                    excludeStatuses.push('dispatch job accepted');
+                    /* falls through */
+                case 'dispatching call':
+                    excludeStatuses.push('dispatching call');
+                    /* falls through */
+                case 'call received':
+                    excludeStatuses.push('call received');
+                    break;
+                    
+            }
+        }
+        
+        for(i = 0; i < excludeStatuses.length; i ++){
+            excludeTids.push(dispatchStatusTids[excludeStatuses[i]]);
+        }
+    }
+    
     db = Omadi.utils.openMainDatabase();
     
     result = db.execute("SELECT vid FROM vocabulary WHERE machine_name = 'dispatch_status'");
@@ -108,10 +175,22 @@ Omadi.bundles.dispatch.getStatusOptions = function(){"use strict";
         
         while(termResult.isValidRow()){
             
-            options.push({
-               tid: termResult.fieldByName('tid'),
-               text: termResult.fieldByName('name') 
-            });
+            useTid = true;
+            tid = termResult.fieldByName('tid', Ti.Database.FIELD_TYPE_INT);
+            
+            for(i = 0; i < excludeTids.length; i ++){
+                if(tid == excludeTids[i]){
+                    useTid = false;
+                    break;
+                }
+            }
+            
+            if(useTid){
+                options.push({
+                   tid: tid,
+                   text: termResult.fieldByName('name') 
+                });
+            }
             
             termResult.next();
         }
@@ -127,9 +206,6 @@ Omadi.bundles.dispatch.getStatusOptions = function(){"use strict";
 Omadi.bundles.dispatch.updateStatus = function(nid, statusTid){"use strict";
     var dialog, http;
     
-    Ti.API.debug(nid);
-    Ti.API.debug(statusTid);
-    
     if(!Ti.Network.online){
         dialog = Ti.UI.createOptionDialog({
             message : 'Your Internet connection was lost. Please try again after you get an Internet connection.'
@@ -143,7 +219,7 @@ Omadi.bundles.dispatch.updateStatus = function(nid, statusTid){"use strict";
         }
     }
     else{
-        Omadi.display.loading();
+        Omadi.display.loading('Updating...');
                 
         Omadi.data.setUpdating(true);
         
@@ -158,19 +234,22 @@ Omadi.bundles.dispatch.updateStatus = function(nid, statusTid){"use strict";
             var json;
             
             Omadi.display.doneLoading();
-            Ti.API.debug(JSON.stringify(e));
-            Ti.API.debug(this.responseText);
+            //Ti.API.debug(JSON.stringify(e));
+            //Ti.API.debug(this.responseText);
             
             if (this.responseText !== null && isJsonString(this.responseText) === true) {
         
                 json = JSON.parse(this.responseText);            
                 Omadi.data.processFetchedJson(json, null);
+                
+                if(!json.dispatch_update_status.success){
+                    alert(json.dispatch_update_status.text);
+                }
             }
             else{
-    
-                Titanium.Media.vibrate();
-                Ti.API.error("Bad response text: " + this.responseText);
-            }                    
+                alert("The status was not updated because an unknown error occurred.");
+                Omadi.service.sendErrorReport("Bad response text for update dispatch status: " + this.responseText);
+            }
     
             Omadi.data.setUpdating(false);
             Ti.App.fireEvent('finishedDataSync');
@@ -196,7 +275,6 @@ Omadi.bundles.dispatch.updateStatus = function(nid, statusTid){"use strict";
             
             Omadi.service.sendErrorReport('Could not accept job' + JSON.stringify(e));
         };
-        Ti.API.debug(nid);
         
         http.send(JSON.stringify({
             nid: nid,
@@ -228,20 +306,23 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
         }
         else{
             
-            statusOptions = Omadi.bundles.dispatch.getStatusOptions();
+            statusOptions = Omadi.bundles.dispatch.getStatusOptions(nid);
             
             options = [];
             for(i = 0; i < statusOptions.length; i ++){
                 options.push(statusOptions[i].text);
             }
             
+            options.push('Cancel');
+            
             statusDialog = Ti.UI.createOptionDialog({
                title: 'Update Job Status To',
-               options: options
+               options: options,
+               cancel: (options.length - 1)
             });
             
             statusDialog.addEventListener('click', function(e){
-                if(e.index >= 0){
+                if(e.index >= 0 && e.index != e.source.cancel){
                     var statusTid = statusOptions[e.index].tid;
                     Omadi.bundles.dispatch.updateStatus(nid, statusTid);
                 }
@@ -296,13 +377,20 @@ Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
 
 Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
     /*global list_search_node_matches_search_criteria*/
-    var newJobs, db, result, sql, nowTimestamp, dispatchBundle, currentUserUid;
+    var newJobs, db, result, sql, nowTimestamp, dispatchBundle, currentUserUid, jobDoneTid, dispatchStatusTids;
     
     nowTimestamp = Omadi.utils.getUTCTimestamp();
     newJobs = [];
     dispatchBundle = Omadi.data.getBundle('dispatch');
     
     if(dispatchBundle){
+        jobDoneTid = 0;
+        if(typeof dispatchBundle.data.node_type_specific !== 'undefined' && typeof dispatchBundle.data.node_type_specific.dispatch_status_terms !== 'undefined'){
+            dispatchStatusTids = JSON.parse(dispatchBundle.data.node_type_specific.dispatch_status_terms);
+            if(typeof dispatchStatusTids['job complete'] !== 'undefined' && dispatchStatusTids['job complete']){
+                jobDoneTid = dispatchStatusTids['job complete'];
+            }
+        }
         
         currentUserUid = Omadi.utils.getUid();
         
@@ -311,7 +399,8 @@ Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
         sql = "SELECT n.nid, n.title, n.viewed FROM node n ";
         sql += "LEFT JOIN dispatch ON dispatch.nid = n.nid ";
         sql += "WHERE n.table_name = 'dispatch' ";
-        sql += "AND dispatch.dispatched_to_driver = " + currentUserUid; 
+        sql += "AND dispatch.dispatched_to_driver = " + currentUserUid + " "; 
+        sql += "AND (dispatch.dispatch_status IS NULL OR dispatch.dispatch_status <> " + jobDoneTid + ") ";
         result = db.execute(sql);
         
         while(result.isValidRow()){
@@ -332,3 +421,4 @@ Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
     
     return newJobs;
 };
+
