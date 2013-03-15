@@ -1243,13 +1243,13 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
                     search_value = criteria_row.value;
                     values = [];
                     
-                    Ti.API.debug(field_name);
+                    //Ti.API.debug(field_name);
                     
                     if(typeof node[field_name] !== 'undefined'){
                        values = node[field_name].dbValues;
                     }
                     
-                    Ti.API.debug(JSON.stringify(values));
+                    //Ti.API.debug(JSON.stringify(values));
               
         
                     switch(instances[field_name].type) {

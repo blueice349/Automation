@@ -1,6 +1,6 @@
 Omadi.display = Omadi.display || {};
 
-/*jslint eqeq:true*/
+/*jslint eqeq:true, plusplus: true*/
 
 Omadi.display.showBigImage = function(imageView) {"use strict";
 
@@ -227,6 +227,21 @@ Omadi.display.openDraftsWindow = function() {"use strict";
     return draftsWindow;
 };
 
+Omadi.display.openJobsWindow = function() {"use strict";
+    var jobsWindow = Titanium.UI.createWindow({
+        title : 'Jobs',
+        navBarHidden : true,
+        url : 'jobs.js'
+    });
+
+    Omadi.display.loading();
+    jobsWindow.addEventListener('open', Omadi.display.doneLoading);
+
+    jobsWindow.open();
+
+    return jobsWindow;
+};
+
 Omadi.display.openViewWindow = function(type, nid) {"use strict";
     var viewWindow = Titanium.UI.createWindow({
         navBarHidden : true,
@@ -375,16 +390,29 @@ Omadi.display.showNewNotificationDialog = function(){"use strict";
  *  so that e.row.nid can be referenced
  *  Also, the row is set to a background color of #fff when going to view or form
  */
-Omadi.display.showDialogFormOptions = function(e) {"use strict";
-    var db, result, options, form_parts, to_type, to_bundle, isEditEnabled, form_part, node_type, bundle, hasCustomCopy, postDialog;
+Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
+    var db, result, options, form_parts, to_type, to_bundle, isEditEnabled, 
+        form_part, node_type, bundle, hasCustomCopy, postDialog, i,
+        extraOptionCallback, extraOptionIndex;
 
+    if(typeof extraOptions === 'undefined'){
+        extraOptions = [];
+    }
+    
     db = Omadi.utils.openMainDatabase();
     result = db.execute('SELECT table_name, form_part, perm_edit FROM node WHERE nid=' + e.row.nid);
-
+    
     isEditEnabled = false;
     hasCustomCopy = false;
     options = [];
     form_parts = [];
+    
+    if(extraOptions.length){
+        for(i = 0; i < extraOptions.length; i ++){
+            options.push(extraOptions[i].text);
+            form_parts.push('_extra_' + i);
+        }
+    }
 
     if (result.fieldByName('perm_edit', Ti.Database.FIELD_TYPE_INT) === 1) {
         isEditEnabled = true;
@@ -451,6 +479,11 @@ Omadi.display.showDialogFormOptions = function(e) {"use strict";
                 ev.source.eventRow.setBackgroundColor('#fff');
                 Omadi.display.openViewWindow(node_type, e.row.nid);
             }
+            else if(form_part.indexOf('_extra_') == 0){
+                extraOptionIndex = parseInt(form_part.substring(7), 10);
+                extraOptionCallback = extraOptions[extraOptionIndex].callback;
+                extraOptionCallback(extraOptions[extraOptionIndex].callbackArgs);
+            }
             else if (ev.index !== -1 && isEditEnabled === true) {
                 ev.source.eventRow.setBackgroundColor('#fff');
                 Omadi.display.openFormWindow(node_type, e.row.nid, form_part);
@@ -485,6 +518,7 @@ Omadi.display.getNodeTypeImagePath = function(type) {"use strict";
         case 'timecard':
         case 'permit_request':
         case 'company_vehicle':
+        case 'dispatch':
 
             return '/images/icons/' + type + ".png";
 

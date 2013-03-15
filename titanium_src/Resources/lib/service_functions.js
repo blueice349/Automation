@@ -130,7 +130,7 @@ Omadi.service.setNodeViewed = function(nid) {"use strict";
 };
 
 Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
-    var http, app_timestamp, progress = null;
+    var http, progress = null;
     /*global isJsonString*/
     /*jslint eqeq:true*/
     try {
@@ -144,7 +144,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                     progress = new Omadi.display.ProgressBar(0, 100);
                 }
 
-                app_timestamp = Math.round(+new Date().getTime() / 1000);
+                
 
                 http = Ti.Network.createHTTPClient();
 
@@ -176,172 +176,25 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
 
                 //When connected
                 http.onload = function(e) {
-                    var nodeType, mainDB, gpsDB, dbFile, tableName, json, GMT_OFFSET, dialog, newNotifications;
-
-                    try {
-                        //Parses response into strings
-                        if (this.responseText !== null && isJsonString(this.responseText) === true) {
-
-                            Ti.API.info(this.responseText.substring(0, 3000));
-
-                            json = JSON.parse(this.responseText);
-
-                            if (json.request_time && json.request_time !== null && json.request_time !== "") {
-                                GMT_OFFSET = Number(json.request_time - app_timestamp);
-                                //Ti.API.info(GMT_OFFSET + "  === " + json.request_time + " === " + app_timestamp);
-                                Ti.App.Properties.setString("timestamp_offset", GMT_OFFSET);
-                            }
-
-                            if (json.delete_all === true || json.delete_all === "true") {
-                                Ti.API.info("=================== ############ ===================");
-                                Ti.API.info("Reseting mainDB, delete_all is required");
-                                Ti.API.info("=================== ############ ===================");
-
-                                //If delete_all is present, delete all contents:
-                                mainDB = Omadi.utils.openMainDatabase();
-                                if (Ti.App.isAndroid) {
-                                    //Remove the mainDB
-                                    mainDB.remove();
-                                    mainDB.close();
-                                }
-                                else {
-                                    dbFile = mainDB.getFile();
-                                    mainDB.close();
-                                    //phisically removes the file
-                                    dbFile.deleteFile();
-                                }
-
-                                // Reset the database
-                                mainDB = Omadi.utils.openMainDatabase();
-                                mainDB.close();
-
-                                gpsDB = Omadi.utils.openGPSDatabase();
-                                gpsDB.execute('DELETE FROM alerts');
-                                gpsDB.close();
-                            }
-
-                            //Ti.API.info("Max itens: " + parseInt(json.total_item_count));
-
-                            //mainDB.execute('UPDATE updated SET "timestamp"=' + json.request_time + ' WHERE "rowid"=1');
-                            Omadi.data.setLastUpdateTimestamp(json.request_time);
-                            //Ti.API.error(json.request_time);
-
-                            Ti.API.info("Total items to install: " + json.total_item_count);
-
-                            mainDB = Omadi.utils.openMainDatabase();
-                            //If mainDB is already last version
-                            if (json.total_item_count == 0) {
-                                //mainDB.execute('UPDATE updated SET "timestamp"=' + json.request_time + ' WHERE "rowid"=1');
-
-                                if (progress != null) {
-                                    progress.set();
-                                    progress.close();
-                                }
-
-                            }
-                            else {
-
-                                if (progress !== null) {
-                                    //Set max value for progress bar
-                                    progress.set_max(parseInt(json.total_item_count, 10));
-                                }
-
-                                if (Omadi.data.getLastUpdateTimestamp() === 0) {
-                                    mainDB.execute('UPDATE updated SET "url"="' + Omadi.DOMAIN_NAME + '" WHERE "rowid"=1');
-                                }
-
-                                //Ti.API.info('######### Request time : ' + json.request_time);
-
-                                //Omadi.data.setLastUpdateTimestamp(json.request_time);
-
-                                if ( typeof json.vehicles !== 'undefined') {
-                                    Ti.API.debug("Installing vehicles");
-                                    Omadi.data.processVehicleJson(json.vehicles, mainDB, progress);
-                                }
-
-                                if ( typeof json.node_type !== 'undefined') {
-                                    Ti.API.debug("Installing bundles");
-                                    Omadi.data.processNodeTypeJson(json.node_type, mainDB, progress);
-                                }
-
-                                if ( typeof json.fields !== 'undefined') {
-                                    Ti.API.debug("Installing fields");
-                                    Omadi.data.processFieldsJson(json.fields, mainDB, progress);
-                                }
-                                
-                                if ( typeof json.fake_fields !== 'undefined') {
-                                    Ti.API.debug("Installing fake fields");
-                                    Omadi.data.processFakeFieldsJson(json.fake_fields, mainDB, progress);
-                                }
-
-                                if ( typeof json.regions !== 'undefined') {
-                                    Ti.API.debug("Installing regions");
-                                    Omadi.data.processRegionsJson(json.regions, mainDB, progress);
-                                }
-
-                                if ( typeof json.vocabularies !== 'undefined') {
-                                    Ti.API.debug("Installing vocabularies");
-                                    Omadi.data.processVocabulariesJson(json.vocabularies, mainDB, progress);
-                                }
-
-                                if ( typeof json.terms !== 'undefined') {
-                                    Ti.API.debug("Installing terms");
-                                    Omadi.data.processTermsJson(json.terms, mainDB, progress);
-                                }
-
-                                if ( typeof json.users !== 'undefined') {
-                                    Ti.API.debug("Installing users");
-                                    Omadi.data.processUsersJson(json.users, mainDB, progress);
-                                }
-
-                                if ( typeof json.node !== 'undefined') {
-                                    Ti.API.debug("Installing nodes");
-                                    for (tableName in json.node) {
-                                        if (json.node.hasOwnProperty(tableName)) {
-                                            if (json.node.hasOwnProperty(tableName)) {
-                                                Omadi.data.processNodeJson(json.node[tableName], tableName, mainDB, progress);
-                                            }
-                                        }
-                                    }
-                                }
-
-                                //Ti.API.info("SUCCESS");
-                                if (progress != null) {
-                                    progress.close();
-                                }
-
-                                Ti.App.fireEvent("syncInstallComplete");
-                            }
-                            mainDB.close();
-
-                            if ( typeof json.new_app !== 'undefined' && json.new_app.length > 0) {
-                                Ti.API.debug("New App: " + json.new_app);
-                                Omadi.display.newAppAvailable(json.new_app);
-                            }
-                        }
-                        else {
-                            if (progress != null) {
-                                progress.close();
-                            }
-
-                            Titanium.Media.vibrate();
-                            Ti.API.error("Bad response text: " + this.responseText);
-                        }
-
-                        Omadi.display.showNewNotificationDialog();
-
+                    var json;
+                    
+                    //Parses response into strings
+                    if (this.responseText !== null && isJsonString(this.responseText) === true) {
+            
+                        Ti.API.info(this.responseText.substring(0, 3000));
+            
+                        json = JSON.parse(this.responseText);
+                        
+                        Omadi.data.processFetchedJson(json, progress);
                     }
-                    catch(ex) {
-                        alert("Saving Sync Data: " + ex);
-                    }
-                    finally {
-                        try {
-                            mainDB.close();
+                    else {
+                        if (progress != null) {
+                            progress.close();
                         }
-                        catch(nothing) {
-
-                        }
-                    }
+            
+                        Titanium.Media.vibrate();
+                        Ti.API.error("Bad response text: " + this.responseText);
+                    }                    
 
                     Omadi.data.setUpdating(false);
                     Ti.App.fireEvent('finishedDataSync');
@@ -596,9 +449,8 @@ Omadi.service.sendUpdates = function() {"use strict";
                 var dialog, db;
                 Ti.API.error('Code status: ' + e.error);
                 Ti.API.error('CODE ERROR = ' + this.status);
+                
                 //Ti.API.info("Progress bar = " + progress);
-                
-                
                 //alert("Data Received with error");
                 
                 if(Ti.App.isAndroid){

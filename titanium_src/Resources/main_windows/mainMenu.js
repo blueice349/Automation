@@ -313,8 +313,10 @@ function setupAndroidMenu() {"use strict";
 }
 
 function setupBottomButtons() {"use strict";
-    var alertsView, alertsImg, alertsLabel, draftsView, draftsImg, draftsLabel, 
+    var alertsView, alertsImg, alertsLabel, 
+        draftsView, draftsImg, draftsLabel, 
         actionsView, actionsImg, actionsLabel, 
+        jobsView, jobsImg, jobsLabel, 
         recentView, recentLabel, recentImg,
         tagsReadyView, tagsReadyImg, tagsReadyLabel, tagBundle;
 
@@ -362,7 +364,43 @@ function setupBottomButtons() {"use strict";
         alertsWindow.open();
     });
 
-    draftsView = Ti.UI.createView({
+    // draftsView = Ti.UI.createView({
+        // backgroundSelectedColor : 'orange',
+        // focusable : true,
+        // width : '33%',
+        // height : 45,
+        // layout : 'vertical',
+        // color : '#fff'
+    // });
+// 
+    // databaseStatusView.add(draftsView);
+// 
+    // draftsImg = Ti.UI.createImageView({
+        // image : '/images/drafts.png',
+        // height : 22,
+        // width : 22,
+        // top : 2
+    // });
+// 
+    // draftsLabel = Ti.UI.createLabel({
+        // text : 'Drafts',
+        // font : {
+            // fontSize : 14
+        // },
+        // height : Ti.UI.SIZE,
+        // bottom : 0,
+        // color : '#fff',
+        // width : Ti.UI.SIZE,
+        // textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
+    // });
+// 
+    // draftsView.add(draftsImg);
+    // draftsView.add(draftsLabel);
+    // draftsView.addEventListener('click', function() {
+        // Omadi.display.openDraftsWindow();
+    // });
+    
+    jobsView = Ti.UI.createView({
         backgroundSelectedColor : 'orange',
         focusable : true,
         width : '33%',
@@ -371,17 +409,17 @@ function setupBottomButtons() {"use strict";
         color : '#fff'
     });
 
-    databaseStatusView.add(draftsView);
+    databaseStatusView.add(jobsView);
 
-    draftsImg = Ti.UI.createImageView({
-        image : '/images/drafts.png',
+    jobsImg = Ti.UI.createImageView({
+        image : '/images/jobs.png',
         height : 22,
         width : 22,
         top : 2
     });
 
-    draftsLabel = Ti.UI.createLabel({
-        text : 'Drafts',
+    jobsLabel = Ti.UI.createLabel({
+        text : 'Jobs',
         font : {
             fontSize : 14
         },
@@ -392,10 +430,10 @@ function setupBottomButtons() {"use strict";
         textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
     });
 
-    draftsView.add(draftsImg);
-    draftsView.add(draftsLabel);
-    draftsView.addEventListener('click', function() {
-        Omadi.display.openDraftsWindow();
+    jobsView.add(jobsImg);
+    jobsView.add(jobsLabel);
+    jobsView.addEventListener('click', function() {
+        Omadi.display.openJobsWindow();
     });
 
     recentView = Ti.UI.createView({
@@ -461,7 +499,7 @@ function setupBottomButtons() {"use strict";
             top : 2
         });
         tagsReadyLabel = Ti.UI.createLabel({
-            text : 'Expired Tags',
+            text : 'Expired',
             font : {
                 fontSize : 14
             },
@@ -489,7 +527,8 @@ function setupBottomButtons() {"use strict";
         });
         
         recentView.width = '25%';
-        draftsView.width = '25%';
+        //draftsView.width = '25%';
+        jobsView.width = '25%';
         alertsView.width = '25%';
     }
     

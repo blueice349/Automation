@@ -1103,6 +1103,162 @@ Omadi.data.getNodeTableInsertStatement = function(node) {"use strict";
     return sql;
 };
 
+Omadi.data.processFetchedJson = function(json, progress){"use strict";
+    var nodeType, mainDB, gpsDB, dbFile, tableName, GMT_OFFSET, dialog, newNotifications;
+     
+    try {
+        //Parses response into strings
+        
+        // if (json.request_time && json.request_time !== null && json.request_time !== "") {
+            // GMT_OFFSET = Number(json.request_time - app_timestamp);
+            // //Ti.API.info(GMT_OFFSET + "  === " + json.request_time + " === " + app_timestamp);
+            // Ti.App.Properties.setString("timestamp_offset", GMT_OFFSET);
+        // }
+
+        if (json.delete_all === true || json.delete_all === "true") {
+            Ti.API.info("=================== ############ ===================");
+            Ti.API.info("Reseting mainDB, delete_all is required");
+            Ti.API.info("=================== ############ ===================");
+
+            //If delete_all is present, delete all contents:
+            mainDB = Omadi.utils.openMainDatabase();
+            if (Ti.App.isAndroid) {
+                //Remove the mainDB
+                mainDB.remove();
+                mainDB.close();
+            }
+            else {
+                dbFile = mainDB.getFile();
+                mainDB.close();
+                //phisically removes the file
+                dbFile.deleteFile();
+            }
+
+            // Reset the database
+            mainDB = Omadi.utils.openMainDatabase();
+            mainDB.close();
+
+            gpsDB = Omadi.utils.openGPSDatabase();
+            gpsDB.execute('DELETE FROM alerts');
+            gpsDB.close();
+        }
+
+        //Ti.API.info("Max itens: " + parseInt(json.total_item_count));
+
+        //mainDB.execute('UPDATE updated SET "timestamp"=' + json.request_time + ' WHERE "rowid"=1');
+        Omadi.data.setLastUpdateTimestamp(json.request_time);
+        //Ti.API.error(json.request_time);
+
+        Ti.API.info("Total items to install: " + json.total_item_count);
+
+        mainDB = Omadi.utils.openMainDatabase();
+        //If mainDB is already last version
+        if (json.total_item_count == 0) {
+            //mainDB.execute('UPDATE updated SET "timestamp"=' + json.request_time + ' WHERE "rowid"=1');
+
+            if (progress != null) {
+                progress.set();
+                progress.close();
+            }
+
+        }
+        else {
+
+            if (progress !== null) {
+                //Set max value for progress bar
+                progress.set_max(parseInt(json.total_item_count, 10));
+            }
+
+            if (Omadi.data.getLastUpdateTimestamp() === 0) {
+                mainDB.execute('UPDATE updated SET "url"="' + Omadi.DOMAIN_NAME + '" WHERE "rowid"=1');
+            }
+
+            //Ti.API.info('######### Request time : ' + json.request_time);
+
+            //Omadi.data.setLastUpdateTimestamp(json.request_time);
+
+            if ( typeof json.vehicles !== 'undefined') {
+                Ti.API.debug("Installing vehicles");
+                Omadi.data.processVehicleJson(json.vehicles, mainDB, progress);
+            }
+
+            if ( typeof json.node_type !== 'undefined') {
+                Ti.API.debug("Installing bundles");
+                Omadi.data.processNodeTypeJson(json.node_type, mainDB, progress);
+            }
+
+            if ( typeof json.fields !== 'undefined') {
+                Ti.API.debug("Installing fields");
+                Omadi.data.processFieldsJson(json.fields, mainDB, progress);
+            }
+            
+            if ( typeof json.fake_fields !== 'undefined') {
+                Ti.API.debug("Installing fake fields");
+                Omadi.data.processFakeFieldsJson(json.fake_fields, mainDB, progress);
+            }
+
+            if ( typeof json.regions !== 'undefined') {
+                Ti.API.debug("Installing regions");
+                Omadi.data.processRegionsJson(json.regions, mainDB, progress);
+            }
+
+            if ( typeof json.vocabularies !== 'undefined') {
+                Ti.API.debug("Installing vocabularies");
+                Omadi.data.processVocabulariesJson(json.vocabularies, mainDB, progress);
+            }
+
+            if ( typeof json.terms !== 'undefined') {
+                Ti.API.debug("Installing terms");
+                Omadi.data.processTermsJson(json.terms, mainDB, progress);
+            }
+
+            if ( typeof json.users !== 'undefined') {
+                Ti.API.debug("Installing users");
+                Omadi.data.processUsersJson(json.users, mainDB, progress);
+            }
+
+            if ( typeof json.node !== 'undefined') {
+                Ti.API.debug("Installing nodes");
+                for (tableName in json.node) {
+                    if (json.node.hasOwnProperty(tableName)) {
+                        if (json.node.hasOwnProperty(tableName)) {
+                            Omadi.data.processNodeJson(json.node[tableName], tableName, mainDB, progress);
+                        }
+                    }
+                }
+            }
+
+            //Ti.API.info("SUCCESS");
+            if (progress != null) {
+                progress.close();
+            }
+
+            Ti.App.fireEvent("syncInstallComplete");
+        }
+        mainDB.close();
+
+        if ( typeof json.new_app !== 'undefined' && json.new_app.length > 0) {
+            Ti.API.debug("New App: " + json.new_app);
+            Omadi.display.newAppAvailable(json.new_app);
+        }
+        
+
+        Omadi.display.showNewNotificationDialog();
+
+    }
+    catch(ex) {
+        alert("Saving Sync Data: " + ex);
+    }
+    finally {
+        try {
+            mainDB.close();
+        }
+        catch(nothing) {
+
+        }
+    }
+};
+
 Omadi.data.processVehicleJson = function(json, mainDB, progress) {"use strict";
     try {
         if (json) {
@@ -1201,145 +1357,138 @@ Omadi.data.processFieldsJson = function(json, mainDB, progress) {"use strict";
                     field_name = json.insert[i].field_name;
                     bundle = json.insert[i].bundle;
                     
-                    if(json.insert[i].type == 'fake'){
-                        
-                        
+                    settings = json.insert[i].settings;
+                    widgetString = JSON.stringify(json.insert[i].widget);
+
+                    settingsString = JSON.stringify(settings);
+
+                    fid = json.insert[i].fid;
+                    field_type = json.insert[i].type;
+                    
+                    label = json.insert[i].label;
+                    description = json.insert[i].description;
+                    
+                    weight = json.insert[i].weight;
+                    required = json.insert[i].required;
+                    disabled = json.insert[i].disabled;
+                    
+                    if(typeof json.insert[i].settings.region !== 'undefined'){
+                        region = json.insert[i].settings.region;
                     }
                     else{
-                    
-                        settings = json.insert[i].settings;
-                        widgetString = JSON.stringify(json.insert[i].widget);
-    
-                        settingsString = JSON.stringify(settings);
-    
-                        fid = json.insert[i].fid;
-                        field_type = json.insert[i].type;
-                        
-                        label = json.insert[i].label;
-                        description = json.insert[i].description;
-                        
-                        weight = json.insert[i].weight;
-                        required = json.insert[i].required;
-                        disabled = json.insert[i].disabled;
-                        
-                        if(typeof json.insert[i].settings.region !== 'undefined'){
-                            region = json.insert[i].settings.region;
-                        }
-                        else{
-                            region = "";
-                        }
-    
-                        can_view = 0;
-                        can_edit = 0;
-    
-                        if (settings.enforce_permissions != null && settings.enforce_permissions == 1) {
-                            for (permIdx in settings.permissions) {
-                                if (settings.permissions.hasOwnProperty(permIdx)) {
-                                    for (roleIdx in roles) {
-                                        if (roles.hasOwnProperty(roleIdx)) {
-                                            if (permIdx == roleIdx) {
-                                                permissionsString = JSON.stringify(settings.permissions[permIdx]);
-                                                if (permissionsString.indexOf('update') >= 0 || settings.permissions[permIdx].all_permissions) {
-                                                    can_edit = 1;
-                                                }
-    
-                                                if (permissionsString.indexOf('view') >= 0 || settings.permissions[permIdx].all_permissions) {
-                                                    can_view = 1;
-                                                }
+                        region = "";
+                    }
+
+                    can_view = 0;
+                    can_edit = 0;
+
+                    if (settings.enforce_permissions != null && settings.enforce_permissions == 1) {
+                        for (permIdx in settings.permissions) {
+                            if (settings.permissions.hasOwnProperty(permIdx)) {
+                                for (roleIdx in roles) {
+                                    if (roles.hasOwnProperty(roleIdx)) {
+                                        if (permIdx == roleIdx) {
+                                            permissionsString = JSON.stringify(settings.permissions[permIdx]);
+                                            if (permissionsString.indexOf('update') >= 0 || settings.permissions[permIdx].all_permissions) {
+                                                can_edit = 1;
+                                            }
+
+                                            if (permissionsString.indexOf('view') >= 0 || settings.permissions[permIdx].all_permissions) {
+                                                can_view = 1;
                                             }
                                         }
                                     }
                                 }
                             }
                         }
-                        else {
-                            can_view = can_edit = 1;
-                        }
-                    
+                    }
+                    else {
+                        can_view = can_edit = 1;
+                    }
+                
 
-                        result = mainDB.execute('SELECT COUNT(*) FROM fields WHERE fid = ' + fid);
-    
-                        field_exists = false;
-                        if (result.field(0, Ti.Database.FIELD_TYPE_INT) > 0) {
-                            field_exists = true;
-                        }
-    
-                        result.close();
-                    
-                    
+                    result = mainDB.execute('SELECT COUNT(*) FROM fields WHERE fid = ' + fid);
 
-                        if (!field_exists) {
-    
-                            //switch(json.insert[i].type) {
-                            //    // case "taxonomy_term_reference":
-                            // case "user_reference":
-                            // case "datestamp":
-                            // case "omadi_time":
-                            // case "number_integer":
-                            // case "omadi_reference":
-                            // case "list_boolean":
-                            // if(Ti.App.isAndroid){
-                            // db_type = "INTEGER";
-                            // }
-                            // else{
-                            // db_type = 'TEXT';
-                            // }
-                            // break;
-                            // case "number_decimal":
-                            // db_type = "REAL";
-                            // break;
-    
-                            //default:
-                            db_type = "TEXT";
-                            //    break;
-                            // }
-    
-                            //Check if it is a valid bundle (automatically inserted through the API):
-                            result = mainDB.execute("SELECT * FROM bundles WHERE bundle_name='" + bundle + "'");
-                            if (result.isValidRow()) {
-                                if (json.insert[i].settings.parts) {
-                                    for (part in json.insert[i].settings.parts) {
-                                        if (json.insert[i].settings.parts.hasOwnProperty(part)) {
-                                            queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___" + part + "' " + db_type);
-                                        }
-                                    }
-                                }
-                                else {
-                                    //if (json.insert[i].type == 'image') {
-                                    //queries.push('ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___file_id' + '\' ' + db_type);
-                                    //queries.push('ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___status' + '\' ' + db_type);
-                                    //}
-                                    
-    
-                                    queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "' " + db_type);
-                                    
-                                    if (json.insert[i].type == 'file') {
-                                        queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___filename' " + db_type);
-                                    }
-                                }
-                            }
-    
-                            result.close();
-    
-                            //Multiple parts
+                    field_exists = false;
+                    if (result.field(0, Ti.Database.FIELD_TYPE_INT) > 0) {
+                        field_exists = true;
+                    }
+
+                    result.close();
+                
+                
+
+                    if (!field_exists) {
+
+                        //switch(json.insert[i].type) {
+                        //    // case "taxonomy_term_reference":
+                        // case "user_reference":
+                        // case "datestamp":
+                        // case "omadi_time":
+                        // case "number_integer":
+                        // case "omadi_reference":
+                        // case "list_boolean":
+                        // if(Ti.App.isAndroid){
+                        // db_type = "INTEGER";
+                        // }
+                        // else{
+                        // db_type = 'TEXT';
+                        // }
+                        // break;
+                        // case "number_decimal":
+                        // db_type = "REAL";
+                        // break;
+
+                        //default:
+                        db_type = "TEXT";
+                        //    break;
+                        // }
+
+                        //Check if it is a valid bundle (automatically inserted through the API):
+                        result = mainDB.execute("SELECT * FROM bundles WHERE bundle_name='" + bundle + "'");
+                        if (result.isValidRow()) {
                             if (json.insert[i].settings.parts) {
                                 for (part in json.insert[i].settings.parts) {
                                     if (json.insert[i].settings.parts.hasOwnProperty(part)) {
-                                        queries.push("INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings, can_view, can_edit) VALUES (" + fid + ",'" + dbEsc(field_type) + "','" + dbEsc(field_name + "___" + part) + "','" + dbEsc(label) + "','" + dbEsc(description) + "','" + dbEsc(bundle) + "','" + dbEsc(region) + "'," + weight + ", '" + dbEsc(required) + "' ,  '" + dbEsc(disabled) + "' , '" + dbEsc(widgetString) + "','" + dbEsc(settingsString) + "'," + can_view + ", " + can_edit + ")");
+                                        queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___" + part + "' " + db_type);
                                     }
                                 }
                             }
-                            //Normal field
                             else {
-                                queries.push("INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings, can_view, can_edit) VALUES (" + fid + ",'" + dbEsc(field_type) + "','" + dbEsc(field_name) + "','" + dbEsc(label) + "','" + dbEsc(description) + "','" + dbEsc(bundle) + "','" + dbEsc(region) + "'," + weight + ",'" + dbEsc(required) + "','" + dbEsc(disabled) + "','" + dbEsc(widgetString) + "','" + dbEsc(settingsString) + "'," + can_view + ", " + can_edit + ")");
+                                //if (json.insert[i].type == 'image') {
+                                //queries.push('ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___file_id' + '\' ' + db_type);
+                                //queries.push('ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___status' + '\' ' + db_type);
+                                //}
+                                
+
+                                queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "' " + db_type);
+                                
+                                if (json.insert[i].type == 'file') {
+                                    queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___filename' " + db_type);
+                                }
                             }
-    
                         }
+
+                        result.close();
+
+                        //Multiple parts
+                        if (json.insert[i].settings.parts) {
+                            for (part in json.insert[i].settings.parts) {
+                                if (json.insert[i].settings.parts.hasOwnProperty(part)) {
+                                    queries.push("INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings, can_view, can_edit) VALUES (" + fid + ",'" + dbEsc(field_type) + "','" + dbEsc(field_name + "___" + part) + "','" + dbEsc(label) + "','" + dbEsc(description) + "','" + dbEsc(bundle) + "','" + dbEsc(region) + "'," + weight + ", '" + dbEsc(required) + "' ,  '" + dbEsc(disabled) + "' , '" + dbEsc(widgetString) + "','" + dbEsc(settingsString) + "'," + can_view + ", " + can_edit + ")");
+                                }
+                            }
+                        }
+                        //Normal field
                         else {
-                            // The structure exists.... just update the fields table values
-                            // This will work for fields with parts, as they are indexed by the same fid
-                            queries.push("UPDATE fields SET type='" + dbEsc(field_type) + "', label='" + dbEsc(label) + "', description='" + dbEsc(description) + "', bundle='" + dbEsc(bundle) + "', region='" + dbEsc(region) + "', weight=" + weight + ", required='" + dbEsc(required) + "', disabled='" + dbEsc(disabled) + "', widget='" + dbEsc(widgetString) + "', settings='" + dbEsc(settingsString) + "', can_view=" + can_view + ", can_edit=" + can_edit + "  WHERE fid=" + fid);
+                            queries.push("INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings, can_view, can_edit) VALUES (" + fid + ",'" + dbEsc(field_type) + "','" + dbEsc(field_name) + "','" + dbEsc(label) + "','" + dbEsc(description) + "','" + dbEsc(bundle) + "','" + dbEsc(region) + "'," + weight + ",'" + dbEsc(required) + "','" + dbEsc(disabled) + "','" + dbEsc(widgetString) + "','" + dbEsc(settingsString) + "'," + can_view + ", " + can_edit + ")");
                         }
+
+                    }
+                    else {
+                        // The structure exists.... just update the fields table values
+                        // This will work for fields with parts, as they are indexed by the same fid
+                        queries.push("UPDATE fields SET type='" + dbEsc(field_type) + "', label='" + dbEsc(label) + "', description='" + dbEsc(description) + "', bundle='" + dbEsc(bundle) + "', region='" + dbEsc(region) + "', weight=" + weight + ", required='" + dbEsc(required) + "', disabled='" + dbEsc(disabled) + "', widget='" + dbEsc(widgetString) + "', settings='" + dbEsc(settingsString) + "', can_view=" + can_view + ", can_edit=" + can_edit + "  WHERE fid=" + fid);
                     }
                 }
             }
@@ -1633,7 +1782,7 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                                 if(typeof json.insert[i][field_name] !== 'undefined'){
                                     value = json.insert[i][field_name];
                                     values.push("'" + dbEsc(value) + "'");
-                                    Ti.API.error("*" + value);
+                                    //Ti.API.error("*" + value);
                                 }
                                 else{
                                     //Ti.API.error("nope");

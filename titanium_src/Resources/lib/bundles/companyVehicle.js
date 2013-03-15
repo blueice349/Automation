@@ -36,6 +36,7 @@ Omadi.bundles.companyVehicle.askAboutVehicle = function() {"use strict";
                 Omadi.bundles.companyVehicle.setUserVehicle(e.source.vehicles[e.index].nid);
             }
             
+            Ti.API.debug(e.index);
 
             if ( typeof alertQueue !== 'undefined') {
                 Ti.App.fireEvent('showNextAlertInQueue');
@@ -94,7 +95,7 @@ Omadi.bundles.companyVehicle.setUserVehicle = function(vehicle_nid) {"use strict
             Omadi.display.doneLoading();
             
             Ti.API.error(JSON.stringify(e));
-            dialog = Ti.UI.createOptionDialog({
+            dialog = Ti.UI.createAlertDialog({
                 message : 'An error occured, and your vehicle was not selected. Please try again.',
                 buttonNames: ['OK']
             });

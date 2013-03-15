@@ -58,8 +58,6 @@ Omadi.bundles.tag.getExpiredTags = function(){"use strict";
         result.next();
     }
     
-    Ti.API.debug(nids);
-    
     result.close();
     
     db.close();
