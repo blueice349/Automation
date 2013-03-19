@@ -82,8 +82,7 @@ Omadi.widgets.datestamp = {
             }
         }
 
-        Ti.API.debug(settings);
-
+        //Ti.API.debug(settings);
 
         if (settings.time == 1 || typeof settings.granularity.hour !== 'undefined') {
             showTime = true;
@@ -382,7 +381,7 @@ Omadi.widgets.datestamp = {
             newDate = datePickerValue;
             e.source.widgetView.jsDate = newDate;
             
-            Ti.API.debug(newDate.toString());
+            //Ti.API.debug(newDate.toString());
 
             e.source.widgetView.dbValue = Math.ceil(newDate.getTime() / 1000);
             e.source.widgetView.textValue = Omadi.utils.formatDate(e.source.widgetView.dbValue, e.source.widgetView.showTime);

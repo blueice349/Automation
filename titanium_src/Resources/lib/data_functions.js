@@ -1813,7 +1813,11 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                                 nid : json.insert[i].nid
                             });
                         }
-                        else if(type == 'dispatch' && json.insert[i].viewed == 0){
+                        else if(json.insert[i].viewed == 0 && 
+                                typeof json.insert[i].from_dispatch !== 'undefined' &&
+                                json.insert[i].from_dispatch > 0){
+                                    
+                            Ti.API.info("NEW DISPATCH");    
                             Ti.App.Properties.setBool('newDispatchJob', true);
                         }
                         

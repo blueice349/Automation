@@ -316,7 +316,7 @@ function setupBottomButtons() {"use strict";
     var alertsView, alertsImg, alertsLabel, 
         draftsView, draftsImg, draftsLabel, 
         actionsView, actionsImg, actionsLabel, 
-        jobsView, jobsImg, jobsLabel, 
+        jobsView, jobsImg, jobsLabel, dispatchBundle, 
         recentView, recentLabel, recentImg,
         tagsReadyView, tagsReadyImg, tagsReadyLabel, tagBundle;
 
@@ -400,42 +400,46 @@ function setupBottomButtons() {"use strict";
         // Omadi.display.openDraftsWindow();
     // });
     
-    jobsView = Ti.UI.createView({
-        backgroundSelectedColor : 'orange',
-        focusable : true,
-        width : '33%',
-        height : 45,
-        layout : 'vertical',
-        color : '#fff'
-    });
-
-    databaseStatusView.add(jobsView);
-
-    jobsImg = Ti.UI.createImageView({
-        image : '/images/jobs.png',
-        height : 22,
-        width : 22,
-        top : 2
-    });
-
-    jobsLabel = Ti.UI.createLabel({
-        text : 'Jobs',
-        font : {
-            fontSize : 14
-        },
-        height : Ti.UI.SIZE,
-        bottom : 0,
-        color : '#fff',
-        width : Ti.UI.SIZE,
-        textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
-    });
-
-    jobsView.add(jobsImg);
-    jobsView.add(jobsLabel);
-    jobsView.addEventListener('click', function() {
-        Omadi.display.openJobsWindow();
-    });
-
+    dispatchBundle = Omadi.data.getBundle('dispatch');
+    if(dispatchBundle){
+        
+        jobsView = Ti.UI.createView({
+            backgroundSelectedColor : 'orange',
+            focusable : true,
+            width : '33%',
+            height : 45,
+            layout : 'vertical',
+            color : '#fff'
+        });
+    
+        databaseStatusView.add(jobsView);
+    
+        jobsImg = Ti.UI.createImageView({
+            image : '/images/jobs.png',
+            height : 22,
+            width : 22,
+            top : 2
+        });
+    
+        jobsLabel = Ti.UI.createLabel({
+            text : 'Jobs',
+            font : {
+                fontSize : 14
+            },
+            height : Ti.UI.SIZE,
+            bottom : 0,
+            color : '#fff',
+            width : Ti.UI.SIZE,
+            textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
+        });
+    
+        jobsView.add(jobsImg);
+        jobsView.add(jobsLabel);
+        jobsView.addEventListener('click', function() {
+            Omadi.display.openJobsWindow();
+        });
+    }
+    
     recentView = Ti.UI.createView({
         backgroundSelectedColor : 'orange',
         focusable : true,
@@ -677,7 +681,6 @@ function showNextAlertInQueue(e) {"use strict";
         offImage.addEventListener('click', function(e) {
             
             Omadi.display.logoutButtonPressed();
-
         });
 
         curWin.addEventListener('close', function() {

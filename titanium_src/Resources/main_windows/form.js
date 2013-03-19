@@ -382,11 +382,25 @@ function validateRequired(node, instance){"use strict";
     if (((instance.is_title === true) || (instance.isRequired) || instance.isConditionallyRequired) && instance.can_view == true){
         
          if(isEmpty){
-             if(instance.partLabel === null){
-                 form_errors.push(instance.label + " is required");
+             if(instance.type == 'location'){
+                 
+                 if(instance.part == 'postal_code'){
+                     if(typeof instance.settings.require_zip !== 'undefined' && instance.settings.require_zip == 1){
+                         form_errors.push(instance.label + " " + instance.partLabel + " is required");
+                     }
+                 }
+                 else{
+                     form_errors.push(instance.label + " " + instance.partLabel + " is required");
+                 }
              }
              else{
-                 form_errors.push(instance.label + " " + instance.partLabel + " is required");
+                        
+                 if(instance.partLabel === null){
+                     form_errors.push(instance.label + " is required");
+                 }
+                 else{
+                     form_errors.push(instance.label + " " + instance.partLabel + " is required");
+                 }
              }
          }
     }
@@ -1217,13 +1231,8 @@ function sort_by_weight(a, b) {"use strict";
     return 0;
 }
 
-
-
-
-
 function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
     
-   
     /*jslint nomen: true*/
     /*global search_criteria_search_order, labelViews*/
    
@@ -1233,19 +1242,19 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
         search_operator, search_value, search_values, values, i, makeRequired,
         and_groups, and_group_index, and_group, and_group_match, j, or_match;
     
-    try{
+    try {
     
         row_matches = [];
         
-        //instance = instances[check_field_name];
-       // Ti.API.debug("In Conditional for " + instance.field_name);
+        // instance = instances[check_field_name];
+         //Ti.API.debug("In Conditional for " + instance.field_name);
+         //Ti.API.debug(instance);
         
         if (instance.settings.criteria != null && instance.settings.criteria.search_criteria != null) {
             //instance.settings.criteria.search_criteria.sort(search_criteria_search_order);
+            
             search_criteria = instance.settings.criteria.search_criteria;
             search_criteria.sort(sort_by_weight);
-            
-            //Ti.API.debug(JSON.stringify(search_criteria));
             
             for (row_idx in search_criteria) {
                 if(search_criteria.hasOwnProperty(row_idx)){
@@ -1265,15 +1274,12 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
                     }
                     
                     //Ti.API.debug(JSON.stringify(values));
-              
-        
                     switch(instances[field_name].type) {
                         case 'text':
                         case 'text_long':
                         case 'link_field':
                         case 'phone':
                         case 'license_plate':
-                        case 'location':
                         case 'vehicle_fields':
                         case 'number_integer':
                         case 'number_decimal':
@@ -1282,14 +1288,13 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
                         case 'omadi_reference':
                         case 'omadi_time':
                         case 'calculation_field':
+                        case 'location':
                         
-
                             if (search_operator == '__filled') {
                                 for (i = 0; i < values.length; i++) {
                                     if (values[i] != null && values[i] != "") {
                                         row_matches[row_idx] = true;
                                     }
-    
                                 }
                             }
                             else {
@@ -1305,6 +1310,31 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
                                 }
                             }
                             break;
+                            
+                        //case 'location':
+                            
+                            // Ti.API.debug(instances[field_name]);
+                            
+                            // if (search_operator == '__filled') {
+                                // for (i = 0; i < values.length; i++) {
+                                    // if (values[i] != null && values[i] != "") {
+                                        // row_matches[row_idx] = true;
+                                    // }
+                                // }
+                            // }
+                            // else {
+                                // if (values.length == 0) {
+                                    // row_matches[row_idx] = true;
+                                // }
+                                // else {
+                                    // for (i = 0; i < values.length; i ++){
+                                        // if (values[i] == null || values[i] == "") {
+                                            // row_matches[row_idx] = true;
+                                        // }
+                                    // }
+                                // }
+                            // }
+                            //break;
                             
                         case 'taxonomy_term_reference':
                         case 'user_reference':
@@ -1455,8 +1485,6 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
                         }
                     }
                 }
-                
-                //Ti.API.error(JSON.stringify(and_groups));
             }
             
             if(typeof labelViews[instance.field_name] !== 'undefined'){
@@ -1481,7 +1509,7 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
         }
     }
     catch(ex){
-        alert("Changing conditional value: " + ex);
+        Omadi.service.sendErrorReport("Changing conditional value: " + ex);
     }
 }
 

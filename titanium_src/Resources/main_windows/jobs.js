@@ -167,7 +167,7 @@ function refreshJobsTable(){"use strict";
             });            
             
             rowImg = Ti.UI.createImageView({
-                image: Omadi.display.getNodeTypeImagePath('dispatch'),
+                image: Omadi.display.getNodeTypeImagePath(newJobs[i].type),
                 top: 5,
                 left: 1,
                 width: 35,
@@ -228,7 +228,7 @@ function refreshJobsTable(){"use strict";
             });            
             
             rowImg = Ti.UI.createImageView({
-                image: Omadi.display.getNodeTypeImagePath('dispatch'),
+                image: Omadi.display.getNodeTypeImagePath(currentUserJobs[i].type),
                 top: 5,
                 left: 1,
                 width: 35,
@@ -283,10 +283,8 @@ function refreshJobsTable(){"use strict";
     });
     
     Ti.App.addEventListener('finishedDataSync', function(){
-        
         refreshJobsTable();
     });
-    
     
     wrapperView = Ti.UI.createView({
         layout: 'vertical',

@@ -103,108 +103,114 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
 Omadi.bundles.dispatch.getStatusOptions = function(nid){"use strict";
     var options, db, result, termResult, vid, dispatchBundle, node, i,
         excludeTids, excludeStatuses, dispatchStatusTids, 
-        currentStatusTid, currentStatus, status, useTid, tid;
+        currentStatusTid, currentStatus, status, useTid, tid, dispatchNode, dispatchNid;
     
     options = [];
     
     node = Omadi.data.nodeLoad(nid);
-    currentStatusTid = node.dispatch_status.dbValues[0];
     
-    dispatchBundle = Omadi.data.getBundle('dispatch');
+    dispatchNid = node.from_dispatch.dbValues[0];
+    dispatchNode = Omadi.data.nodeLoad(dispatchNid);
     
-    excludeTids = [];
-    excludeStatuses = [];
-    
-    if(typeof dispatchBundle.data.node_type_specific !== 'undefined' && typeof dispatchBundle.data.node_type_specific.dispatch_status_terms !== 'undefined'){
+    if(dispatchNode){
+        currentStatusTid = dispatchNode.dispatch_status.dbValues[0];
         
-        if(typeof dispatchBundle.data.node_type_specific.dispatch_status_terms == 'string'){
-            dispatchStatusTids = JSON.parse(dispatchBundle.data.node_type_specific.dispatch_status_terms);
-        }
-        else{
-            dispatchStatusTids = dispatchBundle.data.node_type_specific.dispatch_status_terms;
-        }
+        dispatchBundle = Omadi.data.getBundle('dispatch');
         
-        currentStatus = null;
+        excludeTids = [];
+        excludeStatuses = [];
         
-        for(status in dispatchStatusTids){
-            if(dispatchStatusTids.hasOwnProperty(status)){
-                
-                if(dispatchStatusTids[status] == currentStatusTid){
-                    currentStatus = status;
-                    break;
-                }
+        if(typeof dispatchBundle.data.node_type_specific !== 'undefined' && typeof dispatchBundle.data.node_type_specific.dispatch_status_terms !== 'undefined'){
+            
+            if(typeof dispatchBundle.data.node_type_specific.dispatch_status_terms == 'string'){
+                dispatchStatusTids = JSON.parse(dispatchBundle.data.node_type_specific.dispatch_status_terms);
             }
-        }
-        
-        if(currentStatus !== null){
-            switch(currentStatus){
-                case 'job complete':
-                    excludeStatuses.push('job complete');
-                    /* falls through */
-                case 'arrived at destination':
-                    excludeStatuses.push('arrived at destination');
-                    /* falls through */
-                case 'towing vehicle':
-                    excludeStatuses.push('towing vehicle');
-                    /* falls through */
-                case 'arrived at job':
-                    excludeStatuses.push('arrived at job');
-                    /* falls through */
-                case 'driving to job':
-                    excludeStatuses.push('driving to job');
-                    /* falls through */
-                case 'dispatch job accepted':
-                    excludeStatuses.push('dispatch job accepted');
-                    /* falls through */
-                case 'dispatching call':
-                    excludeStatuses.push('dispatching call');
-                    /* falls through */
-                case 'call received':
-                    excludeStatuses.push('call received');
-                    break;
+            else{
+                dispatchStatusTids = dispatchBundle.data.node_type_specific.dispatch_status_terms;
+            }
+            
+            currentStatus = null;
+            
+            for(status in dispatchStatusTids){
+                if(dispatchStatusTids.hasOwnProperty(status)){
                     
-            }
-        }
-        
-        for(i = 0; i < excludeStatuses.length; i ++){
-            excludeTids.push(dispatchStatusTids[excludeStatuses[i]]);
-        }
-    }
-    
-    db = Omadi.utils.openMainDatabase();
-    
-    result = db.execute("SELECT vid FROM vocabulary WHERE machine_name = 'dispatch_status'");
-    if(result.isValidRow()){
-        vid = result.field(0);
-        
-        termResult = db.execute("SELECT tid, name FROM term_data WHERE vid = " + vid + " ORDER BY weight");
-        
-        while(termResult.isValidRow()){
-            
-            useTid = true;
-            tid = termResult.fieldByName('tid', Ti.Database.FIELD_TYPE_INT);
-            
-            for(i = 0; i < excludeTids.length; i ++){
-                if(tid == excludeTids[i]){
-                    useTid = false;
-                    break;
+                    if(dispatchStatusTids[status] == currentStatusTid){
+                        currentStatus = status;
+                        break;
+                    }
                 }
             }
             
-            if(useTid){
-                options.push({
-                   tid: tid,
-                   text: termResult.fieldByName('name') 
-                });
+            if(currentStatus !== null){
+                switch(currentStatus){
+                    case 'job complete':
+                        excludeStatuses.push('job complete');
+                        /* falls through */
+                    case 'arrived at destination':
+                        excludeStatuses.push('arrived at destination');
+                        /* falls through */
+                    case 'towing vehicle':
+                        excludeStatuses.push('towing vehicle');
+                        /* falls through */
+                    case 'arrived at job':
+                        excludeStatuses.push('arrived at job');
+                        /* falls through */
+                    case 'driving to job':
+                        excludeStatuses.push('driving to job');
+                        /* falls through */
+                    case 'dispatch job accepted':
+                        excludeStatuses.push('dispatch job accepted');
+                        /* falls through */
+                    case 'dispatching call':
+                        excludeStatuses.push('dispatching call');
+                        /* falls through */
+                    case 'call received':
+                        excludeStatuses.push('call received');
+                        break;
+                        
+                }
             }
             
-            termResult.next();
+            for(i = 0; i < excludeStatuses.length; i ++){
+                excludeTids.push(dispatchStatusTids[excludeStatuses[i]]);
+            }
         }
-        termResult.close();
+        
+        db = Omadi.utils.openMainDatabase();
+        
+        result = db.execute("SELECT vid FROM vocabulary WHERE machine_name = 'dispatch_status'");
+        if(result.isValidRow()){
+            vid = result.field(0);
+            
+            termResult = db.execute("SELECT tid, name FROM term_data WHERE vid = " + vid + " ORDER BY weight");
+            
+            while(termResult.isValidRow()){
+                
+                useTid = true;
+                tid = termResult.fieldByName('tid', Ti.Database.FIELD_TYPE_INT);
+                
+                for(i = 0; i < excludeTids.length; i ++){
+                    if(tid == excludeTids[i]){
+                        useTid = false;
+                        break;
+                    }
+                }
+                
+                if(useTid){
+                    options.push({
+                       tid: tid,
+                       text: termResult.fieldByName('name') 
+                    });
+                }
+                
+                termResult.next();
+            }
+            termResult.close();
+        }
+        result.close();
+        
+        db.close();
     }
-    result.close();
-    
-    db.close();
     
     return options;
 };
@@ -346,7 +352,7 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
 
 Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
     /*global list_search_node_matches_search_criteria*/
-    var newJobs, db, result, sql, nowTimestamp, dispatchBundle;
+    var newJobs, db, result, sql, nowTimestamp, dispatchBundle, newDispatchNids, i, node;
     
     nowTimestamp = Omadi.utils.getUTCTimestamp();
     newJobs = [];
@@ -356,26 +362,34 @@ Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
     
         db = Omadi.utils.openMainDatabase();
         
-        sql = "SELECT n.nid, n.title, n.viewed FROM node n ";
+        sql = "SELECT n.nid, dispatch.dispatch_form_reference FROM node n ";
         sql += "LEFT JOIN dispatch ON dispatch.nid = n.nid ";
         sql += "WHERE n.table_name = 'dispatch' ";
+        sql += "AND dispatch.dispatch_form_reference IS NOT NULL ";
         sql += "AND dispatch.dispatched_to_driver IS NULL"; 
         result = db.execute(sql);
         
+        newDispatchNids = [];
         while(result.isValidRow()){
-            
-            newJobs.push({
-               nid: result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT),
-               title: result.fieldByName('title'),
-               viewed: result.fieldByName('viewed')
-            });
-            
+            newDispatchNids.push(result.fieldByName('dispatch_form_reference', Ti.Database.FIELD_TYPE_INT));
             result.next();
         }
-        
         result.close();
-        
         db.close();
+        
+        Ti.API.debug(newDispatchNids);
+        
+        for(i = 0; i < newDispatchNids.length; i ++){
+            
+            node = Omadi.data.nodeLoad(newDispatchNids[i]);
+            
+            newJobs.push({
+               nid: node.nid,
+               title: node.title,
+               viewed: node.viewed,
+               type: node.type
+            });
+        }
     }
     
     return newJobs;
@@ -383,7 +397,8 @@ Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
 
 Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
     /*global list_search_node_matches_search_criteria*/
-    var newJobs, db, result, sql, nowTimestamp, dispatchBundle, currentUserUid, jobDoneTid, dispatchStatusTids;
+    var newJobs, db, result, sql, nowTimestamp, dispatchBundle, currentUserUid, 
+        jobDoneTid, dispatchStatusTids, i, node, currentUserJobNids;
     
     nowTimestamp = Omadi.utils.getUTCTimestamp();
     newJobs = [];
@@ -408,27 +423,34 @@ Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
         
         db = Omadi.utils.openMainDatabase();
         
-        sql = "SELECT n.nid, n.title, n.viewed FROM node n ";
+        sql = "SELECT n.nid, dispatch.dispatch_form_reference FROM node n ";
         sql += "LEFT JOIN dispatch ON dispatch.nid = n.nid ";
         sql += "WHERE n.table_name = 'dispatch' ";
+        sql += "AND dispatch.dispatch_form_reference IS NOT NULL ";
         sql += "AND dispatch.dispatched_to_driver = " + currentUserUid + " "; 
         sql += "AND (dispatch.dispatch_status IS NULL OR dispatch.dispatch_status <> " + jobDoneTid + ") ";
         result = db.execute(sql);
         
+        currentUserJobNids = [];
         while(result.isValidRow()){
-            
-            newJobs.push({
-               nid: result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT),
-               title: result.fieldByName('title'),
-               viewed: result.fieldByName('viewed')
-            });
-            
+            currentUserJobNids.push(result.fieldByName('dispatch_form_reference', Ti.Database.FIELD_TYPE_INT));
             result.next();
         }
-        
         result.close();
-        
         db.close();
+       
+        
+        for(i = 0; i < currentUserJobNids.length; i ++){
+            
+            node = Omadi.data.nodeLoad(currentUserJobNids[i]);
+            
+            newJobs.push({
+               nid: node.nid,
+               title: node.title,
+               viewed: node.viewed,
+               type: node.type
+            });
+        }
     }
     
     return newJobs;

@@ -46,8 +46,10 @@ Omadi.widgets.taxonomy_term_reference = {
     getNewElement : function(node, instance, index) {"use strict";
 
         var settings, widgetView, dbValue, textValue, i, options, textOptions, wrapperView, 
-            descriptionText, descriptionLabel, isAutocomplete, autocomplete_table;
-
+            descriptionText, descriptionLabel, isAutocomplete, autocomplete_table, defaultTerm;
+        
+        settings = instance.settings;
+        
         if (instance.settings.cardinality == -1) {
             dbValue = [];
             textValue = '';
@@ -61,9 +63,17 @@ Omadi.widgets.taxonomy_term_reference = {
                     if (textValue.length > 0) {
                         textValue = textValue.join(', ');
                     }
-                    else {
+                    else{
                         textValue = "";
                     }
+                }
+            }
+            
+            if (dbValue.length == 0 && typeof settings.default_value !== 'undefined') {
+                if(parseInt(settings.default_value, 10) > 0){
+                    dbValue.push(parseInt(settings.default_value, 10));
+                    defaultTerm = Omadi.data.loadTerm(dbValue[0]);
+                    textValue = defaultTerm.name;
                 }
             }
         }
@@ -79,9 +89,16 @@ Omadi.widgets.taxonomy_term_reference = {
                     textValue = node[instance.field_name].textValues[index];
                 }
             }
+            
+            if (dbValue === null && typeof settings.default_value !== 'undefined') {
+                if(parseInt(settings.default_value, 10) > 0){
+                    dbValue = parseInt(settings.default_value, 10);
+                    defaultTerm = Omadi.data.loadTerm(dbValue);
+                    textValue = defaultTerm.name;
+                }
+            }
         }
-
-        settings = instance.settings;
+        
         Ti.API.debug("Creating taxonomy_term_reference field");
 
         options = Omadi.widgets.taxonomy_term_reference.getOptions(instance);
@@ -247,6 +264,7 @@ Omadi.widgets.taxonomy_term_reference = {
             descriptionLabel.setHeight(0);
         }
         else{
+            
             widgetView = Omadi.widgets.getLabelField(instance);
             widgetView.top = 1;
             widgetView.bottom = 1;

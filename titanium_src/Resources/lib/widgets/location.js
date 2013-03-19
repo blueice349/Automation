@@ -35,6 +35,7 @@ Omadi.widgets.location = {
         var settings, widgetView, dbValue, textValue, part, nameParts, real_field_name, i, options, states;
 
         nameParts = instance.field_name.split('___');
+        settings = instance.settings;
 
         if (nameParts[1]) {
             part = nameParts[1];
@@ -53,6 +54,10 @@ Omadi.widgets.location = {
                     dbValue = node[real_field_name].parts[part].textValue;
                 }
             }
+            
+            if (dbValue == "" && typeof settings.state_default_value !== 'undefined') {
+                dbValue = settings.state_default_value;
+            }
 
             if (dbValue > "") {
                 for ( i = 0; i < states.length; i++) {
@@ -62,20 +67,18 @@ Omadi.widgets.location = {
                     }
                 }
             }
-
         }
         else {
-
             dbValue = "";
             textValue = "";
-            if ( typeof node[real_field_name] !== 'undefined') {
-                if ( typeof node[real_field_name].parts[part].textValue !== 'undefined') {
+            if (typeof node[real_field_name] !== 'undefined') {
+                if (typeof node[real_field_name].parts[part].textValue !== 'undefined') {
                     dbValue = textValue = node[real_field_name].parts[part].textValue;
                 }
             }
         }
 
-        settings = instance.settings;
+        
         Ti.API.debug("Creating location " + part + " field");
 
         if (part == 'province') {// state

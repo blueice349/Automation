@@ -472,22 +472,23 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
     
             postDialog.addEventListener('click', function(ev) {
                 var form_part = form_parts[ev.index];
-    
-                if (form_part == '_cancel') {
-                    Ti.API.info("Cancelled");
-                }
-                else if (form_part == '_view') {
-                    ev.source.eventRow.setBackgroundColor('#fff');
-                    Omadi.display.openViewWindow(node_type, e.row.nid);
-                }
-                else if(form_part.toString().indexOf('_extra_') == 0){
-                    extraOptionIndex = parseInt(form_part.substring(7), 10);
-                    extraOptionCallback = extraOptions[extraOptionIndex].callback;
-                    extraOptionCallback(extraOptions[extraOptionIndex].callbackArgs);
-                }
-                else if (ev.index !== -1 && isEditEnabled === true) {
-                    ev.source.eventRow.setBackgroundColor('#fff');
-                    Omadi.display.openFormWindow(node_type, e.row.nid, form_part);
+                if(typeof form_part !== 'undefined'){
+                    if (form_part == '_cancel') {
+                        Ti.API.info("Cancelled");
+                    }
+                    else if (form_part == '_view') {
+                        ev.source.eventRow.setBackgroundColor('#fff');
+                        Omadi.display.openViewWindow(node_type, e.row.nid);
+                    }
+                    else if(form_part.toString().indexOf('_extra_') == 0){
+                        extraOptionIndex = parseInt(form_part.substring(7), 10);
+                        extraOptionCallback = extraOptions[extraOptionIndex].callback;
+                        extraOptionCallback(extraOptions[extraOptionIndex].callbackArgs);
+                    }
+                    else if (ev.index !== -1 && isEditEnabled === true) {
+                        ev.source.eventRow.setBackgroundColor('#fff');
+                        Omadi.display.openFormWindow(node_type, e.row.nid, form_part);
+                    }
                 }
             });
         }
