@@ -13,6 +13,113 @@ Omadi.bundles.dispatch.showNewDispatchJobs = function(){"use strict";
       }
 };
 
+Omadi.bundles.dispatch.getDrivingDirections = function(args){"use strict";
+    var http, dialog, nid = 0, address, node, accountNid;
+    
+    if(typeof args[0] !== 'undefined'){
+        nid = args[0];
+    }
+    
+    if(nid){
+        
+        if(!Ti.Network.online){
+            
+            dialog = Ti.UI.createOptionDialog({
+                message : 'Your Internet connection was lost. Please try again after you get an Internet connection.'
+            });
+            
+            if ( typeof alertQueue !== 'undefined') {
+                alertQueue.push(dialog);
+            }
+            else {
+                dialog.show();
+            }
+        }
+        else{
+            
+            node = Omadi.data.nodeLoad(nid);
+            address = "";
+            
+            if(node.type == 'cod' || node.type == 'pd'){
+                Omadi.bundles.dispatch.openDirectionsToFirstAddress(node);
+            }
+            else if(node.type == 'tow'){
+                accountNid = node.enforcement_account.dbValues[0];
+                node = Omadi.data.nodeLoad(accountNid);
+                Omadi.bundles.dispatch.openDirectionsToFirstAddress(node);
+            }
+            else if(node.type == 'service'){
+                
+                if(typeof node.service_tow_start_address___street !== 'undefined' && node.service_tow_start_address___street.dbValues[0] > ''){
+                    Omadi.bundles.dispatch.openDirectionsToFirstAddress(node);
+                }
+                else{
+                    accountNid = node.enforcement_account.dbValues[0];
+                    node = Omadi.data.nodeLoad(accountNid);
+                    Omadi.bundles.dispatch.openDirectionsToFirstAddress(node);
+                }
+            }
+        }
+    }
+    else{
+        Omadi.service.sendErrorReport('No NID to accept job');
+        alert("An unknown error occurred attempting to accept the job.");
+    }
+};
+
+Omadi.bundles.dispatch.openDirectionsToFirstAddress = function(node){"use strict";
+    var firstLocationFieldName, index, fieldName, street, city, state, zip, address, instances;
+    
+    instances = Omadi.data.getFields(node.type);
+    
+    firstLocationFieldName = "";
+                
+    for(index in instances){
+        if(instances.hasOwnProperty(index)){
+            if(instances[index].type == 'location'){
+                Ti.API.debug(instances[index]);
+                firstLocationFieldName = instances[index].field_name.split('___');
+                firstLocationFieldName = firstLocationFieldName[0];
+                break;
+            }
+        }
+    }
+    
+    if(firstLocationFieldName.length){
+        
+        Ti.API.debug(firstLocationFieldName);
+        
+        for(index in instances){
+            if(instances.hasOwnProperty(index)){
+                if(instances[index].type == 'location'){
+                    switch(instances[index].part){
+                        case 'street':
+                            fieldName = firstLocationFieldName + "___street";
+                            street = node[fieldName].dbValues[0]; break;
+                        case 'city':
+                            fieldName = firstLocationFieldName + "___city";
+                            city = node[fieldName].dbValues[0]; break;
+                        case 'province':
+                            fieldName = firstLocationFieldName + "___province";
+                            state = node[fieldName].dbValues[0]; break;
+                        case 'postal_code':
+                            fieldName = firstLocationFieldName + "___postal_code";
+                            zip = node[fieldName].dbValues[0]; break;
+                    }
+                }
+            }
+        }
+        
+        address = street + " " + city + ", " + state + " " + zip;
+        
+        Ti.API.debug(address);
+        Omadi.display.getDrivingDirectionsTo(address);
+    }
+    else{
+        alert("An unknown error occurred. Please contact support.");
+    }  
+};
+
 Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
     
     var http, dialog, nid = 0;
@@ -97,7 +204,7 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
     else{
         Omadi.service.sendErrorReport('No NID to accept job');
         alert("An unknown error occurred attempting to accept the job.");
-    }    
+    }
 };
 
 Omadi.bundles.dispatch.getStatusOptions = function(nid){"use strict";
@@ -382,13 +489,14 @@ Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
         for(i = 0; i < newDispatchNids.length; i ++){
             
             node = Omadi.data.nodeLoad(newDispatchNids[i]);
-            
-            newJobs.push({
-               nid: node.nid,
-               title: node.title,
-               viewed: node.viewed,
-               type: node.type
-            });
+            if(node && node.nid){
+                newJobs.push({
+                   nid: node.nid,
+                   title: node.title,
+                   viewed: node.viewed,
+                   type: node.type
+                });
+            }
         }
     }
     

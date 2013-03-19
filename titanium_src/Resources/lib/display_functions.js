@@ -495,6 +495,41 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
     }
 };
 
+Omadi.display.getDrivingDirectionsTo = function(addressString){"use strict";
+    
+    if(addressString){
+        
+        Titanium.Geolocation.accuracy = Titanium.Geolocation.ACCURACY_BEST;
+        Titanium.Geolocation.distanceFilter = 10;
+        Titanium.Geolocation.getCurrentPosition(function(e){
+            var url, longitude, latitude, intent;
+            
+            if (e.error){
+                alert("There was a problem getting directions: " + e.error);
+                return;
+            }
+            
+            longitude = e.coords.longitude;
+            latitude = e.coords.latitude;
+           
+            addressString = addressString.replace(/ /g, '+');
+            
+            if(Ti.App.isAndroid){
+                url = "http://maps.google.com/maps?mode=driving&t=m&saddr="; 
+                url += latitude + "," + longitude;
+                url += "&daddr=" + addressString;
+            }
+            else{
+                url = "http://maps.apple.com/maps?mode=driving&t=m&saddr="; 
+                url += latitude + "," + longitude;
+                url += "&daddr=" + addressString;
+            }
+              
+            Ti.Platform.openURL(url);
+        });
+    }
+};
+
 Omadi.display.getNodeTypeImagePath = function(type) {"use strict";
 
     switch(type) {

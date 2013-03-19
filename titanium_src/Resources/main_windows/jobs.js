@@ -315,6 +315,10 @@ function refreshJobsTable(){"use strict";
                 text: 'Accept Job',
                 callback: Omadi.bundles.dispatch.acceptJob,
                 callbackArgs: [e.row.nid]
+            },{
+                text: 'Driving Directions',
+                callback: Omadi.bundles.dispatch.getDrivingDirections,
+                callbackArgs: [e.row.nid]
             }]);
         }
         else{
@@ -322,8 +326,13 @@ function refreshJobsTable(){"use strict";
                 text: 'Update Status',
                 callback: Omadi.bundles.dispatch.showUpdateStatusDialog,
                 callbackArgs: [e.row.nid]
+            },{
+                text: 'Driving Directions',
+                callback: Omadi.bundles.dispatch.getDrivingDirections,
+                callbackArgs: [e.row.nid]
             }]);
         }
+        
     });
     
     wrapperView.add(tableView);

@@ -526,6 +526,16 @@ function doFieldOutput(fieldObj) {"use strict";
                                 if (node[field_parts[0]].parts.postal_code.textValue > "") {
                                     valueLabel.text += " " + node[field_parts[0]].parts.postal_code.textValue;
                                 }
+                                
+                                // Only show an address with sufficient length to get anywhere
+                                if(valueLabel.text.length > 8){
+                                    
+                                    valueLabel.addEventListener('click', function(e){
+                                        var address = e.source.text.replace("\n", ' ');
+                                        //Ti.API.debug(address);
+                                        Omadi.display.getDrivingDirectionsTo(address);
+                                    });
+                                }
     
                                 break;
     
@@ -533,18 +543,13 @@ function doFieldOutput(fieldObj) {"use strict";
     
                                 field_parts = fieldObj.field_name.split("___");
                                 valueLabel.text = node[field_parts[0]].parts.make.textValue + " " + node[field_parts[0]].parts.model.textValue;
-    
                                 break;
     
                             case 'license_plate':
     
                                 field_parts = fieldObj.field_name.split("___");
                                 valueLabel.text = "(" + node[field_parts[0]].parts.state.textValue + ") " + node[field_parts[0]].parts.plate.textValue;
-    
                                 break;
-    
-                         
-    
                         }
     
                         valueView.add(valueLabel);
