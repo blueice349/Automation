@@ -454,7 +454,6 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
         Omadi.service.sendErrorReport('No NID to accept job');
         alert("An unknown error occurred attempting to update the status.");
     }
-    
 };
 
 Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
