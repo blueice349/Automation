@@ -708,7 +708,8 @@ Omadi.data.deletePhotoUpload = function(id) {"use strict";
 Omadi.data.nodeLoad = function(nid) {"use strict";
 
     var db, node, result, subResult, field_name, dbValue, tempDBValues, textValue, 
-        subValue, decoded, i, real_field_name, part, field_parts, widget, instances, tempValue, origDBValue, jsonValue;
+        subValue, decoded, i, real_field_name, part, field_parts, widget, instances, 
+        tempValue, origDBValue, jsonValue, allowedValues, allowedKey;
 
     node = {
         form_part : 0
@@ -968,6 +969,27 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
 
                                 break;
 
+                            case 'list_text':
+
+                                if(typeof instances[field_name].settings.allowed_values !== 'undefined'){
+                                    allowedValues = instances[field_name].settings.allowed_values; 
+                                    for ( i = 0; i < node[field_name].dbValues.length; i += 1) {
+                                        if(typeof allowedValues[node[field_name].dbValues[i]] !== 'undefined'){
+                                             node[field_name].textValues[i] = allowedValues[node[field_name].dbValues[i]];
+                                        }
+                                        else{
+                                            node[field_name].textValues[i] = node[field_name].dbValues[i];
+                                        }
+                                    }
+                                }
+                                else{
+                                    for ( i = 0; i < node[field_name].dbValues.length; i += 1) {
+                                         node[field_name].textValues[i] = node[field_name].dbValues[i];
+                                    }
+                                }
+
+                                break;
+                                
                             case 'omadi_reference':
                                 subResult = db.execute('SELECT title, table_name, nid FROM node WHERE nid IN(' + node[field_name].dbValues.join(',') + ')');
                                 node[field_name].nodeTypes = [];
@@ -1072,6 +1094,8 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
         db.close();
     }
 
+
+//Ti.API.debug(node);
     return node;
 };
 
@@ -1350,6 +1374,8 @@ Omadi.data.processFieldsJson = function(json, mainDB, progress) {"use strict";
 
         if (json.insert) {
 
+            Ti.API.debug(json);
+            
             if (json.insert.length) {
 
                 for ( i = 0; i < json.insert.length; i++) {
@@ -1632,7 +1658,7 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
             if (json.insert) {
 
                 Ti.API.debug("inserting " + type + " nodes");
-
+                Ti.API.debug(json);
                 //Multiple objects
                 if (json.insert.length) {
 
@@ -1762,7 +1788,6 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                                             if(instances[field_name].type == 'file'){
                                                 Ti.API.error(value);
                                             }
-                                            
                                             break;
             
                                         default:

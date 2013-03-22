@@ -342,6 +342,7 @@ function validateRequired(node, instance){"use strict";
                 case 'vehicle_fields':
                 case 'license_plate':
                 case 'rules_field':
+                case 'list_text':
                     if(dbValues[i] > ""){
                         isEmpty = false;
                     }
