@@ -90,11 +90,12 @@ var labelViews = {};
 Omadi.widgets.fontSize = 16;
 
 Omadi.widgets.getDBValues = function(fieldWrapper){"use strict";
-    var dbValues = [], i, j, k, children, subChildren, subSubChildren;
+    var dbValues = [], i, j, k, m, children, subChildren, subSubChildren, subSubSubChildren;
     
     children = fieldWrapper.getChildren();
     
-    // Find the dbValue up to 3 levels deep in the UI elements
+    // Find the dbValue up to 4 levels deep in the UI elements
+    // The only one going 4 levels deep is the image field with widget signature
     
     for(i = 0; i < children.length; i ++){
         if(typeof children[i].dbValue !== 'undefined'){
@@ -129,6 +130,19 @@ Omadi.widgets.getDBValues = function(fieldWrapper){"use strict";
                                 dbValues.push(Omadi.utils.trimWhiteSpace(subSubChildren[k].dbValue));
                             }
                         }
+                        else if(subSubChildren[k].getChildren().length > 0){
+                            subSubSubChildren = subSubChildren[k].getChildren();
+                            for(m = 0; m < subSubSubChildren.length; m ++){
+                                if(typeof subSubSubChildren[m].dbValue !== 'undefined'){
+                                    if(typeof subSubSubChildren[m].dbValue === 'object' && subSubSubChildren[m].dbValue instanceof Array){
+                                        dbValues = subSubSubChildren[m].dbValue;
+                                    }
+                                    else{
+                                        dbValues.push(Omadi.utils.trimWhiteSpace(subSubSubChildren[m].dbValue));
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -139,7 +153,7 @@ Omadi.widgets.getDBValues = function(fieldWrapper){"use strict";
 };
 
 Omadi.widgets.getTextValues = function(fieldWrapper){"use strict";
-    var textValues = [], i, j, k, children, subChildren, subSubChildren;
+    var textValues = [], i, j, k, m, children, subChildren, subSubChildren, subSubSubChildren;
     
     children = fieldWrapper.getChildren();
     
@@ -161,6 +175,14 @@ Omadi.widgets.getTextValues = function(fieldWrapper){"use strict";
                         if(typeof subSubChildren[k].textValue !== 'undefined'){
                             textValues.push(subSubChildren[k].textValue);
                         }
+                        else if(subSubChildren[k].getChildren().length > 0){
+                            subSubSubChildren = subSubChildren[k].getChildren();
+                            for(m = 0; m < subSubSubChildren.length; m ++){
+                                if(typeof subSubSubChildren[m].textValue !== 'undefined'){
+                                    textValues.push(subSubSubChildren[m].textValue);
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -171,9 +193,12 @@ Omadi.widgets.getTextValues = function(fieldWrapper){"use strict";
 };
 
 Omadi.widgets.setValueWidgetProperty = function(field_name, property, value, setIndex){"use strict";
-    var i, j, k, children, subChildren, subSubChildren;
+    var i, j, k, m, children, subChildren, subSubChildren, subSubSubChildren;
     /*global fieldWrappers*/
-   
+    
+    
+    //TODO: currently, this does not support 4 levels deep, which is required for the signature fields
+    
     if(typeof setIndex === 'undefined'){
         // setIndex == -1 means that the value should be set for all elements, even when there are multiples
         setIndex = -1;
@@ -282,8 +307,6 @@ Omadi.widgets.setValueWidgetProperty = function(field_name, property, value, set
     }
 };
 
-
-
 Omadi.widgets.setValues = function(field_name, defaultValues){"use strict";
     //var children, subChildren, subSubChildren, i, j, k, fieldWrapper, actualWidget;
     
@@ -302,6 +325,8 @@ Omadi.widgets.setValues = function(field_name, defaultValues){"use strict";
 
 Omadi.widgets.getValueWidget = function(field_name){"use strict";
     var actualWidget = null, i, j, k, children, fieldWrapper, subChildren, subSubChildren;
+    
+    // TODO: currently this does not support 4 levels deep, which is required for the signature field
     
     if(typeof fieldWrappers[field_name] !== 'undefined'){
         fieldWrapper = fieldWrappers[field_name];

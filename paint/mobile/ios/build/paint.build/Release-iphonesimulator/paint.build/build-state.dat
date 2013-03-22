@@ -1,0 +1,184 @@
+Tpaint
+v5
+r1
+cCheck dependencies
+cProcessPCH /var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiPaint_Prefix-fogrcjowimubjmdnmzwcsmuqrmot/TiPaint_Prefix.pch.pth TiPaint_Prefix.pch normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
+cCompileC build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintModuleAssets.o /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintModuleAssets.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
+cCompileC build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintModule.o /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintModule.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
+cCompileC build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintPaintView.o /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintPaintView.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
+cCompileC build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintPaintViewProxy.o /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintPaintViewProxy.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
+cCompileC build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/WetPaintView.o /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/WetPaintView.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
+cLibtool /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/Release-iphonesimulator/libTiPaint.a normal i386
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator6.1.sdk
+c000000005102E2D30000000000000110
+t1359143635
+s272
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator6.1.sdk/System/Library/Frameworks/Foundation.framework/Foundation
+c000000005107F09F00000000003DDFA0
+t1359474847
+s4054944
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator6.1.sdk/System/Library/Frameworks/Foundation.framework/Headers/Foundation.h
+c000000005107F09E00000000000015F7
+t1359474846
+s5623
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintModule.m
+c00000000514B7A9C000000000000058C
+t1363901084
+s1420
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintModuleAssets.m
+c00000000514B7A9C00000000000000FE
+t1363901084
+s254
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintPaintView.m
+c00000000514B7A9C0000000000000E25
+t1363901084
+s3621
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintPaintViewProxy.m
+c00000000514B7A9C0000000000000187
+t1363901084
+s391
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/WetPaintView.m
+c00000000514B7A9C0000000000001325
+t1363901084
+s4901
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/TiPaint_Prefix.pch
+c00000000514B7A9C000000000000003E
+t1363901084
+s62
+i<Foundation/Foundation.h>
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/Release-iphonesimulator/libTiPaint.a
+t2
+s0
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaint.LinkFileList
+c00000000514CA02B0000000000000308
+t1363976235
+s776
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintModule.o
+t2
+s0
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintModuleAssets.o
+t2
+s0
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintPaintView.o
+t2
+s0
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintPaintViewProxy.o
+t2
+s0
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/WetPaintView.o
+t2
+s0
+
+N/var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiPaint_Prefix-fogrcjowimubjmdnmzwcsmuqrmot/TiPaint_Prefix.pch.pth
+t2
+s0
+
+CCheck dependencies
+r0
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection18"Check dependencies343022abd7fcb641^728741abd7fcb641^---0#1#0#--18"Check dependencies36"FBDB9C7A-148C-42E7-8E59-208CE54B7556-
+
+CCompileC build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintModule.o /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintModule.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
+s385669035.708255
+e385669035.935032
+r1
+xCompileC
+xbuild/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintModule.o
+x/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintModule.m
+xnormal
+xi386
+xobjective-c
+xcom.apple.compilers.llvm.clang.1_0.compiler
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection93"Compile /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintModule.mcd76b5abd7fcb641^ff5defabd7fcb641^---0#0#0#-19%DVTDocumentLocation2@101"file://localhost/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintModule.m0000000000000000^3936"CompileC build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintModule.o Classes/TiPaintModule.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios    setenv LANG en_US.US-ASCII    setenv PATH "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin:/Applications/Xcode.app/Contents/Developer/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/git/bin:/usr/local/mysql/bin:/Users/chris/pear/bin"    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -std=c99 -Wno-trigraphs -fpascal-strings -Os -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-implicit-atomic-properties -Wno-receiver-is-weak -Wformat -Wno-missing-braces -Wno-parentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-enum-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -Wno-selector -Wno-strict-selector-match -Wno-undeclared-selector -Wno-deprecated-implementations -DTI_VERSION= -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator6.1.sdk -fexceptions -fasm-blocks -fstrict-aliasing -Wprotocol -Wdeprecated-declarations -g -Wno-sign-conversion -fobjc-abi-version=2 -fobjc-legacy-dispatch -mios-simulator-version-min=4.0 -iquote /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-generated-files.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-own-target-headers.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-all-target-headers.hmap -iquote /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-project-headers.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/Release-iphonesimulator/include "-I/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include" "-I/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include/TiCore" "-I/Users/chris/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include" "-I/Users/chris/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include/TiCore" -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/DerivedSources/i386 -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/DerivedSources -F/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/Release-iphonesimulator -DTI_POST_1_2 -include /var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiPaint_Prefix-fogrcjowimubjmdnmzwcsmuqrmot/TiPaint_Prefix.pch -MMD -MT dependencies -MF /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintModule.d --serialize-diagnostics /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintModule.dia -c /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintModule.m -o /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintModule.o36"818CB0B3-4882-44A0-8692-26939153E38D-
+
+CCompileC build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintModuleAssets.o /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintModuleAssets.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
+s385669035.708227
+e385669035.742517
+r1
+xCompileC
+xbuild/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintModuleAssets.o
+x/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintModuleAssets.m
+xnormal
+xi386
+xobjective-c
+xcom.apple.compilers.llvm.clang.1_0.compiler
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection99"Compile /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintModuleAssets.m0779b5abd7fcb641^c422beabd7fcb641^---0#0#0#-19%DVTDocumentLocation2@107"file://localhost/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintModuleAssets.m0000000000000000^3972"CompileC build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintModuleAssets.o Classes/TiPaintModuleAssets.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios    setenv LANG en_US.US-ASCII    setenv PATH "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin:/Applications/Xcode.app/Contents/Developer/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/git/bin:/usr/local/mysql/bin:/Users/chris/pear/bin"    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -std=c99 -Wno-trigraphs -fpascal-strings -Os -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-implicit-atomic-properties -Wno-receiver-is-weak -Wformat -Wno-missing-braces -Wno-parentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-enum-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -Wno-selector -Wno-strict-selector-match -Wno-undeclared-selector -Wno-deprecated-implementations -DTI_VERSION= -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator6.1.sdk -fexceptions -fasm-blocks -fstrict-aliasing -Wprotocol -Wdeprecated-declarations -g -Wno-sign-conversion -fobjc-abi-version=2 -fobjc-legacy-dispatch -mios-simulator-version-min=4.0 -iquote /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-generated-files.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-own-target-headers.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-all-target-headers.hmap -iquote /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-project-headers.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/Release-iphonesimulator/include "-I/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include" "-I/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include/TiCore" "-I/Users/chris/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include" "-I/Users/chris/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include/TiCore" -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/DerivedSources/i386 -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/DerivedSources -F/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/Release-iphonesimulator -DTI_POST_1_2 -include /var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiPaint_Prefix-fogrcjowimubjmdnmzwcsmuqrmot/TiPaint_Prefix.pch -MMD -MT dependencies -MF /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintModuleAssets.d --serialize-diagnostics /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintModuleAssets.dia -c /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintModuleAssets.m -o /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintModuleAssets.o36"03F12A10-DFE4-4DAB-BB7B-47A847ED32B8-
+
+CCompileC build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintPaintView.o /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintPaintView.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
+s385669035.743881
+e385669036.018500
+r1
+xCompileC
+xbuild/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintPaintView.o
+x/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintPaintView.m
+xnormal
+xi386
+xobjective-c
+xcom.apple.compilers.llvm.clang.1_0.compiler
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection96"Compile /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintPaintView.m7495beabd7fcb641^90bb04acd7fcb641^---0#0#0#-19%DVTDocumentLocation2@104"file://localhost/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintPaintView.m0000000000000000^3954"CompileC build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintPaintView.o Classes/TiPaintPaintView.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios    setenv LANG en_US.US-ASCII    setenv PATH "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin:/Applications/Xcode.app/Contents/Developer/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/git/bin:/usr/local/mysql/bin:/Users/chris/pear/bin"    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -std=c99 -Wno-trigraphs -fpascal-strings -Os -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-implicit-atomic-properties -Wno-receiver-is-weak -Wformat -Wno-missing-braces -Wno-parentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-enum-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -Wno-selector -Wno-strict-selector-match -Wno-undeclared-selector -Wno-deprecated-implementations -DTI_VERSION= -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator6.1.sdk -fexceptions -fasm-blocks -fstrict-aliasing -Wprotocol -Wdeprecated-declarations -g -Wno-sign-conversion -fobjc-abi-version=2 -fobjc-legacy-dispatch -mios-simulator-version-min=4.0 -iquote /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-generated-files.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-own-target-headers.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-all-target-headers.hmap -iquote /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-project-headers.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/Release-iphonesimulator/include "-I/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include" "-I/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include/TiCore" "-I/Users/chris/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include" "-I/Users/chris/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include/TiCore" -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/DerivedSources/i386 -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/DerivedSources -F/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/Release-iphonesimulator -DTI_POST_1_2 -include /var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiPaint_Prefix-fogrcjowimubjmdnmzwcsmuqrmot/TiPaint_Prefix.pch -MMD -MT dependencies -MF /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintPaintView.d --serialize-diagnostics /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintPaintView.dia -c /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintPaintView.m -o /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintPaintView.o36"26B7ACA7-BC4F-453D-AA6A-2C80BC1E50A9-
+
+CCompileC build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintPaintViewProxy.o /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintPaintViewProxy.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
+s385669035.936498
+e385669036.142229
+r1
+xCompileC
+xbuild/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintPaintViewProxy.o
+x/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintPaintViewProxy.m
+xnormal
+xi386
+xobjective-c
+xcom.apple.compilers.llvm.clang.1_0.compiler
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection101"Compile /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintPaintViewProxy.m18ebefabd7fcb641^126824acd7fcb641^---0#0#0#-19%DVTDocumentLocation2@109"file://localhost/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintPaintViewProxy.m0000000000000000^3984"CompileC build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintPaintViewProxy.o Classes/TiPaintPaintViewProxy.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios    setenv LANG en_US.US-ASCII    setenv PATH "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin:/Applications/Xcode.app/Contents/Developer/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/git/bin:/usr/local/mysql/bin:/Users/chris/pear/bin"    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -std=c99 -Wno-trigraphs -fpascal-strings -Os -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-implicit-atomic-properties -Wno-receiver-is-weak -Wformat -Wno-missing-braces -Wno-parentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-enum-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -Wno-selector -Wno-strict-selector-match -Wno-undeclared-selector -Wno-deprecated-implementations -DTI_VERSION= -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator6.1.sdk -fexceptions -fasm-blocks -fstrict-aliasing -Wprotocol -Wdeprecated-declarations -g -Wno-sign-conversion -fobjc-abi-version=2 -fobjc-legacy-dispatch -mios-simulator-version-min=4.0 -iquote /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-generated-files.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-own-target-headers.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-all-target-headers.hmap -iquote /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-project-headers.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/Release-iphonesimulator/include "-I/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include" "-I/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include/TiCore" "-I/Users/chris/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include" "-I/Users/chris/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include/TiCore" -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/DerivedSources/i386 -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/DerivedSources -F/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/Release-iphonesimulator -DTI_POST_1_2 -include /var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiPaint_Prefix-fogrcjowimubjmdnmzwcsmuqrmot/TiPaint_Prefix.pch -MMD -MT dependencies -MF /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintPaintViewProxy.d --serialize-diagnostics /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintPaintViewProxy.dia -c /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/TiPaintPaintViewProxy.m -o /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaintPaintViewProxy.o36"87133DBF-388C-4340-9C74-3C9A0FB2C60D-
+
+CCompileC build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/WetPaintView.o /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/WetPaintView.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
+s385669036.020429
+e385669036.247407
+r1
+xCompileC
+xbuild/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/WetPaintView.o
+x/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/WetPaintView.m
+xnormal
+xi386
+xobjective-c
+xcom.apple.compilers.llvm.clang.1_0.compiler
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection92"Compile /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/WetPaintView.m446b05acd7fcb641^7a553facd7fcb641^---0#0#0#-19%DVTDocumentLocation2@100"file://localhost/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/WetPaintView.m0000000000000000^3930"CompileC build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/WetPaintView.o Classes/WetPaintView.m normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios    setenv LANG en_US.US-ASCII    setenv PATH "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin:/Applications/Xcode.app/Contents/Developer/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/git/bin:/usr/local/mysql/bin:/Users/chris/pear/bin"    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x objective-c -arch i386 -fmessage-length=0 -std=c99 -Wno-trigraphs -fpascal-strings -Os -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-implicit-atomic-properties -Wno-receiver-is-weak -Wformat -Wno-missing-braces -Wno-parentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-enum-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -Wno-selector -Wno-strict-selector-match -Wno-undeclared-selector -Wno-deprecated-implementations -DTI_VERSION= -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator6.1.sdk -fexceptions -fasm-blocks -fstrict-aliasing -Wprotocol -Wdeprecated-declarations -g -Wno-sign-conversion -fobjc-abi-version=2 -fobjc-legacy-dispatch -mios-simulator-version-min=4.0 -iquote /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-generated-files.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-own-target-headers.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-all-target-headers.hmap -iquote /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-project-headers.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/Release-iphonesimulator/include "-I/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include" "-I/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include/TiCore" "-I/Users/chris/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include" "-I/Users/chris/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include/TiCore" -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/DerivedSources/i386 -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/DerivedSources -F/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/Release-iphonesimulator -DTI_POST_1_2 -include /var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiPaint_Prefix-fogrcjowimubjmdnmzwcsmuqrmot/TiPaint_Prefix.pch -MMD -MT dependencies -MF /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/WetPaintView.d --serialize-diagnostics /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/WetPaintView.dia -c /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/Classes/WetPaintView.m -o /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/WetPaintView.o36"F6B574FB-1050-4B8E-AFD0-B953FC954652-
+
+CLibtool /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/Release-iphonesimulator/libTiPaint.a normal i386
+s385669036.254861
+e385669036.270261
+r1
+xLibtool
+x/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/Release-iphonesimulator/libTiPaint.a
+xnormal
+xi386
+o/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/libtool: -dynamic not specified the following flags are invalid: -ObjC 
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection62"Libtool build/Release-iphonesimulator/libTiPaint.a normal i386e67742acd7fcb641^9c3045acd7fcb641^-159"/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/libtool: -dynamic not specified the following flags are invalid: -ObjC -0#0#0#--1094"Libtool build/Release-iphonesimulator/libTiPaint.a normal i386    cd /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios    setenv IPHONEOS_DEPLOYMENT_TARGET 4.0    setenv PATH "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin:/Applications/Xcode.app/Contents/Developer/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/git/bin:/usr/local/mysql/bin:/Users/chris/pear/bin"    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/libtool -static -arch_only i386 -syslibroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator6.1.sdk -L/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/Release-iphonesimulator -filelist /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/Objects-normal/i386/TiPaint.LinkFileList -ObjC -framework Foundation -o /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/Release-iphonesimulator/libTiPaint.a36"782563C2-AC78-410C-9A94-0D9DEE54A42D-
+
+CProcessPCH /var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiPaint_Prefix-fogrcjowimubjmdnmzwcsmuqrmot/TiPaint_Prefix.pch.pth TiPaint_Prefix.pch normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler
+s385669035.267981
+e385669035.701419
+r1
+xProcessPCH
+x/var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiPaint_Prefix-fogrcjowimubjmdnmzwcsmuqrmot/TiPaint_Prefix.pch.pth
+xTiPaint_Prefix.pch
+xnormal
+xi386
+xobjective-c
+xcom.apple.compilers.llvm.clang.1_0.compiler
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection29"Precompile TiPaint_Prefix.pchb0c744abd7fcb641^cd8fb3abd7fcb641^---0#0#0#-19%DVTDocumentLocation2@96"file://localhost/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/TiPaint_Prefix.pch0000000000000000^3863"ProcessPCH /var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiPaint_Prefix-fogrcjowimubjmdnmzwcsmuqrmot/TiPaint_Prefix.pch.pth TiPaint_Prefix.pch normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios    setenv LANG en_US.US-ASCII    setenv PATH "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/bin:/Applications/Xcode.app/Contents/Developer/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/git/bin:/usr/local/mysql/bin:/Users/chris/pear/bin"    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x objective-c-header -arch i386 -fmessage-length=0 -std=c99 -Wno-trigraphs -fpascal-strings -Os -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-implicit-atomic-properties -Wno-receiver-is-weak -Wformat -Wno-missing-braces -Wno-parentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-enum-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -Wno-selector -Wno-strict-selector-match -Wno-undeclared-selector -Wno-deprecated-implementations -DTI_VERSION= -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator6.1.sdk -fexceptions -fasm-blocks -fstrict-aliasing -Wprotocol -Wdeprecated-declarations -g -Wno-sign-conversion -fobjc-abi-version=2 -fobjc-legacy-dispatch -mios-simulator-version-min=4.0 -iquote /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-generated-files.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-own-target-headers.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-all-target-headers.hmap -iquote /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/TiPaint-project-headers.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/Release-iphonesimulator/include "-I/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include" "-I/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include/TiCore" "-I/Users/chris/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include" "-I/Users/chris/Users/chris/Library/Application Support/Titanium/mobilesdk/osx/2.1.4.GA/iphone/include/TiCore" -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/DerivedSources/i386 -I/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/paint.build/Release-iphonesimulator/paint.build/DerivedSources -F/Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/build/Release-iphonesimulator -DTI_POST_1_2 --serialize-diagnostics /var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiPaint_Prefix-fogrcjowimubjmdnmzwcsmuqrmot/TiPaint_Prefix.pch.dia -c /Users/chris/Projects/omadi_crm/omadi_mobile/paint/mobile/ios/TiPaint_Prefix.pch -o /var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiPaint_Prefix-fogrcjowimubjmdnmzwcsmuqrmot/TiPaint_Prefix.pch.pth -MMD -MT dependencies -MF /var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiPaint_Prefix-fogrcjowimubjmdnmzwcsmuqrmot/TiPaint_Prefix.pch.d36"C01715C6-673F-4D04-BDEB-84A73ED522FC-
+

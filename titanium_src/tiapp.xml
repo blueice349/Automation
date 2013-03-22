@@ -1,22 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ti:app xmlns:ti="http://ti.appcelerator.org">
-    
-    
     <property name="acs-oauth-secret-production" type="string">c3rahBI7uNneWbjATBKC7OIKesFgSDDA</property>
     <property name="acs-oauth-key-production" type="string">gVLP9yzsZ22dP9h0mEgluUEtl9pYIeyN</property>
     <property name="acs-api-key-production" type="string">ExGfkgUxJQ39EsF9Pdf9ErfRArbpuJlS</property>
-    
-   
     <property name="acs-oauth-secret-development" type="string">Me0qsCx0A9gQJeCH1A1jQI4jzPwufceM</property>
     <property name="acs-oauth-key-development" type="string">GC7XPTxo8bhjtWckrPlRDDs8MsxjVzQs</property>
     <property name="acs-api-key-development" type="string">ri6O3S14Hjfa0ROGxXg9qDAdVhRFDl77</property>
-   
     <!--
     <property name="acs-oauth-secret" type="string">c3rahBI7uNneWbjATBKC7OIKesFgSDDA</property>
     <property name="acs-oauth-key" type="string">gVLP9yzsZ22dP9h0mEgluUEtl9pYIeyN</property>
     <property name="acs-api-key" type="string">ExGfkgUxJQ39EsF9Pdf9ErfRArbpuJlS</property>
     -->
-    
     <property name="ti.android.bug2373.finishfalseroot" type="bool">true</property>
     <property name="ti.android.runtime">v8</property>
     <sdk-version>2.1.4.GA</sdk-version>
@@ -79,5 +73,6 @@
         <module platform="iphone" version="0.7">bencoding.basicgeo</module>
         <module platform="android" version="0.5">bencoding.alarmmanager</module>
         <module platform="android" version="2.0.7">ti.cloudpush</module>
+        <module platform="iphone" version="1.3">ti.paint</module>
     </modules>
 </ti:app>

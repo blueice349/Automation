@@ -592,9 +592,13 @@ Omadi.display.displayFile = function(nid, fid, title) {"use strict";
     }
 };
 
-Omadi.display.displayLargeImage = function(imageView, nid, file_id) {"use strict";
+Omadi.display.displayLargeImage = function(imageView, nid, file_id, showInImageView) {"use strict";
 
     var http;
+    
+    if(typeof showInImageView === 'undefined'){
+        showInImageView = false;
+    }
 
     if (imageView.bigImg !== null) {
         Omadi.display.showBigImage(imageView);
@@ -602,8 +606,11 @@ Omadi.display.displayLargeImage = function(imageView, nid, file_id) {"use strict
     }
 
     if (nid > 0 && file_id > 0) {
-        Omadi.display.loading();
-
+        
+        if(!showInImageView){
+            Omadi.display.loading();
+        }
+        
         try {
             http = Ti.Network.createHTTPClient();
             http.setTimeout(30000);
@@ -614,8 +621,14 @@ Omadi.display.displayLargeImage = function(imageView, nid, file_id) {"use strict
             http.onload = function(e) {
                 //Ti.API.info('=========== Success ========');
                 imageView.bigImg = this.responseData;
-                Omadi.display.showBigImage(imageView);
-                Omadi.display.doneLoading();
+                
+                if(showInImageView){
+                    imageView.image = this.responseData;
+                }
+                else{
+                    Omadi.display.showBigImage(imageView);
+                    Omadi.display.doneLoading();
+                }
                 imageView.fullImageLoaded = true;
             };
 

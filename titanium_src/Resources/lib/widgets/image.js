@@ -1,6 +1,8 @@
 /*jslint eqeq:true, plusplus: true*/
 /*global setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
 
+Ti.include('/lib/widgets/signature.js');
+
 var IMAGE_MAX_BYTES = 524258;
 
 Omadi.widgets.image = {
@@ -23,8 +25,14 @@ Omadi.widgets.image = {
         setConditionallyRequiredLabelForInstance(node, instance);
 
         instance.numVisibleFields = 1;
-
-        element = Omadi.widgets.image.getNewElement(node, instance);
+        //Ti.API.debug(instance);
+        
+        if(instance.widget.type == 'omadi_image_signature'){
+            element = Omadi.widgets.signature.getNewElement(node, instance);   
+        }
+        else{
+            element = Omadi.widgets.image.getNewElement(node, instance);
+        }
         instance.elements.push(element);
         fieldView.add(element);
         fieldView.add(Omadi.widgets.getSpacerView());
@@ -341,7 +349,9 @@ Omadi.widgets.image = {
 
         try {
             nid = 0;
+           
             encodedImage = Ti.Utils.base64encode(blob);
+            
             mime = imageView.mimeType;
             imageName = 'image.jpg';
             imageView.dbValue = '-1';

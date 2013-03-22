@@ -168,6 +168,8 @@ function formToNode(){"use strict";
                //Ti.API.debug(JSON.stringify(getDBValues(fieldWrapper)));
            }
        }
+       
+       //Ti.API.debug(node);
    }
    catch(ex){
        Omadi.service.sendErrorReport("Bundling node from form: " + ex);
