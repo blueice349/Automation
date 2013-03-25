@@ -1373,8 +1373,7 @@ Omadi.data.processFieldsJson = function(json, mainDB, progress) {"use strict";
         roles = omadi_session_details.user.roles;
 
         if (json.insert) {
-
-            Ti.API.debug(json);
+            //Ti.API.debug(json);
             
             if (json.insert.length) {
 
@@ -1658,7 +1657,7 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
             if (json.insert) {
 
                 Ti.API.debug("inserting " + type + " nodes");
-                Ti.API.debug(json);
+                //Ti.API.debug(json);
                 //Multiple objects
                 if (json.insert.length) {
 

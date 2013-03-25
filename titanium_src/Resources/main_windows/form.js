@@ -1276,163 +1276,166 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
                        values = node[field_name].dbValues;
                     }
                     
-                    //Ti.API.debug(JSON.stringify(values));
-                    switch(instances[field_name].type) {
-                        case 'text':
-                        case 'text_long':
-                        case 'link_field':
-                        case 'phone':
-                        case 'license_plate':
-                        case 'vehicle_fields':
-                        case 'number_integer':
-                        case 'number_decimal':
-                        case 'email':
-                        case 'datestamp':
-                        case 'omadi_reference':
-                        case 'omadi_time':
-                        case 'calculation_field':
-                        case 'location':
-                        
-                            if (search_operator == '__filled') {
-                                for (i = 0; i < values.length; i++) {
-                                    if (values[i] != null && values[i] != "") {
-                                        row_matches[row_idx] = true;
-                                    }
-                                }
-                            }
-                            else {
-                                if (values.length == 0) {
-                                    row_matches[row_idx] = true;
-                                }
-                                else {
-                                    for (i = 0; i < values.length; i ++){
-                                        if (values[i] == null || values[i] == "") {
+                    if(typeof instances[field_name].type !== 'undefined'){
+                    
+                        //Ti.API.debug(JSON.stringify(values));
+                        switch(instances[field_name].type) {
+                            case 'text':
+                            case 'text_long':
+                            case 'link_field':
+                            case 'phone':
+                            case 'license_plate':
+                            case 'vehicle_fields':
+                            case 'number_integer':
+                            case 'number_decimal':
+                            case 'email':
+                            case 'datestamp':
+                            case 'omadi_reference':
+                            case 'omadi_time':
+                            case 'calculation_field':
+                            case 'location':
+                            
+                                if (search_operator == '__filled') {
+                                    for (i = 0; i < values.length; i++) {
+                                        if (values[i] != null && values[i] != "") {
                                             row_matches[row_idx] = true;
                                         }
                                     }
                                 }
-                            }
-                            break;
-                            
-                        //case 'location':
-                            
-                            // Ti.API.debug(instances[field_name]);
-                            
-                            // if (search_operator == '__filled') {
-                                // for (i = 0; i < values.length; i++) {
-                                    // if (values[i] != null && values[i] != "") {
-                                        // row_matches[row_idx] = true;
-                                    // }
-                                // }
-                            // }
-                            // else {
-                                // if (values.length == 0) {
-                                    // row_matches[row_idx] = true;
-                                // }
-                                // else {
-                                    // for (i = 0; i < values.length; i ++){
-                                        // if (values[i] == null || values[i] == "") {
+                                else {
+                                    if (values.length == 0) {
+                                        row_matches[row_idx] = true;
+                                    }
+                                    else {
+                                        for (i = 0; i < values.length; i ++){
+                                            if (values[i] == null || values[i] == "") {
+                                                row_matches[row_idx] = true;
+                                            }
+                                        }
+                                    }
+                                }
+                                break;
+                                
+                            //case 'location':
+                                
+                                // Ti.API.debug(instances[field_name]);
+                                
+                                // if (search_operator == '__filled') {
+                                    // for (i = 0; i < values.length; i++) {
+                                        // if (values[i] != null && values[i] != "") {
                                             // row_matches[row_idx] = true;
                                         // }
                                     // }
                                 // }
-                            // }
-                            //break;
-                            
-                        case 'taxonomy_term_reference':
-                        case 'user_reference':
-    
-                            search_values = [];
-                            if (!Omadi.utils.isArray(search_value)) {
-                                for (i in search_value) {
-                                    if (search_value.hasOwnProperty(i)) {
-                                        search_values.push(i);
-                                    }
-                                }
-                                search_value = search_values;
-                            }
-                            else {
-                                if (search_value.length == 0) {
-                                    row_matches[row_idx] = true;
-                                    break;
-                                }
-                            }
-                            
-                            
-                            if (search_operator == '__blank') {
-                                row_matches[row_idx] = true;
-                                if(values.length > 0){
-                                    for(i = 0; i < values.length; i ++){
-                                        if(values[i] > 0){
-                                            row_matches[row_idx] = false;
-                                        }
-                                    }
-                                }
-                            }
-                            else if (search_operator == '__filled') {
-                                row_matches[row_idx] = false;
-                                if(values.length > 0){
-                                    for(i = 0; i < values.length; i ++){
-                                        if(values[i] > 0){
-                                            row_matches[row_idx] = true;
-                                        }
-                                    }
-                                }
-                            }
-                            else if (search_operator == '!=') {
-                                row_matches[row_idx] = true;
-                                if (search_value.__null == '__null' && (values.length === 0 || values[0] == null)) {
-                                    row_matches[row_idx] = false;
-                                }
-                                else {
-                                    for (i = 0; i < search_value.length; i ++){
-                                        if(values.indexOf(search_value[i]) !== -1){
-                                            row_matches[row_idx] = false;
-                                        }
-                                    }
-    
-                                }
-                            }
-                            else if (search_operator == '=') {
+                                // else {
+                                    // if (values.length == 0) {
+                                        // row_matches[row_idx] = true;
+                                    // }
+                                    // else {
+                                        // for (i = 0; i < values.length; i ++){
+                                            // if (values[i] == null || values[i] == "") {
+                                                // row_matches[row_idx] = true;
+                                            // }
+                                        // }
+                                    // }
+                                // }
+                                //break;
                                 
-                                if (search_value.indexOf('__null') !== -1 && (values.length === 0 || values[0] == null)) {
-                                    row_matches[row_idx] = true;
+                            case 'taxonomy_term_reference':
+                            case 'user_reference':
+        
+                                search_values = [];
+                                if (!Omadi.utils.isArray(search_value)) {
+                                    for (i in search_value) {
+                                        if (search_value.hasOwnProperty(i)) {
+                                            search_values.push(i);
+                                        }
+                                    }
+                                    search_value = search_values;
                                 }
                                 else {
-                                    for (i = 0; i < search_value.length; i ++){
-                                        for(j = 0; j < values.length; j ++){
-                                            if (values[j] == search_value[i]){
-                                                row_matches[row_idx] = true;
-                                            }   
+                                    if (search_value.length == 0) {
+                                        row_matches[row_idx] = true;
+                                        break;
+                                    }
+                                }
+                                
+                                
+                                if (search_operator == '__blank') {
+                                    row_matches[row_idx] = true;
+                                    if(values.length > 0){
+                                        for(i = 0; i < values.length; i ++){
+                                            if(values[i] > 0){
+                                                row_matches[row_idx] = false;
+                                            }
                                         }
                                     }
                                 }
-                            }
-    
-                            break;
-    
-                        case 'list_boolean':
-                           
-                            if (search_operator == '__filled') {
-                                for (i = 0; i < values.length; i++) {
-                                    if (values[i] != null && values[i] == "1") {
+                                else if (search_operator == '__filled') {
+                                    row_matches[row_idx] = false;
+                                    if(values.length > 0){
+                                        for(i = 0; i < values.length; i ++){
+                                            if(values[i] > 0){
+                                                row_matches[row_idx] = true;
+                                            }
+                                        }
+                                    }
+                                }
+                                else if (search_operator == '!=') {
+                                    row_matches[row_idx] = true;
+                                    if (search_value.__null == '__null' && (values.length === 0 || values[0] == null)) {
+                                        row_matches[row_idx] = false;
+                                    }
+                                    else {
+                                        for (i = 0; i < search_value.length; i ++){
+                                            if(values.indexOf(search_value[i]) !== -1){
+                                                row_matches[row_idx] = false;
+                                            }
+                                        }
+        
+                                    }
+                                }
+                                else if (search_operator == '=') {
+                                    
+                                    if (search_value.indexOf('__null') !== -1 && (values.length === 0 || values[0] == null)) {
                                         row_matches[row_idx] = true;
                                     }
+                                    else {
+                                        for (i = 0; i < search_value.length; i ++){
+                                            for(j = 0; j < values.length; j ++){
+                                                if (values[j] == search_value[i]){
+                                                    row_matches[row_idx] = true;
+                                                }   
+                                            }
+                                        }
+                                    }
                                 }
-                            }
-                            else {
-                                if (values.length == 0) {
-                                    row_matches[row_idx] = true;
-                                }
-                                else {
-                                    for (i = 0; i < values.length; i ++){
-                                        if (values[i] == null || values[i] == "0") {
+        
+                                break;
+        
+                            case 'list_boolean':
+                               
+                                if (search_operator == '__filled') {
+                                    for (i = 0; i < values.length; i++) {
+                                        if (values[i] != null && values[i] == "1") {
                                             row_matches[row_idx] = true;
                                         }
                                     }
                                 }
-                            }
-                            break;
+                                else {
+                                    if (values.length == 0) {
+                                        row_matches[row_idx] = true;
+                                    }
+                                    else {
+                                        for (i = 0; i < values.length; i ++){
+                                            if (values[i] == null || values[i] == "0") {
+                                                row_matches[row_idx] = true;
+                                            }
+                                        }
+                                    }
+                                }
+                                break;
+                        }
                     }
                 }
             }

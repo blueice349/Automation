@@ -43,9 +43,10 @@ Omadi.widgets.signature = {
         });
         
         signNowButton = Ti.UI.createButton({
-            backgroundImage:'/images/blue_button1.png',
+            backgroundImage:'/images/blue_button2.png',
+            color: '#fff',
             title:'Sign Now',
-            width:90,
+            width:86,
             height:35,
             bottom:5,
             top: 5,
@@ -64,9 +65,8 @@ Omadi.widgets.signature = {
         isSigned = (typeof dbValue === 'number');
         
         imageView = Ti.UI.createImageView({
-            width: '96%',
+            width: '100%',
             height: 200,
-            left : 5,
             image : (isSigned ? '/images/signature-loading.png' : dbValue),
             thumbnailLoaded : false,
             fullImageLoaded : false,
@@ -78,7 +78,9 @@ Omadi.widgets.signature = {
             imageIndex : 0,
             dbValue : dbValue,
             instance : instance,
-            parentView : widgetView
+            parentView : widgetView,
+            borderColor: '#ccc',
+            borderWidth: 2
         });
         
         if(isSigned){
@@ -96,8 +98,9 @@ Omadi.widgets.signature = {
         sigLine = Ti.UI.createView({
             width:'90%',
             height:2,
-            backgroundColor:'#aaa',
-            bottom:70
+            backgroundColor:'#000',
+            bottom:70,
+            opacity: 0.5
         });
 
         thex = Ti.UI.createLabel({
@@ -106,14 +109,17 @@ Omadi.widgets.signature = {
             width:'auto',
             height:'auto',
             font:{fontFamily:'Arial',fontSize:24},
-            color:'#aaa',
+            color:'#000',
             bottom:75,
-            left:20
+            left:20,
+            opacity: 0.5
         });
 
+        
+        imageWrapper.add(imageView);
         imageWrapper.add(sigLine);
         imageWrapper.add(thex);
-        imageWrapper.add(imageView);
+        imageWrapper.imageView = imageView;
         
         widgetView.add(imageWrapper);
         widgetView.add(buttonView);
@@ -214,9 +220,10 @@ Omadi.widgets.signature = {
         outsideWrapper.add(buttonView);
         
         doneButton = Ti.UI.createButton({
-            backgroundImage:'/images/blue_button1.png',
+            backgroundImage:'/images/blue_button2.png',
+            color: '#fff',
             title:'Done',
-            width:90,
+            width:86,
             height:35,
             right:12,
             bottom:5,
@@ -227,15 +234,16 @@ Omadi.widgets.signature = {
             },
             win: win,
             widgetView: widgetView,
-            //visible: false
+            instance: instance
         });
          
         clearButton = Ti.UI.createButton({
-            backgroundImage:'/images/black_button1.png',
+            backgroundImage:'/images/black_button2.png',
+            color: '#fff',
             title:'Clear',
-            width:90,
+            width:86,
             height:35,
-            left:120,
+            left:100,
             bottom:5,
             top: 5,
             font:{
@@ -248,9 +256,10 @@ Omadi.widgets.signature = {
         buttonView.add(clearButton);
          
         cancelButton = Ti.UI.createButton({
-            backgroundImage:'/images/black_button1.png',
+            backgroundImage:'/images/black_button2.png',
+            color: '#fff',
             title:'Cancel',
-            width:90,
+            width:86,
             height:35,
             left:12,
             bottom:5,
@@ -267,8 +276,9 @@ Omadi.widgets.signature = {
         sigLine = Ti.UI.createView({
             width:'90%',
             height:2,
-            backgroundColor:'#aaa',
-            bottom:70
+            backgroundColor:'#000',
+            bottom:70,
+            opacity: 0.5
         });
 
         thex = Ti.UI.createLabel({
@@ -277,24 +287,24 @@ Omadi.widgets.signature = {
             width:'auto',
             height:'auto',
             font:{fontFamily:'Arial',fontSize:24},
-            color:'#aaa',
+            color:'#000',
             bottom:75,
-            left:20
+            left:20,
+            opacity: 0.5
         });
 
-        wrapper.add(sigLine);
-
-        wrapper.add(thex);
+        
         
         paintView = Paint.createPaintView({
             width : '100%',
             bottom: 0,
             top: 0,
             instance : instance,
-            strokeWidth: 5,
+            strokeWidth: 4,
             strokeColor: '#666',
             opacity: 1.0,
-            touchEnabled: true
+            touchEnabled: true,
+            backgroundColor: '#fff'
         });
         
         // paintView.addEventListener('touchmove', function(){
@@ -322,14 +332,35 @@ Omadi.widgets.signature = {
         
         wrapper.add(paintView);
         
+        wrapper.add(sigLine);
+
+        wrapper.add(thex);
+        
         doneButton.addEventListener('click',function(e){
-            var sigImg = paintView.toImage();
+            var blob = paintView.toImage();
             
-            e.source.widgetView.imageView.image = sigImg;
-            e.source.widgetView.imageWrapper.visible = true;
-            e.source.widgetView.imageWrapper.height = Ti.UI.SIZE;
+            Omadi.widgets.signature.removePreviousSignature(instance);
             
-            Omadi.widgets.image.saveImageInDb(e.source.widgetView.imageView, sigImg);
+            if(Ti.App.isAndroid){
+                // There were problems with getting the blob from the paintView.
+                // The blob needs to come from the image that was set, but the view's layout needs to update first
+                
+                e.source.widgetView.imageView.setImage(blob);
+                e.source.widgetView.imageWrapper.setVisible(true);
+                e.source.widgetView.imageWrapper.setHeight(Ti.UI.SIZE);
+                
+                setTimeout(function(){
+                    Omadi.widgets.signature.saveForAndroid(e.source);
+                }, 1000);
+                
+            }
+            else{
+                e.source.widgetView.imageView.setImage(blob);
+                e.source.widgetView.imageWrapper.setVisible(true);
+                e.source.widgetView.imageWrapper.setHeight(Ti.UI.SIZE);
+                
+                Omadi.widgets.image.saveImageInDb(e.source.widgetView.imageView, blob);
+            }
             
             e.source.win.close();
         });
@@ -344,8 +375,44 @@ Omadi.widgets.signature = {
             //doneButton.hide();
         });
         
-        
         win.open();
+    },
+    saveForAndroid : function(doneButton){"use strict";
+        Ti.API.debug("SAVING FOR ANDROID");
+        //var blob = e.source.imageView.toBlob();
+        //Omadi.widgets.image.saveImageInDb(e.source.imageView, blob); 
+        
+        // var blob = e.source.toBlob();
+        // Omadi.widgets.image.saveImageInDb(e.source, blob);
+        
+        var blob = doneButton.widgetView.imageView.toBlob();
+        Omadi.widgets.image.saveImageInDb(doneButton.widgetView.imageView, blob);
+    },
+    removePreviousSignature : function(instance){"use strict";
+        var nid, db;
+        /*global dbEsc*/
+        
+        if(typeof Ti.UI.currentWindow.nid !== 'undefined'){
+            nid = Ti.UI.currentWindow.nid;
+            
+            db = Omadi.utils.openMainDatabase();
+            db.execute("DELETE FROM _photos WHERE nid = 0 AND field_name = '" + dbEsc(instance.field_name) + "'");
+            db.close();
+        }
     }
 };
+
+function getObjectClass(obj) {
+    if (obj && obj.constructor && obj.constructor.toString) {
+        var arr = obj.constructor.toString().match(
+            /function\s*(\w+)/);
+
+        if (arr && arr.length == 2) {
+            return arr[1];
+        }
+    }
+
+    return undefined;
+}
+
 

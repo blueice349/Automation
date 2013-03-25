@@ -1,6 +1,45 @@
 /*jslint eqeq:true, plusplus: true*/
 Omadi.location = Omadi.location || {};
 
+Omadi.location.isLocationEnabled = function(){"use strict";
+    /*global alertQueue */
+    var dialog = null, locAuth, retval = true;
+    
+    if(Ti.App.isAndroid && !Ti.Geolocation.getLocationServicesEnabled()){
+        
+        dialog = Ti.UI.createAlertDialog({
+           message: "Your GPS is turned off. Please turn it on in the Android settings screen.",
+           title: 'Location Disabled' 
+        });
+        
+        retval = false;
+    }
+    else if(Ti.App.isIOS){
+        locAuth = Ti.Geolocation.getLocationServicesAuthorization();
+        
+        if(!Ti.Geolocation.getLocationServicesEnabled()){
+            dialog = Ti.UI.createAlertDialog({
+               message: "Your GPS is turned off for all apps. Please turn it on in the settings app under Privacy -> Location Services.",
+               title: 'Location Disabled' 
+            });
+            retval = false;
+        }
+        else if(locAuth == Ti.Geolocation.AUTHORIZATION_DENIED || locAuth == Ti.Geolocation.AUTHORIZATION_RESTRICTED){
+            dialog = Ti.UI.createAlertDialog({
+               message: "Your GPS is turned off for the Omadi app. Please turn it on in the settings app under Privacy -> Location Services.",
+               title: 'Location Disabled' 
+            });
+            retval = false;
+        }
+    }
+    
+    if(dialog !== null){
+        dialog.show();
+    }
+    
+    return retval;
+};
+
 Omadi.location.getLastLocation = function(){"use strict";
     var db, result, location = {};
     

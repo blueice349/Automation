@@ -355,13 +355,37 @@ function setClientAccount(domainName, db){"use strict";
             backgroundColor : '#fff',
             borderRadius : 10,
             borderColor : '#999',
-            borderWidth : 1
+            borderWidth : 1,
+            lastValue: savedPortal
         });
         //Adds picker to root window
         scrollView.add(portal);
 
         portal.addEventListener('return', function() {
             usernameField.focus();
+        });
+        
+        portal.addEventListener('change', function(e) {
+            var tempValue;
+            /*jslint regexp: true*/
+            /*global setConditionallyRequiredLabels*/
+
+            if (e.source.lastValue != e.source.value) {
+                tempValue = "";
+                if(e.source.value !== null){
+                    tempValue = (e.source.value + "".toString()).replace(/[^0-9a-zA-Z_]/g, '');
+                    tempValue = tempValue.toLowerCase();
+                }
+                
+                if (tempValue != e.source.value) {
+                    e.source.value = tempValue;
+                    if (Ti.App.isAndroid) {
+                        e.source.setSelection(e.source.value.length, e.source.value.length);
+                    }
+                }
+                
+                e.source.lastValue = e.source.value;
+            }
         });
 
         //Text field for username
@@ -556,6 +580,8 @@ function setClientAccount(domainName, db){"use strict";
             portal.blur();
             passwordField.blur();
             usernameField.blur();
+
+            portal.setValue(portal.getValue().toString().toLowerCase());
 
             if (!Ti.Network.online) {
                 alert("You do not have a network connection. You cannot login until you connect to the Internet.");

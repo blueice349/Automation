@@ -318,12 +318,31 @@ function setupBottomButtons() {"use strict";
         actionsView, actionsImg, actionsLabel, 
         jobsView, jobsImg, jobsLabel, dispatchBundle, 
         recentView, recentLabel, recentImg,
-        tagsReadyView, tagsReadyImg, tagsReadyLabel, tagBundle;
+        tagsReadyView, tagsReadyImg, tagsReadyLabel, tagBundle,
+        numButtons, widthPercent;
+    
+    numButtons = 0;
+    
+    try{
+        curWin.remove(databaseStatusView);
+    }
+    catch(ex){
+        // Do nothing
+    }
+
+    databaseStatusView = Titanium.UI.createView({
+        backgroundColor : '#333',
+        height : 45,
+        width : '100%',
+        bottom : 0,
+        layout : 'horizontal',
+        zIndex : 100
+    });
 
     alertsView = Ti.UI.createView({
         backgroundSelectedColor : 'orange',
         focusable : true,
-        width : '33%',
+        width : '50%',
         height : 45,
         layout : 'vertical',
         color : '#fff'
@@ -351,18 +370,25 @@ function setupBottomButtons() {"use strict";
     alertsView.add(alertsImg);
     alertsView.add(alertsLabel);
     alertsView.addEventListener('click', function() {
-        var alertsWindow;
+        var alertsWindow, locationEnabled;
 
-        alertsWindow = Ti.UI.createWindow({
-            navBarHidden : true,
-            url : '/main_windows/message_center.js'
-        });
-
-        Omadi.display.loading();
-
-        alertsWindow.addEventListener('open', Omadi.display.doneLoading);
-        alertsWindow.open();
+        locationEnabled = Omadi.location.isLocationEnabled();
+        
+        if(locationEnabled){
+            
+            alertsWindow = Ti.UI.createWindow({
+                navBarHidden : true,
+                url : '/main_windows/message_center.js'
+            });
+    
+            Omadi.display.loading();
+    
+            alertsWindow.addEventListener('open', Omadi.display.doneLoading);
+            alertsWindow.open();
+        }
     });
+    
+    numButtons ++;
 
     // draftsView = Ti.UI.createView({
         // backgroundSelectedColor : 'orange',
@@ -406,7 +432,7 @@ function setupBottomButtons() {"use strict";
         jobsView = Ti.UI.createView({
             backgroundSelectedColor : 'orange',
             focusable : true,
-            width : '33%',
+            width : '50%',
             height : 45,
             layout : 'vertical',
             color : '#fff'
@@ -438,12 +464,14 @@ function setupBottomButtons() {"use strict";
         jobsView.addEventListener('click', function() {
             Omadi.display.openJobsWindow();
         });
+        
+        numButtons ++;
     }
     
     recentView = Ti.UI.createView({
         backgroundSelectedColor : 'orange',
         focusable : true,
-        width : '33%',
+        width : '50%',
         height : 45,
         layout : 'vertical',
         color : '#fff'
@@ -484,12 +512,14 @@ function setupBottomButtons() {"use strict";
         recentWindow.open();
     });
     
+    numButtons ++;
+    
     if(Omadi.bundles.tag.hasSavedTags()){
         
         tagsReadyView = Ti.UI.createView({
             backgroundSelectedColor : 'orange',
             focusable : true,
-            width : '25%',
+            width : '50%',
             height : 45,
             layout : 'vertical',
             color : '#fff'
@@ -530,10 +560,29 @@ function setupBottomButtons() {"use strict";
             tagsReadyWindow.open();
         });
         
-        recentView.width = '25%';
-        //draftsView.width = '25%';
-        jobsView.width = '25%';
-        alertsView.width = '25%';
+        numButtons ++;
+    }
+    
+    if(numButtons > 2){
+        if(numButtons == 3){
+            widthPercent = '33%';
+        }
+        else if(numButtons == 4){
+            widthPercent = '25%';
+        }   
+        
+        if(typeof alertsView !== 'undefined'){
+            alertsView.setWidth(widthPercent);
+        }
+        if(typeof jobsView !== 'undefined'){
+            jobsView.setWidth(widthPercent);
+        }
+        if(typeof recentView !== 'undefined'){
+            recentView.setWidth(widthPercent);
+        }
+        if(typeof tagsReadyView !== 'undefined'){
+            tagsReadyView.setWidth(widthPercent);
+        }
     }
     
     curWin.add(databaseStatusView);
@@ -706,6 +755,8 @@ function showNextAlertInQueue(e) {"use strict";
             
             Ti.App.Properties.setBool("doingFullReset", true);
             
+            
+            
             Omadi.data.setUpdating(true);
 
             Omadi.data.setLastUpdateTimestamp(0);
@@ -753,10 +804,14 @@ function showNextAlertInQueue(e) {"use strict";
             db.close();
 
             listView.setData([]);
+            
+            setupBottomButtons();
 
             Omadi.data.setUpdating(false);
             Omadi.service.checkUpdate('from_menu');
         });
+        
+        Ti.App.addEventListener('finishedDataSync', setupBottomButtons);
 
         Ti.App.addEventListener('normal_update_from_menu', function() {
             Omadi.service.checkUpdate('from_menu');
@@ -768,7 +823,6 @@ function showNextAlertInQueue(e) {"use strict";
             // are blocked because of the alert dialog being show in askclockin
             // It is 
             
-            
             Omadi.bundles.timecard.askClockIn();
             
             Omadi.bundles.companyVehicle.askAboutVehicle();
@@ -776,6 +830,10 @@ function showNextAlertInQueue(e) {"use strict";
             
             Omadi.bundles.inspection.askToReviewLastInspection();
         }
+        
+        Omadi.utils.checkVolumeLevel();
+        
+        Omadi.location.isLocationEnabled();
 
         if (alertQueue.length) {
             firstAlert = alertQueue.shift();
@@ -809,6 +867,8 @@ function showNextAlertInQueue(e) {"use strict";
                 Omadi.service.checkUpdate(); 
             });
         }
+        
+        
 
     }());
 

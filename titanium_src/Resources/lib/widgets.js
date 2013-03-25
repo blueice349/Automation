@@ -148,7 +148,7 @@ Omadi.widgets.getDBValues = function(fieldWrapper){"use strict";
             }
         }
     }
- 
+    
     return dbValues;
 };
 
@@ -188,7 +188,7 @@ Omadi.widgets.getTextValues = function(fieldWrapper){"use strict";
             }
         }
     }
-  
+    
     return textValues;
 };
 

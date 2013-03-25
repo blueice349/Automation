@@ -6,6 +6,39 @@ Omadi.utils = Omadi.utils || {};
 Omadi.DOMAIN_NAME = domainName;
 Omadi.DB_VERSION = "omadiDb1688";
 
+Omadi.utils.checkVolumeLevel = function(){"use strict";
+    /*global alertQueue*/
+    var dialog;
+    
+    try{
+        if(Ti.App.isAndroid){
+           
+        }
+        else{
+           
+            // Ti.API.debug("volume: " + Ti.Media.getVolume());
+            // if(Ti.Media.getVolume() < 0.5){
+//                 
+                // dialog = Ti.UI.createAlertDialog({
+                   // message: "The volume is less than 50%, so you may miss some notifications. Please turn up the volume on your device.",
+                   // title: 'Low Volume Alert' 
+                // });
+//                 
+                // if(typeof alertQueue !== 'undefined'){
+                    // alertQueue.push(dialog);
+                // }
+                // else{
+                    // dialog.show();
+                // }
+            // }
+        }
+    }
+    catch(ex){
+        Ti.API.debug("Volume exception: " + ex);
+        // Do nothing right now
+    }
+};
+
 Omadi.utils.openListDatabase = function() {"use strict";
     var db = Ti.Database.install('/database/db_list.sqlite', Omadi.DB_VERSION + "_list");
     if (Ti.App.isIOS) {

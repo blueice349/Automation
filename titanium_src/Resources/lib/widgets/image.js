@@ -349,8 +349,9 @@ Omadi.widgets.image = {
 
         try {
             nid = 0;
-           
+            Ti.API.debug('before encoded');
             encodedImage = Ti.Utils.base64encode(blob);
+            Ti.API.debug('after encoded');
             
             mime = imageView.mimeType;
             imageName = 'image.jpg';
@@ -365,8 +366,6 @@ Omadi.widgets.image = {
             db = Omadi.utils.openMainDatabase();
             db.execute("INSERT INTO _photos (nid, timestamp, file_data , field_name, file_name, delta, latitude, longitude, accuracy) VALUES ('0','" + timestamp + "','" + encodedImage + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + ")");
             db.close();
-            
-            
         }
         catch(ex) {
             alert("Problem saving the photo to the database: " + ex);

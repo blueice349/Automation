@@ -85,7 +85,6 @@ Omadi.widgets.license_plate = {
 
         if (part == "plate") {
             
-            
             widgetView = Omadi.widgets.getTextField(instance);
             
             widgetView.dbValue = dbValue;
@@ -98,7 +97,7 @@ Omadi.widgets.license_plate = {
             widgetView.addEventListener('focus', function(e) {
                 e.source.touched = true;
             });
-
+            
             widgetView.addEventListener('change', function(e) {
                 var tempValue;
                 /*jslint regexp: true*/
@@ -108,10 +107,16 @@ Omadi.widgets.license_plate = {
                     tempValue = "";
                     if(e.source.value !== null){
                         tempValue = (e.source.value + "".toString()).replace(/[^0-9a-zA-Z]/g, '');
+                        tempValue = tempValue.toUpperCase();
                     }
+                    
+                    e.source.dbValue = tempValue;
+                    e.source.textValue = tempValue;
                     
                     if (tempValue != e.source.value) {
                         e.source.value = tempValue;
+                        
+                        
                         if (Ti.App.isAndroid) {
                             e.source.setSelection(e.source.value.length, e.source.value.length);
                         }
@@ -123,9 +128,6 @@ Omadi.widgets.license_plate = {
                             e.source.setSelection(e.source.value.length, e.source.value.length);
                         }
                     }
-
-                    e.source.dbValue = e.source.value;
-                    e.source.textValue = e.source.value;
 
                     if (e.source.check_conditional_fields.length > 0) {
                         setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
