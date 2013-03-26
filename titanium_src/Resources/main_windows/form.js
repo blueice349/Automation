@@ -1261,6 +1261,7 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
             
             for (row_idx in search_criteria) {
                 if(search_criteria.hasOwnProperty(row_idx)){
+                    
                     criteria_row = search_criteria[row_idx];
                     
                     row_matches[row_idx] = false;
@@ -1271,12 +1272,11 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
                     values = [];
                     
                     //Ti.API.debug(field_name);
-                    
                     if(typeof node[field_name] !== 'undefined'){
                        values = node[field_name].dbValues;
                     }
                     
-                    if(typeof instances[field_name].type !== 'undefined'){
+                    if(typeof instances[field_name] !== 'undefined' && typeof instances[field_name].type !== 'undefined'){
                     
                         //Ti.API.debug(JSON.stringify(values));
                         switch(instances[field_name].type) {

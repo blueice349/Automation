@@ -208,9 +208,10 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
 };
 
 Omadi.bundles.dispatch.getStatusOptions = function(nid){"use strict";
-    var options, db, result, termResult, vid, dispatchBundle, node, i,
-        excludeTids, excludeStatuses, dispatchStatusTids, 
-        currentStatusTid, currentStatus, status, useTid, tid, dispatchNode, dispatchNid;
+    var options, db, result, termResult, vid, dispatchBundle, node, i, j,
+        excludeKeys, excludeStatuses, 
+        currentStatusKey, currentStatus, status, useKey, dispatchNode, dispatchNid,
+        dispatchInstances, statusInstance, fieldOptions;
     
     options = [];
     
@@ -220,109 +221,74 @@ Omadi.bundles.dispatch.getStatusOptions = function(nid){"use strict";
     dispatchNode = Omadi.data.nodeLoad(dispatchNid);
     
     if(dispatchNode){
-        currentStatusTid = dispatchNode.dispatch_status.dbValues[0];
+        currentStatusKey = dispatchNode.field_dispatching_status.dbValues[0];
         
-        dispatchBundle = Omadi.data.getBundle('dispatch');
+        dispatchInstances = Omadi.data.getFields('dispatch');
         
-        excludeTids = [];
-        excludeStatuses = [];
-        
-        if(typeof dispatchBundle.data.node_type_specific !== 'undefined' && typeof dispatchBundle.data.node_type_specific.dispatch_status_terms !== 'undefined'){
+        if(typeof dispatchInstances.field_dispatching_status !== 'undefined'){
+            statusInstance = dispatchInstances.field_dispatching_status;
             
-            if(typeof dispatchBundle.data.node_type_specific.dispatch_status_terms == 'string'){
-                dispatchStatusTids = JSON.parse(dispatchBundle.data.node_type_specific.dispatch_status_terms);
-            }
-            else{
-                dispatchStatusTids = dispatchBundle.data.node_type_specific.dispatch_status_terms;
-            }
+            excludeKeys = [];
             
-            currentStatus = null;
-            
-            for(status in dispatchStatusTids){
-                if(dispatchStatusTids.hasOwnProperty(status)){
-                    
-                    if(dispatchStatusTids[status] == currentStatusTid){
-                        currentStatus = status;
-                        break;
-                    }
+            if(currentStatusKey !== null){
+                switch(currentStatusKey){
+                    case 'job_complete':
+                        excludeKeys.push('job_complete');
+                        /* falls through */
+                    case 'arrived_at_destination':
+                        excludeKeys.push('arrived_at_destination');
+                        /* falls through */
+                    case 'towing_vehicle':
+                        excludeKeys.push('towing_vehicle');
+                        /* falls through */
+                    case 'arrived_at_job':
+                        excludeKeys.push('arrived_at_job');
+                        /* falls through */
+                    case 'driving_to_job':
+                        excludeKeys.push('driving_to_job');
+                        /* falls through */
+                    case 'job_accepted':
+                        excludeKeys.push('job_accepted');
+                        /* falls through */
+                    case 'dispatching_call':
+                        excludeKeys.push('dispatching_call');
+                        /* falls through */
+                    case 'call_received':
+                        excludeKeys.push('call_received');
+                        break;       
                 }
-            }
-            
-            if(currentStatus !== null){
-                switch(currentStatus){
-                    case 'job complete':
-                        excludeStatuses.push('job complete');
-                        /* falls through */
-                    case 'arrived at destination':
-                        excludeStatuses.push('arrived at destination');
-                        /* falls through */
-                    case 'towing vehicle':
-                        excludeStatuses.push('towing vehicle');
-                        /* falls through */
-                    case 'arrived at job':
-                        excludeStatuses.push('arrived at job');
-                        /* falls through */
-                    case 'driving to job':
-                        excludeStatuses.push('driving to job');
-                        /* falls through */
-                    case 'dispatch job accepted':
-                        excludeStatuses.push('dispatch job accepted');
-                        /* falls through */
-                    case 'dispatching call':
-                        excludeStatuses.push('dispatching call');
-                        /* falls through */
-                    case 'call received':
-                        excludeStatuses.push('call received');
-                        break;
-                        
-                }
-            }
-            
-            for(i = 0; i < excludeStatuses.length; i ++){
-                excludeTids.push(dispatchStatusTids[excludeStatuses[i]]);
             }
         }
         
-        db = Omadi.utils.openMainDatabase();
+        excludeKeys.push(null);
         
-        result = db.execute("SELECT vid FROM vocabulary WHERE machine_name = 'dispatch_status'");
-        if(result.isValidRow()){
-            vid = result.field(0);
+        fieldOptions = Omadi.widgets.list_text.getOptions(statusInstance);
+        
+        for(i = 0; i < fieldOptions.length; i ++){
+            useKey = true;
             
-            termResult = db.execute("SELECT tid, name FROM term_data WHERE vid = " + vid + " ORDER BY weight");
-            
-            while(termResult.isValidRow()){
-                
-                useTid = true;
-                tid = termResult.fieldByName('tid', Ti.Database.FIELD_TYPE_INT);
-                
-                for(i = 0; i < excludeTids.length; i ++){
-                    if(tid == excludeTids[i]){
-                        useTid = false;
-                        break;
-                    }
+            for(j = 0; j < excludeKeys.length; j ++){
+                if(fieldOptions[i].dbValue == excludeKeys[j]){
+                    useKey = false;
+                    break;
                 }
-                
-                if(useTid){
-                    options.push({
-                       tid: tid,
-                       text: termResult.fieldByName('name') 
-                    });
-                }
-                
-                termResult.next();
             }
-            termResult.close();
+            
+            if(useKey){
+                options.push({
+                   dbValue: fieldOptions[i].dbValue,
+                   title: fieldOptions[i].title
+                });
+            }
         }
-        result.close();
-        
-        db.close();
     }
+    
+    //Ti.API.debug(options);
     
     return options;
 };
 
-Omadi.bundles.dispatch.updateStatus = function(nid, statusTid){"use strict";
+Omadi.bundles.dispatch.updateStatus = function(nid, status){"use strict";
     var dialog, http;
     
     if(!Ti.Network.online){
@@ -397,7 +363,7 @@ Omadi.bundles.dispatch.updateStatus = function(nid, statusTid){"use strict";
         
         http.send(JSON.stringify({
             nid: nid,
-            status_tid: statusTid
+            status: status
         }));
     }
 };
@@ -429,7 +395,7 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
             
             options = [];
             for(i = 0; i < statusOptions.length; i ++){
-                options.push(statusOptions[i].text);
+                options.push(statusOptions[i].title);
             }
             
             options.push('Cancel');
@@ -442,8 +408,9 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
             
             statusDialog.addEventListener('click', function(e){
                 if(e.index >= 0 && e.index != e.source.cancel){
-                    var statusTid = statusOptions[e.index].tid;
-                    Omadi.bundles.dispatch.updateStatus(nid, statusTid);
+                    var status = statusOptions[e.index].dbValue;
+                    Ti.API.debug(status);
+                    Omadi.bundles.dispatch.updateStatus(nid, status);
                 }
             });
             
@@ -504,27 +471,27 @@ Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
 
 Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
     /*global list_search_node_matches_search_criteria*/
-    var newJobs, db, result, sql, nowTimestamp, dispatchBundle, currentUserUid, 
-        jobDoneTid, dispatchStatusTids, i, node, currentUserJobNids;
+    var newJobs, db, result, sql, nowTimestamp, currentUserUid, 
+        i, node, currentUserJobNids, dispatchBundle;
     
     nowTimestamp = Omadi.utils.getUTCTimestamp();
     newJobs = [];
     dispatchBundle = Omadi.data.getBundle('dispatch');
     
     if(dispatchBundle){
-        jobDoneTid = 0;
-        if(typeof dispatchBundle.data.node_type_specific !== 'undefined' && typeof dispatchBundle.data.node_type_specific.dispatch_status_terms !== 'undefined'){
-            if(typeof dispatchBundle.data.node_type_specific.dispatch_status_terms === 'string'){
-                dispatchStatusTids = JSON.parse(dispatchBundle.data.node_type_specific.dispatch_status_terms);
-            }
-            else{
-                dispatchStatusTids = dispatchBundle.data.node_type_specific.dispatch_status_terms;
-            }
-            
-            if(typeof dispatchStatusTids['job complete'] !== 'undefined' && dispatchStatusTids['job complete']){
-                jobDoneTid = dispatchStatusTids['job complete'];
-            }
-        }
+        //jobDoneTid = 0;
+        // if(typeof dispatchBundle.data.node_type_specific !== 'undefined' && typeof dispatchBundle.data.node_type_specific.dispatch_status_terms !== 'undefined'){
+            // if(typeof dispatchBundle.data.node_type_specific.dispatch_status_terms === 'string'){
+                // dispatchStatusTids = JSON.parse(dispatchBundle.data.node_type_specific.dispatch_status_terms);
+            // }
+            // else{
+                // dispatchStatusTids = dispatchBundle.data.node_type_specific.dispatch_status_terms;
+            // }
+//             
+            // if(typeof dispatchStatusTids['job complete'] !== 'undefined' && dispatchStatusTids['job complete']){
+                // jobDoneTid = dispatchStatusTids['job complete'];
+            // }
+        // }
         
         currentUserUid = Omadi.utils.getUid();
         
@@ -535,7 +502,7 @@ Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
         sql += "WHERE n.table_name = 'dispatch' ";
         sql += "AND dispatch.dispatch_form_reference IS NOT NULL ";
         sql += "AND dispatch.dispatched_to_driver = " + currentUserUid + " "; 
-        sql += "AND (dispatch.dispatch_status IS NULL OR dispatch.dispatch_status <> " + jobDoneTid + ") ";
+        sql += "AND (dispatch.field_dispatching_status IS NULL OR dispatch.field_dispatching_status <> 'job_complete') ";
         result = db.execute(sql);
         
         currentUserJobNids = [];

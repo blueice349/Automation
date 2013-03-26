@@ -3,6 +3,8 @@
 
 Ti.include('/lib/functions.js');
 
+Ti.include("/lib/widgets.js");
+
 var curWin = Ti.UI.currentWindow;
 var wrapperView;
 
