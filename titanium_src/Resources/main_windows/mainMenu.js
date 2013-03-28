@@ -426,8 +426,7 @@ function setupBottomButtons() {"use strict";
         // Omadi.display.openDraftsWindow();
     // });
     
-    dispatchBundle = Omadi.data.getBundle('dispatch');
-    if(dispatchBundle){
+    if(Omadi.bundles.dispatch.showJobsScreen()){
         
         jobsView = Ti.UI.createView({
             backgroundSelectedColor : 'orange',
@@ -691,14 +690,15 @@ function showNextAlertInQueue(e) {"use strict";
             networkStatusLabel.setText(e.message);
             networkStatusView.show();
             
-            setTimeout(function(){
-                networkStatusView.hide();
-            }, 15000);
+            // setTimeout(function(){
+                // networkStatusView.hide();
+            // }, 15000);
         });
 
         Ti.App.addEventListener('loggingOut', function() {
             //if(Ti.App.isIOS){
                 clearInterval(Ti.App.syncInterval);
+                clearInterval(Ti.App.photoUploadCheck);
             //}
             Ti.UI.currentWindow.close();
         });
@@ -749,6 +749,9 @@ function showNextAlertInQueue(e) {"use strict";
         //else{
             Ti.App.syncInterval = setInterval(Omadi.service.checkUpdate, 300000);
         //}
+        
+        
+        Ti.App.photoUploadCheck = setInterval(Omadi.service.uploadFile, 60000);
 
         Ti.App.addEventListener('full_update_from_menu', function() {
             var dbFile, db, result;

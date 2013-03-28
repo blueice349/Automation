@@ -56,7 +56,20 @@ Omadi.widgets.list_text = {
         Ti.API.debug("Creating list_text field");
 
         options = Omadi.widgets.list_text.getOptions(instance);
-Ti.API.debug(options);
+        
+        if (dbValue === null && typeof settings.default_value !== 'undefined') {
+            if(settings.default_value.length > 0){
+                dbValue = settings.default_value;
+                
+                for(i = 0; i < options.length; i ++){
+                    if(options[i].dbValue == dbValue){
+                        textValue = options[i].title;
+                        break;
+                    }
+                }
+            }
+        }
+
         descriptionText = "";
         descriptionLabel = Ti.UI.createLabel({
             height : Ti.UI.SIZE,

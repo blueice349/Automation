@@ -85,6 +85,13 @@ Omadi.widgets.number_decimal = {
         settings = instance.settings;
         Ti.API.debug("Creating number_decimal field");
         
+        if (dbValue === null && typeof settings.default_value !== 'undefined') {
+            if(settings.default_value.length > 0){
+                dbValue = parseFloat(settings.default_value);
+                textValue = dbValue;
+            }
+        }
+        
         widgetView = Omadi.widgets.getTextField(instance);
 
         widgetView.dbValue = dbValue;

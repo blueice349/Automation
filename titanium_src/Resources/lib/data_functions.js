@@ -298,67 +298,72 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
         Omadi.display.doneLoading();
         Omadi.display.loading("Saving...");
         
-        node = Omadi.data.nodeSave(node);
-                    
-        if(node._saved === true){
-            Ti.UI.currentWindow.nodeSaved = true;
-        }
-        
-        // Setup the current node and nid in the window so a duplicate won't be made for this window
-        Ti.UI.currentWindow.node = node;
-        Ti.UI.currentWindow.nid = node.nid;
-        
-        Omadi.display.doneLoading();
-        
-        if(node._saved === true){
-            
-            if(Ti.Network.online){
-                
-                
-                if (saveType === "next_part") {
-                    Omadi.display.openFormWindow(node.type, node.nid, node.form_part + 1);                            
-                }
-                
-                //alert("Node Saved");
-                
-                // Send a clone of the object so the window will close after the network returns a response
-                Omadi.service.sendUpdates();
-                
-                //alert("Updates Sent");
-                
-                if(Ti.UI.currentWindow.url.indexOf('form.js') !== -1){
-                    if(Ti.App.isAndroid){
-                        Ti.UI.currentWindow.close();
-                    }
-                    else{
-                        Ti.UI.currentWindow.hide();
-                    }
-                }
-                
-                //alert('Window hidden');
-            }
-            else{
-                if(Ti.UI.currentWindow.url.indexOf('form.js') !== -1){
-                    dialog = Titanium.UI.createAlertDialog({
-                        title : 'Form Validation',
-                        buttonNames : ['OK'],
-                        message: 'Alert management of this ' + node.type.toUpperCase() + ' immediately. You do not have an Internet connection right now.  Your data was saved and will be synched when you connect to the Internet.'
-                    });
-                    
-                    dialog.show();
-                    
-                    dialog.addEventListener('click', function(ev) {
+        try{
+            node = Omadi.data.nodeSave(node);
                         
-                        if (saveType === "next_part") {
-                            Omadi.display.openFormWindow(node.type, node.nid, node.form_part + 1);
+            if(node._saved === true){
+                Ti.UI.currentWindow.nodeSaved = true;
+            }
+            
+            // Setup the current node and nid in the window so a duplicate won't be made for this window
+            Ti.UI.currentWindow.node = node;
+            Ti.UI.currentWindow.nid = node.nid;
+            
+            //Omadi.display.doneLoading();
+            
+            if(node._saved === true){
+                
+                if(Ti.Network.online){
+                    
+                    if (saveType === "next_part") {
+                        Omadi.display.openFormWindow(node.type, node.nid, node.form_part + 1);                            
+                    }
+                    
+                    //alert("Node Saved");
+                    
+                    // Send a clone of the object so the window will close after the network returns a response
+                    Omadi.service.sendUpdates();
+                    
+                    //alert("Updates Sent");
+                    
+                    if(Ti.UI.currentWindow.url.indexOf('form.js') !== -1){
+                        if(Ti.App.isAndroid){
+                            Ti.UI.currentWindow.close();
                         }
-                        
-                        Ti.UI.currentWindow.close();
-                    });
+                        else{
+                            Ti.UI.currentWindow.hide();
+                        }
+                    }
+                    
+                    //alert('Window hidden');
                 }
+                else{
+                    if(Ti.UI.currentWindow.url.indexOf('form.js') !== -1){
+                        dialog = Titanium.UI.createAlertDialog({
+                            title : 'Form Validation',
+                            buttonNames : ['OK'],
+                            message: 'Alert management of this ' + node.type.toUpperCase() + ' immediately. You do not have an Internet connection right now.  Your data was saved and will be synched when you connect to the Internet.'
+                        });
+                        
+                        dialog.show();
+                        
+                        dialog.addEventListener('click', function(ev) {
+                            
+                            if (saveType === "next_part") {
+                                Omadi.display.openFormWindow(node.type, node.nid, node.form_part + 1);
+                            }
+                            
+                            Ti.UI.currentWindow.close();
+                        });
+                    }
+                }
+                
+                Ti.App.fireEvent("savedNode");
             }
-            
-            Ti.App.fireEvent("savedNode");
+        }
+        catch(ex){
+            Omadi.display.doneLoading();
+            Omadi.service.sendErrorReport("Exception in trysavenode: " + ex);
         }
     } 
 };
@@ -517,6 +522,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
             Ti.API.debug("NODE SAVE WAS SUCCESSFUL");
         }
         catch(ex1) {
+            Omadi.display.doneLoading();
             alert("Error saving to the node table: " + ex1);
             db.execute("DELETE FROM " + node.type + " WHERE nid = " + node.nid);
             Omadi.service.sendErrorReport("Error saving to the node table: " + ex1);
@@ -524,6 +530,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
 
     }
     catch(ex2) {
+        Omadi.display.doneLoading();
         alert("Error saving to " + node.type + " table: " + ex2 + " : " + query);
         Omadi.service.sendErrorReport("Error saving to " + node.type + " table: " + ex2 + " : " + query);
     }
@@ -1128,6 +1135,69 @@ Omadi.data.getNodeTableInsertStatement = function(node) {"use strict";
     return sql;
 };
 
+Omadi.data.getPhotoCount = function(){"use strict";
+    var mainDB, result, retval = 0;
+    
+    try{
+        mainDB = Omadi.utils.openMainDatabase();
+        result = mainDB.execute("SELECT COUNT(*) FROM _photos WHERE nid > 0");
+        
+        if(result.isValidRow()){
+            retval = result.field(0, Ti.Database.FIELD_TYPE_INT);
+        }
+        result.close();
+        mainDB.close();
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport('Error getting photo count: ' + ex);    
+    }
+    
+    return retval;
+};
+
+Omadi.data.getNextPhotoData = function(){"use strict";
+    var mainDB, result, nextPhoto;
+    
+    nextPhoto = null;
+    
+    try{
+        mainDB = Omadi.utils.openMainDatabase();
+        result = mainDB.execute("SELECT nid, id, file_data, file_name, field_name, delta, timestamp, tries, latitude, longitude, accuracy FROM _photos WHERE nid > 0 ORDER BY delta ASC LIMIT 1");
+        
+        if (result.isValidRow()) {
+            //Only upload those images that have positive nids
+            
+            if (result.fieldByName('tries', Ti.Database.FIELD_TYPE_INT) < 0) {
+                Omadi.data.saveFailedUpload(result.fieldByName('id'));
+            }
+            else if (result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT) > 0){
+                nextPhoto = {
+                    nid : result.fieldByName('nid'),
+                    id : result.fieldByName('id'),
+                    file_data : result.fieldByName('file_data'),
+                    file_name : result.fieldByName('file_name'),
+                    field_name : result.fieldByName('field_name'),
+                    delta : result.fieldByName('delta'),
+                    timestamp : result.fieldByName('timestamp'),
+                    tries : result.fieldByName('tries'),
+                    latitude : result.fieldByName('latitude'),
+                    longitude : result.fieldByName('longitude'),
+                    accuracy : result.fieldByName('accuracy')
+                };
+            }
+        }
+        
+        result.close();
+        mainDB.close();
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception getting next photo: " + ex);
+    }
+    
+    return nextPhoto;
+};
+
+
 Omadi.data.processFetchedJson = function(json, progress){"use strict";
     var nodeType, mainDB, gpsDB, dbFile, tableName, GMT_OFFSET, dialog, newNotifications;
      
@@ -1362,6 +1432,8 @@ Omadi.data.processFakeFieldsJson = function(json, mainDB, progress) {"use strict
         alert("Saving extra fields: " + ex);
     }
 };
+
+
 
 Omadi.data.processFieldsJson = function(json, mainDB, progress) {"use strict";
 

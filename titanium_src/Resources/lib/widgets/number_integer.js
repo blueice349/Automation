@@ -65,11 +65,12 @@ Omadi.widgets.number_integer = {
         return fieldView;
     },
     getNewElement : function(node, instance, index) {"use strict";
-
         var settings, widgetView, dbValue, textValue;
 
         dbValue = null;
         textValue = "";
+        settings = instance.settings;
+        
         if ( typeof node[instance.field_name] !== 'undefined') {
             if ( typeof node[instance.field_name].dbValues !== 'undefined' && typeof node[instance.field_name].dbValues[index] !== 'undefined') {
                 dbValue = node[instance.field_name].dbValues[index];
@@ -79,8 +80,14 @@ Omadi.widgets.number_integer = {
                 textValue = node[instance.field_name].textValues[index];
             }
         }
+        
+        if (dbValue === null && typeof settings.default_value !== 'undefined') {
+            if(settings.default_value.length > 0){
+                dbValue = parseInt(settings.default_value, 10);
+                textValue = dbValue;
+            }
+        }
 
-        settings = instance.settings;
         Ti.API.debug("Creating number_integer field");
         
         widgetView = Omadi.widgets.getTextField(instance);

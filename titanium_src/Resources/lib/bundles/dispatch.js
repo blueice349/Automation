@@ -4,6 +4,25 @@
 
 Omadi.bundles.dispatch = {};
 
+Omadi.bundles.dispatch.showJobsScreen = function(){"use strict";
+    var bundle, retval, instances;
+    
+    retval = false;
+    bundle = Omadi.data.getBundle('dispatch');
+    
+    if(bundle){
+        instances = Omadi.data.getFields('dispatch');
+        
+        if(typeof instances.dispatch_form_reference !== 'undefined'){
+            if(typeof instances.field_dispatching_status !== 'undefined'){
+                retval = true;
+            }
+        }
+    }
+    
+    return retval;
+};
+
 Omadi.bundles.dispatch.showNewDispatchJobs = function(){"use strict";
       if(Ti.App.Properties.getBool('newDispatchJob', false)){
           Ti.App.Properties.setBool('newDispatchJob', false);
@@ -479,22 +498,8 @@ Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
     dispatchBundle = Omadi.data.getBundle('dispatch');
     
     if(dispatchBundle){
-        //jobDoneTid = 0;
-        // if(typeof dispatchBundle.data.node_type_specific !== 'undefined' && typeof dispatchBundle.data.node_type_specific.dispatch_status_terms !== 'undefined'){
-            // if(typeof dispatchBundle.data.node_type_specific.dispatch_status_terms === 'string'){
-                // dispatchStatusTids = JSON.parse(dispatchBundle.data.node_type_specific.dispatch_status_terms);
-            // }
-            // else{
-                // dispatchStatusTids = dispatchBundle.data.node_type_specific.dispatch_status_terms;
-            // }
-//             
-            // if(typeof dispatchStatusTids['job complete'] !== 'undefined' && dispatchStatusTids['job complete']){
-                // jobDoneTid = dispatchStatusTids['job complete'];
-            // }
-        // }
         
         currentUserUid = Omadi.utils.getUid();
-        
         db = Omadi.utils.openMainDatabase();
         
         sql = "SELECT n.nid, dispatch.dispatch_form_reference FROM node n ";

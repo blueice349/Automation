@@ -47,92 +47,94 @@ function addiOSToolbar() {"use strict";
 }
 
 function refreshJobsTable(){"use strict";
-    var newJobsSection, currentUserJobsSection, sections, newJobs, backgroundColor, row, textView,
-        i, rowImg, titleLabel, currentUserJobs, dispatchBundle;
+    var newJobsSection, currentUserJobsSection, newJobs, backgroundColor, row, textView,
+        i, rowImg, titleLabel, currentUserJobs, dispatchBundle, newJobsHeader, currentJobsHeader;
     
     dispatchBundle = Omadi.data.getBundle('dispatch');
     newJobs = Omadi.bundles.dispatch.getNewJobs();
     currentUserJobs = Omadi.bundles.dispatch.getCurrentUserJobs();
-    sections = [];
+    
+    newJobsHeader = Ti.UI.createLabel({
+        text: 'New Jobs',
+        color : '#ddd',
+        font : {
+            fontSize : 20,
+            fontWeight : 'bold'
+        },
+        textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER,
+        width : '100%',
+        touchEnabled : false,
+        height : 30,
+        backgroundGradient : {
+            type : 'linear',
+            startPoint : {
+                x : '50%',
+                y : '0%'
+            },
+            endPoint : {
+                x : '50%',
+                y : '100%'
+            },
+            colors : [{
+                color : '#666',
+                offset : 0.0
+            }, {
+                color : '#777',
+                offset : 0.3
+            }, {
+                color : '#444',
+                offset : 1.0
+            }]
+        },
+        ellipsize : true,
+        wordWrap : false
+    });
     
     newJobsSection = Ti.UI.createTableViewSection({
-        headerView: Ti.UI.createLabel({
-            text: 'New Jobs',
-            color : '#ddd',
-            font : {
-                fontSize : 20,
-                fontWeight : 'bold'
+        headerView: newJobsHeader
+    });
+    
+    currentJobsHeader = Ti.UI.createLabel({
+        text: 'My Open Jobs',
+        color : '#ddd',
+        font : {
+            fontSize : 20,
+            fontWeight : 'bold'
+        },
+        textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER,
+        width : '100%',
+        touchEnabled : false,
+        height : 30,
+        backgroundGradient : {
+            type : 'linear',
+            startPoint : {
+                x : '50%',
+                y : '0%'
             },
-            textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER,
-            width : '100%',
-            touchEnabled : false,
-            height : 30,
-            backgroundGradient : {
-                type : 'linear',
-                startPoint : {
-                    x : '50%',
-                    y : '0%'
-                },
-                endPoint : {
-                    x : '50%',
-                    y : '100%'
-                },
-                colors : [{
-                    color : '#666',
-                    offset : 0.0
-                }, {
-                    color : '#777',
-                    offset : 0.3
-                }, {
-                    color : '#444',
-                    offset : 1.0
-                }]
+            endPoint : {
+                x : '50%',
+                y : '100%'
             },
-            ellipsize : true,
-            wordWrap : false
-        })
+            colors : [{
+                color : '#666',
+                offset : 0.0
+            }, {
+                color : '#777',
+                offset : 0.3
+            }, {
+                color : '#444',
+                offset : 1.0
+            }]
+        },
+        ellipsize : true,
+        wordWrap : false
     });
     
     currentUserJobsSection = Ti.UI.createTableViewSection({
-        headerView: Ti.UI.createLabel({
-            text: 'My Open Jobs',
-            color : '#ddd',
-            font : {
-                fontSize : 20,
-                fontWeight : 'bold'
-            },
-            textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER,
-            width : '100%',
-            touchEnabled : false,
-            height : 30,
-            backgroundGradient : {
-                type : 'linear',
-                startPoint : {
-                    x : '50%',
-                    y : '0%'
-                },
-                endPoint : {
-                    x : '50%',
-                    y : '100%'
-                },
-                colors : [{
-                    color : '#666',
-                    offset : 0.0
-                }, {
-                    color : '#777',
-                    offset : 0.3
-                }, {
-                    color : '#444',
-                    offset : 1.0
-                }]
-            },
-            ellipsize : true,
-            wordWrap : false
-        })
+        headerView: currentJobsHeader
     });
     
-    sections.push(newJobsSection);
-    sections.push(currentUserJobsSection);
+   
     
     // separator = ' - ';
     // if ( typeof dispatchBundle.data.title_fields !== 'undefined' && typeof dispatchBundle.data.title_fields.separator !== 'undefined') {
@@ -257,13 +259,15 @@ function refreshJobsTable(){"use strict";
         }
     }
     else{
+        
         currentUserJobsSection.add(Ti.UI.createTableViewRow({
             title: 'You have no open jobs',
             color: '#000'
         }));
     }
     
-    tableView.setData(sections);
+    tableView.setData([]);
+    tableView.setData([newJobsSection, currentUserJobsSection]);
 }
 
 

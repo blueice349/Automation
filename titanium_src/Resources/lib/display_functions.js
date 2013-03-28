@@ -228,18 +228,23 @@ Omadi.display.openDraftsWindow = function() {"use strict";
 };
 
 Omadi.display.openJobsWindow = function() {"use strict";
-    var jobsWindow = Titanium.UI.createWindow({
-        title : 'Jobs',
-        navBarHidden : true,
-        url : '/main_windows/jobs.js'
-    });
 
-    Omadi.display.loading();
-    jobsWindow.addEventListener('open', Omadi.display.doneLoading);
-
-    jobsWindow.open();
-
-    return jobsWindow;
+    if(Omadi.bundles.dispatch.showJobsScreen()){
+        var jobsWindow = Titanium.UI.createWindow({
+            title : 'Jobs',
+            navBarHidden : true,
+            url : '/main_windows/jobs.js'
+        });
+    
+        Omadi.display.loading();
+        jobsWindow.addEventListener('open', Omadi.display.doneLoading);
+    
+        jobsWindow.open();
+    
+        return jobsWindow;
+    }
+    
+    return null;
 };
 
 Omadi.display.openViewWindow = function(type, nid) {"use strict";
