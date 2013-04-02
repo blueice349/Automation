@@ -850,12 +850,12 @@ Omadi.display.loading = function(message) {"use strict";
         },
         textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
     });
-
-    Ti.UI.currentWindow.add(indicator);
-
-    indicator.addEventListener('longpress', function(e) {
-        //e.source.hide();
+    
+    indicator.addEventListener('click', function(e) {
+        e.source.hide();
     });
+    
+    Ti.UI.currentWindow.add(indicator);
 };
 
 Omadi.display.doneLoading = function() {"use strict";
