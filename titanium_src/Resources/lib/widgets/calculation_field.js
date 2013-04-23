@@ -112,179 +112,186 @@ Omadi.widgets.calculation_field = {
             else {
                 cached_final_value = 0;
             }
-    
-            instance.settings.calculation.items = instance.settings.calculation.items.sort(Omadi.utils.sortByWeight);
-
-            for (idx in instance.settings.calculation.items) {
-                if(instance.settings.calculation.items.hasOwnProperty(idx)){
-                    calculation_row = instance.settings.calculation.items[idx];
-                    value = 0;
-                    field_1_multiplier = 0;
-                    field_2_multiplier = 0;
-                    numeric_multiplier = 0;
-
-                    if (calculation_row.field_name_1 != null && node[calculation_row.field_name_1] != null && instances[calculation_row.field_name_1] != null && instances[calculation_row.field_name_1].type == 'calculation_field') {
-                        // Make sure a dependency calculation is made first
-                        required_instance_final_values = Omadi.widgets.calculation_field.getRowValues(node, instances[calculation_row.field_name_1]);
-                        Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_1] = required_instance_final_values[0].final_value;
-                    }
-        
-                    if (calculation_row.field_name_1 != null && calculation_row.field_name_1 != "") {
-                        
-                        if (Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_1] != null) {
-                            
-                            field_1_multiplier = Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_1];
-                        }
-                        else if (calculation_row.type == 'parent_field_value') {
-                            parent_field = calculation_row.parent_field;
-                            if (node[parent_field] != null && node[parent_field].dbValues[0] != null) {
-                                parent_node = Omadi.data.nodeLoad(node[parent_field].dbValues[0]);
-                                if (parent_node && parent_node[calculation_row.field_name_1].dbValues[0] != null) {
-                                    field_1_multiplier = parent_node[calculation_row.field_name_1].dbValues[0];
-                                }
-                            }
-                        }
-                        else if (node[calculation_row.field_name_1] != null && node[calculation_row.field_name_1].dbValues[0] != null) {
-                            field_1_multiplier = node[calculation_row.field_name_1].dbValues[0];
-                        }
-                        if (calculation_row.datestamp_end_field != null && calculation_row.datestamp_end_field != "") {
-
-                            start_timestamp = field_1_multiplier;
-                            field_1_multiplier = 0;
-                            
-                            if (node[calculation_row.datestamp_end_field] != null && node[calculation_row.datestamp_end_field].dbValues[0] != null) {
-                                
-                                end_timestamp = node[calculation_row.datestamp_end_field].dbValues[0];
-                                if (calculation_row.type == 'time-only') {
-                                    if (end_timestamp < start_timestamp) {
-                                        end_timestamp += (24 * 3600);
-                                    }
-                                }
-        
-                                difference = end_timestamp - start_timestamp;
-        
-                                switch(calculation_row.datestamp_interval) {
-                                    case 'minute':
-                                        field_1_multiplier = difference / 60;
-                                        break;
-                                    case 'hour':
-                                        field_1_multiplier = difference / 3600;
-                                        break;
-                                    case 'day':
-                                        field_1_multiplier = difference / (3600 * 24);
-                                        break;
-                                    case 'week':
-                                        field_1_multiplier = difference / (3600 * 24 * 7);
-                                        break;
-                                }
-                                if (calculation_row.type == 'time') {
-
-                                    if (calculation_row.interval_rounding == 'up') {
-                                        field_1_multiplier = Math.ceil(field_1_multiplier);
-                                    }
-                                    else if (calculation_row.interval_rounding == 'down') {
-                                        field_1_multiplier = Math.floor(field_1_multiplier);
-                                    }
-                                    else if (calculation_row.interval_rounding == 'integer') {
-                                        field_1_multiplier = Math.round(field_1_multiplier);
-                                    }
-                                    else if (calculation_row.interval_rounding == 'increment-at-time') {
-                                        
-                                        at_time = calculation_row.increment_at_time;
-                                        start_timestamp = Number(start_timestamp);
-                                        relative_increment_time = at_time = mktime(0,0,0, Omadi.utils.PHPFormatDate('n', start_timestamp), Omadi.utils.PHPFormatDate('j', start_timestamp), Omadi.utils.PHPFormatDate('Y', start_timestamp));
-                                        
-                                        day_count = 0;
-                                        if (relative_increment_time < start_timestamp) {
-                                            relative_increment_time += (3600 * 24);
-                                        }
-        
-                                        while (relative_increment_time <= end_timestamp) {
-                                            day_count++;
-                                            relative_increment_time += (3600 * 24);
-                                        }
-        
-                                        field_1_multiplier = day_count;
-                                    }
-                                }
-                            }
-                        }
-                    
-                    }
-        
-                    if (calculation_row.field_name_2 != null && calculation_row.field_name_2 != "") {
-                        
-                        if (Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_1] != null) {
-                            field_2_multiplier = Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_2];
-                        }
-                        else if (calculation_row.type == 'parent_field_value') {
-                            parent_field = calculation_row.parent_field;
-                            
-                            if (node[parent_field] != null && node[parent_field].dbValues[0] != null) {
-                                parent_node = Omadi.data.nodeLoad(node[parent_field].dbValues[0]);
-                                
-                                if (parent_node && parent_node[calculation_row.field_name_2].dbValues[0] != null) {
-                                    field_2_multiplier = parent_node[calculation_row.field_name_2].dbValues[0];
-                                }
-                            }
-                        }
-                        else if (node[calculation_row.field_name_2] != null && node[calculation_row.field_name_2].dbValues[0] != null) {
-                            field_2_multiplier = node[calculation_row.field_name_2].dbValues[0];
-                        }
-                    }
-        
-                    if (calculation_row.numeric_multiplier != null && calculation_row.numeric_multiplier != "") {
-                        numeric_multiplier = Number(calculation_row.numeric_multiplier);
-                    }
-        
-                    zero = false;
-                    
-                    if (calculation_row.criteria != null && calculation_row.criteria.search_criteria != null) {
-                        if (!list_search_node_matches_search_criteria(node, calculation_row.criteria)) {
-                            zero = true;
-                        }
-                    }
-        
-                    value = 0;
-                    
-                    if(typeof calculation_row.field_name_1 !== 'undefined' && !Omadi.utils.isEmpty(calculation_row.field_name_1)){
-                        if (!field_1_multiplier) {
-                            zero = true;
-                        }
-                        else if (!value && field_1_multiplier) {
-                            value = Number(field_1_multiplier);
-                        }
-                    }
-                    
-                    if(typeof calculation_row.field_name_2 !== 'undefined' && !Omadi.utils.isEmpty(calculation_row.field_name_2)){
-                        if (!field_2_multiplier) {
-                            zero = true;
-                        }
-                        else if (!value && field_2_multiplier) {
-                            value = Number(field_2_multiplier);
-                        }
-                        else if (value && field_2_multiplier) {
-                            value *= Number(field_2_multiplier);
-                        }
-                    }
-        
-                    if (!value && numeric_multiplier) {
-                        value = Number(numeric_multiplier);
-                    }
-                    else if (value && numeric_multiplier) {
-                        value *= Number(numeric_multiplier);
-                    }
-        
-                    if (zero) {
+            
+            if(typeof instance.settings.calculation.items !== 'undefined'){
+                
+                instance.settings.calculation.items = instance.settings.calculation.items.sort(Omadi.utils.sortByWeight);
+            
+                for (idx in instance.settings.calculation.items) {
+                    if(instance.settings.calculation.items.hasOwnProperty(idx)){
+                        calculation_row = instance.settings.calculation.items[idx];
                         value = 0;
+                        field_1_multiplier = 0;
+                        field_2_multiplier = 0;
+                        numeric_multiplier = 0;
+    
+                        if (calculation_row.field_name_1 != null && node[calculation_row.field_name_1] != null && instances[calculation_row.field_name_1] != null && instances[calculation_row.field_name_1].type == 'calculation_field') {
+                            // Make sure a dependency calculation is made first
+                            required_instance_final_values = Omadi.widgets.calculation_field.getRowValues(node, instances[calculation_row.field_name_1]);
+                            Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_1] = required_instance_final_values[0].final_value;
+                        }
+            
+                        if (calculation_row.field_name_1 != null && calculation_row.field_name_1 != "") {
+                            
+                            if (Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_1] != null) {
+                                
+                                field_1_multiplier = Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_1];
+                            }
+                            else if (calculation_row.type == 'parent_field_value') {
+                                parent_field = calculation_row.parent_field;
+                                if (node[parent_field] != null && node[parent_field].dbValues[0] != null) {
+                                    parent_node = Omadi.data.nodeLoad(node[parent_field].dbValues[0]);
+                                    if (parent_node && 
+                                        typeof parent_node[calculation_row.field_name_1] !== 'undefined' && 
+                                        typeof parent_node[calculation_row.field_name_1].dbValues !== 'undefined' && 
+                                        parent_node[calculation_row.field_name_1].dbValues[0] != null) {
+                                            
+                                            field_1_multiplier = parent_node[calculation_row.field_name_1].dbValues[0];
+                                    }
+                                }
+                            }
+                            else if (node[calculation_row.field_name_1] != null && node[calculation_row.field_name_1].dbValues[0] != null) {
+                                field_1_multiplier = node[calculation_row.field_name_1].dbValues[0];
+                            }
+                            if (calculation_row.datestamp_end_field != null && calculation_row.datestamp_end_field != "") {
+    
+                                start_timestamp = field_1_multiplier;
+                                field_1_multiplier = 0;
+                                
+                                if (node[calculation_row.datestamp_end_field] != null && node[calculation_row.datestamp_end_field].dbValues[0] != null) {
+                                    
+                                    end_timestamp = node[calculation_row.datestamp_end_field].dbValues[0];
+                                    if (calculation_row.type == 'time-only') {
+                                        if (end_timestamp < start_timestamp) {
+                                            end_timestamp += (24 * 3600);
+                                        }
+                                    }
+            
+                                    difference = end_timestamp - start_timestamp;
+            
+                                    switch(calculation_row.datestamp_interval) {
+                                        case 'minute':
+                                            field_1_multiplier = difference / 60;
+                                            break;
+                                        case 'hour':
+                                            field_1_multiplier = difference / 3600;
+                                            break;
+                                        case 'day':
+                                            field_1_multiplier = difference / (3600 * 24);
+                                            break;
+                                        case 'week':
+                                            field_1_multiplier = difference / (3600 * 24 * 7);
+                                            break;
+                                    }
+                                    if (calculation_row.type == 'time') {
+    
+                                        if (calculation_row.interval_rounding == 'up') {
+                                            field_1_multiplier = Math.ceil(field_1_multiplier);
+                                        }
+                                        else if (calculation_row.interval_rounding == 'down') {
+                                            field_1_multiplier = Math.floor(field_1_multiplier);
+                                        }
+                                        else if (calculation_row.interval_rounding == 'integer') {
+                                            field_1_multiplier = Math.round(field_1_multiplier);
+                                        }
+                                        else if (calculation_row.interval_rounding == 'increment-at-time') {
+                                            
+                                            at_time = calculation_row.increment_at_time;
+                                            start_timestamp = Number(start_timestamp);
+                                            relative_increment_time = at_time = mktime(0,0,0, Omadi.utils.PHPFormatDate('n', start_timestamp), Omadi.utils.PHPFormatDate('j', start_timestamp), Omadi.utils.PHPFormatDate('Y', start_timestamp));
+                                            
+                                            day_count = 0;
+                                            if (relative_increment_time < start_timestamp) {
+                                                relative_increment_time += (3600 * 24);
+                                            }
+            
+                                            while (relative_increment_time <= end_timestamp) {
+                                                day_count++;
+                                                relative_increment_time += (3600 * 24);
+                                            }
+            
+                                            field_1_multiplier = day_count;
+                                        }
+                                    }
+                                }
+                            }
+                        
+                        }
+            
+                        if (calculation_row.field_name_2 != null && calculation_row.field_name_2 != "") {
+                            
+                            if (Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_1] != null) {
+                                field_2_multiplier = Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_2];
+                            }
+                            else if (calculation_row.type == 'parent_field_value') {
+                                parent_field = calculation_row.parent_field;
+                                
+                                if (node[parent_field] != null && node[parent_field].dbValues[0] != null) {
+                                    parent_node = Omadi.data.nodeLoad(node[parent_field].dbValues[0]);
+                                    
+                                    if (parent_node && parent_node[calculation_row.field_name_2].dbValues[0] != null) {
+                                        field_2_multiplier = parent_node[calculation_row.field_name_2].dbValues[0];
+                                    }
+                                }
+                            }
+                            else if (node[calculation_row.field_name_2] != null && node[calculation_row.field_name_2].dbValues[0] != null) {
+                                field_2_multiplier = node[calculation_row.field_name_2].dbValues[0];
+                            }
+                        }
+            
+                        if (calculation_row.numeric_multiplier != null && calculation_row.numeric_multiplier != "") {
+                            numeric_multiplier = Number(calculation_row.numeric_multiplier);
+                        }
+            
+                        zero = false;
+                        
+                        if (calculation_row.criteria != null && calculation_row.criteria.search_criteria != null) {
+                            if (!list_search_node_matches_search_criteria(node, calculation_row.criteria)) {
+                                zero = true;
+                            }
+                        }
+            
+                        value = 0;
+                        
+                        if(typeof calculation_row.field_name_1 !== 'undefined' && !Omadi.utils.isEmpty(calculation_row.field_name_1)){
+                            if (!field_1_multiplier) {
+                                zero = true;
+                            }
+                            else if (!value && field_1_multiplier) {
+                                value = Number(field_1_multiplier);
+                            }
+                        }
+                        
+                        if(typeof calculation_row.field_name_2 !== 'undefined' && !Omadi.utils.isEmpty(calculation_row.field_name_2)){
+                            if (!field_2_multiplier) {
+                                zero = true;
+                            }
+                            else if (!value && field_2_multiplier) {
+                                value = Number(field_2_multiplier);
+                            }
+                            else if (value && field_2_multiplier) {
+                                value *= Number(field_2_multiplier);
+                            }
+                        }
+            
+                        if (!value && numeric_multiplier) {
+                            value = Number(numeric_multiplier);
+                        }
+                        else if (value && numeric_multiplier) {
+                            value *= Number(numeric_multiplier);
+                        }
+            
+                        if (zero) {
+                            value = 0;
+                        }
+            
+                        row_values.push({
+                            'row_label' : (calculation_row.row_label != null && calculation_row.row_label != "") ? calculation_row.row_label : '',
+                            'value' : value
+                        });
+                       
+                        final_value += Number(value);
                     }
-        
-                    row_values.push({
-                        'row_label' : (calculation_row.row_label != null && calculation_row.row_label != "") ? calculation_row.row_label : '',
-                        'value' : value
-                    });
-                   
-                    final_value += Number(value);
                 }
             }
             

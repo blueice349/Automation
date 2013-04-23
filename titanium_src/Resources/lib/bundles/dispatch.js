@@ -59,10 +59,8 @@ Omadi.bundles.dispatch.getDrivingDirections = function(args){"use strict";
             node = Omadi.data.nodeLoad(nid);
             address = "";
             
-            if(node.type == 'cod' || node.type == 'pd'){
-                Omadi.bundles.dispatch.openDirectionsToFirstAddress(node);
-            }
-            else if(node.type == 'tow'){
+            
+            if(node.type == 'tow'){ // Same as PPI
                 accountNid = node.enforcement_account.dbValues[0];
                 node = Omadi.data.nodeLoad(accountNid);
                 Omadi.bundles.dispatch.openDirectionsToFirstAddress(node);
@@ -77,6 +75,9 @@ Omadi.bundles.dispatch.getDrivingDirections = function(args){"use strict";
                     node = Omadi.data.nodeLoad(accountNid);
                     Omadi.bundles.dispatch.openDirectionsToFirstAddress(node);
                 }
+            }
+            else{ // for club_tow, cod, pd
+                Omadi.bundles.dispatch.openDirectionsToFirstAddress(node);
             }
         }
     }
@@ -457,7 +458,7 @@ Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
         sql = "SELECT n.nid, dispatch.dispatch_form_reference FROM node n ";
         sql += "LEFT JOIN dispatch ON dispatch.nid = n.nid ";
         sql += "WHERE n.table_name = 'dispatch' ";
-        sql += "AND dispatch.dispatch_form_reference IS NOT NULL ";
+        sql += "AND dispatch.dispatch_form_reference IS NOT NULL AND dispatch.dispatch_form_reference > 0 ";
         sql += "AND dispatch.dispatched_to_driver IS NULL"; 
         result = db.execute(sql);
         
@@ -474,13 +475,19 @@ Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
         for(i = 0; i < newDispatchNids.length; i ++){
             
             node = Omadi.data.nodeLoad(newDispatchNids[i]);
-            if(node && node.nid){
-                newJobs.push({
-                   nid: node.nid,
-                   title: node.title,
-                   viewed: node.viewed,
-                   type: node.type
-                });
+            if(node &&
+                node.nid &&
+                typeof node.from_dispatch !== 'undefined' && 
+                typeof node.from_dispatch.dbValues !== 'undefined' &&
+                typeof node.from_dispatch.dbValues[0] !== 'undefined' && 
+                node.from_dispatch.dbValues[0] > 0){
+                
+                    newJobs.push({
+                       nid: node.nid,
+                       title: node.title,
+                       viewed: node.viewed,
+                       type: node.type
+                    });
             }
         }
     }

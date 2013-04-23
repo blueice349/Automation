@@ -607,7 +607,9 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
             fieldSettings = JSON.parse(subResult.fieldByName('settings'));
             subResult.close();
     
-            if (fieldSettings.cardinality > 1 || fieldSettings.cardinality < 0) {
+            if (fieldSettings != null && 
+                typeof fieldSettings.cardinality !== 'undefined' && 
+                (fieldSettings.cardinality > 1 || fieldSettings.cardinality < 0)) {
     
                 subResult = subDB.execute("SELECT " + json.field_name + " FROM " + tableName + " WHERE nid=" + json.nid);
     

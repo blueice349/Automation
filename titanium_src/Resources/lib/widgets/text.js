@@ -102,6 +102,10 @@ Omadi.widgets.text = {
             widgetView.maxLength = settings.max_length;
         }
         
+        if (typeof settings.capitalization  !== null && settings.capitalization != null) {
+            widgetView.capitalization = settings.capitalization;
+        }
+        
         widgetView.addEventListener('change', function(e) {
             /*global setConditionallyRequiredLabels*/
             
@@ -111,6 +115,16 @@ Omadi.widgets.text = {
                     if(e.source.value.length > e.source.maxLength){
                         e.source.value = e.source.value.substring(0, e.source.maxLength);
                         e.source.setSelection(e.source.value.length, e.source.value.length);
+                    }
+                }
+                
+                if(typeof e.source.capitalization !== 'undefined'){
+                    if(e.source.capitalization == 'all_caps' && e.source.value !== null){
+                        e.source.value = (e.source.value + "".toString()).toUpperCase();
+                        
+                        if(Ti.App.isAndroid){
+                            e.source.setSelection(e.source.value.length, e.source.value.length);
+                        }
                     }
                 }
            

@@ -22,7 +22,8 @@ var wrapperView;
 var isFormWindow = true;
 
 if (Ti.App.isAndroid) {
-    cameraAndroid = require('com.omadi.camera');
+    //cameraAndroid = require('com.omadi.camera');
+    cameraAndroid = require('com.omadi.newcamera');
 }
 
 

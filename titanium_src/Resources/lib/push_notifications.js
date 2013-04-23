@@ -149,21 +149,38 @@ Omadi.push_notifications.registeriOS = function() {"use strict";
 };
 
 Omadi.push_notifications.getUserName = function() {"use strict";
-    var uid, clientAccount;
-
-    uid = Omadi.utils.getUid();
-    clientAccount = Omadi.utils.getClientAccount();
+    
+    var uid = 0, clientAccount = "";
+    
+    try{
+        uid = Omadi.utils.getUid();
+        clientAccount = Omadi.utils.getClientAccount();
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport('error getting push username' + JSON.stringify(ex));
+    }
 
     return clientAccount + '_' + uid;
 };
 
 Omadi.push_notifications.getPassword = function() {"use strict";
-    var md5 = Ti.Utils.md5HexDigest(Omadi.push_notifications.getUserName() + "OmadiCRMMRCidamO");
+    var md5, password = "";
+    
+    try{
+        md5 = Ti.Utils.md5HexDigest(Omadi.push_notifications.getUserName() + "OmadiCRMMRCidamO");
+        password = md5.substring(0, 20);
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport('error getting push password' + JSON.stringify(ex));
+    }
 
-    return md5.substring(0, 20);
+    return password;
 };
 
 Omadi.push_notifications.logoutUser = function() {"use strict";
+    
+    Ti.App.registeredPushListener = false;
+    
     Cloud.Users.logout(function(e) {
         if (e.success) {
             Ti.API.info("ACS User logged out successfully");
@@ -239,8 +256,18 @@ Omadi.push_notifications.loginUser = function() {"use strict";
             }
             else {
                 var dialog = Ti.UI.createAlertDialog({
-                    message : 'There was a problem setting up push notifications. Please try again by logging back in.'
+                    title: 'Error Starting Push Notifications',
+                    message : 'There was a problem setting up push notifications. Do you want to retry?',
+                    buttonNames: ['Yes', 'No', 'Cancel'],
+                    cancel: 2
                 });
+                
+                dialog.addEventListener('click', function(e){
+                    if(e.index == 0){
+                        Omadi.push_notifications.init();
+                    }
+                });
+                
                 if ( typeof alertQueue !== 'undefined') {
                     alertQueue.push(dialog);
                 }
@@ -286,7 +313,7 @@ Omadi.push_notifications.init = function() {"use strict";
     
     if(Ti.App.isAndroid){
         
-        if(typeof Ti.App.registeredPushListener === 'undefined'){
+        if(typeof Ti.App.registeredPushListener === 'undefined' || !Ti.App.registeredPushListener){
             Ti.App.registeredPushListener = true;
             Ti.App.addEventListener('androidRegistered', Omadi.push_notifications.loginUser);
         }
@@ -295,7 +322,7 @@ Omadi.push_notifications.init = function() {"use strict";
     }
     else {
         
-        if(typeof Ti.App.registeredPushListener === 'undefined'){
+        if(typeof Ti.App.registeredPushListener === 'undefined' || !Ti.App.registeredPushListener){
             Ti.App.registeredPushListener = true;
             Ti.App.addEventListener('iOSRegistered', Omadi.push_notifications.loginUser);
         }

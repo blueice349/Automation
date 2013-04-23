@@ -824,7 +824,6 @@ function showNextAlertInQueue(e) {"use strict";
             
             // The option dialog should go after clock in, but some of the options
             // are blocked because of the alert dialog being show in askclockin
-            // It is 
             
             Omadi.bundles.timecard.askClockIn();
             
@@ -862,6 +861,7 @@ function showNextAlertInQueue(e) {"use strict";
         // }
         // }
         // }
+        
         Ti.API.debug("before init");
         Omadi.push_notifications.init();
         
@@ -870,8 +870,6 @@ function showNextAlertInQueue(e) {"use strict";
                 Omadi.service.checkUpdate(); 
             });
         }
-        
-        
-
+      
     }());
 
