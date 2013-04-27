@@ -4,12 +4,15 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
+import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
@@ -21,13 +24,18 @@ import android.widget.RelativeLayout.LayoutParams;
 
 public class ToolsOverlay extends RelativeLayout {
 	
-	ImageView captureImage = null;
-	Bitmap bitmap = null;
+	private ImageView captureImage = null;
+	private ImageView flashView = null;
+	private Bitmap bitmap = null;
 	
-	RelativeLayout container = null;
+	private RelativeLayout container = null;
+	private Context context = null;
+	private int degrees = 0;
 	
 	public ToolsOverlay(Context context){
 		super(context);
+		
+		this.context = context;
 		
 //		Display display = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 //    
@@ -44,6 +52,7 @@ public class ToolsOverlay extends RelativeLayout {
 	    
 	    this.addView(container);
 	    
+	
 //	    Drawable drawable = null;
 //	    try {
 //	    	InputStream is = context.getAssets().open("gray_bg.png");
@@ -77,11 +86,99 @@ public class ToolsOverlay extends RelativeLayout {
 		});
 		
 		container.addView(captureImage);
+		
+	}
+	
+	public void createAndShowFlash(){
+	    
+		Camera.Parameters cameraParams = OmadiCameraActivity.getCameraParameters();
+		
+		// FLASH BUTTON
+        if(context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)){
+  
+	         flashView = new ImageView(context);
+	         RelativeLayout.LayoutParams flashParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+			 flashParams.addRule(RelativeLayout.CENTER_VERTICAL);
+			 flashParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+			 
+	         flashView.setLayoutParams(flashParams);
+
+	         try {
+	        	 InputStream is;
+	        	  Log.i("CHRIS", "flash 1");
+		           String omadiFlashProp = System.getProperty("OMADI_FLASH");
+		           if (omadiFlashProp == null) {
+		        	   omadiFlashProp = Camera.Parameters.FLASH_MODE_OFF;
+		           }
+		           
+		           if (omadiFlashProp == Camera.Parameters.FLASH_MODE_OFF) {
+		        	   is = context.getAssets().open("flashOff.png");
+		           } 
+		           else {
+		        	   is = context.getAssets().open("flashOn.png");
+		           }
+		           
+		           cameraParams.setFlashMode(omadiFlashProp);
+		           bitmap = BitmapFactory.decodeStream(is);
+		           flashView.setImageBitmap(bitmap);
+		           
+		           Log.i("CHRIS", "flash 2");
+		           OmadiCameraActivity.setCameraParameters(cameraParams);
+	         } 
+	         catch (IOException e) {
+	        	 
+	         }
+	         
+	         
+	         container.addView(flashView);
+	  
+	         flashView.setOnClickListener(new View.OnClickListener() {
+		           public void onClick(View v) {
+			             InputStream is;
+			             Camera.Parameters localCameraParams = OmadiCameraActivity.getCameraParameters();
+			             try {
+				               if(localCameraParams.getFlashMode().equals(Camera.Parameters.FLASH_MODE_ON)){
+				                 is = context.getAssets().open("flashOff.png");
+				                 localCameraParams.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+				               }
+				               else{
+				                 is = context.getAssets().open("flashOn.png");
+				                 localCameraParams.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+				               }
+				               
+				               System.setProperty("OMADI_FLASH",localCameraParams.getFlashMode());
+				               
+				               bitmap = BitmapFactory.decodeStream(is);
+				               flashView.setImageBitmap(bitmap);
+				               
+				               OmadiCameraActivity.setCameraParameters(localCameraParams);
+				               
+				               redrawButtons();
+			             } 
+			             catch (IOException e) {
+			               // TODO Auto-generated catch block
+			               e.printStackTrace();
+			             }
+		           }
+	         });
+	         
+	         redrawButtons();
+	         
+   		}
 	}
 	
 	public void degreesChanged(int degrees){
+		
+		this.degrees = degrees;
+		
+		redrawButtons();
+	}
+	
+	private void redrawButtons(){
+		
 		RelativeLayout.LayoutParams containerParams = null;
 		RelativeLayout.LayoutParams captureParams = null;
+		RelativeLayout.LayoutParams flashParams = null;
 		RotateAnimation animation = null;
 		
 		if(degrees == 270){ // regular portrait
@@ -92,6 +189,13 @@ public class ToolsOverlay extends RelativeLayout {
 			captureParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
 			captureParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
 			captureImage.setLayoutParams(captureParams);
+			
+			if(flashView != null){
+				flashParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+				flashParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+				flashParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+				flashView.setLayoutParams(flashParams);
+			}
 			
 			animation = getRotateAnimation(270);
 		}
@@ -104,6 +208,13 @@ public class ToolsOverlay extends RelativeLayout {
 			captureParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
 			captureImage.setLayoutParams(captureParams);
 			
+			if(flashView != null){
+				flashParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+				flashParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+				flashParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+				flashView.setLayoutParams(flashParams);
+			}
+			
 			animation = getRotateAnimation(90);
 		}
 		else if(degrees == 180){
@@ -114,6 +225,13 @@ public class ToolsOverlay extends RelativeLayout {
 			captureParams.addRule(RelativeLayout.CENTER_VERTICAL);
 			captureParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
 			captureImage.setLayoutParams(captureParams);
+			
+			if(flashView != null){
+				flashParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+				flashParams.addRule(RelativeLayout.CENTER_VERTICAL);
+				flashParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+				flashView.setLayoutParams(flashParams);
+			}
 			
 			animation = getRotateAnimation(180);
 		}
@@ -126,19 +244,30 @@ public class ToolsOverlay extends RelativeLayout {
 			captureParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
 			captureImage.setLayoutParams(captureParams);
 			
+			if(flashView != null){
+				flashParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+				flashParams.addRule(RelativeLayout.CENTER_VERTICAL);
+				flashParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+				flashView.setLayoutParams(flashParams);
+			}
+			
 			animation = getRotateAnimation(0);
 		}
 		
 		if (animation != null) {
 			captureImage.startAnimation(animation);
+			
+			if(flashView != null){
+				flashView.startAnimation(animation);
+			}
 		}
 		
 		container.setLayoutParams(containerParams);
 	}
 	
 	public void pictureTaken(){
-		captureImage.setEnabled(false);
-		captureImage.setVisibility(INVISIBLE);
+		//captureImage.setEnabled(false);
+		//captureImage.setVisibility(INVISIBLE);
 	}
 	
 	private RotateAnimation getRotateAnimation(int toDegrees) {

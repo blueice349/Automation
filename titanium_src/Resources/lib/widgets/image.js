@@ -173,38 +173,12 @@ Omadi.widgets.image = {
     },
     openCamera : function(imageView) {"use strict";
         /*global cameraAndroid*/
-
+        var blankOverlay;
+        
         if (Ti.App.isAndroid) {
             if (Ti.Media.isCameraSupported) {
-                var overlayView, doneButton, captureButton;
-
-                overlayView = Ti.UI.createView();
-                doneButton = Ti.UI.createButton({
-                    title: 'Done',
-                    bottom: 0,
-                    left: 0
-                });
-                
-                doneButton.addEventListener('click', function(e){
-                    var activity = Ti.Android.currentActivity;
-                    activity.finish();
-                    //alert("hi");
-                });
-                
-                captureButton = Ti.UI.createButton({
-                    bottom: 0,
-                    right: 0,
-                    backgroundImage: '/images/ic_menu_camera.png',
-                    height: 64,
-                    width: 64
-                });
-                
-                captureButton.addEventListener('click', function(e){
-                    cameraAndroid.takePicture(); 
-                });
-                
-                //overlayView.add(doneButton);
-                overlayView.add(captureButton);
+               
+                blankOverlay = Ti.UI.createView();
                 
                 cameraAndroid.showCamera({
                     
@@ -274,18 +248,27 @@ Omadi.widgets.image = {
                         
                         //Omadi.display.doneLoading();
                         
+                        Omadi.widgets.image.saveFileInfo(imageView, filePath, degrees);
+                        
                         if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
                             newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null);
                             imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
                             imageView.parentView.add(newImageView);
-                            newImageView.fireEvent('click');
+                            
+                            // Allow the newImageView time to show up, and then click it
+                            setTimeout(function(){
+                                 newImageView.fireEvent('click');
+                                 Omadi.display.doneLoading();
+                            }, 100);
+                        }
+                        else{
+                            Omadi.display.doneLoading();
                         }
                         
-                        Omadi.widgets.image.saveFileInfo(imageView, filePath, degrees);
                         
                         //Omadi.widgets.image.saveImageInDb(imageView, blob);
                         
-                        Omadi.display.doneLoading();
+                        
                     },
                     success : function(event) {
                         Ti.API.info('CAMERA SUCCESS');
@@ -298,7 +281,8 @@ Omadi.widgets.image = {
                             alert('No Camera in device');
                         }
                     },
-                    overlay : overlayView
+                    // Currently, an overlay must exist to not show the default camera
+                    overlay : blankOverlay
                 });
                 
                 // cameraAndroid.openCamera({

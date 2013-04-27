@@ -49,7 +49,6 @@ import android.widget.RelativeLayout;
 public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder.Callback, SensorEventListener {
 	private static final String LCAT = "OmadiCameraActivity";
 	private static Camera camera;
-	
 
 	private TiViewProxy localOverlayProxy = null;
 	private Uri storageUri;
@@ -76,7 +75,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	private SensorManager sensorManager = null;
 	Bitmap bitmap = null;
 	
-
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -107,9 +106,19 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 		
 		setContentView(previewLayout);
 	}
+	
+	public static Camera.Parameters getCameraParameters(){
+		return camera.getParameters();
+	}
+	
+	public static void setCameraParameters(Camera.Parameters params){
+		camera.setParameters(params);
+	}
 
 	public void surfaceChanged(SurfaceHolder previewHolder, int format, int width, int height) {
 		camera.startPreview();  // make sure setPreviewDisplay is called before this
+		
+		toolsOverlay.createAndShowFlash();
 	}
 
 	public void surfaceCreated(SurfaceHolder previewHolder) {
@@ -133,6 +142,8 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 		} catch(IOException e) {
 			e.printStackTrace();
 		}
+		
+		//toolsOverlay.show();
 	}
 
 	// make sure to call release() otherwise you will have to force kill the app before 

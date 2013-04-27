@@ -1189,7 +1189,6 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                 
                 if(nextPhoto.file_data.length < 200){
                     try{
-                        
                         nextPhoto.filePath = nextPhoto.file_data;
                         
                         if(Ti.App.isAndroid){
