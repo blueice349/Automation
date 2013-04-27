@@ -147,7 +147,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                 http = Ti.Network.createHTTPClient();
 
                 //Timeout until error:
-                http.setTimeout(15000);
+                http.setTimeout(30000);
 
                 //While streamming - following method should be called b4 open URL
                 http.ondatastream = function(e) {
@@ -587,7 +587,8 @@ Omadi.service.sendLogoutRequest = function(){"use strict";
 };
 
 Omadi.service.photoUploadSuccess = function(e){"use strict";
-    var json, subDB, subResult, uploadMore = false, fieldSettings, tableName, decoded_values, decoded, content, multipleValue, dbValue, jsonArray;
+    var json, subDB, subResult, uploadMore = false, fieldSettings, tableName, 
+        decoded_values, decoded, content, multipleValue, dbValue, jsonArray, imageFile, filePath;
     
     //Ti.API.info('UPLOAD FILE: =========== Success ========' + this.responseText);
     Ti.API.debug("Photo upload succeeded");
@@ -621,23 +622,37 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                         jsonArray = multipleValue;
                     }
                 }
-    
+
                 jsonArray[parseInt(json.delta, 10)] = json.file_id;
-    
+
                 subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='" + dbEsc(JSON.stringify(jsonArray)) + "' WHERE nid=" + json.nid);
             }
             else {
                 subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='" + json.file_id + "' WHERE nid='" + json.nid + "'");
             }
-    
-            //Deleting file after upload.
-            subDB.execute("DELETE FROM _photos WHERE nid=" + json.nid + " and delta=" + json.delta + " and field_name='" + json.field_name + "'");
-    
+               
+            subResult = subDB.execute("SELECT file_data FROM _photos WHERE nid=" + json.nid + " AND delta=" + json.delta + " AND field_name='" + json.field_name + "'");   
+            if(subResult.isValidRow()){
+                
+                // If it's a file path, delete the file
+                if(subResult.field(0).length < 200){
+                    filePath = subResult.field(0);
+                    imageFile = Ti.Filesystem.getFile("file://" + filePath); 
+                    
+                    imageFile.deleteFile(); 
+                }
+            
+                //Deleting file after upload.
+                subDB.execute("DELETE FROM _photos WHERE nid=" + json.nid + " AND delta=" + json.delta + " AND field_name='" + json.field_name + "'");
+            }
+            
             subResult = subDB.execute("SELECT id FROM _photos WHERE nid > 0 AND tries = 0");
             uploadMore = (subResult.rowCount > 0 ? true : false);
             subResult.close();
     
             subDB.close();
+            
+            
     
             Ti.App.fireEvent('photoUploaded', {
                 nid : json.nid,
@@ -719,7 +734,7 @@ Omadi.service.photoUploadError = function(e){"use strict";
 
 Omadi.service.uploadFile = function() {"use strict";
     /*jslint eqeq:true, plusplus: true*/
-    /*global Base64*/
+    /*global Base64, cameraAndroid*/
     var http, mainDB, result, isUploading, nowTimestamp, 
         lastUploadStartTimestamp, tmpImageView, 
         blobImage, maxDiff, imageData, uploadPhoto,
@@ -782,6 +797,8 @@ Omadi.service.uploadFile = function() {"use strict";
                     
                     imageData = nextPhotoData.file_data;
                     //imageData = file_data;
+                    
+                    //alert("length: " + imageData.length);
     
                     if (nextPhotoData.nid > 0) {
                         

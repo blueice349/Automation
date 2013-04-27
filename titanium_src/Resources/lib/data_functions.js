@@ -1156,13 +1156,14 @@ Omadi.data.getPhotoCount = function(){"use strict";
 };
 
 Omadi.data.getNextPhotoData = function(){"use strict";
-    var mainDB, result, nextPhoto;
-    
+    var mainDB, result, nextPhoto, imageFile, imageBlob;
+    /*global cameraAndroid*/
+   
     nextPhoto = null;
     
     try{
         mainDB = Omadi.utils.openMainDatabase();
-        result = mainDB.execute("SELECT nid, id, file_data, file_name, field_name, delta, timestamp, tries, latitude, longitude, accuracy FROM _photos WHERE nid > 0 ORDER BY delta ASC LIMIT 1");
+        result = mainDB.execute("SELECT nid, id, file_data, file_name, field_name, delta, timestamp, tries, latitude, longitude, accuracy, degrees FROM _photos WHERE nid > 0 ORDER BY delta ASC LIMIT 1");
         
         if (result.isValidRow()) {
             //Only upload those images that have positive nids
@@ -1182,8 +1183,33 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                     tries : result.fieldByName('tries'),
                     latitude : result.fieldByName('latitude'),
                     longitude : result.fieldByName('longitude'),
-                    accuracy : result.fieldByName('accuracy')
+                    accuracy : result.fieldByName('accuracy'),
+                    degrees : result.fieldByName('degrees', Ti.Database.FIELD_TYPE_INT)
                 };
+                
+                if(nextPhoto.file_data.length < 200){
+                    try{
+                        
+                        nextPhoto.filePath = nextPhoto.file_data;
+                        
+                        if(Ti.App.isAndroid){
+                            
+                            Ti.API.info("next degrees: " + nextPhoto.degrees);
+                            cameraAndroid.resizeImage(nextPhoto.filePath, nextPhoto.degrees);
+                        }
+                        
+                        imageFile = Ti.Filesystem.getFile("file://" + nextPhoto.filePath);
+                        
+                        imageBlob = imageFile.read();
+                        nextPhoto.file_data = Ti.Utils.base64encode(imageBlob).getText();
+                        
+                        imageFile = null;
+                        imageBlob = null;
+                    }
+                    catch(fileEx){
+                        Omadi.service.sendErrorReport("Exception loading next photo: " + fileEx);
+                    }
+                }
             }
         }
         

@@ -4,6 +4,14 @@ if (Ti.App.isIOS) {
     Ti.include('/lib/iOS/backgroundLocation.js');
 }
 
+
+var cameraAndroid;
+
+if (Ti.App.isAndroid) {
+    //cameraAndroid = require('com.omadi.camera');
+    cameraAndroid = require('com.omadi.newcamera');
+}
+
 /*jslint eqeq:true, plusplus: true, nomen: true*/
 
 var curWin = Ti.UI.currentWindow;

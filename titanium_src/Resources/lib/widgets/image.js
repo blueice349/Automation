@@ -5,6 +5,8 @@ Ti.include('/lib/widgets/signature.js');
 
 var IMAGE_MAX_BYTES = 524258;
 
+
+
 Omadi.widgets.image = {
 
     getFieldView : function(node, instance) {"use strict";
@@ -190,9 +192,11 @@ Omadi.widgets.image = {
                 });
                 
                 captureButton = Ti.UI.createButton({
-                    title: 'Capture',
                     bottom: 0,
-                    right: 0
+                    right: 0,
+                    backgroundImage: '/images/ic_menu_camera.png',
+                    height: 64,
+                    width: 64
                 });
                 
                 captureButton.addEventListener('click', function(e){
@@ -206,12 +210,12 @@ Omadi.widgets.image = {
                     
                     finished : function(event){
                         var newImageView, tmpImageView, blob, maxDiff, newHeight, newWidth,
-                            uploadImageView, filePath, file;
+                            uploadImageView, filePath, file, degrees, i, transform, animation, rotateDegrees;
                         
-                        Omadi.display.loading("Resizing Photo...");
+                        //Omadi.display.loading("Resizing Photo...");
                         
                         //blob = Omadi.widgets.image.resizeImage(event.media, 1500);
-                        
+                        Omadi.display.loading("Saving Photo...");
                         
                         // uploadImageView = Ti.UI.createImageView({
                            // image: event.media,
@@ -224,16 +228,43 @@ Omadi.widgets.image = {
                         //imageView.image = Ti.Utils.base64decode(event.media);
                         //uploadImageView.toImage().media;
                         
-                        filePath = "file://" + event.filePath;
+                        filePath = event.filePath;
+                        degrees = event.degrees;
+                        
+
+                        for(i in event){
+                            if(event.hasOwnProperty(i)){
+                                Ti.API.info(i + ": " + event[i]);
+                            }
+                        }
                         //blob = event.media;
                         
-                        alert(filePath);
+                        //alert(filePath);
                         
                         //file = Ti.Filesystem.getFile(filePath);
                         
-                        imageView.setImage(filePath);
+                        imageView.setImage("file://" + filePath);
                         
-                        blob = imageView.toImage().media;
+                        if(degrees > 0){
+                            transform = Ti.UI.create2DMatrix();
+                            animation = Ti.UI.createAnimation();
+                            
+                            rotateDegrees = degrees;
+                            if(rotateDegrees == 270){
+                                rotateDegrees = 90;
+                            }
+                            else if(rotateDegrees == 90){
+                                rotateDegrees = 270;
+                            }
+                            
+                            transform = transform.rotate(rotateDegrees);
+                            animation.transform = transform;
+                            animation.duration = 1;
+                            
+                            imageView.animate(animation);
+                        }
+                        
+                        //blob = imageView.toImage().media;
 
                         //imageView.image = blob;//uploadImageView.image;
 
@@ -241,8 +272,7 @@ Omadi.widgets.image = {
                         //imageView.mimeType = event.media.mimeType;
                         imageView.fullImageLoaded = true;
                         
-                        Omadi.display.doneLoading();
-                        Omadi.display.loading("Saving Photo...");
+                        //Omadi.display.doneLoading();
                         
                         if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
                             newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null);
@@ -251,7 +281,9 @@ Omadi.widgets.image = {
                             newImageView.fireEvent('click');
                         }
                         
-                        Omadi.widgets.image.saveImageInDb(imageView, blob);
+                        Omadi.widgets.image.saveFileInfo(imageView, filePath, degrees);
+                        
+                        //Omadi.widgets.image.saveImageInDb(imageView, blob);
                         
                         Omadi.display.doneLoading();
                     },
@@ -459,6 +491,33 @@ Omadi.widgets.image = {
 
             db = Omadi.utils.openMainDatabase();
             db.execute("INSERT INTO _photos (nid, timestamp, file_data , field_name, file_name, delta, latitude, longitude, accuracy) VALUES ('0','" + timestamp + "','" + encodedImage + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + ")");
+            db.close();
+        }
+        catch(ex) {
+            alert("Problem saving the photo to the database: " + ex);
+        }
+    },
+    saveFileInfo : function(imageView, filePath, degrees) {"use strict";
+        var nid, db, encodedImage, mime, imageName, timestamp, fieldName, imageIndex, location;
+
+        try {
+            nid = 0;
+            // Ti.API.debug('before encoded');
+            // encodedImage = Ti.Utils.base64encode(blob);
+            // Ti.API.debug('after encoded');
+            
+            mime = imageView.mimeType;
+            imageName = 'image.jpg';//filePath;
+            imageView.dbValue = '-1';
+            
+            timestamp = Omadi.utils.getUTCTimestamp();
+            fieldName = imageView.instance.field_name;
+            imageIndex = imageView.imageIndex;
+            
+            location = Omadi.location.getLastLocation();
+
+            db = Omadi.utils.openMainDatabase();
+            db.execute("INSERT INTO _photos (nid, timestamp, file_data, field_name, file_name, delta, latitude, longitude, accuracy, degrees) VALUES ('0','" + timestamp + "','" + filePath + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + "," + degrees + ")");
             db.close();
         }
         catch(ex) {

@@ -10,6 +10,7 @@ package com.omadi.newcamera;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -48,7 +49,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Message;
@@ -110,6 +113,144 @@ public class NewcameraModule extends KrollModule
 			OmadiCameraActivity.cameraActivity.takePicture();
 		} else {
 			Log.e(LCAT, "camera preview is not open, unable to take photo");
+		}
+	}
+	
+	@Kroll.method
+	public void resizeImage(String filePath, int degrees){
+		
+//		BitmapFactory.Options options = new BitmapFactory.Options();
+//		options.inJustDecodeBounds = true;
+//
+//		BitmapFactory.decodeByteArray(data, 0, data.length, options);
+//		int imageHeight = options.outHeight;
+//		int imageWidth = options.outWidth;
+//		int targetHeight = 1024, targetWidth = 768;
+//		//String imageType = options.outMimeType;
+//		int inSampleSize = 1;
+//
+//	    if (imageHeight > targetHeight || imageWidth > targetWidth) {
+//	        if (imageWidth > imageHeight) {
+//	            inSampleSize = Math.round((float)imageHeight / (float)targetHeight);
+//	        } else {
+//	            inSampleSize = Math.round((float)imageWidth / (float)targetWidth);
+//	        }
+//	    }
+//
+//	    if(inSampleSize>=2){
+//	    	inSampleSize = (int)Math.pow(2, inSampleSize);
+//	    }else if(inSampleSize<2 && inSampleSize>=1){
+//	    	inSampleSize = 2;
+//	    }
+//
+//	    Log.d("Pooja", inSampleSize+"");
+//	    options.inSampleSize = inSampleSize;
+//	    options.inJustDecodeBounds = false;
+//	    options.inPurgeable = true;
+//	    Matrix mtx = new Matrix();
+//
+//		if (degrees == 180 || degrees == 0) {
+//			mtx.postRotate(degrees);
+//		}
+//		else if (degrees == 270) {
+//			mtx.postRotate(90);
+//		}
+//		else {
+//			mtx.postRotate(270);
+//		}
+
+		//Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
+		//bitmap = Bitmap.createBitmap(bitmap, 0, 0, options.outWidth, options.outHeight, mtx, true);
+		
+		//FileInputStream imageFile = new FileInputStream(filePath);
+		//Log.i("CHRIS", "in resize");
+		
+		//Log.i("CHRIS", "resize file: " + filePath);
+		
+		
+		//	file:///sdcard/dcim/Camera/Omadi/tia-646219205.jpg
+
+		
+		Bitmap bitmap = BitmapFactory.decodeFile(filePath);
+		
+		if(bitmap != null){
+			int height = bitmap.getHeight();
+			int width = bitmap.getWidth();
+			
+			int newWidth = width;
+			int newHeight = height;
+			
+			float scale = 1.0f;
+			
+			int max = 1024;
+			
+			if (height > max || width > max) {
+		        if (width > height) {
+		        	scale = (float)max / (float)width;
+		        } 
+		        else {
+		            scale = (float)max / (float)height;
+		        }
+		        
+		        //Log.i("CHRIS", "resize width: " + width + " " + scale);
+		        
+		        if(scale > 0){
+		        	newWidth = Math.round((float)width * scale);
+		        	newHeight = Math.round((float)height * scale);
+		        }
+		    }
+			
+			Bitmap resized = null;
+			
+			//Log.i("CHRIS", "MATRIX DEG: " + degrees);
+			
+			resized = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+			
+			if(degrees > 0){
+				Matrix mtx = new Matrix();
+
+				if (degrees == 180) {
+					mtx.postRotate(180);
+				}
+				else if (degrees == 270) {
+					mtx.postRotate(90);
+				}
+				else {
+					mtx.postRotate(270);
+				}
+				
+				resized = Bitmap.createBitmap(resized, 0, 0, newWidth, newHeight, mtx, true);
+			}
+			
+			bitmap.recycle();
+			//stream.close();
+			bitmap = null;
+			
+			//Log.i("CHRIS", "resized it");
+			
+		    //ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			//resized.compress(Bitmap.CompressFormat.JPEG, 95, stream);
+			
+			try {
+			       FileOutputStream out = new FileOutputStream(filePath);
+			       resized.compress(Bitmap.CompressFormat.JPEG, 90, out);
+			       
+			} catch (Exception e) {
+			       e.printStackTrace();
+			       Log.d("CHRIS", e.getMessage());
+			}
+			
+			//Log.i("CHRIS", "resize wrote");
+			
+			//String ss = Base64.encodeToString(stream.toByteArray(), 0);
+	
+			
+			
+			resized.recycle();
+			resized = null;
+			
+			//stream = null;
+			//System.gc();
 		}
 	}
 	
