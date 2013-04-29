@@ -1714,7 +1714,7 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
             if(region_form_part <= node.form_part){
                 
                 var expanded = true;
-                if(typeof region.settings.always_expanded && region.settings.always_expanded == 1){
+                if(typeof region.settings !== 'undefined' && typeof region.settings.always_expanded !== 'undefined' && region.settings.always_expanded == 1){
                     expanded = true;
                 }
                 else if(region_form_part < node.form_part){

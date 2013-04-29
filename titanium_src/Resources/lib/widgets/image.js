@@ -173,49 +173,30 @@ Omadi.widgets.image = {
     },
     openCamera : function(imageView) {"use strict";
         /*global cameraAndroid*/
-        var blankOverlay;
+        var blankOverlay, storageDirectory, storageDirectoryFile;
         
         if (Ti.App.isAndroid) {
             if (Ti.Media.isCameraSupported) {
                
                 blankOverlay = Ti.UI.createView();
                 
+                //storageDirectory = Ti.Filesystem.getExternalStorageDirectory();
+                storageDirectoryFile = Ti.Filesystem.getFile(Ti.Filesystem.getExternalStorageDirectory());
+                storageDirectory = storageDirectoryFile.getNativePath();
+                
+                //alert(storageDirectory);
+                
                 cameraAndroid.showCamera({
                     
                     finished : function(event){
                         var newImageView, tmpImageView, blob, maxDiff, newHeight, newWidth,
-                            uploadImageView, filePath, file, degrees, i, transform, animation, rotateDegrees;
+                            uploadImageView, filePath, file, degrees, transform, animation, rotateDegrees;
                         
-                        //Omadi.display.loading("Resizing Photo...");
-                        
-                        //blob = Omadi.widgets.image.resizeImage(event.media, 1500);
                         Omadi.display.loading("Saving Photo...");
-                        
-                        // uploadImageView = Ti.UI.createImageView({
-                           // image: event.media,
-                           // width: 1000,
-                           // height: 700
-                        // });
-                        
-                        
-                        //blob = Ti.Utils.base64decode(event.media);//event.media;
-                        //imageView.image = Ti.Utils.base64decode(event.media);
-                        //uploadImageView.toImage().media;
                         
                         filePath = event.filePath;
                         degrees = event.degrees;
                         
-
-                        for(i in event){
-                            if(event.hasOwnProperty(i)){
-                                Ti.API.info(i + ": " + event[i]);
-                            }
-                        }
-                        //blob = event.media;
-                        
-                        //alert(filePath);
-                        
-                        //file = Ti.Filesystem.getFile(filePath);
                         
                         imageView.setImage("file://" + filePath);
                         
@@ -238,15 +219,8 @@ Omadi.widgets.image = {
                             imageView.animate(animation);
                         }
                         
-                        //blob = imageView.toImage().media;
-
-                        //imageView.image = blob;//uploadImageView.image;
-
-                        //imageView.bigImg = imageView.image;
-                        //imageView.mimeType = event.media.mimeType;
                         imageView.fullImageLoaded = true;
                         
-                        //Omadi.display.doneLoading();
                         
                         Omadi.widgets.image.saveFileInfo(imageView, filePath, degrees);
                         
@@ -282,38 +256,9 @@ Omadi.widgets.image = {
                         }
                     },
                     // Currently, an overlay must exist to not show the default camera
-                    overlay : blankOverlay
+                    overlay : blankOverlay,
+                    storageDirectory : storageDirectory
                 });
-                
-                // cameraAndroid.openCamera({
-                    // "event" : imageView,
-                    // "callbackFnc" : function(event) {
-                        // //Omadi.display.loading();
-// 
-                        // var newImageView, tmpImageView, blob, maxDiff, newHeight, newWidth;
-// 
-                        // imageView.image = Ti.Utils.base64decode(event.media);
-// 
-                        // imageView.bigImg = imageView.image;
-                        // imageView.mimeType = event.media.mimeType;
-                        // imageView.fullImageLoaded = true;
-// 
-                        // Ti.API.debug("index: " + imageView.imageIndex);
-// 
-                        // if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
-                            // newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null);
-                            // imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
-                            // imageView.parentView.add(newImageView);
-                            // newImageView.fireEvent('click');
-                        // }
-// 
-                        // blob = imageView.image;
-// 
-                        // Omadi.widgets.image.saveImageInDb(imageView, blob);
-// 
-                        // //Omadi.display.doneLoading();
-                    // }
-                // });
             }
             else {
                 alert('No Camera in device');
@@ -380,50 +325,80 @@ Omadi.widgets.image = {
                 Ti.Media.showCamera({
 
                     success : function(event) {
-                        var newImageView, tmpImageView, blob, maxDiff, newHeight, newWidth;
+                        var newImageView, tmpImageView, blob, maxDiff, newHeight, newWidth, imageFile, filePath;
 
+                        Omadi.display.loading("Saving Photo...");
+                        
                         imageView.image = event.media;
 
                         imageView.bigImg = imageView.image;
                         imageView.mimeType = event.media.mimeType;
                         imageView.fullImageLoaded = true;
 
+                        // if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
+                            // newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null);
+                            // imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
+                            // imageView.parentView.add(newImageView);
+                            // newImageView.fireEvent('click');
+                        // }
+
+                        // blob = imageView.image;
+// 
+                        // try {
+                            // if (blob.getLength() > IMAGE_MAX_BYTES) {
+// 
+                                // //var ratio
+                                // if (blob.height > 1000 || blob.width > 1000) {
+// 
+                                    // maxDiff = blob.height - 1000;
+                                    // if (blob.width - 1000 > maxDiff) {
+                                        // // Width is bigger
+                                        // newWidth = 1000;
+                                        // newHeight = (1000 / blob.width) * blob.height;
+                                    // }
+                                    // else {
+                                        // // Height is bigger
+                                        // newHeight = 1000;
+                                        // newWidth = (1000 / blob.height) * blob.width;
+                                    // }
+// 
+                                    // blob = blob.imageAsResized(newWidth, newHeight);
+                                // }
+                            // }
+                        // }
+                        // catch(ex) {
+                            // alert("Error resizing the photo: " + ex);
+                        // }
+                        
+                        
+                        filePath = Ti.Filesystem.applicationDataDirectory + "p_" + Omadi.utils.getUTCTimestamp() + '.jpg';
+                        
+                        
+                        //alert(fileName);
+                        
+                        imageFile = Ti.Filesystem.getFile(filePath);
+                        
+                        imageFile.write(event.media);
+                            
+                        Omadi.widgets.image.saveFileInfo(imageView, filePath, 0);
+                        //Omadi.widgets.image.saveImageInDb(imageView, blob);
+
+                        
                         if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
                             newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null);
                             imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
                             imageView.parentView.add(newImageView);
-                            newImageView.fireEvent('click');
+                            
+                            // Allow the newImageView time to show up, and then click it
+                            setTimeout(function(){
+                                 newImageView.fireEvent('click');
+                                 Omadi.display.doneLoading();
+                            }, 100);
                         }
-
-                        blob = imageView.image;
-
-                        try {
-                            if (blob.getLength() > IMAGE_MAX_BYTES) {
-
-                                //var ratio
-                                if (blob.height > 1000 || blob.width > 1000) {
-
-                                    maxDiff = blob.height - 1000;
-                                    if (blob.width - 1000 > maxDiff) {
-                                        // Width is bigger
-                                        newWidth = 1000;
-                                        newHeight = (1000 / blob.width) * blob.height;
-                                    }
-                                    else {
-                                        // Height is bigger
-                                        newHeight = 1000;
-                                        newWidth = (1000 / blob.height) * blob.width;
-                                    }
-
-                                    blob = blob.imageAsResized(newWidth, newHeight);
-                                }
-                            }
+                        else{
+                            Omadi.display.doneLoading();
                         }
-                        catch(ex) {
-                            alert("Error resizing the photo: " + ex);
-                        }
-
-                        Omadi.widgets.image.saveImageInDb(imageView, blob);
+                        
                     },
                     error : function(error) {
                         Ti.API.info('Captured Image - Error: ' + error.code + " :: " + error.message);

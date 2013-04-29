@@ -20,6 +20,7 @@ import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.RelativeLayout.LayoutParams;
 
 public class ToolsOverlay extends RelativeLayout {
@@ -31,6 +32,9 @@ public class ToolsOverlay extends RelativeLayout {
 	private RelativeLayout container = null;
 	private Context context = null;
 	private int degrees = 0;
+	
+	RelativeLayout zoomBase;
+	VerticalSeekBar zoomControls;
 	
 	public ToolsOverlay(Context context){
 		super(context);
@@ -87,9 +91,36 @@ public class ToolsOverlay extends RelativeLayout {
 		
 		container.addView(captureImage);
 		
+		addZoomBar();
 	}
 	
-	public void createAndShowFlash(){
+	private void addZoomBar(){
+		
+		Display display = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+		
+		int deviceHeight = display.getHeight();
+		int deviceWidth = display.getWidth();
+    
+		// ZOOMBASE
+	    zoomBase = new RelativeLayout(context);
+	    RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(65, LayoutParams.FILL_PARENT);
+	    layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+	    layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+	    zoomBase.setLayoutParams(layoutParams);
+	    
+
+	    // ZOOM CONTROLS
+	    zoomControls = new VerticalSeekBar(context);
+	    RelativeLayout.LayoutParams zoomParams = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, deviceHeight - 150);
+	    zoomParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+	    zoomControls.setLayoutParams(zoomParams);
+	    zoomControls.setPadding(5, 5, 5, 5);
+	    zoomBase.addView(zoomControls);
+	      
+	    this.addView(zoomBase);	    
+	}
+	
+	public void cameraInitialized(){
 	    
 		Camera.Parameters cameraParams = OmadiCameraActivity.getCameraParameters();
 		
@@ -105,7 +136,7 @@ public class ToolsOverlay extends RelativeLayout {
 
 	         try {
 	        	 InputStream is;
-	        	  Log.i("CHRIS", "flash 1");
+	        	  //Log.i("CHRIS", "flash 1");
 		           String omadiFlashProp = System.getProperty("OMADI_FLASH");
 		           if (omadiFlashProp == null) {
 		        	   omadiFlashProp = Camera.Parameters.FLASH_MODE_OFF;
@@ -122,7 +153,7 @@ public class ToolsOverlay extends RelativeLayout {
 		           bitmap = BitmapFactory.decodeStream(is);
 		           flashView.setImageBitmap(bitmap);
 		           
-		           Log.i("CHRIS", "flash 2");
+		           //Log.i("CHRIS", "flash 2");
 		           OmadiCameraActivity.setCameraParameters(cameraParams);
 	         } 
 	         catch (IOException e) {
@@ -165,6 +196,40 @@ public class ToolsOverlay extends RelativeLayout {
 	         redrawButtons();
 	         
    		}
+        
+        
+      //ZOOM CONTROL SLIDER
+		
+		int maxZoomLevel = cameraParams.getMaxZoom();
+		
+		if (maxZoomLevel == 0) {
+			zoomControls.setEnabled(false);
+		} 
+		else {
+			zoomControls.setMax(maxZoomLevel);
+		}
+		
+		zoomControls.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+			
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				try{
+					Camera.Parameters localCameraParams = OmadiCameraActivity.getCameraParameters();
+					localCameraParams.setZoom(progress);
+					OmadiCameraActivity.setCameraParameters(localCameraParams);
+				}
+				catch(Exception e){
+					e.printStackTrace();
+				}
+			}
+
+			public void onStartTrackingTouch(SeekBar seekBar) {
+			
+			}
+
+			public void onStopTrackingTouch(SeekBar seekBar) {
+			
+			}
+		});
 	}
 	
 	public void degreesChanged(int degrees){

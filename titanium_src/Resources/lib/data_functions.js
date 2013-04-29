@@ -566,7 +566,8 @@ Omadi.data.nodeSave = function(node) {"use strict";
 
 Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
 
-    var imageDir, imageFile, filename, imageView, blob, db, result, dialog, nid, field_name, delta;
+    var imageDir, imageFile, newFilePath, imageView, oldImageFile, 
+        blob, db, result, dialog, nid, field_name, delta, file_data, sdCardPath, sdIndex;
 
     db = Omadi.utils.openMainDatabase();
     result = db.execute("SELECT * FROM _photos WHERE id = " + photoId);
@@ -579,13 +580,14 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
 
         if (result.isValidRow()) {
 
-            blob = Ti.Utils.base64decode(result.fieldByName('file_data'));
+            file_data = result.fieldByName('file_data');
+            //blob = Ti.Utils.base64decode(result.fieldByName('file_data'));
             nid = result.fieldByName('nid');
             field_name = result.fieldByName('field_name');
             delta = result.fieldByName('delta');
 
             // Make a temporary imageView so the blob can be created.
-            // It doesn't work with the blog from the base64decode
+            // It doesn't work with the blob from the base64decode
             imageView = Ti.UI.createImageView({
                 image : blob
             });
@@ -597,88 +599,130 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
             if (Ti.App.isAndroid) {
                 if (Ti.Filesystem.isExternalStoragePresent()) {
 
-                    filename = 'O_' + nid + '_' + field_name + '_' + delta + '_' + Omadi.utils.getUTCTimestamp() + '.jpg';
-
                     imageDir = Ti.Filesystem.getFile(Ti.Filesystem.externalStorageDirectory, 'failed_uploads');
+                    
+                    newFilePath = 'failed_' + nid + '_' + field_name + '_' + delta + '_' + Omadi.utils.getUTCTimestamp() + '.jpg'; 
+                    
                     if (! imageDir.exists()) {
                         imageDir.createDirectory();
                     }
 
                     // .resolve() provides the resolved native path for the directory.
-                    imageFile = Ti.Filesystem.getFile(imageDir.resolve(), filename);
+                    //imageFile = Ti.Filesystem.getFile(imageDir.resolve(), newFilePath);
+                    //Ti.API.info("ImageFile path is: " + imageFile.resolve());
 
-                    Ti.API.info("ImageFile path is: " + imageFile.resolve());
-
-                    if (imageFile.write(imageView.toBlob())) {
+                    if(file_data.length < 200){
                         
-                        if(showMessage){
-                            dialog = Ti.UI.createAlertDialog({
-                                title : 'Photo Upload Problem',
-                                message : "There was a problem uploading a photo for node #" + nid + " after 5 tries. The photo was saved to this device's filesystem at " + imageFile.getNativePath(),
+                        Ti.API.info("file_data: " + file_data);
+                        
+                        oldImageFile = Ti.Filesystem.getFile("file://" + file_data);
+                        newFilePath = Ti.Filesystem.externalStorageDirectory + "/failed_uploads/" + newFilePath;
+                        
+                        if(oldImageFile.move(newFilePath)){
+                            newFilePath = Ti.Filesystem.getFile(newFilePath);
+                            
+                            if(showMessage){
+                                
+                                sdCardPath = newFilePath.getNativePath();
+                                sdIndex = sdCardPath.indexOf("/sdcard/");
+                                if(sdIndex != -1){
+                                    sdCardPath = sdCardPath.substring(sdIndex + 7);
+                                }
+                                
+                                dialog = Ti.UI.createAlertDialog({
+                                    title : 'Photo Upload Problem',
+                                    message : "There was a problem uploading a photo for node #" + nid + " after 5 tries. The photo was saved to your SD card at " + sdCardPath,
+                                    buttonNames : ['OK']
+                                });
+                                dialog.show();
+        
+                                Omadi.service.sendErrorReport("Saved to photo gallery Android: " + nid);
+                            }
+                        }
+                        else{
+                            
+                            Omadi.service.sendErrorReport("Did not save to photo gallery: " + photoId);
+                            dialog = Titanium.UI.createAlertDialog({
+                                title : 'Corrupted Photo',
+                                message : "There was a problem uploading a photo for node #" + nid + ", and the photo could not be saved to this device's gallery. Unfortunately, the photo cannot be reclaimed.",
                                 buttonNames : ['OK']
                             });
                             dialog.show();
-    
-                            Omadi.service.sendErrorReport("Saved to photo gallery: " + nid);
+                            
                         }
-
-                        Omadi.data.deletePhotoUpload(photoId);
-                    }
-                    else {
                         
-                        Omadi.service.sendErrorReport("Did not save to photo gallery: " + photoId);
-                        dialog = Titanium.UI.createAlertDialog({
-                            title : 'Corrupted Photo',
-                            message : "There was a problem uploading a photo for node #" + nid + ", and the photo could not be saved to this device's gallery. Unfortunately, the photo cannot be reclaimed.",
-                            buttonNames : ['OK']
-                        });
-                        dialog.show();
-
                         Omadi.data.deletePhotoUpload(photoId);
+                        
+                        // dispose of file handles
+                        oldImageFile = null;
+                        
+                    }
+                    else{
+                        //blob = Ti.Utils.base64decode(file_data);
+                        alert("Using the old image method. Please contact support.");
+                        return;
                     }
 
                     // dispose of file handles
-                    imageFile = null;
                     imageDir = null;
                 }
-                else {
-                    Omadi.service.sendErrorReport("Device does not have external storage on: " + photoId);
-                    dialog = Titanium.UI.createAlertDialog({
-                        title : 'Insert SD Card',
-                        message : "There was a problem uploading a photo. You can either insert an SD card and have the photo saved to the SD card, or you can delete the photo permanently.",
-                        buttonNames : ['Delete', 'Inserted SD Card']
-                    });
-
-                    dialog.addEventListener('click', function(e) {
-                        if (e.index == 0) {
-                            Omadi.data.deletePhotoUpload(photoId);
-                        }
-                        else if (e.index == 1) {
-                            Omadi.data.saveFailedUpload(photoId); 
-                        }
-                    });
-                    dialog.show();
+                else{
+                    Omadi.service.sendErrorReport("Does not have external storage trying to save failed upload.");
                 }
             }
             else {
-                Titanium.Media.saveToPhotoGallery(imageView.toImage(), {
-                    success : function(e) {
+                
+                if(file_data.length < 200){
                         
-                        if(showMessage){
-                            dialog = Titanium.UI.createAlertDialog({
-                                title : 'Photo Upload Problem',
-                                message : "There was a problem uploading a photo for node #" + nid + " after 5 tries. The photo was saved to this device's gallery.",
-                                buttonNames : ['OK']
-                            });
-                            dialog.show();
-    
-                            Omadi.service.sendErrorReport("Saved to photo gallery: " + nid);
-                        }
-                        
-                        Omadi.data.deletePhotoUpload(photoId);
-                    },
-                    error : function(e) {
-                        Omadi.service.sendErrorReport("Did not save to photo gallery: " + photoId);
+                    Ti.API.info("file_data: " + file_data);
+                    
+                    //alert("file_data: " + file_data);
+                    
+                    oldImageFile = Ti.Filesystem.getFile(file_data);
+                    
+                    //alert("file exists: " + oldImageFile.exists());
+                    
+                    //blob = oldImageFile.read();
+                    
+                    //alert("len1: " + blob.length);
+                    //alert("len2: " + blob.media.length);
+                    
+                    if(oldImageFile.exists()){
+                        Titanium.Media.saveToPhotoGallery(oldImageFile, {
+                            success : function(e) {
+                                
+                                if(showMessage){
+                                    dialog = Titanium.UI.createAlertDialog({
+                                        title : 'Photo Upload Problem',
+                                        message : "There was a problem uploading a photo for node #" + nid + " after 5 tries. The photo was saved to your photo gallery.",
+                                        buttonNames : ['OK']
+                                    });
+                                    dialog.show();
+            
+                                    Omadi.service.sendErrorReport("Saved to photo gallery iOS: " + nid);
+                                }
+                                
+                                Omadi.data.deletePhotoUpload(photoId);
+                                
+                                oldImageFile.deleteFile();
+                            },
+                            error : function(e) {
+                                Omadi.service.sendErrorReport("Did not save to photo gallery iOS: " + photoId);
+                                dialog = Titanium.UI.createAlertDialog({
+                                    title : 'Corrupted Photo',
+                                    message : "There was a problem uploading a photo for node #" + nid + ", and the photo could not be saved to this device's gallery. Unfortunately, the photo cannot be reclaimed.",
+                                    buttonNames : ['OK']
+                                });
+                                dialog.show();
+        
+                                Omadi.data.deletePhotoUpload(photoId);
+                                
+                                oldImageFile.deleteFile();
+                            }
+                        });
+                    }
+                    else{
+                        Omadi.service.sendErrorReport("Did not save to photo gallery iOS because file not found: " + photoId);
                         dialog = Titanium.UI.createAlertDialog({
                             title : 'Corrupted Photo',
                             message : "There was a problem uploading a photo for node #" + nid + ", and the photo could not be saved to this device's gallery. Unfortunately, the photo cannot be reclaimed.",
@@ -688,7 +732,14 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
 
                         Omadi.data.deletePhotoUpload(photoId);
                     }
-                });
+                    
+                    //oldImageFile.deleteFile();
+                    //oldImageFile = null;
+                }
+                else{
+                    alert("Using the old image method. Please contact support.");
+                    return;
+                }
             }
         }
     }
@@ -1156,7 +1207,7 @@ Omadi.data.getPhotoCount = function(){"use strict";
 };
 
 Omadi.data.getNextPhotoData = function(){"use strict";
-    var mainDB, result, nextPhoto, imageFile, imageBlob;
+    var mainDB, result, nextPhoto, imageFile, imageBlob, maxDiff, newWidth, newHeight;
     /*global cameraAndroid*/
    
     nextPhoto = null;
@@ -1193,13 +1244,45 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                         
                         if(Ti.App.isAndroid){
                             
-                            Ti.API.info("next degrees: " + nextPhoto.degrees);
-                            cameraAndroid.resizeImage(nextPhoto.filePath, nextPhoto.degrees);
+                            try{
+                                cameraAndroid.resizeImage(nextPhoto.filePath, nextPhoto.degrees);
+                            }
+                            catch(resizeEx){
+                                Omadi.service.sendErrorReport("Could not resize: " + resizeEx);
+                            }
+                            
+                            imageFile = Ti.Filesystem.getFile("file://" + nextPhoto.filePath);
+                            imageBlob = imageFile.read();
+                        }
+                        else{
+                            
+                            imageFile = Ti.Filesystem.getFile(nextPhoto.filePath);  
+                            imageBlob = imageFile.read();
+                            
+                            try {
+                                
+                                if (imageBlob.height > 1000 || imageBlob.width > 1000) {
+
+                                    maxDiff = imageBlob.height - 1000;
+                                    if (imageBlob.width - 1000 > maxDiff) {
+                                        // Width is bigger
+                                        newWidth = 1000;
+                                        newHeight = (1000 / imageBlob.width) * imageBlob.height;
+                                    }
+                                    else {
+                                        // Height is bigger
+                                        newHeight = 1000;
+                                        newWidth = (1000 / imageBlob.height) * imageBlob.width;
+                                    }
+
+                                    imageBlob = imageBlob.imageAsResized(newWidth, newHeight);
+                                }
+                            }
+                            catch(ex) {
+                                alert("Error resizing the iOS photo: " + ex);
+                            }  
                         }
                         
-                        imageFile = Ti.Filesystem.getFile("file://" + nextPhoto.filePath);
-                        
-                        imageBlob = imageFile.read();
                         nextPhoto.file_data = Ti.Utils.base64encode(imageBlob).getText();
                         
                         imageFile = null;

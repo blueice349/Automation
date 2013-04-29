@@ -206,6 +206,10 @@ public class NewcameraModule extends KrollModule
 			
 			resized = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
 			
+			bitmap.recycle();
+			//stream.close();
+			bitmap = null;
+			
 			if(degrees > 0){
 				Matrix mtx = new Matrix();
 
@@ -221,10 +225,6 @@ public class NewcameraModule extends KrollModule
 				
 				resized = Bitmap.createBitmap(resized, 0, 0, newWidth, newHeight, mtx, true);
 			}
-			
-			bitmap.recycle();
-			//stream.close();
-			bitmap = null;
 			
 			//Log.i("CHRIS", "resized it");
 			
@@ -276,6 +276,10 @@ public class NewcameraModule extends KrollModule
 		}
 		if (options.containsKey("overlay")) {
 			OmadiCameraActivity.overlayProxy = (TiViewProxy) options.get("overlay");
+		}
+		
+		if (options.containsKey("storageDirectory")) {
+			OmadiCameraActivity.storageDirectory = (String) options.get("storageDirectory");
 		}
 
 		if (DBG) {

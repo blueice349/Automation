@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.security.Timestamp;
 import java.util.HashMap;
 
 import org.appcelerator.titanium.TiBaseActivity;
@@ -60,6 +62,8 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	public static TiViewProxy overlayProxy = null;
 	public static OmadiCameraActivity cameraActivity = null;
 	
+	public static String storageDirectory = "";
+	
 	private int deviceHeight;
 	private int deviceWidth;
 	//RelativeLayout rootlayout;
@@ -74,6 +78,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	//VerticalSeekBar zoomControls;
 	private SensorManager sensorManager = null;
 	Bitmap bitmap = null;
+	
 	
 	
 	@Override
@@ -118,7 +123,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	public void surfaceChanged(SurfaceHolder previewHolder, int format, int width, int height) {
 		camera.startPreview();  // make sure setPreviewDisplay is called before this
 		
-		toolsOverlay.createAndShowFlash();
+		toolsOverlay.cameraInitialized();
 	}
 
 	public void surfaceCreated(SurfaceHolder previewHolder) {
@@ -257,12 +262,23 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 					
 					String filePath = cameraActivity.storageUri.getPath();
 					
+					//java.util.Date date = new java.util.Date();
+					
+					//String filePath = OmadiCameraActivity.storageDirectory + "/p_" + System.currentTimeMillis() + ".jpg";
+					
+					// Titanium passes in the string with file:// included, so remove it
+					//filePath = filePath.replaceFirst("file://", "");
+					
+					//URI fileURI = URI.create(filePath);
+					
+					Log.i("CHRIS", "PATH: " + filePath);
+					//Log.i("CHRIS", "PATH URI: " + fileURI.getPath());
+					
 					// get the degrees before the file is saved
 					Message msg = Message.obtain();
 					Bundle messageVars = new Bundle();
 					messageVars.putInt("degrees", degrees);
 					messageVars.putString("filePath", filePath);
-					
 					
 					Log.i("CHRIS", "degrees: " + degrees);
 					
