@@ -562,6 +562,9 @@ Omadi.display.getNodeTypeImagePath = function(type) {"use strict";
         case 'permit_request':
         case 'company_vehicle':
         case 'dispatch':
+        case 'club_tow':
+        case 'motor_club':
+        case 'tow_yard':
 
             return '/images/icons/' + type + ".png";
 

@@ -564,6 +564,27 @@ Omadi.data.nodeSave = function(node) {"use strict";
     return node;
 };
 
+Omadi.data.deleteNode = function(nid){"use strict";
+    var db, result, table_name;
+    
+    // Currently, only delete negative nids, which are drafts or non-saved nodes
+    // To delete positive nids, we need to sync that to the server, which is not yet supported
+    if(nid < 0){
+        db = Omadi.utils.openMainDatabase();
+        
+        result = db.execute("SELECT table_name FROM node WHERE nid = " + nid);
+        
+        if(result.isValidRow()){
+            table_name = result.fieldByName("table_name");
+            
+            db.execute("DELETE FROM node WHERE nid = " + nid);
+            db.execute("DELETE FROM " + table_name + " WHERE nid = " + nid);
+        }
+        
+        db.close();
+    }
+};
+
 Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
 
     var imageDir, imageFile, newFilePath, imageView, oldImageFile, 
@@ -1207,7 +1228,8 @@ Omadi.data.getPhotoCount = function(){"use strict";
 };
 
 Omadi.data.getNextPhotoData = function(){"use strict";
-    var mainDB, result, nextPhoto, imageFile, imageBlob, maxDiff, newWidth, newHeight;
+    var mainDB, result, nextPhoto, imageFile, imageBlob, maxDiff, 
+        newWidth, newHeight, resizedFile, resizeError, resizedFilePath;
     /*global cameraAndroid*/
    
     nextPhoto = null;
@@ -1244,15 +1266,31 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                         
                         if(Ti.App.isAndroid){
                             
+                            resizeError = false;
                             try{
                                 cameraAndroid.resizeImage(nextPhoto.filePath, nextPhoto.degrees);
                             }
                             catch(resizeEx){
+                                resizeError = true;
                                 Omadi.service.sendErrorReport("Could not resize: " + resizeEx);
                             }
                             
-                            imageFile = Ti.Filesystem.getFile("file://" + nextPhoto.filePath);
-                            imageBlob = imageFile.read();
+                            if(!resizeError){
+                                resizedFilePath = nextPhoto.filePath.replace(/\.jpg$/, ".resized.jpg");
+                                resizedFile = Ti.Filesystem.getFile("file://" + resizedFilePath);
+                                
+                                if(resizedFile.exists()){
+                                    imageBlob = resizedFile.read();
+                                }
+                                else{
+                                    imageFile = Ti.Filesystem.getFile("file://" + nextPhoto.filePath);
+                                    imageBlob = imageFile.read();
+                                }
+                            }
+                            else{
+                                imageFile = Ti.Filesystem.getFile("file://" + nextPhoto.filePath);
+                                imageBlob = imageFile.read();
+                            }
                         }
                         else{
                             
@@ -1820,7 +1858,10 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
     /*jslint nomen: true*/
     /*global treatArray, isNumber*/
 
-    var closeDB, instances, fakeFields, queries, i, j, field_name, query, fieldNames, no_data, values, value, notifications = {}, numSets, result;
+    var closeDB, instances, fakeFields, queries, i, j, field_name, query, 
+        fieldNames, no_data, values, value, notifications = {}, numSets, 
+        result, reasonIndex, reason, alertReason, dialog;
+    
     closeDB = false;
     queries = [];
 
@@ -1842,206 +1883,248 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                 if (json.insert.length) {
 
                     for ( i = 0; i < json.insert.length; i++) {
-
-                        //Insert into node table
-                        if ((json.insert[i].title === null) || (json.insert[i].title == 'undefined') || (json.insert[i].title === false)) {
-                            json.insert[i].title = "No Title";
-                        }
-
-                        //'update' is a flag to decide whether the node needs to be synced to the server or not
-                        no_data = '';
-                        if (!(json.insert[i].no_data_fields instanceof Array)) {
-                            no_data = JSON.stringify(json.insert[i].no_data_fields);
-                        }
-
-                        queries.push(Omadi.data.getNodeTableInsertStatement({
-                            nid : json.insert[i].nid,
-                            perm_edit : json.insert[i].perm_edit,
-                            perm_delete : json.insert[i].perm_delete,
-                            created : json.insert[i].created,
-                            changed : json.insert[i].changed,
-                            title : json.insert[i].title,
-                            author_uid : json.insert[i].author_uid,
-                            flag_is_updated : 0,
-                            table_name : type,
-                            form_part : json.insert[i].form_part,
-                            changed_uid : json.insert[i].changed_uid,
-                            no_data_fields : no_data,
-                            viewed : json.insert[i].viewed
-                        }));
-
-                        query = 'INSERT OR REPLACE  INTO ' + type + ' (nid, ';
-
-                        fieldNames = [];
-                        for (field_name in instances) {
-                            if (instances.hasOwnProperty(field_name)) {
-                                fieldNames.push("`" + field_name + "`");
+                        
+                        if(typeof json.insert[i].__error !== 'undefined' && json.insert[i].__error == 1){
+                            
+                            Ti.API.debug("HAS ERROR");
+                            
+                            //Ti.API.debug(json.insert[i]);  
+                            if(typeof json.insert[i].__error_reasons !== 'undefined'){
+                                reason = json.insert[i].__error_reasons.join(", ");
+                                alertReason = true;
                                 
-                                if(instances[field_name].type == 'file'){
-                                    fieldNames.push(field_name + "___filename");
+                                for(reasonIndex in json.insert[i].__error_reasons){
+                                    if(json.insert[i].__error_reasons.hasOwnProperty(reasonIndex)){
+                                        if(json.insert[i].__error_reasons[reasonIndex] == 'duplicate'){
+                                            alertReason = false;
+                                        }
+                                    }
+                                }
+                                
+                                if(alertReason){
+                                    reason += " The entry has been saved as a draft.";
+                                    queries.push('UPDATE node SET flag_is_updated=3 WHERE nid=' + json.insert[i].__negative_nid);
+                                    
+                                    dialog = Ti.UI.createAlertDialog({
+                                        title: "Entry Not Saved",
+                                        message: reason,
+                                        ok: 'Go to Drafts'
+                                    });
+                                    
+                                    dialog.addEventListener("click", Omadi.display.openDraftsWindow);
+                                    
+                                    dialog.show();
+                                }
+                                else if ( typeof json.insert[i].__negative_nid !== 'undefined' && alertReason) {
+                                    Ti.API.debug("Deleting nid: " + json.insert[i].__negative_nid);
+        
+                                    queries.push('DELETE FROM ' + type + ' WHERE nid=' + json.insert[i].__negative_nid);
+                                    queries.push('DELETE FROM node WHERE nid=' + json.insert[i].__negative_nid);
                                 }
                             }
                         }
+                        else{
                         
-                        for(field_name in fakeFields){
-                            if(fakeFields.hasOwnProperty(field_name)){
-                                fieldNames.push("`" + field_name + "`");
+                            //Insert into node table
+                            if ((json.insert[i].title === null) || (json.insert[i].title == 'undefined') || (json.insert[i].title === false)) {
+                                json.insert[i].title = "No Title";
                             }
-                        }
-
-                        //Ti.API.error(fieldNames);
-                        
-                        query += fieldNames.join(',');
-                        query += ') VALUES (' + json.insert[i].nid + ',';
-
-                        values = [];
-
-                        for (field_name in instances) {
-                            if(instances.hasOwnProperty(field_name)){
-                                
-                                if(instances[field_name].type == 'file'){
-                                    
-                                    if (typeof json.insert[i][field_name + "___fid"] === "undefined" || json.insert[i][field_name + "___fid"] === null) {
-                                        values.push("null");
-                                    }
-                                    else{
-                                        value = json.insert[i][field_name + "___fid"];
     
-                                        if ( value instanceof Array) {
-                                            values.push("'" + dbEsc(JSON.stringify(value)) + "'");
-                                        }
-                                        else {
-                                            values.push("'" + dbEsc(value) + "'");
-                                        }
-                                    }
-                                    
-                                    if (typeof json.insert[i][field_name + "___filename"] === "undefined" || json.insert[i][field_name + "___filename"] === null) {
-                                        values.push("null");
-                                    }
-                                    else{
-                                        value = json.insert[i][field_name + "___filename"];
+                            //'update' is a flag to decide whether the node needs to be synced to the server or not
+                            no_data = '';
+                            if (!(json.insert[i].no_data_fields instanceof Array)) {
+                                no_data = JSON.stringify(json.insert[i].no_data_fields);
+                            }
     
-                                        if ( value instanceof Array) {
-                                            values.push("'" + dbEsc(JSON.stringify(value)) + "'");
-                                        }
-                                        else {
-                                            values.push("'" + dbEsc(value) + "'");
-                                        }
+                            queries.push(Omadi.data.getNodeTableInsertStatement({
+                                nid : json.insert[i].nid,
+                                perm_edit : json.insert[i].perm_edit,
+                                perm_delete : json.insert[i].perm_delete,
+                                created : json.insert[i].created,
+                                changed : json.insert[i].changed,
+                                title : json.insert[i].title,
+                                author_uid : json.insert[i].author_uid,
+                                flag_is_updated : 0,
+                                table_name : type,
+                                form_part : json.insert[i].form_part,
+                                changed_uid : json.insert[i].changed_uid,
+                                no_data_fields : no_data,
+                                viewed : json.insert[i].viewed
+                            }));
+    
+                            query = 'INSERT OR REPLACE  INTO ' + type + ' (nid, ';
+    
+                            fieldNames = [];
+                            for (field_name in instances) {
+                                if (instances.hasOwnProperty(field_name)) {
+                                    fieldNames.push("`" + field_name + "`");
+                                    
+                                    if(instances[field_name].type == 'file'){
+                                        fieldNames.push(field_name + "___filename");
                                     }
                                 }
-                                else if (typeof json.insert[i][field_name] === "undefined" || json.insert[i][field_name] === null) {
-                                    values.push("null");
+                            }
+                            
+                            for(field_name in fakeFields){
+                                if(fakeFields.hasOwnProperty(field_name)){
+                                    fieldNames.push("`" + field_name + "`");
                                 }
-                                else {
-                                    switch(instances[field_name].type) {
-                                        case 'number_integer':
-                                        case 'number_decimal':
-                                        case 'omadi_reference':
-                                        case 'taxonomy_term_reference':
-                                        case 'user_reference':
-                                        case 'list_boolean':
-                                        case 'datestamp':
-                                        case 'omadi_time':
-                                        case 'image':
-                                            value = json.insert[i][field_name];
+                            }
     
-                                            if ( typeof value === 'number') {
-                                                values.push(value);
-                                            }
-                                            else if ( typeof value === 'string') {
-                                                value = parseInt(value, 10);
-                                                if (isNaN(value)) {
-                                                    values.push('null');
-                                                }
-                                                else {
-                                                    values.push(value);
-                                                }
-                                            }
-                                            else if ( value instanceof Array) {
-                                                values.push("'" + dbEsc(JSON.stringify(value)) + "'");
-                                            }
-                                            else {
-                                                values.push("null");
-                                            }
-                                            
-                                            if(instances[field_name].type == 'file'){
-                                                Ti.API.error(value);
-                                            }
-                                            break;
-            
-                                        default:
-                                            value = json.insert[i][field_name];
+                            //Ti.API.error(fieldNames);
+                            
+                            query += fieldNames.join(',');
+                            query += ') VALUES (' + json.insert[i].nid + ',';
     
+                            values = [];
+    
+                            for (field_name in instances) {
+                                if(instances.hasOwnProperty(field_name)){
+                                    
+                                    if(instances[field_name].type == 'file'){
+                                        
+                                        if (typeof json.insert[i][field_name + "___fid"] === "undefined" || json.insert[i][field_name + "___fid"] === null) {
+                                            values.push("null");
+                                        }
+                                        else{
+                                            value = json.insert[i][field_name + "___fid"];
+        
                                             if ( value instanceof Array) {
                                                 values.push("'" + dbEsc(JSON.stringify(value)) + "'");
                                             }
                                             else {
                                                 values.push("'" + dbEsc(value) + "'");
                                             }
-                                            break;
+                                        }
+                                        
+                                        if (typeof json.insert[i][field_name + "___filename"] === "undefined" || json.insert[i][field_name + "___filename"] === null) {
+                                            values.push("null");
+                                        }
+                                        else{
+                                            value = json.insert[i][field_name + "___filename"];
+        
+                                            if ( value instanceof Array) {
+                                                values.push("'" + dbEsc(JSON.stringify(value)) + "'");
+                                            }
+                                            else {
+                                                values.push("'" + dbEsc(value) + "'");
+                                            }
+                                        }
+                                    }
+                                    else if (typeof json.insert[i][field_name] === "undefined" || json.insert[i][field_name] === null) {
+                                        values.push("null");
+                                    }
+                                    else {
+                                        switch(instances[field_name].type) {
+                                            case 'number_integer':
+                                            case 'number_decimal':
+                                            case 'omadi_reference':
+                                            case 'taxonomy_term_reference':
+                                            case 'user_reference':
+                                            case 'list_boolean':
+                                            case 'datestamp':
+                                            case 'omadi_time':
+                                            case 'image':
+                                                value = json.insert[i][field_name];
+        
+                                                if ( typeof value === 'number') {
+                                                    values.push(value);
+                                                }
+                                                else if ( typeof value === 'string') {
+                                                    value = parseInt(value, 10);
+                                                    if (isNaN(value)) {
+                                                        values.push('null');
+                                                    }
+                                                    else {
+                                                        values.push(value);
+                                                    }
+                                                }
+                                                else if ( value instanceof Array) {
+                                                    values.push("'" + dbEsc(JSON.stringify(value)) + "'");
+                                                }
+                                                else {
+                                                    values.push("null");
+                                                }
+                                                
+                                                if(instances[field_name].type == 'file'){
+                                                    Ti.API.error(value);
+                                                }
+                                                break;
+                
+                                            default:
+                                                value = json.insert[i][field_name];
+        
+                                                if ( value instanceof Array) {
+                                                    values.push("'" + dbEsc(JSON.stringify(value)) + "'");
+                                                }
+                                                else {
+                                                    values.push("'" + dbEsc(value) + "'");
+                                                }
+                                                break;
+                                        }
                                     }
                                 }
                             }
-                        }
-                        
-                        for(field_name in fakeFields){
-                            if(fakeFields.hasOwnProperty(field_name)){
-                                
-                                if(typeof json.insert[i][field_name] !== 'undefined'){
-                                    value = json.insert[i][field_name];
-                                    values.push("'" + dbEsc(value) + "'");
-                                    //Ti.API.error("*" + value);
-                                }
-                                else{
-                                    //Ti.API.error("nope");
-                                   values.push("null");
+                            
+                            for(field_name in fakeFields){
+                                if(fakeFields.hasOwnProperty(field_name)){
+                                    
+                                    if(typeof json.insert[i][field_name] !== 'undefined'){
+                                        value = json.insert[i][field_name];
+                                        values.push("'" + dbEsc(value) + "'");
+                                        //Ti.API.error("*" + value);
+                                    }
+                                    else{
+                                        //Ti.API.error("nope");
+                                       values.push("null");
+                                    }
                                 }
                             }
-                        }
-
-                        query += values.join(",");
-                        query += ')';
-                    
-                        //Ti.API.debug(query);
-
-                        queries.push(query);
+    
+                            query += values.join(",");
+                            query += ')';
                         
-                        if (type == 'notification' && json.insert[i].viewed == 0) {
-                            notifications = Ti.App.Properties.getObject('newNotifications', {
-                                count : 0,
-                                nid : 0
-                            });
-
-                            Ti.App.Properties.setObject('newNotifications', {
-                                count : notifications.count + 1,
-                                nid : json.insert[i].nid
-                            });
-                        }
-                        else if(json.insert[i].viewed == 0 && 
-                                typeof json.insert[i].from_dispatch !== 'undefined' &&
-                                json.insert[i].from_dispatch > 0){
-                                    
-                            Ti.API.info("NEW DISPATCH");    
-                            Ti.App.Properties.setBool('newDispatchJob', true);
-                        }
-                        
-
-                        if ( typeof json.insert[i].__negative_nid !== 'undefined') {
-                            Ti.API.debug("Deleting nid: " + json.insert[i].__negative_nid);
-
-                            queries.push('DELETE FROM ' + type + ' WHERE nid=' + json.insert[i].__negative_nid);
-                            queries.push('DELETE FROM node WHERE nid=' + json.insert[i].__negative_nid);
-
-                            queries.push("UPDATE _photos SET nid =" + json.insert[i].nid + " WHERE nid=" + json.insert[i].__negative_nid);
-
-                            // Make sure we don't add a duplicate from doing a next_part action directly after a node save
-                            //if(typeof Ti.UI.currentWindow.nid !== 'undefined' && Ti.UI.currentWindow.nid == json.insert[i].__negative_nid){
-                            //    Ti.API.error("SWITCHING UP THE NID from " + json.insert[i].__negative_nid + " to " + json.insert[i].nid);
-
-                            Ti.App.fireEvent('switchedItUp', {
-                                negativeNid : json.insert[i].__negative_nid,
-                                positiveNid : json.insert[i].nid
-                            });
+                            //Ti.API.debug(query);
+    
+                            queries.push(query);
+                            
+                            if (type == 'notification' && json.insert[i].viewed == 0) {
+                                notifications = Ti.App.Properties.getObject('newNotifications', {
+                                    count : 0,
+                                    nid : 0
+                                });
+    
+                                Ti.App.Properties.setObject('newNotifications', {
+                                    count : notifications.count + 1,
+                                    nid : json.insert[i].nid
+                                });
+                            }
+                            else if(json.insert[i].viewed == 0 && 
+                                    typeof json.insert[i].from_dispatch !== 'undefined' &&
+                                    json.insert[i].from_dispatch > 0){
+                                        
+                                Ti.API.info("NEW DISPATCH");    
+                                Ti.App.Properties.setBool('newDispatchJob', true);
+                            }
+                            
+    
+                            if ( typeof json.insert[i].__negative_nid !== 'undefined') {
+                                Ti.API.debug("Deleting nid: " + json.insert[i].__negative_nid);
+    
+                                queries.push('DELETE FROM ' + type + ' WHERE nid=' + json.insert[i].__negative_nid);
+                                queries.push('DELETE FROM node WHERE nid=' + json.insert[i].__negative_nid);
+    
+                                queries.push("UPDATE _photos SET nid =" + json.insert[i].nid + " WHERE nid=" + json.insert[i].__negative_nid);
+    
+                                // Make sure we don't add a duplicate from doing a next_part action directly after a node save
+                                //if(typeof Ti.UI.currentWindow.nid !== 'undefined' && Ti.UI.currentWindow.nid == json.insert[i].__negative_nid){
+                                //    Ti.API.error("SWITCHING UP THE NID from " + json.insert[i].__negative_nid + " to " + json.insert[i].nid);
+    
+                                Ti.App.fireEvent('switchedItUp', {
+                                    negativeNid : json.insert[i].__negative_nid,
+                                    positiveNid : json.insert[i].nid
+                                });
+                            }
                         }
                     }
                 }

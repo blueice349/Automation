@@ -315,7 +315,8 @@ Omadi.widgets.setValues = function(field_name, defaultValues){"use strict";
     Omadi.widgets.setValueWidgetProperty(field_name, ['textValue'], defaultValues.textValues[0]);
     Omadi.widgets.setValueWidgetProperty(field_name, ['dbValue'], defaultValues.dbValues[0]);
     
-    if(instances[field_name].type == 'taxonomy_term_reference'){
+    if(instances[field_name].type == 'taxonomy_term_reference' || 
+        (instances[field_name].type == 'omadi_reference' && instances[field_name].widget.type == 'omadi_reference_select')){
         Omadi.widgets.setValueWidgetProperty(field_name, ['text'], defaultValues.textValues[0]);
     }
     else{

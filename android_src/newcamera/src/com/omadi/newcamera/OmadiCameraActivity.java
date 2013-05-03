@@ -50,7 +50,7 @@ import android.widget.RelativeLayout;
 
 public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder.Callback, SensorEventListener {
 	private static final String LCAT = "OmadiCameraActivity";
-	private static Camera camera;
+	private static Camera camera = null;
 
 	private TiViewProxy localOverlayProxy = null;
 	private Uri storageUri;
@@ -87,7 +87,9 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 
 		// set picture location
 		storageUri = (Uri)getIntent().getParcelableExtra(MediaStore.EXTRA_OUTPUT);
-
+		
+		toolsOverlay = new ToolsOverlay(this);
+		
 		// create camera preview
 		preview = new SurfaceView(this);
 		SurfaceHolder previewHolder = preview.getHolder();
@@ -104,7 +106,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 		
 		
-		toolsOverlay = new ToolsOverlay(this);
+		
 		
 		// Getting the sensor service.
 	    sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -122,13 +124,16 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 
 	public void surfaceChanged(SurfaceHolder previewHolder, int format, int width, int height) {
 		camera.startPreview();  // make sure setPreviewDisplay is called before this
+		Log.d("CAMERA", "CAMERA SURFACE CHANGED");
 		
-		toolsOverlay.cameraInitialized();
+		toolsOverlay.cameraInitialized(camera);
 	}
 
 	public void surfaceCreated(SurfaceHolder previewHolder) {
+		Log.d("CAMERA", "CAMERA SURFACE CREATED");
+		
 		camera = Camera.open();
-
+		
 		/*
 		 * Disabling this since it can end up picking a bad preview
 		 * size which can create stretching issues (TIMOB-8151).
@@ -148,7 +153,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 			e.printStackTrace();
 		}
 		
-		//toolsOverlay.show();
+		//toolsOverlay.cam
 	}
 
 	// make sure to call release() otherwise you will have to force kill the app before 
@@ -161,11 +166,17 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	@Override
 	protected void onResume() {
 		super.onResume();
-
+		
+		Log.d("CAMERA", "CAMERA ON RESUME");
+		
 		cameraActivity = this;
 		previewLayout.addView(preview);
 		
 		//previewLayout.addView(localOverlayProxy.getOrCreateView().getNativeView(), new FrameLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+		
+		//if(camera != null){
+			//toolsOverlay.cameraInitialized();
+		//}
 		
 		previewLayout.addView(toolsOverlay);
 		
@@ -176,7 +187,9 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	@Override
 	protected void onPause() {
 		super.onPause();
-
+		
+		Log.d("CAMERA", "CAMERA ON PAUSE");
+		
 		previewLayout.removeView(preview);
 		
 		//previewLayout.removeView(localOverlayProxy.getOrCreateView().getNativeView());
@@ -271,7 +284,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 					
 					//URI fileURI = URI.create(filePath);
 					
-					Log.i("CHRIS", "PATH: " + filePath);
+					//Log.i("CHRIS", "PATH: " + filePath);
 					//Log.i("CHRIS", "PATH URI: " + fileURI.getPath());
 					
 					// get the degrees before the file is saved
@@ -280,7 +293,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 					messageVars.putInt("degrees", degrees);
 					messageVars.putString("filePath", filePath);
 					
-					Log.i("CHRIS", "degrees: " + degrees);
+					//Log.i("CHRIS", "degrees: " + degrees);
 					
 					// write photo to storage
 					outputStream = new FileOutputStream(filePath);

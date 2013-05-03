@@ -119,138 +119,98 @@ public class NewcameraModule extends KrollModule
 	@Kroll.method
 	public void resizeImage(String filePath, int degrees){
 		
-//		BitmapFactory.Options options = new BitmapFactory.Options();
-//		options.inJustDecodeBounds = true;
-//
-//		BitmapFactory.decodeByteArray(data, 0, data.length, options);
-//		int imageHeight = options.outHeight;
-//		int imageWidth = options.outWidth;
-//		int targetHeight = 1024, targetWidth = 768;
-//		//String imageType = options.outMimeType;
-//		int inSampleSize = 1;
-//
-//	    if (imageHeight > targetHeight || imageWidth > targetWidth) {
-//	        if (imageWidth > imageHeight) {
-//	            inSampleSize = Math.round((float)imageHeight / (float)targetHeight);
-//	        } else {
-//	            inSampleSize = Math.round((float)imageWidth / (float)targetWidth);
-//	        }
-//	    }
-//
-//	    if(inSampleSize>=2){
-//	    	inSampleSize = (int)Math.pow(2, inSampleSize);
-//	    }else if(inSampleSize<2 && inSampleSize>=1){
-//	    	inSampleSize = 2;
-//	    }
-//
-//	    Log.d("Pooja", inSampleSize+"");
-//	    options.inSampleSize = inSampleSize;
-//	    options.inJustDecodeBounds = false;
-//	    options.inPurgeable = true;
-//	    Matrix mtx = new Matrix();
-//
-//		if (degrees == 180 || degrees == 0) {
-//			mtx.postRotate(degrees);
-//		}
-//		else if (degrees == 270) {
-//			mtx.postRotate(90);
-//		}
-//		else {
-//			mtx.postRotate(270);
-//		}
-
-		//Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
-		//bitmap = Bitmap.createBitmap(bitmap, 0, 0, options.outWidth, options.outHeight, mtx, true);
-		
-		//FileInputStream imageFile = new FileInputStream(filePath);
-		//Log.i("CHRIS", "in resize");
-		
-		//Log.i("CHRIS", "resize file: " + filePath);
-		
-		
-		//	file:///sdcard/dcim/Camera/Omadi/tia-646219205.jpg
-
-		
-		Bitmap bitmap = BitmapFactory.decodeFile(filePath);
-		
-		if(bitmap != null){
-			int height = bitmap.getHeight();
-			int width = bitmap.getWidth();
+		try{
 			
-			int newWidth = width;
-			int newHeight = height;
+			BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+			// decrease the amount of memory by 4 when loading
 			
-			float scale = 1.0f;
+			bitmapOptions.inJustDecodeBounds = true;
 			
-			int max = 1024;
+			BitmapFactory.decodeFile(filePath, bitmapOptions);
 			
-			if (height > max || width > max) {
-		        if (width > height) {
-		        	scale = (float)max / (float)width;
-		        } 
-		        else {
-		            scale = (float)max / (float)height;
-		        }
-		        
-		        //Log.i("CHRIS", "resize width: " + width + " " + scale);
-		        
-		        if(scale > 0){
-		        	newWidth = Math.round((float)width * scale);
-		        	newHeight = Math.round((float)height * scale);
-		        }
-		    }
+			bitmapOptions.inJustDecodeBounds = false;
 			
-			Bitmap resized = null;
+			if(bitmapOptions.outHeight > 1500 || bitmapOptions.outWidth > 1500){
+				bitmapOptions.inSampleSize = 2;
+			}
 			
-			//Log.i("CHRIS", "MATRIX DEG: " + degrees);
+			Bitmap bitmap = BitmapFactory.decodeFile(filePath, bitmapOptions);
 			
-			resized = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
-			
-			bitmap.recycle();
-			//stream.close();
-			bitmap = null;
-			
-			if(degrees > 0){
-				Matrix mtx = new Matrix();
-
-				if (degrees == 180) {
-					mtx.postRotate(180);
-				}
-				else if (degrees == 270) {
-					mtx.postRotate(90);
-				}
-				else {
-					mtx.postRotate(270);
+			if(bitmap != null){
+				int height = bitmap.getHeight();
+				int width = bitmap.getWidth();
+				
+				int newWidth = width;
+				int newHeight = height;
+				
+				float scale = 1.0f;
+				
+				int max = 1024;
+				
+				if (height > max || width > max) {
+			        if (width > height) {
+			        	scale = (float)max / (float)width;
+			        } 
+			        else {
+			            scale = (float)max / (float)height;
+			        }
+			        
+			        //Log.i("CHRIS", "resize width: " + width + " " + scale);
+			        
+			        if(scale > 0){
+			        	newWidth = Math.round((float)width * scale);
+			        	newHeight = Math.round((float)height * scale);
+			        }
+			    }
+				
+				Bitmap resized = null;
+				
+				//Log.i("CHRIS", "MATRIX DEG: " + degrees);
+				
+				resized = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+				
+				bitmap.recycle();
+				//stream.close();
+				bitmap = null;
+				
+				if(degrees > 0){
+					Matrix mtx = new Matrix();
+	
+					if (degrees == 180) {
+						mtx.postRotate(180);
+					}
+					else if (degrees == 270) {
+						mtx.postRotate(90);
+					}
+					else {
+						mtx.postRotate(270);
+					}
+					
+					resized = Bitmap.createBitmap(resized, 0, 0, newWidth, newHeight, mtx, true);
 				}
 				
-				resized = Bitmap.createBitmap(resized, 0, 0, newWidth, newHeight, mtx, true);
+				//Log.i("CHRIS", "resized it");
+				
+			    //ByteArrayOutputStream stream = new ByteArrayOutputStream();
+				//resized.compress(Bitmap.CompressFormat.JPEG, 95, stream);
+				
+				try {
+					String resizedFilePath = filePath.replaceAll(".jpg$", ".resized.jpg");
+					
+				    FileOutputStream out = new FileOutputStream(resizedFilePath);
+				    resized.compress(Bitmap.CompressFormat.JPEG, 90, out);
+				} 
+				catch (Exception e) {
+				       e.printStackTrace();
+				       Log.d("CAMERA", "CAMERA writing resize file: " + e.getMessage());
+				}
+				
+				resized.recycle();
+				resized = null;
 			}
-			
-			//Log.i("CHRIS", "resized it");
-			
-		    //ByteArrayOutputStream stream = new ByteArrayOutputStream();
-			//resized.compress(Bitmap.CompressFormat.JPEG, 95, stream);
-			
-			try {
-			       FileOutputStream out = new FileOutputStream(filePath);
-			       resized.compress(Bitmap.CompressFormat.JPEG, 90, out);
-			       
-			} catch (Exception e) {
-			       e.printStackTrace();
-			       Log.d("CHRIS", e.getMessage());
-			}
-			
-			//Log.i("CHRIS", "resize wrote");
-			
-			//String ss = Base64.encodeToString(stream.toByteArray(), 0);
-	
-			
-			
-			resized.recycle();
-			resized = null;
-			
-			//stream = null;
-			//System.gc();
+		}
+		catch(Exception e){
+			Log.d("CAMERA", "CAMERA resizing: " + e.getMessage());
 		}
 	}
 	

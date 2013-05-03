@@ -380,7 +380,7 @@ Omadi.service.sendUpdates = function() {"use strict";
             //alert("Going to send data");
             
             http = Ti.Network.createHTTPClient();
-            http.setTimeout(60000);
+            http.setTimeout(45000);
             http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync.json');
 
             http.setRequestHeader("Content-Type", "application/json");
@@ -588,7 +588,7 @@ Omadi.service.sendLogoutRequest = function(){"use strict";
 
 Omadi.service.photoUploadSuccess = function(e){"use strict";
     var json, subDB, subResult, uploadMore = false, fieldSettings, tableName, 
-        decoded_values, decoded, content, multipleValue, dbValue, jsonArray, imageFile, filePath;
+        decoded_values, decoded, content, multipleValue, dbValue, jsonArray, imageFile, filePath, resizedFilePath;
     
     //Ti.API.info('UPLOAD FILE: =========== Success ========' + this.responseText);
     Ti.API.debug("Photo upload succeeded");
@@ -637,9 +637,29 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                 // If it's a file path, delete the file
                 if(subResult.field(0).length < 200){
                     filePath = subResult.field(0);
-                    imageFile = Ti.Filesystem.getFile("file://" + filePath); 
                     
-                    imageFile.deleteFile(); 
+                    if(Ti.App.isAndroid){
+                        imageFile = Ti.Filesystem.getFile("file://" + filePath);
+                        if(imageFile.exists()){
+                            imageFile.deleteFile();
+                        } 
+                        
+                        resizedFilePath = filePath.replace(/\.jpg$/, ".resized.jpg");
+                        
+                        imageFile = Ti.Filesystem.getFile("file://" + resizedFilePath);
+                        if(imageFile.exists()){
+                            imageFile.deleteFile(); 
+                        }
+                    }
+                    else{
+                        imageFile = Ti.Filesystem.getFile(filePath);
+                        if(imageFile.exists()){
+                            imageFile.deleteFile();
+                        } 
+                    }
+                    
+                    // Get rid of file pointers
+                    imageFile = null;
                 }
             
                 //Deleting file after upload.

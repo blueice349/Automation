@@ -60,6 +60,11 @@ Omadi.widgets.omadi_reference = {
                 nodeTypes.push(instance.settings.reference_types[i]);
             }
         }
+        
+        possibleValues.push({
+            title : '- None -',
+            nid : null
+        });
 
         if (nodeTypes.length > 0) {
             query = "SELECT title, nid FROM node WHERE table_name IN ('" + nodeTypes.join("','") + "')";
@@ -87,7 +92,7 @@ Omadi.widgets.omadi_reference = {
         if(instance.widget.type == 'omadi_reference_select'){
             
             options = [];
-
+            
             for ( i = 0; i < possibleValues.length; i++) {
                 options.push(possibleValues[i].title);
             }
@@ -97,6 +102,9 @@ Omadi.widgets.omadi_reference = {
             widgetView.textValue = textValue;
             widgetView.options = options;
             widgetView.possibleValues = possibleValues;
+            widgetView.top = 1;
+            widgetView.bottom = 1;
+            widgetView.setText(textValue);
             
             widgetView.addEventListener('click', function(e) {
                 var postDialog = Titanium.UI.createOptionDialog();
@@ -106,14 +114,22 @@ Omadi.widgets.omadi_reference = {
                 postDialog.show();
 
                 postDialog.addEventListener('click', function(ev) {
+                    var text;
+                    
                     if (ev.index >= 0) {
-                        ev.source.widgetView.textValue = ev.source.options[ev.index];
+                        
+                        if(ev.source.widgetView.possibleValues[ev.index].nid === null){
+                            text = '';   
+                        }
+                        else{
+                            text = ev.source.options[ev.index];
+                        }
+                        ev.source.widgetView.textValue = text;
                         ev.source.widgetView.dbValue = ev.source.widgetView.possibleValues[ev.index].nid;
-                        ev.source.widgetView.setText(ev.source.options[ev.index]);
+                        ev.source.widgetView.setText(text);
                     }
                 });
             });
-            
             
             wrapper.add(widgetView);
             

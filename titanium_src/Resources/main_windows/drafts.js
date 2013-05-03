@@ -11,6 +11,8 @@ var win_new;
 var tableData;
 var wrapperView;
 
+var Drafts = {};
+
 function addiOSToolbar() {"use strict";
     var back, space, label, toolbar;
     
@@ -50,51 +52,17 @@ function addiOSToolbar() {"use strict";
     wrapperView.add(toolbar);
 }
 
-(function() {"use strict";
 
-    var db, result, i, count, section, fullName, row, 
-        empty, search, formWindow, dialog, textView, titleLabel, rowImg, timeLabel;
-    //Current window's instance
+Drafts.deleteDraft = function(nid){"use strict";
 
-    curWin.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
+    Omadi.data.deleteNode(nid);
     
-    wrapperView = Ti.UI.createView({
-       layout: 'vertical',
-       bottom: 0,
-       top: 0,
-       right: 0,
-       left: 0 
-    });
-    
-    //When back button on the phone is pressed, it opens mainMenu.js and close the current window
-    curWin.addEventListener('android:back', function() {
-        //Enable background updates
-        //Omadi.data.setUpdating(false);
-        curWin.close();
-    });
-    
-    Ti.App.addEventListener('loggingOut', function(){
-        Ti.UI.currentWindow.close();
-    });
-    
-    Ti.App.addEventListener("savedNode", function(){
-        
-        if(Ti.App.isAndroid){
-            Ti.UI.currentWindow.close();
-        }
-        else{
-            Ti.UI.currentWindow.hide();
-            // Close the window after the maximum timeout for a node save
-            setTimeout(Ti.UI.currentWindow.close, 65000);
-        }
-    });
-    
-    
-    if (Ti.App.isIOS) {
-        addiOSToolbar();
-    }
-    
-    //Lock database for background updates
+    Drafts.refreshDrafts();
+};
+
+Drafts.refreshDrafts = function(){"use strict";
+    var db, count, result, row, textView, rowImg, titleLabel, timeLabel, 
+        empty, search, dialog, children, i;
 
     db = Omadi.utils.openMainDatabase();
 
@@ -109,7 +77,6 @@ function addiOSToolbar() {"use strict";
 
         while (result.isValidRow()) {
 
-            
             row = Ti.UI.createTableViewRow({
                 width: '100%',
                 height: Ti.UI.SIZE,
@@ -170,6 +137,19 @@ function addiOSToolbar() {"use strict";
             result.next();
         }
     }
+    
+    children = wrapperView.getChildren();
+    if(children.length){
+        for(i = children.length - 1; i >= 0; i --){
+            if(children.hasOwnProperty(i)){
+                wrapperView.remove(children[i]);
+            }
+        }
+    }
+    
+    if (Ti.App.isIOS) {
+        addiOSToolbar();
+    }
 
     //Check if the list is empty or not
     if (tableData.length < 1) {
@@ -187,6 +167,7 @@ function addiOSToolbar() {"use strict";
         });
 
         wrapperView.add(empty);
+        
     }
     else {
 
@@ -277,9 +258,17 @@ function addiOSToolbar() {"use strict";
         //When the user clicks on a certain contact, it opens individual_contact.js
         tableView.addEventListener('click', function(e) {
             //Hide keyboard when returning
-
-            if (e.row.nid != null) {
-                Omadi.display.openFormWindow(e.row.node_type, e.row.nid, e.row.form_part);
+// 
+            // if (e.row.nid != null) {
+                // Omadi.display.openFormWindow(e.row.node_type, e.row.nid, e.row.form_part);
+            // }
+            
+            if(e.row.nid != null){
+                Omadi.display.showDialogFormOptions(e, [{
+                    text: 'Delete Draft',
+                    callback: Drafts.deleteDraft,
+                    callbackArgs: [e.row.nid]
+                }]);
             }
         });
 
@@ -319,7 +308,7 @@ function addiOSToolbar() {"use strict";
         
         setTimeout(function() {
             search.blur();
-        }, 110);
+        }, 100);
     }
 
     if (result !== null) {
@@ -327,8 +316,50 @@ function addiOSToolbar() {"use strict";
     }
 
     db.close();
+};
+
+(function() {"use strict";
+
+    var db, result, i, count, section, fullName, row, 
+        empty, search, formWindow, dialog, textView, titleLabel, rowImg, timeLabel;
+    //Current window's instance
+
+    curWin.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
     
+    wrapperView = Ti.UI.createView({
+       layout: 'vertical',
+       bottom: 0,
+       top: 0,
+       right: 0,
+       left: 0 
+    });
+    
+    //When back button on the phone is pressed, it opens mainMenu.js and close the current window
+    curWin.addEventListener('android:back', function() {
+        //Enable background updates
+        //Omadi.data.setUpdating(false);
+        curWin.close();
+    });
+    
+    Ti.App.addEventListener('loggingOut', function(){
+        Ti.UI.currentWindow.close();
+    });
+    
+    Ti.App.addEventListener("savedNode", function(){
+        
+        if(Ti.App.isAndroid){
+            Ti.UI.currentWindow.close();
+        }
+        else{
+            Ti.UI.currentWindow.hide();
+            // Close the window after the maximum timeout for a node save
+            setTimeout(Ti.UI.currentWindow.close, 65000);
+        }
+    });
+    
+    Drafts.refreshDrafts();
     
     curWin.add(wrapperView);
+    
 }());
 
