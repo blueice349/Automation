@@ -10,7 +10,7 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
         backgroundColor : '#00000000'
     });
 
-    imageWin.setOrientationModes([Ti.UI.PORTRAIT]);
+    //imageWin.setOrientationModes([Ti.UI.PORTRAIT]);
 
     background = Ti.UI.createView({
         backgroundColor : 'black',

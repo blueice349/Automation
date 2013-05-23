@@ -151,7 +151,7 @@ Omadi.widgets.signature = {
         
         // if (instance.can_edit && (instance.settings.cardinality == -1 || (numImagesShowing < instance.settings.cardinality))) {
 //             
-            // widgetView.add(Omadi.widgets.image.getImageView(widgetView, numImagesShowing, null, null));
+            // widgetView.add(Omadi.widgets.image.getImageView(widgetView, numImagesShowing, null, null, 0));
 //         
             // contentWidth += 110;
         // }

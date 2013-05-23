@@ -95,8 +95,6 @@ Omadi.bundles.timecard.isUserClockedIn = function(){"use strict";
         lastClockOutTime = lastNode.clock_out_time.dbValues[0];
     }
     
-    
-    
     // The User is currently clocked in
     if(lastNode && !lastClockOutTime){
         Ti.API.debug("Clocked IN");

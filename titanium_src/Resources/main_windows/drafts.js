@@ -55,9 +55,23 @@ function addiOSToolbar() {"use strict";
 
 Drafts.deleteDraft = function(nid){"use strict";
 
-    Omadi.data.deleteNode(nid);
+    var dialog;
     
-    Drafts.refreshDrafts();
+    dialog = Ti.UI.createAlertDialog({
+       title: 'Confirm Delete',
+       message: 'Are you sure you want to delete the draft?',
+       buttonNames: ['Yes', 'Cancel'],
+       cancel: 1 
+    });
+    
+    dialog.addEventListener('click', function(e){
+        if(e.index == 0){
+            Omadi.data.deleteNode(nid);
+            Drafts.refreshDrafts();
+        }
+    });
+    
+    dialog.show();
 };
 
 Drafts.refreshDrafts = function(){"use strict";

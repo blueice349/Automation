@@ -686,6 +686,7 @@ function showNextAlertInQueue(e) {"use strict";
         Ti.App.addEventListener("doneSendingData", function(e) {
             Ti.API.debug("Done Sending data event received");
             
+            //Omadi.service.sendErrorReport('donesendingdata event received');
             networkStatusView.hide();
             Omadi.service.uploadFile();
         });

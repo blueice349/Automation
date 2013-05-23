@@ -242,7 +242,8 @@ function openFileViewer(e){"use strict";
 function doFieldOutput(fieldObj) {"use strict";
     /*global getCalculationTableView*/
     var i, rowView, valueView, valueLabel, labelView, labelLabel, fieldIsHidden, tableView, fileId, 
-        contentImage, field_parts, part, contentWidth, dotIndex, extension;
+        contentImage, field_parts, part, contentWidth, dotIndex, extension, imagePath, degrees, transform,
+        animation, rotateDegrees;
     
     
     if ( typeof node[fieldObj.field_name] !== 'undefined') {
@@ -387,20 +388,55 @@ function doFieldOutput(fieldObj) {"use strict";
     
                         if (node[fieldObj.field_name].imageData[i] > "") {
                             fileId = node[fieldObj.field_name].dbValues[i];
+                            
+                            if(node[fieldObj.field_name].imageData[i].length < 200){
+                                if(Ti.App.isAndroid){
+                                    imagePath = 'file://' + node[fieldObj.field_name].imageData[i];
+                                }
+                                else{
+                                    imagePath = node[fieldObj.field_name].imageData[i];
+                                }
+                            }
+                            else{
+                                imagePath = node[fieldObj.field_name].imageData[i];
+                            }
+                            
+                            degrees = node[fieldObj.field_name].degrees[i];
+                            
                             contentImage = Ti.UI.createImageView({
                                 height : 100,
                                 width : 100,
                                 left : 10,
                                 top : 0,
-                                image : node[fieldObj.field_name].imageData[i],
+                                image : imagePath,
                                 borderColor : '#333',
                                 borderWidth : 2,
-                                bigImg : node[fieldObj.field_name].imageData[i],
+                                bigImg : imagePath,
                                 isImage : true
                             });
+                            
+                            if(Ti.App.isAndroid && degrees > 0){
+                                transform = Ti.UI.create2DMatrix();
+                                animation = Ti.UI.createAnimation();
+                                
+                                rotateDegrees = degrees;
+                                if(rotateDegrees == 270){
+                                    rotateDegrees = 90;
+                                }
+                                else if(rotateDegrees == 90){
+                                    rotateDegrees = 270;
+                                }
+                                
+                                transform = transform.rotate(rotateDegrees);
+                                animation.transform = transform;
+                                animation.duration = 1;
+                                
+                                contentImage.animate(animation);
+                            }
     
-                            contentImage.addEventListener('click', displayLargeImage);
+                            //contentImage.addEventListener('click', displayLargeImage);
                             valueView.add(contentImage);
+                            
                             contentWidth += 110;
                         }
                     }

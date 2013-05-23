@@ -42,10 +42,11 @@ Omadi.widgets.image = {
         return fieldView;
     },
     getNewElement : function(node, instance) {"use strict";
-        var settings, widgetView, dbValue, imageData, i, numImagesShowing = 0, contentWidth, imageNid;
+        var settings, widgetView, dbValue, imageData, degreeData, i, numImagesShowing = 0, contentWidth, imageNid;
 
         dbValue = [];
         imageData = [];
+        degreeData = [];
 
         if ( typeof node[instance.field_name] !== 'undefined') {
             if ( typeof node[instance.field_name].dbValues !== 'undefined') {
@@ -53,6 +54,7 @@ Omadi.widgets.image = {
             }
             if ( typeof node[instance.field_name].imageData !== 'undefined') {
                 imageData = node[instance.field_name].imageData;
+                degreeData = node[instance.field_name].degrees;
             }
         }
 
@@ -82,7 +84,7 @@ Omadi.widgets.image = {
                 if (dbValue[i] > 0) {
                     Ti.API.debug("Adding image to scroll view");
                      
-                    widgetView.add(Omadi.widgets.image.getImageView(widgetView, i, imageNid, dbValue[i]));
+                    widgetView.add(Omadi.widgets.image.getImageView(widgetView, i, imageNid, dbValue[i], 0));
                 }
             }
             numImagesShowing = dbValue.length;
@@ -91,7 +93,7 @@ Omadi.widgets.image = {
         if (Omadi.utils.isArray(imageData)) {
 
             for ( i = 0; i < imageData.length; i++) {
-                widgetView.add(Omadi.widgets.image.getImageView(widgetView, numImagesShowing + i, imageNid, imageData[i]));
+                widgetView.add(Omadi.widgets.image.getImageView(widgetView, numImagesShowing + i, imageNid, imageData[i], degreeData[i]));
             }
             numImagesShowing += imageData.length;
         }
@@ -100,7 +102,7 @@ Omadi.widgets.image = {
 
         if (instance.can_edit && (instance.settings.cardinality == -1 || (numImagesShowing < instance.settings.cardinality))) {
             
-            widgetView.add(Omadi.widgets.image.getImageView(widgetView, numImagesShowing, null, null));
+            widgetView.add(Omadi.widgets.image.getImageView(widgetView, numImagesShowing, null, null, 0));
 
             contentWidth += 110;
         }
@@ -124,11 +126,15 @@ Omadi.widgets.image = {
 
         return widgetView;
     },
-    getImageView : function(widgetView, index, nid, fid) {"use strict";
-        var imageView, fidIsData = false;
+    getImageView : function(widgetView, index, nid, fid, degrees) {"use strict";
+        var imageView, fidIsData = false, transform, animation, rotateDegrees;
 
         if (fid !== null && typeof fid !== 'number') {
             fidIsData = true;
+            
+            if(Ti.App.isAndroid){
+                fid = "file://" + fid;
+            }
         }
 
         imageView = Ti.UI.createImageView({
@@ -154,20 +160,42 @@ Omadi.widgets.image = {
             imageView.fullImageLoaded = true;
             imageView.isImageData = true;
             imageView.dbValue = -1;
+                           
+            if(Ti.App.isAndroid && degrees > 0){
+                transform = Ti.UI.create2DMatrix();
+                animation = Ti.UI.createAnimation();
+                
+                rotateDegrees = degrees;
+                if(rotateDegrees == 270){
+                    rotateDegrees = 90;
+                }
+                else if(rotateDegrees == 90){
+                    rotateDegrees = 270;
+                }
+                
+                transform = transform.rotate(rotateDegrees);
+                animation.transform = transform;
+                animation.duration = 1;
+                
+                imageView.animate(animation);
+            }
+    
         }
         else if ( typeof fid === 'number') {
             Omadi.display.setImageViewThumbnail(imageView, nid, fid);
         }
-
-        imageView.addEventListener('click', function(e) {
-
-            if (e.source.fid === null && e.source.bigImg === null) {
-                Omadi.widgets.image.openCamera(e.source);
-            }
-            else {
-                Omadi.display.displayLargeImage(e.source, e.source.nid, e.source.fid);
-            }
-        });
+        
+        if(!fidIsData){
+            imageView.addEventListener('click', function(e) {
+    
+                if (e.source.fid === null && e.source.bigImg === null) {
+                    Omadi.widgets.image.openCamera(e.source);
+                }
+                else {
+                    Omadi.display.displayLargeImage(e.source, e.source.nid, e.source.fid);
+                }
+            });
+        }
 
         return imageView;
     },
@@ -225,7 +253,7 @@ Omadi.widgets.image = {
                         Omadi.widgets.image.saveFileInfo(imageView, filePath, degrees);
                         
                         if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
-                            newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null);
+                            newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
                             imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
                             imageView.parentView.add(newImageView);
                             
@@ -336,7 +364,7 @@ Omadi.widgets.image = {
                         imageView.fullImageLoaded = true;
 
                         // if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
-                            // newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null);
+                            // newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
                             // imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
                             // imageView.parentView.add(newImageView);
                             // newImageView.fireEvent('click');
@@ -385,7 +413,7 @@ Omadi.widgets.image = {
 
                         
                         if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
-                            newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null);
+                            newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
                             imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
                             imageView.parentView.add(newImageView);
                             

@@ -759,7 +759,9 @@ Omadi.service.uploadFile = function() {"use strict";
         lastUploadStartTimestamp, tmpImageView, 
         blobImage, maxDiff, imageData, uploadPhoto,
         nextPhotoData, photoCount;
-
+    
+    //Omadi.service.sendErrorReport("In uploadFile");
+    
     if (Ti.Network.online) {
         
         isUploading = false;
@@ -774,6 +776,7 @@ Omadi.service.uploadFile = function() {"use strict";
                 lastUploadStartTimestamp = result.field(0, Ti.Database.FIELD_TYPE_INT);
                 isUploading = true;
                 Ti.API.debug("A photo is currently uploading");
+                //Omadi.service.sendErrorReport("Photo currently uploading");
             }
             result.close();
             mainDB.close(); 
@@ -793,7 +796,10 @@ Omadi.service.uploadFile = function() {"use strict";
                 
                 nextPhotoData = Omadi.data.getNextPhotoData();
                 
+                //Omadi.service.sendErrorReport("Photo count for upload: " + photoCount);
+                
                 if(nextPhotoData){
+                    //Omadi.service.sendErrorReport("Next photo data is valid");
                     
                     Ti.API.debug("Current upload is for nid " + nextPhotoData.nid + " field " + nextPhotoData.field_name + " delta " + nextPhotoData.delta + " and tries=" + nextPhotoData.tries);
                     
@@ -802,11 +808,14 @@ Omadi.service.uploadFile = function() {"use strict";
                         // Reset all photos to not uploading in case there was an error previously
                         mainDB.execute("UPDATE _photos SET uploading = 0 WHERE uploading <> 0");
                         
-                        if ((nextPhotoData.file_data == null || nextPhotoData.file_data.length < 10) && nextPhotoData.id > 0) {
+                        //Omadi.service.sendErrorReport("Next file_data length: " + nextPhotoData.file_data.length);
+                        
+                        if ((nextPhotoData.file_data === null || nextPhotoData.file_data.length < 10) && nextPhotoData.id > 0) {
                             mainDB.execute("DELETE FROM _photos WHERE id=" + nextPhotoData.id);
+                            Omadi.service.sendErrorReport("Deleted a photo from the database");
                             return;
                         }
-                
+                        
                         // Set the photo to uploading status
                         mainDB.execute("UPDATE _photos SET uploading = " + nowTimestamp + " WHERE id = " + nextPhotoData.id);
                         mainDB.close();
@@ -819,7 +828,10 @@ Omadi.service.uploadFile = function() {"use strict";
                     //imageData = file_data;
                     
                     //alert("length: " + imageData.length);
-    
+                    
+                    //Omadi.service.sendErrorReport("Current upload is for nid " + nextPhotoData.nid + " field " + nextPhotoData.field_name + " delta " + nextPhotoData.delta + " and tries=" + nextPhotoData.tries);
+                    
+                    
                     if (nextPhotoData.nid > 0) {
                         
                         try{
