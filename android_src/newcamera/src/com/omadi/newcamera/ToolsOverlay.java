@@ -39,12 +39,18 @@ public class ToolsOverlay extends RelativeLayout {
 	private RelativeLayout container = null;
 	private Context context = null;
 	private int degrees = 0;
+	private int captureDegrees = 0;
 	private boolean cameraInitialized = false;
+	private boolean captureButtonPressed = false;
 	
 	private Camera camera = null;
 	
 	RelativeLayout zoomBase;
 	VerticalSeekBar zoomControls;
+	
+	public int getDegreesAtCapture(){
+		return captureDegrees;
+	}
 	
 	public ToolsOverlay(Context c){
 		super(c);
@@ -78,7 +84,11 @@ public class ToolsOverlay extends RelativeLayout {
 			
 			captureImage.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
-					OmadiCameraActivity.cameraActivity.takePicture();
+					if(!captureButtonPressed){
+						captureDegrees = degrees;
+						captureButtonPressed = true;
+						OmadiCameraActivity.cameraActivity.takePicture();
+					}
 				}
 			});
 			
@@ -122,12 +132,13 @@ public class ToolsOverlay extends RelativeLayout {
 			               
 			               OmadiCameraActivity.setCameraParameters(localCameraParams);
 			               
-			               redrawButtons();
 		             } 
 		             catch (IOException e) {
 		               // TODO Auto-generated catch block
 		               e.printStackTrace();
 		             }
+		             
+		             redrawButtons();
 	           }
 	        });
 	        
@@ -169,88 +180,101 @@ public class ToolsOverlay extends RelativeLayout {
 	
 	public void cameraInitialized(Camera c){
 	    
-		try{
-			if(!cameraInitialized){
-				
-				this.camera = c;
-				
+		if(!cameraInitialized){
+			
+			this.camera = c;
+			
+			Camera.Parameters cameraParams = null;
+			
+			try{
 				//Camera.Parameters cameraParams = OmadiCameraActivity.getCameraParameters();
-				Camera.Parameters cameraParams = camera.getParameters();
-				
-				// FLASH BUTTON
-		        if(context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)){
-		  
-			         try {
-			        	 InputStream is;
-			        	 
-				           String omadiFlashProp = System.getProperty("OMADI_FLASH");
-				           if (omadiFlashProp == null) {
-				        	   omadiFlashProp = Camera.Parameters.FLASH_MODE_OFF;
-				           }
-				           
-				           if (omadiFlashProp == Camera.Parameters.FLASH_MODE_OFF) {
-				        	   is = context.getAssets().open("flashOff.png");
-				           } 
-				           else {
-				        	   is = context.getAssets().open("flashOn.png");
-				           }
-				           
-				           cameraParams.setFlashMode(omadiFlashProp);
-				           bitmap = BitmapFactory.decodeStream(is);
-				           flashView.setImageBitmap(bitmap);
-				           
-				           camera.setParameters(cameraParams);//.setCameraParameters(cameraParams);
-			         } 
-			         catch (IOException e) {
-			        	 
-			         }
-		   		}
-		        else{
-		        	//flashView.setVisibility(View.GONE);
-		        }
-		        
-		        
-		      //ZOOM CONTROL SLIDER
-				
-				int maxZoomLevel = cameraParams.getMaxZoom();
-				
-				if (maxZoomLevel == 0) {
-					zoomControls.setEnabled(false);
-				} 
-				else {
-					zoomControls.setMax(maxZoomLevel);
+				cameraParams = camera.getParameters();
+			}
+			catch(Exception e){
+				Log.d("CAMERA", "CAMERA cannot get camera params: " + e.toString());
+			}
+			
+			if(cameraParams != null){
+				try{
+					// FLASH BUTTON
+			        if(context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)){
+			  
+				         try {
+				        	 InputStream is;
+				        	 
+					           String omadiFlashProp = System.getProperty("OMADI_FLASH");
+					           if (omadiFlashProp == null) {
+					        	   omadiFlashProp = Camera.Parameters.FLASH_MODE_OFF;
+					           }
+					           
+					           if (omadiFlashProp == Camera.Parameters.FLASH_MODE_OFF) {
+					        	   is = context.getAssets().open("flashOff.png");
+					           } 
+					           else {
+					        	   is = context.getAssets().open("flashOn.png");
+					           }
+					           
+					           cameraParams.setFlashMode(omadiFlashProp);
+					           bitmap = BitmapFactory.decodeStream(is);
+					           flashView.setImageBitmap(bitmap);
+					           
+					           camera.setParameters(cameraParams);//.setCameraParameters(cameraParams);
+				         } 
+				         catch (IOException e) {
+				        	 
+				         }
+			   		}
+			        else{
+			        	//flashView.setVisibility(View.GONE);
+			        }
 				}
-				
-				zoomControls.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+				catch(Exception e){
+					Log.d("CAMERA", "CAMERA flash button init: " + e.toString());
+				}
+		        
+		        
+				try{
+			      //ZOOM CONTROL SLIDER
 					
-					public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-						try{
-							Camera.Parameters localCameraParams = camera.getParameters();
-							localCameraParams.setZoom(progress);
-							camera.setParameters(localCameraParams);
-							//OmadiCameraActivity.setCameraParameters(localCameraParams);
+					int maxZoomLevel = cameraParams.getMaxZoom();
+					
+					if (maxZoomLevel == 0) {
+						zoomControls.setEnabled(false);
+					} 
+					else {
+						zoomControls.setMax(maxZoomLevel);
+					}
+					
+					zoomControls.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+						
+						public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+							try{
+								Camera.Parameters localCameraParams = camera.getParameters();
+								localCameraParams.setZoom(progress);
+								camera.setParameters(localCameraParams);
+								//OmadiCameraActivity.setCameraParameters(localCameraParams);
+							}
+							catch(Exception e){
+								e.printStackTrace();
+							}
 						}
-						catch(Exception e){
-							e.printStackTrace();
+			
+						public void onStartTrackingTouch(SeekBar seekBar) {
+						
 						}
-					}
-		
-					public void onStartTrackingTouch(SeekBar seekBar) {
-					
-					}
-		
-					public void onStopTrackingTouch(SeekBar seekBar) {
-					
-					}
-				});
-				
-				cameraInitialized = true;
+			
+						public void onStopTrackingTouch(SeekBar seekBar) {
+						
+						}
+					});
+				}
+				catch(Exception e){
+					Log.d("CAMERA", "CAMERA zoom control init: " + e.toString());
+				}
 			}
 		}
-		catch(Exception e){
-			Log.d("CAMERA", "CAMERA cameraInitialized: " + e.toString());
-		}
 		
+		cameraInitialized = true;
 		redrawButtons();
 	}
 	
@@ -258,7 +282,11 @@ public class ToolsOverlay extends RelativeLayout {
 		
 		this.degrees = degrees;
 		
+		Log.d("CAMERA", "Degrees now " + degrees);
+		
 		redrawButtons();
+		
+		Log.d("CAMERA", "redrew buttons");
 	}
 	
 	private void redrawButtons(){

@@ -105,9 +105,6 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 		
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 		
-		
-		
-		
 		// Getting the sensor service.
 	    sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 		
@@ -182,6 +179,8 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 		
 		// Register this class as a listener for the accelerometer sensor
 		sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
+		
+		Log.d("CAMERA", "Sensor Registered");
 	}
 
 	@Override
@@ -190,22 +189,26 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 		
 		Log.d("CAMERA", "CAMERA ON PAUSE");
 		
+		previewLayout.removeView(toolsOverlay);
+		
 		previewLayout.removeView(preview);
 		
 		//previewLayout.removeView(localOverlayProxy.getOrCreateView().getNativeView());
 
-		previewLayout.removeView(toolsOverlay);
-		
 		sensorManager.unregisterListener(this);
 		
 		try {
 			camera.release();
 			camera = null;
-		} catch (Throwable t) {
-			Log.i(LCAT, "camera is not open, unable to release");
+		}
+		catch (Throwable t) {
+			Log.d("CAMERA", "camera is not open, unable to release: " + t.getMessage());
+			t.printStackTrace();
 		}
 
 		cameraActivity = null;
+		
+		Log.d("CAMERA", "Sensor unregistered");
 	}
 	
 	
@@ -246,7 +249,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 //	}
 
 	public void takePicture() {
-		Log.i(LCAT, "Taking picture");
+		Log.d("CAMERA", "Taking picture");
 		camera.takePicture(null, null, jpegCallback);
 	}
 
@@ -266,8 +269,8 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 
 		public void onPictureTaken(byte[] data, Camera camera) {
 			try {
-				
-				toolsOverlay.pictureTaken();
+				Log.d("CAMERA", "JPEG generated");
+				//toolsOverlay.pictureTaken();
 				
 				FileOutputStream outputStream = null;
 				
@@ -290,7 +293,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 					// get the degrees before the file is saved
 					Message msg = Message.obtain();
 					Bundle messageVars = new Bundle();
-					messageVars.putInt("degrees", degrees);
+					messageVars.putInt("degrees", toolsOverlay.getDegreesAtCapture());
 					messageVars.putString("filePath", filePath);
 					
 					//Log.i("CHRIS", "degrees: " + degrees);
@@ -307,6 +310,8 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 					msg.setData(messageVars);
 					messageHandler.sendMessage(msg);
 					
+					Log.d("CAMERA", "Image saved Correctly");
+					
 				} 
 				catch (FileNotFoundException e) {
 					e.printStackTrace();
@@ -317,7 +322,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 			
 			}
 			catch (Exception ex) {
-
+				ex.printStackTrace();
 			}
 
 		}
@@ -371,50 +376,55 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	 */
 	public void onSensorChanged(SensorEvent event) {
 		//Log.i("CHRIS", "IN SENSOR");
-		synchronized (this) {
-			if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-				//RotateAnimation animation = null;
-				
-				int lastDegrees = degrees;
-				
-				if (event.values[0] < 4 && event.values[0] > -4) {
+		try{
+			synchronized (this) {
+				if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+					//RotateAnimation animation = null;
 					
-					if (event.values[1] > 0 && orientation != ExifInterface.ORIENTATION_ROTATE_90) {
-						// UP
-						//orientation = ExifInterface.ORIENTATION_ROTATE_90;
-						//animation = getRotateAnimation(270);
-						degrees = 270;
+					int lastDegrees = degrees;
+					
+					if (event.values[0] < 4 && event.values[0] > -4) {
+						
+						if (event.values[1] > 0 && orientation != ExifInterface.ORIENTATION_ROTATE_90) {
+							// UP
+							//orientation = ExifInterface.ORIENTATION_ROTATE_90;
+							//animation = getRotateAnimation(270);
+							degrees = 270;
+						} 
+						else if (event.values[1] < 0 && orientation != ExifInterface.ORIENTATION_ROTATE_270) {
+							// UP SIDE DOWN
+							//orientation = ExifInterface.ORIENTATION_ROTATE_270;
+							//animation = getRotateAnimation(90);
+							degrees = 90;
+						}
+						
 					} 
-					else if (event.values[1] < 0 && orientation != ExifInterface.ORIENTATION_ROTATE_270) {
-						// UP SIDE DOWN
-						//orientation = ExifInterface.ORIENTATION_ROTATE_270;
-						//animation = getRotateAnimation(90);
-						degrees = 90;
+					else if (event.values[1] < 4 && event.values[1] > -4) {
+						
+						if (event.values[0] > 0 && orientation != ExifInterface.ORIENTATION_NORMAL) {
+							// LEFT
+							//orientation = ExifInterface.ORIENTATION_NORMAL;
+							//animation = getRotateAnimation(0);
+							degrees = 0;
+						} 
+						else if (event.values[0] < 0 && orientation != ExifInterface.ORIENTATION_ROTATE_180) {
+							// RIGHT
+							//orientation = ExifInterface.ORIENTATION_ROTATE_180;
+							//animation = getRotateAnimation(180);
+							degrees = 180;
+						}
+						
 					}
 					
-				} 
-				else if (event.values[1] < 4 && event.values[1] > -4) {
-					
-					if (event.values[0] > 0 && orientation != ExifInterface.ORIENTATION_NORMAL) {
-						// LEFT
-						//orientation = ExifInterface.ORIENTATION_NORMAL;
-						//animation = getRotateAnimation(0);
-						degrees = 0;
-					} 
-					else if (event.values[0] < 0 && orientation != ExifInterface.ORIENTATION_ROTATE_180) {
-						// RIGHT
-						//orientation = ExifInterface.ORIENTATION_ROTATE_180;
-						//animation = getRotateAnimation(180);
-						degrees = 180;
+					if(lastDegrees != degrees){
+						toolsOverlay.degreesChanged(degrees);
 					}
 					
 				}
-				
-				if(lastDegrees != degrees){
-					toolsOverlay.degreesChanged(degrees);
-				}
-				
 			}
+		}
+		catch(Exception e){
+			Log.d("CAMERA", "Exception onsensor change: " + e.getMessage());
 		}
 	}
 	

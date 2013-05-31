@@ -64,7 +64,6 @@ import ti.modules.titanium.media.android.AndroidModule.MediaScannerClient;
 public class NewcameraModule extends KrollModule
 {
 	
-	
 	private static final String PHOTO_DCIM_CAMERA = "/sdcard/dcim/Camera";
 	
 	@Kroll.constant public static final int NO_CAMERA = 2;
@@ -117,7 +116,8 @@ public class NewcameraModule extends KrollModule
 	}
 	
 	@Kroll.method
-	public void resizeImage(String filePath, int degrees){
+	public boolean resizeImage(String filePath, int degrees){
+		boolean retval = false;
 		
 		try{
 			
@@ -130,7 +130,7 @@ public class NewcameraModule extends KrollModule
 			
 			bitmapOptions.inJustDecodeBounds = false;
 			
-			if(bitmapOptions.outHeight > 1500 || bitmapOptions.outWidth > 1500){
+			if(bitmapOptions.outHeight >= 2000 || bitmapOptions.outWidth >= 2000){
 				bitmapOptions.inSampleSize = 2;
 			}
 			
@@ -145,7 +145,7 @@ public class NewcameraModule extends KrollModule
 				
 				float scale = 1.0f;
 				
-				int max = 1024;
+				int max = 1000;
 				
 				if (height > max || width > max) {
 			        if (width > height) {
@@ -160,58 +160,72 @@ public class NewcameraModule extends KrollModule
 			        if(scale > 0){
 			        	newWidth = Math.round((float)width * scale);
 			        	newHeight = Math.round((float)height * scale);
+			        	
+			        	Bitmap resized = null;
+						
+						//Log.i("CHRIS", "MATRIX DEG: " + degrees);
+						
+						resized = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+						
+						bitmap.recycle();
+						//stream.close();
+						bitmap = null;
+						
+//						if(degrees > 0){
+//							Matrix mtx = new Matrix();
+		//	
+//							if (degrees == 180) {
+//								mtx.postRotate(180);
+//							}
+//							else if (degrees == 270) {
+//								mtx.postRotate(90);
+//							}
+//							else {
+//								mtx.postRotate(270);
+//							}
+//							
+//							resized = Bitmap.createBitmap(resized, 0, 0, newWidth, newHeight, mtx, true);
+//						}
+						
+						//Log.i("CHRIS", "resized it");
+						
+					    //ByteArrayOutputStream stream = new ByteArrayOutputStream();
+						//resized.compress(Bitmap.CompressFormat.JPEG, 95, stream);
+						
+						try {
+							String resizedFilePath = filePath.replaceAll(".jpg$", "_resized.jpg");
+							
+						    FileOutputStream out = new FileOutputStream(resizedFilePath);
+						    resized.compress(Bitmap.CompressFormat.JPEG, 90, out);
+						    out = null;
+						    retval = true;
+						}
+						catch (Exception e) {
+						    e.printStackTrace();
+						    Log.d("CAMERA", "CAMERA writing resize file: " + e.getMessage());
+						}
+						
+						resized.recycle();
+						resized = null;
+						
+			        }
+			        else{
+			        	Log.d("CAMERA", "Scale=0 H=" + height + " W=" + width);
 			        }
 			    }
-				
-				Bitmap resized = null;
-				
-				//Log.i("CHRIS", "MATRIX DEG: " + degrees);
-				
-				resized = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
-				
-				bitmap.recycle();
-				//stream.close();
-				bitmap = null;
-				
-				if(degrees > 0){
-					Matrix mtx = new Matrix();
-	
-					if (degrees == 180) {
-						mtx.postRotate(180);
-					}
-					else if (degrees == 270) {
-						mtx.postRotate(90);
-					}
-					else {
-						mtx.postRotate(270);
-					}
-					
-					resized = Bitmap.createBitmap(resized, 0, 0, newWidth, newHeight, mtx, true);
+				else{
+					Log.d("CAMERA", "The photo does not need to be resized");
 				}
-				
-				//Log.i("CHRIS", "resized it");
-				
-			    //ByteArrayOutputStream stream = new ByteArrayOutputStream();
-				//resized.compress(Bitmap.CompressFormat.JPEG, 95, stream);
-				
-				try {
-					String resizedFilePath = filePath.replaceAll(".jpg$", ".resized.jpg");
-					
-				    FileOutputStream out = new FileOutputStream(resizedFilePath);
-				    resized.compress(Bitmap.CompressFormat.JPEG, 90, out);
-				} 
-				catch (Exception e) {
-				       e.printStackTrace();
-				       Log.d("CAMERA", "CAMERA writing resize file: " + e.getMessage());
-				}
-				
-				resized.recycle();
-				resized = null;
+			}
+			else{
+				Log.d("CAMERA", "Initial bitmap is null");
 			}
 		}
 		catch(Exception e){
 			Log.d("CAMERA", "CAMERA resizing: " + e.getMessage());
 		}
+		
+		return retval;
 	}
 	
 	@Kroll.method
@@ -266,6 +280,9 @@ public class NewcameraModule extends KrollModule
 			if (errorCallback != null) {
 				//errorCallback.call(getKrollObject(), new Object[] { createErrorResponse(NO_CAMERA, "Camera not available. " + t.toString()) });
 			}
+			
+			Log.w("CAMERA", "Camera unable to open: " + t.getMessage());
+			t.printStackTrace();
 
 			return;
 		}
@@ -285,7 +302,7 @@ public class NewcameraModule extends KrollModule
 				if (!imageDir.exists()) {
 					imageDir.mkdirs();
 					if (!imageDir.exists()) {
-						Log.w(LCAT, "Attempt to create '" + imageDir.getAbsolutePath() +  "' failed silently.");
+						Log.w("CAMERA", "Attempt to create '" + imageDir.getAbsolutePath() +  "' failed silently.");
 					}
 				}
 
@@ -295,8 +312,9 @@ public class NewcameraModule extends KrollModule
 
 			imageFile = tfh.getTempFile(imageDir, ".jpg");
 
-		} catch (IOException e) {
-			Log.e(LCAT, "Unable to create temp file", e);
+		} 
+		catch (IOException e) {
+			Log.e("CAMERA", "Unable to create temp file", e);
 			if (errorCallback != null) {
 				errorCallback.callAsync(getKrollObject(), createErrorResponse(UNKNOWN_ERROR, e.getMessage()));
 			}

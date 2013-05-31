@@ -1241,9 +1241,156 @@ Omadi.data.getPhotoCount = function(){"use strict";
     return retval;
 };
 
+Omadi.data.resizeAndroidImage = function(filePath, degrees){"use strict";
+    var imageView, resizedFile, resizedFilePath, retval, rotateDegrees, transform, imageBlob,
+        f, blob, newBlob, containerView, width, height, max, newWidth, newHeight, scale;
+    /*global ImageFactory*/
+    
+    retval = false;
+    
+    if(ImageFactory !== 'undefined'){
+        
+        
+        Ti.API.debug("photo path: " + filePath);
+        
+        try{
+            
+            // containerView = Ti.UI.createView({
+               // width: 800,
+               // height: 800,
+               // left: 100,
+               // top: 0 
+            // });
+//             
+            // imageView = Ti.UI.createImageView({
+               // image: filePath,
+               // width: 800,
+               // height: 800
+            // });
+//             
+            // containerView.add(imageView);
+//             
+            // if(degrees > 0){
+                // transform = Ti.UI.create2DMatrix();
+//                
+                // rotateDegrees = degrees;
+//                 
+                // if(rotateDegrees == 270){
+                    // rotateDegrees = 90;
+                // }
+                // else if(rotateDegrees == 90){
+                    // rotateDegrees = 270;
+                // }
+//                 
+                // transform = transform.rotate(rotateDegrees);
+//                 
+                // imageView.setTransform(transform);
+            // }
+//             
+            // Ti.UI.currentWindow.add(containerView);
+            
+            // f = Ti.Filesystem.getFile(filePath);
+            // blob = f.read();
+//             
+            // newBlob = ImageFactory.imageTransform(blob,
+                // { type: ImageFactory.TRANSFORM_RESIZE, width: 800}
+            // );
+                       
+            
+            
+            
+            resizedFilePath = filePath.replace(/\.jpg$/, "_resized.jpg");
+            
+            Ti.API.info("resized path: " + resizedFilePath);
+            
+            
+            
+            //resizedFile = Ti.Filesystem.getFile(resizedFilePath);
+            
+            
+            
+            //if(resizedFile.writable){
+                //newBlob = imageView.toImage();
+                
+                //f = Ti.Filesystem.getFile(filePath);
+                //blob = f.read();
+                
+                
+                
+                newBlob = null;
+                
+                imageView = Ti.UI.createImageView({
+                   image: filePath,
+                   height: 'auto',
+                   width: 'auto' 
+                });
+                
+                blob = imageView.toImage();
+                
+                height = blob.height;
+                width = blob.width;
+                max = 1024;
+                
+                if(height > max || width > max){
+                    if(width > height){
+                        scale = max / width;
+                    }
+                    else{
+                        scale = max / height;
+                    }
+                    
+                    if(scale > 0){
+                        newWidth = Math.round(width * scale);
+                        newHeight = Math.round(height * scale);
+                        
+                        Ti.API.debug("new H=" + newHeight + " W=" + newWidth);
+                        
+                        newBlob = ImageFactory.imageAsResized(blob, {
+                            width: newWidth,
+                            height: newHeight
+                        });
+                        
+                        blob = null;
+                        
+                        if(newBlob){
+                            Ti.API.debug("Going to compress to file");
+                            //Ti.API.debug("Blob size: " + imageBlob);
+                            retval = ImageFactory.compressToFile(newBlob, 0.6, resizedFilePath);
+                        }
+                        else{
+                            Ti.API.debug("image blob is null");
+                        }
+                    }
+                    else{
+                        Ti.API.debug("Scale is 0");
+                    }
+                }
+                else{
+                    Ti.API.debug("No resize required: w=" + width + " h=" + height);
+                }
+                
+                
+                
+            //Ti.UI.currentWindow.remove(containerView);
+            //}
+            //else{
+            //    Ti.API.debug("Resized location not writable");
+            //}
+        }
+        catch(ex){
+            Ti.API.debug("Caught resize exception: " + ex);
+        }
+    }
+    else{
+        Ti.API.debug("ImageFactory is not defined.");
+    }
+    
+    return retval;
+};
+
 Omadi.data.getNextPhotoData = function(){"use strict";
     var mainDB, result, nextPhoto, imageFile, imageBlob, maxDiff, 
-        newWidth, newHeight, resizedFile, resizeError, resizedFilePath;
+        newWidth, newHeight, resizedFile, isResized, resizedFilePath;
     /*global cameraAndroid*/
    
     nextPhoto = null;
@@ -1285,16 +1432,23 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                         
                         if(Ti.App.isAndroid){
                             
-                            resizeError = false;
-                            try{
-                                cameraAndroid.resizeImage(nextPhoto.filePath, nextPhoto.degrees);
-                            }
-                            catch(resizeEx){
-                                resizeError = true;
-                                Omadi.service.sendErrorReport("Could not resize: " + resizeEx);
-                            }
                             
-                            if(resizeError){
+                            Ti.API.debug("About to resize");
+                            isResized = false;
+                             try{
+                                isResized = cameraAndroid.resizeImage(nextPhoto.filePath, nextPhoto.degrees);
+                             }
+                             catch(resizeEx){
+                                 Omadi.service.sendErrorReport("Could not resize: " + resizeEx);
+                             }
+                            
+                            
+                            
+                            //isResized = Omadi.data.resizeAndroidImage("file://" + nextPhoto.filePath, nextPhoto.degrees);
+                          
+                            Ti.API.debug("Resized Image: " + isResized);
+                            
+                            if(!isResized){
                                 
                                 Omadi.service.sendErrorReport("In Resize Error");
                                 
@@ -1305,6 +1459,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                                     }
                                 }
                                 catch(ex3){
+                                    Ti.API.debug("Exception getting non-resized photo: " + ex3);
                                     Omadi.service.sendErrorReport("Exception getting non-resized photo: " + ex3);
                                 }
                                 
@@ -1312,14 +1467,15 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                                     imageBlob = imageFile.read();
                                 }
                                 catch(ex4){
+                                    Ti.API.debug("Exception reading non-resized photo: " + ex4);
                                     Omadi.service.sendErrorReport("Exception reading non-resized photo: " + ex4);
                                 }
                             }
                             else{
                                 
                                 //Omadi.service.sendErrorReport("File Path: " + nextPhoto.filePath);
-                                
-                                resizedFilePath = nextPhoto.filePath.replace(/\.jpg$/, ".resized.jpg");
+
+                                resizedFilePath = nextPhoto.filePath.replace(/\.jpg$/, "_resized.jpg");
                                 resizedFile = Ti.Filesystem.getFile("file://" + resizedFilePath);
                                 
                                 //Omadi.service.sendErrorReport("Resized File Path: " + resizedFile);
@@ -1330,12 +1486,13 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                                     imageBlob = resizedFile.read();
                                     
                                     if(imageBlob.getLength() == 0){
-                                        resizeError = true;
+                                        isResized = false;
+                                        Ti.API.debug("Resized file is nil");
                                         Omadi.service.sendErrorReport("resized file is nil");
                                     }
                                 }
                                 
-                                if(resizeError){
+                                if(!isResized){
                                     
                                     //Omadi.service.sendErrorReport("Resize error after exists");
                                     
@@ -1346,6 +1503,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                                         imageBlob = imageFile.read();
                                     }
                                     else{
+                                        Ti.API.debug("File does not exist 1: " + nextPhoto.filePath);
                                         Omadi.service.sendErrorReport("File does not exist 1: " + nextPhoto.filePath);
                                     }
                                 }

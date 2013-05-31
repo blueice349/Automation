@@ -126,16 +126,27 @@ function getDataSQL(getCount) {"use strict";
             if ( typeof filterValues[i] != 'undefined' && filterValues[i].value !== false) {
                 Ti.API.info("FILTER VALUE BELOW: " + i + ": " + filterValues[i].value);
                 filterValue = filterValues[i].value;
-
-                // Show all results with filters applied
-                if (filterValue === null) {
-                    conditions.push(field_name + ' IS NULL');
+                
+                if(filterFields[i].type == 'list_boolean'){
+                    // For a checkbox, unchecked is a null or 0
+                    if (filterValue == 0) {
+                        conditions.push(field_name + ' IS NULL OR ' + field_name + ' = 0');
+                    }
+                    else{
+                        conditions.push(field_name + ' = 1');
+                    }
                 }
-                else if (filterValue === "") {
-                    conditions.push(field_name + " = ''");
-                }
-                else {
-                    conditions.push(field_name + ' = ' + filterValue);
+                else{
+                    // Show all results with filters applied
+                    if (filterValue === null) {
+                        conditions.push(field_name + ' IS NULL');
+                    }
+                    else if (filterValue === "") {
+                        conditions.push(field_name + " = ''");
+                    }
+                    else {
+                        conditions.push(field_name + ' = ' + filterValue);
+                    }
                 }
             }
         }
@@ -172,13 +183,22 @@ function getDataSQL(getCount) {"use strict";
 
 function setTableData() {"use strict";
 
-    var lastFilterField, field_name, sql, i, filterValue, row, titleParts, label1, label2, db, db_result, title, separator, whiteSpaceTest, backgroundColor, numTitleRows, fullWidth, text_values, text_value, values, safeValues, subResult, tableIndex, resultCount, appendData, countSQL;
+    var lastFilterField, field_name, sql, i, filterValue, row, titleParts, 
+        label1, label2, db, db_result, title, separator, whiteSpaceTest, 
+        backgroundColor, numTitleRows, fullWidth, text_values, text_value, 
+        values, safeValues, subResult, tableIndex, resultCount, appendData, 
+        countSQL, dbValue;
 
     tableIndex = 0;
     appendData = [];
     
     Ti.API.debug(filterValues);
     sql = getDataSQL();
+    
+    lastFilterField = null;
+    if (filterValues.length < filterFields.length && !showFinalResults) {
+        lastFilterField = filterFields[filterValues.length];
+    }
 
     if (showFinalResults) {
         db = Omadi.utils.openMainDatabase();
@@ -291,15 +311,27 @@ function setTableData() {"use strict";
 
         db = Omadi.utils.openMainDatabase();
         db_result = db.execute(sql);
-
+        
+        
         while (db_result.isValidRow()) {
-
-            values.push(db_result.fieldByName('value'));
-
+            
+            //Ti.API.debug(lastFilterField);
+            dbValue = db_result.fieldByName('value');
+            if(lastFilterField.type == 'list_boolean'){
+                // Do not add the null
+                if(dbValue > ''){
+                    values.push(dbValue);
+                }
+            }
+            else{
+                values.push(dbValue);
+            }
+            
             Ti.API.info("FILTER: " + db_result.fieldByName('value'));
 
             db_result.next();
         }
+        
         db_result.close();
 
         sql = "SELECT ";
@@ -313,7 +345,9 @@ function setTableData() {"use strict";
                 safeValues.push(values[i]);
             }
             else {
-                text_values[values[i]] = '- Not Set -';
+                if(lastFilterField.type != 'list_boolean'){
+                    text_values[values[i]] = '- Not Set -';
+                }
             }
         }
 
@@ -346,6 +380,16 @@ function setTableData() {"use strict";
             }
 
             subResult.close();
+        }
+        else if (lastFilterField.type == 'list_boolean'){
+            for(i = 0; i < safeValues.length; i ++){
+                if(safeValues[i] == 1){
+                    text_values[safeValues[i]] = 'Yes - ' + lastFilterField.label;
+                }
+                else{
+                    text_values[safeValues[i]] = 'No - ' + lastFilterField.label;
+                }
+            }
         }
         else if (lastFilterField.field_name == 'form_part') {
 
@@ -489,7 +533,7 @@ function setTableData() {"use strict";
             }
         });
         
-        Ti.API.debug(filterValues);
+        Ti.API.debug("Filter values: " + JSON.stringify(filterValues));
 
         setTableData();
 

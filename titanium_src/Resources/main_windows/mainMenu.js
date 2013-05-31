@@ -46,6 +46,7 @@ Omadi.data.setUpdating(false);
 Omadi.service.setSendingData(false);
 
 var listView;
+var ImageFactory = null;
 
 var jsonLogin = JSON.parse(Ti.App.Properties.getString("Omadi_session_details"));
 
@@ -615,6 +616,10 @@ function showNextAlertInQueue(e) {"use strict";
 ( function() {"use strict";
         var db, formWindow, time_format, askAboutInspection, dialog, i, showingAlert, firstAlert;
 
+        if (Ti.App.isAndroid) {
+            ImageFactory = require('ti.imagefactory');
+        }
+        
         listView = Titanium.UI.createTableView({
             data : [],
             top : 45,

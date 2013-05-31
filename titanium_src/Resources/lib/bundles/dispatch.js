@@ -455,22 +455,26 @@ Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
     
         db = Omadi.utils.openMainDatabase();
         
-        sql = "SELECT n.nid, dispatch.dispatch_form_reference FROM node n ";
+        sql = "SELECT n.nid, dispatch.dispatch_form_reference, dispatch.field_dispatching_status FROM node n ";
         sql += "LEFT JOIN dispatch ON dispatch.nid = n.nid ";
         sql += "WHERE n.table_name = 'dispatch' ";
         sql += "AND dispatch.dispatch_form_reference IS NOT NULL AND dispatch.dispatch_form_reference > 0 ";
-        sql += "AND dispatch.dispatched_to_driver IS NULL"; 
+        sql += "AND dispatch.dispatched_to_driver IS NULL "; 
+        sql += "AND dispatch.field_dispatching_status != 'job_complete'";
         result = db.execute(sql);
         
         newDispatchNids = [];
         while(result.isValidRow()){
             newDispatchNids.push(result.fieldByName('dispatch_form_reference', Ti.Database.FIELD_TYPE_INT));
+            
+            Ti.API.debug(result.fieldByName('field_dispatching_status'));
             result.next();
         }
         result.close();
         db.close();
         
         Ti.API.debug(newDispatchNids);
+        Ti.API.debug("hello man");
         
         for(i = 0; i < newDispatchNids.length; i ++){
             

@@ -874,14 +874,19 @@ function changeViolationFieldOptions(violation_field_name){"use strict";
     for(i = 0; i < options.length; i ++){
         violationTerms[options[i].dbValue] = options[i];
     }
-
+    
     db = Omadi.utils.openMainDatabase();
+    
+    //Ti.API.info("hello");
+    // Ti.API.info(JSON.stringify(violation_instance.widget));
     
     reference_field_name = violation_instance.widget.rules_field_name;
     rules_parent_field_name = violation_instance.widget.rules_parent_field_name;
     rules_violation_time_field_name = violation_instance.widget.rules_violation_time_field_name;
     
     parentNidDBValues = Omadi.widgets.getDBValues(fieldWrappers[reference_field_name]);
+    
+    //Ti.API.info(JSON.stringify(parentNidDBValues));
     
     violationTimestampValues = Omadi.widgets.getDBValues(fieldWrappers[rules_violation_time_field_name]);
     

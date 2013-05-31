@@ -223,6 +223,7 @@ Omadi.widgets.omadi_reference = {
                 var i, callback;
                 
                 Omadi.widgets.omadi_reference.setChildDefaultValues(widgetView);
+                //Ti.API.debug(widgetView.onChangeCallbacks);
                 if (widgetView.onChangeCallbacks.length > 0) {
                     for ( i = 0; i < widgetView.onChangeCallbacks.length; i++) {
                         callback = widgetView.onChangeCallbacks[i];
