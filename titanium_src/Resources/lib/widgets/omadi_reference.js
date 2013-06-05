@@ -147,6 +147,7 @@ Omadi.widgets.omadi_reference = {
             widgetView.possibleValues = possibleValues;
             widgetView.defaultValueChildFields = [];
             widgetView.onChangeCallbacks = [];
+            widgetView.clickedAutocomplete = false;
     
             widgetView.defaultValueChildFields = Omadi.widgets.omadi_reference.setupParentDefaultFields(instance);
     
@@ -164,7 +165,8 @@ Omadi.widgets.omadi_reference = {
             widgetView.autocomplete_table = autocomplete_table;
     
             autocomplete_table.addEventListener('click', function(e) {
-    
+                var i, callback;
+                
                 e.source.textField.textValue = e.source.textField.value = e.rowData.title;
                 e.source.textField.dbValue = e.rowData.nid;
     
@@ -178,14 +180,16 @@ Omadi.widgets.omadi_reference = {
                 }
     
                 // Pretend like this is just loaded - mainly a fix for android, but makes sense for both
-                e.source.textField.touched = false;
+                //e.source.textField.touched = false;
+                
+                e.source.textField.clickedAutocomplete = true;
     
                 Omadi.widgets.omadi_reference.setChildDefaultValues(e.source.textField);
     
                 if ( typeof e.source.textField.onChangeCallbacks !== 'undefined') {
                     if (e.source.textField.onChangeCallbacks.length > 0) {
                         for ( i = 0; i < e.source.textField.onChangeCallbacks.length; i++) {
-                            var callback = e.source.textField.onChangeCallbacks[i];
+                            callback = e.source.textField.onChangeCallbacks[i];
                             callback(e.source.textField.onChangeCallbackArgs[i]);
                         }
                     }
@@ -198,13 +202,24 @@ Omadi.widgets.omadi_reference = {
                 widgetView.minLength = settings.min_length;
             }
     
-            widgetView.addEventListener('focus', Omadi.widgets.omadi_reference.scrollUp);
-            widgetView.addEventListener('click', Omadi.widgets.omadi_reference.scrollUp);
+            //widgetView.addEventListener('focus', Omadi.widgets.omadi_reference.scrollUp);
+            //widgetView.addEventListener('click', Omadi.widgets.omadi_reference.scrollUp);
+            
+            widgetView.addEventListener('focus', function(e){
+               //Ti.API.debug("focused");
+               e.source.touched = true; 
+            });
+            
+            widgetView.addEventListener('click', function(e){
+                //Ti.API.debug("Clicked");
+               e.source.touched = true; 
+            });
     
             widgetView.addEventListener('blur', function(e) {
                 e.source.autocomplete_table.setBorderWidth(0);
                 e.source.autocomplete_table.setHeight(0);
                 e.source.autocomplete_table.setVisible(false);
+                //e.source.scrollUpOnChange = true;
             });
             
             // widgetView.addEventListener("customCopy", function(){
@@ -235,16 +250,37 @@ Omadi.widgets.omadi_reference = {
             widgetView.addEventListener('change', function(e) {
                 /*global setConditionallyRequiredLabels*/
     
-                var possibleValues, tableData, i, regEx, row, upperCaseValue, callback;
-    
-                if (e.source.touched === true) {
+                var possibleValues, tableData, i, j, regEx, row, upperCaseValue, callback;
+                
+                Ti.API.debug("auto: " + e.source.clickedAutocomplete);
+                
+                if(e.source.clickedAutocomplete){
+                    e.source.clickedAutocomplete = false;
+                    Ti.API.debug("IN clicked auto");
+                    return;
+                }
+                
+                //if (e.source.touched === true) {
                     //Ti.API.info("changed");
-    
+                        
                     e.source.dbValue = null;
                     e.source.textValue = e.source.value;
     
                     if (e.source.lastValue != e.source.value && e.source.value != '') {
                         possibleValues = e.source.possibleValues;
+                        
+                        
+                        Omadi.widgets.omadi_reference.scrollUp(e);
+                        
+                        //Omadi.widgets.omadi_reference.scrollUp(e);
+                        //if(e.source.scrollUpOnChange){
+                             //Ti.API.debug("testing");
+                            
+                        //}
+                        
+                        //Ti.API.debug(e.source.value);
+                        
+                        //e.source.scrollUpOnChange = false;
     
                         upperCaseValue = e.source.value.toUpperCase();
                         tableData = [];
@@ -257,10 +293,11 @@ Omadi.widgets.omadi_reference = {
                                 if (upperCaseValue == possibleValues[i].title.toUpperCase()) {
                                     e.source.dbValue = possibleValues[i].nid;
                                     Omadi.widgets.omadi_reference.setChildDefaultValues(e.source);
+                                    
                                     if (e.source.onChangeCallbacks.length > 0) {
-                                        for ( i = 0; i < e.source.onChangeCallbacks.length; i++) {
-                                            callback = e.source.onChangeCallbacks[i];
-                                            callback(e.source.onChangeCallbackArgs[i]);
+                                        for ( j = 0; j < e.source.onChangeCallbacks.length; j++) {
+                                            callback = e.source.onChangeCallbacks[j];
+                                            callback(e.source.onChangeCallbackArgs[j]);
                                         }
                                     }
                                 }
@@ -277,6 +314,8 @@ Omadi.widgets.omadi_reference = {
                                     autocomplete_table : e.source.autocomplete_table,
                                     textField : e.source
                                 });
+                                
+                                Ti.API.debug(possibleValues[i].title);
     
                                 // apply rows to data array
                                 tableData.push(row);
@@ -305,7 +344,7 @@ Omadi.widgets.omadi_reference = {
                         e.source.autocomplete_table.setHeight(0);
                         e.source.autocomplete_table.setVisible(false);
                     }
-                }
+                //}
                 e.source.lastValue = e.source.value;
     
                 if (e.source.check_conditional_fields.length > 0) {
@@ -322,8 +361,10 @@ Omadi.widgets.omadi_reference = {
     scrollUp : function(e) {"use strict";
         var calculatedTop;
         /*global scrollView, scrollPositionY*/
-        e.source.touched = true;
+        //Ti.API.debug("hi");
+        //e.source.touched = true;
         if ( typeof scrollView !== 'undefined') {
+            Ti.API.debug("Scroll view defined");
             calculatedTop = e.source.convertPointToView({
                 x : 0,
                 y : 0
@@ -366,10 +407,10 @@ Omadi.widgets.omadi_reference = {
         if (widgetView.dbValue > 0) {
             if (widgetView.defaultValueChildFields.length > 0) {
                 
-                Ti.API.debug(widgetView.dbValue);
+                //Ti.API.debug(widgetView.dbValue);
                 
                 parentNode = Omadi.data.nodeLoad(widgetView.dbValue);
-                Ti.API.debug(parentNode.nid);
+                //Ti.API.debug(parentNode.nid);
                 
                 for ( i = 0; i < widgetView.defaultValueChildFields.length; i++) {
                     childFieldName = widgetView.defaultValueChildFields[i].childFieldName;

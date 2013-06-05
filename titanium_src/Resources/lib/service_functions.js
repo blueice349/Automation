@@ -641,14 +641,14 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                     if(Ti.App.isAndroid){
                         imageFile = Ti.Filesystem.getFile("file://" + filePath);
                         if(imageFile.exists()){
-                            //imageFile.deleteFile();
+                            imageFile.deleteFile();
                         } 
                         
                         resizedFilePath = filePath.replace(/\.jpg$/, ".resized.jpg");
                         
                         imageFile = Ti.Filesystem.getFile("file://" + resizedFilePath);
                         if(imageFile.exists()){
-                            //imageFile.deleteFile(); 
+                            imageFile.deleteFile(); 
                         }
                     }
                     else{

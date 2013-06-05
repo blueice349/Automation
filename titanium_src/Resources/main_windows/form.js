@@ -1503,7 +1503,9 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
             
                 if (makeRequired) {
                     if (!instance.isConditionallyRequired) {
-                        labelViews[instance.field_name].text = '*' + labelViews[instance.field_name].text;
+                        if(labelViews[instance.field_name].text.substring(0,1) != '*'){
+                            labelViews[instance.field_name].text = '*' + labelViews[instance.field_name].text;
+                        }
                         labelViews[instance.field_name].color = 'red';
                         //instance.required = true;
                     }
@@ -1719,8 +1721,12 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
             if(region_form_part <= node.form_part){
                 
                 var expanded = true;
-                if(typeof region.settings !== 'undefined' && typeof region.settings.always_expanded !== 'undefined' && region.settings.always_expanded == 1){
-                    expanded = true;
+                if(typeof region.settings !== 'undefined' && 
+                    region.settings != null &&
+                    typeof region.settings.always_expanded !== 'undefined' && 
+                    region.settings.always_expanded == 1){
+                        
+                        expanded = true;
                 }
                 else if(region_form_part < node.form_part){
                     expanded = false;
@@ -1827,12 +1833,12 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
     
     Ti.App.fireEvent("formFullyLoaded");
     
-    setTimeout(function(){
-        
-        scrollView.scrollTo(0, 0);
-        
-       // Omadi.widgets.blurFields();
-    }, 1000);
+    // setTimeout(function(){
+//         
+        // //scrollView.scrollTo(0, 0);
+//         
+       // // Omadi.widgets.blurFields();
+    // }, 1000);
     
     recalculateCalculationFields();
     

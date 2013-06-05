@@ -719,7 +719,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         listView.setData(data);
         
         listView.addEventListener('click', function(e) {
-            Ti.API.debug(e.row.isSelected);
+            // Ti.API.debug(e.row.isSelected);
             
             if (!e.row.isSelected) {
                 e.rowData.listView.data[0].rows[e.index].isSelected = true;
