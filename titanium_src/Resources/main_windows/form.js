@@ -54,7 +54,7 @@ function get_android_menu(menu_exists) {"use strict";
    /*global Omadi, save_form_data*/
    
     win.activity.onCreateOptionsMenu = function(e) {
-        var db, result, menu_zero, bundle, btn_tt, btn_id, menu_first, menu_second, menu_third;
+        var db, result, menu_zero, bundle, btn_tt, btn_id, menu_first, menu_second, menu_third, menu_save_new;
         btn_tt = [];
         btn_id = [];
     
@@ -80,6 +80,7 @@ function get_android_menu(menu_exists) {"use strict";
         
     
         btn_tt.push('Save');
+        
         btn_tt.push('Save as Draft');
         btn_tt.push('Cancel');
     
@@ -88,16 +89,22 @@ function get_android_menu(menu_exists) {"use strict";
             order : 1
         });
         menu_first.setIcon("/images/save.png");
+        
+        menu_save_new = menu.add({
+            title : 'Save + New',
+            order : 2
+        });
+        menu_save_new.setIcon(Omadi.display.getNodeTypeImagePath(Ti.UI.currentWindow.type));
     
         menu_second = menu.add({
             title : 'Save as Draft',
-            order : 2
+            order : 3
         });
         menu_second.setIcon("/images/drafts_android.png");
     
         menu_third = menu.add({
             title : 'Cancel',
-            order : 3
+            order : 4
         });
         menu_third.setIcon("/images/cancel.png");
     
@@ -107,15 +114,20 @@ function get_android_menu(menu_exists) {"use strict";
         menu_first.addEventListener("click", function(e) {
             save_form_data('normal');
         });
+        
+        menu_save_new.addEventListener("click", function(e) {
+            Ti.API.debug("SAVING + NEW");
+            save_form_data('new');
+        });
     
         menu_second.addEventListener("click", function(e) {
-           
             save_form_data('draft');
         });
     
         menu_third.addEventListener("click", function(e) {
             cancelOpt();
         });
+        
     };
 }
 
@@ -664,6 +676,8 @@ function save_form_data(saveType) {"use strict";
         no_data_fields, db_put, need_at, quotes, nid, new_nid, query, _array_value, x_j, 
         title_to_node, j, field_names, content_s, value_to_insert, formWin;
     
+    Ti.API.info("Save_form_data");
+    
     node = formToNode();
     
     Ti.API.debug("Saving with type " + saveType);
@@ -791,20 +805,28 @@ function addiOSToolbar() {"use strict";
             var btn_id = [];
 
             btn_tt.push('Save');
+            btn_id.push('normal');
 
-            //Ti.API.info('BUNDLE: ' + JSON.stringify(node));
-
+            //Ti.API.info('BUNDLE: ' + JSON.stringify(bundle));
+            if(bundle.can_create == 1){
+                btn_tt.push("Save + New");
+                btn_id.push("new");
+            }
+            
             if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
-                //Ti.API.info('Form table part = ' + bundle.data.form_parts.parts.length);
+
                 if (bundle.data.form_parts.parts.length >= node.form_part + 2) {
-                    //Ti.API.info("<<<<<<<------->>>>>>> Title = " + bundle.data.form_parts.parts[node.form_part + 1].label);
+
                     btn_tt.push("Save + " + bundle.data.form_parts.parts[node.form_part + 1].label);
-                    btn_id.push(node.form_part + 1);
+                    btn_id.push('next');
                 }
             }
-           
+            
             btn_tt.push('Save as Draft');
+            btn_id.push('draft');
+            
             btn_tt.push('Cancel');
+            btn_id.push('cancel');
 
             var postDialog = Titanium.UI.createOptionDialog();
             postDialog.options = btn_tt;
@@ -813,23 +835,18 @@ function addiOSToolbar() {"use strict";
             postDialog.addEventListener('click', function(ev) {
                 
                 if(Ti.UI.currentWindow.nodeSaved === false){
-                    if (btn_tt.length == 4) {
-                        if (ev.index == 1) {
+                    if(ev.index != -1){
+                        if(btn_id[ev.index] == 'next'){
                             save_form_data('next_part');
                         }
-                        else if (ev.index == 0) {
-                            save_form_data('normal');
-                        }
-                        else if (ev.index == 2) {
+                        else if(btn_id[ev.index] == 'draft'){
                             save_form_data('draft');
                         }
-                    }
-                    else {
-                        if (ev.index == 0) {
-                            save_form_data('normal');
+                        else if(btn_id[ev.index] == 'new'){
+                            save_form_data('new');
                         }
-                        else if (ev.index == 1) {
-                            save_form_data('draft');
+                        else if(btn_id[ev.index] == 'normal'){
+                            save_form_data('normal');
                         }
                     }
                 }
@@ -1155,7 +1172,6 @@ var field_name;
     var instance;
     var i, j;
     var region_name;
-    var regionHeaderView;
     var regionView;
     var tempFormPart;
     var widgetView;
@@ -1219,7 +1235,7 @@ function setConditionallyRequiredLabels(check_instance, check_fields){"use stric
         affectedFields = affectsAnotherConditionalField(check_instance);
     }
     
-    //Ti.API.debug("Affecting fields: " + JSON.stringify(affectedFields));
+    Ti.API.debug("Affecting fields: " + JSON.stringify(affectedFields));
     
     if(affectedFields.length > 0){
         node = formToNode();
@@ -1527,6 +1543,43 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
     }
 }
 
+function photoUploadedForm(e){"use strict";
+    
+    var nid, delta, fid, field_name, dbValues;
+    
+    nid = parseInt(e.nid, 10);
+    delta = parseInt(e.delta, 10);
+    field_name = e.field_name;
+    fid = parseInt(e.fid, 10);
+    
+    if(Ti.UI.currentWindow.nid == nid){
+        if(typeof fieldWrappers[field_name] !== 'undefined'){
+            //alert("Just saved delta " + delta);
+            Omadi.widgets.setValueWidgetProperty(field_name, 'dbValue', fid, delta);
+            Omadi.widgets.setValueWidgetProperty(field_name, 'fid', fid, delta);
+        }
+    }
+}
+
+function loggingOutForm(){"use strict";
+    Ti.UI.currentWindow.close();
+}
+
+function formFullyLoadedForm(){"use strict";
+    var field_name;
+    
+    Ti.UI.currentWindow.fireEvent("customCopy");
+    
+    for(field_name in instances){
+        if(instances.hasOwnProperty(field_name)){
+            widgetView = Omadi.widgets.getValueWidget(field_name);
+            
+            if(widgetView && typeof widgetView.check_conditional_fields !== 'undefined'){
+                setConditionallyRequiredLabels(instances[field_name], widgetView.check_conditional_fields);
+            }
+        }
+    }
+}
 
 (function(){"use strict";
     var field_name;
@@ -1561,26 +1614,10 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
         });
     }
     
-    Ti.App.addEventListener('photoUploaded', function(e){
-        var nid, delta, fid, field_name, dbValues;
-        
-        nid = parseInt(e.nid, 10);
-        delta = parseInt(e.delta, 10);
-        field_name = e.field_name;
-        fid = parseInt(e.fid, 10);
-        
-        if(Ti.UI.currentWindow.nid == nid){
-            if(typeof fieldWrappers[field_name] !== 'undefined'){
-                //alert("Just saved delta " + delta);
-                Omadi.widgets.setValueWidgetProperty(field_name, 'dbValue', fid, delta);
-                Omadi.widgets.setValueWidgetProperty(field_name, 'fid', fid, delta);
-            }
-        }
-    });
+    Ti.App.addEventListener('photoUploaded', photoUploadedForm);
     
-    Ti.App.addEventListener('loggingOut', function(){
-        Ti.UI.currentWindow.close();
-    });
+    Ti.App.addEventListener('loggingOut', loggingOutForm);
+    
     
     
     if(win.nid != "new" && win.nid > 0){
@@ -1650,8 +1687,6 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
         });
         
         wrapperView.add(scrollView);
-        
-        
    // }
     
     win.add(wrapperView);
@@ -1659,7 +1694,6 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
     scrollView.addEventListener('scroll', function(e){
         scrollPositionY = e.y;
     });
-
 
     if(typeof win.form_part !== 'undefined'){
         tempFormPart = parseInt(win.form_part, 10);
@@ -1676,20 +1710,10 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
             win.nid = 'new';
             win.form_part = 0;    
             
-            Ti.App.addEventListener("formFullyLoaded", function(){
-                var field_name;
-                
-                Ti.App.fireEvent("customCopy");
-                
-                for(field_name in instances){
-                    if(instances.hasOwnProperty(field_name)){
-                        widgetView = Omadi.widgets.getValueWidget(field_name);
-                        
-                        if(widgetView && typeof widgetView.check_conditional_fields !== 'undefined'){
-                            setConditionallyRequiredLabels(instances[field_name], widgetView.check_conditional_fields);
-                        }
-                    }
-                }
+            Ti.App.addEventListener("formFullyLoaded", formFullyLoadedForm);
+            
+            Ti.UI.currentWindow.addEventListener('close', function(){
+                Ti.App.removeEventListener("formFullyLoaded", formFullyLoadedForm);
             });
         }
     }
@@ -1732,15 +1756,13 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
                     expanded = false;
                 }
                 
-                regionHeaderView = getRegionHeaderView(region, expanded);
-                
                 regionWrapperView = Ti.UI.createView({
                     height: Ti.UI.SIZE,
                     width: '100%',
                     layout: 'vertical'
                 });
                 
-                regionWrapperView.add(regionHeaderView);
+                regionWrapperView.add(getRegionHeaderView(region, expanded));
                 regionWrapperView.add(Ti.UI.createView({
                     height: 10,
                     width: '100%'
@@ -1827,6 +1849,7 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
         if(regionViews.hasOwnProperty(region_name)){
             if(regionViews[region_name].getChildren().length == 0){
                 scrollView.remove(regionWrappers[region_name]);
+                regionWrappers[region_name] = null;
             }
         }
     }
@@ -1845,6 +1868,59 @@ function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
     if(hasViolationField){
         setupViolationField();
     }
+    
+    Ti.UI.currentWindow.addEventListener('close', function(){
+        var regionWrappers_i, regionView_i, regionWrapperChild_i;
+        
+        Ti.App.removeEventListener('loggingOut', loggingOutForm);
+        Ti.App.removeEventListener('photoUploaded', photoUploadedForm);
+        
+        
+        // Remove region views from memory
+        for(regionWrappers_i in regionWrappers){
+            if(regionWrappers.hasOwnProperty(regionWrappers_i)){
+                
+                for(regionView_i in regionViews){
+                    if(regionViews.hasOwnProperty(regionView_i)){
+                        regionViews[regionView_i] = null;
+                    }
+                }
+                
+                if(regionWrappers[regionWrappers_i].children.length > 0){
+                    for(regionWrapperChild_i in regionWrappers[regionWrappers_i].children){
+                        if(regionWrappers[regionWrappers_i].children.hasOwnProperty(regionWrapperChild_i)){
+                            regionWrappers[regionWrappers_i].remove(regionWrappers[regionWrappers_i].children[regionWrapperChild_i]);
+                            regionWrappers[regionWrappers_i].children[regionWrapperChild_i] = null;
+                        }
+                    }
+                }
+                
+                scrollView.remove(regionWrappers[regionWrappers_i]);
+                regionWrappers[regionWrappers_i] = null;
+            }
+        }
+        
+        
+        
+        wrapperView.remove(scrollView);
+        scrollView = null;
+        
+        win.remove(wrapperView);
+        wrapperView = null;
+        
+
+        fieldViews = null;
+        instances = null;
+        formWrapperView = null;
+        menu = null;
+        fieldWrappers = null;
+        regionWrappers = null;
+        regionViews = null;
+        regions = null;
+        node = null;
+        win = null;
+        regionWrapperView = null;
+    });
     
 }());
 

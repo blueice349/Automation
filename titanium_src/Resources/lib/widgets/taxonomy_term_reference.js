@@ -40,6 +40,25 @@ Omadi.widgets.taxonomy_term_reference = {
             fieldView.add(element);
             fieldView.add(Omadi.widgets.getSpacerView());
         }
+        
+        Ti.UI.currentWindow.addEventListener('close', function(){
+            var i, j;
+            
+            for(i = 0; i < instance.elements.length; i ++){
+                
+                if(instance.elements[i].children.length > 0){
+                    for(j = 0; j < instance.elements[i].children.length; j ++){
+                        instance.elements[i].remove(instance.elements[i].children[j]);
+                        instance.elements[i].children[j] = null;
+                    }
+                }
+                
+                fieldView.remove(instance.elements[i]);
+                instance.elements[i] = null;
+            }
+            
+            instance.fieldView = null;
+        });  
 
         return fieldView;
     },

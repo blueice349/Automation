@@ -311,15 +311,20 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
             
             //Omadi.display.doneLoading();
             
+            
             if(node._saved === true){
                 
-                if(Ti.Network.online){
+                if(node._isDraft === true){
+                    Ti.UI.currentWindow.close();
+                }
+                else if(Ti.Network.online){
                     
                     if (saveType === "next_part") {
                         Omadi.display.openFormWindow(node.type, node.nid, node.form_part + 1);                            
                     }
-                    
-                    //alert("Node Saved");
+                    else if(saveType == 'new'){
+                        Omadi.display.openFormWindow(node.type, node.nid, node.type);
+                    }
                     
                     // Send a clone of the object so the window will close after the network returns a response
                     Omadi.service.sendUpdates();
@@ -327,6 +332,7 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
                     //alert("Updates Sent");
                     
                     if(Ti.UI.currentWindow.url.indexOf('form.js') !== -1){
+                        Ti.API.debug("CLOSING WINDOW");
                         if(Ti.App.isAndroid){
                             Ti.UI.currentWindow.close();
                         }
@@ -351,6 +357,9 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
                             
                             if (saveType === "next_part") {
                                 Omadi.display.openFormWindow(node.type, node.nid, node.form_part + 1);
+                            }
+                            else if(saveType == 'new'){
+                                Omadi.display.openFormWindow(node.type, node.nid, node.type);
                             }
                             
                             Ti.UI.currentWindow.close();
@@ -401,6 +410,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
     node.title = Omadi.data.getNodeTitle(node);
 
     if (node.nid == 'new') {
+        Ti.API.debug("Saving new node");
         node.nid = Omadi.data.getNewNodeNid();
         node.sync_hash = Ti.Utils.md5HexDigest(JSON.stringify(node) + (new Date()).getTime());
     }
@@ -1514,28 +1524,34 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                             imageFile = Ti.Filesystem.getFile(nextPhoto.filePath);  
                             imageBlob = imageFile.read();
                             
-                            try {
-                                
-                                if (imageBlob.height > 1000 || imageBlob.width > 1000) {
-
-                                    maxDiff = imageBlob.height - 1000;
-                                    if (imageBlob.width - 1000 > maxDiff) {
-                                        // Width is bigger
-                                        newWidth = 1000;
-                                        newHeight = (1000 / imageBlob.width) * imageBlob.height;
+                            if(imageBlob){
+                            
+                                try {
+                                    
+                                    if (imageBlob.height > 1000 || imageBlob.width > 1000) {
+    
+                                        maxDiff = imageBlob.height - 1000;
+                                        if (imageBlob.width - 1000 > maxDiff) {
+                                            // Width is bigger
+                                            newWidth = 1000;
+                                            newHeight = (1000 / imageBlob.width) * imageBlob.height;
+                                        }
+                                        else {
+                                            // Height is bigger
+                                            newHeight = 1000;
+                                            newWidth = (1000 / imageBlob.height) * imageBlob.width;
+                                        }
+    
+                                        imageBlob = imageBlob.imageAsResized(newWidth, newHeight);
                                     }
-                                    else {
-                                        // Height is bigger
-                                        newHeight = 1000;
-                                        newWidth = (1000 / imageBlob.height) * imageBlob.width;
-                                    }
-
-                                    imageBlob = imageBlob.imageAsResized(newWidth, newHeight);
                                 }
+                                catch(ex) {
+                                    Omadi.service.sendErrorReport("Exception resizing iOS Photo: " + ex);
+                                }  
                             }
-                            catch(ex) {
-                                alert("Error resizing the iOS photo: " + ex);
-                            }  
+                            else{
+                                Omadi.service.sendErrorReport("Image blob is null");
+                            }
                         }
                         
                         //Omadi.service.sendErrorReport("Image Blog length: " + imageBlob.getLength());

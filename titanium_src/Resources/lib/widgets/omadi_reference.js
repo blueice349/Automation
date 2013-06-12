@@ -29,6 +29,25 @@ Omadi.widgets.omadi_reference = {
         fieldView.add(element);
 
         fieldView.add(Omadi.widgets.getSpacerView());
+        
+        Ti.UI.currentWindow.addEventListener('close', function(){
+            var i, j;
+            
+            for(i = 0; i < instance.elements.length; i ++){
+                
+                if(instance.elements[i].children.length > 0){
+                    for(j = 0; j < instance.elements[i].children.length; j ++){
+                        instance.elements[i].remove(instance.elements[i].children[j]);
+                        instance.elements[i].children[j] = null;
+                    }
+                }
+                
+                fieldView.remove(instance.elements[i]);
+                instance.elements[i] = null;
+            }
+            
+            instance.fieldView = null;
+        });   
 
         return fieldView;
     },
@@ -148,6 +167,7 @@ Omadi.widgets.omadi_reference = {
             widgetView.defaultValueChildFields = [];
             widgetView.onChangeCallbacks = [];
             widgetView.clickedAutocomplete = false;
+            widgetView.touched = false;
     
             widgetView.defaultValueChildFields = Omadi.widgets.omadi_reference.setupParentDefaultFields(instance);
     
@@ -234,9 +254,10 @@ Omadi.widgets.omadi_reference = {
                 // }
             // });
             
-            Ti.App.addEventListener("customCopy", function(){
+            Ti.UI.currentWindow.addEventListener("customCopy", function(){
                 var i, callback;
                 
+                Ti.API.debug("In CUSTOM COPY");
                 Omadi.widgets.omadi_reference.setChildDefaultValues(widgetView);
                 //Ti.API.debug(widgetView.onChangeCallbacks);
                 if (widgetView.onChangeCallbacks.length > 0) {
@@ -260,7 +281,7 @@ Omadi.widgets.omadi_reference = {
                     return;
                 }
                 
-                //if (e.source.touched === true) {
+                if (e.source.touched === true) {
                     //Ti.API.info("changed");
                         
                     e.source.dbValue = null;
@@ -344,7 +365,7 @@ Omadi.widgets.omadi_reference = {
                         e.source.autocomplete_table.setHeight(0);
                         e.source.autocomplete_table.setVisible(false);
                     }
-                //}
+                }
                 e.source.lastValue = e.source.value;
     
                 if (e.source.check_conditional_fields.length > 0) {
@@ -404,9 +425,12 @@ Omadi.widgets.omadi_reference = {
         var parentFieldName, defaultValueField, childFieldValues, parentNode, instance, instances, defaultValues, field_name, childFieldName, i, childInstance;
         /*global getFormFieldValues*/
         
+        
+        
         if (widgetView.dbValue > 0) {
             if (widgetView.defaultValueChildFields.length > 0) {
                 
+                Ti.API.debug("Setting default values");
                 //Ti.API.debug(widgetView.dbValue);
                 
                 parentNode = Omadi.data.nodeLoad(widgetView.dbValue);
@@ -430,7 +454,6 @@ Omadi.widgets.omadi_reference = {
                 }
             }
         }
-
     }
 };
 

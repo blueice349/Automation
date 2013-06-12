@@ -21,14 +21,32 @@ Omadi.widgets.vehicle_fields = {
         fieldView.add(Omadi.widgets.label.getRegularLabelView(instance));
         setConditionallyRequiredLabelForInstance(node, instance);
 
-        Ti.API.debug(instance.numVisibleFields);
-
         instance.numVisibleFields = 1;
 
         element = Omadi.widgets.vehicle_fields.getNewElement(node, instance, 0);
         instance.elements.push(element);
         fieldView.add(element);
         fieldView.add(Omadi.widgets.getSpacerView());
+        
+        Ti.UI.currentWindow.addEventListener('close', function(){
+            var i, j;
+            
+            for(i = 0; i < instance.elements.length; i ++){
+                
+                if(instance.elements[i].children.length > 0){
+                    for(j = 0; j < instance.elements[i].children.length; j ++){
+                        instance.elements[i].remove(instance.elements[i].children[j]);
+                        instance.elements[i].children[j] = null;
+                    }
+                }
+                
+                fieldView.remove(instance.elements[i]);
+                instance.elements[i] = null;
+            }
+            
+            instance.fieldView = null;
+            instance = null;
+        });  
 
         return fieldView;
     },
@@ -85,6 +103,8 @@ Omadi.widgets.vehicle_fields = {
         widgetView.real_field_name = real_field_name;
         widgetView.possibleValues = possibleValues;
         widgetView.lastValue = textValue;
+        widgetView.clickedAutocomplete = false;
+        widgetView.touched = false;
 
         if (part == 'make') {
             widgetView.maxLength = 18;
@@ -131,7 +151,8 @@ Omadi.widgets.vehicle_fields = {
             }
 
             // Pretend like this is just loaded - mainly a fix for android, but makes sense for both
-            e.source.textField.touched = false;
+            //e.source.textField.touched = false;
+            e.source.textField.clickedAutocomplete = true;
 
             e.source.autocomplete_table.setHeight(0);
             e.source.autocomplete_table.setBorderWidth(0);
@@ -157,8 +178,15 @@ Omadi.widgets.vehicle_fields = {
             widgetView.minLength = settings.min_length;
         }
 
-        widgetView.addEventListener('focus', Omadi.widgets.vehicle_fields.scrollUp);
-        widgetView.addEventListener('click', Omadi.widgets.vehicle_fields.scrollUp);
+         widgetView.addEventListener('focus', function(e){
+           //Ti.API.debug("focused");
+           e.source.touched = true; 
+        });
+        
+        widgetView.addEventListener('click', function(e){
+            //Ti.API.debug("Clicked");
+           e.source.touched = true; 
+        });
 
         widgetView.addEventListener('blur', function(e) {
             e.source.autocomplete_table.setBorderWidth(0);
@@ -170,9 +198,17 @@ Omadi.widgets.vehicle_fields = {
             /*global setConditionallyRequiredLabels, getFormFieldValues*/
 
             var possibleValues, tableData, i, regEx, row, db, result, makeValues;
-
+            
+            if(e.source.clickedAutocomplete){
+                e.source.clickedAutocomplete = false;
+                Ti.API.debug("IN clicked auto");
+                return;
+            }
+            
             if (e.source.touched === true) {
-
+                
+                Omadi.widgets.vehicle_fields.scrollUp(e);
+                
                 if (Ti.App.isAndroid) {
                     if (e.source.value.length > e.source.maxLength) {
                         e.source.value = e.source.value.substring(0, e.source.maxLength);
@@ -275,7 +311,9 @@ Omadi.widgets.vehicle_fields = {
         wrapper = Ti.UI.createView({
             width : '100%',
             height : Ti.UI.SIZE,
-            layout : 'vertical'
+            layout : 'vertical',
+            widgetView : widgetView,
+            autocomplete_table : autocomplete_table
         });
 
         wrapper.add(widgetView);
@@ -287,7 +325,6 @@ Omadi.widgets.vehicle_fields = {
     scrollUp : function(e) {"use strict";
         var calculatedTop;
         /*global scrollView, scrollPositionY*/
-        e.source.touched = true;
         if ( typeof scrollView !== 'undefined') {
             calculatedTop = e.source.convertPointToView({
                 x : 0,

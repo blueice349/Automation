@@ -5,6 +5,9 @@ Ti.include('/lib/functions.js');
 
 var curWin;
 var currentWinWrapper;
+var refreshText;
+var vehicleText;
+var vehicleButton;
 
 curWin = Ti.UI.currentWindow;
 
@@ -199,8 +202,17 @@ function addClockInClockOut() {"use strict";
     }
 }
 
+function companyVehicleSelectedDraft(e){"use strict";
+          
+     var vehicle_name = Omadi.bundles.companyVehicle.getCurrentVehicleName();
+     if(vehicle_name !== null){
+         vehicleButton.setTitle("Done With Vehicle");
+         vehicleText.setText('You are in ' + vehicle_name + '.');
+     }
+}
+
 function addCompanyVehicle(){"use strict";
-    var wrapper, button, dialog, image, text, textButton, currentVehicle, companyVehicleBundle;
+    var wrapper, dialog, image, textButton, currentVehicle, companyVehicleBundle;
     
     companyVehicleBundle = Omadi.data.getBundle('company_vehicle');
     
@@ -218,7 +230,7 @@ function addCompanyVehicle(){"use strict";
             right: 0
         });
         
-        text = Ti.UI.createLabel({
+        vehicleText = Ti.UI.createLabel({
            color: '#666',
            font: {
                fontSize: 14
@@ -227,7 +239,7 @@ function addCompanyVehicle(){"use strict";
            width: Ti.UI.SIZE
         });
         
-        button = Ti.UI.createButton({
+        vehicleButton = Ti.UI.createButton({
             style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             backgroundGradient : {
                 type : 'linear',
@@ -266,15 +278,15 @@ function addCompanyVehicle(){"use strict";
         currentVehicle = Omadi.bundles.companyVehicle.getCurrentVehicleName();
         
         if (currentVehicle === null) {
-            text.setText('You are not in a vehicle.');   
-            button.setTitle("Choose Your Vehicle");
+            vehicleText.setText('You are not in a vehicle.');   
+            vehicleButton.setTitle("Choose Your Vehicle");
         }
         else{
-            text.setText('You are in ' + currentVehicle + '.');
-            button.setTitle("Done With Vehicle");
+            vehicleText.setText('You are in ' + currentVehicle + '.');
+            vehicleButton.setTitle("Done With Vehicle");
         }
 
-        button.addEventListener('click', function(e) {
+        vehicleButton.addEventListener('click', function(e) {
             var inVehicle = Omadi.bundles.companyVehicle.getCurrentVehicleName();
             
             if (inVehicle === null) {
@@ -282,18 +294,16 @@ function addCompanyVehicle(){"use strict";
             }
             else {
                 Omadi.bundles.companyVehicle.exitVehicle();
-                text.setText('You are not in a vehicle.');
-                button.setTitle("Choose Your Vehicle");
+                vehicleText.setText('You are not in a vehicle.');
+                vehicleButton.setTitle("Choose Your Vehicle");
             }
         });
         
-        Ti.App.addEventListener('companyVehicleSelected', function(e){
-             
-             var vehicle_name = Omadi.bundles.companyVehicle.getCurrentVehicleName();
-             if(vehicle_name !== null){
-                 button.setTitle("Done With Vehicle");
-                 text.setText('You are in ' + vehicle_name + '.');
-             }
+        Ti.App.removeEventListener('companyVehicleSelected', companyVehicleSelectedDraft); 
+        Ti.App.addEventListener('companyVehicleSelected', companyVehicleSelectedDraft);
+        
+        Ti.UI.currentWindow.addEventListener('close', function(){
+           Ti.App.removeEventListener('companyVehicleSelected', companyVehicleSelectedDraft); 
         });
         
         image = Ti.UI.createImageView({
@@ -306,8 +316,8 @@ function addCompanyVehicle(){"use strict";
         
         wrapper.add(image);
         
-        textButton.add(text);
-        textButton.add(button);
+        textButton.add(vehicleText);
+        textButton.add(vehicleButton);
         
         wrapper.add(textButton);
         currentWinWrapper.add(wrapper);
@@ -496,8 +506,22 @@ function addDeleteAll(){"use strict";
 
 }
 
+function refreshCallbackDraft(){"use strict";
+   var lastSyncTimestamp;
+   
+   Omadi.display.doneLoading(); 
+   lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp();
+
+    if(lastSyncTimestamp !== 0){
+        refreshText.setText("Synced " + Omadi.utils.getTimeAgoStr(lastSyncTimestamp));
+    } 
+    else{
+        refreshText.setText('Never Synced');
+    } 
+}
+
 function addRefresh(){"use strict";
-    var wrapper, button, dialog, image, text, textButton, lastSyncTimestamp;
+    var wrapper, button, dialog, image, textButton, lastSyncTimestamp;
     
   
     wrapper = Ti.UI.createView({
@@ -512,7 +536,7 @@ function addRefresh(){"use strict";
         right: 0
     });
     
-    text = Ti.UI.createLabel({
+    refreshText = Ti.UI.createLabel({
        color: '#666',
        font: {
            fontSize: 14
@@ -524,10 +548,10 @@ function addRefresh(){"use strict";
     lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp();
     
     if(lastSyncTimestamp !== 0){
-        text.setText("Synced " + Omadi.utils.getTimeAgoStr(lastSyncTimestamp));
+        refreshText.setText("Synced " + Omadi.utils.getTimeAgoStr(lastSyncTimestamp));
     } 
     else{
-        text.setText('Never Synced');
+        refreshText.setText('Never Synced');
     }
     
     button = Ti.UI.createButton({
@@ -571,16 +595,12 @@ function addRefresh(){"use strict";
         Omadi.display.loading('Refreshing...');
         Omadi.service.checkUpdate();
         
-        Ti.App.addEventListener('finishedDataSync', function(){
-           Omadi.display.doneLoading(); 
-           lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp();
-    
-            if(lastSyncTimestamp !== 0){
-                text.setText("Synced " + Omadi.utils.getTimeAgoStr(lastSyncTimestamp));
-            } 
-            else{
-                text.setText('Never Synced');
-            }
+        Ti.App.removeEventListener('finishedDataSync', refreshCallbackDraft);
+        
+        Ti.App.addEventListener('finishedDataSync', refreshCallbackDraft);
+        
+        Ti.UI.currentWindow.addEventListener('close', function(){
+            Ti.App.removeEventListener('finishedDataSync', refreshCallbackDraft);
         });
     });
     
@@ -594,7 +614,7 @@ function addRefresh(){"use strict";
     
     wrapper.add(image);
     
-    textButton.add(text);
+    textButton.add(refreshText);
     textButton.add(button);
     
     wrapper.add(textButton);

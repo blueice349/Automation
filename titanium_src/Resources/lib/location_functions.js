@@ -88,7 +88,7 @@ Omadi.location.uploadGPSCoordinates = function() {"use strict";
 
     /*global createNotification*/
 
-    Ti.API.debug("GPS Uploading: " + Omadi.location.is_GPS_uploading());
+    //Ti.API.debug("GPS Uploading: " + Omadi.location.is_GPS_uploading());
 
     if (!Omadi.location.is_GPS_uploading() && Omadi.utils.isLoggedIn()) {
 

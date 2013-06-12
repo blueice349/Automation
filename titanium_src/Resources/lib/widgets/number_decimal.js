@@ -21,8 +21,6 @@ Omadi.widgets.number_decimal = {
         fieldView.add(Omadi.widgets.label.getRegularLabelView(instance));
         setConditionallyRequiredLabelForInstance(node, instance);
 
-        Ti.API.debug(instance.numVisibleFields);
-
         if ( typeof instance.numVisibleFields === 'undefined') {
 
             if (settings.cardinality == -1) {
@@ -63,6 +61,17 @@ Omadi.widgets.number_decimal = {
             fieldView.add(addAnotherItemButton);
             fieldView.add(Omadi.widgets.getSpacerView());
         }
+        
+        Ti.UI.currentWindow.addEventListener('close', function(){
+            var i;
+            
+            for(i = 0; i < instance.elements.length; i ++){
+                fieldView.remove(instance.elements[i]);
+                instance.elements[i] = null;
+            }
+            
+            instance.fieldView = null;
+        });  
 
         return fieldView;
     },

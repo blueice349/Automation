@@ -394,7 +394,8 @@ Omadi.widgets.shared = {
     /*global formToNode*/
         
         var fieldView, children, i, newFieldView, newFieldViewChildren, wrapper, node;
-        Ti.API.debug(instance.numVisibleFields);
+        
+        Ti.API.debug("IN REDRAW");
         
         node = formToNode();
         

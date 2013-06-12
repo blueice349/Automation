@@ -19,13 +19,13 @@ curWin.isTopWindow = true;
 curWin.backgroundColor = '#eee';
 curWin.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
 
-var toolActInd = Ti.UI.createActivityIndicator();
-toolActInd.font = {
-    fontSize : 15,
-    fontWeight : 'bold'
-};
-toolActInd.color = 'white';
-toolActInd.message = 'Loading...';
+// var toolActInd = Ti.UI.createActivityIndicator();
+// toolActInd.font = {
+    // fontSize : 15,
+    // fontWeight : 'bold'
+// };
+// toolActInd.color = 'white';
+// toolActInd.message = 'Loading...';
 
 var version = 'Omadi Inc';
 var isFirstTime = false;

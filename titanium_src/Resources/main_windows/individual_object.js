@@ -3,7 +3,6 @@ Ti.include("/lib/widgets.js");
 
 /*jslint eqeq:true, plusplus: true*/
 
-
 var domainName = Ti.App.Properties.getString("domainName");
 
 //Current window's instance
@@ -400,6 +399,8 @@ function doFieldOutput(fieldObj) {"use strict";
                             else{
                                 imagePath = node[fieldObj.field_name].imageData[i];
                             }
+                            
+                            //alert(imagePath);
                             
                             degrees = node[fieldObj.field_name].degrees[i];
                             

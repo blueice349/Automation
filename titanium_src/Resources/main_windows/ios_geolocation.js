@@ -36,7 +36,7 @@ function updateCurrentLocationiOS(e) {"use strict";
     altitude = e.location.altitude;
 
     //Ti.API.info('=====>>> Speed ' + speed*2.23693629+' Miles/H');
-    Ti.API.info('LOCATION: ' + latitude + ', ' + longitude + ': ' + accuracy);
+    //Ti.API.info('LOCATION: ' + latitude + ', ' + longitude + ': ' + accuracy);
 
     if (latitude !== 0 && longitude !== 0) {
         timestamp = Omadi.utils.getUTCTimestamp();
@@ -57,6 +57,7 @@ function updateCurrentLocationiOS(e) {"use strict";
             db = Omadi.utils.openGPSDatabase();
             db.execute("INSERT INTO user_location (longitude, latitude, timestamp, status) VALUES ('" + longitude + "','" + latitude + "'," + timestamp + ", 'notUploaded')");
             db.close();
+            db = null;
 
             Ti.App.Properties.setBool("insertingGPS", false);
             

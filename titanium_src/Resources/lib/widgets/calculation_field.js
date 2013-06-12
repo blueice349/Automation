@@ -37,6 +37,17 @@ Omadi.widgets.calculation_field = {
         fieldView.add(element);
         fieldView.add(Omadi.widgets.getSpacerView());
         
+        Ti.UI.currentWindow.addEventListener('close', function(){
+            var i;
+            
+            for(i = 0; i < instance.elements.length; i ++){
+                fieldView.remove(instance.elements[i]);
+                instance.elements[i] = null;
+            }
+            
+            instance.fieldView = null;
+        });  
+        
         return fieldView;
     },
     getNewElement: function(node, instance){"use strict";

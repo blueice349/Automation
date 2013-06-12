@@ -38,6 +38,25 @@ Omadi.widgets.image = {
         instance.elements.push(element);
         fieldView.add(element);
         fieldView.add(Omadi.widgets.getSpacerView());
+        
+        Ti.UI.currentWindow.addEventListener('close', function(){
+            var i, j;
+            
+            for(i = 0; i < instance.elements.length; i ++){
+                
+                if(instance.elements[i].children.length > 0){
+                    for(j = 0; j < instance.elements[i].children.length; j ++){
+                        instance.elements[i].remove(instance.elements[i].children[j]);
+                        instance.elements[i].children[j] = null;
+                    }
+                }
+                
+                fieldView.remove(instance.elements[i]);
+                instance.elements[i] = null;
+            }
+            
+            instance.fieldView = null;
+        });  
 
         return fieldView;
     },
@@ -201,7 +220,8 @@ Omadi.widgets.image = {
     },
     openCamera : function(imageView) {"use strict";
         /*global cameraAndroid*/
-        var blankOverlay, storageDirectory, storageDirectoryFile;
+        var blankOverlay, storageDirectory, storageDirectoryFile,
+         overlayView, captureButton, doneButton, flexible, flashMode, flashButton, navBar;
         
         if (Ti.App.isAndroid) {
             if (Ti.Media.isCameraSupported) {
@@ -294,7 +314,6 @@ Omadi.widgets.image = {
         }
         else {
             try {
-                var overlayView, captureButton, doneButton, flexible, flashMode, flashButton, navBar;
 
                 overlayView = Ti.UI.createView();
                 captureButton = Ti.UI.createButton({
@@ -362,6 +381,10 @@ Omadi.widgets.image = {
                         imageView.bigImg = imageView.image;
                         imageView.mimeType = event.media.mimeType;
                         imageView.fullImageLoaded = true;
+                        
+                        if(event.media.file){
+                            alert(event.media.file);
+                        }
 
                         // if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
                             // newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);

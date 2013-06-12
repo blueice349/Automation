@@ -565,6 +565,9 @@ Omadi.display.getNodeTypeImagePath = function(type) {"use strict";
         case 'club_tow':
         case 'motor_club':
         case 'tow_yard':
+        case 'refund_request':
+        case 'tow_request':
+        case 'permit':
 
             return '/images/icons/' + type + ".png";
 
@@ -859,6 +862,11 @@ Omadi.display.loading = function(message) {"use strict";
     });
     
     Ti.UI.currentWindow.add(indicator);
+    
+    Ti.UI.currentWindow.addEventListener('close', function(){
+        Ti.UI.currentWindow.remove(indicator);
+        indicator = null; 
+    });
 };
 
 Omadi.display.doneLoading = function() {"use strict";

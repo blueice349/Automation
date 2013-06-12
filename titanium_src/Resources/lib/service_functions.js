@@ -488,7 +488,7 @@ Omadi.service.sendUpdates = function() {"use strict";
                 
                 Omadi.service.setSendingData(false);
                 Ti.App.fireEvent("doneSendingData");
-
+                
                 Ti.UI.currentWindow.close();
                 /*** IMPORTANT: CANNOT DO ANYTHING AFTER THE WINDOW IS CLOSED ***/
             };
