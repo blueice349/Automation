@@ -1460,7 +1460,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                             
                             if(!isResized){
                                 
-                                Omadi.service.sendErrorReport("In Resize Error");
+                                //Omadi.service.sendErrorReport("In Resize Error");
                                 
                                 try{
                                     imageFile = Ti.Filesystem.getFile("file://" + nextPhoto.filePath);

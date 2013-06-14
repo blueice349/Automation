@@ -67,6 +67,8 @@ Omadi.widgets.taxonomy_term_reference = {
         var settings, widgetView, dbValue, textValue, i, options, textOptions, wrapperView, 
             descriptionText, descriptionLabel, isAutocomplete, autocomplete_table, defaultTerm;
         
+        /*global labelViews*/
+        
         settings = instance.settings;
         
         if (instance.settings.cardinality == -1) {
@@ -309,15 +311,20 @@ Omadi.widgets.taxonomy_term_reference = {
                         for ( i = 0; i < e.source.options.length; i++) {
                             textOptions.push(e.source.options[i].title);
                         }
+                        
+                        textOptions.push('- Cancel -');
     
-                        postDialog = Titanium.UI.createOptionDialog();
+                        postDialog = Titanium.UI.createOptionDialog({
+                            title: labelViews[e.source.instance.field_name].text
+                        });
                         postDialog.options = textOptions;
-                        postDialog.cancel = -1;
+                        postDialog.cancel = textOptions.length - 1;
                         postDialog.widgetView = e.source;
                         postDialog.show();
     
                         postDialog.addEventListener('click', function(ev) {
-                            if (ev.index >= 0) {
+                            
+                            if (ev.index >= 0 && ev.index != ev.source.cancel) {
                                 var textValue = ev.source.options[ev.index];
     
                                 if (textValue == '- None -') {
@@ -326,11 +333,11 @@ Omadi.widgets.taxonomy_term_reference = {
                                 ev.source.widgetView.textValue = textValue;
                                 ev.source.widgetView.setText(textValue);
                                 ev.source.widgetView.value = ev.source.widgetView.dbValue = ev.source.widgetView.options[ev.index].dbValue;
-                            }
+                                
+                                if (ev.source.widgetView.check_conditional_fields.length > 0) {
     
-                            if (ev.source.widgetView.check_conditional_fields.length > 0) {
-    
-                                setConditionallyRequiredLabels(ev.source.widgetView.instance, ev.source.widgetView.check_conditional_fields);
+                                    setConditionallyRequiredLabels(ev.source.widgetView.instance, ev.source.widgetView.check_conditional_fields);
+                                }
                             }
                         });
                     }

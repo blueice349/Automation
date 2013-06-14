@@ -168,6 +168,7 @@ Omadi.widgets.omadi_reference = {
             widgetView.onChangeCallbacks = [];
             widgetView.clickedAutocomplete = false;
             widgetView.touched = false;
+            widgetView.blurred = true;
     
             widgetView.defaultValueChildFields = Omadi.widgets.omadi_reference.setupParentDefaultFields(instance);
     
@@ -179,6 +180,7 @@ Omadi.widgets.omadi_reference = {
                 borderColor : '#000',
                 borderWidth : 0,
                 top : 0,
+                width: '96%',
                 textField : widgetView
             });
     
@@ -193,6 +195,8 @@ Omadi.widgets.omadi_reference = {
                 e.source.autocomplete_table.setHeight(0);
                 e.source.autocomplete_table.setBorderWidth(0);
                 e.source.autocomplete_table.setVisible(false);
+                
+                e.source.textField.setColor('#006600');
     
                 if (Ti.App.isAndroid) {
                     // Make sure the cursor is at the end of the text
@@ -239,7 +243,7 @@ Omadi.widgets.omadi_reference = {
                 e.source.autocomplete_table.setBorderWidth(0);
                 e.source.autocomplete_table.setHeight(0);
                 e.source.autocomplete_table.setVisible(false);
-                //e.source.scrollUpOnChange = true;
+                e.source.blurred = true;
             });
             
             // widgetView.addEventListener("customCopy", function(){
@@ -275,7 +279,7 @@ Omadi.widgets.omadi_reference = {
                 
                 Ti.API.debug("auto: " + e.source.clickedAutocomplete);
                 
-                if(e.source.clickedAutocomplete){
+                if(Ti.App.isAndroid && e.source.clickedAutocomplete){
                     e.source.clickedAutocomplete = false;
                     Ti.API.debug("IN clicked auto");
                     return;
@@ -286,22 +290,11 @@ Omadi.widgets.omadi_reference = {
                         
                     e.source.dbValue = null;
                     e.source.textValue = e.source.value;
+                    
+                    e.source.setColor('#ee0000');
     
                     if (e.source.lastValue != e.source.value && e.source.value != '') {
                         possibleValues = e.source.possibleValues;
-                        
-                        
-                        Omadi.widgets.omadi_reference.scrollUp(e);
-                        
-                        //Omadi.widgets.omadi_reference.scrollUp(e);
-                        //if(e.source.scrollUpOnChange){
-                             //Ti.API.debug("testing");
-                            
-                        //}
-                        
-                        //Ti.API.debug(e.source.value);
-                        
-                        //e.source.scrollUpOnChange = false;
     
                         upperCaseValue = e.source.value.toUpperCase();
                         tableData = [];
@@ -315,6 +308,12 @@ Omadi.widgets.omadi_reference = {
                                     e.source.dbValue = possibleValues[i].nid;
                                     Omadi.widgets.omadi_reference.setChildDefaultValues(e.source);
                                     
+                                    e.source.autocomplete_table.setHeight(0);
+                                    e.source.autocomplete_table.setBorderWidth(0);
+                                    e.source.autocomplete_table.setVisible(false);
+                                    
+                                    e.source.setColor('#006600');
+                                    
                                     if (e.source.onChangeCallbacks.length > 0) {
                                         for ( j = 0; j < e.source.onChangeCallbacks.length; j++) {
                                             callback = e.source.onChangeCallbacks[j];
@@ -324,25 +323,25 @@ Omadi.widgets.omadi_reference = {
                                 }
                                 else {
                                     e.source.dbValue = null;
-                                }
-    
-                                //Create partial matching row
-                                row = Ti.UI.createTableViewRow({
-                                    height : 38,
-                                    title : possibleValues[i].title,
-                                    nid : possibleValues[i].nid,
-                                    color : '#000000',
-                                    autocomplete_table : e.source.autocomplete_table,
-                                    textField : e.source
-                                });
-                                
-                                Ti.API.debug(possibleValues[i].title);
-    
-                                // apply rows to data array
-                                tableData.push(row);
-    
-                                if (tableData.length >= 4) {
-                                    break;
+                                    
+                                     //Create partial matching row
+                                    row = Ti.UI.createTableViewRow({
+                                        height : 38,
+                                        title : possibleValues[i].title,
+                                        nid : possibleValues[i].nid,
+                                        color : '#000000',
+                                        autocomplete_table : e.source.autocomplete_table,
+                                        textField : e.source
+                                    });
+                                    
+                                    Ti.API.debug(possibleValues[i].title);
+        
+                                    // apply rows to data array
+                                    tableData.push(row);
+        
+                                    if (tableData.length >= 4) {
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -358,6 +357,12 @@ Omadi.widgets.omadi_reference = {
                             e.source.autocomplete_table.setBorderWidth(1);
                             e.source.autocomplete_table.setHeight(38 * tableData.length);
                             e.source.autocomplete_table.setVisible(true);
+                        }
+                        
+                        if(e.source.blurred){
+                            Ti.API.info("in bluslkdjf");
+                            e.source.blurred = false;
+                            Omadi.widgets.omadi_reference.scrollUp(e);
                         }
                     }
                     else {
@@ -379,18 +384,38 @@ Omadi.widgets.omadi_reference = {
 
         return wrapper;
     },
+    // scrollUp : function(e) {"use strict";
+        // var calculatedTop;
+        // /*global scrollView, scrollPositionY*/
+        // //Ti.API.debug("hi");
+        // //e.source.touched = true;
+        // if ( typeof scrollView !== 'undefined') {
+            // Ti.API.debug("Scroll view defined");
+            // calculatedTop = e.source.convertPointToView({
+                // x : 0,
+                // y : 0
+            // }, scrollView);
+            // scrollView.scrollTo(0, calculatedTop.y - 18 + scrollPositionY);
+        // }
+    // },
     scrollUp : function(e) {"use strict";
-        var calculatedTop;
+        var calculatedTop, amountToScrollUp;
         /*global scrollView, scrollPositionY*/
-        //Ti.API.debug("hi");
-        //e.source.touched = true;
         if ( typeof scrollView !== 'undefined') {
-            Ti.API.debug("Scroll view defined");
             calculatedTop = e.source.convertPointToView({
                 x : 0,
                 y : 0
             }, scrollView);
-            scrollView.scrollTo(0, calculatedTop.y - 18 + scrollPositionY);
+            
+            amountToScrollUp = 187; // (4*38) + 35;
+            
+            if(calculatedTop.y < 210){ // 187 + 23
+                amountToScrollUp -= (210 - calculatedTop.y);
+            }
+            
+            if(amountToScrollUp > 0){
+                scrollView.scrollTo(0, scrollPositionY + amountToScrollUp);
+            }
         }
     },
     setupParentDefaultFields : function(omadi_reference_instance) {"use strict";

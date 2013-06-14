@@ -7,12 +7,6 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
     var imageWin, fullImage, background;
 
     imageWin = Ti.UI.createWindow({
-        backgroundColor : '#00000000'
-    });
-
-    //imageWin.setOrientationModes([Ti.UI.PORTRAIT]);
-
-    background = Ti.UI.createView({
         backgroundColor : 'black',
         opacity : 0.8,
         top : 0,
@@ -21,22 +15,29 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
         left : 0
     });
 
+    background = Ti.UI.createWindow({
+        opacity : 1.0
+    });
+
     fullImage = Omadi.display.getImageViewFromData(imageView.bigImg, Ti.Platform.displayCaps.platformWidth, Ti.Platform.displayCaps.platformHeight - 50);
 
     if (fullImage !== null) {
 
-        fullImage.opacity = 1;
+        fullImage.setOpacity(1.0);
+        
         fullImage.addEventListener('click', function(e) {
+            background.close();
             imageWin.close();
         });
 
         background.addEventListener('click', function(e) {
+            background.close();
             imageWin.close();
         });
 
         background.add(fullImage);
-        imageWin.add(background);
         imageWin.open();
+        background.open();
     }
 };
 
@@ -612,6 +613,7 @@ Omadi.display.displayLargeImage = function(imageView, nid, file_id, showInImageV
     }
 
     if (imageView.bigImg !== null) {
+        Ti.API.debug("Displaying big image");
         Omadi.display.showBigImage(imageView);
         return;
     }
@@ -665,7 +667,8 @@ Omadi.display.getImageViewFromData = function(blobImage, maxWidth, maxHeight) {"
         imageView = Titanium.UI.createImageView({
             image : blobImage,
             width : 'auto',
-            height : 'auto'
+            height : 'auto',
+            opacity : 1.0
         });
 
         blobImage = imageView.toBlob();
@@ -861,12 +864,14 @@ Omadi.display.loading = function(message) {"use strict";
         e.source.hide();
     });
     
-    Ti.UI.currentWindow.add(indicator);
-    
     Ti.UI.currentWindow.addEventListener('close', function(){
         Ti.UI.currentWindow.remove(indicator);
         indicator = null; 
     });
+    
+    if(indicator !== null){
+        Ti.UI.currentWindow.add(indicator);
+    }
 };
 
 Omadi.display.doneLoading = function() {"use strict";

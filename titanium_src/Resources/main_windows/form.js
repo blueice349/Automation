@@ -571,7 +571,7 @@ function validate_form_data(node){"use strict";
 
 function getRegionHeaderView(region, expanded){"use strict";
     
-    var arrow_img, regionHeader, regionHeaderWrapper;
+    var arrow_img, regionHeader, regionHeaderWrapper, collapsedView;
     
     arrow_img = Ti.UI.createImageView({
         image : '/images/light_arrow_left.png',
@@ -579,7 +579,8 @@ function getRegionHeaderView(region, expanded){"use strict";
         height : 29,
         top: 5,
         right: 5,
-        zIndex : 999
+        zIndex : 999,
+        touchEnabled: false
     });
     
     if(expanded){
@@ -630,7 +631,27 @@ function getRegionHeaderView(region, expanded){"use strict";
         }
     });
     
+    collapsedView = Ti.UI.createLabel({
+        top: 40,
+        width: '100%',
+        height: Ti.UI.SIZE,
+        text: region.label + ' is Collapsed',
+        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        color: '#666',
+        font: {
+            fontSize: 13
+        },
+        backgroundColor: '#ddd'
+    });
+    
+    if(expanded){
+        collapsedView.visible = false;
+    }
+    
     regionHeader.arrow = arrow_img;
+    regionHeader.collapsedView = collapsedView;
     
     regionHeader.addEventListener('click', function(e) {
         
@@ -642,6 +663,8 @@ function getRegionHeaderView(region, expanded){"use strict";
             
             regionView = regionViews[e.source.region_name];
             regionView.startLayout();
+            
+            e.source.collapsedView.hide();
             regionView.show();
             regionView.setHeight(Ti.UI.SIZE);
             
@@ -653,9 +676,11 @@ function getRegionHeaderView(region, expanded){"use strict";
             
             regionView = regionViews[e.source.region_name];
             regionView.startLayout();
+            
+            e.source.collapsedView.show();
             regionView.hide();
             regionView.setHeight(5);
-            
+           
             e.source.arrow.setImage("/images/light_arrow_left.png");
             
             regionView.finishLayout();
@@ -664,6 +689,7 @@ function getRegionHeaderView(region, expanded){"use strict";
     
     regionHeaderWrapper.add(regionHeader);
     regionHeaderWrapper.add(arrow_img);
+    regionHeaderWrapper.add(collapsedView);
     
     return regionHeaderWrapper;
 }

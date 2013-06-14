@@ -57,7 +57,8 @@ Omadi.widgets.user_reference = {
     getNewElement : function(node, instance, index) {"use strict";
 
         var settings, widgetView, dbValue, textValue, i, options, textOptions, loginDetails;
-
+        /*global labelViews */
+       
         settings = instance.settings;
 
         if (settings.cardinality == -1) {
@@ -114,6 +115,8 @@ Omadi.widgets.user_reference = {
             textOptions.push(options[i].title);
         }
         
+        textOptions.push('- Cancel -');
+        
         widgetView = Omadi.widgets.getLabelField(instance);
         widgetView.setText(textValue);
         widgetView.textValue = textValue;
@@ -130,18 +133,21 @@ Omadi.widgets.user_reference = {
                 if (instance.settings.cardinality == -1) {
 
                     Omadi.widgets.getMultipleSelector(e.source);
-
                 }
                 else {
-
-                    postDialog = Titanium.UI.createOptionDialog();
+                    
+                    postDialog = Titanium.UI.createOptionDialog({
+                        title: labelViews[e.source.instance.field_name].text
+                    });
+                    
                     postDialog.options = e.source.textOptions;
-                    postDialog.cancel = -1;
+                    postDialog.cancel = e.source.textOptions.length - 1;
                     postDialog.widgetView = e.source;
                     postDialog.show();
 
                     postDialog.addEventListener('click', function(ev) {
-                        if (ev.index >= 0) {
+                        
+                        if (ev.index >= 0 && ev.index != ev.source.cancel) {
                             var textValue = ev.source.options[ev.index];
 
                             if (textValue == '- None -') {

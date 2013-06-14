@@ -207,7 +207,7 @@ Omadi.widgets.image = {
         if(!fidIsData){
             imageView.addEventListener('click', function(e) {
     
-                if (e.source.fid === null && e.source.bigImg === null) {
+                if (e.source.fid === null) {
                     Omadi.widgets.image.openCamera(e.source);
                 }
                 else {

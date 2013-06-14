@@ -42,7 +42,7 @@ Omadi.widgets.license_plate = {
         return fieldView;
     },
     getNewElement : function(node, instance, index) {"use strict";
-
+        /*global labelViews */
         var settings, widgetView, dbValue, textValue, part, nameParts, real_field_name, i, options, states;
 
         nameParts = instance.field_name.split('___');
@@ -156,6 +156,8 @@ Omadi.widgets.license_plate = {
                 options.push(states[i].title);
             }
             
+            options.push('- Cancel -');
+            
             widgetView = Omadi.widgets.getLabelField(instance);
             widgetView.setText(textValue);
             widgetView.textValue = textValue;
@@ -165,14 +167,19 @@ Omadi.widgets.license_plate = {
             widgetView.real_field_name = real_field_name;
 
             widgetView.addEventListener('click', function(e) {
-                var postDialog = Titanium.UI.createOptionDialog();
+                var postDialog = Titanium.UI.createOptionDialog({
+                    title: labelViews[e.source.instance.field_name].text
+                });
+                
                 postDialog.options = e.source.options;
-                postDialog.cancel = -1;
+                postDialog.cancel = states.length;
                 postDialog.widgetView = e.source;
                 postDialog.show();
 
                 postDialog.addEventListener('click', function(ev) {
-                    if (ev.index >= 0) {
+                    var stateIndex;
+                    
+                    if (ev.index >= 0 && ev.index != ev.source.cancel) {
                         ev.source.widgetView.textValue = ev.source.options[ev.index];
                         ev.source.widgetView.dbValue = ev.source.widgetView.states[ev.index].usps;
                         ev.source.widgetView.setText(ev.source.options[ev.index]);

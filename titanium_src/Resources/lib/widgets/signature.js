@@ -171,17 +171,6 @@ Omadi.widgets.signature = {
             }
         }
         
-        Ti.UI.currentWindow.addEventListener('close', function(){
-            var i;
-            
-            for(i = 0; i < instance.elements.length; i ++){
-                fieldView.remove(instance.elements[i]);
-                instance.elements[i] = null;
-            }
-            
-            instance.fieldView = null;
-        });  
-        
         return widgetView;
     },
     openSignatureView : function(node, instance, widgetView){"use strict";
@@ -413,7 +402,7 @@ Omadi.widgets.signature = {
     }
 };
 
-function getObjectClass(obj) {
+function getObjectClass(obj) {"use strict";
     if (obj && obj.constructor && obj.constructor.toString) {
         var arr = obj.constructor.toString().match(
             /function\s*(\w+)/);

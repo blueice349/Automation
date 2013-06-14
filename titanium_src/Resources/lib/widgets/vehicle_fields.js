@@ -105,6 +105,7 @@ Omadi.widgets.vehicle_fields = {
         widgetView.lastValue = textValue;
         widgetView.clickedAutocomplete = false;
         widgetView.touched = false;
+        widgetView.blurred = true;
 
         if (part == 'make') {
             widgetView.maxLength = 18;
@@ -136,6 +137,7 @@ Omadi.widgets.vehicle_fields = {
             borderColor : '#000',
             borderWidth : 0,
             top : 0,
+            width: '96%',
             textField : widgetView
         });
 
@@ -192,6 +194,7 @@ Omadi.widgets.vehicle_fields = {
             e.source.autocomplete_table.setBorderWidth(0);
             e.source.autocomplete_table.setHeight(0);
             e.source.autocomplete_table.setVisible(false);
+            e.source.blurred = true;
         });
 
         widgetView.addEventListener('change', function(e) {
@@ -199,15 +202,13 @@ Omadi.widgets.vehicle_fields = {
 
             var possibleValues, tableData, i, regEx, row, db, result, makeValues;
             
-            if(e.source.clickedAutocomplete){
+            if(Ti.App.isAndroid && e.source.clickedAutocomplete){
                 e.source.clickedAutocomplete = false;
                 Ti.API.debug("IN clicked auto");
                 return;
             }
             
             if (e.source.touched === true) {
-                
-                Omadi.widgets.vehicle_fields.scrollUp(e);
                 
                 if (Ti.App.isAndroid) {
                     if (e.source.value.length > e.source.maxLength) {
@@ -293,6 +294,11 @@ Omadi.widgets.vehicle_fields = {
                         e.source.autocomplete_table.setHeight(38 * tableData.length);
                         e.source.autocomplete_table.setVisible(true);
                     }
+                    
+                    if(e.source.blurred){
+                        e.source.blurred = false;
+                        Omadi.widgets.vehicle_fields.scrollUp(e);
+                    }
                 }
                 else {
                     e.source.autocomplete_table.setBorderWidth(0);
@@ -323,14 +329,23 @@ Omadi.widgets.vehicle_fields = {
 
     },
     scrollUp : function(e) {"use strict";
-        var calculatedTop;
+        var calculatedTop, amountToScrollUp;
         /*global scrollView, scrollPositionY*/
         if ( typeof scrollView !== 'undefined') {
             calculatedTop = e.source.convertPointToView({
                 x : 0,
                 y : 0
             }, scrollView);
-            scrollView.scrollTo(0, calculatedTop.y - 18 + scrollPositionY);
+            
+            amountToScrollUp = 187; // (4*38) + 35;
+            
+            if(calculatedTop.y < 210){ // 187 + 23
+                amountToScrollUp -= (210 - calculatedTop.y);
+            }
+            
+            if(amountToScrollUp > 0){
+                scrollView.scrollTo(0, scrollPositionY + amountToScrollUp);
+            }
         }
     }
 };

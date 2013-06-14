@@ -34,16 +34,17 @@ Ti.App.addEventListener('loggingOut', function() {"use strict";
     Ti.UI.currentWindow.close();
 });
 
-Ti.App.addEventListener("savedNode", function() {"use strict";
-    //if (Ti.App.isAndroid) {
-        Ti.UI.currentWindow.close();
-    //}
-    //else {
-    //    Ti.UI.currentWindow.hide();
-        // Close the window after the maximum timeout for a node save
-    //    Ti.UI.currentWindow.close
-    //}
-});
+// Do not close this window when a node is saved as it could close a next form part unexpectedly
+// Ti.App.addEventListener("savedNode", function() {"use strict";
+    // //if (Ti.App.isAndroid) {
+        // Ti.UI.currentWindow.close();
+    // //}
+    // //else {
+    // //    Ti.UI.currentWindow.hide();
+        // // Close the window after the maximum timeout for a node save
+    // //    Ti.UI.currentWindow.close
+    // //}
+// });
 
 function sortByTitle(a, b) {"use strict";
     if (a.title < b.title) {

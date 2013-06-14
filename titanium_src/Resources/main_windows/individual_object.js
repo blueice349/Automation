@@ -238,6 +238,11 @@ function openFileViewer(e){"use strict";
     Omadi.display.displayFile(curWin.nid, e.source.dbValue, e.source.textValue);
 }
 
+function getDrivingDirectionsView(e){"use strict";
+    var address = e.source.text.replace("\n", ' ');
+    Omadi.display.getDrivingDirectionsTo(address);                                   
+}
+
 function doFieldOutput(fieldObj) {"use strict";
     /*global getCalculationTableView*/
     var i, rowView, valueView, valueLabel, labelView, labelLabel, fieldIsHidden, tableView, fileId, 
@@ -567,11 +572,7 @@ function doFieldOutput(fieldObj) {"use strict";
                                 // Only show an address with sufficient length to get anywhere
                                 if(valueLabel.text.length > 8){
                                     
-                                    valueLabel.addEventListener('click', function(e){
-                                        var address = e.source.text.replace("\n", ' ');
-                                        //Ti.API.debug(address);
-                                        Omadi.display.getDrivingDirectionsTo(address);
-                                    });
+                                    valueLabel.addEventListener('click', getDrivingDirectionsView);
                                 }
     
                                 break;
