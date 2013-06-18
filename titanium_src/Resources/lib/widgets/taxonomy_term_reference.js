@@ -47,7 +47,7 @@ Omadi.widgets.taxonomy_term_reference = {
             for(i = 0; i < instance.elements.length; i ++){
                 
                 if(instance.elements[i].children.length > 0){
-                    for(j = 0; j < instance.elements[i].children.length; j ++){
+                    for(j = instance.elements[i].children.length -1; j >= 0; j --){
                         instance.elements[i].remove(instance.elements[i].children[j]);
                         instance.elements[i].children[j] = null;
                     }
@@ -360,31 +360,36 @@ Omadi.widgets.taxonomy_term_reference = {
 
         var db, result, vid, options;
         db = Omadi.utils.openMainDatabase();
-
-        result = db.execute("SELECT vid FROM vocabulary WHERE machine_name = '" + instance.settings.vocabulary + "'");
-        vid = result.fieldByName('vid');
-        result.close();
-
-        result = db.execute("SELECT name, tid, description FROM term_data WHERE vid='" + vid + "' GROUP BY name ORDER BY CAST(`weight` AS INTEGER) ASC");
-
+        
         options = [];
 
-        if (instance.settings.cardinality != -1 && instance.required == 0) {
-            options.push({
-                title : '- None -',
-                dbValue : null
-            });
+        result = db.execute("SELECT vid FROM vocabulary WHERE machine_name = '" + instance.settings.vocabulary + "'");
+        if(result.isValidRow()){
+            vid = result.fieldByName('vid');
+            result.close();
+    
+            result = db.execute("SELECT name, tid, description FROM term_data WHERE vid='" + vid + "' GROUP BY name ORDER BY CAST(`weight` AS INTEGER) ASC");
+    
+           
+    
+            if (instance.settings.cardinality != -1 && instance.required == 0) {
+                options.push({
+                    title : '- None -',
+                    dbValue : null
+                });
+            }
+    
+            while (result.isValidRow()) {
+                options.push({
+                    title : result.fieldByName('name'),
+                    dbValue : result.fieldByName('tid'),
+                    description : result.fieldByName('description')
+                });
+                result.next();
+            }
+            result.close();
         }
-
-        while (result.isValidRow()) {
-            options.push({
-                title : result.fieldByName('name'),
-                dbValue : result.fieldByName('tid'),
-                description : result.fieldByName('description')
-            });
-            result.next();
-        }
-        result.close();
+        
         db.close();
 
         return options;

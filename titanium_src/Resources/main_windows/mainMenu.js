@@ -4,11 +4,9 @@ if (Ti.App.isIOS) {
     Ti.include('/lib/iOS/backgroundLocation.js');
 }
 
-
 var cameraAndroid;
 
 if (Ti.App.isAndroid) {
-    //cameraAndroid = require('com.omadi.camera');
     cameraAndroid = require('com.omadi.newcamera');
 }
 
@@ -18,14 +16,6 @@ var curWin = Ti.UI.currentWindow;
 curWin.isTopWindow = true;
 curWin.backgroundColor = '#eee';
 curWin.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
-
-// var toolActInd = Ti.UI.createActivityIndicator();
-// toolActInd.font = {
-    // fontSize : 15,
-    // fontWeight : 'bold'
-// };
-// toolActInd.color = 'white';
-// toolActInd.message = 'Loading...';
 
 var version = 'Omadi Inc';
 var isFirstTime = false;
@@ -186,19 +176,6 @@ var a = Titanium.UI.createAlertDialog({
 });
 
 var lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp();
-
-//function lock_screen() {"use strict";
-//curWin.touchEnabled = false;
-//databaseStatusView.touchEnabled = false;
-//databaseStatusView.focusable = false;
-//}
-
-//function unlock_screen() {"use strict";
-//curWin.touchEnabled = true;
-//databaseStatusView.touchEnabled = true;
-//databaseStatusView.focusable = true;
-//}
-
 
 
 function displayBundleList() {"use strict";
@@ -398,42 +375,6 @@ function setupBottomButtons() {"use strict";
     });
     
     numButtons ++;
-
-    // draftsView = Ti.UI.createView({
-        // backgroundSelectedColor : 'orange',
-        // focusable : true,
-        // width : '33%',
-        // height : 45,
-        // layout : 'vertical',
-        // color : '#fff'
-    // });
-// 
-    // databaseStatusView.add(draftsView);
-// 
-    // draftsImg = Ti.UI.createImageView({
-        // image : '/images/drafts.png',
-        // height : 22,
-        // width : 22,
-        // top : 2
-    // });
-// 
-    // draftsLabel = Ti.UI.createLabel({
-        // text : 'Drafts',
-        // font : {
-            // fontSize : 14
-        // },
-        // height : Ti.UI.SIZE,
-        // bottom : 0,
-        // color : '#fff',
-        // width : Ti.UI.SIZE,
-        // textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
-    // });
-// 
-    // draftsView.add(draftsImg);
-    // draftsView.add(draftsLabel);
-    // draftsView.addEventListener('click', function() {
-        // Omadi.display.openDraftsWindow();
-    // });
     
     if(Omadi.bundles.dispatch.showJobsScreen()){
         
@@ -613,9 +554,108 @@ function showNextAlertInQueue(e) {"use strict";
     }
 }
 
+function doneSendingDataMainMenu(e){"use strict";
+    Ti.API.debug("Done Sending data event received");
+   
+    networkStatusView.hide();
+    Omadi.service.uploadFile();
+}
+
+function doneSendingPhotosMainMenu(e){"use strict";
+    networkStatusView.hide();
+}
+
+function sendingDataMainMenu(e){"use strict";
+    networkStatusLabel.setText(e.message);
+    networkStatusView.show();
+}
+
+function loggingOutMainMenu(e){"use strict";
+    Ti.UI.currentWindow.close();
+}
+
+function networkChangedMainMenu(e){"use strict";
+    var isOnline = e.online;
+    if (isOnline) {
+        Omadi.service.checkUpdate();
+    }
+}
+
+function normalUpdateFromMenu(e){"use strict";
+    Omadi.service.checkUpdate('from_menu');
+}
+
+function fullUpdateFromMenu(e){"use strict";
+    var dbFile, db, result;
+    
+    Ti.App.Properties.setBool("doingFullReset", true);
+    
+    Omadi.data.setUpdating(true);
+
+    Omadi.data.setLastUpdateTimestamp(0);
+    //If delete_all is present, delete all contents:
+
+    if (!Ti.Network.online) {
+        alert("You do not have an Internet connection right now, so new data will not be downloaded until you connect.");
+    }
+
+    db = Omadi.utils.openMainDatabase();
+
+    result = db.execute("SELECT id FROM _photos");
+    if (result.rowCount > 0) {
+        alert("One or more photos were not uploaded to the server, so they will be stored on this device now.");
+
+        while (result.isValidRow()) {
+
+            Omadi.data.saveFailedUpload(result.fieldByName('id', Ti.Database.FIELD_TYPE_INT), false);
+
+            result.next();
+        }
+    }
+    result.close();
+    db.close();
+
+    if (Ti.App.isAndroid) {
+        //Remove the database
+        db.remove();
+        db.close();
+    }
+    else {
+        dbFile = db.getFile();
+        db.close();
+        //phisically removes the file
+        dbFile.deleteFile();
+    }
+
+    // Install database with an empty version
+    db = Omadi.utils.openMainDatabase();
+    db.close();
+
+    // Clear out the GPS database alerts
+    db = Omadi.utils.openGPSDatabase();
+    db.execute('DELETE FROM alerts');
+    db.close();
+
+    listView.setData([]);
+    
+    setupBottomButtons();
+
+    Omadi.data.setUpdating(false);
+    Omadi.service.checkUpdate('from_menu');
+}
+
+function openFormCallback(e){"use strict";
+    Ti.API.debug(e);
+    
+    Omadi.display.openFormWindow(e.node_type, e.nid, e.form_part);
+}
+
 ( function() {"use strict";
         var db, formWindow, time_format, askAboutInspection, dialog, i, showingAlert, firstAlert;
-
+        
+        // Initialize the global scope variable to map deleted nids to saved positive nids
+        Ti.App.deletedNegatives = {};
+        
         if (Ti.App.isAndroid) {
             ImageFactory = require('ti.imagefactory');
         }
@@ -651,15 +691,6 @@ function showNextAlertInQueue(e) {"use strict";
         actionsButton.addEventListener('click', function(){
            
            Omadi.display.openActionsWindow();
-           
-           // if (Omadi.bundles.timecard.userShouldClockInOut()) {
-               // if (Omadi.bundles.timecard.isUserClockedIn()){
-                   // options.push('Clock Out');
-               // }
-               // else{
-                   // options.push('Clock In');
-               // }
-           // }
         });
 
         curWin.add(loggedView);
@@ -688,41 +719,15 @@ function showNextAlertInQueue(e) {"use strict";
 
         setupBottomButtons();
 
-        Ti.App.addEventListener("doneSendingData", function(e) {
-            Ti.API.debug("Done Sending data event received");
-            
-            //Omadi.service.sendErrorReport('donesendingdata event received');
-            networkStatusView.hide();
-            Omadi.service.uploadFile();
-        });
-
-        Ti.App.addEventListener("doneSendingPhotos", function() {
-            networkStatusView.hide();
-        });
-
-        Ti.App.addEventListener("sendingData", function(e) {
-            networkStatusLabel.setText(e.message);
-            networkStatusView.show();
-            
-            // setTimeout(function(){
-                // networkStatusView.hide();
-            // }, 15000);
-        });
-
-        Ti.App.addEventListener('loggingOut', function() {
-            //if(Ti.App.isIOS){
-                clearInterval(Ti.App.syncInterval);
-                clearInterval(Ti.App.photoUploadCheck);
-            //}
-            Ti.UI.currentWindow.close();
-        });
-
-        Ti.Network.addEventListener('change', function(e) {
-            var isOnline = e.online;
-            if (isOnline) {
-                Omadi.service.checkUpdate();
-            }
-        });
+        Ti.App.addEventListener("doneSendingData", doneSendingDataMainMenu);
+        Ti.App.addEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
+        Ti.App.addEventListener("sendingData", sendingDataMainMenu);
+        Ti.App.addEventListener('loggingOut', loggingOutMainMenu);
+        Ti.App.addEventListener('openForm', openFormCallback);
+        
+        Ti.App.addEventListener('sendUpdates', Omadi.service.sendUpdates);
+        
+        Ti.Network.addEventListener('change', networkChangedMainMenu);
 
         listView.addEventListener('click', function(e) {
             var nextWindow;
@@ -746,93 +751,20 @@ function showNextAlertInQueue(e) {"use strict";
             Omadi.display.logoutButtonPressed();
         });
 
-        curWin.addEventListener('close', function() {
-            Ti.API.info('Closing main menu');
-        });
-
-        //When back button on the phone is pressed, it alerts the user (pop up box)
+        // When back button on the phone is pressed, it alerts the user (pop up box)
         // that he needs to log out in order to go back to the root window
         curWin.addEventListener('android:back', function() {
             
             Omadi.display.logoutButtonPressed();
         });
-
-        //if(Ti.App.isAndroid){
-        //    Omadi.background.android.startUpdateService();
-        //}
-        //else{
-            Ti.App.syncInterval = setInterval(Omadi.service.checkUpdate, 300000);
-        //}
         
-        
+        Ti.App.syncInterval = setInterval(Omadi.service.checkUpdate, 300000);
+      
         Ti.App.photoUploadCheck = setInterval(Omadi.service.uploadFile, 60000);
 
-        Ti.App.addEventListener('full_update_from_menu', function() {
-            var dbFile, db, result;
-            
-            Ti.App.Properties.setBool("doingFullReset", true);
-            
-            
-            
-            Omadi.data.setUpdating(true);
-
-            Omadi.data.setLastUpdateTimestamp(0);
-            //If delete_all is present, delete all contents:
-
-            if (!Ti.Network.online) {
-                alert("You do not have an Internet connection right now, so new data will not be downloaded until you connect.");
-            }
-
-            db = Omadi.utils.openMainDatabase();
-
-            result = db.execute("SELECT id FROM _photos");
-            if (result.rowCount > 0) {
-                alert("One or more photos were not uploaded to the server, so they will be stored on this device now.");
-
-                while (result.isValidRow()) {
-
-                    Omadi.data.saveFailedUpload(result.fieldByName('id', Ti.Database.FIELD_TYPE_INT), false);
-
-                    result.next();
-                }
-            }
-            result.close();
-            db.close();
-
-            if (Ti.App.isAndroid) {
-                //Remove the database
-                db.remove();
-                db.close();
-            }
-            else {
-                dbFile = db.getFile();
-                db.close();
-                //phisically removes the file
-                dbFile.deleteFile();
-            }
-
-            // Install database with an empty version
-            db = Omadi.utils.openMainDatabase();
-            db.close();
-
-            // Clear out the GPS database alerts
-            db = Omadi.utils.openGPSDatabase();
-            db.execute('DELETE FROM alerts');
-            db.close();
-
-            listView.setData([]);
-            
-            setupBottomButtons();
-
-            Omadi.data.setUpdating(false);
-            Omadi.service.checkUpdate('from_menu');
-        });
-        
+        Ti.App.addEventListener('full_update_from_menu', fullUpdateFromMenu);
         Ti.App.addEventListener('finishedDataSync', setupBottomButtons);
-
-        Ti.App.addEventListener('normal_update_from_menu', function() {
-            Omadi.service.checkUpdate('from_menu');
-        });
+        Ti.App.addEventListener('normal_update_from_menu', normalUpdateFromMenu);
 
         if ( typeof curWin.fromSavedCookie !== 'undefined' && !curWin.fromSavedCookie) {
             
@@ -842,7 +774,6 @@ function showNextAlertInQueue(e) {"use strict";
             Omadi.bundles.timecard.askClockIn();
             
             Omadi.bundles.companyVehicle.askAboutVehicle();
-            //Omadi.bundles.timecard.askClockIn();
             
             Omadi.bundles.inspection.askToReviewLastInspection();
         }
@@ -860,30 +791,38 @@ function showNextAlertInQueue(e) {"use strict";
         }
 
         Ti.App.addEventListener('showNextAlertInQueue', showNextAlertInQueue);
-
-        // if(alertQueue.length > 0){
-        // for(i = 0; i < alertQueue.length; i ++){
-        //
-        // if(i == 0){
-        // alertQueue[i].show();
-        // currentAlertIndex = 0;
-        // }
-        //
-        // if(alertQueue.length > i + 1){
-        // //alertQueue[i].queueIndex = i;
-        // alertQueue[i].addEventListener('showNextAlertInQueue', showNextAlertInQueue);
-        // }
-        // }
-        // }
         
         Ti.API.debug("before init");
         Omadi.push_notifications.init();
         
         if(Ti.App.isIOS){
-            Ti.App.addEventListener('resume', function(){
-                Omadi.service.checkUpdate(); 
-            });
+            Ti.App.addEventListener('resume', Omadi.service.checkUpdate);
         }
+        
+        Ti.UI.currentWindow.addEventListener('close', function() {
+            Ti.API.info('Closing main menu');
+            
+            clearInterval(Ti.App.syncInterval);
+            clearInterval(Ti.App.photoUploadCheck);
+            
+            if(Ti.App.isIOS){
+                Ti.App.removeEventListener('resume', Omadi.service.checkUpdate);
+            }
+            
+            
+            Ti.App.removeEventListener('openForm', openFormCallback);
+            Ti.App.removeEventListener('showNextAlertInQueue', showNextAlertInQueue);
+            Ti.App.removeEventListener("syncInstallComplete", displayBundleList);
+            Ti.App.removeEventListener("doneSendingData", doneSendingDataMainMenu);
+            Ti.App.removeEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
+            Ti.App.removeEventListener("sendingData", sendingDataMainMenu);
+            Ti.App.removeEventListener('loggingOut', loggingOutMainMenu);
+            Ti.Network.removeEventListener('change', networkChangedMainMenu);
+            
+            Ti.App.removeEventListener('finishedDataSync', setupBottomButtons);
+            Ti.App.removeEventListener('normal_update_from_menu', normalUpdateFromMenu);
+            Ti.App.removeEventListener('full_update_from_menu', fullUpdateFromMenu);
+        });
       
     }());
 

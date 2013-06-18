@@ -648,6 +648,7 @@ function getRegionHeaderView(region, expanded){"use strict";
     
     if(expanded){
         collapsedView.visible = false;
+        collapsedView.borderWidth = 0;
     }
     
     regionHeader.arrow = arrow_img;
@@ -665,6 +666,8 @@ function getRegionHeaderView(region, expanded){"use strict";
             regionView.startLayout();
             
             e.source.collapsedView.hide();
+            e.source.collapsedView.setBorderWidth(0);
+
             regionView.show();
             regionView.setHeight(Ti.UI.SIZE);
             
@@ -678,6 +681,8 @@ function getRegionHeaderView(region, expanded){"use strict";
             regionView.startLayout();
             
             e.source.collapsedView.show();
+            e.source.collapsedView.setBorderWidth(1);
+            
             regionView.hide();
             regionView.setHeight(5);
            
@@ -1158,37 +1163,45 @@ function loadCustomCopyNode(originalNode, from_type, to_type){"use strict";
         origNid: originalNode.nid
     };
     
-    if(originalNode){
-        if(typeof fromBundle.data.custom_copy !== 'undefined'){
-            if(typeof fromBundle.data.custom_copy[to_type] !== 'undefined'){
-                for(to_field_name in fromBundle.data.custom_copy[to_type]){
-                    if(fromBundle.data.custom_copy[to_type].hasOwnProperty(to_field_name)){
-                        from_field_name = fromBundle.data.custom_copy[to_type][to_field_name];
-                        if(typeof originalNode[from_field_name] !== 'undefined'){
-                            newNode[to_field_name] = originalNode[from_field_name];
+    if(fromBundle){
+        if(originalNode){
+            if(typeof fromBundle.data !== 'undefined'){
+                if(typeof fromBundle.data.custom_copy !== 'undefined'){
+                    if(typeof fromBundle.data.custom_copy[to_type] !== 'undefined'){
+                        for(to_field_name in fromBundle.data.custom_copy[to_type]){
+                            if(fromBundle.data.custom_copy[to_type].hasOwnProperty(to_field_name)){
+                                from_field_name = fromBundle.data.custom_copy[to_type][to_field_name];
+                                if(typeof originalNode[from_field_name] !== 'undefined'){
+                                    newNode[to_field_name] = originalNode[from_field_name];
+                                }
+                            }
                         }
                     }
                 }
             }
         }
-    }
-    
-    // If there is also a child/parent relationship with the forms, add the parent reference to the child node
-    if(typeof fromBundle.child_forms !== 'undefined' && fromBundle.child_forms.length){
-        for(index in fromBundle.child_forms){
-            if(fromBundle.child_forms.hasOwnProperty(index)){
-                
-                if(fromBundle.child_forms[index].child_node_type == to_type){
+        
+        // If there is also a child/parent relationship with the forms, add the parent reference to the child node
+        if(typeof fromBundle.child_forms !== 'undefined' && fromBundle.child_forms.length){
+            for(index in fromBundle.child_forms){
+                if(fromBundle.child_forms.hasOwnProperty(index)){
                     
-                    newNode[fromBundle.child_forms[index].child_field_name] = {};
-                    newNode[fromBundle.child_forms[index].child_field_name].dbValues = [];
-                    newNode[fromBundle.child_forms[index].child_field_name].textValues = [];
-                    newNode[fromBundle.child_forms[index].child_field_name].dbValues.push(originalNode.nid);
-                    newNode[fromBundle.child_forms[index].child_field_name].textValues.push(originalNode.title);
-                    break;
+                    if(fromBundle.child_forms[index].child_node_type == to_type){
+                        
+                        newNode[fromBundle.child_forms[index].child_field_name] = {};
+                        newNode[fromBundle.child_forms[index].child_field_name].dbValues = [];
+                        newNode[fromBundle.child_forms[index].child_field_name].textValues = [];
+                        newNode[fromBundle.child_forms[index].child_field_name].dbValues.push(originalNode.nid);
+                        newNode[fromBundle.child_forms[index].child_field_name].textValues.push(originalNode.title);
+                        break;
+                    }
                 }
             }
         }
+    }
+    else{
+        Ti.API.error("No bundle found for " + from_type);
+        Omadi.service.sendErrorReport("No bundle found for " + from_type);
     }
     
     return newNode;
@@ -1607,36 +1620,43 @@ function formFullyLoadedForm(){"use strict";
     }
 }
 
+function switchedNodeIdForm(e){"use strict";
+  
+    Ti.API.error(JSON.stringify(e));
+   
+    if(Ti.UI.currentWindow.nid == e.negativeNid){   
+       Ti.UI.currentWindow.nid = e.positiveNid;
+       Ti.UI.currentWindow.node.nid = e.positiveNid;
+       Ti.API.error("new nid: " + Ti.UI.currentWindow.nid);
+   }
+}
+
 (function(){"use strict";
     var field_name;
     
     /*jslint vars: true, eqeq: true*/
    /*global Omadi*/
    
-    if(win.nid == 'new'){
+    if(Ti.UI.currentWindow.nid == 'new'){
         node = getNewNode();
     }
     else{
         node = Omadi.data.nodeLoad(win.nid);
+        // Make sure the window nid is updated to the real nid, as it could have changed in nodeLoad
+        Ti.UI.currentWindow.nid = node.nid;
     }
     
     Ti.API.debug("LOADED NODE: " + JSON.stringify(node));
    
-    win.addEventListener("android:back", cancelOpt);
+    Ti.UI.currentWindow.addEventListener("android:back", cancelOpt);
    
     if(win.nid < 0){
-        //Ti.API.error("WIN NID: " + win.nid);
+        Ti.API.error("WIN NID: " + win.nid);
         
-        Ti.App.addEventListener('switchedItUp', function(e){
-           //alert("it switched"); 
-           //Ti.API.error(JSON.stringify(e));
-       
-           if(Ti.UI.currentWindow.nid == e.negativeNid){
-               
-               Ti.UI.currentWindow.nid = e.positiveNid;
-               Ti.UI.currentWindow.node.nid = e.positiveNid;
-               //Ti.API.error("new nid: " + Ti.UI.currentWindow.nid);
-           }
+        Ti.App.addEventListener('switchedItUp', switchedNodeIdForm);
+        
+        Ti.UI.currentWindow.addEventListener('close', function(){
+           Ti.App.removeEventListener('switchedItUp', switchedNodeIdForm); 
         });
     }
     
@@ -1646,11 +1666,11 @@ function formFullyLoadedForm(){"use strict";
     
     
     
-    if(win.nid != "new" && win.nid > 0){
-        Omadi.service.setNodeViewed(win.nid);
+    if(Ti.UI.currentWindow.nid != "new" && Ti.UI.currentWindow.nid > 0){
+        Omadi.service.setNodeViewed(Ti.UI.currentWindow.nid);
     }
     
-    win.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
+    Ti.UI.currentWindow.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
     wrapperView = Ti.UI.createView({
        layout: 'vertical',
        bottom: 0,

@@ -314,34 +314,35 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
             
             if(node._saved === true){
                 
+                Ti.App.fireEvent("savedNode");
+                
                 if(node._isDraft === true){
                     Ti.UI.currentWindow.close();
                 }
                 else if(Ti.Network.online){
                     
                     if (saveType === "next_part") {
-                        Omadi.display.openFormWindow(node.type, node.nid, node.form_part + 1);                            
+                        //Omadi.display.openFormWindow(node.type, node.nid, node.form_part + 1);     
+                        
+                        Ti.App.fireEvent('openForm', {
+                            node_type: node.type,
+                            nid: node.nid,
+                            form_part: node.form_part + 1
+                        });                       
                     }
                     else if(saveType == 'new'){
-                        Omadi.display.openFormWindow(node.type, node.nid, node.type);
+                        
+                        //Omadi.display.openFormWindow(node.type, node.nid, node.type);
+                        
+                        Ti.App.fireEvent('openForm', {
+                            node_type: node.type,
+                            nid: node.nid,
+                            form_part: node.type
+                        });
                     }
                     
-                    // Send a clone of the object so the window will close after the network returns a response
-                    Omadi.service.sendUpdates();
-                    
-                    //alert("Updates Sent");
-                    
-                    if(Ti.UI.currentWindow.url.indexOf('form.js') !== -1){
-                        Ti.API.debug("CLOSING WINDOW");
-                        if(Ti.App.isAndroid){
-                            Ti.UI.currentWindow.close();
-                        }
-                        else{
-                            Ti.UI.currentWindow.hide();
-                        }
-                    }
-                    
-                    //alert('Window hidden');
+                    Ti.App.fireEvent('sendUpdates');
+                    Ti.UI.currentWindow.close();
                 }
                 else{
                     if(Ti.UI.currentWindow.url.indexOf('form.js') !== -1){
@@ -356,18 +357,27 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
                         dialog.addEventListener('click', function(ev) {
                             
                             if (saveType === "next_part") {
-                                Omadi.display.openFormWindow(node.type, node.nid, node.form_part + 1);
+                                // Omadi.display.openFormWindow(node.type, node.nid, node.form_part + 1);
+                                Ti.App.fireEvent('openForm', {
+                                    node_type: node.type,
+                                    nid: node.nid,
+                                    form_part: node.form_part + 1
+                                });
                             }
                             else if(saveType == 'new'){
-                                Omadi.display.openFormWindow(node.type, node.nid, node.type);
+                                //Omadi.display.openFormWindow(node.type, node.nid, node.type);
+                                
+                                Ti.App.fireEvent('openForm', {
+                                    node_type: node.type,
+                                    nid: node.nid,
+                                    form_part: node.type
+                                });
                             }
                             
                             Ti.UI.currentWindow.close();
                         });
                     }
                 }
-                
-                Ti.App.fireEvent("savedNode");
             }
         }
         catch(ex){
@@ -798,7 +808,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
 
     var db, node, result, subResult, field_name, dbValue, tempDBValues, textValue, 
         subValue, decoded, i, real_field_name, part, field_parts, widget, instances, 
-        tempValue, origDBValue, jsonValue, allowedValues, allowedKey, imageData;
+        tempValue, origDBValue, jsonValue, allowedValues, allowedKey, imageData, newNid;
 
     node = {
         form_part : 0
@@ -807,26 +817,65 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
     if (parseInt(nid, 10) != 0) {
         db = Omadi.utils.openMainDatabase();
 
-        result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed, sync_hash FROM node WHERE  nid = ' + nid);
-
-        if (result.isValidRow()) {
-
-            node.nid = result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT);
-            node.title = result.fieldByName('title', Ti.Database.FIELD_TYPE_STRING);
-            node.created = result.fieldByName('created', Ti.Database.FIELD_TYPE_INT);
-            node.changed = result.fieldByName('changed', Ti.Database.FIELD_TYPE_INT);
-            node.author_uid = result.fieldByName('author_uid', Ti.Database.FIELD_TYPE_INT);
-            node.flag_is_updated = result.fieldByName('flag_is_updated', Ti.Database.FIELD_TYPE_INT);
-            node.table_name = node.type = result.fieldByName('table_name', Ti.Database.FIELD_TYPE_STRING);
-            node.form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
-            node.changed_uid = result.fieldByName('changed_uid', Ti.Database.FIELD_TYPE_INT);
-            node.no_data_fields = result.fieldByName('no_data_fields', Ti.Database.FIELD_TYPE_STRING);
-            node.perm_edit = result.fieldByName('perm_edit', Ti.Database.FIELD_TYPE_INT);
-            node.perm_delete = result.fieldByName('perm_delete', Ti.Database.FIELD_TYPE_INT);
-            node.viewed = result.fieldByName('viewed', Ti.Database.FIELD_TYPE_STRING);
-            node.sync_hash = result.fieldByName('sync_hash', Ti.Database.FIELD_TYPE_STRING);
+        try{
+            result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed, sync_hash FROM node WHERE  nid = ' + nid);
+    
+            if (result.isValidRow()) {
+    
+                node.nid = result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT);
+                node.title = result.fieldByName('title', Ti.Database.FIELD_TYPE_STRING);
+                node.created = result.fieldByName('created', Ti.Database.FIELD_TYPE_INT);
+                node.changed = result.fieldByName('changed', Ti.Database.FIELD_TYPE_INT);
+                node.author_uid = result.fieldByName('author_uid', Ti.Database.FIELD_TYPE_INT);
+                node.flag_is_updated = result.fieldByName('flag_is_updated', Ti.Database.FIELD_TYPE_INT);
+                node.table_name = node.type = result.fieldByName('table_name', Ti.Database.FIELD_TYPE_STRING);
+                node.form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
+                node.changed_uid = result.fieldByName('changed_uid', Ti.Database.FIELD_TYPE_INT);
+                node.no_data_fields = result.fieldByName('no_data_fields', Ti.Database.FIELD_TYPE_STRING);
+                node.perm_edit = result.fieldByName('perm_edit', Ti.Database.FIELD_TYPE_INT);
+                node.perm_delete = result.fieldByName('perm_delete', Ti.Database.FIELD_TYPE_INT);
+                node.viewed = result.fieldByName('viewed', Ti.Database.FIELD_TYPE_STRING);
+                node.sync_hash = result.fieldByName('sync_hash', Ti.Database.FIELD_TYPE_STRING);
+            }
+            else{
+                // If the nid doesn't exist, maybe it was deleted and a positive nid has replaced it
+                if(typeof Ti.App.deletedNegatives[nid] !== 'undefined'){
+                    
+                    newNid = Ti.App.deletedNegatives[nid];
+                    Ti.API.debug("CAN RECOVER " + nid +  " >>> " + newNid);
+                    
+                    result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed, sync_hash FROM node WHERE  nid = ' + newNid);
+    
+                    if (result.isValidRow()) {
+            
+                        node.nid = result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT);
+                        node.title = result.fieldByName('title', Ti.Database.FIELD_TYPE_STRING);
+                        node.created = result.fieldByName('created', Ti.Database.FIELD_TYPE_INT);
+                        node.changed = result.fieldByName('changed', Ti.Database.FIELD_TYPE_INT);
+                        node.author_uid = result.fieldByName('author_uid', Ti.Database.FIELD_TYPE_INT);
+                        node.flag_is_updated = result.fieldByName('flag_is_updated', Ti.Database.FIELD_TYPE_INT);
+                        node.table_name = node.type = result.fieldByName('table_name', Ti.Database.FIELD_TYPE_STRING);
+                        node.form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
+                        node.changed_uid = result.fieldByName('changed_uid', Ti.Database.FIELD_TYPE_INT);
+                        node.no_data_fields = result.fieldByName('no_data_fields', Ti.Database.FIELD_TYPE_STRING);
+                        node.perm_edit = result.fieldByName('perm_edit', Ti.Database.FIELD_TYPE_INT);
+                        node.perm_delete = result.fieldByName('perm_delete', Ti.Database.FIELD_TYPE_INT);
+                        node.viewed = result.fieldByName('viewed', Ti.Database.FIELD_TYPE_STRING);
+                        node.sync_hash = result.fieldByName('sync_hash', Ti.Database.FIELD_TYPE_STRING);
+                    }
+                    else{
+                         Omadi.service.sendErrorReport("unrecoverable node load 1");
+                    }
+                }
+                else{
+                   Omadi.service.sendErrorReport("unrecoverable node load 2");
+                }
+            }
+            result.close();
         }
-        result.close();
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception with node table query: " + ex);
+        }
 
         instances = Omadi.data.getFields(node.table_name);
 
@@ -2172,7 +2221,7 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                                     dialog.show();
                                 }
                                 else if ( typeof json.insert[i].__negative_nid !== 'undefined' && alertReason) {
-                                    Ti.API.debug("Deleting nid: " + json.insert[i].__negative_nid);
+                                    Ti.API.debug("Deleting nid from error: " + json.insert[i].__negative_nid);
         
                                     queries.push('DELETE FROM ' + type + ' WHERE nid=' + json.insert[i].__negative_nid);
                                     queries.push('DELETE FROM node WHERE nid=' + json.insert[i].__negative_nid);
@@ -2363,10 +2412,11 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                                 Ti.App.Properties.setBool('newDispatchJob', true);
                             }
                             
-    
                             if ( typeof json.insert[i].__negative_nid !== 'undefined') {
                                 Ti.API.debug("Deleting nid: " + json.insert[i].__negative_nid);
-    
+                                
+                                Ti.App.deletedNegatives[json.insert[i].__negative_nid] = json.insert[i].nid;
+                                
                                 queries.push('DELETE FROM ' + type + ' WHERE nid=' + json.insert[i].__negative_nid);
                                 queries.push('DELETE FROM node WHERE nid=' + json.insert[i].__negative_nid);
     

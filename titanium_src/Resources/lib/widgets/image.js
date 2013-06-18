@@ -45,7 +45,7 @@ Omadi.widgets.image = {
             for(i = 0; i < instance.elements.length; i ++){
                 
                 if(instance.elements[i].children.length > 0){
-                    for(j = 0; j < instance.elements[i].children.length; j ++){
+                    for(j = instance.elements[i].children.length -1; j >= 0; j --){
                         instance.elements[i].remove(instance.elements[i].children[j]);
                         instance.elements[i].children[j] = null;
                     }
