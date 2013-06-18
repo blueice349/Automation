@@ -530,7 +530,11 @@ Omadi.widgets.getLabelField = function(instance){"use strict";
 
 Omadi.widgets.getTextField = function(instance){"use strict";
     
-    var textField = Ti.UI.createTextField({
+    var textField, now;
+    
+    now = new Date();
+    
+    textField = Ti.UI.createTextField({
         backgroundColor: '#fff',
         borderRadius: 10,
         borderColor: '#999',
@@ -559,7 +563,8 @@ Omadi.widgets.getTextField = function(instance){"use strict";
         suppressReturn: true,
         
         // Custom variables
-        instance: instance
+        instance: instance,
+        lastChange: now.getTime()
     });
     
     if(Ti.App.isAndroid){

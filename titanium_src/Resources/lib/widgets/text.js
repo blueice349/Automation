@@ -119,31 +119,30 @@ Omadi.widgets.text = {
         
         widgetView.addEventListener('change', function(e) {
             /*global setConditionallyRequiredLabels*/
+            var now, milliseconds, timeChange;
             
-            Ti.API.debug("Change: " + e.source.value);
+            now = new Date();
+            milliseconds = now.getTime();
+            timeChange = milliseconds - e.source.lastChange;
             
-            if(e.source.lastValue != e.source.value){
+            if(e.source.lastValue != e.source.value && (timeChange > 30)){
                 Ti.API.debug("text value changed: " + e.source.lastValue + " -> " + e.source.value);
                 
                 if(Ti.App.isAndroid && typeof e.source.maxLength !== 'undefined'){
                     if(e.source.value.length > e.source.maxLength){
-                        Ti.API.debug("len text before set value");
-                        e.source.value = e.source.value.substring(0, e.source.maxLength);
-                        Ti.API.debug("len text setvalue");
                         
+                        e.source.value = e.source.value.substring(0, e.source.maxLength);
                         e.source.setSelection(e.source.value.length, e.source.value.length);
-                        Ti.API.debug("len text setselection");
                     }
                 }
                 
                 if(typeof e.source.capitalization !== 'undefined'){
                     if(e.source.capitalization == 'all_caps' && e.source.value !== null){
-                        Ti.API.debug("cap text before set value");
+                      
                         e.source.value = (e.source.value + "".toString()).toUpperCase();
-                        Ti.API.debug("cap text setvalue");
+                      
                         if(Ti.App.isAndroid){
                             e.source.setSelection(e.source.value.length, e.source.value.length);
-                            Ti.API.debug("cap text setselection");
                         }
                     }
                 }
@@ -152,14 +151,11 @@ Omadi.widgets.text = {
                 e.source.textValue = e.source.value;
                 
                 if(e.source.check_conditional_fields.length > 0){
-                    Ti.API.debug("text before conditional");
                     setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
-                    Ti.API.debug("text after conditional");
                 }
                 
                 e.source.lastValue = e.source.value;
-                
-                Ti.API.debug("text: End of change logic");
+                e.source.lastChange = milliseconds;
             }
         });
         

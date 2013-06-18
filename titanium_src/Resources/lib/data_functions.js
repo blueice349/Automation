@@ -299,8 +299,16 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
         Omadi.display.loading("Saving...");
         
         try{
+            
+            // Do not allow the web server's data in a background update
+            // to overwrite the local data just being saved
+            Ti.App.allowBackgroundUpdate = false;
+            
             node = Omadi.data.nodeSave(node);
-                        
+            
+            // Now that the node is saved on the phone or a big error occurred, allow background logouts
+            Ti.App.allowBackgroundLogout = true;
+            
             if(node._saved === true){
                 Ti.UI.currentWindow.nodeSaved = true;
             }
@@ -374,10 +382,18 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
                                 });
                             }
                             
+                            Omadi.display.loading();
+                            
                             Ti.UI.currentWindow.close();
                         });
                     }
                 }
+            }
+            else{
+                
+                // Allow background updates again
+                Ti.App.allowBackgroundUpdate = true;
+                Omadi.service.sendErrorReport("Node failed to save on the phone");
             }
         }
         catch(ex){
@@ -839,10 +855,12 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
             }
             else{
                 // If the nid doesn't exist, maybe it was deleted and a positive nid has replaced it
-                if(typeof Ti.App.deletedNegatives[nid] !== 'undefined'){
+                if(typeof Ti.App.deletedNegatives[nid] !== 'undefined' && Ti.App.deletedNegatives[nid] !== null){
                     
                     newNid = Ti.App.deletedNegatives[nid];
                     Ti.API.debug("CAN RECOVER " + nid +  " >>> " + newNid);
+                    
+                    Ti.App.deletedNegatives[nid] = null;
                     
                     result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed, sync_hash FROM node WHERE  nid = ' + newNid);
     
@@ -2165,7 +2183,7 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
 
     var closeDB, instances, fakeFields, queries, i, j, field_name, query, 
         fieldNames, no_data, values, value, notifications = {}, numSets, 
-        result, reasonIndex, reason, alertReason, dialog;
+        result, reasonIndex, reason, alertReason, dialog, updateNid;
     
     closeDB = false;
     queries = [];
@@ -2189,6 +2207,8 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
 
                     for ( i = 0; i < json.insert.length; i++) {
                         
+                        Ti.API.debug(JSON.stringify(json.insert[i]));
+                        
                         if(typeof json.insert[i].__error !== 'undefined' && json.insert[i].__error == 1){
                             
                             Ti.API.debug("HAS ERROR");
@@ -2206,12 +2226,22 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                                     }
                                 }
                                 
+                                Ti.API.debug("Alert Reason: " + alertReason);
+                                Ti.API.debug("Reason: " + reason);
+                                
+                                if(typeof json.insert[i].__negative_nid !== 'undefined'){
+                                    updateNid = json.insert[i].__negative_nid;
+                                }
+                                else{
+                                    updateNid = json.insert[i].nid;
+                                }
+                                
                                 if(alertReason){
                                     reason += " The entry has been saved as a draft.";
-                                    queries.push('UPDATE node SET flag_is_updated=3 WHERE nid=' + json.insert[i].__negative_nid);
+                                    queries.push('UPDATE node SET flag_is_updated=3 WHERE nid=' + updateNid);
                                     
                                     dialog = Ti.UI.createAlertDialog({
-                                        title: "Entry Not Saved",
+                                        title: "Recent Data Not Synched",
                                         message: reason,
                                         ok: 'Go to Drafts'
                                     });
@@ -2221,10 +2251,10 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                                     dialog.show();
                                 }
                                 else if ( typeof json.insert[i].__negative_nid !== 'undefined' && alertReason) {
-                                    Ti.API.debug("Deleting nid from error: " + json.insert[i].__negative_nid);
+                                    Ti.API.debug("Deleting nid from error: " + updateNid);
         
-                                    queries.push('DELETE FROM ' + type + ' WHERE nid=' + json.insert[i].__negative_nid);
-                                    queries.push('DELETE FROM node WHERE nid=' + json.insert[i].__negative_nid);
+                                    queries.push('DELETE FROM ' + type + ' WHERE nid=' + updateNid);
+                                    queries.push('DELETE FROM node WHERE nid=' + updateNid);
                                 }
                             }
                         }

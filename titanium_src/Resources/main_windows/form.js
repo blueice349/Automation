@@ -1635,8 +1635,14 @@ function switchedNodeIdForm(e){"use strict";
     var field_name;
     
     /*jslint vars: true, eqeq: true*/
-   /*global Omadi*/
-   
+    /*global Omadi*/
+    
+    Ti.UI.currentWindow.addEventListener("android:back", cancelOpt);
+    
+    // Do not let the app log this user out while on the form screen
+    // Allow again when the node is saved
+    Ti.App.allowBackgroundLogout = false;
+    
     if(Ti.UI.currentWindow.nid == 'new'){
         node = getNewNode();
     }
@@ -1646,10 +1652,33 @@ function switchedNodeIdForm(e){"use strict";
         Ti.UI.currentWindow.nid = node.nid;
     }
     
+    if(typeof win.form_part !== 'undefined'){
+        tempFormPart = parseInt(win.form_part, 10);
+        if(win.form_part == tempFormPart){
+            node.form_part = win.form_part;
+        }
+        else{
+            // This is a copy to form, the form_part passed in is which type to copy to
+            Ti.API.info("This is a custom copy to " + win.form_part);
+            node = loadCustomCopyNode(node, win.type, win.form_part);
+            
+            win.origNid = node.origNid;
+            win.type = node.type;
+            win.nid = 'new';
+            win.form_part = 0;
+            
+            Ti.App.addEventListener("formFullyLoaded", formFullyLoadedForm);
+            
+            Ti.UI.currentWindow.addEventListener('close', function(){
+                Ti.App.removeEventListener("formFullyLoaded", formFullyLoadedForm);
+            });
+        }
+    }
+    
+    Ti.UI.currentWindow.node = node;
+    
     Ti.API.debug("LOADED NODE: " + JSON.stringify(node));
-   
-    Ti.UI.currentWindow.addEventListener("android:back", cancelOpt);
-   
+    
     if(win.nid < 0){
         Ti.API.error("WIN NID: " + win.nid);
         
@@ -1661,10 +1690,7 @@ function switchedNodeIdForm(e){"use strict";
     }
     
     Ti.App.addEventListener('photoUploaded', photoUploadedForm);
-    
     Ti.App.addEventListener('loggingOut', loggingOutForm);
-    
-    
     
     if(Ti.UI.currentWindow.nid != "new" && Ti.UI.currentWindow.nid > 0){
         Omadi.service.setNodeViewed(Ti.UI.currentWindow.nid);
@@ -1741,34 +1767,8 @@ function switchedNodeIdForm(e){"use strict";
         scrollPositionY = e.y;
     });
 
-    if(typeof win.form_part !== 'undefined'){
-        tempFormPart = parseInt(win.form_part, 10);
-        if(win.form_part == tempFormPart){
-            node.form_part = win.form_part;
-        }
-        else{
-            // This is a copy to form, the form_part passed in is which type to copy to
-            Ti.API.info("This is a custom copy to " + win.form_part);
-            node = loadCustomCopyNode(node, win.type, win.form_part);
-            
-            win.origNid = node.origNid; 
-            win.type = node.type;
-            win.nid = 'new';
-            win.form_part = 0;    
-            
-            Ti.App.addEventListener("formFullyLoaded", formFullyLoadedForm);
-            
-            Ti.UI.currentWindow.addEventListener('close', function(){
-                Ti.App.removeEventListener("formFullyLoaded", formFullyLoadedForm);
-            });
-        }
-    }
-    
-    win.node = node;
     instances = Omadi.data.getFields(win.type);
-    
-    
-    
+        
     regions = Omadi.data.getRegions(win.type);
     var region;
     var region_name;

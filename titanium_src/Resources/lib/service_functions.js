@@ -52,38 +52,48 @@ Omadi.service.refreshSession = function() {"use strict";
                     Omadi.data.setUpdating(false);
 
                     if (this.status == 403) {
-                        dialog = Titanium.UI.createAlertDialog({
-                            title : 'Omadi',
-                            buttonNames : ['OK'],
-                            message : "You were logged out while refreshing your session. Please log back in."
-                        });
-
-                        dialog.addEventListener('click', function(e) {
-                            var db_func = Omadi.utils.openListDatabase();
-                            db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
-                            db_func.close();
-                        });
-
-                        Omadi.service.logout();
-                        dialog.show();
+                        
+                        // Do not allow a logout when a background logout is disabled
+                        // Currently, this should only be when the user is filling out a form
+                        if(Ti.App.allowBackgroundLogout){
+                            dialog = Titanium.UI.createAlertDialog({
+                                title : 'Omadi',
+                                buttonNames : ['OK'],
+                                message : "You were logged out while refreshing your session. Please log back in."
+                            });
+    
+                            dialog.addEventListener('click', function(e) {
+                                var db_func = Omadi.utils.openListDatabase();
+                                db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+                                db_func.close();
+                            });
+    
+                            Omadi.service.logout();
+                            dialog.show();
+                        }
                     }
                     else if (this.status == 401) {
-                        dialog = Titanium.UI.createAlertDialog({
-                            title : 'Omadi',
-                            buttonNames : ['OK'],
-                            message : "Your session is no longer valid, and it could not be refreshed. Please log back in."
-                        });
-
-                        dialog.addEventListener('click', function(e) {
-
-                            var db_func = Omadi.utils.openListDatabase();
-                            db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
-                            db_func.close();
-
-                        });
-
-                        dialog.show();
-                        Omadi.service.logout();
+                        
+                        // Do not allow a logout when a background logout is disabled
+                        // Currently, this should only be when the user is filling out a form
+                        if(Ti.App.allowBackgroundLogout){
+                            dialog = Titanium.UI.createAlertDialog({
+                                title : 'Omadi',
+                                buttonNames : ['OK'],
+                                message : "Your session is no longer valid, and it could not be refreshed. Please log back in."
+                            });
+    
+                            dialog.addEventListener('click', function(e) {
+    
+                                var db_func = Omadi.utils.openListDatabase();
+                                db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+                                db_func.close();
+    
+                            });
+    
+                            dialog.show();
+                            Omadi.service.logout();
+                        }
                         
                     }
                     else {
@@ -217,41 +227,50 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                     //Titanium.Media.vibrate();
 
                     if (this.status == 403) {
-                        dialog = Titanium.UI.createAlertDialog({
-                            title : 'Omadi',
-                            buttonNames : ['OK'],
-                            message : "You have been logged out. Please log back in."
-                        });
-
-                        dialog.addEventListener('click', function(e) {
-                            var db_func = Omadi.utils.openListDatabase();
-                            db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
-                            db_func.close();
-                            //win.close();
-                        });
-
-                        dialog.show();
-                        Omadi.service.logout();
+                        
+                        // Do not allow a logout when a background logout is disabled
+                        // Currently, this should only be when the user is filling out a form
+                        if(Ti.App.allowBackgroundLogout){
+                            dialog = Titanium.UI.createAlertDialog({
+                                title : 'Omadi',
+                                buttonNames : ['OK'],
+                                message : "You have been logged out. Please log back in."
+                            });
+    
+                            dialog.addEventListener('click', function(e) {
+                                var db_func = Omadi.utils.openListDatabase();
+                                db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+                                db_func.close();
+                                //win.close();
+                            });
+    
+                            dialog.show();
+                            Omadi.service.logout();
+                        }
                         
                     }
                     else if (this.status == 401) {
-                        dialog = Titanium.UI.createAlertDialog({
-                            title : 'Omadi',
-                            buttonNames : ['OK'],
-                            message : "Your session is no longer valid. Please log back in."
-                        });
-
-                        dialog.addEventListener('click', function(e) {
-
-                            var db_func = Omadi.utils.openListDatabase();
-                            db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
-                            db_func.close();
-
-                        });
-
-                        dialog.show();
-                        
-                        Omadi.service.logout();
+                        // Do not allow a logout when a background logout is disabled
+                        // Currently, this should only be when the user is filling out a form
+                        if(Ti.App.allowBackgroundLogout){
+                            dialog = Titanium.UI.createAlertDialog({
+                                title : 'Omadi',
+                                buttonNames : ['OK'],
+                                message : "Your session is no longer valid. Please log back in."
+                            });
+    
+                            dialog.addEventListener('click', function(e) {
+    
+                                var db_func = Omadi.utils.openListDatabase();
+                                db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+                                db_func.close();
+    
+                            });
+    
+                            dialog.show();
+                            
+                            Omadi.service.logout();
+                        }
                     }
                     // Only show the dialog if this is not a background update
                     else if (useProgressBar) {
@@ -456,17 +475,22 @@ Omadi.service.sendUpdates = function() {"use strict";
                 }
 
                 if (this.status == 403 || this.status == 401) {
-                    dialog = Titanium.UI.createAlertDialog({
-                        title : 'Please Login Again',
-                        buttonNames : ['OK'],
-                        message : "You have been logged out. Your latest data was saved, and it will be sent to the server after you login again."
-                    });
-
-                    Omadi.service.sendErrorReport('User logged out with code ' + this.status);
-
-                    dialog.show();
-
-                    Omadi.service.logout();
+                    
+                    // Only logout when background logout is enabled
+                    // Currently, it should only be disabled when the user is filling out a form
+                    if(Ti.App.allowBackgroundLogout){
+                        dialog = Titanium.UI.createAlertDialog({
+                            title : 'Please Login Again',
+                            buttonNames : ['OK'],
+                            message : "You have been logged out. Your latest data was saved, and it will be sent to the server after you login again."
+                        });
+    
+                        Omadi.service.sendErrorReport('User logged out with code ' + this.status);
+    
+                        dialog.show();
+    
+                        Omadi.service.logout();
+                    }
                 }
                 else if (this.status == 500) {
 
@@ -503,6 +527,10 @@ Omadi.service.sendUpdates = function() {"use strict";
             
             //alert("Data Sent");
         }
+    }
+    else{
+        // Allow background updates again
+        Ti.App.allowBackgroundUpdate = true;
     }
 };
 

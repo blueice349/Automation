@@ -556,7 +556,10 @@ function showNextAlertInQueue(e) {"use strict";
 
 function doneSendingDataMainMenu(e){"use strict";
     Ti.API.debug("Done Sending data event received");
-   
+    
+    // Allow background updates again
+    Ti.App.allowBackgroundUpdate = true;
+    
     networkStatusView.hide();
     Omadi.service.uploadFile();
 }
@@ -650,11 +653,26 @@ function openFormCallback(e){"use strict";
     Omadi.display.openFormWindow(e.node_type, e.nid, e.form_part);
 }
 
+function backgroundCheckForUpdates(){"use strict";
+    
+    // allowBackground update is set to true at the beginning of the main menu opening.
+    // It is set to false from just before the node is saved on the phone and just after
+    //    the time it is saved to the web server or an error occurs.
+    if(Ti.App.allowBackgroundUpdate){
+        Omadi.service.checkUpdate();
+    }
+    else{
+        Ti.API.debug("Background updates are not allowed right now.");
+    }
+}
+
 ( function() {"use strict";
         var db, formWindow, time_format, askAboutInspection, dialog, i, showingAlert, firstAlert;
         
         // Initialize the global scope variable to map deleted nids to saved positive nids
         Ti.App.deletedNegatives = {};
+        Ti.App.allowBackgroundUpdate = true;
+        Ti.App.allowBackgroundLogout = true;
         
         if (Ti.App.isAndroid) {
             ImageFactory = require('ti.imagefactory');
@@ -758,7 +776,7 @@ function openFormCallback(e){"use strict";
             Omadi.display.logoutButtonPressed();
         });
         
-        Ti.App.syncInterval = setInterval(Omadi.service.checkUpdate, 300000);
+        Ti.App.syncInterval = setInterval(backgroundCheckForUpdates, 300000);
       
         Ti.App.photoUploadCheck = setInterval(Omadi.service.uploadFile, 60000);
 
