@@ -22,49 +22,16 @@ wrapperView = Ti.UI.createView({
 
 curWin.is_opened = false;
 var listTableView;
-//var search;
 
 var accountMessage = {};
 var accountWindow = {};
 var accountWrapperView;
 
-//accountMessage.search = null;
 accountMessage.listView = null;
 accountWindow.isOpened = false;
 
-//var actIndAlert;
 var refreshImg;
 var toolbar; 
-
-// var showLoading = function() {"use strict";
-    // if (Ti.App.isAndroid) {
-        // actIndAlert.show();
-    // }
-    // else {
-        // var items = toolbar.getItems();
-        // items.pop();
-        // items.push(actIndAlert);
-        // toolbar.setItems(items);
-        // actIndAlert.show();
-        // refreshImg.hide();
-    // }
-// };
-// 
-// var hideLoading = function() {"use strict";
-    // if (Ti.App.isAndroid) {
-        // actIndAlert.hide();
-    // }
-    // else {
-        // var items = toolbar.getItems();
-        // items.pop();
-        // items.push(refreshImg);
-        // toolbar.setItems(items);
-        // actIndAlert.hide();
-        // refreshImg.show();
-// 
-    // }
-// };
-
 
 function loadAccAlertData() {"use strict";
     var db, result, ch_color, ch, n_data, t_lb, n_lb, full_msg, rowWrapper;
@@ -87,7 +54,6 @@ function loadAccAlertData() {"use strict";
             }
             ch++;
             
-            //Ti.API.info("======>>> " + result.fieldByName('message'));
             full_msg = result.fieldByName('message');
 
             t_lb = Titanium.UI.createLabel({
@@ -487,34 +453,44 @@ function opnAccountAlertsList(e) {"use strict";
     loadAccAlertData();
 }
 
+function logginOutMessageCenter(){"use strict";
+    Ti.UI.currentWindow.close();
+}
+
+function savedNodeMessageCenter(){"use strict";
+
+    if(Ti.App.isAndroid){
+        
+        if(accountWindow.isOpened){
+            accountWindow.close();
+        }
+        
+        Ti.UI.currentWindow.close();
+    }
+    else{
+        
+        if(accountWindow.isOpened){
+            accountWindow.close();
+        }
+        
+        Ti.UI.currentWindow.hide();
+        // Close the window after the maximum timeout for a node save
+        setTimeout(Ti.UI.currentWindow.close, 65000);
+    }
+}
+
+function refreshUIAlertsMessageCenter(e){"use strict";
+
+    Omadi.display.doneLoading();      
+    loadData();
+}
+
 
 ( function() {"use strict";
 
     
-    Ti.App.addEventListener('loggingOut', function() {
-        Ti.UI.currentWindow.close();
-    });
-
-    Ti.App.addEventListener("savedNode", function(){
-        if(Ti.App.isAndroid){
-            
-            if(accountWindow.isOpened){
-                accountWindow.close();
-            }
-            
-            Ti.UI.currentWindow.close();
-        }
-        else{
-            
-            if(accountWindow.isOpened){
-                accountWindow.close();
-            }
-            
-            Ti.UI.currentWindow.hide();
-            // Close the window after the maximum timeout for a node save
-            setTimeout(Ti.UI.currentWindow.close, 65000);
-        }
-    });
+    Ti.App.addEventListener('loggingOut', logginOutMessageCenter);
+    Ti.App.addEventListener("savedNode", savedNodeMessageCenter);
     
     if (Ti.App.isAndroid) {
         alertNavButtons_android(listTableView, curWin, wrapperView);
@@ -575,27 +551,25 @@ function opnAccountAlertsList(e) {"use strict";
     curWin.is_opened = true;
     loadData();
 
-    Ti.App.addEventListener('refresh_UI_Alerts', function(e) {
-        Omadi.display.doneLoading();
-        //if (curWin && curWin.is_opened === true) {
-        //    
-        //    if (e.status == 'fail') {
-        //        return;
-       //     }
-            //if (accountWindow.isOpened == true) {
-            //    loadAccAlertData();
-            //}
-            //else {
-                loadData();
-           // }
-       // }
-    });
+    Ti.App.addEventListener('refresh_UI_Alerts', refreshUIAlertsMessageCenter);
     
     curWin.add(wrapperView);
     
     curWin.is_opened = true;
     Omadi.display.loading("Refreshing...");
     Omadi.location.uploadGPSCoordinates();
+    
+    Ti.UI.currentWindow.addEventListener('close', function(){
+        Ti.App.removeEventListener('loggingOut', logginOutMessageCenter);
+        Ti.App.removeEventListener("savedNode", savedNodeMessageCenter);
+        Ti.App.removeEventListener('refresh_UI_Alerts', refreshUIAlertsMessageCenter);
+        
+        // Clean up memory
+        
+        Ti.UI.currentWindow.remove(wrapperView);
+        wrapperView = null;
+        curWin = null;
+    });
     
 }());
 

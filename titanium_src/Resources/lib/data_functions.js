@@ -832,7 +832,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
 
     if (parseInt(nid, 10) != 0) {
         db = Omadi.utils.openMainDatabase();
-
+        
         try{
             result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed, sync_hash FROM node WHERE  nid = ' + nid);
     
@@ -882,11 +882,13 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                         node.sync_hash = result.fieldByName('sync_hash', Ti.Database.FIELD_TYPE_STRING);
                     }
                     else{
-                         Omadi.service.sendErrorReport("unrecoverable node load 1");
+                         Omadi.service.sendErrorReport("unrecoverable node load 1 for nid " + nid);
+                         node = null;
                     }
                 }
                 else{
-                   Omadi.service.sendErrorReport("unrecoverable node load 2");
+                   Omadi.service.sendErrorReport("unrecoverable node load 2 for nid " + nid);
+                   node = null;
                 }
             }
             result.close();
@@ -895,9 +897,9 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
             Omadi.service.sendErrorReport("Exception with node table query: " + ex);
         }
 
-        instances = Omadi.data.getFields(node.table_name);
-
-        if ( typeof node.nid !== 'undefined') {
+        if (node != null && typeof node.nid !== 'undefined') {
+            
+            instances = Omadi.data.getFields(node.table_name);
 
             result = db.execute("SELECT * FROM " + node.table_name + " WHERE nid = " + node.nid);
             if (result.isValidRow()) {
@@ -1178,7 +1180,9 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                 for ( i = 0; i < node[field_name].dbValues.length; i++) {
                                     if (!Omadi.utils.isEmpty(node[field_name].dbValues[i])) {
                                         node[field_name].dbValues[i] = parseInt(node[field_name].dbValues[i], 10);
-                                        node[field_name].textValues[i] = Omadi.utils.formatDate(node[field_name].dbValues[i], (instances[field_name].settings.time == 1 || typeof instances[field_name].settings.granularity.hour !== 'undefined'));
+                                        node[field_name].textValues[i] = Omadi.utils.formatDate(node[field_name].dbValues[i], 
+                                            (instances[field_name].settings.time == 1 || 
+                                                (typeof instances[field_name].settings.granularity !== 'undefined' && typeof instances[field_name].settings.granularity.hour !== 'undefined')));
                                     }
                                     else {
                                         node[field_name].dbValues[i] = null;
@@ -1509,7 +1513,6 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                         
                         if(Ti.App.isAndroid){
                             
-                            
                             Ti.API.debug("About to resize");
                             isResized = false;
                              try{
@@ -1628,6 +1631,8 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                         }
                         catch(ex5){
                             Omadi.service.sendErrorReport("Exception base64 encoding photo: " + ex5); 
+                            // This photo is not going to upload correctly
+                            nextPhoto = null;
                         }
                         
                         try{
@@ -1638,6 +1643,8 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                         }
                         catch(ex6){
                             Omadi.service.sendErrorReport("Exception getting text of base64 photo: " + ex6); 
+                            // This photo is not going to upload correctly
+                            nextPhoto = null;
                         }
                         
                         imageFile = null;
@@ -1905,13 +1912,15 @@ Omadi.data.processFakeFieldsJson = function(json, mainDB, progress) {"use strict
 
 
 Omadi.data.processFieldsJson = function(json, mainDB, progress) {"use strict";
-
+    /*global ROLE_ID_ADMIN, ROLE_ID_OMADI_AGENT*/
     var result, fid, field_exists, field_type, db_type, field_name, label, widgetString, settingsString, region, part, queries, description, bundle, weight, required, disabled, can_view, can_edit, settings, omadi_session_details, roles, permissionsString, permIdx, roleIdx, i;
     try {
         queries = [];
 
         omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
         roles = omadi_session_details.user.roles;
+        
+        Ti.API.debug(roles);
 
         if (json.insert) {
             //Ti.API.debug(json);
@@ -1951,8 +1960,12 @@ Omadi.data.processFieldsJson = function(json, mainDB, progress) {"use strict";
 
                     can_view = 0;
                     can_edit = 0;
-
-                    if (settings.enforce_permissions != null && settings.enforce_permissions == 1) {
+                    
+                    if (roles.hasOwnProperty(ROLE_ID_ADMIN) || roles.hasOwnProperty(ROLE_ID_OMADI_AGENT)) {
+                        // Admin users can view/edit any field
+                        can_view = can_edit = 1;
+                    }
+                    else if (settings.enforce_permissions != null && settings.enforce_permissions == 1) {
                         for (permIdx in settings.permissions) {
                             if (settings.permissions.hasOwnProperty(permIdx)) {
                                 for (roleIdx in roles) {
@@ -1973,6 +1986,7 @@ Omadi.data.processFieldsJson = function(json, mainDB, progress) {"use strict";
                         }
                     }
                     else {
+                        // No permissions are enforced, so give permission to everybody
                         can_view = can_edit = 1;
                     }
                 
@@ -1985,8 +1999,6 @@ Omadi.data.processFieldsJson = function(json, mainDB, progress) {"use strict";
                     }
 
                     result.close();
-                
-                
 
                     if (!field_exists) {
 
@@ -2727,7 +2739,7 @@ Omadi.data.processTermsJson = function(json, mainDB, progress) {"use strict";
 };
 
 Omadi.data.processNodeTypeJson = function(json, mainDB, progress) {"use strict";
-    /*global ROLE_ID_ADMIN */
+    /*global ROLE_ID_ADMIN, ROLE_ID_OMADI_AGENT */
     var queries, roles, i, type, perm_idx, role_idx, bundle_result, 
         app_permissions, title_fields, data, display, description, 
         disabled, is_disabled, permission_string, childForms;
@@ -2790,7 +2802,7 @@ Omadi.data.processNodeTypeJson = function(json, mainDB, progress) {"use strict";
                         if (!is_disabled) {
                             if ( typeof roles !== 'undefined') {
 
-                                if (roles.hasOwnProperty(ROLE_ID_ADMIN)) {
+                                if (roles.hasOwnProperty(ROLE_ID_ADMIN) || roles.hasOwnProperty(ROLE_ID_OMADI_AGENT)) {
                                     app_permissions.can_create = 1;
                                     app_permissions.all_permissions = 1;
                                     app_permissions.can_update = 1;

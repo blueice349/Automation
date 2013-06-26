@@ -20,11 +20,12 @@ curWin.addEventListener('android:back', function() {"use strict";
     curWin.close();
 });
 
-Ti.App.addEventListener('loggingOut', function(){"use strict";
+function loggingOutIndividualObject(){"use strict";
     Ti.UI.currentWindow.close();
-});
+}
 
-Ti.App.addEventListener("savedNode", function(){"use strict";
+function savedNodeIndividualObject(){"use strict";
+    
     if(Ti.App.isAndroid){
         Ti.UI.currentWindow.close();
     }
@@ -33,7 +34,10 @@ Ti.App.addEventListener("savedNode", function(){"use strict";
         // Close the window after the maximum timeout for a node save
         setTimeout(Ti.UI.currentWindow.close, 65000);
     }
-});
+}
+
+Ti.App.addEventListener('loggingOut', loggingOutIndividualObject);
+Ti.App.addEventListener("savedNode", savedNodeIndividualObject);
 
 function form_min(min) {"use strict";
     if (min < 10) {
@@ -144,6 +148,7 @@ var omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_sessio
 var roles = omadi_session_details.user.roles;
 
 while (fields_result.isValidRow()) {
+    
     if (fields_result.fieldByName('type') == 'file') {
         unsorted_res.push({
             field_name : fields_result.fieldByName('field_name') + '___filename',
@@ -170,7 +175,11 @@ while (fields_result.isValidRow()) {
     field_desc.can_view = false;
     field_desc.can_edit = false;
         
-    if (settings.enforce_permissions != null && settings.enforce_permissions == 1) {
+    if(roles.hasOwnProperty(ROLE_ID_ADMIN) || roles.hasOwnProperty(ROLE_ID_OMADI_AGENT)){
+        // Give all admin accounts permissions
+        field_desc.can_view = field_desc.can_edit = true;
+    }
+    else if (settings.enforce_permissions != null && settings.enforce_permissions == 1) {
         for (i in settings.permissions) {
             if(settings.permissions.hasOwnProperty(i)){
                 for (j in roles) {
@@ -191,6 +200,7 @@ while (fields_result.isValidRow()) {
         }
     }
     else {
+        // No permissions are being enforced, so give access
         field_desc.can_view = field_desc.can_edit = true;
     }
 
@@ -373,7 +383,7 @@ function doFieldOutput(fieldObj) {"use strict";
                                 width : 100,
                                 left : 10,
                                 top : 0,
-                                image : '../images/photo-loading.png',
+                                image : '/images/photo-loading.png',
                                 borderColor : '#333',
                                 borderWidth : 2,
                                 imageVal : fileId,
@@ -672,7 +682,6 @@ function doRegionOutput(regionObj) {"use strict";
 
         node = Omadi.data.nodeLoad(curWin.nid);
 
-
         var regionName;
 
         for (regionName in regions) {
@@ -766,6 +775,15 @@ function doRegionOutput(regionObj) {"use strict";
         for ( i = 0; i < metaDataFields.length; i++) {
             doFieldOutput(metaDataFields[i]);
         }
+        
+        Ti.UI.currentWindow.addEventListener('close', function(){
+            Ti.App.removeEventListener('loggingOut', loggingOutIndividualObject);
+            Ti.App.removeEventListener("savedNode", savedNodeIndividualObject);
+            
+            // Clean up memory in the window
+            Ti.UI.currentWindow.remove(formWrapperView);
+            formWrapperView = null; 
+        });
 
     }());
 

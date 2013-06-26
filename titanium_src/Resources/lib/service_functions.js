@@ -15,6 +15,7 @@ Omadi.service.refreshSession = function() {"use strict";
 
         if (Ti.Network.online && !Ti.App.Properties.getBool("sessionRefreshed", false)) {
             if (!Omadi.data.isUpdating()) {
+                
                 Omadi.data.setUpdating(true);
 
                 http = Ti.Network.createHTTPClient();
@@ -140,7 +141,7 @@ Omadi.service.setNodeViewed = function(nid) {"use strict";
 };
 
 Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
-    var http, progress = null;
+    var http, progress = null, lastSyncTimestamp;
     /*global isJsonString*/
     /*jslint eqeq:true*/
     try {
@@ -158,6 +159,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
 
                 //Timeout until error:
                 http.setTimeout(30000);
+                http.setValidatesSecureCertificate(false);
 
                 //While streamming - following method should be called b4 open URL
                 http.ondatastream = function(e) {
@@ -167,15 +169,10 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                         //Ti.API.debug(' ONDATASTREAM1 - PROGRESS: ' + e.progress);
                     }
                 };
-
-                //Opens address to retrieve list
-                if (Omadi.data.getLastUpdateTimestamp() === 0) {
-                    Ti.API.info("DOING A FULL INSTALL");
-                    http.open('GET', Omadi.DOMAIN_NAME + '/js-sync/download.json?sync_timestamp=0');
-                }
-                else {
-                    http.open('GET', Omadi.DOMAIN_NAME + '/js-sync/download.json');
-                }
+                
+                lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp();
+                
+                http.open('GET', Omadi.DOMAIN_NAME + '/js-sync/download.json?sync_timestamp=' + lastSyncTimestamp);
 
                 //Header parameters
                 http.setRequestHeader("Content-Type", "application/json");
@@ -184,7 +181,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
 
                 //When connected
                 http.onload = function(e) {
-                    var json;
+                    var json, dir, file, string;
                     
                     //Parses response into strings
                     if (this.responseText !== null && isJsonString(this.responseText) === true) {
@@ -195,14 +192,49 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                         
                         Omadi.data.processFetchedJson(json, progress);
                     }
-                    else {
+                    else if(this.responseData !== null){
+                        // In some very rare cases, this.responseText will be null
+                        // Here, we write the data to a file, read it back and do the installation
+                        
+                        dir = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory);
+                        
+                        if(!dir.exists()){
+                            dir.createDirectory();
+                        }
+                        
+                        file = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory + "/download.txt");
+                        
+                        Omadi.service.sendErrorReport("Data length: " + this.responseData.length);
+                        
+                        if(file.write(this.responseData)){
+                           
+                           string = file.read();
+                           
+                           if(isJsonString(string)){
+                            
+                                json = JSON.parse(string);
+                                
+                                Omadi.data.processFetchedJson(json, progress);
+                            }
+                            else{
+                                Omadi.service.sendErrorReport("Text is not json");
+                                if (progress != null) {
+                                    progress.close();
+                                }
+                            }
+                        }
+                        else{
+                            Omadi.service.sendErrorReport("Failed to write to the download file");
+                        }
+                    }
+                    else{
                         if (progress != null) {
                             progress.close();
                         }
             
-                        //Titanium.Media.vibrate();
-                        Omadi.service.sendErrorReport("Bad response text for regular fetch update: " + this.responseText);
-                    }                    
+                    
+                        Omadi.service.sendErrorReport("Bad response text and data for download: " + this.responseText + ", stautus: " + this.status + ", statusText: " + this.statusText);
+                    }               
 
                     Omadi.data.setUpdating(false);
                     Ti.App.fireEvent('finishedDataSync');
@@ -906,6 +938,9 @@ Omadi.service.uploadFile = function() {"use strict";
                         }
                         //alert("time_stamp_send_to_sever_in_ios");
                     }
+                }
+                else{
+                    Omadi.service.sendErrorReport("Next photo data is null");
                 }
             }
         }

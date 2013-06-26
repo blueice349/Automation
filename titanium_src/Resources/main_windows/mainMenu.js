@@ -180,7 +180,6 @@ var lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp();
 
 function displayBundleList() {"use strict";
     var db, result, dataRows, name_table, i, j, k, display, description, row_t, icon, titleLabel, plusButton, can_view, can_create;
-    /*global ROLE_ID_ADMIN*/
 
     db = Omadi.utils.openMainDatabase();
     result = db.execute('SELECT * FROM bundles');
@@ -827,7 +826,6 @@ function backgroundCheckForUpdates(){"use strict";
                 Ti.App.removeEventListener('resume', Omadi.service.checkUpdate);
             }
             
-            
             Ti.App.removeEventListener('openForm', openFormCallback);
             Ti.App.removeEventListener('showNextAlertInQueue', showNextAlertInQueue);
             Ti.App.removeEventListener("syncInstallComplete", displayBundleList);
@@ -840,6 +838,26 @@ function backgroundCheckForUpdates(){"use strict";
             Ti.App.removeEventListener('finishedDataSync', setupBottomButtons);
             Ti.App.removeEventListener('normal_update_from_menu', normalUpdateFromMenu);
             Ti.App.removeEventListener('full_update_from_menu', fullUpdateFromMenu);
+            
+            // Release memory
+            
+            Ti.UI.currentWindow.remove(loggedView);
+            Ti.UI.currentWindow.remove(networkStatusView);
+            Ti.UI.currentWindow.remove(databaseStatusView);
+            Ti.UI.currentWindow.remove(listView);
+            
+            loggedView = null;
+            networkStatusView = null;
+            databaseStatusView = null;
+            listView = null;
+            curWin = null;
+            
+            networkStatusLabel = null;
+            refresh_image = null;
+            label_top = null;
+            offImage = null;
+            actionsButton = null;
+            a = null;
         });
       
     }());

@@ -59,25 +59,29 @@ Omadi.bundles.dispatch.getDrivingDirections = function(args){"use strict";
             node = Omadi.data.nodeLoad(nid);
             address = "";
             
-            
-            if(node.type == 'tow'){ // Same as PPI
-                accountNid = node.enforcement_account.dbValues[0];
-                node = Omadi.data.nodeLoad(accountNid);
-                Omadi.bundles.dispatch.openDirectionsToFirstAddress(node);
-            }
-            else if(node.type == 'service'){
-                
-                if(typeof node.service_tow_start_address___street !== 'undefined' && node.service_tow_start_address___street.dbValues[0] > ''){
-                    Omadi.bundles.dispatch.openDirectionsToFirstAddress(node);
-                }
-                else{
+            if(node){
+                if(node.type == 'tow'){ // Same as PPI
                     accountNid = node.enforcement_account.dbValues[0];
                     node = Omadi.data.nodeLoad(accountNid);
                     Omadi.bundles.dispatch.openDirectionsToFirstAddress(node);
                 }
+                else if(node.type == 'service'){
+                    
+                    if(typeof node.service_tow_start_address___street !== 'undefined' && node.service_tow_start_address___street.dbValues[0] > ''){
+                        Omadi.bundles.dispatch.openDirectionsToFirstAddress(node);
+                    }
+                    else{
+                        accountNid = node.enforcement_account.dbValues[0];
+                        node = Omadi.data.nodeLoad(accountNid);
+                        Omadi.bundles.dispatch.openDirectionsToFirstAddress(node);
+                    }
+                }
+                else{ // for club_tow, cod, pd
+                    Omadi.bundles.dispatch.openDirectionsToFirstAddress(node);
+                }
             }
-            else{ // for club_tow, cod, pd
-                Omadi.bundles.dispatch.openDirectionsToFirstAddress(node);
+            else{
+                alert("An error occurred getting the address.");
             }
         }
     }
@@ -237,68 +241,70 @@ Omadi.bundles.dispatch.getStatusOptions = function(nid){"use strict";
     
     node = Omadi.data.nodeLoad(nid);
     
-    dispatchNid = node.from_dispatch.dbValues[0];
-    dispatchNode = Omadi.data.nodeLoad(dispatchNid);
-    
-    if(dispatchNode){
-        currentStatusKey = dispatchNode.field_dispatching_status.dbValues[0];
+    if(node){
+        dispatchNid = node.from_dispatch.dbValues[0];
+        dispatchNode = Omadi.data.nodeLoad(dispatchNid);
         
-        dispatchInstances = Omadi.data.getFields('dispatch');
-        
-        if(typeof dispatchInstances.field_dispatching_status !== 'undefined'){
-            statusInstance = dispatchInstances.field_dispatching_status;
+        if(dispatchNode){
+            currentStatusKey = dispatchNode.field_dispatching_status.dbValues[0];
             
-            excludeKeys = [];
+            dispatchInstances = Omadi.data.getFields('dispatch');
             
-            if(currentStatusKey !== null){
-                switch(currentStatusKey){
-                    case 'job_complete':
-                        excludeKeys.push('job_complete');
-                        /* falls through */
-                    case 'arrived_at_destination':
-                        excludeKeys.push('arrived_at_destination');
-                        /* falls through */
-                    case 'towing_vehicle':
-                        excludeKeys.push('towing_vehicle');
-                        /* falls through */
-                    case 'arrived_at_job':
-                        excludeKeys.push('arrived_at_job');
-                        /* falls through */
-                    case 'driving_to_job':
-                        excludeKeys.push('driving_to_job');
-                        /* falls through */
-                    case 'job_accepted':
-                        excludeKeys.push('job_accepted');
-                        /* falls through */
-                    case 'dispatching_call':
-                        excludeKeys.push('dispatching_call');
-                        /* falls through */
-                    case 'call_received':
-                        excludeKeys.push('call_received');
-                        break;       
-                }
-            }
-        }
-        
-        excludeKeys.push(null);
-        
-        fieldOptions = Omadi.widgets.list_text.getOptions(statusInstance);
-        
-        for(i = 0; i < fieldOptions.length; i ++){
-            useKey = true;
-            
-            for(j = 0; j < excludeKeys.length; j ++){
-                if(fieldOptions[i].dbValue == excludeKeys[j]){
-                    useKey = false;
-                    break;
+            if(typeof dispatchInstances.field_dispatching_status !== 'undefined'){
+                statusInstance = dispatchInstances.field_dispatching_status;
+                
+                excludeKeys = [];
+                
+                if(currentStatusKey !== null){
+                    switch(currentStatusKey){
+                        case 'job_complete':
+                            excludeKeys.push('job_complete');
+                            /* falls through */
+                        case 'arrived_at_destination':
+                            excludeKeys.push('arrived_at_destination');
+                            /* falls through */
+                        case 'towing_vehicle':
+                            excludeKeys.push('towing_vehicle');
+                            /* falls through */
+                        case 'arrived_at_job':
+                            excludeKeys.push('arrived_at_job');
+                            /* falls through */
+                        case 'driving_to_job':
+                            excludeKeys.push('driving_to_job');
+                            /* falls through */
+                        case 'job_accepted':
+                            excludeKeys.push('job_accepted');
+                            /* falls through */
+                        case 'dispatching_call':
+                            excludeKeys.push('dispatching_call');
+                            /* falls through */
+                        case 'call_received':
+                            excludeKeys.push('call_received');
+                            break;       
+                    }
                 }
             }
             
-            if(useKey){
-                options.push({
-                   dbValue: fieldOptions[i].dbValue,
-                   title: fieldOptions[i].title
-                });
+            excludeKeys.push(null);
+            
+            fieldOptions = Omadi.widgets.list_text.getOptions(statusInstance);
+            
+            for(i = 0; i < fieldOptions.length; i ++){
+                useKey = true;
+                
+                for(j = 0; j < excludeKeys.length; j ++){
+                    if(fieldOptions[i].dbValue == excludeKeys[j]){
+                        useKey = false;
+                        break;
+                    }
+                }
+                
+                if(useKey){
+                    options.push({
+                       dbValue: fieldOptions[i].dbValue,
+                       title: fieldOptions[i].title
+                    });
+                }
             }
         }
     }
@@ -474,7 +480,6 @@ Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
         db.close();
         
         Ti.API.debug(newDispatchNids);
-        Ti.API.debug("hello man");
         
         for(i = 0; i < newDispatchNids.length; i ++){
             
@@ -534,12 +539,14 @@ Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
             
             node = Omadi.data.nodeLoad(currentUserJobNids[i]);
             
-            newJobs.push({
-               nid: node.nid,
-               title: node.title,
-               viewed: node.viewed,
-               type: node.type
-            });
+            if(node){
+                newJobs.push({
+                   nid: node.nid,
+                   title: node.title,
+                   viewed: node.viewed,
+                   type: node.type
+                });
+            }
         }
     }
     

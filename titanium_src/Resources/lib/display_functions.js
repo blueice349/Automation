@@ -785,7 +785,7 @@ Omadi.display.setImageViewThumbnail = function(imageView, nid, file_id) {"use st
 
             http.onerror = function(e) {
                 Ti.API.error("Error in download image: " + e.status + " " + e.error + " " + nid + " " + file_id);
-                imageView.image = '../images/default.png';
+                imageView.image = '/images/default.png';
             };
 
             http.send();
@@ -865,7 +865,9 @@ Omadi.display.loading = function(message) {"use strict";
     });
     
     Ti.UI.currentWindow.addEventListener('close', function(){
-        Ti.UI.currentWindow.remove(indicator);
+        if(indicator){
+            Ti.UI.currentWindow.remove(indicator);
+        }
         indicator = null; 
     });
     

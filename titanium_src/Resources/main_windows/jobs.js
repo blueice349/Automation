@@ -270,27 +270,36 @@ function refreshJobsTable(){"use strict";
     tableView.setData([newJobsSection, currentUserJobsSection]);
 }
 
+function savedNodeJobs(){"use strict";
+        
+    if(Ti.App.isAndroid){
+        Ti.UI.currentWindow.close();
+    }
+    else{
+        Ti.UI.currentWindow.hide();
+        // Close the window after the maximum timeout for a node save
+        setTimeout(Ti.UI.currentWindow.close, 65000);
+    }
+}
+
+function finishedDataSyncJobs(){"use strict";
+    
+     refreshJobsTable();
+}
+
+function loggingOutJobs(){"use strict";
+    Ti.UI.currentWindow.close();
+}
+    
 
 (function(){"use strict";
     var newJobs, data, i, row, textView, rowImg, titleLabel, backgroundColor, 
         newJobsSection, sections, currentUserJobsSection, currentUserJobs, 
         dispatchBundle, separator, whiteSpaceTest;
     
-    Ti.App.addEventListener("savedNode", function(){
-        
-        if(Ti.App.isAndroid){
-            Ti.UI.currentWindow.close();
-        }
-        else{
-            Ti.UI.currentWindow.hide();
-            // Close the window after the maximum timeout for a node save
-            setTimeout(Ti.UI.currentWindow.close, 65000);
-        }
-    });
-    
-    Ti.App.addEventListener('finishedDataSync', function(){
-        refreshJobsTable();
-    });
+    Ti.App.addEventListener("savedNode", savedNodeJobs);
+    Ti.App.addEventListener('finishedDataSync', finishedDataSyncJobs);
+    Ti.App.addEventListener('loggingOut', loggingOutJobs);
     
     wrapperView = Ti.UI.createView({
         layout: 'vertical',
@@ -344,6 +353,17 @@ function refreshJobsTable(){"use strict";
     wrapperView.add(tableView);
    
     curWin.add(wrapperView);
+    
+    Ti.UI.currentWindow.addEventListener('close', function(){
+        Ti.App.removeEventListener("savedNode", savedNodeJobs);
+        Ti.App.removeEventListener('finishedDataSync', finishedDataSyncJobs);
+        Ti.App.removeEventListener('loggingOut', loggingOutJobs);
+        
+        // Clean up memory
+        Ti.UI.currentWindow.remove(wrapperView);
+        wrapperView = null;
+        curWin = null;
+    });
     
 }());
 

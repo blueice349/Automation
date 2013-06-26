@@ -44,21 +44,28 @@ function addiOSToolbar() {"use strict";
     wrapperView.add(toolbar);
 }
 
+function savedNodeTagsReady(){"use strict";
+        
+    if(Ti.App.isAndroid){
+        Ti.UI.currentWindow.close();
+    }
+    else{
+        Ti.UI.currentWindow.hide();
+        // Close the window after the maximum timeout for a node save
+        setTimeout(Ti.UI.currentWindow.close, 65000);
+    }
+}
+
+function loggingOutTagsReady(){"use strict";
+    Ti.UI.currentWindow.close();
+}
 
 (function(){"use strict";
     var expiredTags, data, i, row, textView, rowImg, titleLabel, backgroundColor;
     
-    Ti.App.addEventListener("savedNode", function(){
-        
-        if(Ti.App.isAndroid){
-            Ti.UI.currentWindow.close();
-        }
-        else{
-            Ti.UI.currentWindow.hide();
-            // Close the window after the maximum timeout for a node save
-            setTimeout(Ti.UI.currentWindow.close, 65000);
-        }
-    });
+    Ti.App.addEventListener("savedNode", savedNodeTagsReady);
+    Ti.App.addEventListener("loggingOut", loggingOutTagsReady);
+    
     
     expiredTags = Omadi.bundles.tag.getExpiredTags();
     
@@ -171,4 +178,16 @@ function addiOSToolbar() {"use strict";
     }
     
     curWin.add(wrapperView);
+    
+    Ti.UI.currentWindow.addEventListener('close', function(){
+        Ti.App.removeEventListener("savedNode", savedNodeTagsReady);
+        Ti.App.removeEventListener("loggingOut", loggingOutTagsReady); 
+        
+        // Release memory
+        
+        Ti.UI.currentWindow.remove(wrapperView);
+        wrapperView = null;
+        curWin = null;
+    });
+    
 }());

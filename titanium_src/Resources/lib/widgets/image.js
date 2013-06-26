@@ -333,7 +333,7 @@ Omadi.widgets.image = {
                     right : 5,
                     height : 34,
                     width : 68,
-                    backgroundImage : (flashMode == Ti.Media.CAMERA_FLASH_ON) ? '../images/flashOn.png' : '../images/flashOff.png'
+                    backgroundImage : (flashMode == Ti.Media.CAMERA_FLASH_ON) ? '/images/flashOn.png' : '/images/flashOff.png'
                 });
 
                 if (Ti.App.Properties.getBool('deviceHasFlash')) {
@@ -359,12 +359,12 @@ Omadi.widgets.image = {
                 flashButton.addEventListener('click', function(evt) {
                     if (Ti.Media.cameraFlashMode == Ti.Media.CAMERA_FLASH_ON) {
                         Ti.App.Properties.setInt("flashMode", Ti.Media.CAMERA_FLASH_OFF);
-                        evt.source.backgroundImage = "../images/flashOff.png";
+                        evt.source.backgroundImage = "/images/flashOff.png";
                         Ti.Media.cameraFlashMode = Ti.Media.CAMERA_FLASH_OFF;
                     }
                     else {
                         Ti.App.Properties.setInt("flashMode", Ti.Media.CAMERA_FLASH_ON);
-                        evt.source.backgroundImage = "../images/flashOn.png";
+                        evt.source.backgroundImage = "/images/flashOn.png";
                         Ti.Media.cameraFlashMode = Ti.Media.CAMERA_FLASH_ON;
                     }
                 });

@@ -266,6 +266,21 @@ function createAndroidTabs(){"use strict";
     }
 }
 
+function loggingOutRecent(){"use strict";
+    Ti.UI.currentWindow.close();
+}
+
+function savedNodeRecent(){"use strict";
+    if(Ti.App.isAndroid){
+        Ti.UI.currentWindow.close();
+    }
+    else{
+        Ti.UI.currentWindow.hide();
+        // Close the window after the maximum timeout for a node save
+        setTimeout(Ti.UI.currentWindow.close, 65000);
+    }
+}
+
 (function(){"use strict";
     var recentlySavedTab, recentlySavedWindow, recentlyViewedTab, recentlyViewedWindow;
     
@@ -273,20 +288,8 @@ function createAndroidTabs(){"use strict";
        curWin.close(); 
     });
     
-    Ti.App.addEventListener('loggingOut', function(){
-        Ti.UI.currentWindow.close();
-    });
-    
-    Ti.App.addEventListener("savedNode", function(){
-        if(Ti.App.isAndroid){
-            Ti.UI.currentWindow.close();
-        }
-        else{
-            Ti.UI.currentWindow.hide();
-            // Close the window after the maximum timeout for a node save
-            setTimeout(Ti.UI.currentWindow.close, 65000);
-        }
-    });
+    Ti.App.addEventListener('loggingOut', loggingOutRecent);
+    Ti.App.addEventListener("savedNode", savedNodeRecent);
     
     if(Ti.App.isAndroid){
         createAndroidTabs();
@@ -362,17 +365,24 @@ function createAndroidTabs(){"use strict";
     });
     
     tableView.addEventListener('click', function(e) {
-            
-        //if(e.row.nid > 0){
-           
-           Omadi.display.showDialogFormOptions(e);
-        //}
+        Omadi.display.showDialogFormOptions(e);
     });
         
     tableView.setData(getTableViewData('changed'));  
     wrapperView.add(tableView);
     
     curWin.add(wrapperView);
+    
+    Ti.UI.currentWindow.addEventListener('close', function(){
+        Ti.App.removeEventListener('loggingOut', loggingOutRecent);        
+        Ti.App.removeEventListener("savedNode", savedNodeRecent);
+        
+        // Clean up memory
+        Ti.UI.currentWindow.remove(wrapperView);
+        wrapperView = null;
+        curWin = null;
+    });
+    
 }());
 
 

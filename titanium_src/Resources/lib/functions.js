@@ -23,6 +23,7 @@ var ROLE_ID_MANAGER = 4;
 var ROLE_ID_SALES = 5;
 var ROLE_ID_FIELD = 6;
 var ROLE_ID_CLIENT = 7;
+var ROLE_ID_OMADI_AGENT = 8;
 
 var app_timestamp = 0;
 

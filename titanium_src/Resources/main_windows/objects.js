@@ -30,9 +30,12 @@ wrapperView = Ti.UI.createView({
    left: 0 
 });
 
-Ti.App.addEventListener('loggingOut', function() {"use strict";
-    Ti.UI.currentWindow.close();
-});
+
+function closeWindowObjects(){"use strict";
+    Ti.UI.currentWindow.close();   
+}
+
+Ti.App.addEventListener('loggingOut', closeWindowObjects);
 
 // Do not close this window when a node is saved as it could close a next form part unexpectedly
 // Ti.App.addEventListener("savedNode", function() {"use strict";
@@ -864,23 +867,13 @@ function setTableData() {"use strict";
         if (showFinalResults) {
 
             search.addEventListener('change', function(e) {
-                //e.value; // search string as user types
-                //Ti.API.info("in change");
-
+               
                 titleSearch = e.source.value;
                 numPagesLoaded = 0;
 
                 setTableData();
 
-                // var filterData = [];
-                // var i;
-                // for(i = 0; i < tableData.length; i++) {
-                // var rg = new RegExp(e.source.value, 'i');
-                // if(tableData[i].searchValue.search(rg) != -1) {
-                // filterData.push(tableData[i]);
-                // }
-                // }
-                //
+              
                 var labelText = '';
                 if (Ti.Platform.osname == 'iphone') {
                     labelText += 'Found (' + num_records + ')';
@@ -891,19 +884,7 @@ function setTableData() {"use strict";
 
                 listLabel.setText(labelText);
 
-                // if(filterData.length == 0){
-                // var row = Ti.UI.createTableViewRow({
-                // height : 50,
-                // hasChild : false,
-                // title : 'No Results (Touch to Reset)',
-                // color: '#900',
-                // nid: 0,
-                // font: {fontWeight: 'bold', fontSize: 16}
-                // });
-                // filterTableView..push(row);
-                // }
-                //
-                //filterTableView.setData(filterData);
+               
             });
 
             search.addEventListener('return', function(e) {
@@ -941,122 +922,12 @@ function setTableData() {"use strict";
                     Omadi.display.showDialogFormOptions(e);
                 }
                 
-                //Hide keyboard when returning
-                //search.blur();
-                // if (e.row.nid == 0) {
-                    // search.setValue("");
-                    // search.fireEvent("change");
-                    // search.blur();
-                    // search.fireEvent("cancel");
-                    // search.fireEvent("return");
-                // }
-                // else {
-                    // //bottomButtons1(e.row.nid, curWin, e);
-// 
-                    // //var _nid = e.row.nid;
-                    // var subDB = Omadi.utils.openMainDatabase();
-// 
-                    // // var json_data = db_act.execute('SELECT _data FROM bundles WHERE bundle_name="' + curWin.type + '"');
-                    // // var _data = JSON.parse(json_data.fieldByName('_data'));
-// 
-                    // var result = subDB.execute('SELECT form_part, perm_edit FROM node WHERE nid=' + e.row.nid);
-// 
-                    // //Ti.API.info('Form node part = ' + result.fieldByName('form_part'));
-// 
-                    // var btn_tt = [];
-                    // var btn_id = [];
-                    // var isEditEnabled = false;
-                    // var to_type, to_bundle;
-// 
-                    // if (result) {
-                        // if (result.fieldByName('perm_edit') == 1) {
-                            // if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
-                                // //Ti.API.info('Form table part = ' + bundle.data.form_parts.parts.length);
-                                // if (bundle.data.form_parts.parts.length >= parseInt(result.fieldByName('form_part'), 10) + 2) {
-                                    // //Ti.API.info("Title = " + bundle.data.form_parts.parts[result.fieldByName('form_part') + 1].label);
-                                    // btn_tt.push(bundle.data.form_parts.parts[result.fieldByName('form_part') + 1].label);
-                                    // btn_id.push(result.fieldByName('form_part') + 1);
-                                    // //Ti.API.info(result.fieldByName('form_part') + 1);
-                                // }
-                            // }
-                            // isEditEnabled = true;
-                            // btn_tt.push('Edit');
-                            // btn_id.push(result.fieldByName('form_part'));
-                        // }
-                        // result.close();
-                    // }
-// 
-                    // subDB.close();
-// 
-                    // btn_tt.push('View');
-                    // btn_id.push('_view');
-// 
-                    // if ( typeof bundle.data.custom_copy !== 'undefined') {
-                        // for (to_type in bundle.data.custom_copy) {
-                            // if (bundle.data.custom_copy.hasOwnProperty(to_type)) {
-                                // to_bundle = Omadi.data.getBundle(to_type);
-                                // if (to_bundle) {
-                                    // btn_tt.push("Copy to " + to_bundle.label);
-                                    // btn_id.push(to_type);
-                                    // isEditEnabled = true;
-                                // }
-                            // }
-                        // }
-                    // }
-// 
-                    // if (!isEditEnabled) {
-                        // e.row.setBackgroundColor('#fff');
-                        // Omadi.display.openViewWindow(curWin.type, e.row.nid);
-                    // }
-                    // else {
-// 
-                        // btn_tt.push('Cancel');
-                        // btn_id.push('_cancel');
-// 
-                        // var postDialog = Titanium.UI.createOptionDialog();
-                        // postDialog.options = btn_tt;
-                        // postDialog.eventRow = e.row;
-                        // postDialog.show();
-// 
-                        // postDialog.addEventListener('click', function(ev) {
-                            // var form_part = btn_id[ev.index];
-// 
-                            // if (form_part == '_cancel') {
-                                // Ti.API.info("Cancelled");
-                            // }
-                            // else if (form_part == '_view') {
-                                // ev.source.eventRow.setBackgroundColor('#fff');
-                                // Omadi.display.openViewWindow(curWin.type, ev.source.eventRow.nid);
-                            // }
-                            // else if (ev.index !== -1 && isEditEnabled === true) {
-                                // ev.source.eventRow.setBackgroundColor('#fff');
-                                // Omadi.display.openFormWindow(curWin.type, ev.source.eventRow.nid, form_part);
-                            // }
-                        // });
-                    // }
-                // }
-                //resultsNames.close();
             });
         }
         else {
 
             filterTableView.addEventListener('click', function(e) {
-                //Hide keyboard when returning
-                //refreshDataTable();
-                //var newFilterValue = e.row.filterValue;
-                //var new
-                //Ti.API.info(e.row.filterValue);
-
-                //Titanium.App.Properties.setString("filterValue1",e.row.filterValue);
-
-                // var newWin = Ti.UI.createWindow({
-                // title:'Results',
-                // url: 'objects.js',
-                // navBarHidden: true,
-                // type: curWin.type,
-                // uid: curWin.uid,
-                // show_plus: curWin.show_plus
-                // });
+               
 
                 var filterValues = curWin.filterValues;
 
@@ -1083,33 +954,24 @@ function setTableData() {"use strict";
 
         }
 
-        //search.blur();
         Ti.API.info("END OF OBJECTS WINDOW FILE");
-
-        //if(Ti.App.isAndroid){
-        // bottomBack(curWin, "Back" , "enable", true);
-        // if (listTableView != null ){
-        // listTableView.bottom = '6%'
-        // listTableView.top = 50;
-        // }
-        // if(curWin.show_plus == true){
-        // var activity = curWin.activity;
-        // activity.onCreateOptionsMenu = function(e) {
-        // var menu = e.menu;
-        // var menu_edit = menu.add({
-        // title : 'New',
-        // order : 0
-        // });
-        // menu_edit.setIcon("/images/action.png");
-        // menu_edit.addEventListener("click", function(e) {
-        // openCreateNodeScreen();
-        // });
-        // }
-        // }
-        //}
 
         Omadi.data.setUpdating(false);
         
-        curWin.add(wrapperView);
+        Ti.UI.currentWindow.add(wrapperView);
+        
+        Ti.UI.currentWindow.addEventListener('close', function(){
+           
+           // Clean up memory references
+           
+           wrapperView.remove(filterTableView);
+           filterTableView = null;
+           
+           curWin.remove(wrapperView);
+           wrapperView = null; 
+           curWin = null;
+           
+           Ti.App.removeEventListener('loggingOut', closeWindowObjects);
+        });
 
     }());
