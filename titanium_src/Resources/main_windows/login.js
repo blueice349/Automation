@@ -732,5 +732,11 @@ function setClientAccount(domainName, db){"use strict";
             startGPSService();
         }
         
+        // closeApp is fired in case memory is getting low and a restart is necessary
+        // TODO: plug all the memory leaks and conserve memory better
+        Ti.App.addEventListener('closeApp', function(){
+            Ti.UI.currentWindow.close();
+        });
+        
     }());
 

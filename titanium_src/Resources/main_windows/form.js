@@ -657,7 +657,6 @@ function getRegionHeaderView(region, expanded){"use strict";
     regionHeader.addEventListener('click', function(e) {
         
         var regionView;
-        
         e.source.expanded = !e.source.expanded;
         
         if (e.source.expanded === true) {
@@ -669,11 +668,19 @@ function getRegionHeaderView(region, expanded){"use strict";
             e.source.collapsedView.setBorderWidth(0);
 
             regionView.show();
-            regionView.setHeight(Ti.UI.SIZE);
+            //regionView.setHeight(Ti.UI.SIZE);
             
             e.source.arrow.setImage("/images/light_arrow_down.png");
             
             regionView.finishLayout();
+            regionView.setHeight(Ti.UI.SIZE);
+            
+            // For iOS, just make sure the region is expanded as layout doesn't always happen
+            if(Ti.App.isIOS){
+                setTimeout(function(){
+                    regionView.setHeight(Ti.UI.SIZE);
+                }, 100);
+            }
         }
         else {
             
@@ -684,7 +691,8 @@ function getRegionHeaderView(region, expanded){"use strict";
             e.source.collapsedView.setBorderWidth(1);
             
             regionView.hide();
-            regionView.setHeight(5);
+            
+            regionView.setHeight(0);
            
             e.source.arrow.setImage("/images/light_arrow_left.png");
             
@@ -1788,7 +1796,7 @@ function switchedNodeIdForm(e){"use strict";
                 region_form_part = 0;
             }
            
-            if(region_form_part <= node.form_part){
+            if(region_form_part <= node.form_part || (node.form_part == -1 && region_form_part == 0)){
                 
                 var expanded = true;
                 if(typeof region.settings !== 'undefined' && 
@@ -1847,10 +1855,12 @@ function switchedNodeIdForm(e){"use strict";
             instance = instances[field_name];        
             
             var settings = instance.settings;
-            var isRequired = instance.required;
             var labelColor = "#246";
             
-            if(instance.required == 1){
+            if(node.form_part == -1){
+                instance.isRequired = false;
+            }
+            else if(instance.required == 1){
                 instance.isRequired = true;
             }
             else{
@@ -1902,13 +1912,6 @@ function switchedNodeIdForm(e){"use strict";
     
     Ti.App.fireEvent("formFullyLoaded");
     
-    // setTimeout(function(){
-//         
-        // //scrollView.scrollTo(0, 0);
-//         
-       // // Omadi.widgets.blurFields();
-    // }, 1000);
-    
     recalculateCalculationFields();
     
     if(hasViolationField){
@@ -1920,7 +1923,6 @@ function switchedNodeIdForm(e){"use strict";
         
         Ti.App.removeEventListener('loggingOut', loggingOutForm);
         Ti.App.removeEventListener('photoUploaded', photoUploadedForm);
-        
         
         // Remove region views from memory
         for(regionWrappers_i in regionWrappers){

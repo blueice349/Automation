@@ -356,7 +356,7 @@ function setupBottomButtons() {"use strict";
     alertsView.add(alertsLabel);
     alertsView.addEventListener('click', function() {
         var alertsWindow, locationEnabled;
-
+        
         locationEnabled = Omadi.location.isLocationEnabled();
         
         if(locationEnabled){
@@ -666,199 +666,199 @@ function backgroundCheckForUpdates(){"use strict";
 }
 
 ( function() {"use strict";
-        var db, formWindow, time_format, askAboutInspection, dialog, i, showingAlert, firstAlert;
-        
-        // Initialize the global scope variable to map deleted nids to saved positive nids
-        Ti.App.deletedNegatives = {};
-        Ti.App.allowBackgroundUpdate = true;
-        Ti.App.allowBackgroundLogout = true;
-        
-        if (Ti.App.isAndroid) {
-            ImageFactory = require('ti.imagefactory');
-        }
-        
-        listView = Titanium.UI.createTableView({
-            data : [],
-            top : 45,
-            bottom : 45,
-            scrollable : true,
-            separatorColor : '#BDBDBD'
+    var db, formWindow, time_format, askAboutInspection, dialog, i, showingAlert, firstAlert;
+    
+    // Initialize the global scope variable to map deleted nids to saved positive nids
+    Ti.App.deletedNegatives = {};
+    Ti.App.allowBackgroundUpdate = true;
+    Ti.App.allowBackgroundLogout = true;
+    Ti.App.closingApp = false;
+    
+    if (Ti.App.isAndroid) {
+        ImageFactory = require('ti.imagefactory');
+    }
+    
+    listView = Titanium.UI.createTableView({
+        data : [],
+        top : 45,
+        bottom : 45,
+        scrollable : true,
+        separatorColor : '#BDBDBD'
+    });
+
+    if (Ti.App.isIOS) {
+        listView.footerView = Ti.UI.createView({
+            height : 45,
+            width : '100%'
         });
+    }
 
-        if (Ti.App.isIOS) {
-            listView.footerView = Ti.UI.createView({
-                height : 45,
-                width : '100%'
-            });
-        }
+    curWin.add(listView);
 
-        curWin.add(listView);
+    networkStatusView.add(networkStatusLabel);
 
-        networkStatusView.add(networkStatusLabel);
+    displayBundleList();
 
-        displayBundleList();
+    loggedView.add(refresh_image);
 
-        loggedView.add(refresh_image);
+    loggedView.add(label_top);
+    loggedView.add(offImage);
+    
+    loggedView.add(actionsButton);
+    
+    actionsButton.addEventListener('click', function(){
+       Omadi.display.openActionsWindow();
+    });
 
-        loggedView.add(label_top);
-        loggedView.add(offImage);
+    curWin.add(loggedView);
+    curWin.add(networkStatusView);
+
+    if (lastSyncTimestamp == 0) {
+        db = Omadi.utils.openMainDatabase();
+        db.execute("INSERT INTO updated (timestamp, updating) VALUES (0, 0)");
+        db.close();
         
-        loggedView.add(actionsButton);
-        
-        actionsButton.addEventListener('click', function(){
-           
-           Omadi.display.openActionsWindow();
-        });
+        Ti.App.Properties.setBool("doingFullReset", true);
+    }
 
-        curWin.add(loggedView);
-        curWin.add(networkStatusView);
+    if (lastSyncTimestamp == 0) {
+        isFirstTime = true;
+        Omadi.service.checkUpdate('from_menu');
+    }
+    else {
+        isFirstTime = false;
+        Omadi.service.checkUpdate('from_menu');
+    }
 
-        if (lastSyncTimestamp == 0) {
-            db = Omadi.utils.openMainDatabase();
-            db.execute("INSERT INTO updated (timestamp, updating) VALUES (0, 0)");
-            db.close();
-            
-            Ti.App.Properties.setBool("doingFullReset", true);
-        }
+    if (Ti.App.isAndroid) {
+        setupAndroidMenu();
+    }
 
-        if (lastSyncTimestamp == 0) {
-            isFirstTime = true;
-            Omadi.service.checkUpdate('from_menu');
+    setupBottomButtons();
+
+    Ti.App.addEventListener("doneSendingData", doneSendingDataMainMenu);
+    Ti.App.addEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
+    Ti.App.addEventListener("sendingData", sendingDataMainMenu);
+    Ti.App.addEventListener('loggingOut', loggingOutMainMenu);
+    Ti.App.addEventListener('openForm', openFormCallback);
+    
+    Ti.App.addEventListener('sendUpdates', Omadi.service.sendUpdates);
+    
+    Ti.Network.addEventListener('change', networkChangedMainMenu);
+
+    listView.addEventListener('click', function(e) {
+        var nextWindow;
+
+        Omadi.data.setUpdating(true);
+
+        if (e.source.is_plus) {
+            Omadi.display.openFormWindow(e.row.name_table, 'new', 0);
         }
         else {
-            isFirstTime = false;
-            Omadi.service.checkUpdate('from_menu');
+            Omadi.display.openListWindow(e.row.name_table, e.row.show_plus, [], [], false);
         }
 
-        if (Ti.App.isAndroid) {
-            setupAndroidMenu();
-        }
-
-        setupBottomButtons();
-
-        Ti.App.addEventListener("doneSendingData", doneSendingDataMainMenu);
-        Ti.App.addEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
-        Ti.App.addEventListener("sendingData", sendingDataMainMenu);
-        Ti.App.addEventListener('loggingOut', loggingOutMainMenu);
-        Ti.App.addEventListener('openForm', openFormCallback);
+        Omadi.data.setUpdating(false);
+    });
+    
+    refresh_image.addEventListener('click', Omadi.service.checkUpdate);
+    
+    offImage.addEventListener('click', function(e) {
         
-        Ti.App.addEventListener('sendUpdates', Omadi.service.sendUpdates);
+        Omadi.display.logoutButtonPressed();
+    });
+
+    // When back button on the phone is pressed, it alerts the user (pop up box)
+    // that he needs to log out in order to go back to the root window
+    curWin.addEventListener('android:back', function() {
         
-        Ti.Network.addEventListener('change', networkChangedMainMenu);
+        Omadi.display.logoutButtonPressed();
+    });
+    
+    Ti.App.syncInterval = setInterval(backgroundCheckForUpdates, 300000);
+  
+    Ti.App.photoUploadCheck = setInterval(Omadi.service.uploadFile, 60000);
 
-        listView.addEventListener('click', function(e) {
-            var nextWindow;
+    Ti.App.addEventListener('full_update_from_menu', fullUpdateFromMenu);
+    Ti.App.addEventListener('finishedDataSync', setupBottomButtons);
+    Ti.App.addEventListener('normal_update_from_menu', normalUpdateFromMenu);
 
-            Omadi.data.setUpdating(true);
-
-            if (e.source.is_plus) {
-                Omadi.display.openFormWindow(e.row.name_table, 'new', 0);
-            }
-            else {
-                Omadi.display.openListWindow(e.row.name_table, e.row.show_plus, [], [], false);
-            }
-
-            Omadi.data.setUpdating(false);
-        });
+    if ( typeof curWin.fromSavedCookie !== 'undefined' && !curWin.fromSavedCookie) {
         
-        refresh_image.addEventListener('click', Omadi.service.checkUpdate);
+        // The option dialog should go after clock in, but some of the options
+        // are blocked because of the alert dialog being show in askclockin
         
-        offImage.addEventListener('click', function(e) {
-            
-            Omadi.display.logoutButtonPressed();
-        });
-
-        // When back button on the phone is pressed, it alerts the user (pop up box)
-        // that he needs to log out in order to go back to the root window
-        curWin.addEventListener('android:back', function() {
-            
-            Omadi.display.logoutButtonPressed();
-        });
+        Omadi.bundles.timecard.askClockIn();
         
-        Ti.App.syncInterval = setInterval(backgroundCheckForUpdates, 300000);
-      
-        Ti.App.photoUploadCheck = setInterval(Omadi.service.uploadFile, 60000);
-
-        Ti.App.addEventListener('full_update_from_menu', fullUpdateFromMenu);
-        Ti.App.addEventListener('finishedDataSync', setupBottomButtons);
-        Ti.App.addEventListener('normal_update_from_menu', normalUpdateFromMenu);
-
-        if ( typeof curWin.fromSavedCookie !== 'undefined' && !curWin.fromSavedCookie) {
-            
-            // The option dialog should go after clock in, but some of the options
-            // are blocked because of the alert dialog being show in askclockin
-            
-            Omadi.bundles.timecard.askClockIn();
-            
-            Omadi.bundles.companyVehicle.askAboutVehicle();
-            
-            Omadi.bundles.inspection.askToReviewLastInspection();
-        }
+        Omadi.bundles.companyVehicle.askAboutVehicle();
         
-        Omadi.utils.checkVolumeLevel();
-        
-        Omadi.location.isLocationEnabled();
+        Omadi.bundles.inspection.askToReviewLastInspection();
+    }
+    
+    Omadi.utils.checkVolumeLevel();
+    
+    Omadi.location.isLocationEnabled();
 
-        if (alertQueue.length) {
-            firstAlert = alertQueue.shift();
-            firstAlert.show();
-        }
-        else{
-            useAlertQueue = false;
-        }
+    if (alertQueue.length) {
+        firstAlert = alertQueue.shift();
+        firstAlert.show();
+    }
+    else{
+        useAlertQueue = false;
+    }
 
-        Ti.App.addEventListener('showNextAlertInQueue', showNextAlertInQueue);
+    Ti.App.addEventListener('showNextAlertInQueue', showNextAlertInQueue);
+    
+    Ti.API.debug("before init");
+    Omadi.push_notifications.init();
+    
+    if(Ti.App.isIOS){
+        Ti.App.addEventListener('resume', Omadi.service.checkUpdate);
+    }
+    
+    Ti.UI.currentWindow.addEventListener('close', function() {
+        Ti.API.info('Closing main menu');
         
-        Ti.API.debug("before init");
-        Omadi.push_notifications.init();
+        clearInterval(Ti.App.syncInterval);
+        clearInterval(Ti.App.photoUploadCheck);
         
         if(Ti.App.isIOS){
-            Ti.App.addEventListener('resume', Omadi.service.checkUpdate);
+            Ti.App.removeEventListener('resume', Omadi.service.checkUpdate);
         }
         
-        Ti.UI.currentWindow.addEventListener('close', function() {
-            Ti.API.info('Closing main menu');
-            
-            clearInterval(Ti.App.syncInterval);
-            clearInterval(Ti.App.photoUploadCheck);
-            
-            if(Ti.App.isIOS){
-                Ti.App.removeEventListener('resume', Omadi.service.checkUpdate);
-            }
-            
-            Ti.App.removeEventListener('openForm', openFormCallback);
-            Ti.App.removeEventListener('showNextAlertInQueue', showNextAlertInQueue);
-            Ti.App.removeEventListener("syncInstallComplete", displayBundleList);
-            Ti.App.removeEventListener("doneSendingData", doneSendingDataMainMenu);
-            Ti.App.removeEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
-            Ti.App.removeEventListener("sendingData", sendingDataMainMenu);
-            Ti.App.removeEventListener('loggingOut', loggingOutMainMenu);
-            Ti.Network.removeEventListener('change', networkChangedMainMenu);
-            
-            Ti.App.removeEventListener('finishedDataSync', setupBottomButtons);
-            Ti.App.removeEventListener('normal_update_from_menu', normalUpdateFromMenu);
-            Ti.App.removeEventListener('full_update_from_menu', fullUpdateFromMenu);
-            
-            // Release memory
-            
-            Ti.UI.currentWindow.remove(loggedView);
-            Ti.UI.currentWindow.remove(networkStatusView);
-            Ti.UI.currentWindow.remove(databaseStatusView);
-            Ti.UI.currentWindow.remove(listView);
-            
-            loggedView = null;
-            networkStatusView = null;
-            databaseStatusView = null;
-            listView = null;
-            curWin = null;
-            
-            networkStatusLabel = null;
-            refresh_image = null;
-            label_top = null;
-            offImage = null;
-            actionsButton = null;
-            a = null;
-        });
-      
-    }());
+        Ti.App.removeEventListener('openForm', openFormCallback);
+        Ti.App.removeEventListener('showNextAlertInQueue', showNextAlertInQueue);
+        Ti.App.removeEventListener("syncInstallComplete", displayBundleList);
+        Ti.App.removeEventListener("doneSendingData", doneSendingDataMainMenu);
+        Ti.App.removeEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
+        Ti.App.removeEventListener("sendingData", sendingDataMainMenu);
+        Ti.App.removeEventListener('loggingOut', loggingOutMainMenu);
+        Ti.Network.removeEventListener('change', networkChangedMainMenu);
+        
+        Ti.App.removeEventListener('finishedDataSync', setupBottomButtons);
+        Ti.App.removeEventListener('normal_update_from_menu', normalUpdateFromMenu);
+        Ti.App.removeEventListener('full_update_from_menu', fullUpdateFromMenu);
+        
+        // Release memory
+        
+        Ti.UI.currentWindow.remove(loggedView);
+        Ti.UI.currentWindow.remove(networkStatusView);
+        Ti.UI.currentWindow.remove(databaseStatusView);
+        Ti.UI.currentWindow.remove(listView);
+        
+        loggedView = null;
+        networkStatusView = null;
+        databaseStatusView = null;
+        listView = null;
+        curWin = null;
+        
+        networkStatusLabel = null;
+        refresh_image = null;
+        label_top = null;
+        offImage = null;
+        actionsButton = null;
+        a = null;
+    });
+  
+}());
 

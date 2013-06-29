@@ -1,49 +1,34 @@
 package com.omadi.newcamera;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.security.Timestamp;
 import java.util.HashMap;
+import java.util.List;
 
 import org.appcelerator.titanium.TiBaseActivity;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
-import android.graphics.drawable.Drawable;
+import android.graphics.ImageFormat;
 import android.hardware.Camera;
+import android.hardware.Camera.Size;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PictureCallback;
-import android.hardware.Camera.ShutterCallback;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
-import android.util.Base64;
 import android.util.Log;
-import android.view.Display;
-import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
-import android.view.WindowManager;
-import android.view.ViewGroup.LayoutParams;
-import android.view.animation.Animation;
-import android.view.animation.RotateAnimation;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -73,13 +58,12 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	private ImageView done;
 	private ImageView flash;
 	RelativeLayout zoomBase;
+	private boolean isPreviewRunning = false;
 	
 	public static ToolsOverlay toolsOverlay = null;
 	//VerticalSeekBar zoomControls;
 	private SensorManager sensorManager = null;
 	Bitmap bitmap = null;
-	
-	
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -112,7 +96,10 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	}
 	
 	public static Camera.Parameters getCameraParameters(){
-		return camera.getParameters();
+		if(camera != null){
+			return camera.getParameters();
+		}
+		return null;
 	}
 	
 	public static void setCameraParameters(Camera.Parameters params){
@@ -120,10 +107,136 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	}
 
 	public void surfaceChanged(SurfaceHolder previewHolder, int format, int width, int height) {
-		camera.startPreview();  // make sure setPreviewDisplay is called before this
+		
 		Log.d("CAMERA", "CAMERA SURFACE CHANGED");
 		
+		if (isPreviewRunning) {
+			if(camera != null){
+				camera.stopPreview();
+			}
+	    }
+		
+	    try{
+		    Camera.Parameters p = camera.getParameters();
+		    if(p!=null){
+		    	
+			    List<Size> sizes = p.getSupportedPreviewSizes();
+			    Size optimalSize = getOptimalPreviewSize(sizes, width, height);
+			    if(optimalSize != null){
+			    	
+			    	p.setPreviewSize(optimalSize.width, optimalSize.height);
+			    }
+			    
+			    List<Size> pictureSizes = p.getSupportedPictureSizes();
+			    Size optimalPictureSize = getOptimalPictureSize(pictureSizes);
+			    if(optimalPictureSize != null){
+			    	
+			    	Log.d("CAMERA", "CAMERA OPTIMAL PICTURE SIZE: " + optimalPictureSize.width + "x" + optimalPictureSize.height);
+			    	p.setPictureSize(optimalPictureSize.width, optimalPictureSize.height);
+			    }
+			    
+			    // Set to 90% quality
+			    p.setJpegQuality(90);
+			    p.setPictureFormat(ImageFormat.JPEG);
+			    
+			    camera.setParameters(p);
+			    
+		
+			    camera.setPreviewDisplay(previewHolder);
+			    camera.startPreview();
+		    }
+	    } 
+	    catch (IOException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+	    }
+
+	    isPreviewRunning = true;
+		
 		toolsOverlay.cameraInitialized(camera);
+	}
+	
+	private Size getOptimalPictureSize(List<Size> pictureSizes){
+		Size optimalSize = null;
+		
+	    if(pictureSizes.size() > 0){
+		    int target = 1000;
+		    int minDiff = Integer.MAX_VALUE;
+		    
+		    for (Size pictureSize : pictureSizes) {
+		    	Log.d("CAMERA", "CAMERA SIZE: " + pictureSize.width + "x" + pictureSize.height);
+		    	if(pictureSize.width > pictureSize.height){
+		    		// Make sure it's in landscape mode
+		    		if(pictureSize.width <= target){
+		    			// Make sure it's smaller than the target size
+		    			
+		    			if(target - pictureSize.width < minDiff){
+		    				optimalSize = pictureSize;
+		    				minDiff = target - pictureSize.width;
+		    			}
+		    		}
+		    	}
+		    }
+		    
+		    if(optimalSize == null){
+		    	// Get smallest size
+		    	for (Size pictureSize : pictureSizes) {
+		    		if(pictureSize.width > pictureSize.height){
+		    			// Make sure it's in landscape mode
+				    	if(optimalSize == null){
+				    		optimalSize = pictureSize;
+				    	}
+				    	else if(pictureSize.width < optimalSize.width){
+				    		optimalSize = pictureSize;
+				    	}
+				    }
+		    	}
+		    }
+	    }
+	    
+	    return optimalSize;
+	}
+	
+	private Size getOptimalPreviewSize(List<Size> sizes, int w, int h) {
+	    
+	    final double ASPECT_TOLERANCE = 0.05;
+	    double targetRatio = (double) w / h;
+	    if (sizes == null) return null;
+
+	    Size optimalSize = null;
+	    double minDiff = Double.MAX_VALUE;
+
+	    int targetHeight = h;
+
+	    // Try to find an size match aspect ratio and size
+	    for (Size size : sizes) {
+		    double ratio = (double) size.width / size.height;
+		    if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE){
+		    	continue;
+		    }
+		    if(size.width > size.height){
+		    	// Make sure it's in landscape mode
+			    if (Math.abs(size.height - targetHeight) < minDiff) {
+				    optimalSize = size;
+				    minDiff = Math.abs(size.height - targetHeight);
+				}
+		    }
+	    }
+		
+	    // Cannot find the one match the aspect ratio, ignore the requirement
+	    if (optimalSize == null) {
+		    minDiff = Double.MAX_VALUE;
+		    for (Size size : sizes) {
+		    	if(size.width > size.height){
+		    		// Make sure it's in landscape mode
+				    if (Math.abs(size.height - targetHeight) < minDiff) {
+					    optimalSize = size;
+					    minDiff = Math.abs(size.height - targetHeight);
+				    }
+		    	}
+		    }
+	    }
+	    return optimalSize;
 	}
 
 	public void surfaceCreated(SurfaceHolder previewHolder) {
@@ -142,13 +255,13 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 		cameraParams.setPreviewSize(previewSize.width, previewSize.height );
 		camera.setParameters(cameraParams);
 		*/
-
-		try {
-			Log.i(LCAT, "setting preview display");
-			camera.setPreviewDisplay(previewHolder);
-		} catch(IOException e) {
-			e.printStackTrace();
-		}
+//
+//		try {
+//			Log.i(LCAT, "setting preview display");
+//			camera.setPreviewDisplay(previewHolder);
+//		} catch(IOException e) {
+//			e.printStackTrace();
+//		}
 		
 		//toolsOverlay.cam
 	}
@@ -198,8 +311,10 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 		sensorManager.unregisterListener(this);
 		
 		try {
-			camera.release();
-			camera = null;
+			if(camera != null){
+				camera.release();
+				camera = null;
+			}
 		}
 		catch (Throwable t) {
 			Log.d("CAMERA", "camera is not open, unable to release: " + t.getMessage());

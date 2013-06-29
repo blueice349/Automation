@@ -21,9 +21,9 @@ Ti.include('/lib/functions.js');
 	reinitializeBtn,
 	dialog,
 	scrollView,
-	termsOfServiceLabel;
-	
-	
+	termsOfServiceLabel,
+	portalLabel;
+
 	curWin = Ti.UI.currentWindow;
 	curWin.backgroundColor = '#eee';
 	curWin.setOrientationModes([Titanium.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
@@ -104,6 +104,17 @@ Ti.include('/lib/functions.js');
 		}
 	});
 	
+	portalLabel = Ti.UI.createLabel({
+	   text: 'Signed into ' + Omadi.utils.getClientAccount() + ' as ' + Omadi.utils.getUsername(Omadi.utils.getUid()),
+	   width : Ti.UI.SIZE,
+       height : Ti.UI.SIZE,
+       top : 10,
+       color : '#666',
+       font: {
+           fontSize: 14
+       }
+	});
+	
 	termsOfServiceLabel = Ti.UI.createLabel({
         text : ' Terms of Service',
         color : '#495A8B',
@@ -140,8 +151,8 @@ Ti.include('/lib/functions.js');
         }
 	});
 	
+	scrollView.add(portalLabel);
 	scrollView.add(syncLabel);
-	
 	
 	scrollView.add(termsOfServiceLabel);
 	// buttonView = Ti.UI.createView({

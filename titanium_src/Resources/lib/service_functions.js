@@ -204,8 +204,6 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                         
                         file = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory + "/download.txt");
                         
-                        Omadi.service.sendErrorReport("Data length: " + this.responseData.length);
-                        
                         if(file.write(this.responseData)){
                            
                            string = file.read();
@@ -226,6 +224,13 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                         else{
                             Omadi.service.sendErrorReport("Failed to write to the download file");
                         }
+                        
+                        if(file.exists()){
+                            file.deleteFile();
+                        }
+                        
+                        file = null;
+                        dir = null;
                     }
                     else{
                         if (progress != null) {
@@ -704,12 +709,12 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                             imageFile.deleteFile();
                         } 
                         
-                        resizedFilePath = filePath.replace(/\.jpg$/, ".resized.jpg");
-                        
-                        imageFile = Ti.Filesystem.getFile("file://" + resizedFilePath);
-                        if(imageFile.exists()){
-                            imageFile.deleteFile(); 
-                        }
+                        // resizedFilePath = filePath.replace(/\.jpg$/, "_resized.jpg");
+//                         
+                        // imageFile = Ti.Filesystem.getFile("file://" + resizedFilePath);
+                        // if(imageFile.exists()){
+                            // imageFile.deleteFile(); 
+                        // }
                     }
                     else{
                         imageFile = Ti.Filesystem.getFile(filePath);
@@ -812,6 +817,29 @@ Omadi.service.photoUploadError = function(e){"use strict";
     // }
 };
 
+Omadi.service.getLastUploadStartTimestamp = function(){"use strict";
+   var lastUploadStartTimestamp = null, mainDB, result;
+   try {
+        // Upload images
+        mainDB = Omadi.utils.openMainDatabase();
+        result = mainDB.execute("SELECT uploading FROM _photos WHERE uploading > 0");
+        
+        if (result.isValidRow()) {
+            lastUploadStartTimestamp = result.field(0, Ti.Database.FIELD_TYPE_INT);
+            
+            Ti.API.debug("A photo is currently uploading");
+        }
+        result.close();
+        mainDB.close();
+    }
+    catch(ex) {
+        
+        Omadi.service.sendErrorReport("Exception getting uploading vars: " + ex);
+    }  
+    
+    return lastUploadStartTimestamp;
+};
+
 Omadi.service.uploadFile = function() {"use strict";
     /*jslint eqeq:true, plusplus: true*/
     /*global Base64, cameraAndroid*/
@@ -822,30 +850,20 @@ Omadi.service.uploadFile = function() {"use strict";
     
     //Omadi.service.sendErrorReport("In uploadFile");
     
-    if (Ti.Network.online) {
+    if (Ti.Network.online && !Ti.App.closingApp) {
         
-        isUploading = false;
-        lastUploadStartTimestamp = nowTimestamp = Omadi.utils.getUTCTimestamp();
+        nowTimestamp = Omadi.utils.getUTCTimestamp();
         
-        try {
-            // Upload images
-            mainDB = Omadi.utils.openMainDatabase();
-            result = mainDB.execute("SELECT uploading FROM _photos WHERE uploading > 0");
-            
-            if (result.isValidRow()) {
-                lastUploadStartTimestamp = result.field(0, Ti.Database.FIELD_TYPE_INT);
-                isUploading = true;
-                Ti.API.debug("A photo is currently uploading");
-                //Omadi.service.sendErrorReport("Photo currently uploading");
-            }
-            result.close();
-            mainDB.close(); 
-            
+        lastUploadStartTimestamp = Omadi.service.getLastUploadStartTimestamp();
+        
+        if(lastUploadStartTimestamp === null){
+            lastUploadStartTimestamp = nowTimestamp;
+            isUploading = false;
         }
-        catch(ex) {
-            //alert("There was an error uploading your photo. Details: ");
-            Omadi.service.sendErrorReport("Exception getting uploading vars: " + ex);
+        else{
+            isUploading = true;
         }
+        
         // Make sure no images are currently uploading
         // Maximum of 90 seconds apart for images uploading
         if (!isUploading || (nowTimestamp - lastUploadStartTimestamp) > 90) {

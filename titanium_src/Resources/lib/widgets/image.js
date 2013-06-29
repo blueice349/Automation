@@ -386,54 +386,14 @@ Omadi.widgets.image = {
                             alert(event.media.file);
                         }
 
-                        // if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
-                            // newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
-                            // imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
-                            // imageView.parentView.add(newImageView);
-                            // newImageView.fireEvent('click');
-                        // }
-
-                        // blob = imageView.image;
-// 
-                        // try {
-                            // if (blob.getLength() > IMAGE_MAX_BYTES) {
-// 
-                                // //var ratio
-                                // if (blob.height > 1000 || blob.width > 1000) {
-// 
-                                    // maxDiff = blob.height - 1000;
-                                    // if (blob.width - 1000 > maxDiff) {
-                                        // // Width is bigger
-                                        // newWidth = 1000;
-                                        // newHeight = (1000 / blob.width) * blob.height;
-                                    // }
-                                    // else {
-                                        // // Height is bigger
-                                        // newHeight = 1000;
-                                        // newWidth = (1000 / blob.height) * blob.width;
-                                    // }
-// 
-                                    // blob = blob.imageAsResized(newWidth, newHeight);
-                                // }
-                            // }
-                        // }
-                        // catch(ex) {
-                            // alert("Error resizing the photo: " + ex);
-                        // }
-                        
-                        
                         filePath = Ti.Filesystem.applicationDataDirectory + "p_" + Omadi.utils.getUTCTimestamp() + '.jpg';
-                        
-                        
-                        //alert(fileName);
                         
                         imageFile = Ti.Filesystem.getFile(filePath);
                         
                         imageFile.write(event.media);
                             
                         Omadi.widgets.image.saveFileInfo(imageView, filePath, 0);
-                        //Omadi.widgets.image.saveImageInDb(imageView, blob);
-
+                       
                         
                         if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
                             newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
@@ -533,41 +493,6 @@ Omadi.widgets.image = {
         catch(ex) {
             alert("Problem saving the photo to the database: " + ex);
         }
-    },
-    resizeImage : function(blob, maxWidth){"use strict";
-        var tmpImage, tmp, wid, ht, reduction, newImage;
-        
-        tmpImage = Ti.UI.createImageView({
-           image: blob,
-           width: Ti.UI.SIZE,
-           height: Ti.UI.SIZE
-        });
-        
-        tmp = tmpImage.toImage();
-        wid = tmp.width;
-        ht = tmp.height;
-        
-        Ti.API.debug(wid);
-        Ti.API.debug(ht);
-        
-        if(wid > ht) {
-            reduction = maxWidth / wid;
-            wid = maxWidth;
-            ht = Math.round(ht * reduction);
-        }
-        else {
-            reduction = maxWidth / ht;
-            ht = maxWidth;
-            wid = Math.round(wid * reduction);
-        }
-        
-        newImage = Ti.UI.createImageView({
-            image: blob,
-            width: 1000,
-            height: 1000
-        });
-        return newImage.toBlob();
     }
-    
 };
 

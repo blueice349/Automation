@@ -116,113 +116,137 @@ public class NewcameraModule extends KrollModule
 	}
 	
 	@Kroll.method
-	public boolean resizeImage(String filePath, int degrees){
-		boolean retval = false;
+	public String resizeImage(String filePath, int degrees){
+		String retval = "Unknown";
+		Bitmap bitmap = null;
+		BitmapFactory.Options bitmapOptions = null;
+		
+		// if returning "Unknown", something weird happened
+		// if returning "Error ...", an error occurred
+		// if returning "Resized", everything went smoothly 
+		// if returning "No Resize Necessary", the camera took a photo small enough already
 		
 		try{
 			
-			BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+			bitmapOptions = new BitmapFactory.Options();
 			// decrease the amount of memory by 4 when loading
 			
 			bitmapOptions.inJustDecodeBounds = true;
 			
 			BitmapFactory.decodeFile(filePath, bitmapOptions);
-			
+		}
+		catch(Exception e){
+			retval = "Memory Error 1: " + e.getMessage();
+			return retval;
+		}
+		
+		try{
 			bitmapOptions.inJustDecodeBounds = false;
 			
 			if(bitmapOptions.outHeight >= 2000 || bitmapOptions.outWidth >= 2000){
 				bitmapOptions.inSampleSize = 2;
 			}
 			
-			Bitmap bitmap = BitmapFactory.decodeFile(filePath, bitmapOptions);
+			bitmap = BitmapFactory.decodeFile(filePath, bitmapOptions);
+		}
+		catch(Exception e){
+			retval = "Memory Error 2: " + e.getMessage();
+			return retval;
+		}
+		
+		if(bitmap == null){
+			Log.d("CAMERA", "Initial bitmap is null");
+			retval = "Bitmap Error 3: bitmap is null";
+		}
+		else{
+			int height = 0;
+			int width = 0;
+			int newWidth = 0;
+			int newHeight = 0;
+			float scale = 0;
+			int max = 0;
 			
-			if(bitmap != null){
-				int height = bitmap.getHeight();
-				int width = bitmap.getWidth();
+			try{
+				height = bitmap.getHeight();
+				width = bitmap.getWidth();
+			}
+			catch(Exception e){
+				retval = "Bitmap Error 4: " + e.getMessage();
+				return retval;
+			}
+			
+			newWidth = width;
+			newHeight = height;
+			
+			scale = 1.0f;
+			max = 1000;
+			
+			if (height > max || width > max) {
 				
-				int newWidth = width;
-				int newHeight = height;
-				
-				float scale = 1.0f;
-				
-				int max = 1000;
-				
-				if (height > max || width > max) {
+				try{
 			        if (width > height) {
 			        	scale = (float)max / (float)width;
 			        } 
 			        else {
 			            scale = (float)max / (float)height;
 			        }
-			        
-			        //Log.i("CHRIS", "resize width: " + width + " " + scale);
-			        
-			        if(scale > 0){
-			        	newWidth = Math.round((float)width * scale);
-			        	newHeight = Math.round((float)height * scale);
-			        	
-			        	Bitmap resized = null;
-						
-						//Log.i("CHRIS", "MATRIX DEG: " + degrees);
-						
-						resized = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
-						
-						bitmap.recycle();
-						//stream.close();
-						bitmap = null;
-						
-//						if(degrees > 0){
-//							Matrix mtx = new Matrix();
-		//	
-//							if (degrees == 180) {
-//								mtx.postRotate(180);
-//							}
-//							else if (degrees == 270) {
-//								mtx.postRotate(90);
-//							}
-//							else {
-//								mtx.postRotate(270);
-//							}
-//							
-//							resized = Bitmap.createBitmap(resized, 0, 0, newWidth, newHeight, mtx, true);
-//						}
-						
-						//Log.i("CHRIS", "resized it");
-						
-					    //ByteArrayOutputStream stream = new ByteArrayOutputStream();
-						//resized.compress(Bitmap.CompressFormat.JPEG, 95, stream);
-						
-						try {
-							String resizedFilePath = filePath.replaceAll(".jpg$", "_resized.jpg");
-							
-						    FileOutputStream out = new FileOutputStream(resizedFilePath);
-						    resized.compress(Bitmap.CompressFormat.JPEG, 90, out);
-						    out = null;
-						    retval = true;
-						}
-						catch (Exception e) {
-						    e.printStackTrace();
-						    Log.d("CAMERA", "CAMERA writing resize file: " + e.getMessage());
-						}
-						
-						resized.recycle();
-						resized = null;
-						
-			        }
-			        else{
-			        	Log.d("CAMERA", "Scale=0 H=" + height + " W=" + width);
-			        }
-			    }
-				else{
-					Log.d("CAMERA", "The photo does not need to be resized");
 				}
-			}
+				catch(Exception e){
+					retval = "Bitmap Error 5: " + e.getMessage();
+					return retval;
+				}
+				
+				if(scale <= 0){
+					Log.d("CAMERA", "Scale=0 H=" + height + " W=" + width);
+					retval = "Bitmap Error 6: scale less than or equal to 0";
+				}
+				else{
+					try{
+						newWidth = Math.round((float)width * scale);
+						newHeight = Math.round((float)height * scale);
+					}
+					catch(Exception e){
+						retval = "Bitmap Error 7: could not get new width/height";
+						return retval;
+					}
+		        	
+		        	Bitmap resized = null;
+		        	
+		        	try{
+		        		resized = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true);
+		        	}
+					catch(Exception e){
+						retval = "Memory Error 8: " + e.getMessage();
+						bitmap.recycle();
+						bitmap = null;
+						return retval;
+					}
+					
+					bitmap.recycle();
+					bitmap = null;
+					
+					try {
+						String resizedFilePath = filePath.replaceAll(".jpg$", "_resized.jpg");
+						
+					    FileOutputStream out = new FileOutputStream(resizedFilePath);
+					    resized.compress(Bitmap.CompressFormat.JPEG, 90, out);
+					    out = null;
+					    retval = "Resized";
+					}
+					catch (Exception e) {
+					    e.printStackTrace();
+					    Log.d("CAMERA", "CAMERA writing resize file: " + e.getMessage());
+					    retval = "Write Error 9: " + e.getMessage();
+					}
+					
+					resized.recycle();
+					resized = null;
+		        }
+		    }
 			else{
-				Log.d("CAMERA", "Initial bitmap is null");
+				Log.d("CAMERA", "The photo does not need to be resized");
+				retval = "No Resize Necessary";
 			}
-		}
-		catch(Exception e){
-			Log.d("CAMERA", "CAMERA resizing: " + e.getMessage());
 		}
 		
 		return retval;
@@ -269,7 +293,6 @@ public class NewcameraModule extends KrollModule
 				camera.release();
 				camera = null;
 			}
-
 		} 
 		catch (Throwable t) {
 			

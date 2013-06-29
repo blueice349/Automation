@@ -54,7 +54,7 @@ Omadi.widgets.omadi_reference = {
     getNewElement : function(node, instance, index) {"use strict";
 
         var settings, widgetView, dbValue, textValue, nodeTypes, possibleValues, options,
-            i, query, db, result, wrapper, autocomplete_table, calculatedTop;
+            i, query, db, result, wrapper, autocomplete_table, calculatedTop, isHidden;
 
         dbValue = "";
         textValue = "";
@@ -156,11 +156,33 @@ Omadi.widgets.omadi_reference = {
         else{
         
             widgetView = Omadi.widgets.getTextField(instance);
-    
+            
+            if(typeof instance.settings.hidden_on_form !== 'undefined' && instance.settings.hidden_on_form == 1){
+                isHidden = true;
+                widgetView = Ti.UI.createLabel({
+                    text: textValue,
+                    font: {
+                        fontSize: 14
+                    },
+                    color: '#999'
+                });
+                
+                if(textValue == ''){
+                    widgetView.text = '- No Options -';
+                }
+                
+                wrapper.add(widgetView);
+            }
+            else{
+                widgetView = Omadi.widgets.getTextField(instance);
+                widgetView.setValue(textValue);
+                widgetView.setAutocapitalization(Ti.UI.TEXT_AUTOCAPITALIZATION_WORDS);
+                isHidden = false;
+            }
+            
             widgetView.dbValue = dbValue;
             widgetView.textValue = textValue;
-            widgetView.setValue(textValue);
-            widgetView.setAutocapitalization(Ti.UI.TEXT_AUTOCAPITALIZATION_WORDS);
+            
             widgetView.lastValue = textValue;
             widgetView.touched = false;
             widgetView.possibleValues = possibleValues;
@@ -169,216 +191,201 @@ Omadi.widgets.omadi_reference = {
             widgetView.clickedAutocomplete = false;
             widgetView.touched = false;
             widgetView.blurred = true;
-    
-            widgetView.defaultValueChildFields = Omadi.widgets.omadi_reference.setupParentDefaultFields(instance);
-    
-            autocomplete_table = Titanium.UI.createTableView({
-                zIndex : 999,
-                height : 0,
-                backgroundColor : '#FFFFFF',
-                visible : false,
-                borderColor : '#000',
-                borderWidth : 0,
-                top : 0,
-                width: '96%',
-                textField : widgetView
-            });
-    
-            widgetView.autocomplete_table = autocomplete_table;
-    
-            autocomplete_table.addEventListener('click', function(e) {
-                var i, callback;
-                
-                e.source.textField.textValue = e.source.textField.value = e.rowData.title;
-                e.source.textField.dbValue = e.rowData.nid;
-    
-                e.source.autocomplete_table.setHeight(0);
-                e.source.autocomplete_table.setBorderWidth(0);
-                e.source.autocomplete_table.setVisible(false);
-                
-                e.source.textField.setColor('#006600');
-    
-                if (Ti.App.isAndroid) {
-                    // Make sure the cursor is at the end of the text
-                    e.source.textField.setSelection(e.source.textField.value.length, e.source.textField.value.length);
-                }
-    
-                // Pretend like this is just loaded - mainly a fix for android, but makes sense for both
-                //e.source.textField.touched = false;
-                
-                e.source.textField.clickedAutocomplete = true;
-    
-                Omadi.widgets.omadi_reference.setChildDefaultValues(e.source.textField);
-    
-                if ( typeof e.source.textField.onChangeCallbacks !== 'undefined') {
-                    if (e.source.textField.onChangeCallbacks.length > 0) {
-                        for ( i = 0; i < e.source.textField.onChangeCallbacks.length; i++) {
-                            callback = e.source.textField.onChangeCallbacks[i];
-                            callback(e.source.textField.onChangeCallbackArgs[i]);
+            
+            if(!isHidden){
+                widgetView.defaultValueChildFields = Omadi.widgets.omadi_reference.setupParentDefaultFields(instance);
+        
+                autocomplete_table = Titanium.UI.createTableView({
+                    zIndex : 999,
+                    height : 0,
+                    backgroundColor : '#FFFFFF',
+                    visible : false,
+                    borderColor : '#000',
+                    borderWidth : 0,
+                    top : 0,
+                    width: '96%',
+                    textField : widgetView
+                });
+        
+                widgetView.autocomplete_table = autocomplete_table;
+        
+                autocomplete_table.addEventListener('click', function(e) {
+                    var i, callback;
+                    
+                    e.source.textField.textValue = e.source.textField.value = e.rowData.title;
+                    e.source.textField.dbValue = e.rowData.nid;
+        
+                    e.source.autocomplete_table.setHeight(0);
+                    e.source.autocomplete_table.setBorderWidth(0);
+                    e.source.autocomplete_table.setVisible(false);
+                    
+                    e.source.textField.setColor('#006600');
+        
+                    if (Ti.App.isAndroid) {
+                        // Make sure the cursor is at the end of the text
+                        e.source.textField.setSelection(e.source.textField.value.length, e.source.textField.value.length);
+                    }
+        
+                    // Pretend like this is just loaded - mainly a fix for android, but makes sense for both
+                    //e.source.textField.touched = false;
+                    
+                    e.source.textField.clickedAutocomplete = true;
+        
+                    Omadi.widgets.omadi_reference.setChildDefaultValues(e.source.textField);
+        
+                    if ( typeof e.source.textField.onChangeCallbacks !== 'undefined') {
+                        if (e.source.textField.onChangeCallbacks.length > 0) {
+                            for ( i = 0; i < e.source.textField.onChangeCallbacks.length; i++) {
+                                callback = e.source.textField.onChangeCallbacks[i];
+                                callback(e.source.textField.onChangeCallbackArgs[i]);
+                            }
                         }
                     }
+                });
+        
+                widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
+        
+                if (settings.min_length && settings.min_length != null && settings.min_length != "null") {
+                    widgetView.minLength = settings.min_length;
                 }
-            });
-    
-            widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
-    
-            if (settings.min_length && settings.min_length != null && settings.min_length != "null") {
-                widgetView.minLength = settings.min_length;
-            }
-    
-            //widgetView.addEventListener('focus', Omadi.widgets.omadi_reference.scrollUp);
-            //widgetView.addEventListener('click', Omadi.widgets.omadi_reference.scrollUp);
-            
-            widgetView.addEventListener('focus', function(e){
-               //Ti.API.debug("focused");
-               e.source.touched = true; 
-            });
-            
-            widgetView.addEventListener('click', function(e){
-                //Ti.API.debug("Clicked");
-               e.source.touched = true; 
-            });
-    
-            widgetView.addEventListener('blur', function(e) {
-                e.source.autocomplete_table.setBorderWidth(0);
-                e.source.autocomplete_table.setHeight(0);
-                e.source.autocomplete_table.setVisible(false);
-                e.source.blurred = true;
-            });
-            
-            // widgetView.addEventListener("customCopy", function(){
-                // var callback;
-    //             
-                // Omadi.widgets.omadi_reference.setChildDefaultValues(widgetView);
-                // if (widgetView.onChangeCallbacks.length > 0) {
-                    // for ( i = 0; i < widgetView.onChangeCallbacks.length; i++) {
-                        // callback = widgetView.onChangeCallbacks[i];
-                        // callback(widgetView.onChangeCallbackArgs[i]);
-                    // }
-                // }
-            // });
-            
-            Ti.UI.currentWindow.addEventListener("customCopy", function(){
-                var i, callback;
+        
+                widgetView.addEventListener('focus', function(e){
+                   e.source.touched = true; 
+                });
                 
-                Ti.API.debug("In CUSTOM COPY");
-                Omadi.widgets.omadi_reference.setChildDefaultValues(widgetView);
-                //Ti.API.debug(widgetView.onChangeCallbacks);
-                if (widgetView.onChangeCallbacks.length > 0) {
-                    for ( i = 0; i < widgetView.onChangeCallbacks.length; i++) {
-                        callback = widgetView.onChangeCallbacks[i];
-                        callback(widgetView.onChangeCallbackArgs[i]);
-                    }
-                }
-            });
-    
-            widgetView.addEventListener('change', function(e) {
-                /*global setConditionallyRequiredLabels*/
-    
-                var possibleValues, tableData, i, j, regEx, row, upperCaseValue, callback;
+                widgetView.addEventListener('click', function(e){
+                   e.source.touched = true; 
+                });
+        
+                widgetView.addEventListener('blur', function(e) {
+                    e.source.autocomplete_table.setBorderWidth(0);
+                    e.source.autocomplete_table.setHeight(0);
+                    e.source.autocomplete_table.setVisible(false);
+                    e.source.blurred = true;
+                });
                 
-                Ti.API.debug("auto: " + e.source.clickedAutocomplete);
-                
-                if(Ti.App.isAndroid && e.source.clickedAutocomplete){
-                    e.source.clickedAutocomplete = false;
-                    Ti.API.debug("IN clicked auto");
-                    return;
-                }
-                
-                if (e.source.touched === true) {
-                    //Ti.API.info("changed");
-                        
-                    e.source.dbValue = null;
-                    e.source.textValue = e.source.value;
+                Ti.UI.currentWindow.addEventListener("customCopy", function(){
+                    var i, callback;
                     
-                    e.source.setColor('#ee0000');
-    
-                    if (e.source.lastValue != e.source.value && e.source.value != '') {
-                        possibleValues = e.source.possibleValues;
-    
-                        upperCaseValue = e.source.value.toUpperCase();
-                        tableData = [];
-    
-                        for ( i = 0; i < possibleValues.length; i++) {
-    
-                            regEx = new RegExp(e.source.value, 'i');
-                            if (possibleValues[i].title.search(regEx) != -1) {
-                                //Check match
-                                if (upperCaseValue == possibleValues[i].title.toUpperCase()) {
-                                    e.source.dbValue = possibleValues[i].nid;
-                                    Omadi.widgets.omadi_reference.setChildDefaultValues(e.source);
-                                    
-                                    e.source.autocomplete_table.setHeight(0);
-                                    e.source.autocomplete_table.setBorderWidth(0);
-                                    e.source.autocomplete_table.setVisible(false);
-                                    
-                                    e.source.setColor('#006600');
-                                    
-                                    if (e.source.onChangeCallbacks.length > 0) {
-                                        for ( j = 0; j < e.source.onChangeCallbacks.length; j++) {
-                                            callback = e.source.onChangeCallbacks[j];
-                                            callback(e.source.onChangeCallbackArgs[j]);
+                    Ti.API.debug("In CUSTOM COPY");
+                    Omadi.widgets.omadi_reference.setChildDefaultValues(widgetView);
+                    //Ti.API.debug(widgetView.onChangeCallbacks);
+                    if (widgetView.onChangeCallbacks.length > 0) {
+                        for ( i = 0; i < widgetView.onChangeCallbacks.length; i++) {
+                            callback = widgetView.onChangeCallbacks[i];
+                            callback(widgetView.onChangeCallbackArgs[i]);
+                        }
+                    }
+                });
+        
+                widgetView.addEventListener('change', function(e) {
+                    /*global setConditionallyRequiredLabels*/
+        
+                    var possibleValues, tableData, i, j, regEx, row, upperCaseValue, callback;
+                    
+                    Ti.API.debug("auto: " + e.source.clickedAutocomplete);
+                    
+                    if(Ti.App.isAndroid && e.source.clickedAutocomplete){
+                        e.source.clickedAutocomplete = false;
+                        Ti.API.debug("IN clicked auto");
+                        return;
+                    }
+                    
+                    if (e.source.touched === true) {
+                        //Ti.API.info("changed");
+                            
+                        e.source.dbValue = null;
+                        e.source.textValue = e.source.value;
+                        
+                        e.source.setColor('#ee0000');
+        
+                        if (e.source.lastValue != e.source.value && e.source.value != '') {
+                            possibleValues = e.source.possibleValues;
+        
+                            upperCaseValue = e.source.value.toUpperCase();
+                            tableData = [];
+        
+                            for ( i = 0; i < possibleValues.length; i++) {
+        
+                                regEx = new RegExp(e.source.value, 'i');
+                                if (possibleValues[i].title.search(regEx) != -1) {
+                                    //Check match
+                                    if (upperCaseValue == possibleValues[i].title.toUpperCase()) {
+                                        e.source.dbValue = possibleValues[i].nid;
+                                        Omadi.widgets.omadi_reference.setChildDefaultValues(e.source);
+                                        
+                                        e.source.autocomplete_table.setHeight(0);
+                                        e.source.autocomplete_table.setBorderWidth(0);
+                                        e.source.autocomplete_table.setVisible(false);
+                                        
+                                        e.source.setColor('#006600');
+                                        
+                                        if (e.source.onChangeCallbacks.length > 0) {
+                                            for ( j = 0; j < e.source.onChangeCallbacks.length; j++) {
+                                                callback = e.source.onChangeCallbacks[j];
+                                                callback(e.source.onChangeCallbackArgs[j]);
+                                            }
+                                        }
+                                    }
+                                    else {
+                                        e.source.dbValue = null;
+                                        
+                                         //Create partial matching row
+                                        row = Ti.UI.createTableViewRow({
+                                            height : 38,
+                                            title : possibleValues[i].title,
+                                            nid : possibleValues[i].nid,
+                                            color : '#000000',
+                                            autocomplete_table : e.source.autocomplete_table,
+                                            textField : e.source
+                                        });
+                                        
+                                        Ti.API.debug(possibleValues[i].title);
+            
+                                        // apply rows to data array
+                                        tableData.push(row);
+            
+                                        if (tableData.length >= 4) {
+                                            break;
                                         }
                                     }
                                 }
-                                else {
-                                    e.source.dbValue = null;
-                                    
-                                     //Create partial matching row
-                                    row = Ti.UI.createTableViewRow({
-                                        height : 38,
-                                        title : possibleValues[i].title,
-                                        nid : possibleValues[i].nid,
-                                        color : '#000000',
-                                        autocomplete_table : e.source.autocomplete_table,
-                                        textField : e.source
-                                    });
-                                    
-                                    Ti.API.debug(possibleValues[i].title);
+                            }
         
-                                    // apply rows to data array
-                                    tableData.push(row);
+                            e.source.autocomplete_table.setData(tableData);
         
-                                    if (tableData.length >= 4) {
-                                        break;
-                                    }
-                                }
+                            if (tableData.length == 0) {
+                                e.source.autocomplete_table.setBorderWidth(0);
+                                e.source.autocomplete_table.setHeight(0);
+                                e.source.autocomplete_table.setVisible(false);
+                            }
+                            else {
+                                e.source.autocomplete_table.setBorderWidth(1);
+                                e.source.autocomplete_table.setHeight(38 * tableData.length);
+                                e.source.autocomplete_table.setVisible(true);
+                            }
+                            
+                            if(e.source.blurred){
+                                e.source.blurred = false;
+                                Omadi.widgets.omadi_reference.scrollUp(e);
                             }
                         }
-    
-                        e.source.autocomplete_table.setData(tableData);
-    
-                        if (tableData.length == 0) {
+                        else {
                             e.source.autocomplete_table.setBorderWidth(0);
                             e.source.autocomplete_table.setHeight(0);
                             e.source.autocomplete_table.setVisible(false);
                         }
-                        else {
-                            e.source.autocomplete_table.setBorderWidth(1);
-                            e.source.autocomplete_table.setHeight(38 * tableData.length);
-                            e.source.autocomplete_table.setVisible(true);
-                        }
-                        
-                        if(e.source.blurred){
-                            e.source.blurred = false;
-                            Omadi.widgets.omadi_reference.scrollUp(e);
-                        }
                     }
-                    else {
-                        e.source.autocomplete_table.setBorderWidth(0);
-                        e.source.autocomplete_table.setHeight(0);
-                        e.source.autocomplete_table.setVisible(false);
+                    e.source.lastValue = e.source.value;
+        
+                    if (e.source.check_conditional_fields.length > 0) {
+                        setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
                     }
-                }
-                e.source.lastValue = e.source.value;
-    
-                if (e.source.check_conditional_fields.length > 0) {
-                    setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
-                }
-            });
-    
-            wrapper.add(widgetView);
-            wrapper.add(autocomplete_table);
+                });
+        
+                wrapper.add(widgetView);
+                wrapper.add(autocomplete_table);
+            }
         }
 
         return wrapper;
