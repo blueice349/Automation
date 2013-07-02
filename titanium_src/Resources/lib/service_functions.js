@@ -653,7 +653,8 @@ Omadi.service.sendLogoutRequest = function(){"use strict";
 
 Omadi.service.photoUploadSuccess = function(e){"use strict";
     var json, subDB, subResult, uploadMore = false, fieldSettings, tableName, 
-        decoded_values, decoded, content, multipleValue, dbValue, jsonArray, imageFile, filePath, resizedFilePath;
+        decoded_values, decoded, content, multipleValue, dbValue, jsonArray, 
+        imageFile, filePath, resizedFilePath, deleteFile, photoWidget, photoDeleteOption;
     
     //Ti.API.info('UPLOAD FILE: =========== Success ========' + this.responseText);
     Ti.API.debug("Photo upload succeeded");
@@ -704,10 +705,21 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                     filePath = subResult.field(0);
                     
                     if(Ti.App.isAndroid){
-                        imageFile = Ti.Filesystem.getFile("file://" + filePath);
-                        if(imageFile.exists()){
-                            imageFile.deleteFile();
-                        } 
+                       deleteFile = true;
+                        
+                       photoWidget = Ti.App.Properties.getString("photoWidget", 'take');
+                       photoDeleteOption = Ti.App.Properties.getString("deleteOnUpload", "false");
+                       if(photoWidget == 'choose' && photoDeleteOption == "false"){
+                            deleteFile = false;
+                       }
+                        
+                       if(deleteFile){
+                        
+                            imageFile = Ti.Filesystem.getFile("file://" + filePath);
+                            if(imageFile.exists()){
+                                imageFile.deleteFile();
+                            } 
+                       }
                         
                         // resizedFilePath = filePath.replace(/\.jpg$/, "_resized.jpg");
 //                         
@@ -722,6 +734,7 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                             imageFile.deleteFile();
                         } 
                     }
+                    
                     
                     // Get rid of file pointers
                     imageFile = null;

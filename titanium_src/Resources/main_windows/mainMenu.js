@@ -261,16 +261,16 @@ function setupAndroidMenu() {"use strict";
 
     activity.onCreateOptionsMenu = function(e) {
 
-        var menu, menuItem, menu_draft, menu_about;
+        var menu, menuItem, menu_draft, menu_about, menu_settings;
 
         menu = e.menu;
 
-        menuItem = menu.add({
-            title : 'Sync Data',
-            order : 0
-        });
-        menuItem.setIcon('/images/item1.png');
-
+        // menuItem = menu.add({
+            // title : 'Sync Data',
+            // order : 0
+        // });
+        // menuItem.setIcon('/images/item1.png');
+        
         menu_draft = menu.add({
             title : 'Display drafts',
             order : 1
@@ -282,17 +282,27 @@ function setupAndroidMenu() {"use strict";
             order : 2
         });
         menu_about.setIcon("/images/about.png");
+        
+        menu_settings = menu.add({
+           title: 'Settings',
+           order: 3 
+        });
+        menu_settings.setIcon("/images/gear.png");
 
         menu_about.addEventListener("click", function(e) {
             Omadi.display.openAboutWindow();
         });
 
-        menuItem.addEventListener("click", function(e) {
-            Omadi.service.checkUpdate('from_menu');
-        });
+        // menuItem.addEventListener("click", function(e) {
+            // Omadi.service.checkUpdate('from_menu');
+        // });
 
         menu_draft.addEventListener('click', function() {
             Omadi.display.openDraftsWindow();
+        });
+        
+        menu_settings.addEventListener("click", function(e) {
+            Omadi.display.openSettingsWindow();
         });
     };
 }

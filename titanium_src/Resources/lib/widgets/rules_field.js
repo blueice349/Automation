@@ -308,7 +308,7 @@ Omadi.widgets.rules_field = {
         detailsVal = e.source.details;
         forms_str = '- All -';
 
-        if (e.source.formTypes.length < 4 && e.source.formTypes.length > 0) {
+        if (typeof e.source.formTypes !== 'undefined' && e.source.formTypes.length < 4 && e.source.formTypes.length > 0) {
             forms_str = '';
             for ( i = 0; i < e.source.formTypes.length; i++) {
                 forms_str += e.source.formTypes[i] + ((i == e.source.formTypes.length - 1) ? "" : ", ");
@@ -316,7 +316,6 @@ Omadi.widgets.rules_field = {
         }
         else if (e.source.formTypes.length == 0) {
             forms_str = '- NONE -';
-
         }
         formsViewLabel.text = forms_str;
 

@@ -169,7 +169,7 @@ Omadi.display.newAppAvailable = function(message) {"use strict";
 Omadi.display.openListWindow = function(type, show_plus, filterValues, nestedWindows, showFinalResults) {"use strict";
     var listWindow = Titanium.UI.createWindow({
         navBarHidden : true,
-        url : 'objects.js',
+        url : '/main_windows/objects.js',
         type : type,
         show_plus : show_plus,
         filterValues : filterValues,
@@ -189,7 +189,7 @@ Omadi.display.openActionsWindow = function() {"use strict";
     var actionsWindow = Ti.UI.createWindow({
         title : 'Actions',
         navBarHidden : true,
-        url : 'actions.js'
+        url : '/main_windows/actions.js'
     });
 
     Omadi.display.loading();
@@ -203,7 +203,7 @@ Omadi.display.openAboutWindow = function() {"use strict";
     var aboutWindow = Ti.UI.createWindow({
         title : 'About',
         navBarHidden : true,
-        url : 'about.js'
+        url : '/main_windows/about.js'
     });
 
     Omadi.display.loading();
@@ -217,7 +217,7 @@ Omadi.display.openDraftsWindow = function() {"use strict";
     var draftsWindow = Titanium.UI.createWindow({
         title : 'Drafts',
         navBarHidden : true,
-        url : 'drafts.js'
+        url : '/main_windows/drafts.js'
     });
 
     Omadi.display.loading();
@@ -226,6 +226,21 @@ Omadi.display.openDraftsWindow = function() {"use strict";
     draftsWindow.open();
 
     return draftsWindow;
+};
+
+Omadi.display.openSettingsWindow = function() {"use strict";
+    var settingsWindow = Titanium.UI.createWindow({
+        title : 'Settings',
+        navBarHidden : true,
+        url : '/main_windows/settings.js'
+    });
+
+    Omadi.display.loading();
+    settingsWindow.addEventListener('open', Omadi.display.doneLoading);
+
+    settingsWindow.open();
+
+    return settingsWindow;
 };
 
 Omadi.display.openJobsWindow = function() {"use strict";
@@ -252,7 +267,7 @@ Omadi.display.openViewWindow = function(type, nid) {"use strict";
     var viewWindow = Titanium.UI.createWindow({
         navBarHidden : true,
         type : type,
-        url : 'individual_object.js',
+        url : '/main_windows/individual_object.js',
         nid : nid
     });
 

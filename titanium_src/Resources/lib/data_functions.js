@@ -654,6 +654,7 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
             }
 
             if (Ti.App.isAndroid) {
+                
                 if (Ti.Filesystem.isExternalStoragePresent()) {
 
                     imageDir = Ti.Filesystem.getFile(Ti.Filesystem.externalStorageDirectory, 'failed_uploads');

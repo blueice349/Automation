@@ -119,7 +119,7 @@ function scrollBoxesToTop() {"use strict";
     var calculatedTop;
 
     if (Ti.Platform.osname !== 'ipad') {
-        if ( typeof scrollView !== 'undefined') {
+        if ( typeof scrollView !== 'undefined' && scrollView !== null) {
             calculatedTop = portal.convertPointToView({
                 x : 0,
                 y : 0

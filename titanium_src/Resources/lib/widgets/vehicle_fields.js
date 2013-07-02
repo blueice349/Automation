@@ -331,7 +331,7 @@ Omadi.widgets.vehicle_fields = {
     scrollUp : function(e) {"use strict";
         var calculatedTop, amountToScrollUp;
         /*global scrollView, scrollPositionY*/
-        if ( typeof scrollView !== 'undefined') {
+        if ( typeof scrollView !== 'undefined' && scrollView !== null) {
             calculatedTop = e.source.convertPointToView({
                 x : 0,
                 y : 0

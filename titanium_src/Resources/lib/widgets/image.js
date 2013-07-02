@@ -146,7 +146,7 @@ Omadi.widgets.image = {
         return widgetView;
     },
     getImageView : function(widgetView, index, nid, fid, degrees) {"use strict";
-        var imageView, fidIsData = false, transform, animation, rotateDegrees;
+        var imageView, fidIsData = false, transform, animation, rotateDegrees, image, widgetType;
 
         if (fid !== null && typeof fid !== 'number') {
             fidIsData = true;
@@ -155,12 +155,35 @@ Omadi.widgets.image = {
                 fid = "file://" + fid;
             }
         }
+        
+        widgetType = Ti.App.Properties.getString("photoWidget", 'take');
+        if(widgetType == 'choose'){
+            // Make sure the path is correct
+            if(Omadi.widgets.image.getPhotoChooserDir() === null){
+                widgetType = 'take';
+            }
+        }
+        
+        if(fid === null){
+            if(widgetType == 'choose'){
+                image = '/images/choose-a-photo.png';
+            }
+            else{
+                image = '/images/take-a-photo.png';
+            }   
+        }
+        else if(typeof fid === 'number'){
+            image = '/images/photo-loading.png';
+        }
+        else{
+            image = fid;
+        }
 
         imageView = Ti.UI.createImageView({
             left : 5,
             height : 100,
             width : 100,
-            image : (fid === null ? '/images/take-a-photo.png' : ( typeof fid === 'number' ? '/images/photo-loading.png' : fid)),
+            image : image,
             thumbnailLoaded : false,
             fullImageLoaded : false,
             isImageData : false,
@@ -205,18 +228,304 @@ Omadi.widgets.image = {
         }
         
         if(!fidIsData){
-            imageView.addEventListener('click', function(e) {
-    
-                if (e.source.fid === null) {
-                    Omadi.widgets.image.openCamera(e.source);
-                }
-                else {
-                    Omadi.display.displayLargeImage(e.source, e.source.nid, e.source.fid);
-                }
-            });
+            if(widgetType == 'choose'){
+                imageView.addEventListener('click', function(e) {
+                    
+                    if(e.source.fid === null){
+                         Omadi.widgets.image.openPictureChooser(e.source);
+                    }
+                    else{
+                        Omadi.display.displayLargeImage(e.source, e.source.nid, e.source.fid);
+                    }
+                });
+            }
+            else{
+                imageView.addEventListener('click', function(e) {
+        
+                    if (e.source.fid === null) {
+                        Omadi.widgets.image.openCamera(e.source);
+                    }
+                    else {
+                        Omadi.display.displayLargeImage(e.source, e.source.nid, e.source.fid);
+                    }
+                });
+            }
         }
 
         return imageView;
+    },
+    getPhotoChooserDir : function(){"use strict";
+        var photoCameraPath, retval = null;
+        
+        photoCameraPath = Ti.App.Properties.getString("photoCameraPath", "");
+        
+        if(photoCameraPath != ""){
+       
+            retval = Ti.Filesystem.getFile(photoCameraPath);
+            
+            if(!retval.isDirectory()){
+                retval = null;
+            }
+        }
+        return retval;
+    },
+    openPictureChooser : function(imageView){"use strict";
+        var pictureWindow, table, photoDir, imageStrings, i, recentFiles, tempFile, now,
+            earliestTimestamp, rows, modified, row, image, extension, checkbox, refreshButton, 
+            topBar, titleLabel, buttons, useButton, cancelButton;
+        
+        pictureWindow = Ti.UI.createView({
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: '#fff'
+        });
+        
+        photoDir = Omadi.widgets.image.getPhotoChooserDir();
+        
+        if(photoDir !== null){
+        
+            recentFiles = [];
+            
+            now = Omadi.utils.getUTCTimestamp();
+            // Last hour
+            earliestTimestamp = (now - 3600) * 1000;
+            
+            if(photoDir.isDirectory()){
+                
+                rows = [];
+                
+                topBar = Ti.UI.createLabel({
+                   top: 0,
+                   backgroundColor: '#666',
+                   height: 40,
+                   width: '100%',
+                   text: imageView.instance.label,
+                   color: '#fff',
+                   font: {
+                        fontSize: 15,
+                        fontWeight: 'bold'
+                   },
+                   textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+                });
+                
+                buttons = Ti.UI.createView({
+                    width: '100%',
+                    bottom: 0,
+                    height: 50
+                });
+                
+                useButton = Ti.UI.createButton({
+                    title: 'Use Photos', 
+                    width: '50%',
+                    left: 0 
+                });
+                
+                useButton.addEventListener('click', function(){
+                    var i, file, localImageView, newImageView, copiedFile, dbPath;
+                    
+                    localImageView = imageView;
+                    
+                    for(i = 0; i < rows.length; i ++){
+                        
+                        if(rows[i].isChecked){
+                            file = rows[i].photoFile;
+                            
+                            //copiedFile = Ti.Filesystem.getFile();
+                            
+                            Ti.API.debug(file.getNativePath());
+                            dbPath = file.getNativePath();
+                            
+                            if(Ti.App.isAndroid){
+                                dbPath = dbPath.replace(/^file:\/\//, '');
+                            }
+                            
+                            Omadi.widgets.image.saveFileInfo(localImageView, dbPath, 0);
+                            
+                            localImageView.setImage(rows[i].photoFile);
+                            
+                            if (localImageView.instance.settings.cardinality == -1 || (localImageView.imageIndex + 1) < localImageView.instance.settings.cardinality) {
+                                newImageView = Omadi.widgets.image.getImageView(localImageView.parentView, localImageView.imageIndex + 1, null, null, 0);
+                                localImageView.parentView.setContentWidth(localImageView.parentView.getContentWidth() + 110);
+                                localImageView.parentView.add(newImageView);
+                                
+                                localImageView = newImageView;
+                            }
+                        }
+                    }
+                    
+                    pictureWindow.hide(); 
+                    
+                    // Clean up some memory
+                    for(i = 0; i < rows.length; i ++){
+                        table.remove(rows[i]);
+                        rows[i] = null;
+                    }
+                    rows = null;
+                    pictureWindow.remove(table);
+                    table = null;
+                    
+                    pictureWindow = null;
+                });
+                
+                cancelButton = Ti.UI.createButton({
+                    title: 'Cancel',
+                    width: '50%',
+                    right: 0 
+                });
+                
+                cancelButton.addEventListener('click', function(){
+                    var i;
+                    
+                    pictureWindow.hide(); 
+                    
+                   // Clean up some memory
+                    for(i = 0; i < rows.length; i ++){
+                        table.remove(rows[i]);
+                        rows[i] = null;
+                    }
+                    rows = null;
+                    pictureWindow.remove(table);
+                    table = null;
+                    
+                    pictureWindow = null;
+                });
+                
+                buttons.add(useButton);
+                buttons.add(cancelButton);
+            
+                imageStrings = photoDir.getDirectoryListing();
+                
+                Ti.API.debug("num files: " + imageStrings.length);
+                
+                table = Ti.UI.createScrollView({
+                    top: 40,
+                    bottom: 50,
+                    left: 0,
+                    right: 0,
+                    layout: 'vertical',
+                    contentHeight: 'auto'
+                });
+                
+                for(i = 0; i < imageStrings.length; i ++){
+                    
+                    Ti.API.debug(imageStrings[i]);
+                    tempFile = Ti.Filesystem.getFile(photoDir.getNativePath(), imageStrings[i]);
+                    modified = tempFile.modificationTimestamp();
+                    extension = tempFile.extension();
+                    
+                    if(extension !== null){
+                        
+                        extension = extension.toLowerCase();
+                        if((extension == 'jpg' || extension == 'jpeg') && modified > earliestTimestamp){
+                            
+                            tempFile.modifiedTimestamp = modified;
+                            recentFiles.push(tempFile);
+                        }
+                    }
+                }
+                
+                if(recentFiles.length > 0){
+                    recentFiles = recentFiles.sort(Omadi.widgets.image.sortByModified);
+                    
+                    for(i = 0; i < recentFiles.length; i ++){
+                        row = Ti.UI.createView({
+                            height: 50,
+                            width: '100%',
+                            isChecked: false,
+                            photoFile: recentFiles[i]
+                        });
+                        
+                        row.add(Ti.UI.createImageView({
+                            image: recentFiles[i],
+                            height: 45,
+                            width: 45,
+                            autorotate: true,  // only with TI 3.x
+                            left: 10,
+                            touchEnabled: false
+                        }));
+                        
+                        row.add(Ti.UI.createLabel({
+                            text: Omadi.utils.getTimeAgoStr(recentFiles[i].modifiedTimestamp / 1000),
+                            left: 60,
+                            touchEnabled: false,
+                            ellipsize: true
+                        }));
+                        
+                        checkbox = Ti.UI.createView({
+                            width : 35,
+                            height : 35,
+                            borderRadius : 4,
+                            borderColor : '#333',
+                            borderWidth : 1,
+                            backgroundColor : '#FFF',
+                            enabled : true,
+                            right: 10,
+                            parentRow: row,
+                            touchEnabled: false
+                        });
+                        
+                        row.checkbox = checkbox;
+                        
+                        row.add(checkbox);
+                        rows.push(row);
+                        
+                        row.addEventListener('click', Omadi.widgets.image.imageRowClicked);
+                        
+                        table.add(row);
+                    }
+                }
+                else{
+                    row = Ti.UI.createLabel({
+                        height: 50,
+                        width: '100%',
+                        isChecked: false,
+                        text: '- No photos taken in the past hour -',
+                        font: {
+                            fontSize: 14
+                        },
+                        color: '#999',
+                        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+                    });
+                    
+                    table.add(row);
+                }
+                
+                pictureWindow.add(topBar);
+                pictureWindow.add(table);
+                pictureWindow.add(buttons);
+            }
+            else{
+                alert("Could not find the photo directory.");     
+            } 
+            
+            Ti.UI.Android.hideSoftKeyboard();
+            
+            Ti.UI.currentWindow.add(pictureWindow);
+        }
+        else{
+            alert("Error: Could not open photo chooser.");
+            Omadi.service.sendErrorReport("Could not open photo chooser");
+        }
+        //pictureWindow.open();
+    },
+    imageRowClicked: function(e){"use strict";
+    
+        if(e.source.isChecked){
+            e.source.checkbox.setBackgroundImage(null);
+            e.source.checkbox.setBorderWidth(1);
+            e.source.setBackgroundColor('#fff');
+        }
+        else{
+            e.source.checkbox.setBackgroundImage('/images/selected_test.png');
+            e.source.checkbox.setBorderWidth(2);
+            e.source.setBackgroundColor('#eee');
+        }
+        e.source.isChecked = !e.source.isChecked;
+    },
+    sortByModified : function (a, b){ "use strict";
+        return ((a.modifiedTimestamp < b.modifiedTimestamp) ? 1 : -1);
     },
     openCamera : function(imageView) {"use strict";
         /*global cameraAndroid*/

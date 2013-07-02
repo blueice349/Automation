@@ -398,7 +398,7 @@ Omadi.widgets.taxonomy_term_reference = {
         var calculatedTop;
         /*global scrollView, scrollPositionY*/
         e.source.touched = true;
-        if ( typeof scrollView !== 'undefined') {
+        if (typeof scrollView !== 'undefined' && scrollView !== null) {
             calculatedTop = e.source.convertPointToView({
                 x : 0,
                 y : 0
