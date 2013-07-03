@@ -427,7 +427,7 @@ Omadi.widgets.image = {
                 }
                 
                 if(recentFiles.length > 0){
-                    recentFiles = recentFiles.sort(Omadi.widgets.image.sortByModified);
+                    recentFiles = recentFiles.sort(Omadi.utils.fileSortByModified);
                     
                     for(i = 0; i < recentFiles.length; i ++){
                         row = Ti.UI.createView({
@@ -523,9 +523,6 @@ Omadi.widgets.image = {
             e.source.setBackgroundColor('#eee');
         }
         e.source.isChecked = !e.source.isChecked;
-    },
-    sortByModified : function (a, b){ "use strict";
-        return ((a.modifiedTimestamp < b.modifiedTimestamp) ? 1 : -1);
     },
     openCamera : function(imageView) {"use strict";
         /*global cameraAndroid*/
@@ -690,34 +687,36 @@ Omadi.widgets.image = {
                         imageView.bigImg = imageView.image;
                         imageView.mimeType = event.media.mimeType;
                         imageView.fullImageLoaded = true;
-                        
-                        if(event.media.file){
-                            alert(event.media.file);
-                        }
 
                         filePath = Ti.Filesystem.applicationDataDirectory + "p_" + Omadi.utils.getUTCTimestamp() + '.jpg';
                         
                         imageFile = Ti.Filesystem.getFile(filePath);
                         
                         imageFile.write(event.media);
+                        imageFile.setRemoteBackup(false);
+                                
+                            Omadi.widgets.image.saveFileInfo(imageView, filePath, 0);
+                           
                             
-                        Omadi.widgets.image.saveFileInfo(imageView, filePath, 0);
-                       
-                        
-                        if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
-                            newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
-                            imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
-                            imageView.parentView.add(newImageView);
-                            
-                            // Allow the newImageView time to show up, and then click it
-                            setTimeout(function(){
-                                 newImageView.fireEvent('click');
-                                 Omadi.display.doneLoading();
-                            }, 100);
-                        }
-                        else{
-                            Omadi.display.doneLoading();
-                        }
+                            if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
+                                newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
+                                imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
+                                imageView.parentView.add(newImageView);
+                                
+                                // Allow the newImageView time to show up, and then click it
+                                setTimeout(function(){
+                                     newImageView.fireEvent('click');
+                                     Omadi.display.doneLoading();
+                                }, 100);
+                            }
+                            else{
+                                Omadi.display.doneLoading();
+                            }
+                        // }
+                        // else{
+                            // alert("An error occurred saving the photo.");
+                            // Omadi.service.sendErrorReport("Could not save iOS photo");
+                        // }
                         
                     },
                     error : function(error) {

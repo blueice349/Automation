@@ -857,7 +857,8 @@ function setTableData() {"use strict";
                 top : '50%',
                 font : {
                     fontSize : 24
-                }
+                },
+                width: '100%'
             });
             wrapperView.add(emptyLabel);
         }
@@ -872,7 +873,6 @@ function setTableData() {"use strict";
                 numPagesLoaded = 0;
 
                 setTableData();
-
               
                 var labelText = '';
                 if (Ti.Platform.osname == 'iphone') {
@@ -883,8 +883,6 @@ function setTableData() {"use strict";
                 }
 
                 listLabel.setText(labelText);
-
-               
             });
 
             search.addEventListener('return', function(e) {

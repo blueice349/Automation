@@ -410,6 +410,91 @@ function addDrafts(){"use strict";
     
 }
 
+function addLocalPhotos(){"use strict";
+    var wrapper, button, dialog, image, text, textButton, currentVehicle, companyVehicleBundle;
+    
+    
+        wrapper = Ti.UI.createView({
+           height: Ti.UI.SIZE,
+           width: Ti.UI.FILL
+        });
+        
+        textButton = Ti.UI.createView({
+            layout: 'vertical',
+            height: Ti.UI.SIZE,
+            left: 48,
+            right: 0
+        });
+        
+        text = Ti.UI.createLabel({
+           color: '#666',
+           font: {
+               fontSize: 14
+           },
+           height: Ti.UI.SIZE,
+           width: Ti.UI.SIZE
+        });
+        
+        button = Ti.UI.createButton({
+            style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+            backgroundGradient : {
+                type : 'linear',
+                startPoint : {
+                    x : '50%',
+                    y : '0%'
+                },
+                endPoint : {
+                    x : '50%',
+                    y : '100%'
+                },
+                colors : [{
+                    color : '#246',
+                    offset : 0.0
+                }, {
+                    color : '#468',
+                    offset : 0.33
+                }, {
+                    color : '#024',
+                    offset : 1.0
+                }]
+            },
+            color: '#fff',
+            borderRadius: 7,
+            width: 200,
+            height: 35,
+            font: {
+                fontWeight: 'bold',
+                fontSize: 16
+            },
+            borderColor: '#333',
+            borderWidth: 1,
+            top: 3,
+            title: 'Photos Not Uploaded'
+        });
+
+        button.addEventListener('click', function(e) {
+            Omadi.display.openLocalPhotosWindow();
+        });
+        
+        image = Ti.UI.createImageView({
+           image: '/images/drafts.png',
+           top: 9,
+           left: '3%',
+           height: Ti.UI.SIZE,
+           width: Ti.UI.SIZE
+        });
+        
+        wrapper.add(image);
+        
+        textButton.add(text);
+        textButton.add(button);
+        
+        wrapper.add(textButton);
+        currentWinWrapper.add(wrapper);
+        addSeparator();
+    
+}
+
 function addDeleteAll(){"use strict";
     var wrapper, button, dialog, image, textButton;
     
@@ -801,6 +886,8 @@ function addAbout(){"use strict";
         addCompanyVehicle();
         
         addDrafts();
+        
+        addLocalPhotos();
         
         addRefresh();
         

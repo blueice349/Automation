@@ -298,6 +298,22 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
     return formWindow;
 };
 
+Omadi.display.openLocalPhotosWindow = function() {"use strict";
+
+    var localPhotosWindow = Ti.UI.createWindow({
+        navBarHidden : true,
+        url : '/main_windows/localPhotos.js'
+    });
+    
+    localPhotosWindow.addEventListener('close', Omadi.display.showNewNotificationDialog);
+    localPhotosWindow.addEventListener('open', Omadi.display.doneLoading);
+    Omadi.display.loading();
+
+    localPhotosWindow.open();
+
+    return localPhotosWindow;
+};
+
 Omadi.display.openMainMenuWindow = function(options) {"use strict";
     var mainMenuWindow, i;
     
@@ -584,6 +600,7 @@ Omadi.display.getNodeTypeImagePath = function(type) {"use strict";
         case 'refund_request':
         case 'tow_request':
         case 'permit':
+        case 'spot':
 
             return '/images/icons/' + type + ".png";
 

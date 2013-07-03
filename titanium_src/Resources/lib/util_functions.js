@@ -344,6 +344,10 @@ Omadi.utils.isArray = function(input) {"use strict";
     return typeof (input) == 'object' && ( input instanceof Array);
 };
 
+Omadi.utils.fileSortByModified = function (a, b){ "use strict";
+    return ((a.modifiedTimestamp < b.modifiedTimestamp) ? 1 : -1);
+};
+
 Omadi.utils.getParsedJSON = function(str){"use strict";
     var retval;
     

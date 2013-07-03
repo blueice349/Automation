@@ -621,6 +621,30 @@ Omadi.data.deleteNode = function(nid){"use strict";
     }
 };
 
+Omadi.data.getPhotosNotUploaded = function(){"use strict";
+    var db, result, filePaths, filePath;
+    filePaths = [];
+    
+    db = Omadi.utils.openMainDatabase();
+    result = db.execute("SELECT * FROM _photos");
+    
+    while(result.isValidRow()){
+        filePath = result.fieldByName("file_data");
+        if(Ti.App.isAndroid){
+            filePath = 'file://' + filePath;
+        }
+        
+        filePaths.push(filePath);
+        
+        result.next();
+    }
+    
+    result.close();
+    db.close();
+    
+    return filePaths;
+};
+
 Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
 
     var imageDir, imageFile, newFilePath, imageView, oldImageFile, 

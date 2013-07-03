@@ -466,7 +466,9 @@ Omadi.widgets.label = {
             textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
             left: 16,
             touchEnabled : false,
-            height : Ti.UI.SIZE
+            height : Ti.UI.SIZE,
+            width: '100%',
+            ellipsize: true
         });
         
         labelViews[instance.field_name] = labelView;

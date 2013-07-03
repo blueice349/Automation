@@ -9,7 +9,8 @@ Omadi.location.isLocationEnabled = function(){"use strict";
         
         dialog = Ti.UI.createAlertDialog({
            message: "Your GPS is turned off. Please turn it on in the Android settings screen.",
-           title: 'Location Disabled' 
+           title: 'Location Disabled',
+           buttonNames: ['OK']
         });
         
         retval = false;
@@ -20,14 +21,16 @@ Omadi.location.isLocationEnabled = function(){"use strict";
         if(!Ti.Geolocation.getLocationServicesEnabled()){
             dialog = Ti.UI.createAlertDialog({
                message: "Your GPS is turned off for all apps. Please turn it on in the settings app under Privacy -> Location Services.",
-               title: 'Location Disabled' 
+               title: 'Location Disabled',
+               buttonNames: ['OK']
             });
             retval = false;
         }
         else if(locAuth == Ti.Geolocation.AUTHORIZATION_DENIED || locAuth == Ti.Geolocation.AUTHORIZATION_RESTRICTED){
             dialog = Ti.UI.createAlertDialog({
                message: "Your GPS is turned off for the Omadi app. Please turn it on in the settings app under Privacy -> Location Services.",
-               title: 'Location Disabled' 
+               title: 'Location Disabled',
+               buttonNames: ['OK']
             });
             retval = false;
         }
