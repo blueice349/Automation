@@ -4,11 +4,11 @@ if (Ti.App.isIOS) {
     Ti.include('/lib/iOS/backgroundLocation.js');
 }
 
-var cameraAndroid;
-
-if (Ti.App.isAndroid) {
-    cameraAndroid = require('com.omadi.newcamera');
-}
+// var cameraAndroid;
+// 
+// if (Ti.App.isAndroid) {
+    // cameraAndroid = require('com.omadi.newcamera');
+// }
 
 /*jslint eqeq:true, plusplus: true, nomen: true*/
 
@@ -675,8 +675,30 @@ function backgroundCheckForUpdates(){"use strict";
     }
 }
 
+function showContinuousSavedNode(){
+    var db, result, continuousSave;
+    
+    db = Omadi.utils.openMainDatabase();
+    result = db.execute("SELECT nid, table_name, form_part FROM node WHERE flag_is_updated = 4 ORDER BY changed DESC");
+    continuousSave = null;
+    
+    if(result.isValidRow()){
+        continuousSave = {
+            node_type: result.fieldByName('table_name'),
+            nid: result.fieldByName('nid'),
+            form_part: result.fieldByName('form_part')
+        }
+    }
+    result.close();
+    db.close();
+    
+    if(continuousSave !== null){
+        Omadi.display.openFormWindow(continuousSave.node_type, continuousSave.nid, continuousSave.form_part);
+    }
+}
+
 ( function() {"use strict";
-    var db, formWindow, time_format, askAboutInspection, dialog, i, showingAlert, firstAlert;
+    var db, result, formWindow, time_format, askAboutInspection, dialog, i, showingAlert, firstAlert;
     
     // Initialize the global scope variable to map deleted nids to saved positive nids
     Ti.App.deletedNegatives = {};
@@ -869,6 +891,8 @@ function backgroundCheckForUpdates(){"use strict";
         actionsButton = null;
         a = null;
     });
-  
+    
+    //showContinuousSavedNode();
+    
 }());
 

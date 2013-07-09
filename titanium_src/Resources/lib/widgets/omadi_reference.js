@@ -203,7 +203,7 @@ Omadi.widgets.omadi_reference = {
                     borderColor : '#000',
                     borderWidth : 0,
                     top : 0,
-                    width: '96%',
+                    width: '92%',
                     textField : widgetView
                 });
         

@@ -32,7 +32,7 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.RelativeLayout.LayoutParams;
 
-public class ToolsOverlay extends RelativeLayout {
+public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCallback{
 	
 	private ImageView captureImage = null;
 	private ImageView flashView = null;
@@ -47,6 +47,9 @@ public class ToolsOverlay extends RelativeLayout {
 	
 	private Camera camera = null;
 	
+	private boolean hasAutoFocus = false;
+	private ToolsOverlay toolsOverlay = null;
+	
 	RelativeLayout zoomBase;
 	VerticalSeekBar zoomControls;
 	
@@ -56,6 +59,8 @@ public class ToolsOverlay extends RelativeLayout {
 	
 	public ToolsOverlay(Context c){
 		super(c);
+		
+		toolsOverlay = this;
 		
 		try{
 			this.context = c;
@@ -89,7 +94,13 @@ public class ToolsOverlay extends RelativeLayout {
 					if(!captureButtonPressed){
 						captureDegrees = degrees;
 						captureButtonPressed = true;
-						OmadiCameraActivity.cameraActivity.takePicture();
+						
+						if(hasAutoFocus){
+							camera.autoFocus(toolsOverlay);
+						}
+						else{
+							OmadiCameraActivity.cameraActivity.takePicture();
+						}
 					}
 				}
 			});
@@ -149,10 +160,10 @@ public class ToolsOverlay extends RelativeLayout {
 							}
 							
 							String currentFlashMode = localCameraParams.getFlashMode();
-
+							
 							if (hasFlashAuto) {
 								// When has auto - Off or auto - default to auto
-								if(currentFlashMode.equals(Camera.Parameters.FLASH_MODE_AUTO)){
+								if(currentFlashMode != null && currentFlashMode.equals(Camera.Parameters.FLASH_MODE_AUTO)){
 									// Change to flash off
 									is = context.getAssets().open("flashOff.png");
 									localCameraParams.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
@@ -165,7 +176,7 @@ public class ToolsOverlay extends RelativeLayout {
 							}
 							else if(hasFlashOn){
 								// When no auto - OFF OR ON - default to on
-								if(currentFlashMode.equals(Camera.Parameters.FLASH_MODE_ON)){
+								if(currentFlashMode != null && currentFlashMode.equals(Camera.Parameters.FLASH_MODE_ON)){
 									// Change to flash off
 									is = context.getAssets().open("flashOff.png");
 									localCameraParams.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
@@ -211,6 +222,11 @@ public class ToolsOverlay extends RelativeLayout {
 		catch(Exception e){
 			Log.d("CAMERA", "CAMERA tools INIT: " + e.getMessage());
 		}
+	}
+	
+	public void onAutoFocus(boolean success, Camera camera){
+		Log.d("CAMERA", "FOCUS WAS SUCCESSFUL");
+		OmadiCameraActivity.cameraActivity.takePicture();
 	}
 	
 	private void addZoomBar(){
@@ -288,6 +304,13 @@ public class ToolsOverlay extends RelativeLayout {
 
 			if(cameraParams != null){
 				try{
+					List<String> focusModes = cameraParams.getSupportedFocusModes();
+					if(focusModes.size() > 0){
+						if(focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)){
+							this.hasAutoFocus = true;
+							cameraParams.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+						}
+					}
 					
 					List<String> flashModes = cameraParams.getSupportedFocusModes();
 					

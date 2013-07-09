@@ -485,7 +485,6 @@ function refreshUIAlertsMessageCenter(e){"use strict";
     loadData();
 }
 
-
 ( function() {"use strict";
 
     

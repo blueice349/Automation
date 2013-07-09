@@ -21,7 +21,7 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
 
     fullImage = Omadi.display.getImageViewFromData(imageView.bigImg, Ti.Platform.displayCaps.platformWidth, Ti.Platform.displayCaps.platformHeight - 50);
 
-    if (fullImage !== null) {
+    if (typeof fullImage !== 'undefined' && fullImage) {
 
         fullImage.setOpacity(1.0);
         

@@ -61,12 +61,14 @@ Drafts.deleteDraft = function(nid){"use strict";
        title: 'Confirm Delete',
        message: 'Are you sure you want to delete the draft?',
        buttonNames: ['Yes', 'Cancel'],
-       cancel: 1 
+       cancel: 1,
+       nid: nid
     });
     
     dialog.addEventListener('click', function(e){
         if(e.index == 0){
-            Omadi.data.deleteNode(nid);
+            Ti.API.debug("DELETING nid " + e.source.nid);
+            Omadi.data.deleteNode(e.source.nid);
             Drafts.refreshDrafts();
         }
     });
@@ -82,7 +84,7 @@ Drafts.refreshDrafts = function(){"use strict";
 
     count = 0;
     tableData = [];
-    result = db.execute('SELECT * FROM node WHERE flag_is_updated=3 ORDER BY changed DESC');
+    result = db.execute('SELECT * FROM node WHERE flag_is_updated IN (3,4) ORDER BY changed DESC');
     if (result.rowCount == 0) {
         result = null;
         //Ti.API.info('0 drafts');

@@ -159,7 +159,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
 
                 //Timeout until error:
                 http.setTimeout(30000);
-                http.setValidatesSecureCertificate(false);
+                //http.setValidatesSecureCertificate(false);
 
                 //While streamming - following method should be called b4 open URL
                 http.ondatastream = function(e) {
@@ -855,7 +855,7 @@ Omadi.service.getLastUploadStartTimestamp = function(){"use strict";
 
 Omadi.service.uploadFile = function() {"use strict";
     /*jslint eqeq:true, plusplus: true*/
-    /*global Base64, cameraAndroid*/
+    /*global Base64*/
     var http, mainDB, result, isUploading, nowTimestamp, 
         lastUploadStartTimestamp, tmpImageView, 
         blobImage, maxDiff, imageData, uploadPhoto,
@@ -1010,7 +1010,7 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
 
         nids = [];
  
-        result = db.execute("SELECT nid FROM node WHERE flag_is_updated=1");
+        result = db.execute("SELECT nid FROM node WHERE flag_is_updated = 1");
 
         while (result.isValidRow()) {
             nids.push(result.fieldByName('nid'));

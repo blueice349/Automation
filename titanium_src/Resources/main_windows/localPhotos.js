@@ -53,16 +53,14 @@ function addIOSToolbarLocalPhotos() {"use strict";
 
 function galleryItemClicked(e){"use strict";
     if(e.source.isChecked){
-        //e.source.checkbox.setBackgroundImage(null);
-        e.source.setBorderWidth(2);
-        e.source.setBackgroundColor('#ccc');
-        e.source.setBorderColor('#333');
-    }
-    else{
-        //e.source.checkbox.setBackgroundImage('/images/selected_test.png');
         e.source.setBorderWidth(0);
         e.source.setBackgroundColor('#fff');
         e.source.setBorderColor('#ccc');
+    }
+    else{
+        e.source.setBorderWidth(2);
+        e.source.setBackgroundColor('#ccc');
+        e.source.setBorderColor('#333');
     }
     e.source.isChecked = !e.source.isChecked;
 }
@@ -90,9 +88,10 @@ function showButtons(){"use strict";
 
 (function(){"use strict";
 
-    var gallery, imageStrings, i, recentFiles, tempFile, now,
+    var gallery, images, i, recentFiles, tempFile, now,
         earliestTimestamp, items, modified, item, image, checkbox, refreshButton, 
-        topBar, titleLabel, buttons, useButton, cancelButton, galleryWrapper;
+        topBar, titleLabel, buttons, useButton, cancelButton, galleryWrapper, transform, 
+        rotateDegrees, imageView;
     
     Ti.UI.currentWindow.setBackgroundColor('#eee');
         
@@ -106,9 +105,9 @@ function showButtons(){"use strict";
     items = [];
     recentFiles = [];
     
-    imageStrings = Omadi.data.getPhotosNotUploaded();
+    images = Omadi.data.getPhotosNotUploaded();
     
-    Ti.API.debug("num files: " + imageStrings.length);
+    Ti.API.debug("num files: " + images.length);
     
     galleryWrapper = Ti.UI.createScrollView({
         top: 50,
@@ -130,16 +129,19 @@ function showButtons(){"use strict";
     
     galleryWrapper.add(gallery);
     
-    for(i = 0; i < imageStrings.length; i ++){
+    for(i = 0; i < images.length; i ++){
         
-        Ti.API.debug(imageStrings[i]);
-        tempFile = Ti.Filesystem.getFile(imageStrings[i]);
+        //Ti.API.debug(imageStrings[i]);
+        tempFile = Ti.Filesystem.getFile(images[i].filePath);
         
         if(tempFile.exists()){
             modified = tempFile.modificationTimestamp();
            
             tempFile.modifiedTimestamp = modified;
-            recentFiles.push(tempFile);
+            recentFiles.push({
+                file: tempFile,
+                degrees: images[i].degrees
+            });
         }
     }
     
@@ -151,7 +153,7 @@ function showButtons(){"use strict";
                 height: 120,
                 width: 120,
                 isChecked: false,
-                photoFile: recentFiles[i],
+                photoFile: recentFiles[i].file,
                 left: 5,
                 top: 5,
                 borderWidth: 0,
@@ -159,17 +161,35 @@ function showButtons(){"use strict";
                 backgroundColor: '#fff'
             });
             
-            item.add(Ti.UI.createImageView({
-                image: recentFiles[i],
+            imageView = Ti.UI.createImageView({
+                image: recentFiles[i].file,
                 height: 100,
                 width: 100,
                 top: 10,
                 left: 10,
-                autorotate: true,  // only with TI 3.x
+                autorotate: true,
                 touchEnabled: false,
                 borderWidth: 1,
                 borderColor: '#666'
-            }));
+            });
+            
+            if(Ti.App.isAndroid && recentFiles[i].degrees > 0){
+                transform = Ti.UI.create2DMatrix();
+             
+                rotateDegrees = recentFiles[i].degrees;
+                if(rotateDegrees == 270){
+                    rotateDegrees = 90;
+                }
+                else if(rotateDegrees == 90){
+                    rotateDegrees = 270;
+                }
+                
+                transform = transform.rotate(rotateDegrees);
+                
+                imageView.setTransform(transform);
+            }
+            
+            item.add(imageView);
             
             // row.add(Ti.UI.createLabel({
                 // text: Omadi.utils.getTimeAgoStr(recentFiles[i].modifiedTimestamp / 1000),

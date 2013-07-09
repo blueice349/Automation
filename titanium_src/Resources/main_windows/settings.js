@@ -137,9 +137,9 @@ function errorCameraPhoto(){"use strict";
         font : {
             fontSize : 14
         },
-        right: 15,
-        left: 15,
+        left: '2%',
         height: 35,
+        width: '92%',
         
         // Android options
         ellipsize : true,
@@ -210,9 +210,9 @@ function errorCameraPhoto(){"use strict";
         font : {
             fontSize : 14
         },
-        right: 15,
-        left: 15,
+        left: '2%',
         height: 35,
+        width: '92%',
         
         // Android options
         ellipsize : true,

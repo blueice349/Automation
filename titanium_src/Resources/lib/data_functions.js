@@ -278,6 +278,35 @@ Omadi.data.getNodeTitle = function(node) {"use strict";
     return title;
 };
 
+Omadi.data.deleteContinuousNodes = function(){"use strict";
+  var db, result, deleteNids, i;
+  
+  Ti.UI.currentWindow.saveContinually = false;
+  
+  if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined' && Ti.UI.currentWindow.continuous_nid != null){
+      // Don't keep saving as the window should now close
+      Ti.API.debug("deleting some nids: " + Ti.UI.currentWindow.continuous_nid);
+      
+      deleteNids = [];
+      db = Omadi.utils.openMainDatabase();
+      
+      result = db.execute("SELECT nid FROM node WHERE flag_is_updated = 4");  
+      
+      while(result.isValidRow()){
+          deleteNids.push(result.fieldByName('nid'));
+          result.next();
+      }
+      
+      result.close();
+      db.close();
+      
+      for(i = 0; i < deleteNids.length; i ++){
+          
+          Ti.API.debug("DELETING: " + deleteNids[i]);
+          Omadi.data.deleteNode(deleteNids[i]);
+      }
+  }
+};
 
 Omadi.data.trySaveNode = function(node, saveType){"use strict";
     var dialog;
@@ -287,6 +316,8 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
         saveType = 'regular';
     }
     
+    // Allow instant saving of drafts and continuous saves
+    // Do not allow drafts or continuous saves to happen while an update is happening as it can cause problems
     if(Omadi.data.isUpdating()){
         Omadi.display.loading("Waiting...");
         setTimeout(function(){
@@ -296,7 +327,10 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
     else{
         
         Omadi.display.doneLoading();
-        Omadi.display.loading("Saving...");
+        
+        if(saveType != 'continuous'){
+            Omadi.display.loading("Saving...");
+        }
         
         try{
             
@@ -310,7 +344,10 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
             Ti.App.allowBackgroundLogout = true;
             
             if(node._saved === true){
-                Ti.UI.currentWindow.nodeSaved = true;
+                // Don't set the node as saved on a continuous save, as that can mess up windows closing, etc.
+                if(!node._isContinuous){
+                    Ti.UI.currentWindow.nodeSaved = true;
+                }
             }
             
             // Setup the current node and nid in the window so a duplicate won't be made for this window
@@ -319,73 +356,78 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
             
             //Omadi.display.doneLoading();
             
-            
             if(node._saved === true){
                 
-                Ti.App.fireEvent("savedNode");
-                
-                if(node._isDraft === true){
-                    Ti.UI.currentWindow.close();
-                }
-                else if(Ti.Network.online){
-                    
-                    if (saveType === "next_part") {
-                        //Omadi.display.openFormWindow(node.type, node.nid, node.form_part + 1);     
-                        
-                        Ti.App.fireEvent('openForm', {
-                            node_type: node.type,
-                            nid: node.nid,
-                            form_part: node.form_part + 1
-                        });                       
-                    }
-                    else if(saveType == 'new'){
-                        
-                        //Omadi.display.openFormWindow(node.type, node.nid, node.type);
-                        
-                        Ti.App.fireEvent('openForm', {
-                            node_type: node.type,
-                            nid: node.nid,
-                            form_part: node.type
-                        });
-                    }
-                    
-                    Ti.App.fireEvent('sendUpdates');
-                    Ti.UI.currentWindow.close();
+                if(node._isContinuous === true){
+                    // Keep the window open, do not sync
+                    Omadi.display.doneLoading();
                 }
                 else{
-                    if(Ti.UI.currentWindow.url.indexOf('form.js') !== -1){
-                        dialog = Titanium.UI.createAlertDialog({
-                            title : 'Form Validation',
-                            buttonNames : ['OK'],
-                            message: 'Alert management of this ' + node.type.toUpperCase() + ' immediately. You do not have an Internet connection right now.  Your data was saved and will be synched when you connect to the Internet.'
-                        });
+                    
+                    Ti.App.fireEvent("savedNode");
+                    // Delete the continuous node if one exists
+                    Omadi.data.deleteContinuousNodes();
+                    
+                    if(node._isDraft === true){
+                        Ti.UI.currentWindow.close();
+                    }
+                    else if(Ti.Network.online){
                         
-                        dialog.show();
-                        
-                        dialog.addEventListener('click', function(ev) {
+                        if (saveType === "next_part") {    
                             
-                            if (saveType === "next_part") {
-                                // Omadi.display.openFormWindow(node.type, node.nid, node.form_part + 1);
-                                Ti.App.fireEvent('openForm', {
-                                    node_type: node.type,
-                                    nid: node.nid,
-                                    form_part: node.form_part + 1
-                                });
-                            }
-                            else if(saveType == 'new'){
-                                //Omadi.display.openFormWindow(node.type, node.nid, node.type);
+                            Ti.App.fireEvent('openForm', {
+                                node_type: node.type,
+                                nid: node.nid,
+                                form_part: node.form_part + 1
+                            });                       
+                        }
+                        else if(saveType == 'new'){
+                            
+                            Ti.App.fireEvent('openForm', {
+                                node_type: node.type,
+                                nid: node.nid,
+                                form_part: node.type
+                            });
+                        }
+                        
+                        Ti.App.fireEvent('sendUpdates');
+                        Ti.UI.currentWindow.close();
+                    }
+                    else{
+                        if(Ti.UI.currentWindow.url.indexOf('form.js') !== -1){
+                            dialog = Titanium.UI.createAlertDialog({
+                                title : 'Form Validation',
+                                buttonNames : ['OK'],
+                                message: 'Alert management of this ' + node.type.toUpperCase() + ' immediately. You do not have an Internet connection right now.  Your data was saved and will be synched when you connect to the Internet.'
+                            });
+                            
+                            dialog.show();
+                            
+                            dialog.addEventListener('click', function(ev) {
                                 
-                                Ti.App.fireEvent('openForm', {
-                                    node_type: node.type,
-                                    nid: node.nid,
-                                    form_part: node.type
-                                });
-                            }
-                            
-                            Omadi.display.loading();
-                            
-                            Ti.UI.currentWindow.close();
-                        });
+                                if (saveType === "next_part") {
+                                    // Omadi.display.openFormWindow(node.type, node.nid, node.form_part + 1);
+                                    Ti.App.fireEvent('openForm', {
+                                        node_type: node.type,
+                                        nid: node.nid,
+                                        form_part: node.form_part + 1
+                                    });
+                                }
+                                else if(saveType == 'new'){
+                                    //Omadi.display.openFormWindow(node.type, node.nid, node.type);
+                                    
+                                    Ti.App.fireEvent('openForm', {
+                                        node_type: node.type,
+                                        nid: node.nid,
+                                        form_part: node.type
+                                    });
+                                }
+                                
+                                Omadi.display.loading();
+                                
+                                Ti.UI.currentWindow.close();
+                            });
+                        }
                     }
                 }
             }
@@ -405,7 +447,7 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
 
 Omadi.data.nodeSave = function(node) {"use strict";
     var query, field_name, fieldNames, instances, result, db, smallestNid, insertValues, j, k, 
-        instance, value_to_insert, has_data, content_s;
+        instance, value_to_insert, has_data, content_s, saveNid, continuousNid;
 
     /*global treatArray*/
     /*jslint nomen: true*/
@@ -434,10 +476,28 @@ Omadi.data.nodeSave = function(node) {"use strict";
     }
 
     node.title = Omadi.data.getNodeTitle(node);
-
-    if (node.nid == 'new') {
+    
+    // Setup the default for the saveNid
+    saveNid = node.nid;
+    
+    if(node._isContinuous){
+        
+        // Start a new record if the continuous_nid isn't set
+        if(typeof Ti.UI.currentWindow.continuous_nid == 'undefined' || Ti.UI.currentWindow.continuous_nid == null || Ti.UI.currentWindow.continuous_nid == 0){
+            Ti.UI.currentWindow.continuous_nid = Omadi.data.getNewNodeNid();
+        }
+        
+        // Save the actual nid as the continuous negative NID
+        saveNid = Ti.UI.currentWindow.continuous_nid;
+        
+        // The continuous_nid will be saved as the current window's NID
+    }
+    else if (node.nid == 'new') {
         Ti.API.debug("Saving new node");
-        node.nid = Omadi.data.getNewNodeNid();
+        node.nid = saveNid = Omadi.data.getNewNodeNid();
+    }
+    
+    if(typeof node.sync_hash === 'undefined' || node.sync_has == null){
         node.sync_hash = Ti.Utils.md5HexDigest(JSON.stringify(node) + (new Date()).getTime());
     }
     
@@ -448,7 +508,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
         if(fieldNames.length > 0){
             query = "INSERT OR REPLACE INTO " + node.type + " (nid, `";
             query += fieldNames.join('`,`');
-            query += '`) VALUES (' + node.nid + ',';
+            query += '`) VALUES (' + saveNid + ',';
     
             insertValues = [];
             
@@ -536,23 +596,32 @@ Omadi.data.nodeSave = function(node) {"use strict";
         }
 
         try {
-            if (node._isDraft) {
-                if (node.nid > 0) {
-                    db.execute("UPDATE node SET changed=" + node.changed + ", changed_uid=" + node.changed_uid + ", title='" + dbEsc(node.title) + "', flag_is_updated=3, table_name='" + node.type + "', form_part=" + node.form_part + ", no_data_fields='" + node.no_data + "',viewed=" + node.viewed + " WHERE nid=" + node.nid);
+            if (node._isContinuous) {          
+                Ti.API.debug("SAVING TO CONTINUOUS: " + saveNid + " " + Ti.UI.currentWindow.nid);    
+                
+                continuousNid = Ti.UI.currentWindow.nid;
+                if(continuousNid == 'new'){
+                    continuousNid = 0;
+                } 
+                db.execute("INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",4,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + continuousNid + ")");
+            }
+            else if (node._isDraft) {
+                if (saveNid > 0) {
+                    db.execute("UPDATE node SET changed=" + node.changed + ", changed_uid=" + node.changed_uid + ", title='" + dbEsc(node.title) + "', flag_is_updated=3, table_name='" + node.type + "', form_part=" + node.form_part + ", no_data_fields='" + node.no_data + "',viewed=" + node.viewed + " WHERE nid=" + saveNid);
                 }
                 else {
-                    db.execute("INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete) VALUES (" + node.nid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",3,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1)");
+                    db.execute("INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",3,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1)");
                 }
             }
-            else if (node.nid > 0) {
-                db.execute("UPDATE node SET changed=" + node.changed + ", changed_uid=" + node.changed_uid + ", title='" + dbEsc(node.title) + "', flag_is_updated=1, table_name='" + node.type + "', form_part=" + node.form_part + ", no_data_fields='" + node.no_data + "',viewed=" + node.viewed + " WHERE nid=" + node.nid);
+            else if (saveNid > 0) {
+                db.execute("UPDATE node SET changed=" + node.changed + ", changed_uid=" + node.changed_uid + ", title='" + dbEsc(node.title) + "', flag_is_updated=1, table_name='" + node.type + "', form_part=" + node.form_part + ", no_data_fields='" + node.no_data + "',viewed=" + node.viewed + " WHERE nid=" + saveNid);
             }
             else {
                 // Give all permissions for this node. Once it comes back, the correct permissions will be there.  If it never gets uploaded, the user should be able to do whatever they want with that info.
-                db.execute("INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete) VALUES (" + node.nid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",1,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1)");
+                db.execute("INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",1,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1)");
             }
 
-            db.execute('UPDATE _photos SET nid=' + node.nid + ' WHERE nid = 0');
+            db.execute('UPDATE _photos SET nid=' + saveNid + ' WHERE nid = 0');
 
             node._saved = true;
             Ti.API.debug("NODE SAVE WAS SUCCESSFUL");
@@ -560,7 +629,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
         catch(ex1) {
             Omadi.display.doneLoading();
             alert("Error saving to the node table: " + ex1);
-            db.execute("DELETE FROM " + node.type + " WHERE nid = " + node.nid);
+            db.execute("DELETE FROM " + node.type + " WHERE nid = " + saveNid);
             Omadi.service.sendErrorReport("Error saving to the node table: " + ex1);
         }
 
@@ -634,7 +703,10 @@ Omadi.data.getPhotosNotUploaded = function(){"use strict";
             filePath = 'file://' + filePath;
         }
         
-        filePaths.push(filePath);
+        filePaths.push({
+            filePath: filePath,
+            degrees: result.fieldByName("degrees")
+        });
         
         result.next();
     }
@@ -859,7 +931,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
         db = Omadi.utils.openMainDatabase();
         
         try{
-            result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed, sync_hash FROM node WHERE  nid = ' + nid);
+            result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed, sync_hash, continuous_nid FROM node WHERE  nid = ' + nid);
     
             if (result.isValidRow()) {
     
@@ -877,6 +949,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                 node.perm_delete = result.fieldByName('perm_delete', Ti.Database.FIELD_TYPE_INT);
                 node.viewed = result.fieldByName('viewed', Ti.Database.FIELD_TYPE_STRING);
                 node.sync_hash = result.fieldByName('sync_hash', Ti.Database.FIELD_TYPE_STRING);
+                node.continuous_nid = result.fieldByName('continuous_nid', Ti.Database.FIELD_TYPE_INT);
             }
             else{
                 // If the nid doesn't exist, maybe it was deleted and a positive nid has replaced it
@@ -887,7 +960,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                     
                     Ti.App.deletedNegatives[nid] = null;
                     
-                    result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed, sync_hash FROM node WHERE  nid = ' + newNid);
+                    result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed, sync_hash, continuous_nid FROM node WHERE  nid = ' + newNid);
     
                     if (result.isValidRow()) {
             
@@ -905,6 +978,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                         node.perm_delete = result.fieldByName('perm_delete', Ti.Database.FIELD_TYPE_INT);
                         node.viewed = result.fieldByName('viewed', Ti.Database.FIELD_TYPE_STRING);
                         node.sync_hash = result.fieldByName('sync_hash', Ti.Database.FIELD_TYPE_STRING);
+                        node.continuous_nid = result.fieldByName('continuous_nid', Ti.Database.FIELD_TYPE_INT);
                     }
                     else{
                          Omadi.service.sendErrorReport("unrecoverable node load 1 for nid " + nid);
@@ -916,6 +990,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                    node = null;
                 }
             }
+            
             result.close();
         }
         catch(ex){
@@ -1351,7 +1426,6 @@ Omadi.data.getNextPhotoData = function(){"use strict";
     var mainDB, result, nextPhoto, imageFile, imageBlob, maxDiff, 
         newWidth, newHeight, resizedFile, isResized, resizedFilePath, 
         resizeRetval, readyForUpload, restartSuggested, dialog;
-    /*global cameraAndroid*/
    
     nextPhoto = null;
     readyForUpload = true;
@@ -1604,7 +1678,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
 
 
 Omadi.data.processFetchedJson = function(json, progress){"use strict";
-    var nodeType, mainDB, gpsDB, dbFile, tableName, GMT_OFFSET, dialog, newNotifications;
+    var nodeType, mainDB, gpsDB, dbFile, tableName, GMT_OFFSET, dialog, newNotifications, numItems;
      
     try {
         //Parses response into strings
@@ -1646,34 +1720,38 @@ Omadi.data.processFetchedJson = function(json, progress){"use strict";
         //Ti.API.info("Max itens: " + parseInt(json.total_item_count));
 
         //mainDB.execute('UPDATE updated SET "timestamp"=' + json.request_time + ' WHERE "rowid"=1');
-        Omadi.data.setLastUpdateTimestamp(json.request_time);
+        
         //Ti.API.error(json.request_time);
-
-        Ti.API.info("Total items to install: " + json.total_item_count);
+        numItems = parseInt(json.total_item_count, 10);
+        Ti.API.info("Total items to install: " + numItems);
 
         mainDB = Omadi.utils.openMainDatabase();
+        Ti.API.debug("Opened database");
+        
         //If mainDB is already last version
-        if (json.total_item_count == 0) {
+        if (numItems == 0) {
             //mainDB.execute('UPDATE updated SET "timestamp"=' + json.request_time + ' WHERE "rowid"=1');
-
+            Omadi.data.setLastUpdateTimestamp(json.request_time);
+            
             if (progress != null) {
                 progress.set();
                 progress.close();
             }
-
+            Ti.API.debug("Done with install - no items");
         }
         else {
-
+            Ti.API.debug("hihihi");
             if (progress !== null) {
                 //Set max value for progress bar
-                progress.set_max(parseInt(json.total_item_count, 10));
+                progress.set_max(numItems);
             }
-
+            
+            Ti.API.debug("yoyoyo");
             if (Omadi.data.getLastUpdateTimestamp() === 0) {
                 mainDB.execute('UPDATE updated SET "url"="' + Omadi.DOMAIN_NAME + '" WHERE "rowid"=1');
             }
 
-            //Ti.API.info('######### Request time : ' + json.request_time);
+            Ti.API.info('######### Request time : ' + json.request_time);
 
             //Omadi.data.setLastUpdateTimestamp(json.request_time);
 
@@ -1727,12 +1805,14 @@ Omadi.data.processFetchedJson = function(json, progress){"use strict";
                     }
                 }
             }
+            
+            Omadi.data.setLastUpdateTimestamp(json.request_time);
 
             //Ti.API.info("SUCCESS");
             if (progress != null) {
                 progress.close();
             }
-
+            
             Ti.App.fireEvent("syncInstallComplete");
         }
         mainDB.close();

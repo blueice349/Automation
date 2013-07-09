@@ -88,7 +88,7 @@ public class NewcameraModule extends KrollModule
 	@Kroll.onAppCreate
 	public static void onAppCreate(TiApplication app)
 	{
-		Log.d(LCAT, "inside onAppCreate");
+		Log.d(LCAT, "inside new camera onAppCreate");
 		// put module init code that needs to run when the application is created
 	}
 
@@ -333,11 +333,19 @@ public class NewcameraModule extends KrollModule
 				imageDir = tfh.getDataDirectory(false);
 			}
 
-			imageFile = tfh.getTempFile(imageDir, ".jpg");
+			imageFile = tfh.getTempFile(imageDir, ".jpg", true);
 
 		} 
 		catch (IOException e) {
 			Log.e("CAMERA", "Unable to create temp file", e);
+			if (errorCallback != null) {
+				errorCallback.callAsync(getKrollObject(), createErrorResponse(UNKNOWN_ERROR, e.getMessage()));
+			}
+
+			return;
+		}
+		catch (Exception e){
+			Log.e("CAMERA", "Unable to create temp file 2", e);
 			if (errorCallback != null) {
 				errorCallback.callAsync(getKrollObject(), createErrorResponse(UNKNOWN_ERROR, e.getMessage()));
 			}
@@ -417,7 +425,8 @@ public class NewcameraModule extends KrollModule
 					cancelCallback.callAsync(getKrollObject(), new Object[] {});
 				}
 
-			} else {
+			} 
+			else {
 				if (data == null) {
 					ContentValues values = new ContentValues(7);
 					values.put(Images.Media.TITLE, imageFile.getName());

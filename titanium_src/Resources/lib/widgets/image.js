@@ -146,7 +146,7 @@ Omadi.widgets.image = {
         return widgetView;
     },
     getImageView : function(widgetView, index, nid, fid, degrees) {"use strict";
-        var imageView, fidIsData = false, transform, animation, rotateDegrees, image, widgetType;
+        var imageView, fidIsData = false, transform, rotateDegrees, image, widgetType;
 
         if (fid !== null && typeof fid !== 'number') {
             fidIsData = true;
@@ -184,6 +184,7 @@ Omadi.widgets.image = {
             height : 100,
             width : 100,
             image : image,
+            autorotate: true,
             thumbnailLoaded : false,
             fullImageLoaded : false,
             isImageData : false,
@@ -205,7 +206,6 @@ Omadi.widgets.image = {
                            
             if(Ti.App.isAndroid && degrees > 0){
                 transform = Ti.UI.create2DMatrix();
-                animation = Ti.UI.createAnimation();
                 
                 rotateDegrees = degrees;
                 if(rotateDegrees == 270){
@@ -216,10 +216,8 @@ Omadi.widgets.image = {
                 }
                 
                 transform = transform.rotate(rotateDegrees);
-                animation.transform = transform;
-                animation.duration = 1;
                 
-                imageView.animate(animation);
+                imageView.setTransform(transform);
             }
     
         }
@@ -594,6 +592,9 @@ Omadi.widgets.image = {
                         }
                         
                         
+                        if(Ti.UI.currentWindow.saveContinually && typeof save_form_data !== 'undefined'){
+                            save_form_data('continuous');
+                        }
                         //Omadi.widgets.image.saveImageInDb(imageView, blob);
                         
                         
@@ -695,29 +696,26 @@ Omadi.widgets.image = {
                         imageFile.write(event.media);
                         imageFile.setRemoteBackup(false);
                                 
-                            Omadi.widgets.image.saveFileInfo(imageView, filePath, 0);
-                           
+                        Omadi.widgets.image.saveFileInfo(imageView, filePath, 0);
+                       
+                        if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
+                            newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
+                            imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
+                            imageView.parentView.add(newImageView);
                             
-                            if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
-                                newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
-                                imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
-                                imageView.parentView.add(newImageView);
-                                
-                                // Allow the newImageView time to show up, and then click it
-                                setTimeout(function(){
-                                     newImageView.fireEvent('click');
-                                     Omadi.display.doneLoading();
-                                }, 100);
-                            }
-                            else{
-                                Omadi.display.doneLoading();
-                            }
-                        // }
-                        // else{
-                            // alert("An error occurred saving the photo.");
-                            // Omadi.service.sendErrorReport("Could not save iOS photo");
-                        // }
+                            // Allow the newImageView time to show up, and then click it
+                            setTimeout(function(){
+                                 newImageView.fireEvent('click');
+                                 Omadi.display.doneLoading();
+                            }, 100);
+                        }
+                        else{
+                            Omadi.display.doneLoading();
+                        }
                         
+                        if(Ti.UI.currentWindow.saveContinually && typeof save_form_data !== 'undefined'){
+                            save_form_data('continuous');
+                        }
                     },
                     error : function(error) {
                         Ti.API.info('Captured Image - Error: ' + error.code + " :: " + error.message);

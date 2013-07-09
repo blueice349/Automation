@@ -464,10 +464,10 @@ Omadi.widgets.label = {
                 fontWeight : 'bold'
             },
             textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
-            left: 16,
+            left: '4%',
             touchEnabled : false,
             height : Ti.UI.SIZE,
-            width: '100%',
+            width: '96%',
             ellipsize: true
         });
         
@@ -509,9 +509,9 @@ Omadi.widgets.getLabelField = function(instance){"use strict";
         font : {
             fontSize : Omadi.widgets.fontSize
         },
-        right: 15,
-        left: 15,
+        left: '4%',
         height: 35,
+        width: '92%',
         
         // Android options
         ellipsize : true,
@@ -542,9 +542,9 @@ Omadi.widgets.getTextField = function(instance){"use strict";
         borderColor: '#999',
         borderWidth: 1,
         textAlign: Ti.UI.TEXT_ALIGNMENT_LEFT,
-        right: 15,
-        left: 15,
+        left: '4%',
         height: 35,
+        width: '92%',
         color: '#000',
         autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_NONE,
         autocorrect: false,
