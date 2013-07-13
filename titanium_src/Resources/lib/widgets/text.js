@@ -104,13 +104,23 @@ Omadi.widgets.text = {
         widgetView.setAutocapitalization(Ti.UI.TEXT_AUTOCAPITALIZATION_WORDS);
         
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
-    
-        if (settings.min_length && settings.min_length != null && settings.min_length != "null") {
-            widgetView.minLength = settings.min_length;
+        
+        if(typeof settings.min_length !== 'undefined'){
+            settings.min_length = parseInt(settings.min_length, 10);
+            
+            if (settings.min_length > 0) {
+                widgetView.minLength = settings.min_length;
+            }
         }
         
-        if (settings.max_length && settings.max_length != null && settings.max_length != "null") {
-            widgetView.maxLength = settings.max_length;
+        if(typeof settings.max_length !== 'undefined'){
+            Ti.API.debug("max: " + settings.max_length);
+            settings.max_length = parseInt(settings.max_length, 10);
+            
+            if (settings.max_length > 0) {
+                widgetView.maxLength = settings.min_length;
+                Ti.API.debug("max: " +  widgetView.maxLength);
+            }
         }
         
         if (typeof settings.capitalization  !== null && settings.capitalization != null) {
@@ -126,11 +136,14 @@ Omadi.widgets.text = {
             timeChange = milliseconds - e.source.lastChange;
             
             if(e.source.lastValue != e.source.value && (timeChange > 30)){
+                e.source.lastChange = milliseconds;
+                
                 Ti.API.debug("text value changed: " + e.source.lastValue + " -> " + e.source.value);
                 
                 if(Ti.App.isAndroid && typeof e.source.maxLength !== 'undefined'){
-                    if(e.source.value.length > e.source.maxLength){
-                        
+                    // For some weird reason, e.source.maxLength is at times -1. I don't know how it gets set that way. Keep the maxlength > 0
+                    if(e.source.maxLength > 0 && e.source.value.length > e.source.maxLength){
+                        Ti.API.debug("Max: " + e.source.maxLength);
                         e.source.value = e.source.value.substring(0, e.source.maxLength);
                         e.source.setSelection(e.source.value.length, e.source.value.length);
                     }
@@ -149,13 +162,13 @@ Omadi.widgets.text = {
            
                 e.source.dbValue = e.source.value;
                 e.source.textValue = e.source.value;
+                e.source.lastValue = e.source.value;
                 
                 if(e.source.check_conditional_fields.length > 0){
                     setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
                 }
                 
-                e.source.lastValue = e.source.value;
-                e.source.lastChange = milliseconds;
+                
             }
         });
         

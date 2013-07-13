@@ -892,7 +892,7 @@ function showContinuousSavedNode(){
         a = null;
     });
     
-    //showContinuousSavedNode();
+    showContinuousSavedNode();
     
 }());
 

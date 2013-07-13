@@ -417,6 +417,23 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 					outputStream = new FileOutputStream(filePath);
 					outputStream.write(data);
 					outputStream.close();
+					
+					int orientation = ExifInterface.ORIENTATION_NORMAL;
+					switch(toolsOverlay.getDegreesAtCapture()){
+					case 90:
+						orientation = ExifInterface.ORIENTATION_ROTATE_270;
+						break;
+					case 270:
+						orientation = ExifInterface.ORIENTATION_ROTATE_90;
+						break;
+					case 180:
+						orientation = ExifInterface.ORIENTATION_ROTATE_180;
+						break;
+					}
+					
+					ExifInterface exif = new ExifInterface(filePath);
+					exif.setAttribute(ExifInterface.TAG_ORIENTATION, orientation + "");
+					exif.saveAttributes();
 	
 					cameraActivity.setResult(Activity.RESULT_OK);
 					cameraActivity.finish();

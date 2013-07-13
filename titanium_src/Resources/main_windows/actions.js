@@ -477,7 +477,7 @@ function addLocalPhotos(){"use strict";
         });
         
         image = Ti.UI.createImageView({
-           image: '/images/drafts.png',
+           image: '/images/camera_icon.png',
            top: 9,
            left: '3%',
            height: Ti.UI.SIZE,
@@ -492,7 +492,6 @@ function addLocalPhotos(){"use strict";
         wrapper.add(textButton);
         currentWinWrapper.add(wrapper);
         addSeparator();
-    
 }
 
 function addDeleteAll(){"use strict";

@@ -1,4 +1,5 @@
-/*jslint eqeq:true, plusplus: true*/ 
+
+ /*jslint eqeq:true, plusplus: true*/ 
 /*global Omadi */
 
 Ti.include('/lib/functions.js');
@@ -9,8 +10,12 @@ var viewButton;
 var emailButton;
 var deleteButton;
 var uploadButton;
+var gallery;
+var galleryWrapper;
 
-function addIOSToolbarLocalPhotos() {"use strict";
+var Gallery = {};
+
+Gallery.addIOSToolbar = function() {"use strict";
     var backButton, space, label, items, toolbar;
 
     backButton = Ti.UI.createButton({
@@ -49,58 +54,209 @@ function addIOSToolbarLocalPhotos() {"use strict";
     });
 
     currentWinWrapper.add(toolbar);
-}
+};
 
-function galleryItemClicked(e){"use strict";
-    if(e.source.isChecked){
-        e.source.setBorderWidth(0);
-        e.source.setBackgroundColor('#fff');
-        e.source.setBorderColor('#ccc');
-    }
-    else{
-        e.source.setBorderWidth(2);
-        e.source.setBackgroundColor('#ccc');
-        e.source.setBorderColor('#333');
-    }
-    e.source.isChecked = !e.source.isChecked;
-}
-
-function showButtons(){"use strict";
-    var buttons, viewButton;
-    
-    buttons = Ti.UI.createView({
-        width: '100%',
-        bottom: 0,
-        height: 50,
-        visible: false
+Gallery.savedToPhotoGallery = function(e){"use strict";
+    var dialog = Ti.UI.createAlertDialog({
+       title: "Photo Saved Successfully",
+       message: 'The photo was saved to your photo gallery.',
+       buttonNames: ['OK'] 
     });
-    
-    viewButton = Ti.UI.createButton({
-        title: 'View Photo', 
-        width: '50%',
-        left: 0 
+    dialog.show();
+};
+
+Gallery.failedSaveToPhotoGallery = function(e){"use strict";
+    var dialog = Ti.UI.createAlertDialog({
+       title: "Error Saving Photo",
+       message: 'An error occurred while saving. Please try again.',
+       buttonNames: ['OK'] 
     });
-    
-    buttons.add(viewButton);
-    
-    currentWinWrapper.add(buttons);
-}
+    dialog.show();
+};
 
-(function(){"use strict";
+Gallery.deleteOptionSelected = function(e){"use strict";
+    if(e.index === 1){
+        Omadi.data.deletePhotoUpload(e.source.imageView.photoId, e.source.imageView.filePath);
 
-    var gallery, images, i, recentFiles, tempFile, now,
-        earliestTimestamp, items, modified, item, image, checkbox, refreshButton, 
-        topBar, titleLabel, buttons, useButton, cancelButton, galleryWrapper, transform, 
-        rotateDegrees, imageView;
-    
-    Ti.UI.currentWindow.setBackgroundColor('#eee');
+        galleryWrapper.remove(gallery);
+        Gallery.update();
+    }
+};
+
+Gallery.emailComplete = function(e){"use strict";
+                            
+    if(e.success == true){
         
-    currentWinWrapper = Ti.UI.createView({
-        top : 0,
-        left : 0,
-        bottom : 0,
-        right : 0
+        // Only ask if the result is sent.  Do not ask if cancelled or saved the email
+        // Android doesn't give reliable return codes in the result. 
+        // Currently, pressing the back button will return a SENT result, so do not ask to delete on Android right now
+        if(e.result == e.source.SENT && Ti.App.isIOS){
+            // Ask if the successfully emailed photo should be deleted
+            var alertDialog;
+            
+            alertDialog = Ti.UI.createAlertDialog({
+                buttonNames: ['Keep', 'Delete'],
+                title: 'Your Email was Sent',
+                message: 'Do you want to delete the photo from this device?',
+                imageView: e.source.imageView
+            });
+            
+            alertDialog.addEventListener('click', Gallery.deleteOptionSelected);
+            
+            alertDialog.show();
+         }
+    }
+    else if(e.success == false){
+        alert("Your email failed to send. Details: " + e.error);
+    }
+};
+
+Gallery.confirmDeleteOptionSelected = function(e){"use strict";
+    if(e.index === 0){
+        
+        Omadi.data.deletePhotoUpload(e.source.imageView.photoId, e.source.imageView.filePath);
+        
+        galleryWrapper.remove(gallery);
+        Gallery.update();
+    }
+};
+
+Gallery.imageOptionClicked = function(e){"use strict";
+    var alertDialog, emailDialog, imageFile;
+    
+    if(e.index >= 0){
+        
+        if(e.source.options[e.index] == "View Photo"){
+            // View photo
+            Omadi.display.displayFullImage(e.source.imageView);
+        }
+        else if(e.source.options[e.index] == "Email Photo"){
+            // Email Photo
+
+            imageFile = Ti.Filesystem.getFile(e.source.imageView.filePath);
+            if(imageFile.exists()){
+                
+                emailDialog = Ti.UI.createEmailDialog({
+                    subject: "Photo",
+                    messageBody: "See the attached photo",
+                    imageView: e.source.imageView
+                });
+                
+                if(emailDialog.isSupported()){
+                    
+                    if(Ti.Network.online){
+                        
+                        emailDialog.addAttachment(imageFile);
+                        emailDialog.addEventListener('complete', Gallery.emailComplete);
+                        emailDialog.open();
+                    }
+                    else{
+                        alert("You do not have an Internet connection.");
+                    }
+                }
+                else{
+                    alert("Email support is not enabled for this device.");
+                }
+            }
+            else{
+                alert("The photo could not be found probably because it was just uploaded.");
+            }
+        }
+        else if(e.source.options[e.index] == "Delete Photo"){
+            
+            // Delete Photo
+            alertDialog = Ti.UI.createAlertDialog({
+                title: 'Really Delete?',
+                message: 'Are you sure you want to delete the photo?',
+                buttonNames: ['Delete', 'Cancel'],
+                cancel: 1,
+                imageView: e.source.imageView
+            });
+            
+            alertDialog.addEventListener('click', Gallery.confirmDeleteOptionSelected);
+            alertDialog.show();
+        }
+        else if(e.source.options[e.index] == "Save to Photo Gallery"){
+            
+            // Save to Photo Gallery
+            imageFile = Ti.Filesystem.getFile(e.source.imageView.filePath);
+            if(imageFile.exists()){
+                Ti.Media.saveToPhotoGallery(imageFile, {
+                    success: Gallery.savedToPhotoGallery,
+                    error: Gallery.failedSaveToPhotoGallery
+                });
+            }
+            else{
+                alert("The photo could not be found probably because it was just uploaded.");
+            }
+        }
+    }
+};
+
+Gallery.imageClicked = function(e){"use strict";
+
+    var dialog, options;
+    
+    options = [];
+    options.push('View Photo');
+    options.push('Email Photo');
+    
+    if(Ti.App.isIOS){
+        options.push("Save to Photo Gallery");
+    }
+    
+    options.push('Delete Photo');
+    options.push('Cancel');
+    
+    
+    dialog = Ti.UI.createOptionDialog({
+        title: 'Photo Options',
+        options: options,
+        imageView: e.source,
+        cancel: (options.length - 1)
     });
+    
+    dialog.addEventListener('click', Gallery.imageOptionClicked);
+    
+    dialog.show();
+    
+    // if(e.source.isChecked){
+        // e.source.setBorderWidth(0);
+        // e.source.setBackgroundColor('#fff');
+        // e.source.setBorderColor('#ccc');
+    // }
+    // else{
+        // e.source.setBorderWidth(2);
+        // e.source.setBackgroundColor('#ccc');
+        // e.source.setBorderColor('#333');
+    // }
+    // e.source.isChecked = !e.source.isChecked;
+};
+
+// function showButtons(){"use strict";
+    // var buttons, viewButton;
+//     
+    // buttons = Ti.UI.createView({
+        // width: '100%',
+        // bottom: 0,
+        // height: 50,
+        // visible: false
+    // });
+//     
+    // viewButton = Ti.UI.createButton({
+        // title: 'View Photo', 
+        // width: '50%',
+        // left: 0 
+    // });
+//     
+    // buttons.add(viewButton);
+//     
+    // currentWinWrapper.add(buttons);
+// }
+
+Gallery.update = function(){"use strict";
+    
+    var i, recentFiles, images, item, imageView, modified, items, tempFile;
     
     items = [];
     recentFiles = [];
@@ -108,18 +264,6 @@ function showButtons(){"use strict";
     images = Omadi.data.getPhotosNotUploaded();
     
     Ti.API.debug("num files: " + images.length);
-    
-    galleryWrapper = Ti.UI.createScrollView({
-        top: 50,
-        bottom: 50,
-        left: 0,
-        right: 0,
-        horizontalWrap: true,
-        contentHeight: 'auto',
-        width: '100%',
-        scrollType: 'vertical',
-        layout: 'vertical'
-    });
     
     gallery = Ti.UI.createView({
         width: '100%',
@@ -140,7 +284,9 @@ function showButtons(){"use strict";
             tempFile.modifiedTimestamp = modified;
             recentFiles.push({
                 file: tempFile,
-                degrees: images[i].degrees
+                degrees: images[i].degrees,
+                filePath: images[i].filePath,
+                photoId: images[i].photoId
             });
         }
     }
@@ -168,26 +314,29 @@ function showButtons(){"use strict";
                 top: 10,
                 left: 10,
                 autorotate: true,
-                touchEnabled: false,
+                touchEnabled: true,
                 borderWidth: 1,
-                borderColor: '#666'
+                borderColor: '#666',
+                filePath: recentFiles[i].filePath,
+                photoId: recentFiles[i].photoId,
+                bigImg: null
             });
             
-            if(Ti.App.isAndroid && recentFiles[i].degrees > 0){
-                transform = Ti.UI.create2DMatrix();
-             
-                rotateDegrees = recentFiles[i].degrees;
-                if(rotateDegrees == 270){
-                    rotateDegrees = 90;
-                }
-                else if(rotateDegrees == 90){
-                    rotateDegrees = 270;
-                }
-                
-                transform = transform.rotate(rotateDegrees);
-                
-                imageView.setTransform(transform);
-            }
+            // if(Ti.App.isAndroid && recentFiles[i].degrees > 0){
+                // transform = Ti.UI.create2DMatrix();
+//              
+                // rotateDegrees = recentFiles[i].degrees;
+                // if(rotateDegrees == 270){
+                    // rotateDegrees = 90;
+                // }
+                // else if(rotateDegrees == 90){
+                    // rotateDegrees = 270;
+                // }
+//                 
+                // transform = transform.rotate(rotateDegrees);
+//                 
+                // //imageView.setTransform(transform);
+            // }
             
             item.add(imageView);
             
@@ -216,7 +365,7 @@ function showButtons(){"use strict";
             // row.add(checkbox);
             items.push(item);
             
-            item.addEventListener('click', galleryItemClicked);
+            imageView.addEventListener('click', Gallery.imageClicked);
             
             gallery.add(item);
         }
@@ -236,6 +385,37 @@ function showButtons(){"use strict";
         
         gallery.add(item);
     }
+};
+
+(function(){"use strict";
+
+    var tempFile, now,
+        earliestTimestamp, items, modified, image, checkbox, refreshButton, 
+        topBar, titleLabel, buttons, useButton, cancelButton, transform, 
+        rotateDegrees;
+    
+    Ti.UI.currentWindow.setBackgroundColor('#eee');
+        
+    currentWinWrapper = Ti.UI.createView({
+        top : 0,
+        left : 0,
+        bottom : 0,
+        right : 0
+    });
+    
+    galleryWrapper = Ti.UI.createScrollView({
+        top: 50,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        horizontalWrap: true,
+        contentHeight: 'auto',
+        width: '100%',
+        scrollType: 'vertical',
+        layout: 'vertical'
+    });
+    
+    Gallery.update();
     
     if(Ti.App.isAndroid){
         topBar = Ti.UI.createLabel({
@@ -254,14 +434,13 @@ function showButtons(){"use strict";
         currentWinWrapper.add(topBar);
     }
     else{
-        addIOSToolbarLocalPhotos();
+        Gallery.addIOSToolbar();
     }
     
-    
     currentWinWrapper.add(galleryWrapper);
-    
     
     Ti.UI.currentWindow.setBackgroundColor("#fff");
     Ti.UI.currentWindow.add(currentWinWrapper);
     
 }());
+

@@ -33,7 +33,7 @@ Omadi.widgets.phone = {
                     instance.numVisibleFields = 1;
                 }
             }
-            else {
+            else{
                 instance.numVisibleFields = settings.cardinality;
             }
         }

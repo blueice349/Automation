@@ -1,11 +1,10 @@
-/*jslint eqeq:true, plusplus: true*/
+
 /*global setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
+/*jslint eqeq:true, plusplus:true*/
 
 Ti.include('/lib/widgets/signature.js');
 
 var IMAGE_MAX_BYTES = 524258;
-
-
 
 Omadi.widgets.image = {
 
@@ -35,6 +34,7 @@ Omadi.widgets.image = {
         else{
             element = Omadi.widgets.image.getNewElement(node, instance);
         }
+        
         instance.elements.push(element);
         fieldView.add(element);
         fieldView.add(Omadi.widgets.getSpacerView());
@@ -146,14 +146,13 @@ Omadi.widgets.image = {
         return widgetView;
     },
     getImageView : function(widgetView, index, nid, fid, degrees) {"use strict";
-        var imageView, fidIsData = false, transform, rotateDegrees, image, widgetType;
-
+        var imageView, transform, rotateDegrees, image, widgetType, isFilePath;
+        
+        isFilePath = false;
+        
         if (fid !== null && typeof fid !== 'number') {
-            fidIsData = true;
             
-            if(Ti.App.isAndroid){
-                fid = "file://" + fid;
-            }
+            isFilePath = true;
         }
         
         widgetType = Ti.App.Properties.getString("photoWidget", 'take');
@@ -195,37 +194,38 @@ Omadi.widgets.image = {
             imageIndex : index,
             dbValue : fid,
             instance : widgetView.instance,
-            parentView : widgetView
+            parentView : widgetView,
+            degrees: degrees
         });
 
-        if (fidIsData) {
-            imageView.bigImg = fid;
+        if (isFilePath) {
             imageView.fullImageLoaded = true;
             imageView.isImageData = true;
             imageView.dbValue = -1;
+            imageView.filePath = fid;
                            
-            if(Ti.App.isAndroid && degrees > 0){
-                transform = Ti.UI.create2DMatrix();
-                
-                rotateDegrees = degrees;
-                if(rotateDegrees == 270){
-                    rotateDegrees = 90;
-                }
-                else if(rotateDegrees == 90){
-                    rotateDegrees = 270;
-                }
-                
-                transform = transform.rotate(rotateDegrees);
-                
-                imageView.setTransform(transform);
-            }
+            // if(Ti.App.isAndroid && degrees > 0){
+                // transform = Ti.UI.create2DMatrix();
+//                 
+                // rotateDegrees = degrees;
+                // if(rotateDegrees == 270){
+                    // rotateDegrees = 90;
+                // }
+                // else if(rotateDegrees == 90){
+                    // rotateDegrees = 270;
+                // }
+//                 
+                // transform = transform.rotate(rotateDegrees);
+//                 
+                // imageView.setTransform(transform);
+            // }
     
         }
         else if ( typeof fid === 'number') {
             Omadi.display.setImageViewThumbnail(imageView, nid, fid);
         }
         
-        if(!fidIsData){
+        //if(!fidIsData){
             if(widgetType == 'choose'){
                 imageView.addEventListener('click', function(e) {
                     
@@ -233,22 +233,42 @@ Omadi.widgets.image = {
                          Omadi.widgets.image.openPictureChooser(e.source);
                     }
                     else{
-                        Omadi.display.displayLargeImage(e.source, e.source.nid, e.source.fid);
+                        //Omadi.display.displayLargeImage(e.source, e.source.nid, e.source.fid);
+                        Omadi.display.displayFullImage(e.source);
                     }
                 });
             }
             else{
                 imageView.addEventListener('click', function(e) {
-        
+                    var dialog;
+                    
                     if (e.source.fid === null) {
                         Omadi.widgets.image.openCamera(e.source);
                     }
                     else {
-                        Omadi.display.displayLargeImage(e.source, e.source.nid, e.source.fid);
+                        
+                        Omadi.display.displayFullImage(e.source);
+                        
+                        
+                        // dialog = Ti.UI.createOptionDialog({
+                            // options: ['View Photo', 'Remove Photo'],
+                            // title: 'Photo Options',
+                            // imageView: e.source
+                        // });
+//                         
+                        // dialog.addEventListener('click', function(e2){
+                           // if(e2.index == 0){
+                                // Omadi.display.displayFullImage(e2.source.imageView);     
+                           // } 
+                           // else if(e2.index == 1){
+                               // alert("hey");
+                           // }
+                        // });
+                        // dialog.show();
                     }
                 });
             }
-        }
+       // }
 
         return imageView;
     },
@@ -523,7 +543,7 @@ Omadi.widgets.image = {
         e.source.isChecked = !e.source.isChecked;
     },
     openCamera : function(imageView) {"use strict";
-        /*global cameraAndroid*/
+        /*global cameraAndroid, save_form_data*/
         var blankOverlay, storageDirectory, storageDirectoryFile,
          overlayView, captureButton, doneButton, flexible, flashMode, flashButton, navBar;
         
@@ -546,15 +566,14 @@ Omadi.widgets.image = {
                         
                         Omadi.display.loading("Saving Photo...");
                         
-                        filePath = event.filePath;
+                        filePath = "file://" + event.filePath;
                         degrees = event.degrees;
                         
-                        
-                        imageView.setImage("file://" + filePath);
+                        imageView.setImage(filePath);
+                        imageView.filePath = filePath;
                         
                         if(degrees > 0){
                             transform = Ti.UI.create2DMatrix();
-                            animation = Ti.UI.createAnimation();
                             
                             rotateDegrees = degrees;
                             if(rotateDegrees == 270){
@@ -565,16 +584,18 @@ Omadi.widgets.image = {
                             }
                             
                             transform = transform.rotate(rotateDegrees);
-                            animation.transform = transform;
-                            animation.duration = 1;
                             
-                            imageView.animate(animation);
+                            imageView.setTransform(transform);
                         }
                         
-                        imageView.fullImageLoaded = true;
-                        
+                        //imageView.fullImageLoaded = true;
                         
                         Omadi.widgets.image.saveFileInfo(imageView, filePath, degrees);
+                        
+                        // Save a draft of this image in case a crash happens soon
+                        if(Ti.UI.currentWindow.saveContinually && typeof save_form_data !== 'undefined'){
+                            save_form_data('continuous');
+                        }
                         
                         if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
                             newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
@@ -590,13 +611,6 @@ Omadi.widgets.image = {
                         else{
                             Omadi.display.doneLoading();
                         }
-                        
-                        
-                        if(Ti.UI.currentWindow.saveContinually && typeof save_form_data !== 'undefined'){
-                            save_form_data('continuous');
-                        }
-                        //Omadi.widgets.image.saveImageInDb(imageView, blob);
-                        
                         
                     },
                     success : function(event) {
@@ -619,7 +633,7 @@ Omadi.widgets.image = {
                 alert('No Camera in device');
             }
         }
-        else {
+        else { // this is iOS
             try {
 
                 overlayView = Ti.UI.createView();
@@ -683,20 +697,27 @@ Omadi.widgets.image = {
 
                         Omadi.display.loading("Saving Photo...");
                         
-                        imageView.image = event.media;
+                        //imageView.image = event.media;
 
-                        imageView.bigImg = imageView.image;
+                        //imageView.bigImg = imageView.image;
                         imageView.mimeType = event.media.mimeType;
-                        imageView.fullImageLoaded = true;
+                        //imageView.fullImageLoaded = true;
 
                         filePath = Ti.Filesystem.applicationDataDirectory + "p_" + Omadi.utils.getUTCTimestamp() + '.jpg';
-                        
                         imageFile = Ti.Filesystem.getFile(filePath);
                         
                         imageFile.write(event.media);
                         imageFile.setRemoteBackup(false);
+                        
+                        imageView.setImage(filePath);
+                        imageView.filePath = filePath;
                                 
                         Omadi.widgets.image.saveFileInfo(imageView, filePath, 0);
+                        
+                        // Save a draft of this image in case a crash happens soon
+                        if(Ti.UI.currentWindow.saveContinually && typeof save_form_data !== 'undefined'){
+                            save_form_data('continuous');
+                        }
                        
                         if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
                             newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
@@ -711,10 +732,6 @@ Omadi.widgets.image = {
                         }
                         else{
                             Omadi.display.doneLoading();
-                        }
-                        
-                        if(Ti.UI.currentWindow.saveContinually && typeof save_form_data !== 'undefined'){
-                            save_form_data('continuous');
                         }
                     },
                     error : function(error) {
@@ -785,10 +802,15 @@ Omadi.widgets.image = {
             mime = imageView.mimeType;
             imageName = 'image.jpg';//filePath;
             imageView.dbValue = '-1';
+            imageView.fid = '-1';
+            imageView.degrees = degrees;
+            
+            imageView.filePath = filePath;   
             
             timestamp = Omadi.utils.getUTCTimestamp();
             fieldName = imageView.instance.field_name;
             imageIndex = imageView.imageIndex;
+            
             
             location = Omadi.location.getLastLocation();
 

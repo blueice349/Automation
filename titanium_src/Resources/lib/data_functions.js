@@ -447,7 +447,7 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
 
 Omadi.data.nodeSave = function(node) {"use strict";
     var query, field_name, fieldNames, instances, result, db, smallestNid, insertValues, j, k, 
-        instance, value_to_insert, has_data, content_s, saveNid, continuousNid;
+        instance, value_to_insert, has_data, content_s, saveNid, continuousNid, photoNids;
 
     /*global treatArray*/
     /*jslint nomen: true*/
@@ -620,8 +620,18 @@ Omadi.data.nodeSave = function(node) {"use strict";
                 // Give all permissions for this node. Once it comes back, the correct permissions will be there.  If it never gets uploaded, the user should be able to do whatever they want with that info.
                 db.execute("INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",1,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1)");
             }
-
-            db.execute('UPDATE _photos SET nid=' + saveNid + ' WHERE nid = 0');
+            
+            photoNids = [0];
+            
+            if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined' && Ti.UI.currentWindow.continuous_nid != 0){
+                photoNids.push(Ti.UI.currentWindow.continuous_nid);
+            }
+            
+            if(Ti.UI.currentWindow.nid != 'new' && Ti.UI.currentWindow.nid != 0){
+                photoNids.push(Ti.UI.currentWindow.nid);
+            }
+            
+            db.execute('UPDATE _photos SET nid=' + saveNid + ' WHERE nid IN (' + photoNids.join(',') + ')');
 
             node._saved = true;
             Ti.API.debug("NODE SAVE WAS SUCCESSFUL");
@@ -699,13 +709,11 @@ Omadi.data.getPhotosNotUploaded = function(){"use strict";
     
     while(result.isValidRow()){
         filePath = result.fieldByName("file_data");
-        if(Ti.App.isAndroid){
-            filePath = 'file://' + filePath;
-        }
-        
+       
         filePaths.push({
             filePath: filePath,
-            degrees: result.fieldByName("degrees")
+            degrees: result.fieldByName("degrees", Ti.Database.FIELD_TYPE_INT),
+            photoId: result.fieldByName("id", Ti.Database.FIELD_TYPE_INT)
         });
         
         result.next();
@@ -769,7 +777,7 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
                         
                         Ti.API.info("file_data: " + file_data);
                         
-                        oldImageFile = Ti.Filesystem.getFile("file://" + file_data);
+                        oldImageFile = Ti.Filesystem.getFile(file_data);
                         newFilePath = Ti.Filesystem.externalStorageDirectory + "/failed_uploads/" + newFilePath;
                         
                         if(oldImageFile.move(newFilePath)){
@@ -911,10 +919,19 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
     db.close();
 };
 
-Omadi.data.deletePhotoUpload = function(id) {"use strict";
-    var db = Omadi.utils.openMainDatabase();
+Omadi.data.deletePhotoUpload = function(id, deleteFilePath) {"use strict";
+    var file, db;
+    
+    db = Omadi.utils.openMainDatabase();
     db.execute("DELETE FROM _photos WHERE id = " + id);
     db.close();
+    
+    if(typeof deleteFilePath !== 'undefined'){
+        file = Ti.Filesystem.getFile(deleteFilePath);
+        if(file.exists()){
+            file.deleteFile();
+        }
+    }
 };
 
 Omadi.data.nodeLoad = function(nid) {"use strict";
@@ -1510,7 +1527,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                                 //Omadi.service.sendErrorReport("In Resize Error");
                                 
                                 try{
-                                    imageFile = Ti.Filesystem.getFile("file://" + nextPhoto.filePath);
+                                    imageFile = Ti.Filesystem.getFile(nextPhoto.filePath);
                                     if(!imageFile.exists()){
                                         Omadi.service.sendErrorReport("File does not exist 2: " + nextPhoto.filePath);
                                         // upload to get out of the system
@@ -1677,9 +1694,9 @@ Omadi.data.getNextPhotoData = function(){"use strict";
 };
 
 
-Omadi.data.processFetchedJson = function(json, progress){"use strict";
+Omadi.data.processFetchedJson = function(){"use strict";
     var nodeType, mainDB, gpsDB, dbFile, tableName, GMT_OFFSET, dialog, newNotifications, numItems;
-     
+    
     try {
         //Parses response into strings
         
@@ -1689,7 +1706,7 @@ Omadi.data.processFetchedJson = function(json, progress){"use strict";
             // Ti.App.Properties.setString("timestamp_offset", GMT_OFFSET);
         // }
 
-        if (json.delete_all === true || json.delete_all === "true") {
+        if (Omadi.service.fetchedJSON.delete_all === true || Omadi.service.fetchedJSON.delete_all === "true") {
             Ti.API.info("=================== ############ ===================");
             Ti.API.info("Reseting mainDB, delete_all is required");
             Ti.API.info("=================== ############ ===================");
@@ -1722,28 +1739,31 @@ Omadi.data.processFetchedJson = function(json, progress){"use strict";
         //mainDB.execute('UPDATE updated SET "timestamp"=' + json.request_time + ' WHERE "rowid"=1');
         
         //Ti.API.error(json.request_time);
-        numItems = parseInt(json.total_item_count, 10);
+        numItems = parseInt(Omadi.service.fetchedJSON.total_item_count, 10);
         Ti.API.info("Total items to install: " + numItems);
 
-        mainDB = Omadi.utils.openMainDatabase();
-        Ti.API.debug("Opened database");
+        
         
         //If mainDB is already last version
         if (numItems == 0) {
             //mainDB.execute('UPDATE updated SET "timestamp"=' + json.request_time + ' WHERE "rowid"=1');
-            Omadi.data.setLastUpdateTimestamp(json.request_time);
+            Omadi.data.setLastUpdateTimestamp(Omadi.service.fetchedJSON.request_time);
             
-            if (progress != null) {
-                progress.set();
-                progress.close();
+            if (Omadi.service.progressBar !== null) {
+                Omadi.service.progressBar.set();
+                Omadi.service.progressBar.close();
+                Omadi.service.progressBar = null;
             }
             Ti.API.debug("Done with install - no items");
         }
         else {
+            mainDB = Omadi.utils.openMainDatabase();
+            Ti.API.debug("Opened database");
+        
             Ti.API.debug("hihihi");
-            if (progress !== null) {
+            if (Omadi.service.progressBar !== null) {
                 //Set max value for progress bar
-                progress.set_max(numItems);
+                Omadi.service.progressBar.set_max(numItems);
             }
             
             Ti.API.debug("yoyoyo");
@@ -1751,75 +1771,78 @@ Omadi.data.processFetchedJson = function(json, progress){"use strict";
                 mainDB.execute('UPDATE updated SET "url"="' + Omadi.DOMAIN_NAME + '" WHERE "rowid"=1');
             }
 
-            Ti.API.info('######### Request time : ' + json.request_time);
+            Ti.API.info('######### Request time : ' + Omadi.service.fetchedJSON.request_time);
 
             //Omadi.data.setLastUpdateTimestamp(json.request_time);
 
-            if ( typeof json.vehicles !== 'undefined') {
+            if ( typeof Omadi.service.fetchedJSON.vehicles !== 'undefined') {
                 Ti.API.debug("Installing vehicles");
-                Omadi.data.processVehicleJson(json.vehicles, mainDB, progress);
+                Omadi.data.processVehicleJson(mainDB);
             }
 
-            if ( typeof json.node_type !== 'undefined') {
+            if ( typeof Omadi.service.fetchedJSON.node_type !== 'undefined') {
                 Ti.API.debug("Installing bundles");
-                Omadi.data.processNodeTypeJson(json.node_type, mainDB, progress);
+                Omadi.data.processNodeTypeJson(mainDB);
             }
 
-            if ( typeof json.fields !== 'undefined') {
+            if ( typeof Omadi.service.fetchedJSON.fields !== 'undefined') {
                 Ti.API.debug("Installing fields");
-                Omadi.data.processFieldsJson(json.fields, mainDB, progress);
+                Omadi.data.processFieldsJson(mainDB);
             }
             
-            if ( typeof json.fake_fields !== 'undefined') {
+            if ( typeof Omadi.service.fetchedJSON.fake_fields !== 'undefined') {
                 Ti.API.debug("Installing fake fields");
-                Omadi.data.processFakeFieldsJson(json.fake_fields, mainDB, progress);
+                Omadi.data.processFakeFieldsJson(mainDB);
             }
 
-            if ( typeof json.regions !== 'undefined') {
+            if ( typeof Omadi.service.fetchedJSON.regions !== 'undefined') {
                 Ti.API.debug("Installing regions");
-                Omadi.data.processRegionsJson(json.regions, mainDB, progress);
+                Omadi.data.processRegionsJson(mainDB);
             }
 
-            if ( typeof json.vocabularies !== 'undefined') {
+            if ( typeof Omadi.service.fetchedJSON.vocabularies !== 'undefined') {
                 Ti.API.debug("Installing vocabularies");
-                Omadi.data.processVocabulariesJson(json.vocabularies, mainDB, progress);
+                Omadi.data.processVocabulariesJson(mainDB);
             }
 
-            if ( typeof json.terms !== 'undefined') {
+            if ( typeof Omadi.service.fetchedJSON.terms !== 'undefined') {
                 Ti.API.debug("Installing terms");
-                Omadi.data.processTermsJson(json.terms, mainDB, progress);
+                Omadi.data.processTermsJson(mainDB);
             }
 
-            if ( typeof json.users !== 'undefined') {
+            if ( typeof Omadi.service.fetchedJSON.users !== 'undefined') {
                 Ti.API.debug("Installing users");
-                Omadi.data.processUsersJson(json.users, mainDB, progress);
+                Omadi.data.processUsersJson(mainDB);
             }
 
-            if ( typeof json.node !== 'undefined') {
+            if ( typeof Omadi.service.fetchedJSON.node !== 'undefined') {
                 Ti.API.debug("Installing nodes");
-                for (tableName in json.node) {
-                    if (json.node.hasOwnProperty(tableName)) {
-                        if (json.node.hasOwnProperty(tableName)) {
-                            Omadi.data.processNodeJson(json.node[tableName], tableName, mainDB, progress);
+                for (tableName in Omadi.service.fetchedJSON.node) {
+                    if (Omadi.service.fetchedJSON.node.hasOwnProperty(tableName)) {
+                        if (Omadi.service.fetchedJSON.node.hasOwnProperty(tableName)) {
+                            Omadi.data.processNodeJson(tableName, mainDB);
                         }
                     }
                 }
             }
             
-            Omadi.data.setLastUpdateTimestamp(json.request_time);
+            mainDB.close();
+            
+            Omadi.data.setLastUpdateTimestamp(Omadi.service.fetchedJSON.request_time);
 
             //Ti.API.info("SUCCESS");
-            if (progress != null) {
-                progress.close();
+            if (Omadi.service.progressBar !== null) {
+                Omadi.service.progressBar.close();
+                Omadi.service.progressBar = null;
             }
             
-            Ti.App.fireEvent("syncInstallComplete");
+            Ti.App.fireEvent("syncInstallComplete");   
         }
-        mainDB.close();
+        
 
-        if ( typeof json.new_app !== 'undefined' && json.new_app.length > 0) {
-            Ti.API.debug("New App: " + json.new_app);
-            Omadi.display.newAppAvailable(json.new_app);
+        if ( typeof Omadi.service.fetchedJSON.new_app !== 'undefined' && Omadi.service.fetchedJSON.new_app.length > 0) {
+            Ti.API.debug("New App: " + Omadi.service.fetchedJSON.new_app);
+            Omadi.display.newAppAvailable(Omadi.service.fetchedJSON.new_app);
         }
         
         if(!Ti.App.Properties.getBool("doingFullReset", false)){
@@ -1842,15 +1865,15 @@ Omadi.data.processFetchedJson = function(json, progress){"use strict";
     }
 };
 
-Omadi.data.processVehicleJson = function(json, mainDB, progress) {"use strict";
+Omadi.data.processVehicleJson = function(mainDB) {"use strict";
     try {
-        if (json) {
+        if (Omadi.service.fetchedJSON.vehicles) {
             var queries = [], i;
 
-            if ( json instanceof Array) {
-                for (i in json) {
-                    if (json.hasOwnProperty(i)) {
-                        queries.push("INSERT OR REPLACE INTO _vehicles (make, model) VALUES ('" + dbEsc(json[i][0]) + "', '" + dbEsc(json[i][1]) + "' )");
+            if ( Omadi.service.fetchedJSON.vehicles instanceof Array) {
+                for (i in Omadi.service.fetchedJSON.vehicles) {
+                    if (Omadi.service.fetchedJSON.vehicles.hasOwnProperty(i)) {
+                        queries.push("INSERT OR REPLACE INTO _vehicles (make, model) VALUES ('" + dbEsc(Omadi.service.fetchedJSON.vehicles[i][0]) + "', '" + dbEsc(Omadi.service.fetchedJSON.vehicles[i][1]) + "' )");
                     }
                 }
             }
@@ -1867,24 +1890,24 @@ Omadi.data.processVehicleJson = function(json, mainDB, progress) {"use strict";
     }
 };
 
-Omadi.data.processFakeFieldsJson = function(json, mainDB, progress) {"use strict";
+Omadi.data.processFakeFieldsJson = function(mainDB) {"use strict";
     var result, field_exists, queries, i, field_name, bundle;
     
     try {
         queries = [];
 
-        if (json.insert) {
+        if (Omadi.service.fetchedJSON.fake_fields.insert) {
 
-            if (json.insert.length) {
+            if (Omadi.service.fetchedJSON.fake_fields.insert.length) {
 
-                for ( i = 0; i < json.insert.length; i++) {
+                for ( i = 0; i < Omadi.service.fetchedJSON.fake_fields.insert.length; i++) {
 
-                    if (progress != null) {
-                        progress.set();
+                    if (Omadi.service.progressBar != null) {
+                        Omadi.service.progressBar.set();
                     }
                     
-                    field_name = json.insert[i].field_name;
-                    bundle = json.insert[i].bundle;
+                    field_name = Omadi.service.fetchedJSON.fake_fields.insert[i].field_name;
+                    bundle = Omadi.service.fetchedJSON.fake_fields.insert[i].bundle;
     
                     result = mainDB.execute("SELECT COUNT(*) FROM fake_fields WHERE field_name='" + field_name + "' AND bundle='" + bundle + "'");
                     
@@ -1920,7 +1943,7 @@ Omadi.data.processFakeFieldsJson = function(json, mainDB, progress) {"use strict
 
 
 
-Omadi.data.processFieldsJson = function(json, mainDB, progress) {"use strict";
+Omadi.data.processFieldsJson = function(mainDB) {"use strict";
     /*global ROLE_ID_ADMIN, ROLE_ID_OMADI_AGENT*/
     var result, fid, field_exists, field_type, db_type, field_name, label, widgetString, settingsString, region, part, queries, description, bundle, weight, required, disabled, can_view, can_edit, settings, omadi_session_details, roles, permissionsString, permIdx, roleIdx, i;
     try {
@@ -1929,39 +1952,39 @@ Omadi.data.processFieldsJson = function(json, mainDB, progress) {"use strict";
         omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
         roles = omadi_session_details.user.roles;
         
-        Ti.API.debug(roles);
+        //Ti.API.debug(roles);
 
-        if (json.insert) {
+        if (Omadi.service.fetchedJSON.fields.insert) {
             //Ti.API.debug(json);
             
-            if (json.insert.length) {
+            if (Omadi.service.fetchedJSON.fields.insert.length) {
 
-                for ( i = 0; i < json.insert.length; i++) {
+                for ( i = 0; i < Omadi.service.fetchedJSON.fields.insert.length; i++) {
 
-                    if (progress != null) {
-                        progress.set();
+                    if (Omadi.service.progressBar != null) {
+                        Omadi.service.progressBar.set();
                     }
                     
-                    field_name = json.insert[i].field_name;
-                    bundle = json.insert[i].bundle;
+                    field_name = Omadi.service.fetchedJSON.fields.insert[i].field_name;
+                    bundle = Omadi.service.fetchedJSON.fields.insert[i].bundle;
                     
-                    settings = json.insert[i].settings;
-                    widgetString = JSON.stringify(json.insert[i].widget);
+                    settings = Omadi.service.fetchedJSON.fields.insert[i].settings;
+                    widgetString = JSON.stringify(Omadi.service.fetchedJSON.fields.insert[i].widget);
 
                     settingsString = JSON.stringify(settings);
 
-                    fid = json.insert[i].fid;
-                    field_type = json.insert[i].type;
+                    fid = Omadi.service.fetchedJSON.fields.insert[i].fid;
+                    field_type = Omadi.service.fetchedJSON.fields.insert[i].type;
                     
-                    label = json.insert[i].label;
-                    description = json.insert[i].description;
+                    label = Omadi.service.fetchedJSON.fields.insert[i].label;
+                    description = Omadi.service.fetchedJSON.fields.insert[i].description;
                     
-                    weight = json.insert[i].weight;
-                    required = json.insert[i].required;
-                    disabled = json.insert[i].disabled;
+                    weight = Omadi.service.fetchedJSON.fields.insert[i].weight;
+                    required = Omadi.service.fetchedJSON.fields.insert[i].required;
+                    disabled = Omadi.service.fetchedJSON.fields.insert[i].disabled;
                     
-                    if(typeof json.insert[i].settings.region !== 'undefined'){
-                        region = json.insert[i].settings.region;
+                    if(typeof Omadi.service.fetchedJSON.fields.insert[i].settings.region !== 'undefined'){
+                        region = Omadi.service.fetchedJSON.fields.insert[i].settings.region;
                     }
                     else{
                         region = "";
@@ -2011,7 +2034,7 @@ Omadi.data.processFieldsJson = function(json, mainDB, progress) {"use strict";
 
                     if (!field_exists) {
 
-                        //switch(json.insert[i].type) {
+                        //switch(Omadi.service.fetchedJSON.fields.insert[i].type) {
                         //    // case "taxonomy_term_reference":
                         // case "user_reference":
                         // case "datestamp":
@@ -2038,15 +2061,15 @@ Omadi.data.processFieldsJson = function(json, mainDB, progress) {"use strict";
                         //Check if it is a valid bundle (automatically inserted through the API):
                         result = mainDB.execute("SELECT * FROM bundles WHERE bundle_name='" + bundle + "'");
                         if (result.isValidRow()) {
-                            if (json.insert[i].settings.parts) {
-                                for (part in json.insert[i].settings.parts) {
-                                    if (json.insert[i].settings.parts.hasOwnProperty(part)) {
+                            if (Omadi.service.fetchedJSON.fields.insert[i].settings.parts) {
+                                for (part in Omadi.service.fetchedJSON.fields.insert[i].settings.parts) {
+                                    if (Omadi.service.fetchedJSON.fields.insert[i].settings.parts.hasOwnProperty(part)) {
                                         queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___" + part + "' " + db_type);
                                     }
                                 }
                             }
                             else {
-                                //if (json.insert[i].type == 'image') {
+                                //if (Omadi.service.fetchedJSON.fields.insert[i].type == 'image') {
                                 //queries.push('ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___file_id' + '\' ' + db_type);
                                 //queries.push('ALTER TABLE \'' + bundle + '\' ADD \'' + field_name + '___status' + '\' ' + db_type);
                                 //}
@@ -2054,7 +2077,7 @@ Omadi.data.processFieldsJson = function(json, mainDB, progress) {"use strict";
 
                                 queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "' " + db_type);
                                 
-                                if (json.insert[i].type == 'file') {
+                                if (Omadi.service.fetchedJSON.fields.insert[i].type == 'file') {
                                     queries.push("ALTER TABLE '" + bundle + "' ADD '" + field_name + "___filename' " + db_type);
                                 }
                             }
@@ -2063,9 +2086,9 @@ Omadi.data.processFieldsJson = function(json, mainDB, progress) {"use strict";
                         result.close();
 
                         //Multiple parts
-                        if (json.insert[i].settings.parts) {
-                            for (part in json.insert[i].settings.parts) {
-                                if (json.insert[i].settings.parts.hasOwnProperty(part)) {
+                        if (Omadi.service.fetchedJSON.fields.insert[i].settings.parts) {
+                            for (part in Omadi.service.fetchedJSON.fields.insert[i].settings.parts) {
+                                if (Omadi.service.fetchedJSON.fields.insert[i].settings.parts.hasOwnProperty(part)) {
                                     queries.push("INSERT OR REPLACE INTO fields (fid, type, field_name, label, description, bundle, region, weight, required, disabled, widget, settings, can_view, can_edit) VALUES (" + fid + ",'" + dbEsc(field_type) + "','" + dbEsc(field_name + "___" + part) + "','" + dbEsc(label) + "','" + dbEsc(description) + "','" + dbEsc(bundle) + "','" + dbEsc(region) + "'," + weight + ", '" + dbEsc(required) + "' ,  '" + dbEsc(disabled) + "' , '" + dbEsc(widgetString) + "','" + dbEsc(settingsString) + "'," + can_view + ", " + can_edit + ")");
                                 }
                             }
@@ -2085,12 +2108,12 @@ Omadi.data.processFieldsJson = function(json, mainDB, progress) {"use strict";
             }
         }
 
-        if (json["delete"]) {
-            if (json["delete"].length) {
-                for ( i = 0; i < json["delete"].length; i++) {
-                    //Ti.API.info('FID: ' + json["delete"][i].fid + ' was deleted');
+        if (Omadi.service.fetchedJSON.fields["delete"]) {
+            if (Omadi.service.fetchedJSON.fields["delete"].length) {
+                for ( i = 0; i < Omadi.service.fetchedJSON.fields["delete"].length; i++) {
+                    //Ti.API.info('FID: ' + Omadi.service.fetchedJSON.fields["delete"][i].fid + ' was deleted');
                     //Deletes rows from terms
-                    queries.push('DELETE FROM fields WHERE fid=' + json["delete"][i].fid);
+                    queries.push('DELETE FROM fields WHERE fid=' + Omadi.service.fetchedJSON.fields["delete"][i].fid);
                 }
             }
         }
@@ -2109,7 +2132,7 @@ Omadi.data.processFieldsJson = function(json, mainDB, progress) {"use strict";
     }
 };
 
-Omadi.data.processUsersJson = function(json, mainDB, progress) {"use strict";
+Omadi.data.processUsersJson = function(mainDB) {"use strict";
     var i, j, queries;
 
     try {
@@ -2117,50 +2140,50 @@ Omadi.data.processUsersJson = function(json, mainDB, progress) {"use strict";
         queries = [];
 
         //Insert - Users
-        if (json.insert) {
-            if (json.insert.length) {
-                for ( i = 0; i < json.insert.length; i++) {
-                    if (progress != null) {
+        if (Omadi.service.fetchedJSON.users.insert) {
+            if (Omadi.service.fetchedJSON.users.insert.length) {
+                for ( i = 0; i < Omadi.service.fetchedJSON.users.insert.length; i++) {
+                    if (Omadi.service.progressBar != null) {
                         //Increment Progress Bar
-                        progress.set();
+                        Omadi.service.progressBar.set();
                     }
 
-                    queries.push('INSERT OR REPLACE  INTO user (uid, username, mail, realname, status ) VALUES (' + json.insert[i].uid + ",'" + dbEsc(json.insert[i].username) + "','" + dbEsc(json.insert[i].mail) + "','" + dbEsc(json.insert[i].realname) + "'," + json.insert[i].status + ')');
+                    queries.push('INSERT OR REPLACE  INTO user (uid, username, mail, realname, status ) VALUES (' + Omadi.service.fetchedJSON.users.insert[i].uid + ",'" + dbEsc(Omadi.service.fetchedJSON.users.insert[i].username) + "','" + dbEsc(Omadi.service.fetchedJSON.users.insert[i].mail) + "','" + dbEsc(Omadi.service.fetchedJSON.users.insert[i].realname) + "'," + Omadi.service.fetchedJSON.users.insert[i].status + ')');
 
-                    if (json.insert[i].roles.length) {
-                        for ( j = 0; j < json.insert[i].roles.length; j++) {
-                            queries.push('INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES (' + json.insert[i].uid + ',' + json.insert[i].roles[j] + ')');
+                    if (Omadi.service.fetchedJSON.users.insert[i].roles.length) {
+                        for ( j = 0; j < Omadi.service.fetchedJSON.users.insert[i].roles.length; j++) {
+                            queries.push('INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES (' + Omadi.service.fetchedJSON.users.insert[i].uid + ',' + Omadi.service.fetchedJSON.users.insert[i].roles[j] + ')');
                         }
                     }
                     else {
-                        queries.push('INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES (' + json.insert[i].uid + ',' + json.insert[i].roles + ')');
+                        queries.push('INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES (' + Omadi.service.fetchedJSON.users.insert[i].uid + ',' + Omadi.service.fetchedJSON.users.insert[i].roles + ')');
                     }
                 }
             }
         }
 
         //Update - Users
-        if (json.update) {
-            if (json.update.length) {
-                for ( i = 0; i < json.update.length; i++) {
-                    if (progress != null) {
+        if (Omadi.service.fetchedJSON.users.update) {
+            if (Omadi.service.fetchedJSON.users.update.length) {
+                for ( i = 0; i < Omadi.service.fetchedJSON.users.update.length; i++) {
+                    if (Omadi.service.progressBar != null) {
                         //Increment Progress Bar
-                        progress.set();
+                        Omadi.service.progressBar.set();
                     }
-                    queries.push("UPDATE user SET username='" + dbEsc(json.update[i].username) + "', mail='" + dbEsc(json.update[i].mail) + "', realname='" + dbEsc(json.update[i].realname) + "', status=" + json.update[i].status + ' WHERE uid=' + json.update[i].uid);
+                    queries.push("UPDATE user SET username='" + dbEsc(Omadi.service.fetchedJSON.users.update[i].username) + "', mail='" + dbEsc(Omadi.service.fetchedJSON.users.update[i].mail) + "', realname='" + dbEsc(Omadi.service.fetchedJSON.users.update[i].realname) + "', status=" + Omadi.service.fetchedJSON.users.update[i].status + ' WHERE uid=' + Omadi.service.fetchedJSON.users.update[i].uid);
 
                     //Delete every row present at user_roles
-                    queries.push('DELETE FROM user_roles WHERE uid=' + json.update[i].uid);
+                    queries.push('DELETE FROM user_roles WHERE uid=' + Omadi.service.fetchedJSON.users.update[i].uid);
 
                     //Insert it over again!
-                    if (json.update[i].roles) {
-                        if (json.update[i].roles.length) {
-                            for ( j = 0; j < json.update[i].roles.length; j++) {
-                                queries.push('INSERT OR REPLACE INTO user_roles (uid, rid ) VALUES (' + json.update[i].uid + ',' + json.update[i].roles[j] + ')');
+                    if (Omadi.service.fetchedJSON.users.update[i].roles) {
+                        if (Omadi.service.fetchedJSON.users.update[i].roles.length) {
+                            for ( j = 0; j < Omadi.service.fetchedJSON.users.update[i].roles.length; j++) {
+                                queries.push('INSERT OR REPLACE INTO user_roles (uid, rid ) VALUES (' + Omadi.service.fetchedJSON.users.update[i].uid + ',' + Omadi.service.fetchedJSON.users.update[i].roles[j] + ')');
                             }
                         }
                         else {
-                            queries.push('INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES (' + json.update[i].uid + ',' + json.update[i].roles + ')');
+                            queries.push('INSERT OR REPLACE  INTO user_roles (uid, rid ) VALUES (' + Omadi.service.fetchedJSON.users.update[i].uid + ',' + Omadi.service.fetchedJSON.users.update[i].roles + ')');
                         }
                     }
                 }
@@ -2168,17 +2191,17 @@ Omadi.data.processUsersJson = function(json, mainDB, progress) {"use strict";
         }
 
         //Delete - Users
-        if (json["delete"]) {
-            if (json["delete"].length) {
-                for ( i = 0; i < json["delete"].length; i++) {
-                    if (progress != null) {
+        if (Omadi.service.fetchedJSON.users["delete"]) {
+            if (Omadi.service.fetchedJSON.users["delete"].length) {
+                for ( i = 0; i < Omadi.service.fetchedJSON.users["delete"].length; i++) {
+                    if (Omadi.service.progressBar != null) {
                         //Increment Progress Bar
-                        progress.set();
+                        Omadi.service.progressBar.set();
                     }
 
                     //Deletes current row (contact)
-                    queries.push('DELETE FROM user WHERE uid=' + json["delete"][i].uid);
-                    queries.push('DELETE FROM user_roles WHERE uid=' + json["delete"][i].uid);
+                    queries.push('DELETE FROM user WHERE uid=' + Omadi.service.fetchedJSON.users["delete"][i].uid);
+                    queries.push('DELETE FROM user_roles WHERE uid=' + Omadi.service.fetchedJSON.users["delete"][i].uid);
                 }
             }
         }
@@ -2198,7 +2221,7 @@ Omadi.data.processUsersJson = function(json, mainDB, progress) {"use strict";
     }
 };
 
-Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict";
+Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
     /*jslint nomen: true*/
     /*global treatArray, isNumber*/
 
@@ -2219,29 +2242,29 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
         if (result.field(0, Ti.Database.FIELD_TYPE_INT) > 0) {
 
             //Insert
-            if (json.insert) {
+            if (Omadi.service.fetchedJSON.node[type].insert) {
 
                 Ti.API.debug("inserting " + type + " nodes");
-                //Ti.API.debug(json);
+                //Ti.API.debug(Omadi.service.fetchedJSON.node[type]);
                 //Multiple objects
-                if (json.insert.length) {
+                if (Omadi.service.fetchedJSON.node[type].insert.length) {
 
-                    for ( i = 0; i < json.insert.length; i++) {
+                    for ( i = 0; i < Omadi.service.fetchedJSON.node[type].insert.length; i++) {
                         
-                        Ti.API.debug(JSON.stringify(json.insert[i]));
+                        //Ti.API.debug(JSON.stringify(Omadi.service.fetchedJSON.node[type].insert[i]));
                         
-                        if(typeof json.insert[i].__error !== 'undefined' && json.insert[i].__error == 1){
+                        if(typeof Omadi.service.fetchedJSON.node[type].insert[i].__error !== 'undefined' && Omadi.service.fetchedJSON.node[type].insert[i].__error == 1){
                             
                             Ti.API.debug("HAS ERROR");
                             
-                            //Ti.API.debug(json.insert[i]);  
-                            if(typeof json.insert[i].__error_reasons !== 'undefined'){
-                                reason = json.insert[i].__error_reasons.join(", ");
+                            //Ti.API.debug(Omadi.service.fetchedJSON.node[type].insert[i]);  
+                            if(typeof Omadi.service.fetchedJSON.node[type].insert[i].__error_reasons !== 'undefined'){
+                                reason = Omadi.service.fetchedJSON.node[type].insert[i].__error_reasons.join(", ");
                                 alertReason = true;
                                 
-                                for(reasonIndex in json.insert[i].__error_reasons){
-                                    if(json.insert[i].__error_reasons.hasOwnProperty(reasonIndex)){
-                                        if(json.insert[i].__error_reasons[reasonIndex] == 'duplicate'){
+                                for(reasonIndex in Omadi.service.fetchedJSON.node[type].insert[i].__error_reasons){
+                                    if(Omadi.service.fetchedJSON.node[type].insert[i].__error_reasons.hasOwnProperty(reasonIndex)){
+                                        if(Omadi.service.fetchedJSON.node[type].insert[i].__error_reasons[reasonIndex] == 'duplicate'){
                                             alertReason = false;
                                         }
                                     }
@@ -2250,11 +2273,11 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                                 Ti.API.debug("Alert Reason: " + alertReason);
                                 Ti.API.debug("Reason: " + reason);
                                 
-                                if(typeof json.insert[i].__negative_nid !== 'undefined'){
-                                    updateNid = json.insert[i].__negative_nid;
+                                if(typeof Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid !== 'undefined'){
+                                    updateNid = Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid;
                                 }
                                 else{
-                                    updateNid = json.insert[i].nid;
+                                    updateNid = Omadi.service.fetchedJSON.node[type].insert[i].nid;
                                 }
                                 
                                 if(alertReason){
@@ -2271,7 +2294,7 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                                     
                                     dialog.show();
                                 }
-                                else if ( typeof json.insert[i].__negative_nid !== 'undefined' && alertReason) {
+                                else if ( typeof Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid !== 'undefined' && alertReason) {
                                     Ti.API.debug("Deleting nid from error: " + updateNid);
         
                                     queries.push('DELETE FROM ' + type + ' WHERE nid=' + updateNid);
@@ -2282,30 +2305,30 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                         else{
                         
                             //Insert into node table
-                            if ((json.insert[i].title === null) || (json.insert[i].title == 'undefined') || (json.insert[i].title === false)) {
-                                json.insert[i].title = "No Title";
+                            if ((Omadi.service.fetchedJSON.node[type].insert[i].title === null) || (Omadi.service.fetchedJSON.node[type].insert[i].title == 'undefined') || (Omadi.service.fetchedJSON.node[type].insert[i].title === false)) {
+                                Omadi.service.fetchedJSON.node[type].insert[i].title = "No Title";
                             }
     
                             //'update' is a flag to decide whether the node needs to be synced to the server or not
                             no_data = '';
-                            if (!(json.insert[i].no_data_fields instanceof Array)) {
-                                no_data = JSON.stringify(json.insert[i].no_data_fields);
+                            if (!(Omadi.service.fetchedJSON.node[type].insert[i].no_data_fields instanceof Array)) {
+                                no_data = JSON.stringify(Omadi.service.fetchedJSON.node[type].insert[i].no_data_fields);
                             }
     
                             queries.push(Omadi.data.getNodeTableInsertStatement({
-                                nid : json.insert[i].nid,
-                                perm_edit : json.insert[i].perm_edit,
-                                perm_delete : json.insert[i].perm_delete,
-                                created : json.insert[i].created,
-                                changed : json.insert[i].changed,
-                                title : json.insert[i].title,
-                                author_uid : json.insert[i].author_uid,
+                                nid : Omadi.service.fetchedJSON.node[type].insert[i].nid,
+                                perm_edit : Omadi.service.fetchedJSON.node[type].insert[i].perm_edit,
+                                perm_delete : Omadi.service.fetchedJSON.node[type].insert[i].perm_delete,
+                                created : Omadi.service.fetchedJSON.node[type].insert[i].created,
+                                changed : Omadi.service.fetchedJSON.node[type].insert[i].changed,
+                                title : Omadi.service.fetchedJSON.node[type].insert[i].title,
+                                author_uid : Omadi.service.fetchedJSON.node[type].insert[i].author_uid,
                                 flag_is_updated : 0,
                                 table_name : type,
-                                form_part : json.insert[i].form_part,
-                                changed_uid : json.insert[i].changed_uid,
+                                form_part : Omadi.service.fetchedJSON.node[type].insert[i].form_part,
+                                changed_uid : Omadi.service.fetchedJSON.node[type].insert[i].changed_uid,
                                 no_data_fields : no_data,
-                                viewed : json.insert[i].viewed
+                                viewed : Omadi.service.fetchedJSON.node[type].insert[i].viewed
                             }));
     
                             query = 'INSERT OR REPLACE  INTO ' + type + ' (nid, ';
@@ -2330,7 +2353,7 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                             //Ti.API.error(fieldNames);
                             
                             query += fieldNames.join(',');
-                            query += ') VALUES (' + json.insert[i].nid + ',';
+                            query += ') VALUES (' + Omadi.service.fetchedJSON.node[type].insert[i].nid + ',';
     
                             values = [];
     
@@ -2339,11 +2362,11 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                                     
                                     if(instances[field_name].type == 'file'){
                                         
-                                        if (typeof json.insert[i][field_name + "___fid"] === "undefined" || json.insert[i][field_name + "___fid"] === null) {
+                                        if (typeof Omadi.service.fetchedJSON.node[type].insert[i][field_name + "___fid"] === "undefined" || Omadi.service.fetchedJSON.node[type].insert[i][field_name + "___fid"] === null) {
                                             values.push("null");
                                         }
                                         else{
-                                            value = json.insert[i][field_name + "___fid"];
+                                            value = Omadi.service.fetchedJSON.node[type].insert[i][field_name + "___fid"];
         
                                             if ( value instanceof Array) {
                                                 values.push("'" + dbEsc(JSON.stringify(value)) + "'");
@@ -2353,11 +2376,11 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                                             }
                                         }
                                         
-                                        if (typeof json.insert[i][field_name + "___filename"] === "undefined" || json.insert[i][field_name + "___filename"] === null) {
+                                        if (typeof Omadi.service.fetchedJSON.node[type].insert[i][field_name + "___filename"] === "undefined" || Omadi.service.fetchedJSON.node[type].insert[i][field_name + "___filename"] === null) {
                                             values.push("null");
                                         }
                                         else{
-                                            value = json.insert[i][field_name + "___filename"];
+                                            value = Omadi.service.fetchedJSON.node[type].insert[i][field_name + "___filename"];
         
                                             if ( value instanceof Array) {
                                                 values.push("'" + dbEsc(JSON.stringify(value)) + "'");
@@ -2367,7 +2390,7 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                                             }
                                         }
                                     }
-                                    else if (typeof json.insert[i][field_name] === "undefined" || json.insert[i][field_name] === null) {
+                                    else if (typeof Omadi.service.fetchedJSON.node[type].insert[i][field_name] === "undefined" || Omadi.service.fetchedJSON.node[type].insert[i][field_name] === null) {
                                         values.push("null");
                                     }
                                     else {
@@ -2381,7 +2404,7 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                                             case 'datestamp':
                                             case 'omadi_time':
                                             case 'image':
-                                                value = json.insert[i][field_name];
+                                                value = Omadi.service.fetchedJSON.node[type].insert[i][field_name];
         
                                                 if ( typeof value === 'number') {
                                                     values.push(value);
@@ -2408,7 +2431,7 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                                                 break;
                 
                                             default:
-                                                value = json.insert[i][field_name];
+                                                value = Omadi.service.fetchedJSON.node[type].insert[i][field_name];
         
                                                 if ( value instanceof Array) {
                                                     values.push("'" + dbEsc(JSON.stringify(value)) + "'");
@@ -2425,8 +2448,8 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                             for(field_name in fakeFields){
                                 if(fakeFields.hasOwnProperty(field_name)){
                                     
-                                    if(typeof json.insert[i][field_name] !== 'undefined'){
-                                        value = json.insert[i][field_name];
+                                    if(typeof Omadi.service.fetchedJSON.node[type].insert[i][field_name] !== 'undefined'){
+                                        value = Omadi.service.fetchedJSON.node[type].insert[i][field_name];
                                         values.push("'" + dbEsc(value) + "'");
                                         //Ti.API.error("*" + value);
                                     }
@@ -2444,7 +2467,7 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
     
                             queries.push(query);
                             
-                            if (type == 'notification' && json.insert[i].viewed == 0) {
+                            if (type == 'notification' && Omadi.service.fetchedJSON.node[type].insert[i].viewed == 0) {
                                 notifications = Ti.App.Properties.getObject('newNotifications', {
                                     count : 0,
                                     nid : 0
@@ -2452,34 +2475,34 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
     
                                 Ti.App.Properties.setObject('newNotifications', {
                                     count : notifications.count + 1,
-                                    nid : json.insert[i].nid
+                                    nid : Omadi.service.fetchedJSON.node[type].insert[i].nid
                                 });
                             }
-                            else if(json.insert[i].viewed == 0 && 
-                                    typeof json.insert[i].from_dispatch !== 'undefined' &&
-                                    json.insert[i].from_dispatch > 0){
+                            else if(Omadi.service.fetchedJSON.node[type].insert[i].viewed == 0 && 
+                                    typeof Omadi.service.fetchedJSON.node[type].insert[i].from_dispatch !== 'undefined' &&
+                                    Omadi.service.fetchedJSON.node[type].insert[i].from_dispatch > 0){
                                         
                                 Ti.API.info("NEW DISPATCH");    
                                 Ti.App.Properties.setBool('newDispatchJob', true);
                             }
                             
-                            if ( typeof json.insert[i].__negative_nid !== 'undefined') {
-                                Ti.API.debug("Deleting nid: " + json.insert[i].__negative_nid);
+                            if ( typeof Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid !== 'undefined') {
+                                Ti.API.debug("Deleting nid: " + Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid);
                                 
-                                Ti.App.deletedNegatives[json.insert[i].__negative_nid] = json.insert[i].nid;
+                                Ti.App.deletedNegatives[Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid] = Omadi.service.fetchedJSON.node[type].insert[i].nid;
                                 
-                                queries.push('DELETE FROM ' + type + ' WHERE nid=' + json.insert[i].__negative_nid);
-                                queries.push('DELETE FROM node WHERE nid=' + json.insert[i].__negative_nid);
+                                queries.push('DELETE FROM ' + type + ' WHERE nid=' + Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid);
+                                queries.push('DELETE FROM node WHERE nid=' + Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid);
     
-                                queries.push("UPDATE _photos SET nid =" + json.insert[i].nid + " WHERE nid=" + json.insert[i].__negative_nid);
+                                queries.push("UPDATE _photos SET nid =" + Omadi.service.fetchedJSON.node[type].insert[i].nid + " WHERE nid=" + Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid);
     
                                 // Make sure we don't add a duplicate from doing a next_part action directly after a node save
-                                //if(typeof Ti.UI.currentWindow.nid !== 'undefined' && Ti.UI.currentWindow.nid == json.insert[i].__negative_nid){
-                                //    Ti.API.error("SWITCHING UP THE NID from " + json.insert[i].__negative_nid + " to " + json.insert[i].nid);
+                                //if(typeof Ti.UI.currentWindow.nid !== 'undefined' && Ti.UI.currentWindow.nid == Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid){
+                                //    Ti.API.error("SWITCHING UP THE NID from " + Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid + " to " + Omadi.service.fetchedJSON.node[type].insert[i].nid);
     
                                 Ti.App.fireEvent('switchedItUp', {
-                                    negativeNid : json.insert[i].__negative_nid,
-                                    positiveNid : json.insert[i].nid
+                                    negativeNid : Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid,
+                                    positiveNid : Omadi.service.fetchedJSON.node[type].insert[i].nid
                                 });
                             }
                         }
@@ -2487,11 +2510,11 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
                 }
             }
 
-            if (json['delete']) {
-                if (json['delete'].length) {
-                    for ( i = 0; i < json['delete'].length; i++) {
-                        queries.push("DELETE FROM node WHERE nid = " + json['delete'][i].nid);
-                        queries.push("DELETE FROM " + type + " WHERE nid = " + json['delete'][i].nid);
+            if (Omadi.service.fetchedJSON.node[type]['delete']) {
+                if (Omadi.service.fetchedJSON.node[type]['delete'].length) {
+                    for ( i = 0; i < Omadi.service.fetchedJSON.node[type]['delete'].length; i++) {
+                        queries.push("DELETE FROM node WHERE nid = " + Omadi.service.fetchedJSON.node[type]['delete'][i].nid);
+                        queries.push("DELETE FROM " + type + " WHERE nid = " + Omadi.service.fetchedJSON.node[type]['delete'][i].nid);
                     }
                 }
             }
@@ -2507,11 +2530,11 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
 
             mainDB.execute("BEGIN IMMEDIATE TRANSACTION");
 
-            if (progress != null) {
+            if (Omadi.service.progressBar != null) {
                 for ( i = 0; i < queries.length; i++) {
                     mainDB.execute(queries[i]);
                     if (i % 4 == 0) {
-                        progress.set();
+                        Omadi.service.progressBar.set();
                         numSets++;
                     }
                 }
@@ -2525,9 +2548,9 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
             mainDB.execute("COMMIT TRANSACTION");
         }
 
-        if (progress != null && typeof json.insert != 'undefined') {
-            for ( i = numSets; i < json.insert.length; i++) {
-                progress.set();
+        if (Omadi.service.progressBar != null && typeof Omadi.service.fetchedJSON.node[type].insert != 'undefined') {
+            for ( i = numSets; i < Omadi.service.fetchedJSON.node[type].insert.length; i++) {
+                Omadi.service.progressBar.set();
             }
         }
     }
@@ -2548,54 +2571,54 @@ Omadi.data.processNodeJson = function(json, type, mainDB, progress) {"use strict
 
 };
 
-Omadi.data.processVocabulariesJson = function(json, mainDB, progress) {"use strict";
+Omadi.data.processVocabulariesJson = function(mainDB) {"use strict";
     var queries = [], i, vid, name, machine_name;
     try {
 
-        if (json.insert) {
-            if (json.insert.length) {
+        if (Omadi.service.fetchedJSON.vocabularies.insert) {
+            if (Omadi.service.fetchedJSON.vocabularies.insert.length) {
 
-                for ( i = 0; i < json.insert.length; i++) {
+                for ( i = 0; i < Omadi.service.fetchedJSON.vocabularies.insert.length; i++) {
                     //Increment Progress Bar
-                    if (progress != null) {
-                        progress.set();
+                    if (Omadi.service.progressBar != null) {
+                        Omadi.service.progressBar.set();
                     }
-                    vid = json.insert[i].vid;
-                    name = json.insert[i].name;
-                    machine_name = json.insert[i].machine_name;
+                    vid = Omadi.service.fetchedJSON.vocabularies.insert[i].vid;
+                    name = Omadi.service.fetchedJSON.vocabularies.insert[i].name;
+                    machine_name = Omadi.service.fetchedJSON.vocabularies.insert[i].machine_name;
 
                     //Ti.API.info("About to insert vocabulary: "+vid_v);
                     queries.push('INSERT OR REPLACE  INTO vocabulary (vid, name, machine_name) VALUES (' + vid + ",'" + dbEsc(name) + "','" + dbEsc(machine_name) + "')");
                 }
             }
         }
-        if (json.update) {
-            if (json.update.length) {
-                for ( i = 0; i < json.update.length; i++) {
-                    if (progress != null) {
+        if (Omadi.service.fetchedJSON.vocabularies.update) {
+            if (Omadi.service.fetchedJSON.vocabularies.update.length) {
+                for ( i = 0; i < Omadi.service.fetchedJSON.vocabularies.update.length; i++) {
+                    if (Omadi.service.progressBar != null) {
                         //Increment Progress Bar
-                        progress.set();
+                        Omadi.service.progressBar.set();
                     }
 
-                    //Ti.API.info("About to update vocabulary: "+json.update[i].vid);
-                    queries.push("UPDATE vocabulary SET name='" + dbEsc(json.insert[i].name) + "', machine_name='" + dbEsc(json.update[i].machine_name) + "' WHERE vid=" + json.update[i].vid);
+                    //Ti.API.info("About to update vocabulary: "+Omadi.service.fetchedJSON.vocabularies.update[i].vid);
+                    queries.push("UPDATE vocabulary SET name='" + dbEsc(Omadi.service.fetchedJSON.vocabularies.insert[i].name) + "', machine_name='" + dbEsc(Omadi.service.fetchedJSON.vocabularies.update[i].machine_name) + "' WHERE vid=" + Omadi.service.fetchedJSON.vocabularies.update[i].vid);
                 }
             }
         }
-        if (json["delete"]) {
-            if (json["delete"].length) {
+        if (Omadi.service.fetchedJSON.vocabularies["delete"]) {
+            if (Omadi.service.fetchedJSON.vocabularies["delete"].length) {
 
-                for ( i = 0; i < json["delete"].length; i++) {
-                    if (progress != null) {
+                for ( i = 0; i < Omadi.service.fetchedJSON.vocabularies["delete"].length; i++) {
+                    if (Omadi.service.progressBar != null) {
                         //Increment Progress Bar
-                        progress.set();
+                        Omadi.service.progressBar.set();
                     }
 
                     //Deletes rows from terms
-                    queries.push('DELETE FROM term_data WHERE vid=' + json["delete"][i].vid);
+                    queries.push('DELETE FROM term_data WHERE vid=' + Omadi.service.fetchedJSON.vocabularies["delete"][i].vid);
 
                     //Deletes corresponding rows in vocabulary
-                    queries.push('DELETE FROM vocabulary WHERE vid=' + json["delete"][i].vid);
+                    queries.push('DELETE FROM vocabulary WHERE vid=' + Omadi.service.fetchedJSON.vocabularies["delete"][i].vid);
                 }
             }
         }
@@ -2615,49 +2638,49 @@ Omadi.data.processVocabulariesJson = function(json, mainDB, progress) {"use stri
     }
 };
 
-Omadi.data.processRegionsJson = function(json, mainDB, progress) {"use strict";
+Omadi.data.processRegionsJson = function(mainDB) {"use strict";
     var i, queries, settings;
 
     try {
         queries = [];
 
         //Insert - Regions
-        if (json.insert) {
-            if (json.insert.length) {
-                for ( i = 0; i < json.insert.length; i++) {
-                    if (progress != null) {
+        if (Omadi.service.fetchedJSON.regions.insert) {
+            if (Omadi.service.fetchedJSON.regions.insert.length) {
+                for ( i = 0; i < Omadi.service.fetchedJSON.regions.insert.length; i++) {
+                    if (Omadi.service.progressBar != null) {
                         //Increment Progress Bar
-                        progress.set();
+                        Omadi.service.progressBar.set();
                     }
 
                     //Encode:
-                    settings = JSON.stringify(json.insert[i].settings);
+                    settings = JSON.stringify(Omadi.service.fetchedJSON.regions.insert[i].settings);
 
-                    queries.push('INSERT OR REPLACE INTO regions (rid, node_type, label, region_name, weight, settings ) VALUES (' + json.insert[i].rid + ", '" + dbEsc(json.insert[i].node_type) + "','" + dbEsc(json.insert[i].label) + "','" + dbEsc(json.insert[i].region_name) + "'," + json.insert[i].weight + ",'" + dbEsc(settings) + "')");
+                    queries.push('INSERT OR REPLACE INTO regions (rid, node_type, label, region_name, weight, settings ) VALUES (' + Omadi.service.fetchedJSON.regions.insert[i].rid + ", '" + dbEsc(Omadi.service.fetchedJSON.regions.insert[i].node_type) + "','" + dbEsc(Omadi.service.fetchedJSON.regions.insert[i].label) + "','" + dbEsc(Omadi.service.fetchedJSON.regions.insert[i].region_name) + "'," + Omadi.service.fetchedJSON.regions.insert[i].weight + ",'" + dbEsc(settings) + "')");
                 }
             }
         }
 
         //Update - Regions
-        if (json.update) {
-            if (json.update.length) {
-                for ( i = 0; i < json.update.length; i++) {
-                    if (progress != null) {
-                        progress.set();
+        if (Omadi.service.fetchedJSON.regions.update) {
+            if (Omadi.service.fetchedJSON.regions.update.length) {
+                for ( i = 0; i < Omadi.service.fetchedJSON.regions.update.length; i++) {
+                    if (Omadi.service.progressBar != null) {
+                        Omadi.service.progressBar.set();
                     }
-                    queries.push("UPDATE regions SET node_type='" + dbEsc(json.update[i].node_type) + "', label='" + dbEsc(json.update[i].label) + "', region_name='" + dbEsc(json.update[i].region_name) + "', weight=" + json.update[i].weight + ", settings='" + dbEsc(JSON.stringify(json.update[i].settings)) + "' WHERE rid=" + json.update[i].rid);
+                    queries.push("UPDATE regions SET node_type='" + dbEsc(Omadi.service.fetchedJSON.regions.update[i].node_type) + "', label='" + dbEsc(Omadi.service.fetchedJSON.regions.update[i].label) + "', region_name='" + dbEsc(Omadi.service.fetchedJSON.regions.update[i].region_name) + "', weight=" + Omadi.service.fetchedJSON.regions.update[i].weight + ", settings='" + dbEsc(JSON.stringify(Omadi.service.fetchedJSON.regions.update[i].settings)) + "' WHERE rid=" + Omadi.service.fetchedJSON.regions.update[i].rid);
                 }
             }
         }
 
         //Delete - Regions
-        if (json["delete"]) {
-            if (json["delete"].length) {
-                for ( i = 0; i < json["delete"].length; i++) {
-                    if (progress != null) {
-                        progress.set();
+        if (Omadi.service.fetchedJSON.regions["delete"]) {
+            if (Omadi.service.fetchedJSON.regions["delete"].length) {
+                for ( i = 0; i < Omadi.service.fetchedJSON.regions["delete"].length; i++) {
+                    if (Omadi.service.progressBar != null) {
+                        Omadi.service.progressBar.set();
                     }
-                    queries.push('DELETE FROM regions WHERE rid=' + json["delete"][i].rid);
+                    queries.push('DELETE FROM regions WHERE rid=' + Omadi.service.fetchedJSON.regions["delete"][i].rid);
                 }
             }
         }
@@ -2676,59 +2699,59 @@ Omadi.data.processRegionsJson = function(json, mainDB, progress) {"use strict";
     }
 };
 
-Omadi.data.processTermsJson = function(json, mainDB, progress) {"use strict";
+Omadi.data.processTermsJson = function(mainDB) {"use strict";
     /*jslint nomen: true*/
     var i, vid, tid, name, desc, weight, queries;
 
     try {
         queries = [];
 
-        if (json.insert) {
-            if (json.insert.length) {
+        if (Omadi.service.fetchedJSON.terms.insert) {
+            if (Omadi.service.fetchedJSON.terms.insert.length) {
 
-                for ( i = 0; i < json.insert.length; i++) {
-                    if (progress != null) {
+                for ( i = 0; i < Omadi.service.fetchedJSON.terms.insert.length; i++) {
+                    if (Omadi.service.progressBar != null) {
                         //Increment Progress Bar
-                        progress.set();
+                        Omadi.service.progressBar.set();
                     }
 
-                    vid = json.insert[i].vid;
-                    tid = json.insert[i].tid;
-                    name = json.insert[i].name;
-                    desc = json.insert[i].description;
-                    weight = json.insert[i].weight;
+                    vid = Omadi.service.fetchedJSON.terms.insert[i].vid;
+                    tid = Omadi.service.fetchedJSON.terms.insert[i].tid;
+                    name = Omadi.service.fetchedJSON.terms.insert[i].name;
+                    desc = Omadi.service.fetchedJSON.terms.insert[i].description;
+                    weight = Omadi.service.fetchedJSON.terms.insert[i].weight;
 
                     if (weight == null) {
                         weight = 0;
                     }
 
                     queries.push('INSERT OR REPLACE  INTO term_data ( tid , vid, name, description, weight) VALUES (' + tid + ',' + vid + ",'" + dbEsc(name) + "','" + dbEsc(desc) + "','" + dbEsc(weight) + "')");
-                    if ( typeof json.insert[i].__negative_tid !== 'undefined') {
-                        queries.push('DELETE FROM term_data WHERE tid=' + json.insert[i].__negative_tid);
+                    if ( typeof Omadi.service.fetchedJSON.terms.insert[i].__negative_tid !== 'undefined') {
+                        queries.push('DELETE FROM term_data WHERE tid=' + Omadi.service.fetchedJSON.terms.insert[i].__negative_tid);
                     }
                 }
             }
         }
-        if (json.update) {
-            if (json.update.length) {
-                for ( i = 0; i < json.update.length; i++) {
+        if (Omadi.service.fetchedJSON.terms.update) {
+            if (Omadi.service.fetchedJSON.terms.update.length) {
+                for ( i = 0; i < Omadi.service.fetchedJSON.terms.update.length; i++) {
 
-                    if (progress != null) {
+                    if (Omadi.service.progressBar != null) {
                         //Increment Progress Bar
-                        progress.set();
+                        Omadi.service.progressBar.set();
                     }
-                    queries.push("UPDATE term_data SET name='" + dbEsc(json.update[i].name) + "', description='" + dbEsc(json.update[i].description) + "', weight='" + dbEsc(json.update[i].weight) + "', vid=" + json.update[i].vid + ' WHERE tid=' + json.update[i].tid);
+                    queries.push("UPDATE term_data SET name='" + dbEsc(Omadi.service.fetchedJSON.terms.update[i].name) + "', description='" + dbEsc(Omadi.service.fetchedJSON.terms.update[i].description) + "', weight='" + dbEsc(Omadi.service.fetchedJSON.terms.update[i].weight) + "', vid=" + Omadi.service.fetchedJSON.terms.update[i].vid + ' WHERE tid=' + Omadi.service.fetchedJSON.terms.update[i].tid);
                 }
             }
         }
-        if (json["delete"]) {
-            if (json["delete"].length) {
-                for ( i = 0; i < json["delete"].length; i++) {
-                    if (progress != null) {
+        if (Omadi.service.fetchedJSON.terms["delete"]) {
+            if (Omadi.service.fetchedJSON.terms["delete"].length) {
+                for ( i = 0; i < Omadi.service.fetchedJSON.terms["delete"].length; i++) {
+                    if (Omadi.service.progressBar != null) {
                         //Increment Progress Bar
-                        progress.set();
+                        Omadi.service.progressBar.set();
                     }
-                    queries.push('DELETE FROM term_data WHERE tid=' + json["delete"][i].tid);
+                    queries.push('DELETE FROM term_data WHERE tid=' + Omadi.service.fetchedJSON.terms["delete"][i].tid);
                 }
             }
         }
@@ -2747,7 +2770,7 @@ Omadi.data.processTermsJson = function(json, mainDB, progress) {"use strict";
     }
 };
 
-Omadi.data.processNodeTypeJson = function(json, mainDB, progress) {"use strict";
+Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
     /*global ROLE_ID_ADMIN, ROLE_ID_OMADI_AGENT */
     var queries, roles, i, type, perm_idx, role_idx, bundle_result, 
         app_permissions, title_fields, data, display, description, 
@@ -2760,17 +2783,17 @@ Omadi.data.processNodeTypeJson = function(json, mainDB, progress) {"use strict";
         roles = Ti.App.Properties.getObject("userRoles", {});
 
         //Node type inserts
-        if (json.insert) {
+        if (Omadi.service.fetchedJSON.node_type.insert) {
             //Multiple nodes inserts
-            if (json.insert.length) {
+            if (Omadi.service.fetchedJSON.node_type.insert.length) {
 
-                for ( i = 0; i < json.insert.length; i++) {
-                    type = json.insert[i].type;
-
+                for ( i = 0; i < Omadi.service.fetchedJSON.node_type.insert.length; i++) {
+                    type = Omadi.service.fetchedJSON.node_type.insert[i].type;
+                    
                     if (type != 'user') {
                         //Increment the progress bar
-                        if (progress != null) {
-                            progress.set();
+                        if (Omadi.service.progressBar != null) {
+                            Omadi.service.progressBar.set();
                         }
 
                         bundle_result = mainDB.execute("SELECT COUNT(*) FROM bundles WHERE bundle_name = '" + type + "'");
@@ -2779,19 +2802,19 @@ Omadi.data.processNodeTypeJson = function(json, mainDB, progress) {"use strict";
                             queries.push("CREATE TABLE " + type + " ('nid' INTEGER PRIMARY KEY NOT NULL UNIQUE )");
                         }
 
-                        title_fields = json.insert[i].data.title_fields;
-                        data = json.insert[i].data;
+                        title_fields = Omadi.service.fetchedJSON.node_type.insert[i].data.title_fields;
+                        data = Omadi.service.fetchedJSON.node_type.insert[i].data;
                         
                         childForms = '';
-                        if(typeof json.insert[i].child_forms !== 'undefined'){
-                            childForms = json.insert[i].child_forms;
+                        if(typeof Omadi.service.fetchedJSON.node_type.insert[i].child_forms !== 'undefined'){
+                            childForms = Omadi.service.fetchedJSON.node_type.insert[i].child_forms;
                         }
                         
-                        display = json.insert[i].name.toUpperCase();
+                        display = Omadi.service.fetchedJSON.node_type.insert[i].name.toUpperCase();
                         //n_bund.fieldByName("display_name").toUpperCase();
-                        description = json.insert[i].description;
+                        description = Omadi.service.fetchedJSON.node_type.insert[i].description;
                         //n_bund.fieldByName("description");
-                        disabled = json.insert[i].disabled;
+                        disabled = Omadi.service.fetchedJSON.node_type.insert[i].disabled;
                         is_disabled = (disabled == 1 ? true : false);
                         //n_bund.fieldByName("disabled");
 
@@ -2802,7 +2825,7 @@ Omadi.data.processNodeTypeJson = function(json, mainDB, progress) {"use strict";
                             can_view : 0
                         };
 
-                        //var node_type_json = JSON.parse(_nd);
+                        //var node_type_Omadi.service.fetchedJSON.node_type = JSON.parse(_nd);
 
                         if (data.no_mobile_display != null && data.no_mobile_display == 1) {
                             is_disabled = true;
@@ -2861,29 +2884,29 @@ Omadi.data.processNodeTypeJson = function(json, mainDB, progress) {"use strict";
             }
 
         }
-        else if (json['delete']) {
+        else if (Omadi.service.fetchedJSON.node_type['delete']) {
             //Multiple node type deletions
-            if (json['delete'].length) {
+            if (Omadi.service.fetchedJSON.node_type['delete'].length) {
 
-                for ( i = 0; i < json['delete'].length; i++) {
+                for ( i = 0; i < Omadi.service.fetchedJSON.node_type['delete'].length; i++) {
                     //Increment the progress bar
-                    if (progress != null) {
-                        progress.set();
+                    if (Omadi.service.progressBar !== null) {
+                        Omadi.service.progressBar.set();
                     }
-                    queries.push("DROP TABLE " + json.insert[i].type);
-                    queries.push("DELETE FROM bundles WHERE bundle_name = '" + json.insert[i].type + "'");
-                    queries.push("DELETE FROM node WHERE table_name = '" + json.insert[i].type + "'");
+                    queries.push("DROP TABLE " + Omadi.service.fetchedJSON.node_type.insert[i].type);
+                    queries.push("DELETE FROM bundles WHERE bundle_name = '" + Omadi.service.fetchedJSON.node_type.insert[i].type + "'");
+                    queries.push("DELETE FROM node WHERE table_name = '" + Omadi.service.fetchedJSON.node_type.insert[i].type + "'");
 
                 }
             }
             //Unique node deletion
             else {
-                if (progress != null) {
-                    progress.set();
+                if (Omadi.service.progressBar !== null) {
+                    Omadi.service.progressBar.set();
                 }
-                queries.push("DROP TABLE " + json.insert.type);
-                queries.push("DELETE FROM bundles WHERE bundle_name = '" + json.insert.type + "'");
-                queries.push("DELETE FROM node WHERE table_name = '" + json.insert.type + "'");
+                queries.push("DROP TABLE " + Omadi.service.fetchedJSON.node_type.insert.type);
+                queries.push("DELETE FROM bundles WHERE bundle_name = '" + Omadi.service.fetchedJSON.node_type.insert.type + "'");
+                queries.push("DELETE FROM node WHERE table_name = '" + Omadi.service.fetchedJSON.node_type.insert.type + "'");
             }
         }
 

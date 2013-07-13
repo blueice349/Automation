@@ -184,11 +184,11 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
                 
                 if (this.responseText !== null && isJsonString(this.responseText) === true) {
             
-                    json = JSON.parse(this.responseText);            
-                    Omadi.data.processFetchedJson(json, null);
+                    Omadi.service.fetchedJSON = JSON.parse(this.responseText);            
+                    Omadi.data.processFetchedJson();
                     
-                    if(!json.dispatch_accept_job.success){
-                        alert(json.dispatch_accept_job.text);
+                    if(!Omadi.service.fetchedJSON.dispatch_accept_job.success){
+                        alert(Omadi.service.fetchedJSON.dispatch_accept_job.text);
                     }
                 }
                 else {
@@ -350,11 +350,11 @@ Omadi.bundles.dispatch.updateStatus = function(nid, status){"use strict";
             
             if (this.responseText !== null && isJsonString(this.responseText) === true) {
         
-                json = JSON.parse(this.responseText);            
-                Omadi.data.processFetchedJson(json, null);
+                Omadi.service.fetchedJSON = JSON.parse(this.responseText);            
+                Omadi.data.processFetchedJson();
                 
-                if(!json.dispatch_update_status.success){
-                    alert(json.dispatch_update_status.text);
+                if(!Omadi.service.fetchedJSON.dispatch_update_status.success){
+                    alert(Omadi.service.fetchedJSON.dispatch_update_status.text);
                 }
             }
             else{

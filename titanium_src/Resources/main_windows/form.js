@@ -30,8 +30,9 @@ if (Ti.App.isAndroid) {
 
 
 function cancelOpt() {"use strict";
+    var dialog, photoNids;
     
-    var dialog = Ti.UI.createAlertDialog({
+    dialog = Ti.UI.createAlertDialog({
         cancel : 1,
         buttonNames : ['Yes', 'No'],
         message : 'Are you sure you want to cancel and go back?',
@@ -43,7 +44,12 @@ function cancelOpt() {"use strict";
         
         if (e.index == 0) {
             
-            query = "SELECT COUNT(*) FROM _photos WHERE nid = 0";
+            photoNids = [0];
+            if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined' && Ti.UI.currentWindow.continuous_nid != 0){
+                photoNids.push(Ti.UI.currentWindow.continuous_nid);
+            }
+            
+            query = "SELECT COUNT(*) FROM _photos WHERE nid IN (" + photoNids.join(',') + ")";
             // if(Ti.UI.currentWindow.nid < 0){
                 // query += " OR nid = " + Ti.UI.currentWindow.nid;
             // }
@@ -68,19 +74,22 @@ function cancelOpt() {"use strict";
                 });
                 
                 secondDialog.addEventListener('click', function(e) {
-                    var db_toDeleteImage, deleteResult, file;
+                    var db_toDeleteImage, deleteResult, file, photoNids;
+                    
+                    photoNids = [0];
+                    if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined' && Ti.UI.currentWindow.continuous_nid != 0){
+                        photoNids.push(Ti.UI.currentWindow.continuous_nid);
+                    }
+                    
+                    db_toDeleteImage = Omadi.utils.openMainDatabase();
                     
                     if (e.index == 0) {
-                        db_toDeleteImage = Omadi.utils.openMainDatabase();
-                        deleteResult = db_toDeleteImage.execute("SELECT file_data FROM _photos WHERE nid = 0");
+                        
+                        deleteResult = db_toDeleteImage.execute("SELECT file_data FROM _photos WHERE nid IN (" + photoNids.join(',') + ")");
                         
                         while(deleteResult.isValidRow()){
-                            if(Ti.App.isAndroid){
-                                file = Ti.Filesystem.getFile("file://" + deleteResult.fieldByName("file_data"));   
-                            }
-                            else{
-                                file = Ti.Filesystem.getFile(deleteResult.fieldByName("file_data"));
-                            }
+                            
+                            file = Ti.Filesystem.getFile(deleteResult.fieldByName("file_data"));
                             
                             if(file.exists()){
                                 file.deleteFile();
@@ -91,9 +100,16 @@ function cancelOpt() {"use strict";
                         
                         deleteResult.close();
                         
-                        db_toDeleteImage.execute("DELETE FROM _photos WHERE nid = 0;");
-                        db_toDeleteImage.close();
+                        db_toDeleteImage.execute("DELETE FROM _photos WHERE nid IN (" + photoNids.join(",") + ")");
+                        
                     }
+                    else{
+                        // Set the nid of the photos to save to -1000000, so they won't be deleted by deletion of other photos, 
+                        // and so it isn't automatically used by other new nodes
+                        db_toDeleteImage.execute("UPDATE _photos SET nid = -1000000 WHERE nid IN (" + photoNids.join(",") + ")");
+                    }
+                    
+                    db_toDeleteImage.close();
                     
                     Omadi.data.deleteContinuousNodes();
                     Ti.UI.currentWindow.close();
@@ -283,7 +299,7 @@ function validateMaxLength(node, instance){"use strict";
     if (node[instance.field_name].dbValues.length > 0) {
         if (instance.settings.max_length != null) {
             maxLength = parseInt(instance.settings.max_length, 10);
-            if(maxLength >= 0){
+            if(maxLength > 0){
                 for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
                     if (node[instance.field_name].dbValues[i].length > maxLength) {
                         form_errors.push(instance.label + " cannot have more than " + maxLength + " characters.");

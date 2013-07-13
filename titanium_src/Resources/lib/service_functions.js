@@ -3,6 +3,9 @@
 
 Omadi.service = Omadi.service || {};
 
+Omadi.service.fetchedJSON = null;
+Omadi.service.progressBar = null;
+
 Omadi.service.refreshSession = function() {"use strict";
     var http;
 
@@ -152,7 +155,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                 Omadi.data.setUpdating(true);
 
                 if (useProgressBar) {
-                    progress = new Omadi.display.ProgressBar(0, 100);
+                    Omadi.service.progressBar = new Omadi.display.ProgressBar(0, 100);
                 }
 
                 http = Ti.Network.createHTTPClient();
@@ -164,13 +167,14 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                 //While streamming - following method should be called b4 open URL
                 http.ondatastream = function(e) {
                     //ind.value = e.progress ;
-                    if (progress !== null) {
-                        progress.set_download(e.progress);
+                    if (Omadi.service.progressBar !== null) {
+                        Omadi.service.progressBar.set_download(e.progress);
                         //Ti.API.debug(' ONDATASTREAM1 - PROGRESS: ' + e.progress);
                     }
                 };
                 
                 lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp();
+                Ti.API.debug("lastSynctimestamp: " + lastSyncTimestamp);
                 
                 http.open('GET', Omadi.DOMAIN_NAME + '/js-sync/download.json?sync_timestamp=' + lastSyncTimestamp);
 
@@ -181,16 +185,19 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
 
                 //When connected
                 http.onload = function(e) {
-                    var json, dir, file, string;
+                    var dir, file, string;
                     
                     //Parses response into strings
                     if (this.responseText !== null && isJsonString(this.responseText) === true) {
             
                         Ti.API.info(this.responseText.substring(0, 3000));
             
-                        json = JSON.parse(this.responseText);
+                        Omadi.service.fetchedJSON = JSON.parse(this.responseText);
                         
-                        Omadi.data.processFetchedJson(json, progress);
+                        // Free the memory
+                        this.responseText = null;
+                        
+                        Omadi.data.processFetchedJson();
                     }
                     else if(this.responseData !== null){
                         // In some very rare cases, this.responseText will be null
@@ -210,14 +217,18 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                            
                            if(isJsonString(string)){
                             
-                                json = JSON.parse(string);
+                                Omadi.service.fetchedJSON = JSON.parse(string);
                                 
-                                Omadi.data.processFetchedJson(json, progress);
+                                // Free the memory
+                                string = null;
+                                
+                                Omadi.data.processFetchedJson();
                             }
                             else{
                                 Omadi.service.sendErrorReport("Text is not json");
-                                if (progress != null) {
-                                    progress.close();
+                                if (Omadi.service.progressBar !== null) {
+                                    Omadi.service.progressBar.close();
+                                    Omadi.service.progressBar = null;
                                 }
                             }
                         }
@@ -233,8 +244,9 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                         dir = null;
                     }
                     else{
-                        if (progress != null) {
-                            progress.close();
+                        if (Omadi.service.progressBar !== null) {
+                            Omadi.service.progressBar.close();
+                            Omadi.service.progressBar = null;
                         }
             
                     
@@ -257,8 +269,9 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                     Ti.API.error('CODE ERROR = ' + this.status);
                     //Ti.API.info("Progress bar = " + progress);
 
-                    if (progress != null) {
-                        progress.close();
+                    if (Omadi.service.progressBar !== null) {
+                        Omadi.service.progressBar.close();
+                        Omadi.service.progressBar = null;
                     }
 
                     //Titanium.Media.vibrate();
@@ -453,18 +466,18 @@ Omadi.service.sendUpdates = function() {"use strict";
 
                 if (this.responseText !== null && this.responseText !== "null" && this.responseText !== "" && this.responseText !== "" && isJsonString(this.responseText) === true) {
 
-                    json = JSON.parse(this.responseText.replace(/'/gi, '\''));
+                    Omadi.service.fetchedJSON = JSON.parse(this.responseText);
 
                     subDB = Omadi.utils.openMainDatabase();
 
                     //Terms:
-                    if (json.terms) {
-                        Omadi.data.processTermsJson(json.terms, subDB, null);
+                    if (Omadi.service.fetchedJSON.terms) {
+                        Omadi.data.processTermsJson(subDB);
                     }
 
-                    for (nameTable in json.node) {
-                        if (json.node.hasOwnProperty(nameTable)) {
-                            Omadi.data.processNodeJson(json.node[nameTable], nameTable, subDB, null);
+                    for (nameTable in Omadi.service.fetchedJSON.node) {
+                        if (Omadi.service.fetchedJSON.node.hasOwnProperty(nameTable)) {
+                            Omadi.data.processNodeJson(nameTable, subDB);
                         }
                     }
 
@@ -715,7 +728,7 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                         
                        if(deleteFile){
                         
-                            imageFile = Ti.Filesystem.getFile("file://" + filePath);
+                            imageFile = Ti.Filesystem.getFile(filePath);
                             if(imageFile.exists()){
                                 imageFile.deleteFile();
                             } 
@@ -863,6 +876,10 @@ Omadi.service.uploadFile = function() {"use strict";
     
     //Omadi.service.sendErrorReport("In uploadFile");
     
+    Ti.API.debug("Attempting to upload a file");
+    
+    //Ti.API.debug("Online: " + Ti.Network.online + ", closing: " + Ti.App.closingApp);
+    
     if (Ti.Network.online && !Ti.App.closingApp) {
         
         nowTimestamp = Omadi.utils.getUTCTimestamp();
@@ -882,6 +899,8 @@ Omadi.service.uploadFile = function() {"use strict";
         if (!isUploading || (nowTimestamp - lastUploadStartTimestamp) > 90) {
 
             photoCount = Omadi.data.getPhotoCount();
+            
+            Ti.API.debug("Photos left: " + photoCount);
             
             if (photoCount > 0) {
                 
@@ -974,6 +993,9 @@ Omadi.service.uploadFile = function() {"use strict";
                     Omadi.service.sendErrorReport("Next photo data is null");
                 }
             }
+        }
+        else{
+            Ti.API.debug("now: " + nowTimestamp + ", last: " + lastUploadStartTimestamp + ", isUploadin: " + isUploading);
         }
     }
 };

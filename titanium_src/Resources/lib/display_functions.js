@@ -1,44 +1,217 @@
+
 Omadi.display = Omadi.display || {};
 
 /*jslint eqeq:true, plusplus: true*/
 
+Omadi.display.largePhotoWindow = null;
+
 Omadi.display.showBigImage = function(imageView) {"use strict";
 
-    var imageWin, fullImage, background;
+    var fullImage, background, transform, rotateDegrees, 
+        orientation, screenWidth, screenHeight, picWidth, picHeight, 
+        scrollView, picBlob, toolbar, isRotated, back, space, label;
 
-    imageWin = Ti.UI.createWindow({
+    Omadi.display.largePhotoWindow = Ti.UI.createWindow({
         backgroundColor : 'black',
-        opacity : 0.8,
         top : 0,
         bottom : 0,
         right : 0,
-        left : 0
+        left : 0,
+        modal: true,
+        width: Ti.UI.FILL,
+        height: Ti.UI.FILL,
+        orientationModes: [Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.PORTRAIT, Ti.UI.UPSIDE_PORTRAIT],
+        modalStyle: Ti.UI.iPhone.MODAL_PRESENTATION_FORMSHEET,
+        navBarHidden: true
     });
-
-    background = Ti.UI.createWindow({
-        opacity : 1.0
-    });
-
-    fullImage = Omadi.display.getImageViewFromData(imageView.bigImg, Ti.Platform.displayCaps.platformWidth, Ti.Platform.displayCaps.platformHeight - 50);
-
-    if (typeof fullImage !== 'undefined' && fullImage) {
-
-        fullImage.setOpacity(1.0);
-        
-        fullImage.addEventListener('click', function(e) {
-            background.close();
-            imageWin.close();
+    
+    // scrollView = Ti.UI.createScrollView({
+        // width: Ti.UI.FILL,
+        // height: Ti.UI.FILL,
+        // contentWidth: 'auto',
+        // contentHeight: 'auto',
+        // top: 0,
+        // scrollType: 'horizontal'
+    // });
+    
+    if(Ti.App.isAndroid){
+        Omadi.display.largePhotoWindow.addEventListener("android:back", function(e){
+            
+            //Ti.Gesture.removeEventListener('orientationchange', Omadi.display.largePhotoResize);
+            Omadi.display.largePhotoWindow.close(); 
+            Omadi.display.largePhotoWindow = null;
         });
-
-        background.addEventListener('click', function(e) {
-            background.close();
-            imageWin.close();
-        });
-
-        background.add(fullImage);
-        imageWin.open();
-        background.open();
     }
+    else{
+        
+        
+        back = Ti.UI.createButton({
+            title : 'Back',
+            style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+        });
+        
+        back.addEventListener('click', function() {
+            Omadi.display.largePhotoWindow.close();
+        });
+    
+        space = Titanium.UI.createButton({
+            systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+        });
+        
+        label = Titanium.UI.createButton({
+            title : 'View Photo',
+            color : '#fff',
+            ellipsize : true,
+            wordwrap : false,
+            width : 200,
+            style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+        });
+    
+        // create and add toolbar
+        toolbar = Ti.UI.iOS.createToolbar({
+            items : [back, space, label, space],
+            top : 0,
+            left: 0,
+            borderTop : false,
+            borderBottom : true,
+            zIndex: 100
+        });
+        
+        Omadi.display.largePhotoWindow.add(toolbar);
+    }
+    
+    // orientation = Ti.Gesture.getOrientation();
+//     
+    // screenWidth = Ti.Platform.displayCaps.platformWidth;
+    // screenHeight = Ti.Platform.displayCaps.platformHeight;
+//     
+    // if(orientation == Ti.UI.PORTRAIT || orientation == Ti.UI.UPSIDE_PORTRAIT){
+//         
+    // }
+    // else{
+//         
+    // }
+    
+    if(imageView.bigImg !== null){ 
+        //fullImage = Omadi.display.getImageViewFromData(imageView.bigImg, Ti.Platform.displayCaps.platformWidth, Ti.Platform.displayCaps.platformHeight - 50);    
+        Ti.API.debug("DISPLAYING FULL IMAGE FROM BLOB");
+        fullImage = Ti.UI.createImageView({
+           image: imageView.bigImg,
+           autorotate: true,
+           height: '100%'
+        });
+    }
+    else if(typeof imageView.filePath !== 'undefined' && imageView.filePath !== null){
+        Ti.API.debug("DISPLAYING FULL IMAGE FROM FILE PATH");
+        fullImage = Ti.UI.createImageView({
+           image: imageView.filePath,
+           autorotate: true,
+           height: '100%'
+        });
+        
+        imageView.bigImg = fullImage.toImage();
+    }
+    else{
+        alert("Could not display large photo.");
+        return;
+    }
+    
+    isRotated = false;
+    Ti.API.debug("before dim");
+    
+    picWidth = imageView.bigImg.width;
+    picHeight = imageView.bigImg.height;
+    
+    Ti.API.debug("dimensions: " + picWidth + "x" + picHeight);
+    
+    if(Ti.App.isAndroid && (imageView.degrees == 270 || imageView.degrees == 90)){    
+        isRotated = true;
+        
+        picWidth = imageView.bigImg.height;
+        picHeight = imageView.bigImg.width;
+    }
+   
+    if (typeof fullImage !== 'undefined' && fullImage) {
+        
+        fullImage.setOpacity(1.0);
+        Ti.API.debug("Full Image");
+        
+        Omadi.display.largePhotoWindow.add(fullImage);
+        
+        if(picWidth > 150 && picHeight > 150){
+            // Pinch zoom is enabled
+            fullImage.baseHeight = picHeight;
+            fullImage.baseWidth = picWidth;
+            fullImage.height = picHeight;
+            fullImage.width = picWidth;
+        }
+        
+        fullImage.addEventListener('touchstart', function(e){
+            e.source.baseHeight = e.source.height;
+            e.source.baseWidth = e.source.width; 
+        });
+        
+        fullImage.addEventListener('pinch', function(e){
+            if(e.source.width > 0){
+                e.source.height = e.source.baseHeight * e.scale;
+                e.source.width = e.source.baseWidth * e.scale; 
+            }
+        });
+        
+        fullImage.addEventListener('postlayout', function(e){
+            Ti.API.debug("Rect: " + e.source.rect.width + "x" + e.source.rect.height);
+            e.source.width = e.source.rect.width;
+            e.source.height = e.source.rect.height;
+        });
+        
+        Omadi.display.largePhotoWindow.fullImage = fullImage;
+        
+        Omadi.display.largePhotoWindow.open();
+    }
+    else{
+        alert("Could not open the photo.");
+        Omadi.display.largePhotoWindow = null;
+    }
+};
+
+Omadi.display.iOSBackToolbar = function(actualWindow, label){"use strict";
+    var back, space, toolbar;
+    
+    if(Ti.App.isIOS){
+        back = Ti.UI.createButton({
+            title : 'Back',
+            style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+        });
+        
+        back.addEventListener('click', function() {
+            actualWindow.close();
+        });
+    
+        space = Titanium.UI.createButton({
+            systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+        });
+        
+        label = Titanium.UI.createButton({
+            title : label,
+            color : '#fff',
+            ellipsize : true,
+            wordwrap : false,
+            width : 200,
+            style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+        });
+    
+        // create and add toolbar
+        toolbar = Ti.UI.iOS.createToolbar({
+            items : [back, space, label, space],
+            top : 0,
+            borderTop : false,
+            borderBottom : true
+        });
+        
+        return toolbar;
+    }  
+    
+    return null;
 };
 
 Omadi.display.showLogoutDialog = function(){"use strict";
@@ -633,6 +806,68 @@ Omadi.display.displayFile = function(nid, fid, title) {"use strict";
     }
     else{
         alert("You are not connected to the Internet, so the file cannot be downloaded.");
+    }
+};
+
+Omadi.display.displayFullImage = function(imageView) {"use strict";
+
+    var http, db, result;
+
+    if (imageView.bigImg !== null || (typeof imageView.filePath !== 'undefined' && imageView.filePath !== null)) {
+        Ti.API.debug("Displaying big image");
+        Omadi.display.showBigImage(imageView);
+    }
+    else if (imageView.nid > 0 && imageView.fid > 0) {
+        
+        // var webview = Ti.UI.createWebView({
+            // url:  Omadi.DOMAIN_NAME + '/sync/file/' + imageView.nid + '/' + imageView.fid
+        // });
+//         
+        // var picWindow = Ti.UI.createWindow();
+        // picWindow.add(webview);
+        // picWindow.open({
+            // modal:true
+        // });
+        
+        Omadi.display.loading();
+        
+        try {
+            http = Ti.Network.createHTTPClient();
+            http.setTimeout(30000);
+            http.open('GET', Omadi.DOMAIN_NAME + '/sync/file/' + imageView.nid + '/' + imageView.fid);
+
+            Omadi.utils.setCookieHeader(http);
+
+            http.onload = function(e) {
+                //Ti.API.info('=========== Success ========');
+                if(this.responseData !== null){
+                    
+                    imageView.bigImg = this.responseData;
+                    
+                    Omadi.display.showBigImage(imageView);
+                    Omadi.display.doneLoading();
+                }
+                else{
+                    alert("There was a problem downloading the photo.");
+                }
+            };
+
+            http.onerror = function(e) {
+                Ti.API.error("Error in download Image 2");
+                Omadi.display.doneLoading();
+                alert("There was an error retrieving the file.");
+            };
+
+            http.send();
+        }
+        catch(e) {
+            Omadi.display.doneLoading();
+            alert("There was an error retrieving the file.");
+            Ti.API.info("==== ERROR ===" + e);
+        }
+    }
+    else{
+        alert("The photo could not be displayed.");
     }
 };
 

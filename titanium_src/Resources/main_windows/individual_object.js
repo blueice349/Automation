@@ -404,17 +404,8 @@ function doFieldOutput(fieldObj) {"use strict";
                         if (node[fieldObj.field_name].imageData[i] > "") {
                             fileId = node[fieldObj.field_name].dbValues[i];
                             
-                            if(node[fieldObj.field_name].imageData[i].length < 200){
-                                if(Ti.App.isAndroid){
-                                    imagePath = 'file://' + node[fieldObj.field_name].imageData[i];
-                                }
-                                else{
-                                    imagePath = node[fieldObj.field_name].imageData[i];
-                                }
-                            }
-                            else{
-                                imagePath = node[fieldObj.field_name].imageData[i];
-                            }
+                            
+                            imagePath = node[fieldObj.field_name].imageData[i];
                             
                             //alert(imagePath);
                             
@@ -433,24 +424,24 @@ function doFieldOutput(fieldObj) {"use strict";
                                 isImage : true
                             });
                             
-                            if(Ti.App.isAndroid && degrees > 0){
-                                transform = Ti.UI.create2DMatrix();
-                                animation = Ti.UI.createAnimation();
-                                
-                                rotateDegrees = degrees;
-                                if(rotateDegrees == 270){
-                                    rotateDegrees = 90;
-                                }
-                                else if(rotateDegrees == 90){
-                                    rotateDegrees = 270;
-                                }
-                                
-                                transform = transform.rotate(rotateDegrees);
-                                animation.transform = transform;
-                                animation.duration = 1;
-                                
-                                contentImage.animate(animation);
-                            }
+                            // if(Ti.App.isAndroid && degrees > 0){
+                                // transform = Ti.UI.create2DMatrix();
+                                // animation = Ti.UI.createAnimation();
+//                                 
+                                // rotateDegrees = degrees;
+                                // if(rotateDegrees == 270){
+                                    // rotateDegrees = 90;
+                                // }
+                                // else if(rotateDegrees == 90){
+                                    // rotateDegrees = 270;
+                                // }
+//                                 
+                                // transform = transform.rotate(rotateDegrees);
+                                // animation.transform = transform;
+                                // animation.duration = 1;
+//                                 
+                                // contentImage.animate(animation);
+                            // }
     
                             //contentImage.addEventListener('click', displayLargeImage);
                             valueView.add(contentImage);
