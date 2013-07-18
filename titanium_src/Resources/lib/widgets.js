@@ -980,8 +980,3 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
 };
 
 
-
-
-
-
-

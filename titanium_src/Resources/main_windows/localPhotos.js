@@ -2,6 +2,7 @@
 /*jslint eqeq:true, plusplus: true*/ 
 /*global Omadi */
 
+
 Ti.include('/lib/functions.js');
 
 var currentWinWrapper;
@@ -12,7 +13,6 @@ var deleteButton;
 var uploadButton;
 var gallery;
 var galleryWrapper;
-
 var Gallery = {};
 
 Gallery.addIOSToolbar = function() {"use strict";
