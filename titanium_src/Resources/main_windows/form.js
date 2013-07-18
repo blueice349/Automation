@@ -83,7 +83,7 @@ function cancelOpt() {"use strict";
                     }
                 }
                 
-                query = "SELECT COUNT(*) FROM _photos WHERE nid IN (" + photoNids.join(',') + ")";
+                query = "SELECT COUNT(*) FROM _files WHERE nid IN (" + photoNids.join(',') + ")";
                 // if(Ti.UI.currentWindow.nid < 0){
                     // query += " OR nid = " + Ti.UI.currentWindow.nid;
                 // }
@@ -122,11 +122,11 @@ function cancelOpt() {"use strict";
                         
                         if (e.index == 0) {
                             
-                            deleteResult = db_toDeleteImage.execute("SELECT file_data FROM _photos WHERE nid IN (" + photoNids.join(',') + ")");
+                            deleteResult = db_toDeleteImage.execute("SELECT file_path FROM _files WHERE nid IN (" + photoNids.join(',') + ")");
                             
                             while(deleteResult.isValidRow()){
                                 
-                                file = Ti.Filesystem.getFile(deleteResult.fieldByName("file_data"));
+                                file = Ti.Filesystem.getFile(deleteResult.fieldByName("file_path"));
                                 
                                 if(file.exists()){
                                     file.deleteFile();
@@ -137,13 +137,13 @@ function cancelOpt() {"use strict";
                             
                             deleteResult.close();
                             
-                            db_toDeleteImage.execute("DELETE FROM _photos WHERE nid IN (" + photoNids.join(",") + ")");
+                            db_toDeleteImage.execute("DELETE FROM _files WHERE nid IN (" + photoNids.join(",") + ")");
                             
                         }
                         else{
                             // Set the nid of the photos to save to -1000000, so they won't be deleted by deletion of other photos, 
                             // and so it isn't automatically used by other new nodes
-                            db_toDeleteImage.execute("UPDATE _photos SET nid = -1000000 WHERE nid IN (" + photoNids.join(",") + ")");
+                            db_toDeleteImage.execute("UPDATE _files SET nid = -1000000 WHERE nid IN (" + photoNids.join(",") + ")");
                         }
                         
                         db_toDeleteImage.close();

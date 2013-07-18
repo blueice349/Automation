@@ -938,7 +938,7 @@ Omadi.widgets.image = {
             location = Omadi.location.getLastLocation();
 
             db = Omadi.utils.openMainDatabase();
-            db.execute("INSERT INTO _photos (nid, timestamp, file_data , field_name, file_name, delta, latitude, longitude, accuracy) VALUES ('0','" + timestamp + "','" + encodedImage + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + ")");
+            db.execute("INSERT INTO _files (nid, timestamp, file_path , field_name, file_name, delta, latitude, longitude, accuracy) VALUES ('0','" + timestamp + "','" + encodedImage + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + ")");
             db.close();
         }
         catch(ex) {
@@ -970,7 +970,7 @@ Omadi.widgets.image = {
             location = Omadi.location.getLastLocation();
 
             db = Omadi.utils.openMainDatabase();
-            db.execute("INSERT INTO _photos (nid, timestamp, file_data, field_name, file_name, delta, latitude, longitude, accuracy, degrees, thumb_path) VALUES ('0','" + timestamp + "','" + filePath + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + "," + degrees + ",'" + thumbPath + "')");
+            db.execute("INSERT INTO _files (nid, timestamp, file_path, field_name, file_name, delta, latitude, longitude, accuracy, degrees, thumb_path) VALUES ('0','" + timestamp + "','" + filePath + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + "," + degrees + ",'" + thumbPath + "')");
             db.close();
         }
         catch(ex) {

@@ -613,7 +613,7 @@ function fullUpdateFromMenu(e){"use strict";
 
     db = Omadi.utils.openMainDatabase();
 
-    result = db.execute("SELECT id FROM _photos");
+    result = db.execute("SELECT id FROM _files");
     if (result.rowCount > 0) {
         alert("One or more photos were not uploaded to the server, so they will be stored on this device now.");
 

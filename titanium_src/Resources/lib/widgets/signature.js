@@ -397,7 +397,7 @@ Omadi.widgets.signature = {
             nid = Ti.UI.currentWindow.nid;
             
             db = Omadi.utils.openMainDatabase();
-            db.execute("DELETE FROM _photos WHERE nid = 0 AND field_name = '" + dbEsc(instance.field_name) + "'");
+            db.execute("DELETE FROM _files WHERE nid = 0 AND field_name = '" + dbEsc(instance.field_name) + "'");
             db.close();
         }
     }
