@@ -1,293 +1,381 @@
-/**
- * Name: objects.js
- * Function:
- * 		Show objects' list retrieved from the database
- * Provides:
- * 		the window called by mainMenu.js and individual_object.js(Back button)
- *		a way to close the current window and open mainMenu.js. This is achieved when the user clicks on
- * 			"back" on the phone or on the Back button at the app's bottom
- *		the objects' list.
- * @author Joseandro
- */
-
-//Common used functions
 Ti.include('/lib/functions.js');
-Ti.include('/main_windows/create_or_edit_node.js');
 
-//Current window's instance
-var win3 = Ti.UI.currentWindow;
+/*jslint eqeq: true, plusplus: true*/
+/*global  Omadi*/
 
-//Sets only portrait mode
-win3.orientationModes = [Titanium.UI.PORTRAIT];
+var curWin = Ti.UI.currentWindow;
+curWin.setBackgroundColor('#eee');
 
-//When back button on the phone is pressed, it opens mainMenu.js and close the current window
-win3.addEventListener('android:back', function() {
-	//Enable background updates
-	unsetUse();	
-	win3.close();
-});
+var tableView = null;
+var win_new;
+var tableData;
+var wrapperView;
 
-//Definition of the window before (opens when the user clicks on the back button)
-var goToWindow = Titanium.UI.createWindow({
-	fullscreen : false,
-	title:'Omadi CRM',	
-	url : 'mainMenu.js',
-	notOpen: true
-});
+var Drafts = {};
 
+function addiOSToolbar() {"use strict";
+    var back, space, label, toolbar;
+    
+    if (tableView !== null) {
+        tableView.top = 40;
+    }
+    back = Ti.UI.createButton({
+        title : 'Back',
+        style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+    });
 
-//Lock database for background updates
-setUse();
+    back.addEventListener('click', function() {
+        //Omadi.data.setUpdating(false);
+        curWin.close();
+    });
 
-var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
-var resultsNames = "";
-var data = new Array();
-var i = 0;
-var _arr_tables = [];
-var resultsNames = db.execute('SELECT * FROM node WHERE flag_is_updated=3 ORDER BY table_name ASC ');
-if (resultsNames.rowCount == 0){
-	resultsNames = null;
-	Ti.API.info('0 drafts');
-}
-else{
-	Ti.API.info(resultsNames.rowCount+' drafts ..');
-	while (resultsNames.isValidRow()){
-		if (!_arr_tables[resultsNames.fieldByName('table_name')]){
-			
-			if (i != 0 ){
-				aux_data.sort(sortTableView);
-				for (var _i in aux_data ){
-					section.add(aux_data[_i]);
-				}
-				data.push(section);
-			}
-			
-			aux_data = null;
-			aux_data = new Array();
-			
-			_arr_tables[resultsNames.fieldByName('table_name')] = true;
+    space = Titanium.UI.createButton({
+        systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+    });
+    label = Titanium.UI.createButton({
+        title : 'Drafts',
+        color : '#fff',
+        ellipsize : true,
+        wordwrap : false,
+        width : 200,
+        style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+    });
 
-			var section = Titanium.UI.createTableViewSection({
-				height : 'auto',
-				headerTitle : resultsNames.fieldByName('table_name').charAt(0).toUpperCase() + resultsNames.fieldByName('table_name').slice(1),
-				backgroundColor: '#000',
-				color: '#000',
-				nid: false,
-				visible: true
-			});
-
-		}
-		
-		var fullName = resultsNames.fieldByName('title');
-		var row = Ti.UI.createTableViewRow({
-			height : 'auto',
-			hasChild : false,
-			title : fullName,
-			form_part: resultsNames.fieldByName('form_part'),
-			_type: resultsNames.fieldByName('table_name'),
-			color: '#000'
-		});
-		
-		//Parameters added to each row
-		row.nid = resultsNames.fieldByName('nid');
-		row.name = fullName;
-		
-		//Populates the array
-		aux_data.push(row);
-		i++;
-		resultsNames.next();
-		
-		if (!resultsNames.isValidRow()){
-			aux_data.sort(sortTableView);
-			for (var _i in aux_data ){
-				section.add(aux_data[_i]);
-			}	
-			data.push(section);
-		}
-	}
+    // create and add toolbar
+    toolbar = Titanium.UI.iOS.createToolbar({
+        items : [back, space, label, space],
+        top : 0,
+        borderTop : false,
+        borderBottom : false,
+        height: Ti.UI.SIZE
+    });
+    wrapperView.add(toolbar);
 }
 
-//Check if the list is empty or not
-if(data.length < 1) {
-	//Shows the empty list
-	var empty = Titanium.UI.createLabel({
-		height : 'auto',
-		width : 'auto',
-		top : '50%',
-		text : 'There are no drafts available',
-		color: '#000'
-	});
 
-	//Debug
-	Ti.API.info("XXXXXXX ---- No "+win3.type+" ! ----- XXXXXX");
+Drafts.deleteDraft = function(nid){"use strict";
 
-	win3.add(empty);
-	//showBottom(actualWindow, goToWindow )
-	//showBottom(win3, goToWindow);
-}
-//Shows the contacts
-else {
-
-	//Search bar definition
-	var search = Ti.UI.createSearchBar({
-		hintText : 'Search...',
-		autocorrect : false,
-		barColor : '#000'
-	});
-	
-	//Contat list container
-	var listTableView = Titanium.UI.createTableView({
-		data   : data,
-		top	   : '3%',
-		search : search,
-		height : '91%',
-		separatorColor: '#E6E6E6'
-	});
-	
-	listTableView.addEventListener('focus', function(e) {
-		search.blur();
-		//hides the keyboard
-	});
-	
-	//Sort the array (A>B>C>...>Z):
-	data.sort(sortTableView);
-
-	// SEARCH BAR EVENTS
-	search.addEventListener('change', function(e) {
-		//e.value; // search string as user types
-	});
-
-	search.addEventListener('return', function(e) {
-		search.blur();
-		//hides the keyboard
-	});
-	
-	search.addEventListener('cancel', function(e) {
-		search.blur();
-		//hides the keyboard
-	});
-
-	//When the user clicks on a certain contact, it opens individual_contact.js
-	listTableView.addEventListener('click', function(e) {
-		//Hide keyboard when returning 
-		firstClick = true;
-		if (e.row.nid != null){
-			
-			var win_new = create_or_edit_node.getWindow();
-			win_new.title = e.row.title;
-			win_new.type = e.row._type;
-			win_new.listView = win3.listView;
-			win_new.up_node = win3.up_node;
-			win_new.uid = win3.uid;
-			win_new.region_form = e.row.form_part;
-
-			//Passing parameters
-			win_new.nid = e.row.nid;
-			win_new.picked = win3.picked;
-			win_new.nameSelected = e.row.name;
-
-			//Sets a mode to fields edition
-			win_new.mode = 1;
-
-			win_new.open();
-			setTimeout(function() {
-				create_or_edit_node.loadUI();
-			}, 100);
-			unsetUse();	
-			(PLATFORM=='android')?win3.close():win3.hide();
-	
-			//win3.close();
-			resultsNames.close();
-		}
-	});
-
-	listTableView.addEventListener('longclick', function(e) {
-		//Hide keyboard when returning 
-		firstClick = true;
-		Ti.API.info('Size : '+e.section.rowCount);
-
-		if (e.row.nid != null){
-			Ti.API.info('DELETE');
-			Titanium.Media.vibrate();
-			
-			var a_msg = Titanium.UI.createAlertDialog({
-				title:'Omadi',
-				buttonNames: ['Yes', 'No'],
-				cancel: 1,
-				click_index: e.index,
-				sec_obj: e.section,
-				row_obj: e.row
-			});
-			
-			a_msg.message = 'Are you sure you want to delete the draft "'+e.row.title+'" ?';
-			a_msg.show();
-			
-			a_msg.addEventListener('click', function(e){
-				if (e.cancel === false){
-					Ti.API.info('deleted');
-					Ti.API.info(e.source.click_index);
-					listTableView.deleteRow(listTableView.data[0][e.source.click_index]);
-					var db = Ti.Database.install('/database/db.sqlite', Titanium.App.Properties.getString("databaseVersion")+"_"+getDBName() );
-					db.execute('UPDATE node SET flag_is_updated = 4 WHERE nid='+e.source.row_obj.nid);
-					db.close();
-				}
-			});
-		}
-	});
-
-	//Adds contact list container to the UI
-	win3.add(listTableView);
-	search.blur();
-	win3.addEventListener('focus', function(){
-		setTimeout(function (){
-			search.blur();
-		}, 110 );
-	});
-
-
-}
-if (resultsNames != null){
-	resultsNames.close();	
-}
-db.close();
-
-//showBottom(actualWindow, goToWindow )
-if(PLATFORM == 'android'){
-	bottomBack_release(win3, "Back" , "enable");
-}else{
-	draftNavButtons();
-}
-
-function draftNavButtons(){
-	if(listTableView!=null){listTableView.top = '40'}
-	var back = Ti.UI.createButton({
-		title : 'Back',
-		style:Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-	});
-	back.addEventListener('click', function() {
-		unsetUse();	
-		win3.close();
-	});
-	
-	var space = Titanium.UI.createButton({
-		systemButton:Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
-	});
-	var label = Titanium.UI.createButton({
-		title: 'Drafts List',
-		color:'#fff',
-		ellipsize: true,
-		wordwrap: false,
-		width: 200,
-		style:Titanium.UI.iPhone.SystemButtonStyle.PLAIN
-	});
-	
-	// create and add toolbar
-	var toolbar = Titanium.UI.createToolbar({
-		items:[back, label, space],
-		top:0,
-		borderTop:false,
-		borderBottom:true
-	});
-	win3.add(toolbar);
+    var dialog;
+    
+    dialog = Ti.UI.createAlertDialog({
+       title: 'Confirm Delete',
+       message: 'Are you sure you want to delete the draft?',
+       buttonNames: ['Yes', 'Cancel'],
+       cancel: 1,
+       nid: nid
+    });
+    
+    dialog.addEventListener('click', function(e){
+        if(e.index == 0){
+            Ti.API.debug("DELETING nid " + e.source.nid);
+            Omadi.data.deleteNode(e.source.nid);
+            Drafts.refreshDrafts();
+        }
+    });
+    
+    dialog.show();
 };
+
+Drafts.refreshDrafts = function(){"use strict";
+    var db, count, result, row, textView, rowImg, titleLabel, timeLabel, 
+        empty, search, dialog, children, i;
+
+    db = Omadi.utils.openMainDatabase();
+
+    count = 0;
+    tableData = [];
+    result = db.execute('SELECT * FROM node WHERE flag_is_updated IN (3,4) ORDER BY changed DESC');
+    if (result.rowCount == 0) {
+        result = null;
+        //Ti.API.info('0 drafts');
+    }
+    else {
+
+        while (result.isValidRow()) {
+
+            row = Ti.UI.createTableViewRow({
+                width: '100%',
+                height: Ti.UI.SIZE,
+                nid: result.fieldByName('nid'),
+                form_part : result.fieldByName('form_part'),
+                node_type : result.fieldByName('table_name'),
+                backgroundColor: '#fff',
+                searchValue: result.fieldByName('title')
+            });
+            
+            textView = Ti.UI.createView({
+                right: 1,
+                left: 45,
+                top: 0,
+                height: Ti.UI.SIZE,
+                layout: 'vertical'
+            });
+            
+            rowImg = Ti.UI.createImageView({
+                image: Omadi.display.getNodeTypeImagePath(result.fieldByName('table_name')),
+                left: 1,
+                top: 5,
+                width: 35,
+                height: 35
+            });
+            
+            titleLabel = Ti.UI.createLabel({
+                width: '100%',
+                text: result.fieldByName('title'),
+                textAlign: Ti.UI.TEXT_ALIGNMENT_LEFT,
+                height: Ti.UI.SIZE,
+                font: {
+                    fontSize: 16
+                },
+                color: '#000',
+                left: 5
+            });
+            
+            timeLabel = Ti.UI.createLabel({
+                text: 'Saved ' + Omadi.utils.getTimeAgoStr(result.fieldByName('changed')),
+                height: Ti.UI.SIZE,
+                width: '100%',
+                textAlign: Ti.UI.TEXT_ALIGNMENT_LEFT,
+                color: '#999',
+                font: {
+                    fontSize: 14
+                },
+                left: 5
+            });
+            
+            row.add(rowImg);
+            textView.add(titleLabel);
+            textView.add(timeLabel);
+            row.add(textView);
+            
+            tableData.push(row);
+            count++;
+            result.next();
+        }
+    }
+    
+    children = wrapperView.getChildren();
+    if(children.length){
+        for(i = children.length - 1; i >= 0; i --){
+            if(children.hasOwnProperty(i)){
+                wrapperView.remove(children[i]);
+            }
+        }
+    }
+    
+    if (Ti.App.isIOS) {
+        addiOSToolbar();
+    }
+
+    //Check if the list is empty or not
+    if (tableData.length < 1) {
+        //Shows the empty list
+        empty = Titanium.UI.createLabel({
+            height : Ti.UI.FILL,
+            width : '100%',
+            text : 'No drafts have been saved',
+            color : '#999',
+            font : {
+                fontSize : 22,
+                fontWeight : 'bold'
+            },
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+        });
+
+        wrapperView.add(empty);
+        
+    }
+    else {
+
+        search = Ti.UI.createSearchBar({
+            hintText : 'Search...',
+            autocorrect : false,
+            barColor : '#666',
+            showCancel: true,
+            color: '#000',
+            backgroundColor: '#666'
+        });
+        
+        if(Ti.App.isAndroid){
+            search.height = 45;
+        }
+        else{
+            search.height = 35;
+        }
+        
+        search.addEventListener('change', function(e){
+            var v, i, regex, filterData = [];
+            
+            v = e.source.value;
+            v = v.replace(/([\(\)\[\]\:\-\?\.\^\$\\\*\+\|\{\}])/g, "\\" + "$1");
+            regex = new RegExp(v, 'i');
+            
+            for(i = 0; i < tableData.length; i ++){
+                
+                if(tableData[i].searchValue.search(regex) != -1) {
+                    filterData.push(tableData[i]);
+                }
+            }
+            
+            tableView.setData(filterData);
+        });
+        
+        search.addEventListener('cancel', function(e){
+            tableView.setData(tableData);
+            e.source.setValue('');
+            e.source.blur();
+        });
+        
+        search.addEventListener('return', function(e){
+            e.source.blur();
+        });
+        
+        search.addEventListener('touchcancel', function(e){
+            e.source.blur();
+        });
+        
+        wrapperView.add(search);
+        
+        //Sort the array (A>B>C>...>Z):
+        tableData.sort(Omadi.utils.sortByName);
+
+        tableView = Titanium.UI.createTableView({
+            data : tableData,
+            top : 0,
+            bottom: 0,
+            separatorColor : '#ccc'
+        });
+        
+        if(Ti.App.isIOS){
+            tableView.footerView = Ti.UI.createView({
+                height: 50,
+                width: '100%'
+            });
+        }
+        
+        tableView.addEventListener('touchstart', function(e) {
+            search.blur();
+        });
+        
+        tableView.addEventListener('scroll', function(e) {
+            search.blur();
+        });
+
+        search.addEventListener('return', function(e) {
+            search.blur();
+            //hides the keyboard
+        });
+
+        search.addEventListener('cancel', function(e) {
+            search.blur();
+            //hides the keyboard
+        });
+
+        //When the user clicks on a certain contact, it opens individual_contact.js
+        tableView.addEventListener('click', function(e) {
+            //Hide keyboard when returning
+// 
+            // if (e.row.nid != null) {
+                // Omadi.display.openFormWindow(e.row.node_type, e.row.nid, e.row.form_part);
+            // }
+            
+            if(e.row.nid != null){
+                Omadi.display.showDialogFormOptions(e, [{
+                    text: 'Delete Draft',
+                    callback: Drafts.deleteDraft,
+                    callbackArgs: [e.row.nid]
+                }]);
+            }
+        });
+
+        tableView.addEventListener('longclick', function(e) {
+
+            if (e.row.nid != null) {
+                
+                Titanium.Media.vibrate();
+
+                dialog = Titanium.UI.createAlertDialog({
+                    title : 'Omadi',
+                    buttonNames : ['Yes', 'No'],
+                    cancel : 1,
+                    click_index : e.index,
+                    sec_obj : e.section,
+                    row_obj : e.row
+                });
+
+                dialog.message = 'Are you sure you want to delete the draft "' + e.row.searchValue + '" ?';
+                dialog.show();
+
+                dialog.addEventListener('click', function(e) {
+                    if (e.cancel === false) {
+                       
+                        tableView.deleteRow(tableView.data[0][e.source.click_index]);
+                        var db = Omadi.utils.openMainDatabase();
+                        db.execute('UPDATE node SET flag_is_updated = 4 WHERE nid=' + e.source.row_obj.nid);
+                        db.close();
+                    }
+                });
+            }
+        });
+
+        //Adds contact list container to the UI
+        wrapperView.add(tableView);
+        search.blur();
+        
+        setTimeout(function() {
+            search.blur();
+        }, 100);
+    }
+
+    if (result !== null) {
+        result.close();
+    }
+
+    db.close();
+};
+
+(function() {"use strict";
+
+    var db, result, i, count, section, fullName, row, 
+        empty, search, formWindow, dialog, textView, titleLabel, rowImg, timeLabel;
+    //Current window's instance
+
+    curWin.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
+    
+    wrapperView = Ti.UI.createView({
+       layout: 'vertical',
+       bottom: 0,
+       top: 0,
+       right: 0,
+       left: 0 
+    });
+    
+    //When back button on the phone is pressed, it opens mainMenu.js and close the current window
+    curWin.addEventListener('android:back', function() {
+        //Enable background updates
+        //Omadi.data.setUpdating(false);
+        curWin.close();
+    });
+    
+    Ti.App.addEventListener('loggingOut', function(){
+        Ti.UI.currentWindow.close();
+    });
+    
+    Ti.App.addEventListener("savedNode", function(){
+        
+        if(Ti.App.isAndroid){
+            Ti.UI.currentWindow.close();
+        }
+        else{
+            Ti.UI.currentWindow.hide();
+            // Close the window after the maximum timeout for a node save
+            setTimeout(Ti.UI.currentWindow.close, 65000);
+        }
+    });
+    
+    Drafts.refreshDrafts();
+    
+    curWin.add(wrapperView);
+    
+}());
 

@@ -1,0 +1,10 @@
+tmp
+bin
+build
+.apt_generated
+.settings
+/libs
+libs
+/.settings
+.classpath
+.project

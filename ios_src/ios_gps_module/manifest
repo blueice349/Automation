@@ -2,8 +2,8 @@
 # this is your module manifest and used by Titanium
 # during compilation, packaging, distribution, etc.
 #
-version: 2
-apiversion: 2
+version: 4
+apiversion: 4
 description: Omadi tracking GPS iOS native module
 author: Joseandro Luiz
 license: Licensed for Omadi, Inc. only

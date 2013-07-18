@@ -2,21 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="build/.apt_generated"/>
-	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
-	<classpathentry exported="true" kind="lib" path="/home/jo/Apps/android-sdk/platforms/android-8/android.jar"/>
-	<classpathentry exported="true" kind="lib" path="/home/jo/.titanium/mobilesdk/linux/2.1.1.GA/android/android-support-v4.jar"/>
-	<classpathentry exported="true" kind="lib" path="/home/jo/.titanium/mobilesdk/linux/2.1.1.GA/android/freemarker.jar"/>
-	<classpathentry exported="true" kind="lib" path="/home/jo/.titanium/mobilesdk/linux/2.1.1.GA/android/jaxen-1.1.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="/home/jo/.titanium/mobilesdk/linux/2.1.1.GA/android/js.jar"/>
-	<classpathentry exported="true" kind="lib" path="/home/jo/.titanium/mobilesdk/linux/2.1.1.GA/android/json_simple-1.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="/home/jo/.titanium/mobilesdk/linux/2.1.1.GA/android/kroll-apt.jar"/>
-	<classpathentry exported="true" kind="lib" path="/home/jo/.titanium/mobilesdk/linux/2.1.1.GA/android/kroll-common.jar"/>
-	<classpathentry exported="true" kind="lib" path="/home/jo/.titanium/mobilesdk/linux/2.1.1.GA/android/kroll-rhino.jar"/>
-	<classpathentry exported="true" kind="lib" path="/home/jo/.titanium/mobilesdk/linux/2.1.1.GA/android/kroll-v8.jar"/>
-	<classpathentry exported="true" kind="lib" path="/home/jo/.titanium/mobilesdk/linux/2.1.1.GA/android/thirdparty.jar"/>
-	<classpathentry exported="true" kind="lib" path="/home/jo/.titanium/mobilesdk/linux/2.1.1.GA/android/ti-commons-codec-1.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="/home/jo/.titanium/mobilesdk/linux/2.1.1.GA/android/titanium.jar"/>
-	<classpathentry exported="true" kind="lib" path="/home/jo/Apps/android-sdk/add-ons/addon_google_apis_google_inc_8/libs/maps.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

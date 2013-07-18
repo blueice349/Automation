@@ -1,0 +1,164 @@
+Timagefactory
+v5
+r1
+cCheck dependencies
+cProcessPCH /var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiImagefactory_Prefix-aullfajshcljgmgjglsgnodqprex/TiImagefactory_Prefix.pch.pth TiImagefactory_Prefix.pch normal armv7 objective-c com.apple.compilers.llvm.clang.1_0.compiler
+cCompileC build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiImagefactoryModuleAssets.o /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/TiImagefactoryModuleAssets.m normal armv7 objective-c com.apple.compilers.llvm.clang.1_0.compiler
+cCompileC build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiUIImage+Resize.o /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/UIImage/TiUIImage+Resize.m normal armv7 objective-c com.apple.compilers.llvm.clang.1_0.compiler
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk
+c0000000050ED385D0000000000000110
+t1357723741
+s272
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk/System/Library/Frameworks/Foundation.framework/Foundation
+c0000000051B7962A000000000062AD10
+t1370986026
+s6466832
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk/System/Library/Frameworks/Foundation.framework/Headers/Foundation.h
+c0000000051B7962900000000000015F7
+t1370986025
+s5623
+
+N/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk/System/Library/Frameworks/UIKit.framework/Headers/UIKit.h
+c0000000051B7962A0000000000000E8D
+t1370986026
+s3725
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/TiImageFactory.m
+c00000000514B7A9C0000000000000C8E
+t1363901084
+s3214
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/TiImagefactoryModule.m
+c00000000514B7A9C000000000000153B
+t1363901084
+s5435
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/TiImagefactoryModuleAssets.m
+c00000000514B7A9C000000000000010C
+t1363901084
+s268
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/UIImage/TiUIImage+Alpha.m
+c00000000514B7A9C0000000000001708
+t1363901084
+s5896
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/UIImage/TiUIImage+Resize.m
+c00000000514B7A9C0000000000002365
+t1363901084
+s9061
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/UIImage/TiUIImage+RoundedCorner.m
+c00000000514B7A9C0000000000000D2F
+t1363901084
+s3375
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/TiImagefactory_Prefix.pch
+c00000000514B7A9C0000000000000057
+t1363901084
+s87
+i<Foundation/Foundation.h>
+i<UIKit/UIKit.h>
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/Release-iphoneos/libTiImagefactory.a
+t2
+s0
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiImageFactory.o
+t2
+s0
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiImagefactory.LinkFileList
+c0000000051E59B58000000000000040E
+t1374002008
+s1038
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiImagefactoryModule.o
+t2
+s0
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiImagefactoryModuleAssets.o
+t2
+s0
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiUIImage+Alpha.o
+t2
+s0
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiUIImage+Resize.o
+t2
+s0
+
+N/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiUIImage+RoundedCorner.o
+t2
+s0
+
+N/var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiImagefactory_Prefix-aullfajshcljgmgjglsgnodqprex/TiImagefactory_Prefix.pch.pth
+t2
+s0
+
+CCheck dependencies
+r0
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection18"Check dependenciesc11f0ed8d295b741^b7eea6d8d295b741^---0#1#0#--18"Check dependencies36"D4505502-7322-45AB-9288-3F59AA4854DC-
+
+CCompileC build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiImageFactory.o /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/TiImageFactory.m normal armv7 objective-c com.apple.compilers.llvm.clang.1_0.compiler
+r0
+
+CCompileC build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiImagefactoryModule.o /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/TiImagefactoryModule.m normal armv7 objective-c com.apple.compilers.llvm.clang.1_0.compiler
+r0
+
+CCompileC build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiImagefactoryModuleAssets.o /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/TiImagefactoryModuleAssets.m normal armv7 objective-c com.apple.compilers.llvm.clang.1_0.compiler
+s395694810.297041
+e395694810.584347
+r1
+xCompileC
+xbuild/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiImagefactoryModuleAssets.o
+x/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/TiImagefactoryModuleAssets.m
+xnormal
+xarmv7
+xobjective-c
+xcom.apple.compilers.llvm.clang.1_0.compiler
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection113"Compile /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/TiImagefactoryModuleAssets.m0e2f4cdad295b741^079895dad295b741^---0#0#0#-19%DVTDocumentLocation2@121"file://localhost/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/TiImagefactoryModuleAssets.m0000000000000000^3875"CompileC build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiImagefactoryModuleAssets.o Classes/TiImagefactoryModuleAssets.m normal armv7 objective-c com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios    setenv LANG en_US.US-ASCII    setenv PATH "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin:/Applications/Xcode.app/Contents/Developer/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/git/bin:/usr/local/mysql/bin:/Users/chris/pear/bin"    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x objective-c -arch armv7 -fmessage-length=0 -std=c99 -Wno-trigraphs -fpascal-strings -Os -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-implicit-atomic-properties -Wno-receiver-is-weak -Wformat -Wno-missing-braces -Wno-parentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-enum-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -Wno-selector -Wno-strict-selector-match -Wno-undeclared-selector -Wno-deprecated-implementations -DTI_VERSION= -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk -fstrict-aliasing -Wprotocol -Wdeprecated-declarations -g -Wno-sign-conversion -miphoneos-version-min=4.0 -iquote /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/TiImagefactory-generated-files.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/TiImagefactory-own-target-headers.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/TiImagefactory-all-target-headers.hmap -iquote /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/TiImagefactory-project-headers.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/Release-iphoneos/include "-I/Library/Application Support/Titanium/mobilesdk/osx/3.1.1.GA/iphone/include" "-I/Library/Application Support/Titanium/mobilesdk/osx/3.1.1.GA/iphone/include/TiCore" -I/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/DerivedSources/armv7 -I/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/DerivedSources -F/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/Release-iphoneos -DTI_POST_1_2 -include /var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiImagefactory_Prefix-aullfajshcljgmgjglsgnodqprex/TiImagefactory_Prefix.pch -MMD -MT dependencies -MF /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiImagefactoryModuleAssets.d --serialize-diagnostics /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiImagefactoryModuleAssets.dia -c /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/TiImagefactoryModuleAssets.m -o /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiImagefactoryModuleAssets.o36"01A4F8F7-722D-4D3E-9D5C-4B9D6BFED079-
+
+CCompileC build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiUIImage+Alpha.o /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/UIImage/TiUIImage+Alpha.m normal armv7 objective-c com.apple.compilers.llvm.clang.1_0.compiler
+r0
+
+CCompileC build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiUIImage+Resize.o /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/UIImage/TiUIImage+Resize.m normal armv7 objective-c com.apple.compilers.llvm.clang.1_0.compiler
+s395694810.297055
+e395694810.483392
+r0
+xCompileC
+xbuild/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiUIImage+Resize.o
+x/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/UIImage/TiUIImage+Resize.m
+xnormal
+xarmv7
+xobjective-c
+xcom.apple.compilers.llvm.clang.1_0.compiler
+o/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/UIImage/TiUIImage+Resize.m:9:9: fatal error: 'TiUtils.h' file not found
+o#import "TiUtils.h"
+o        ^
+o1 error generated.
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection111"Compile /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/UIImage/TiUIImage+Resize.mdb324cdad295b741^7cb97bdad295b741^-198"/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/UIImage/TiUIImage+Resize.m:9:9: fatal error: 'TiUtils.h' file not found#import "TiUtils.h"        ^1 error generated.1(36%IDEClangDiagnosticActivityLogMessage2@26"'TiUtils.h' file not found-395694810#18446744073709551615#0#-2#27"com.apple.dt.IDE.diagnostic23%DVTTextDocumentLocation3@119"file://localhost/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/UIImage/TiUIImage+Resize.m0000000000000000^8#8#8#8#271#0#29"Lexical or Preprocessor Issue--0#0#0#-19%DVTDocumentLocation4@119"file://localhost/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/UIImage/TiUIImage+Resize.m0000000000000000^3831"CompileC build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiUIImage+Resize.o Classes/UIImage/TiUIImage+Resize.m normal armv7 objective-c com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios    setenv LANG en_US.US-ASCII    setenv PATH "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin:/Applications/Xcode.app/Contents/Developer/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/git/bin:/usr/local/mysql/bin:/Users/chris/pear/bin"    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x objective-c -arch armv7 -fmessage-length=0 -std=c99 -Wno-trigraphs -fpascal-strings -Os -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-implicit-atomic-properties -Wno-receiver-is-weak -Wformat -Wno-missing-braces -Wno-parentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-enum-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -Wno-selector -Wno-strict-selector-match -Wno-undeclared-selector -Wno-deprecated-implementations -DTI_VERSION= -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk -fstrict-aliasing -Wprotocol -Wdeprecated-declarations -g -Wno-sign-conversion -miphoneos-version-min=4.0 -iquote /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/TiImagefactory-generated-files.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/TiImagefactory-own-target-headers.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/TiImagefactory-all-target-headers.hmap -iquote /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/TiImagefactory-project-headers.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/Release-iphoneos/include "-I/Library/Application Support/Titanium/mobilesdk/osx/3.1.1.GA/iphone/include" "-I/Library/Application Support/Titanium/mobilesdk/osx/3.1.1.GA/iphone/include/TiCore" -I/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/DerivedSources/armv7 -I/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/DerivedSources -F/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/Release-iphoneos -DTI_POST_1_2 -include /var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiImagefactory_Prefix-aullfajshcljgmgjglsgnodqprex/TiImagefactory_Prefix.pch -MMD -MT dependencies -MF /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiUIImage+Resize.d --serialize-diagnostics /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiUIImage+Resize.dia -c /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/UIImage/TiUIImage+Resize.m -o /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiUIImage+Resize.o36"6BC02709-E45F-46B9-916E-512FE55290A2-
+
+CCompileC build/imagefactory.build/Release-iphoneos/imagefactory.build/Objects-normal/armv7/TiUIImage+RoundedCorner.o /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/Classes/UIImage/TiUIImage+RoundedCorner.m normal armv7 objective-c com.apple.compilers.llvm.clang.1_0.compiler
+r0
+
+CLibtool /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/Release-iphoneos/libTiImagefactory.a normal armv7
+r0
+
+CProcessPCH /var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiImagefactory_Prefix-aullfajshcljgmgjglsgnodqprex/TiImagefactory_Prefix.pch.pth TiImagefactory_Prefix.pch normal armv7 objective-c com.apple.compilers.llvm.clang.1_0.compiler
+s395694808.659268
+e395694810.290203
+r1
+xProcessPCH
+x/var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiImagefactory_Prefix-aullfajshcljgmgjglsgnodqprex/TiImagefactory_Prefix.pch.pth
+xTiImagefactory_Prefix.pch
+xnormal
+xarmv7
+xobjective-c
+xcom.apple.compilers.llvm.clang.1_0.compiler
+lSLF05#21%IDEActivityLogSection1@2#32"com.apple.dt.IDE.BuildLogSection36"Precompile TiImagefactory_Prefix.pch84f4a8d8d295b741^5a4a4adad295b741^---0#0#0#-19%DVTDocumentLocation2@110"file://localhost/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/TiImagefactory_Prefix.pch0000000000000000^3727"ProcessPCH /var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiImagefactory_Prefix-aullfajshcljgmgjglsgnodqprex/TiImagefactory_Prefix.pch.pth TiImagefactory_Prefix.pch normal armv7 objective-c com.apple.compilers.llvm.clang.1_0.compiler    cd /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios    setenv LANG en_US.US-ASCII    setenv PATH "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin:/Applications/Xcode.app/Contents/Developer/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/git/bin:/usr/local/mysql/bin:/Users/chris/pear/bin"    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x objective-c-header -arch armv7 -fmessage-length=0 -std=c99 -Wno-trigraphs -fpascal-strings -Os -Wno-missing-field-initializers -Wno-missing-prototypes -Wno-return-type -Wno-implicit-atomic-properties -Wno-receiver-is-weak -Wformat -Wno-missing-braces -Wno-parentheses -Wswitch -Wunused-function -Wno-unused-label -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-enum-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -Wno-selector -Wno-strict-selector-match -Wno-undeclared-selector -Wno-deprecated-implementations -DTI_VERSION= -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.1.sdk -fstrict-aliasing -Wprotocol -Wdeprecated-declarations -g -Wno-sign-conversion -miphoneos-version-min=4.0 -iquote /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/TiImagefactory-generated-files.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/TiImagefactory-own-target-headers.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/TiImagefactory-all-target-headers.hmap -iquote /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/TiImagefactory-project-headers.hmap -I/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/Release-iphoneos/include "-I/Library/Application Support/Titanium/mobilesdk/osx/3.1.1.GA/iphone/include" "-I/Library/Application Support/Titanium/mobilesdk/osx/3.1.1.GA/iphone/include/TiCore" -I/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/DerivedSources/armv7 -I/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/imagefactory.build/Release-iphoneos/imagefactory.build/DerivedSources -F/Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/build/Release-iphoneos -DTI_POST_1_2 --serialize-diagnostics /var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiImagefactory_Prefix-aullfajshcljgmgjglsgnodqprex/TiImagefactory_Prefix.pch.dia -c /Users/chris/Projects/omadi_crm/omadi_mobile/imagefactory/mobile/ios/TiImagefactory_Prefix.pch -o /var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiImagefactory_Prefix-aullfajshcljgmgjglsgnodqprex/TiImagefactory_Prefix.pch.pth -MMD -MT dependencies -MF /var/folders/vt/dbsypb5565b_thjmy1z957q00000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/TiImagefactory_Prefix-aullfajshcljgmgjglsgnodqprex/TiImagefactory_Prefix.pch.d36"12F1A6DF-0A64-4368-82BD-C5AED8C921F0-
+

@@ -14,7 +14,7 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>joseandro.omadi.com</string>
+			<string>com.omadi.crm</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>omadi</string>
@@ -22,7 +22,7 @@
 		</dict>
 	</array>
 	<key>CFBundleIdentifier</key>
-	<string>joseandro.omadi.com</string>
+	<string>com.omadi.crm</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -32,9 +32,9 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>1.4.16</string>
+	<string>1.6.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.4.16</string>
+	<string>1.6.0</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>CFBundleIconFiles</key>
@@ -48,8 +48,6 @@
 	<key>UIStatusBarStyle</key>
 	<string>UIStatusBarStyleDefault</string>
 	<key>UIBackgroundModes</key>
-	<array>
-		<string>location</string>
-	</array>
+	<array/>
 </dict>
 </plist>

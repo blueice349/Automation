@@ -3,11 +3,13 @@ package com.omadi.camera;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 
 import org.appcelerator.kroll.KrollDict;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -50,178 +52,245 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 	FrameLayout frameCameraViewContainer;
 	private ImageView rotatingImage;
 	private ImageView done;
+	private ImageView flash;
 	private int degrees = 0;
 	Bitmap bitmap = null;
 	RelativeLayout zoomBase;
 	VerticalSeekBar zoomControls;
+	Camera.Parameters cParams;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		mContext = this;
 
-		// Selecting the resolution of the Android device so we can create a
-		// proportional preview
-		Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE))
-				.getDefaultDisplay();
-		deviceHeight = display.getHeight();
-		deviceWidth = display.getWidth();
+		try{
+      super.onCreate(savedInstanceState);
+      mContext = this;
 
-		// BASE LAYOUT
-		rootlayout = new RelativeLayout(mContext);
-		rootlayout.setLayoutParams(new RelativeLayout.LayoutParams(
-				LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+      // Selecting the resolution of the Android device so we can create a
+      // proportional preview
+      Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE))
+          .getDefaultDisplay();
+      deviceHeight = display.getHeight();
+      deviceWidth = display.getWidth();
 
-		// SURFACE LAYOUT
-		frameCameraViewContainer = new FrameLayout(mContext);
-		frameCameraViewContainer
-				.setLayoutParams(new RelativeLayout.LayoutParams(412,
-						LayoutParams.FILL_PARENT));
-		rootlayout.addView(frameCameraViewContainer);
+      // BASE LAYOUT
+      rootlayout = new RelativeLayout(mContext);
+      rootlayout.setLayoutParams(new RelativeLayout.LayoutParams(
+          LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
 
-		// ZOOMBASE
-		zoomBase = new RelativeLayout(mContext);
-		RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
-				LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-		layoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
-		layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-		zoomBase.setLayoutParams(layoutParams);
+      // SURFACE LAYOUT
+      frameCameraViewContainer = new FrameLayout(mContext);
+      frameCameraViewContainer
+          .setLayoutParams(new RelativeLayout.LayoutParams(412,
+              LayoutParams.FILL_PARENT));
+      rootlayout.addView(frameCameraViewContainer);
 
-		// ZOOM CONTROLS
-		zoomControls = new VerticalSeekBar(mContext);
-		RelativeLayout.LayoutParams layoutParams03 = new RelativeLayout.LayoutParams(
-				LayoutParams.WRAP_CONTENT, deviceWidth - 20);
-		layoutParams03.addRule(RelativeLayout.CENTER_IN_PARENT);
-		zoomControls.setLayoutParams(layoutParams03);
-		zoomControls.setPadding(5, 5, 5, 10);
-		zoomBase.addView(zoomControls);
+      // ZOOMBASE
+      zoomBase = new RelativeLayout(mContext);
+      RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+          LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+      layoutParams.addRule(RelativeLayout.CENTER_VERTICAL);
+      layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+      zoomBase.setLayoutParams(layoutParams);
 
-		// BOTTOM STRIP
-		enerlayout = new RelativeLayout(mContext);
-		RelativeLayout.LayoutParams layoutParams01 = new RelativeLayout.LayoutParams(
-				(int) (deviceWidth * 7 / 100), LayoutParams.FILL_PARENT);
-		layoutParams01.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-		enerlayout.setLayoutParams(layoutParams01);
-		Drawable drawable = null;
-		try {
-			InputStream is = getAssets().open("gray_bg.png");
-			drawable = Drawable.createFromStream(is, null);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		enerlayout.setBackgroundDrawable(drawable);
-		rootlayout.addView(enerlayout);
+      // ZOOM CONTROLS
+      zoomControls = new VerticalSeekBar(mContext);
+      RelativeLayout.LayoutParams layoutParams03 = new RelativeLayout.LayoutParams(
+          LayoutParams.WRAP_CONTENT, deviceWidth - 20);
+      layoutParams03.addRule(RelativeLayout.CENTER_IN_PARENT);
+      zoomControls.setLayoutParams(layoutParams03);
+      zoomControls.setPadding(5, 5, 5, 10);
+      zoomBase.addView(zoomControls);
 
-		// DONE BUTTON
-		done = new ImageView(mContext);
-		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
-				70, 100);
-		params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-		done.setLayoutParams(params);
-		try {
-			InputStream is = getAssets().open("done.png");
-			bitmap = BitmapFactory.decodeStream(is);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		done.setImageBitmap(bitmap);
-		done.setAnimation(getRotateAnimation(270));
-		enerlayout.addView(done);
+      // BOTTOM STRIP
+      enerlayout = new RelativeLayout(mContext);
+      RelativeLayout.LayoutParams layoutParams01 = new RelativeLayout.LayoutParams(
+          (int) (deviceWidth * 7 / 100), LayoutParams.FILL_PARENT);
+      layoutParams01.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+      enerlayout.setLayoutParams(layoutParams01);
+      Drawable drawable = null;
+      try {
+        InputStream is = getAssets().open("gray_bg.png");
+        drawable = Drawable.createFromStream(is, null);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+      enerlayout.setBackgroundDrawable(drawable);
+      rootlayout.addView(enerlayout);
 
-		done.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				finish();
-			}
-		});
+      // DONE BUTTON
+      done = new ImageView(mContext);
+      RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+          70, 100);
+      params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+      done.setLayoutParams(params);
+      try {
+        InputStream is = getAssets().open("done.png");
+        bitmap = BitmapFactory.decodeStream(is);
+      } catch (IOException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+      done.setImageBitmap(bitmap);
+      done.setAnimation(getRotateAnimation(270));
+      enerlayout.addView(done);
 
-		done.setOnTouchListener(new View.OnTouchListener() {
+      done.setOnClickListener(new View.OnClickListener() {
+        public void onClick(View v) {
+          finish();
+        }
+      });
 
-			public boolean onTouch(View arg0, MotionEvent arg1) {
-				switch (arg1.getAction() & MotionEvent.ACTION_MASK) {
-				case MotionEvent.ACTION_DOWN:
-					try {
-						InputStream is = getAssets().open("done_hover.png");
-						bitmap = BitmapFactory.decodeStream(is);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					done.setImageBitmap(bitmap);
-					break;
-				case MotionEvent.ACTION_UP:
-					try {
-						InputStream is = getAssets().open("done.png");
-						bitmap = BitmapFactory.decodeStream(is);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					done.setImageBitmap(bitmap);
-					break;
-				}
+      done.setOnTouchListener(new View.OnTouchListener() {
 
-				return false;
-			}
+        public boolean onTouch(View arg0, MotionEvent arg1) {
+          switch (arg1.getAction() & MotionEvent.ACTION_MASK) {
+          case MotionEvent.ACTION_DOWN:
+            try {
+              InputStream is = getAssets().open("done_hover.png");
+              bitmap = BitmapFactory.decodeStream(is);
+            } catch (IOException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+            }
+            done.setImageBitmap(bitmap);
+            break;
+          case MotionEvent.ACTION_UP:
+            try {
+              InputStream is = getAssets().open("done.png");
+              bitmap = BitmapFactory.decodeStream(is);
+            } catch (IOException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+            }
+            done.setImageBitmap(bitmap);
+            break;
+          }
 
-		});
+          return false;
+        }
 
-		// ROTATE/CAPTURE BUTTON
-		rotatingImage = new ImageView(mContext);
-		RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(
-				LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-		params2.addRule(RelativeLayout.CENTER_IN_PARENT);
-		rotatingImage.setLayoutParams(params2);
+      });
 
-		try {
-			InputStream is = getAssets().open("ic_menu_camera.png");
-			bitmap = BitmapFactory.decodeStream(is);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		rotatingImage.setImageBitmap(bitmap);
-		enerlayout.addView(rotatingImage);
+      // FLASH BUTTON
+      // if(mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)){
+  //
+  //       flash = new ImageView(mContext);
+  //       RelativeLayout.LayoutParams flashParams = new RelativeLayout.LayoutParams(40, 50);
+  //       flashParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+  //       flashParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+  //       flash.setLayoutParams(flashParams);
+  //       flash.setAnimation(getRotateAnimation(270));
+  //       enerlayout.addView(flash);
+  //
+  //       flash.setOnClickListener(new View.OnClickListener() {
+  //         public void onClick(View v) {
+  //           InputStream is;
+  //           try {
+  //             if(cParams.getFlashMode().equals(cParams.FLASH_MODE_ON)){
+  //               is = mContext.getAssets().open("flashOff.png");
+  //               cParams.setFlashMode(cParams.FLASH_MODE_OFF);
+  //             }else{
+  //               is = mContext.getAssets().open("flashOn.png");
+  //               cParams.setFlashMode(cParams.FLASH_MODE_ON);
+  //             }
+  //             System.setProperty("MYPROP",cParams.getFlashMode());
+  //             bitmap = BitmapFactory.decodeStream(is);
+  //             flash.setImageBitmap(bitmap);
+  //             mCamera.setParameters(cParams);
+  //           } catch (IOException e) {
+  //             // TODO Auto-generated catch block
+  //             e.printStackTrace();
+  //           }
+  //         }
+  //       });
+  // 		}
 
-		setContentView(rootlayout);
+      // ROTATE/CAPTURE BUTTON
+      rotatingImage = new ImageView(mContext);
+      RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams(
+          LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+      params2.addRule(RelativeLayout.CENTER_IN_PARENT);
+      rotatingImage.setLayoutParams(params2);
 
-		// Getting the sensor service.
-		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+      try {
+        InputStream is = getAssets().open("ic_menu_camera.png");
+        bitmap = BitmapFactory.decodeStream(is);
+      } catch (IOException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+      rotatingImage.setImageBitmap(bitmap);
+      enerlayout.addView(rotatingImage);
 
-		// Add a listener to the Capture button
-		rotatingImage.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				mCamera.takePicture(null, null, mPicture);
-			}
-		});
+      setContentView(rootlayout);
 
+      // Getting the sensor service.
+      sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+
+      // Add a listener to the Capture button
+      rotatingImage.setOnClickListener(new View.OnClickListener() {
+        public void onClick(View v) {
+          mCamera.takePicture(null, null, mPicture);
+        }
+      });
+    }
+    catch(Exception e){
+      Log.d("Init Camera", e.getMessage());
+    }
 	}
 
 	private void createCamera() {
-		// Create an instance of Camera
-		mCamera = getCameraInstance();
 
-		// Setting the right parameters in the camera
-		Camera.Parameters params = mCamera.getParameters();
-		params.setPictureFormat(PixelFormat.JPEG);
-		params.setJpegQuality(95);
-		mCamera.setParameters(params);
+	  try{
+      // Create an instance of Camera
+      mCamera = getCameraInstance();
 
-		// Create our Preview view and set it as the content of our activity.
-		mPreview = new CameraPreview(this, mCamera, zoomControls);
+      // Setting the right parameters in the camera
+      cParams = mCamera.getParameters();
+      cParams.setPictureFormat(PixelFormat.JPEG);
+      cParams.setJpegQuality(95);
+      mCamera.setParameters(cParams);
+      InputStream is;
 
-		// Resizing the LinearLayout so we can make a proportional preview. This
-		// approach is not 100% perfect because on devices with a really small
-		// screen the the image will still be distorted - there is place for
-		// improvment.
-		RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
-				deviceWidth- (int) (deviceWidth * 7 / 100), deviceHeight);
-		frameCameraViewContainer.setLayoutParams(layoutParams);
+      // if(mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)){
+//         try {
+//           String myprop = System.getProperty("MYPROP");
+//           if (myprop == null) {
+//             myprop = cParams.FLASH_MODE_OFF;
+//           }
+//           if (myprop == cParams.FLASH_MODE_OFF) {
+//             is = mContext.getAssets().open("flashOff.png");
+//           } else {
+//             is = mContext.getAssets().open("flashOn.png");
+//           }
+//           cParams.setFlashMode(myprop);
+//           bitmap = BitmapFactory.decodeStream(is);
+//           flash.setImageBitmap(bitmap);
+//           mCamera.setParameters(cParams);
+//         } catch (IOException e) {
+//         }
+//       }
 
-		// Adding the camera preview after the FrameLayout and before the button
-		// as a separated element.
-		frameCameraViewContainer.addView(mPreview);
-		frameCameraViewContainer.addView(zoomBase);
+      // Create our Preview view and set it as the content of our activity.
+      mPreview = new CameraPreview(this, mCamera, zoomControls);
+
+      // Resizing the LinearLayout so we can make a proportional preview. This
+      // approach is not 100% perfect because on devices with a really small
+      // screen the the image will still be distorted - there is place for
+      // improvment.
+      RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+          deviceWidth- (int) (deviceWidth * 7 / 100), deviceHeight);
+      frameCameraViewContainer.setLayoutParams(layoutParams);
+
+      // Adding the camera preview after the FrameLayout and before the button
+      // as a separated element.
+      frameCameraViewContainer.addView(mPreview);
+      frameCameraViewContainer.addView(zoomBase);
+    }
+    catch(Exception e){
+      Log.d("Create Camera", e.getMessage());
+    }
 	}
 
 	@Override
@@ -280,10 +349,10 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 				// Replacing the button after a photho was taken.
 				rotatingImage.setEnabled(false);
 				System.gc();
-				
+
 				BitmapFactory.Options options = new BitmapFactory.Options();
 				options.inJustDecodeBounds = true;
-				
+
 				BitmapFactory.decodeByteArray(data, 0, data.length, options);
 				int imageHeight = options.outHeight;
 				int imageWidth = options.outWidth;
@@ -298,35 +367,37 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 			            inSampleSize = Math.round((float)imageWidth / (float)targetWidth);
 			        }
 			    }
-			    
+
 //			    if(inSampleSize>=2){
 //			    	inSampleSize = (int)Math.pow(2, inSampleSize);
 //			    }else if(inSampleSize<2 && inSampleSize>=1){
 //			    	inSampleSize = 2;
 //			    }
-			    
+
 			    Log.d("Pooja", inSampleSize+"");
 			    options.inSampleSize = inSampleSize;
 			    options.inJustDecodeBounds = false;
 			    options.inPurgeable = true;
 			    Matrix mtx = new Matrix();
-				
+
 				if (degrees == 180 || degrees == 0) {
 					mtx.postRotate(degrees);
-				} else if (degrees == 270) {
+				}
+				else if (degrees == 270) {
 					mtx.postRotate(90);
-				} else {
+				}
+				else {
 					mtx.postRotate(270);
 				}
-				
+
 				Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
 				bitmap = Bitmap.createBitmap(bitmap, 0, 0, options.outWidth, options.outHeight, mtx, true);
-			    
+
 			    ByteArrayOutputStream stream = new ByteArrayOutputStream();
 				bitmap.compress(Bitmap.CompressFormat.JPEG, 95, stream);
 				String ss = Base64.encodeToString(stream.toByteArray(), 0);
-				
-				bitmap.recycle();	
+
+				bitmap.recycle();
 				stream.close();
 				bitmap = null;
 				stream = null;
@@ -337,12 +408,9 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 				Message msg = new Message();
 				msg.obj = ss;
 				h4.sendMessage(msg);
-				// KrollDict eventData = new KrollDict();
-				// eventData.put("source", CustomcameraModule.eve);
-				// eventData.put("media", ss);
-				// CustomcameraModule.getInstance().fireEvent("successCameraCapture",
-				// eventData);
-			} catch (Exception ex) {
+
+			}
+			catch (Exception ex) {
 
 			}
 
@@ -352,11 +420,18 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 	public Handler h4 = new Handler() {
 		@Override
 		public void dispatchMessage(Message msg) {
-			KrollDict eventData = new KrollDict();
-			eventData.put("source", CustomcameraModule.eve);
-			eventData.put("media", msg.obj);
-			CustomcameraModule.getInstance().fireEvent("successCameraCapture",
-					eventData);
+//			KrollDict eventData = new KrollDict();
+//			eventData.put("source", CustomcameraModule.eve);
+//			eventData.put("media", msg.obj);
+//			CustomcameraModule.getInstance().fireEvent("successCameraCapture",
+//					eventData);
+
+
+			HashMap<String, Object> hm = new HashMap<String, Object>();
+			hm.put("source", CustomcameraModule.eve);
+			hm.put("media", msg.obj);
+
+			CustomcameraModule.imageCallback.callAsync(CustomcameraModule.getInstance().getKrollObject(), hm);
 		}
 	};
 
@@ -412,14 +487,13 @@ public class DgCamActivity extends Activity implements SensorEventListener {
 					rotatingImage.startAnimation(animation);
 				}
 			}
-
 		}
 	}
 
 	/**
 	 * Calculating the degrees needed to rotate the image imposed on the button
 	 * so it is always facing the user in the right direction
-	 * 
+	 *
 	 * @param toDegrees
 	 * @return
 	 */
