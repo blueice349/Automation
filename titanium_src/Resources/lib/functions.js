@@ -1,5 +1,5 @@
-/*jslint eqeq:true, plusplus: true */
-/*global Omadi, dbEsc*/
+/*jslint eqeq:true,plusplus:true */
+/*global Omadi,dbEsc*/
 
 var domainName = Ti.App.Properties.getString("domainName");
 
@@ -70,7 +70,7 @@ function notifyIOS(msg, update_time) {"use strict";
     var time, slide_it_top, win, view, label, slide_it_out;
 
     if (update_time === true) {
-        time = Math.round(new Date().getTime() / 1000);
+        time = Omadi.utils.getUTCTimestamp();
         Ti.App.Properties.setString("last_alert_popup", time);
     }
 

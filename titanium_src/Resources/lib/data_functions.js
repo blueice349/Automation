@@ -1,6 +1,8 @@
-Omadi.data = Omadi.data || {};
 
-/*jslint plusplus: true, eqeq: true, nomen: true*/
+
+/*jslint plusplus:true,eqeq:true,nomen:true*/
+
+Omadi.data = Omadi.data || {};
 
 Omadi.data.isUpdating = function() {"use strict";
 
@@ -22,6 +24,8 @@ Omadi.data.isUpdating = function() {"use strict";
     // return false;
     // }
 };
+
+
 
 function dbEsc(string) {"use strict";
     if (string === null) {
@@ -701,7 +705,7 @@ Omadi.data.deleteNode = function(nid){"use strict";
 };
 
 Omadi.data.getPhotosNotUploaded = function(){"use strict";
-    var db, result, filePaths, filePath;
+    var db, result, filePaths, filePath, thumbPath;
     filePaths = [];
     
     db = Omadi.utils.openMainDatabase();
@@ -709,9 +713,11 @@ Omadi.data.getPhotosNotUploaded = function(){"use strict";
     
     while(result.isValidRow()){
         filePath = result.fieldByName("file_data");
+        thumbPath = result.fieldByName("thumb_path");
        
         filePaths.push({
             filePath: filePath,
+            thumbPath: thumbPath,
             degrees: result.fieldByName("degrees", Ti.Database.FIELD_TYPE_INT),
             photoId: result.fieldByName("id", Ti.Database.FIELD_TYPE_INT)
         });
@@ -728,7 +734,8 @@ Omadi.data.getPhotosNotUploaded = function(){"use strict";
 Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
 
     var imageDir, imageFile, newFilePath, imageView, oldImageFile, 
-        blob, db, result, dialog, nid, field_name, delta, file_data, sdCardPath, sdIndex;
+        blob, db, result, dialog, nid, field_name, delta, file_data, 
+        sdCardPath, sdIndex, thumbPath, thumbFile;
 
     db = Omadi.utils.openMainDatabase();
     result = db.execute("SELECT * FROM _photos WHERE id = " + photoId);
@@ -742,6 +749,8 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
         if (result.isValidRow()) {
 
             file_data = result.fieldByName('file_data');
+            thumbPath = result.fieldByName('thumb_path');
+            
             //blob = Ti.Utils.base64decode(result.fieldByName('file_data'));
             nid = result.fieldByName('nid');
             field_name = result.fieldByName('field_name');
@@ -800,6 +809,9 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
         
                                 Omadi.service.sendErrorReport("Saved to photo gallery Android: " + nid);
                             }
+                            
+                            // Only delete the original file if the file was moved correctly
+                            Omadi.data.deletePhotoUpload(photoId, true);
                         }
                         else{
                             
@@ -811,9 +823,8 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
                             });
                             dialog.show();
                             
+                            Omadi.data.deletePhotoUpload(photoId, false);
                         }
-                        
-                        Omadi.data.deletePhotoUpload(photoId);
                         
                         // dispose of file handles
                         oldImageFile = null;
@@ -864,9 +875,7 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
                                     Omadi.service.sendErrorReport("Saved to photo gallery iOS: " + nid);
                                 }
                                 
-                                Omadi.data.deletePhotoUpload(photoId);
-                                
-                                oldImageFile.deleteFile();
+                                Omadi.data.deletePhotoUpload(photoId, true);
                             },
                             error : function(e) {
                                 Omadi.service.sendErrorReport("Did not save to photo gallery iOS: " + photoId);
@@ -877,9 +886,7 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
                                 });
                                 dialog.show();
         
-                                Omadi.data.deletePhotoUpload(photoId);
-                                
-                                oldImageFile.deleteFile();
+                                Omadi.data.deletePhotoUpload(photoId, true);
                             }
                         });
                     }
@@ -892,11 +899,8 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
                         });
                         dialog.show();
 
-                        Omadi.data.deletePhotoUpload(photoId);
+                        Omadi.data.deletePhotoUpload(photoId, false);
                     }
-                    
-                    //oldImageFile.deleteFile();
-                    //oldImageFile = null;
                 }
                 else{
                     alert("Using the old image method. Please contact support.");
@@ -919,17 +923,52 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
     db.close();
 };
 
-Omadi.data.deletePhotoUpload = function(id, deleteFilePath) {"use strict";
-    var file, db;
+Omadi.data.deletePhotoUploadByPath = function(filePath, deleteFile){"use strict";
+    var db, result, id;
+    
+    id = null;
+    db = Omadi.utils.openMainDatabase();
+    result = db.execute("SELECT id FROM _photos WHERE file_data = '" + dbEsc(filePath) + "'");
+    if(result.isValidRow()){
+        id = result.fieldByName('id', Ti.Database.FIELD_TYPE_INT);
+    }
+    db.close();
+    
+    if(id !== null){
+        Ti.API.debug("Photo ID to delete: " + id);
+        Omadi.data.deletePhotoUpload(id, deleteFile);
+    }
+};
+
+Omadi.data.deletePhotoUpload = function(id, deleteFile) {"use strict";
+    var file, db, result, filePath = null, thumbPath = null, thumbFile;
     
     db = Omadi.utils.openMainDatabase();
+    if(typeof deleteFile !== 'undefined' && deleteFile == true){
+        result = db.execute("SELECT file_data, thumb_path FROM _photos WHERE id = " + id);
+        if(result.isValidRow()){
+            filePath = result.fieldByName('file_data');
+            thumbPath = result.fieldByName('thumb_path');
+        }
+    }
+    else{
+        deleteFile = false;
+    }
+    
     db.execute("DELETE FROM _photos WHERE id = " + id);
     db.close();
     
-    if(typeof deleteFilePath !== 'undefined'){
-        file = Ti.Filesystem.getFile(deleteFilePath);
-        if(file.exists()){
+    if(filePath !== null){
+        file = Ti.Filesystem.getFile(filePath);
+        if(file.exists() && file.isFile()){
             file.deleteFile();
+        }
+        
+        if(thumbPath != null && thumbPath.length > 10){
+            thumbFile = Ti.Filesystem.getFile(thumbPath);
+            if(thumbFile.exists() && thumbFile.isFile()){
+                thumbFile.deleteFile();
+            }
         }
     }
 };
@@ -1442,15 +1481,16 @@ Omadi.data.getPhotoCount = function(){"use strict";
 Omadi.data.getNextPhotoData = function(){"use strict";
     var mainDB, result, nextPhoto, imageFile, imageBlob, maxDiff, 
         newWidth, newHeight, resizedFile, isResized, resizedFilePath, 
-        resizeRetval, readyForUpload, restartSuggested, dialog;
+        resizeRetval, readyForUpload, restartSuggested, dialog, deleteFromDB;
    
     nextPhoto = null;
     readyForUpload = true;
     restartSuggested = false;
+    deleteFromDB = false;
     
     try{
         mainDB = Omadi.utils.openMainDatabase();
-        result = mainDB.execute("SELECT nid, id, file_data, file_name, field_name, delta, timestamp, tries, latitude, longitude, accuracy, degrees FROM _photos WHERE nid > 0 ORDER BY delta ASC LIMIT 1");
+        result = mainDB.execute("SELECT nid, id, file_data, file_name, field_name, delta, timestamp, tries, latitude, longitude, accuracy, degrees, thumb_path FROM _photos WHERE nid > 0 ORDER BY delta ASC LIMIT 1");
         
         if (result.isValidRow()) {
             //Only upload those images that have positive nids
@@ -1471,7 +1511,8 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                     latitude : result.fieldByName('latitude'),
                     longitude : result.fieldByName('longitude'),
                     accuracy : result.fieldByName('accuracy'),
-                    degrees : result.fieldByName('degrees', Ti.Database.FIELD_TYPE_INT)
+                    degrees : result.fieldByName('degrees', Ti.Database.FIELD_TYPE_INT),
+                    thumb_path : result.fieldByName('thumb_path')
                 };
                 
                 //Omadi.service.sendErrorReport("File data length: " + nextPhoto.file_data.length);
@@ -1528,10 +1569,23 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                                 
                                 try{
                                     imageFile = Ti.Filesystem.getFile(nextPhoto.filePath);
-                                    if(!imageFile.exists()){
+                                    
+                                    if(!imageFile.exists() || !imageFile.isFile()){
                                         Omadi.service.sendErrorReport("File does not exist 2: " + nextPhoto.filePath);
                                         // upload to get out of the system
-                                        readyForUpload = true;
+                                        deleteFromDB = true;
+                                    }
+                                    else{
+                                        try{
+                                            imageBlob = imageFile.read();
+                                        }
+                                        catch(ex4){
+                                            Ti.API.debug("Exception reading non-resized photo: " + ex4);
+                                            Omadi.service.sendErrorReport("Exception reading non-resized photo: " + ex4);
+                                            readyForUpload = false;
+                                            // This is probably a memory error, so request a restart
+                                            restartSuggested = true;
+                                        }
                                     }
                                 }
                                 catch(ex3){
@@ -1540,16 +1594,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                                     readyForUpload = false;
                                 }
                                 
-                                try{
-                                    imageBlob = imageFile.read();
-                                }
-                                catch(ex4){
-                                    Ti.API.debug("Exception reading non-resized photo: " + ex4);
-                                    Omadi.service.sendErrorReport("Exception reading non-resized photo: " + ex4);
-                                    readyForUpload = false;
-                                    // This is probably a memory error, so request a restart
-                                    restartSuggested = true;
-                                }
+                                
                                 
                             // }
                             // else{
@@ -1593,57 +1638,66 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                         else{ // isIOS
                             
                             imageFile = Ti.Filesystem.getFile(nextPhoto.filePath);  
-                            imageBlob = imageFile.read();
                             
-                            if(imageBlob){
-                            
-                                try {
-                                    
-                                    if (imageBlob.height > 1000 || imageBlob.width > 1000) {
-    
-                                        maxDiff = imageBlob.height - 1000;
-                                        if (imageBlob.width - 1000 > maxDiff) {
-                                            // Width is bigger
-                                            newWidth = 1000;
-                                            newHeight = (1000 / imageBlob.width) * imageBlob.height;
+                            if(imageFile.exists() && imageFile.isFile()){
+                                imageBlob = imageFile.read();
+                                
+                                if(imageBlob){
+                                
+                                    try {
+                                        
+                                        if (imageBlob.height > 1000 || imageBlob.width > 1000) {
+        
+                                            maxDiff = imageBlob.height - 1000;
+                                            if (imageBlob.width - 1000 > maxDiff) {
+                                                // Width is bigger
+                                                newWidth = 1000;
+                                                newHeight = (1000 / imageBlob.width) * imageBlob.height;
+                                            }
+                                            else {
+                                                // Height is bigger
+                                                newHeight = 1000;
+                                                newWidth = (1000 / imageBlob.height) * imageBlob.width;
+                                            }
+        
+                                            imageBlob = imageBlob.imageAsResized(newWidth, newHeight);
                                         }
-                                        else {
-                                            // Height is bigger
-                                            newHeight = 1000;
-                                            newWidth = (1000 / imageBlob.height) * imageBlob.width;
-                                        }
-    
-                                        imageBlob = imageBlob.imageAsResized(newWidth, newHeight);
                                     }
+                                    catch(ex) {
+                                        Omadi.service.sendErrorReport("Exception resizing iOS Photo: " + ex);
+                                        readyForUpload = false;
+                                    }  
                                 }
-                                catch(ex) {
-                                    Omadi.service.sendErrorReport("Exception resizing iOS Photo: " + ex);
-                                    readyForUpload = false;
-                                }  
+                                else{
+                                    Omadi.service.sendErrorReport("Image blob is null");
+                                }
                             }
                             else{
-                                Omadi.service.sendErrorReport("Image blob is null");
+                                readyForUpload = false;
+                                deleteFromDB = true;
                             }
                         }
                         
                         //Omadi.service.sendErrorReport("Image Blog length: " + imageBlob.getLength());
                         
-                        try{
-                            nextPhoto.file_data = Ti.Utils.base64encode(imageBlob);
-                        }
-                        catch(ex5){
-                            Omadi.service.sendErrorReport("Exception base64 encoding photo: " + ex5); 
-                            // This photo is not going to upload correctly
-                            readyForUpload = false;
-                        }
-                        
-                        try{
-                            nextPhoto.file_data = nextPhoto.file_data.getText();
-                        }
-                        catch(ex6){
-                            Omadi.service.sendErrorReport("Exception getting text of base64 photo: " + ex6); 
-                            // This photo is not going to upload correctly
-                            readyForUpload = false;
+                        if(readyForUpload){
+                            try{
+                                nextPhoto.file_data = Ti.Utils.base64encode(imageBlob);
+                                
+                                try{
+                                    nextPhoto.file_data = nextPhoto.file_data.getText();
+                                }
+                                catch(ex6){
+                                    Omadi.service.sendErrorReport("Exception getting text of base64 photo: " + ex6); 
+                                    // This photo is not going to upload correctly
+                                    readyForUpload = false;
+                                }
+                            }
+                            catch(ex5){
+                                Omadi.service.sendErrorReport("Exception base64 encoding photo: " + ex5); 
+                                // This photo is not going to upload correctly
+                                readyForUpload = false;
+                            }
                         }
                         
                         imageFile = null;
@@ -1669,10 +1723,11 @@ Omadi.data.getNextPhotoData = function(){"use strict";
         Omadi.service.sendErrorReport("Exception getting next photo: " + ex7);
     }
     
-    if(readyForUpload){
-        return nextPhoto;
+    if(deleteFromDB){
+        Omadi.data.deletePhotoUpload(nextPhoto.id, false);
+        nextPhoto = null;
     }
-        
+    
     if(Ti.App.isAndroid && restartSuggested){
         dialog = Ti.UI.createAlertDialog({
            buttonNames: ['Close App', 'Cancel'],
@@ -1688,6 +1743,10 @@ Omadi.data.getNextPhotoData = function(){"use strict";
         });
         
         dialog.show();
+    }
+    
+    if(readyForUpload){
+        return nextPhoto;
     }
     
     return null;

@@ -1,5 +1,7 @@
-/*jslint eqeq:true, plusplus: true*/
-/*global setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
+
+   
+/*jslint eqeq:true, plusplus:true*/
+/*global setConditionallyRequiredLabelForInstance, affectsAnotherConditionalField*/
 
 Omadi.widgets.calculation_field = {
     calculated_field_cache: [],
@@ -40,9 +42,11 @@ Omadi.widgets.calculation_field = {
         Ti.UI.currentWindow.addEventListener('close', function(){
             var i;
             
-            for(i = 0; i < instance.elements.length; i ++){
-                fieldView.remove(instance.elements[i]);
-                instance.elements[i] = null;
+            for(i = instance.elements.length - 1; i <= 0; i --){
+                if(instance.elements[i] != null){
+                    fieldView.remove(instance.elements[i]);
+                    instance.elements[i] = null;
+                }
             }
             
             instance.fieldView = null;

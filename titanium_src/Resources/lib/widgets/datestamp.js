@@ -134,7 +134,9 @@ Omadi.widgets.datestamp = {
     },
     displayPicker : function(widgetView) {"use strict";
 
-        var dateWindow, titleLabel, minDate, opacView, maxDate, widgetDate, okButton, clearButton, wrapperView, buttonView, topButtonsView, widgetYear, date_picker, time_picker, doneButton, cancelButton;
+        var dateWindow, titleLabel, minDate, opacView, maxDate, widgetDate, 
+            okButton, clearButton, wrapperView, buttonView, topButtonsView, 
+            widgetYear, date_picker, time_picker, doneButton, cancelButton, innerWrapperView;
 
         if (Ti.App.isAndroid) {
             Ti.UI.Android.hideSoftKeyboard();
@@ -155,16 +157,24 @@ Omadi.widgets.datestamp = {
 
         dateWindow.add(opacView);
 
-        wrapperView = Ti.UI.createView({
-            layout : 'vertical',
+        wrapperView = Ti.UI.createScrollView({
+           width: Ti.UI.SIZE,
+           height: Ti.UI.SIZE,
+           backgroundColor: '#000'
+        });
+        
+        innerWrapperView = Ti.UI.createView({
+            layout : 'horizontal',
             height : Ti.UI.SIZE,
             width : Ti.UI.SIZE,
-            opacity : 1
+            opacity : 1,
+            top: 44
         });
 
         topButtonsView = Ti.UI.createView({
-            bottom : 0,
             height : 44,
+            top: 0,
+            width: Ti.UI.FILL,
             backgroundGradient : {
                 type : 'linear',
                 startPoint : {
@@ -193,6 +203,7 @@ Omadi.widgets.datestamp = {
             bottom : 7,
             right : 10,
             width : 80,
+            height: 30,
             style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             color : '#fff',
             borderRadius : 5,
@@ -228,6 +239,7 @@ Omadi.widgets.datestamp = {
             top : 7,
             bottom : 7,
             left : 10,
+            height: 30,
             widgetView : widgetView,
             style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             color : '#fff',
@@ -263,6 +275,7 @@ Omadi.widgets.datestamp = {
             top : 7,
             bottom : 7,
             left : 100,
+            height: 30,
             widgetView : widgetView,
             style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             color : '#fff',
@@ -318,16 +331,13 @@ Omadi.widgets.datestamp = {
             useSpinner : true,
             borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
             value : widgetDate,
-            font : {
-                fontSize : 18
-            },
             type : Ti.UI.PICKER_TYPE_DATE,
             minDate : minDate,
             maxDate : maxDate,
             color : '#000000',
             widgetView : widgetView,
             height : Ti.UI.SIZE,
-            width : '100%',
+            width : Ti.UI.SIZE,
             textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
         });
         
@@ -335,30 +345,28 @@ Omadi.widgets.datestamp = {
         // then the date won't actually be recorded
         date_picker.addEventListener('change', function(e){
           // Empty, but necessary
+          // do not remove this change listener
         });
 
-        wrapperView.add(date_picker);
+        innerWrapperView.add(date_picker);
 
         if (widgetView.showTime) {
             time_picker = Titanium.UI.createPicker({
                 useSpinner : true,
                 borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
                 value : widgetDate,
-                font : {
-                    fontSize : 18
-                },
                 type : Ti.UI.PICKER_TYPE_TIME,
                 color : '#000000',
                 timezone : null,
                 widgetView : widgetView,
                 height : Ti.UI.SIZE,
-                width : '100%',
+                width : Ti.UI.SIZE,
                 textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER,
                 format24 : (Omadi.utils.getTimeFormat().indexOf('H') !== -1 ? true : false) // Only available on Android
             });
             
             okButton.time_picker = time_picker;
-            wrapperView.add(time_picker);
+            innerWrapperView.add(time_picker);
 
             // This sounds really stupid - and it is! If this onchange listener isn't in place, 
             // then the date won't actually be recorded
@@ -435,6 +443,7 @@ Omadi.widgets.datestamp = {
             dateWindow.close();
         });
 
+        wrapperView.add(innerWrapperView);
         dateWindow.add(wrapperView);
 
         dateWindow.open();

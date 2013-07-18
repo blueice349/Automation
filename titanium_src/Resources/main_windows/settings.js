@@ -76,7 +76,7 @@ function errorCameraPhoto(){"use strict";
        visible: false 
     });
     
-    currentPhotoOption = Ti.App.Properties.getString("photoWidget", 'take');
+    currentPhotoOption = Omadi.utils.getPhotoWidget();
     currentPhotoOptionString = 'Take photos in the app';
     currentPhotoOptionIndex = 0;
     if(currentPhotoOption == 'choose'){
@@ -237,7 +237,7 @@ function errorCameraPhoto(){"use strict";
             var cameraDialog;
             
             if(ev.index == 0){
-                Ti.App.Properties.setString("photoWidget", 'take'); 
+                Omadi.utils.setPhotoWidget('take'); 
                 ev.source.button.setText("Take photos in the app");
                 chooseSettingsView.setVisible(false);
                 currentPhotoOptionIndex = 0;
@@ -258,14 +258,14 @@ function errorCameraPhoto(){"use strict";
                         autohide: true,
                         cancel: function(e){
                             alert("Camera action cancelled. In-app photos will be used.");
-                            Ti.App.Properties.setString("photoWidget", 'take'); 
+                            Omadi.utils.setPhotoWidget('take');
                             ev.source.button.setText("Take photos in the app");
                             chooseSettingsView.setVisible(false);
                             currentPhotoOptionIndex = 0;
                         },
                         error: function(e){
                             alert("A camera error occurred. In-app photos will be used.");
-                            Ti.App.Properties.setString("photoWidget", 'take'); 
+                            Omadi.utils.setPhotoWidget('take');
                             ev.source.button.setText("Take photos in the app");
                             chooseSettingsView.setVisible(false);
                             currentPhotoOptionIndex = 0;
@@ -276,7 +276,7 @@ function errorCameraPhoto(){"use strict";
                             
                             if(typeof e.media.nativePath !== 'undefined'){
                             
-                                Ti.App.Properties.setString("photoWidget", 'choose');
+                                Omadi.utils.setPhotoWidget('choose');
                                 currentPhotoOptionIndex = 1;
                                 
                                 nativeDir = e.media.nativePath.replace(/(.+)\/[^\/]+$/, "$1");
@@ -293,7 +293,7 @@ function errorCameraPhoto(){"use strict";
                             else{
                                 Omadi.service.sendErrorReport("No native path from camera");
                                 alert("There was a problem getting the save location. In-app photos will be used.");
-                                Ti.App.Properties.setString("photoWidget", 'take'); 
+                                Omadi.utils.setPhotoWidget('take');
                                 ev.source.button.setText("Take photos in the app");
                                 chooseSettingsView.setVisible(false);
                                 currentPhotoOptionIndex = 0;

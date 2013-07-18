@@ -1,3 +1,4 @@
+
 Ti.include('/lib/functions.js');
 
 if (Ti.App.isIOS) {
@@ -36,7 +37,6 @@ Omadi.data.setUpdating(false);
 Omadi.service.setSendingData(false);
 
 var listView;
-var ImageFactory = null;
 
 var jsonLogin = JSON.parse(Ti.App.Properties.getString("Omadi_session_details"));
 
@@ -698,17 +698,13 @@ function showContinuousSavedNode(){
 }
 
 ( function() {"use strict";
-    var db, result, formWindow, time_format, askAboutInspection, dialog, i, showingAlert, firstAlert;
+    var db, result, formWindow, time_format, askAboutInspection, dialog, i, showingAlert, firstAlert, nowTimestamp;
     
     // Initialize the global scope variable to map deleted nids to saved positive nids
     Ti.App.deletedNegatives = {};
     Ti.App.allowBackgroundUpdate = true;
     Ti.App.allowBackgroundLogout = true;
     Ti.App.closingApp = false;
-    
-    if (Ti.App.isAndroid) {
-        ImageFactory = require('ti.imagefactory');
-    }
     
     listView = Titanium.UI.createTableView({
         data : [],
@@ -724,6 +720,10 @@ function showContinuousSavedNode(){
             width : '100%'
         });
     }
+    
+    // Don't show an alert immediately after the user logs in
+    nowTimestamp = Omadi.utils.getUTCTimestamp();
+    Ti.App.Properties.setString("last_alert_popup", nowTimestamp);
 
     curWin.add(listView);
 

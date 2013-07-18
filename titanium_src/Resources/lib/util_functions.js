@@ -1,10 +1,11 @@
-/*jslint eqeq:true, plusplus: true*/
+
+/*jslint eqeq:true,plusplus:true*/
 
 var Omadi = Omadi || {};
 Omadi.utils = Omadi.utils || {};
 
 Omadi.DOMAIN_NAME = domainName;
-Omadi.DB_VERSION = "DB1691";
+Omadi.DB_VERSION = "DB1693";
 
 Omadi.utils.checkVolumeLevel = function(){"use strict";
     /*global alertQueue*/
@@ -566,7 +567,13 @@ Omadi.utils.applyNumberFormat = function(instance, value) {"use strict";
     return value_str;
 };
 
+Omadi.utils.setPhotoWidget = function(photoWidget){"use strict";
+    Ti.App.Properties.setString("photoWidget", photoWidget);
+};
 
+Omadi.utils.getPhotoWidget = function(){"use strict";
+    return Ti.App.Properties.getString("photoWidget", 'take');
+};
 
 Ti.include('/lib/location_functions.js');
 Ti.include('/lib/service_functions.js');

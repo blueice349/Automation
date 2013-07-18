@@ -30,7 +30,6 @@ wrapperView = Ti.UI.createView({
    left: 0 
 });
 
-
 function closeWindowObjects(){"use strict";
     Ti.UI.currentWindow.close();   
 }
@@ -709,6 +708,7 @@ function setTableData() {"use strict";
             });
 
             plusButton.addEventListener('click', function() {
+                search.blur();
                 Omadi.display.openFormWindow(curWin.type, 'new', 0);
             });
 

@@ -1,10 +1,11 @@
-/*global Omadi, dbEsc*/
-/*jslint eqeq: true, plusplus: true*/
 
 Omadi.service = Omadi.service || {};
 
 Omadi.service.fetchedJSON = null;
 Omadi.service.progressBar = null;
+
+/*global Omadi, dbEsc*/
+/*jslint eqeq:true, plusplus:true*/
 
 Omadi.service.refreshSession = function() {"use strict";
     var http;
@@ -667,7 +668,8 @@ Omadi.service.sendLogoutRequest = function(){"use strict";
 Omadi.service.photoUploadSuccess = function(e){"use strict";
     var json, subDB, subResult, uploadMore = false, fieldSettings, tableName, 
         decoded_values, decoded, content, multipleValue, dbValue, jsonArray, 
-        imageFile, filePath, resizedFilePath, deleteFile, photoWidget, photoDeleteOption;
+        imageFile, filePath, resizedFilePath, deleteFile, photoWidget, 
+        photoDeleteOption, thumbPath, thumbFile;
     
     //Ti.API.info('UPLOAD FILE: =========== Success ========' + this.responseText);
     Ti.API.debug("Photo upload succeeded");
@@ -710,18 +712,20 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                 subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='" + json.file_id + "' WHERE nid='" + json.nid + "'");
             }
                
-            subResult = subDB.execute("SELECT file_data FROM _photos WHERE nid=" + json.nid + " AND delta=" + json.delta + " AND field_name='" + json.field_name + "'");   
+            subResult = subDB.execute("SELECT file_data, thumb_path FROM _photos WHERE nid=" + json.nid + " AND delta=" + json.delta + " AND field_name='" + json.field_name + "'");   
             if(subResult.isValidRow()){
                 
                 // If it's a file path, delete the file
-                if(subResult.field(0).length < 200){
-                    filePath = subResult.field(0);
+                if(subResult.fieldByName('file_data').length < 200){
+                    filePath = subResult.fieldByName('file_data');
+                    thumbPath = subResult.fieldByName('thumb_path');
                     
                     if(Ti.App.isAndroid){
                        deleteFile = true;
                         
                        photoWidget = Ti.App.Properties.getString("photoWidget", 'take');
                        photoDeleteOption = Ti.App.Properties.getString("deleteOnUpload", "false");
+                       
                        if(photoWidget == 'choose' && photoDeleteOption == "false"){
                             deleteFile = false;
                        }
@@ -732,6 +736,14 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                             if(imageFile.exists()){
                                 imageFile.deleteFile();
                             } 
+                            
+                            // Delete the thumbnail if one is saved
+                            if(thumbPath != null && thumbPath.length > 10){
+                                thumbFile = Ti.Filesystem.getFile(thumbPath);
+                                if(thumbFile.exists()){
+                                    thumbFile.deleteFile();
+                                }
+                            }
                        }
                         
                         // resizedFilePath = filePath.replace(/\.jpg$/, "_resized.jpg");
@@ -746,11 +758,19 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                         if(imageFile.exists()){
                             imageFile.deleteFile();
                         } 
+                        
+                        // Delete the thumbnail if one is saved
+                        if(thumbPath != null && thumbPath.length > 10){
+                            thumbFile = Ti.Filesystem.getFile(thumbPath);
+                            if(thumbFile.exists()){
+                                thumbFile.deleteFile();
+                            }
+                        }
                     }
-                    
                     
                     // Get rid of file pointers
                     imageFile = null;
+                    thumbFile = null;
                 }
             
                 //Deleting file after upload.
@@ -892,6 +912,7 @@ Omadi.service.uploadFile = function() {"use strict";
         }
         else{
             isUploading = true;
+            Ti.API.debug("Currently uploading a photo: " + lastUploadStartTimestamp);
         }
         
         // Make sure no images are currently uploading

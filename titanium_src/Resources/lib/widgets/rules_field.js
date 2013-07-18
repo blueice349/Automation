@@ -1,4 +1,4 @@
-/*jslint eqeq:true, plusplus: true*/
+/*jslint eqeq:true, plusplus:true*/
 /*global setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
 
 Omadi.widgets.rules_field = {
@@ -278,13 +278,13 @@ Omadi.widgets.rules_field = {
         detail_row = Ti.UI.createView({
             width : Ti.Platform.displayCaps.platformWidth - 16,
             top : 75,
-            height : '175',
+            height : 175,
             layout : 'horizontal'
         });
         table_format_bg.add(detail_row);
 
         formsView = Ti.UI.createScrollView({
-            height : '175',
+            height : 175,
             contentHeight : 'auto',
             scrollType : 'vertical',
             showVerticalScrollIndicator : true,

@@ -1,5 +1,5 @@
 
- /*jslint eqeq:true, plusplus: true*/ 
+/*jslint eqeq:true, plusplus: true*/ 
 /*global Omadi */
 
 Ti.include('/lib/functions.js');
@@ -31,7 +31,7 @@ Gallery.addIOSToolbar = function() {"use strict";
         systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
     });
 
-    label = Titanium.UI.createButton({
+    label = Ti.UI.createButton({
         title : 'Photos Not Uploaded',
         color : '#fff',
         ellipsize : true,
@@ -76,10 +76,14 @@ Gallery.failedSaveToPhotoGallery = function(e){"use strict";
 
 Gallery.deleteOptionSelected = function(e){"use strict";
     if(e.index === 1){
-        Omadi.data.deletePhotoUpload(e.source.imageView.photoId, e.source.imageView.filePath);
-
-        galleryWrapper.remove(gallery);
-        Gallery.update();
+        
+        Omadi.display.loading();
+        Omadi.data.deletePhotoUpload(e.source.imageView.photoId, true);
+        
+        Gallery.remove(e.source.imageView);
+        // galleryWrapper.remove(gallery);
+        // Gallery.update();
+        Omadi.display.doneLoading();
     }
 };
 
@@ -114,10 +118,16 @@ Gallery.emailComplete = function(e){"use strict";
 Gallery.confirmDeleteOptionSelected = function(e){"use strict";
     if(e.index === 0){
         
-        Omadi.data.deletePhotoUpload(e.source.imageView.photoId, e.source.imageView.filePath);
+        Omadi.display.loading();
         
-        galleryWrapper.remove(gallery);
-        Gallery.update();
+        Omadi.data.deletePhotoUpload(e.source.imageView.photoId, true);
+        
+        //galleryWrapper.remove(gallery);
+        //Gallery.update();
+        
+        Gallery.remove(e.source.imageView);
+        
+        Omadi.display.doneLoading();
     }
 };
 
@@ -254,9 +264,16 @@ Gallery.imageClicked = function(e){"use strict";
     // currentWinWrapper.add(buttons);
 // }
 
+Gallery.remove = function(imageView){"use strict";
+
+    gallery.remove(imageView.parentItem); 
+    imageView.parentItem = null;
+     
+};
+
 Gallery.update = function(){"use strict";
     
-    var i, recentFiles, images, item, imageView, modified, items, tempFile;
+    var i, recentFiles, images, item, imageView, modified, items, tempFile, thumbFile, imageFile;
     
     items = [];
     recentFiles = [];
@@ -277,6 +294,7 @@ Gallery.update = function(){"use strict";
         
         //Ti.API.debug(imageStrings[i]);
         tempFile = Ti.Filesystem.getFile(images[i].filePath);
+        thumbFile = Ti.Filesystem.getFile(images[i].thumbPath);
         
         if(tempFile.exists()){
             modified = tempFile.modificationTimestamp();
@@ -284,8 +302,10 @@ Gallery.update = function(){"use strict";
             tempFile.modifiedTimestamp = modified;
             recentFiles.push({
                 file: tempFile,
+                thumbFile: thumbFile,
                 degrees: images[i].degrees,
                 filePath: images[i].filePath,
+                thumbPath: images[i].thumbPath,
                 photoId: images[i].photoId
             });
         }
@@ -307,8 +327,13 @@ Gallery.update = function(){"use strict";
                 backgroundColor: '#fff'
             });
             
+            imageFile = recentFiles[i].thumbFile;
+            if(!imageFile.exists() || !imageFile.isFile()){
+                imageFile = recentFiles[i].file;
+            }
+            
             imageView = Ti.UI.createImageView({
-                image: recentFiles[i].file,
+                image: imageFile,
                 height: 100,
                 width: 100,
                 top: 10,
@@ -319,7 +344,8 @@ Gallery.update = function(){"use strict";
                 borderColor: '#666',
                 filePath: recentFiles[i].filePath,
                 photoId: recentFiles[i].photoId,
-                bigImg: null
+                bigImg: null,
+                parentItem: item
             });
             
             // if(Ti.App.isAndroid && recentFiles[i].degrees > 0){
@@ -363,7 +389,7 @@ Gallery.update = function(){"use strict";
             // row.checkbox = checkbox;
 //             
             // row.add(checkbox);
-            items.push(item);
+            //items.push(item);
             
             imageView.addEventListener('click', Gallery.imageClicked);
             
@@ -404,7 +430,7 @@ Gallery.update = function(){"use strict";
     });
     
     galleryWrapper = Ti.UI.createScrollView({
-        top: 50,
+        top: 40,
         bottom: 0,
         left: 0,
         right: 0,

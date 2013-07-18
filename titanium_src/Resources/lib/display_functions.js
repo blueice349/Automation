@@ -1,176 +1,204 @@
 
+
+/*jslint eqeq:true,plusplus:true*/
+
 Omadi.display = Omadi.display || {};
 
-/*jslint eqeq:true, plusplus: true*/
-
 Omadi.display.largePhotoWindow = null;
+
+
 
 Omadi.display.showBigImage = function(imageView) {"use strict";
 
     var fullImage, background, transform, rotateDegrees, 
         orientation, screenWidth, screenHeight, picWidth, picHeight, 
         scrollView, picBlob, toolbar, isRotated, back, space, label;
-
-    Omadi.display.largePhotoWindow = Ti.UI.createWindow({
-        backgroundColor : 'black',
-        top : 0,
-        bottom : 0,
-        right : 0,
-        left : 0,
-        modal: true,
-        width: Ti.UI.FILL,
-        height: Ti.UI.FILL,
-        orientationModes: [Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.PORTRAIT, Ti.UI.UPSIDE_PORTRAIT],
-        modalStyle: Ti.UI.iPhone.MODAL_PRESENTATION_FORMSHEET,
-        navBarHidden: true
-    });
     
-    // scrollView = Ti.UI.createScrollView({
-        // width: Ti.UI.FILL,
-        // height: Ti.UI.FILL,
-        // contentWidth: 'auto',
-        // contentHeight: 'auto',
-        // top: 0,
-        // scrollType: 'horizontal'
-    // });
+    if(Omadi.display.largePhotoWindow === null){
     
-    if(Ti.App.isAndroid){
-        Omadi.display.largePhotoWindow.addEventListener("android:back", function(e){
-            
-            //Ti.Gesture.removeEventListener('orientationchange', Omadi.display.largePhotoResize);
-            Omadi.display.largePhotoWindow.close(); 
-            Omadi.display.largePhotoWindow = null;
-        });
-    }
-    else{
-        
-        
-        back = Ti.UI.createButton({
-            title : 'Back',
-            style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-        });
-        
-        back.addEventListener('click', function() {
-            Omadi.display.largePhotoWindow.close();
-        });
-    
-        space = Titanium.UI.createButton({
-            systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
-        });
-        
-        label = Titanium.UI.createButton({
-            title : 'View Photo',
-            color : '#fff',
-            ellipsize : true,
-            wordwrap : false,
-            width : 200,
-            style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
-        });
-    
-        // create and add toolbar
-        toolbar = Ti.UI.iOS.createToolbar({
-            items : [back, space, label, space],
+        Omadi.display.largePhotoWindow = Ti.UI.createWindow({
+            backgroundColor : 'black',
             top : 0,
-            left: 0,
-            borderTop : false,
-            borderBottom : true,
-            zIndex: 100
+            bottom : 0,
+            right : 0,
+            left : 0,
+            modal: true,
+            width: Ti.UI.FILL,
+            height: Ti.UI.FILL,
+            orientationModes: [Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.PORTRAIT, Ti.UI.UPSIDE_PORTRAIT],
+            modalStyle: Ti.UI.iPhone.MODAL_PRESENTATION_FORMSHEET,
+            navBarHidden: true
         });
         
-        Omadi.display.largePhotoWindow.add(toolbar);
-    }
-    
-    // orientation = Ti.Gesture.getOrientation();
-//     
-    // screenWidth = Ti.Platform.displayCaps.platformWidth;
-    // screenHeight = Ti.Platform.displayCaps.platformHeight;
-//     
-    // if(orientation == Ti.UI.PORTRAIT || orientation == Ti.UI.UPSIDE_PORTRAIT){
-//         
-    // }
-    // else{
-//         
-    // }
-    
-    if(imageView.bigImg !== null){ 
-        //fullImage = Omadi.display.getImageViewFromData(imageView.bigImg, Ti.Platform.displayCaps.platformWidth, Ti.Platform.displayCaps.platformHeight - 50);    
-        Ti.API.debug("DISPLAYING FULL IMAGE FROM BLOB");
-        fullImage = Ti.UI.createImageView({
-           image: imageView.bigImg,
-           autorotate: true,
-           height: '100%'
-        });
-    }
-    else if(typeof imageView.filePath !== 'undefined' && imageView.filePath !== null){
-        Ti.API.debug("DISPLAYING FULL IMAGE FROM FILE PATH");
-        fullImage = Ti.UI.createImageView({
-           image: imageView.filePath,
-           autorotate: true,
-           height: '100%'
-        });
+        // scrollView = Ti.UI.createScrollView({
+            // width: Ti.UI.FILL,
+            // height: Ti.UI.FILL,
+            // contentWidth: 'auto',
+            // contentHeight: 'auto',
+            // top: 0,
+            // scrollType: 'horizontal'
+        // });
         
-        imageView.bigImg = fullImage.toImage();
-    }
-    else{
-        alert("Could not display large photo.");
-        return;
-    }
-    
-    isRotated = false;
-    Ti.API.debug("before dim");
-    
-    picWidth = imageView.bigImg.width;
-    picHeight = imageView.bigImg.height;
-    
-    Ti.API.debug("dimensions: " + picWidth + "x" + picHeight);
-    
-    if(Ti.App.isAndroid && (imageView.degrees == 270 || imageView.degrees == 90)){    
-        isRotated = true;
+        if(Ti.App.isAndroid){
+            Omadi.display.largePhotoWindow.addEventListener("android:back", function(e){
+                
+                //Ti.Gesture.removeEventListener('orientationchange', Omadi.display.largePhotoResize);
+                Omadi.display.largePhotoWindow.close(); 
+                Omadi.display.largePhotoWindow = null;
+            });
+        }
+        else{
+            
+            
+            back = Ti.UI.createButton({
+                title : 'Back',
+                style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+            });
+            
+            back.addEventListener('click', function() {
+                Omadi.display.largePhotoWindow.close();
+                Omadi.display.largePhotoWindow = null;
+            });
         
-        picWidth = imageView.bigImg.height;
-        picHeight = imageView.bigImg.width;
-    }
-   
-    if (typeof fullImage !== 'undefined' && fullImage) {
+            space = Titanium.UI.createButton({
+                systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+            });
+            
+            label = Titanium.UI.createButton({
+                title : 'View Photo',
+                color : '#fff',
+                ellipsize : true,
+                wordwrap : false,
+                width : 200,
+                style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+            });
         
-        fullImage.setOpacity(1.0);
-        Ti.API.debug("Full Image");
-        
-        Omadi.display.largePhotoWindow.add(fullImage);
-        
-        if(picWidth > 150 && picHeight > 150){
-            // Pinch zoom is enabled
-            fullImage.baseHeight = picHeight;
-            fullImage.baseWidth = picWidth;
-            fullImage.height = picHeight;
-            fullImage.width = picWidth;
+            // create and add toolbar
+            toolbar = Ti.UI.iOS.createToolbar({
+                items : [back, space, label, space],
+                top : 0,
+                left: 0,
+                borderTop : false,
+                borderBottom : true,
+                zIndex: 100
+            });
+            
+            Omadi.display.largePhotoWindow.add(toolbar);
         }
         
-        fullImage.addEventListener('touchstart', function(e){
-            e.source.baseHeight = e.source.height;
-            e.source.baseWidth = e.source.width; 
-        });
+        // orientation = Ti.Gesture.getOrientation();
+    //     
+        // screenWidth = Ti.Platform.displayCaps.platformWidth;
+        // screenHeight = Ti.Platform.displayCaps.platformHeight;
+    //     
+        // if(orientation == Ti.UI.PORTRAIT || orientation == Ti.UI.UPSIDE_PORTRAIT){
+    //         
+        // }
+        // else{
+    //         
+        // }
         
-        fullImage.addEventListener('pinch', function(e){
-            if(e.source.width > 0){
-                e.source.height = e.source.baseHeight * e.scale;
-                e.source.width = e.source.baseWidth * e.scale; 
+        if(typeof imageView.filePath !== 'undefined' && imageView.filePath !== null){
+            Ti.API.debug("DISPLAYING FULL IMAGE FROM FILE PATH");
+            fullImage = Ti.UI.createImageView({
+               image: imageView.filePath,
+               autorotate: true,
+               height: '100%'
+            });
+            
+            imageView.bigImg = fullImage.toImage();
+        }
+        else if(imageView.bigImg !== null){ 
+            //fullImage = Omadi.display.getImageViewFromData(imageView.bigImg, Ti.Platform.displayCaps.platformWidth, Ti.Platform.displayCaps.platformHeight - 50);    
+            Ti.API.debug("DISPLAYING FULL IMAGE FROM BLOB");
+            fullImage = Ti.UI.createImageView({
+               image: imageView.bigImg,
+               autorotate: true,
+               height: '100%'
+            });
+        }
+        else{
+            alert("Could not display large photo.");
+            return;
+        }
+        
+        isRotated = false;
+        Ti.API.debug("before dim");
+        
+        picWidth = imageView.bigImg.width;
+        picHeight = imageView.bigImg.height;
+        
+        Ti.API.debug("dimensions: " + picWidth + "x" + picHeight);
+        
+        if(Omadi.utils.getPhotoWidget() == 'choose'){
+            // For the photo chooser, we don't know about any degrees saved
+            // No zooming will be allowed for now
+            picWidth = 1;
+            picHeight = 1;
+        }
+        else if(Ti.App.isAndroid && (imageView.degrees == 270 || imageView.degrees == 90)){    
+            isRotated = true;
+            
+            picWidth = imageView.bigImg.height;
+            picHeight = imageView.bigImg.width;
+        }
+       
+        if (typeof fullImage !== 'undefined' && fullImage != null) {
+            
+            Ti.API.debug("Full Image");
+            
+            Omadi.display.largePhotoWindow.add(fullImage);
+
+            if(picWidth > 150 && picHeight > 150){
+                // Pinch zoom is enabled as baseWidth is defined
+                fullImage.baseHeight = picHeight;
+                fullImage.baseWidth = picWidth;
+                fullImage.height = picHeight;
+                fullImage.width = picWidth;
+                
+                imageView.baseHeight = picHeight;
+                imageView.baseWidth = picWidth;
             }
-        });
-        
-        fullImage.addEventListener('postlayout', function(e){
-            Ti.API.debug("Rect: " + e.source.rect.width + "x" + e.source.rect.height);
-            e.source.width = e.source.rect.width;
-            e.source.height = e.source.rect.height;
-        });
-        
-        Omadi.display.largePhotoWindow.fullImage = fullImage;
-        
-        Omadi.display.largePhotoWindow.open();
-    }
-    else{
-        alert("Could not open the photo.");
-        Omadi.display.largePhotoWindow = null;
+            else if(typeof imageView.baseHeight !== 'undefined' && imageView.baseHeight > 1){
+                // Had to add in this condition because the second time coming into the same photo
+                // it would have a picHeight and picWidth of 1, so zooming wouldn't be possible
+                fullImage.baseHeight = imageView.baseHeight;
+                fullImage.baseWidth = imageView.baseWidth;
+                fullImage.height = imageView.baseHeight;
+                fullImage.width = imageView.baseWidth;
+            }
+            else{
+                
+                fullImage.height = Ti.UI.SIZE;
+                fullImage.width = Ti.UI.SIZE;
+            }
+            
+            fullImage.addEventListener('touchstart', function(e){
+                e.source.baseHeight = e.source.height;
+                e.source.baseWidth = e.source.width; 
+            });
+            
+            fullImage.addEventListener('pinch', function(e){
+                if(e.source.baseWidth > 0){
+                    e.source.height = e.source.baseHeight * e.scale;
+                    e.source.width = e.source.baseWidth * e.scale; 
+                }
+            });
+            
+            fullImage.addEventListener('postlayout', function(e){
+                Ti.API.debug("Rect: " + e.source.rect.width + "x" + e.source.rect.height);
+                e.source.width = e.source.rect.width;
+                e.source.height = e.source.rect.height;
+            });
+            
+            Omadi.display.largePhotoWindow.fullImage = fullImage;
+            
+            Omadi.display.largePhotoWindow.open();
+        }
+        else{
+            alert("Could not open the photo.");
+            Omadi.display.largePhotoWindow = null;
+        }
     }
 };
 
@@ -522,74 +550,77 @@ Omadi.display.showNewNotificationDialog = function(){"use strict";
     
     //inspectionAlertShowing = Ti.App.Properties.getBool("inspectionAlertShowing", false);
     //Ti.API.debug("inspection: " + inspectionAlertShowing);
+    if(typeof newNotifications !== 'undefined'){
+        
+        if (newNotifications.count > 0 && !inspectionAlertShowing) {
+            
+            // Clear the newNotifications object 
+            Ti.App.Properties.setObject('newNotifications', {
+                count : 0,
+                nid : 0
+            });
     
-    if (newNotifications.count > 0 && !inspectionAlertShowing) {
-
-        Ti.App.Properties.setObject('newNotifications', {
-            count : 0,
-            nid : 0
-        });
-
-        if (newNotifications.count > 1) {
-            dialog = Titanium.UI.createAlertDialog({
-                title : '(' + newNotifications.count + ') New Notifications',
-                message : 'View the notification list?',
-                buttonNames : ['Take Me There', 'View Later'],
-                cancel : 1
-            });
-
-            dialog.addEventListener('click', function(e) {
-                if (e.index !== e.source.cancel) {
-                    newWin = Omadi.display.openListWindow('notification', false, [], [], true);
-                    if(typeof alertQueue !== 'undefined'){
-                        newWin.addEventListener('close', function(){
+            if (newNotifications.count > 1) {
+                dialog = Titanium.UI.createAlertDialog({
+                    title : '(' + newNotifications.count + ') New Notifications',
+                    message : 'View the notification list?',
+                    buttonNames : ['Take Me There', 'View Later'],
+                    cancel : 1
+                });
+    
+                dialog.addEventListener('click', function(e) {
+                    if (e.index !== e.source.cancel) {
+                        newWin = Omadi.display.openListWindow('notification', false, [], [], true);
+                        if(typeof alertQueue !== 'undefined'){
+                            newWin.addEventListener('close', function(){
+                                Ti.App.fireEvent('showNextAlertInQueue');
+                            });
+                       }
+                    }
+                    else{
+                        if(typeof alertQueue !== 'undefined'){
                             Ti.App.fireEvent('showNextAlertInQueue');
-                        });
-                   }
+                        }
+                    }
+                });
+                
+                if(typeof alertQueue !== 'undefined' && useAlertQueue){
+                    alertQueue.push(dialog);
                 }
                 else{
-                    if(typeof alertQueue !== 'undefined'){
-                        Ti.App.fireEvent('showNextAlertInQueue');
-                    }
+                    dialog.show();
                 }
-            });
-            
-            if(typeof alertQueue !== 'undefined' && useAlertQueue){
-                alertQueue.push(dialog);
             }
-            else{
-                dialog.show();
-            }
-        }
-        else {
-            dialog = Titanium.UI.createAlertDialog({
-                title : 'New Notification',
-                message : 'Read the notification now?',
-                buttonNames : ['Read Now', 'Read Later'],
-                cancel : 1
-            });
-
-            dialog.addEventListener('click', function(e) {
-                if (e.index !== e.source.cancel) {
-                    newWin = Omadi.display.openViewWindow('notification', newNotifications.nid);
-                    if(typeof alertQueue !== 'undefined'){
-                        newWin.addEventListener('close', function(){
-                            Ti.App.fireEvent('showNextAlertInQueue');
-                        });
+            else {
+                dialog = Titanium.UI.createAlertDialog({
+                    title : 'New Notification',
+                    message : 'Read the notification now?',
+                    buttonNames : ['Read Now', 'Read Later'],
+                    cancel : 1
+                });
+    
+                dialog.addEventListener('click', function(e) {
+                    if (e.index !== e.source.cancel) {
+                        newWin = Omadi.display.openViewWindow('notification', newNotifications.nid);
+                        if(typeof alertQueue !== 'undefined'){
+                            newWin.addEventListener('close', function(){
+                                Ti.App.fireEvent('showNextAlertInQueue');
+                            });
+                        }
                     }
+                    else{
+                        if(typeof alertQueue !== 'undefined'){
+                            Ti.App.fireEvent('showNextAlertInQueue');
+                        }
+                    }
+                });
+                
+                if(typeof alertQueue !== 'undefined' && useAlertQueue){
+                    alertQueue.push(dialog);
                 }
                 else{
-                    if(typeof alertQueue !== 'undefined'){
-                        Ti.App.fireEvent('showNextAlertInQueue');
-                    }
+                    dialog.show();
                 }
-            });
-            
-            if(typeof alertQueue !== 'undefined' && useAlertQueue){
-                alertQueue.push(dialog);
-            }
-            else{
-                dialog.show();
             }
         }
     }
@@ -1146,9 +1177,8 @@ Omadi.display.loading = function(message) {"use strict";
 Omadi.display.doneLoading = function() {"use strict";
 
     if (indicator !== null) {
-        indicator.hide();
-
-        //Ti.App.fireEvent("displayDoneLoading");
+        Ti.UI.currentWindow.remove(indicator);
+        indicator = null;
     }
 };
 

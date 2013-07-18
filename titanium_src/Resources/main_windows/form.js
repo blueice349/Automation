@@ -44,83 +44,92 @@ function cancelOpt() {"use strict";
         
         if (e.index == 0) {
             
-            photoNids = [0];
-            if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined' && Ti.UI.currentWindow.continuous_nid != 0){
-                photoNids.push(Ti.UI.currentWindow.continuous_nid);
+            if(Omadi.utils.getPhotoWidget() == 'choose'){
+                // Nothing to delete with the choose widget
+                // Photos should be managed externally except when uploaded successfully
+                Omadi.data.deleteContinuousNodes();
+                Ti.UI.currentWindow.close();
             }
+            else{
             
-            query = "SELECT COUNT(*) FROM _photos WHERE nid IN (" + photoNids.join(',') + ")";
-            // if(Ti.UI.currentWindow.nid < 0){
-                // query += " OR nid = " + Ti.UI.currentWindow.nid;
-            // }
-            
-            numPhotos = 0;
-    
-            db = Omadi.utils.openMainDatabase();
-            
-            result = db.execute(query);
-            if(result.isValidRow()){
-                numPhotos = result.field(0, Ti.Database.FIELD_TYPE_INT);
-            }
-            result.close();
-            db.close();
-            
-            if(numPhotos > 0){
-                secondDialog = Ti.UI.createAlertDialog({
-                    cancel : 1,
-                    buttonNames : ['Delete', 'Keep'],
-                    message : 'Do you want to delete the ' + (numPhotos == 1 ? 'photo' : numPhotos + ' photos') + ' you just took?',
-                    title : 'Delete ' + numPhotos + ' Photo' + (numPhotos > 1 ? 's' : '')
-                });
+                photoNids = [0];
+                if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined' && Ti.UI.currentWindow.continuous_nid != 0){
+                    photoNids.push(Ti.UI.currentWindow.continuous_nid);
+                }
                 
-                secondDialog.addEventListener('click', function(e) {
-                    var db_toDeleteImage, deleteResult, file, photoNids;
+                query = "SELECT COUNT(*) FROM _photos WHERE nid IN (" + photoNids.join(',') + ")";
+                // if(Ti.UI.currentWindow.nid < 0){
+                    // query += " OR nid = " + Ti.UI.currentWindow.nid;
+                // }
+                
+                numPhotos = 0;
+        
+                db = Omadi.utils.openMainDatabase();
+                
+                result = db.execute(query);
+                if(result.isValidRow()){
+                    numPhotos = result.field(0, Ti.Database.FIELD_TYPE_INT);
+                }
+                result.close();
+                db.close();
+                
+                if(numPhotos > 0){
+                    secondDialog = Ti.UI.createAlertDialog({
+                        cancel : 1,
+                        buttonNames : ['Delete', 'Keep'],
+                        message : 'Do you want to delete the ' + (numPhotos == 1 ? 'photo' : numPhotos + ' photos') + ' you just took?',
+                        title : 'Delete ' + numPhotos + ' Photo' + (numPhotos > 1 ? 's' : '')
+                    });
                     
-                    photoNids = [0];
-                    if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined' && Ti.UI.currentWindow.continuous_nid != 0){
-                        photoNids.push(Ti.UI.currentWindow.continuous_nid);
-                    }
-                    
-                    db_toDeleteImage = Omadi.utils.openMainDatabase();
-                    
-                    if (e.index == 0) {
+                    secondDialog.addEventListener('click', function(e) {
+                        var db_toDeleteImage, deleteResult, file, photoNids;
                         
-                        deleteResult = db_toDeleteImage.execute("SELECT file_data FROM _photos WHERE nid IN (" + photoNids.join(',') + ")");
-                        
-                        while(deleteResult.isValidRow()){
-                            
-                            file = Ti.Filesystem.getFile(deleteResult.fieldByName("file_data"));
-                            
-                            if(file.exists()){
-                                file.deleteFile();
-                            }
-                            
-                            deleteResult.next();
+                        photoNids = [0];
+                        if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined' && Ti.UI.currentWindow.continuous_nid != 0){
+                            photoNids.push(Ti.UI.currentWindow.continuous_nid);
                         }
                         
-                        deleteResult.close();
+                        db_toDeleteImage = Omadi.utils.openMainDatabase();
                         
-                        db_toDeleteImage.execute("DELETE FROM _photos WHERE nid IN (" + photoNids.join(",") + ")");
+                        if (e.index == 0) {
+                            
+                            deleteResult = db_toDeleteImage.execute("SELECT file_data FROM _photos WHERE nid IN (" + photoNids.join(',') + ")");
+                            
+                            while(deleteResult.isValidRow()){
+                                
+                                file = Ti.Filesystem.getFile(deleteResult.fieldByName("file_data"));
+                                
+                                if(file.exists()){
+                                    file.deleteFile();
+                                }
+                                
+                                deleteResult.next();
+                            }
+                            
+                            deleteResult.close();
+                            
+                            db_toDeleteImage.execute("DELETE FROM _photos WHERE nid IN (" + photoNids.join(",") + ")");
+                            
+                        }
+                        else{
+                            // Set the nid of the photos to save to -1000000, so they won't be deleted by deletion of other photos, 
+                            // and so it isn't automatically used by other new nodes
+                            db_toDeleteImage.execute("UPDATE _photos SET nid = -1000000 WHERE nid IN (" + photoNids.join(",") + ")");
+                        }
                         
-                    }
-                    else{
-                        // Set the nid of the photos to save to -1000000, so they won't be deleted by deletion of other photos, 
-                        // and so it isn't automatically used by other new nodes
-                        db_toDeleteImage.execute("UPDATE _photos SET nid = -1000000 WHERE nid IN (" + photoNids.join(",") + ")");
-                    }
+                        db_toDeleteImage.close();
+                        
+                        Omadi.data.deleteContinuousNodes();
+                        Ti.UI.currentWindow.close();
+                    });
                     
-                    db_toDeleteImage.close();
+                    secondDialog.show();
+                }
+                else{
                     
                     Omadi.data.deleteContinuousNodes();
                     Ti.UI.currentWindow.close();
-                });
-                
-                secondDialog.show();
-            }
-            else{
-                
-                Omadi.data.deleteContinuousNodes();
-                Ti.UI.currentWindow.close();
+                }
             }
         }
     });
