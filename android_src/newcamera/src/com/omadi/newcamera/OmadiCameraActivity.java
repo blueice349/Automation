@@ -242,8 +242,12 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	public void surfaceCreated(SurfaceHolder previewHolder) {
 		Log.d("CAMERA", "CAMERA SURFACE CREATED");
 		
-		camera = Camera.open();
-		
+    try{
+      camera = Camera.open();
+		}
+    catch(Exception e){
+      Log.e("CAMERA", "Could not open camera: " + e.getMessage());
+    }
 		/*
 		 * Disabling this since it can end up picking a bad preview
 		 * size which can create stretching issues (TIMOB-8151).
