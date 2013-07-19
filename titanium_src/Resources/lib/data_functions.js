@@ -2379,9 +2379,10 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                             case 'datestamp':
                                             case 'omadi_time':
                                             case 'image':
+                                            
                                                 value = Omadi.service.fetchedJSON.node[type].insert[i][field_name];
         
-                                                if ( typeof value === 'number') {
+                                                if (typeof value === 'number') {
                                                     values.push(value);
                                                 }
                                                 else if ( typeof value === 'string') {
@@ -2394,6 +2395,12 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                                     }
                                                 }
                                                 else if ( value instanceof Array) {
+                                                    // for(j = value.length - 1; j <= 0; j --){
+                                                        // if(value[j] == -1){
+//                                                             
+                                                        // }
+                                                    // }
+                                                    Ti.API.debug(JSON.stringify(value));
                                                     values.push("'" + dbEsc(JSON.stringify(value)) + "'");
                                                 }
                                                 else {

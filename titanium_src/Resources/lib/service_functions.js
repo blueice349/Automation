@@ -447,7 +447,7 @@ Omadi.service.sendUpdates = function() {"use strict";
             
             Omadi.service.setSendingData(true);
             
-            //alert("Going to send data");
+            alert("Going to send data");
             
             http = Ti.Network.createHTTPClient();
             http.setTimeout(45000);
@@ -464,11 +464,15 @@ Omadi.service.sendUpdates = function() {"use strict";
                 //Parses response into strings
                 //Ti.API.info("Onload reached - Here follows the json: ");
                 //Ti.API.info(this.responseText.substr(0, 200));
-
+                
+                Ti.API.debug("Got response");
+                
                 if (this.responseText !== null && this.responseText !== "null" && this.responseText !== "" && this.responseText !== "" && isJsonString(this.responseText) === true) {
 
                     Omadi.service.fetchedJSON = JSON.parse(this.responseText);
-
+                        
+                    Ti.API.debug("parsed data");
+                    
                     subDB = Omadi.utils.openMainDatabase();
 
                     //Terms:
@@ -483,7 +487,6 @@ Omadi.service.sendUpdates = function() {"use strict";
                     }
 
                     subDB.close();
-
                 }
                 else {
                     
@@ -507,8 +510,10 @@ Omadi.service.sendUpdates = function() {"use strict";
                         Omadi.service.logout();
                     });
                 }
+                Ti.API.debug("BEFORE set sending data");
                 
                 Omadi.service.setSendingData(false);
+                Ti.API.debug("AFTER set sending data");
                 Ti.App.fireEvent("doneSendingData");
             };
 
@@ -576,7 +581,7 @@ Omadi.service.sendUpdates = function() {"use strict";
             
             http.send(Omadi.service.getUpdatedNodeJSON());
             
-            //alert("Data Sent");
+            alert("Data Sent");
         }
     }
     else{
