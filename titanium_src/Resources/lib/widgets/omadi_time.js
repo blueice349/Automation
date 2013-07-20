@@ -176,18 +176,18 @@ Omadi.widgets.omadi_time = {
 
         wrapperView.add(topButtonsView);
 
-        okButton = Ti.UI.createButton({
-            title : 'Done',
-            top : 7,
-            bottom : 7,
+        okButton = Ti.UI.createLabel({
+            text : 'Done',
             right : 10,
             width : 80,
-            height: 30,
+            height: 35,
             style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             color : '#fff',
             borderRadius : 5,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
             font : {
-                fontSize : 14
+                fontSize : 14,
+                fontWeight: 'bold'
             },
             borderWidth : 1,
             borderColor : '#555',
@@ -212,18 +212,19 @@ Omadi.widgets.omadi_time = {
         });
         topButtonsView.add(okButton);
 
-        cancelButton = Ti.UI.createButton({
-            title : 'Cancel',
+        cancelButton = Ti.UI.createLabel({
+            text : 'Cancel',
             width : 80,
-            top : 7,
-            bottom : 7,
             left : 10,
+            height: 35,
             widgetView : widgetView,
             style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             color : '#fff',
             borderRadius : 5,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
             font : {
-                fontSize : 14
+                fontSize : 14,
+                fontWeight: 'bold'
             },
             borderWidth : 1,
             borderColor : '#555',
@@ -247,19 +248,19 @@ Omadi.widgets.omadi_time = {
             }
         });
 
-        clearButton = Ti.UI.createButton({
-            title : 'Clear',
+        clearButton = Ti.UI.createLabel({
+            text : 'Clear',
             width : 80,
-            top : 7,
-            bottom : 7,
             left : 100,
-            height: 30,
+            height: 35,
             widgetView : widgetView,
             style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             color : '#fff',
             borderRadius : 5,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
             font : {
-                fontSize : 14
+                fontSize : 14,
+                fontWeight: 'bold'
             },
             borderWidth : 1,
             borderColor : '#555',

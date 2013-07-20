@@ -76,7 +76,7 @@ Omadi.widgets.datestamp = {
     },
     getNewElement : function(node, instance, index) {"use strict";
 
-        var settings, widgetView, dbValue, textValue, showTime, jsDate;
+        var settings, widgetView, dbValue, textValue, showTime, jsDate, dateView, dateText, timeView, timeText;
 
         settings = instance.settings;
 
@@ -95,7 +95,7 @@ Omadi.widgets.datestamp = {
 
         //Ti.API.debug(settings);
 
-        if (settings.time == 1 || (typeof settings.granularity !== 'undefined' && typeof settings.granularity.hour !== 'undefined')) {
+        if (settings.time == 1 || (typeof settings.granularity !== 'undefined' && typeof settings.granularity.hour !== 'undefined' && settings.granularity.hour == 1)) {
             showTime = true;
         }
         else {
@@ -114,37 +114,89 @@ Omadi.widgets.datestamp = {
             dbValue = Math.ceil(jsDate.getTime() / 1000);
             textValue = Omadi.utils.formatDate(dbValue, showTime);
         }
+        
+        dateText = timeText = "";
+        if(dbValue !== null){
+            dateText = Omadi.utils.formatDate(dbValue, false);
+            timeText = Omadi.utils.formatTime(dbValue);
+        }
 
-        widgetView = Omadi.widgets.getLabelField(instance);
-        widgetView.setText(textValue);
-        widgetView.textValue = textValue;
-        widgetView.dbValue = dbValue;
-        widgetView.showTime = showTime;
-        widgetView.jsDate = jsDate;
-
+        widgetView = Ti.UI.createView({
+            layout: 'composite',
+            width: '100%',
+            height: Ti.UI.SIZE,
+            dbValue: dbValue,
+            textValue: textValue,
+            showTime: showTime,
+            jsDate: jsDate
+        });
+        
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
+        
+        dateView = Omadi.widgets.getLabelField(instance);
+        dateView.setText(dateText);
+        dateView.widgetView = widgetView;
+        dateView.top = 1;
+        dateView.bottom = 1;
+        
+        Ti.API.debug(dateText);
+        Ti.API.debug(dbValue);
 
-        widgetView.addEventListener('click', function(e) {
+        dateView.addEventListener('click', function(e) {
             if (e.source.instance.can_edit) {
-                Omadi.widgets.datestamp.displayPicker(e.source);
+                Omadi.widgets.datestamp.displayPicker(e.source.widgetView, 'date');
             }
         });
+        
+        widgetView.dateView = dateView;
+        
+        widgetView.add(dateView);
+        
+        if(showTime){
+            
+            timeView = Omadi.widgets.getLabelField(instance);
+            timeView.setText(timeText);
+            timeView.widgetView = widgetView;
+            timeView.top = 1;
+            timeView.bottom = 1;
+            timeView.width = '37%';
+            timeView.right = '4%';
+            timeView.left = null;
+            
+            dateView.width = '53%';
+            dateView.left = '4%';
+            dateView.right = null;
+    
+            timeView.addEventListener('click', function(e) {
+                if (e.source.instance.can_edit) {
+                    Omadi.widgets.datestamp.displayPicker(e.source.widgetView, 'time');
+                }
+            });
+            
+            widgetView.timeView = timeView;
+            
+            widgetView.add(timeView);
+        }
 
         return widgetView;
     },
-    displayPicker : function(widgetView) {"use strict";
+    displayPicker : function(widgetView, type) {"use strict";
 
         var dateWindow, titleLabel, minDate, opacView, maxDate, widgetDate, 
             okButton, clearButton, wrapperView, buttonView, topButtonsView, 
-            widgetYear, date_picker, time_picker, doneButton, cancelButton, innerWrapperView;
+            widgetYear, date_picker, time_picker, doneButton, cancelButton, 
+            innerWrapperView;
 
         if (Ti.App.isAndroid) {
             Ti.UI.Android.hideSoftKeyboard();
         }
-
-        dateWindow = Ti.UI.createWindow({
-
-        });
+        
+        dateWindow = Ti.UI.createWindow();
+        
+        if(Ti.App.isAndroid){
+            dateWindow.modal = true;
+            dateWindow.navBarHidden = true;
+        }
 
         opacView = Ti.UI.createView({
             left : 0,
@@ -156,23 +208,24 @@ Omadi.widgets.datestamp = {
         });
 
         dateWindow.add(opacView);
-
-        wrapperView = Ti.UI.createScrollView({
+        
+        // Use a scrollview with ios as the time picker isn't shown in landscape mode
+        wrapperView = Ti.UI.createView({
            width: Ti.UI.SIZE,
            height: Ti.UI.SIZE,
            backgroundColor: '#000'
         });
-        
+    
         innerWrapperView = Ti.UI.createView({
-            layout : 'horizontal',
+            layout : 'vertical',
             height : Ti.UI.SIZE,
-            width : Ti.UI.SIZE,
+            width : Ti.UI.FILL,
             opacity : 1,
-            top: 44
+            top: 50
         });
-
+     
         topButtonsView = Ti.UI.createView({
-            height : 44,
+            height : 50,
             top: 0,
             width: Ti.UI.FILL,
             backgroundGradient : {
@@ -197,19 +250,19 @@ Omadi.widgets.datestamp = {
 
         wrapperView.add(topButtonsView);
 
-        okButton = Ti.UI.createButton({
-            title : 'Done',
-            top : 7,
-            bottom : 7,
+        okButton = Ti.UI.createLabel({
+            text : 'Done',
             right : 10,
             width : 80,
-            height: 30,
+            height: 35,
             style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             color : '#fff',
             borderRadius : 5,
             font : {
-                fontSize : 14
+                fontSize : 14,
+                fontWeight: 'bold'
             },
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
             borderWidth : 1,
             borderColor : '#555',
             backgroundGradient : {
@@ -233,19 +286,19 @@ Omadi.widgets.datestamp = {
         });
         topButtonsView.add(okButton);
 
-        cancelButton = Ti.UI.createButton({
-            title : 'Cancel',
-            width : 80,
-            top : 7,
-            bottom : 7,
+        cancelButton = Ti.UI.createLabel({
+            text : 'Cancel',
+            width : 75,
             left : 10,
-            height: 30,
+            height: 35,
             widgetView : widgetView,
             style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             color : '#fff',
             borderRadius : 5,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
             font : {
-                fontSize : 14
+                fontSize : 14,
+                fontWeight: 'bold'
             },
             borderWidth : 1,
             borderColor : '#555',
@@ -269,19 +322,19 @@ Omadi.widgets.datestamp = {
             }
         });
 
-        clearButton = Ti.UI.createButton({
-            title : 'Clear',
+        clearButton = Ti.UI.createLabel({
+            text : 'Clear',
             width : 80,
-            top : 7,
-            bottom : 7,
             left : 100,
-            height: 30,
+            height: 35,
             widgetView : widgetView,
             style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             color : '#fff',
             borderRadius : 5,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
             font : {
-                fontSize : 14
+                fontSize : 14,
+                fontWeight: 'bold'
             },
             borderWidth : 1,
             borderColor : '#555',
@@ -326,31 +379,39 @@ Omadi.widgets.datestamp = {
         maxDate.setFullYear(widgetYear + 5);
         maxDate.setMonth(11);
         maxDate.setDate(31);
-
-        date_picker = Titanium.UI.createPicker({
-            useSpinner : true,
-            borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-            value : widgetDate,
-            type : Ti.UI.PICKER_TYPE_DATE,
-            minDate : minDate,
-            maxDate : maxDate,
-            color : '#000000',
-            widgetView : widgetView,
-            height : Ti.UI.SIZE,
-            width : Ti.UI.SIZE,
-            textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
-        });
         
-        // This sounds really stupid - and it is! If this onchange listener isn't in place, 
-        // then the date won't actually be recorded
-        date_picker.addEventListener('change', function(e){
-          // Empty, but necessary
-          // do not remove this change listener
-        });
-
-        innerWrapperView.add(date_picker);
-
-        if (widgetView.showTime) {
+        
+        if(type == 'date'){
+            date_picker = Titanium.UI.createPicker({
+                useSpinner : true,
+                borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+                value : widgetDate,
+                type : Ti.UI.PICKER_TYPE_DATE,
+                minDate : minDate,
+                maxDate : maxDate,
+                color : '#000000',
+                widgetView : widgetView,
+                height : Ti.UI.SIZE,
+                width : Ti.UI.FILL,
+                textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
+            });
+            
+            if(Ti.App.isAndroid){
+                date_picker.width = Ti.UI.SIZE;
+            }
+            
+            // This sounds really stupid - and it is! If this onchange listener isn't in place, 
+            // then the date won't actually be recorded
+            date_picker.addEventListener('change', function(e){
+              // Empty, but necessary
+              // do not remove this change listener
+            });
+    
+            innerWrapperView.add(date_picker);
+            okButton.date_picker = date_picker;
+        }
+        
+        if (widgetView.showTime && type == 'time') {
             time_picker = Titanium.UI.createPicker({
                 useSpinner : true,
                 borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
@@ -360,10 +421,14 @@ Omadi.widgets.datestamp = {
                 timezone : null,
                 widgetView : widgetView,
                 height : Ti.UI.SIZE,
-                width : Ti.UI.SIZE,
+                width : Ti.UI.FILL,
                 textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER,
                 format24 : (Omadi.utils.getTimeFormat().indexOf('H') !== -1 ? true : false) // Only available on Android
             });
+            
+            if(Ti.App.isAndroid){
+                time_picker.width = Ti.UI.SIZE;
+            }
             
             okButton.time_picker = time_picker;
             innerWrapperView.add(time_picker);
@@ -376,36 +441,62 @@ Omadi.widgets.datestamp = {
         }
         
         okButton.widgetView = widgetView;
-        okButton.date_picker = date_picker;
         
         okButton.addEventListener('click', function(e) {
-            var year, month, date, hour, minute, second, newDate, i, callback, timePickerValue, datePickerValue;
+            var year, month, date, hour, minute, second, newDate, i, callback, pickerValue, datePickerValue, dbValue, now;
             /*global setConditionallyRequiredLabels*/
-
-            datePickerValue = e.source.date_picker.getValue();
-
-            if (e.source.widgetView.showTime) {
-                
-                timePickerValue = e.source.time_picker.getValue();
-                datePickerValue.setHours(timePickerValue.getHours());
-                datePickerValue.setMinutes(timePickerValue.getMinutes());
-            }
-            else {
-                datePickerValue.setHours(0);
-                datePickerValue.setMinutes(0);
-            }
-
-            datePickerValue.setSeconds(0);
-
-            newDate = datePickerValue;
-            e.source.widgetView.jsDate = newDate;
             
-            //Ti.API.debug(newDate.toString());
-
-            e.source.widgetView.dbValue = Math.ceil(newDate.getTime() / 1000);
+            if(typeof e.source.date_picker !== 'undefined'){
+                pickerValue = e.source.date_picker.getValue();
+                
+                if (e.source.widgetView.showTime) {
+                    if(e.source.widgetView.dbValue === null){
+                        // The clear button was pressed at some point
+                        pickerValue.setHours(0);
+                        pickerValue.setMinutes(0);
+                    }
+                    else{
+                        pickerValue.setHours(e.source.widgetView.jsDate.getHours());
+                        pickerValue.setMinutes(e.source.widgetView.jsDate.getMinutes());
+                    }    
+                }
+                else {
+                    pickerValue.setHours(0);
+                    pickerValue.setMinutes(0);
+                }
+                
+                pickerValue.setSeconds(0);
+                
+                newDate = pickerValue;
+            }
+            else if(typeof e.source.time_picker !== 'undefined'){
+                pickerValue = e.source.time_picker.getValue();
+                
+                if(e.source.widgetView.dbValue === null){
+                    // The clear button was pressed at some point
+                    now = new Date();
+                    pickerValue.setFullYear(now.getFullYear());
+                    pickerValue.setMonth(now.getMonth());    
+                    pickerValue.setDate(now.getDate());
+                }
+                else{
+                    pickerValue.setFullYear(e.source.widgetView.jsDate.getFullYear());
+                    pickerValue.setMonth(e.source.widgetView.jsDate.getMonth());    
+                    pickerValue.setDate(e.source.widgetView.jsDate.getDate());
+                }
+                
+                newDate = pickerValue;
+            }
+            
+            e.source.widgetView.jsDate = newDate;
+            e.source.widgetView.dbValue = dbValue = Math.ceil(newDate.getTime() / 1000);
             e.source.widgetView.textValue = Omadi.utils.formatDate(e.source.widgetView.dbValue, e.source.widgetView.showTime);
-
-            e.source.widgetView.setText(e.source.widgetView.textValue);
+            e.source.widgetView.dateView.setText(Omadi.utils.formatDate(dbValue, false));
+            
+            if(e.source.widgetView.showTime){
+                e.source.widgetView.timeView.setText(Omadi.utils.formatTime(dbValue));
+            }
+            //Ti.API.debug(newDate.toString());
 
             if ( typeof e.source.widgetView.onChangeCallbacks !== 'undefined') {
                 if (e.source.widgetView.onChangeCallbacks.length > 0) {
@@ -429,7 +520,11 @@ Omadi.widgets.datestamp = {
             e.source.widgetView.dbValue = null;
             e.source.widgetView.textValue = "";
 
-            e.source.widgetView.setText(e.source.widgetView.textValue);
+            e.source.widgetView.dateView.setText("");
+            
+            if(e.source.widgetView.showTime){
+                e.source.widgetView.timeView.setText("");
+            }
 
             if (e.source.widgetView.check_conditional_fields.length > 0) {
                 setConditionallyRequiredLabels(e.source.widgetView.instance, e.source.widgetView.check_conditional_fields);

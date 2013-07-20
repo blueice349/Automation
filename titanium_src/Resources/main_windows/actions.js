@@ -106,7 +106,7 @@ function addClockInClockOut() {"use strict";
             text.setText('You are clocked out.');
         }
         
-        button = Ti.UI.createButton({
+        button = Ti.UI.createLabel({
             style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             backgroundGradient : {
                 type : 'linear',
@@ -139,14 +139,15 @@ function addClockInClockOut() {"use strict";
             },
             borderColor: '#333',
             borderWidth: 1,
-            top: 3
+            top: 3,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
         });
         
         if (Omadi.bundles.timecard.isUserClockedIn()) {
-            button.setTitle("Clock Out");
+            button.setText("Clock Out");
         }
         else {
-            button.setTitle("Clock In");
+            button.setText("Clock In");
         }
 
         button.addEventListener('click', function(e) {
@@ -159,7 +160,7 @@ function addClockInClockOut() {"use strict";
                 dialog.addEventListener('click', function(e) {
                     if (e.index == 0) {
                         Omadi.bundles.timecard.doClockOut(false);
-                        button.setTitle("Clock In");
+                        button.setText("Clock In");
                         text.setText('You are clocked out.');
                     }
                 });
@@ -173,7 +174,7 @@ function addClockInClockOut() {"use strict";
                 dialog.addEventListener('click', function(e) {
                     if (e.index == 0) {
                         Omadi.bundles.timecard.doClockIn();
-                        button.setTitle("Clock Out");
+                        button.setText("Clock Out");
                         text.setText('You are currently clocked in.');
                     }
                 });
@@ -206,7 +207,7 @@ function companyVehicleSelectedDraft(e){"use strict";
           
      var vehicle_name = Omadi.bundles.companyVehicle.getCurrentVehicleName();
      if(vehicle_name !== null){
-         vehicleButton.setTitle("Done With Vehicle");
+         vehicleButton.setText("Done With Vehicle");
          vehicleText.setText('You are in ' + vehicle_name + '.');
      }
 }
@@ -239,7 +240,7 @@ function addCompanyVehicle(){"use strict";
            width: Ti.UI.SIZE
         });
         
-        vehicleButton = Ti.UI.createButton({
+        vehicleButton = Ti.UI.createLabel({
             style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             backgroundGradient : {
                 type : 'linear',
@@ -272,18 +273,19 @@ function addCompanyVehicle(){"use strict";
             },
             borderColor: '#333',
             borderWidth: 1,
-            top: 3
+            top: 3,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
         });
         
         currentVehicle = Omadi.bundles.companyVehicle.getCurrentVehicleName();
         
         if (currentVehicle === null) {
             vehicleText.setText('You are not in a vehicle.');   
-            vehicleButton.setTitle("Choose Your Vehicle");
+            vehicleButton.setText("Choose Your Vehicle");
         }
         else{
             vehicleText.setText('You are in ' + currentVehicle + '.');
-            vehicleButton.setTitle("Done With Vehicle");
+            vehicleButton.setText("Done With Vehicle");
         }
 
         vehicleButton.addEventListener('click', function(e) {
@@ -295,7 +297,7 @@ function addCompanyVehicle(){"use strict";
             else {
                 Omadi.bundles.companyVehicle.exitVehicle();
                 vehicleText.setText('You are not in a vehicle.');
-                vehicleButton.setTitle("Choose Your Vehicle");
+                vehicleButton.setText("Choose Your Vehicle");
             }
         });
         
@@ -350,7 +352,7 @@ function addDrafts(){"use strict";
            width: Ti.UI.SIZE
         });
         
-        button = Ti.UI.createButton({
+        button = Ti.UI.createLabel({
             style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             backgroundGradient : {
                 type : 'linear',
@@ -384,7 +386,8 @@ function addDrafts(){"use strict";
             borderColor: '#333',
             borderWidth: 1,
             top: 3,
-            title: 'View My Drafts'
+            text: 'View My Drafts',
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
         });
 
         button.addEventListener('click', function(e) {
@@ -435,7 +438,7 @@ function addLocalPhotos(){"use strict";
            width: Ti.UI.SIZE
         });
         
-        button = Ti.UI.createButton({
+        button = Ti.UI.createLabel({
             style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             backgroundGradient : {
                 type : 'linear',
@@ -469,7 +472,8 @@ function addLocalPhotos(){"use strict";
             borderColor: '#333',
             borderWidth: 1,
             top: 3,
-            title: 'Photos Not Uploaded'
+            text: 'Photos Not Uploaded',
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
         });
 
         button.addEventListener('click', function(e) {
@@ -510,7 +514,7 @@ function addDeleteAll(){"use strict";
         right: 0
     });
     
-    button = Ti.UI.createButton({
+    button = Ti.UI.createLabel({
         style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
         backgroundGradient : {
             type : 'linear',
@@ -544,7 +548,8 @@ function addDeleteAll(){"use strict";
         borderColor: '#333',
         borderWidth: 1,
         top: 3,
-        title: 'Reset All Data'
+        text: 'Reset All Data',
+        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });
     
     button.addEventListener('click', function(e) {
@@ -638,7 +643,7 @@ function addRefresh(){"use strict";
         refreshText.setText('Never Synced');
     }
     
-    button = Ti.UI.createButton({
+    button = Ti.UI.createLabel({
         style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
         backgroundGradient : {
             type : 'linear',
@@ -672,7 +677,8 @@ function addRefresh(){"use strict";
         borderColor: '#333',
         borderWidth: 1,
         top: 3,
-        title: 'Refresh / Sync Data'
+        text: 'Refresh / Sync Data',
+        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });
     
     button.addEventListener('click', function(e) {
@@ -722,7 +728,7 @@ function addLogout(){"use strict";
         right: 0
     });
     
-    button = Ti.UI.createButton({
+    button = Ti.UI.createLabel({
         style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
         backgroundGradient : {
             type : 'linear',
@@ -756,7 +762,8 @@ function addLogout(){"use strict";
         borderColor: '#333',
         borderWidth: 1,
         top: 3,
-        title: 'Logout Now'
+        text: 'Logout Now',
+        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });
     
     button.addEventListener('click', function(e) {
@@ -797,7 +804,7 @@ function addAbout(){"use strict";
         right: 0
     });
     
-    button = Ti.UI.createButton({
+    button = Ti.UI.createLabel({
         style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
         backgroundGradient : {
             type : 'linear',
@@ -831,7 +838,8 @@ function addAbout(){"use strict";
         borderColor: '#333',
         borderWidth: 1,
         top: 3,
-        title: 'About'
+        text: 'About',
+        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });
     
     button.addEventListener('click', function(e) {

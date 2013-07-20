@@ -42,12 +42,15 @@ Omadi.widgets.calculation_field = {
         Ti.UI.currentWindow.addEventListener('close', function(){
             var i;
             
-            for(i = instance.elements.length - 1; i <= 0; i --){
-                if(instance.elements[i] != null){
-                    fieldView.remove(instance.elements[i]);
-                    instance.elements[i] = null;
-                }
-            }
+            // Do not remove elements like the below commented out code
+            // It will freeze the iOS app in instances where the child isn't really there
+            
+                    //for(i = instance.elements.length - 1; i <= 0; i --){
+                    //    if(instance.elements[i] != null){
+                            //fieldView.remove(instance.elements[i]);
+                            //instance.elements[i] = null;
+                    //    }
+                    //}
             
             instance.fieldView = null;
         });  

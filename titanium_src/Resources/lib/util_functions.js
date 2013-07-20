@@ -5,7 +5,7 @@ var Omadi = Omadi || {};
 Omadi.utils = Omadi.utils || {};
 
 Omadi.DOMAIN_NAME = domainName;
-Omadi.DB_VERSION = "DB1693";
+Omadi.DB_VERSION = "DB1694";
 
 Omadi.utils.checkVolumeLevel = function(){"use strict";
     /*global alertQueue*/
@@ -338,6 +338,12 @@ Omadi.utils.formatDate = function(timestamp, showTime){"use strict";
         format += ' - ' + Omadi.utils.getTimeFormat();
     }
     
+    return (new Date(timestamp * 1000)).format(format);
+};
+
+Omadi.utils.formatTime = function(timestamp){"use strict";
+    
+    var format = Omadi.utils.getTimeFormat();
     return (new Date(timestamp * 1000)).format(format);
 };
 

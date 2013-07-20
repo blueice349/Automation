@@ -32,7 +32,7 @@ Omadi.widgets.signature = {
         
         widgetView = Ti.UI.createView({
            height: Ti.UI.SIZE,
-           width: '96%',
+           width: '92%',
            layout: 'vertical'
         });
         
@@ -42,14 +42,13 @@ Omadi.widgets.signature = {
             layout: 'horizontal' 
         });
         
-        signNowButton = Ti.UI.createButton({
+        signNowButton = Ti.UI.createLabel({
             backgroundImage:'/images/blue_button2.png',
             color: '#fff',
-            title:'Sign Now',
+            text:'Sign Now',
             width:86,
             height:35,
-            bottom:5,
-            top: 5,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
             font:{
                 fontWeight:'bold',
                 fontSize:14
@@ -214,20 +213,19 @@ Omadi.widgets.signature = {
         
         buttonView = Ti.UI.createView({
             backgroundColor: '#666',
-            height: Ti.UI.SIZE
+            height: 50
         });
         
         outsideWrapper.add(buttonView);
         
-        doneButton = Ti.UI.createButton({
+        doneButton = Ti.UI.createLabel({
             backgroundImage:'/images/blue_button2.png',
             color: '#fff',
-            title:'Done',
+            text:'Done',
             width:86,
             height:35,
             right:12,
-            bottom:5,
-            top: 5,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
             font:{
                 fontWeight:'bold',
                 fontSize:14
@@ -237,15 +235,14 @@ Omadi.widgets.signature = {
             instance: instance
         });
          
-        clearButton = Ti.UI.createButton({
+        clearButton = Ti.UI.createLabel({
             backgroundImage:'/images/black_button2.png',
             color: '#fff',
-            title:'Clear',
+            text:'Clear',
             width:86,
             height:35,
             left:100,
-            bottom:5,
-            top: 5,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
             font:{
                 fontWeight:'bold',
                 fontSize:14
@@ -255,15 +252,14 @@ Omadi.widgets.signature = {
         buttonView.add(doneButton);
         buttonView.add(clearButton);
          
-        cancelButton = Ti.UI.createButton({
+        cancelButton = Ti.UI.createLabel({
             backgroundImage:'/images/black_button2.png',
             color: '#fff',
-            title:'Cancel',
+            text:'Cancel',
             width:86,
             height:35,
             left:12,
-            bottom:5,
-            top: 5,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
             font:{
                 fontWeight:'bold',
                 fontSize:14
@@ -292,8 +288,6 @@ Omadi.widgets.signature = {
             left:20,
             opacity: 0.5
         });
-
-        
         
         paintView = Paint.createPaintView({
             width : '100%',

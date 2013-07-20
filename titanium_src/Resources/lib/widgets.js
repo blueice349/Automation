@@ -605,7 +605,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         
     var popupWin, opacView, numItemsSelected, wrapperView, descriptionView, listView, descriptionLabel, 
         i, j, color_set, color_unset, cancelButton, itemLabel, itemRow, topButtonsView, okButton, options, data, dbValues, 
-        descriptionText, selectedIndexes, screenHeight, listHeight, label;
+        descriptionText, selectedIndexes, screenHeight, listHeight, label, labelView;
     
     
     if(buttonView.instance.widget.type == 'violation_select' && buttonView.options.length == 0){
@@ -796,6 +796,20 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
             }
         });
         
+        labelView = Ti.UI.createLabel({
+           text: buttonView.instance.label,
+           width: '100%',
+           textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+           color: '#333',
+           font: {
+               fontWeight: 'bold',
+               fontSize: 14
+           },
+           zIndex: 0
+        });
+        
+        topButtonsView.add(labelView);
+        
         //Ti.API.info("widget: " + JSON.stringify(buttonView.instance.settings));
         descriptionView = Ti.UI.createView({
             width: '100%',
@@ -832,31 +846,31 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
                 },
                 color : '#000',
                 height : Ti.UI.SIZE,
-                width: '100%',
+                width: '96%',
                 text: descriptionText,
-                left: 10,
-                right: 10
+                left: '2%',
+                right: '2%'
             });
             
             descriptionView.add(descriptionLabel);
         }
         
-        okButton = Ti.UI.createButton({
-            title : 'Done',
-            top : 7,
-            bottom : 7,
+        okButton = Ti.UI.createLabel({
+            text : 'Done',
             right : 10,
             width: 80,
-            height: 30,
+            height: 35,
             listView: listView,
             buttonView: buttonView,
             style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             color: '#fff',
             borderRadius: 5,
             font: {
-                fontSize: 14
+                fontSize: 14,
+                fontWeight: 'bold'
             },
             borderWidth: 1,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
             borderColor: '#555',
             backgroundGradient : {
                 type : 'linear',
@@ -875,7 +889,8 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
                     color : '#444',
                     offset : 1.0
                 }]
-            }
+            },
+            zIndex: 1
         });
         topButtonsView.add(okButton);
         
@@ -928,20 +943,20 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
     
         });
     
-        cancelButton = Ti.UI.createButton({
-            title : 'Cancel',
+        cancelButton = Ti.UI.createLabel({
+            text : 'Cancel',
             width: 80,
-            top : 7,
-            bottom : 7,
             left : 10,
-            height: 30,
+            height: 35,
             listView: listView,
             buttonView: buttonView,
             style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             color: '#fff',
             borderRadius: 5,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
             font: {
-                fontSize: 14
+                fontSize: 14,
+                fontWeight: 'bold'
             },
             borderWidth: 1,
             borderColor: '#555',
@@ -962,7 +977,8 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
                     color : '#444',
                     offset : 1.0
                 }]
-            }
+            },
+            zIndex: 1
         });
         
         topButtonsView.add(cancelButton);
