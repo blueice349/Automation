@@ -114,12 +114,10 @@ Omadi.widgets.text = {
         }
         
         if(typeof settings.max_length !== 'undefined'){
-            Ti.API.debug("max: " + settings.max_length);
             settings.max_length = parseInt(settings.max_length, 10);
             
             if (settings.max_length > 0) {
-                widgetView.maxLength = settings.min_length;
-                Ti.API.debug("max: " +  widgetView.maxLength);
+                widgetView.maxLength = settings.max_length;
             }
         }
         
