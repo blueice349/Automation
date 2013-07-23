@@ -65,7 +65,7 @@ Omadi.widgets.datestamp = {
             var i;
             
             for(i = 0; i < instance.elements.length; i ++){
-                fieldView.remove(instance.elements[i]);
+                //fieldView.remove(instance.elements[i]);
                 instance.elements[i] = null;
             }
             

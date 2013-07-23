@@ -2,7 +2,6 @@
 /*jslint eqeq:true,regexp:true,plusplus:true*/
 /*global setConditionallyRequiredLabelForInstance, affectsAnotherConditionalField*/
 
-
 Ti.include('/lib/widgets/signature.js');
 
 var ImageFactory = null;
@@ -308,9 +307,7 @@ Omadi.widgets.image = {
         var dialog, message, title;
         
         if(e.index === 0){
-            Omadi.display.loading();
             Omadi.display.displayFullImage(e.source.imageView);
-            Omadi.display.doneLoading();
         }
         else if(e.index === 1){
             

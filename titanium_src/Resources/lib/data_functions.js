@@ -308,6 +308,8 @@ Omadi.data.deleteContinuousNodes = function(){"use strict";
           
           Ti.API.debug("DELETING: " + deleteNids[i]);
           Omadi.data.deleteNode(deleteNids[i]);
+          
+          
       }
   }
 };
@@ -371,6 +373,10 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
                     Ti.App.fireEvent("savedNode");
                     // Delete the continuous node if one exists
                     Omadi.data.deleteContinuousNodes();
+                    
+                    if(typeof node._deleteNid !== 'undefined' && node._deleteNid < 0){
+                        Omadi.data.deleteNode(node._deleteNid);
+                    }
                     
                     if(node._isDraft === true){
                         Ti.UI.currentWindow.close();
@@ -451,7 +457,7 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
 
 Omadi.data.nodeSave = function(node) {"use strict";
     var query, field_name, fieldNames, instances, result, db, smallestNid, insertValues, j, k, 
-        instance, value_to_insert, has_data, content_s, saveNid, continuousNid, photoNids;
+        instance, value_to_insert, has_data, content_s, saveNid, continuousNid, photoNids, origNid;
 
     /*global treatArray*/
     /*jslint nomen: true*/
@@ -499,6 +505,24 @@ Omadi.data.nodeSave = function(node) {"use strict";
     else if (node.nid == 'new') {
         Ti.API.debug("Saving new node");
         node.nid = saveNid = Omadi.data.getNewNodeNid();
+    }
+    else if(node._isDraft){
+        // This else if must come after the node.nid == 'new'
+        
+        // If the draft is already saved as a negative nid, then don't generate a new one
+        // If this node has a positive nid, make sure we create a copy with a new negative nid
+        if(node.nid > 0){
+            node.origNid = node.nid;
+            saveNid = Omadi.data.getNewNodeNid();
+        }
+    }
+    else if(typeof node.flag_is_updated !== 'undefined' && node.flag_is_updated == 3){
+        // This was saved as a draft, and we are doing a regular save
+        // Delete the draft version after a successful node save
+        // The continuous_nid is actually the originally saved draft, 
+        // as a continuous save is saved over the original draft
+        // The logic elsewhere will not delete the node unless the node is correctly saved
+        node._deleteNid = node.continuous_nid;
     }
     
     if(typeof node.sync_hash === 'undefined' || node.sync_has == null){
@@ -610,12 +634,19 @@ Omadi.data.nodeSave = function(node) {"use strict";
                 db.execute("INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",4,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + continuousNid + ")");
             }
             else if (node._isDraft) {
-                if (saveNid > 0) {
-                    db.execute("UPDATE node SET changed=" + node.changed + ", changed_uid=" + node.changed_uid + ", title='" + dbEsc(node.title) + "', flag_is_updated=3, table_name='" + node.type + "', form_part=" + node.form_part + ", no_data_fields='" + node.no_data + "',viewed=" + node.viewed + " WHERE nid=" + saveNid);
+                // if (saveNid > 0) {
+                    // db.execute("UPDATE node SET changed=" + node.changed + ", changed_uid=" + node.changed_uid + ", title='" + dbEsc(node.title) + "', flag_is_updated=3, table_name='" + node.type + "', form_part=" + node.form_part + ", no_data_fields='" + node.no_data + "',viewed=" + node.viewed + " WHERE nid=" + saveNid);
+                // }
+                // else {
+                origNid = "null";
+                if(typeof node.origNid !== 'undefined'){
+                    origNid = node.origNid;
                 }
-                else {
-                    db.execute("INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",3,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1)");
-                }
+                
+                Ti.API.debug("SAVING DRAFT: " + saveNid + " " + origNid);
+                // Only save drafts as a negative nid
+                db.execute("INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",3,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + origNid + ")");
+                //}
             }
             else if (saveNid > 0) {
                 db.execute("UPDATE node SET changed=" + node.changed + ", changed_uid=" + node.changed_uid + ", title='" + dbEsc(node.title) + "', flag_is_updated=1, table_name='" + node.type + "', form_part=" + node.form_part + ", no_data_fields='" + node.no_data + "',viewed=" + node.viewed + " WHERE nid=" + saveNid);
@@ -627,11 +658,11 @@ Omadi.data.nodeSave = function(node) {"use strict";
             
             photoNids = [0];
             
-            if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined' && Ti.UI.currentWindow.continuous_nid != 0){
+            if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined' && Ti.UI.currentWindow.continuous_nid != 0 && Ti.UI.currentWindow.continuous_nid != null && Ti.UI.currentWindow.continuous_nid != ""){
                 photoNids.push(Ti.UI.currentWindow.continuous_nid);
             }
             
-            if(Ti.UI.currentWindow.nid != 'new' && Ti.UI.currentWindow.nid != 0){
+            if(Ti.UI.currentWindow.nid != 'new' && Ti.UI.currentWindow.nid != 0 && Ti.UI.currentWindow.nid != null && Ti.UI.currentWindow.nid != ""){
                 photoNids.push(Ti.UI.currentWindow.nid);
             }
             
@@ -699,6 +730,11 @@ Omadi.data.deleteNode = function(nid){"use strict";
             db.execute("DELETE FROM node WHERE nid = " + nid);
             db.execute("DELETE FROM " + table_name + " WHERE nid = " + nid);
         }
+        
+        result.close();
+        
+        // Delete any photos from the DB where the nid matches
+        db.execute("UPDATE _photos SET nid = -1000000 WHERE nid = " + nid);
         
         db.close();
     }

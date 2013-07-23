@@ -2,11 +2,10 @@
 
 /*jslint eqeq:true,plusplus:true*/
 
+
 Omadi.display = Omadi.display || {};
 
 Omadi.display.largePhotoWindow = null;
-
-
 
 Omadi.display.showBigImage = function(imageView) {"use strict";
 
@@ -843,22 +842,15 @@ Omadi.display.displayFile = function(nid, fid, title) {"use strict";
 Omadi.display.displayFullImage = function(imageView) {"use strict";
 
     var http, db, result;
-
+    
     if (imageView.bigImg !== null || (typeof imageView.filePath !== 'undefined' && imageView.filePath !== null)) {
         Ti.API.debug("Displaying big image");
+        
+        Omadi.display.loading();
         Omadi.display.showBigImage(imageView);
+        Omadi.display.doneLoading();
     }
     else if (imageView.nid > 0 && imageView.fid > 0) {
-        
-        // var webview = Ti.UI.createWebView({
-            // url:  Omadi.DOMAIN_NAME + '/sync/file/' + imageView.nid + '/' + imageView.fid
-        // });
-//         
-        // var picWindow = Ti.UI.createWindow();
-        // picWindow.add(webview);
-        // picWindow.open({
-            // modal:true
-        // });
         
         Omadi.display.loading();
         
@@ -871,16 +863,18 @@ Omadi.display.displayFullImage = function(imageView) {"use strict";
 
             http.onload = function(e) {
                 //Ti.API.info('=========== Success ========');
+                
                 if(this.responseData !== null){
                     
                     imageView.bigImg = this.responseData;
-                    
+                   
                     Omadi.display.showBigImage(imageView);
-                    Omadi.display.doneLoading();
                 }
                 else{
                     alert("There was a problem downloading the photo.");
                 }
+                
+                Omadi.display.doneLoading();
             };
 
             http.onerror = function(e) {
@@ -1164,9 +1158,10 @@ Omadi.display.loading = function(message) {"use strict";
     
     Ti.UI.currentWindow.addEventListener('close', function(){
         if(indicator){
+            indicator.hide();
             Ti.UI.currentWindow.remove(indicator);
+            indicator = null; 
         }
-        indicator = null; 
     });
     
     if(indicator !== null){
@@ -1175,8 +1170,9 @@ Omadi.display.loading = function(message) {"use strict";
 };
 
 Omadi.display.doneLoading = function() {"use strict";
-
+    
     if (indicator !== null) {
+        indicator.hide();
         Ti.UI.currentWindow.remove(indicator);
         indicator = null;
     }

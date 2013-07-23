@@ -465,7 +465,8 @@ function setTableData() {"use strict";
             separatorColor : '#ccc',
             data : [],
             backgroundColor : '#eee',
-            scrollable: true
+            scrollable: true,
+            lastTouched: new Date()
         });
 
         Omadi.data.setUpdating(true);
@@ -906,7 +907,6 @@ function setTableData() {"use strict";
         }
         else {
             showAllButton.addEventListener('click', function(e) {
-
                 Omadi.display.openListWindow(curWin.type, curWin.show_plus, filterValues, [], true);
             });
         }
@@ -914,20 +914,34 @@ function setTableData() {"use strict";
         if (showFinalResults) {
             // //When the user clicks on a certain contact, it opens individual_contact.js
             filterTableView.addEventListener('click', function(e) {
-                
+                var now;
                 if(e.row.nid > 0){
-           
+                    now = new Date();
+                    // Only allow one touch per 500 milliseconds
+                    if(now - filterTableView.lastTouched < 500){
+                        // debounce
+                        return;   
+                    }
+                    
+                    filterTableView.lastTouched = now;
                     Omadi.display.showDialogFormOptions(e);
                 }
-                
             });
         }
         else {
 
             filterTableView.addEventListener('click', function(e) {
-               
-
-                var filterValues = curWin.filterValues;
+                var filterValues, now;
+                now = new Date();
+                // Only allow one touch per 500 milliseconds
+                if(now - filterTableView.lastTouched < 500){
+                    // debounce
+                    return;   
+                }
+                
+                filterTableView.lastTouched = now;
+                
+                filterValues = curWin.filterValues;
 
                 if ( typeof filterValues != "object") {
                     filterValues = [];
@@ -949,7 +963,6 @@ function setTableData() {"use strict";
 
                 Omadi.display.openListWindow(curWin.type, curWin.show_plus, filterValues, nestedWindows, false);
             });
-
         }
 
         Ti.API.info("END OF OBJECTS WINDOW FILE");

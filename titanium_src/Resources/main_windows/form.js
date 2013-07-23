@@ -2073,7 +2073,7 @@ function continuousSave(){
         wrapperView.remove(scrollView);
         scrollView = null;
         
-        win.remove(wrapperView);
+        //win.remove(wrapperView);
         wrapperView = null;
         
 

@@ -281,8 +281,9 @@ function doFieldOutput(fieldObj) {"use strict";
     
             labelLabel = Ti.UI.createLabel({
                 text : fieldObj.label,
-                right : 5,
+                right : '3%',
                 top : 10,
+                width: '97%',
                 textAlign : Ti.UI.TEXT_ALIGNMENT_RIGHT,
                 font : {
                     fontSize : 16,

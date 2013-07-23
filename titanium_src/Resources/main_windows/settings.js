@@ -272,7 +272,7 @@ function errorCameraPhoto(){"use strict";
                         },
                         saveToPhotoGallery: true,
                         success: function(e){
-                            var nativeDir;
+                            var nativeDir, width, height;
                             
                             if(typeof e.media.nativePath !== 'undefined'){
                             
@@ -283,12 +283,26 @@ function errorCameraPhoto(){"use strict";
                                 
                                 Ti.App.Properties.setString("photoCameraPath", nativeDir);
                                 
-                                dialog = Ti.UI.createAlertDialog({
-                                   title: 'READ THIS MESSAGE',
-                                   buttonNames: ['I Understand'],
-                                   message: 'Be sure to set the resolution of your camera app to one of the lower settings (ie. 800x480).'                                
-                                });
-                                dialog.show();
+                                width = e.media.width;
+                                height = e.media.height;
+                                
+                                if(width > 1200 || height > 1200){
+                                
+                                    dialog = Ti.UI.createAlertDialog({
+                                       title: 'WHOA THERE!',
+                                       buttonNames: ['I Understand'],
+                                       message: 'Your camera app resolution is set to ' + width + 'x' + height + ', and that is a little too high. \n\nPlease set your camera resolution to a lower setting (ie. 800x480). \n\nSide effects of very high resolution:\n1. Thumbnails may not show up.\n2. Up to 10x more bandwidth may be used on your data plan.\n3. As much as 10x more time is required to upload photos.\n4. More memory will be used on your phone, so a crash is more likely.'                                
+                                    });
+                                    dialog.show();
+                                }
+                                else{
+                                    dialog = Ti.UI.createAlertDialog({
+                                       title: 'Photo Widget Changed',
+                                       buttonNames: ['Ok'],
+                                       message: 'You should now take all photos using your regular photo app.'                                
+                                    });
+                                    dialog.show();
+                                }
                             }
                             else{
                                 Omadi.service.sendErrorReport("No native path from camera");
