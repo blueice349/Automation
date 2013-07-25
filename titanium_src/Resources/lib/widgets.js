@@ -1,5 +1,5 @@
-Ti.include('/lib/functions.js');
 
+Ti.include('/lib/functions.js');
 
 Omadi.widgets = Omadi.widgets || {};
 

@@ -347,6 +347,7 @@ Omadi.widgets.signature = {
             
             // This waiting is really only for the Android devices, but it's not a hugely back thing
             // To leave for a possibly slow iOS device
+
             setTimeout(function(){
                 Omadi.widgets.signature.saveSignature(e.source);
             }, 1000);
@@ -376,8 +377,9 @@ Omadi.widgets.signature = {
         filePath = file.getNativePath();
         
         doneButton.widgetView.imageView.filePath = filePath;
-     
+
         if(file){
+
             blob = doneButton.widgetView.imageView.toBlob();
             file.write(blob);
 

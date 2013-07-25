@@ -739,7 +739,7 @@ Omadi.data.deleteNode = function(nid){"use strict";
         result.close();
         
         // Delete any photos from the DB where the nid matches
-        db.execute("UPDATE _photos SET nid = -1000000 WHERE nid = " + nid);
+        db.execute("UPDATE _files SET nid = -1000000 WHERE nid = " + nid);
         
         db.close();
     }
@@ -750,7 +750,7 @@ Omadi.data.getPhotosNotUploaded = function(){"use strict";
     filePaths = [];
     
     db = Omadi.utils.openMainDatabase();
-    result = db.execute("SELECT * FROM _files");
+    result = db.execute("SELECT * FROM _files WHERE type IN ('image','signature')");
     
     while(result.isValidRow()){
         filePath = result.fieldByName("file_path");
@@ -1492,16 +1492,18 @@ Omadi.data.getPhotoCount = function(){"use strict";
 Omadi.data.getNextPhotoData = function(){"use strict";
     var mainDB, result, nextPhoto, imageFile, imageBlob, maxDiff, 
         newWidth, newHeight, resizedFile, isResized, resizedFilePath, 
-        resizeRetval, readyForUpload, restartSuggested, dialog, deleteFromDB;
+        resizeRetval, readyForUpload, restartSuggested, dialog, deleteFromDB,
+        fileStream, buffer, numBytesRead;
    
     nextPhoto = null;
     readyForUpload = true;
     restartSuggested = false;
     deleteFromDB = false;
     
+    mainDB = Omadi.utils.openMainDatabase();
+    
     try{
-        mainDB = Omadi.utils.openMainDatabase();
-        result = mainDB.execute("SELECT nid, id, file_path, file_name, field_name, delta, timestamp, tries, latitude, longitude, accuracy, degrees, thumb_path FROM _files WHERE nid > 0 ORDER BY delta ASC LIMIT 1");
+        result = mainDB.execute("SELECT * FROM _files WHERE nid > 0 ORDER BY delta ASC LIMIT 1");
         
         if (result.isValidRow()) {
             //Only upload those images that have positive nids
@@ -1510,21 +1512,29 @@ Omadi.data.getNextPhotoData = function(){"use strict";
             //    Omadi.data.saveFailedUpload(result.fieldByName('id'));
             //}
             //else if (result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT) > 0){
+                Ti.API.debug("valid row");
+                
                 nextPhoto = {
-                    nid : result.fieldByName('nid'),
-                    id : result.fieldByName('id'),
+                    nid : result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT),
+                    id : result.fieldByName('id', Ti.Database.FIELD_TYPE_INT),
                     file_path : result.fieldByName('file_path'),
                     file_name : result.fieldByName('file_name'),
                     field_name : result.fieldByName('field_name'),
-                    delta : result.fieldByName('delta'),
-                    timestamp : result.fieldByName('timestamp'),
-                    tries : result.fieldByName('tries'),
+                    delta : result.fieldByName('delta', Ti.Database.FIELD_TYPE_INT),
+                    timestamp : result.fieldByName('timestamp', Ti.Database.FIELD_TYPE_INT),
+                    tries : result.fieldByName('tries', Ti.Database.FIELD_TYPE_INT),
                     latitude : result.fieldByName('latitude'),
                     longitude : result.fieldByName('longitude'),
-                    accuracy : result.fieldByName('accuracy'),
+                    accuracy : result.fieldByName('accuracy', Ti.Database.FIELD_TYPE_INT),
                     degrees : result.fieldByName('degrees', Ti.Database.FIELD_TYPE_INT),
-                    thumb_path : result.fieldByName('thumb_path')
+                    thumb_path : result.fieldByName('thumb_path'),
+                    type : result.fieldByName('type'),
+                    filesize : result.fieldByName('filesize', Ti.Database.FIELD_TYPE_INT),
+                    bytes_uploaded : result.fieldByName('bytes_uploaded', Ti.Database.FIELD_TYPE_INT),
+                    fid : result.fieldByName('fid', Ti.Database.FIELD_TYPE_INT)
                 };
+                
+                Ti.API.debug(nextPhoto);
                 
                 try{
                    
@@ -1562,7 +1572,48 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                         imageFile = Ti.Filesystem.getFile(nextPhoto.file_path);  
                         
                         if(imageFile.exists() && imageFile.isFile()){
-                            imageBlob = imageFile.read();
+                            
+                            if(nextPhoto.type == 'image' || nextPhoto.type == 'signature'){
+                                imageBlob = imageFile.read();
+                            }
+                            else if(nextPhoto.type == 'video' || nextPhoto.type == 'file'){
+                                Ti.API.debug("uploading a video");
+                                
+                                fileStream = imageFile.open(Ti.Filesystem.MODE_READ);
+                                buffer = Ti.createBuffer({
+                                    length: 2097152 // 2MB 
+                                });
+                                
+                                Ti.API.debug("bytes already uploaded: " + nextPhoto.bytes_uploaded);
+                                
+                                var position = 0;
+                                var filePart = 0;
+                                
+                                // No seek function, so move the stream to the correct position
+                                while(position < nextPhoto.bytes_uploaded){
+                                    filePart ++;
+                                    position += fileStream.read(buffer);
+                                    Ti.API.debug("used a buffer");
+                                }
+                                
+                                if(filePart > 0){
+                                    buffer.clear();
+                                }
+                                
+                                numBytesRead = fileStream.read(buffer);
+                                if(numBytesRead > 0){
+                                    if(numBytesRead < buffer.length){
+                                        buffer.length = numBytesRead;
+                                    }
+                                    imageBlob = buffer.toBlob();
+                                }
+                                else{
+                                    Omadi.service.sendErrorReport("Read zero bytes from stream.");
+                                }
+                                
+                                // Release the resources
+                                buffer.release();
+                            }
                             
                             if(imageBlob){
                             
@@ -1633,10 +1684,13 @@ Omadi.data.getNextPhotoData = function(){"use strict";
         }
         
         result.close();
-        mainDB.close();
     }
     catch(ex7){
         Omadi.service.sendErrorReport("Exception getting next photo: " + ex7);
+    }
+    finally{
+        // Make sure the DB gets closed
+        mainDB.close();
     }
     
     if(deleteFromDB){

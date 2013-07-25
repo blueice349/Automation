@@ -2,7 +2,6 @@
 
 /*jslint eqeq:true,plusplus:true*/
 
-
 Omadi.display = Omadi.display || {};
 
 Omadi.display.largePhotoWindow = null;

@@ -1,7 +1,7 @@
 
 Ti.include("/lib/widgets.js");
 /*global Omadi*/
-/*jslint eqeq: true, plusplus: true*/
+/*jslint eqeq:true,plusplus:true*/
 
 Ti.API.info("Form Window Opened");
 

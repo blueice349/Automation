@@ -76,6 +76,21 @@ var networkStatusLabel = Ti.UI.createLabel({
     textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
 });
 
+var uploadingProgressBar = Ti.UI.createProgressBar({
+    color : '#fff',
+    font : {
+        fontSize : 16
+    },
+    width : '100%',
+    height : 45,
+    message : "",
+    style : (Ti.App.isIOS) ? Titanium.UI.iPhone.ProgressBarStyle.PLAIN : '',
+    min: 0,
+    max: 1,
+    value: 0,
+    visible: false
+});
+
 var label_top = Titanium.UI.createLabel({
     color : '#FFFFFF',
     text : name + ''.toString(),
@@ -578,7 +593,19 @@ function doneSendingPhotosMainMenu(e){"use strict";
 }
 
 function sendingDataMainMenu(e){"use strict";
-    networkStatusLabel.setText(e.message);
+    // the progress bar set by onsendstream does not currently work with Android
+    // Only allow iOS apps to show the progress bar for uploads
+    if(Ti.App.isIOS && typeof e.progress === 'undefined'){
+        networkStatusLabel.setText(e.message);
+        uploadingProgressBar.setVisible(false);
+        networkStatusLabel.setVisible(true);
+    }
+    else{
+        uploadingProgressBar.setValue(0.01);
+        uploadingProgressBar.setMessage(e.message);
+        networkStatusLabel.setVisible(false);
+        uploadingProgressBar.setVisible(true);
+    }
     networkStatusView.show();
 }
 
@@ -728,6 +755,7 @@ function showContinuousSavedNode(){"use strict";
     curWin.add(listView);
 
     networkStatusView.add(networkStatusLabel);
+    networkStatusView.add(uploadingProgressBar);
 
     displayBundleList();
 
@@ -885,6 +913,7 @@ function showContinuousSavedNode(){"use strict";
         curWin = null;
         
         networkStatusLabel = null;
+        uploadingProgressBar = null;
         refresh_image = null;
         label_top = null;
         offImage = null;
