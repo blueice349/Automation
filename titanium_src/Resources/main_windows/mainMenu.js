@@ -675,7 +675,7 @@ function backgroundCheckForUpdates(){"use strict";
     }
 }
 
-function showContinuousSavedNode(){
+function showContinuousSavedNode(){"use strict";
     var db, result, continuousSave;
     
     db = Omadi.utils.openMainDatabase();
@@ -687,7 +687,7 @@ function showContinuousSavedNode(){
             node_type: result.fieldByName('table_name'),
             nid: result.fieldByName('nid'),
             form_part: result.fieldByName('form_part')
-        }
+        };
     }
     result.close();
     db.close();

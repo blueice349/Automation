@@ -669,7 +669,7 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
     var json, subDB, subResult, uploadMore = false, fieldSettings, tableName, 
         decoded_values, decoded, content, multipleValue, dbValue, jsonArray, 
         imageFile, filePath, resizedFilePath, deleteFile, photoWidget, 
-        photoDeleteOption, thumbPath, thumbFile;
+        photoDeleteOption, thumbPath, thumbFile, photosLeft;
     
     //Ti.API.info('UPLOAD FILE: =========== Success ========' + this.responseText);
     Ti.API.debug("Photo upload succeeded");
@@ -777,13 +777,14 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                 subDB.execute("DELETE FROM _photos WHERE nid=" + json.nid + " AND delta=" + json.delta + " AND field_name='" + json.field_name + "'");
             }
             
-            subResult = subDB.execute("SELECT id FROM _photos WHERE nid > 0 AND tries = 0");
-            uploadMore = (subResult.rowCount > 0 ? true : false);
+            //subResult = subDB.execute("SELECT id FROM _photos WHERE nid > 0 AND tries = 0");
+            //uploadMore = (subResult.rowCount > 0 ? true : false);
             subResult.close();
     
             subDB.close();
             
-            
+            photosLeft = Omadi.data.getPhotoCount();
+            Ti.API.debug("Photos left now: " + photosLeft);
     
             Ti.App.fireEvent('photoUploaded', {
                 nid : json.nid,
@@ -792,7 +793,7 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                 fid : json.file_id
             });
     
-            if (uploadMore) {
+            if (photosLeft > 0) {
                 Omadi.service.uploadFile();
             }
             else {

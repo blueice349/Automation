@@ -1,4 +1,4 @@
-/*jslint eqeq:true, plusplus: true*/
+/*jslint eqeq:true,plusplus:true*/
 /*global setConditionallyRequiredLabelForInstance,affectsAnotherConditionalField*/
 
 Omadi.widgets.datestamp = {

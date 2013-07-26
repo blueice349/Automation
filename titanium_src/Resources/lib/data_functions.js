@@ -457,7 +457,8 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
 
 Omadi.data.nodeSave = function(node) {"use strict";
     var query, field_name, fieldNames, instances, result, db, smallestNid, insertValues, j, k, 
-        instance, value_to_insert, has_data, content_s, saveNid, continuousNid, photoNids, origNid;
+        instance, value_to_insert, has_data, content_s, saveNid, continuousNid, photoNids, origNid,
+        continuousId, tempNid;
 
     /*global treatArray*/
     /*jslint nomen: true*/
@@ -658,12 +659,18 @@ Omadi.data.nodeSave = function(node) {"use strict";
             
             photoNids = [0];
             
-            if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined' && Ti.UI.currentWindow.continuous_nid != 0 && Ti.UI.currentWindow.continuous_nid != null && Ti.UI.currentWindow.continuous_nid != ""){
-                photoNids.push(Ti.UI.currentWindow.continuous_nid);
+            if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined'){
+                continuousId = parseInt(Ti.UI.currentWindow.continuous_nid, 10);
+                if(!isNaN(continuousId) && continuousId != 0){
+                    photoNids.push(continuousId);
+                }
             }
             
-            if(Ti.UI.currentWindow.nid != 'new' && Ti.UI.currentWindow.nid != 0 && Ti.UI.currentWindow.nid != null && Ti.UI.currentWindow.nid != ""){
-                photoNids.push(Ti.UI.currentWindow.nid);
+            if(typeof Ti.UI.currentWindow.nid !== 'undefined'){
+                tempNid = parseInt(Ti.UI.currentWindow.nid, 10);
+                if(!isNaN(tempNid) && tempNid != 0){
+                    photoNids.push(tempNid);
+                }
             }
             
             db.execute('UPDATE _photos SET nid=' + saveNid + ' WHERE nid IN (' + photoNids.join(',') + ')');
@@ -1341,7 +1348,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                 break;
                                 
                             case 'omadi_reference':
-                                subResult = db.execute('SELECT title, table_name, nid FROM node WHERE nid IN(' + node[field_name].dbValues.join(',') + ')');
+                                subResult = db.execute('SELECT title, table_name, nid FROM node WHERE nid IN (' + node[field_name].dbValues.join(',') + ')');
                                 node[field_name].nodeTypes = [];
 
                                 while (subResult.isValidRow()) {
@@ -1384,6 +1391,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                 break;
 
                             case 'image':
+                            case 'signature':
                                 subResult = db.execute('SELECT * FROM _photos WHERE nid=' + node.nid + ' AND field_name ="' + field_name + '" ORDER BY delta ASC');
 
                                 node[field_name].imageData = [];

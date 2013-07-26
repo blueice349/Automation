@@ -720,6 +720,13 @@ Omadi.widgets.image = {
                             }, 100);
                         }
                         else{
+                            
+                            newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex, null, filePath, degrees);
+                            
+                            imageView.parentView.add(newImageView);
+                            imageView.parentView.remove(imageView);
+                            imageView = null;
+                            
                             Omadi.display.doneLoading();
                         }
                         
@@ -871,6 +878,13 @@ Omadi.widgets.image = {
                             }, 100);
                         }
                         else{
+                            
+                            newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex, null, filePath, 0);
+                            
+                            imageView.parentView.add(newImageView);
+                            imageView.parentView.remove(imageView);
+                            imageView = null;
+                            
                             Omadi.display.doneLoading();
                         }
                     },

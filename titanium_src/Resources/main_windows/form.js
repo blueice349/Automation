@@ -1,6 +1,5 @@
 
 Ti.include("/lib/widgets.js");
-
 /*global Omadi*/
 /*jslint eqeq: true, plusplus: true*/
 
@@ -40,21 +39,48 @@ function cancelOpt() {"use strict";
     });
 
     dialog.addEventListener('click', function(e) {
-        var db, result, numPhotos, secondDialog, negativeNid, query;
+        var db, result, numPhotos, secondDialog, negativeNid, query, continuousId, photoNids;
         
         if (e.index == 0) {
             
-            if(Omadi.utils.getPhotoWidget() == 'choose'){
+            
+            if(node.flag_is_updated == 3){
+                // The original node is a draft
+                if(!isNaN(parseInt(Ti.UI.currentWindow.nid, 10))){
+                    // Add any newly created/removed photos to the draft so they aren't lost
+                    photoNids = [0];
+                    if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined'){
+                        continuousId = parseInt(Ti.UI.currentWindow.continuous_nid, 10);
+                        if(!isNaN(continuousId) && continuousId != 0){
+                            photoNids.push(continuousId);
+                        }
+                    }
+                    
+                    db = Omadi.utils.openMainDatabase();
+                    db.execute("UPDATE _photos SET nid = " + Ti.UI.currentWindow.nid + " WHERE nid IN (" + photoNids.join(",") + ")");
+                    db.close();
+                }
+                
+                Omadi.data.deleteContinuousNodes();
+                Ti.UI.currentWindow.close();
+            }
+            else if(Omadi.utils.getPhotoWidget() == 'choose'){
+                // This is not a draft, and we don't care about the taken photos
                 // Nothing to delete with the choose widget
                 // Photos should be managed externally except when uploaded successfully
+                
                 Omadi.data.deleteContinuousNodes();
                 Ti.UI.currentWindow.close();
             }
             else{
-            
+                // Regular save with photos being taken inside the app
+                
                 photoNids = [0];
-                if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined' && Ti.UI.currentWindow.continuous_nid != 0){
-                    photoNids.push(Ti.UI.currentWindow.continuous_nid);
+                if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined'){
+                    continuousId = parseInt(Ti.UI.currentWindow.continuous_nid, 10);
+                    if(!isNaN(continuousId) && continuousId != 0){
+                        photoNids.push(continuousId);
+                    }
                 }
                 
                 query = "SELECT COUNT(*) FROM _photos WHERE nid IN (" + photoNids.join(',') + ")";
@@ -82,11 +108,14 @@ function cancelOpt() {"use strict";
                     });
                     
                     secondDialog.addEventListener('click', function(e) {
-                        var db_toDeleteImage, deleteResult, file, photoNids;
+                        var db_toDeleteImage, deleteResult, file, photoNids, continuousId;
                         
                         photoNids = [0];
-                        if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined' && Ti.UI.currentWindow.continuous_nid != 0){
-                            photoNids.push(Ti.UI.currentWindow.continuous_nid);
+                        if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined'){
+                            continuousId = parseInt(Ti.UI.currentWindow.continuous_nid, 10);
+                            if(!isNaN(continuousId) && continuousId != 0){
+                                photoNids.push(continuousId);
+                            }
                         }
                         
                         db_toDeleteImage = Omadi.utils.openMainDatabase();
@@ -238,6 +267,7 @@ function getNewNode(){"use strict";
     
     node.changed = Omadi.utils.getUTCTimestamp();
     node.changed_uid = Omadi.utils.getUid();
+    node.flag_is_updated = 0;
     
     return node;
 }

@@ -82,6 +82,12 @@ Omadi.widgets.signature = {
             borderWidth: 2
         });
         
+        if (Omadi.utils.isArray(imageData)) {
+            if(typeof imageData[0] !== 'undefined'){
+                imageView.image = imageData[0];
+            }
+        }
+        
         if(isSigned){
             imageWrapper.visible = true;
             imageWrapper.height = Ti.UI.SIZE;
@@ -335,26 +341,15 @@ Omadi.widgets.signature = {
             
             Omadi.widgets.signature.removePreviousSignature(instance);
             
-            if(Ti.App.isAndroid){
-                // There were problems with getting the blob from the paintView.
-                // The blob needs to come from the image that was set, but the view's layout needs to update first
-                
-                e.source.widgetView.imageView.setImage(blob);
-                e.source.widgetView.imageWrapper.setVisible(true);
-                e.source.widgetView.imageWrapper.setHeight(Ti.UI.SIZE);
-                
-                setTimeout(function(){
-                    Omadi.widgets.signature.saveForAndroid(e.source);
-                }, 1000);
-                
-            }
-            else{
-                e.source.widgetView.imageView.setImage(blob);
-                e.source.widgetView.imageWrapper.setVisible(true);
-                e.source.widgetView.imageWrapper.setHeight(Ti.UI.SIZE);
-                
-                Omadi.widgets.image.saveImageInDb(e.source.widgetView.imageView, blob);
-            }
+            e.source.widgetView.imageView.setImage(blob);
+            e.source.widgetView.imageWrapper.setVisible(true);
+            e.source.widgetView.imageWrapper.setHeight(Ti.UI.SIZE);
+            
+            // This waiting is really only for the Android devices, but it's not a hugely back thing
+            // To leave for a possibly slow iOS device
+            setTimeout(function(){
+                Omadi.widgets.signature.saveSignature(e.source);
+            }, 1000);
             
             e.source.win.close();
         });
@@ -371,16 +366,36 @@ Omadi.widgets.signature = {
         
         win.open();
     },
-    saveForAndroid : function(doneButton){"use strict";
-        Ti.API.debug("SAVING FOR ANDROID");
+    saveSignature : function(doneButton){"use strict";
+        var filePath, file, blob;
+
+        Ti.API.debug("SAVING SIGNATURE");
         //var blob = e.source.imageView.toBlob();
-        //Omadi.widgets.image.saveImageInDb(e.source.imageView, blob); 
-        
+        //Omadi.widgets.image.saveImageInDb(e.source.imageView, blob);
+
         // var blob = e.source.toBlob();
         // Omadi.widgets.image.saveImageInDb(e.source, blob);
-        
-        var blob = doneButton.widgetView.imageView.toBlob();
-        Omadi.widgets.image.saveImageInDb(doneButton.widgetView.imageView, blob);
+
+        filePath = Ti.Filesystem.applicationDataDirectory + "s_" + Omadi.utils.getUTCTimestamp() + '.bmp';
+
+        doneButton.widgetView.imageView.filePath = filePath;
+        Ti.API.debug(filePath);
+
+        file = Ti.Filesystem.getFile(filePath);
+        if(file && file.writable){
+            blob = doneButton.widgetView.imageView.toBlob();
+            file.write(blob);
+
+            Omadi.widgets.image.saveFileInfo(doneButton.widgetView.imageView, filePath, '', 0);
+        }
+        else{
+
+            Omadi.service.sendErrorReport("File is not writable for signature.");
+            alert("There is a problem saving the signature.");
+        }
+
+        //var blob = doneButton.widgetView.imageView.toBlob();
+        //Omadi.widgets.image.saveImageInDb(doneButton.widgetView.imageView, blob);
     },
     removePreviousSignature : function(instance){"use strict";
         var nid, db;
