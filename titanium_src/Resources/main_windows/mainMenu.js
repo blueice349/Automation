@@ -603,8 +603,13 @@ function sendingDataMainMenu(e){"use strict";
     else{
         uploadingProgressBar.setValue(0.01);
         uploadingProgressBar.setMessage(e.message);
+        uploadingProgressBar.uploadingBytes = e.uploadingBytes;
+        uploadingProgressBar.filesize = e.filesize;
+        uploadingProgressBar.bytesUploaded = e.bytesUploaded;
+        
         networkStatusLabel.setVisible(false);
         uploadingProgressBar.setVisible(true);
+        
     }
     networkStatusView.show();
 }

@@ -696,7 +696,7 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
             tableName = subResult.fieldByName('table_name');
             subResult.close();
     
-            subResult = subDB.execute("SELECT settings FROM fields WHERE bundle='" + tableName + "' and type IN ('image','file','video','signature') AND field_name='" + json.field_name + "';");
+            subResult = subDB.execute("SELECT settings FROM fields WHERE bundle='" + tableName + "' and type IN ('image','file') AND field_name='" + json.field_name + "';");
             fieldSettings = JSON.parse(subResult.fieldByName('settings'));
             subResult.close();
     
@@ -811,6 +811,7 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
             });
     
             if (photosLeft > 0) {
+                
                 Omadi.service.uploadFile();
             }
             else {
@@ -904,10 +905,27 @@ Omadi.service.getLastUploadStartTimestamp = function(){"use strict";
     return lastUploadStartTimestamp;
 };
 
+Omadi.service.currentFileUpload = null;
+
 Omadi.service.photoUploadStream = function(e){"use strict";
     /*global uploadingProgressBar*/
+    var filesize, uploadingBytes, bytesUploaded, currentBytesUploaded;
+    
     if(uploadingProgressBar !== null){
-        uploadingProgressBar.setValue(e.progress);
+        
+        filesize = Omadi.service.currentFileUpload.filesize;
+        uploadingBytes = Omadi.service.currentFileUpload.uploading_bytes;
+        bytesUploaded = Omadi.service.currentFileUpload.bytes_uploaded;
+        
+        Ti.API.debug("in an upload stream");
+        
+        if(filesize == uploadingBytes){
+            uploadingProgressBar.setValue(e.progress);
+        }
+        else{
+            currentBytesUploaded = Math.floor(bytesUploaded + (e.progress * uploadingBytes));
+            uploadingProgressBar.setValue(currentBytesUploaded / filesize);
+        }
     }
 };
 
@@ -917,7 +935,7 @@ Omadi.service.uploadFile = function() {"use strict";
     var http, mainDB, result, isUploading, nowTimestamp, 
         lastUploadStartTimestamp, tmpImageView, 
         blobImage, maxDiff, imageData, uploadPhoto,
-        nextPhotoData, photoCount;
+        photoCount, payload;
     
     //Omadi.service.sendErrorReport("In uploadFile");
     Ti.API.debug("Attempting to upload a file");
@@ -949,35 +967,35 @@ Omadi.service.uploadFile = function() {"use strict";
             
             if (photoCount > 0) {
                 
-                nextPhotoData = Omadi.data.getNextPhotoData();
+                Omadi.service.currentFileUpload = Omadi.data.getNextPhotoData();
                 
                 //Omadi.service.sendErrorReport("Photo count for upload: " + photoCount);
                 
-                if(nextPhotoData){
+                if(Omadi.service.currentFileUpload){
                     //Omadi.service.sendErrorReport("Next photo data is valid");
                     
-                    Ti.API.debug("Current upload is for nid " + nextPhotoData.nid + " field " + nextPhotoData.field_name + " delta " + nextPhotoData.delta + " and tries=" + nextPhotoData.tries);
+                    Ti.API.debug("Current upload is for nid " + Omadi.service.currentFileUpload.nid + " field " + Omadi.service.currentFileUpload.field_name + " delta " + Omadi.service.currentFileUpload.delta + " and tries=" + Omadi.service.currentFileUpload.tries);
                     
                     try{
                         mainDB = Omadi.utils.openMainDatabase();
                         // Reset all photos to not uploading in case there was an error previously
                         mainDB.execute("UPDATE _files SET uploading = 0 WHERE uploading <> 0");
                         
-                        if ((nextPhotoData.file_data === null || nextPhotoData.file_data.length < 10) && nextPhotoData.id > 0) {
-                            mainDB.execute("DELETE FROM _files WHERE id=" + nextPhotoData.id);
+                        if ((Omadi.service.currentFileUpload.file_data === null || Omadi.service.currentFileUpload.file_data.length < 10) && Omadi.service.currentFileUpload.id > 0) {
+                            mainDB.execute("DELETE FROM _files WHERE id=" + Omadi.service.currentFileUpload.id);
                             Omadi.service.sendErrorReport("Deleted a photo from the database");
                             return;
                         }
                         
                         // Set the photo to uploading status
-                        mainDB.execute("UPDATE _files SET uploading = " + nowTimestamp + " WHERE id = " + nextPhotoData.id);
+                        mainDB.execute("UPDATE _files SET uploading = " + nowTimestamp + " WHERE id = " + Omadi.service.currentFileUpload.id);
                         mainDB.close();
                     }
                     catch(ex1){
                         Omadi.service.sendErrorReport("Exception setting uploading var: " + ex1);
                     }
                      
-                    if (nextPhotoData.nid > 0) {
+                    if (Omadi.service.currentFileUpload.nid > 0) {
                         
                         try{
                             http = Ti.Network.createHTTPClient();
@@ -988,40 +1006,46 @@ Omadi.service.uploadFile = function() {"use strict";
                             http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/upload.json');
                             http.setTimeout(30000);
                             
-                            http.nid = nextPhotoData.nid;
-                            http.photoId = nextPhotoData.id;
-                            http.delta = nextPhotoData.delta;
-                            http.field_name = nextPhotoData.field_name;
+                            http.nid = Omadi.service.currentFileUpload.nid;
+                            http.photoId = Omadi.service.currentFileUpload.id;
+                            http.delta = Omadi.service.currentFileUpload.delta;
+                            http.field_name = Omadi.service.currentFileUpload.field_name;
+                            http.uploadPart = Omadi.service.currentFileUpload.uploadPart;
+                            http.numUploadParts = Omadi.service.currentFileUpload.numUploadParts;
         
                             //Ti.API.info("Uploading to " + domainName);
                             http.setRequestHeader("Content-Type", "application/json");
                             Omadi.utils.setCookieHeader(http);
-                           
-                            Ti.App.fireEvent("sendingData", {
-                                message : 'Uploading files. ' + photoCount + ' to go...',
-                                progress: true
-                            });
+                            
+                            payload = JSON.stringify({
+                                file_data : Omadi.service.currentFileUpload.file_data,
+                                filename : Omadi.service.currentFileUpload.file_name,
+                                nid : Omadi.service.currentFileUpload.nid,
+                                field_name : Omadi.service.currentFileUpload.field_name,
+                                delta : Omadi.service.currentFileUpload.delta,
+                                timestamp : Omadi.service.currentFileUpload.timestamp,
+                                latitude : Omadi.service.currentFileUpload.latitude,
+                                longitude : Omadi.service.currentFileUpload.longitude,
+                                accuracy : Omadi.service.currentFileUpload.accuracy,
+                                degrees : Omadi.service.currentFileUpload.degrees,
+                                type : Omadi.service.currentFileUpload.type,
+                                fid : Omadi.service.currentFileUpload.fid,
+                                filesize : Omadi.service.currentFileUpload.filesize
+                            })
+                            
+                            if(Omadi.service.currentFileUpload.uploadPart == 1){
+                                Ti.App.fireEvent("sendingData", {
+                                    message : 'Uploading files. ' + photoCount + ' to go...',
+                                    progress : true
+                                });
+                            }
                             
                             Ti.API.debug("Sending photo to server");
                             
-                            // var file = Ti.Filesystem.getFile(nextPhotoData.file_path);
+                            // var file = Ti.Filesystem.getFile(Omadi.service.currentFileUpload.file_path);
                             // var blob = file.read();
                             
-                            http.send(JSON.stringify({
-                                file_data : nextPhotoData.file_data,
-                                filename : nextPhotoData.file_name,
-                                nid : nextPhotoData.nid,
-                                field_name : nextPhotoData.field_name,
-                                delta : nextPhotoData.delta,
-                                timestamp : nextPhotoData.timestamp,
-                                latitude : nextPhotoData.latitude,
-                                longitude : nextPhotoData.longitude,
-                                accuracy : nextPhotoData.accuracy,
-                                degrees : nextPhotoData.degrees,
-                                type : nextPhotoData.type,
-                                fid : nextPhotoData.fid,
-                                filesize : nextPhotoData.filesize
-                            }));
+                            http.send(payload);
                         }
                         catch(ex2){
                             Omadi.service.sendErrorReport("Exception sending upload data: " + ex2);

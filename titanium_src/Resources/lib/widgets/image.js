@@ -87,7 +87,7 @@ Omadi.widgets.image = {
         Ti.API.debug("Creating image field");
 
         widgetView = Ti.UI.createScrollView({
-            width : '96%',
+            width : '92%',
             //***** Don't set contentWidth to anything here.  It is set further down ******/
             //contentWidth : 'auto',
             contentHeight : 100,

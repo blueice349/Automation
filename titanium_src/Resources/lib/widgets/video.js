@@ -8,6 +8,8 @@ Omadi.widgets.video = {
         dbValue = [];
         imageData = [];
         degreeData = [];
+        
+        Ti.API.debug(node);
 
         if ( typeof node[instance.field_name] !== 'undefined') {
             if ( typeof node[instance.field_name].dbValues !== 'undefined') {
@@ -20,10 +22,10 @@ Omadi.widgets.video = {
         }
 
         settings = instance.settings;
-        Ti.API.debug("Creating image field");
+        Ti.API.debug("Creating video field");
 
         widgetView = Ti.UI.createScrollView({
-            width : '96%',
+            width : '92%',
             //***** Don't set contentWidth to anything here.  It is set further down ******/
             //contentWidth : 'auto',
             contentHeight : 100,

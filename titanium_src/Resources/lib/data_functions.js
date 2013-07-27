@@ -471,8 +471,8 @@ Omadi.data.nodeSave = function(node) {"use strict";
         if (instances.hasOwnProperty(field_name)) {
             if (field_name != null && typeof instances[field_name] !== 'undefined') {
                 
-                // Don't save anything for file or rules_field, as they are read-only for mobile devices
-                if(instances[field_name].type != 'file' && instances[field_name].type != 'rules_field'){
+                // Don't save anything for rules_field, as they are read-only for mobile devices
+                if(instances[field_name].type != 'rules_field'){
                     fieldNames.push(field_name);
                 }
             }
@@ -584,6 +584,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
                             case 'omadi_time':
                             case 'auto_increment':
                             case 'image':
+                            case 'file':
     
                                 if (Omadi.utils.isEmpty(value_to_insert)) {
                                     value_to_insert = "null";
@@ -1144,7 +1145,8 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                     case 'file':
                                     case 'datestamp':
                                     case 'omadi_time':
-                                    
+                                        Ti.API.debug("Loading: " + field_name + " " + dbValue);
+                                        
                                         if (!Omadi.utils.isEmpty(dbValue)) {
                                             dbValue = parseInt(dbValue, 10);
                                             node[field_name].dbValues.push(dbValue);
@@ -1362,57 +1364,60 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                 break;
 
                             case 'image':
-                            case 'signature':
-
+                            case 'file':
+                                // This includes signature and video fields
+                                
                                 subResult = db.execute('SELECT * FROM _files WHERE nid=' + node.nid + ' AND field_name ="' + field_name + '" ORDER BY delta ASC');
-
 
                                 node[field_name].imageData = [];
                                 node[field_name].degrees = [];
                                 
                                 if (subResult.rowCount > 0) {
                                     while (subResult.isValidRow()) {
-                                        //isUpdated[val.fieldByName('delta')] = true;
-                                        filePath = subResult.fieldByName('file_path');
                                         
-                                        node[field_name].imageData.push(filePath);
+                                        node[field_name].imageData.push(subResult.fieldByName('file_path'));
                                         node[field_name].degrees.push(subResult.fieldByName('degrees', Ti.Database.FIELD_TYPE_INT));
                                         
                                         subResult.next();
                                     }
                                 }
                                 subResult.close();
-                                break;
                                 
-                            case 'file':
-                                
-                                subResult = db.execute("SELECT " + field_name + "___filename AS filename FROM " + node.type + " WHERE nid=" + node.nid);
-                                if (subResult.rowCount > 0) {
-                                    textValue = [];
-                                    origDBValue = subResult.fieldByName("filename");
-                                    tempDBValues = Omadi.utils.getParsedJSON(origDBValue);
-                                    //Ti.API.debug(tempDBValues);
-                                    if(Omadi.utils.isArray(tempDBValues)){
-                                        textValue = tempDBValues;
-                                    }
-                                    else{
-                                        textValue.push(origDBValue);
-                                    }
-                                    //Ti.API.debug(textValue);
+                                // Special case for only file-type fields
+                                if(instances[field_name].type == 'file'){
                                     
-                                    for ( i = 0; i < node[field_name].dbValues.length; i++) {
-                                        if (!Omadi.utils.isEmpty(node[field_name].dbValues[i])) {
-                                            
-                                            if(typeof textValue[i] !== 'undefined'){
-                                                node[field_name].textValues[i] = textValue[i];
-                                            }
-                                            else{
-                                                node[field_name].textValues[i] = node[field_name].dbValues[i];
+                                    Ti.API.debug("node load");
+                                    Ti.API.debug(node);
+                                    
+                                    subResult = db.execute("SELECT " + field_name + "___filename AS filename FROM " + node.type + " WHERE nid=" + node.nid);
+                                    if (subResult.rowCount > 0) {
+                                        textValue = [];
+                                        origDBValue = subResult.fieldByName("filename");
+                                        tempDBValues = Omadi.utils.getParsedJSON(origDBValue);
+                                        //Ti.API.debug(tempDBValues);
+                                        if(Omadi.utils.isArray(tempDBValues)){
+                                            textValue = tempDBValues;
+                                        }
+                                        else{
+                                            textValue.push(origDBValue);
+                                        }
+                                        //Ti.API.debug(textValue);
+                                        
+                                        for ( i = 0; i < node[field_name].dbValues.length; i++) {
+                                            if (!Omadi.utils.isEmpty(node[field_name].dbValues[i])) {
+                                                
+                                                if(typeof textValue[i] !== 'undefined'){
+                                                    node[field_name].textValues[i] = textValue[i];
+                                                }
+                                                else{
+                                                    node[field_name].textValues[i] = node[field_name].dbValues[i];
+                                                }
                                             }
                                         }
                                     }
+                                    subResult.close();
                                 }
-                                subResult.close();
+                                
                                 break;
 
                             case 'calculation_field':
@@ -1493,8 +1498,9 @@ Omadi.data.getNextPhotoData = function(){"use strict";
     var mainDB, result, nextPhoto, imageFile, imageBlob, maxDiff, 
         newWidth, newHeight, resizedFile, isResized, resizedFilePath, 
         resizeRetval, readyForUpload, restartSuggested, dialog, deleteFromDB,
-        fileStream, buffer, numBytesRead;
+        fileStream, buffer, numBytesRead, maxBytesPerUpload;
    
+    maxBytesPerUpload = 3145728; // 3MB
     nextPhoto = null;
     readyForUpload = true;
     restartSuggested = false;
@@ -1533,6 +1539,19 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                     bytes_uploaded : result.fieldByName('bytes_uploaded', Ti.Database.FIELD_TYPE_INT),
                     fid : result.fieldByName('fid', Ti.Database.FIELD_TYPE_INT)
                 };
+                
+                if(nextPhoto.filesize > maxBytesPerUpload){
+                    nextPhoto.numUploadParts = Math.ceil(nextPhoto.filesize / maxBytesPerUpload);
+                    nextPhoto.uploadPart = (nextPhoto.bytes_uploaded / maxBytesPerUpload) + 1;
+                    nextPhoto.uploading_bytes = maxBytesPerUpload;
+                }
+                else{
+                    nextPhoto.numUploadParts = 1;
+                    nextPhoto.uploadPart = 1;
+                    nextPhoto.uploading_bytes = nextPhoto.filesize;
+                }
+                
+                Ti.API.debug("Upload Part: " + nextPhoto.uploadPart + "/" + nextPhoto.numUploadParts);
                 
                 Ti.API.debug(nextPhoto);
                 
@@ -1581,7 +1600,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                                 
                                 fileStream = imageFile.open(Ti.Filesystem.MODE_READ);
                                 buffer = Ti.createBuffer({
-                                    length: 2097152 // 2MB 
+                                    length: maxBytesPerUpload 
                                 });
                                 
                                 Ti.API.debug("bytes already uploaded: " + nextPhoto.bytes_uploaded);
@@ -1610,6 +1629,9 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                                 else{
                                     Omadi.service.sendErrorReport("Read zero bytes from stream.");
                                 }
+                                
+                                // Set the actual number of bytes we're uploading for this part
+                                nextPhoto.uploading_bytes = numBytesRead;
                                 
                                 // Release the resources
                                 buffer.release();
@@ -2433,6 +2455,7 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                             case 'datestamp':
                                             case 'omadi_time':
                                             case 'image':
+                                            case 'file':
                                             
                                                 value = Omadi.service.fetchedJSON.node[type].insert[i][field_name];
         
