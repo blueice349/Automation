@@ -712,7 +712,8 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
     
             postDialog.addEventListener('click', function(ev) {
                 var form_part = form_parts[ev.index];
-                if(typeof form_part !== 'undefined'){
+                Ti.API.debug("Form part clicked: " + form_part);
+                if(typeof form_part !== 'undefined' && ev.index >= 0){
                     if (form_part == '_cancel') {
                         Ti.API.info("Cancelled");
                     }
@@ -725,8 +726,15 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
                         extraOptionCallback = extraOptions[extraOptionIndex].callback;
                         extraOptionCallback(extraOptions[extraOptionIndex].callbackArgs);
                     }
-                    else if (ev.index !== -1 && isEditEnabled === true) {
-                        ev.source.eventRow.setBackgroundColor('#fff');
+                    else if (!isNaN(parseInt(form_part, 10))){
+                        // form+_part is a number, so it is editing the current node
+                        if(isEditEnabled === true) {
+                            ev.source.eventRow.setBackgroundColor('#fff');
+                            Omadi.display.openFormWindow(node_type, e.row.nid, form_part);
+                        }
+                    }
+                    else{
+                        // The form part is a string, so it is a copy to function
                         Omadi.display.openFormWindow(node_type, e.row.nid, form_part);
                     }
                 }

@@ -793,58 +793,59 @@ function openAndroidMenuItem(e){"use strict";
     Omadi.display.openFormWindow(itemData.type, itemData.nid, itemData.form_part);
 }
 
-if (Ti.App.isAndroid && isEditEnabled == true) {
+if (Ti.App.isAndroid) {
     var activity = curWin.activity;
     activity.onCreateOptionsMenu = function(e) {"use strict";
         var db, result, bundle, menu_zero, form_part, menu_edit, customCopy, to_type, to_bundle, order;
-     
-
-        db = Omadi.utils.openMainDatabase();
-        bundle = Omadi.data.getBundle(curWin.type);
-
-
-        result = db.execute('SELECT form_part FROM node WHERE nid=' + curWin.nid);
-        form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
         
-        result.close();
-        db.close();
-
         order = 0;
+        bundle = Omadi.data.getBundle(curWin.type);
+            
+        if(isEditEnabled == true){
+            
+            db = Omadi.utils.openMainDatabase();
 
-        if (bundle.data.form_parts != null && bundle.data.form_parts != "" && (bundle.data.form_parts.parts.length >= form_part + 2)) {
-
-            menu_zero = e.menu.add({
-                title : bundle.data.form_parts.parts[form_part + 1].label,
+            result = db.execute('SELECT form_part FROM node WHERE nid=' + curWin.nid);
+            form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
+            
+            result.close();
+            db.close();
+        
+            if (bundle.data.form_parts != null && bundle.data.form_parts != "" && (bundle.data.form_parts.parts.length >= form_part + 2)) {
+    
+                menu_zero = e.menu.add({
+                    title : bundle.data.form_parts.parts[form_part + 1].label,
+                    order : order
+                });
+                
+                androidMenuItemData[order] = {
+                    type: curWin.type,
+                    nid: curWin.nid,
+                    form_part: form_part + 1  
+                };
+    
+                menu_zero.setIcon("/images/drop.png");
+                menu_zero.addEventListener("click", openAndroidMenuItem);
+                
+                order++;
+            }
+    
+            menu_edit = e.menu.add({
+                title : 'Edit',
                 order : order
             });
             
             androidMenuItemData[order] = {
                 type: curWin.type,
                 nid: curWin.nid,
-                form_part: form_part + 1  
+                form_part: form_part
             };
-
-            menu_zero.setIcon("/images/drop.png");
-            menu_zero.addEventListener("click", openAndroidMenuItem);
+            
+            menu_edit.setIcon("/images/edit.png");
+            menu_edit.addEventListener("click", openAndroidMenuItem);
             
             order++;
         }
-
-        menu_edit = e.menu.add({
-            title : 'Edit',
-            order : order
-        });
-        
-        androidMenuItemData[order] = {
-            type: curWin.type,
-            nid: curWin.nid,
-            form_part: form_part
-        };
-        
-        menu_edit.setIcon("/images/edit.png");
-        menu_edit.addEventListener("click", openAndroidMenuItem);
-        
-        order++;
         
         if(typeof bundle.data.custom_copy !== 'undefined'){
             for(to_type in bundle.data.custom_copy){
