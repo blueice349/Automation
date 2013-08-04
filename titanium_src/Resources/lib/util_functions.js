@@ -5,7 +5,7 @@ var Omadi = Omadi || {};
 Omadi.utils = Omadi.utils || {};
 
 Omadi.DOMAIN_NAME = domainName;
-Omadi.DB_VERSION = "DB1701";
+Omadi.DB_VERSION = "DB1702";
 
 
 Omadi.utils.checkVolumeLevel = function(){"use strict";

@@ -421,8 +421,117 @@ function doFieldOutput(fieldObj) {"use strict";
                                 autorotate: true,
                                 borderColor : '#333',
                                 borderWidth : 2,
-                                bigImg : imagePath,
+                                filePath : imagePath,
                                 isImage : true
+                            });
+                            
+                            // if(Ti.App.isAndroid && degrees > 0){
+                                // transform = Ti.UI.create2DMatrix();
+                                // animation = Ti.UI.createAnimation();
+//                                 
+                                // rotateDegrees = degrees;
+                                // if(rotateDegrees == 270){
+                                    // rotateDegrees = 90;
+                                // }
+                                // else if(rotateDegrees == 90){
+                                    // rotateDegrees = 270;
+                                // }
+//                                 
+                                // transform = transform.rotate(rotateDegrees);
+                                // animation.transform = transform;
+                                // animation.duration = 1;
+//                                 
+                                // contentImage.animate(animation);
+                            // }
+    
+                            //contentImage.addEventListener('click', displayLargeImage);
+                            valueView.add(contentImage);
+                            
+                            contentWidth += 110;
+                        }
+                    }
+                    
+                    valueView.setContentWidth(contentWidth);
+    
+                    if (valueView.getChildren().length === 0) {
+                        valueView.height = 0;
+                    }
+                    else{
+                        labelView.setWidth('100%');
+                        labelLabel.setTextAlign(Ti.UI.TEXT_ALIGNMENT_LEFT);
+                        labelLabel.setLeft(5);
+                    }
+                    
+                    rowView.add(valueView);
+                    
+                    scrollView.add(labelView);
+                }
+                else if (fieldObj.type === 'file' && typeof fieldObj.widget !== 'undefined' && fieldObj.widget.type !== 'undefined' && fieldObj.widget.type == 'omadi_file_video') {
+                    valueView = Ti.UI.createScrollView({
+                        contentHeight : 100,
+                        arrImages : null,
+                        scrollType : "horizontal",
+                        layout : 'horizontal',
+                        right : 0,
+                        width : '100%',
+                        height : 100
+                    });
+                    
+                    contentWidth = 0;
+    
+                    for ( i = 0; i < node[fieldObj.field_name].dbValues.length; i += 1) {
+    
+                        if (node[fieldObj.field_name].dbValues[i] > 0) {
+                            
+                            fileId = node[fieldObj.field_name].dbValues[i];
+                            contentImage = Ti.UI.createImageView({
+                                height : 100,
+                                width : 100,
+                                left : 10,
+                                top : 0,
+                                image : '/images/thumbnail-loading.png',
+                                autorotate: true,
+                                borderColor : '#333',
+                                borderWidth : 2,
+                                imageVal : fileId,
+                                fid : fileId,
+                                nid : node.nid,
+                                instance : fieldObj
+                            });
+    
+                            contentImage.addEventListener('click', function(e){
+                                 Omadi.widgets.video.openVideoPlayer(e.source);
+                            });
+                            
+                            valueView.add(contentImage);
+                            //Omadi.display.setImageViewThumbnail(contentImage, node.nid, fileId);
+                            contentWidth += 110;
+                        }
+                    }
+    
+                    for ( i = 0; i < node[fieldObj.field_name].imageData.length; i += 1) {
+    
+                        if (node[fieldObj.field_name].imageData[i] > "") {
+                            fileId = node[fieldObj.field_name].dbValues[i];
+                            
+                            
+                            imagePath = node[fieldObj.field_name].imageData[i];
+                            
+                            //alert(imagePath);
+                            
+                            degrees = node[fieldObj.field_name].degrees[i];
+                            
+                            contentImage = Ti.UI.createImageView({
+                                height : 100,
+                                width : 100,
+                                left : 10,
+                                top : 0,
+                                image : imagePath,
+                                autorotate: true,
+                                borderColor : '#333',
+                                borderWidth : 2,
+                                isImage : true,
+                                filePath : imagePath
                             });
                             
                             // if(Ti.App.isAndroid && degrees > 0){

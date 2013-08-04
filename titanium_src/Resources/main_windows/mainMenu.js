@@ -1,8 +1,11 @@
 
 Ti.include('/lib/functions.js');
 
+var ImageFactory = null;
+
 if (Ti.App.isIOS) {
     Ti.include('/lib/iOS/backgroundLocation.js');
+    ImageFactory = require('ti.imagefactory');
 }
 
 // var cameraAndroid;

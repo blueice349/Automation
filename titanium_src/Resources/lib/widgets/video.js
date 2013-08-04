@@ -152,7 +152,7 @@ Omadi.widgets.video = {
             imageView.filePath = fid;
         }
         else if ( typeof fid === 'number') {
-            alert("add this");
+            Ti.API.error("add thumbnail to video");
             //Omadi.display.setImageViewThumbnail(imageView, nid, fid);
         }
         
@@ -267,8 +267,6 @@ Omadi.widgets.video = {
                             fullscreen: false,
                             height: Ti.UI.FILL,
                             width: Ti.UI.FILL,
-                            //url: Omadi.DOMAIN_NAME + '/sync/file/' + imageView.nid + '/' + imageView.fid,
-                            //url: 'https://s3.amazonaws.com/omadi/12777_1374706214_v_1374706046.mp4',
                             url: json.url,
                             top: 0
                         });
@@ -289,7 +287,7 @@ Omadi.widgets.video = {
                 alert("Could not load the video: " + e.error);
             };
             
-            http.open('GET', Omadi.DOMAIN_NAME + '/js-sync/s3/' + imageView.nid + '/' + imageView.instance.field_name + '/' + imageView.fid + '.json');
+            http.open('GET', Omadi.DOMAIN_NAME + '/js-file/s3/' + imageView.nid + '/' + imageView.fid + '/' + imageView.instance.field_name + '.json');
             http.setTimeout(30000);
 
             http.setRequestHeader("Content-Type", "application/json");
@@ -318,7 +316,7 @@ Omadi.widgets.video = {
                 /*global save_form_data*/
                 var newImageView, takeNextPhotoView, filePath, videoFile;
                 
-                alert(event.media.length + " bytes");
+                Ti.API.info("Media length: " + event.media.length + " bytes");
                 
                 filePath = Ti.Filesystem.applicationDataDirectory + "v_" + Omadi.utils.getUTCTimestamp() + '.mp4';
                 videoFile = Ti.Filesystem.getFile(filePath);
