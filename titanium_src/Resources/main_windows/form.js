@@ -1,4 +1,5 @@
 
+
 Ti.include("/lib/widgets.js");
 /*global Omadi*/
 /*jslint eqeq:true,plusplus:true*/
@@ -1871,7 +1872,7 @@ function switchedNodeIdForm(e){"use strict";
    }
 }
 
-function continuousSave(){
+function continuousSave(){"use strict";
     if(Ti.UI.currentWindow.saveContinually){
         save_form_data('continuous');
     }
@@ -2194,8 +2195,10 @@ function continuousSave(){
                 if(regionWrappers[regionWrappers_i].children.length > 0){
                     for(regionWrapperChild_i in regionWrappers[regionWrappers_i].children){
                         if(regionWrappers[regionWrappers_i].children.hasOwnProperty(regionWrapperChild_i)){
-                            regionWrappers[regionWrappers_i].remove(regionWrappers[regionWrappers_i].children[regionWrapperChild_i]);
-                            regionWrappers[regionWrappers_i].children[regionWrapperChild_i] = null;
+                            if(regionWrappers[regionWrappers_i].children[regionWrapperChild_i] != null){
+                                regionWrappers[regionWrappers_i].remove(regionWrappers[regionWrappers_i].children[regionWrapperChild_i]);
+                                regionWrappers[regionWrappers_i].children[regionWrapperChild_i] = null;
+                            }
                         }
                     }
                 }

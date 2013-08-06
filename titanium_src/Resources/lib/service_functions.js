@@ -2,6 +2,7 @@
 /*global Omadi,dbEsc*/
 /*jslint eqeq:true,plusplus:true*/
 
+
 Omadi.service = Omadi.service || {};
 
 
@@ -371,7 +372,8 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                     }
 
                     Omadi.data.setUpdating(false);
-                    Omadi.service.uploadFile();
+                    
+                    //Omadi.service.uploadFile();
 
                     Ti.API.error("Services are down");
                 };
@@ -613,14 +615,20 @@ Omadi.service.logout = function() {"use strict";
     }
 };
 
-Omadi.service.doPostLogoutOperations = function(){"use strict";
-    var db;
+Omadi.service.doPostLogoutOperations = function(fullLogout){"use strict";
+    var db, sql;
     
     // Logout of Appcelerator cloud services
     Omadi.push_notifications.logoutUser();
     
+    sql = "UPDATE login SET is_logged='false' ";
+    if(fullLogout){
+        sql += ", picked='null', login_json='null', cookie='null' ";
+    }
+    sql += "WHERE id_log=1";
+    
     db = Omadi.utils.openListDatabase();
-    db.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+    db.execute(sql);
     db.close();
 
     Ti.App.Properties.setBool("stopGPS", true);
@@ -630,41 +638,58 @@ Omadi.service.doPostLogoutOperations = function(){"use strict";
 };
 
 Omadi.service.sendLogoutRequest = function(){"use strict";
-    var http;
+    var http, numFilesLeft, doRequest;
     
     Ti.App.fireEvent('loggingOut');
-
-    http = Ti.Network.createHTTPClient();
-    http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync/logout.json');
-
-    //Timeout until error:
-    http.setTimeout(15000);
-
-    //Header parameters
-    http.setRequestHeader("Content-Type", "application/json");
-    Omadi.utils.setCookieHeader(http);
-
-    http.onload = function(e) {
-        Ti.App.Properties.setString('logStatus', "You have successfully logged out");
-        //Ti.API.info('From Functions ... Value is : ' + Ti.App.Properties.getString('logStatus'));
-        Omadi.service.doPostLogoutOperations();
-    };
-
-    http.onerror = function(e) {
-        //Omadi.display.hideLoadingIndicator();
-
-        if (this.status == 403 || this.status == 401) {
-            Ti.App.Properties.setString('logStatus', "You are logged out");
-        }
-        else {
-            Ti.API.info("Failed to log out");
-            //alert("Failed to log out, please try again");
-        }
+    
+    doRequest = true;
+    
+    if(Ti.Network.online){
         
-        Omadi.service.doPostLogoutOperations();
-    };
-
-    http.send();  
+        numFilesLeft = Omadi.data.getNumFilesReadyToUpload();
+        if(numFilesLeft > 0){
+            // Don't send the logout request just yet
+            // Wait until all the files have been uploaded first
+            // Pretend the logout happened on the mobile app
+            doRequest = false;
+            Omadi.service.doPostLogoutOperations(false);
+        }
+    }
+    
+    
+    if(doRequest){
+        http = Ti.Network.createHTTPClient();
+        http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync/logout.json');
+    
+        //Timeout until error:
+        http.setTimeout(15000);
+    
+        //Header parameters
+        http.setRequestHeader("Content-Type", "application/json");
+        Omadi.utils.setCookieHeader(http);
+    
+        http.onload = function(e) {
+            Ti.App.Properties.setString('logStatus', "You have successfully logged out");
+            //Ti.API.info('From Functions ... Value is : ' + Ti.App.Properties.getString('logStatus'));
+            Omadi.service.doPostLogoutOperations(true);
+        };
+    
+        http.onerror = function(e) {
+            //Omadi.display.hideLoadingIndicator();
+    
+            if (this.status == 403 || this.status == 401) {
+                Ti.App.Properties.setString('logStatus', "You are logged out");
+            }
+            else {
+                Ti.API.info("Failed to log out");
+                //alert("Failed to log out, please try again");
+            }
+            
+            Omadi.service.doPostLogoutOperations(true);
+        };
+    
+        http.send();  
+    }
 };
 
 Omadi.service.photoUploadSuccess = function(e){"use strict";
@@ -821,8 +846,10 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                 field_name : json.field_name,
                 fid : json.file_id
             });
-    
-            if (numFilesReadyToUpload > 0) {
+            
+            // closeWindowAfterUpload is set when the user logged out
+            // and uploads should now be completed on the login screen
+            if (numFilesReadyToUpload > 0 && (typeof Ti.App.closeWindowAfterUpload === 'undefined' || !Ti.App.closeWindowAfterUpload)) {
                 
                 Omadi.service.uploadFile();
             }
@@ -929,7 +956,7 @@ Omadi.service.photoUploadStream = function(e){"use strict";
         uploadingBytes = Omadi.service.currentFileUpload.uploading_bytes;
         bytesUploaded = Omadi.service.currentFileUpload.bytes_uploaded;
         
-        Ti.API.debug("in an upload stream");
+        Ti.API.debug("Uploading: " + Math.floor(e.progress * 100) + "%");
         
         if(filesize == uploadingBytes){
             uploadingProgressBar.setValue(e.progress);
@@ -1215,7 +1242,7 @@ Omadi.service.checkUpdate = function(useProgressBar){"use strict";
     Ti.API.info("Checking for sync updates.");
     
     if ( typeof useProgressBar === 'undefined') {
-        useProgressBar = false;
+        useProgressBar = true;
     }
     // else {
         // useProgressBar = true;

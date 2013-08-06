@@ -33,7 +33,6 @@ Omadi.widgets.video = {
             arrImages : null,
             scrollType : 'horizontal',
             layout : 'horizontal',
-
             instance : instance
         });
         

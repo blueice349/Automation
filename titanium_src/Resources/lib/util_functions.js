@@ -1,12 +1,12 @@
 
 /*jslint eqeq:true,plusplus:true*/
 
+
 var Omadi = Omadi || {};
 Omadi.utils = Omadi.utils || {};
 
 Omadi.DOMAIN_NAME = domainName;
-Omadi.DB_VERSION = "DB1702";
-
+Omadi.DB_VERSION = "DB1703";
 
 Omadi.utils.checkVolumeLevel = function(){"use strict";
     /*global alertQueue*/
@@ -91,6 +91,14 @@ Omadi.utils.getMainDBName = function() {"use strict";
 
 Omadi.utils.openMainDatabase = function() {"use strict";
     var db = Ti.Database.install('/database/db.sqlite', Omadi.DB_VERSION + "_" + Omadi.utils.getMainDBName());
+    if (Ti.App.isIOS) {
+        db.file.setRemoteBackup(false);
+    }
+    return db;
+};
+
+Omadi.utils.openSharedDatabase = function() {"use strict";
+    var db = Ti.Database.install('/database/shared.sqlite', Omadi.DB_VERSION + "_shared");
     if (Ti.App.isIOS) {
         db.file.setRemoteBackup(false);
     }
