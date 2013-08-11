@@ -89,7 +89,7 @@ Omadi.widgets.video = {
         return widgetView;
     },
     getImageView : function(widgetView, index, nid, fid, degrees) {"use strict";
-        var imageView, transform, rotateDegrees, image, widgetType, isFilePath;
+        var imageView, transform, rotateDegrees, image, widgetType, isFilePath, thumbVideo, videoFile;
         
         isFilePath = false;
         
@@ -125,8 +125,8 @@ Omadi.widgets.video = {
 
         imageView = Ti.UI.createImageView({
             left : 5,
-            height : 100,
-            width : 100,
+            width: 100,
+            height: 100,
             image : image,
             autorotate: true,
             thumbnailLoaded : false,
@@ -149,12 +149,22 @@ Omadi.widgets.video = {
             imageView.isImageData = true;
             imageView.dbValue = -1;
             imageView.filePath = fid;
+            
+            videoFile = Ti.Filesystem.getFile(imageView.filePath);
+            
+            thumbVideo = Ti.Media.createVideoPlayer({
+                width: 100,
+                height: 100,
+                autoplay: false,
+                media: videoFile
+            });
+            
+            imageView.image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
         }
         else if ( typeof fid === 'number') {
-            Ti.API.error("add thumbnail to video");
-            //Omadi.display.setImageViewThumbnail(imageView, nid, fid);
+            Omadi.display.setImageViewVideoThumbnail(imageView, nid, fid, instance.field_name);
         }
-        
+     
         imageView.addEventListener('click', function(e) {
             var dialog;
             
@@ -181,7 +191,7 @@ Omadi.widgets.video = {
         return imageView;
     },
     openVideoPlayer : function(imageView){"use strict";
-        var videoFile, player, toolbar, back, space, label, http;
+        var videoFile, player, toolbar, back, space, label, http, s3URL;
         
         Omadi.widgets.video.videoWin = Titanium.UI.createWindow({
             backgroundColor : '#000',
@@ -286,7 +296,11 @@ Omadi.widgets.video = {
                 alert("Could not load the video: " + e.error);
             };
             
-            http.open('GET', Omadi.DOMAIN_NAME + '/js-file/s3/' + imageView.nid + '/' + imageView.fid + '/' + imageView.instance.field_name + '.json');
+            s3URL = Omadi.DOMAIN_NAME + '/js-file/s3/' + imageView.nid + '/' + imageView.fid + '/' + imageView.instance.field_name + '.json';
+            
+            Ti.API.info("S3: " + s3URL);
+            
+            http.open('GET', s3URL);
             http.setTimeout(30000);
 
             http.setRequestHeader("Content-Type", "application/json");
@@ -313,7 +327,7 @@ Omadi.widgets.video = {
             popoverView: imageView,
             success: function(event){
                 /*global save_form_data*/
-                var newImageView, takeNextPhotoView, filePath, videoFile;
+                var newImageView, takeNextPhotoView, filePath, videoFile, thumbVideo;
                 
                 Ti.API.info("Media length: " + event.media.length + " bytes");
                 
@@ -330,12 +344,23 @@ Omadi.widgets.video = {
                     save_form_data('continuous');
                 }
                 
+                videoFile = Ti.Filesystem.getFile(imageView.filePath);
+            
+                thumbVideo = Ti.Media.createVideoPlayer({
+                    width: 100,
+                    height: 100,
+                    autoplay: false,
+                    media: videoFile
+                });
+                
                 if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
                             
                     newImageView = Omadi.widgets.video.getImageView(imageView.parentView, imageView.imageIndex, null, filePath, 0);
                     takeNextPhotoView = Omadi.widgets.video.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
                     
-                    newImageView.setImage("/images/video-selected.png");
+                    //newImageView.setImage("/images/video-selected.png");
+                    
+                    newImageView.image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
                     
                     imageView.parentView.add(newImageView);
                     imageView.parentView.add(takeNextPhotoView);
@@ -347,7 +372,8 @@ Omadi.widgets.video = {
                 else{
                     
                     newImageView = Omadi.widgets.video.getImageView(imageView.parentView, imageView.imageIndex, null, filePath, 0);
-                    newImageView.setImage("/images/video-selected.png");
+                    
+                    newImageView.image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
                     
                     imageView.parentView.add(newImageView);
                     imageView.parentView.remove(imageView);

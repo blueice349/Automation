@@ -58,9 +58,8 @@ Drafts.deleteDraft = function(nid){"use strict";
     var dialog;
     
     dialog = Ti.UI.createAlertDialog({
-       title: 'Confirm Delete',
-       message: 'Are you sure you want to delete the draft?',
-       buttonNames: ['Yes', 'Cancel'],
+       title: 'Really Delete Draft?',
+       buttonNames: ['Delete', 'Cancel'],
        cancel: 1,
        nid: nid
     });
@@ -288,35 +287,35 @@ Drafts.refreshDrafts = function(){"use strict";
             }
         });
 
-        tableView.addEventListener('longclick', function(e) {
-
-            if (e.row.nid != null) {
-                
-                Titanium.Media.vibrate();
-
-                dialog = Titanium.UI.createAlertDialog({
-                    title : 'Omadi',
-                    buttonNames : ['Yes', 'No'],
-                    cancel : 1,
-                    click_index : e.index,
-                    sec_obj : e.section,
-                    row_obj : e.row
-                });
-
-                dialog.message = 'Are you sure you want to delete the draft "' + e.row.searchValue + '" ?';
-                dialog.show();
-
-                dialog.addEventListener('click', function(e) {
-                    if (e.cancel === false) {
-                       
-                        tableView.deleteRow(tableView.data[0][e.source.click_index]);
-                        var db = Omadi.utils.openMainDatabase();
-                        db.execute('UPDATE node SET flag_is_updated = 4 WHERE nid=' + e.source.row_obj.nid);
-                        db.close();
-                    }
-                });
-            }
-        });
+        // tableView.addEventListener('longclick', function(e) {
+// 
+            // if (e.row.nid != null) {
+//                 
+                // Titanium.Media.vibrate();
+// 
+                // dialog = Titanium.UI.createAlertDialog({
+                    // title : 'Omadi',
+                    // buttonNames : ['Yes', 'No'],
+                    // cancel : 1,
+                    // click_index : e.index,
+                    // sec_obj : e.section,
+                    // row_obj : e.row
+                // });
+// 
+                // dialog.message = 'Are you sure you want to delete the draft "' + e.row.searchValue + '" ?';
+                // dialog.show();
+// 
+                // dialog.addEventListener('click', function(e) {
+                    // if (e.cancel === false) {
+//                        
+                        // tableView.deleteRow(tableView.data[0][e.source.click_index]);
+                        // var db = Omadi.utils.openMainDatabase();
+                        // db.execute('UPDATE node SET flag_is_updated = 4 WHERE nid=' + e.source.row_obj.nid);
+                        // db.close();
+                    // }
+                // });
+            // }
+        // });
 
         //Adds contact list container to the UI
         wrapperView.add(tableView);

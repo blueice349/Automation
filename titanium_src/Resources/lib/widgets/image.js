@@ -919,35 +919,9 @@ Omadi.widgets.image = {
             }
         }
     },
-    saveImageInDb : function(imageView, blob) {"use strict";
-        var nid, db, encodedImage, mime, imageName, timestamp, fieldName, imageIndex, location;
-
-        try {
-            nid = 0;
-            Ti.API.debug('before encoded');
-            encodedImage = Ti.Utils.base64encode(blob);
-            Ti.API.debug('after encoded');
-            
-            mime = imageView.mimeType;
-            imageName = 'image.jpg';
-            imageView.dbValue = '-1';
-            
-            timestamp = Omadi.utils.getUTCTimestamp();
-            fieldName = imageView.instance.field_name;
-            imageIndex = imageView.imageIndex;
-            
-            location = Omadi.location.getLastLocation();
-
-            db = Omadi.utils.openMainDatabase();
-            db.execute("INSERT INTO _files (nid, timestamp, file_path , field_name, file_name, delta, latitude, longitude, accuracy) VALUES ('0','" + timestamp + "','" + encodedImage + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + ")");
-            db.close();
-        }
-        catch(ex) {
-            alert("Problem saving the photo to the database: " + ex);
-        }
-    },
     saveFileInfo : function(imageView, filePath, thumbPath, degrees, filesize, type) {"use strict";
-        var nid, db, encodedImage, mime, imageName, timestamp, fieldName, imageIndex, location;
+        var nid, db, encodedImage, mime, imageName, timestamp, fieldName, 
+            imageIndex, location, uid, clientAccount;
 
         try {
             nid = 0;
@@ -969,9 +943,12 @@ Omadi.widgets.image = {
             
             
             location = Omadi.location.getLastLocation();
+            
+            uid = Omadi.utils.getUid();
+            clientAccount = Omadi.utils.getClientAccount();
 
-            db = Omadi.utils.openMainDatabase();
-            db.execute("INSERT INTO _files (nid, timestamp, file_path, field_name, file_name, delta, latitude, longitude, accuracy, degrees, thumb_path, filesize, bytes_uploaded, type) VALUES ('0','" + timestamp + "','" + filePath + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + "," + degrees + ",'" + thumbPath + "'," + filesize + ",0,'" + type + "')");
+            db = Omadi.utils.openListDatabase();
+            db.execute("INSERT INTO _files (nid, timestamp, file_path, field_name, file_name, delta, latitude, longitude, accuracy, degrees, thumb_path, filesize, bytes_uploaded, type, uid, client_account) VALUES ('0','" + timestamp + "','" + filePath + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + "," + degrees + ",'" + thumbPath + "'," + filesize + ",0,'" + type + "'," + uid + ",'" + clientAccount + "')");
             db.close();
         }
         catch(ex) {

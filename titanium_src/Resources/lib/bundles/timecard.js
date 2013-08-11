@@ -26,9 +26,8 @@ Omadi.bundles.timecard.askClockOutLogout = function(){"use strict";
     else{
         
         verifyLogout = Ti.UI.createAlertDialog({
-            title : 'Logout?',
-            message : 'Are you sure you want to logout?',
-            buttonNames : ['Yes', 'No']
+            title : 'Really Logout?',
+            buttonNames : ['Logout', 'Cancel']
         });
 
         verifyLogout.addEventListener('click', function(e) {
@@ -52,9 +51,8 @@ Omadi.bundles.timecard.askClockIn = function(){"use strict";
         if(!Omadi.bundles.timecard.isUserClockedIn()){
             
             dialog = Ti.UI.createAlertDialog({
-               title: 'Clock In',
-               message: 'Do you want to clock in now?',
-               buttonNames: ['Yes', 'No']
+               title: 'Clock In Now?',
+               buttonNames: ['Clock In', 'Cancel']
             });
             
             dialog.addEventListener('click', function(e){

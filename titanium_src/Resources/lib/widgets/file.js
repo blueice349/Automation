@@ -6,6 +6,7 @@ Ti.include('/lib/widgets/video.js');
 Omadi.widgets.file = {
 
     getFieldView : function(node, instance) {"use strict";
+        /*jslint nomen:true*/
         instance.elements = [];
 
         var settings = instance.settings, fieldView, i, j, element, addAnotherItemButton = null;
@@ -22,7 +23,7 @@ Omadi.widgets.file = {
         fieldView.add(Omadi.widgets.label.getRegularLabelView(instance));
         setConditionallyRequiredLabelForInstance(node, instance);
         
-        if(instance.widget.type == 'omadi_file_video'){
+        if(typeof instance.settings._display !== 'undefined' && instance.settings._display['default'].type == 'omadi_file_video'){
             // This is a video widget
             element = Omadi.widgets.video.getNewElement(node, instance);   
             

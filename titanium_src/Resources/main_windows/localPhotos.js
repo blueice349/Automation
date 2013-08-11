@@ -176,8 +176,7 @@ Gallery.imageOptionClicked = function(e){"use strict";
             
             // Delete Photo
             alertDialog = Ti.UI.createAlertDialog({
-                title: 'Really Delete?',
-                message: 'Are you sure you want to delete the photo?',
+                title: 'Really Delete Photo?',
                 buttonNames: ['Delete', 'Cancel'],
                 cancel: 1,
                 imageView: e.source.imageView

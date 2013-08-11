@@ -223,7 +223,7 @@ function displayBundleList() {"use strict";
         if (can_view === 1) {
 
             row_t = Ti.UI.createTableViewRow({
-                height : 45,
+                height : 53,
                 display : display,
                 name : display,
                 desc : description,
@@ -232,8 +232,8 @@ function displayBundleList() {"use strict";
             });
 
             icon = Titanium.UI.createImageView({
-                width : 32,
-                height : 32,
+                width : 42,
+                height : 42,
                 top : 6,
                 left : 5,
                 image : Omadi.display.getNodeTypeImagePath(name_table),
@@ -247,7 +247,7 @@ function displayBundleList() {"use strict";
                 },
                 width : '82%',
                 textAlign : 'left',
-                left : 42,
+                left : 55,
                 height : Ti.UI.SIZE,
                 color : '#000',
                 desc : description
@@ -684,7 +684,7 @@ function normalUpdateFromMenu(e){"use strict";
 }
 
 function fullUpdateFromMenu(e){"use strict";
-    var dbFile, db, result;
+    var dbFile, db, result, fileIds, i;
     
     Ti.App.Properties.setBool("doingFullReset", true);
     
@@ -697,7 +697,8 @@ function fullUpdateFromMenu(e){"use strict";
         alert("You do not have an Internet connection right now, so new data will not be downloaded until you connect.");
     }
 
-    db = Omadi.utils.openMainDatabase();
+    db = Omadi.utils.openListDatabase();
+    fileIds = [];
 
     result = db.execute("SELECT id FROM _files");
     if (result.rowCount > 0) {
@@ -705,13 +706,16 @@ function fullUpdateFromMenu(e){"use strict";
 
         while (result.isValidRow()) {
 
-            Omadi.data.saveFailedUpload(result.fieldByName('id', Ti.Database.FIELD_TYPE_INT), false);
-
+            fileIds.push(result.fieldByName('id', Ti.Database.FIELD_TYPE_INT));
             result.next();
         }
     }
     result.close();
     db.close();
+    
+    for(i = 0; i < fileIds.length; i ++){
+        Omadi.data.saveFailedUpload(fileIds[i], false);
+    }
 
     if (Ti.App.isAndroid) {
         //Remove the database
@@ -909,7 +913,7 @@ function showContinuousSavedNode(){"use strict";
         
         Omadi.bundles.companyVehicle.askAboutVehicle();
         
-        Omadi.bundles.inspection.askToReviewLastInspection();
+        //Omadi.bundles.inspection.askToReviewLastInspection();
     }
     
     //Omadi.utils.checkVolumeLevel();
@@ -957,11 +961,15 @@ function showContinuousSavedNode(){"use strict";
         Ti.App.removeEventListener('full_update_from_menu', fullUpdateFromMenu);
         
         // Release memory
-        
-        Ti.UI.currentWindow.remove(loggedView);
-        Ti.UI.currentWindow.remove(networkStatusView);
-        Ti.UI.currentWindow.remove(databaseStatusView);
-        Ti.UI.currentWindow.remove(listView);
+        try{
+            Ti.UI.currentWindow.remove(loggedView);
+            Ti.UI.currentWindow.remove(networkStatusView);
+            Ti.UI.currentWindow.remove(databaseStatusView);
+            Ti.UI.currentWindow.remove(listView);
+        }
+        catch(ex){
+            Ti.API.debug("Could not remove a view from the main menu window");
+        }
         
         loggedView = null;
         networkStatusView = null;

@@ -398,7 +398,7 @@ Omadi.widgets.signature = {
         if(typeof Ti.UI.currentWindow.nid !== 'undefined'){
             nid = Ti.UI.currentWindow.nid;
             
-            db = Omadi.utils.openMainDatabase();
+            db = Omadi.utils.openListDatabase();
             db.execute("DELETE FROM _files WHERE nid = 0 AND field_name = '" + dbEsc(instance.field_name) + "'");
             db.close();
         }

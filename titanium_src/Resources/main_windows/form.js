@@ -34,9 +34,9 @@ function cancelOpt() {"use strict";
     
     dialog = Ti.UI.createAlertDialog({
         cancel : 1,
-        buttonNames : ['Yes', 'No'],
-        message : 'Are you sure you want to cancel and go back?',
-        title : 'Cancel'
+        buttonNames : ['Exit', 'Cancel'],
+        title : 'Really Exit Form?',
+        message: 'Any unsaved changes will be lost.'
     });
 
     dialog.addEventListener('click', function(e) {
@@ -44,7 +44,6 @@ function cancelOpt() {"use strict";
             photoNids, types, dialogTitle, dialogMessage, messageParts;
         
         if (e.index == 0) {
-            
             
             if(node.flag_is_updated == 3){
                 // The original node is a draft
@@ -58,7 +57,7 @@ function cancelOpt() {"use strict";
                         }
                     }
                     
-                    db = Omadi.utils.openMainDatabase();
+                    db = Omadi.utils.openListDatabase();
                     db.execute("UPDATE _files SET nid = " + Ti.UI.currentWindow.nid + " WHERE nid IN (" + photoNids.join(",") + ")");
                     db.close();
                 }
@@ -93,7 +92,7 @@ function cancelOpt() {"use strict";
                 
                 numPhotos = 0;
         
-                db = Omadi.utils.openMainDatabase();
+                db = Omadi.utils.openListDatabase();
                 
                 result = db.execute(query);
                 if(result.isValidRow()){
@@ -225,7 +224,7 @@ function cancelOpt() {"use strict";
                         
                         if(e.index === 0 || e.index === 1){
                             
-                            db_toDeleteImage = Omadi.utils.openMainDatabase();
+                            db_toDeleteImage = Omadi.utils.openListDatabase();
                             
                             if (e.index === 0) {
                                 
@@ -594,6 +593,7 @@ function validateRequired(node, instance){"use strict";
                 case 'image':
                 case 'datestamp':
                 case 'omadi_time':
+                
                     if(!Omadi.utils.isEmpty(dbValues[i])){
                         isEmpty = false;
                     }
@@ -604,12 +604,12 @@ function validateRequired(node, instance){"use strict";
                 case 'user_reference':
                 case 'file':
                 case 'auto_increment':
+                case 'list_boolean': 
                     if(!Omadi.utils.isEmpty(dbValues[i]) && dbValues[i] != 0){
                         isEmpty = false;
                     }
                     break;
                     
-                case 'list_boolean': 
                 case 'calculation_field':
                     isEmpty = false;
                     break;
@@ -2162,8 +2162,10 @@ function continuousSave(){"use strict";
     for(region_name in regionViews){
         if(regionViews.hasOwnProperty(region_name)){
             if(regionViews[region_name].getChildren().length == 0){
-                scrollView.remove(regionWrappers[region_name]);
-                regionWrappers[region_name] = null;
+                if(regionWrappers[region_name] != null){
+                    scrollView.remove(regionWrappers[region_name]);
+                    regionWrappers[region_name] = null;
+                }
             }
         }
     }
@@ -2203,15 +2205,17 @@ function continuousSave(){"use strict";
                     }
                 }
                 
-                scrollView.remove(regionWrappers[regionWrappers_i]);
-                regionWrappers[regionWrappers_i] = null;
+                if(regionWrappers[regionWrappers_i] != null){
+                    scrollView.remove(regionWrappers[regionWrappers_i]);
+                    regionWrappers[regionWrappers_i] = null;
+                }
             }
         }
         
-        
-        
-        wrapperView.remove(scrollView);
-        scrollView = null;
+        if(scrollView != null){
+            wrapperView.remove(scrollView);
+            scrollView = null;
+        }
         
         //win.remove(wrapperView);
         wrapperView = null;

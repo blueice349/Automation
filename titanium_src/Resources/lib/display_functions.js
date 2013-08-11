@@ -250,9 +250,8 @@ Omadi.display.showLogoutDialog = function(){"use strict";
     else {
 
         verifyLogout = Ti.UI.createAlertDialog({
-            title : 'Logout?',
-            message : 'Are you sure you want to logout?',
-            buttonNames : ['Yes', 'No']
+            title : 'Really Logout?',
+            buttonNames : ['Logout', 'Cancel']
         });
 
         verifyLogout.addEventListener('click', function(e) {
@@ -268,7 +267,7 @@ Omadi.display.showLogoutDialog = function(){"use strict";
 
 Omadi.display.logoutButtonPressed = function(){"use strict";
     if (Omadi.bundles.inspection.userShouldDoInspection()) {
-        Omadi.bundles.inspection.askToCreateInspection();
+        Omadi.bundles.inspection.askToCreateInspection(true);
     }
     else {
         Omadi.display.showLogoutDialog();
@@ -780,6 +779,43 @@ Omadi.display.getDrivingDirectionsTo = function(addressString){"use strict";
 Omadi.display.getNodeTypeImagePath = function(type) {"use strict";
 
     switch(type) {
+        
+        // case 'pd':
+            // return '/images/testicons/circle-black-pd.png';
+//             
+        // case 'permit':
+            // return '/images/testicons/circle-black-permit.png';
+//         
+        // case 'potential':
+            // return '/images/testicons/circle-black-potential.png';
+//             
+        // case 'drop_fee':
+            // return '/images/testicons/circle-color-drop-fee.png';
+//             
+        // case 'incident_report':
+            // return '/images/testicons/circle-color-incident.png';
+//             
+        // case 'lead':
+            // return '/images/testicons/circle-color-lead.png';
+//             
+        // case 'restriction':
+            // return '/images/testicons/circle-red-restrictions.png';
+//             
+        // case 'service':
+            // return '/images/testicons/circle-red-service.png';
+//             
+        // case 'spot':
+            // return '/images/testicons/circle-red-spot.png';
+//            
+        // case 'task':
+            // return '/images/testicons/square-blue-task.png';
+//             
+        // case 'timecard':
+            // return '/images/testicons/square-blue-timecard.png';
+//             
+        // case 'company_vehicle':
+            // return '/images/testicons/square-blue-truck.png';
+        
         case 'lead':
         case 'contact':
         case 'account':
@@ -1078,12 +1114,63 @@ Omadi.display.setImageViewThumbnail = function(imageView, nid, file_id) {"use st
                 else {
                     imageView.setImage(this.responseData);
                 }
+                imageView.height = null;
+                imageView.width = null;
                 imageView.isImage = true;
                 imageView.thumbnailLoaded = true;
             };
 
             http.onerror = function(e) {
                 Ti.API.error("Error in download image: " + e.status + " " + e.error + " " + nid + " " + file_id);
+                imageView.image = '/images/default.png';
+            };
+
+            http.send();
+        }
+        catch(e) {
+            Ti.API.info("==== ERROR ===" + e);
+        }
+    }
+};
+
+// Download Image from the server
+Omadi.display.setImageViewVideoThumbnail = function(imageView, nid, file_id, field_name) {"use strict";
+
+    var http, tempImg, url;
+
+    if (nid > 0 && file_id > 0) {
+        try {
+            http = Ti.Network.createHTTPClient();
+            http.setTimeout(30000);
+            
+            url = Omadi.DOMAIN_NAME + '/sync/video_file/video_thumbnail/' + nid + '/' + file_id + '/' + field_name;
+            
+            Ti.API.info(url);
+            http.open('GET', url);
+
+            Omadi.utils.setCookieHeader(http);
+
+            http.onload = function(e) {
+                tempImg = Ti.UI.createImageView({
+                    height : 'auto',
+                    width : 'auto',
+                    image : this.responseData
+                });
+
+                if (tempImg.toImage().height > 100 || tempImg.toImage().width > 100) {
+                    imageView.setImage(Omadi.display.getImageViewFromData(tempImg.toImage(), 100, 100).toBlob());
+                }
+                else {
+                    imageView.setImage(this.responseData);
+                }
+                imageView.height = null;
+                imageView.width = null;
+                imageView.isImage = true;
+                imageView.thumbnailLoaded = true;
+            };
+
+            http.onerror = function(e) {
+                Ti.API.error("Error in download video thumbnail: " + e.status + " " + e.error + " " + nid + " " + file_id + " " + field_name);
                 imageView.image = '/images/default.png';
             };
 

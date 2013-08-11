@@ -455,7 +455,7 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
 Omadi.data.nodeSave = function(node) {"use strict";
     var query, field_name, fieldNames, instances, result, db, smallestNid, insertValues, j, k, 
         instance, value_to_insert, has_data, content_s, saveNid, continuousNid, photoNids, origNid,
-        continuousId, tempNid;
+        continuousId, tempNid, listDB;
 
     /*global treatArray*/
     /*jslint nomen: true*/
@@ -671,7 +671,9 @@ Omadi.data.nodeSave = function(node) {"use strict";
                 }
             }
             
-            db.execute('UPDATE _files SET nid=' + saveNid + ' WHERE nid IN (' + photoNids.join(',') + ')');
+            listDB = Omadi.utils.openListDatabase();
+            listDB.execute('UPDATE _files SET nid=' + saveNid + ' WHERE nid IN (' + photoNids.join(',') + ')');
+            listDB.close();
 
             node._saved = true;
             Ti.API.debug("NODE SAVE WAS SUCCESSFUL");
@@ -720,7 +722,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
 };
 
 Omadi.data.deleteNode = function(nid){"use strict";
-    var db, result, table_name;
+    var db, result, table_name, listDB;
     
     // Currently, only delete negative nids, which are drafts or non-saved nodes
     // To delete positive nids, we need to sync that to the server, which is not yet supported
@@ -737,11 +739,12 @@ Omadi.data.deleteNode = function(nid){"use strict";
         }
         
         result.close();
-        
-        // Delete any photos from the DB where the nid matches
-        db.execute("UPDATE _files SET nid = -1000000 WHERE nid = " + nid);
-        
         db.close();
+        
+        listDB = Omadi.utils.openListDatabase();
+        // Delete any photos from the DB where the nid matches
+        listDB.execute("UPDATE _files SET nid = -1000000 WHERE nid = " + nid);
+        listDB.close();
     }
 };
 
@@ -749,7 +752,7 @@ Omadi.data.getPhotosNotUploaded = function(){"use strict";
     var db, result, filePaths, filePath, thumbPath;
     filePaths = [];
     
-    db = Omadi.utils.openMainDatabase();
+    db = Omadi.utils.openListDatabase();
     result = db.execute("SELECT * FROM _files WHERE type IN ('image','signature')");
     
     while(result.isValidRow()){
@@ -778,7 +781,7 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
         blob, db, result, dialog, nid, field_name, delta, filePath, 
         sdCardPath, sdIndex, thumbPath, thumbFile;
 
-    db = Omadi.utils.openMainDatabase();
+    db = Omadi.utils.openListDatabase();
     result = db.execute("SELECT * FROM _files WHERE id = " + photoId);
     
     if(typeof showMessage === 'undefined'){
@@ -941,7 +944,7 @@ Omadi.data.deletePhotoUploadByPath = function(filePath, deleteFile){"use strict"
     var db, result, id;
     
     id = null;
-    db = Omadi.utils.openMainDatabase();
+    db = Omadi.utils.openListDatabase();
     result = db.execute("SELECT id FROM _files WHERE file_path = '" + dbEsc(filePath) + "'");
     if(result.isValidRow()){
         id = result.fieldByName('id', Ti.Database.FIELD_TYPE_INT);
@@ -957,7 +960,7 @@ Omadi.data.deletePhotoUploadByPath = function(filePath, deleteFile){"use strict"
 Omadi.data.deletePhotoUpload = function(id, deleteFile) {"use strict";
     var file, db, result, filePath = null, thumbPath = null, thumbFile;
     
-    db = Omadi.utils.openMainDatabase();
+    db = Omadi.utils.openListDatabase();
     if(typeof deleteFile !== 'undefined' && deleteFile == true){
         result = db.execute("SELECT file_path, thumb_path FROM _files WHERE id = " + id);
         if(result.isValidRow()){
@@ -991,7 +994,8 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
 
     var db, node, result, subResult, field_name, dbValue, tempDBValues, textValue, 
         subValue, decoded, i, real_field_name, part, field_parts, widget, instances, 
-        tempValue, origDBValue, jsonValue, allowedValues, allowedKey, filePath, newNid;
+        tempValue, origDBValue, jsonValue, allowedValues, allowedKey, filePath, newNid,
+        listDB;
 
     node = {
         form_part : 0
@@ -999,6 +1003,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
 
     if (parseInt(nid, 10) != 0) {
         db = Omadi.utils.openMainDatabase();
+        listDB = Omadi.utils.openListDatabase();
         
         try{
             result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed, sync_hash, continuous_nid FROM node WHERE  nid = ' + nid);
@@ -1022,6 +1027,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                 node.continuous_nid = result.fieldByName('continuous_nid', Ti.Database.FIELD_TYPE_INT);
             }
             else{
+                
                 // If the nid doesn't exist, maybe it was deleted and a positive nid has replaced it
                 if(typeof Ti.App.deletedNegatives[nid] !== 'undefined' && Ti.App.deletedNegatives[nid] !== null){
                     
@@ -1366,7 +1372,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                             case 'file':
                                 // This includes signature and video fields
                                 
-                                subResult = db.execute('SELECT * FROM _files WHERE nid=' + node.nid + ' AND field_name ="' + field_name + '" ORDER BY delta ASC');
+                                subResult = listDB.execute('SELECT * FROM _files WHERE nid=' + node.nid + ' AND field_name ="' + field_name + '" ORDER BY delta ASC');
 
                                 node[field_name].imageData = [];
                                 node[field_name].degrees = [];
@@ -1433,7 +1439,8 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
             }
             result.close();
         }
-
+        
+        listDB.close();
         db.close();
     }
 
@@ -1471,12 +1478,15 @@ Omadi.data.getNodeTableInsertStatement = function(node) {"use strict";
     return sql;
 };
 
-Omadi.data.getNumFilesReadyToUpload = function(){"use strict";
+Omadi.data.getNumFilesReadyToUpload = function(uid){"use strict";
     var mainDB, result, sql, retval = 0;
     
     try{
-        
         sql = "SELECT COUNT(*) FROM _files WHERE nid > 0";
+        
+        if(typeof uid !== 'undefined'){
+            sql += " AND uid = " + uid;
+        }
         
         if(Ti.Network.networkType === Ti.Network.NETWORK_MOBILE){
             if(!Ti.App.Properties.getBool('allowVideoMobileNetwork', false)){
@@ -1485,7 +1495,7 @@ Omadi.data.getNumFilesReadyToUpload = function(){"use strict";
             }
         }
         
-        mainDB = Omadi.utils.openMainDatabase();
+        mainDB = Omadi.utils.openListDatabase();
         result = mainDB.execute(sql);
         
         if(result.isValidRow()){
@@ -1527,7 +1537,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
     
     sql += " ORDER BY delta ASC LIMIT 1";
     
-    mainDB = Omadi.utils.openMainDatabase();
+    mainDB = Omadi.utils.openListDatabase();
     
     try{
         
@@ -1559,7 +1569,9 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                     type : result.fieldByName('type'),
                     filesize : result.fieldByName('filesize', Ti.Database.FIELD_TYPE_INT),
                     bytes_uploaded : result.fieldByName('bytes_uploaded', Ti.Database.FIELD_TYPE_INT),
-                    fid : result.fieldByName('fid', Ti.Database.FIELD_TYPE_INT)
+                    fid : result.fieldByName('fid', Ti.Database.FIELD_TYPE_INT),
+                    uid : result.fieldByName('uid', Ti.Database.FIELD_TYPE_INT),
+                    client_account : result.fieldByName('client_account')
                 };
                 
                 if(nextFile.filesize > maxBytesPerUpload){
@@ -1573,10 +1585,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                     nextFile.uploading_bytes = nextFile.filesize;
                 }
                 
-                Ti.API.debug("Upload Part: " + nextFile.uploadPart + "/" + nextFile.numUploadParts);
-                
-                Ti.API.debug(nextFile);
-                
+               
                 try{
                    
                     if(Ti.App.isAndroid){
@@ -1651,9 +1660,16 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                                             if(resizedBlob.length > 1000){
                                                 imageBlob = ImageFactory.compress(resizedBlob, 0.75);
                                                 nextFile.filesize = imageBlob.length;
+                                                
+                                                nextFile.numUploadParts = 1;
+                                                nextFile.uploadPart = 1;
+                                                nextFile.uploading_bytes = nextFile.filesize;
                                             }
                                             
                                             Ti.API.debug("Compressed: " + imageBlob.length);
+                                        }
+                                        else{
+                                            Ti.API.debug("No image Resize was necessary");
                                         }
                                     }
                                     catch(ex) {
@@ -1713,8 +1729,12 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                         else{
                             readyForUpload = false;
                             deleteFromDB = true;
+                            Ti.API.debug("File does not exist");
                         }
                     }
+                    
+                    Ti.API.debug("Upload Part: " + nextFile.uploadPart + "/" + nextFile.numUploadParts);
+                    Ti.API.debug(nextFile);
                     
                     if(readyForUpload){
                         try{
@@ -2321,7 +2341,7 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
 
     var closeDB, instances, fakeFields, queries, i, j, field_name, query, 
         fieldNames, no_data, values, value, notifications = {}, numSets, 
-        result, reasonIndex, reason, alertReason, dialog, updateNid;
+        result, reasonIndex, reason, alertReason, dialog, updateNid, listDB;
     
     closeDB = false;
     queries = [];
@@ -2595,9 +2615,11 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                 
                                 queries.push('DELETE FROM ' + type + ' WHERE nid=' + Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid);
                                 queries.push('DELETE FROM node WHERE nid=' + Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid);
-    
-                                queries.push("UPDATE _files SET nid =" + Omadi.service.fetchedJSON.node[type].insert[i].nid + " WHERE nid=" + Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid);
-    
+                                
+                                listDB = Omadi.utils.openListDatabase();
+                                listDB.execute("UPDATE _files SET nid =" + Omadi.service.fetchedJSON.node[type].insert[i].nid + " WHERE nid=" + Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid);
+                                listDB.close();
+                                
                                 // Make sure we don't add a duplicate from doing a next_part action directly after a node save
                                 //if(typeof Ti.UI.currentWindow.nid !== 'undefined' && Ti.UI.currentWindow.nid == Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid){
                                 //    Ti.API.error("SWITCHING UP THE NID from " + Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid + " to " + Omadi.service.fetchedJSON.node[type].insert[i].nid);

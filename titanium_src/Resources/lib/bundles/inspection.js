@@ -2,72 +2,100 @@
 
 Omadi.bundles.inspection = {};
 
+Omadi.bundles.inspection.getLastInspectionReportNid = function(vehicleNid){"use strict";
+    var db, result, lastNid;
+    /* Prerequisite to using this function is knowing the inspection bundle exists */
+    
+    lastNid = 0;
+    
+    if(vehicleNid > 0){
+    
+        db = Omadi.utils.openMainDatabase();
+        result = db.execute("SELECT n.nid FROM inspection i INNER JOIN node n ON n.nid = i.nid WHERE i.truck_reference = " + vehicleNid + " ORDER BY n.created DESC LIMIT 1");
+        if(result.isValidRow()){
+            lastNid = result.field(0, Ti.Database.FIELD_TYPE_INT);         
+        }
+        result.close();
+        db.close();
+    }
+    
+    return lastNid;
+};
+
 Omadi.bundles.inspection.askToReviewLastInspection = function(){"use strict";
-    var dialog, bundle, newWin, vehicle_nid, vehicle_name, hasFilter;
+    var dialog, bundle, showNextAlert, currentVehicleNid, lastInspectionReportNid;
     /*global roles, ROLE_ID_FIELD, alertQueue*/
+    
+    showNextAlert = false;
     
     bundle = Omadi.data.getBundle('inspection');
     if(bundle && bundle.can_create == 1){
         if(Omadi.bundles.inspection.userDrivesATruck()){
             
-            dialog = Ti.UI.createAlertDialog({
-               title: 'Review Last Inspection',
-               message: 'Sign Pre-Shift Form?',
-               buttonNames: ['Yes', 'No']
-            });
+            currentVehicleNid = Omadi.bundles.companyVehicle.getCurrentVehicleNid();
             
-            dialog.addEventListener('click', function(e){
-               
-               if(e.index == 0){
-                   
-                   vehicle_nid = Omadi.bundles.companyVehicle.getCurrentVehicleNid();
-                   
-                   hasFilter = false;
-                   
-                   if(typeof bundle.data.mobile !== 'undefined' && 
-                        typeof bundle.data.mobile.filters !== 'undefined' && 
-                        typeof bundle.data.mobile.filters.fields !== 'undefined' && 
-                        typeof bundle.data.mobile.filters.fields[0] !== 'undefined' &&
-                        typeof bundle.data.mobile.filters.fields[0].field_name !== 'undefined' &&
-                        bundle.data.mobile.filters.fields[0].field_name == 'truck_reference'){
-                            hasFilter = true;
-                        } 
-                   
-                   if(vehicle_nid > 0 && hasFilter){
-                       
-                       vehicle_name = Omadi.bundles.companyVehicle.getCurrentVehicleName();
-                       
-                       var filterValues = [];
-                       filterValues.push({
-                           value: vehicle_nid,
-                           text: vehicle_name
-                       });
-                       
-                       newWin = Omadi.display.openListWindow('inspection', false, filterValues, [], true);
-                   }
-                   else{
-                       newWin = Omadi.display.openListWindow('inspection', false, [], [], false);    
-                   }
-                   
-                   if(typeof alertQueue !== 'undefined'){
-                       newWin.addEventListener('close', function(){
-                            Ti.App.fireEvent('showNextAlertInQueue'); 
-                       });
-                   }
-               }
-               else{
-                   if(typeof alertQueue !== 'undefined'){
-                        Ti.App.fireEvent('showNextAlertInQueue');
-                   }
-               }
-            });
+            Ti.API.debug("truck nid: " + currentVehicleNid);
             
-            if(typeof alertQueue !== 'undefined'){
-                alertQueue.push(dialog);
+            if(currentVehicleNid > 0){
+                // The user is currently in a truck
+                
+                lastInspectionReportNid = Omadi.bundles.inspection.getLastInspectionReportNid(currentVehicleNid);
+                
+                Ti.API.debug("last nid: " + lastInspectionReportNid);
+                
+                if(lastInspectionReportNid > 0){
+                
+                    dialog = Ti.UI.createAlertDialog({
+                       title: 'Review Last Inspection Report?',
+                       buttonNames: ['Ok', 'Cancel']
+                    });
+                    
+                    dialog.addEventListener('click', function(e){
+                       var newWin, vehicle_nid;
+                       
+                       if(e.index == 0){
+                       
+                           newWin = Omadi.display.openFormWindow('inspection', lastInspectionReportNid, 1);
+                           
+                           if(typeof alertQueue !== 'undefined'){
+                               newWin.addEventListener('close', function(){
+                                    Ti.App.fireEvent('showNextAlertInQueue'); 
+                               });
+                           }
+                       }
+                       else{
+                           if(typeof alertQueue !== 'undefined'){
+                                Ti.App.fireEvent('showNextAlertInQueue');
+                           }
+                       }
+                    });
+                    
+                    if(typeof alertQueue !== 'undefined'){
+                        alertQueue.push(dialog);
+                    }
+                    else{
+                        dialog.show();
+                    }
+                }
+                else{
+                    showNextAlert = true;
+                }
             }
             else{
-                dialog.show();
+               showNextAlert = true;
             }
+        }
+        else{
+           showNextAlert = true;
+        }
+    }
+    else{
+        showNextAlert = true;
+    }
+    
+    if(showNextAlert){
+        if(typeof alertQueue !== 'undefined'){
+            Ti.App.fireEvent('showNextAlertInQueue');
         }
     }
 };
@@ -123,16 +151,15 @@ Omadi.bundles.inspection.userShouldDoInspection = function(){"use strict";
     return false;
 };
 
-Omadi.bundles.inspection.askToCreateInspection = function(){"use strict";
+Omadi.bundles.inspection.askToCreateInspection = function(showLogout){"use strict";
     var dialog, bundle;
     /*global roles, ROLE_ID_FIELD, alertQueue*/
     
     //if(Omadi.bundles.inspection.userShouldDoInspection()){
 
         dialog = Ti.UI.createAlertDialog({
-           title: 'DOT Inspection Report',
-           message: 'Fill Out Post-Shift Form?',
-           buttonNames: ['Yes', 'No'] 
+           title: 'Do Post-Shift Inspection?',
+           buttonNames: ['Ok', 'Cancel'] 
         });
         
         dialog.addEventListener('click', function(e){
@@ -140,7 +167,7 @@ Omadi.bundles.inspection.askToCreateInspection = function(){"use strict";
            if(e.index == 0){
                Omadi.display.openFormWindow('inspection', 'new', 0);
            }
-           else{
+           else if(showLogout){
                Omadi.display.showLogoutDialog();
            }
         });

@@ -34,13 +34,14 @@ Omadi.bundles.companyVehicle.askAboutVehicle = function() {"use strict";
             }
             else if(typeof e.source.vehicles[e.index] !== 'undefined'){
                 Omadi.bundles.companyVehicle.setUserVehicle(e.source.vehicles[e.index].nid);
+                
+                Omadi.bundles.inspection.askToReviewLastInspection();
             }
             
-            Ti.API.debug(e.index);
-
             if ( typeof alertQueue !== 'undefined') {
                 Ti.App.fireEvent('showNextAlertInQueue');
             }
+
         });
 
         if ( typeof alertQueue !== 'undefined') {
@@ -53,7 +54,7 @@ Omadi.bundles.companyVehicle.askAboutVehicle = function() {"use strict";
 };
 
 Omadi.bundles.companyVehicle.setUserVehicle = function(vehicle_nid) {"use strict";
-    var http, dialog;
+    var http, dialog, db;
     
     if(!Ti.Network.online){
         dialog = Ti.UI.createOptionDialog({
@@ -70,6 +71,11 @@ Omadi.bundles.companyVehicle.setUserVehicle = function(vehicle_nid) {"use strict
     else{
         Omadi.display.loading();
         
+        // Set the vehicle immediately, if it fails, unset it
+        db = Omadi.utils.openListDatabase();
+        db.execute("UPDATE history SET in_vehicle_nid = " + vehicle_nid + " WHERE id_hist=1");
+        db.close();
+        
         http = Ti.Network.createHTTPClient();
         http.setTimeout(60000);
         http.open('POST', Omadi.DOMAIN_NAME + '/js-company-vehicle/company_vehicle/enter_vehicle.json');
@@ -79,20 +85,18 @@ Omadi.bundles.companyVehicle.setUserVehicle = function(vehicle_nid) {"use strict
     
         http.onload = function(e) {
             Omadi.display.doneLoading();
-            //Ti.API.debug(JSON.stringify(e));
-            var db;
-            
-            db = Omadi.utils.openListDatabase();
-            db.execute("UPDATE history SET in_vehicle_nid = " + vehicle_nid + " WHERE id_hist=1");
-            db.close();
             
             Ti.App.fireEvent('companyVehicleSelected');
         };
     
         http.onerror = function(e) {
-            var dialog;
+            var dialog, db;
             
             Omadi.display.doneLoading();
+            
+            db = Omadi.utils.openListDatabase();
+            db.execute("UPDATE history SET in_vehicle_nid=0 WHERE id_hist=1");
+            db.close();
             
             Ti.API.error(JSON.stringify(e));
             dialog = Ti.UI.createAlertDialog({
@@ -122,6 +126,10 @@ Omadi.bundles.companyVehicle.exitVehicle = function(){"use strict";
     bundle = Omadi.data.getBundle('company_vehicle');
 
     if (bundle && Omadi.bundles.inspection.userDrivesATruck()) {
+        
+        // Make sure the user doesn't forget to do an inspection on the last vehicle just exited
+        Omadi.bundles.inspection.askToCreateInspection(false);
+        
         if(!Ti.Network.online){
             dialog = Ti.UI.createOptionDialog({
                 message : 'Exiting the vehicle was not saved. Please try again once you are connected to the Internet.',

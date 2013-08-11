@@ -14,6 +14,19 @@ Ti.API.info("Starting App.");
 
 var iOSGPS, scrollView, scrollPositionY = 0, portal, sound;
 
+var uploadBytesLeft = 0;
+var mainMenuWindow;
+var uploadView, uploadProgress, uploadLabel;
+
+var uploadAnimation = Ti.UI.createAnimation();
+
+var ImageFactory;
+
+if (Ti.App.isIOS) {
+    Ti.include('/lib/iOS/backgroundLocation.js');
+    ImageFactory = require('ti.imagefactory');
+}
+
 function setProperties(domainName, jsonString) {"use strict";
     /*jslint regexp:true*/
     
@@ -144,6 +157,97 @@ function setClientAccount(domainName, db){"use strict";
     }
     
     db.execute("UPDATE history SET client_account='" + dbEsc(clientAccount) + "' WHERE id_hist=1");
+}
+
+function showUploadStatusHandler(){"use strict";
+    scrollView.top = 0;
+}
+
+function hideUploadStatusHandler(){"use strict";
+    scrollView.top = -40;
+}
+
+function setBytesLeftLabel(bytesLeft){
+    uploadLabel.setText("Uploading files. " + Omadi.utils.formatMegaBytes(bytesLeft) + "MB to go.");
+}
+
+function bytesStreamedLogin(e){"use strict";
+    var bytesLeft = uploadBytesLeft - e.bytesStreamed;
+    
+    setBytesLeftLabel(bytesLeft);
+}
+
+function updateUploadBytes(){"use strict";
+    var db, result, http, cookies, i;
+    
+    db = Omadi.utils.openListDatabase();
+    result = db.execute("SELECT filesize, bytes_uploaded FROM _files WHERE nid > 0");
+    uploadBytesLeft = 0;
+    
+    while(result.isValidRow()){
+        uploadBytesLeft += (result.fieldByName('filesize', Ti.Database.FIELD_TYPE_INT) - result.fieldByName('bytes_uploaded', Ti.Database.FIELD_TYPE_INT));
+        result.next();
+    }
+    
+    db.close();
+    
+    Ti.API.debug("BYTES LEFT: " + uploadBytesLeft);
+    
+    setBytesLeftLabel(uploadBytesLeft);
+    
+    if(uploadBytesLeft == 0){
+        // Stop the upload checks as there is nothing left to upload
+        if(typeof Ti.App.backgroundPhotoUploadCheck !== 'undefined'){
+            clearInterval(Ti.App.backgroundPhotoUploadCheck);
+        }
+        
+        if(scrollView.top == 0){
+            uploadAnimation.duration = 1000;
+            uploadAnimation.top = -40;
+            uploadAnimation.addEventListener('complete', hideUploadStatusHandler);
+            
+            scrollView.animate(uploadAnimation);
+        }
+        
+        Ti.App.removeEventListener('bytesStreamed', bytesStreamedLogin);
+        
+        cookies = [];
+        db = Omadi.utils.openListDatabase();
+        result = db.execute("SELECT token FROM background_files");
+        if(result.isValidRow()){
+            cookies.push(result.fieldByName('token'));
+        }
+        db.close();  
+        
+        for(i = 0; i < cookies.length; i ++){
+            http = Ti.Network.createHTTPClient();
+            http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync/logout.json');
+            http.setTimeout(15000);
+            http.setRequestHeader("Content-Type", "application/json");
+            
+            if(cookies[i] > ""){
+                http.setRequestHeader("Cookie", cookies[i]);
+            }
+        
+            http.send(); 
+        }
+        
+        db = Omadi.utils.openListDatabase();
+        db.execute("DELETE FROM background_files");
+        db.close();
+    }
+    else{
+       
+        if(scrollView.top < 0){
+            uploadAnimation.duration = 500;
+            uploadAnimation.top = 0;
+            uploadAnimation.addEventListener('complete', showUploadStatusHandler);
+            
+            scrollView.animate(uploadAnimation);
+            
+            Ti.App.addEventListener('bytesStreamed', bytesStreamedLogin);
+        }
+    }
 }
 
 ( function() {"use strict";
@@ -297,7 +401,7 @@ function setClientAccount(domainName, db){"use strict";
             scrollView = Ti.UI.createView({
                layout: 'vertical',
                width: '100%',
-               top: 0,
+               top: -40,
                bottom: 0,
                left: 0,
                right: 0
@@ -309,7 +413,7 @@ function setClientAccount(domainName, db){"use strict";
                 showHorizontalScrollIndicator : false,
                 scrollType : 'vertical',
                 width : '100%',
-                top : 0,
+                top : -40,
                 left : 0,
                 bottom: 0,
                 right: 0,
@@ -327,8 +431,37 @@ function setClientAccount(domainName, db){"use strict";
             });
         }
         
+        Ti.App.addEventListener('loggingOut', function() {
+            // Try uploading any remaining files
+            //Omadi.service.uploadFile();
+            //Omadi.service.uploadBackgroundFile();
+            
+            updateUploadBytes();
+            
+            Ti.App.backgroundPhotoUploadCheck = setInterval(Omadi.service.uploadBackgroundFile, 60000);
+        });
+        
         Ti.UI.currentWindow.add(scrollView);
-
+        
+        uploadView = Ti.UI.createView({
+            width: Ti.UI.FILL,
+            height: 40,
+            backgroundColor: '#000'
+        });
+        
+        uploadLabel = Ti.UI.createLabel({
+            color: '#fff',
+            font : {
+                fontSize: 16
+            },
+            width: Ti.UI.FILL,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+        });
+        
+        uploadView.add(uploadLabel);
+        
+        scrollView.add(uploadView);
+        
         //Web site picker
         logo = Titanium.UI.createImageView({
             width : 200,
@@ -431,8 +564,6 @@ function setClientAccount(domainName, db){"use strict";
         });
 
         scrollView.add(passwordField);
-
-        
 
         usernameField.addEventListener('return', function() {
             passwordField.focus();
@@ -612,7 +743,11 @@ function setClientAccount(domainName, db){"use strict";
                 // When infos are retrieved:
                 xhr.onload = function(e) {
                     var db_list, list_result, cookie, dialog, loginJSON;
-
+                    
+                    if(typeof Ti.App.backgroundPhotoUploadCheck !== 'undefined'){
+                        clearInterval(Ti.App.backgroundPhotoUploadCheck);
+                    }
+                    
                     db_list = Omadi.utils.openListDatabase();
 
                     list_result = db_list.execute("SELECT domain FROM domains WHERE domain='" + dbEsc(portal.value) + "'");
@@ -625,7 +760,7 @@ function setClientAccount(domainName, db){"use strict";
                         db_list.execute("BEGIN IMMEDIATE TRANSACTION");
                         //Create another database
                         Ti.API.info('database does not exist, creating a new one');
-                        db_list.execute("INSERT INTO domains (domain, db_name) VALUES ('" + dbEsc(portal.value) + "','" + dbEsc("db_" + portal.value + '_' + usernameField.value) + "')");
+                        db_list.execute("INSERT INTO domains (domain, db_name) VALUES ('" + dbEsc(portal.value) + "','" + dbEsc(Omadi.utils.getUserDBName(portal.value, usernameField.value)) + "')");
                         db_list.execute("COMMIT TRANSACTION");
                     }
 
@@ -641,10 +776,18 @@ function setClientAccount(domainName, db){"use strict";
                     setProperties(domainName, this.responseText);
                     
                     setClientAccount(domainName, db_list);
-
+                    
+                    Ti.App.removeEventListener('bytesStreamed', bytesStreamedLogin);
+                    
                     Omadi.display.doneLoading();
-                    Omadi.display.openMainMenuWindow({
+                    mainMenuWindow = Omadi.display.openMainMenuWindow({
                         fromSavedCookie: false
+                    });
+                    
+                    // Right when the main menu window closes, check for additional files to upload
+                    mainMenuWindow.addEventListener('close', function(){
+                        updateUploadBytes();
+                        Omadi.service.uploadBackgroundFile(); 
                     });
 
                     cookie = this.getResponseHeader('Set-Cookie');
@@ -662,6 +805,9 @@ function setClientAccount(domainName, db){"use strict";
                         db_list.execute("INSERT INTO login SET picked = '" + dbEsc(domainName) + "', login_json = '" + dbEsc(Ti.Utils.base64encode(this.responseText)) + "', is_logged = 'true', cookie = '" + dbEsc(cookie) + "', logged_time = '" + Omadi.utils.getUTCTimestamp() + "', id_log=1");
                         db_list.execute("COMMIT TRANSACTION");
                     }
+                    
+                    // Get rid of any background uploads as the cookie is updated
+                    db_list.execute("DELETE FROM background_files WHERE client_account='" + dbEsc(portal.value) + "' AND username = '" + dbEsc(usernameField.value) + "'");
 
                     db_list.close();
                     passwordField.value = "";
@@ -708,6 +854,7 @@ function setClientAccount(domainName, db){"use strict";
         });
 
         Ti.UI.currentWindow.addEventListener('android:back', function() {
+            // TODO: if uploading a file, ask first before closing the app
             Ti.UI.currentWindow.close();
         });
 
@@ -723,10 +870,26 @@ function setClientAccount(domainName, db){"use strict";
             domainName = result.fieldByName("picked");
             setProperties(domainName, Ti.Utils.base64decode(result.fieldByName("login_json")));
             setClientAccount(domainName, db);
+            
+            // Get rid of any background uploads as the cookie is updated
+            db.execute("DELETE FROM background_files WHERE client_account='" + dbEsc(portal.value) + "' AND username = '" + dbEsc(usernameField.value) + "'");
             db.close();
+            
+            // Don't allow the upload checks anymore on the login screen
+            if(typeof Ti.App.backgroundPhotoUploadCheck !== 'undefined'){
+                clearInterval(Ti.App.backgroundPhotoUploadCheck);
+            }
+            
+            Ti.App.removeEventListener('bytesStreamed', bytesStreamedLogin);
 
-            Omadi.display.openMainMenuWindow({
+            mainMenuWindow = Omadi.display.openMainMenuWindow({
                 fromSavedCookie: true
+            });
+            
+            // Right when the main menu window closes, check for additional files to upload
+            mainMenuWindow.addEventListener('close', function(){
+                updateUploadBytes();
+                Omadi.service.uploadBackgroundFile(); 
             });
 
             startGPSService();
@@ -736,6 +899,16 @@ function setClientAccount(domainName, db){"use strict";
         // TODO: plug all the memory leaks and conserve memory better
         Ti.App.addEventListener('closeApp', function(){
             Ti.UI.currentWindow.close();
+        });
+        
+        Ti.App.addEventListener('photoUploaded', function(e){
+            
+            
+            if(!Omadi.utils.isLoggedIn()){
+                Ti.API.debug("Photo was just uploaded: login");
+                
+                updateUploadBytes();
+            } 
         });
         
     }());
