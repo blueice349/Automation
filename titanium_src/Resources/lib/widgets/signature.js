@@ -370,32 +370,24 @@ Omadi.widgets.signature = {
         var filePath, file, blob;
 
         Ti.API.debug("SAVING SIGNATURE");
-        //var blob = e.source.imageView.toBlob();
-        //Omadi.widgets.image.saveImageInDb(e.source.imageView, blob);
 
-        // var blob = e.source.toBlob();
-        // Omadi.widgets.image.saveImageInDb(e.source, blob);
-
-        filePath = Ti.Filesystem.applicationDataDirectory + "s_" + Omadi.utils.getUTCTimestamp() + '.bmp';
-
+        file = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, "s_" + Omadi.utils.getUTCTimestamp() + '.bmp');
+        
+        filePath = file.getNativePath();
+        
         doneButton.widgetView.imageView.filePath = filePath;
-        Ti.API.debug(filePath);
-
-        file = Ti.Filesystem.getFile(filePath);
-        if(file && file.writable){
+     
+        if(file){
             blob = doneButton.widgetView.imageView.toBlob();
             file.write(blob);
 
-            Omadi.widgets.image.saveFileInfo(doneButton.widgetView.imageView, filePath, '', 0);
+            Omadi.widgets.image.saveFileInfo(doneButton.widgetView.imageView, filePath, '', 0, blob.length, 'signature');
         }
         else{
 
-            Omadi.service.sendErrorReport("File is not writable for signature.");
-            alert("There is a problem saving the signature.");
+            Omadi.service.sendErrorReport("File is not available for signature.");
+            alert("There was a problem saving the signature.");
         }
-
-        //var blob = doneButton.widgetView.imageView.toBlob();
-        //Omadi.widgets.image.saveImageInDb(doneButton.widgetView.imageView, blob);
     },
     removePreviousSignature : function(instance){"use strict";
         var nid, db;

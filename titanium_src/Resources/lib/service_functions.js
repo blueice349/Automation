@@ -1028,7 +1028,7 @@ Omadi.service.sendErrorReport = function(message) {"use strict";
     uid = Omadi.utils.getUid();
     http = Ti.Network.createHTTPClient();
     http.setTimeout(30000);
-    http.open('GET', Omadi.DOMAIN_NAME + '/error.json?domain=' + Omadi.DOMAIN_NAME + '&uid=' + uid + '&message=' + message);
+    http.open('GET', Omadi.DOMAIN_NAME + '/js-sync/error.json?domain=' + Omadi.DOMAIN_NAME + '&uid=' + uid + '&message=' + message);
     //http.setRequestHeader("Content-Type", "application/json");
     //Omadi.utils.setCookieHeader(http);
 
