@@ -255,6 +255,8 @@ function getDrivingDirectionsView(e){"use strict";
 
 function doFieldOutput(fieldObj) {"use strict";
     /*global getCalculationTableView*/
+    /*jslint nomen:true*/
+   
     var i, rowView, valueView, valueLabel, labelView, labelLabel, fieldIsHidden, tableView, fileId, 
         contentImage, field_parts, part, contentWidth, dotIndex, extension, imagePath, degrees, transform,
         animation, rotateDegrees;
@@ -405,10 +407,7 @@ function doFieldOutput(fieldObj) {"use strict";
                         if (node[fieldObj.field_name].imageData[i] > "") {
                             fileId = node[fieldObj.field_name].dbValues[i];
                             
-                            
                             imagePath = node[fieldObj.field_name].imageData[i];
-                            
-                            //alert(imagePath);
                             
                             degrees = node[fieldObj.field_name].degrees[i];
                             
@@ -425,26 +424,6 @@ function doFieldOutput(fieldObj) {"use strict";
                                 isImage : true
                             });
                             
-                            // if(Ti.App.isAndroid && degrees > 0){
-                                // transform = Ti.UI.create2DMatrix();
-                                // animation = Ti.UI.createAnimation();
-//                                 
-                                // rotateDegrees = degrees;
-                                // if(rotateDegrees == 270){
-                                    // rotateDegrees = 90;
-                                // }
-                                // else if(rotateDegrees == 90){
-                                    // rotateDegrees = 270;
-                                // }
-//                                 
-                                // transform = transform.rotate(rotateDegrees);
-                                // animation.transform = transform;
-                                // animation.duration = 1;
-//                                 
-                                // contentImage.animate(animation);
-                            // }
-    
-                            //contentImage.addEventListener('click', displayLargeImage);
                             valueView.add(contentImage);
                             
                             contentWidth += 110;
@@ -466,7 +445,7 @@ function doFieldOutput(fieldObj) {"use strict";
                     
                     scrollView.add(labelView);
                 }
-                else if (fieldObj.type === 'file' && typeof fieldObj.widget !== 'undefined' && fieldObj.widget.type !== 'undefined' && fieldObj.widget.type == 'omadi_file_video') {
+                else if (fieldObj.type === 'file' && typeof fieldObj.settings !== 'undefined' && fieldObj.settings._display !== 'undefined' && fieldObj.settings._display['default'].type !== 'undefined' && fieldObj.settings._display['default'].type == 'omadi_file_video') {
                     valueView = Ti.UI.createScrollView({
                         contentHeight : 100,
                         arrImages : null,
@@ -504,7 +483,7 @@ function doFieldOutput(fieldObj) {"use strict";
                             });
                             
                             valueView.add(contentImage);
-                            //Omadi.display.setImageViewThumbnail(contentImage, node.nid, fileId);
+                            Omadi.display.setImageViewVideoThumbnail(contentImage, node.nid, fileId, fieldObj.field_name);
                             contentWidth += 110;
                         }
                     }

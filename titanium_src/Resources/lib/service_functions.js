@@ -882,35 +882,79 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
     }
 };
 
+Omadi.service.photoUploadErrorDialog = null;
+
 Omadi.service.photoUploadError = function(e){"use strict";
-    var subDB, dialog, message, subResult, numTries, blob, photoId, nid, uploadMore, imageView, delta, field_name, filename, imageFile, imageDir;
+    var subDB, dialog, message, subResult, numTries, blob, 
+        photoId, nid, uploadMore, imageView, delta, field_name, 
+        filename, imageFile, imageDir, incrementTries, 
+        saveFailedUpload, isBackground;
 
     Ti.API.error("Photo upload failed");
     
     Ti.API.error(e);
     Ti.API.error(this);
+    
+    incrementTries = true;
+    saveFailedUpload = false;
+    
+    if(e.code == 1){
+        // Some kind of network error
+        incrementTries = false;
+        
+        if(Omadi.service.photoUploadErrorDialog === null){
+            Omadi.service.photoUploadErrorDialog = Ti.UI.createAlertDialog({
+                title: "Problem with Network",
+                message: "Please login to continue uploads.",
+                buttonNames: ['Ok'] 
+            });
+            
+            Omadi.service.photoUploadErrorDialog.addEventListener('click', function(){
+                 Omadi.service.photoUploadErrorDialog = null;
+            });
+            
+            Omadi.service.photoUploadErrorDialog.show();
+        }
+    }
+    else if(e.code == 3 || e.code == 401 || e.code == 403){
+        // Some kind of authentication error
+        incrementTries = false;
+        
+        if(Omadi.service.photoUploadErrorDialog === null){
+            Omadi.service.photoUploadErrorDialog = Ti.UI.createAlertDialog({
+                title: "Problem with Upload",
+                message: "Please login to continue uploads.",
+                buttonNames: ['Ok'] 
+            });
+            
+            Omadi.service.photoUploadErrorDialog.addEventListener('click', function(){
+                 Omadi.service.photoUploadErrorDialog = null;
+            });
+            
+            Omadi.service.photoUploadErrorDialog.show();
+        }
+        
+        Omadi.service.doBackgroundUploads = false;
+    }
+    else if(e.code == 410 || e.code == 412){
+        // Node was deleted, so delete db entry immediately and save image to gallery
+        saveFailedUpload = true;
+    }
+    
+    photoId = this.photoId;
+    nid = this.nid;
+    delta = this.delta;
+    field_name = this.field_name;
+    numTries = this.tries;
+    isBackground = this.isBackground;
 
     try{
-        photoId = this.photoId;
-        nid = this.nid;
-        delta = this.delta;
-        field_name = this.field_name;
-    
-        //Omadi.service.sendErrorReport("Photo upload failed: " + nid);
-    
+       
         subDB = Omadi.utils.openListDatabase();
-        subResult = subDB.execute("SELECT tries, file_path FROM _files WHERE id=" + photoId);
     
         subDB.execute("UPDATE _files SET uploading = 0 WHERE id = " + photoId);
-    
-        if (subResult.rowCount > 0) {
-            numTries = subResult.fieldByName('tries', Ti.Database.FIELD_TYPE_INT);
-    
-            if (numTries >= 4) {
-    
-                Omadi.data.saveFailedUpload(photoId);
-            }
-    
+        
+        if(incrementTries){
             subDB.execute("UPDATE _files SET tries = (tries + 1) where id=" + photoId);
         }
     
@@ -931,6 +975,10 @@ Omadi.service.photoUploadError = function(e){"use strict";
     }
     catch(ex){
         Omadi.service.sendErrorReport("Upload failed exception: " + ex);
+    }
+    
+    if (Omadi.utils.isLoggedIn() && (numTries >= 4 || saveFailedUpload)) {
+        Omadi.data.saveFailedUpload(photoId);
     }
     
 
@@ -1002,7 +1050,9 @@ Omadi.service.photoUploadStream = function(e){"use strict";
 };
 
 Omadi.service.uploadBackgroundFile = function(){"use strict";
-    Omadi.service.uploadFile(true);
+    if(Omadi.service.doBackgroundUploads){
+        Omadi.service.uploadFile(true);    
+    }
 };
 
 Omadi.service.uploadFile = function(isBackground) {"use strict";
@@ -1094,6 +1144,8 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
                             http.field_name = Omadi.service.currentFileUpload.field_name;
                             http.uploadPart = Omadi.service.currentFileUpload.uploadPart;
                             http.numUploadParts = Omadi.service.currentFileUpload.numUploadParts;
+                            http.tries = Omadi.service.currentFileUpload.tries;
+                            http.isBackground = isBackground;
         
                             //Ti.API.info("Uploading to " + domainName);
                             http.setRequestHeader("Content-Type", "application/json");

@@ -167,8 +167,14 @@ function hideUploadStatusHandler(){"use strict";
     scrollView.top = -40;
 }
 
-function setBytesLeftLabel(bytesLeft){
-    uploadLabel.setText("Uploading files. " + Omadi.utils.formatMegaBytes(bytesLeft) + "MB to go.");
+function setBytesLeftLabel(bytesLeft){"use strict";
+    
+    if(Omadi.service.doBackgroundUploads){
+        uploadLabel.setText("Uploading files. " + Omadi.utils.formatMegaBytes(bytesLeft) + "MB to go.");
+    }
+    else{
+        uploadLabel.setText("Please login to continue file uploads.");
+    }
 }
 
 function bytesStreamedLogin(e){"use strict";
@@ -437,6 +443,7 @@ function updateUploadBytes(){"use strict";
             //Omadi.service.uploadBackgroundFile();
             
             updateUploadBytes();
+            Omadi.service.doBackgroundUploads = true;
             
             Ti.App.backgroundPhotoUploadCheck = setInterval(Omadi.service.uploadBackgroundFile, 60000);
         });
