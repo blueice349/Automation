@@ -1,8 +1,11 @@
 
 Ti.include('/lib/functions.js');
 
+var ImageFactory = null;
+
 if (Ti.App.isIOS) {
     Ti.include('/lib/iOS/backgroundLocation.js');
+    ImageFactory = require('ti.imagefactory');
 }
 
 // var cameraAndroid;
@@ -19,7 +22,6 @@ curWin.backgroundColor = '#eee';
 curWin.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
 
 var version = 'Omadi Inc';
-var isFirstTime = false;
 var alertQueue = [];
 var currentAlertIndex = 0;
 var useAlertQueue = true;
@@ -49,20 +51,27 @@ Ti.App.Properties.setObject('userRoles', roles);
 Ti.App.addEventListener("syncInstallComplete", displayBundleList);
 
 var loggedView = Titanium.UI.createView({
-    top : 0,
+    top : 40,
     backgroundColor : '#333',
     height : 45,
     width : '100%',
     opacity : 1
 });
 
+var headerListView = Ti.UI.createView({
+    top: -40,
+    bottom: 0,
+    left: 0,
+    right: 0
+});
+
 var networkStatusView = Ti.UI.createView({
     zIndex : 1000,
     top : 0,
-    height : 45,
+    height : 40,
     width : '100%',
     backgroundColor : '#111',
-    visible : false
+    visible : true
 });
 
 var networkStatusLabel = Ti.UI.createLabel({
@@ -74,6 +83,21 @@ var networkStatusLabel = Ti.UI.createLabel({
     width : '100%',
     height : 45,
     textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
+});
+
+var uploadingProgressBar = Ti.UI.createProgressBar({
+    color : '#fff',
+    font : {
+        fontSize : 16
+    },
+    width : '100%',
+    height : 45,
+    message : "",
+    style : (Ti.App.isIOS) ? Titanium.UI.iPhone.ProgressBarStyle.PLAIN : '',
+    min: 0,
+    max: 1,
+    value: 0,
+    visible: false
 });
 
 var label_top = Titanium.UI.createLabel({
@@ -177,6 +201,8 @@ var a = Titanium.UI.createAlertDialog({
 
 var lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp();
 
+var networkStatusAnimation = Titanium.UI.createAnimation();
+
 
 function displayBundleList() {"use strict";
     var db, result, dataRows, name_table, i, j, k, display, description, row_t, icon, titleLabel, plusButton, can_view, can_create;
@@ -197,7 +223,7 @@ function displayBundleList() {"use strict";
         if (can_view === 1) {
 
             row_t = Ti.UI.createTableViewRow({
-                height : 45,
+                height : 53,
                 display : display,
                 name : display,
                 desc : description,
@@ -206,8 +232,8 @@ function displayBundleList() {"use strict";
             });
 
             icon = Titanium.UI.createImageView({
-                width : 32,
-                height : 32,
+                width : 42,
+                height : 42,
                 top : 6,
                 left : 5,
                 image : Omadi.display.getNodeTypeImagePath(name_table),
@@ -221,7 +247,7 @@ function displayBundleList() {"use strict";
                 },
                 width : '82%',
                 textAlign : 'left',
-                left : 42,
+                left : 55,
                 height : Ti.UI.SIZE,
                 color : '#000',
                 desc : description
@@ -563,27 +589,87 @@ function showNextAlertInQueue(e) {"use strict";
     }
 }
 
+function showNetworkStatusHandler(){"use strict";
+    headerListView.top = 0;
+}
+
+function showNetworkStatus(){"use strict";
+    networkStatusAnimation.duration = 500;
+    networkStatusAnimation.top = 0;
+    networkStatusAnimation.addEventListener('complete', showNetworkStatusHandler);
+    
+    headerListView.animate(networkStatusAnimation);
+}
+
+function hideNetworkStatusHandler(){"use strict";
+    headerListView.top = -40;
+}
+
+function hideNetworkStatus(){"use strict";
+    
+    networkStatusAnimation.duration = 1000;
+    networkStatusAnimation.top = -40;
+    networkStatusAnimation.addEventListener('complete', hideNetworkStatusHandler);
+    
+    headerListView.animate(networkStatusAnimation);
+}
+
 function doneSendingDataMainMenu(e){"use strict";
     Ti.API.debug("Done Sending data event received");
     
     // Allow background updates again
     Ti.App.allowBackgroundUpdate = true;
     
-    networkStatusView.hide();
+    hideNetworkStatus();
     Omadi.service.uploadFile();
 }
 
 function doneSendingPhotosMainMenu(e){"use strict";
-    networkStatusView.hide();
+    hideNetworkStatus();
 }
 
 function sendingDataMainMenu(e){"use strict";
-    networkStatusLabel.setText(e.message);
-    networkStatusView.show();
+    // the progress bar set by onsendstream does not currently work with Android
+    // Only allow iOS apps to show the progress bar for uploads
+    if(Ti.App.isAndroid || typeof e.progress === 'undefined'){
+        networkStatusLabel.setText(e.message);
+        uploadingProgressBar.setVisible(false);
+        networkStatusLabel.setVisible(true);
+    }
+    else{
+        uploadingProgressBar.setValue(0.01);
+        uploadingProgressBar.setMessage(e.message);
+        uploadingProgressBar.uploadingBytes = e.uploadingBytes;
+        uploadingProgressBar.filesize = e.filesize;
+        uploadingProgressBar.bytesUploaded = e.bytesUploaded;
+        
+        networkStatusLabel.setVisible(false);
+        uploadingProgressBar.setVisible(true);
+        
+    }
+    
+    showNetworkStatus();
 }
 
 function loggingOutMainMenu(e){"use strict";
-    Ti.UI.currentWindow.close();
+    var lastUploadStartTimestamp;
+    
+    lastUploadStartTimestamp = Omadi.service.getLastUploadStartTimestamp();
+                
+    if(lastUploadStartTimestamp === null){
+        // Not currently uploading anything, so the window can close immediately
+        Ti.API.debug("Closing Main Menu Window Immediately");
+        Ti.UI.currentWindow.close();
+    }
+    else{
+        Ti.UI.currentWindow.hide();
+        Ti.App.closeWindowAfterUpload = true;
+        Ti.App.addEventListener('doneSendingPhotos', function(){
+            Ti.API.debug("Closing Main Menu Window");
+            Ti.App.closeWindowAfterUpload = false;
+            Ti.UI.currentWindow.close(); 
+        });
+    }
 }
 
 function networkChangedMainMenu(e){"use strict";
@@ -598,7 +684,7 @@ function normalUpdateFromMenu(e){"use strict";
 }
 
 function fullUpdateFromMenu(e){"use strict";
-    var dbFile, db, result;
+    var dbFile, db, result, fileIds, i;
     
     Ti.App.Properties.setBool("doingFullReset", true);
     
@@ -611,21 +697,25 @@ function fullUpdateFromMenu(e){"use strict";
         alert("You do not have an Internet connection right now, so new data will not be downloaded until you connect.");
     }
 
-    db = Omadi.utils.openMainDatabase();
+    db = Omadi.utils.openListDatabase();
+    fileIds = [];
 
-    result = db.execute("SELECT id FROM _photos");
+    result = db.execute("SELECT id FROM _files");
     if (result.rowCount > 0) {
         alert("One or more photos were not uploaded to the server, so they will be stored on this device now.");
 
         while (result.isValidRow()) {
 
-            Omadi.data.saveFailedUpload(result.fieldByName('id', Ti.Database.FIELD_TYPE_INT), false);
-
+            fileIds.push(result.fieldByName('id', Ti.Database.FIELD_TYPE_INT));
             result.next();
         }
     }
     result.close();
     db.close();
+    
+    for(i = 0; i < fileIds.length; i ++){
+        Omadi.data.saveFailedUpload(fileIds[i], false);
+    }
 
     if (Ti.App.isAndroid) {
         //Remove the database
@@ -708,7 +798,7 @@ function showContinuousSavedNode(){"use strict";
     
     listView = Titanium.UI.createTableView({
         data : [],
-        top : 45,
+        top : 85,
         bottom : 45,
         scrollable : true,
         separatorColor : '#BDBDBD'
@@ -725,12 +815,14 @@ function showContinuousSavedNode(){"use strict";
     nowTimestamp = Omadi.utils.getUTCTimestamp();
     Ti.App.Properties.setString("last_alert_popup", nowTimestamp);
 
-    curWin.add(listView);
+    //curWin.add(listView);
 
     networkStatusView.add(networkStatusLabel);
+    networkStatusView.add(uploadingProgressBar);
 
     displayBundleList();
-
+    
+    
     loggedView.add(refresh_image);
 
     loggedView.add(label_top);
@@ -742,8 +834,14 @@ function showContinuousSavedNode(){"use strict";
        Omadi.display.openActionsWindow();
     });
 
-    curWin.add(loggedView);
-    curWin.add(networkStatusView);
+    //curWin.add(loggedView);
+    
+    headerListView.add(networkStatusView);
+    headerListView.add(loggedView);
+    headerListView.add(listView);
+
+    curWin.add(headerListView);
+    
 
     if (lastSyncTimestamp == 0) {
         db = Omadi.utils.openMainDatabase();
@@ -751,15 +849,6 @@ function showContinuousSavedNode(){"use strict";
         db.close();
         
         Ti.App.Properties.setBool("doingFullReset", true);
-    }
-
-    if (lastSyncTimestamp == 0) {
-        isFirstTime = true;
-        Omadi.service.checkUpdate('from_menu');
-    }
-    else {
-        isFirstTime = false;
-        Omadi.service.checkUpdate('from_menu');
     }
 
     if (Ti.App.isAndroid) {
@@ -824,10 +913,10 @@ function showContinuousSavedNode(){"use strict";
         
         Omadi.bundles.companyVehicle.askAboutVehicle();
         
-        Omadi.bundles.inspection.askToReviewLastInspection();
+        //Omadi.bundles.inspection.askToReviewLastInspection();
     }
     
-    Omadi.utils.checkVolumeLevel();
+    //Omadi.utils.checkVolumeLevel();
     
     Omadi.location.isLocationEnabled();
 
@@ -872,11 +961,15 @@ function showContinuousSavedNode(){"use strict";
         Ti.App.removeEventListener('full_update_from_menu', fullUpdateFromMenu);
         
         // Release memory
-        
-        Ti.UI.currentWindow.remove(loggedView);
-        Ti.UI.currentWindow.remove(networkStatusView);
-        Ti.UI.currentWindow.remove(databaseStatusView);
-        Ti.UI.currentWindow.remove(listView);
+        try{
+            Ti.UI.currentWindow.remove(loggedView);
+            Ti.UI.currentWindow.remove(networkStatusView);
+            Ti.UI.currentWindow.remove(databaseStatusView);
+            Ti.UI.currentWindow.remove(listView);
+        }
+        catch(ex){
+            Ti.API.debug("Could not remove a view from the main menu window");
+        }
         
         loggedView = null;
         networkStatusView = null;
@@ -885,12 +978,17 @@ function showContinuousSavedNode(){"use strict";
         curWin = null;
         
         networkStatusLabel = null;
+        uploadingProgressBar = null;
         refresh_image = null;
         label_top = null;
         offImage = null;
         actionsButton = null;
         a = null;
     });
+    
+    Ti.API.debug("About to check for updates.");
+    
+    Omadi.service.checkUpdate('from_menu');
     
     showContinuousSavedNode();
     

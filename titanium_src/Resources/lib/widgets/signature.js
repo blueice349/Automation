@@ -347,6 +347,7 @@ Omadi.widgets.signature = {
             
             // This waiting is really only for the Android devices, but it's not a hugely back thing
             // To leave for a possibly slow iOS device
+
             setTimeout(function(){
                 Omadi.widgets.signature.saveSignature(e.source);
             }, 1000);
@@ -376,8 +377,9 @@ Omadi.widgets.signature = {
         filePath = file.getNativePath();
         
         doneButton.widgetView.imageView.filePath = filePath;
-     
+
         if(file){
+
             blob = doneButton.widgetView.imageView.toBlob();
             file.write(blob);
 
@@ -396,8 +398,8 @@ Omadi.widgets.signature = {
         if(typeof Ti.UI.currentWindow.nid !== 'undefined'){
             nid = Ti.UI.currentWindow.nid;
             
-            db = Omadi.utils.openMainDatabase();
-            db.execute("DELETE FROM _photos WHERE nid = 0 AND field_name = '" + dbEsc(instance.field_name) + "'");
+            db = Omadi.utils.openListDatabase();
+            db.execute("DELETE FROM _files WHERE nid = 0 AND field_name = '" + dbEsc(instance.field_name) + "'");
             db.close();
         }
     }

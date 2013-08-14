@@ -1,8 +1,9 @@
-/*jslint eqeq:true, plusplus: true*/
+
+/*jslint eqeq:true,plusplus:true*/
+/*global Omadi*/
 
 Ti.include('/lib/functions.js');
 
-/*global Omadi*/
 
 var bundle, curWin, search, instances, filterValues, filterFields, win_new;
 

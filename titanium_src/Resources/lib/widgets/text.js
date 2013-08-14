@@ -141,7 +141,6 @@ Omadi.widgets.text = {
                 if(Ti.App.isAndroid && typeof e.source.maxLength !== 'undefined'){
                     // For some weird reason, e.source.maxLength is at times -1. I don't know how it gets set that way. Keep the maxlength > 0
                     if(e.source.maxLength > 0 && e.source.value.length > e.source.maxLength){
-                        Ti.API.debug("Max: " + e.source.maxLength);
                         e.source.value = e.source.value.substring(0, e.source.maxLength);
                         e.source.setSelection(e.source.value.length, e.source.value.length);
                     }

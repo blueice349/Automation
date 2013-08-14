@@ -865,6 +865,81 @@ function addAbout(){"use strict";
 
 }
 
+function addSettings(){"use strict";
+    var wrapper, button, dialog, image, textButton;
+   
+    wrapper = Ti.UI.createView({
+       height: Ti.UI.SIZE,
+       width: Ti.UI.FILL
+    });
+    
+    textButton = Ti.UI.createView({
+        layout: 'vertical',
+        height: Ti.UI.SIZE,
+        left: 48,
+        right: 0
+    });
+    
+    button = Ti.UI.createLabel({
+        style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+        backgroundGradient : {
+            type : 'linear',
+            startPoint : {
+                x : '50%',
+                y : '0%'
+            },
+            endPoint : {
+                x : '50%',
+                y : '100%'
+            },
+            colors : [{
+                color : '#777',
+                offset : 0.0
+            }, {
+                color : '#999',
+                offset : 0.33
+            }, {
+                color : '#666',
+                offset : 1.0
+            }]
+        },
+        color: '#fff',
+        borderRadius: 7,
+        width: 200,
+        height: 35,
+        font: {
+            fontWeight: 'bold',
+            fontSize: 16
+        },
+        borderColor: '#333',
+        borderWidth: 1,
+        top: 3,
+        text: 'Settings',
+        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+    });
+    
+    button.addEventListener('click', function(e) {
+        Omadi.display.openSettingsWindow();
+    });
+    
+    image = Ti.UI.createImageView({
+       image: '/images/gear_48.png',
+       top: 2,
+       left: '3%',
+       height: Ti.UI.SIZE,
+       width: Ti.UI.SIZE
+    });
+    
+    wrapper.add(image);
+    
+    textButton.add(button);
+    
+    wrapper.add(textButton);
+    currentWinWrapper.add(wrapper);
+    
+    addSeparator();
+}
+
 ( function() {"use strict";
 
         curWin.setBackgroundColor('#eee');
@@ -901,6 +976,8 @@ function addAbout(){"use strict";
         addLogout();
         
         addAbout();
+        
+        addSettings();
         
         addDeleteAll();
    

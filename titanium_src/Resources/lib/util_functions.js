@@ -5,7 +5,7 @@ var Omadi = Omadi || {};
 Omadi.utils = Omadi.utils || {};
 
 Omadi.DOMAIN_NAME = domainName;
-Omadi.DB_VERSION = "DB1695";
+Omadi.DB_VERSION = "DB1705";
 
 Omadi.utils.checkVolumeLevel = function(){"use strict";
     /*global alertQueue*/
@@ -77,6 +77,10 @@ Omadi.utils.openListDatabase = function() {"use strict";
     return db;
 };
 
+Omadi.utils.getUserDBName = function(clientAccount, username){"use strict";
+    return "db_" + clientAccount + '_' + username;
+};
+
 Omadi.utils.getMainDBName = function() {"use strict";
     var db, result, dbName;
 
@@ -88,8 +92,24 @@ Omadi.utils.getMainDBName = function() {"use strict";
     return dbName;
 };
 
+Omadi.utils.openMainDatabaseFromUser = function(clientAccount, username){"use strict";
+    var db = Ti.Database.install('/database/db.sqlite', Omadi.DB_VERSION + "_" + Omadi.utils.getUserDBName(clientAccount, username));
+    if (Ti.App.isIOS) {
+        db.file.setRemoteBackup(false);
+    }
+    return db;
+};
+
 Omadi.utils.openMainDatabase = function() {"use strict";
     var db = Ti.Database.install('/database/db.sqlite', Omadi.DB_VERSION + "_" + Omadi.utils.getMainDBName());
+    if (Ti.App.isIOS) {
+        db.file.setRemoteBackup(false);
+    }
+    return db;
+};
+
+Omadi.utils.openSharedDatabase = function() {"use strict";
+    var db = Ti.Database.install('/database/shared.sqlite', Omadi.DB_VERSION + "_shared");
     if (Ti.App.isIOS) {
         db.file.setRemoteBackup(false);
     }
@@ -160,6 +180,11 @@ Omadi.utils.getUsername = function(uid){"use strict";
     
     return username;
 };
+
+Omadi.utils.formatMegaBytes = function(bytes){"use strict";
+    var mb = bytes / 1048576;
+    return Math.round(mb * 10) / 10;
+}
 
 Omadi.utils.getTimeFormat = function(){"use strict";
     var format, loginJson = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
@@ -248,29 +273,35 @@ Omadi.utils.getTimeAgoStr = function(unix_timestamp) {'use strict';
 Omadi.utils.setCookieHeader = function(http) {"use strict";
     var cookie = Omadi.utils.getCookie();
 
-    if(cookie > ""){
+    if(cookie != null && cookie > "" && cookie != "null"){
         http.setRequestHeader("Cookie", cookie);
     }
 };
 
 Omadi.utils.getCookie = function(fullCookie){"use strict";
     var db, result, cookie;
-
+    
+    cookie = null;
+    
     if(typeof fullCookie === 'undefined'){
         fullCookie = false;
     }
     
     db = Omadi.utils.openListDatabase();
     result = db.execute('SELECT * FROM login WHERE rowid=1');
-    cookie = result.fieldByName("cookie", Ti.Database.FIELD_TYPE_STRING);
-    //Ti.API.info("FOUND COOKIE = " + cookie);
+    if(result.isValidRow()){
+        cookie = result.fieldByName("cookie", Ti.Database.FIELD_TYPE_STRING);
+    }
+    
     result.close();
     db.close();
     
-    if (Ti.App.isIOS && !fullCookie) {
-        if(cookie.indexOf(';') != -1){
-            cookie = cookie.split(';');
-            cookie = cookie[0];
+   if(cookie){
+        if (Ti.App.isIOS && !fullCookie) {
+            if(cookie.indexOf(';') != -1){
+                cookie = cookie.split(';');
+                cookie = cookie[0];
+            }
         }
     }
     

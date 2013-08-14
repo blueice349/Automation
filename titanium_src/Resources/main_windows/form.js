@@ -1,7 +1,8 @@
 
+
 Ti.include("/lib/widgets.js");
 /*global Omadi*/
-/*jslint eqeq: true, plusplus: true*/
+/*jslint eqeq:true,plusplus:true*/
 
 Ti.API.info("Form Window Opened");
 
@@ -33,16 +34,16 @@ function cancelOpt() {"use strict";
     
     dialog = Ti.UI.createAlertDialog({
         cancel : 1,
-        buttonNames : ['Yes', 'No'],
-        message : 'Are you sure you want to cancel and go back?',
-        title : 'Cancel'
+        buttonNames : ['Exit', 'Cancel'],
+        title : 'Really Exit Form?',
+        message: 'Any unsaved changes will be lost.'
     });
 
     dialog.addEventListener('click', function(e) {
-        var db, result, numPhotos, secondDialog, negativeNid, query, continuousId, photoNids;
+        var db, result, numPhotos, secondDialog, negativeNid, query, continuousId, 
+            photoNids, types, dialogTitle, dialogMessage, messageParts;
         
         if (e.index == 0) {
-            
             
             if(node.flag_is_updated == 3){
                 // The original node is a draft
@@ -56,8 +57,8 @@ function cancelOpt() {"use strict";
                         }
                     }
                     
-                    db = Omadi.utils.openMainDatabase();
-                    db.execute("UPDATE _photos SET nid = " + Ti.UI.currentWindow.nid + " WHERE nid IN (" + photoNids.join(",") + ")");
+                    db = Omadi.utils.openListDatabase();
+                    db.execute("UPDATE _files SET nid = " + Ti.UI.currentWindow.nid + " WHERE nid IN (" + photoNids.join(",") + ")");
                     db.close();
                 }
                 
@@ -78,33 +79,136 @@ function cancelOpt() {"use strict";
                 photoNids = [0];
                 if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined'){
                     continuousId = parseInt(Ti.UI.currentWindow.continuous_nid, 10);
-                    if(!isNaN(continuousId) && continuousId != 0){
+                    if(!isNaN(continuousId) && continuousId < 0){
+                        // Don't do anything with the photos with a positive nid
                         photoNids.push(continuousId);
                     }
                 }
                 
-                query = "SELECT COUNT(*) FROM _photos WHERE nid IN (" + photoNids.join(',') + ")";
+                query = "SELECT COUNT(*) FROM _files WHERE nid IN (" + photoNids.join(',') + ")";
                 // if(Ti.UI.currentWindow.nid < 0){
                     // query += " OR nid = " + Ti.UI.currentWindow.nid;
                 // }
                 
                 numPhotos = 0;
         
-                db = Omadi.utils.openMainDatabase();
+                db = Omadi.utils.openListDatabase();
                 
                 result = db.execute(query);
                 if(result.isValidRow()){
                     numPhotos = result.field(0, Ti.Database.FIELD_TYPE_INT);
                 }
                 result.close();
+                
+                types = {};
+                
+                if(numPhotos > 0){
+                    result = db.execute("SELECT type FROM _files WHERE nid IN (" + photoNids.join(',') + ")");
+                    while(result.isValidRow()){
+                        
+                        if(typeof types[result.fieldByName('type')] === 'undefined'){
+                            types[result.fieldByName('type')] = 1;
+                        }
+                        else{
+                            types[result.fieldByName('type')] ++;
+                        }
+                        
+                        result.next();
+                    }
+                    result.close();
+                    
+                    if(Omadi.utils.count(types) > 1){
+                        dialogTitle = 'Delete ' + numPhotos + ' Files';
+                        dialogMessage = 'Do you want to delete the ';
+                        messageParts = [];
+                        
+                        if(typeof types.image !== 'undefined'){
+                            if(types.image == 1){
+                                messageParts.push('photo');
+                            }
+                            else{
+                                messageParts.push(types.image + ' photos');
+                            }
+                        }
+                        if(typeof types.video !== 'undefined'){
+                            if(types.video == 1){
+                                messageParts.push('video');
+                            }
+                            else{
+                                messageParts.push(types.video + ' videos');
+                            }
+                        }
+                        if(typeof types.signature !== 'undefined'){
+                            if(types.signature == 1){
+                                messageParts.push('signature');
+                            }
+                            else{
+                                messageParts.push(types.signature + ' signature');
+                            }
+                        }
+                        if(typeof types.file !== 'undefined'){
+                            if(types.file == 1){
+                                messageParts.push('1 file');
+                            }
+                            else{
+                                messageParts.push(types.file + ' files');
+                            }
+                        }
+                        
+                        dialogMessage += messageParts.join(' and ') + "?";
+                    }
+                    else{
+                        if(numPhotos == 1){
+                            dialogTitle = 'Delete 1 ';
+                            dialogMessage = 'Do you want to delete the ';
+                            if(typeof types.image !== 'undefined'){
+                                dialogTitle += 'Photo';
+                                dialogMessage += 'photo you just took?';
+                            }
+                            else if(typeof types.video !== 'undefined'){
+                                dialogTitle += 'Video';
+                                dialogMessage += 'video you just attached?';
+                            }
+                            else if(typeof types.signature !== 'undefined'){
+                                dialogTitle += 'Signature';
+                                dialogMessage += 'signature?';
+                            }
+                            else{
+                                dialogTitle += 'File';
+                                dialogMessage += 'file just selected?';
+                            }
+                        }
+                        else{
+                            dialogTitle = 'Delete ' + numPhotos + ' ';
+                            dialogMessage = 'Do you want to delete the ' + numPhotos + ' ';
+                            if(typeof types.image !== 'undefined'){
+                                dialogTitle += 'Photos';
+                                dialogMessage += 'photos you just took?';
+                            }
+                            else if(typeof types.video !== 'undefined'){
+                                dialogTitle += 'Videos';
+                                dialogMessage += 'videos you just attached?';
+                            }
+                            else if(typeof types.signature !== 'undefined'){
+                                dialogTitle += 'Signatures';
+                                dialogMessage += 'signatures?';
+                            }
+                            else{
+                                dialogTitle += 'Files';
+                                dialogMessage += 'files just selected?';
+                            }
+                        }
+                    }
+                }
+                    
                 db.close();
                 
                 if(numPhotos > 0){
                     secondDialog = Ti.UI.createAlertDialog({
                         cancel : 1,
-                        buttonNames : ['Delete', 'Keep'],
-                        message : 'Do you want to delete the ' + (numPhotos == 1 ? 'photo' : numPhotos + ' photos') + ' you just took?',
-                        title : 'Delete ' + numPhotos + ' Photo' + (numPhotos > 1 ? 's' : '')
+                        buttonNames : ['Delete', 'Keep', 'Cancel'],
+                        message : dialogMessage,
+                        title : dialogTitle
                     });
                     
                     secondDialog.addEventListener('click', function(e) {
@@ -118,38 +222,41 @@ function cancelOpt() {"use strict";
                             }
                         }
                         
-                        db_toDeleteImage = Omadi.utils.openMainDatabase();
-                        
-                        if (e.index == 0) {
+                        if(e.index === 0 || e.index === 1){
                             
-                            deleteResult = db_toDeleteImage.execute("SELECT file_data FROM _photos WHERE nid IN (" + photoNids.join(',') + ")");
+                            db_toDeleteImage = Omadi.utils.openListDatabase();
                             
-                            while(deleteResult.isValidRow()){
+                            if (e.index === 0) {
                                 
-                                file = Ti.Filesystem.getFile(deleteResult.fieldByName("file_data"));
+                                deleteResult = db_toDeleteImage.execute("SELECT file_path FROM _files WHERE nid IN (" + photoNids.join(',') + ")");
                                 
-                                if(file.exists()){
-                                    file.deleteFile();
+                                while(deleteResult.isValidRow()){
+                                    
+                                    file = Ti.Filesystem.getFile(deleteResult.fieldByName("file_path"));
+                                    
+                                    if(file.exists()){
+                                        file.deleteFile();
+                                    }
+                                    
+                                    deleteResult.next();
                                 }
                                 
-                                deleteResult.next();
+                                deleteResult.close();
+                                
+                                db_toDeleteImage.execute("DELETE FROM _files WHERE nid IN (" + photoNids.join(",") + ")");
+                                
+                            }
+                            else if(e.index === 1){
+                                // Set the nid of the photos to save to -1000000, so they won't be deleted by deletion of other photos, 
+                                // and so it isn't automatically used by other new nodes
+                                db_toDeleteImage.execute("UPDATE _files SET nid = -1000000 WHERE nid IN (" + photoNids.join(",") + ")");
                             }
                             
-                            deleteResult.close();
+                            db_toDeleteImage.close();
                             
-                            db_toDeleteImage.execute("DELETE FROM _photos WHERE nid IN (" + photoNids.join(",") + ")");
-                            
+                            Omadi.data.deleteContinuousNodes();
+                            Ti.UI.currentWindow.close();
                         }
-                        else{
-                            // Set the nid of the photos to save to -1000000, so they won't be deleted by deletion of other photos, 
-                            // and so it isn't automatically used by other new nodes
-                            db_toDeleteImage.execute("UPDATE _photos SET nid = -1000000 WHERE nid IN (" + photoNids.join(",") + ")");
-                        }
-                        
-                        db_toDeleteImage.close();
-                        
-                        Omadi.data.deleteContinuousNodes();
-                        Ti.UI.currentWindow.close();
                     });
                     
                     secondDialog.show();
@@ -486,6 +593,7 @@ function validateRequired(node, instance){"use strict";
                 case 'image':
                 case 'datestamp':
                 case 'omadi_time':
+                
                     if(!Omadi.utils.isEmpty(dbValues[i])){
                         isEmpty = false;
                     }
@@ -496,12 +604,12 @@ function validateRequired(node, instance){"use strict";
                 case 'user_reference':
                 case 'file':
                 case 'auto_increment':
+                case 'list_boolean': 
                     if(!Omadi.utils.isEmpty(dbValues[i]) && dbValues[i] != 0){
                         isEmpty = false;
                     }
                     break;
                     
-                case 'list_boolean': 
                 case 'calculation_field':
                     isEmpty = false;
                     break;
@@ -1764,7 +1872,7 @@ function switchedNodeIdForm(e){"use strict";
    }
 }
 
-function continuousSave(){
+function continuousSave(){"use strict";
     if(Ti.UI.currentWindow.saveContinually){
         save_form_data('continuous');
     }
@@ -2054,8 +2162,10 @@ function continuousSave(){
     for(region_name in regionViews){
         if(regionViews.hasOwnProperty(region_name)){
             if(regionViews[region_name].getChildren().length == 0){
-                scrollView.remove(regionWrappers[region_name]);
-                regionWrappers[region_name] = null;
+                if(regionWrappers[region_name] != null){
+                    scrollView.remove(regionWrappers[region_name]);
+                    regionWrappers[region_name] = null;
+                }
             }
         }
     }
@@ -2087,21 +2197,25 @@ function continuousSave(){
                 if(regionWrappers[regionWrappers_i].children.length > 0){
                     for(regionWrapperChild_i in regionWrappers[regionWrappers_i].children){
                         if(regionWrappers[regionWrappers_i].children.hasOwnProperty(regionWrapperChild_i)){
-                            regionWrappers[regionWrappers_i].remove(regionWrappers[regionWrappers_i].children[regionWrapperChild_i]);
-                            regionWrappers[regionWrappers_i].children[regionWrapperChild_i] = null;
+                            if(regionWrappers[regionWrappers_i].children[regionWrapperChild_i] != null){
+                                regionWrappers[regionWrappers_i].remove(regionWrappers[regionWrappers_i].children[regionWrapperChild_i]);
+                                regionWrappers[regionWrappers_i].children[regionWrapperChild_i] = null;
+                            }
                         }
                     }
                 }
                 
-                scrollView.remove(regionWrappers[regionWrappers_i]);
-                regionWrappers[regionWrappers_i] = null;
+                if(regionWrappers[regionWrappers_i] != null){
+                    scrollView.remove(regionWrappers[regionWrappers_i]);
+                    regionWrappers[regionWrappers_i] = null;
+                }
             }
         }
         
-        
-        
-        wrapperView.remove(scrollView);
-        scrollView = null;
+        if(scrollView != null){
+            wrapperView.remove(scrollView);
+            scrollView = null;
+        }
         
         //win.remove(wrapperView);
         wrapperView = null;

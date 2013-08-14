@@ -87,7 +87,7 @@ Omadi.widgets.image = {
         Ti.API.debug("Creating image field");
 
         widgetView = Ti.UI.createScrollView({
-            width : '96%',
+            width : '92%',
             //***** Don't set contentWidth to anything here.  It is set further down ******/
             //contentWidth : 'auto',
             contentHeight : 100,
@@ -446,7 +446,7 @@ Omadi.widgets.image = {
                             Ti.API.debug(file.getNativePath());
                             dbPath = file.getNativePath();
                             
-                            Omadi.widgets.image.saveFileInfo(localImageView, dbPath, "", 0);
+                            Omadi.widgets.image.saveFileInfo(localImageView, dbPath, "", 0, file.getSize(), 'image');
                             
                             //localImageView.setImage(rows[i].photoFile);
                             localImageView.filePath = dbPath;
@@ -521,6 +521,7 @@ Omadi.widgets.image = {
                 });
                 
                 for(i = 0; i < imageStrings.length; i ++){
+                    // Get the filename from the path
                     filename = imageStrings[i].replace(/^.*[\\\/]/, '');
                     
                     if(allUsedFileNames.indexOf(filename) == -1){
@@ -668,7 +669,7 @@ Omadi.widgets.image = {
                         
                         //imageView.setImage(filePath);
                         imageView.filePath = filePath;
-                        
+                        file = Ti.Filesystem.getFile(filePath);
                         // Allow the imageView to be touched again with an event
                         imageView.setTouchEnabled(true);
                         
@@ -690,7 +691,7 @@ Omadi.widgets.image = {
                         
                         //imageView.fullImageLoaded = true;
                         
-                        Omadi.widgets.image.saveFileInfo(imageView, filePath, '', degrees);
+                        Omadi.widgets.image.saveFileInfo(imageView, filePath, '', degrees, file.getSize(), 'image');
                         
                         // Save a draft of this image in case a crash happens soon
                         if(Ti.UI.currentWindow.saveContinually && typeof save_form_data !== 'undefined'){
@@ -720,9 +721,9 @@ Omadi.widgets.image = {
                             }, 100);
                         }
                         else{
-                            
+                           
                             newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex, null, filePath, degrees);
-                            
+
                             imageView.parentView.add(newImageView);
                             imageView.parentView.remove(imageView);
                             imageView = null;
@@ -848,7 +849,7 @@ Omadi.widgets.image = {
                         
                         imageView.setImage(thumbPath);
                                 
-                        Omadi.widgets.image.saveFileInfo(imageView, filePath, thumbPath, 0);
+                        Omadi.widgets.image.saveFileInfo(imageView, filePath, thumbPath, 0, event.media.length, 'image');
                         
                         // Save a draft of this image in case a crash happens soon
                         if(Ti.UI.currentWindow.saveContinually && typeof save_form_data !== 'undefined'){
@@ -918,35 +919,9 @@ Omadi.widgets.image = {
             }
         }
     },
-    saveImageInDb : function(imageView, blob) {"use strict";
-        var nid, db, encodedImage, mime, imageName, timestamp, fieldName, imageIndex, location;
-
-        try {
-            nid = 0;
-            Ti.API.debug('before encoded');
-            encodedImage = Ti.Utils.base64encode(blob);
-            Ti.API.debug('after encoded');
-            
-            mime = imageView.mimeType;
-            imageName = 'image.jpg';
-            imageView.dbValue = '-1';
-            
-            timestamp = Omadi.utils.getUTCTimestamp();
-            fieldName = imageView.instance.field_name;
-            imageIndex = imageView.imageIndex;
-            
-            location = Omadi.location.getLastLocation();
-
-            db = Omadi.utils.openMainDatabase();
-            db.execute("INSERT INTO _photos (nid, timestamp, file_data , field_name, file_name, delta, latitude, longitude, accuracy) VALUES ('0','" + timestamp + "','" + encodedImage + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + ")");
-            db.close();
-        }
-        catch(ex) {
-            alert("Problem saving the photo to the database: " + ex);
-        }
-    },
-    saveFileInfo : function(imageView, filePath, thumbPath, degrees) {"use strict";
-        var nid, db, encodedImage, mime, imageName, timestamp, fieldName, imageIndex, location;
+    saveFileInfo : function(imageView, filePath, thumbPath, degrees, filesize, type) {"use strict";
+        var nid, db, encodedImage, mime, imageName, timestamp, fieldName, 
+            imageIndex, location, uid, clientAccount;
 
         try {
             nid = 0;
@@ -968,9 +943,12 @@ Omadi.widgets.image = {
             
             
             location = Omadi.location.getLastLocation();
+            
+            uid = Omadi.utils.getUid();
+            clientAccount = Omadi.utils.getClientAccount();
 
-            db = Omadi.utils.openMainDatabase();
-            db.execute("INSERT INTO _photos (nid, timestamp, file_data, field_name, file_name, delta, latitude, longitude, accuracy, degrees, thumb_path) VALUES ('0','" + timestamp + "','" + filePath + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + "," + degrees + ",'" + thumbPath + "')");
+            db = Omadi.utils.openListDatabase();
+            db.execute("INSERT INTO _files (nid, timestamp, file_path, field_name, file_name, delta, latitude, longitude, accuracy, degrees, thumb_path, filesize, bytes_uploaded, type, uid, client_account) VALUES ('0','" + timestamp + "','" + filePath + "','" + fieldName + "','" + imageName + "'," + imageIndex + ",'" + location.latitude + "','" + location.longitude + "'," + location.accuracy + "," + degrees + ",'" + thumbPath + "'," + filesize + ",0,'" + type + "'," + uid + ",'" + clientAccount + "')");
             db.close();
         }
         catch(ex) {
