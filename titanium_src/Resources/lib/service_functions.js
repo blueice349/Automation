@@ -298,7 +298,6 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                             dialog.show();
                             Omadi.service.logout();
                         }
-                        
                     }
                     else if (this.status == 401) {
                         // Do not allow a logout when a background logout is disabled

@@ -955,7 +955,7 @@ Omadi.widgets.image = {
             // Ti.API.debug('after encoded');
             
             mime = imageView.mimeType;
-            imageName = 'image.jpg';//filePath;
+            imageName = filePath.replace(/^.*[\\\/]/, '');
             imageView.dbValue = '-1';
             imageView.fid = '-1';
             imageView.degrees = degrees;
