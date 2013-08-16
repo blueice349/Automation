@@ -245,12 +245,12 @@ function addPhotoWidgetOptions(){"use strict";
                                 width = e.media.width;
                                 height = e.media.height;
                                 
-                                if(width > 1200 || height > 1200){
+                                if(width > 1280 || height > 1280){
                                 
                                     dialog = Ti.UI.createAlertDialog({
                                        title: 'WHOA THERE!',
                                        buttonNames: ['I Understand'],
-                                       message: 'Your camera app resolution is set to ' + width + 'x' + height + ', and that is a little too high. \n\nPlease set your camera resolution to a lower setting (ie. 800x480). \n\nSide effects of very high resolution:\n1. Thumbnails may not show up.\n2. Up to 10x more bandwidth may be used on your data plan.\n3. As much as 10x more time is required to upload photos.\n4. More memory will be used on your phone, so a crash is more likely.'                                
+                                       message: 'Your camera app resolution is set to ' + width + 'x' + height + ', and that is a little too high. \n\nPlease set your camera resolution to a lower setting (ie. 1280x720). \n\nSide effects of very high resolution:\n1. Thumbnails may not show up.\n2. Up to 10x more bandwidth may be used on your data plan.\n3. As much as 10x more time is required to upload photos.\n4. More memory will be used on your phone, so a crash is more likely.'                                
                                     });
                                     dialog.show();
                                 }

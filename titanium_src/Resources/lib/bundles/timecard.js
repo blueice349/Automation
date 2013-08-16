@@ -52,7 +52,7 @@ Omadi.bundles.timecard.askClockIn = function(){"use strict";
             
             dialog = Ti.UI.createAlertDialog({
                title: 'Clock In Now?',
-               buttonNames: ['Clock In', 'Cancel']
+               buttonNames: ['Clock In', 'No']
             });
             
             dialog.addEventListener('click', function(e){

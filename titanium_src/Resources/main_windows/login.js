@@ -167,6 +167,15 @@ function hideUploadStatusHandler(){"use strict";
     scrollView.top = -40;
 }
 
+function setFilesLeftLabel(filesLeft){"use strict";
+    if(Omadi.service.doBackgroundUploads){
+        uploadLabel.setText("Uploading files. " + filesLeft + " to go...");
+    }
+    else{
+        uploadLabel.setText("Please login to continue file uploads.");
+    }
+}
+
 function setBytesLeftLabel(bytesLeft){"use strict";
     
     if(Omadi.service.doBackgroundUploads){
@@ -184,14 +193,16 @@ function bytesStreamedLogin(e){"use strict";
 }
 
 function updateUploadBytes(){"use strict";
-    var db, result, http, cookies, i;
+    var db, result, http, cookies, i, numFilesLeft;
     
     db = Omadi.utils.openListDatabase();
     result = db.execute("SELECT filesize, bytes_uploaded FROM _files WHERE nid > 0");
     uploadBytesLeft = 0;
+    numFilesLeft = 0;
     
     while(result.isValidRow()){
         uploadBytesLeft += (result.fieldByName('filesize', Ti.Database.FIELD_TYPE_INT) - result.fieldByName('bytes_uploaded', Ti.Database.FIELD_TYPE_INT));
+        numFilesLeft ++;
         result.next();
     }
     
@@ -199,7 +210,12 @@ function updateUploadBytes(){"use strict";
     
     Ti.API.debug("BYTES LEFT: " + uploadBytesLeft);
     
-    setBytesLeftLabel(uploadBytesLeft);
+    if(Ti.App.isAndroid){
+        setFilesLeftLabel(numFilesLeft);
+    }
+    else{
+        setBytesLeftLabel(uploadBytesLeft);
+    }
     
     if(uploadBytesLeft == 0){
         // Stop the upload checks as there is nothing left to upload
@@ -264,6 +280,7 @@ function updateUploadBytes(){"use strict";
         /*global clearCache*/
 
         Omadi.location.unset_GPS_uploading();
+        Omadi.data.setNoFilesUploading();
 
         if (Ti.App.isIOS) {
             clearCache();

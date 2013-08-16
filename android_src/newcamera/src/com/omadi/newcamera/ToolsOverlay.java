@@ -225,7 +225,7 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 	}
 	
 	public void onAutoFocus(boolean success, Camera camera){
-		Log.d("CAMERA", "FOCUS WAS SUCCESSFUL");
+		Log.d("CAMERA", "CAMERA FOCUS WAS SUCCESSFUL");
 		OmadiCameraActivity.cameraActivity.takePicture();
 	}
 	
@@ -430,11 +430,11 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 		
 		this.degrees = degrees;
 		
-		Log.d("CAMERA", "Degrees now " + degrees);
+		Log.d("CAMERA", "CAMERA Degrees now " + degrees);
 		
 		redrawButtons();
 		
-		Log.d("CAMERA", "redrew buttons");
+		Log.d("CAMERA", "CAMERA redrew buttons");
 	}
 	
 	private void redrawButtons(){

@@ -152,17 +152,24 @@ Omadi.widgets.video = {
             
             videoFile = Ti.Filesystem.getFile(imageView.filePath);
             
-            thumbVideo = Ti.Media.createVideoPlayer({
-                width: 100,
-                height: 100,
-                autoplay: false,
-                media: videoFile
-            });
+            if(Ti.App.isIOS){
+                thumbVideo = Ti.Media.createVideoPlayer({
+                    width: 100,
+                    height: 100,
+                    autoplay: false,
+                    media: videoFile
+                });
             
-            imageView.image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
+                imageView.image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
+            }
+            else{
+                imageView.image = '/images/video-selected.png';
+                imageView.height = 100;
+                imageView.width = 100;
+            }
         }
         else if ( typeof fid === 'number') {
-            Omadi.display.setImageViewVideoThumbnail(imageView, nid, fid, instance.field_name);
+            Omadi.display.setImageViewVideoThumbnail(imageView, nid, fid, imageView.instance.field_name);
         }
      
         imageView.addEventListener('click', function(e) {
@@ -199,61 +206,76 @@ Omadi.widgets.video = {
             layout: 'vertical'
         });
         
-        back = Ti.UI.createButton({
-            title : 'Back',
-            style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-        });
-        
-        back.addEventListener('click', function() {
-            Omadi.widgets.video.videoPlayer.stop();
-            Omadi.widgets.video.videoPlayer = null;
+        if(Ti.App.isIOS){
             
-            Omadi.widgets.video.videoWin.close();
-            Omadi.widgets.video.videoWin = null;
-        });
-    
-        space = Titanium.UI.createButton({
-            systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
-        });
+            back = Ti.UI.createButton({
+                title : 'Back',
+                style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+            });
+            
+            back.addEventListener('click', function() {
+                Omadi.widgets.video.videoPlayer.stop();
+                Omadi.widgets.video.videoPlayer = null;
+                
+                Omadi.widgets.video.videoWin.close();
+                Omadi.widgets.video.videoWin = null;
+            });
         
-        label = Titanium.UI.createButton({
-            title : 'Video Playback',
-            color : '#fff',
-            ellipsize : true,
-            wordwrap : false,
-            width : 200,
-            style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
-        });
-    
-        // create and add toolbar
-        toolbar = Ti.UI.iOS.createToolbar({
-            items : [back, space, label, space],
-            top : 0,
-            left: 0,
-            borderTop : false,
-            borderBottom : true,
-            zIndex: 100
-        });
+            space = Titanium.UI.createButton({
+                systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+            });
+            
+            label = Titanium.UI.createButton({
+                title : 'Video Playback',
+                color : '#fff',
+                ellipsize : true,
+                wordwrap : false,
+                width : 200,
+                style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+            });
         
-        Omadi.widgets.video.videoWin.add(toolbar);
+            // create and add toolbar
+            toolbar = Ti.UI.iOS.createToolbar({
+                items : [back, space, label, space],
+                top : 0,
+                left: 0,
+                borderTop : false,
+                borderBottom : true,
+                zIndex: 100
+            });
+            
+            Omadi.widgets.video.videoWin.add(toolbar);
+        }
         
         if(typeof imageView.filePath !== 'undefined'){
             
             videoFile = Ti.Filesystem.getFile(imageView.filePath);
             
-            Omadi.widgets.video.videoPlayer = Ti.Media.createVideoPlayer({
-                allowsAirPlay: true,
-                autoplay: true,
-                backgroundColor: 'Transparent',
-                fullscreen: false,
-                height: Ti.UI.FILL,
-                width: Ti.UI.FILL,
-                media: videoFile,
-                top: 0
-            });
+            if(videoFile.exists() && videoFile.isFile()){
             
-            Omadi.widgets.video.videoWin.add(Omadi.widgets.video.videoPlayer);
-            Omadi.widgets.video.videoWin.open();
+                Ti.API.debug("Video URL: " + imageView.filePath);
+                if(Ti.App.isAndroid){
+                    Ti.API.debug("Video filesize: " + videoFile.getSize());
+                }
+                
+                Omadi.widgets.video.videoPlayer = Ti.Media.createVideoPlayer({
+                    allowsAirPlay: true,
+                    autoplay: true,
+                    backgroundColor: 'Transparent',
+                    fullscreen: false,
+                    height: Ti.UI.FILL,
+                    width: Ti.UI.FILL,
+                    
+                    url: imageView.filePath,
+                    top: 0
+                });
+                
+                Omadi.widgets.video.videoWin.add(Omadi.widgets.video.videoPlayer);
+                Omadi.widgets.video.videoWin.open();
+            }
+            else{
+                alert("The video file was not found.");
+            }
         }
         else{
             
@@ -310,79 +332,197 @@ Omadi.widgets.video = {
         }
     },
     openVideoChooser : function(imageView){"use strict";
-        Ti.Media.openPhotoGallery({
-            allowEditing: false,
-            animated: true,
-            autohide: true,
-            cancel: function(e){
-                //alert("cancel");
-                //Ti.API.debug(JSON.stringify(e));
-            },
-            error: function (e){
-                alert("There was a problem inserting the video.");
-                Omadi.service.sendErrorReport("Video insert: " + JSON.stringify(e));
-                Ti.API.debug(JSON.stringify(e));
-            },
-            mediaTypes: [Ti.Media.MEDIA_TYPE_VIDEO],
-            popoverView: imageView,
-            success: function(event){
-                /*global save_form_data*/
-                var newImageView, takeNextPhotoView, filePath, videoFile, thumbVideo;
-                
-                Ti.API.info("Media length: " + event.media.length + " bytes");
-                
-                filePath = Ti.Filesystem.applicationDataDirectory + "v_" + Omadi.utils.getUTCTimestamp() + '.mp4';
-                videoFile = Ti.Filesystem.getFile(filePath);
-                
-                videoFile.write(event.media);
-                videoFile.setRemoteBackup(false);
-                
-                Omadi.widgets.image.saveFileInfo(imageView, filePath, '', 0, event.media.length, 'video');
-                        
-                // Save a draft of this image in case a crash happens soon
-                if(Ti.UI.currentWindow.saveContinually && typeof save_form_data !== 'undefined'){
-                    save_form_data('continuous');
-                }
-                
-                videoFile = Ti.Filesystem.getFile(imageView.filePath);
+    
+        if(Ti.App.isAndroid){
+            var intent = Titanium.Android.createIntent({
+                action : Ti.Android.ACTION_PICK,
+                type : "video/*"
+            });
+            //android.media.action.VIDEO_CAPTURE
+            intent.addCategory(Ti.Android.CATEGORY_DEFAULT);
             
-                thumbVideo = Ti.Media.createVideoPlayer({
-                    width: 100,
-                    height: 100,
-                    autoplay: false,
-                    media: videoFile
-                });
-                
-                if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
+            Ti.UI.currentWindow.activity.startActivityForResult(intent, function(e) {
+                var filePath, source, movieFile, newImageView, takeNextPhotoView;
+                /*global save_form_data*/
+                if (e.error) {
+                    Ti.UI.createNotification({
+                        duration : Ti.UI.NOTIFICATION_DURATION_SHORT,
+                        message : 'Error: ' + e.error
+                    }).show();
+                } 
+                else {
+                    if (e.resultCode === Titanium.Android.RESULT_OK) {
+                        filePath = e.intent.data;
+                        source = Ti.Filesystem.getFile(filePath);
+                        
+                        if(Ti.Filesystem.isExternalStoragePresent()){
+                            movieFile = Titanium.Filesystem.getFile(Titanium.Filesystem.externalStorageDirectory, "v_" + Omadi.utils.getUTCTimestamp() + '.mp4');
+                        }
+                        else{
+                            movieFile = Titanium.Filesystem.getFile(Titanium.Filesystem.applicationDataDirectory, "v_" + Omadi.utils.getUTCTimestamp() + '.mp4');    
+                        }
+                        
+                        source.copy(movieFile.nativePath);
+                        filePath = movieFile.nativePath;
+                        
+                        Ti.API.debug(filePath);
+                        Ti.API.debug("filesize: " + movieFile.getSize());
+                        Ti.API.debug("Is external: " + Ti.Filesystem.isExternalStoragePresent());
+                        
+                        
+                        Omadi.widgets.image.saveFileInfo(imageView, filePath, '', 0, movieFile.getSize(), 'video');
+                        
+                        // Save a draft of this image in case a crash happens soon
+                        if(Ti.UI.currentWindow.saveContinually && typeof save_form_data !== 'undefined'){
+                            save_form_data('continuous');
+                        }
+                        
+                        
+                        if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
+                                    
+                            newImageView = Omadi.widgets.video.getImageView(imageView.parentView, imageView.imageIndex, null, filePath, 0);
+                            takeNextPhotoView = Omadi.widgets.video.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
                             
-                    newImageView = Omadi.widgets.video.getImageView(imageView.parentView, imageView.imageIndex, null, filePath, 0);
-                    takeNextPhotoView = Omadi.widgets.video.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
-                    
-                    //newImageView.setImage("/images/video-selected.png");
-                    
-                    newImageView.image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
-                    
-                    imageView.parentView.add(newImageView);
-                    imageView.parentView.add(takeNextPhotoView);
-                    
-                    imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
-                    imageView.parentView.remove(imageView);
-                    imageView = null;
+                            //newImageView.setImage("/images/video-selected.png");
+                           
+                            newImageView.image = '/images/video-selected.png';
+                            newImageView.height = 100;
+                            newImageView.width = 100;
+                            
+                            
+                            imageView.parentView.add(newImageView);
+                            imageView.parentView.add(takeNextPhotoView);
+                            
+                            imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
+                            imageView.parentView.remove(imageView);
+                            imageView = null;
+                        }
+                        else{
+                            
+                            newImageView = Omadi.widgets.video.getImageView(imageView.parentView, imageView.imageIndex, null, filePath, 0);
+                           
+                            
+                            newImageView.image = '/images/video-selected.png';
+                            newImageView.height = 100;
+                            newImageView.width = 100;
+                            
+                            
+                            imageView.parentView.add(newImageView);
+                            imageView.parentView.remove(imageView);
+                            imageView = null;
+                            
+                            Omadi.display.doneLoading();
+                        }
+                    } 
+                    else {
+                        Ti.UI.createNotification({
+                            duration : Ti.UI.NOTIFICATION_DURATION_SHORT,
+                            message : 'Canceled!'
+                        }).show();
+                    }
                 }
-                else{
+            });
+        }
+        else{ // is IOS
+            
+            Ti.Media.openPhotoGallery({
+                allowEditing: false,
+                animated: true,
+                autohide: true,
+                cancel: function(e){
+                    //alert("cancel");
+                    //Ti.API.debug(JSON.stringify(e));
+                },
+                error: function (e){
+                    alert("There was a problem inserting the video.");
+                    Omadi.service.sendErrorReport("Video insert: " + JSON.stringify(e));
+                    Ti.API.debug(JSON.stringify(e));
+                },
+                mediaTypes: [Ti.Media.MEDIA_TYPE_VIDEO],
+                popoverView: imageView,
+                success: function(event){
+                    /*global save_form_data*/
+                    var newImageView, takeNextPhotoView, filePath, videoFile, thumbVideo, saved;
                     
-                    newImageView = Omadi.widgets.video.getImageView(imageView.parentView, imageView.imageIndex, null, filePath, 0);
+                    Ti.API.info("Media length: " + event.media.length + " bytes");
+                    Ti.API.info("media type: " + event.mediaType);
                     
-                    newImageView.image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
+                    videoFile = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, "v_" + Omadi.utils.getUTCTimestamp() + '.mp4');
                     
-                    imageView.parentView.add(newImageView);
-                    imageView.parentView.remove(imageView);
-                    imageView = null;
+                    saved = videoFile.write(event.media);
                     
-                    Omadi.display.doneLoading();
+                    Ti.API.debug("SAved video: " + saved);
+                    
+                    // Get rid of the custom stream wrapper
+                    filePath = videoFile.nativePath;
+                    
+                    if(Ti.App.isIOS){
+                        videoFile.setRemoteBackup(false);
+                    }
+                    
+                    Omadi.widgets.image.saveFileInfo(imageView, filePath, '', 0, event.media.length, 'video');
+                            
+                    // Save a draft of this image in case a crash happens soon
+                    if(Ti.UI.currentWindow.saveContinually && typeof save_form_data !== 'undefined'){
+                        save_form_data('continuous');
+                    }
+                    
+                    videoFile = Ti.Filesystem.getFile(imageView.filePath);
+                    
+                    if(Ti.App.isIOS){
+                        thumbVideo = Ti.Media.createVideoPlayer({
+                            width: 100,
+                            height: 100,
+                            autoplay: false,
+                            media: videoFile
+                        });
+                    }
+                    
+                    if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
+                                
+                        newImageView = Omadi.widgets.video.getImageView(imageView.parentView, imageView.imageIndex, null, filePath, 0);
+                        takeNextPhotoView = Omadi.widgets.video.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
+                        
+                        //newImageView.setImage("/images/video-selected.png");
+                        if(Ti.App.isIOS){
+                            newImageView.image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
+                        }
+                        else{
+                            newImageView.image = '/images/video-selected.png';
+                            newImageView.height = 100;
+                            newImageView.width = 100;
+                        }
+                        
+                        imageView.parentView.add(newImageView);
+                        imageView.parentView.add(takeNextPhotoView);
+                        
+                        imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
+                        imageView.parentView.remove(imageView);
+                        imageView = null;
+                    }
+                    else{
+                        
+                        newImageView = Omadi.widgets.video.getImageView(imageView.parentView, imageView.imageIndex, null, filePath, 0);
+                       
+                        if(Ti.App.isIOS){
+                            newImageView.image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
+                        }
+                        else{
+                            newImageView.image = '/images/video-selected.png';
+                            newImageView.height = 100;
+                            newImageView.width = 100;
+                        }
+                        
+                        imageView.parentView.add(newImageView);
+                        imageView.parentView.remove(imageView);
+                        imageView = null;
+                        
+                        Omadi.display.doneLoading();
+                    }
                 }
-            }
-        });
+            });
+        }
+        
     },
     openCamera : function(){"use strict";
         

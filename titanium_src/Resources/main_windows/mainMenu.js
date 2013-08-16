@@ -48,7 +48,6 @@ var name = jsonLogin.user.realname;
 var roles = jsonLogin.user.roles;
 
 Ti.App.Properties.setObject('userRoles', roles);
-Ti.App.addEventListener("syncInstallComplete", displayBundleList);
 
 var loggedView = Titanium.UI.createView({
     top : 40,
@@ -651,24 +650,38 @@ function sendingDataMainMenu(e){"use strict";
     showNetworkStatus();
 }
 
+function afterUploadCloseMainMenu(){
+    Ti.API.debug("Closing Main Menu Window");
+    Ti.App.closeWindowAfterUpload = false;
+    
+    Ti.App.removeEventListener('photoUploaded', afterUploadCloseMainMenu);
+    Ti.App.removeEventListener('doneSendingPhotos', afterUploadCloseMainMenu);
+    
+    Ti.UI.currentWindow.close(); 
+}
+
 function loggingOutMainMenu(e){"use strict";
     var lastUploadStartTimestamp;
+    Ti.UI.currentWindow.close();
     
     lastUploadStartTimestamp = Omadi.service.getLastUploadStartTimestamp();
-                
+                 
     if(lastUploadStartTimestamp === null){
         // Not currently uploading anything, so the window can close immediately
         Ti.API.debug("Closing Main Menu Window Immediately");
         Ti.UI.currentWindow.close();
     }
     else{
+        Ti.API.debug("Waiting to close main menu");
         Ti.UI.currentWindow.hide();
+        Ti.UI.currentWindow.setVisible(false);
         Ti.App.closeWindowAfterUpload = true;
-        Ti.App.addEventListener('doneSendingPhotos', function(){
-            Ti.API.debug("Closing Main Menu Window");
-            Ti.App.closeWindowAfterUpload = false;
-            Ti.UI.currentWindow.close(); 
-        });
+        
+        Ti.App.addEventListener('photoUploaded', afterUploadCloseMainMenu);
+        Ti.App.addEventListener('doneSendingPhotos', afterUploadCloseMainMenu);
+        
+        // After 5 minutes, make sure the close listeners are removed if the events take too long to happen 
+        setTimeout(afterUploadCloseMainMenu, 300000);
     }
 }
 
@@ -862,8 +875,16 @@ function showContinuousSavedNode(){"use strict";
     Ti.App.addEventListener("sendingData", sendingDataMainMenu);
     Ti.App.addEventListener('loggingOut', loggingOutMainMenu);
     Ti.App.addEventListener('openForm', openFormCallback);
-    
     Ti.App.addEventListener('sendUpdates', Omadi.service.sendUpdates);
+    Ti.App.addEventListener('full_update_from_menu', fullUpdateFromMenu);
+    Ti.App.addEventListener('finishedDataSync', setupBottomButtons);
+    Ti.App.addEventListener('normal_update_from_menu', normalUpdateFromMenu);
+    Ti.App.addEventListener('showNextAlertInQueue', showNextAlertInQueue);
+    Ti.App.addEventListener("syncInstallComplete", displayBundleList);
+    
+    if(Ti.App.isIOS){
+        Ti.App.addEventListener('resume', Omadi.service.checkUpdate);
+    }
     
     Ti.Network.addEventListener('change', networkChangedMainMenu);
 
@@ -900,9 +921,7 @@ function showContinuousSavedNode(){"use strict";
   
     Ti.App.photoUploadCheck = setInterval(Omadi.service.uploadFile, 60000);
 
-    Ti.App.addEventListener('full_update_from_menu', fullUpdateFromMenu);
-    Ti.App.addEventListener('finishedDataSync', setupBottomButtons);
-    Ti.App.addEventListener('normal_update_from_menu', normalUpdateFromMenu);
+    
 
     if ( typeof curWin.fromSavedCookie !== 'undefined' && !curWin.fromSavedCookie) {
         
@@ -927,15 +946,9 @@ function showContinuousSavedNode(){"use strict";
     else{
         useAlertQueue = false;
     }
-
-    Ti.App.addEventListener('showNextAlertInQueue', showNextAlertInQueue);
     
     Ti.API.debug("before init");
     Omadi.push_notifications.init();
-    
-    if(Ti.App.isIOS){
-        Ti.App.addEventListener('resume', Omadi.service.checkUpdate);
-    }
     
     Ti.UI.currentWindow.addEventListener('close', function() {
         Ti.API.info('Closing main menu');
@@ -954,11 +967,12 @@ function showContinuousSavedNode(){"use strict";
         Ti.App.removeEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
         Ti.App.removeEventListener("sendingData", sendingDataMainMenu);
         Ti.App.removeEventListener('loggingOut', loggingOutMainMenu);
-        Ti.Network.removeEventListener('change', networkChangedMainMenu);
-        
+        Ti.App.removeEventListener('sendUpdates', Omadi.service.sendUpdates);
         Ti.App.removeEventListener('finishedDataSync', setupBottomButtons);
         Ti.App.removeEventListener('normal_update_from_menu', normalUpdateFromMenu);
         Ti.App.removeEventListener('full_update_from_menu', fullUpdateFromMenu);
+        
+        Ti.Network.removeEventListener('change', networkChangedMainMenu);
         
         // Release memory
         try{

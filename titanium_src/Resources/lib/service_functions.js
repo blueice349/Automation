@@ -1011,6 +1011,8 @@ Omadi.service.getLastUploadStartTimestamp = function(){"use strict";
         Omadi.service.sendErrorReport("Exception getting uploading vars: " + ex);
     }  
     
+    Ti.API.debug("last upload: " + lastUploadStartTimestamp);
+    
     return lastUploadStartTimestamp;
 };
 
@@ -1128,9 +1130,10 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
                             http = Ti.Network.createHTTPClient({
                                 enableKeepAlive: false
                             });
+                            
+                            http.onsendstream = Omadi.service.photoUploadStream;
                             http.onload = Omadi.service.photoUploadSuccess;
                             http.onerror = Omadi.service.photoUploadError;
-                            http.onsendstream = Omadi.service.photoUploadStream;
                             
                             http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/upload.json');
                             http.timeout = 45000;
@@ -1181,6 +1184,12 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
                                 filesize : Omadi.service.currentFileUpload.filesize
                             });
                             
+                            // var tempFile = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, '_temp.txt');
+                            // tempFile.write(payload);
+//                             
+                            // tempFile = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, '_temp.txt');
+                            // payload = tempFile.read();
+                            
                             if(Omadi.service.currentFileUpload.uploadPart == 1){
                                 Ti.App.fireEvent("sendingData", {
                                     message : 'Uploading files. ' + numFilesReadyToUpload + ' to go...',
@@ -1192,6 +1201,8 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
                             
                             // var file = Ti.Filesystem.getFile(Omadi.service.currentFileUpload.file_path);
                             // var blob = file.read();
+                            
+                            http.setValidatesSecureCertificate(false);
                             
                             http.send(payload);
                         }
@@ -1213,12 +1224,18 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
 };
 
 Omadi.service.sendErrorReport = function(message) {"use strict";
-    var http, uid;
+    var http, uid, domain, appVersion, platform, model, version;
 
     uid = Omadi.utils.getUid();
+    domain = Omadi.DOMAIN_NAME.replace('https://', '').replace('.omadi.com', '');
+    appVersion = Ti.App.version;
+    model = Ti.Platform.model;
+    version = Ti.Platform.version;
+    platform = Ti.Platform.name;
+    
     http = Ti.Network.createHTTPClient();
     http.setTimeout(30000);
-    http.open('GET', Omadi.DOMAIN_NAME + '/js-sync/error.json?domain=' + Omadi.DOMAIN_NAME + '&uid=' + uid + '&message=' + message);
+    http.open('GET', Omadi.DOMAIN_NAME + '/js-sync/error.json?domain=' + domain + '&platform=' + platform + '&model=' + model + '&version=' + version + '&appVersion=' + appVersion + '&uid=' + uid + '&message=' + message);
     //http.setRequestHeader("Content-Type", "application/json");
     //Omadi.utils.setCookieHeader(http);
 

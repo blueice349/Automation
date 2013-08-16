@@ -155,7 +155,7 @@ public class NewcameraModule extends KrollModule
 		}
 		
 		if(bitmap == null){
-			Log.d("CAMERA", "Initial bitmap is null");
+			Log.d("CAMERA", "CAMERA Initial bitmap is null");
 			retval = "Bitmap Error 3: bitmap is null";
 		}
 		else{
@@ -197,7 +197,7 @@ public class NewcameraModule extends KrollModule
 				}
 				
 				if(scale <= 0){
-					Log.d("CAMERA", "Scale=0 H=" + height + " W=" + width);
+					Log.d("CAMERA", "CAMERA Scale=0 H=" + height + " W=" + width);
 					retval = "Bitmap Error 6: scale less than or equal to 0";
 				}
 				else{
@@ -244,7 +244,7 @@ public class NewcameraModule extends KrollModule
 		        }
 		    }
 			else{
-				Log.d("CAMERA", "The photo does not need to be resized");
+				Log.d("CAMERA", "CAMERA The photo does not need to be resized");
 				retval = "No Resize Necessary";
 			}
 		}
@@ -304,7 +304,7 @@ public class NewcameraModule extends KrollModule
 				//errorCallback.call(getKrollObject(), new Object[] { createErrorResponse(NO_CAMERA, "Camera not available. " + t.toString()) });
 			}
 			
-			Log.w("CAMERA", "Camera unable to open: " + t.getMessage());
+			Log.w("CAMERA", "CAMERA unable to open: " + t.getMessage());
 			t.printStackTrace();
 
 			return;
@@ -325,7 +325,7 @@ public class NewcameraModule extends KrollModule
 				if (!imageDir.exists()) {
 					imageDir.mkdirs();
 					if (!imageDir.exists()) {
-						Log.w("CAMERA", "Attempt to create '" + imageDir.getAbsolutePath() +  "' failed silently.");
+						Log.w("CAMERA", "CAMERA Attempt to create '" + imageDir.getAbsolutePath() +  "' failed silently.");
 					}
 				}
 
@@ -337,7 +337,7 @@ public class NewcameraModule extends KrollModule
 
 		} 
 		catch (IOException e) {
-			Log.e("CAMERA", "Unable to create temp file", e);
+			Log.e("CAMERA", "CAMERA Unable to create temp file", e);
 			if (errorCallback != null) {
 				errorCallback.callAsync(getKrollObject(), createErrorResponse(UNKNOWN_ERROR, e.getMessage()));
 			}

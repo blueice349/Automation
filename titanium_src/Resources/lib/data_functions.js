@@ -775,6 +775,14 @@ Omadi.data.getPhotosNotUploaded = function(){"use strict";
     return filePaths;
 };
 
+Omadi.data.setNoFilesUploading = function(){"use strict";
+    var db;
+    
+    db = Omadi.utils.openListDatabase();
+    db.execute("UPDATE _files SET uploading = 0 WHERE 1=1");
+    db.close();
+};
+
 Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
 
     var imageDir, imageFile, newFilePath, imageView, oldImageFile, 
@@ -1518,13 +1526,14 @@ Omadi.data.getNextPhotoData = function(){"use strict";
         newWidth, newHeight, resizedFile, isResized, resizedFilePath, 
         resizeRetval, readyForUpload, restartSuggested, dialog, deleteFromDB,
         fileStream, buffer, numBytesRead, maxBytesPerUpload, sql, position, 
-        filePart, resizedBlob;
+        filePart, resizedBlob, maxPhotoPixels;
    
     maxBytesPerUpload = 3145728; // 3MB
     nextFile = null;
     readyForUpload = true;
     restartSuggested = false;
     deleteFromDB = false;
+    maxPhotoPixels = 1280;
     
     sql = "SELECT * FROM _files WHERE nid > 0 ";
         
@@ -1550,218 +1559,202 @@ Omadi.data.getNextPhotoData = function(){"use strict";
             //    Omadi.data.saveFailedUpload(result.fieldByName('id'));
             //}
             //else if (result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT) > 0){
-                Ti.API.debug("valid row");
+            Ti.API.debug("valid row");
+            
+            nextFile = {
+                nid : result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT),
+                id : result.fieldByName('id', Ti.Database.FIELD_TYPE_INT),
+                file_path : result.fieldByName('file_path'),
+                file_name : result.fieldByName('file_name'),
+                field_name : result.fieldByName('field_name'),
+                delta : result.fieldByName('delta', Ti.Database.FIELD_TYPE_INT),
+                timestamp : result.fieldByName('timestamp', Ti.Database.FIELD_TYPE_INT),
+                tries : result.fieldByName('tries', Ti.Database.FIELD_TYPE_INT),
+                latitude : result.fieldByName('latitude'),
+                longitude : result.fieldByName('longitude'),
+                accuracy : result.fieldByName('accuracy', Ti.Database.FIELD_TYPE_INT),
+                degrees : result.fieldByName('degrees', Ti.Database.FIELD_TYPE_INT),
+                thumb_path : result.fieldByName('thumb_path'),
+                type : result.fieldByName('type'),
+                filesize : result.fieldByName('filesize', Ti.Database.FIELD_TYPE_INT),
+                bytes_uploaded : result.fieldByName('bytes_uploaded', Ti.Database.FIELD_TYPE_INT),
+                fid : result.fieldByName('fid', Ti.Database.FIELD_TYPE_INT),
+                uid : result.fieldByName('uid', Ti.Database.FIELD_TYPE_INT),
+                client_account : result.fieldByName('client_account')
+            };
+            
+            if(nextFile.filesize > maxBytesPerUpload){
+                nextFile.numUploadParts = Math.ceil(nextFile.filesize / maxBytesPerUpload);
+                nextFile.uploadPart = (nextFile.bytes_uploaded / maxBytesPerUpload) + 1;
+                nextFile.uploading_bytes = maxBytesPerUpload;
+            }
+            else{
+                nextFile.numUploadParts = 1;
+                nextFile.uploadPart = 1;
+                nextFile.uploading_bytes = nextFile.filesize;
+            }
+            
+           
+            try{
                 
-                nextFile = {
-                    nid : result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT),
-                    id : result.fieldByName('id', Ti.Database.FIELD_TYPE_INT),
-                    file_path : result.fieldByName('file_path'),
-                    file_name : result.fieldByName('file_name'),
-                    field_name : result.fieldByName('field_name'),
-                    delta : result.fieldByName('delta', Ti.Database.FIELD_TYPE_INT),
-                    timestamp : result.fieldByName('timestamp', Ti.Database.FIELD_TYPE_INT),
-                    tries : result.fieldByName('tries', Ti.Database.FIELD_TYPE_INT),
-                    latitude : result.fieldByName('latitude'),
-                    longitude : result.fieldByName('longitude'),
-                    accuracy : result.fieldByName('accuracy', Ti.Database.FIELD_TYPE_INT),
-                    degrees : result.fieldByName('degrees', Ti.Database.FIELD_TYPE_INT),
-                    thumb_path : result.fieldByName('thumb_path'),
-                    type : result.fieldByName('type'),
-                    filesize : result.fieldByName('filesize', Ti.Database.FIELD_TYPE_INT),
-                    bytes_uploaded : result.fieldByName('bytes_uploaded', Ti.Database.FIELD_TYPE_INT),
-                    fid : result.fieldByName('fid', Ti.Database.FIELD_TYPE_INT),
-                    uid : result.fieldByName('uid', Ti.Database.FIELD_TYPE_INT),
-                    client_account : result.fieldByName('client_account')
-                };
+                imageFile = Ti.Filesystem.getFile(nextFile.file_path);
                 
-                if(nextFile.filesize > maxBytesPerUpload){
-                    nextFile.numUploadParts = Math.ceil(nextFile.filesize / maxBytesPerUpload);
-                    nextFile.uploadPart = (nextFile.bytes_uploaded / maxBytesPerUpload) + 1;
-                    nextFile.uploading_bytes = maxBytesPerUpload;
-                }
-                else{
-                    nextFile.numUploadParts = 1;
-                    nextFile.uploadPart = 1;
-                    nextFile.uploading_bytes = nextFile.filesize;
-                }
+                if(imageFile.exists() && imageFile.isFile()){
                 
-               
-                try{
-                   
-                    if(Ti.App.isAndroid){
-                        
-                        try{
-                            imageFile = Ti.Filesystem.getFile(nextFile.file_path);
-                            
-                            if(!imageFile.exists() || !imageFile.isFile()){
-                                Omadi.service.sendErrorReport("File does not exist 2: " + nextFile.file_path);
-                                // upload to get out of the system
-                                deleteFromDB = true;
-                            }
-                            else{
-                                try{
-                                    imageBlob = imageFile.read();
-                                }
-                                catch(ex4){
-                                    Ti.API.debug("Exception reading non-resized photo: " + ex4);
-                                    Omadi.service.sendErrorReport("Exception reading non-resized photo: " + ex4);
-                                    readyForUpload = false;
-                                    // This is probably a memory error, so request a restart
-                                    restartSuggested = true;
-                                }
-                            }
-                        }
-                        catch(ex3){
-                            Ti.API.debug("Exception getting non-resized photo: " + ex3);
-                            Omadi.service.sendErrorReport("Exception getting non-resized photo: " + ex3);
-                            readyForUpload = false;
-                        }
-                    }
-                    else{ // isIOS
-                        
-                        imageFile = Ti.Filesystem.getFile(nextFile.file_path);  
-                        
-                        if(imageFile.exists() && imageFile.isFile()){
-                            
-                            if(nextFile.type == 'image' || nextFile.type == 'signature'){
-                                imageBlob = imageFile.read();
-                                
-                                if(imageBlob){
-                            
-                                    try {
-                                        
-                                        Ti.API.debug("Original: " + imageBlob.length + " " + imageBlob.width + "x" + imageBlob.height);
-                                        
-                                        if (imageBlob.length > maxBytesPerUpload || imageBlob.height > 1000 || imageBlob.width > 1000) {
-        
-                                            maxDiff = imageBlob.height - 1000;
-                                            if (imageBlob.width - 1000 > maxDiff) {
-                                                // Width is bigger
-                                                newWidth = 1000;
-                                                newHeight = (1000 / imageBlob.width) * imageBlob.height;
-                                            }
-                                            else {
-                                                // Height is bigger
-                                                newHeight = 1000;
-                                                newWidth = (1000 / imageBlob.height) * imageBlob.width;
-                                            }
-        
-                                            //imageBlob = imageBlob.imageAsResized(newWidth, newHeight);
-                                            /*global ImageFactory*/
-                                            resizedBlob = ImageFactory.imageAsResized(imageBlob, {
-                                                width: newWidth, 
-                                                height: newHeight,
-                                                quality: ImageFactory.QUALITY_DEFAULT,
-                                                hires: false
-                                            });
-                                            
-                                            Ti.API.debug("Resized: " + resizedBlob.length);
-                                            
-                                            if(resizedBlob.length > 1000){
-                                                imageBlob = ImageFactory.compress(resizedBlob, 0.75);
-                                                nextFile.filesize = imageBlob.length;
-                                                
-                                                nextFile.numUploadParts = 1;
-                                                nextFile.uploadPart = 1;
-                                                nextFile.uploading_bytes = nextFile.filesize;
-                                            }
-                                            
-                                            Ti.API.debug("Compressed: " + imageBlob.length);
-                                        }
-                                        else{
-                                            Ti.API.debug("No image Resize was necessary");
-                                        }
-                                    }
-                                    catch(ex) {
-                                        Omadi.service.sendErrorReport("Exception resizing iOS Photo: " + ex);
-                                        readyForUpload = false;
-                                    }  
-                                    
-                                    // Clean up some memory
-                                    resizedBlob = null;
-                                }
-                                else{
-                                    Omadi.service.sendErrorReport("Image blob is null");
-                                }
-                            }
-                            else if(nextFile.type == 'video' || nextFile.type == 'file'){
-                                Ti.API.debug("uploading a video");
-                                
-                                fileStream = imageFile.open(Ti.Filesystem.MODE_READ);
-                                buffer = Ti.createBuffer({
-                                    length: maxBytesPerUpload 
-                                });
-                                
-                                Ti.API.debug("bytes already uploaded: " + nextFile.bytes_uploaded);
-                                
-                                position = 0;
-                                filePart = 0;
-                                
-                                // No seek function, so move the stream to the correct position
-                                while(position < nextFile.bytes_uploaded){
-                                    filePart ++;
-                                    position += fileStream.read(buffer);
-                                    Ti.API.debug("used a buffer");
-                                }
-                                
-                                if(filePart > 0){
-                                    buffer.clear();
-                                }
-                                
-                                numBytesRead = fileStream.read(buffer);
-                                if(numBytesRead > 0){
-                                    if(numBytesRead < buffer.length){
-                                        buffer.length = numBytesRead;
-                                    }
-                                    imageBlob = buffer.toBlob();
-                                }
-                                else{
-                                    Omadi.service.sendErrorReport("Read zero bytes from stream.");
-                                }
-                                
-                                // Set the actual number of bytes we're uploading for this part
-                                nextFile.uploading_bytes = numBytesRead;
-                                
-                                // Release the resources
-                                buffer.release();
-                            }
-                        }
-                        else{
-                            readyForUpload = false;
-                            deleteFromDB = true;
-                            Ti.API.debug("File does not exist");
-                        }
-                    }
-                    
-                    Ti.API.debug("Upload Part: " + nextFile.uploadPart + "/" + nextFile.numUploadParts);
-                    Ti.API.debug(nextFile);
-                    
-                    if(readyForUpload){
-                        try{
-                            nextFile.file_data = Ti.Utils.base64encode(imageBlob);
+                    if(nextFile.type == 'image' || nextFile.type == 'signature'){
+                        if(Ti.App.isAndroid){
                             
                             try{
-                                nextFile.file_data = nextFile.file_data.getText();
+                                imageBlob = imageFile.read();
                             }
-                            catch(ex6){
-                                Omadi.service.sendErrorReport("Exception getting text of base64 photo: " + ex6); 
-                                // This photo is not going to upload correctly
+                            catch(ex4){
+                                Ti.API.debug("Exception reading non-resized photo: " + ex4);
+                                Omadi.service.sendErrorReport("Exception reading non-resized photo: " + ex4);
                                 readyForUpload = false;
+                                // This is probably a memory error, so request a restart
+                                restartSuggested = true;
                             }
                         }
-                        catch(ex5){
-                            Omadi.service.sendErrorReport("Exception base64 encoding photo: " + ex5); 
+                        else{ // isIOS
+                            
+                            imageBlob = imageFile.read();
+                            
+                            if(imageBlob){
+                        
+                                try {
+                                    
+                                    Ti.API.debug("Original: " + imageBlob.length + " " + imageBlob.width + "x" + imageBlob.height);
+                                    
+                                    if (imageBlob.length > maxBytesPerUpload || imageBlob.height > maxPhotoPixels || imageBlob.width > maxPhotoPixels) {
+    
+                                        maxDiff = imageBlob.height - maxPhotoPixels;
+                                        if (imageBlob.width - maxPhotoPixels > maxDiff) {
+                                            // Width is bigger
+                                            newWidth = maxPhotoPixels;
+                                            newHeight = (maxPhotoPixels / imageBlob.width) * imageBlob.height;
+                                        }
+                                        else {
+                                            // Height is bigger
+                                            newHeight = maxPhotoPixels;
+                                            newWidth = (maxPhotoPixels / imageBlob.height) * imageBlob.width;
+                                        }
+    
+                                        //imageBlob = imageBlob.imageAsResized(newWidth, newHeight);
+                                        /*global ImageFactory*/
+                                        resizedBlob = ImageFactory.imageAsResized(imageBlob, {
+                                            width: newWidth, 
+                                            height: newHeight,
+                                            quality: ImageFactory.QUALITY_DEFAULT,
+                                            hires: false
+                                        });
+                                        
+                                        Ti.API.debug("Resized: " + resizedBlob.length);
+                                        
+                                        if(resizedBlob.length > maxPhotoPixels){
+                                            imageBlob = ImageFactory.compress(resizedBlob, 0.75);
+                                            nextFile.filesize = imageBlob.length;
+                                            
+                                            nextFile.numUploadParts = 1;
+                                            nextFile.uploadPart = 1;
+                                            nextFile.uploading_bytes = nextFile.filesize;
+                                        }
+                                        
+                                        Ti.API.debug("Compressed: " + imageBlob.length);
+                                    }
+                                    else{
+                                        Ti.API.debug("No image Resize was necessary");
+                                    }
+                                }
+                                catch(ex) {
+                                    Omadi.service.sendErrorReport("Exception resizing iOS Photo: " + ex);
+                                    readyForUpload = false;
+                                }  
+                                
+                                // Clean up some memory
+                                resizedBlob = null;
+                            }
+                            else{
+                                Omadi.service.sendErrorReport("Image blob is null");
+                            }
+                        }
+                    }
+                    else if(nextFile.type == 'video' || nextFile.type == 'file'){
+                        Ti.API.debug("uploading a video");
+                        
+                        fileStream = imageFile.open(Ti.Filesystem.MODE_READ);
+                        buffer = Ti.createBuffer({
+                            length: maxBytesPerUpload 
+                        });
+                        
+                        Ti.API.debug("bytes already uploaded: " + nextFile.bytes_uploaded);
+                        
+                        position = 0;
+                        filePart = 0;
+                        
+                        // No seek function, so move the stream to the correct position
+                        while(position < nextFile.bytes_uploaded){
+                            filePart ++;
+                            position += fileStream.read(buffer);
+                            Ti.API.debug("used a buffer");
+                        }
+                        
+                        if(filePart > 0){
+                            buffer.clear();
+                        }
+                        
+                        numBytesRead = fileStream.read(buffer);
+                        if(numBytesRead > 0){
+                            if(numBytesRead < buffer.length){
+                                buffer.length = numBytesRead;
+                            }
+                            imageBlob = buffer.toBlob();
+                        }
+                        else{
+                            Omadi.service.sendErrorReport("Read zero bytes from stream.");
+                        }
+                        
+                        // Set the actual number of bytes we're uploading for this part
+                        nextFile.uploading_bytes = numBytesRead;
+                        
+                        // Release the resources
+                        buffer.release();
+                    }
+                }
+                else{
+                     readyForUpload = false;
+                     deleteFromDB = true;
+                     Ti.API.error("File does not exist");
+                }
+                
+                Ti.API.debug("Upload Part: " + nextFile.uploadPart + "/" + nextFile.numUploadParts);
+                Ti.API.debug(nextFile);
+                
+                if(readyForUpload){
+                    try{
+                        nextFile.file_data = Ti.Utils.base64encode(imageBlob);
+                        
+                        try{
+                            nextFile.file_data = nextFile.file_data.getText();
+                        }
+                        catch(ex6){
+                            Omadi.service.sendErrorReport("Exception getting text of base64 photo: " + ex6); 
                             // This photo is not going to upload correctly
                             readyForUpload = false;
                         }
                     }
-                    
-                    imageFile = null;
-                    imageBlob = null;
+                    catch(ex5){
+                        Omadi.service.sendErrorReport("Exception base64 encoding photo: " + ex5); 
+                        // This photo is not going to upload correctly
+                        readyForUpload = false;
+                    }
                 }
-                catch(fileEx){
-                    Omadi.service.sendErrorReport("Exception loading next photo: " + fileEx);
-                }
+                
+                imageFile = null;
+                imageBlob = null;
+            }
+            catch(fileException){
+                Omadi.service.sendErrorReport("Exception loading next photo: " + fileException);
+            }
             
         }
         else{
@@ -1872,15 +1865,12 @@ Omadi.data.processFetchedJson = function(){"use strict";
         }
         else {
             mainDB = Omadi.utils.openMainDatabase();
-            Ti.API.debug("Opened database");
         
-            Ti.API.debug("hihihi");
             if (Omadi.service.progressBar !== null) {
                 //Set max value for progress bar
                 Omadi.service.progressBar.set_max(numItems);
             }
             
-            Ti.API.debug("yoyoyo");
             if (Omadi.data.getLastUpdateTimestamp() === 0) {
                 mainDB.execute('UPDATE updated SET "url"="' + Omadi.DOMAIN_NAME + '" WHERE "rowid"=1');
             }

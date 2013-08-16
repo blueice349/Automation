@@ -184,7 +184,7 @@ Omadi.utils.getUsername = function(uid){"use strict";
 Omadi.utils.formatMegaBytes = function(bytes){"use strict";
     var mb = bytes / 1048576;
     return Math.round(mb * 10) / 10;
-}
+};
 
 Omadi.utils.getTimeFormat = function(){"use strict";
     var format, loginJson = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));

@@ -120,15 +120,14 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 		    Camera.Parameters p = camera.getParameters();
 		    if(p!=null){
 		    	
-			    List<Size> sizes = p.getSupportedPreviewSizes();
-			    Size optimalSize = getOptimalPreviewSize(sizes, width, height);
+			    
+			    Size optimalSize = getOptimalPreviewSize(p, height);
 			    if(optimalSize != null){
 			    	
 			    	p.setPreviewSize(optimalSize.width, optimalSize.height);
 			    }
 			    
-			    List<Size> pictureSizes = p.getSupportedPictureSizes();
-			    Size optimalPictureSize = getOptimalPictureSize(pictureSizes);
+			    Size optimalPictureSize = getOptimalPictureSize(p);
 			    if(optimalPictureSize != null){
 			    	
 			    	Log.d("CAMERA", "CAMERA OPTIMAL PICTURE SIZE: " + optimalPictureSize.width + "x" + optimalPictureSize.height);
@@ -156,15 +155,18 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 		toolsOverlay.cameraInitialized(camera);
 	}
 	
-	private Size getOptimalPictureSize(List<Size> pictureSizes){
+	private Size getOptimalPictureSize(Camera.Parameters p){
+		
+		List<Size> pictureSizes = p.getSupportedPictureSizes();
 		Size optimalSize = null;
 		
 	    if(pictureSizes.size() > 0){
-		    int target = 1000;
+		    int target = 1280;
 		    int minDiff = Integer.MAX_VALUE;
 		    
 		    for (Size pictureSize : pictureSizes) {
 		    	Log.d("CAMERA", "CAMERA SIZE: " + pictureSize.width + "x" + pictureSize.height);
+		    	
 		    	if(pictureSize.width > pictureSize.height){
 		    		// Make sure it's in landscape mode
 		    		if(pictureSize.width <= target){
@@ -197,10 +199,11 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	    return optimalSize;
 	}
 	
-	private Size getOptimalPreviewSize(List<Size> sizes, int w, int h) {
-	    
+	private Size getOptimalPreviewSize(Camera.Parameters p, int h) {
+		List<Size> sizes = p.getSupportedPreviewSizes();
+		Size photoSize = this.getOptimalPictureSize(p);
 	    final double ASPECT_TOLERANCE = 0.05;
-	    double targetRatio = (double) w / h;
+	    double targetRatio = (double)photoSize.width / (double)photoSize.height;
 	    if (sizes == null) return null;
 
 	    Size optimalSize = null;
@@ -246,7 +249,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
       camera = Camera.open();
 		}
     catch(Exception e){
-      Log.e("CAMERA", "Could not open camera: " + e.getMessage());
+      Log.e("CAMERA", "CAMERA Could not open camera: " + e.getMessage());
     }
 		/*
 		 * Disabling this since it can end up picking a bad preview
@@ -297,7 +300,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 		// Register this class as a listener for the accelerometer sensor
 		sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
 		
-		Log.d("CAMERA", "Sensor Registered");
+		Log.d("CAMERA", "CAMERA Sensor Registered");
 	}
 
 	@Override
@@ -321,13 +324,13 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 			}
 		}
 		catch (Throwable t) {
-			Log.d("CAMERA", "camera is not open, unable to release: " + t.getMessage());
+			Log.d("CAMERA", "CAMERA is not open, unable to release: " + t.getMessage());
 			t.printStackTrace();
 		}
 
 		cameraActivity = null;
 		
-		Log.d("CAMERA", "Sensor unregistered");
+		Log.d("CAMERA", "CAMERA Sensor unregistered");
 	}
 	
 	
@@ -368,7 +371,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 //	}
 
 	public void takePicture() {
-		Log.d("CAMERA", "Taking picture");
+		Log.d("CAMERA", "CAMERA Taking picture");
 		camera.takePicture(null, null, jpegCallback);
 	}
 
@@ -388,7 +391,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 
 		public void onPictureTaken(byte[] data, Camera camera) {
 			try {
-				Log.d("CAMERA", "JPEG generated");
+				Log.d("CAMERA", "CAMERA JPEG generated");
 				//toolsOverlay.pictureTaken();
 				
 				FileOutputStream outputStream = null;
@@ -446,7 +449,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 					msg.setData(messageVars);
 					messageHandler.sendMessage(msg);
 					
-					Log.d("CAMERA", "Image saved Correctly");
+					Log.d("CAMERA", "CAMERA Image saved Correctly");
 					
 				} 
 				catch (FileNotFoundException e) {
@@ -560,7 +563,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 			}
 		}
 		catch(Exception e){
-			Log.d("CAMERA", "Exception onsensor change: " + e.getMessage());
+			Log.d("CAMERA", "CAMERA Exception onsensor change: " + e.getMessage());
 		}
 	}
 	

@@ -37,7 +37,7 @@ Omadi.push_notifications.registerAndroid = function() {"use strict";
             Omadi.push_notifications.setUserDeviceToken(e.deviceToken);
             CloudPush.enabled = true;
             CloudPush.focusAppOnPush = true;
-            Ti.App.fireEvent('androidRegistered');
+            Omadi.push_notifications.loginUser();
         },
         error: function(e){
             var dialog = Ti.UI.createAlertDialog({
@@ -100,7 +100,7 @@ Omadi.push_notifications.registeriOS = function() {"use strict";
         types : [Titanium.Network.NOTIFICATION_TYPE_BADGE, Titanium.Network.NOTIFICATION_TYPE_ALERT, Titanium.Network.NOTIFICATION_TYPE_SOUND],
         success : function(e) {
             Omadi.push_notifications.setUserDeviceToken(e.deviceToken);
-            Ti.App.fireEvent('iOSRegistered');
+            Omadi.push_notifications.loginUser();
         },
         error : function(e) {
 
@@ -237,7 +237,7 @@ Omadi.push_notifications.setupACSPush = function() {"use strict";
 };
 
 Omadi.push_notifications.loginUser = function() {"use strict";
-
+    
     Cloud.Users.login({
         login : Omadi.push_notifications.getUserName(),
         password : Omadi.push_notifications.getPassword()
@@ -313,19 +313,10 @@ Omadi.push_notifications.init = function() {"use strict";
     
     if(Ti.App.isAndroid){
         
-        if(typeof Ti.App.registeredPushListener === 'undefined' || !Ti.App.registeredPushListener){
-            Ti.App.registeredPushListener = true;
-            Ti.App.addEventListener('androidRegistered', Omadi.push_notifications.loginUser);
-        }
-        
         Omadi.push_notifications.registerAndroid();
     }
     else {
         
-        if(typeof Ti.App.registeredPushListener === 'undefined' || !Ti.App.registeredPushListener){
-            Ti.App.registeredPushListener = true;
-            Ti.App.addEventListener('iOSRegistered', Omadi.push_notifications.loginUser);
-        }
         Omadi.push_notifications.registeriOS();
     }
 };
