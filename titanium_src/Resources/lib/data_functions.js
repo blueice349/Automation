@@ -73,25 +73,40 @@ Omadi.data.getLastUpdateTimestamp = function() {"use strict";
     //return Ti.App.Properties.getDouble("sync_timestamp", 0);
 };
 
-Omadi.data.getBundle = function(type) {"use strict";
+Omadi.data.bundleCache = {};
+Omadi.data.getBundle = function(type, reset) {"use strict";
     var db, result, bundle = null;
-
-    db = Omadi.utils.openMainDatabase();
-    result = db.execute('SELECT _data, display_name, can_create, can_view, child_forms FROM bundles WHERE bundle_name="' + type + '"');
-
-    if (result.isValidRow()) {
-        bundle = {
-            type : type,
-            data : JSON.parse(result.fieldByName('_data')),
-            child_forms : JSON.parse(result.fieldByName('child_forms')),
-            label : result.fieldByName('display_name'),
-            can_create : result.fieldByName('can_create', Ti.Database.FIELD_TYPE_INT),
-            can_view : result.fieldByName('can_view', Ti.Database.FIELD_TYPE_INT)
-        };
+    
+    if(typeof reset === 'undefined'){
+        reset = false;
     }
+    
+    if(typeof Omadi.data.bundleCache[type] === 'undefined' || reset){
 
-    result.close();
-    db.close();
+        db = Omadi.utils.openMainDatabase();
+        result = db.execute('SELECT _data, display_name, can_create, can_view, child_forms FROM bundles WHERE bundle_name="' + type + '"');
+    
+        if (result.isValidRow()) {
+            bundle = {
+                type : type,
+                data : JSON.parse(result.fieldByName('_data')),
+                child_forms : JSON.parse(result.fieldByName('child_forms')),
+                label : result.fieldByName('display_name'),
+                can_create : result.fieldByName('can_create', Ti.Database.FIELD_TYPE_INT),
+                can_view : result.fieldByName('can_view', Ti.Database.FIELD_TYPE_INT)
+            };
+            
+            Omadi.data.bundleCache[type] = bundle;
+        }
+        else{
+            Omadi.data.bundleCache[type] = null;
+        }
+    
+        result.close();
+        db.close();
+    }
+    
+    bundle = Omadi.data.bundleCache[type];
 
     return bundle;
 };
@@ -2888,8 +2903,10 @@ Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
     /*global ROLE_ID_ADMIN, ROLE_ID_OMADI_AGENT */
     var queries, roles, i, type, perm_idx, role_idx, bundle_result, 
         app_permissions, title_fields, data, display, description, 
-        disabled, is_disabled, permission_string, childForms;
-
+        disabled, is_disabled, permission_string, childForms, resetBundles;
+    
+    resetBundles = [];
+    
     try {
         //Node types creation:
         queries = [];
@@ -2905,6 +2922,7 @@ Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
                     type = Omadi.service.fetchedJSON.node_type.insert[i].type;
                     
                     if (type != 'user') {
+                        
                         //Increment the progress bar
                         if (Omadi.service.progressBar != null) {
                             Omadi.service.progressBar.set();
@@ -2993,6 +3011,8 @@ Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
                         }
 
                         queries.push("INSERT OR REPLACE INTO bundles (bundle_name, display_name, description, title_fields, _data, can_create, can_view, child_forms) VALUES ('" + dbEsc(type) + "', '" + dbEsc(display) + "','" + dbEsc(description) + "','" + dbEsc(JSON.stringify(title_fields)) + "','" + dbEsc(JSON.stringify(data)) + "'," + app_permissions.can_create + "," + app_permissions.can_view + ",'" + dbEsc(JSON.stringify(childForms)) + "')");
+                        
+                        resetBundles.push(type);
                     }
                 }
             }
@@ -3030,6 +3050,13 @@ Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
             mainDB.execute(queries[i]);
         }
         mainDB.execute("COMMIT TRANSACTION");
+        
+        if(resetBundles.length > 0){
+            for(i = 0; i < resetBundles.length; i ++){
+                // Just clear the bundle cache for other functions to use correctly
+                Omadi.data.getBundle(resetBundles[i], true);
+            }
+        }
 
         Ti.API.info("Success for node_types, db operations ran smoothly!");
     }

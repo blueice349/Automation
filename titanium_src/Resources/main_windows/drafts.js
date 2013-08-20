@@ -104,7 +104,7 @@ Drafts.refreshDrafts = function(){"use strict";
             
             textView = Ti.UI.createView({
                 right: 1,
-                left: 45,
+                left: 50,
                 top: 0,
                 height: Ti.UI.SIZE,
                 layout: 'vertical'
@@ -112,8 +112,9 @@ Drafts.refreshDrafts = function(){"use strict";
             
             rowImg = Ti.UI.createImageView({
                 image: Omadi.display.getNodeTypeImagePath(result.fieldByName('table_name')),
-                left: 1,
+                left: 5,
                 top: 5,
+                bottom: 5,
                 width: 35,
                 height: 35
             });

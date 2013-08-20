@@ -83,7 +83,7 @@ function getTableViewData(orderField){"use strict";
             
             textView = Ti.UI.createView({
                 right: 1,
-                left: 45,
+                left: 50,
                 top: 0,
                 height: Ti.UI.SIZE,
                 layout: 'vertical'
@@ -92,9 +92,10 @@ function getTableViewData(orderField){"use strict";
             rowImg = Ti.UI.createImageView({
                 image: Omadi.display.getNodeTypeImagePath(nodeData[i].type),
                 top: 5,
-                left: 1,
+                left: 5,
                 width: 35,
-                height: 35
+                height: 35,
+                bottom: 5
             });
             
             titleLabel = Ti.UI.createLabel({
@@ -379,7 +380,7 @@ function savedNodeRecent(){"use strict";
         Ti.App.removeEventListener("savedNode", savedNodeRecent);
         
         // Clean up memory
-        Ti.UI.currentWindow.remove(wrapperView);
+        //Ti.UI.currentWindow.remove(wrapperView);
         wrapperView = null;
         curWin = null;
     });

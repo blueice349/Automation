@@ -164,7 +164,7 @@ function refreshJobsTable(){"use strict";
             
             textView = Ti.UI.createView({
                 right: 1,
-                left: 45,
+                left: 50,
                 top: 0,
                 height: Ti.UI.SIZE,
                 layout: 'vertical'
@@ -173,9 +173,10 @@ function refreshJobsTable(){"use strict";
             rowImg = Ti.UI.createImageView({
                 image: Omadi.display.getNodeTypeImagePath(newJobs[i].type),
                 top: 5,
-                left: 1,
+                left: 5,
                 width: 35,
-                height: 35
+                height: 35,
+                bottom: 5
             });
             
             titleLabel = Ti.UI.createLabel({
@@ -225,7 +226,7 @@ function refreshJobsTable(){"use strict";
             
             textView = Ti.UI.createView({
                 right: 1,
-                left: 45,
+                left: 50,
                 top: 0,
                 height: Ti.UI.SIZE,
                 layout: 'vertical'
@@ -234,7 +235,8 @@ function refreshJobsTable(){"use strict";
             rowImg = Ti.UI.createImageView({
                 image: Omadi.display.getNodeTypeImagePath(currentUserJobs[i].type),
                 top: 5,
-                left: 1,
+                left: 5,
+                bottom: 5,
                 width: 35,
                 height: 35
             });

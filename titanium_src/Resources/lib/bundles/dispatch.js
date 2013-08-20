@@ -462,7 +462,7 @@ Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
         db = Omadi.utils.openMainDatabase();
         
         sql = "SELECT n.nid, dispatch.dispatch_form_reference, dispatch.field_dispatching_status FROM node n ";
-        sql += "LEFT JOIN dispatch ON dispatch.nid = n.nid ";
+        sql += "INNER JOIN dispatch ON dispatch.nid = n.nid ";
         sql += "WHERE n.table_name = 'dispatch' ";
         sql += "AND dispatch.dispatch_form_reference IS NOT NULL AND dispatch.dispatch_form_reference > 0 ";
         sql += "AND dispatch.dispatched_to_driver IS NULL "; 
@@ -519,7 +519,7 @@ Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
         db = Omadi.utils.openMainDatabase();
         
         sql = "SELECT n.nid, dispatch.dispatch_form_reference FROM node n ";
-        sql += "LEFT JOIN dispatch ON dispatch.nid = n.nid ";
+        sql += "INNER JOIN dispatch ON dispatch.nid = n.nid ";
         sql += "WHERE n.table_name = 'dispatch' ";
         sql += "AND dispatch.dispatch_form_reference IS NOT NULL ";
         sql += "AND dispatch.dispatched_to_driver = " + currentUserUid + " "; 

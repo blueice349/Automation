@@ -88,7 +88,7 @@ function loggingOutTagsReady(){"use strict";
         
         textView = Ti.UI.createView({
             right: 1,
-            left: 45,
+            left: 50,
             top: 0,
             height: Ti.UI.SIZE,
             layout: 'vertical'
@@ -97,7 +97,8 @@ function loggingOutTagsReady(){"use strict";
         rowImg = Ti.UI.createImageView({
             image: Omadi.display.getNodeTypeImagePath('tag'),
             top: 5,
-            left: 1,
+            left: 5,
+            bottom: 5,
             width: 35,
             height: 35
         });

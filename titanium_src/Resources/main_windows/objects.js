@@ -701,8 +701,8 @@ function setTableData() {"use strict";
             var items = [];
 
             var plusButton = Titanium.UI.createButton({
-                backgroundImage : '/images/plus_btn.png',
-                backgroundSelectedImage : '/images/plus_btn_selected.png',
+                backgroundImage : '/images/newicons/plus_btn_grey.png',
+                backgroundSelectedImage : '/images/newicons/plus_btn_light_blue.png',
                 width : 54,
                 height : 38,
                 right : 1,
@@ -783,7 +783,7 @@ function setTableData() {"use strict";
                         order : 1
                     });
 
-                    newItem.setIcon("/images/plus_btn.png");
+                    newItem.setIcon("/images/newiconds/plus_btn_grey.png");
                     newItem.addEventListener("click", function(e) {
                         Omadi.display.openFormWindow(curWin.type, 'new', 0);
                     });
@@ -976,10 +976,10 @@ function setTableData() {"use strict";
            
            // Clean up memory references
            
-           wrapperView.remove(filterTableView);
+           //wrapperView.remove(filterTableView);
            filterTableView = null;
            
-           curWin.remove(wrapperView);
+           //curWin.remove(wrapperView);
            wrapperView = null; 
            curWin = null;
            

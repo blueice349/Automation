@@ -777,82 +777,111 @@ Omadi.display.getDrivingDirectionsTo = function(addressString){"use strict";
 };
 
 Omadi.display.getNodeTypeImagePath = function(type) {"use strict";
-
-    switch(type) {
-        
-        // case 'pd':
-            // return '/images/testicons/circle-black-pd.png';
+    var bundle, color;
+    
+    bundle = Omadi.data.getBundle(type);
+    
+    color = 'gray';
+    if(bundle && typeof bundle.data !== 'undefined' && typeof bundle.data.color !== 'undefined'){
+        color = bundle.data.color;
+    }
+    
+    return Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, 'icon_' + type + '_' + color + '.png');
+    
+    // switch(type) {
+        // case 'lead':
+            // return '/images/newicons/lead_green.png'; 
 //             
-        // case 'permit':
-            // return '/images/testicons/circle-black-permit.png';
-//         
-        // case 'potential':
-            // return '/images/testicons/circle-black-potential.png';
+        // case 'contact':
+            // return '/images/newicons/contact_dark_blue.png'; 
+//             
+        // case 'account':
+            // return '/images/newicons/account_grey.png';  
+//              
+        // case 'boot':
+            // return '/images/newicons/boot_light_blue.png'; 
+//             
+        // case 'tow':
+            // return '/images/newicons/tow_light_blue.png'; 
 //             
         // case 'drop_fee':
-            // return '/images/testicons/circle-color-drop-fee.png';
+            // return '/images/newicons/drop_fee_green.png'; 
 //             
         // case 'incident_report':
-            // return '/images/testicons/circle-color-incident.png';
+            // return '/images/newicons/incident_report_red.png'; 
 //             
-        // case 'lead':
-            // return '/images/testicons/circle-color-lead.png';
+        // case 'notification':
+            // return '/images/newicons/notification_orange.png'; 
+//             
+        // case 'pd':
+            // return '/images/newicons/pd_light_blue.png'; 
+//             
+        // case 'potential':
+            // return '/images/newicons/potential_dark_blue.png'; 
 //             
         // case 'restriction':
-            // return '/images/testicons/circle-red-restrictions.png';
+            // return '/images/newicons/restriction_orange.png'; 
 //             
         // case 'service':
-            // return '/images/testicons/circle-red-service.png';
+            // return '/images/newicons/service_green.png'; 
 //             
-        // case 'spot':
-            // return '/images/testicons/circle-red-spot.png';
-//            
+        // case 'tag':
+            // return '/images/newicons/tag_light_blue.png'; 
+//             
         // case 'task':
-            // return '/images/testicons/square-blue-task.png';
+            // return '/images/newicons/task_purple.png'; 
+//             
+        // case 'cod':
+            // return '/images/newicons/cod_green.png'; 
+//             
+        // case 'repo':
+            // return '/images/newicons/repo_light_blue.png'; 
+//             
+        // case 'ticket':
+            // return '/images/newicons/ticket_green.png'; 
+//             
+        // case 'inspection':
+            // return '/images/newicons/inspection_orange.png'; 
 //             
         // case 'timecard':
-            // return '/images/testicons/square-blue-timecard.png';
+            // return '/images/newicons/timecard_dark_blue.png'; 
+//             
+        // case 'permit_request':
+            // return '/images/newicons/permit_request_dark_blue.png'; 
 //             
         // case 'company_vehicle':
-            // return '/images/testicons/square-blue-truck.png';
-        
-        case 'lead':
-        case 'contact':
-        case 'account':
-        case 'boot':
-        case 'tow':
-        case 'drop_fee':
-        case 'incident_report':
-        case 'notification':
-        case 'pd':
-        case 'potential':
-        case 'restriction':
-        case 'service':
-        case 'tag':
-        case 'task':
-        case 'cod':
-        case 'cash_call':
-        case 'hourly':
-        case 'repo':
-        case 'ticket':
-        case 'inspection':
-        case 'timecard':
-        case 'permit_request':
-        case 'company_vehicle':
-        case 'dispatch':
-        case 'club_tow':
-        case 'motor_club':
-        case 'tow_yard':
-        case 'refund_request':
-        case 'tow_request':
-        case 'permit':
-        case 'spot':
-
-            return '/images/icons/' + type + ".png";
-
-        default:
-            return '/images/icons/settings.png';
-    }
+            // return '/images/newicons/company_vehicle_grey.png'; 
+//             
+        // case 'dispatch':
+            // return '/images/newicons/dispatch_green.png'; 
+//             
+        // case 'club_tow':
+            // return '/images/newicons/club_tow_light_blue.png'; 
+//             
+        // case 'motor_club':
+            // return '/images/newicons/motor_club_grey.png'; 
+//             
+        // case 'tow_yard':
+            // return '/images/newicons/tow_yard_grey.png'; 
+//             
+        // case 'refund_request':
+            // return '/images/newicons/refund_request_orange.png'; 
+//             
+        // case 'tow_request':
+            // return '/images/newicons/tow_request_dark_blue.png'; 
+//             
+        // case 'permit':
+            // return '/images/newicons/permit_dark_blue.png'; 
+//             
+        // case 'spot':
+            // return '/images/newicons/spot_light_blue.png'; 
+// 
+            // //return '/images/icons/' + type + ".png";
+// 
+        // default:
+            // return '/images/newicons/settings_grey.png';
+            // //return '/images/icons/settings.png';
+    // }
 };
 
 Omadi.display.displayFile = function(nid, fid, title) {"use strict";
