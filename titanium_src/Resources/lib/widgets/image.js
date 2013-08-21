@@ -174,11 +174,11 @@ Omadi.widgets.image = {
                 image = '/images/choose-a-photo.png';
             }
             else{
-                image = '/images/take-a-photo.png';
+                image = '/images/take_photo.png';
             }   
         }
         else if(typeof fid === 'number'){
-            image = '/images/photo-loading.png';
+            image = '/images/photo_loading.png';
         }
         else{
             image = fid;

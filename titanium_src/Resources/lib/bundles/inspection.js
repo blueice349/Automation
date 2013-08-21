@@ -47,7 +47,7 @@ Omadi.bundles.inspection.askToReviewLastInspection = function(){"use strict";
                 
                     dialog = Ti.UI.createAlertDialog({
                        title: 'Review Last Inspection Report?',
-                       buttonNames: ['Ok', 'Cancel']
+                       buttonNames: ['Review', 'No']
                     });
                     
                     dialog.addEventListener('click', function(e){
@@ -159,7 +159,7 @@ Omadi.bundles.inspection.askToCreateInspection = function(showLogout){"use stric
 
         dialog = Ti.UI.createAlertDialog({
            title: 'Do Post-Shift Inspection?',
-           buttonNames: ['Ok', 'Cancel'] 
+           buttonNames: ['Do Inspection', 'No'] 
         });
         
         dialog.addEventListener('click', function(e){

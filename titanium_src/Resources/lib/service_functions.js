@@ -188,10 +188,18 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                 http.onload = function(e) {
                     var dir, file, string;
                     
+                    Ti.API.debug("Sync data loaded");
+                    
+                    Ti.API.debug("text: " + (this.responseText !== null));
+                    Ti.API.debug("data: " + (this.responseData !== null));
+                    
+                    
                     //Parses response into strings
                     if (this.responseText !== null && isJsonString(this.responseText) === true) {
             
-                        Ti.API.info(this.responseText.substring(0, 3000));
+                        //Ti.API.info(this.responseText.substring(0, 3000));
+                        
+                        Ti.API.debug("JSON String Length: " + this.responseText.length);
             
                         Omadi.service.fetchedJSON = JSON.parse(this.responseText);
                         
@@ -203,42 +211,50 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                     else if(this.responseData !== null){
                         // In some very rare cases, this.responseText will be null
                         // Here, we write the data to a file, read it back and do the installation
-                        
-                        dir = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory);
-                        
-                        if(!dir.exists()){
-                            dir.createDirectory();
-                        }
-                        
-                        file = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory + "/download.txt");
-                        
-                        if(file.write(this.responseData)){
-                           
-                           string = file.read();
-                           
-                           if(isJsonString(string)){
+                        try{
+                            dir = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory);
                             
-                                Omadi.service.fetchedJSON = JSON.parse(string);
-                                
-                                // Free the memory
-                                string = null;
-                                
-                                Omadi.data.processFetchedJson();
+                            if(!dir.exists()){
+                                dir.createDirectory();
                             }
-                            else{
-                                Omadi.service.sendErrorReport("Text is not json");
-                                if (Omadi.service.progressBar !== null) {
-                                    Omadi.service.progressBar.close();
-                                    Omadi.service.progressBar = null;
+                            
+                            Ti.API.debug("JSON String Length: " + this.responseData.length);
+                            
+                            file = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory + "/download_" + Omadi.utils.getUTCTimestamp() + ".txt");
+                            
+                            if(file.write(this.responseData)){
+                               
+                               string = file.read();
+                               
+                               if(isJsonString(string.text)){
+                                    Ti.API.debug("Is JSON");
+                                    
+                                    Omadi.service.fetchedJSON = JSON.parse(string.text);
+                                    
+                                    // Free the memory
+                                    string = null;
+                                    
+                                    Omadi.data.processFetchedJson();
+                                }
+                                else{
+                                    Omadi.service.sendErrorReport("Text is not json");
+                                    if (Omadi.service.progressBar !== null) {
+                                        Omadi.service.progressBar.close();
+                                        Omadi.service.progressBar = null;
+                                    }
                                 }
                             }
+                            else{
+                                Omadi.service.sendErrorReport("Failed to write to the download file");
+                            }
+                            
+                            if(file.exists()){
+                                file.deleteFile();
+                            }
                         }
-                        else{
-                            Omadi.service.sendErrorReport("Failed to write to the download file");
-                        }
-                        
-                        if(file.exists()){
-                            file.deleteFile();
+                        catch(ex){
+                            Ti.API.debug("Exception at data: " + ex);
+                            Omadi.service.sendErrorReport("Exception at json data: " + ex)
                         }
                         
                         file = null;
@@ -250,7 +266,6 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                             Omadi.service.progressBar = null;
                         }
             
-                    
                         Omadi.service.sendErrorReport("Bad response text and data for download: " + this.responseText + ", stautus: " + this.status + ", statusText: " + this.statusText);
                     }               
 
@@ -561,7 +576,7 @@ Omadi.service.sendUpdates = function() {"use strict";
 
                     dialog.show();
 
-                    Omadi.service.sendErrorReport('500 error on send update');
+                    Omadi.service.sendErrorReport('500 error on send update: ' + e.error);
                 }
                 
                 Omadi.service.setSendingData(false);

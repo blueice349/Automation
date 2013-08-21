@@ -130,10 +130,10 @@ var offImage = Titanium.UI.createLabel({
             y : '100%'
         },
         colors : [{
-            color : '#ccc',
+            color : '#ddd',
             offset : 0.0
         }, {
-            color : '#ddd',
+            color : '#ccc',
             offset : 0.25
         }, {
             color : '#aaa',
@@ -167,13 +167,13 @@ var actionsButton = Ti.UI.createLabel({
             y : '100%'
         },
         colors : [{
-            color : '#468',
+            color : '#2BC4F3',
             offset : 0.0
         }, {
-            color : '#68a',
+            color : '#00AEEE',
             offset : 0.25
         }, {
-            color : '#246',
+            color : '#0095DA',
             offset : 1.0
         }]
     },
@@ -187,7 +187,7 @@ var actionsButton = Ti.UI.createLabel({
 });
 
 var refresh_image = Ti.UI.createImageView({
-    image : '/images/refresh.png',
+    image : '/images/refresh_light_blue.png',
     right : 9,
     width : 32,
     height : 32
@@ -467,10 +467,9 @@ function setupBottomButtons() {"use strict";
     databaseStatusView.add(alertsView);
 
     alertsImg = Ti.UI.createImageView({
-        image : '/images/msg3.png',
-        height : 22,
-        width : 22,
-        top : 2
+        image : '/images/alerts_white.png',
+        height : 17,
+        top : 5
     });
     alertsLabel = Ti.UI.createLabel({
         text : 'Alerts',
@@ -521,10 +520,9 @@ function setupBottomButtons() {"use strict";
         databaseStatusView.add(jobsView);
     
         jobsImg = Ti.UI.createImageView({
-            image : '/images/jobs.png',
-            height : 22,
-            width : 22,
-            top : 2
+            image : '/images/dispatch_white.png',
+            height : 18,
+            top : 5
         });
     
         jobsLabel = Ti.UI.createLabel({
@@ -559,10 +557,9 @@ function setupBottomButtons() {"use strict";
     databaseStatusView.add(recentView);
 
     recentImg = Ti.UI.createImageView({
-        image : '/images/clock.png',
-        height : 22,
-        width : 22,
-        top : 2
+        image : '/images/recent_white.png',
+        height : 18,
+        top : 5
     });
     recentLabel = Ti.UI.createLabel({
         text : 'Recent',
@@ -607,10 +604,9 @@ function setupBottomButtons() {"use strict";
         databaseStatusView.add(tagsReadyView);
     
         tagsReadyImg = Ti.UI.createImageView({
-            image : '/images/tags_ready.png',
-            height : 22,
-            width : 22,
-            top : 2
+            image : '/images/tag_white.png',
+            height : 18,
+            top : 5
         });
         tagsReadyLabel = Ti.UI.createLabel({
             text : 'Expired',
@@ -728,9 +724,11 @@ function sendingDataMainMenu(e){"use strict";
     // the progress bar set by onsendstream does not currently work with Android
     // Only allow iOS apps to show the progress bar for uploads
     if(Ti.App.isAndroid || typeof e.progress === 'undefined'){
-        networkStatusLabel.setText(e.message);
-        uploadingProgressBar.setVisible(false);
-        networkStatusLabel.setVisible(true);
+        if(networkStatusLabel !== null){
+            networkStatusLabel.setText(e.message);
+            uploadingProgressBar.setVisible(false);
+            networkStatusLabel.setVisible(true);
+        }
     }
     else{
         uploadingProgressBar.setValue(0.01);

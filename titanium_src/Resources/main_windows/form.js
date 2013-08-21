@@ -278,7 +278,8 @@ function get_android_menu(menu_exists) {"use strict";
    /*global Omadi, save_form_data*/
    
     win.activity.onCreateOptionsMenu = function(e) {
-        var db, result, menu_zero, bundle, btn_tt, btn_id, menu_first, menu_second, menu_third, menu_save_new;
+        var db, result, menu_zero, bundle, btn_tt, btn_id, 
+            menu_first, menu_second, menu_third, menu_save_new, iconFile;
         btn_tt = [];
         btn_id = [];
     
@@ -318,7 +319,8 @@ function get_android_menu(menu_exists) {"use strict";
             title : 'Save + New',
             order : 2
         });
-        menu_save_new.setIcon(Omadi.display.getNodeTypeImagePath(Ti.UI.currentWindow.type));
+        // iconFile = Omadi.display.getNodeTypeImagePath(Ti.UI.currentWindow.type);
+        // menu_save_new.setIcon(iconFile.nativePath);
     
         menu_second = menu.add({
             title : 'Save as Draft',
@@ -326,11 +328,11 @@ function get_android_menu(menu_exists) {"use strict";
         });
         menu_second.setIcon("/images/drafts_android.png");
     
-        menu_third = menu.add({
-            title : 'Cancel',
-            order : 4
-        });
-        menu_third.setIcon("/images/cancel.png");
+        // menu_third = menu.add({
+            // title : 'Cancel',
+            // order : 4
+        // });
+        // menu_third.setIcon("/images/cancel.png");
     
         //======================================
         // MENU - EVENTS
@@ -348,9 +350,9 @@ function get_android_menu(menu_exists) {"use strict";
             save_form_data('draft');
         });
     
-        menu_third.addEventListener("click", function(e) {
-            cancelOpt();
-        });
+        // menu_third.addEventListener("click", function(e) {
+            // cancelOpt();
+        // });
         
     };
 }

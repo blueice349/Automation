@@ -110,14 +110,14 @@ Omadi.widgets.video = {
         
         if(fid === null){
             if(widgetType == 'choose'){
-                image = '/images/choose-video.png';
+                image = '/images/choose_a_video.png';
             }
             else{
-                image = '/images/take-video.png';
+                image = '/images/take_video.png';
             }   
         }
         else if(typeof fid === 'number'){
-            image = '/images/thumbnail-loading.png';
+            image = '/images/video_loading.png';
         }
         else{
             image = fid;
@@ -163,7 +163,7 @@ Omadi.widgets.video = {
                 imageView.image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
             }
             else{
-                imageView.image = '/images/video-selected.png';
+                imageView.image = '/images/video_selected.png';
                 imageView.height = 100;
                 imageView.width = 100;
             }
@@ -385,7 +385,7 @@ Omadi.widgets.video = {
                             
                             //newImageView.setImage("/images/video-selected.png");
                            
-                            newImageView.image = '/images/video-selected.png';
+                            newImageView.image = '/images/video_selected.png';
                             newImageView.height = 100;
                             newImageView.width = 100;
                             
@@ -402,7 +402,7 @@ Omadi.widgets.video = {
                             newImageView = Omadi.widgets.video.getImageView(imageView.parentView, imageView.imageIndex, null, filePath, 0);
                            
                             
-                            newImageView.image = '/images/video-selected.png';
+                            newImageView.image = '/images/video_selected.png';
                             newImageView.height = 100;
                             newImageView.width = 100;
                             
@@ -488,7 +488,7 @@ Omadi.widgets.video = {
                             newImageView.image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
                         }
                         else{
-                            newImageView.image = '/images/video-selected.png';
+                            newImageView.image = '/images/video_selected.png';
                             newImageView.height = 100;
                             newImageView.width = 100;
                         }
@@ -508,7 +508,7 @@ Omadi.widgets.video = {
                             newImageView.image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
                         }
                         else{
-                            newImageView.image = '/images/video-selected.png';
+                            newImageView.image = '/images/video_selected.png';
                             newImageView.height = 100;
                             newImageView.width = 100;
                         }

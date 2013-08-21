@@ -884,7 +884,8 @@ function openAndroidMenuItem(e){"use strict";
 if (Ti.App.isAndroid) {
     var activity = curWin.activity;
     activity.onCreateOptionsMenu = function(e) {"use strict";
-        var db, result, bundle, menu_zero, form_part, menu_edit, customCopy, to_type, to_bundle, order;
+        var db, result, bundle, menu_zero, form_part, menu_edit, 
+            customCopy, to_type, to_bundle, order, iconFile;
         
         order = 0;
         bundle = Omadi.data.getBundle(curWin.type);
@@ -944,7 +945,8 @@ if (Ti.App.isAndroid) {
                             title : "Copy to " + to_bundle.label,
                             order : order
                         });
-                        customCopy.setIcon(Omadi.display.getNodeTypeImagePath(to_type));
+                        //iconFile = Omadi.display.getNodeTypeImagePath(to_type);
+                        //customCopy.setIcon(iconFile.nativePath);
                         
                         androidMenuItemData[order] = {
                             type: curWin.type,

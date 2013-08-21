@@ -652,7 +652,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
                     // db.execute("UPDATE node SET changed=" + node.changed + ", changed_uid=" + node.changed_uid + ", title='" + dbEsc(node.title) + "', flag_is_updated=3, table_name='" + node.type + "', form_part=" + node.form_part + ", no_data_fields='" + node.no_data + "',viewed=" + node.viewed + " WHERE nid=" + saveNid);
                 // }
                 // else {
-                origNid = "null";
+                origNid = 0;
                 if(typeof node.origNid !== 'undefined'){
                     origNid = node.origNid;
                 }
@@ -1047,7 +1047,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                 node.perm_delete = result.fieldByName('perm_delete', Ti.Database.FIELD_TYPE_INT);
                 node.viewed = result.fieldByName('viewed', Ti.Database.FIELD_TYPE_STRING);
                 node.sync_hash = result.fieldByName('sync_hash', Ti.Database.FIELD_TYPE_STRING);
-                node.continuous_nid = result.fieldByName('continuous_nid', Ti.Database.FIELD_TYPE_INT);
+                node.continuous_nid = result.fieldByName('continuous_nid', Ti.Database.FIELD_TYPE_STRING);
             }
             else{
                 
@@ -1077,7 +1077,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                         node.perm_delete = result.fieldByName('perm_delete', Ti.Database.FIELD_TYPE_INT);
                         node.viewed = result.fieldByName('viewed', Ti.Database.FIELD_TYPE_STRING);
                         node.sync_hash = result.fieldByName('sync_hash', Ti.Database.FIELD_TYPE_STRING);
-                        node.continuous_nid = result.fieldByName('continuous_nid', Ti.Database.FIELD_TYPE_INT);
+                        node.continuous_nid = result.fieldByName('continuous_nid', Ti.Database.FIELD_TYPE_STRING);
                     }
                     else{
                          Omadi.service.sendErrorReport("unrecoverable node load 1 for nid " + nid);
@@ -1467,7 +1467,6 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
         db.close();
     }
 
-
 //Ti.API.debug(node);
     return node;
 };
@@ -1752,13 +1751,13 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                             nextFile.file_data = nextFile.file_data.getText();
                         }
                         catch(ex6){
-                            Omadi.service.sendErrorReport("Exception getting text of base64 photo: " + ex6); 
+                            Omadi.service.sendErrorReport("Exception getting text of base64 photo of size " + imageBlob.length + ": " + ex6); 
                             // This photo is not going to upload correctly
                             readyForUpload = false;
                         }
                     }
                     catch(ex5){
-                        Omadi.service.sendErrorReport("Exception base64 encoding photo: " + ex5); 
+                        Omadi.service.sendErrorReport("Exception base64 encoding photo of size " + imageBlob.length + ": " + ex5); 
                         // This photo is not going to upload correctly
                         readyForUpload = false;
                     }
@@ -2413,7 +2412,7 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                     
                                     dialog.show();
                                 }
-                                else if ( typeof Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid !== 'undefined' && alertReason) {
+                                else if ( typeof Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid !== 'undefined' && !alertReason) {
                                     Ti.API.debug("Deleting nid from error: " + updateNid);
         
                                     queries.push('DELETE FROM ' + type + ' WHERE nid=' + updateNid);

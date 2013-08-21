@@ -187,8 +187,7 @@ function addClockInClockOut() {"use strict";
            image: Omadi.display.getNodeTypeImagePath('timecard'),
            top: 9,
            left: '3%',
-           height: Ti.UI.SIZE,
-           width: Ti.UI.SIZE
+           width: 48
         });
         
         wrapper.add(image);
@@ -312,8 +311,7 @@ function addCompanyVehicle(){"use strict";
            image: Omadi.display.getNodeTypeImagePath('company_vehicle'),
            top: 9,
            left: '3%',
-           height: Ti.UI.SIZE,
-           width: Ti.UI.SIZE
+           width: 48
         });
         
         wrapper.add(image);
@@ -395,11 +393,10 @@ function addDrafts(){"use strict";
         });
         
         image = Ti.UI.createImageView({
-           image: '/images/drafts.png',
+           image: '/images/drafts_color.png',
            top: 9,
            left: '3%',
-           height: Ti.UI.SIZE,
-           width: Ti.UI.SIZE
+           width: 48
         });
         
         wrapper.add(image);
@@ -481,11 +478,10 @@ function addLocalPhotos(){"use strict";
         });
         
         image = Ti.UI.createImageView({
-           image: '/images/camera_icon.png',
+           image: '/images/camera_icon_color.png',
            top: 9,
            left: '3%',
-           height: Ti.UI.SIZE,
-           width: Ti.UI.SIZE
+           width: 48
         });
         
         wrapper.add(image);
@@ -555,9 +551,9 @@ function addDeleteAll(){"use strict";
     button.addEventListener('click', function(e) {
         dialog = Ti.UI.createAlertDialog({
             cancel : 1,
-            buttonNames : ['Yes', 'No'],
+            buttonNames : ['Delete It', 'Cancel'],
             message : 'This will delete any data not uploaded to the server, and this cannot be undone! Are you sure?',
-            title : 'Reset All Data'
+            title : 'Really Reset Everything?'
         });
     
         dialog.addEventListener('click', function(e) {
@@ -578,11 +574,10 @@ function addDeleteAll(){"use strict";
     });
     
     image = Ti.UI.createImageView({
-       image: '/images/delete_all_icon.png',
+       image: '/images/delete_all_icon_color.png',
        top: 2,
        left: '3%',
-       height: Ti.UI.SIZE,
-       width: Ti.UI.SIZE
+       width: 48
     });
     
     wrapper.add(image);
@@ -695,11 +690,10 @@ function addRefresh(){"use strict";
     });
     
     image = Ti.UI.createImageView({
-       image: '/images/refresh.png',
+       image: '/images/refresh_light_blue.png',
        top: 10,
        left: '3%',
-       height: Ti.UI.SIZE,
-       width: Ti.UI.SIZE
+       width: 48
     });
     
     wrapper.add(image);
@@ -771,11 +765,10 @@ function addLogout(){"use strict";
     });
     
     image = Ti.UI.createImageView({
-       image: '/images/logout_icon.png',
+       image: '/images/logout_icon_color.png',
        top: 2,
        left: '3%',
-       height: Ti.UI.SIZE,
-       width: Ti.UI.SIZE
+       width: 48
     });
     
     wrapper.add(image);
@@ -847,11 +840,10 @@ function addAbout(){"use strict";
     });
     
     image = Ti.UI.createImageView({
-       image: '/images/info_icon.png',
+       image: '/images/about_color.png',
        top: 2,
        left: '3%',
-       height: Ti.UI.SIZE,
-       width: Ti.UI.SIZE
+       width: 48
     });
     
     wrapper.add(image);
@@ -923,11 +915,10 @@ function addSettings(){"use strict";
     });
     
     image = Ti.UI.createImageView({
-       image: '/images/gear_48.png',
+       image: '/images/settings_color.png',
        top: 2,
        left: '3%',
-       height: Ti.UI.SIZE,
-       width: Ti.UI.SIZE
+       width: 48
     });
     
     wrapper.add(image);
