@@ -991,11 +991,10 @@ Omadi.service.photoUploadError = function(e){"use strict";
         Omadi.service.sendErrorReport("Upload failed exception: " + ex);
     }
     
-    if (Omadi.utils.isLoggedIn() && (numTries >= 4 || saveFailedUpload)) {
+    if (Omadi.utils.isLoggedIn() && saveFailedUpload) {
         Omadi.data.saveFailedUpload(photoId);
     }
     
-
     Ti.App.fireEvent("doneSendingPhotos");
     
     // if(this.error.toString().indexOf('Timeout') !== -1){
