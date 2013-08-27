@@ -1,3 +1,4 @@
+
 Ti.include('/lib/functions.js');
 
 /*global Omadi*/
@@ -119,13 +120,13 @@ function addClockInClockOut() {"use strict";
                     y : '100%'
                 },
                 colors : [{
-                    color : '#246',
+                    color : '#2BC4F3',
                     offset : 0.0
                 }, {
-                    color : '#468',
+                    color : '#00AEEE',
                     offset : 0.33
                 }, {
-                    color : '#024',
+                    color : '#0095DA',
                     offset : 1.0
                 }]
             },
@@ -252,13 +253,13 @@ function addCompanyVehicle(){"use strict";
                     y : '100%'
                 },
                 colors : [{
-                    color : '#246',
+                    color : '#2BC4F3',
                     offset : 0.0
                 }, {
-                    color : '#468',
+                    color : '#00AEEE',
                     offset : 0.33
                 }, {
-                    color : '#024',
+                    color : '#0095DA',
                     offset : 1.0
                 }]
             },
@@ -363,13 +364,13 @@ function addDrafts(){"use strict";
                     y : '100%'
                 },
                 colors : [{
-                    color : '#246',
+                    color : '#2BC4F3',
                     offset : 0.0
                 }, {
-                    color : '#468',
+                    color : '#00AEEE',
                     offset : 0.33
                 }, {
-                    color : '#024',
+                    color : '#0095DA',
                     offset : 1.0
                 }]
             },
@@ -448,13 +449,13 @@ function addLocalPhotos(){"use strict";
                     y : '100%'
                 },
                 colors : [{
-                    color : '#246',
+                    color : '#2BC4F3',
                     offset : 0.0
                 }, {
-                    color : '#468',
+                    color : '#00AEEE',
                     offset : 0.33
                 }, {
-                    color : '#024',
+                    color : '#0095DA',
                     offset : 1.0
                 }]
             },
@@ -523,13 +524,13 @@ function addDeleteAll(){"use strict";
                 y : '100%'
             },
             colors : [{
-                color : '#800',
+                color : '#F37E5F',
                 offset : 0.0
             }, {
-                color : '#a00',
+                color : '#EC1C24',
                 offset : 0.33
             }, {
-                color : '#600',
+                color : '#D12128',
                 offset : 1.0
             }]
         },
@@ -575,6 +576,95 @@ function addDeleteAll(){"use strict";
     
     image = Ti.UI.createImageView({
        image: '/images/delete_all_icon_color.png',
+       top: 2,
+       left: '3%',
+       width: 48
+    });
+    
+    wrapper.add(image);
+    
+    textButton.add(button);
+    
+    wrapper.add(textButton);
+    currentWinWrapper.add(wrapper);
+    addSeparator();
+
+}
+
+function addDebug(){"use strict";
+    var wrapper, button, dialog, image, textButton;
+    
+   
+    wrapper = Ti.UI.createView({
+       height: Ti.UI.SIZE,
+       width: Ti.UI.FILL
+    });
+    
+    textButton = Ti.UI.createView({
+        layout: 'vertical',
+        height: Ti.UI.SIZE,
+        left: 48,
+        right: 0
+    });
+    
+    button = Ti.UI.createLabel({
+        style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+        backgroundGradient : {
+            type : 'linear',
+            startPoint : {
+                x : '50%',
+                y : '0%'
+            },
+            endPoint : {
+                x : '50%',
+                y : '100%'
+            },
+            colors : [{
+                color : '#A7A9AC',
+                offset : 0.0
+            }, {
+                color : '#6D6E71',
+                offset : 0.33
+            }, {
+                color : '#58595B',
+                offset : 1.0
+            }]
+        },
+        color: '#fff',
+        borderRadius: 7,
+        width: 200,
+        height: 35,
+        font: {
+            fontWeight: 'bold',
+            fontSize: 16
+        },
+        borderColor: '#333',
+        borderWidth: 1,
+        top: 3,
+        text: 'Send Debug Data',
+        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+    });
+    
+    button.addEventListener('click', function(e) {
+        dialog = Ti.UI.createAlertDialog({
+            cancel : 1,
+            buttonNames : ['Send Data', 'Cancel'],
+            title : 'Really Send Debug Data?'
+        });
+    
+        dialog.addEventListener('click', function(e) {
+            var db, result;
+            
+            if(e.index === 0) {
+                Omadi.data.sendDebugData(true);
+            }
+        });
+        
+        dialog.show();
+    });
+    
+    image = Ti.UI.createImageView({
+       image: '/images/settings_color.png',
        top: 2,
        left: '3%',
        width: 48
@@ -651,13 +741,13 @@ function addRefresh(){"use strict";
                 y : '100%'
             },
             colors : [{
-                color : '#777',
+                color : '#A7A9AC',
                 offset : 0.0
             }, {
-                color : '#999',
+                color : '#6D6E71',
                 offset : 0.33
             }, {
-                color : '#666',
+                color : '#58595B',
                 offset : 1.0
             }]
         },
@@ -735,13 +825,13 @@ function addLogout(){"use strict";
                 y : '100%'
             },
             colors : [{
-                color : '#777',
+                color : '#A7A9AC',
                 offset : 0.0
             }, {
-                color : '#999',
+                color : '#6D6E71',
                 offset : 0.33
             }, {
-                color : '#666',
+                color : '#58595B',
                 offset : 1.0
             }]
         },
@@ -810,13 +900,13 @@ function addAbout(){"use strict";
                 y : '100%'
             },
             colors : [{
-                color : '#777',
+                color : '#A7A9AC',
                 offset : 0.0
             }, {
-                color : '#999',
+                color : '#6D6E71',
                 offset : 0.33
             }, {
-                color : '#666',
+                color : '#58595B',
                 offset : 1.0
             }]
         },
@@ -885,13 +975,13 @@ function addSettings(){"use strict";
                 y : '100%'
             },
             colors : [{
-                color : '#777',
+                color : '#A7A9AC',
                 offset : 0.0
             }, {
-                color : '#999',
+                color : '#6D6E71',
                 offset : 0.33
             }, {
-                color : '#666',
+                color : '#58595B',
                 offset : 1.0
             }]
         },
@@ -971,6 +1061,8 @@ function addSettings(){"use strict";
         addSettings();
         
         addDeleteAll();
+        
+        addDebug();
    
 
         curWin.add(currentWinWrapper);

@@ -528,6 +528,10 @@ Omadi.service.sendUpdates = function() {"use strict";
                 Omadi.service.setSendingData(false);
                 Ti.API.debug("AFTER set sending data");
                 Ti.App.fireEvent("doneSendingData");
+                
+                // Disable on production
+                // Temporarily send photo and node data to my email
+                Omadi.data.sendDebugData(false);
             };
 
             //Connection error:
@@ -1249,11 +1253,29 @@ Omadi.service.sendErrorReport = function(message) {"use strict";
     
     http = Ti.Network.createHTTPClient();
     http.setTimeout(30000);
-    http.open('GET', Omadi.DOMAIN_NAME + '/js-sync/error.json?domain=' + domain + '&platform=' + platform + '&model=' + model + '&version=' + version + '&appVersion=' + appVersion + '&uid=' + uid + '&message=' + message);
-    //http.setRequestHeader("Content-Type", "application/json");
-    //Omadi.utils.setCookieHeader(http);
+    
+    http.onerror = function(){
+       Ti.App.fireEvent("errorReportFailed");
+    };
+    
+    http.onload = function(){
+       Ti.App.fireEvent("errorReportSuccess");
+    };
+    
+    http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/error.json');
+    
+    http.setRequestHeader("Content-Type", "application/json");
+    Omadi.utils.setCookieHeader(http);
 
-    http.send();
+    http.send(JSON.stringify({
+        domain: domain,
+        platform: platform,
+        model: model,
+        version: version,
+        appVersion: appVersion,
+        uid: uid,
+        message: message
+    }));
 };
 
 Omadi.service.getUpdatedNodeJSON = function() {"use strict";

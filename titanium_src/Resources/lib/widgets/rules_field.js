@@ -101,7 +101,9 @@ Omadi.widgets.rules_field = {
                                     for (key in nodeValue[i].node_types) {
                                         if (nodeValue[i].node_types.hasOwnProperty(key)) {
                                             result = db.execute('SELECT display_name FROM bundles WHERE bundle_name="' + key + '"');
-                                            formTypes.push(result.fieldByName('display_name'));
+                                            if(result.isValidRow()){
+                                                formTypes.push(result.fieldByName('display_name'));
+                                            }
                                             result.close();
                                         }
                                     }
