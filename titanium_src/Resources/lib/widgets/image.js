@@ -68,7 +68,7 @@ Omadi.widgets.image = {
     },
     getNewElement : function(node, instance) {"use strict";
         var settings, widgetView, dbValue, imageData, degreeData, i, j, localDelta, 
-            numImagesShowing = 0, contentWidth, imageNid, deltaData;
+            numImagesShowing = 0, contentWidth, imageNid, deltaData, imageDataAdded;
 
         dbValue = [];
         imageData = [];
@@ -106,37 +106,53 @@ Omadi.widgets.image = {
         if(typeof Ti.UI.currentWindow.origNid !== 'undefined'){
             imageNid = Ti.UI.currentWindow.origNid;
         }
+        
+        imageDataAdded = [];
+        numImagesShowing = 0;
 
         if (Omadi.utils.isArray(dbValue)) {
             for ( i = 0; i < dbValue.length; i++) {
                 if (dbValue[i] > 0) {
                     Ti.API.debug("Adding image to scroll view");
                     
+                    // See if any non-uploaded photos need to replace the "Uploading photo thumbnail"
                     localDelta = null;
                     for(j = 0; j < deltaData.length; j ++){
                         if(deltaData[j] == i){
                             localDelta = j;
+                            break;
                         }
                     }
                     
                     if(localDelta === null){
+                        Ti.API.debug("Uploaded index: " + i);
                         widgetView.add(Omadi.widgets.image.getImageView(widgetView, i, imageNid, dbValue[i], 0));
                     }
                     else{
+                        Ti.API.debug("Local delta index: " + localDelta + " and index: " + i);
                         widgetView.add(Omadi.widgets.image.getImageView(widgetView, i, imageNid, imageData[localDelta], degreeData[localDelta]));
-                    }   
+                        imageDataAdded.push(localDelta);
+                    }
+                    
+                    numImagesShowing ++;   
                 }
             }
-            numImagesShowing = dbValue.length;
         }
 
-        // if (Omadi.utils.isArray(imageData)) {
-// 
-            // for ( i = 0; i < imageData.length; i++) {
-                // widgetView.add(Omadi.widgets.image.getImageView(widgetView, numImagesShowing + i, imageNid, imageData[i], degreeData[i]));
-            // }
-            // numImagesShowing += imageData.length;
-        // }
+        Ti.API.debug("Num images showing 1 : " + numImagesShowing);
+    
+        if (Omadi.utils.isArray(imageData) && imageDataAdded.length < imageData.length) {
+
+            for ( i = 0; i < imageData.length; i++) {
+                if(imageDataAdded.indexOf(i) == -1){
+                    Ti.API.debug("Adding local image index: " + numImagesShowing);
+                    widgetView.add(Omadi.widgets.image.getImageView(widgetView, numImagesShowing, imageNid, imageData[i], degreeData[i]));
+                    numImagesShowing ++;
+                }
+            }
+        }
+        
+        Ti.API.debug("Num images showing: " + numImagesShowing);
 
         contentWidth = numImagesShowing * 110;
 

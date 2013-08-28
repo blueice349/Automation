@@ -1095,8 +1095,12 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                     }
                 }
                 else{
-                   Omadi.service.sendErrorReport("unrecoverable node load 2 for nid " + nid);
-                   node = null;
+                    
+                    if(nid <= 0){
+                        Omadi.service.sendErrorReport("unrecoverable node load 2 for nid " + nid);
+                    }
+                    
+                    node = null;
                 }
             }
             
@@ -1641,7 +1645,7 @@ Omadi.data.getFileArray = function(onlyUploadable){"use strict";
                     node = Omadi.data.nodeLoad(nextFile.nid);
                     
                     if(node !== null){
-                        // If this is not a draft, send up the info
+                       
                         message = "Over 10 tries: " + JSON.stringify(node);
                         // Limit node message to 2000 characters
                         message = message.substring(0, 2000);
@@ -1867,6 +1871,9 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                         // This photo is not going to upload correctly
                         readyForUpload = false;
                         errorOccurred = true;
+                        
+                        // A memory problem is usually the culprit here.
+                        restartSuggested = true;
                     }
                 }
                 
@@ -2537,17 +2544,7 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                             //Ti.API.debug(Omadi.service.fetchedJSON.node[type].insert[i]);  
                             if(typeof Omadi.service.fetchedJSON.node[type].insert[i].__error_reasons !== 'undefined'){
                                 reason = Omadi.service.fetchedJSON.node[type].insert[i].__error_reasons.join(", ");
-                                alertReason = true;
-                                
-                                for(reasonIndex in Omadi.service.fetchedJSON.node[type].insert[i].__error_reasons){
-                                    if(Omadi.service.fetchedJSON.node[type].insert[i].__error_reasons.hasOwnProperty(reasonIndex)){
-                                        if(Omadi.service.fetchedJSON.node[type].insert[i].__error_reasons[reasonIndex] == 'duplicate'){
-                                            alertReason = false;
-                                        }
-                                    }
-                                }
-                                
-                                Ti.API.debug("Alert Reason: " + alertReason);
+                               
                                 Ti.API.debug("Reason: " + reason);
                                 
                                 if(typeof Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid !== 'undefined'){
@@ -2557,26 +2554,18 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                     updateNid = Omadi.service.fetchedJSON.node[type].insert[i].nid;
                                 }
                                 
-                                if(alertReason){
-                                    reason += " The entry has been saved as a draft.";
-                                    queries.push('UPDATE node SET flag_is_updated=3 WHERE nid=' + updateNid);
-                                    
-                                    dialog = Ti.UI.createAlertDialog({
-                                        title: "Recent Data Not Synched",
-                                        message: reason,
-                                        ok: 'Go to Drafts'
-                                    });
-                                    
-                                    dialog.addEventListener("click", Omadi.display.openDraftsWindow);
-                                    
-                                    dialog.show();
-                                }
-                                else if ( typeof Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid !== 'undefined' && !alertReason) {
-                                    Ti.API.debug("Deleting nid from error: " + updateNid);
-        
-                                    queries.push('DELETE FROM ' + type + ' WHERE nid=' + updateNid);
-                                    queries.push('DELETE FROM node WHERE nid=' + updateNid);
-                                }
+                                reason += " The entry has been saved as a draft.";
+                                queries.push('UPDATE node SET flag_is_updated=3 WHERE nid=' + updateNid);
+                                
+                                dialog = Ti.UI.createAlertDialog({
+                                    title: "Recent Data Not Synched",
+                                    message: reason,
+                                    ok: 'Go to Drafts'
+                                });
+                                
+                                dialog.addEventListener("click", Omadi.display.openDraftsWindow);
+                                
+                                dialog.show();
                             }
                         }
                         else{

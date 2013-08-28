@@ -198,10 +198,9 @@ var a = Titanium.UI.createAlertDialog({
     buttonNames : ['OK']
 });
 
+var watermarkImage = null;
 var lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp();
-
 var networkStatusAnimation = Titanium.UI.createAnimation();
-
 
 function insertBundleIcon(imageView, type){"use strict";
     var http;
@@ -258,10 +257,31 @@ function insertBundleIcon(imageView, type){"use strict";
     http.send();
 }
 
+function displayWatermark(){"use strict";
+    var minWidth;
+    
+    minWidth = Math.min(Ti.Platform.displayCaps.platformHeight, Ti.Platform.displayCaps.platformWidth);
+    
+    if(watermarkImage === null){
+        watermarkImage = Ti.UI.createImageView({
+            image: '/images/watermark_600x600.png',
+            width: Math.round(minWidth * 0.75),
+            height: Math.round(minWidth * 0.75)
+        });
+    }
+    
+    listView.setVisible(false);
+    listView.setHeight(0);
+    
+    watermarkImage.setVisible(true);
+    watermarkImage.setHeight(minWidth * 0.75);
+}
+
 function displayBundleList() {"use strict";
     var db, result, dataRows, name_table, i, j, k, display, 
         description, row_t, icon, titleLabel, plusButton, 
-        can_view, can_create, data, colorGroups, item, colors, iconFile;
+        can_view, can_create, data, colorGroups, item, 
+        colors, iconFile, numBundles;
 
     db = Omadi.utils.openMainDatabase();
     result = db.execute('SELECT * FROM bundles ORDER BY display_name ASC');
@@ -277,7 +297,9 @@ function displayBundleList() {"use strict";
       red: [],
       gray: []  
     };
-
+    
+    numBundles = 0;
+    
     while (result.isValidRow()) {
         
         item = {
@@ -296,85 +318,100 @@ function displayBundleList() {"use strict";
             colorGroups.gray.push(item);
         }
         
+        numBundles ++;
+        
         result.next();
     }
     result.close();
-
     db.close();
     
-    colors = ["light_blue", "green", "dark_blue", "purple", "orange", "red", "gray"];
+    Ti.API.info("Num Bundles: " + numBundles);
     
-    for(i = 0; i < colors.length; i ++){
-        if(colorGroups[colors[i]].length > 0){
-            for(j = 0; j < colorGroups[colors[i]].length; j ++){
-                item = colorGroups[colors[i]][j];
+    if(numBundles == 0){
+        
+        displayWatermark();
+    }
+    else{
+        colors = ["light_blue", "green", "dark_blue", "purple", "orange", "red", "gray"];
+        
+        for(i = 0; i < colors.length; i ++){
+            if(colorGroups[colors[i]].length > 0){
+                for(j = 0; j < colorGroups[colors[i]].length; j ++){
+                    item = colorGroups[colors[i]][j];
+                
+                    if (item.can_view === 1) {
             
-                if (item.can_view === 1) {
-        
-                    row_t = Ti.UI.createTableViewRow({
-                        height : 53,
-                        display : item.display,
-                        name : item.display,
-                        desc : description,
-                        name_table : item.name_table,
-                        show_plus : (item.can_create === 1 ? true : false)
-                    });
-                    
-                    icon = Titanium.UI.createImageView({
-                        width : 42,
-                        height : 42,
-                        top : 6,
-                        left : 5,
-                        desc : description
-                    });
-                    
-                    iconFile = Omadi.display.getNodeTypeImagePath(item.name_table);
-                    if(iconFile.exists() && iconFile.isFile()){
-                        icon.image = iconFile;
-                    }
-                    else{
-                        icon.image = '/images/icon_default.png';
-                        
-                        insertBundleIcon(icon, item.name_table, colors[i]);
-                    }
-        
-                    titleLabel = Titanium.UI.createLabel({
-                        text : item.display,
-                        font : {
-                            fontSize : 23,
-                            fontWeight: 'bold'
-                        },
-                        width : '82%',
-                        textAlign : 'left',
-                        left : 55,
-                        height : Ti.UI.SIZE,
-                        color : '#000',
-                        desc : item.description
-                    });
-        
-                    row_t.add(icon);
-                    row_t.add(titleLabel);
-        
-                    if (item.can_create === 1) {
-                        plusButton = Titanium.UI.createButton({
-                            backgroundImage : '/images/plus_btn_light_gray.png',
-                            //backgroundImage : '/images/plus_btn_' + colors[i] + '.png',
-                            backgroundSelectedImage : '/images/plus_btn_dark_gray.png',
-                            width : 63,
-                            height : 42,
-                            right : 0,
-                            is_plus : true
+                        row_t = Ti.UI.createTableViewRow({
+                            height : 53,
+                            display : item.display,
+                            name : item.display,
+                            desc : description,
+                            name_table : item.name_table,
+                            show_plus : (item.can_create === 1 ? true : false)
                         });
-                        row_t.add(plusButton);
+                        
+                        icon = Titanium.UI.createImageView({
+                            width : 42,
+                            height : 42,
+                            top : 6,
+                            left : 5,
+                            desc : description
+                        });
+                        
+                        iconFile = Omadi.display.getNodeTypeImagePath(item.name_table);
+                        if(iconFile.exists() && iconFile.isFile()){
+                            icon.image = iconFile;
+                        }
+                        else{
+                            icon.image = '/images/icon_default.png';
+                            
+                            insertBundleIcon(icon, item.name_table, colors[i]);
+                        }
+            
+                        titleLabel = Titanium.UI.createLabel({
+                            text : item.display,
+                            font : {
+                                fontSize : 23,
+                                fontWeight: 'bold'
+                            },
+                            width : '82%',
+                            textAlign : 'left',
+                            left : 55,
+                            height : Ti.UI.SIZE,
+                            color : '#000',
+                            desc : item.description
+                        });
+            
+                        row_t.add(icon);
+                        row_t.add(titleLabel);
+            
+                        if (item.can_create === 1) {
+                            plusButton = Titanium.UI.createButton({
+                                backgroundImage : '/images/plus_btn_light_gray.png',
+                                //backgroundImage : '/images/plus_btn_' + colors[i] + '.png',
+                                backgroundSelectedImage : '/images/plus_btn_dark_gray.png',
+                                width : 63,
+                                height : 42,
+                                right : 0,
+                                is_plus : true
+                            });
+                            row_t.add(plusButton);
+                        }
+            
+                        dataRows.push(row_t);
                     }
-        
-                    dataRows.push(row_t);
                 }
             }
         }
+        
+        //dataRows.sort(Omadi.utils.sortByName);
+        listView.setData(dataRows);
+        listView.setHeight(null);
+        listView.setVisible(true);
+        
+        watermarkImage.setHeight(0);
+        watermarkImage.setVisible(false);
     }
-    //dataRows.sort(Omadi.utils.sortByName);
-    listView.setData(dataRows);
 }
 
 function setupAndroidMenu() {"use strict";
@@ -828,17 +865,18 @@ function fullUpdateFromMenu(e){"use strict";
     for(i = 0; i < fileIds.length; i ++){
         Omadi.data.saveFailedUpload(fileIds[i], false);
     }
-
+    
+    
+    
     if (Ti.App.isAndroid) {
         //Remove the database
         db.remove();
         db.close();
     }
     else {
-        dbFile = db.getFile();
+        // The file isn't actually being deleted
+        db.file.deleteFile();
         db.close();
-        //phisically removes the file
-        dbFile.deleteFile();
     }
 
     // Install database with an empty version
@@ -849,12 +887,15 @@ function fullUpdateFromMenu(e){"use strict";
     db = Omadi.utils.openGPSDatabase();
     db.execute('DELETE FROM alerts');
     db.close();
-
-    listView.setData([]);
+    
+    displayWatermark();
     
     setupBottomButtons();
 
     Omadi.data.setUpdating(false);
+    
+    Omadi.data.setLastUpdateTimestamp(0);
+    
     Omadi.service.checkUpdate('from_menu');
 }
 
@@ -923,6 +964,8 @@ function showContinuousSavedNode(){"use strict";
         });
     }
     
+    displayWatermark();
+    
     // Don't show an alert immediately after the user logs in
     nowTimestamp = Omadi.utils.getUTCTimestamp();
     Ti.App.Properties.setString("last_alert_popup", nowTimestamp);
@@ -951,9 +994,9 @@ function showContinuousSavedNode(){"use strict";
     headerListView.add(networkStatusView);
     headerListView.add(loggedView);
     headerListView.add(listView);
+    headerListView.add(watermarkImage);
 
     curWin.add(headerListView);
-    
 
     if (lastSyncTimestamp == 0) {
         db = Omadi.utils.openMainDatabase();

@@ -973,9 +973,9 @@ Omadi.service.photoUploadError = function(e){"use strict";
     
         subDB.execute("UPDATE _files SET uploading = 0 WHERE id = " + photoId);
         
-        if(incrementTries){
-            subDB.execute("UPDATE _files SET tries = (tries + 1) where id=" + photoId);
-        }
+        //if(incrementTries){
+        //    subDB.execute("UPDATE _files SET tries = (tries + 1) where id=" + photoId);
+        //}
     
         subResult = subDB.execute("SELECT id FROM _files WHERE nid > 0");
         uploadMore = (subResult.rowCount > 0 ? true : false);
