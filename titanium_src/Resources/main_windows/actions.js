@@ -771,7 +771,6 @@ function addRefresh(){"use strict";
         Omadi.service.checkUpdate();
         
         Ti.App.removeEventListener('finishedDataSync', refreshCallbackDraft);
-        
         Ti.App.addEventListener('finishedDataSync', refreshCallbackDraft);
         
         Ti.UI.currentWindow.addEventListener('close', function(){

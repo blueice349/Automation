@@ -320,8 +320,6 @@ Omadi.data.deleteContinuousNodes = function(){"use strict";
           
           Ti.API.debug("DELETING: " + deleteNids[i]);
           Omadi.data.deleteNode(deleteNids[i]);
-          
-          
       }
   }
 };
@@ -969,14 +967,20 @@ Omadi.data.saveFailedUpload = function(photoId, showMessage) {"use strict";
 };
 
 Omadi.data.deletePhotoUploadByPath = function(filePath, deleteFile){"use strict";
-    var db, result, id;
+    var db, result, id, nid, delta;
     
     id = null;
     db = Omadi.utils.openListDatabase();
-    result = db.execute("SELECT id FROM _files WHERE file_path = '" + dbEsc(filePath) + "'");
+    result = db.execute("SELECT id, nid, delta FROM _files WHERE file_path = '" + dbEsc(filePath) + "'");
     if(result.isValidRow()){
         id = result.fieldByName('id', Ti.Database.FIELD_TYPE_INT);
+        nid = result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT);
+        delta = result.fieldByName('delta', Ti.Database.FIELD_TYPE_INT);
+        
+        // Move over the other photos still in the queue for uploads
+        db.execute("UPDATE _files SET delta = (delta - 1) WHERE nid = " + nid + " AND delta > " + delta);
     }
+    result.close();
     db.close();
     
     if(id !== null){
@@ -1405,11 +1409,13 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
 
                                 node[field_name].imageData = [];
                                 node[field_name].degrees = [];
+                                node[field_name].deltas = [];
                                 
                                 if (subResult.rowCount > 0) {
                                     while (subResult.isValidRow()) {
                                         
                                         node[field_name].imageData.push(subResult.fieldByName('file_path'));
+                                        node[field_name].deltas.push(subResult.fieldByName('delta'));
                                         node[field_name].degrees.push(subResult.fieldByName('degrees', Ti.Database.FIELD_TYPE_INT));
                                         
                                         subResult.next();
@@ -1610,21 +1616,23 @@ Omadi.data.getFileArray = function(onlyUploadable){"use strict";
                     now = Omadi.utils.getUTCTimestamp();
                     if(nextFile.timestamp < now - 1800){
                         // If the file was done over 30 minutes ago, find out more
-                        node = Omadi.data.nodeLoad(nextFile.nid);
-                        if(node !== null){
-                            if(node.flag_is_updated != 3){
-                                // If this is not a draft, send up the info
-                                message = "Not a negative draft: " + JSON.stringify(node);
-                                // Limit node message to 2000 characters
-                                message = message.substring(0, 2000);
+                        if(nextFile.nid != -1000000){
+                            node = Omadi.data.nodeLoad(nextFile.nid);
+                            if(node !== null){
+                                if(node.flag_is_updated != 3){
+                                    // If this is not a draft, send up the info
+                                    message = "Not a negative draft: " + JSON.stringify(node);
+                                    // Limit node message to 2000 characters
+                                    message = message.substring(0, 2000);
+                                    message += JSON.stringify(nextFile);
+                                    Omadi.service.sendErrorReport(message);
+                                }
+                            }
+                            else{
+                                message = "Null negative Node with nid " + nextFile.nid + " ";
                                 message += JSON.stringify(nextFile);
                                 Omadi.service.sendErrorReport(message);
                             }
-                        }
-                        else{
-                            message = "Null negative Node with nid " + nextFile.nid + " ";
-                            message += JSON.stringify(nextFile);
-                            Omadi.service.sendErrorReport(message);
                         }
                     }
                 }
@@ -1932,6 +1940,9 @@ Omadi.data.sendDebugData = function(showResponse){"use strict";
     var message, files, db, result, nids, i;
     
     message = "--- DEBUG DATA --- ";
+    if(showResponse){
+        message += " --- USER SUBMITTED --- ";    
+    }
     
     files = Omadi.data.getFileArray(false);
     
@@ -1953,7 +1964,10 @@ Omadi.data.sendDebugData = function(showResponse){"use strict";
     }
     
     if(showResponse){
+        Ti.App.removeEventListener('errorReportSuccess', Omadi.data.debugDataSent);
         Ti.App.addEventListener('errorReportSuccess', Omadi.data.debugDataSent);
+        
+        Ti.App.removeEventListener('errorReportFailed', Omadi.data.debugDataFailed);
         Ti.App.addEventListener('errorReportFailed', Omadi.data.debugDataFailed);
     }
     

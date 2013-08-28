@@ -757,6 +757,7 @@ function afterUploadCloseMainMenu(){
 
 function loggingOutMainMenu(e){"use strict";
     var lastUploadStartTimestamp;
+    
     Ti.UI.currentWindow.close();
     
     lastUploadStartTimestamp = Omadi.service.getLastUploadStartTimestamp();
@@ -772,7 +773,10 @@ function loggingOutMainMenu(e){"use strict";
         Ti.UI.currentWindow.setVisible(false);
         Ti.App.closeWindowAfterUpload = true;
         
+        Ti.App.removeEventListener('photoUploaded', afterUploadCloseMainMenu);
         Ti.App.addEventListener('photoUploaded', afterUploadCloseMainMenu);
+        
+        Ti.App.removeEventListener('doneSendingPhotos', afterUploadCloseMainMenu);
         Ti.App.addEventListener('doneSendingPhotos', afterUploadCloseMainMenu);
         
         // After 5 minutes, make sure the close listeners are removed if the events take too long to happen 
@@ -964,23 +968,48 @@ function showContinuousSavedNode(){"use strict";
     }
 
     setupBottomButtons();
-
+    
+    // First try to remove the listener, as the app may have crashed, and the listeners aren't removed
+    
+    Ti.App.removeEventListener("doneSendingData", doneSendingDataMainMenu);
     Ti.App.addEventListener("doneSendingData", doneSendingDataMainMenu);
+    
+    Ti.App.removeEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
     Ti.App.addEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
+    
+    Ti.App.removeEventListener("sendingData", sendingDataMainMenu);
     Ti.App.addEventListener("sendingData", sendingDataMainMenu);
+    
+    Ti.App.removeEventListener('loggingOut', loggingOutMainMenu);
     Ti.App.addEventListener('loggingOut', loggingOutMainMenu);
+    
+    Ti.App.removeEventListener('openForm', openFormCallback);
     Ti.App.addEventListener('openForm', openFormCallback);
+    
+    Ti.App.removeEventListener('sendUpdates', Omadi.service.sendUpdates);
     Ti.App.addEventListener('sendUpdates', Omadi.service.sendUpdates);
+    
+    Ti.App.removeEventListener('full_update_from_menu', fullUpdateFromMenu);
     Ti.App.addEventListener('full_update_from_menu', fullUpdateFromMenu);
+    
+    Ti.App.removeEventListener('finishedDataSync', setupBottomButtons);
     Ti.App.addEventListener('finishedDataSync', setupBottomButtons);
+    
+    Ti.App.removeEventListener('normal_update_from_menu', normalUpdateFromMenu);
     Ti.App.addEventListener('normal_update_from_menu', normalUpdateFromMenu);
+    
+    Ti.App.removeEventListener('showNextAlertInQueue', showNextAlertInQueue);
     Ti.App.addEventListener('showNextAlertInQueue', showNextAlertInQueue);
+    
+    Ti.App.removeEventListener("syncInstallComplete", displayBundleList);
     Ti.App.addEventListener("syncInstallComplete", displayBundleList);
     
     if(Ti.App.isIOS){
+        Ti.App.removeEventListener('resume', Omadi.service.checkUpdate);
         Ti.App.addEventListener('resume', Omadi.service.checkUpdate);
     }
     
+    Ti.Network.removeEventListener('change', networkChangedMainMenu);
     Ti.Network.addEventListener('change', networkChangedMainMenu);
 
     listView.addEventListener('click', function(e) {

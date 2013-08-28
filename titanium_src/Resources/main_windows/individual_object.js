@@ -25,18 +25,13 @@ function loggingOutIndividualObject(){"use strict";
 }
 
 function savedNodeIndividualObject(){"use strict";
-    
-    if(Ti.App.isAndroid){
-        Ti.UI.currentWindow.close();
-    }
-    else{
-        Ti.UI.currentWindow.hide();
-        // Close the window after the maximum timeout for a node save
-        setTimeout(Ti.UI.currentWindow.close, 65000);
-    }
+    Ti.UI.currentWindow.close();
 }
 
+Ti.App.removeEventListener('loggingOut', loggingOutIndividualObject);
 Ti.App.addEventListener('loggingOut', loggingOutIndividualObject);
+
+Ti.App.removeEventListener("savedNode", savedNodeIndividualObject);
 Ti.App.addEventListener("savedNode", savedNodeIndividualObject);
 
 function form_min(min) {"use strict";

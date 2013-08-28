@@ -45,15 +45,7 @@ function addiOSToolbar() {"use strict";
 }
 
 function savedNodeTagsReady(){"use strict";
-        
-    if(Ti.App.isAndroid){
-        Ti.UI.currentWindow.close();
-    }
-    else{
-        Ti.UI.currentWindow.hide();
-        // Close the window after the maximum timeout for a node save
-        setTimeout(Ti.UI.currentWindow.close, 65000);
-    }
+    Ti.UI.currentWindow.close();
 }
 
 function loggingOutTagsReady(){"use strict";
@@ -63,9 +55,11 @@ function loggingOutTagsReady(){"use strict";
 (function(){"use strict";
     var expiredTags, data, i, row, textView, rowImg, titleLabel, backgroundColor;
     
+    Ti.App.removeEventListener("savedNode", savedNodeTagsReady);
     Ti.App.addEventListener("savedNode", savedNodeTagsReady);
-    Ti.App.addEventListener("loggingOut", loggingOutTagsReady);
     
+    Ti.App.removeEventListener("loggingOut", loggingOutTagsReady);
+    Ti.App.addEventListener("loggingOut", loggingOutTagsReady);
     
     expiredTags = Omadi.bundles.tag.getExpiredTags();
     

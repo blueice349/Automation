@@ -488,7 +488,10 @@ function refreshUIAlertsMessageCenter(e){"use strict";
 ( function() {"use strict";
 
     
+    Ti.App.removeEventListener('loggingOut', logginOutMessageCenter);
     Ti.App.addEventListener('loggingOut', logginOutMessageCenter);
+    
+    Ti.App.removeEventListener("savedNode", savedNodeMessageCenter);
     Ti.App.addEventListener("savedNode", savedNodeMessageCenter);
     
     if (Ti.App.isAndroid) {

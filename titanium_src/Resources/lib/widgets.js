@@ -595,8 +595,6 @@ Omadi.widgets.getTextField = function(instance){"use strict";
         Omadi.widgets.currentlyFocusedField = e.source; 
     });
     
-    //Ti.App.addEventListener('customCopy')
-    
     return textField;
 };
 

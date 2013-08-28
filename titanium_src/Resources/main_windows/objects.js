@@ -35,6 +35,7 @@ function closeWindowObjects(){"use strict";
     Ti.UI.currentWindow.close();   
 }
 
+Ti.App.removeEventListener('loggingOut', closeWindowObjects);
 Ti.App.addEventListener('loggingOut', closeWindowObjects);
 
 // Do not close this window when a node is saved as it could close a next form part unexpectedly

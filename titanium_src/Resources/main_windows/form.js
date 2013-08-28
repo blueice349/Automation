@@ -1935,6 +1935,7 @@ function continuousSave(){"use strict";
             win.nid = 'new';
             win.form_part = 0;
             
+            Ti.App.removeEventListener("formFullyLoaded", formFullyLoadedForm);
             Ti.App.addEventListener("formFullyLoaded", formFullyLoadedForm);
             
             Ti.UI.currentWindow.addEventListener('close', function(){
@@ -1950,6 +1951,7 @@ function continuousSave(){"use strict";
     if(win.nid < 0){
         Ti.API.error("WIN NID: " + win.nid);
         
+        Ti.App.removeEventListener('switchedItUp', switchedNodeIdForm);
         Ti.App.addEventListener('switchedItUp', switchedNodeIdForm);
         
         Ti.UI.currentWindow.addEventListener('close', function(){
@@ -1957,7 +1959,10 @@ function continuousSave(){"use strict";
         });
     }
     
+    Ti.App.removeEventListener('photoUploaded', photoUploadedForm);
     Ti.App.addEventListener('photoUploaded', photoUploadedForm);
+    
+    Ti.App.removeEventListener('loggingOut', loggingOutForm);
     Ti.App.addEventListener('loggingOut', loggingOutForm);
     
     if(Ti.UI.currentWindow.nid != "new" && Ti.UI.currentWindow.nid > 0){

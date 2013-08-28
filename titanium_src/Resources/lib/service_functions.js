@@ -622,6 +622,7 @@ Omadi.service.logout = function() {"use strict";
     
     if(Omadi.bundles.companyVehicle.getCurrentVehicleNid > 0){
         
+        Ti.App.removeEventListener('exitedVehicle', Omadi.service.sendLogoutRequest);
         Ti.App.addEventListener('exitedVehicle', Omadi.service.sendLogoutRequest);
         
         Omadi.bundles.companyVehicle.exitVehicle();

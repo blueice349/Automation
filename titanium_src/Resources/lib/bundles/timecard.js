@@ -127,6 +127,7 @@ Omadi.bundles.timecard.doClockIn = function() {"use strict";
         form_part : 0
     };
     
+    Ti.App.removeEventListener('doneSendingData', Omadi.bundles.timecard.removeStatus);
     Ti.App.addEventListener('doneSendingData', Omadi.bundles.timecard.removeStatus);
 
     Omadi.data.trySaveNode(node);
@@ -191,6 +192,7 @@ Omadi.bundles.timecard.doClockOut = function(logoutNext) {"use strict";
     lastNode.viewed = now;
     lastNode.form_part = 1;
     
+    Ti.App.removeEventListener('doneSendingData', Omadi.bundles.timecard.removeStatus);
     Ti.App.addEventListener('doneSendingData', Omadi.bundles.timecard.removeStatus);
     
     Omadi.data.trySaveNode(lastNode);
@@ -200,6 +202,7 @@ Omadi.bundles.timecard.doClockOut = function(logoutNext) {"use strict";
     if(logoutNext){
     
         if(Ti.Network.online){
+            Ti.App.removeEventListener("doneSendingData", Omadi.bundles.timecard.logout);
             Ti.App.addEventListener("doneSendingData", Omadi.bundles.timecard.logout);
         }
         else{

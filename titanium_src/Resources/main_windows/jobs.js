@@ -274,14 +274,7 @@ function refreshJobsTable(){"use strict";
 
 function savedNodeJobs(){"use strict";
         
-    if(Ti.App.isAndroid){
-        Ti.UI.currentWindow.close();
-    }
-    else{
-        Ti.UI.currentWindow.hide();
-        // Close the window after the maximum timeout for a node save
-        setTimeout(Ti.UI.currentWindow.close, 65000);
-    }
+    Ti.UI.currentWindow.close();
 }
 
 function finishedDataSyncJobs(){"use strict";
@@ -299,8 +292,13 @@ function loggingOutJobs(){"use strict";
         newJobsSection, sections, currentUserJobsSection, currentUserJobs, 
         dispatchBundle, separator, whiteSpaceTest;
     
+    Ti.App.removeEventListener("savedNode", savedNodeJobs);
     Ti.App.addEventListener("savedNode", savedNodeJobs);
+    
+    Ti.App.removeEventListener('finishedDataSync', finishedDataSyncJobs);
     Ti.App.addEventListener('finishedDataSync', finishedDataSyncJobs);
+    
+    Ti.App.removeEventListener('loggingOut', loggingOutJobs);
     Ti.App.addEventListener('loggingOut', loggingOutJobs);
     
     wrapperView = Ti.UI.createView({

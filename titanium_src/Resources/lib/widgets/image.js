@@ -67,11 +67,13 @@ Omadi.widgets.image = {
         return fieldView;
     },
     getNewElement : function(node, instance) {"use strict";
-        var settings, widgetView, dbValue, imageData, degreeData, i, numImagesShowing = 0, contentWidth, imageNid;
+        var settings, widgetView, dbValue, imageData, degreeData, i, j, localDelta, 
+            numImagesShowing = 0, contentWidth, imageNid, deltaData;
 
         dbValue = [];
         imageData = [];
         degreeData = [];
+        deltaData = [];
 
         if ( typeof node[instance.field_name] !== 'undefined') {
             if ( typeof node[instance.field_name].dbValues !== 'undefined') {
@@ -80,6 +82,7 @@ Omadi.widgets.image = {
             if ( typeof node[instance.field_name].imageData !== 'undefined') {
                 imageData = node[instance.field_name].imageData;
                 degreeData = node[instance.field_name].degrees;
+                deltaData = node[instance.field_name].deltas;
             }
         }
 
@@ -108,20 +111,32 @@ Omadi.widgets.image = {
             for ( i = 0; i < dbValue.length; i++) {
                 if (dbValue[i] > 0) {
                     Ti.API.debug("Adding image to scroll view");
-                     
-                    widgetView.add(Omadi.widgets.image.getImageView(widgetView, i, imageNid, dbValue[i], 0));
+                    
+                    localDelta = null;
+                    for(j = 0; j < deltaData.length; j ++){
+                        if(deltaData[j] == i){
+                            localDelta = j;
+                        }
+                    }
+                    
+                    if(localDelta === null){
+                        widgetView.add(Omadi.widgets.image.getImageView(widgetView, i, imageNid, dbValue[i], 0));
+                    }
+                    else{
+                        widgetView.add(Omadi.widgets.image.getImageView(widgetView, i, imageNid, imageData[localDelta], degreeData[localDelta]));
+                    }   
                 }
             }
             numImagesShowing = dbValue.length;
         }
 
-        if (Omadi.utils.isArray(imageData)) {
-
-            for ( i = 0; i < imageData.length; i++) {
-                widgetView.add(Omadi.widgets.image.getImageView(widgetView, numImagesShowing + i, imageNid, imageData[i], degreeData[i]));
-            }
-            numImagesShowing += imageData.length;
-        }
+        // if (Omadi.utils.isArray(imageData)) {
+// 
+            // for ( i = 0; i < imageData.length; i++) {
+                // widgetView.add(Omadi.widgets.image.getImageView(widgetView, numImagesShowing + i, imageNid, imageData[i], degreeData[i]));
+            // }
+            // numImagesShowing += imageData.length;
+        // }
 
         contentWidth = numImagesShowing * 110;
 

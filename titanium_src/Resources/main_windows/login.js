@@ -267,9 +267,18 @@ function updateUploadBytes(){"use strict";
             
             scrollView.animate(uploadAnimation);
             
+            Ti.App.removeEventListener('bytesStreamed', bytesStreamedLogin);
             Ti.App.addEventListener('bytesStreamed', bytesStreamedLogin);
         }
     }
+}
+
+function loggingOutLoginScreen(){"use strict";
+    
+    updateUploadBytes();
+    Omadi.service.doBackgroundUploads = true;
+    
+    Ti.App.backgroundPhotoUploadCheck = setInterval(Omadi.service.uploadBackgroundFile, 60000);
 }
 
 ( function() {"use strict";
@@ -318,10 +327,9 @@ function updateUploadBytes(){"use strict";
         Ti.App.Properties.setBool('insertingGPS', false);
 
         Omadi.data.setUpdating(false);
-
-        Ti.App.addEventListener('upload_gps_locations', function(e) {
-            Omadi.location.uploadGPSCoordinates();
-        });
+        
+        Ti.App.removeEventListener('upload_gps_locations', Omadi.location.uploadGPSCoordinates);
+        Ti.App.addEventListener('upload_gps_locations', Omadi.location.uploadGPSCoordinates);
 
         Ti.App.addEventListener('stop_gps', function(e) {
 
@@ -454,16 +462,8 @@ function updateUploadBytes(){"use strict";
             });
         }
         
-        Ti.App.addEventListener('loggingOut', function() {
-            // Try uploading any remaining files
-            //Omadi.service.uploadFile();
-            //Omadi.service.uploadBackgroundFile();
-            
-            updateUploadBytes();
-            Omadi.service.doBackgroundUploads = true;
-            
-            Ti.App.backgroundPhotoUploadCheck = setInterval(Omadi.service.uploadBackgroundFile, 60000);
-        });
+        Ti.App.removeEventListener('loggingOut', loggingOutLoginScreen);
+        Ti.App.addEventListener('loggingOut', loggingOutLoginScreen);
         
         Ti.UI.currentWindow.add(scrollView);
         
