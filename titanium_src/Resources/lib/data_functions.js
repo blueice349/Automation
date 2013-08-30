@@ -469,7 +469,7 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
 Omadi.data.nodeSave = function(node) {"use strict";
     var query, field_name, fieldNames, instances, result, db, smallestNid, insertValues, j, k, 
         instance, value_to_insert, has_data, content_s, saveNid, continuousNid, photoNids, origNid,
-        continuousId, tempNid, listDB;
+        continuousId, tempNid, listDB, trueWindowNid;
 
     /*global treatArray*/
     /*jslint nomen: true*/
@@ -683,16 +683,20 @@ Omadi.data.nodeSave = function(node) {"use strict";
                 }
             }
             
+            trueWindowNid = 'new';
             if(typeof Ti.UI.currentWindow.nid !== 'undefined'){
-                tempNid = parseInt(Ti.UI.currentWindow.nid, 10);
-                if(!isNaN(tempNid) && tempNid != 0){
-                    photoNids.push(tempNid);
+                trueWindowNid = parseInt(Ti.UI.currentWindow.nid, 10);
+                if(!isNaN(trueWindowNid) && trueWindowNid != 0){
+                    photoNids.push(trueWindowNid);
                 }
             }
             
-            listDB = Omadi.utils.openListDatabase();
-            listDB.execute('UPDATE _files SET nid=' + saveNid + ' WHERE nid IN (' + photoNids.join(',') + ')');
-            listDB.close();
+            // Do not save the photos to the continuous save unless the original window is new
+            if(!node._isContinuous || isNaN(trueWindowNid)){
+                listDB = Omadi.utils.openListDatabase();
+                listDB.execute('UPDATE _files SET nid=' + saveNid + ' WHERE nid IN (' + photoNids.join(',') + ')');
+                listDB.close();
+            }
 
             node._saved = true;
             Ti.API.debug("NODE SAVE WAS SUCCESSFUL");
@@ -1063,7 +1067,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
             else{
                 
                 // If the nid doesn't exist, maybe it was deleted and a positive nid has replaced it
-                if(typeof Ti.App.deletedNegatives[nid] !== 'undefined' && Ti.App.deletedNegatives[nid] !== null && Ti.App.deleteNegatives[nid] != ""){
+                if(typeof Ti.App.deletedNegatives[nid] !== 'undefined' && Ti.App.deletedNegatives[nid] !== null && Ti.App.deletedNegatives[nid] != ""){
                     
                     newNid = Ti.App.deletedNegatives[nid];
                     Ti.API.debug("CAN RECOVER " + nid +  " >>> " + newNid);
@@ -1410,7 +1414,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                             case 'file':
                                 // This includes signature and video fields
                                 
-                                subResult = listDB.execute('SELECT * FROM _files WHERE nid=' + node.nid + ' AND field_name ="' + field_name + '" ORDER BY delta ASC');
+                                subResult = listDB.execute('SELECT * FROM _files WHERE nid IN(' + node.nid + ',0) AND field_name ="' + field_name + '" ORDER BY delta ASC');
 
                                 node[field_name].imageData = [];
                                 node[field_name].degrees = [];

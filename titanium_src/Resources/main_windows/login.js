@@ -686,7 +686,7 @@ function loggingOutLoginScreen(){"use strict";
             title : 'Log In',
             width : 200,
             height : 45,
-            top : 10,
+            top : 15,
             style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             backgroundGradient : {
                 type : 'linear',
