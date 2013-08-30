@@ -1,6 +1,7 @@
 
 /*jslint plusplus:true,eqeq:true,nomen:true*/
 
+
 Omadi.data = Omadi.data || {};
 
 Omadi.data.isUpdating = function() {"use strict";
@@ -1062,7 +1063,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
             else{
                 
                 // If the nid doesn't exist, maybe it was deleted and a positive nid has replaced it
-                if(typeof Ti.App.deletedNegatives[nid] !== 'undefined' && Ti.App.deletedNegatives[nid] !== null){
+                if(typeof Ti.App.deletedNegatives[nid] !== 'undefined' && Ti.App.deletedNegatives[nid] !== null && Ti.App.deleteNegatives[nid] != ""){
                     
                     newNid = Ti.App.deletedNegatives[nid];
                     Ti.API.debug("CAN RECOVER " + nid +  " >>> " + newNid);
@@ -1867,7 +1868,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                         }
                     }
                     catch(ex5){
-                        Omadi.service.sendErrorReport("Exception base64 encoding photo of size " + imageBlob.length + ": " + ex5); 
+                        Omadi.service.sendErrorReport("Exception base64 encoding photo of size " + imageBlob.length + ": " + ex5 + ", availableMemory " + Ti.Platform.availableMemory); 
                         // This photo is not going to upload correctly
                         readyForUpload = false;
                         errorOccurred = true;

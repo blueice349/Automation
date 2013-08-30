@@ -485,20 +485,18 @@ function loggingOutLoginScreen(){"use strict";
         uploadView.add(uploadLabel);
         
         scrollView.add(uploadView);
-        
-        //Web site picker
+       
         logo = Titanium.UI.createImageView({
-            width : 200,
-            top : 20,
-            height : 114,
+            width : 180,
+            top : 0,
+            height : 180,
             image : '/images/logo.png'
-        });
-        //Adds picker to root window
+        }); 
         scrollView.add(logo);
 
         portal = Titanium.UI.createTextField({
             width : 200,
-            top : 20,
+            top : 0,
             height : Ti.UI.SIZE,
             hintText : 'Client Account',
             color : '#000',
@@ -701,13 +699,13 @@ function loggingOutLoginScreen(){"use strict";
                     y : '100%'
                 },
                 colors : [{
-                    color : '#777',
+                    color : '#2BC4F3',
                     offset : 0.0
                 }, {
-                    color : '#999',
+                    color : '#00AEEE',
                     offset : 0.3
                 }, {
-                    color : '#555',
+                    color : '#0095DA',
                     offset : 1.0
                 }]
             },
@@ -717,7 +715,9 @@ function loggingOutLoginScreen(){"use strict";
                 fontSize : 20,
                 fontFamily : 'Arial'
             },
-            borderRadius : 10
+            borderRadius : 10,
+            borderWidth: 1,
+            borderColor: '#666'
         });
 
         //Adds button to the interface

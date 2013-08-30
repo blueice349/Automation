@@ -908,7 +908,7 @@ if (Ti.App.isAndroid) {
                     form_part: form_part + 1  
                 };
     
-                menu_zero.setIcon("/images/drop.png");
+                menu_zero.setIcon("/images/save_arrow_white.png");
                 menu_zero.addEventListener("click", openAndroidMenuItem);
                 
                 order++;
@@ -925,7 +925,7 @@ if (Ti.App.isAndroid) {
                 form_part: form_part
             };
             
-            menu_edit.setIcon("/images/edit.png");
+            menu_edit.setIcon("/images/edit_white.png");
             menu_edit.addEventListener("click", openAndroidMenuItem);
             
             order++;
