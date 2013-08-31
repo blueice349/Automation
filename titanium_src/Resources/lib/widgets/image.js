@@ -360,16 +360,34 @@ Omadi.widgets.image = {
             });
             
             dialog.addEventListener('click', function(e2){  
+                var filePath = null, imageViews, newPhotoView;
                 /*global save_form_data*/              
                 if(e2.index === 0){
                     
-                    // Remove the image from the scroll view
+                    if(typeof e2.source.imageView.filePath !== 'undefined' && e2.source.imageView.filePath != null){
+                        filePath = e2.source.imageView.filePath;   
+                    }
+                    
+                    imageViews = e2.source.imageView.parentView.children;
+                    
+                    if(imageViews.length > 1){
+                        newPhotoView = imageViews[imageViews.length - 1];
+                        if(newPhotoView.nid === null && newPhotoView.fid === null){
+                            Ti.API.debug("Moving the new photo delta down one");
+                            newPhotoView.imageIndex --;
+                        }
+                    }
+                    
+                    // Remove the image from the scroll view before the file reference or data is deleted
                     e2.source.imageView.parentView.remove(e2.source.imageView);
                     
-                    if(typeof e2.source.imageView.filePath !== 'undefined' && e2.source.imageView.filePath != null){
-                        Ti.API.debug("Removing file reference in DB: " + e2.source.imageView.filePath + " " + e2.source.isDeletePhoto);
+                    if(filePath !== null){
+                        Ti.API.debug("Removing file reference in DB: " + filePath + " " + e2.source.isDeletePhoto);
                         // Do the removal for an image stored on the phone
-                        Omadi.data.deletePhotoUploadByPath(e2.source.imageView.filePath, e2.source.isDeletePhoto); 
+                        Omadi.data.deletePhotoUploadByPath(filePath, e2.source.isDeletePhoto); 
+                    }
+                    else{
+                        Omadi.service.sendErrorReport("Trying to remove image, filepath is null");
                     }
                     
                     // Make sure the photo data is saved

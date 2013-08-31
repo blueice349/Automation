@@ -985,6 +985,10 @@ Omadi.data.deletePhotoUploadByPath = function(filePath, deleteFile){"use strict"
         // Move over the other photos still in the queue for uploads
         db.execute("UPDATE _files SET delta = (delta - 1) WHERE nid = " + nid + " AND delta > " + delta);
     }
+    else{
+        Omadi.service.sendErrorReport("Could not find filepath in database: " + filePath);
+    }
+    
     result.close();
     db.close();
     
