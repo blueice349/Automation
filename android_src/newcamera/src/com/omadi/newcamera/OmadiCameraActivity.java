@@ -1,5 +1,6 @@
 package com.omadi.newcamera;
 
+import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -12,6 +13,7 @@ import org.appcelerator.titanium.proxy.TiViewProxy;
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
@@ -395,11 +397,14 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 				//toolsOverlay.pictureTaken();
 				
 				FileOutputStream outputStream = null;
+				FileOutputStream thumbOutputStream = null;
 				
 				try {
 					
 					String filePath = cameraActivity.storageUri.getPath();
 					
+					cameraActivity.setResult(Activity.RESULT_OK);
+					cameraActivity.finish();
 					//java.util.Date date = new java.util.Date();
 					
 					//String filePath = OmadiCameraActivity.storageDirectory + "/p_" + System.currentTimeMillis() + ".jpg";
@@ -413,10 +418,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 					//Log.i("CHRIS", "PATH URI: " + fileURI.getPath());
 					
 					// get the degrees before the file is saved
-					Message msg = Message.obtain();
-					Bundle messageVars = new Bundle();
-					messageVars.putInt("degrees", toolsOverlay.getDegreesAtCapture());
-					messageVars.putString("filePath", filePath);
+					
 					
 					//Log.i("CHRIS", "degrees: " + degrees);
 					
@@ -438,12 +440,49 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 						break;
 					}
 					
+					// Save orientation to photo
 					ExifInterface exif = new ExifInterface(filePath);
 					exif.setAttribute(ExifInterface.TAG_ORIENTATION, orientation + "");
 					exif.saveAttributes();
 	
-					cameraActivity.setResult(Activity.RESULT_OK);
-					cameraActivity.finish();
+					
+					String thumbPath = filePath.replaceAll(".jpg$", "_thumb.jpg");
+					
+					// Create thumbnail
+					try     
+			        {
+			            final int THUMBNAIL_HEIGHT = 100;
+			            Log.d("CAMERA", "CAMERA: thumbPath: " + thumbPath);
+			            
+			            BitmapFactory.Options options = new BitmapFactory.Options();
+			            options.inSampleSize = 4;
+			            
+			            Bitmap imageBitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
+			            Float width = new Float(imageBitmap.getWidth());
+			            Float height = new Float(imageBitmap.getHeight());
+			            Float ratio = width / height;
+
+			            imageBitmap = Bitmap.createScaledBitmap(imageBitmap, (int)(THUMBNAIL_HEIGHT * ratio), THUMBNAIL_HEIGHT, false);
+
+			            thumbOutputStream = new FileOutputStream(thumbPath);
+			            imageBitmap.compress(Bitmap.CompressFormat.JPEG, 90, thumbOutputStream);
+			            thumbOutputStream.close();
+			            
+			            // Save orientation to thumbnail
+				        ExifInterface thumbExif = new ExifInterface(thumbPath);
+				        thumbExif.setAttribute(ExifInterface.TAG_ORIENTATION, orientation + "");
+				        thumbExif.saveAttributes();
+			        }
+			        catch(Exception ex) {
+			        	Log.e("CAMERA", "CAMERA: Could not create thumbnail: " + ex.getMessage());
+			        	thumbPath = "";
+			        }
+			        
+					Message msg = Message.obtain();
+					Bundle messageVars = new Bundle();
+					messageVars.putInt("degrees", toolsOverlay.getDegreesAtCapture());
+					messageVars.putString("filePath", filePath);
+					messageVars.putString("thumbPath", thumbPath);
 					
 					//messageVars.putByteArray("media", data);
 					msg.setData(messageVars);
@@ -482,6 +521,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 			
 			//hm.put("source", NewcameraModule.eve);
 			hm.put("filePath", messageVars.getString("filePath"));
+			hm.put("thumbPath", messageVars.getString("thumbPath"));
 			hm.put("degrees", messageVars.getInt("degrees"));
 			//hm.put("media", messageVars.getByteArray("media"));
 

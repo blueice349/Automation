@@ -639,29 +639,37 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
     
     if(e.row.nid){
         db = Omadi.utils.openMainDatabase();
-        result = db.execute('SELECT table_name, form_part, perm_edit FROM node WHERE nid=' + e.row.nid);
-        
-        isEditEnabled = false;
-        hasCustomCopy = false;
-        options = [];
-        form_parts = [];
-        
-        if(extraOptions.length){
-            for(i = 0; i < extraOptions.length; i ++){
-                options.push(extraOptions[i].text);
-                form_parts.push('_extra_' + i);
+        try{
+            result = db.execute('SELECT table_name, form_part, perm_edit FROM node WHERE nid=' + e.row.nid);
+            
+            isEditEnabled = false;
+            hasCustomCopy = false;
+            options = [];
+            form_parts = [];
+            
+            if(extraOptions.length){
+                for(i = 0; i < extraOptions.length; i ++){
+                    options.push(extraOptions[i].text);
+                    form_parts.push('_extra_' + i);
+                }
             }
+        
+            if (result.fieldByName('perm_edit', Ti.Database.FIELD_TYPE_INT) === 1) {
+                isEditEnabled = true;
+            }
+        
+            form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
+            node_type = result.fieldByName('table_name');
+        
+            result.close();
         }
-    
-        if (result.fieldByName('perm_edit', Ti.Database.FIELD_TYPE_INT) === 1) {
-            isEditEnabled = true;
+        catch(ex){
+            alert("The form entry has moved. Please reload this screen.");
+            return;
         }
-    
-        form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
-        node_type = result.fieldByName('table_name');
-    
-        result.close();
-        db.close();
+        finally{
+            db.close();
+        }
     
         bundle = Omadi.data.getBundle(node_type);
     

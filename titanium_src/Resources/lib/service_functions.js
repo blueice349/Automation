@@ -453,7 +453,7 @@ Omadi.service.sendUpdates = function() {"use strict";
                 });
             }
             else{
-                
+                Omadi.service.sendUpdateRetries = 0;
                 isSendingData = Omadi.service.setSendingData(false);
                 Omadi.service.sendUpdates();
             }
@@ -1444,9 +1444,9 @@ Omadi.service.checkUpdate = function(useProgressBar){"use strict";
     // }
 
     db = Omadi.utils.openMainDatabase();
-    result = db.execute('SELECT * FROM node WHERE flag_is_updated=1');
+    result = db.execute('SELECT COUNT(*) as numNodes FROM node WHERE flag_is_updated=1');
 
-    if (result.rowCount > 0) {
+    if (result.isValidRow() && result.field(0, Ti.Database.FIELD_TYPE_INT) > 0) {
         Omadi.service.sendUpdates();
     }
     result.close();

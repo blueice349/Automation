@@ -140,26 +140,7 @@ Omadi.widgets.signature = {
             Omadi.widgets.signature.openSignatureView(node, instance, widgetView);
         });
         
-        // eraseButton.addEventListener('click', function(e){
-//             
-            // e.source.imageView.dbValue = null;
-            // e.source.imageView.image = null;
-        // });
-        
-        // imageNid = Ti.UI.currentWindow.nid;
-        // if(typeof Ti.UI.currentWindow.origNid !== 'undefined'){
-            // imageNid = Ti.UI.currentWindow.origNid;
-        // }
-        
         numImagesShowing = 1;
-        
-        
-        // if (instance.can_edit && (instance.settings.cardinality == -1 || (numImagesShowing < instance.settings.cardinality))) {
-//             
-            // widgetView.add(Omadi.widgets.image.getImageView(widgetView, numImagesShowing, null, null, 0));
-//         
-            // contentWidth += 110;
-        // }
         
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
         

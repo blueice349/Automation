@@ -833,7 +833,7 @@ function normalUpdateFromMenu(e){"use strict";
 }
 
 function fullUpdateFromMenu(e){"use strict";
-    var dbFile, db, result, fileIds, i;
+    var dbFile, db, result, fileIds, i, listDB;
     
     Ti.App.Properties.setBool("doingFullReset", true);
     
@@ -845,29 +845,13 @@ function fullUpdateFromMenu(e){"use strict";
     if (!Ti.Network.online) {
         alert("You do not have an Internet connection right now, so new data will not be downloaded until you connect.");
     }
-
-    db = Omadi.utils.openListDatabase();
-    fileIds = [];
-
-    result = db.execute("SELECT id FROM _files");
-    if (result.rowCount > 0) {
-        alert("One or more photos were not uploaded to the server, so they will be stored on this device now.");
-
-        while (result.isValidRow()) {
-
-            fileIds.push(result.fieldByName('id', Ti.Database.FIELD_TYPE_INT));
-            result.next();
-        }
-    }
-    result.close();
-    db.close();
     
-    for(i = 0; i < fileIds.length; i ++){
-        Omadi.data.saveFailedUpload(fileIds[i], false);
-    }
+    // Do not remove files with a positive nid, as they can still be uploaded
+    listDB = Omadi.utils.openListDatabase();
+    listDB.execute("UPDATE _files SET nid = -1000000 WHERE nid <= 0");
+    listDB.close();
     
-    
-    
+    db = Omadi.utils.openMainDatabase();    
     if (Ti.App.isAndroid) {
         //Remove the database
         db.remove();

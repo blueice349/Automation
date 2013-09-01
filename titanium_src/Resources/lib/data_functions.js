@@ -1423,6 +1423,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                 node[field_name].imageData = [];
                                 node[field_name].degrees = [];
                                 node[field_name].deltas = [];
+                                node[field_name].thumbData = [];
                                 
                                 if (subResult.rowCount > 0) {
                                     while (subResult.isValidRow()) {
@@ -1430,6 +1431,9 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                         node[field_name].imageData.push(subResult.fieldByName('file_path'));
                                         node[field_name].deltas.push(subResult.fieldByName('delta'));
                                         node[field_name].degrees.push(subResult.fieldByName('degrees', Ti.Database.FIELD_TYPE_INT));
+                                        node[field_name].thumbData.push(subResult.fieldByName('thumb_path'));
+                                        
+                                        Ti.API.debug(JSON.stringify(node[field_name]));
                                         
                                         subResult.next();
                                     }
@@ -1563,7 +1567,7 @@ Omadi.data.getNumFilesReadyToUpload = function(uid){"use strict";
 Omadi.data.maxBytesPerUpload = 3145728; // 3MB
 
 Omadi.data.getFileArray = function(onlyUploadable){"use strict";
-    var files, sql, listDB, result, nextFile, now, node, message;
+    var files, sql, listDB, result, nextFile, now, node, message, lastErrorTimestamp;
     
     if(typeof onlyUploadable === 'undefined'){
         onlyUploadable = true;
@@ -1581,6 +1585,9 @@ Omadi.data.getFileArray = function(onlyUploadable){"use strict";
     }
     
     sql += " ORDER BY tries ASC, filesize ASC, delta ASC";
+    
+    now = Omadi.utils.getUTCTimestamp();
+    lastErrorTimestamp = Ti.App.Properties.getDouble('lastFileErrorTimestamp', 0);
     
     listDB = Omadi.utils.openListDatabase();
     
@@ -1626,45 +1633,57 @@ Omadi.data.getFileArray = function(onlyUploadable){"use strict";
             if(onlyUploadable){
                 
                 if(nextFile.nid <= 0){
-                    now = Omadi.utils.getUTCTimestamp();
-                    if(nextFile.timestamp < now - 1800){
-                        // If the file was done over 30 minutes ago, find out more
-                        if(nextFile.nid != -1000000){
-                            node = Omadi.data.nodeLoad(nextFile.nid);
-                            if(node !== null){
-                                if(node.flag_is_updated != 3){
-                                    // If this is not a draft, send up the info
-                                    message = "Not a negative draft: " + JSON.stringify(node);
-                                    // Limit node message to 2000 characters
-                                    message = message.substring(0, 2000);
+                    
+                    if(now - lastErrorTimestamp > (60 * 15)){
+                        // Only send errors at most every 15 minutes
+                        
+                        if(nextFile.timestamp < now - 1800){
+                            // If the file was done over 30 minutes ago, find out more
+                            if(nextFile.nid != -1000000){
+                                node = Omadi.data.nodeLoad(nextFile.nid);
+                                if(node !== null){
+                                    if(node.flag_is_updated != 3){
+                                        // If this is not a draft, send up the info
+                                        message = "Not a negative draft: " + JSON.stringify(node);
+                                        // Limit node message to 2000 characters
+                                        message = message.substring(0, 2000);
+                                        message += JSON.stringify(nextFile);
+                                        Omadi.service.sendErrorReport(message);
+                                    }
+                                }
+                                else{
+                                    message = "Null negative Node with nid " + nextFile.nid + " ";
                                     message += JSON.stringify(nextFile);
                                     Omadi.service.sendErrorReport(message);
                                 }
-                            }
-                            else{
-                                message = "Null negative Node with nid " + nextFile.nid + " ";
-                                message += JSON.stringify(nextFile);
-                                Omadi.service.sendErrorReport(message);
+                                
+                                Ti.App.Properties.setDouble('lastFileErrorTimestamp', now);
                             }
                         }
                     }
                 }
                 else if(nextFile.tries > 10){
-                    // Show everything if the file was attempted more than 10 times
-                    node = Omadi.data.nodeLoad(nextFile.nid);
-                    
-                    if(node !== null){
-                       
-                        message = "Over 10 tries: " + JSON.stringify(node);
-                        // Limit node message to 2000 characters
-                        message = message.substring(0, 2000);
-                        message += JSON.stringify(nextFile);
-                        Omadi.service.sendErrorReport(message);
-                    }
-                    else{
-                        message = "Null Node with nid " + nextFile.nid + " ";
-                        message += JSON.stringify(nextFile);
-                        Omadi.service.sendErrorReport(message);
+                    if(now - lastErrorTimestamp > (60 * 15)){
+                        // Only send errors at most every 15 minutes
+                        
+                        // Show everything if the file was attempted more than 10 times
+                        node = Omadi.data.nodeLoad(nextFile.nid);
+                        
+                        if(node !== null){
+                           
+                            message = "Over 10 tries: " + JSON.stringify(node);
+                            // Limit node message to 2000 characters
+                            message = message.substring(0, 2000);
+                            message += JSON.stringify(nextFile);
+                            Omadi.service.sendErrorReport(message);
+                        }
+                        else{
+                            message = "Null Node with nid " + nextFile.nid + " ";
+                            message += JSON.stringify(nextFile);
+                            Omadi.service.sendErrorReport(message);
+                        }
+                        
+                        Ti.App.Properties.setDouble('lastFileErrorTimestamp', now);
                     }
                 }
                 else{
@@ -1771,13 +1790,14 @@ Omadi.data.getNextPhotoData = function(){"use strict";
     
                                     //imageBlob = imageBlob.imageAsResized(newWidth, newHeight);
                                     /*global ImageFactory*/
-                                    resizedBlob = ImageFactory.imageAsResized(imageBlob, {
-                                        width: newWidth, 
-                                        height: newHeight,
-                                        quality: ImageFactory.QUALITY_DEFAULT,
-                                        hires: false
-                                    });
-                                    
+                                   resizedBlob = imageBlob.imageAsResized(newWidth, newHeight);
+                                    // resizedBlob = ImageFactory.imageAsResized(imageBlob, {
+                                        // width: newWidth, 
+                                        // height: newHeight,
+                                        // quality: ImageFactory.QUALITY_DEFAULT,
+                                        // hires: false
+                                    // });
+//                                     
                                     Ti.API.debug("Resized: " + resizedBlob.length);
                                     
                                     if(resizedBlob.length > maxPhotoPixels){

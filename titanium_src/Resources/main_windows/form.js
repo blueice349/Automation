@@ -225,7 +225,7 @@ function cancelOpt() {"use strict";
                     });
                     
                     secondDialog.addEventListener('click', function(e) {
-                        var db_toDeleteImage, deleteResult, file, photoNids, continuousId;
+                        var db_toDeleteImage, deleteResult, file, photoNids, continuousId, thumbFile;
                         
                         photoNids = [0];
                         if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined'){
@@ -241,14 +241,20 @@ function cancelOpt() {"use strict";
                             
                             if (e.index === 0) {
                                 
-                                deleteResult = db_toDeleteImage.execute("SELECT file_path FROM _files WHERE nid IN (" + photoNids.join(',') + ")");
+                                deleteResult = db_toDeleteImage.execute("SELECT file_path, thumb_path FROM _files WHERE nid IN (" + photoNids.join(',') + ")");
                                 
                                 while(deleteResult.isValidRow()){
                                     
+                                    // Delete the regular photo file
                                     file = Ti.Filesystem.getFile(deleteResult.fieldByName("file_path"));
-                                    
                                     if(file.exists()){
                                         file.deleteFile();
+                                    }
+                                    
+                                    // Delete the thumbnail file
+                                    thumbFile = Ti.Filesystem.getFile(deleteResult.fieldByName("thumb_path"));
+                                    if(thumbFile.exists()){
+                                        thumbFile.deleteFile();
                                     }
                                     
                                     deleteResult.next();
