@@ -141,6 +141,7 @@ function addClockInClockOut() {"use strict";
             borderColor: '#333',
             borderWidth: 1,
             top: 3,
+            bottom: 3,
             textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
         });
         
@@ -274,6 +275,7 @@ function addCompanyVehicle(){"use strict";
             borderColor: '#333',
             borderWidth: 1,
             top: 3,
+            bottom: 3,
             textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
         });
         
@@ -385,6 +387,7 @@ function addDrafts(){"use strict";
             borderColor: '#333',
             borderWidth: 1,
             top: 3,
+            bottom: 3,
             text: 'View My Drafts',
             textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
         });
@@ -470,6 +473,7 @@ function addLocalPhotos(){"use strict";
             borderColor: '#333',
             borderWidth: 1,
             top: 3,
+            bottom: 3,
             text: 'Photos Not Uploaded',
             textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
         });
@@ -545,6 +549,7 @@ function addDeleteAll(){"use strict";
         borderColor: '#333',
         borderWidth: 1,
         top: 3,
+        bottom: 3,
         text: 'Reset All Data',
         textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });
@@ -641,6 +646,7 @@ function addDebug(){"use strict";
         borderColor: '#333',
         borderWidth: 1,
         top: 3,
+        bottom: 3,
         text: 'Send Debug Data',
         textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });
@@ -762,6 +768,7 @@ function addRefresh(){"use strict";
         borderColor: '#333',
         borderWidth: 1,
         top: 3,
+        bottom: 3,
         text: 'Refresh / Sync Data',
         textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });
@@ -845,6 +852,7 @@ function addLogout(){"use strict";
         borderColor: '#333',
         borderWidth: 1,
         top: 3,
+        bottom: 3,
         text: 'Logout Now',
         textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });
@@ -920,6 +928,7 @@ function addAbout(){"use strict";
         borderColor: '#333',
         borderWidth: 1,
         top: 3,
+        bottom: 3,
         text: 'About',
         textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });
@@ -995,6 +1004,7 @@ function addSettings(){"use strict";
         borderColor: '#333',
         borderWidth: 1,
         top: 3,
+        bottom: 3,
         text: 'Settings',
         textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
     });

@@ -87,9 +87,9 @@ Ti.include('/lib/functions.js');
 	
 	logo = Ti.UI.createImageView({
 		image : '/images/logo.png',
-		top : 50,
-		width : 200,
-		height : 114
+		top : 0,
+		width : 280,
+		height : 280
 	});
 	
 	scrollView.add(logo);
