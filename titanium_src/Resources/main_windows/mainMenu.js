@@ -8,12 +8,6 @@ if (Ti.App.isIOS) {
     ImageFactory = require('ti.imagefactory');
 }
 
-// var cameraAndroid;
-// 
-// if (Ti.App.isAndroid) {
-    // cameraAndroid = require('com.omadi.newcamera');
-// }
-
 /*jslint eqeq:true, plusplus: true, nomen: true*/
 
 var curWin = Ti.UI.currentWindow;

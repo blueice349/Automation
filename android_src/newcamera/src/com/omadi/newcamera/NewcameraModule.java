@@ -57,6 +57,7 @@ import android.net.Uri;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
+import android.util.Base64;
 import ti.modules.titanium.media.android.AndroidModule.MediaScannerClient;
 
 
@@ -113,6 +114,39 @@ public class NewcameraModule extends KrollModule
 		} else {
 			Log.e(LCAT, "camera preview is not open, unable to take photo");
 		}
+	}
+	
+	@Kroll.method
+	public String base64Encode(String filePath) throws java.io.FileNotFoundException, java.io.IOException{
+		int bytesRead = 0;
+		String base64 = "";
+		int bufferSize;
+		FileInputStream fin = null;
+		
+		filePath = filePath.replaceFirst("^file://", "");
+		
+		File file = new File(filePath);
+		
+		bufferSize = (int)file.length();
+		
+		fin = new FileInputStream(file);
+		
+		byte[] buffer = new byte[bufferSize]; 
+		
+		BufferedInputStream buf = new BufferedInputStream(fin);
+	
+		bytesRead = buf.read(buffer, 0, bufferSize);
+		
+		if(bytesRead != bufferSize){
+			
+		}
+		
+		buf.close();
+		fin.close();
+		
+		base64 = Base64.encodeToString(buffer, Base64.DEFAULT);
+		
+		return base64;
 	}
 	
 	@Kroll.method

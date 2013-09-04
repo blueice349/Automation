@@ -4,6 +4,8 @@
 
 Omadi.data = Omadi.data || {};
 
+Omadi.data.cameraAndroid = null;
+
 Omadi.data.isUpdating = function() {"use strict";
 
     return Ti.App.Properties.getBool("isUpdating", false);
@@ -1744,85 +1746,124 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                 alert("The file at " + nextFile.file_path + " for node #" + nextFile.nid + " cannot be found for upload.");
             }
             else{
+                
+                nextFile.loaded = false;
             
                 if(nextFile.type == 'image' || nextFile.type == 'signature'){
                     
-                    try{
-                        imageBlob = imageFile.read();
+                    if(Ti.App.isAndroid){
                         
-                        if(!imageBlob){
-                            errorOccurred = true;
-                            Ti.API.debug("Image Blob is null");
-                            Omadi.service.sendErrorReport("Image blob is null");
+                        if(Omadi.data.cameraAndroid === null){
+                            Omadi.data.cameraAndroid = require('com.omadi.newcamera');
                         }
-                    }
-                    catch(exRead){
-                        Ti.API.debug("Exception reading file: " + exRead);
-                        Omadi.service.sendErrorReport("Exception reading non-resized photo: " + exRead);
-                        readyForUpload = false;
-                        // This is probably a memory error, so request a restart
-                        restartSuggested = true;
                         
-                        errorOccurred = true;
-                    }
-                    
-                    if(!errorOccurred){
-                        
-                        if(Ti.App.isIOS){
-                            // Resize the photo to a smaller size
-                            try {
+                        try{
+                            nextFile.file_data = Omadi.data.cameraAndroid.base64Encode(nextFile.file_path);
+                            nextFile.loaded = true;
+                        }
+                        catch(exbase64){
+                            Ti.API.debug("Exception reading Android base64Encode: " + exbase64);
+                            Omadi.service.sendErrorReport("Exception reading Android base64Encode: " + exbase64);
+                            
+                            // Fall back to original method of encoding the image
+                            try{
+                                imageBlob = imageFile.read();
                                 
-                                Ti.API.debug("Original: " + imageBlob.length + " " + imageBlob.width + "x" + imageBlob.height);
-                                
-                                if (imageBlob.length > Omadi.data.maxBytesPerUpload || imageBlob.height > maxPhotoPixels || imageBlob.width > maxPhotoPixels) {
-    
-                                    maxDiff = imageBlob.height - maxPhotoPixels;
-                                    if (imageBlob.width - maxPhotoPixels > maxDiff) {
-                                        // Width is bigger
-                                        newWidth = maxPhotoPixels;
-                                        newHeight = (maxPhotoPixels / imageBlob.width) * imageBlob.height;
-                                    }
-                                    else {
-                                        // Height is bigger
-                                        newHeight = maxPhotoPixels;
-                                        newWidth = (maxPhotoPixels / imageBlob.height) * imageBlob.width;
-                                    }
-    
-                                    //imageBlob = imageBlob.imageAsResized(newWidth, newHeight);
-                                    /*global ImageFactory*/
-                                   resizedBlob = imageBlob.imageAsResized(newWidth, newHeight);
-                                    // resizedBlob = ImageFactory.imageAsResized(imageBlob, {
-                                        // width: newWidth, 
-                                        // height: newHeight,
-                                        // quality: ImageFactory.QUALITY_DEFAULT,
-                                        // hires: false
-                                    // });
-//                                     
-                                    Ti.API.debug("Resized: " + resizedBlob.length);
-                                    
-                                    if(resizedBlob.length > maxPhotoPixels){
-                                        imageBlob = ImageFactory.compress(resizedBlob, 0.75);
-                                        nextFile.filesize = imageBlob.length;
-                                        
-                                        nextFile.numUploadParts = 1;
-                                        nextFile.uploadPart = 1;
-                                        nextFile.uploading_bytes = nextFile.filesize;
-                                    }
-                                    
-                                    Ti.API.debug("Compressed: " + imageBlob.length);
-                                }
-                                else{
-                                    Ti.API.debug("No image Resize was necessary");
+                                if(!imageBlob){
+                                    errorOccurred = true;
+                                    Ti.API.debug("Image Blob is null");
+                                    Omadi.service.sendErrorReport("Image blob is null");
                                 }
                             }
-                            catch(ex) {
-                                Omadi.service.sendErrorReport("Exception resizing iOS Photo: " + ex);
+                            catch(exRead){
+                                Ti.API.debug("Exception reading file: " + exRead);
+                                Omadi.service.sendErrorReport("Exception reading non-resized photo: " + exRead);
                                 readyForUpload = false;
+                                // This is probably a memory error, so request a restart
+                                restartSuggested = true;
+                                
                                 errorOccurred = true;
                             }
-                            finally{
-                                // Clean up some memory
-                                resizedBlob = null;
+                        }
+                    }
+                    else{
+                        try{
+                            imageBlob = imageFile.read();
+                            
+                            if(!imageBlob){
+                                errorOccurred = true;
+                                Ti.API.debug("Image Blob is null");
+                                Omadi.service.sendErrorReport("Image blob is null");
+                            }
+                        }
+                        catch(exRead1){
+                            Ti.API.debug("Exception reading file: " + exRead1);
+                            Omadi.service.sendErrorReport("Exception reading non-resized photo: " + exRead1);
+                            readyForUpload = false;
+                            // This is probably a memory error, so request a restart
+                            restartSuggested = true;
+                            
+                            errorOccurred = true;
+                        }
+                        
+                        if(!errorOccurred){
+                            
+                            if(Ti.App.isIOS){
+                                // Resize the photo to a smaller size
+                                try {
+                                    
+                                    Ti.API.debug("Original: " + imageBlob.length + " " + imageBlob.width + "x" + imageBlob.height);
+                                    
+                                    if (imageBlob.length > Omadi.data.maxBytesPerUpload || imageBlob.height > maxPhotoPixels || imageBlob.width > maxPhotoPixels) {
+        
+                                        maxDiff = imageBlob.height - maxPhotoPixels;
+                                        if (imageBlob.width - maxPhotoPixels > maxDiff) {
+                                            // Width is bigger
+                                            newWidth = maxPhotoPixels;
+                                            newHeight = (maxPhotoPixels / imageBlob.width) * imageBlob.height;
+                                        }
+                                        else {
+                                            // Height is bigger
+                                            newHeight = maxPhotoPixels;
+                                            newWidth = (maxPhotoPixels / imageBlob.height) * imageBlob.width;
+                                        }
+        
+                                        //imageBlob = imageBlob.imageAsResized(newWidth, newHeight);
+                                        /*global ImageFactory*/
+                                       resizedBlob = imageBlob.imageAsResized(newWidth, newHeight);
+                                        // resizedBlob = ImageFactory.imageAsResized(imageBlob, {
+                                            // width: newWidth, 
+                                            // height: newHeight,
+                                            // quality: ImageFactory.QUALITY_DEFAULT,
+                                            // hires: false
+                                        // });
+    //                                     
+                                        Ti.API.debug("Resized: " + resizedBlob.length);
+                                        
+                                        if(resizedBlob.length > maxPhotoPixels){
+                                            imageBlob = ImageFactory.compress(resizedBlob, 0.75);
+                                            nextFile.filesize = imageBlob.length;
+                                            
+                                            nextFile.numUploadParts = 1;
+                                            nextFile.uploadPart = 1;
+                                            nextFile.uploading_bytes = nextFile.filesize;
+                                        }
+                                        
+                                        Ti.API.debug("Compressed: " + imageBlob.length);
+                                    }
+                                    else{
+                                        Ti.API.debug("No image Resize was necessary");
+                                    }
+                                }
+                                catch(ex) {
+                                    Omadi.service.sendErrorReport("Exception resizing iOS Photo: " + ex);
+                                    readyForUpload = false;
+                                    errorOccurred = true;
+                                }
+                                finally{
+                                    // Clean up some memory
+                                    resizedBlob = null;
+                                }
                             }
                         }
                     }
@@ -1878,7 +1919,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                     }
                 }
                 
-                if(!errorOccurred){
+                if(!nextFile.loaded && !errorOccurred){
                     Ti.API.debug("Upload Part: " + nextFile.uploadPart + "/" + nextFile.numUploadParts);
                     Ti.API.debug(nextFile);
                     
@@ -1944,6 +1985,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
         
         dialog.addEventListener('click', function(e){
            if(e.index == 0){
+               Omadi.service.sendErrorReport("Actually closing the app by user");
                Omadi.utils.closeApp();
            } 
         });

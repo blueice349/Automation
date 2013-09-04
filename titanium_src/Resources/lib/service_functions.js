@@ -725,6 +725,9 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
         filesize, bytesUploaded, photoId, uploadFinished, listDB,
         nid, delta, field_name, numTries, isBackground;
     
+    // Get back the memory used for the photo upload
+    Omadi.service.currentFileUpload = null;
+    
     //Ti.API.info('UPLOAD FILE: =========== Success ========' + this.responseText);
     Ti.API.debug("Photo upload succeeded");
     
@@ -927,6 +930,9 @@ Omadi.service.photoUploadError = function(e){"use strict";
         photoId, nid, uploadMore, imageView, delta, field_name, 
         filename, imageFile, imageDir, incrementTries, 
         saveFailedUpload, isBackground;
+    
+    // Get back the memory used for the photo upload
+    Omadi.service.currentFileUpload = null;
     
     Omadi.service.sendErrorReport("Upload failed. Code: " + e.code + ", Error: " + e.error);
     Ti.API.error("Upload failed. Code: " + e.code + ", Error: " + e.error);
