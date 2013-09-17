@@ -271,7 +271,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                     }               
 
                     Omadi.data.setUpdating(false);
-                    Ti.App.fireEvent('finishedDataSync');
+                    Ti.App.fireEvent('omadi:finishedDataSync');
 
                     Omadi.service.uploadFile();
                 };
@@ -280,7 +280,7 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                 http.onerror = function(e) {
                     var dialog, message, errorDescription;
                     
-                    Ti.App.fireEvent('finishedDataSync');
+                    Ti.App.fireEvent('omadi:finishedDataSync');
                     
                     Ti.API.error('Code status: ' + e.error);
                     Ti.API.error('CODE ERROR = ' + this.status);
@@ -290,8 +290,6 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                         Omadi.service.progressBar.close();
                         Omadi.service.progressBar = null;
                     }
-
-                    //Titanium.Media.vibrate();
 
                     if (this.status == 403) {
                         
@@ -430,7 +428,32 @@ Omadi.service.isSendingData = function(){"use strict";
 Omadi.service.sendUpdateRetries = 0;
 Omadi.service.sendUpdates = function() {"use strict";
     /*jslint eqeq: true*/
-    var isSendingData, http, secondsLeft;
+    var isSendingData, http, secondsLeft, origAppStartMillis;
+    
+    // Remove the activity if the appStartMillis don't match the current runtime
+    // This may come up when the app crashes, and this function is called multiple times
+    // for all the open activities, but it should only be called once
+    if(typeof Ti.UI.currentWindow.appStartMillis !== 'undefined'){
+        origAppStartMillis = Ti.App.Properties.getDouble('omadi:appStartMillis', 0);
+        if(origAppStartMillis == 0){
+            Omadi.service.sendErrorReport("AppStartMillis was zero");
+        }
+        else{
+            if(origAppStartMillis != Ti.UI.currentWindow.appStartMillis){
+                if(Ti.App.isAndroid){
+                    Omadi.service.sendErrorReport("An extra android activity was shut down");
+                    Ti.Android.currentActivity.finish();
+                }
+                else{
+                    Omadi.service.sendErrorReport("An extra iOS event was shut down");
+                    return;
+                }
+            }
+        }
+    }
+    else{
+        Omadi.service.sendErrorReport("AppStartMillis was undefined");
+    }
 
     if (Ti.Network.online) {
         //alert("Has network");
@@ -524,6 +547,7 @@ Omadi.service.sendUpdates = function() {"use strict";
                         Omadi.service.logout();
                     });
                 }
+                
                 Ti.API.debug("BEFORE set sending data");
                 
                 Omadi.service.setSendingData(false);
@@ -723,7 +747,7 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
         imageFile, filePath, resizedFilePath, deleteFile, photoWidget, 
         photoDeleteOption, thumbPath, thumbFile, numFilesReadyToUpload, 
         filesize, bytesUploaded, photoId, uploadFinished, listDB,
-        nid, delta, field_name, numTries, isBackground;
+        nid, delta, field_name, numTries, isBackground, message;
     
     // Get back the memory used for the photo upload
     Omadi.service.currentFileUpload = null;
@@ -761,47 +785,67 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
             
             subDB = Omadi.utils.openMainDatabase();
             listDB = Omadi.utils.openListDatabase();
-    
+            
+            tableName = null;
+            
             // Updating status
             subResult = subDB.execute("SELECT table_name FROM node WHERE nid=" + json.nid);
-            tableName = subResult.fieldByName('table_name');
-            subResult.close();
-    
-            subResult = subDB.execute("SELECT settings FROM fields WHERE bundle='" + tableName + "' and type IN ('image','file') AND field_name='" + json.field_name + "'");
-            fieldSettings = JSON.parse(subResult.fieldByName('settings'));
-            subResult.close();
-    
-            if (fieldSettings != null && 
-                typeof fieldSettings.cardinality !== 'undefined' && 
-                (fieldSettings.cardinality > 1 || fieldSettings.cardinality < 0)) {
-                
-                if(typeof json.field_value !== 'undefined'){
-                    // This is here since 2.5.13
-                    jsonArray = json.field_value;
-                    Ti.API.info("Field Value");
-                    Ti.API.info(JSON.stringify(json.field_value));
-                }
-                else{
-                    
-                    // In case field_value is not in the json -- should remove this block soon
-                    subResult = subDB.execute("SELECT " + json.field_name + " FROM " + tableName + " WHERE nid=" + json.nid);
-    
-                    jsonArray = [];
-        
-                    if (subResult.isValidRow()) {
-                        multipleValue = Omadi.utils.getParsedJSON(subResult.fieldByName(json.field_name));
-                        if (Omadi.utils.isArray(multipleValue)) {
-                            jsonArray = multipleValue;
-                        }
-                    }
-    
-                    jsonArray[parseInt(json.delta, 10)] = json.file_id;
-                }
-
-                subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='" + dbEsc(JSON.stringify(jsonArray)) + "' WHERE nid=" + json.nid);
+            if(subResult.isValidRow()){
+                tableName = subResult.fieldByName('table_name');
             }
-            else {
-                subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='" + json.file_id + "' WHERE nid='" + json.nid + "'");
+            subResult.close();
+            
+            if(tableName !== null){
+                
+                // We do not need to update the files in the file that uploaded if the nid does not exist in the node table
+                // This could be from a background upload where the second user doesn't have permissions to the node
+                
+                subResult = subDB.execute("SELECT settings FROM fields WHERE bundle='" + tableName + "' and type IN ('image','file') AND field_name='" + json.field_name + "'");
+                fieldSettings = JSON.parse(subResult.fieldByName('settings'));
+                subResult.close();
+        
+                if (fieldSettings != null && 
+                    typeof fieldSettings.cardinality !== 'undefined' && 
+                    (fieldSettings.cardinality > 1 || fieldSettings.cardinality < 0)) {
+                    
+                    if(typeof json.field_value !== 'undefined'){
+                        // This is here since 2.5.13
+                        jsonArray = json.field_value;
+                        Ti.API.info("Field Value");
+                        Ti.API.info(JSON.stringify(json.field_value));
+                    }
+                    else{
+                        
+                        // In case field_value is not in the json -- should remove this block soon
+                        subResult = subDB.execute("SELECT " + json.field_name + " FROM " + tableName + " WHERE nid=" + json.nid);
+        
+                        jsonArray = [];
+            
+                        if (subResult.isValidRow()) {
+                            multipleValue = Omadi.utils.getParsedJSON(subResult.fieldByName(json.field_name));
+                            if (Omadi.utils.isArray(multipleValue)) {
+                                jsonArray = multipleValue;
+                            }
+                        }
+        
+                        jsonArray[parseInt(json.delta, 10)] = json.file_id;
+                    }
+                    
+                    try{
+                        subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='" + dbEsc(JSON.stringify(jsonArray)) + "' WHERE nid=" + json.nid);
+                    }
+                    catch(sqlEx4){
+                        Omadi.service.sendErrorReport("Exception in upload success ex4: " + sqlEx4 + ", json: " + JSON.stringify(json));
+                    }
+                }
+                else {
+                    try{
+                        subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='" + json.file_id + "' WHERE nid='" + json.nid + "'");
+                    }
+                    catch(sqlEx3){
+                        Omadi.service.sendErrorReport("Exception in upload success ex3: " + sqlEx3 + ", json: " + JSON.stringify(json));
+                    }
+                }
             }
                
             subResult = listDB.execute("SELECT id, file_path, thumb_path, filesize FROM _files WHERE id = " + photoId);   
@@ -845,14 +889,7 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                                     thumbFile.deleteFile();
                                 }
                             }
-                       }
-                        
-                        // resizedFilePath = filePath.replace(/\.jpg$/, "_resized.jpg");
-    //                         
-                        // imageFile = Ti.Filesystem.getFile("file://" + resizedFilePath);
-                        // if(imageFile.exists()){
-                            // imageFile.deleteFile(); 
-                        // }
+                        }
                     }
                     else{// isIOS
                         
@@ -874,11 +911,21 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                     imageFile = null;
                     thumbFile = null;
                     
-                    //Deleting file after upload.
-                    listDB.execute("DELETE FROM _files WHERE id=" + photoId);
+                    try{
+                        //Deleting file after upload.
+                        listDB.execute("DELETE FROM _files WHERE id=" + photoId);
+                    }
+                    catch(sqlEx2){
+                        Omadi.service.sendErrorReport("Exception in upload success ex2: " + sqlEx2 + ", json: " + JSON.stringify(json));
+                    }
                 }
                 else{
-                    listDB.execute("UPDATE _files SET bytes_uploaded=" + bytesUploaded + ", fid=" + json.file_id + ", uploading=0 WHERE id=" + photoId);
+                    try{
+                        listDB.execute("UPDATE _files SET bytes_uploaded=" + bytesUploaded + ", fid=" + json.file_id + ", uploading=0 WHERE id=" + photoId);
+                    }
+                    catch(sqlEx1){
+                        Omadi.service.sendErrorReport("Exception in upload success ex1: " + sqlEx1 + ", json: " + JSON.stringify(json));
+                    }
                 }
             }
 
@@ -919,8 +966,14 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
     }
     catch(ex){
         Ti.App.fireEvent("doneSendingPhotos");
-        Omadi.service.sendErrorReport("Exception in upload success: " + ex);
+        message = "Exception in upload success: " + ex + ", photoId: " + photoId + ", nid: " + nid + ", delta: " + delta + ", field_name: " + field_name + ", numTries: " + numTries + ", isBackground: " + isBackground;
+        if(typeof json !== 'undefined'){
+            message += JSON.stringify(json);
+        }
+        Omadi.service.sendErrorReport(message);
     }
+    
+    Omadi.service.uploadFileHTTP = null;
 };
 
 Omadi.service.photoUploadErrorDialog = null;
@@ -969,28 +1022,35 @@ Omadi.service.photoUploadError = function(e){"use strict";
     else if(e.code == 3 || e.code == 401 || e.code == 403){
         // Some kind of authentication error
         if(Omadi.service.photoUploadErrorDialog === null){
-            Omadi.service.photoUploadErrorDialog = Ti.UI.createAlertDialog({
-                title: "Problem with Upload",
-                message: "Please login to continue uploads.",
-                buttonNames: ['Ok'] 
-            });
             
-            Omadi.service.photoUploadErrorDialog.addEventListener('click', function(){
-                 Omadi.service.photoUploadErrorDialog = null;
-            });
-            
-            Omadi.service.photoUploadErrorDialog.show();
+            if(!Omadi.utils.isLoggedIn()){
+                Omadi.service.photoUploadErrorDialog = Ti.UI.createAlertDialog({
+                    title: "Problem with Upload",
+                    message: "Please login to continue uploads.",
+                    buttonNames: ['Ok'] 
+                });
+                
+                Omadi.service.photoUploadErrorDialog.addEventListener('click', function(){
+                     Omadi.service.photoUploadErrorDialog = null;
+                });
+                
+                Omadi.service.photoUploadErrorDialog.show();
+            }
         }
         
         Omadi.service.doBackgroundUploads = false;
     }
     else if(e.code == 410 || e.code == 412){
-        // Node was deleted, so delete db entry immediately and save image to gallery
+        // Node was deleted, orso delete db entry immediately and save image to gallery
+        saveFailedUpload = true;
+    }
+    else if (e.code == 406){
+        // Something was wrong with the file - too small for a photo or video
         saveFailedUpload = true;
     }
     else if(e.code == -1){
         
-        if(e.error == "Gone"){
+        if(e.error == "Gone" || e.error == 'Precondition Failed'){
             saveFailedUpload = true;
         }
         else{
@@ -999,6 +1059,10 @@ Omadi.service.photoUploadError = function(e){"use strict";
                 saveFailedUpload = true;
             }
         }
+    }
+    else if(e.code == 2){
+        // Do nothing - this is a request timed out error code
+        saveFailedUpload = false;
     }
     
     try{
@@ -1034,13 +1098,8 @@ Omadi.service.photoUploadError = function(e){"use strict";
     }
     
     Ti.App.fireEvent("doneSendingPhotos");
-    
-    // if(this.error.toString().indexOf('Timeout') !== -1){
-    // message = "A photo failed to upload.  Please check your Internet connection. Once you connect, the photo will be automatically uploaded.";
-    // }
-    // else{
-    // message = 'There was a problem uploading your photo. Details: ' + this.status + " " + this.error;
-    // }
+ 
+    Omadi.service.uploadFileHTTP = null;
 };
 
 Omadi.service.getLastUploadStartTimestamp = function(){"use strict";
@@ -1108,16 +1167,58 @@ Omadi.service.uploadBackgroundFile = function(){"use strict";
     }
 };
 
+Omadi.service.uploadFileHTTP = null;
+
+Omadi.service.abortFileUpload = function(){"use strict";
+    var db;
+    
+    if(typeof Omadi.service.uploadFileHTTP !== 'undefined' && Omadi.service.uploadFileHTTP !== null){
+        Omadi.service.uploadFileHTTP.abort();
+        Ti.API.info("Aborted current file upload.");
+        
+        db = Omadi.utils.openListDatabase();
+        db.execute("UPDATE _files SET uploading = 0");
+        db.close();
+        
+        Omadi.service.uploadFileHTTP = null;
+    }
+};
+
 Omadi.service.uploadFile = function(isBackground) {"use strict";
     /*jslint eqeq:true, plusplus: true*/
     /*global Base64*/
-    var http, listDB, result, isUploading, nowTimestamp, 
+    var listDB, result, isUploading, nowTimestamp, 
         lastUploadStartTimestamp, tmpImageView, 
         blobImage, maxDiff, imageData, uploadPhoto,
-        numFilesReadyToUpload, payload, cookie;
+        numFilesReadyToUpload, payload, cookie, origAppStartMillis;
         
     if(typeof isBackground === 'undefined'){
         isBackground = false;
+    }
+    
+    // Remove the activity if the appStartMillis don't match the current runtime
+    // This may come up when the app crashes, and this function is called multiple times
+    // for all the open activities, but it should only be called once
+    if(typeof Ti.UI.currentWindow.appStartMillis !== 'undefined'){
+        origAppStartMillis = Ti.App.Properties.getDouble('omadi:appStartMillis', 0);
+        if(origAppStartMillis == 0){
+            Omadi.service.sendErrorReport("AppStartMillis upload was zero, background: " + isBackground);
+        }
+        else{
+            if(origAppStartMillis != Ti.UI.currentWindow.appStartMillis){
+                if(Ti.App.isAndroid){
+                    Omadi.service.sendErrorReport("An extra android upload activity was shut down, background: " + isBackground);
+                    Ti.Android.currentActivity.finish();
+                }
+                else{
+                    Omadi.service.sendErrorReport("An extra iOS upload event was shut down, background: " + isBackground);
+                    return;
+                }
+            }
+        }
+    }
+    else{
+        Omadi.service.sendErrorReport("AppStartMillis upload was undefined, background: " + isBackground);
     }
     
     //Omadi.service.sendErrorReport("In uploadFile");
@@ -1162,7 +1263,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
                         // Reset all photos to not uploading in case there was an error previously
                         listDB.execute("UPDATE _files SET uploading = 0 WHERE uploading <> 0");
                         
-                        if ((Omadi.service.currentFileUpload.file_data === null || Omadi.service.currentFileUpload.file_data.length < 10) && Omadi.service.currentFileUpload.id > 0) {
+                        if ((Omadi.service.currentFileUpload.file_data === null || typeof Omadi.service.currentFileUpload.file_data.length === 'undefined' || Omadi.service.currentFileUpload.file_data.length < 10) && Omadi.service.currentFileUpload.id > 0) {
                             listDB.execute("DELETE FROM _files WHERE id=" + Omadi.service.currentFileUpload.id);
                             Omadi.service.sendErrorReport("Deleted a file from the database");
                             return;
@@ -1179,30 +1280,30 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
                     if (Omadi.service.currentFileUpload.nid > 0) {
                         
                         try{
-                            http = Ti.Network.createHTTPClient({
+                            Omadi.service.uploadFileHTTP = Ti.Network.createHTTPClient({
                                 enableKeepAlive: false
                             });
                             
-                            http.onsendstream = Omadi.service.photoUploadStream;
-                            http.onload = Omadi.service.photoUploadSuccess;
-                            http.onerror = Omadi.service.photoUploadError;
+                            Omadi.service.uploadFileHTTP.onsendstream = Omadi.service.photoUploadStream;
+                            Omadi.service.uploadFileHTTP.onload = Omadi.service.photoUploadSuccess;
+                            Omadi.service.uploadFileHTTP.onerror = Omadi.service.photoUploadError;
                             
-                            http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/upload.json');
-                            http.timeout = 45000;
+                            Omadi.service.uploadFileHTTP.open('POST', Omadi.DOMAIN_NAME + '/js-sync/upload.json');
+                            Omadi.service.uploadFileHTTP.timeout = 45000;
                             
                             //Ti.API.error(Omadi.DOMAIN_NAME);
                             
-                            http.nid = Omadi.service.currentFileUpload.nid;
-                            http.photoId = Omadi.service.currentFileUpload.id;
-                            http.delta = Omadi.service.currentFileUpload.delta;
-                            http.field_name = Omadi.service.currentFileUpload.field_name;
-                            http.uploadPart = Omadi.service.currentFileUpload.uploadPart;
-                            http.numUploadParts = Omadi.service.currentFileUpload.numUploadParts;
-                            http.tries = Omadi.service.currentFileUpload.tries;
-                            http.isBackground = isBackground;
+                            Omadi.service.uploadFileHTTP.nid = Omadi.service.currentFileUpload.nid;
+                            Omadi.service.uploadFileHTTP.photoId = Omadi.service.currentFileUpload.id;
+                            Omadi.service.uploadFileHTTP.delta = Omadi.service.currentFileUpload.delta;
+                            Omadi.service.uploadFileHTTP.field_name = Omadi.service.currentFileUpload.field_name;
+                            Omadi.service.uploadFileHTTP.uploadPart = Omadi.service.currentFileUpload.uploadPart;
+                            Omadi.service.uploadFileHTTP.numUploadParts = Omadi.service.currentFileUpload.numUploadParts;
+                            Omadi.service.uploadFileHTTP.tries = Omadi.service.currentFileUpload.tries;
+                            Omadi.service.uploadFileHTTP.isBackground = isBackground;
         
                             //Ti.API.info("Uploading to " + domainName);
-                            http.setRequestHeader("Content-Type", "application/json");
+                            Omadi.service.uploadFileHTTP.setRequestHeader("Content-Type", "application/json");
                             
                             if(isBackground){
                                 listDB = Omadi.utils.openListDatabase();
@@ -1211,13 +1312,13 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
                                     cookie = result.fieldByName('token');
                                     //Ti.API.error("cook: " + cookie);
                                     if(cookie > ""){
-                                        http.setRequestHeader("Cookie", cookie);
+                                        Omadi.service.uploadFileHTTP.setRequestHeader("Cookie", cookie);
                                     }
                                 }
                                 listDB.close();   
                             }
                             else{
-                                Omadi.utils.setCookieHeader(http);
+                                Omadi.utils.setCookieHeader(Omadi.service.uploadFileHTTP);
                             }
                             
                             payload = JSON.stringify({
@@ -1255,9 +1356,9 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
                             // var file = Ti.Filesystem.getFile(Omadi.service.currentFileUpload.file_path);
                             // var blob = file.read();
                             
-                            http.setValidatesSecureCertificate(false);
+                            Omadi.service.uploadFileHTTP.setValidatesSecureCertificate(false);
                             
-                            http.send(payload);
+                            Omadi.service.uploadFileHTTP.send(payload);
                         }
                         catch(ex2){
                             Omadi.service.sendErrorReport("Exception sending upload data: " + ex2);
@@ -1266,7 +1367,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
                     }
                 }
                 else{
-                    Omadi.service.sendErrorReport("Next photo data is null");
+                    Ti.API.error("Next photo data is null");
                 }
             }
         }

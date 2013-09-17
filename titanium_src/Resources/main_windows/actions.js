@@ -777,11 +777,11 @@ function addRefresh(){"use strict";
         Omadi.display.loading('Refreshing...');
         Omadi.service.checkUpdate();
         
-        Ti.App.removeEventListener('finishedDataSync', refreshCallbackDraft);
-        Ti.App.addEventListener('finishedDataSync', refreshCallbackDraft);
+        Ti.App.removeEventListener('omadi:finishedDataSync', refreshCallbackDraft);
+        Ti.App.addEventListener('omadi:finishedDataSync', refreshCallbackDraft);
         
         Ti.UI.currentWindow.addEventListener('close', function(){
-            Ti.App.removeEventListener('finishedDataSync', refreshCallbackDraft);
+            Ti.App.removeEventListener('omadi:finishedDataSync', refreshCallbackDraft);
         });
     });
     

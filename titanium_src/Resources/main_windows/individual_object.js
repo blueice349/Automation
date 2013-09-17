@@ -217,7 +217,7 @@ while (fields_result.isValidRow()) {
 var results = db.execute('SELECT * FROM ' + curWin.type + ' WHERE  nid = ' + curWin.nid);
 
 function displayLargeImage(e){"use strict";
-    Omadi.display.displayLargeImage(e.source, curWin.nid, e.source.imageVal);
+    Omadi.display.displayLargeImage(e.source, e.source.nid, e.source.fid);
 }
 
 function openTelephone(e){"use strict";
@@ -246,6 +246,10 @@ function openFileViewer(e){"use strict";
 function getDrivingDirectionsView(e){"use strict";
     var address = e.source.text.replace("\n", ' ');
     Omadi.display.getDrivingDirectionsTo(address);                                   
+}
+
+function displayFullImage(e){"use strict";
+    Omadi.display.displayFullImage(e.source);
 }
 
 function doFieldOutput(fieldObj) {"use strict";
@@ -385,8 +389,9 @@ function doFieldOutput(fieldObj) {"use strict";
                                 autorotate: true,
                                 borderColor : '#333',
                                 borderWidth : 2,
-                                imageVal : fileId,
-                                bigImg : null
+                                fid : fileId,
+                                bigImg : null,
+                                nid: node.nid
                             });
     
                             contentImage.addEventListener('click', displayLargeImage);
@@ -418,6 +423,8 @@ function doFieldOutput(fieldObj) {"use strict";
                                 filePath : imagePath,
                                 isImage : true
                             });
+                            
+                            contentImage.addEventListener('click', displayFullImage);
                             
                             valueView.add(contentImage);
                             

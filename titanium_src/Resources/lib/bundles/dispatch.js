@@ -28,7 +28,6 @@ Omadi.bundles.dispatch.showNewDispatchJobs = function(){"use strict";
           Ti.App.Properties.setBool('newDispatchJob', false);
           
           Omadi.display.openJobsWindow();
-          
       }
 };
 
@@ -197,7 +196,7 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
                 }                    
 
                 Omadi.data.setUpdating(false);
-                Ti.App.fireEvent('finishedDataSync');
+                Ti.App.fireEvent('omadi:finishedDataSync');
             };
         
             http.onerror = function(e) {
@@ -363,7 +362,7 @@ Omadi.bundles.dispatch.updateStatus = function(nid, status){"use strict";
             }
     
             Omadi.data.setUpdating(false);
-            Ti.App.fireEvent('finishedDataSync');
+            Ti.App.fireEvent('omadi:finishedDataSync');
         };
     
         http.onerror = function(e) {
@@ -461,10 +460,8 @@ Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
     
         db = Omadi.utils.openMainDatabase();
         
-        sql = "SELECT n.nid, dispatch.dispatch_form_reference, dispatch.field_dispatching_status FROM node n ";
-        sql += "INNER JOIN dispatch ON dispatch.nid = n.nid ";
-        sql += "WHERE n.table_name = 'dispatch' ";
-        sql += "AND dispatch.dispatch_form_reference IS NOT NULL AND dispatch.dispatch_form_reference > 0 ";
+        sql = "SELECT dispatch.nid, dispatch.dispatch_form_reference, dispatch.field_dispatching_status FROM dispatch ";
+        sql += "WHERE dispatch.dispatch_form_reference IS NOT NULL AND dispatch.dispatch_form_reference > 0 ";
         sql += "AND dispatch.dispatched_to_driver IS NULL "; 
         sql += "AND dispatch.field_dispatching_status != 'job_complete'";
         result = db.execute(sql);
@@ -518,10 +515,8 @@ Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
         currentUserUid = Omadi.utils.getUid();
         db = Omadi.utils.openMainDatabase();
         
-        sql = "SELECT n.nid, dispatch.dispatch_form_reference FROM node n ";
-        sql += "INNER JOIN dispatch ON dispatch.nid = n.nid ";
-        sql += "WHERE n.table_name = 'dispatch' ";
-        sql += "AND dispatch.dispatch_form_reference IS NOT NULL ";
+        sql = "SELECT dispatch.nid, dispatch.dispatch_form_reference FROM dispatch ";
+        sql += "WHERE dispatch.dispatch_form_reference IS NOT NULL ";
         sql += "AND dispatch.dispatched_to_driver = " + currentUserUid + " "; 
         sql += "AND (dispatch.field_dispatching_status IS NULL OR dispatch.field_dispatching_status <> 'job_complete') ";
         result = db.execute(sql);
@@ -533,7 +528,6 @@ Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
         }
         result.close();
         db.close();
-       
         
         for(i = 0; i < currentUserJobNids.length; i ++){
             

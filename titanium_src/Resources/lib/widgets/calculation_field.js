@@ -4,7 +4,7 @@
 /*global setConditionallyRequiredLabelForInstance, affectsAnotherConditionalField*/
 
 Omadi.widgets.calculation_field = {
-    calculated_field_cache: [],
+    calculated_field_cache: {},
     getFieldView: function(node, instance){"use strict";
         instance.elements = [];
         
@@ -80,9 +80,8 @@ Omadi.widgets.calculation_field = {
             instance: instance
         });
         
-        //Ti.API.debug('before table');
         calculationTableView = Omadi.widgets.calculation_field.getTableView(node, instance);
-        //Ti.API.debug('after table');
+        
         widgetView.add(calculationTableView);
         
         if(settings.include_recalculate_button == 1){
@@ -101,6 +100,9 @@ Omadi.widgets.calculation_field = {
             
             recalculateButton.addEventListener('click', function(e){
                 var instance = e.source.instance;
+                
+                // Reset the cached values
+                Omadi.widgets.calculation_field.calculated_field_cache = {};
                 Omadi.widgets.shared.redraw(instance);
             });
             
@@ -115,7 +117,7 @@ Omadi.widgets.calculation_field = {
         var entity, final_value, row_values, idx, calculation_row, value, field_1_multiplier,
             field_2_multiplier, numeric_multiplier, cached_final_value, instances, required_instance_final_values,
             parent_field, start_timestamp, end_timestamp, difference, at_time, relative_increment_time, day_count, 
-            parent_node, zero;
+            parent_node, zero, criteria_index, field_name, finalValue;
         
         /*global list_search_node_matches_search_criteria,mktime*/
         
@@ -147,12 +149,16 @@ Omadi.widgets.calculation_field = {
                             // Make sure a dependency calculation is made first
                             required_instance_final_values = Omadi.widgets.calculation_field.getRowValues(node, instances[calculation_row.field_name_1]);
                             Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_1] = required_instance_final_values[0].final_value;
+                            
+                            // TODO: make sure the node is a reference, not just a value, as nested calls to this could result in incorrect calculations
+                            if(typeof required_instance_final_values[0].final_value !== 'undefined'){
+                                node[calculation_row.field_name_1].dbValues[0] = required_instance_final_values[0].final_value;
+                            }
                         }
-            
+                        
                         if (calculation_row.field_name_1 != null && calculation_row.field_name_1 != "") {
                             
-                            if (Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_1] != null) {
-                                
+                            if (typeof Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_1] !== 'undefined' && Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_1] != null) {
                                 field_1_multiplier = Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_1];
                             }
                             else if (calculation_row.type == 'parent_field_value') {
@@ -163,7 +169,6 @@ Omadi.widgets.calculation_field = {
                                         typeof parent_node[calculation_row.field_name_1] !== 'undefined' && 
                                         typeof parent_node[calculation_row.field_name_1].dbValues !== 'undefined' && 
                                         parent_node[calculation_row.field_name_1].dbValues[0] != null) {
-                                            
                                             field_1_multiplier = parent_node[calculation_row.field_name_1].dbValues[0];
                                     }
                                 }
@@ -171,8 +176,11 @@ Omadi.widgets.calculation_field = {
                             else if (node[calculation_row.field_name_1] != null && node[calculation_row.field_name_1].dbValues[0] != null) {
                                 field_1_multiplier = node[calculation_row.field_name_1].dbValues[0];
                             }
+                            
+                            // If this is a time calculation, the saved value can be completely 
+                            // recalculated to the current value, or if empty according to the current time
                             if (calculation_row.datestamp_end_field != null && calculation_row.datestamp_end_field != "") {
-    
+                                
                                 start_timestamp = field_1_multiplier;
                                 field_1_multiplier = 0;
                                 
@@ -201,8 +209,9 @@ Omadi.widgets.calculation_field = {
                                             field_1_multiplier = difference / (3600 * 24 * 7);
                                             break;
                                     }
+                                  
                                     if (calculation_row.type == 'time') {
-    
+                                        
                                         if (calculation_row.interval_rounding == 'up') {
                                             field_1_multiplier = Math.ceil(field_1_multiplier);
                                         }
@@ -229,11 +238,11 @@ Omadi.widgets.calculation_field = {
                                             }
             
                                             field_1_multiplier = day_count;
+                                            
                                         }
                                     }
                                 }
                             }
-                        
                         }
             
                         if (calculation_row.field_name_2 != null && calculation_row.field_name_2 != "") {
@@ -264,6 +273,34 @@ Omadi.widgets.calculation_field = {
                         zero = false;
                         
                         if (calculation_row.criteria != null && calculation_row.criteria.search_criteria != null) {
+                            
+                            // Make sure any search criteria items are calculated before passing to the matching function
+                            for (criteria_index in calculation_row.criteria.search_criteria) {
+                                if (calculation_row.criteria.search_criteria.hasOwnProperty(criteria_index)) {
+                
+                                    field_name = calculation_row.criteria.search_criteria[criteria_index].field_name;
+                                    
+                                    if(typeof instances[field_name] !== 'undefined'){
+                                        if(instances[field_name].type == 'calculation_field'){
+                                            
+                                            if(typeof Omadi.widgets.calculation_field.calculated_field_cache[field_name] !== 'undefined'){
+                                                // Use the cached value if available
+                                                finalValue = Omadi.widgets.calculation_field.calculated_field_cache[field_name];
+                                            }
+                                            else{
+                                                // Calculate the value of the search criteria value
+                                                required_instance_final_values = Omadi.widgets.calculation_field.getRowValues(node, instances[field_name]);
+                                                finalValue = required_instance_final_values[0].final_value;  
+                                                Omadi.widgets.calculation_field.calculated_field_cache[field_name] = finalValue;
+                                            }
+                                            
+                                            // TODO: make sure the node is a reference, not just a value, as nested calls to this could result in incorrect calculations
+                                            node[field_name].dbValues[0] = finalValue; 
+                                        }
+                                    }
+                                }
+                            }
+                            
                             if (!list_search_node_matches_search_criteria(node, calculation_row.criteria)) {
                                 zero = true;
                             }
@@ -298,7 +335,7 @@ Omadi.widgets.calculation_field = {
                         else if (value && numeric_multiplier) {
                             value *= Number(numeric_multiplier);
                         }
-            
+                            
                         if (zero) {
                             value = 0;
                         }
@@ -309,6 +346,8 @@ Omadi.widgets.calculation_field = {
                         });
                        
                         final_value += Number(value);
+                        
+                        
                     }
                 }
             }
@@ -320,6 +359,7 @@ Omadi.widgets.calculation_field = {
             }];
     
         }
+        
         return [];
 
     },
@@ -340,8 +380,8 @@ Omadi.widgets.calculation_field = {
             }
         }
         
-        
         result = Omadi.widgets.calculation_field.getRowValues(node, instance);
+        
         row_values = result[0].rows;
     
         tableView = Ti.UI.createView({
@@ -359,8 +399,6 @@ Omadi.widgets.calculation_field = {
     
             for ( idx = 0; idx < row_values.length; idx++) {
                 cal_value = row_values[idx].value;
-                
-                Ti.API.debug(cal_value);
                 
                 if(cal_value === null){
                     cal_value = 0;
@@ -537,7 +575,6 @@ Omadi.widgets.calculation_field = {
         }
         else {
     
-            //Ti.API.info(row_values.length + " rows");
             cal_value = (row_values.length == 1) ? result[0].final_value : 0;
             if(typeof (cal_value) == 'string'){
                 cal_value = parseFloat(cal_value);
@@ -606,7 +643,7 @@ Omadi.widgets.calculation_field = {
                 value = Ti.UI.createLabel({
                     text : "  " + cal_value_str,
                     textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
-                    left : 0,
+                    left : '2%',
                     font : {
                         fontSize : 16
                     },

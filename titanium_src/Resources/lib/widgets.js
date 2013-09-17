@@ -92,53 +92,55 @@ Omadi.widgets.fontSize = 16;
 Omadi.widgets.getDBValues = function(fieldWrapper){"use strict";
     var dbValues = [], i, j, k, m, children, subChildren, subSubChildren, subSubSubChildren;
     
-    children = fieldWrapper.getChildren();
-    
-    // Find the dbValue up to 4 levels deep in the UI elements
-    // The only one going 4 levels deep is the image field with widget signature
-    
-    for(i = 0; i < children.length; i ++){
-        if(typeof children[i].dbValue !== 'undefined'){
-            if(typeof children[i].dbValue === 'object' && children[i].dbValue instanceof Array){
-                dbValues = children[i].dbValue;
-            }
-            else{
-                dbValues.push(Omadi.utils.trimWhiteSpace(children[i].dbValue));
-            }
-        }
-        else if(children[i].getChildren().length > 0){
-            subChildren = children[i].getChildren();
-            for(j = 0; j < subChildren.length; j ++){
-                if(typeof subChildren[j].dbValue !== 'undefined'){
-                    
-                    if(typeof subChildren[j].dbValue === 'object' && subChildren[j].dbValue instanceof Array){
-                        //Ti.API.debug(JSON.stringify(subChildren[j].dbValue));
-                        dbValues = subChildren[j].dbValue;
-                    }
-                    else{
-                        dbValues.push(Omadi.utils.trimWhiteSpace(subChildren[j].dbValue));
-                    }
+    if(typeof fieldWrapper !== 'undefined'){
+        children = fieldWrapper.getChildren();
+        
+        // Find the dbValue up to 4 levels deep in the UI elements
+        // The only one going 4 levels deep is the image field with widget signature
+        
+        for(i = 0; i < children.length; i ++){
+            if(typeof children[i].dbValue !== 'undefined'){
+                if(typeof children[i].dbValue === 'object' && children[i].dbValue instanceof Array){
+                    dbValues = children[i].dbValue;
                 }
-                else if(subChildren[j].getChildren().length > 0){
-                    subSubChildren = subChildren[j].getChildren();
-                    for(k = 0; k < subSubChildren.length; k ++){
-                        if(typeof subSubChildren[k].dbValue !== 'undefined'){
-                            if(typeof subSubChildren[k].dbValue === 'object' && subSubChildren[k].dbValue instanceof Array){
-                                dbValues = subSubChildren[k].dbValue;
-                            }
-                            else{
-                                dbValues.push(Omadi.utils.trimWhiteSpace(subSubChildren[k].dbValue));
-                            }
+                else{
+                    dbValues.push(Omadi.utils.trimWhiteSpace(children[i].dbValue));
+                }
+            }
+            else if(children[i].getChildren().length > 0){
+                subChildren = children[i].getChildren();
+                for(j = 0; j < subChildren.length; j ++){
+                    if(typeof subChildren[j].dbValue !== 'undefined'){
+                        
+                        if(typeof subChildren[j].dbValue === 'object' && subChildren[j].dbValue instanceof Array){
+                            //Ti.API.debug(JSON.stringify(subChildren[j].dbValue));
+                            dbValues = subChildren[j].dbValue;
                         }
-                        else if(subSubChildren[k].getChildren().length > 0){
-                            subSubSubChildren = subSubChildren[k].getChildren();
-                            for(m = 0; m < subSubSubChildren.length; m ++){
-                                if(typeof subSubSubChildren[m].dbValue !== 'undefined'){
-                                    if(typeof subSubSubChildren[m].dbValue === 'object' && subSubSubChildren[m].dbValue instanceof Array){
-                                        dbValues = subSubSubChildren[m].dbValue;
-                                    }
-                                    else{
-                                        dbValues.push(Omadi.utils.trimWhiteSpace(subSubSubChildren[m].dbValue));
+                        else{
+                            dbValues.push(Omadi.utils.trimWhiteSpace(subChildren[j].dbValue));
+                        }
+                    }
+                    else if(subChildren[j].getChildren().length > 0){
+                        subSubChildren = subChildren[j].getChildren();
+                        for(k = 0; k < subSubChildren.length; k ++){
+                            if(typeof subSubChildren[k].dbValue !== 'undefined'){
+                                if(typeof subSubChildren[k].dbValue === 'object' && subSubChildren[k].dbValue instanceof Array){
+                                    dbValues = subSubChildren[k].dbValue;
+                                }
+                                else{
+                                    dbValues.push(Omadi.utils.trimWhiteSpace(subSubChildren[k].dbValue));
+                                }
+                            }
+                            else if(subSubChildren[k].getChildren().length > 0){
+                                subSubSubChildren = subSubChildren[k].getChildren();
+                                for(m = 0; m < subSubSubChildren.length; m ++){
+                                    if(typeof subSubSubChildren[m].dbValue !== 'undefined'){
+                                        if(typeof subSubSubChildren[m].dbValue === 'object' && subSubSubChildren[m].dbValue instanceof Array){
+                                            dbValues = subSubSubChildren[m].dbValue;
+                                        }
+                                        else{
+                                            dbValues.push(Omadi.utils.trimWhiteSpace(subSubSubChildren[m].dbValue));
+                                        }
                                     }
                                 }
                             }
@@ -148,7 +150,6 @@ Omadi.widgets.getDBValues = function(fieldWrapper){"use strict";
             }
         }
     }
-    
     return dbValues;
 };
 
@@ -213,56 +214,13 @@ Omadi.widgets.setValueWidgetProperty = function(field_name, property, value, set
         value = value + "".toString();
     }
     
-    children = fieldWrappers[field_name].getChildren();
-    
-    if(setIndex == -1){
-        for(i = 0; i < children.length; i ++){
-            if(typeof children[i].dbValue !== 'undefined'){
-               
-                if(property.length == 1){
-                    fieldWrappers[field_name].children[i][property[0]] = value;
-                }
-                else if(property.length == 2){
-                    fieldWrappers[field_name].children[i][property[0]][property[1]] = value;
-                }
-            }
-            
-            if(children[i].getChildren().length > 0){
-                subChildren = children[i].getChildren();
-                for(j = 0; j < subChildren.length; j ++){
-                    if(typeof subChildren[j].dbValue !== 'undefined'){
-                        //Ti.API.debug(field_name + " " + property[0] + " sub children");
-                        if(property.length == 1){
-                            fieldWrappers[field_name].children[i].children[j][property[0]] = value;
-                        }
-                        else if(property.length == 2){
-                            fieldWrappers[field_name].children[i].children[j][property[0]][property[1]] = value;
-                        }
-                    }
-                    
-                    if(subChildren[j].getChildren().length > 0){
-                        subSubChildren = subChildren[j].getChildren();
-                        for(k = 0; k < subSubChildren.length; k ++){
-                            if(typeof subSubChildren[k].dbValue !== 'undefined'){
-                                //Ti.API.debug(field_name + " " + property[0] + " sub sub children");
-                                if(property.length == 1){
-                                    //Ti.API.debug('value: ' + value);
-                                    fieldWrappers[field_name].children[i].children[j].children[k][property[0]] = value;
-                                }
-                                else if(property.length == 2){
-                                    fieldWrappers[field_name].children[i].children[j].children[k][property[0]][property[1]] = value;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    else{
-        for(i = 0; i < children.length; i ++){
-            if(typeof children[i].dbValue !== 'undefined'){
-                if(i == setIndex){
+    if(typeof fieldWrappers[field_name] !== 'undefined'){
+        children = fieldWrappers[field_name].getChildren();
+        
+        if(setIndex == -1){
+            for(i = 0; i < children.length; i ++){
+                if(typeof children[i].dbValue !== 'undefined'){
+                   
                     if(property.length == 1){
                         fieldWrappers[field_name].children[i][property[0]] = value;
                     }
@@ -270,13 +228,12 @@ Omadi.widgets.setValueWidgetProperty = function(field_name, property, value, set
                         fieldWrappers[field_name].children[i][property[0]][property[1]] = value;
                     }
                 }
-            }
-            
-            if(children[i].getChildren().length > 0){
-                subChildren = children[i].getChildren();
-                for(j = 0; j < subChildren.length; j ++){
-                    if(typeof subChildren[j].dbValue !== 'undefined'){
-                        if(j == setIndex){
+                
+                if(children[i].getChildren().length > 0){
+                    subChildren = children[i].getChildren();
+                    for(j = 0; j < subChildren.length; j ++){
+                        if(typeof subChildren[j].dbValue !== 'undefined'){
+                            //Ti.API.debug(field_name + " " + property[0] + " sub children");
                             if(property.length == 1){
                                 fieldWrappers[field_name].children[i].children[j][property[0]] = value;
                             }
@@ -284,18 +241,64 @@ Omadi.widgets.setValueWidgetProperty = function(field_name, property, value, set
                                 fieldWrappers[field_name].children[i].children[j][property[0]][property[1]] = value;
                             }
                         }
-                    }
-                    
-                    if(subChildren[j].getChildren().length > 0){
-                        subSubChildren = subChildren[j].getChildren();
-                        for(k = 0; k < subSubChildren.length; k ++){
-                            if(typeof subSubChildren[k].dbValue !== 'undefined'){
-                                if(k == setIndex){
+                        
+                        if(subChildren[j].getChildren().length > 0){
+                            subSubChildren = subChildren[j].getChildren();
+                            for(k = 0; k < subSubChildren.length; k ++){
+                                if(typeof subSubChildren[k].dbValue !== 'undefined'){
+                                    //Ti.API.debug(field_name + " " + property[0] + " sub sub children");
                                     if(property.length == 1){
+                                        //Ti.API.debug('value: ' + value);
                                         fieldWrappers[field_name].children[i].children[j].children[k][property[0]] = value;
                                     }
                                     else if(property.length == 2){
                                         fieldWrappers[field_name].children[i].children[j].children[k][property[0]][property[1]] = value;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else{
+            for(i = 0; i < children.length; i ++){
+                if(typeof children[i].dbValue !== 'undefined'){
+                    if(i == setIndex){
+                        if(property.length == 1){
+                            fieldWrappers[field_name].children[i][property[0]] = value;
+                        }
+                        else if(property.length == 2){
+                            fieldWrappers[field_name].children[i][property[0]][property[1]] = value;
+                        }
+                    }
+                }
+                
+                if(children[i].getChildren().length > 0){
+                    subChildren = children[i].getChildren();
+                    for(j = 0; j < subChildren.length; j ++){
+                        if(typeof subChildren[j].dbValue !== 'undefined'){
+                            if(j == setIndex){
+                                if(property.length == 1){
+                                    fieldWrappers[field_name].children[i].children[j][property[0]] = value;
+                                }
+                                else if(property.length == 2){
+                                    fieldWrappers[field_name].children[i].children[j][property[0]][property[1]] = value;
+                                }
+                            }
+                        }
+                        
+                        if(subChildren[j].getChildren().length > 0){
+                            subSubChildren = subChildren[j].getChildren();
+                            for(k = 0; k < subSubChildren.length; k ++){
+                                if(typeof subSubChildren[k].dbValue !== 'undefined'){
+                                    if(k == setIndex){
+                                        if(property.length == 1){
+                                            fieldWrappers[field_name].children[i].children[j].children[k][property[0]] = value;
+                                        }
+                                        else if(property.length == 2){
+                                            fieldWrappers[field_name].children[i].children[j].children[k][property[0]][property[1]] = value;
+                                        }
                                     }
                                 }
                             }

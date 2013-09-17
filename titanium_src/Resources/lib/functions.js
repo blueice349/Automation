@@ -571,6 +571,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                         }
                                     }
                                     break;
+                                    
                                 case 'number_integer':
                                 case 'number_decimal':
                                     

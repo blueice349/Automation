@@ -295,8 +295,8 @@ function loggingOutJobs(){"use strict";
     Ti.App.removeEventListener("savedNode", savedNodeJobs);
     Ti.App.addEventListener("savedNode", savedNodeJobs);
     
-    Ti.App.removeEventListener('finishedDataSync', finishedDataSyncJobs);
-    Ti.App.addEventListener('finishedDataSync', finishedDataSyncJobs);
+    Ti.App.removeEventListener('omadi:finishedDataSync', finishedDataSyncJobs);
+    Ti.App.addEventListener('omadi:finishedDataSync', finishedDataSyncJobs);
     
     Ti.App.removeEventListener('loggingOut', loggingOutJobs);
     Ti.App.addEventListener('loggingOut', loggingOutJobs);
@@ -356,7 +356,7 @@ function loggingOutJobs(){"use strict";
     
     Ti.UI.currentWindow.addEventListener('close', function(){
         Ti.App.removeEventListener("savedNode", savedNodeJobs);
-        Ti.App.removeEventListener('finishedDataSync', finishedDataSyncJobs);
+        Ti.App.removeEventListener('omadi:finishedDataSync', finishedDataSyncJobs);
         Ti.App.removeEventListener('loggingOut', loggingOutJobs);
         
         // Clean up memory

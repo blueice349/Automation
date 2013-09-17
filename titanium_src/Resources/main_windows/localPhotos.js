@@ -2,7 +2,6 @@
 /*jslint eqeq:true, plusplus: true*/ 
 /*global Omadi */
 
-
 Ti.include('/lib/functions.js');
 
 var currentWinWrapper;
@@ -267,15 +266,19 @@ Gallery.remove = function(imageView){"use strict";
 
     gallery.remove(imageView.parentItem); 
     imageView.parentItem = null;
-     
 };
 
 Gallery.update = function(){"use strict";
     
-    var i, recentFiles, images, item, imageView, modified, items, tempFile, thumbFile, imageFile;
+    var i, recentFiles, images, item, imageView, modified, items, tempFile, thumbFile, 
+        imageFile, printedCurrentBar, printedDraftBar, printedNeverBar, file;
     
     items = [];
     recentFiles = [];
+    
+    printedCurrentBar = false;
+    printedDraftBar = false;
+    printedNeverBar = false;
     
     images = Omadi.data.getPhotosNotUploaded();
     
@@ -305,7 +308,8 @@ Gallery.update = function(){"use strict";
                 degrees: images[i].degrees,
                 filePath: images[i].filePath,
                 thumbPath: images[i].thumbPath,
-                photoId: images[i].photoId
+                photoId: images[i].photoId,
+                nid: images[i].nid
             });
         }
     }
@@ -314,21 +318,140 @@ Gallery.update = function(){"use strict";
         recentFiles = recentFiles.sort(Omadi.utils.fileSortByModified);
         
         for(i = 0; i < recentFiles.length; i ++){
+            
+            file = recentFiles[i];
+            
+            if(file.nid > 0){
+                
+                if(!printedCurrentBar){
+                
+                    gallery.add(Ti.UI.createLabel({
+                        text: 'Photos Currently Uploading',
+                        backgroundGradient : {
+                            type : 'linear',
+                            startPoint : {
+                                x : '50%',
+                                y : '0%'
+                            },
+                            endPoint : {
+                                x : '50%',
+                                y : '100%'
+                            },
+                            colors : [{
+                                color : '#2BC4F3',
+                                offset : 0.0
+                            }, {
+                                color : '#00AEEE',
+                                offset : 0.33
+                            }, {
+                                color : '#0095DA',
+                                offset : 1.0
+                            }]
+                        },
+                        color: '#fff',
+                        height: 35,
+                        width: '100%',
+                        font: {
+                            fontSize: 16,
+                            fontWeight: 'bold'
+                        },
+                        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+                    }));
+                    printedCurrentBar = true;
+                }
+            }
+            else if(file.nid == -1000000){
+                
+                if(!printedNeverBar){
+                    gallery.add(Ti.UI.createLabel({
+                        text: 'Photos Never Going to Upload',
+                        backgroundGradient : {
+                            type : 'linear',
+                            startPoint : {
+                                x : '50%',
+                                y : '0%'
+                            },
+                            endPoint : {
+                                x : '50%',
+                                y : '100%'
+                            },
+                            colors : [{
+                                color : '#F37E5F',
+                                offset : 0.0
+                            }, {
+                                color : '#EC1C24',
+                                offset : 0.33
+                            }, {
+                                color : '#D12128',
+                                offset : 1.0
+                            }]
+                        },
+                        color: '#fff',
+                        height: 35,
+                        width: '100%',
+                        font: {
+                            fontSize: 16,
+                            fontWeight: 'bold'
+                        },
+                        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+                    }));
+                    printedNeverBar = true;
+                }
+            }
+            else{
+                if(!printedDraftBar){
+                    gallery.add(Ti.UI.createLabel({
+                        text: 'Photos in Drafts',
+                        backgroundGradient : {
+                            type : 'linear',
+                            startPoint : {
+                                x : '50%',
+                                y : '0%'
+                            },
+                            endPoint : {
+                                x : '50%',
+                                y : '100%'
+                            },
+                            colors : [{
+                                color : '#2BC4F3',
+                                offset : 0.0
+                            }, {
+                                color : '#00AEEE',
+                                offset : 0.33
+                            }, {
+                                color : '#0095DA',
+                                offset : 1.0
+                            }]
+                        },
+                        color: '#fff',
+                        height: 35,
+                        width: '100%',
+                        font: {
+                            fontSize: 16,
+                            fontWeight: 'bold'
+                        },
+                        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+                    }));
+                    printedDraftBar = true;
+                }
+            }
+            
             item = Ti.UI.createView({
                 height: 120,
                 width: 120,
                 isChecked: false,
-                photoFile: recentFiles[i].file,
+                photoFile: file.file,
                 left: 5,
                 top: 5,
                 borderWidth: 0,
                 borderColor: '#ccc',
-                backgroundColor: '#fff'
+                backgroundColor: '#fff',
+                photoId: file.photoId
             });
             
-            imageFile = recentFiles[i].thumbFile;
+            imageFile = file.thumbFile;
             if(!imageFile.exists() || !imageFile.isFile()){
-                imageFile = recentFiles[i].file;
+                imageFile = file.file;
             }
             
             imageView = Ti.UI.createImageView({
@@ -341,54 +464,13 @@ Gallery.update = function(){"use strict";
                 touchEnabled: true,
                 borderWidth: 1,
                 borderColor: '#666',
-                filePath: recentFiles[i].filePath,
-                photoId: recentFiles[i].photoId,
+                filePath: file.filePath,
+                photoId: file.photoId,
                 bigImg: null,
                 parentItem: item
             });
             
-            // if(Ti.App.isAndroid && recentFiles[i].degrees > 0){
-                // transform = Ti.UI.create2DMatrix();
-//              
-                // rotateDegrees = recentFiles[i].degrees;
-                // if(rotateDegrees == 270){
-                    // rotateDegrees = 90;
-                // }
-                // else if(rotateDegrees == 90){
-                    // rotateDegrees = 270;
-                // }
-//                 
-                // transform = transform.rotate(rotateDegrees);
-//                 
-                // //imageView.setTransform(transform);
-            // }
-            
             item.add(imageView);
-            
-            // row.add(Ti.UI.createLabel({
-                // text: Omadi.utils.getTimeAgoStr(recentFiles[i].modifiedTimestamp / 1000),
-                // left: 60,
-                // touchEnabled: false,
-                // ellipsize: true
-            // }));
-//             
-            // checkbox = Ti.UI.createView({
-                // width : 35,
-                // height : 35,
-                // borderRadius : 4,
-                // borderColor : '#333',
-                // borderWidth : 1,
-                // backgroundColor : '#FFF',
-                // enabled : true,
-                // right: 10,
-                // parentRow: row,
-                // touchEnabled: false
-            // });
-//             
-            // row.checkbox = checkbox;
-//             
-            // row.add(checkbox);
-            //items.push(item);
             
             imageView.addEventListener('click', Gallery.imageClicked);
             
@@ -466,6 +548,24 @@ Gallery.update = function(){"use strict";
     
     Ti.UI.currentWindow.setBackgroundColor("#fff");
     Ti.UI.currentWindow.add(currentWinWrapper);
+    
+    Ti.App.addEventListener('photoUploaded', function(e){
+        var photoId, i;
+        
+        if(typeof e.id !== 'undefined' && gallery.children){
+            photoId = e.id;
+            
+            for(i = 0; i < gallery.children.length; i ++){
+                if(typeof gallery.children[i].photoId !== 'undefined'){
+                    if(gallery.children[i].photoId == photoId){
+                        gallery.remove(gallery.children[i]);
+                        gallery.children[i] = null;
+                        break;
+                    }
+                }
+            }
+        }
+    });
     
 }());
 

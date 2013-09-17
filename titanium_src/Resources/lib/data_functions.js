@@ -778,7 +778,7 @@ Omadi.data.getPhotosNotUploaded = function(){"use strict";
     filePaths = [];
     
     db = Omadi.utils.openListDatabase();
-    result = db.execute("SELECT * FROM _files WHERE type IN ('image','signature')");
+    result = db.execute("SELECT * FROM _files WHERE type IN ('image','signature') ORDER BY nid DESC");
     
     while(result.isValidRow()){
         filePath = result.fieldByName("file_path");
@@ -788,7 +788,8 @@ Omadi.data.getPhotosNotUploaded = function(){"use strict";
             filePath: filePath,
             thumbPath: thumbPath,
             degrees: result.fieldByName("degrees", Ti.Database.FIELD_TYPE_INT),
-            photoId: result.fieldByName("id", Ti.Database.FIELD_TYPE_INT)
+            photoId: result.fieldByName("id", Ti.Database.FIELD_TYPE_INT),
+            nid: result.fieldByName("nid", Ti.Database.FIELD_TYPE_INT)
         });
         
         result.next();
@@ -1566,15 +1567,17 @@ Omadi.data.getNumFilesReadyToUpload = function(uid){"use strict";
     return retval;
 };
 
-Omadi.data.maxBytesPerUpload = 3145728; // 3MB
+Omadi.data.maxBytesPerUpload = 2097152; // 2MB
 
 Omadi.data.getFileArray = function(onlyUploadable){"use strict";
-    var files, sql, listDB, result, nextFile, now, node, message, lastErrorTimestamp;
+    var files, sql, listDB, result, nextFile, now, node, message, lastErrorTimestamp, 
+        neverUploadIds, dialog;
     
     if(typeof onlyUploadable === 'undefined'){
         onlyUploadable = true;
     }
     
+    neverUploadIds = [];
     files = [];
     
     sql = "SELECT * FROM _files ";
@@ -1598,75 +1601,120 @@ Omadi.data.getFileArray = function(onlyUploadable){"use strict";
         
         while(result.isValidRow()) {
             
-            nextFile = {
-                nid : result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT),
-                id : result.fieldByName('id', Ti.Database.FIELD_TYPE_INT),
-                file_path : result.fieldByName('file_path'),
-                file_name : result.fieldByName('file_name'),
-                field_name : result.fieldByName('field_name'),
-                delta : result.fieldByName('delta', Ti.Database.FIELD_TYPE_INT),
-                timestamp : result.fieldByName('timestamp', Ti.Database.FIELD_TYPE_INT),
-                tries : result.fieldByName('tries', Ti.Database.FIELD_TYPE_INT),
-                latitude : result.fieldByName('latitude'),
-                longitude : result.fieldByName('longitude'),
-                accuracy : result.fieldByName('accuracy', Ti.Database.FIELD_TYPE_INT),
-                degrees : result.fieldByName('degrees', Ti.Database.FIELD_TYPE_INT),
-                thumb_path : result.fieldByName('thumb_path'),
-                type : result.fieldByName('type'),
-                filesize : result.fieldByName('filesize', Ti.Database.FIELD_TYPE_INT),
-                bytes_uploaded : result.fieldByName('bytes_uploaded', Ti.Database.FIELD_TYPE_INT),
-                fid : result.fieldByName('fid', Ti.Database.FIELD_TYPE_INT),
-                uid : result.fieldByName('uid', Ti.Database.FIELD_TYPE_INT),
-                client_account : result.fieldByName('client_account'),
-                uploading : result.fieldByName('uploading')
-            };
-            
-            if(nextFile.type == 'video' || nextFile.type == 'file'){
-                nextFile.numUploadParts = Math.ceil(nextFile.filesize / Omadi.data.maxBytesPerUpload);
-                nextFile.uploadPart = (nextFile.bytes_uploaded / Omadi.data.maxBytesPerUpload) + 1;
-                nextFile.uploading_bytes = Omadi.data.maxBytesPerUpload;
-            }
-            else{
-                nextFile.numUploadParts = 1;
-                nextFile.uploadPart = 1;
-                nextFile.uploading_bytes = nextFile.filesize;
-            }
-            
-            if(onlyUploadable){
+            try{
                 
-                if(nextFile.nid <= 0){
+           
+                nextFile = {
+                    nid : result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT),
+                    id : result.fieldByName('id', Ti.Database.FIELD_TYPE_INT),
+                    file_path : result.fieldByName('file_path'),
+                    file_name : result.fieldByName('file_name'),
+                    field_name : result.fieldByName('field_name'),
+                    delta : result.fieldByName('delta'),
+                    timestamp : result.fieldByName('timestamp'),
+                    tries : result.fieldByName('tries'),
+                    latitude : result.fieldByName('latitude'),
+                    longitude : result.fieldByName('longitude'),
+                    accuracy : result.fieldByName('accuracy'),
+                    degrees : result.fieldByName('degrees'),
+                    thumb_path : result.fieldByName('thumb_path'),
+                    type : result.fieldByName('type'),
+                    filesize : result.fieldByName('filesize'),
+                    bytes_uploaded : result.fieldByName('bytes_uploaded'),
+                    fid : result.fieldByName('fid'),
+                    uid : result.fieldByName('uid'),
+                    client_account : result.fieldByName('client_account'),
+                    uploading : result.fieldByName('uploading')
+                };
+                
+                if(nextFile.filesize != null){
+                    nextFile.filesize = parseInt(nextFile.filesize, 10);
+                }
+                else{
+                    nextFile.filesize = 0;
+                }
+                
+                if(nextFile.bytes_uploaded != null){
+                    nextFile.bytes_uploaded = parseInt(nextFile.bytes_uploaded, 10);
+                }
+                else{
+                    nextFile.bytes_uploaded = 0;
+                }
+                
+                if(nextFile.tries != null){
+                    nextFile.tries = parseInt(nextFile.tries, 10);
+                }
+                else{
+                    nextFile.tries = 0;
+                }
+                
+                if(nextFile.delta != null){
+                    nextFile.delta = parseInt(nextFile.delta, 10);
+                }
+                else{
+                    nextFile.delta = 0;
+                }
+                
+                if(nextFile.timestamp != null){
+                    nextFile.timestamp = parseInt(nextFile.timestamp, 10);
+                }
+                else{
+                    nextFile.timestamp = 0;
+                }
+                
+                if(nextFile.fid != null){
+                    nextFile.fid = parseInt(nextFile.fid, 10);
+                }
+                else{
+                    nextFile.fid = 0;
+                }
+                
+                if(nextFile.type == 'video' || nextFile.type == 'file'){
+                    nextFile.numUploadParts = Math.ceil(nextFile.filesize / Omadi.data.maxBytesPerUpload);
+                    nextFile.uploadPart = (nextFile.bytes_uploaded / Omadi.data.maxBytesPerUpload) + 1;
+                    nextFile.uploading_bytes = Omadi.data.maxBytesPerUpload;
+                }
+                else{
+                    nextFile.numUploadParts = 1;
+                    nextFile.uploadPart = 1;
+                    nextFile.uploading_bytes = nextFile.filesize;
+                }
+                
+                if(onlyUploadable){
                     
-                    if(now - lastErrorTimestamp > (60 * 15)){
-                        // Only send errors at most every 15 minutes
-                        
+                    if(nextFile.nid <= 0){
+                            
                         if(nextFile.timestamp < now - 1800){
                             // If the file was done over 30 minutes ago, find out more
                             if(nextFile.nid != -1000000){
                                 node = Omadi.data.nodeLoad(nextFile.nid);
                                 if(node !== null){
                                     if(node.flag_is_updated != 3){
-                                        // If this is not a draft, send up the info
+                                        // If this is not a draft or continuous save, send up the debug
                                         message = "Not a negative draft: " + JSON.stringify(node);
                                         // Limit node message to 2000 characters
                                         message = message.substring(0, 2000);
                                         message += JSON.stringify(nextFile);
                                         Omadi.service.sendErrorReport(message);
+                                        
+                                        // Do not remove this as an upload just yet.
+                                        // It could be a continuous save node
+                                        // Need to look at error data from users using this
+                                        // to determine what to do in this case
                                     }
                                 }
                                 else{
                                     message = "Null negative Node with nid " + nextFile.nid + " ";
                                     message += JSON.stringify(nextFile);
                                     Omadi.service.sendErrorReport(message);
+                                    
+                                    // This file should stop attempting to be uploaded
+                                    neverUploadIds.push(nextFile.id);
                                 }
-                                
-                                Ti.App.Properties.setDouble('lastFileErrorTimestamp', now);
                             }
                         }
                     }
-                }
-                else if(nextFile.tries > 10){
-                    if(now - lastErrorTimestamp > (60 * 15)){
-                        // Only send errors at most every 15 minutes
+                    else if(nextFile.tries > 10){
                         
                         // Show everything if the file was attempted more than 10 times
                         node = Omadi.data.nodeLoad(nextFile.nid);
@@ -1685,18 +1733,23 @@ Omadi.data.getFileArray = function(onlyUploadable){"use strict";
                             Omadi.service.sendErrorReport(message);
                         }
                         
-                        Ti.App.Properties.setDouble('lastFileErrorTimestamp', now);
+                        // This file should stop attempting to be uploaded
+                        neverUploadIds.push(nextFile.id);
+                    }
+                    else{
+                        // Only allow positive nids into the possibilities for upload
+                        files.push(nextFile);
                     }
                 }
                 else{
-                    // Only allow positive nids into the possibilities for upload
+                    // Put all files into the array
                     files.push(nextFile);
                 }
             }
-            else{
-                
-                // Put all files into the array
-                files.push(nextFile);
+            catch(innerEx){
+                // Catch the inner exception so it doesn't throw away all uploads
+                Ti.API.error("Error in inner file query load: " + innerEx);
+                Omadi.service.sendErrorReport("Error in get file query load: " + innerEx);
             }
             
             result.next();
@@ -1707,9 +1760,26 @@ Omadi.data.getFileArray = function(onlyUploadable){"use strict";
         Ti.API.error("Error in get file query load: " + exDB);
         Omadi.service.sendErrorReport("Error in get file query load: " + exDB);
     }
-    finally{
-        listDB.close();
+    
+    if(neverUploadIds.length > 0){
+        // Set files to never be attempted again
+        listDB.execute("UPDATE _files SET nid = -1000000 WHERE id IN(" + neverUploadIds.join(',') + ")");
+        dialog = Ti.UI.createAlertDialog({
+           title: 'Upload Problem',
+           message: neverUploadIds.length + " file" + (neverUploadIds.length > 1 ? 's' : '') + " could not be uploaded. You can see non-uploaded files under 'Actions' -> 'Photos Not Uploaded'",  
+           buttonNames: ['Ok', 'Take Me There']
+        });
+        
+        dialog.addEventListener('click', function(e){
+            if(e.index === 1){
+                Omadi.display.openLocalPhotosWindow();
+            }
+        });
+        
+        dialog.show();
     }
+        
+    listDB.close();
     
     return files;
 };
@@ -1719,8 +1789,8 @@ Omadi.data.getNextPhotoData = function(){"use strict";
     var listDB, result, nextFile, imageFile, imageBlob, maxDiff, 
         newWidth, newHeight, resizedFile, isResized, resizedFilePath, 
         resizeRetval, readyForUpload, restartSuggested, dialog, deleteFromDB,
-        fileStream, buffer, numBytesRead, maxBytesPerUpload, sql, position, 
-        filePart, resizedBlob, maxPhotoPixels, files, i, errorOccurred;
+        fileStream, buffer, numBytesRead, sql, position, 
+        filePart, resizedBlob, maxPhotoPixels, files, i, errorOccurred, retryEncode;
    
     nextFile = null;
     readyForUpload = true;
@@ -1744,6 +1814,8 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                 Omadi.service.sendErrorReport("The file at " + nextFile.file_path + " for node #" + nextFile.nid + " cannot be found for upload.");
                 
                 alert("The file at " + nextFile.file_path + " for node #" + nextFile.nid + " cannot be found for upload.");
+                
+                errorOccurred = true;
             }
             else{
                 
@@ -1757,14 +1829,28 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                             Omadi.data.cameraAndroid = require('com.omadi.newcamera');
                         }
                         
+                        retryEncode = false;
+                        
                         try{
                             nextFile.file_data = Omadi.data.cameraAndroid.base64Encode(nextFile.file_path);
-                            nextFile.loaded = true;
+                            
+                            if(nextFile.file_data.length > 20000){
+                                // If we have at least 20KB of data, we probably have a photo
+                                nextFile.loaded = true;
+                            }
+                            else{
+                                Ti.API.debug("Defined exception in Android base64Encode: " + nextFile.file_data);
+                                Omadi.service.sendErrorReport("Defined exception in Android base64Encode: " + nextFile.file_data);
+                                retryEncode = true;
+                            }
                         }
                         catch(exbase64){
                             Ti.API.debug("Exception reading Android base64Encode: " + exbase64);
                             Omadi.service.sendErrorReport("Exception reading Android base64Encode: " + exbase64);
-                            
+                            retryEncode = true;
+                        }
+                        
+                        if(retryEncode){
                             // Fall back to original method of encoding the image
                             try{
                                 imageBlob = imageFile.read();
@@ -1773,7 +1859,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                                     errorOccurred = true;
                                     Ti.API.debug("Image Blob is null");
                                     Omadi.service.sendErrorReport("Image blob is null");
-                                }
+                                } 
                             }
                             catch(exRead){
                                 Ti.API.debug("Exception reading file: " + exRead);
@@ -1875,7 +1961,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                     try{
                         fileStream = imageFile.open(Ti.Filesystem.MODE_READ);
                         buffer = Ti.createBuffer({
-                            length: maxBytesPerUpload 
+                            length: Omadi.data.maxBytesPerUpload 
                         });
                         
                         Ti.API.debug("bytes already uploaded: " + nextFile.bytes_uploaded);
@@ -2052,6 +2138,38 @@ Omadi.data.sendDebugData = function(showResponse){"use strict";
     Omadi.service.sendErrorReport(message);
 };
 
+Omadi.data.resetDatabases = function(){"use strict";
+    var listDB, db, gpsDB;
+    
+    Ti.App.Properties.setDouble('omadi:fullResetLastSync', Omadi.data.getLastUpdateTimestamp());
+    
+    // Do not remove files with a positive nid, as they can still be uploaded
+    listDB = Omadi.utils.openListDatabase();
+    listDB.execute("UPDATE _files SET nid = -1000000 WHERE nid <= 0");
+    listDB.close();
+    
+    db = Omadi.utils.openMainDatabase();    
+    if (Ti.App.isAndroid) {
+        //Remove the database
+        db.remove();
+        db.close();
+    }
+    else {
+        // The file isn't actually being deleted
+        db.file.deleteFile();
+        db.close();
+    }
+
+    // Install database with an empty version
+    db = Omadi.utils.openMainDatabase();
+    db.close();
+
+    // Clear out the GPS database alerts
+    gpsDB = Omadi.utils.openGPSDatabase();
+    gpsDB.execute('DELETE FROM alerts');
+    gpsDB.close();  
+};
+
 
 Omadi.data.processFetchedJson = function(){"use strict";
     var nodeType, mainDB, gpsDB, dbFile, tableName, GMT_OFFSET, dialog, newNotifications, numItems;
@@ -2066,43 +2184,16 @@ Omadi.data.processFetchedJson = function(){"use strict";
         // }
 
         if (Omadi.service.fetchedJSON.delete_all === true || Omadi.service.fetchedJSON.delete_all === "true") {
-            Ti.API.info("=================== ############ ===================");
+            
             Ti.API.info("Reseting mainDB, delete_all is required");
-            Ti.API.info("=================== ############ ===================");
-
+            
             //If delete_all is present, delete all contents:
-            mainDB = Omadi.utils.openMainDatabase();
-            if (Ti.App.isAndroid) {
-                //Remove the mainDB
-                mainDB.remove();
-                mainDB.close();
-            }
-            else {
-                dbFile = mainDB.getFile();
-                mainDB.close();
-                //phisically removes the file
-                dbFile.deleteFile();
-            }
-
-            // Reset the database
-            mainDB = Omadi.utils.openMainDatabase();
-            mainDB.close();
-
-            gpsDB = Omadi.utils.openGPSDatabase();
-            gpsDB.execute('DELETE FROM alerts');
-            gpsDB.close();
+            Omadi.data.resetDatabases();
         }
 
-        //Ti.API.info("Max itens: " + parseInt(json.total_item_count));
-
-        //mainDB.execute('UPDATE updated SET "timestamp"=' + json.request_time + ' WHERE "rowid"=1');
-        
-        //Ti.API.error(json.request_time);
         numItems = parseInt(Omadi.service.fetchedJSON.total_item_count, 10);
         Ti.API.info("Total items to install: " + numItems);
 
-        
-        
         //If mainDB is already last version
         if (numItems == 0) {
             //mainDB.execute('UPDATE updated SET "timestamp"=' + json.request_time + ' WHERE "rowid"=1');
@@ -2192,7 +2283,7 @@ Omadi.data.processFetchedJson = function(){"use strict";
                 Omadi.service.progressBar = null;
             }
             
-            Ti.App.fireEvent("syncInstallComplete");   
+            Ti.App.fireEvent("omadi:syncInstallComplete");   
         }
 
         if ( typeof Omadi.service.fetchedJSON.new_app !== 'undefined' && Omadi.service.fetchedJSON.new_app.length > 0) {
@@ -2200,12 +2291,10 @@ Omadi.data.processFetchedJson = function(){"use strict";
             Omadi.display.newAppAvailable(Omadi.service.fetchedJSON.new_app);
         }
         
-        if(!Ti.App.Properties.getBool("doingFullReset", false)){
-            Omadi.bundles.dispatch.showNewDispatchJobs();
-            Omadi.display.showNewNotificationDialog();
-        }
         
-        Ti.App.Properties.setBool("doingFullReset", false);
+        Omadi.bundles.dispatch.showNewDispatchJobs();
+        Omadi.display.showNewNotificationDialog();
+        
     }
     catch(ex) {
         alert("Saving Sync Data: " + ex);
@@ -2582,7 +2671,14 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
 
     var closeDB, instances, fakeFields, queries, i, j, field_name, query, 
         fieldNames, no_data, values, value, notifications = {}, numSets, 
-        result, reasonIndex, reason, alertReason, dialog, updateNid, listDB;
+        result, reasonIndex, reason, alertReason, dialog, updateNid, 
+        listDB, fullResetLastSync, nodeChangedTimestamp;
+    
+    
+    fullResetLastSync = Ti.App.Properties.getDouble('omadi:fullResetLastSync', 0);
+    
+    // No full reset is happening after this process, so reset, the value is cached above
+    Ti.App.Properties.setDouble('omadi:fullResetLastSync', 0);
     
     closeDB = false;
     queries = [];
@@ -2812,24 +2908,33 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
     
                             queries.push(query);
                             
-                            if (type == 'notification' && Omadi.service.fetchedJSON.node[type].insert[i].viewed == 0) {
-                                notifications = Ti.App.Properties.getObject('newNotifications', {
-                                    count : 0,
-                                    nid : 0
-                                });
-    
-                                Ti.App.Properties.setObject('newNotifications', {
-                                    count : notifications.count + 1,
-                                    nid : Omadi.service.fetchedJSON.node[type].insert[i].nid
-                                });
+                            // Don't display new items from a full reset, as it is just annoying
+                            
+                            nodeChangedTimestamp = parseInt(Omadi.service.fetchedJSON.node[type].insert[i].changed, 10);
+                            
+                            // Allow a notification or dispatch screen to be shown if this is not a full reset 
+                            // OR if the node has actually changed even though this is a full reset
+                            if((fullResetLastSync > 0 && nodeChangedTimestamp >= fullResetLastSync) || fullResetLastSync == 0){
+                            
+                                if (type == 'notification' && Omadi.service.fetchedJSON.node[type].insert[i].viewed == 0) {
+                                    notifications = Ti.App.Properties.getObject('newNotifications', {
+                                        count : 0,
+                                        nid : 0
+                                    });
+        
+                                    Ti.App.Properties.setObject('newNotifications', {
+                                        count : notifications.count + 1,
+                                        nid : Omadi.service.fetchedJSON.node[type].insert[i].nid
+                                    });
+                                }
+                                else if(Omadi.service.fetchedJSON.node[type].insert[i].viewed == 0 && 
+                                        typeof Omadi.service.fetchedJSON.node[type].insert[i].from_dispatch !== 'undefined' &&
+                                        Omadi.service.fetchedJSON.node[type].insert[i].from_dispatch > 0){
+                                     
+                                     Ti.App.Properties.setBool('newDispatchJob', true);
+                                }
                             }
-                            else if(Omadi.service.fetchedJSON.node[type].insert[i].viewed == 0 && 
-                                    typeof Omadi.service.fetchedJSON.node[type].insert[i].from_dispatch !== 'undefined' &&
-                                    Omadi.service.fetchedJSON.node[type].insert[i].from_dispatch > 0){
-                                        
-                                Ti.API.info("NEW DISPATCH");    
-                                Ti.App.Properties.setBool('newDispatchJob', true);
-                            }
+                            
                             
                             if ( typeof Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid !== 'undefined') {
                                 Ti.API.debug("Deleting nid: " + Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid);
@@ -2879,16 +2984,34 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
 
             if (Omadi.service.progressBar != null) {
                 for ( i = 0; i < queries.length; i++) {
-                    mainDB.execute(queries[i]);
-                    if (i % 4 == 0) {
-                        Omadi.service.progressBar.set();
-                        numSets++;
+                    // Don't allow one bad node to ruin the rest of the inserts
+                    // Do a try/catch for each one
+                    try{
+                        mainDB.execute(queries[i]);
+                        if (i % 4 == 0) {
+                            Omadi.service.progressBar.set();
+                            numSets++;
+                        }   
+                    }
+                    catch(ex1) {
+                        Ti.API.error("Saving single Node Data from JSON: " + ex1);
+                        alert("Error saving node Data for " + type + ": " + ex1 + ". Details: " + queries[i]);
+                        
                     }
                 }
             }
             else {
                 for ( i = 0; i < queries.length; i++) {
-                    mainDB.execute(queries[i]);
+                    // Don't allow one bad node to ruin the rest of the inserts
+                    // Do a try/catch for each one
+                    try{
+                        mainDB.execute(queries[i]); 
+                    }
+                    catch(ex2) {
+                        Ti.API.error("Saving single Node Data from JSON: " + ex2);
+                        alert("Error saving node Data for " + type + ": " + ex2 + ". Details: " + queries[i]);
+                        
+                    }
                 }
             }
 
@@ -2903,7 +3026,8 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
     }
     catch(ex) {
         Ti.API.error("Saving Node Data from JSON: " + ex);
-        alert("Saving Form Data: " + ex);
+        alert("Saving Form Data for " + type + ": " + ex);
+        
     }
     finally {
         try {

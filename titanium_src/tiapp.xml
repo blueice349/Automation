@@ -24,7 +24,7 @@
     </deployment-targets>
     <id>com.omadi.crm</id>
     <name>Omadi</name>
-    <version>2.6.0</version>
+    <version>2.6.5</version>
     <publisher>Omadi</publisher>
     <url>http://www.omadi.com</url>
     <description>Mobile CRM From Omadi</description>
@@ -44,7 +44,7 @@
             <service url="android_gps_event.js"/>
         </services>
         <manifest android:installLocation="preferExternal"
-            android:versionCode="29" android:versionName="2.6.0">
+            android:versionCode="33" android:versionName="2.6.5">
             <uses-sdk android:minSdkVersion="10"/>
             <uses-permission android:name="android.permission.READ_LOGS"/>
             <uses-permission android:name="android.permission.CAMERA"/>
@@ -65,6 +65,7 @@
             <application android:debuggable="false"
                 android:icon="@drawable/appicon" android:label="Omadi" android:name="OmadiApplication">
                 <activity android:alwaysRetainTaskState="true"
+                    android:clearTaskOnLaunch="false"
                     android:configChanges="keyboardHidden|orientation"
                     android:label="Omadi" android:name=".OmadiActivity" android:theme="@style/Theme.Titanium">
                     <intent-filter>

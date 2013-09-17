@@ -117,34 +117,58 @@ public class NewcameraModule extends KrollModule
 	}
 	
 	@Kroll.method
-	public String base64Encode(String filePath) throws java.io.FileNotFoundException, java.io.IOException{
+	public String base64Encode(String filePath){
 		int bytesRead = 0;
 		String base64 = "";
 		int bufferSize;
 		FileInputStream fin = null;
+		StackTraceElement[] stackTrace;
 		
-		filePath = filePath.replaceFirst("^file://", "");
-		
-		File file = new File(filePath);
-		
-		bufferSize = (int)file.length();
-		
-		fin = new FileInputStream(file);
-		
-		byte[] buffer = new byte[bufferSize]; 
-		
-		BufferedInputStream buf = new BufferedInputStream(fin);
-	
-		bytesRead = buf.read(buffer, 0, bufferSize);
-		
-		if(bytesRead != bufferSize){
+		try{
+			filePath = filePath.replaceFirst("^file://", "");
 			
+			File file = new File(filePath);
+			
+			bufferSize = (int)file.length();
+			
+			fin = new FileInputStream(file);
+			
+			byte[] buffer = new byte[bufferSize]; 
+			
+			BufferedInputStream buf = new BufferedInputStream(fin);
+		
+			bytesRead = buf.read(buffer, 0, bufferSize);
+			
+			if(bytesRead != bufferSize){
+				
+			}
+			
+			buf.close();
+			fin.close();
+			
+			base64 = Base64.encodeToString(buffer, Base64.DEFAULT);
 		}
-		
-		buf.close();
-		fin.close();
-		
-		base64 = Base64.encodeToString(buffer, Base64.DEFAULT);
+		catch(java.io.FileNotFoundException fileEx){
+			base64 = "File Not Found: " + fileEx.getMessage() + " " + filePath + " ";
+			stackTrace = fileEx.getStackTrace();
+			for(StackTraceElement element : stackTrace){
+				base64 += "\n\nclass:" + element.getClassName() + ", file:" + element.getFileName() + ", method" + element.getMethodName() + ", line:" + element.getLineNumber() + ", isnative" + element.isNativeMethod();
+			}
+		}
+		catch(java.io.IOException ioEx){
+			base64 = "IO Exception: " + ioEx.getMessage();
+			stackTrace = ioEx.getStackTrace();
+			for(StackTraceElement element : stackTrace){
+				base64 += "\n\nclass:" + element.getClassName() + ", file:" + element.getFileName() + ", method" + element.getMethodName() + ", line:" + element.getLineNumber() + ", isnative" + element.isNativeMethod();
+			}
+		}
+		catch(Exception e){
+			base64 = "Other Exception: " + e.getMessage();
+			stackTrace = e.getStackTrace();
+			for(StackTraceElement element : stackTrace){
+				base64 += "\n\nclass:" + element.getClassName() + ", file:" + element.getFileName() + ", method" + element.getMethodName() + ", line:" + element.getLineNumber() + ", isnative" + element.isNativeMethod();
+			}
+		}
 		
 		return base64;
 	}

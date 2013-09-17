@@ -266,6 +266,25 @@ Omadi.display.showLogoutDialog = function(){"use strict";
 };
 
 Omadi.display.logoutButtonPressed = function(){"use strict";
+    
+    // try{
+        // var intent = Ti.Android.createIntent({
+            // action: Ti.Android.ACTION_MAIN,
+            // flags: Ti.Android.FLAG_ACTIVITY_CLEAR_TOP,
+            // packageName: 'com.omadi.crm',
+            // className: 'OmadiActivity'
+        // });
+        // intent.addCategory(Ti.Android.CATEGORY_LAUNCHER);
+        // Ti.Android.currentActivity.startActivity(intent);
+//         
+        // Omadi.utils.closeApp();
+//     
+    // }
+    // catch(ex){
+        // alert(ex);
+    // }
+//     
+    // return;
     if (Omadi.bundles.inspection.userShouldDoInspection()) {
         Omadi.bundles.inspection.askToCreateInspection(true);
     }

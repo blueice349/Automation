@@ -278,6 +278,14 @@ function loggingOutLoginScreen(){"use strict";
     updateUploadBytes();
     Omadi.service.doBackgroundUploads = true;
     
+    Ti.UI.currentWindow.appStartMillis = (new Date()).getTime(); 
+    Ti.App.Properties.setDouble('omadi:appStartMillis', Ti.UI.currentWindow.appStartMillis);
+    
+    // Make sure we don't have multiple photoupload checks
+    if(typeof Ti.App.backgroundPhotoUploadCheck !== 'undefined'){
+        clearInterval(Ti.App.backgroundPhotoUploadCheck);
+    }
+    
     Ti.App.backgroundPhotoUploadCheck = setInterval(Omadi.service.uploadBackgroundFile, 60000);
 }
 
@@ -804,8 +812,13 @@ function loggingOutLoginScreen(){"use strict";
                     Ti.App.removeEventListener('bytesStreamed', bytesStreamedLogin);
                     
                     Omadi.display.doneLoading();
+                    
+                    // Stop uploading a background file, as the new login with invalidate the session
+                    Omadi.service.abortFileUpload();
+                    
                     mainMenuWindow = Omadi.display.openMainMenuWindow({
-                        fromSavedCookie: false
+                        fromSavedCookie: false,
+                        appStartMillis: Ti.UI.currentWindow.appStartMillis
                     });
                     
                     // Right when the main menu window closes, check for additional files to upload
@@ -905,9 +918,13 @@ function loggingOutLoginScreen(){"use strict";
             }
             
             Ti.App.removeEventListener('bytesStreamed', bytesStreamedLogin);
-
+            
+            // Stop uploading a background file, as the new login with invalidate the session
+            Omadi.service.abortFileUpload();
+            
             mainMenuWindow = Omadi.display.openMainMenuWindow({
-                fromSavedCookie: true
+                fromSavedCookie: true,
+                appStartMillis: Ti.UI.currentWindow.appStartMillis
             });
             
             // Right when the main menu window closes, check for additional files to upload

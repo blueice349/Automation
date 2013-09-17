@@ -411,7 +411,7 @@ Omadi.widgets.image = {
         allUsedFileNames = [];
         
         for(i = 0; i < allImageViews.length; i ++){
-            if(typeof allImageViews[i].filePath !== 'undefined' && allImageViews[i].filePath.length > 0){
+            if(typeof allImageViews[i].filePath !== 'undefined' && allImageViews[i].filePath !== null && allImageViews[i].filePath.length > 0){
                 filename = allImageViews[i].filePath.replace(/^.*[\\\/]/, '');
                 allUsedFileNames.push(filename);
                 Ti.API.debug("used: " + filename);
@@ -699,7 +699,7 @@ Omadi.widgets.image = {
                         Omadi.display.loading("Saving Photo...");
                         
                         filePath = "file://" + event.filePath;
-                        thumbPath = "file://" + event.thumbPath;
+                        thumbPath = ''; //"file://" + event.thumbPath;
                         degrees = event.degrees;
                         
                         //imageView.setImage(filePath);

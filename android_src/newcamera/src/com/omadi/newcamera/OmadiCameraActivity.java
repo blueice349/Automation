@@ -449,34 +449,34 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 					String thumbPath = filePath.replaceAll(".jpg$", "_thumb.jpg");
 					
 					// Create thumbnail
-					try     
-			        {
-			            final int THUMBNAIL_HEIGHT = 100;
-			            Log.d("CAMERA", "CAMERA: thumbPath: " + thumbPath);
-			            
-			            BitmapFactory.Options options = new BitmapFactory.Options();
-			            options.inSampleSize = 4;
-			            
-			            Bitmap imageBitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
-			            Float width = new Float(imageBitmap.getWidth());
-			            Float height = new Float(imageBitmap.getHeight());
-			            Float ratio = width / height;
-
-			            imageBitmap = Bitmap.createScaledBitmap(imageBitmap, (int)(THUMBNAIL_HEIGHT * ratio), THUMBNAIL_HEIGHT, false);
-
-			            thumbOutputStream = new FileOutputStream(thumbPath);
-			            imageBitmap.compress(Bitmap.CompressFormat.JPEG, 90, thumbOutputStream);
-			            thumbOutputStream.close();
-			            
-			            // Save orientation to thumbnail
-				        ExifInterface thumbExif = new ExifInterface(thumbPath);
-				        thumbExif.setAttribute(ExifInterface.TAG_ORIENTATION, orientation + "");
-				        thumbExif.saveAttributes();
-			        }
-			        catch(Exception ex) {
-			        	Log.e("CAMERA", "CAMERA: Could not create thumbnail: " + ex.getMessage());
-			        	thumbPath = "";
-			        }
+//					try     
+//			        {
+//			            final int THUMBNAIL_HEIGHT = 100;
+//			            Log.d("CAMERA", "CAMERA: thumbPath: " + thumbPath);
+//			            
+//			            BitmapFactory.Options options = new BitmapFactory.Options();
+//			            options.inSampleSize = 4;
+//			            
+//			            Bitmap imageBitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
+//			            Float width = new Float(imageBitmap.getWidth());
+//			            Float height = new Float(imageBitmap.getHeight());
+//			            Float ratio = width / height;
+//
+//			            imageBitmap = Bitmap.createScaledBitmap(imageBitmap, (int)(THUMBNAIL_HEIGHT * ratio), THUMBNAIL_HEIGHT, false);
+//
+//			            thumbOutputStream = new FileOutputStream(thumbPath);
+//			            imageBitmap.compress(Bitmap.CompressFormat.JPEG, 90, thumbOutputStream);
+//			            thumbOutputStream.close();
+//			            
+//			            // Save orientation to thumbnail
+//				        ExifInterface thumbExif = new ExifInterface(thumbPath);
+//				        thumbExif.setAttribute(ExifInterface.TAG_ORIENTATION, orientation + "");
+//				        thumbExif.saveAttributes();
+//			        }
+//			        catch(Exception ex) {
+//			        	Log.e("CAMERA", "CAMERA: Could not create thumbnail: " + ex.getMessage());
+//			        	thumbPath = "";
+//			        }
 			        
 					Message msg = Message.obtain();
 					Bundle messageVars = new Bundle();

@@ -23,7 +23,8 @@ Omadi.bundles.inspection.getLastInspectionReportNid = function(vehicleNid){"use 
 };
 
 Omadi.bundles.inspection.askToReviewLastInspection = function(){"use strict";
-    var dialog, bundle, showNextAlert, currentVehicleNid, lastInspectionReportNid;
+    var dialog, bundle, showNextAlert, currentVehicleNid, lastInspectionReportNid, 
+        lastNode, noInspectionDialog, showNoInspectionDialog;
     /*global roles, ROLE_ID_FIELD, alertQueue*/
     
     showNextAlert = false;
@@ -36,6 +37,13 @@ Omadi.bundles.inspection.askToReviewLastInspection = function(){"use strict";
             
             Ti.API.debug("truck nid: " + currentVehicleNid);
             
+            showNoInspectionDialog = false;
+            noInspectionDialog = Ti.UI.createAlertDialog({
+               title: 'No inspection to review',
+               message: "Somebody failed to do their post-shift inspection or it has not synced to this device.",
+               buttonNames: ['OK']
+            });
+            
             if(currentVehicleNid > 0){
                 // The user is currently in a truck
                 
@@ -44,41 +52,55 @@ Omadi.bundles.inspection.askToReviewLastInspection = function(){"use strict";
                 Ti.API.debug("last nid: " + lastInspectionReportNid);
                 
                 if(lastInspectionReportNid > 0){
-                
-                    dialog = Ti.UI.createAlertDialog({
-                       title: 'Review Last Inspection Report?',
-                       buttonNames: ['Review', 'No']
-                    });
                     
-                    dialog.addEventListener('click', function(e){
-                       var newWin, vehicle_nid;
-                       
-                       if(e.index == 0){
-                       
-                           newWin = Omadi.display.openFormWindow('inspection', lastInspectionReportNid, 1);
-                           
-                           if(typeof alertQueue !== 'undefined'){
-                               newWin.addEventListener('close', function(){
-                                    Ti.App.fireEvent('showNextAlertInQueue'); 
-                               });
-                           }
-                       }
-                       else{
-                           if(typeof alertQueue !== 'undefined'){
-                                Ti.App.fireEvent('showNextAlertInQueue');
-                           }
-                       }
-                    });
+                    lastNode = Omadi.data.nodeLoad(lastInspectionReportNid);
                     
-                    if(typeof alertQueue !== 'undefined'){
-                        alertQueue.push(dialog);
+                    if(lastNode){
+                        
+                        if(lastNode.form_part > 0){
+                            // The last inspection pre-shift has already been filled out
+                            showNoInspectionDialog = true;
+                        }
+                        else{
+                            dialog = Ti.UI.createAlertDialog({
+                               title: 'Review Last Inspection Report?',
+                               buttonNames: ['Review', 'No']
+                            });
+                            
+                            dialog.addEventListener('click', function(e){
+                               var newWin, vehicle_nid;
+                               
+                               if(e.index == 0){
+                               
+                                   newWin = Omadi.display.openFormWindow('inspection', lastInspectionReportNid, 1);
+                                   
+                                   if(typeof alertQueue !== 'undefined'){
+                                       newWin.addEventListener('close', function(){
+                                            Ti.App.fireEvent('showNextAlertInQueue'); 
+                                       });
+                                   }
+                               }
+                               else{
+                                   if(typeof alertQueue !== 'undefined'){
+                                        Ti.App.fireEvent('showNextAlertInQueue');
+                                   }
+                               }
+                            });
+                            
+                            if(typeof alertQueue !== 'undefined'){
+                                alertQueue.push(dialog);
+                            }
+                            else{
+                                dialog.show();
+                            }
+                        }
                     }
                     else{
-                        dialog.show();
+                        showNoInspectionDialog = true;
                     }
                 }
                 else{
-                    showNextAlert = true;
+                    showNoInspectionDialog = true;
                 }
             }
             else{
@@ -93,7 +115,17 @@ Omadi.bundles.inspection.askToReviewLastInspection = function(){"use strict";
         showNextAlert = true;
     }
     
-    if(showNextAlert){
+    if(showNoInspectionDialog){
+        
+        if(typeof alertQueue !== 'undefined'){
+            alertQueue.push(noInspectionDialog);
+            Ti.App.fireEvent('showNextAlertInQueue');
+        }
+        else{
+            noInspectionDialog.show();
+        }
+    }
+    else if(showNextAlert){
         if(typeof alertQueue !== 'undefined'){
             Ti.App.fireEvent('showNextAlertInQueue');
         }

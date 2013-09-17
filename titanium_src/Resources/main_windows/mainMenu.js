@@ -787,32 +787,34 @@ function afterUploadCloseMainMenu(){
 }
 
 function loggingOutMainMenu(e){"use strict";
-    var lastUploadStartTimestamp;
+    var lastUploadStartTimestamp, db;
+    
+    Omadi.service.abortFileUpload();
     
     Ti.UI.currentWindow.close();
     
-    lastUploadStartTimestamp = Omadi.service.getLastUploadStartTimestamp();
-                 
-    if(lastUploadStartTimestamp === null){
-        // Not currently uploading anything, so the window can close immediately
-        Ti.API.debug("Closing Main Menu Window Immediately");
-        Ti.UI.currentWindow.close();
-    }
-    else{
-        Ti.API.debug("Waiting to close main menu");
-        Ti.UI.currentWindow.hide();
-        Ti.UI.currentWindow.setVisible(false);
-        Ti.App.closeWindowAfterUpload = true;
-        
-        Ti.App.removeEventListener('photoUploaded', afterUploadCloseMainMenu);
-        Ti.App.addEventListener('photoUploaded', afterUploadCloseMainMenu);
-        
-        Ti.App.removeEventListener('doneSendingPhotos', afterUploadCloseMainMenu);
-        Ti.App.addEventListener('doneSendingPhotos', afterUploadCloseMainMenu);
-        
-        // After 5 minutes, make sure the close listeners are removed if the events take too long to happen 
-        setTimeout(afterUploadCloseMainMenu, 300000);
-    }
+    // lastUploadStartTimestamp = Omadi.service.getLastUploadStartTimestamp();
+//                  
+    // if(lastUploadStartTimestamp === null){
+        // // Not currently uploading anything, so the window can close immediately
+        // Ti.API.debug("Closing Main Menu Window Immediately");
+        // Ti.UI.currentWindow.close();
+    // }
+    // else{
+        // Ti.API.debug("Waiting to close main menu");
+        // Ti.UI.currentWindow.hide();
+        // Ti.UI.currentWindow.setVisible(false);
+        // Ti.App.closeWindowAfterUpload = true;
+//         
+        // Ti.App.removeEventListener('photoUploaded', afterUploadCloseMainMenu);
+        // Ti.App.addEventListener('photoUploaded', afterUploadCloseMainMenu);
+//         
+        // Ti.App.removeEventListener('doneSendingPhotos', afterUploadCloseMainMenu);
+        // Ti.App.addEventListener('doneSendingPhotos', afterUploadCloseMainMenu);
+//         
+        // // After 5 minutes, make sure the close listeners are removed if the events take too long to happen 
+        // setTimeout(afterUploadCloseMainMenu, 300000);
+    // }
 }
 
 function networkChangedMainMenu(e){"use strict";
@@ -829,50 +831,19 @@ function normalUpdateFromMenu(e){"use strict";
 function fullUpdateFromMenu(e){"use strict";
     var dbFile, db, result, fileIds, i, listDB;
     
-    Ti.App.Properties.setBool("doingFullReset", true);
-    
     Omadi.data.setUpdating(true);
-
-    Omadi.data.setLastUpdateTimestamp(0);
-    //If delete_all is present, delete all contents:
 
     if (!Ti.Network.online) {
         alert("You do not have an Internet connection right now, so new data will not be downloaded until you connect.");
     }
     
-    // Do not remove files with a positive nid, as they can still be uploaded
-    listDB = Omadi.utils.openListDatabase();
-    listDB.execute("UPDATE _files SET nid = -1000000 WHERE nid <= 0");
-    listDB.close();
-    
-    db = Omadi.utils.openMainDatabase();    
-    if (Ti.App.isAndroid) {
-        //Remove the database
-        db.remove();
-        db.close();
-    }
-    else {
-        // The file isn't actually being deleted
-        db.file.deleteFile();
-        db.close();
-    }
-
-    // Install database with an empty version
-    db = Omadi.utils.openMainDatabase();
-    db.close();
-
-    // Clear out the GPS database alerts
-    db = Omadi.utils.openGPSDatabase();
-    db.execute('DELETE FROM alerts');
-    db.close();
+    Omadi.data.resetDatabases();
     
     displayWatermark();
     
     setupBottomButtons();
 
     Omadi.data.setUpdating(false);
-    
-    Omadi.data.setLastUpdateTimestamp(0);
     
     Omadi.service.checkUpdate('from_menu');
 }
@@ -918,8 +889,18 @@ function showContinuousSavedNode(){"use strict";
     }
 }
 
+function mainMenuFirstSyncInstallComplete(){"use strict";
+    
+    Ti.App.removeEventListener('omadi:finishedDataSync', mainMenuFirstSyncInstallComplete);
+    
+    Ti.API.debug("hi");
+    
+    // Show the first alert
+    Ti.App.fireEvent('showNextAlertInQueue');
+}
+
 ( function() {"use strict";
-    var db, result, formWindow, time_format, askAboutInspection, dialog, i, showingAlert, firstAlert, nowTimestamp;
+    var db, result, formWindow, time_format, askAboutInspection, dialog, i, showingAlert, nowTimestamp;
     
     // Initialize the global scope variable to map deleted nids to saved positive nids
     Ti.App.deletedNegatives = {};
@@ -980,8 +961,6 @@ function showContinuousSavedNode(){"use strict";
         db = Omadi.utils.openMainDatabase();
         db.execute("INSERT INTO updated (timestamp, updating) VALUES (0, 0)");
         db.close();
-        
-        Ti.App.Properties.setBool("doingFullReset", true);
     }
 
     if (Ti.App.isAndroid) {
@@ -1013,8 +992,8 @@ function showContinuousSavedNode(){"use strict";
     Ti.App.removeEventListener('full_update_from_menu', fullUpdateFromMenu);
     Ti.App.addEventListener('full_update_from_menu', fullUpdateFromMenu);
     
-    Ti.App.removeEventListener('finishedDataSync', setupBottomButtons);
-    Ti.App.addEventListener('finishedDataSync', setupBottomButtons);
+    Ti.App.removeEventListener('omadi:finishedDataSync', setupBottomButtons);
+    Ti.App.addEventListener('omadi:finishedDataSync', setupBottomButtons);
     
     Ti.App.removeEventListener('normal_update_from_menu', normalUpdateFromMenu);
     Ti.App.addEventListener('normal_update_from_menu', normalUpdateFromMenu);
@@ -1022,8 +1001,8 @@ function showContinuousSavedNode(){"use strict";
     Ti.App.removeEventListener('showNextAlertInQueue', showNextAlertInQueue);
     Ti.App.addEventListener('showNextAlertInQueue', showNextAlertInQueue);
     
-    Ti.App.removeEventListener("syncInstallComplete", displayBundleList);
-    Ti.App.addEventListener("syncInstallComplete", displayBundleList);
+    Ti.App.removeEventListener("omadi:syncInstallComplete", displayBundleList);
+    Ti.App.addEventListener("omadi:syncInstallComplete", displayBundleList);
     
     if(Ti.App.isIOS){
         Ti.App.removeEventListener('resume', Omadi.service.checkUpdate);
@@ -1083,14 +1062,6 @@ function showContinuousSavedNode(){"use strict";
     //Omadi.utils.checkVolumeLevel();
     
     Omadi.location.isLocationEnabled();
-
-    if (alertQueue.length) {
-        firstAlert = alertQueue.shift();
-        firstAlert.show();
-    }
-    else{
-        useAlertQueue = false;
-    }
     
     Ti.API.debug("before init");
     Omadi.push_notifications.init();
@@ -1107,13 +1078,13 @@ function showContinuousSavedNode(){"use strict";
         
         Ti.App.removeEventListener('openForm', openFormCallback);
         Ti.App.removeEventListener('showNextAlertInQueue', showNextAlertInQueue);
-        Ti.App.removeEventListener("syncInstallComplete", displayBundleList);
+        Ti.App.removeEventListener("omadi:syncInstallComplete", displayBundleList);
         Ti.App.removeEventListener("doneSendingData", doneSendingDataMainMenu);
         Ti.App.removeEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
         Ti.App.removeEventListener("sendingData", sendingDataMainMenu);
         Ti.App.removeEventListener('loggingOut', loggingOutMainMenu);
         Ti.App.removeEventListener('sendUpdates', Omadi.service.sendUpdates);
-        Ti.App.removeEventListener('finishedDataSync', setupBottomButtons);
+        Ti.App.removeEventListener('omadi:finishedDataSync', setupBottomButtons);
         Ti.App.removeEventListener('normal_update_from_menu', normalUpdateFromMenu);
         Ti.App.removeEventListener('full_update_from_menu', fullUpdateFromMenu);
         
@@ -1147,6 +1118,8 @@ function showContinuousSavedNode(){"use strict";
     
     Ti.API.debug("About to check for updates.");
     
+    // Only after the first sync after login
+    Ti.App.addEventListener('omadi:finishedDataSync', mainMenuFirstSyncInstallComplete);
     Omadi.service.checkUpdate('from_menu');
     
     showContinuousSavedNode();
