@@ -497,14 +497,46 @@ Omadi.display.openViewWindow = function(type, nid) {"use strict";
 };
 
 Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
-
-    var formWindow = Ti.UI.createWindow({
-        navBarHidden : true,
-        url : '/main_windows/form.js',
-        type : type,
-        nid : nid,
-        form_part : form_part
-    });
+    var db, result, formWindow, intNid, isDispatch, dispatchNid;
+    
+    isDispatch = false;
+    
+    intNid = parseInt(nid, 10);
+    if(!isNaN(intNid)){
+        db = Omadi.utils.openMainDatabase();
+        result = db.execute("SELECT dispatch_nid FROM node where nid = " + intNid);
+        if(result.isValidRow()){
+            dispatchNid = result.field(0, Ti.Database.FIELD_TYPE_INT);
+            if(dispatchNid != 0){
+                isDispatch = true;
+            }
+        }
+        result.close();
+        db.close();   
+    }
+    else if(type == 'dispatch'){
+        isDispatch = true;
+    }
+    
+    if(isDispatch){
+        formWindow = Ti.UI.createWindow({
+            navBarHidden : true,
+            url : '/main_windows/dispatch_form.js',
+            type : type,
+            nid : nid,
+            form_part : form_part
+        });
+    }
+    else{
+        formWindow = Ti.UI.createWindow({
+            navBarHidden : true,
+            url : '/main_windows/form.js',
+            type : type,
+            nid : nid,
+            form_part : form_part,
+            usingDispatch : false
+        });
+    }
     
     formWindow.addEventListener('close', Omadi.display.showNewNotificationDialog);
     formWindow.addEventListener('open', Omadi.display.doneLoading);
@@ -648,9 +680,9 @@ Omadi.display.showNewNotificationDialog = function(){"use strict";
  *  Also, the row is set to a background color of #fff when going to view or form
  */
 Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
-    var db, result, options, form_parts, to_type, to_bundle, isEditEnabled, 
+    var db, result, options, buttonData, to_type, to_bundle, isEditEnabled, 
         form_part, node_type, bundle, hasCustomCopy, postDialog, i,
-        extraOptionCallback, extraOptionIndex;
+        extraOptionCallback, extraOptionIndex, dispatchNid;
 
     if(typeof extraOptions === 'undefined'){
         extraOptions = [];
@@ -659,17 +691,19 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
     if(e.row.nid){
         db = Omadi.utils.openMainDatabase();
         try{
-            result = db.execute('SELECT table_name, form_part, perm_edit FROM node WHERE nid=' + e.row.nid);
+            result = db.execute('SELECT table_name, form_part, perm_edit, dispatch_nid FROM node WHERE nid=' + e.row.nid);
             
             isEditEnabled = false;
             hasCustomCopy = false;
             options = [];
-            form_parts = [];
+            buttonData = [];
             
             if(extraOptions.length){
                 for(i = 0; i < extraOptions.length; i ++){
                     options.push(extraOptions[i].text);
-                    form_parts.push('_extra_' + i);
+                    buttonData.push({
+                        form_part : '_extra_' + i
+                    });
                 }
             }
         
@@ -679,6 +713,7 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
         
             form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
             node_type = result.fieldByName('table_name');
+            dispatchNid = result.fieldByName('dispatch_nid', Ti.Database.FIELD_TYPE_INT);
         
             result.close();
         }
@@ -697,16 +732,25 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
                 if (bundle.data.form_parts.parts.length >= form_part + 2) {
     
                     options.push(bundle.data.form_parts.parts[form_part + 1].label);
-                    form_parts.push(form_part + 1);
+                    buttonData.push({
+                        form_part: (form_part + 1),
+                        dispatch_nid : dispatchNid
+                    });
                 }
             }
     
             options.push('Edit');
-            form_parts.push(form_part);
+            buttonData.push({
+                form_part: form_part,
+                dispatch_nid : dispatchNid
+            });
         }
     
         options.push('View');
-        form_parts.push('_view');
+        buttonData.push({
+            form_part: '_view',
+            dispatch_nid : dispatchNid
+        });
     
         if ( typeof bundle.data.custom_copy !== 'undefined') {
             for (to_type in bundle.data.custom_copy) {
@@ -714,7 +758,9 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
                     to_bundle = Omadi.data.getBundle(to_type);
                     if (to_bundle && to_bundle.can_create == 1) {
                         options.push("Copy to " + to_bundle.label);
-                        form_parts.push(to_type);
+                        buttonData.push({
+                            form_part : to_type
+                        });
                         hasCustomCopy = true;
                     }
                 }
@@ -728,7 +774,9 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
         else {
     
             options.push('Cancel');
-            form_parts.push('_cancel');
+            buttonData.push({
+                form_part : '_cancel'
+            });
     
             postDialog = Titanium.UI.createOptionDialog();
             postDialog.options = options;
@@ -736,8 +784,11 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
             postDialog.show();
     
             postDialog.addEventListener('click', function(ev) {
-                var form_part = form_parts[ev.index];
-                Ti.API.debug("Form part clicked: " + form_part);
+                var buttonInfo, form_part;
+                
+                buttonInfo = buttonData[ev.index];
+                form_part = buttonInfo.form_part;
+                
                 if(typeof form_part !== 'undefined' && ev.index >= 0){
                     if (form_part == '_cancel') {
                         Ti.API.info("Cancelled");
@@ -755,7 +806,7 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
                         // form+_part is a number, so it is editing the current node
                         if(isEditEnabled === true) {
                             ev.source.eventRow.setBackgroundColor('#fff');
-                            Omadi.display.openFormWindow(node_type, e.row.nid, form_part);
+                            Omadi.display.openFormWindow(node_type, e.row.nid, form_part);   
                         }
                     }
                     else{

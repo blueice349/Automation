@@ -1,6 +1,6 @@
 
-/*jslint eqeq:true, plusplus: true*/
-/*global alertQueue, isJsonString*/
+/*jslint eqeq:true,plusplus:true*/
+/*global alertQueue,isJsonString*/
 
 Omadi.bundles.dispatch = {};
 
@@ -13,10 +13,8 @@ Omadi.bundles.dispatch.showJobsScreen = function(){"use strict";
     if(bundle){
         instances = Omadi.data.getFields('dispatch');
         
-        if(typeof instances.dispatch_form_reference !== 'undefined'){
-            if(typeof instances.field_dispatching_status !== 'undefined'){
-                retval = true;
-            }
+        if(typeof instances.field_dispatching_status !== 'undefined'){
+            retval = true;
         }
     }
     
@@ -85,7 +83,7 @@ Omadi.bundles.dispatch.getDrivingDirections = function(args){"use strict";
         }
     }
     else{
-        Omadi.service.sendErrorReport('No NID to accept job');
+        Omadi.service.sendErrorReport('No NID to get driving directions');
         alert("An unknown error occurred attempting to accept the job.");
     }
 };
@@ -241,10 +239,11 @@ Omadi.bundles.dispatch.getStatusOptions = function(nid){"use strict";
     node = Omadi.data.nodeLoad(nid);
     
     if(node){
-        dispatchNid = node.from_dispatch.dbValues[0];
+        dispatchNid = node.dispatch_nid;
         dispatchNode = Omadi.data.nodeLoad(dispatchNid);
         
         if(dispatchNode){
+            Ti.API.debug(dispatchNode);
             currentStatusKey = dispatchNode.field_dispatching_status.dbValues[0];
             
             dispatchInstances = Omadi.data.getFields('dispatch');
@@ -460,33 +459,30 @@ Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
     
         db = Omadi.utils.openMainDatabase();
         
-        sql = "SELECT dispatch.nid, dispatch.dispatch_form_reference, dispatch.field_dispatching_status FROM dispatch ";
-        sql += "WHERE dispatch.dispatch_form_reference IS NOT NULL AND dispatch.dispatch_form_reference > 0 ";
+        sql = "SELECT n.nid FROM dispatch ";
+        sql += "INNER JOIN node n ON n.dispatch_nid = dispatch.nid ";
+        sql += "WHERE n.dispatch_nid > 0 ";
         sql += "AND dispatch.dispatched_to_driver IS NULL "; 
         sql += "AND dispatch.field_dispatching_status != 'job_complete'";
         result = db.execute(sql);
         
         newDispatchNids = [];
         while(result.isValidRow()){
-            newDispatchNids.push(result.fieldByName('dispatch_form_reference', Ti.Database.FIELD_TYPE_INT));
-            
-            Ti.API.debug(result.fieldByName('field_dispatching_status'));
+            newDispatchNids.push(result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT));
             result.next();
         }
         result.close();
         db.close();
         
+        Ti.API.debug("new jobs");
         Ti.API.debug(newDispatchNids);
         
         for(i = 0; i < newDispatchNids.length; i ++){
             
+            // TODO: only show a new job if the user is in the dispatch list                  
+            
             node = Omadi.data.nodeLoad(newDispatchNids[i]);
-            if(node &&
-                node.nid &&
-                typeof node.from_dispatch !== 'undefined' && 
-                typeof node.from_dispatch.dbValues !== 'undefined' &&
-                typeof node.from_dispatch.dbValues[0] !== 'undefined' && 
-                node.from_dispatch.dbValues[0] > 0){
+            if(node && node.nid && node.dispatch_nid > 0){
                 
                     newJobs.push({
                        nid: node.nid,
@@ -515,19 +511,24 @@ Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
         currentUserUid = Omadi.utils.getUid();
         db = Omadi.utils.openMainDatabase();
         
-        sql = "SELECT dispatch.nid, dispatch.dispatch_form_reference FROM dispatch ";
-        sql += "WHERE dispatch.dispatch_form_reference IS NOT NULL ";
+        sql = "SELECT n.nid FROM dispatch ";
+        sql += "INNER JOIN node n ON n.dispatch_nid = dispatch.nid ";
+        sql += "WHERE n.dispatch_nid > 0 ";
         sql += "AND dispatch.dispatched_to_driver = " + currentUserUid + " "; 
         sql += "AND (dispatch.field_dispatching_status IS NULL OR dispatch.field_dispatching_status <> 'job_complete') ";
+        
         result = db.execute(sql);
         
         currentUserJobNids = [];
         while(result.isValidRow()){
-            currentUserJobNids.push(result.fieldByName('dispatch_form_reference', Ti.Database.FIELD_TYPE_INT));
+            currentUserJobNids.push(result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT));
             result.next();
         }
         result.close();
         db.close();
+        
+        Ti.API.debug("current jobs");
+        Ti.API.debug(currentUserJobNids);
         
         for(i = 0; i < currentUserJobNids.length; i ++){
             

@@ -99,7 +99,12 @@ Omadi.widgets.list_text = {
             width : '100%'
         });
         
-   
+        // This is a specialty section for only dispatch forms
+        // Do not allow the work form to change if it has already been saved
+        if(instance.field_name == 'field_tow_type' && dbValue !== null){
+            instance.can_edit = false;
+        }
+        
         widgetView = Omadi.widgets.getLabelField(instance);
         widgetView.top = 1;
         widgetView.bottom = 1;
@@ -136,6 +141,13 @@ Omadi.widgets.list_text = {
                         ev.source.widgetView.textValue = textValue;
                         ev.source.widgetView.setText(textValue);
                         ev.source.widgetView.value = ev.source.widgetView.dbValue = ev.source.widgetView.options[ev.index].dbValue;
+                        
+                        // This is a special case for dispatching
+                        if(ev.source.widgetView.instance.field_name == 'field_tow_type'){
+                            Ti.App.fireEvent("omadi:dispatch:towTypeChanged", {
+                                dbValue : ev.source.widgetView.dbValue
+                            });
+                        }
                     }
 
                     // if (ev.source.widgetView.check_conditional_fields.length > 0) {

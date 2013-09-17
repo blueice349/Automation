@@ -849,7 +849,6 @@ function fullUpdateFromMenu(e){"use strict";
 }
 
 function openFormCallback(e){"use strict";
-    Ti.API.debug(e);
     
     Omadi.display.openFormWindow(e.node_type, e.nid, e.form_part);
 }
@@ -892,8 +891,6 @@ function showContinuousSavedNode(){"use strict";
 function mainMenuFirstSyncInstallComplete(){"use strict";
     
     Ti.App.removeEventListener('omadi:finishedDataSync', mainMenuFirstSyncInstallComplete);
-    
-    Ti.API.debug("hi");
     
     // Show the first alert
     Ti.App.fireEvent('showNextAlertInQueue');

@@ -302,29 +302,25 @@ Omadi.data.deleteContinuousNodes = function(){"use strict";
   
   Ti.UI.currentWindow.saveContinually = false;
   
-  if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined' && Ti.UI.currentWindow.continuous_nid != null){
-      // Don't keep saving as the window should now close
-      Ti.API.debug("deleting some nids: " + Ti.UI.currentWindow.continuous_nid);
-      
-      deleteNids = [];
-      db = Omadi.utils.openMainDatabase();
-      
-      result = db.execute("SELECT nid FROM node WHERE flag_is_updated = 4");  
-      
-      while(result.isValidRow()){
-          deleteNids.push(result.fieldByName('nid'));
-          result.next();
-      }
-      
-      result.close();
-      db.close();
-      
-      for(i = 0; i < deleteNids.length; i ++){
-          
-          Ti.API.debug("DELETING: " + deleteNids[i]);
-          Omadi.data.deleteNode(deleteNids[i]);
-      }
+  deleteNids = [];
+  db = Omadi.utils.openMainDatabase();
+  
+  result = db.execute("SELECT nid FROM node WHERE flag_is_updated = 4");  
+  
+  while(result.isValidRow()){
+      deleteNids.push(result.fieldByName('nid'));
+      result.next();
   }
+  
+  result.close();
+  db.close();
+  
+  for(i = 0; i < deleteNids.length; i ++){
+      
+      Ti.API.debug("DELETING: " + deleteNids[i]);
+      Omadi.data.deleteNode(deleteNids[i]);
+  }
+  
 };
 
 Omadi.data.trySaveNode = function(node, saveType){"use strict";
@@ -646,7 +642,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
                 if(continuousNid == 'new'){
                     continuousNid = 0;
                 } 
-                db.execute("INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",4,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + continuousNid + ")");
+                db.execute("INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",4,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + continuousNid + "," + node.dispatch_nid + ")");
             }
             else if (node._isDraft) {
                 // if (saveNid > 0) {
@@ -659,21 +655,22 @@ Omadi.data.nodeSave = function(node) {"use strict";
                 }
                 
                 Ti.API.debug("SAVING DRAFT: " + saveNid + " " + origNid);
-                // Only save drafts as a negative nid
-                db.execute("INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",3,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + origNid + ")");
-                
                 Omadi.service.sendErrorReport("Saved draft: saveNid = " + saveNid + ", origNid = " + origNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
+                // Only save drafts as a negative nid
+                db.execute("INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",3,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + origNid + "," + node.dispatch_nid + ")");
+                
+                
             }
             else if (saveNid > 0) {
-                db.execute("UPDATE node SET changed=" + node.changed + ", changed_uid=" + node.changed_uid + ", title='" + dbEsc(node.title) + "', flag_is_updated=1, table_name='" + node.type + "', form_part=" + node.form_part + ", no_data_fields='" + node.no_data + "',viewed=" + node.viewed + " WHERE nid=" + saveNid);
-                
                 Omadi.service.sendErrorReport("Saved update: saveNid = " + saveNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
+                db.execute("UPDATE node SET changed=" + node.changed + ", changed_uid=" + node.changed_uid + ", title='" + dbEsc(node.title) + "', flag_is_updated=1, table_name='" + node.type + "', form_part=" + node.form_part + ", no_data_fields='" + node.no_data + "',viewed=" + node.viewed + " WHERE nid=" + saveNid);
             }
             else {
-                // Give all permissions for this node. Once it comes back, the correct permissions will be there.  If it never gets uploaded, the user should be able to do whatever they want with that info.
-                db.execute("INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",1,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1)");
-                
+                Ti.API.error("sldkfjsldkfjslkdjf");
+                Ti.API.info(node);
                 Omadi.service.sendErrorReport("Saved new: saveNid = " + saveNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
+                // Give all permissions for this node. Once it comes back, the correct permissions will be there.  If it never gets uploaded, the user should be able to do whatever they want with that info.
+                db.execute("INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",1,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1,0," + node.dispatch_nid + ")");   
             }
             
             photoNids = [0];
@@ -758,9 +755,12 @@ Omadi.data.deleteNode = function(nid){"use strict";
         
         if(result.isValidRow()){
             table_name = result.fieldByName("table_name");
-            
+
             db.execute("DELETE FROM node WHERE nid = " + nid);
-            db.execute("DELETE FROM " + table_name + " WHERE nid = " + nid);
+            
+            if(table_name){
+                db.execute("DELETE FROM " + table_name + " WHERE nid = " + nid);
+            }
         }
         
         result.close();
@@ -1041,7 +1041,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
         tempValue, origDBValue, jsonValue, allowedValues, allowedKey, filePath, newNid,
         listDB, intNid;
 
-   node = null;
+    node = null;
     
     if(typeof nid !== 'undefined'){
         intNid = parseInt(nid, 10);
@@ -1058,7 +1058,8 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
             
             try{
                 
-                result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed, sync_hash, continuous_nid FROM node WHERE  nid = ' + nid);
+
+                result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed, sync_hash, continuous_nid, dispatch_nid FROM node WHERE  nid = ' + nid);
         
                 if (result.isValidRow()) {
         
@@ -1077,6 +1078,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                     node.viewed = result.fieldByName('viewed', Ti.Database.FIELD_TYPE_STRING);
                     node.sync_hash = result.fieldByName('sync_hash', Ti.Database.FIELD_TYPE_STRING);
                     node.continuous_nid = result.fieldByName('continuous_nid', Ti.Database.FIELD_TYPE_STRING);
+                    node.dispatch_nid = result.fieldByName('dispatch_nid', Ti.Database.FIELD_TYPE_INT);
                 }
                 else{
                     
@@ -1084,11 +1086,11 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                     if(typeof Ti.App.deletedNegatives[nid] !== 'undefined' && Ti.App.deletedNegatives[nid] !== null && Ti.App.deletedNegatives[nid] != ""){
                         
                         newNid = Ti.App.deletedNegatives[nid];
-                        Ti.API.debug("CAN RECOVER " + nid +  " >>> " + newNid);
+                        Ti.API.debug("CAN RECOVER " + nid +  " > " + newNid);
                         
                         Ti.App.deletedNegatives[nid] = null;
                         
-                        result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed, sync_hash, continuous_nid FROM node WHERE  nid = ' + newNid);
+                        result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed, sync_hash, continuous_nid, dispatch_nid FROM node WHERE  nid = ' + newNid);
         
                         if (result.isValidRow()) {
                 
@@ -1107,6 +1109,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                             node.viewed = result.fieldByName('viewed', Ti.Database.FIELD_TYPE_STRING);
                             node.sync_hash = result.fieldByName('sync_hash', Ti.Database.FIELD_TYPE_STRING);
                             node.continuous_nid = result.fieldByName('continuous_nid', Ti.Database.FIELD_TYPE_STRING);
+                            node.dispatch_nid = result.fieldByName('dispatch_nid', Ti.Database.FIELD_TYPE_INT);
                         }
                         else{
                              Omadi.service.sendErrorReport("unrecoverable node load 1 for nid " + nid);
@@ -1512,7 +1515,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
 
 Omadi.data.getNodeTableInsertStatement = function(node) {"use strict";
 
-    var sql = 'INSERT OR REPLACE INTO node (nid, perm_edit, perm_delete, created, changed, title, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, viewed) VALUES (';
+    var sql = 'INSERT OR REPLACE INTO node (nid, perm_edit, perm_delete, created, changed, title, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, viewed, dispatch_nid) VALUES (';
 
     sql += node.nid;
     sql += ',' + node.perm_edit;
@@ -1525,16 +1528,10 @@ Omadi.data.getNodeTableInsertStatement = function(node) {"use strict";
     sql += ',"' + node.table_name + '"';
     sql += ',' + node.form_part;
     sql += ',' + node.changed_uid;
-    sql += ',\'' + dbEsc(node.no_data_fields) + '\'';
+    sql += ",''";
     sql += ',\'' + node.viewed + '\'';
-
+    sql += ',' + node.dispatch_nid;
     sql += ')';
-
-    // if (node.table_name == 'notification' && node.viewed == 0) {
-    // Ti.API.debug("A notification was added");
-    // //newNotificationCount++;
-    // //newNotificationNid = node.nid;
-    // }
 
     return sql;
 };
@@ -2749,12 +2746,6 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                 Omadi.service.fetchedJSON.node[type].insert[i].title = "No Title";
                             }
     
-                            //'update' is a flag to decide whether the node needs to be synced to the server or not
-                            no_data = '';
-                            if (!(Omadi.service.fetchedJSON.node[type].insert[i].no_data_fields instanceof Array)) {
-                                no_data = JSON.stringify(Omadi.service.fetchedJSON.node[type].insert[i].no_data_fields);
-                            }
-    
                             queries.push(Omadi.data.getNodeTableInsertStatement({
                                 nid : Omadi.service.fetchedJSON.node[type].insert[i].nid,
                                 perm_edit : Omadi.service.fetchedJSON.node[type].insert[i].perm_edit,
@@ -2767,8 +2758,8 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                 table_name : type,
                                 form_part : Omadi.service.fetchedJSON.node[type].insert[i].form_part,
                                 changed_uid : Omadi.service.fetchedJSON.node[type].insert[i].changed_uid,
-                                no_data_fields : no_data,
-                                viewed : Omadi.service.fetchedJSON.node[type].insert[i].viewed
+                                viewed : Omadi.service.fetchedJSON.node[type].insert[i].viewed,
+                                dispatch_nid : Omadi.service.fetchedJSON.node[type].insert[i].dispatch_nid
                             }));
     
                             query = 'INSERT OR REPLACE  INTO ' + type + ' (nid, ';
@@ -2935,13 +2926,15 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                     });
                                 }
                                 else if(Omadi.service.fetchedJSON.node[type].insert[i].viewed == 0 && 
-                                        typeof Omadi.service.fetchedJSON.node[type].insert[i].from_dispatch !== 'undefined' &&
-                                        Omadi.service.fetchedJSON.node[type].insert[i].from_dispatch > 0){
+                                        type != 'dispatch' &&
+                                        typeof Omadi.service.fetchedJSON.node[type].insert[i].dispatch_nid !== 'undefined' &&
+                                        Omadi.service.fetchedJSON.node[type].insert[i].dispatch_nid > 0){
+                                     
+                                     // TODO: only set the newDispatchJob if the user is the assigned driver or in the dispatch list
                                      
                                      Ti.App.Properties.setBool('newDispatchJob', true);
                                 }
                             }
-                            
                             
                             if ( typeof Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid !== 'undefined') {
                                 Ti.API.debug("Deleting nid: " + Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid);

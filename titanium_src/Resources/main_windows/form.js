@@ -1,6 +1,7 @@
 
 
 Ti.include("/lib/widgets.js");
+Ti.include("/lib/form_functions.js");
 /*global Omadi*/
 /*jslint eqeq:true,plusplus:true*/
 
@@ -50,242 +51,7 @@ function cancelOpt() {"use strict";
               windowNid = 0;   
             }
             
-            if(node.flag_is_updated == 3){
-                // The original node is a draft
-                if(windowNid != 0){
-                    // Add any newly created/removed photos to the draft so they aren't lost
-                    photoNids = [0];
-                    if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined'){
-                        continuousId = parseInt(Ti.UI.currentWindow.continuous_nid, 10);
-                        if(!isNaN(continuousId) && continuousId != 0){
-                            photoNids.push(continuousId);
-                        }
-                    }
-                    
-                    db = Omadi.utils.openListDatabase();
-                    db.execute("UPDATE _files SET nid = " + Ti.UI.currentWindow.nid + " WHERE nid IN (" + photoNids.join(",") + ")");
-                    db.close();
-                }
-                
-                Omadi.data.deleteContinuousNodes();
-                Ti.UI.currentWindow.close();
-            }
-            else if(Omadi.utils.getPhotoWidget() == 'choose'){
-                // This is not a draft, and we don't care about the taken photos
-                // Nothing to delete with the choose widget
-                // Photos should be managed externally except when uploaded successfully
-                
-                Omadi.data.deleteContinuousNodes();
-                Ti.UI.currentWindow.close();
-            }
-            else{
-                
-                
-                if(windowNid > 0){
-                    // On an update
-                    photoNids = [0];
-                }
-                else{
-                    // When not a draft (above)
-                    // When continuous
-                    // When new
-                    
-                    photoNids = [0];
-                    if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined'){
-                        continuousId = parseInt(Ti.UI.currentWindow.continuous_nid, 10);
-                        if(!isNaN(continuousId) && continuousId < 0){
-                            // Don't do anything with the photos with a positive nid
-                            photoNids.push(continuousId);
-                        }
-                    }
-                }
-                
-                query = "SELECT COUNT(*) FROM _files WHERE nid IN (" + photoNids.join(',') + ")";
-                
-                numPhotos = 0;
-        
-                db = Omadi.utils.openListDatabase();
-                
-                result = db.execute(query);
-                if(result.isValidRow()){
-                    numPhotos = result.field(0, Ti.Database.FIELD_TYPE_INT);
-                }
-                result.close();
-                
-                types = {};
-                
-                if(numPhotos > 0){
-                    
-                    result = db.execute("SELECT type FROM _files WHERE nid IN (" + photoNids.join(',') + ")");
-                    while(result.isValidRow()){
-                        
-                        if(typeof types[result.fieldByName('type')] === 'undefined'){
-                            types[result.fieldByName('type')] = 1;
-                        }
-                        else{
-                            types[result.fieldByName('type')] ++;
-                        }
-                        
-                        result.next();
-                    }
-                    result.close();
-                    
-                    if(Omadi.utils.count(types) > 1){
-                        dialogTitle = 'Delete ' + numPhotos + ' Files';
-                        dialogMessage = 'Do you want to delete the ';
-                        messageParts = [];
-                        
-                        if(typeof types.image !== 'undefined'){
-                            if(types.image == 1){
-                                messageParts.push('photo');
-                            }
-                            else{
-                                messageParts.push(types.image + ' photos');
-                            }
-                        }
-                        if(typeof types.video !== 'undefined'){
-                            if(types.video == 1){
-                                messageParts.push('video');
-                            }
-                            else{
-                                messageParts.push(types.video + ' videos');
-                            }
-                        }
-                        if(typeof types.signature !== 'undefined'){
-                            if(types.signature == 1){
-                                messageParts.push('signature');
-                            }
-                            else{
-                                messageParts.push(types.signature + ' signature');
-                            }
-                        }
-                        if(typeof types.file !== 'undefined'){
-                            if(types.file == 1){
-                                messageParts.push('1 file');
-                            }
-                            else{
-                                messageParts.push(types.file + ' files');
-                            }
-                        }
-                        
-                        dialogMessage += messageParts.join(' and ') + "?";
-                    }
-                    else{
-                        if(numPhotos == 1){
-                            dialogTitle = 'Delete 1 ';
-                            dialogMessage = 'Do you want to delete the ';
-                            if(typeof types.image !== 'undefined'){
-                                dialogTitle += 'Photo';
-                                dialogMessage += 'photo you just took?';
-                            }
-                            else if(typeof types.video !== 'undefined'){
-                                dialogTitle += 'Video';
-                                dialogMessage += 'video you just attached?';
-                            }
-                            else if(typeof types.signature !== 'undefined'){
-                                dialogTitle += 'Signature';
-                                dialogMessage += 'signature?';
-                            }
-                            else{
-                                dialogTitle += 'File';
-                                dialogMessage += 'file just selected?';
-                            }
-                        }
-                        else{
-                            dialogTitle = 'Delete ' + numPhotos + ' ';
-                            dialogMessage = 'Do you want to delete the ' + numPhotos + ' ';
-                            if(typeof types.image !== 'undefined'){
-                                dialogTitle += 'Photos';
-                                dialogMessage += 'photos you just took?';
-                            }
-                            else if(typeof types.video !== 'undefined'){
-                                dialogTitle += 'Videos';
-                                dialogMessage += 'videos you just attached?';
-                            }
-                            else if(typeof types.signature !== 'undefined'){
-                                dialogTitle += 'Signatures';
-                                dialogMessage += 'signatures?';
-                            }
-                            else{
-                                dialogTitle += 'Files';
-                                dialogMessage += 'files just selected?';
-                            }
-                        }
-                    }
-                }
-                    
-                db.close();
-                
-                if(numPhotos > 0){
-                    secondDialog = Ti.UI.createAlertDialog({
-                        cancel : 1,
-                        buttonNames : ['Delete', 'Keep', 'Cancel'],
-                        message : dialogMessage,
-                        title : dialogTitle
-                    });
-                    
-                    secondDialog.addEventListener('click', function(e) {
-                        var db_toDeleteImage, deleteResult, file, photoNids, continuousId, thumbFile;
-                        
-                        photoNids = [0];
-                        if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined'){
-                            continuousId = parseInt(Ti.UI.currentWindow.continuous_nid, 10);
-                            if(!isNaN(continuousId) && continuousId != 0){
-                                photoNids.push(continuousId);
-                            }
-                        }
-                        
-                        if(e.index === 0 || e.index === 1){
-                            
-                            db_toDeleteImage = Omadi.utils.openListDatabase();
-                            
-                            if (e.index === 0) {
-                                
-                                deleteResult = db_toDeleteImage.execute("SELECT file_path, thumb_path FROM _files WHERE nid IN (" + photoNids.join(',') + ")");
-                                
-                                while(deleteResult.isValidRow()){
-                                    
-                                    // Delete the regular photo file
-                                    file = Ti.Filesystem.getFile(deleteResult.fieldByName("file_path"));
-                                    if(file.exists()){
-                                        file.deleteFile();
-                                    }
-                                    
-                                    // Delete the thumbnail file
-                                    thumbFile = Ti.Filesystem.getFile(deleteResult.fieldByName("thumb_path"));
-                                    if(thumbFile.exists()){
-                                        thumbFile.deleteFile();
-                                    }
-                                    
-                                    deleteResult.next();
-                                }
-                                
-                                deleteResult.close();
-                                
-                                db_toDeleteImage.execute("DELETE FROM _files WHERE nid IN (" + photoNids.join(",") + ")");
-                                
-                            }
-                            else if(e.index === 1){
-                                // Set the nid of the photos to save to -1000000, so they won't be deleted by deletion of other photos, 
-                                // and so it isn't automatically used by other new nodes
-                                db_toDeleteImage.execute("UPDATE _files SET nid = -1000000 WHERE nid IN (" + photoNids.join(",") + ")");
-                            }
-                            
-                            db_toDeleteImage.close();
-                            
-                            Omadi.data.deleteContinuousNodes();
-                            Ti.UI.currentWindow.close();
-                        }
-                    });
-                    
-                    secondDialog.show();
-                }
-                else{
-                    
-                    Omadi.data.deleteContinuousNodes();
-                    Ti.UI.currentWindow.close();
-                }
-            }
+            Omadi.form.adjustFileTable(node, windowNid, Ti.UI.currentWindow.continuous_nid);
         }
     });
 
@@ -387,6 +153,7 @@ function getNewNode(){"use strict";
         node.created = Omadi.utils.getUTCTimestamp();
         node.author_uid = Omadi.utils.getUid();
         node.form_part = 0;
+        node.dispatch_nid = 0;
     }
     
     node.nid = Ti.UI.currentWindow.nid;
@@ -1084,21 +851,21 @@ function addiOSToolbar() {"use strict";
             title : 'Actions',
             style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
         });
-
+    
         actions.addEventListener('click', function(e) {
-            var bundle;
+            var bundle, btn_tt, btn_id, postDialog;
             
             if(typeof Omadi.widgets.currentlyFocusedField !== 'undefined'){
                 Omadi.widgets.currentlyFocusedField.blur();
             }
             
             bundle = Omadi.data.getBundle(node.type);
-            var btn_tt = [];
-            var btn_id = [];
-
+            btn_tt = [];
+            btn_id = [];
+    
             btn_tt.push('Save');
             btn_id.push('normal');
-
+    
             //Ti.API.info('BUNDLE: ' + JSON.stringify(bundle));
             if(bundle.can_create == 1){
                 btn_tt.push("Save + New");
@@ -1106,9 +873,9 @@ function addiOSToolbar() {"use strict";
             }
             
             if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
-
+    
                 if (bundle.data.form_parts.parts.length >= node.form_part + 2) {
-
+    
                     btn_tt.push("Save + " + bundle.data.form_parts.parts[node.form_part + 1].label);
                     btn_id.push('next');
                 }
@@ -1119,11 +886,11 @@ function addiOSToolbar() {"use strict";
             
             btn_tt.push('Cancel');
             btn_id.push('cancel');
-
-            var postDialog = Titanium.UI.createOptionDialog();
+    
+            postDialog = Titanium.UI.createOptionDialog();
             postDialog.options = btn_tt;
             postDialog.show();
-
+    
             postDialog.addEventListener('click', function(ev) {
                 
                 if(Ti.UI.currentWindow.nodeSaved === false){
@@ -1357,41 +1124,42 @@ function changeViolationFieldOptions(violation_field_name){"use strict";
 
 function setupViolationField(){"use strict";
     
-    var instances, field_name, instance, valueWidget, widget, referenceWidget, datestampWidget;
+    var field_name, instance, valueWidget, widget, referenceWidget, datestampWidget;
     // NOTE: this will not work with time fields with multiple cardinality
     
-    instances = Omadi.data.getFields(Ti.UI.currentWindow.type);
-    
-    for(field_name in instances){
-        if(instances.hasOwnProperty(field_name)){
-            instance = instances[field_name];
-            if(typeof instance.widget !== 'undefined' && instance.widget.type == 'violation_select'){
-                
-                widget = instance.widget;
-                
-                if(typeof fieldWrappers[field_name] !== 'undefined'){
-                    //valueWidget = Omadi.widgets.getValueWidget(field_name);
+    // instances is a global that must be set before calling this function
+    if(typeof instances !== 'undefined' && instances != null){
+        
+        for(field_name in instances){
+            if(instances.hasOwnProperty(field_name)){
+                instance = instances[field_name];
+                if(typeof instance.widget !== 'undefined' && instance.widget.type == 'violation_select'){
                     
-                    if (widget.rules_field_name != null && widget.rules_field_name != "") {
-                       
-                        Omadi.widgets.setValueWidgetProperty(widget.rules_field_name, 'onChangeCallbacks', [changeViolationFieldOptions]);
-                        Omadi.widgets.setValueWidgetProperty(widget.rules_field_name, 'onChangeCallbackArgs', [[field_name]]);
+                    widget = instance.widget;
+                    
+                    if(typeof fieldWrappers[field_name] !== 'undefined'){
+                        //valueWidget = Omadi.widgets.getValueWidget(field_name);
                         
-                        if (widget.rules_violation_time_field_name != null && widget.rules_violation_time_field_name != "") {
+                        if (widget.rules_field_name != null && widget.rules_field_name != "") {
+                           
+                            Omadi.widgets.setValueWidgetProperty(widget.rules_field_name, 'onChangeCallbacks', [changeViolationFieldOptions]);
+                            Omadi.widgets.setValueWidgetProperty(widget.rules_field_name, 'onChangeCallbackArgs', [[field_name]]);
                             
-                            Omadi.widgets.setValueWidgetProperty(widget.rules_violation_time_field_name, 'onChangeCallbacks', [changeViolationFieldOptions]);
-                            Omadi.widgets.setValueWidgetProperty(widget.rules_violation_time_field_name, 'onChangeCallbackArgs', [[field_name]]);
+                            if (widget.rules_violation_time_field_name != null && widget.rules_violation_time_field_name != "") {
+                                
+                                Omadi.widgets.setValueWidgetProperty(widget.rules_violation_time_field_name, 'onChangeCallbacks', [changeViolationFieldOptions]);
+                                Omadi.widgets.setValueWidgetProperty(widget.rules_violation_time_field_name, 'onChangeCallbackArgs', [[field_name]]);
+                            }
                         }
+                        
+                        // Initialize the field for default values
+                        changeViolationFieldOptions(field_name);
                     }
-                    
-                    // Initialize the field for default values
-                    changeViolationFieldOptions(field_name);
                 }
             }
         }
     }
 }
-
 
 function recalculateCalculationFields(){"use strict";
     var field_name;
@@ -1406,7 +1174,6 @@ function recalculateCalculationFields(){"use strict";
         }
     }
 }
-
 
 function loadCustomCopyNode(originalNode, from_type, to_type){"use strict";
     var fromBundle, newNode, to_field_name, from_field_name, index;
@@ -1910,6 +1677,8 @@ function continuousSave(){"use strict";
     
     Ti.UI.currentWindow.addEventListener("android:back", cancelOpt);
     
+    
+    
     // Do not let the app log this user out while on the form screen
     // Allow again when the node is saved
     Ti.App.allowBackgroundLogout = false;
@@ -1997,11 +1766,18 @@ function continuousSave(){"use strict";
     });
     
     
-    if (Ti.App.isAndroid) {
-        get_android_menu();
+    if(Ti.UI.currentWindow.usingDispatch){
+        Ti.UI.currentWindow.addEventListener("omadi:saveForm", function(e){
+            save_form_data(e.saveType);
+        });
     }
-    else {
-        addiOSToolbar();
+    else{
+        if (Ti.App.isAndroid) {
+            get_android_menu();
+        }
+        else {
+            addiOSToolbar();
+        }
     }
     
     // if (Ti.App.isAndroid) {
@@ -2130,9 +1906,11 @@ function continuousSave(){"use strict";
     
     var omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
     var roles = omadi_session_details.user.roles;
-    //var field_name;
+    var showField;
     
     for(field_name in instances){
+        showField = true;
+        
         if(instances.hasOwnProperty(field_name)){
             
             instance = instances[field_name];        
@@ -2157,26 +1935,46 @@ function continuousSave(){"use strict";
                 
                 if (instance.disabled == 0 && instance.can_view) {
                     
-                    var fieldWrapper = Ti.UI.createView({
-                       width: '100%',
-                       height: Ti.UI.SIZE, 
-                       instance: instance
-                    });
-                    
-                    var fieldView = Omadi.widgets.getFieldView(node, instance);
-                    if(fieldView !== null){
-                        fieldView.wrapper = fieldWrapper;
-                           
-                        fieldWrapper.add(fieldView);
-                        fieldWrappers[instance.field_name] = fieldWrapper;
-                        regionViews[region_name].add(fieldWrapper);
-                        
-                        if(instance.widget.type == 'violation_select'){
-                            hasViolationField = true;
+                    // Specialty section just for dispatch nodes
+                    if(Ti.UI.currentWindow.usingDispatch){
+                        if(node.form_part == -1){
+                            if(typeof instance.settings.dispatch === 'undefined' || typeof instance.settings.dispatch.dispatch_show === 'undefined' || instance.settings.dispatch.dispatch_show == 0){
+                                // We do not use this field for dispatch, so hide it
+                                showField = false;                        
+                            }  
+                            else if(typeof instance.settings.dispatch !== 'undefined' && 
+                                    typeof instance.settings.dispatch.dispatch_show !== 'undefined' && 
+                                    instance.settings.dispatch.dispatch_show == 1 &&
+                                    typeof instance.settings.dispatch.dispatch_require !== 'undefined' && 
+                                    instance.settings.dispatch.dispatch_require == 1){
+                                        instance.isRequired = true;
+                                        instances[field_name].isRequired = true;
+                                    }
                         }
                     }
-                    else{
-                        Ti.API.error("Could not add field type " + instance.type);
+                    
+                    if(showField){
+                        var fieldWrapper = Ti.UI.createView({
+                           width: '100%',
+                           height: Ti.UI.SIZE, 
+                           instance: instance
+                        });
+                        
+                        var fieldView = Omadi.widgets.getFieldView(node, instance);
+                        if(fieldView !== null){
+                            fieldView.wrapper = fieldWrapper;
+                               
+                            fieldWrapper.add(fieldView);
+                            fieldWrappers[instance.field_name] = fieldWrapper;
+                            regionViews[region_name].add(fieldWrapper);
+                            
+                            if(instance.widget.type == 'violation_select'){
+                                hasViolationField = true;
+                            }
+                        }
+                        else{
+                            Ti.API.error("Could not add field type " + instance.type);
+                        }
                     }
                 }
             }
@@ -2219,18 +2017,18 @@ function continuousSave(){"use strict";
                     }
                 }
                 
-                if(regionWrappers[regionWrappers_i].children.length > 0){
-                    for(regionWrapperChild_i in regionWrappers[regionWrappers_i].children){
-                        if(regionWrappers[regionWrappers_i].children.hasOwnProperty(regionWrapperChild_i)){
-                            if(regionWrappers[regionWrappers_i].children[regionWrapperChild_i] != null){
-                                regionWrappers[regionWrappers_i].remove(regionWrappers[regionWrappers_i].children[regionWrapperChild_i]);
-                                regionWrappers[regionWrappers_i].children[regionWrapperChild_i] = null;
+                if(regionWrappers[regionWrappers_i] != null){
+                    if(regionWrappers[regionWrappers_i].children.length > 0){
+                        for(regionWrapperChild_i in regionWrappers[regionWrappers_i].children){
+                            if(regionWrappers[regionWrappers_i].children.hasOwnProperty(regionWrapperChild_i)){
+                                if(regionWrappers[regionWrappers_i].children[regionWrapperChild_i] != null){
+                                    regionWrappers[regionWrappers_i].remove(regionWrappers[regionWrappers_i].children[regionWrapperChild_i]);
+                                    regionWrappers[regionWrappers_i].children[regionWrapperChild_i] = null;
+                                }
                             }
                         }
                     }
-                }
-                
-                if(regionWrappers[regionWrappers_i] != null){
+                    
                     scrollView.remove(regionWrappers[regionWrappers_i]);
                     regionWrappers[regionWrappers_i] = null;
                 }
