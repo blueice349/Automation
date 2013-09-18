@@ -1124,5 +1124,13 @@ function mainMenuFirstSyncInstallComplete(){"use strict";
     
     showContinuousSavedNode();
     
+    var origAppStartMillis = Ti.App.Properties.getDouble("omadi:appStartMillis", 0);
+    if(typeof Ti.UI.currentWindow.appStartMillis !== 'undefined'){        
+        Omadi.service.sendErrorReport("Main Menu was opened with millis: " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
+    }
+    else{
+        Omadi.service.sendErrorReport("Main Menu was opened with NO millis: " + origAppStartMillis);
+    }
+    
 }());
 

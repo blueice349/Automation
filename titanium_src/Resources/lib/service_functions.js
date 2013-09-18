@@ -441,12 +441,12 @@ Omadi.service.sendUpdates = function() {"use strict";
         else{
             if(origAppStartMillis != Ti.UI.currentWindow.appStartMillis){
                 if(Ti.App.isAndroid){
-                    Omadi.service.sendErrorReport("An extra android activity was shut down");
-                    Ti.Android.currentActivity.finish();
+                    Omadi.service.sendErrorReport("An extra android activity should be shut down: " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
+                    //Ti.Android.currentActivity.finish();
                 }
                 else{
-                    Omadi.service.sendErrorReport("An extra iOS event was shut down");
-                    return;
+                    Omadi.service.sendErrorReport("An extra iOS event should be shut down: " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
+                    //return;
                 }
             }
         }
@@ -639,6 +639,8 @@ Omadi.service.logout = function() {"use strict";
     
     Ti.App.fireEvent('upload_gps_locations');
     Ti.App.fireEvent('stop_gps');
+    
+    Omadi.service.sendErrorReport("Logging out.");
     
     if(Ti.App.isAndroid){
         Omadi.background.android.stopGPSService();
@@ -1207,12 +1209,12 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
         else{
             if(origAppStartMillis != Ti.UI.currentWindow.appStartMillis){
                 if(Ti.App.isAndroid){
-                    Omadi.service.sendErrorReport("An extra android upload activity was shut down, background: " + isBackground);
-                    Ti.Android.currentActivity.finish();
+                    Omadi.service.sendErrorReport("An extra android upload activity should be shut down, background: " + isBackground + " : "  + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
+                    //Ti.Android.currentActivity.finish();
                 }
                 else{
-                    Omadi.service.sendErrorReport("An extra iOS upload event was shut down, background: " + isBackground);
-                    return;
+                    Omadi.service.sendErrorReport("An extra iOS upload event should be shut down, background: " + isBackground + " : " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
+                    //return;
                 }
             }
         }

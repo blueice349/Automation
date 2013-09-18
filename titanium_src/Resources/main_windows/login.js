@@ -281,6 +281,7 @@ function loggingOutLoginScreen(){"use strict";
     Ti.UI.currentWindow.appStartMillis = (new Date()).getTime(); 
     Ti.App.Properties.setDouble('omadi:appStartMillis', Ti.UI.currentWindow.appStartMillis);
     
+    
     // Make sure we don't have multiple photoupload checks
     if(typeof Ti.App.backgroundPhotoUploadCheck !== 'undefined'){
         clearInterval(Ti.App.backgroundPhotoUploadCheck);
