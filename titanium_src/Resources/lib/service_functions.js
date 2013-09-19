@@ -1233,11 +1233,8 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
         Omadi.service.sendErrorReport("AppStartMillis upload was undefined, background: " + isBackground);
     }
     
-    //Omadi.service.sendErrorReport("In uploadFile");
     Ti.API.debug("Attempting to upload a file");
-    
-    //Ti.API.debug("Online: " + Ti.Network.online + ", closing: " + Ti.App.closingApp);
-    
+   
     if (Ti.Network.online && !Ti.App.closingApp) {
         
         nowTimestamp = Omadi.utils.getUTCTimestamp();
