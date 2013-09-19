@@ -99,9 +99,12 @@ var bug = [];
 var node;
 
 var fieldNames = [];
+var nodeFormPart = 0;
 
 var node_form = db.execute('SELECT form_part, perm_edit FROM node WHERE nid=' + curWin.nid);
 var isEditEnabled = (node_form.fieldByName('perm_edit') == 1) ? true : false;
+
+nodeFormPart = node_form.fieldByName('form_part');
 
 omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
 roles = omadi_session_details.user.roles;
@@ -114,7 +117,7 @@ while (result.isValidRow()) {
     reg_settings = JSON.parse(reg_settings);
     
 
-    if (reg_settings != null && parseInt(reg_settings.form_part, 10) > node_form.fieldByName('form_part')) {
+    if (reg_settings != null && parseInt(reg_settings.form_part, 10) > nodeFormPart && nodeFormPart != -1) {
         Ti.API.info('Region : ' + result.fieldByName('label') + ' won\'t appear');
     }
     else {
@@ -641,32 +644,33 @@ function doFieldOutput(fieldObj) {"use strict";
                                 valueLabel.text = "";
                                 //node[field_parts[0]].dbValues.join(', ');
                               
-    
-                                if (node[field_parts[0]].parts.street.textValue > "") {
-                                    valueLabel.text += node[field_parts[0]].parts.street.textValue;
-                                }
-                                if (valueLabel.text > "") {
-                                    valueLabel.text += "\n";
-                                }
-                                if (node[field_parts[0]].parts.city.textValue > "") {
-                                    valueLabel.text += node[field_parts[0]].parts.city.textValue;
-                                }
-    
-                                if (node[field_parts[0]].parts.province.textValue > "") {
-                                    if (node[field_parts[0]].parts.city.textValue > "") {
-                                        valueLabel.text += ', ';
+                                if(typeof node[field_parts[0]].parts !== 'undefined'){
+                                    if (node[field_parts[0]].parts.street.textValue > "") {
+                                        valueLabel.text += node[field_parts[0]].parts.street.textValue;
                                     }
-                                    valueLabel.text += node[field_parts[0]].parts.province.textValue;
-                                }
-    
-                                if (node[field_parts[0]].parts.postal_code.textValue > "") {
-                                    valueLabel.text += " " + node[field_parts[0]].parts.postal_code.textValue;
-                                }
-                                
-                                // Only show an address with sufficient length to get anywhere
-                                if(valueLabel.text.length > 8){
+                                    if (valueLabel.text > "") {
+                                        valueLabel.text += "\n";
+                                    }
+                                    if (node[field_parts[0]].parts.city.textValue > "") {
+                                        valueLabel.text += node[field_parts[0]].parts.city.textValue;
+                                    }
+        
+                                    if (node[field_parts[0]].parts.province.textValue > "") {
+                                        if (node[field_parts[0]].parts.city.textValue > "") {
+                                            valueLabel.text += ', ';
+                                        }
+                                        valueLabel.text += node[field_parts[0]].parts.province.textValue;
+                                    }
+        
+                                    if (node[field_parts[0]].parts.postal_code.textValue > "") {
+                                        valueLabel.text += " " + node[field_parts[0]].parts.postal_code.textValue;
+                                    }
                                     
-                                    valueLabel.addEventListener('click', getDrivingDirectionsView);
+                                    // Only show an address with sufficient length to get anywhere
+                                    if(valueLabel.text.length > 8){
+                                        
+                                        valueLabel.addEventListener('click', getDrivingDirectionsView);
+                                    }
                                 }
     
                                 break;

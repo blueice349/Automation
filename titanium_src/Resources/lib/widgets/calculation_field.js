@@ -364,7 +364,8 @@ Omadi.widgets.calculation_field = {
 
     },
     getTableView: function(node, instance) {"use strict";
-        var result, row_values, tableView, cal_value, cal_value_str, isNegative, row, row_label, value, idx, dbValue, origValue;
+        var result, row_values, tableView, cal_value, cal_value_str, isNegative, 
+            row, row_label, value, idx, dbValue, origValue, onlyShowTotal;
         /*global isNumber*/
         
         dbValue = null;
@@ -392,7 +393,15 @@ Omadi.widgets.calculation_field = {
             dbValue: null
         });
     
-        if (row_values.length > 1) {
+        onlyShowTotal = false;
+        if(row_values.length == 1){
+            onlyShowTotal = true;
+        }
+        else if(typeof instance.settings.only_show_total !== 'undefined' && instance.settings.only_show_total == 1){
+            onlyShowTotal = true;
+        }
+        
+        if (!onlyShowTotal) {
             cal_value = 0;
             cal_value_str = "";
             isNegative = false;
@@ -574,11 +583,16 @@ Omadi.widgets.calculation_field = {
             tableView.singleValue = false;
         }
         else {
-    
-            cal_value = (row_values.length == 1) ? result[0].final_value : 0;
+            
+            cal_value = 0;
+            if(typeof result[0] !== 'undefined' && typeof result[0].final_value !== 'undefined'){
+                cal_value = result[0].final_value;
+            }
+            
             if(typeof (cal_value) == 'string'){
                 cal_value = parseFloat(cal_value);
             }
+            
             if(!isNumber(cal_value)){
                 cal_value = 0;
             }

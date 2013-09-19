@@ -497,25 +497,35 @@ Omadi.display.openViewWindow = function(type, nid) {"use strict";
 };
 
 Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
-    var db, result, formWindow, intNid, isDispatch, dispatchNid;
+    var db, result, formWindow, intNid, isDispatch, dispatchNid, bundle;
     
     isDispatch = false;
     
-    intNid = parseInt(nid, 10);
-    if(!isNaN(intNid)){
-        db = Omadi.utils.openMainDatabase();
-        result = db.execute("SELECT dispatch_nid FROM node where nid = " + intNid);
-        if(result.isValidRow()){
-            dispatchNid = result.field(0, Ti.Database.FIELD_TYPE_INT);
-            if(dispatchNid != 0){
+    if(type == 'dispatch'){
+        isDispatch = true;
+    }
+    else{
+        intNid = parseInt(nid, 10);
+        if(!isNaN(intNid)){
+            db = Omadi.utils.openMainDatabase();
+            result = db.execute("SELECT dispatch_nid FROM node where nid = " + intNid);
+            if(result.isValidRow()){
+                dispatchNid = result.field(0, Ti.Database.FIELD_TYPE_INT);
+                if(dispatchNid != 0){
+                    isDispatch = true;
+                }
+            }
+            result.close();
+            db.close();   
+        }
+        else{
+            // This is a new node from plus button
+            bundle = Omadi.data.getBundle(type);
+            if(typeof bundle.data.dispatch !== 'undefined' && typeof bundle.data.dispatch.force_dispatch !== 'undefined' && bundle.data.dispatch.force_dispatch == 1){
+                // Do not allow a force dispatch to create its own node without a dispatch node
                 isDispatch = true;
             }
         }
-        result.close();
-        db.close();   
-    }
-    else if(type == 'dispatch'){
-        isDispatch = true;
     }
     
     if(isDispatch){
@@ -786,32 +796,34 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
             postDialog.addEventListener('click', function(ev) {
                 var buttonInfo, form_part;
                 
-                buttonInfo = buttonData[ev.index];
-                form_part = buttonInfo.form_part;
-                
-                if(typeof form_part !== 'undefined' && ev.index >= 0){
-                    if (form_part == '_cancel') {
-                        Ti.API.info("Cancelled");
-                    }
-                    else if (form_part == '_view') {
-                        ev.source.eventRow.setBackgroundColor('#fff');
-                        Omadi.display.openViewWindow(node_type, e.row.nid);
-                    }
-                    else if(form_part.toString().indexOf('_extra_') == 0){
-                        extraOptionIndex = parseInt(form_part.substring(7), 10);
-                        extraOptionCallback = extraOptions[extraOptionIndex].callback;
-                        extraOptionCallback(extraOptions[extraOptionIndex].callbackArgs);
-                    }
-                    else if (!isNaN(parseInt(form_part, 10))){
-                        // form+_part is a number, so it is editing the current node
-                        if(isEditEnabled === true) {
-                            ev.source.eventRow.setBackgroundColor('#fff');
-                            Omadi.display.openFormWindow(node_type, e.row.nid, form_part);   
+                if(ev.index >= 0){
+                    buttonInfo = buttonData[ev.index];
+                    form_part = buttonInfo.form_part;
+                    
+                    if(typeof form_part !== 'undefined'){
+                        if (form_part == '_cancel') {
+                            Ti.API.info("Cancelled");
                         }
-                    }
-                    else{
-                        // The form part is a string, so it is a copy to function
-                        Omadi.display.openFormWindow(node_type, e.row.nid, form_part);
+                        else if (form_part == '_view') {
+                            ev.source.eventRow.setBackgroundColor('#fff');
+                            Omadi.display.openViewWindow(node_type, e.row.nid);
+                        }
+                        else if(form_part.toString().indexOf('_extra_') == 0){
+                            extraOptionIndex = parseInt(form_part.substring(7), 10);
+                            extraOptionCallback = extraOptions[extraOptionIndex].callback;
+                            extraOptionCallback(extraOptions[extraOptionIndex].callbackArgs);
+                        }
+                        else if (!isNaN(parseInt(form_part, 10))){
+                            // form+_part is a number, so it is editing the current node
+                            if(isEditEnabled === true) {
+                                ev.source.eventRow.setBackgroundColor('#fff');
+                                Omadi.display.openFormWindow(node_type, e.row.nid, form_part);   
+                            }
+                        }
+                        else{
+                            // The form part is a string, so it is a copy to function
+                            Omadi.display.openFormWindow(node_type, e.row.nid, form_part);
+                        }
                     }
                 }
             });

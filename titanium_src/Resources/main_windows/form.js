@@ -2017,11 +2017,11 @@ function continuousSave(){"use strict";
                     }
                 }
                 
-                if(regionWrappers[regionWrappers_i] != null){
+                if(typeof regionWrappers[regionWrappers_i] !== 'undefined' && regionWrappers[regionWrappers_i] != null){
                     if(regionWrappers[regionWrappers_i].children.length > 0){
                         for(regionWrapperChild_i in regionWrappers[regionWrappers_i].children){
                             if(regionWrappers[regionWrappers_i].children.hasOwnProperty(regionWrapperChild_i)){
-                                if(regionWrappers[regionWrappers_i].children[regionWrapperChild_i] != null){
+                                if(typeof regionWrappers[regionWrappers_i].children[regionWrapperChild_i] !== 'undefined' && regionWrappers[regionWrappers_i].children[regionWrapperChild_i] != null){
                                     regionWrappers[regionWrappers_i].remove(regionWrappers[regionWrappers_i].children[regionWrapperChild_i]);
                                     regionWrappers[regionWrappers_i].children[regionWrapperChild_i] = null;
                                 }
@@ -2043,7 +2043,6 @@ function continuousSave(){"use strict";
         //win.remove(wrapperView);
         wrapperView = null;
         
-
         fieldViews = null;
         instances = null;
         formWrapperView = null;

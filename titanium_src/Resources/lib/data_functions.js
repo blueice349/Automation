@@ -324,12 +324,14 @@ Omadi.data.deleteContinuousNodes = function(){"use strict";
 };
 
 Omadi.data.trySaveNode = function(node, saveType){"use strict";
-    var dialog;
+    var dialog, closeAfterSave;
     /*jslint nomen: true*/
     
     if(typeof saveType === 'undefined'){
         saveType = 'regular';
     }
+    
+    closeAfterSave = true;
     
     // Allow instant saving of drafts and continuous saves
     // Do not allow drafts or continuous saves to happen while an update is happening as it can cause problems
@@ -373,6 +375,22 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
             
             if(node._saved === true){
                 
+                if(Ti.UI.currentWindow.usingDispatch){
+                    // Let the dispatch_form.js window take care of the rest once the data is in the database
+                    Ti.App.fireEvent("omadi:dispatch:savedDispatchNode",{
+                        nodeNid: node._saveNid,
+                        nodeType: node.type,
+                        isContinuous: node._isContinuous,
+                        isDraft: node._isDraft
+                    }); 
+                    
+                    if(Ti.App.isAndroid){
+                        // The android activity should not close since all 3 windows are in the same activity
+                        // The dispatch_form will take care of closing
+                        //closeAfterSave = false;
+                    }
+                }
+                
                 if(node._isContinuous === true){
                     // Keep the window open, do not sync
                     Omadi.display.doneLoading();
@@ -388,7 +406,10 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
                     }
                     
                     if(node._isDraft === true){
-                        Ti.UI.currentWindow.close();
+                        
+                        if(closeAfterSave){
+                            Ti.UI.currentWindow.close();
+                        }
                     }
                     else if(Ti.Network.online){
                         
@@ -409,8 +430,15 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
                             });
                         }
                         
-                        Ti.App.fireEvent('sendUpdates');
-                        Ti.UI.currentWindow.close();
+                        if(!Ti.UI.currentWindow.usingDispatch){
+                            // Send updates immediately only when not using dispatch
+                            // When using dispatch, the dispatch_form.js window will initialize this
+                            Ti.App.fireEvent('sendUpdates');
+                        }
+                        
+                        if(closeAfterSave){
+                            Ti.UI.currentWindow.close();
+                        }
                     }
                     else{
                         if(Ti.UI.currentWindow.url.indexOf('form.js') !== -1){
@@ -444,7 +472,9 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
                                 
                                 Omadi.display.loading();
                                 
-                                Ti.UI.currentWindow.close();
+                                if(closeAfterSave){
+                                    Ti.UI.currentWindow.close();
+                                }
                             });
                         }
                     }
@@ -534,6 +564,8 @@ Omadi.data.nodeSave = function(node) {"use strict";
         // The logic elsewhere will not delete the node unless the node is correctly saved
         node._deleteNid = node.continuous_nid;
     }
+    
+    node._saveNid = saveNid;
     
     if(typeof node.sync_hash === 'undefined' || node.sync_has == null){
         node.sync_hash = Ti.Utils.md5HexDigest(JSON.stringify(node) + (new Date()).getTime());
@@ -666,8 +698,6 @@ Omadi.data.nodeSave = function(node) {"use strict";
                 db.execute("UPDATE node SET changed=" + node.changed + ", changed_uid=" + node.changed_uid + ", title='" + dbEsc(node.title) + "', flag_is_updated=1, table_name='" + node.type + "', form_part=" + node.form_part + ", no_data_fields='" + node.no_data + "',viewed=" + node.viewed + " WHERE nid=" + saveNid);
             }
             else {
-                Ti.API.error("sldkfjsldkfjslkdjf");
-                Ti.API.info(node);
                 Omadi.service.sendErrorReport("Saved new: saveNid = " + saveNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
                 // Give all permissions for this node. Once it comes back, the correct permissions will be there.  If it never gets uploaded, the user should be able to do whatever they want with that info.
                 db.execute("INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",1,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1,0," + node.dispatch_nid + ")");   
@@ -744,17 +774,19 @@ Omadi.data.nodeSave = function(node) {"use strict";
 };
 
 Omadi.data.deleteNode = function(nid){"use strict";
-    var db, result, table_name, listDB;
+    var db, result, table_name, listDB, dispatchNid;
     
     // Currently, only delete negative nids, which are drafts or non-saved nodes
     // To delete positive nids, we need to sync that to the server, which is not yet supported
     if(nid < 0){
         db = Omadi.utils.openMainDatabase();
+        dispatchNid = 0;
         
-        result = db.execute("SELECT table_name FROM node WHERE nid = " + nid);
+        result = db.execute("SELECT table_name, dispatch_nid FROM node WHERE nid = " + nid);
         
         if(result.isValidRow()){
             table_name = result.fieldByName("table_name");
+            dispatchNid = result.fieldByName("dispatch_nid", Ti.Database.FIELD_TYPE_INT);
 
             db.execute("DELETE FROM node WHERE nid = " + nid);
             
@@ -770,6 +802,10 @@ Omadi.data.deleteNode = function(nid){"use strict";
         // Delete any photos from the DB where the nid matches
         listDB.execute("UPDATE _files SET nid = -1000000 WHERE nid = " + nid);
         listDB.close();
+        
+        if(dispatchNid < 0){
+            Omadi.data.deleteNode(dispatchNid);
+        }
     }
 };
 

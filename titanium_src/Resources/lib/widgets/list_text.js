@@ -68,6 +68,23 @@ Omadi.widgets.list_text = {
 
         options = Omadi.widgets.list_text.getOptions(instance);
         
+        // This is a specialty section for only dispatch forms
+        // Do not allow the work form to change if it has already been saved
+        if(instance.field_name == 'field_tow_type'){
+            if(dbValue !== null && typeof node.dispatch_id !== 'undefined' && node.dispatch_id != 0){
+                instance.can_edit = false;
+            }
+            else if(typeof Ti.UI.currentWindow.field_tow_type !== 'undefined' && Ti.UI.currentWindow.field_tow_type != null){
+                dbValue = Ti.UI.currentWindow.field_tow_type;
+                for(i = 0; i < options.length; i ++){
+                    if(options[i].dbValue == dbValue){
+                        textValue = options[i].title;
+                        break;
+                    }
+                }
+            }
+        }
+        
         if (dbValue === null && typeof settings.default_value !== 'undefined') {
             if(settings.default_value.length > 0){
                 dbValue = settings.default_value;
@@ -98,12 +115,6 @@ Omadi.widgets.list_text = {
             height : Ti.UI.SIZE,
             width : '100%'
         });
-        
-        // This is a specialty section for only dispatch forms
-        // Do not allow the work form to change if it has already been saved
-        if(instance.field_name == 'field_tow_type' && dbValue !== null){
-            instance.can_edit = false;
-        }
         
         widgetView = Omadi.widgets.getLabelField(instance);
         widgetView.top = 1;

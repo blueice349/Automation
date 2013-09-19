@@ -1497,6 +1497,7 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
                 obj.data.node[nid].form_part = node.form_part;
                 obj.data.node[nid].no_data_fields = node.no_data_fields;
                 obj.data.node[nid].sync_hash = node.sync_hash;
+                obj.data.node[nid].dispatch_nid = node.dispatch_nid;
 
                 for (field_name in instances) {
                     if (instances.hasOwnProperty(field_name)) {
