@@ -10,7 +10,8 @@ var dispatchWindow, workWindow;
 var dispatchWindowOpen, workWindowOpen;
 var iOSTabbedBar;
 var NO_JOB_TYPE_LABEL = "No Job Type";
-var dispatchSavedInfo, workSavedInfo;
+var dispatchSavedInfo, workSavedInfo, continuousDispatchInfo, continuousWorkInfo;
+var setSendingData = false;
 
 function exitForm(){"use strict";
     var dialog, photoNids;
@@ -26,7 +27,10 @@ function exitForm(){"use strict";
         var db, result, numPhotos, secondDialog, negativeNid, query, continuousId, photoNids, types, dialogTitle, dialogMessage, messageParts, windowNid;
 
         if (e.index == 0) {
-
+            
+            Ti.App.removeEventListener("omadi:dispatch:towTypeChanged", towTypeChanged);
+            Ti.App.removeEventListener("omadi:dispatch:savedDispatchNode", savedDispatchNode);
+            
             windowNid = parseInt(Ti.UI.currentWindow.nid, 10);
             if (isNaN(windowNid)) {
                 windowNid = 0;
@@ -34,15 +38,86 @@ function exitForm(){"use strict";
 
             if (dispatchWindowOpen) {
                 Omadi.form.adjustFileTable(dispatchNode, dispatchNode.nid);
+                dispatchWindow.close();
             }
 
             if (workWindowOpen) {
                 Omadi.form.adjustFileTable(workNode, workNode.nid);
+                workWindow.close();
+            }
+            
+            // Remove any fully-saved nodes that may not have been linked
+            db = Omadi.utils.openMainDatabase();
+            db.execute("BEGIN IMMEDIATE TRANSACTION");
+            db.execute("DELETE FROM node WHERE flag_is_updated = 5");
+            db.execute("COMMIT TRANSACTION");
+            db.close();
+            
+            if(setSendingData){
+                // This screen set sending data to true, so free it up in case it's still set
+                // which would be the case for one node validating and the other not validating
+                Omadi.service.setSendingData(false);
             }
         }
     });
 
     dialog.show();
+}
+
+function savedWorkNowSaveDispatch(){"use strict";
+    Ti.App.removeEventListener("omadi:dispatch:savedDispatchNode", savedWorkNowSaveDispatch);
+    
+    if (dispatchWindowOpen) {
+        dispatchWindow.fireEvent("omadi:saveForm", {
+            saveType : "normal"
+        });
+    }
+}
+
+function dispatchSaveForms(saveType){"use strict";
+    if(workWindowOpen && dispatchWindowOpen){
+        // When both forms are open, save one at a time to avoid negative nid conflicts
+        
+        Ti.App.removeEventListener("omadi:dispatch:savedDispatchNode", savedWorkNowSaveDispatch);
+        Ti.App.addEventListener("omadi:dispatch:savedDispatchNode", savedWorkNowSaveDispatch);
+        
+        workWindow.fireEvent("omadi:saveForm", {
+            saveType : saveType
+        });
+    }
+    else if (workWindowOpen) {
+        workWindow.fireEvent("omadi:saveForm", {
+            saveType : saveType
+        });
+    }
+    else if (dispatchWindowOpen) {
+        // The savetype on a dispatch will always be normal since we do not want it to have more parts
+        dispatchWindow.fireEvent("omadi:saveForm", {
+            saveType : "normal"
+        });
+    }
+}
+
+function saveForAndroid(saveType){"use strict";
+    var dialog, workLabel = workTab.text;
+
+    if (workLabel == NO_JOB_TYPE_LABEL) {
+        dialog = Ti.UI.createAlertDialog({
+            buttonNames : ['OK'],
+            title : 'Cannot Save',
+            message : 'You must set the job type first.'
+        }).show();
+    }
+    else if ((workNode.nid == 'new' || workNode.nid < 0) && workNode.flag_is_updated != 3 && !workWindowOpen) {
+        dialog = Ti.UI.createAlertDialog({
+            buttonNames : ['OK'],
+            title : 'Cannot Save',
+            message : 'Fill out the job tab first.'
+        }).show();
+    }
+    else{
+        dispatchSaveForms(saveType);
+    }
 }
 
 function createAndroidToolbar(workNodeTypeLabel, openDispatch) {"use strict";
@@ -81,21 +156,10 @@ function createAndroidToolbar(workNodeTypeLabel, openDispatch) {"use strict";
                     });
                     menu_zero.setIcon("/images/save_arrow_white.png");
                     menu_zero.addEventListener("click", function(ev) {
-                       
-                        if (workWindowOpen) {
-                            workWindow.fireEvent("omadi:saveForm", {
-                                saveType : "next_part"
-                            });
-                        }
-                        if (dispatchWindowOpen) {
-                            dispatchWindow.fireEvent("omadi:saveForm", {
-                                saveType : "normal"
-                            });
-                        }
+                        saveForAndroid("next_part");
                     });
                 }
             }
-            
         
             btn_tt.push('Save');
             
@@ -115,29 +179,11 @@ function createAndroidToolbar(workNodeTypeLabel, openDispatch) {"use strict";
             menu_second.setIcon("/images/display_drafts_white.png");
         
             menu_first.addEventListener("click", function(e) {
-                if (workWindowOpen) {
-                    workWindow.fireEvent("omadi:saveForm", {
-                        saveType : "normal"
-                    });
-                }
-                if (dispatchWindowOpen) {
-                    dispatchWindow.fireEvent("omadi:saveForm", {
-                        saveType : "normal"
-                    });
-                }
+                saveForAndroid("normal");
             });
         
             menu_second.addEventListener("click", function(e) {
-                if (workWindowOpen) {
-                    workWindow.fireEvent("omadi:saveForm", {
-                        saveType : "draft"
-                    });
-                }
-                if (dispatchWindowOpen) {
-                    dispatchWindow.fireEvent("omadi:saveForm", {
-                        saveType : "draft"
-                    });
-                }
+                saveForAndroid("draft");
             });
         };
         
@@ -313,93 +359,63 @@ function createiOSToolbar(workNodeTypeLabel, openDispatch) {"use strict";
                     message : 'You must set the job type first.'
                 }).show();
             }
+            else if ((workNode.nid == 'new' || workNode.nid < 0) && workNode.flag_is_updated != 3 && !workWindowOpen) {
+                postDialog = Ti.UI.createAlertDialog({
+                    buttonNames : ['OK'],
+                    title : 'No Actions',
+                    message : 'Fill out the job tab first.'
+                }).show();
+            }
             else {
+                bundle = Omadi.data.getBundle(workNode.type);
+                btn_tt = [];
+                btn_id = [];
 
-                if ((workNode.nid == 'new' || workNode.nid < 0) && workNode.flag_is_updated != 3 && !workWindowOpen) {
-                    postDialog = Ti.UI.createAlertDialog({
-                        buttonNames : ['OK'],
-                        title : 'No Actions',
-                        message : 'First, open the job tab.'
-                    }).show();
+                btn_tt.push('Save');
+                btn_id.push('normal');
+
+                // Do not allow going to the next part on dispatch create
+                // The problem is that the dispatch_id won't be on the screen
+                // and the dispatch_form.js won't be called, but only form.js
+                if (workNode.nid > 0 && bundle.data.form_parts != null && bundle.data.form_parts != "") {
+
+                    if (bundle.data.form_parts.parts.length >= workNode.form_part + 2) {
+
+                        btn_tt.push("Save + " + bundle.data.form_parts.parts[workNode.form_part + 1].label);
+                        btn_id.push('next');
+                    }
                 }
-                else {
-                    bundle = Omadi.data.getBundle(workNode.type);
-                    btn_tt = [];
-                    btn_id = [];
 
-                    btn_tt.push('Save');
-                    btn_id.push('normal');
+                //Currently do not allow saving drafts with dispatch
+                btn_tt.push('Save as Draft');
+                btn_id.push('draft');
 
-                    // Do not allow going to the next part on dispatch create
-                    // The problem is that the dispatch_id won't be on the screen
-                    // and the dispatch_form.js won't be called, but only form.js
-                    if (workNode.nid > 0 && bundle.data.form_parts != null && bundle.data.form_parts != "") {
+                btn_tt.push('Cancel');
+                btn_id.push('cancel');
 
-                        if (bundle.data.form_parts.parts.length >= workNode.form_part + 2) {
+                postDialog = Titanium.UI.createOptionDialog();
+                postDialog.options = btn_tt;
+                postDialog.show();
 
-                            btn_tt.push("Save + " + bundle.data.form_parts.parts[workNode.form_part + 1].label);
-                            btn_id.push('next');
+                postDialog.addEventListener('click', function(ev) {
+
+                    //if(Ti.UI.currentWindow.nodeSaved === false){
+                    if (ev.index != -1) {
+                        if (btn_id[ev.index] == 'next') {
+                            dispatchSaveForms("next_part");
+                        }
+                        else if (btn_id[ev.index] == 'draft') {
+                            dispatchSaveForms("draft");
+                        }
+                        else if (btn_id[ev.index] == 'normal') {
+                            dispatchSaveForms("normal");
                         }
                     }
-
-                    //Currently do not allow saving drafts with dispatch
-                    btn_tt.push('Save as Draft');
-                    btn_id.push('draft');
-
-                    btn_tt.push('Cancel');
-                    btn_id.push('cancel');
-
-                    postDialog = Titanium.UI.createOptionDialog();
-                    postDialog.options = btn_tt;
-                    postDialog.show();
-
-                    postDialog.addEventListener('click', function(ev) {
-
-                        //if(Ti.UI.currentWindow.nodeSaved === false){
-                        if (ev.index != -1) {
-                            if (btn_id[ev.index] == 'next') {
-                                if (workWindowOpen) {
-                                    workWindow.fireEvent("omadi:saveForm", {
-                                        saveType : "next_part"
-                                    });
-                                }
-                                if (dispatchWindowOpen) {
-                                    dispatchWindow.fireEvent("omadi:saveForm", {
-                                        saveType : "normal"
-                                    });
-                                }
-                            }
-                            else if (btn_id[ev.index] == 'draft') {
-                                if (workWindowOpen) {
-                                    workWindow.fireEvent("omadi:saveForm", {
-                                        saveType : "draft"
-                                    });
-                                }
-                                if (dispatchWindowOpen) {
-                                    dispatchWindow.fireEvent("omadi:saveForm", {
-                                        saveType : "draft"
-                                    });
-                                }
-                            }
-                            else if (btn_id[ev.index] == 'normal') {
-                                if (workWindowOpen) {
-                                    workWindow.fireEvent("omadi:saveForm", {
-                                        saveType : "normal"
-                                    });
-                                }
-                                if (dispatchWindowOpen) {
-                                    dispatchWindow.fireEvent("omadi:saveForm", {
-                                        saveType : "normal"
-                                    });
-                                }
-                            }
-                        }
-                        //}
-                        //else{
-                        //    alert("The form data was saved correctly, but this screen didn't close for some reason. You can exit safely. Please report what you did to get this screen.");
-                        //}
-                    });
-                }
+                    //}
+                    //else{
+                    //    alert("The form data was saved correctly, but this screen didn't close for some reason. You can exit safely. Please report what you did to get this screen.");
+                    //}
+                });
             }
         });
 
@@ -466,80 +482,6 @@ function setFormWindowTop(e) {"use strict";
     }
 }
 
-function savedDispatchNode(e) {"use strict";
-    var workNid, dispatchNid, sendUpdates, db, localOnly;
-
-    localOnly = (e.isContinuous || e.isDraft);
-
-    if (!localOnly) {
-        // Don't allow a background job to send data before everything is ready
-        Omadi.service.setSendingData(true);
-    }
-
-    if (e.nodeType == 'dispatch') {
-        dispatchSavedInfo = e;
-    }
-    else {
-        workSavedInfo = e;
-    }
-
-    if (e.nodeNid < 0) {
-
-        // Only change dispatch_nids when both are new
-        if (workSavedInfo !== null && dispatchSavedInfo !== null) {
-
-            workNid = parseInt(workSavedInfo.nodeNid, 10);
-            dispatchNid = parseInt(dispatchSavedInfo.nodeNid, 10);
-
-            if (isNaN(workNid) || isNaN(dispatchNid)) {
-                Omadi.service.sendErrorReport("Bad dispatch nids: " + JSON.stringify(workSavedInfo) + " " + JSON.stringify(dispatchSavedInfo));
-                alert("There was a problem saving this dispatch, and it will not be sent out properly. Please try again.");
-            }
-            else {
-                
-                Ti.API.error(workNid + " " + dispatchNid);
-                
-                db = Omadi.utils.openMainDatabase();
-                db.execute("UPDATE node SET dispatch_nid = " + workNid + " WHERE nid = " + dispatchNid);
-                db.execute("UPDATE node SET dispatch_nid = " + dispatchNid + " WHERE nid = " + workNid);
-                db.close();
-            }
-        }
-    }
-
-    // Only send the updates to the server if all the information is present
-    sendUpdates = false;
-    if (dispatchWindowOpen && workWindowOpen) {
-        if (workSavedInfo !== null && dispatchSavedInfo !== null) {
-            sendUpdates = true;
-        }
-    }
-    else if (dispatchWindowOpen && !workWindowOpen) {
-        if (dispatchSavedInfo !== null) {
-            sendUpdates = true;
-        }
-    }
-    else if (workWindowOpen && !dispatchWindowOpen) {
-        if (workSavedInfo !== null) {
-            sendUpdates = true;
-        }
-    }
-
-    if (sendUpdates) {
-        // Both nodes are saved, so we can close the window
-
-        if (!localOnly) {
-            // Allow the updates to go through now that all the data is present
-            Omadi.service.setSendingData(false);
-            Ti.App.fireEvent('sendUpdates');
-        }
-
-        if (!e.isContinuous) {
-            Ti.UI.currentWindow.close();
-        }
-    }
-}
-
 function towTypeChanged(e) {"use strict";
     var newNodeType, newBundle;
 
@@ -585,6 +527,154 @@ function towTypeChanged(e) {"use strict";
     }
 }
 
+function savedDispatchNode(e) {"use strict";
+    var workNid, dispatchNid, sendUpdates, db, localOnly, singleSaveNid, isFinalSave, setFlag;
+
+    localOnly = (e.isContinuous || e.isDraft);
+
+    if (!localOnly) {
+        setSendingData = true;
+        // Don't allow a background job to send data before everything is ready
+        Omadi.service.setSendingData(true);
+    }
+    
+    // We have two sets of Info from the 'e' variable. The continuous saves need to stay linked
+    // When the final save comes through, we don't want to mix up nids as 4 different negative nids
+    // will be floating around for this one dispatch form
+    if(e.isContinuous){
+        // Don't get continuous and real nids mixed up
+        if (e.nodeType == 'dispatch') {
+            continuousDispatchInfo = e;
+        }
+        else {
+            continuousWorkInfo = e;
+        }
+    }
+    else{
+        // Don't get continuous and real nids mixed up
+        if (e.nodeType == 'dispatch') {
+            dispatchSavedInfo = e;
+        }
+        else {
+            workSavedInfo = e;
+        }
+    }
+
+    if (e.nodeNid < 0) {
+
+        // Only change dispatch_nids when both are new
+        if ((workSavedInfo !== null && dispatchSavedInfo !== null) || (continuousDispatchInfo !== null && continuousWorkInfo !== null)) {
+            
+            if(dispatchSavedInfo !== null && workSavedInfo !== null){
+                workNid = parseInt(workSavedInfo.nodeNid, 10);
+                dispatchNid = parseInt(dispatchSavedInfo.nodeNid, 10);
+                isFinalSave = true;
+            }
+            else{
+                workNid = parseInt(continuousWorkInfo.nodeNid, 10);
+                dispatchNid = parseInt(continuousDispatchInfo.nodeNid, 10);
+                isFinalSave = false;
+            }
+            
+
+            if (isNaN(workNid) || isNaN(dispatchNid)) {
+                if(isFinalSave){
+                    Omadi.service.sendErrorReport("Bad dispatch nids: " + JSON.stringify(workSavedInfo) + " " + JSON.stringify(dispatchSavedInfo));
+                    alert("There was a problem saving this dispatch, and it will not be sent out properly. Please try again.");
+                }
+            }
+            else {
+                
+                db = Omadi.utils.openMainDatabase();
+                db.execute("BEGIN IMMEDIATE TRANSACTION");
+                db.execute("UPDATE node SET dispatch_nid = " + workNid + " WHERE nid = " + dispatchNid);
+                db.execute("UPDATE node SET dispatch_nid = " + dispatchNid + " WHERE nid = " + workNid);
+                
+                if(isFinalSave){
+                    
+                    if(workSavedInfo.saveType == 'draft'){
+                        setFlag = 3;    
+                    }
+                    else{
+                        setFlag = 1;   
+                    }
+                    
+                    db.execute("UPDATE node SET flag_is_updated = " + setFlag + " WHERE nid IN (" + dispatchNid + "," + workNid + ")");
+                }
+                
+                db.execute("COMMIT TRANSACTION");
+                db.close();
+            }
+        }
+    }
+
+    // Only send the updates to the server if all the information is present
+    sendUpdates = false;
+    if (dispatchWindowOpen && workWindowOpen) {
+        if (workSavedInfo !== null && dispatchSavedInfo !== null) {
+            sendUpdates = true;
+        }
+        else if(e.nodeNid < 0 && !e.isContinuous){
+            // If the node is only local (negative nid), then set flag_is_updated to 5
+            // If the form is closed, removed those nodes with flag_is_updated == 5
+            // This scenario can happen when one of the two nodes saves correctly, but the other does not
+            // If this weren't, here that saved dispatch or work node would not be attached with dispatch_nid
+            
+            if(workSavedInfo !== null){
+                singleSaveNid = parseInt(workSavedInfo.nodeNid, 10);
+            }
+            else if(dispatchSavedInfo !== null){
+                singleSaveNid = parseInt(dispatchSavedInfo.nodeNid, 10);
+            }
+            
+            if(!isNaN(singleSaveNid)){
+            
+                db = Omadi.utils.openMainDatabase();
+                db.execute("BEGIN IMMEDIATE TRANSACTION");
+                db.execute("UPDATE node SET flag_is_updated = 5 WHERE nid = " + singleSaveNid);
+                db.execute("COMMIT TRANSACTION");
+                db.close();
+            }
+        }
+    }
+    else if (dispatchWindowOpen && !workWindowOpen) {
+        if (dispatchSavedInfo !== null) {
+            sendUpdates = true;
+        }
+    }
+    else if (workWindowOpen && !dispatchWindowOpen) {
+        if (workSavedInfo !== null) {
+            sendUpdates = true;
+        }
+    }
+
+    if (sendUpdates) {
+        // Both nodes are saved, so we can close the window
+
+        if (!localOnly) {
+            setSendingData = false;
+            // Allow the updates to go through now that all the data is present
+            Omadi.service.setSendingData(false);
+            Ti.App.fireEvent('sendUpdates');
+        }
+
+        if (!e.isContinuous) {
+            
+            if(dispatchWindowOpen){
+                dispatchWindow.close();    
+            }
+            if(workWindowOpen){
+                workWindow.close();
+            }
+            
+            Ti.App.removeEventListener("omadi:dispatch:towTypeChanged", towTypeChanged);
+            Ti.App.removeEventListener("omadi:dispatch:savedDispatchNode", savedDispatchNode);
+            
+            Ti.UI.currentWindow.close();
+        }
+    }
+}
+
 ( function() {"use strict";
     var workBundle, openDispatch, workLabel, dialog, allowRecover;
 
@@ -595,9 +685,15 @@ function towTypeChanged(e) {"use strict";
 
     dispatchSavedInfo = null;
     workSavedInfo = null;
+    continuousDispatchInfo = null;
+    continuousWorkInfo = null;
 
     Ti.Gesture.addEventListener("orientationchange", setFormWindowTop);
+    
+    Ti.App.removeEventListener("omadi:dispatch:towTypeChanged", towTypeChanged);
     Ti.App.addEventListener("omadi:dispatch:towTypeChanged", towTypeChanged);
+    
+    Ti.App.removeEventListener("omadi:dispatch:savedDispatchNode", savedDispatchNode);
     Ti.App.addEventListener("omadi:dispatch:savedDispatchNode", savedDispatchNode);
 
     if (Ti.UI.currentWindow.nid == 'new') {
@@ -645,7 +741,6 @@ function towTypeChanged(e) {"use strict";
         }
         
         // Recover from a crash with the correct work node if the work node was never looked at
-        
         if(allowRecover){   
             if((workNode === null || typeof workNode.nid === 'undefined') && 
                 typeof dispatchNode.field_tow_type !== 'undefined' &&

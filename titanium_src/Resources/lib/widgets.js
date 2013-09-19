@@ -406,7 +406,6 @@ Omadi.widgets.shared = {
         children = fieldView.getChildren();
         
         wrapper = fieldView.wrapper;
-        wrapper.startLayout();
         
         instance.dbValues = Omadi.widgets.getDBValues(wrapper);
         instance.textValues = Omadi.widgets.getTextValues(wrapper);
@@ -427,12 +426,6 @@ Omadi.widgets.shared = {
         for(i = children.length - 1; i >= 0; i --){
             wrapper.remove(children[i]);
         }
-        
-        // for(i = children.length - 1; i >= 0; i --){
-            // fieldView.remove(children[i]);
-        // }
-        
-        wrapper.finishLayout();
     }
 };
 

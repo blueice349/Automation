@@ -59,8 +59,10 @@ Omadi.widgets.license_plate = {
             dbValue = "";
             textValue = "";
             if ( typeof node[real_field_name] !== 'undefined') {
-                if ( typeof node[real_field_name].parts[part].textValue !== 'undefined') {
+                // The "false" will still allow "FALSE", so we're okay here since CAPS is mandated for a final value
+                if ( typeof node[real_field_name].parts[part].textValue !== 'undefined' && node[real_field_name].parts[part].textValue !== "false") {
                     dbValue = textValue = node[real_field_name].parts[part].textValue;
+                    Ti.API.error("lic: " + dbValue);
                 }
             }
         }

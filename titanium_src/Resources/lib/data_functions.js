@@ -381,14 +381,12 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
                         nodeNid: node._saveNid,
                         nodeType: node.type,
                         isContinuous: node._isContinuous,
-                        isDraft: node._isDraft
-                    }); 
+                        isDraft: node._isDraft,
+                        saveType: saveType
+                    });
                     
-                    if(Ti.App.isAndroid){
-                        // The android activity should not close since all 3 windows are in the same activity
-                        // The dispatch_form will take care of closing
-                        //closeAfterSave = false;
-                    }
+                    // if in dispatch, the dispatch_form.js will take care of closing the window
+                    closeAfterSave = false;
                 }
                 
                 if(node._isContinuous === true){
@@ -572,6 +570,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
     }
     
     db = Omadi.utils.openMainDatabase();
+    db.execute("BEGIN IMMEDIATE TRANSACTION");
     
     try {
 
@@ -662,7 +661,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
             query += ")";
     
             //Ti.API.error(query);
-    
+            
             db.execute(query);
         }
 
@@ -743,33 +742,15 @@ Omadi.data.nodeSave = function(node) {"use strict";
         alert("Error saving to " + node.type + " table: " + ex2 + " : " + query);
         Omadi.service.sendErrorReport("Error saving to " + node.type + " table: " + ex2 + " : " + query);
     }
-    finally {
-        try {
-            db.close();
-        }
-        catch(nothing) {
-
-        }
+    
+    try {
+        db.execute("COMMIT TRANSACTION");
+        db.close();
     }
+    catch(nothing) {
 
-    //if (title_to_node == "") {
-    //    title_to_node = "No title";
-    //}
-
-    //No data fields JSON
-    //no_data_fields_content = '';
-
-    // for ( idx_k = 0; idx_k < no_data_fields.length; idx_k++) {
-    // if (idx_k == no_data_fields.length - 1) {
-    // no_data_fields_content += '\"' + no_data_fields[idx_k] + '\" : \"' + no_data_fields[idx_k] + '\"';
-    // }
-    // else {
-    // no_data_fields_content += '\"' + no_data_fields[idx_k] + '\" : \"' + no_data_fields[idx_k] + '\",';
-    // }
-    // }
-    // if (no_data_fields_content != null && no_data_fields_content != '') {
-    // no_data_fields_content = "{" + no_data_fields_content + "}"
-
+    }
+    
     return node;
 };
 

@@ -429,6 +429,8 @@ Omadi.service.sendUpdates = function() {"use strict";
     /*jslint eqeq: true*/
     var isSendingData, http, secondsLeft, origAppStartMillis;
     
+    Ti.API.error("Sending Data Now");
+    
     // Remove the activity if the appStartMillis don't match the current runtime
     // This may come up when the app crashes, and this function is called multiple times
     // for all the open activities, but it should only be called once
@@ -1446,7 +1448,10 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
 
         while (result.isValidRow()) {
             nids.push(result.fieldByName('nid'));
+            Ti.API.info(result.fieldByName('nid'));
             result.next();
+            
+            
         }
 
         result.close();
@@ -1513,6 +1518,8 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
                 }
             }
         }
+        
+        Ti.API.info(JSON.stringify(obj));
         
         return JSON.stringify(obj);
     }

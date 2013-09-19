@@ -202,11 +202,11 @@ function createAndroidTabs(){"use strict";
                fontSize: 16,
                fontWeight: 'bold'               
            },
-           backgroundColor: '#444',
+           backgroundColor: '#00AEEE',
            color: '#fff',
            width: '49%',
            height: 40,
-           borderColor: '#444',
+           borderColor: '#00AEEE',
            borderWidth: 1,
            borderRadius: 3,
            left: 0,
@@ -216,8 +216,8 @@ function createAndroidTabs(){"use strict";
         savedTab.addEventListener('click', function(e){
             if(currentOrderField != 'changed'){
                 currentOrderField = 'changed';
-                savedTab.setBackgroundColor('#444');
-                viewedTab.setBackgroundColor('#777');
+                savedTab.setBackgroundColor('#00AEEE');
+                viewedTab.setBackgroundColor('#444');
                 tableView.setData(getTableViewData(currentOrderField));
             }  
             
@@ -232,11 +232,11 @@ function createAndroidTabs(){"use strict";
                fontSize: 16,
                fontWeight: 'bold'               
            },
-           backgroundColor: '#777',
+           backgroundColor: '#444',
            color: '#fff',
            width: '49%',
            height: 40,
-           borderColor: '#444',
+           borderColor: '#00AEEE',
            borderWidth: 1,
            borderRadius: 3,
            right: 0,
@@ -246,8 +246,8 @@ function createAndroidTabs(){"use strict";
         viewedTab.addEventListener('click', function(e){
             if(currentOrderField != 'viewed'){
                 currentOrderField = 'viewed';
-                viewedTab.setBackgroundColor('#444');
-                savedTab.setBackgroundColor('#777');
+                viewedTab.setBackgroundColor('#00AEEE');
+                savedTab.setBackgroundColor('#444');
                 tableView.setData(getTableViewData(currentOrderField));
             }  
             tableView.scrollToIndex(0);

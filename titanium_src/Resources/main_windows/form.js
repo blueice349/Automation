@@ -675,7 +675,6 @@ function getRegionHeaderView(region, expanded){"use strict";
         if (e.source.expanded === true) {
             
             regionView = regionViews[e.source.region_name];
-            regionView.startLayout();
             
             e.source.collapsedView.hide();
             e.source.collapsedView.setBorderWidth(0);
@@ -685,7 +684,6 @@ function getRegionHeaderView(region, expanded){"use strict";
             
             e.source.arrow.setImage("/images/light_arrow_down.png");
             
-            regionView.finishLayout();
             regionView.setHeight(Ti.UI.SIZE);
             
             // For iOS, just make sure the region is expanded as layout doesn't always happen
@@ -698,7 +696,6 @@ function getRegionHeaderView(region, expanded){"use strict";
         else {
             
             regionView = regionViews[e.source.region_name];
-            regionView.startLayout();
             
             e.source.collapsedView.show();
             e.source.collapsedView.setBorderWidth(1);
@@ -708,8 +705,6 @@ function getRegionHeaderView(region, expanded){"use strict";
             regionView.setHeight(0);
            
             e.source.arrow.setImage("/images/light_arrow_left.png");
-            
-            regionView.finishLayout();
         }
     });
     
@@ -1677,8 +1672,6 @@ function continuousSave(){"use strict";
     
     Ti.UI.currentWindow.addEventListener("android:back", cancelOpt);
     
-    
-    
     // Do not let the app log this user out while on the form screen
     // Allow again when the node is saved
     Ti.App.allowBackgroundLogout = false;
@@ -1780,53 +1773,17 @@ function continuousSave(){"use strict";
         }
     }
     
-    // if (Ti.App.isAndroid) {
-        // //The view where the results are presented
-        // formWrapperView = Ti.UI.createView({
-            // top : 0,
-            // height : '100%',
-            // width : '100%',
-            // backgroundColor : '#EEEEEE',
-            // opacity : 1
-        // });
-        // win.add(formWrapperView);
-// 
-        // scrollView = Ti.UI.createScrollView({
-            // bottom : 0,
-            // contentHeight : 'auto',
-            // backgroundColor : '#EEEEEE',
-            // showHorizontalScrollIndicator : false,
-            // showVerticalScrollIndicator : true,
-            // opacity : 1,
-            // scrollType : "vertical",
-            // zIndex : 10,
-            // layout: 'vertical',
-            // height: Ti.UI.SIZE,
-            // top: 0
-        // });
-    // }
-    // else {
-// 
-        // //The view where the results are presented
-        // formWrapperView = Ti.UI.createView({
-            // top : 45,
-            // height : Ti.UI.FILL,
-            // width : '100%'
-        // });
-        // //win.add(formWrapperView);
-
-        scrollView = Ti.UI.createScrollView({
-            contentHeight : 'auto',
-            showHorizontalScrollIndicator : false,
-            showVerticalScrollIndicator : true,
-            scrollType : 'vertical',
-            layout: 'vertical',
-            height: Ti.UI.FILL,
-            width: '100%'
-        });
-        
-        wrapperView.add(scrollView);
-   // }
+    scrollView = Ti.UI.createScrollView({
+        contentHeight : 'auto',
+        showHorizontalScrollIndicator : false,
+        showVerticalScrollIndicator : true,
+        scrollType : 'vertical',
+        layout: 'vertical',
+        height: Ti.UI.FILL,
+        width: '100%'
+    });
+    
+    wrapperView.add(scrollView);
     
     win.add(wrapperView);
     
@@ -2057,6 +2014,13 @@ function continuousSave(){"use strict";
     });
     
     Ti.UI.currentWindow.saveInterval = setInterval(continuousSave, 15000);
+    
+    Ti.UI.currentWindow.addEventListener('close', function(){
+        Ti.API.error("Form window close event");
+        if(typeof Ti.UI.currentWindow.saveInterval !== 'undefined'){
+            clearInterval(Ti.UI.currentWindow.saveInterval);
+        } 
+    });
     
 }());
 
