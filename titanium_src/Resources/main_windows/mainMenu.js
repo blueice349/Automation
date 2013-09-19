@@ -908,6 +908,10 @@ function mainMenuFirstSyncInstallComplete(){"use strict";
     Ti.App.allowBackgroundLogout = true;
     Ti.App.closingApp = false;
     
+    Ti.UI.currentWindow.appStartMillis = (new Date()).getTime();
+    Ti.App.Properties.setDouble("omadi:appStartMillis", Ti.UI.currentWindow.appStartMillis);
+    Omadi.service.sendErrorReport("Main Menu was opened with millis: " + Ti.UI.currentWindow.appStartMillis);
+   
     listView = Titanium.UI.createTableView({
         data : [],
         top : 85,
@@ -1123,14 +1127,6 @@ function mainMenuFirstSyncInstallComplete(){"use strict";
     Omadi.service.checkUpdate('from_menu');
     
     showContinuousSavedNode();
-    
-    var origAppStartMillis = Ti.App.Properties.getDouble("omadi:appStartMillis", 0);
-    if(typeof Ti.UI.currentWindow.appStartMillis !== 'undefined'){        
-        Omadi.service.sendErrorReport("Main Menu was opened with millis: " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
-    }
-    else{
-        Omadi.service.sendErrorReport("Main Menu was opened with NO millis: " + origAppStartMillis);
-    }
     
 }());
 

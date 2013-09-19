@@ -348,7 +348,47 @@ function addVideoSettings(){"use strict";
             fontSize: 15,
             fontWeight: 'bold'
         },
+        left: '2%',
+        width: '75%'
+    });
+    
+    wrapper = Ti.UI.createView({
+        height: Ti.UI.SIZE,
+        width: Ti.UI.FILL,
+        layout: 'horizontal',
+        top: 10
+    }); 
+    
+    wrapper.add(radio);
+    wrapper.add(label);
+    
+    scrollView.add(wrapper);
+}
+
+function addPhotoThumbnailOptions(){"use strict";
+    var radio, wrapper, label;
+    
+    radio = Ti.UI.createSwitch({
+        value: Ti.App.Properties.getBool('omadi:image:skipThumbnail', false),
+        top: 5,
+        bottom: 5,
+        height: Ti.UI.SIZE,
         left: '2%'
+    });
+    
+    radio.addEventListener('change', function(e){
+        Ti.App.Properties.setBool('omadi:image:skipThumbnail', e.value);
+    });
+    
+    label = Ti.UI.createLabel({
+        text: "Speed up photos or solve memory problems by not loading thumbnails on forms",
+        color: '#999',
+        font: {
+            fontSize: 15,
+            fontWeight: 'bold'
+        },
+        left: '2%',
+        width: '75%'
     });
     
     wrapper = Ti.UI.createView({
@@ -394,6 +434,8 @@ function addVideoSettings(){"use strict";
     
     wrapperView.add(scrollView);
     
+    
+    
     if(Ti.App.isAndroid){
         topBar = Ti.UI.createLabel({
            backgroundColor: '#666',
@@ -409,6 +451,7 @@ function addVideoSettings(){"use strict";
         });
         
         scrollView.add(topBar);
+        addPhotoThumbnailOptions();
         addPhotoWidgetOptions();
     }
     else{

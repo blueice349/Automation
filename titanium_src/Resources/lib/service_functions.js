@@ -435,8 +435,8 @@ Omadi.service.sendUpdates = function() {"use strict";
     // for all the open activities, but it should only be called once
     if(typeof Ti.UI.currentWindow.appStartMillis !== 'undefined'){
         origAppStartMillis = Ti.App.Properties.getDouble('omadi:appStartMillis', 0);
-        if(origAppStartMillis == 0){
-            Omadi.service.sendErrorReport("AppStartMillis was zero");
+        if(origAppStartMillis == 0 || origAppStartMillis == null || origAppStartMillis == ""){
+            Omadi.service.sendErrorReport("AppStartMillis was zero: " + origAppStartMillis);
         }
         else{
             if(origAppStartMillis != Ti.UI.currentWindow.appStartMillis){
@@ -1203,8 +1203,8 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
     // for all the open activities, but it should only be called once
     if(typeof Ti.UI.currentWindow.appStartMillis !== 'undefined'){
         origAppStartMillis = Ti.App.Properties.getDouble('omadi:appStartMillis', 0);
-        if(origAppStartMillis == 0){
-            Omadi.service.sendErrorReport("AppStartMillis upload was zero, background: " + isBackground);
+        if(origAppStartMillis == 0 || origAppStartMillis == null || origAppStartMillis == ""){
+            Omadi.service.sendErrorReport("AppStartMillis upload was zero: " + origAppStartMillis + ", background: " + isBackground);
         }
         else{
             if(origAppStartMillis != Ti.UI.currentWindow.appStartMillis){

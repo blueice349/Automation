@@ -13,6 +13,10 @@
     -->
     <property name="ti.android.bug2373.finishfalseroot" type="bool">true</property>
     <property name="ti.android.runtime">v8</property>
+    <property name="ti.android.threadstacksize" type="int">49152</property>
+    <property name="ti.android.httpclient.maxbuffersize" type="int">2097152</property>
+    <!-- The below property will not work until building at tool-level 11 or greater-->
+    <property name="ti.android.largeHeap" type="bool">true</property>
     <sdk-version>3.1.1.GA</sdk-version>
     <deployment-targets>
         <target device="tizen">false</target>
@@ -44,7 +48,7 @@
             <service url="android_gps_event.js"/>
         </services>
         <manifest android:installLocation="preferExternal"
-            android:versionCode="33" android:versionName="2.6.5">
+            android:versionCode="34" android:versionName="2.6.6">
             <uses-sdk android:minSdkVersion="10"/>
             <uses-permission android:name="android.permission.READ_LOGS"/>
             <uses-permission android:name="android.permission.CAMERA"/>

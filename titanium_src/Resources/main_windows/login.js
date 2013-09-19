@@ -278,9 +278,8 @@ function loggingOutLoginScreen(){"use strict";
     updateUploadBytes();
     Omadi.service.doBackgroundUploads = true;
     
-    Ti.UI.currentWindow.appStartMillis = (new Date()).getTime(); 
+    Ti.UI.currentWindow.appStartMillis = (new Date()).getTime();
     Ti.App.Properties.setDouble('omadi:appStartMillis', Ti.UI.currentWindow.appStartMillis);
-    
     
     // Make sure we don't have multiple photoupload checks
     if(typeof Ti.App.backgroundPhotoUploadCheck !== 'undefined'){
@@ -818,8 +817,7 @@ function loggingOutLoginScreen(){"use strict";
                     Omadi.service.abortFileUpload();
                     
                     mainMenuWindow = Omadi.display.openMainMenuWindow({
-                        fromSavedCookie: false,
-                        appStartMillis: Ti.UI.currentWindow.appStartMillis
+                        fromSavedCookie: false
                     });
                     
                     // Right when the main menu window closes, check for additional files to upload
@@ -924,8 +922,7 @@ function loggingOutLoginScreen(){"use strict";
             Omadi.service.abortFileUpload();
             
             mainMenuWindow = Omadi.display.openMainMenuWindow({
-                fromSavedCookie: true,
-                appStartMillis: Ti.UI.currentWindow.appStartMillis
+                fromSavedCookie: true
             });
             
             // Right when the main menu window closes, check for additional files to upload
