@@ -2,7 +2,6 @@
 /*global Omadi,dbEsc*/
 /*jslint eqeq:true,plusplus:true*/
 
-
 Omadi.service = Omadi.service || {};
 
 Omadi.service.fetchedJSON = null;
@@ -1192,7 +1191,8 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
     var listDB, result, isUploading, nowTimestamp, 
         lastUploadStartTimestamp, tmpImageView, 
         blobImage, maxDiff, imageData, uploadPhoto,
-        numFilesReadyToUpload, payload, cookie, origAppStartMillis;
+        numFilesReadyToUpload, payload, cookie, 
+        origAppStartMillis, currentWinStartMillis;
         
     if(typeof isBackground === 'undefined'){
         isBackground = false;
@@ -1203,18 +1203,28 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
     // for all the open activities, but it should only be called once
     if(typeof Ti.UI.currentWindow.appStartMillis !== 'undefined'){
         origAppStartMillis = Ti.App.Properties.getDouble('omadi:appStartMillis', 0);
-        if(origAppStartMillis == 0 || origAppStartMillis == null || origAppStartMillis == ""){
-            Omadi.service.sendErrorReport("AppStartMillis upload was zero: " + origAppStartMillis + ", background: " + isBackground);
+        currentWinStartMillis = parseInt(Ti.UI.currentWindow.appStartMillis, 10);
+        
+        if(isNaN(origAppStartMillis) || isNaN(currentWinStartMillis)){
+            Ti.API.error("start millis is NaN: " + currentWinStartMillis + " - " + origAppStartMillis);
+            Omadi.service.sendErrorReport("start millis is NaN: " + currentWinStartMillis + " - " + origAppStartMillis);
         }
         else{
-            if(origAppStartMillis != Ti.UI.currentWindow.appStartMillis){
-                if(Ti.App.isAndroid){
-                    Omadi.service.sendErrorReport("An extra android upload activity should be shut down, background: " + isBackground + " : "  + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
-                    //Ti.Android.currentActivity.finish();
-                }
-                else{
-                    Omadi.service.sendErrorReport("An extra iOS upload event should be shut down, background: " + isBackground + " : " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
-                    //return;
+            if(origAppStartMillis == 0 || currentWinStartMillis == 0){
+                Ti.API.error("AppStartMillis upload was zero: " + origAppStartMillis + " - " + currentWinStartMillis + ", background: " + isBackground);
+                Omadi.service.sendErrorReport("AppStartMillis upload was zero: " + origAppStartMillis + " - " + currentWinStartMillis + ", background: " + isBackground);
+            }
+            else{
+                if(origAppStartMillis != Ti.UI.currentWindow.appStartMillis){
+                    if(Ti.App.isAndroid){
+                        Omadi.service.sendErrorReport("An extra android upload activity was REJECTED, background: " + isBackground + " : "  + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
+                        return;
+                        //Ti.Android.currentActivity.finish();
+                    }
+                    else{
+                        Omadi.service.sendErrorReport("An extra iOS upload event is being REJECTED, background: " + isBackground + " : " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
+                        return;
+                    }
                 }
             }
         }
