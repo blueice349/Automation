@@ -1069,12 +1069,11 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                 form_part: 0,
                 nid : nid
             };
-        
+
             db = Omadi.utils.openMainDatabase();
             listDB = Omadi.utils.openListDatabase();
             
             try{
-                
 
                 result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed, sync_hash, continuous_nid, dispatch_nid FROM node WHERE  nid = ' + nid);
         
@@ -1103,8 +1102,9 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                     if(typeof Ti.App.deletedNegatives[nid] !== 'undefined' && Ti.App.deletedNegatives[nid] !== null && Ti.App.deletedNegatives[nid] != ""){
                         
                         newNid = Ti.App.deletedNegatives[nid];
+
                         Ti.API.debug("CAN RECOVER " + nid +  " > " + newNid);
-                        
+              
                         Ti.App.deletedNegatives[nid] = null;
                         
                         result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed, sync_hash, continuous_nid, dispatch_nid FROM node WHERE  nid = ' + newNid);
@@ -1144,6 +1144,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                 }
                 
                 result.close();
+
             }
             catch(ex){
                 Omadi.service.sendErrorReport("Exception with node table query: " + ex);
@@ -1472,9 +1473,6 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                     
                                     // Special case for only file-type fields
                                     if(instances[field_name].type == 'file'){
-                                        
-                                        Ti.API.debug("node load");
-                                        Ti.API.debug(node);
                                         
                                         subResult = db.execute("SELECT " + field_name + "___filename AS filename FROM " + node.type + " WHERE nid=" + node.nid);
                                         if (subResult.rowCount > 0) {
