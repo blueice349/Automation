@@ -9,14 +9,17 @@ Omadi.bundles.inspection.getLastInspectionReportNid = function(vehicleNid){"use 
     lastNid = 0;
     
     if(vehicleNid > 0){
-    
-        db = Omadi.utils.openMainDatabase();
-        result = db.execute("SELECT n.nid FROM inspection i INNER JOIN node n ON n.nid = i.nid WHERE i.truck_reference = " + vehicleNid + " ORDER BY n.created DESC LIMIT 1");
-        if(result.isValidRow()){
-            lastNid = result.field(0, Ti.Database.FIELD_TYPE_INT);         
+        
+        if(Omadi.data.fieldExists('inspection', 'truck_reference')){
+        
+            db = Omadi.utils.openMainDatabase();
+            result = db.execute("SELECT n.nid FROM inspection i INNER JOIN node n ON n.nid = i.nid WHERE i.truck_reference = " + vehicleNid + " ORDER BY n.created DESC LIMIT 1");
+            if(result.isValidRow()){
+                lastNid = result.field(0, Ti.Database.FIELD_TYPE_INT);         
+            }
+            result.close();
+            db.close();
         }
-        result.close();
-        db.close();
     }
     
     return lastNid;

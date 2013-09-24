@@ -122,7 +122,6 @@ Omadi.bundles.timecard.doClockIn = function() {"use strict";
         changed_uid : uid,
         table_name : 'timecard',
         type : 'timecard',
-        no_data : [],
         viewed : now,
         form_part : 0
     };

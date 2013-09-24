@@ -1,4 +1,3 @@
-
 /*global Omadi,dbEsc*/
 /*jslint eqeq:true,plusplus:true*/
 
@@ -569,9 +568,9 @@ Omadi.service.sendUpdates = function() {"use strict";
                 //Ti.API.info("Progress bar = " + progress);
                 //alert("Data Received with error");
                 
-                if(Ti.App.isAndroid){
-                    Titanium.Media.vibrate();
-                }
+                // if(Ti.App.isAndroid){
+                    // Titanium.Media.vibrate();
+                // }
 
                 if (this.status == 403 || this.status == 401) {
                     

@@ -1,7 +1,6 @@
 
 /*jslint plusplus:true,eqeq:true,nomen:true*/
 
-
 Omadi.data = Omadi.data || {};
 
 Omadi.data.cameraAndroid = null;
@@ -112,6 +111,20 @@ Omadi.data.getBundle = function(type, reset) {"use strict";
     bundle = Omadi.data.bundleCache[type];
 
     return bundle;
+};
+
+/**
+ * Return true or false if the DB schema should have the specified field in the specified bundle
+ */
+Omadi.data.fieldExists = function(nodeType, fieldName){"use strict";
+    var instances;
+    instances = Omadi.data.getFields(nodeType);
+    
+    if(typeof instances[fieldName] !== 'undefined'){
+        return true;
+    }
+    
+    return false;
 };
 
 var _staticFields = {};
@@ -386,6 +399,11 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
                     });
                     
                     // if in dispatch, the dispatch_form.js will take care of closing the window
+                    closeAfterSave = false;
+                }
+                else if(Ti.UI.currentWindow.url !== 'undefined' && Ti.UI.currentWindow.url.indexOf("mainMenu.js") !== -1){
+                    // If the node save is called from the main menu, do not close
+                    // This is the case for the clock-in dialog at login
                     closeAfterSave = false;
                 }
                 
@@ -666,6 +684,12 @@ Omadi.data.nodeSave = function(node) {"use strict";
         }
 
         try {
+            
+            // Make sure dispatch_nid is set for the save
+            if(typeof node.dispatch_nid === 'undefined'){
+                node.dispatch_nid = 0;
+            }
+            
             if (node._isContinuous) {          
                 Ti.API.debug("SAVING TO CONTINUOUS: " + saveNid + " " + Ti.UI.currentWindow.nid);    
                 
@@ -689,8 +713,6 @@ Omadi.data.nodeSave = function(node) {"use strict";
                 Omadi.service.sendErrorReport("Saved draft: saveNid = " + saveNid + ", origNid = " + origNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
                 // Only save drafts as a negative nid
                 db.execute("INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",3,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + origNid + "," + node.dispatch_nid + ")");
-                
-                
             }
             else if (saveNid > 0) {
                 Omadi.service.sendErrorReport("Saved update: saveNid = " + saveNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
