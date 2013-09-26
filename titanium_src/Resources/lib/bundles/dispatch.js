@@ -30,7 +30,7 @@ Omadi.bundles.dispatch.showNewDispatchJobs = function(){"use strict";
 };
 
 Omadi.bundles.dispatch.getDrivingDirections = function(args){"use strict";
-    var http, dialog, nid = 0, address, node, accountNid;
+    var http, dialog, nid = 0, address, node, accountNid, bundle;
     
     if(typeof args[0] !== 'undefined'){
         nid = args[0];
@@ -57,25 +57,7 @@ Omadi.bundles.dispatch.getDrivingDirections = function(args){"use strict";
             address = "";
             
             if(node){
-                if(node.type == 'tow'){ // Same as PPI
-                    accountNid = node.enforcement_account.dbValues[0];
-                    node = Omadi.data.nodeLoad(accountNid);
-                    Omadi.bundles.dispatch.openDirectionsToFirstAddress(node);
-                }
-                else if(node.type == 'service'){
-                    
-                    if(typeof node.service_tow_start_address___street !== 'undefined' && node.service_tow_start_address___street.dbValues[0] > ''){
-                        Omadi.bundles.dispatch.openDirectionsToFirstAddress(node);
-                    }
-                    else{
-                        accountNid = node.enforcement_account.dbValues[0];
-                        node = Omadi.data.nodeLoad(accountNid);
-                        Omadi.bundles.dispatch.openDirectionsToFirstAddress(node);
-                    }
-                }
-                else{ // for club_tow, cod, pd
-                    Omadi.bundles.dispatch.openDirectionsToFirstAddress(node);
-                }
+                Omadi.bundles.dispatch.openDispatchDirections(node);
             }
             else{
                 alert("An error occurred getting the address.");
@@ -88,58 +70,138 @@ Omadi.bundles.dispatch.getDrivingDirections = function(args){"use strict";
     }
 };
 
-Omadi.bundles.dispatch.openDirectionsToFirstAddress = function(node){"use strict";
-    var firstLocationFieldName, index, fieldName, street, city, state, zip, address, instances;
+Omadi.bundles.dispatch.openDispatchDirections = function(node){"use strict";
+    var locationFieldName, bundle, index, fieldName, street, city, state, 
+        zip, address, locationFieldParts, locationFieldBundle, 
+        locationFieldOmadiReference, referenceNid;
     
-    instances = Omadi.data.getFields(node.type);
+    bundle = Omadi.data.getBundle(node.type);
     
-    firstLocationFieldName = "";
-                
-    for(index in instances){
-        if(instances.hasOwnProperty(index)){
-            if(instances[index].type == 'location'){
-                Ti.API.debug(instances[index]);
-                firstLocationFieldName = instances[index].field_name.split('___');
-                firstLocationFieldName = firstLocationFieldName[0];
-                break;
-            }
-        }
-    }
+    street = "";
+    city = "";
+    state = "";
+    zip = "";
     
-    if(firstLocationFieldName.length){
+    locationFieldName = null;
+    
+    if(typeof bundle.data !== 'undefined' &&
+        typeof bundle.data.dispatch !== 'undefined' && 
+        typeof bundle.data.dispatch.dispatch_location_field !== 'undefined'){
         
-        Ti.API.debug(firstLocationFieldName);
-        
-        for(index in instances){
-            if(instances.hasOwnProperty(index)){
-                if(instances[index].type == 'location'){
-                    switch(instances[index].part){
-                        case 'street':
-                            fieldName = firstLocationFieldName + "___street";
-                            street = node[fieldName].dbValues[0]; break;
-                        case 'city':
-                            fieldName = firstLocationFieldName + "___city";
-                            city = node[fieldName].dbValues[0]; break;
-                        case 'province':
-                            fieldName = firstLocationFieldName + "___province";
-                            state = node[fieldName].dbValues[0]; break;
-                        case 'postal_code':
-                            fieldName = firstLocationFieldName + "___postal_code";
-                            zip = node[fieldName].dbValues[0]; break;
-                    }
+            locationFieldParts = bundle.data.dispatch.dispatch_location_field.split('|');
+            locationFieldBundle = locationFieldParts[0];
+            locationFieldOmadiReference = locationFieldParts[1];
+            locationFieldName = locationFieldParts[2];
+            
+            if(locationFieldBundle != node.type){
+                if(typeof node[locationFieldOmadiReference] !== 'undefined' &&
+                   typeof node[locationFieldOmadiReference].dbValues !== 'undefined' && 
+                   typeof node[locationFieldOmadiReference].dbValues[0] !== 'undefined'){
+                       referenceNid = parseInt(node[locationFieldOmadiReference].dbValues[0], 10);
+                       
+                       if(!isNaN(referenceNid)){
+                           // Change the node to the referenced parent node
+                           node = Omadi.data.nodeLoad(referenceNid);
+                           if(node == null){
+                               Omadi.service.sendErrorReport("reference node null for address: " + JSON.stringify(node) + JSON.strigify(bundle));
+                               alert("The street address is blank, so directions cannot be opened.");
+                           }
+                       }
+                       else{
+                           Omadi.service.sendErrorReport("reference nid Street is not filled in: " + JSON.stringify(node) + JSON.strigify(bundle));
+                           alert("The street address is blank, so directions cannot be opened.");
+                       }
                 }
             }
+    }
+    
+    if(locationFieldName !== null){
+        
+        fieldName = locationFieldName + "___street";
+        if(typeof node[fieldName] !== 'undefined'){
+            street = node[fieldName].dbValues[0];
+        }
+        
+        fieldName = locationFieldName + "___city";
+        if(typeof node[fieldName] !== 'undefined'){
+            city = node[fieldName].dbValues[0];
+        }
+        
+        fieldName = locationFieldName + "___province";
+        if(typeof node[fieldName] !== 'undefined'){
+            state = node[fieldName].dbValues[0];
+        }
+        
+        fieldName = locationFieldName + "___postal_code";
+        if(typeof node[fieldName] !== 'undefined'){
+            zip = node[fieldName].dbValues[0];
         }
         
         address = street + " " + city + ", " + state + " " + zip;
         
-        Ti.API.debug(address);
-        Omadi.display.getDrivingDirectionsTo(address);
+        if(street.length > 0){
+            Omadi.display.getDrivingDirectionsTo(address);
+        }
+        else{
+            Omadi.service.sendErrorReport("Street is not filled in: " + locationFieldName + " " + address + JSON.stringify(node));
+            alert("The street address is blank, so directions cannot be opened.");
+        }
     }
     else{
-        alert("An unknown error occurred. Please contact support.");
+        Omadi.service.sendErrorReport("Could not find locationFieldName: " + JSON.stringify(node) + JSON.stringify(bundle));
+        alert("The directions could not be opened. Please try again later.");
     }  
 };
+
+// Omadi.bundles.dispatch.openDirectionsToFirstAddress = function(node){"use strict";
+    // var firstLocationFieldName, index, fieldName, street, city, state, zip, address, instances;
+//     
+    // instances = Omadi.data.getFields(node.type);
+//     
+    // firstLocationFieldName = "";
+//                 
+    // for(index in instances){
+        // if(instances.hasOwnProperty(index)){
+            // if(instances[index].type == 'location'){
+                // Ti.API.debug(instances[index]);
+                // firstLocationFieldName = instances[index].field_name.split('___');
+                // firstLocationFieldName = firstLocationFieldName[0];
+                // break;
+            // }
+        // }
+    // }
+//     
+    // if(firstLocationFieldName.length){
+//         
+        // for(index in instances){
+            // if(instances.hasOwnProperty(index)){
+                // if(instances[index].type == 'location'){
+                    // switch(instances[index].part){
+                        // case 'street':
+                            // fieldName = firstLocationFieldName + "___street";
+                            // street = node[fieldName].dbValues[0]; break;
+                        // case 'city':
+                            // fieldName = firstLocationFieldName + "___city";
+                            // city = node[fieldName].dbValues[0]; break;
+                        // case 'province':
+                            // fieldName = firstLocationFieldName + "___province";
+                            // state = node[fieldName].dbValues[0]; break;
+                        // case 'postal_code':
+                            // fieldName = firstLocationFieldName + "___postal_code";
+                            // zip = node[fieldName].dbValues[0]; break;
+                    // }
+                // }
+            // }
+        // }
+//         
+        // address = street + " " + city + ", " + state + " " + zip;
+//         
+        // Omadi.display.getDrivingDirectionsTo(address);
+    // }
+    // else{
+        // alert("An unknown error occurred. Please contact support.");
+    // }  
+// };
 
 Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
     

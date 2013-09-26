@@ -145,15 +145,32 @@ Omadi.widgets.calculation_field = {
                         field_2_multiplier = 0;
                         numeric_multiplier = 0;
     
-                        if (calculation_row.field_name_1 != null && node[calculation_row.field_name_1] != null && instances[calculation_row.field_name_1] != null && instances[calculation_row.field_name_1].type == 'calculation_field') {
-                            // Make sure a dependency calculation is made first
-                            required_instance_final_values = Omadi.widgets.calculation_field.getRowValues(node, instances[calculation_row.field_name_1]);
-                            Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_1] = required_instance_final_values[0].final_value;
-                            
-                            // TODO: make sure the node is a reference, not just a value, as nested calls to this could result in incorrect calculations
-                            if(typeof required_instance_final_values[0].final_value !== 'undefined'){
-                                node[calculation_row.field_name_1].dbValues[0] = required_instance_final_values[0].final_value;
-                            }
+                        if (typeof calculation_row.field_name_2 !== 'undefined' && 
+                            typeof node[calculation_row.field_name_1] !== 'undefined' && 
+                            typeof instances[calculation_row.field_name_1] !== 'undefined' && 
+                            instances[calculation_row.field_name_1].type == 'calculation_field') {
+                                // Make sure a dependency calculation is made first
+                                required_instance_final_values = Omadi.widgets.calculation_field.getRowValues(node, instances[calculation_row.field_name_1]);
+                                Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_1] = required_instance_final_values[0].final_value;
+                                
+                                // TODO: make sure the node is a reference, not just a value, as nested calls to this could result in incorrect calculations
+                                if(typeof required_instance_final_values[0].final_value !== 'undefined'){
+                                    node[calculation_row.field_name_1].dbValues[0] = required_instance_final_values[0].final_value;
+                                }
+                        }
+                        
+                        if (typeof calculation_row.field_name_2 !== 'undefined' && 
+                            typeof node[calculation_row.field_name_2] !== 'undefined' && 
+                            typeof instances[calculation_row.field_name_2] !== 'undefined' && 
+                            instances[calculation_row.field_name_2].type == 'calculation_field') {
+                                // Make sure a dependency calculation is made first
+                                required_instance_final_values = Omadi.widgets.calculation_field.getRowValues(node, instances[calculation_row.field_name_2]);
+                                Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_2] = required_instance_final_values[0].final_value;
+                                
+                                // TODO: make sure the node is a reference, not just a value, as nested calls to this could result in incorrect calculations
+                                if(typeof required_instance_final_values[0].final_value !== 'undefined'){
+                                    node[calculation_row.field_name_2].dbValues[0] = required_instance_final_values[0].final_value;
+                                }
                         }
                         
                         if (calculation_row.field_name_1 != null && calculation_row.field_name_1 != "") {
