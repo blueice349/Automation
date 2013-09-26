@@ -135,7 +135,11 @@ Omadi.widgets.calculation_field = {
             
             if(typeof instance.settings.calculation.items !== 'undefined'){
                 
-                instance.settings.calculation.items = instance.settings.calculation.items.sort(Omadi.utils.sortByWeight);
+                if(Omadi.utils.isArray(instance.settings.calculation.items)){
+                    // Only sort if the items is an array
+                    // We can still support a key/value object, but sort will not work
+                    instance.settings.calculation.items = instance.settings.calculation.items.sort(Omadi.utils.sortByWeight);
+                }
             
                 for (idx in instance.settings.calculation.items) {
                     if(instance.settings.calculation.items.hasOwnProperty(idx)){
