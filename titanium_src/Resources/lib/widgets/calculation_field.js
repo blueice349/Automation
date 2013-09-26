@@ -145,7 +145,7 @@ Omadi.widgets.calculation_field = {
                         field_2_multiplier = 0;
                         numeric_multiplier = 0;
     
-                        if (typeof calculation_row.field_name_2 !== 'undefined' && 
+                        if (typeof calculation_row.field_name_1 !== 'undefined' && 
                             typeof node[calculation_row.field_name_1] !== 'undefined' && 
                             typeof instances[calculation_row.field_name_1] !== 'undefined' && 
                             instances[calculation_row.field_name_1].type == 'calculation_field') {
