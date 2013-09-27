@@ -3392,6 +3392,9 @@ Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
                         queries.push("INSERT OR REPLACE INTO bundles (bundle_name, display_name, description, title_fields, _data, can_create, can_view, child_forms) VALUES ('" + dbEsc(type) + "', '" + dbEsc(display) + "','" + dbEsc(description) + "','" + dbEsc(JSON.stringify(title_fields)) + "','" + dbEsc(JSON.stringify(data)) + "'," + app_permissions.can_create + "," + app_permissions.can_view + ",'" + dbEsc(JSON.stringify(childForms)) + "')");
                         
                         resetBundles.push(type);
+                        
+                        // Download the icon image for this node type
+                        Omadi.display.insertBundleIcon(type);
                     }
                 }
             }

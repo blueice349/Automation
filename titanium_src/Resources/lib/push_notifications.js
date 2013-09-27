@@ -75,7 +75,7 @@ Omadi.push_notifications.registerAndroid = function() {"use strict";
         payload = JSON.parse(e.payload);
         
         if (payload.fetchUpdates == 1) {
-            Omadi.service.fetchUpdates();
+            Omadi.service.fetchUpdates(true);
         }
 
         if (payload.showAlert == 1) {

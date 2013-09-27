@@ -196,61 +196,6 @@ var watermarkImage = null;
 var lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp();
 var networkStatusAnimation = Titanium.UI.createAnimation();
 
-function insertBundleIcon(imageView, type){"use strict";
-    var http;
-    
-    http = Ti.Network.createHTTPClient();
-    http.setTimeout(45000);
-    http.cache = false;
-    http.enableKeepAlive = false;
-    http.open('GET', Omadi.DOMAIN_NAME + '/custom_forms/icon/' + type);
-
-    Ti.API.debug("Getting icon for " + type);
-
-    http.onload = function(e) {
-        var iconFile, written, iconFile2;
-        
-        if(e.success){
-            Ti.API.debug(e);
-            Ti.API.debug(this);
-            
-            iconFile = Omadi.display.getNodeTypeImagePath(type);
-            
-            Ti.API.debug("exists: " + iconFile.exists());
-            Ti.API.debug("is file: " + iconFile.isFile());
-            
-            written = iconFile.write(this.responseData);
-            
-            if(!written){
-                iconFile.move(iconFile.nativePath + ".png");
-                Ti.API.debug("not written 1");
-                
-                iconFile2 = Omadi.display.getNodeTypeImagePath(type);
-                written = iconFile2.write(this.responseData);
-            }
-            
-            Ti.API.debug("FILESIZE: " + this.responseData.length);
-            
-            if(Ti.App.isIOS){
-                iconFile.remoteBackup = false;
-            }
-            
-            iconFile = null;
-            
-            Ti.API.debug("written icon: " + written);
-            
-            iconFile = Omadi.display.getNodeTypeImagePath(type);
-            imageView.image = iconFile;
-        }
-    };
-    
-    http.onerror = function(e){
-      Ti.API.error("Error downloading icon image for " + type);  
-    };
-    
-    http.send();
-}
-
 function displayWatermark(){"use strict";
     var minWidth;
     
@@ -358,8 +303,7 @@ function displayBundleList() {"use strict";
                         }
                         else{
                             icon.image = '/images/icon_default.png';
-                            
-                            insertBundleIcon(icon, item.name_table, colors[i]);
+                            Omadi.display.insertBundleIcon(item.name_table, icon);
                         }
             
                         titleLabel = Titanium.UI.createLabel({
