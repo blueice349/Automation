@@ -3398,7 +3398,6 @@ Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
                     }
                 }
             }
-
         }
         else if (Omadi.service.fetchedJSON.node_type['delete']) {
             //Multiple node type deletions
@@ -3412,7 +3411,6 @@ Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
                     queries.push("DROP TABLE " + Omadi.service.fetchedJSON.node_type.insert[i].type);
                     queries.push("DELETE FROM bundles WHERE bundle_name = '" + Omadi.service.fetchedJSON.node_type.insert[i].type + "'");
                     queries.push("DELETE FROM node WHERE table_name = '" + Omadi.service.fetchedJSON.node_type.insert[i].type + "'");
-
                 }
             }
             //Unique node deletion
