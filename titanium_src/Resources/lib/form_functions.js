@@ -186,7 +186,9 @@ Omadi.form.adjustFileTable = function(node, windowNid, continuousId){"use strict
             });
 
             secondDialog.addEventListener('click', function(e) {
-                var db_toDeleteImage, deleteResult, file, fileNids, continuousId, thumbFile;
+                var db_toDeleteImage, deleteResult, file, fileNids, 
+                continuousId, thumbFile, thumbPath;
+                
                 continuousId = e.source.continuousId;
                 
                 fileNids = [0];
@@ -211,9 +213,12 @@ Omadi.form.adjustFileTable = function(node, windowNid, continuousId){"use strict
                             }
                             
                             // Delete the thumbnail file
-                            thumbFile = Ti.Filesystem.getFile(deleteResult.fieldByName("thumb_path"));
-                            if(thumbFile.exists()){
-                                thumbFile.deleteFile();
+                            thumbPath = deleteResult.fieldByName("thumb_path");
+                            if(thumbPath){
+                                thumbFile = Ti.Filesystem.getFile(thumbPath);
+                                if(thumbFile.exists()){
+                                    thumbFile.deleteFile();
+                                }
                             }
                             
                             deleteResult.next();

@@ -235,7 +235,12 @@ function strpos(haystack, needle, offset) {"use strict";
 
 function list_search_node_matches_search_criteria(node, criteria) {"use strict";
 
-    var user, row_matches, instances, i, j, criteria_index, criteria_row, field_name, search_field, search_value, search_operator, search_time_value, compare_times, value_index, nodeDBValues, nodeTextValues, search_time_value2, compare_times2, node_value, weekdays, reference_types, db, result, query, possibleValues, searchValues, chosen_value, retval, and_groups, and_group, and_group_index, and_group_match;
+    var user, row_matches, instances, i, j, criteria_index, criteria_row, field_name, 
+    search_field, search_value, search_operator, search_time_value, compare_times, 
+    value_index, nodeDBValues, nodeTextValues, search_time_value2, compare_times2, 
+    node_value, weekdays, reference_types, db, result, query, possibleValues, 
+    searchValues, chosen_value, retval, and_groups, and_group, and_group_index, 
+    and_group_match, useNids;
 
     /*jslint nomen: true*/
 
@@ -703,7 +708,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                             }
                                         }
     
-                                        query = 'SELECT nid from node WHERE table_name IN (' + reference_types.join(',') + ')';
+                                        query = "SELECT nid, title FROM node WHERE table_name IN ('" + reference_types.join("','") + "')";
                                         switch(search_operator) {
                                             case 'starts with':
                                             case 'not starts with':
@@ -715,7 +720,43 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                                 break;
                                             case '=':
                                             case '!=':
-                                                query += " AND title='" + dbEsc(search_value) + "'";
+                                                
+                                                if(typeof search_field.widget.type !== 'undefined' && search_field.widget.type == 'omadi_reference_select'){
+                                                    // Make sure the search value is an array
+                                                    searchValues = [];
+                                                    if (!Omadi.utils.isArray(search_value)) {
+
+                                                        for (i in search_value) {
+                                                            if (search_value.hasOwnProperty(i)) {
+                
+                                                                searchValues.push(i);
+                                                            }
+                                                        }
+                                                        search_value = searchValues;
+                                                    }
+                                                    
+                                                    useNids = true;
+                                                    for(i in search_value){
+                                                        if(search_value.hasOwnProperty(i)){
+                                                            if(isNaN(parseInt(search_value[i], 10))){
+                                                                useNids = false;
+                                                                break;
+                                                            }   
+                                                        }
+                                                    }
+                                                    
+                                                    
+                                                    if(useNids){
+                                                        query += " AND nid IN (" + dbEsc(search_value.join(",")) + ")";
+                                                    }
+                                                    else{
+                                                        query += " AND title='" + dbEsc(search_value[0]) + "'";
+                                                    }
+                                                }
+                                                else{
+                                                    query += " AND title='" + dbEsc(search_value) + "'";
+                                                }
+                                                
                                                 break;
                                             default:
                                                 query += " AND title LIKE '%" + dbEsc(search_value) + "'%";
@@ -738,7 +779,7 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                                 row_matches[criteria_index] = true;
                                             }
                                         }
-    
+                                        
                                         switch(search_operator) {
                                             case 'not starts with':
                                             case 'not ends with':
@@ -756,6 +797,8 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                                         }
                                                     }
                                                 }
+                                                
+                                                Ti.API.info("!= " + row_matches[criteria_index]);
                                                 break;
                                             default:
                                                 for ( i = 0; i < nodeDBValues.length; i++) {
@@ -764,6 +807,8 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                                         row_matches[criteria_index] = true;
                                                     }
                                                 }
+                                                
+                                                Ti.API.info("equal " + row_matches[criteria_index]);
                                                 break;
                                         }
                                     }
