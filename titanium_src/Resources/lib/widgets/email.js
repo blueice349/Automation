@@ -99,11 +99,11 @@ Omadi.widgets.email = {
         widgetView.dbValue = dbValue;
         widgetView.textValue = textValue;
         widgetView.setValue(textValue);
+        widgetView.maxLength = 255;
         
         // Got to be at least a@a.co, additional validation is happening later
         widgetView.minLength = 6;
        
-
         widgetView.check_conditional_fields = affectsAnotherConditionalField(instance);
 
         widgetView.addEventListener('change', function(e) {

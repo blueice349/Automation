@@ -210,12 +210,6 @@ Omadi.widgets.vehicle_fields = {
             }
             
             if (e.source.touched === true) {
-                
-                if (Ti.App.isAndroid) {
-                    if (e.source.value.length > e.source.maxLength) {
-                        e.source.value = e.source.value.substring(0, e.source.maxLength);
-                    }
-                }
 
                 e.source.textValue = e.source.dbValue = e.source.value;
 

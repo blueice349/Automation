@@ -1,4 +1,3 @@
-
 /*jslint plusplus:true,eqeq:true,nomen:true*/
 
 Omadi.data = Omadi.data || {};

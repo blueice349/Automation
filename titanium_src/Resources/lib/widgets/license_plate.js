@@ -135,14 +135,6 @@ Omadi.widgets.license_plate = {
                         }
                     }
 
-                    if (e.source.value.length > e.source.maxLength) {
-                        e.source.value = e.source.value.substring(0, e.source.maxLength);
-                        
-                        if (Ti.App.isAndroid) {
-                            e.source.setSelection(e.source.value.length, e.source.value.length);
-                        }
-                    }
-
                     if (e.source.check_conditional_fields.length > 0) {
                         setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
                     }
