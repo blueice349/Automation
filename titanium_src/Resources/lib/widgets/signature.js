@@ -171,6 +171,46 @@ Omadi.widgets.signature = {
         
         hasText = false;
         
+        if(typeof instance.settings.signature_text !== 'undefined' && 
+            instance.settings.signature_text.length != null && 
+            instance.settings.signature_text.length != ""){
+            
+            hasText = true;
+            
+            
+            scrollView = Ti.UI.createScrollView({
+                contentHeight: 'auto',
+                contentWidth: '100%',
+                height: Ti.UI.FILL,
+                width: Ti.UI.FILL,
+                scrollType: 'vertical',
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                scrollingEnabled: true
+            });
+        }
+        else{
+            
+            // The scrollview must be initialized with scrollingenabled = false
+            // It seems there is a bug in the Titanium code
+            // This and the above scroll view should be identical except for scrollingEnabled
+            
+            scrollView = Ti.UI.createScrollView({
+                contentHeight: 'auto',
+                contentWidth: '100%',
+                height: Ti.UI.FILL,
+                width: Ti.UI.FILL,
+                scrollType: 'vertical',
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                scrollingEnabled: false
+            });
+        }
+        
         screenShadow = Ti.UI.createView({
            top: 0,
            bottom: 0,
@@ -179,22 +219,6 @@ Omadi.widgets.signature = {
            backgroundColor: '#ddd',
            opacity: 0.8 
         });
-        
-        win.add(screenShadow);
-        
-        scrollView = Ti.UI.createScrollView({
-            contentHeight: 'auto',
-            contentWidth: '100%',
-            height: Ti.UI.FILL,
-            width: Ti.UI.FILL,
-            scrollType: 'vertical',
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0
-        });
-        
-        win.add(scrollView);
         
         outsideWrapper = Ti.UI.createView({
            width: '95%',
@@ -216,8 +240,6 @@ Omadi.widgets.signature = {
             backgroundColor: '#666',
             height: 50
         });
-        
-        
         
         doneButton = Ti.UI.createLabel({
             backgroundImage:'/images/blue_button2.png',
@@ -297,14 +319,7 @@ Omadi.widgets.signature = {
             backgroundColor: '#fff'
         });
         
-        
-        
-        
-        if(typeof instance.settings.signature_text !== 'undefined' && 
-            instance.settings.signature_text.length != null && 
-            instance.settings.signature_text.length != ""){
-            
-            hasText = true;
+        if(hasText){
             
             textView = Ti.UI.createView({
                 height: Ti.UI.SIZE,
@@ -390,6 +405,7 @@ Omadi.widgets.signature = {
             wrapper.add(overlayButton);
         }
         
+        
         doneButton.addEventListener('click',function(e){
             var blob = paintView.toImage();
             
@@ -418,6 +434,9 @@ Omadi.widgets.signature = {
             paintView.clear();
             //doneButton.hide();
         });
+        
+        win.add(screenShadow);
+        win.add(scrollView);
         
         win.open();
     },
