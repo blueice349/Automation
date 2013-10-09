@@ -26,9 +26,9 @@ function addiOSToolbar() {"use strict";
     space = Titanium.UI.createButton({
         systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
     });
-    label = Titanium.UI.createButton({
-        title : 'Dispatched Jobs',
-        color : '#fff',
+    label = Titanium.UI.createLabel({
+        text : 'Dispatched Jobs',
+        color : '#333',
         ellipsize : true,
         wordwrap : false,
         width : Ti.UI.SIZE,
@@ -46,7 +46,7 @@ function addiOSToolbar() {"use strict";
     wrapperView.add(toolbar);
 }
 
-function refreshJobsTable(){"use strict";
+function refreshJobsTable(firstTimeThrough){"use strict";
     var newJobsSection, currentUserJobsSection, newJobs, backgroundColor, row, textView,
         i, rowImg, titleLabel, currentUserJobs, dispatchBundle, newJobsHeader, currentJobsHeader;
     
@@ -171,7 +171,7 @@ function refreshJobsTable(){"use strict";
             });            
             
             rowImg = Ti.UI.createImageView({
-                image: Omadi.display.getNodeTypeImagePath(newJobs[i].type),
+                image: Omadi.display.getIconFile(newJobs[i].type),
                 top: 5,
                 left: 5,
                 width: 35,
@@ -233,7 +233,7 @@ function refreshJobsTable(){"use strict";
             });            
             
             rowImg = Ti.UI.createImageView({
-                image: Omadi.display.getNodeTypeImagePath(currentUserJobs[i].type),
+                image: Omadi.display.getIconFile(currentUserJobs[i].type),
                 top: 5,
                 left: 5,
                 bottom: 5,
@@ -279,7 +279,7 @@ function savedNodeJobs(){"use strict";
 
 function finishedDataSyncJobs(){"use strict";
     
-     refreshJobsTable();
+     refreshJobsTable(false);
 }
 
 function loggingOutJobs(){"use strict";
@@ -290,7 +290,7 @@ function loggingOutJobs(){"use strict";
 (function(){"use strict";
     var newJobs, data, i, row, textView, rowImg, titleLabel, backgroundColor, 
         newJobsSection, sections, currentUserJobsSection, currentUserJobs, 
-        dispatchBundle, separator, whiteSpaceTest;
+        dispatchBundle, separator, whiteSpaceTest, validJobs;
     
     Ti.App.removeEventListener("savedNode", savedNodeJobs);
     Ti.App.addEventListener("savedNode", savedNodeJobs);
@@ -314,6 +314,9 @@ function loggingOutJobs(){"use strict";
     }
     else{
         addiOSToolbar();
+        if(Ti.App.isIOS7){
+            wrapperView.top = 20;
+        }
     }
     
     tableView = Ti.UI.createTableView({
@@ -322,7 +325,7 @@ function loggingOutJobs(){"use strict";
         scrollable: true
     });
     
-    refreshJobsTable();
+    refreshJobsTable(true);
     
     tableView.addEventListener('click', function(e) {
         if(e.row.type == 'newJob'){

@@ -28,9 +28,9 @@ function createIOSToolbar() {"use strict";
         systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
     });
 
-    label = Titanium.UI.createButton({
-        title : 'Actions',
-        color : '#fff',
+    label = Titanium.UI.createLabel({
+        text : 'Actions',
+        color : '#333',
         ellipsize : true,
         wordwrap : false,
         width : Ti.UI.SIZE,
@@ -186,7 +186,7 @@ function addClockInClockOut() {"use strict";
         });
         
         image = Ti.UI.createImageView({
-           image: Omadi.display.getNodeTypeImagePath('timecard'),
+           image: Omadi.display.getIconFile('timecard'),
            top: 9,
            left: '3%',
            width: 48
@@ -311,7 +311,7 @@ function addCompanyVehicle(){"use strict";
         });
         
         image = Ti.UI.createImageView({
-           image: Omadi.display.getNodeTypeImagePath('company_vehicle'),
+           image: Omadi.display.getIconFile('company_vehicle'),
            top: 9,
            left: '3%',
            width: 48
@@ -1041,6 +1041,10 @@ function addSettings(){"use strict";
             bottom : 0,
             right : 0
         });
+        
+        if(Ti.App.isIOS7){
+            currentWinWrapper.top = 20;
+        }
 
         if (Ti.App.isAndroid) {
             curWin.addEventListener('android:back', function() {

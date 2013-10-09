@@ -27,7 +27,6 @@ Ti.include('/lib/functions.js');
 
 	curWin = Ti.UI.currentWindow;
 	curWin.backgroundColor = '#eee';
-	curWin.setOrientationModes([Titanium.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
 	
 	wrapperView = Ti.UI.createView({
 	   layout: 'vertical',
@@ -36,6 +35,10 @@ Ti.include('/lib/functions.js');
 	   right: 0,
 	   left: 0 
 	});
+
+    if(Ti.App.isIOS7){
+        wrapperView.top = 20;
+    }
 	
 	curWin.add(wrapperView);
 	
@@ -57,12 +60,12 @@ Ti.include('/lib/functions.js');
 			systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
 		});
 		
-		aboutLabel = Titanium.UI.createButton({
-			title : 'About',
-			color : '#fff',
+		aboutLabel = Titanium.UI.createLabel({
+			text : 'About',
+			color : '#333',
 			ellipsize : true,
 			wordwrap : false,
-			width : 200,
+			width : Ti.UI.SIZE,
 			style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
 		});
 	

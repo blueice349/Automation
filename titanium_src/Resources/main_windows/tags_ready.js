@@ -24,9 +24,9 @@ function addiOSToolbar() {"use strict";
     space = Titanium.UI.createButton({
         systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
     });
-    label = Titanium.UI.createButton({
-        title : 'Expired Tags',
-        color : '#fff',
+    label = Titanium.UI.createLabel({
+        text : 'Expired Tags',
+        color : '#333',
         ellipsize : true,
         wordwrap : false,
         width : Ti.UI.SIZE,
@@ -89,7 +89,7 @@ function loggingOutTagsReady(){"use strict";
         });            
         
         rowImg = Ti.UI.createImageView({
-            image: Omadi.display.getNodeTypeImagePath('tag'),
+            image: Omadi.display.getIconFile('tag'),
             top: 5,
             left: 5,
             bottom: 5,
@@ -134,6 +134,10 @@ function loggingOutTagsReady(){"use strict";
         left: 0,
         right: 0    
     });
+    
+    if(Ti.App.isIOS7){
+        wrapperView.top = 20;
+    }
     
     if(Ti.App.isAndroid){
         Ti.API.error("Add android menu");

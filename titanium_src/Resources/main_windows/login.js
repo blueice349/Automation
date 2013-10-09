@@ -1,9 +1,10 @@
+var Omadi;
+
 /*jslint eqeq: true, plusplus: true*/
 /*global Omadi, dbEsc*/
 
 // this sets the background color of every
 Ti.UI.currentWindow.setBackgroundColor('#eee');
-Ti.UI.currentWindow.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
 
 //Common used functions
 Ti.include('/lib/encoder_base_64.js');
@@ -102,12 +103,9 @@ function createAndroidNotifications() {"use strict";
                 ostate = "start";
                 //createNotification("Start event called ...");
             }
-
         };
 
         registerPause = function() {
-            
-
             ostate = "pause";
         };
 
@@ -160,11 +158,25 @@ function setClientAccount(domainName, db){"use strict";
 }
 
 function showUploadStatusHandler(){"use strict";
-    scrollView.top = 0;
+    if(Ti.App.isIOS7){
+        scrollView.top = 20;
+    }
+    else{
+        scrollView.top = 0;   
+    }
+    
+    uploadView.show();
 }
 
 function hideUploadStatusHandler(){"use strict";
-    scrollView.top = -40;
+    if(Ti.App.isIOS7){
+        scrollView.top = -20;
+    }
+    else{
+        scrollView.top = -40;   
+    }
+    
+    uploadView.hide();
 }
 
 function setFilesLeftLabel(filesLeft){"use strict";
@@ -223,9 +235,17 @@ function updateUploadBytes(){"use strict";
             clearInterval(Ti.App.backgroundPhotoUploadCheck);
         }
         
-        if(scrollView.top == 0){
+        if(scrollView.top >= 0){
             uploadAnimation.duration = 1000;
-            uploadAnimation.top = -40;
+            if(Ti.App.isIOS7){
+                uploadAnimation.top = -20;
+            }
+            else{
+                uploadAnimation.top = -40;   
+            }
+            
+            uploadView.hide();
+            
             uploadAnimation.addEventListener('complete', hideUploadStatusHandler);
             
             scrollView.animate(uploadAnimation);
@@ -264,6 +284,8 @@ function updateUploadBytes(){"use strict";
             uploadAnimation.duration = 500;
             uploadAnimation.top = 0;
             uploadAnimation.addEventListener('complete', showUploadStatusHandler);
+            
+            uploadView.show();
             
             scrollView.animate(uploadAnimation);
             
@@ -427,9 +449,15 @@ function loggingOutLoginScreen(){"use strict";
             text : Titanium.App.version,
             color : '#354350',
             font : {
-                fontWeight : 'bold'
+                fontWeight : 'bold',
+                fontSize: 14
             }
         });
+        
+        if(Ti.App.isIOS7){
+            version_label.top = 20;
+        }
+        
         Ti.UI.currentWindow.add(version_label);
 
         if(Ti.Platform.osname === 'ipad'){
@@ -500,6 +528,7 @@ function loggingOutLoginScreen(){"use strict";
             height : 180,
             image : '/images/logo.png'
         }); 
+        
         scrollView.add(logo);
 
         portal = Titanium.UI.createTextField({
@@ -804,6 +833,7 @@ function loggingOutLoginScreen(){"use strict";
 
                     //Passes parameter to the second window:
                     domainName = 'https://' + portal.value + '.omadi.com';
+                    Omadi.DOMAIN_NAME = domainName;
 
                     setProperties(domainName, this.responseText);
                     
@@ -856,7 +886,10 @@ function loggingOutLoginScreen(){"use strict";
                     //Ti.API.info("status is: " + this.status);
                     Omadi.display.doneLoading();
 
-                    if (this.status == 401 || this.status == 404) {
+                    if(!Ti.Network.online){
+                        alert("You do not have a connection to the Internet. Please connect and try again.");
+                    }
+                    else if (this.status == 401 || this.status == 404) {
                         //label_error.text = "Check your username and password. Then try again.";
                         alert("Make sure client account, username and password are correct.");
                     }
@@ -866,6 +899,7 @@ function loggingOutLoginScreen(){"use strict";
                     }
                     else {
                         alert("There was a problem logging you in. Please try again.");
+                        Omadi.service.sendErrorReport("Error logging in: " + e.error);
                         //label_error.text = "An error has occurred. Please try again.";
                     }
                 };

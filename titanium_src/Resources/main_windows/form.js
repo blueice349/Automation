@@ -807,12 +807,6 @@ function addiOSToolbar() {"use strict";
             systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
         });
         
-        var icon = Ti.UI.createImageView({
-            image: Omadi.display.getNodeTypeImagePath(win.type),
-            height: 30,
-            width: 30
-        });
-        
         var bundle = Omadi.data.getBundle(node.type);
         
         var labelScrollView = Ti.UI.createScrollView({
@@ -821,8 +815,8 @@ function addiOSToolbar() {"use strict";
             height: Ti.UI.SIZE
         });
         
-        var label = Titanium.UI.createButton({
-            title : (node.nid == 'new' ? 'New ' : 'Update ') + bundle.label,
+        var label = Titanium.UI.createLabel({
+            text : (node.nid == 'new' ? 'New ' : 'Update ') + bundle.label,
             right: 5,
             font: {
                 fontWeight: 'bold'
@@ -833,15 +827,9 @@ function addiOSToolbar() {"use strict";
         
         
         labelScrollView.add(label);
-        labelScrollView.add(icon);
         
-        if(Ti.Platform.osname == 'ipad'){
-            label.color = '#666';
-        }
-        else{
-            label.color = '#fff';   
-        }
-
+        label.color = '#333';
+        
         var actions = Ti.UI.createButton({
             title : 'Actions',
             style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
@@ -1749,7 +1737,6 @@ function continuousSave(){"use strict";
         Omadi.service.setNodeViewed(Ti.UI.currentWindow.nid);
     }
     
-    Ti.UI.currentWindow.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
     wrapperView = Ti.UI.createView({
        layout: 'vertical',
        bottom: 0,
@@ -1758,6 +1745,9 @@ function continuousSave(){"use strict";
        left: 0 
     });
     
+    if(Ti.App.isIOS7){
+        wrapperView.top = 20;
+    }
     
     if(Ti.UI.currentWindow.usingDispatch){
         Ti.UI.currentWindow.addEventListener("omadi:saveForm", function(e){

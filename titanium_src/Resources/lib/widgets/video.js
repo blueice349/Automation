@@ -203,7 +203,8 @@ Omadi.widgets.video = {
         Omadi.widgets.video.videoWin = Titanium.UI.createWindow({
             backgroundColor : '#000',
             navBarHidden: true,
-            layout: 'vertical'
+            layout: 'vertical',
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
         });
         
         if(Ti.App.isIOS){

@@ -191,7 +191,9 @@ Omadi.widgets.datestamp = {
             Ti.UI.Android.hideSoftKeyboard();
         }
         
-        dateWindow = Ti.UI.createWindow();
+        dateWindow = Ti.UI.createWindow({
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+        });
         
         if(Ti.App.isAndroid){
             dateWindow.modal = true;

@@ -160,10 +160,10 @@ Omadi.location.uploadGPSCoordinates = function() {"use strict";
                 http = Ti.Network.createHTTPClient();
                 //Timeout until error:
                 http.setTimeout(30000);
-
+                
                 //Opens address to retrieve contact list
                 http.open('POST', Omadi.DOMAIN_NAME + '/js-location/mobile_location.json');
-
+                
                 //Header parameters
                 http.setRequestHeader("Content-Type", "application/json");
                 Omadi.utils.setCookieHeader(http);
@@ -182,7 +182,6 @@ Omadi.location.uploadGPSCoordinates = function() {"use strict";
                 Ti.API.debug("FETCHING CURRENT POSITION");
 
                 createNotification("No coordinates saved... " + Omadi.utils.PHPFormatDate('g:i a', Number(Omadi.utils.getUTCTimestamp())));
-
             }
         }
     }

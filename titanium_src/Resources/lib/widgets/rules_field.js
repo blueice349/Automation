@@ -402,11 +402,11 @@ Omadi.widgets.rules_field = {
                             times['All Day'].push(i);
                         }
                         else {
-                            if (times[Omadi.widgets.omadi_time.secondsToString(values[2]) + '-' + Omadi.widgets.omadi_time.secondsToString(values[3])] == null) {
-                                times[Omadi.widgets.omadi_time.secondsToString(values[2]) + '-' + Omadi.widgets.omadi_time.secondsToString(values[3])] = [];
+                            if (times[Omadi.utils.secondsToString(values[2]) + '-' + Omadi.utils.secondsToString(values[3])] == null) {
+                                times[Omadi.utils.secondsToString(values[2]) + '-' + Omadi.utils.secondsToString(values[3])] = [];
                             }
 
-                            times[Omadi.widgets.omadi_time.secondsToString(values[2]) + '-' + Omadi.widgets.omadi_time.secondsToString(values[3])].push(i);
+                            times[Omadi.utils.secondsToString(values[2]) + '-' + Omadi.utils.secondsToString(values[3])].push(i);
                         }
                     }
                 }

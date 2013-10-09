@@ -5,6 +5,14 @@ var domainName = Ti.App.Properties.getString("domainName");
 
 Ti.App.isAndroid = (Ti.Platform.name === 'android');
 Ti.App.isIOS = !Ti.App.isAndroid;
+Ti.App.isIOS7 = false;
+if(Ti.App.isIOS){
+    var version = Ti.Platform.version.split(".");
+    var major = parseInt(version[0]);
+    if(major >= 7){
+        Ti.App.isIOS7 = true;
+    }
+}
 
 Ti.include('/lib/encoder_base_64.js');
 Ti.include('/lib/util_functions.js');
@@ -83,7 +91,8 @@ function notifyIOS(msg, update_time) {"use strict";
         width : "100%",
         top : -50,
         navBarHidden : true,
-        zIndex : -1000
+        zIndex : -1000,
+        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
     });
 
     view = Titanium.UI.createView({

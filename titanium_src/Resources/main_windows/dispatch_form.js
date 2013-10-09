@@ -429,6 +429,10 @@ function createiOSToolbar(workNodeTypeLabel, openDispatch) {"use strict";
             borderBottom : false,
             zIndex : 1
         });
+        
+        if(Ti.App.isIOS7){
+            toolbar.top = 20;
+        }
 
         Ti.UI.currentWindow.add(toolbar);
     }
@@ -455,21 +459,21 @@ function setFormWindowTop(e) {"use strict";
         switch(orientation) {
             case Ti.UI.PORTRAIT:
             case Ti.UI.UPSIDE_PORTRAIT:
-                top = 43;
+                top = 63;
                 break;
     
             case Ti.UI.LANDSCAPE_LEFT:
             case Ti.UI.LANDSCAPE_RIGHT:
                 if (Ti.App.isIOS && Ti.Platform.osname == 'iphone') {
-                    top = 30;
+                    top = 50;
                 }
                 else {
-                    top = 43;
+                    top = 63;
                 }
                 break;
     
             default:
-                top = 43;
+                top = 63;
                 break;
         }
     }
@@ -515,7 +519,8 @@ function towTypeChanged(e) {"use strict";
             right : 0,
             left : 0,
             zIndex : 1,
-            usingDispatch : true
+            usingDispatch : true,
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
         });
 
         workWindowOpen = false;
@@ -800,7 +805,8 @@ function savedDispatchNode(e) {"use strict";
         right : 0,
         left : 0,
         usingDispatch : true,
-        field_tow_type : workNode.type
+        field_tow_type : workNode.type,
+        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
     });
 
     workWindow = Ti.UI.createWindow({
@@ -811,7 +817,8 @@ function savedDispatchNode(e) {"use strict";
         bottom : 0,
         right : 0,
         left : 0,
-        usingDispatch : true
+        usingDispatch : true,
+        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
     });
 
     setFormWindowTop();

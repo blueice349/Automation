@@ -51,6 +51,10 @@ Gallery.addIOSToolbar = function() {"use strict";
         borderBottom : false,
         height : Ti.UI.SIZE
     });
+    
+    if(Ti.App.isIOS7){
+        toolbar.top = 20;
+    }
 
     currentWinWrapper.add(toolbar);
 };
@@ -542,6 +546,7 @@ Gallery.update = function(){"use strict";
     }
     else{
         Gallery.addIOSToolbar();
+        currentWinWrapper.top = 20;
     }
     
     currentWinWrapper.add(galleryWrapper);

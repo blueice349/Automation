@@ -301,9 +301,9 @@ function addiOSToolbarSettings() {"use strict";
         systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
     });
 
-    label = Titanium.UI.createButton({
-        title : 'Settings',
-        color : '#fff',
+    label = Titanium.UI.createLabel({
+        text : 'Settings',
+        color : '#333',
         ellipsize : true,
         wordwrap : false,
         width : Ti.UI.SIZE,
@@ -409,7 +409,6 @@ function addPhotoThumbnailOptions(){"use strict";
     var topBar;
     
     Ti.UI.currentWindow.backgroundColor = '#eee';
-    Ti.UI.currentWindow.setOrientationModes([Titanium.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
     
     wrapperView = Ti.UI.createView({
        layout: 'vertical',
@@ -418,6 +417,10 @@ function addPhotoThumbnailOptions(){"use strict";
        right: 0,
        left: 0 
     });
+    
+    if(Ti.App.isIOS7){
+        wrapperView.top = 20;
+    }
     
     Ti.UI.currentWindow.add(wrapperView);
     
@@ -433,8 +436,6 @@ function addPhotoThumbnailOptions(){"use strict";
     });
     
     wrapperView.add(scrollView);
-    
-    
     
     if(Ti.App.isAndroid){
         topBar = Ti.UI.createLabel({

@@ -274,7 +274,15 @@ Omadi.utils.setCookieHeader = function(http) {"use strict";
     var cookie = Omadi.utils.getCookie();
 
     if(cookie != null && cookie > "" && cookie != "null"){
-        http.setRequestHeader("Cookie", cookie);
+        
+        try{
+            http.setRequestHeader("Cookie", cookie);
+        }
+        catch(ex){
+            Ti.API.error("Could not set http cookie header");
+            Ti.API.error(cookie);
+            Omadi.service.sendErrorReport("Could not set cookie for " + http.location);
+        }
     }
 };
 
@@ -376,6 +384,46 @@ Omadi.utils.formatTime = function(timestamp){"use strict";
     
     var format = Omadi.utils.getTimeFormat();
     return (new Date(timestamp * 1000)).format(format);
+};
+
+Omadi.utils.secondsToString = function(seconds) {"use strict";
+    var format, am_pm, hours, hours_str, minutes, time_string, new_hours;
+    
+    format = Omadi.utils.getTimeFormat();
+    Ti.API.error(format);
+
+    am_pm = (format.indexOf('H') === -1);
+
+    hours = Math.floor(seconds / 3600);
+
+    hours_str = hours;
+
+    minutes = Math.floor((seconds - (hours * 3600)) / 60);
+    if (minutes < 10) {
+        minutes = '0' + minutes;
+    }
+
+    if (am_pm) {
+        if (hours == 0) {
+            time_string = '12:' + minutes + ' AM';
+        }
+        else if (hours == 12) {
+            time_string = '12:' + minutes + ' PM';
+        }
+        else if (hours > 12) {
+            new_hours = hours - 12;
+            hours_str = new_hours;
+            time_string = hours_str + ':' + minutes + ' PM';
+        }
+        else {
+            time_string = hours_str + ':' + minutes + ' AM';
+        }
+    }
+    else {
+        time_string = hours_str + ':' + minutes;
+    }
+
+    return time_string;
 };
 
 Omadi.utils.isArray = function(input) {"use strict";

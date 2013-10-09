@@ -11,7 +11,6 @@ var curWin = Ti.UI.currentWindow;
 Omadi.service.setNodeViewed(curWin.nid);
 
 curWin.backgroundColor = "#EEEEEE";
-curWin.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
 var movement = curWin.movement;
 
 //When back button on the phone is pressed, it opens mainMenu.js and close the current window
@@ -45,11 +44,15 @@ var db = Omadi.utils.openMainDatabase();
 
 //The view where the results are presented
 var formWrapperView = Ti.UI.createView({
-    top : '0',
+    top : 0,
     height : '100%',
     width : '100%',
     backgroundColor : '#EEEEEE'
 });
+
+if(Ti.App.isIOS7){
+    formWrapperView.top = 20;
+}
 
 curWin.add(formWrapperView);
 
@@ -951,7 +954,7 @@ if (Ti.App.isAndroid) {
                             title : "Copy to " + to_bundle.label,
                             order : order
                         });
-                        //iconFile = Omadi.display.getNodeTypeImagePath(to_type);
+                        //iconFile = Omadi.display.getIconFile(to_type);
                         //customCopy.setIcon(iconFile.nativePath);
                         
                         androidMenuItemData[order] = {
@@ -1071,7 +1074,7 @@ function iOSActionMenu(actualWindow) {"use strict";
     // create and add toolbar
     toolbar = Ti.UI.iOS.createToolbar({
         items : arr,
-        top : 0,
+        top : 20,
         borderTop : false,
         borderBottom : true
     });

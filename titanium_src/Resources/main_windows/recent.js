@@ -11,8 +11,6 @@ var currentOrderField = 'changed';
 var wrapperView;
 var search;
 
-
-curWin.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
 curWin.setBackgroundColor('#eee');
 
 wrapperView = Ti.UI.createView({
@@ -22,6 +20,10 @@ wrapperView = Ti.UI.createView({
    right: 0,
    left: 0 
 });
+
+if(Ti.App.isIOS7){
+    wrapperView.top = 20;
+}
 
 function getRecentNodeData(orderField){"use strict";
     var db, result, nodes = [], sql;

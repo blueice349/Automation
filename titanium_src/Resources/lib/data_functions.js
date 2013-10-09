@@ -348,10 +348,12 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
     // Allow instant saving of drafts and continuous saves
     // Do not allow drafts or continuous saves to happen while an update is happening as it can cause problems
     if(Omadi.data.isUpdating()){
-        Omadi.display.loading("Waiting...");
-        setTimeout(function(){
-            Omadi.data.trySaveNode(node, saveType);
-        }, 1000);
+        if(saveType != 'continuous'){
+            Omadi.display.loading("Waiting...");
+            setTimeout(function(){
+                Omadi.data.trySaveNode(node, saveType);
+            }, 1000);
+        }
     }
     else{
         
@@ -1447,7 +1449,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                 case 'omadi_time':
     
                                     for ( i = 0; i < node[field_name].dbValues.length; i++) {
-                                        node[field_name].textValues[i] = Omadi.widgets.omadi_time.secondsToString(node[field_name].dbValues[i]);
+                                        node[field_name].textValues[i] = Omadi.utils.secondsToString(node[field_name].dbValues[i]);
                                     }
                                     break;
     
@@ -2331,7 +2333,6 @@ Omadi.data.processFetchedJson = function(){"use strict";
             Omadi.display.newAppAvailable(Omadi.service.fetchedJSON.new_app);
         }
         
-        
         Omadi.bundles.dispatch.showNewDispatchJobs();
         Omadi.display.showNewNotificationDialog();
         
@@ -2893,7 +2894,7 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
 //                                                             
                                                         // }
                                                     // }
-                                                    Ti.API.debug(JSON.stringify(value));
+                                                    //Ti.API.debug(JSON.stringify(value));
                                                     values.push("'" + dbEsc(JSON.stringify(value)) + "'");
                                                 }
                                                 else {
@@ -3032,7 +3033,6 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                     catch(ex1) {
                         Ti.API.error("Saving single Node Data from JSON: " + ex1);
                         alert("Error saving node Data for " + type + ": " + ex1 + ". Details: " + queries[i]);
-                        
                     }
                 }
             }
@@ -3046,7 +3046,6 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                     catch(ex2) {
                         Ti.API.error("Saving single Node Data from JSON: " + ex2);
                         alert("Error saving node Data for " + type + ": " + ex2 + ". Details: " + queries[i]);
-                        
                     }
                 }
             }
@@ -3391,9 +3390,6 @@ Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
                         queries.push("INSERT OR REPLACE INTO bundles (bundle_name, display_name, description, title_fields, _data, can_create, can_view, child_forms) VALUES ('" + dbEsc(type) + "', '" + dbEsc(display) + "','" + dbEsc(description) + "','" + dbEsc(JSON.stringify(title_fields)) + "','" + dbEsc(JSON.stringify(data)) + "'," + app_permissions.can_create + "," + app_permissions.can_view + ",'" + dbEsc(JSON.stringify(childForms)) + "')");
                         
                         resetBundles.push(type);
-                        
-                        // Download the icon image for this node type
-                        Omadi.display.insertBundleIcon(type);
                     }
                 }
             }

@@ -1,4 +1,6 @@
 
+var Omadi;
+
 Ti.include('/lib/functions.js');
 
 var ImageFactory = null;
@@ -13,7 +15,6 @@ if (Ti.App.isIOS) {
 var curWin = Ti.UI.currentWindow;
 curWin.isTopWindow = true;
 curWin.backgroundColor = '#eee';
-curWin.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
 
 var version = 'Omadi Inc';
 var alertQueue = [];
@@ -58,10 +59,14 @@ var headerListView = Ti.UI.createView({
     right: 0
 });
 
+if(Ti.App.isIOS7){
+    headerListView.top = -20;
+}
+
 var networkStatusView = Ti.UI.createView({
     zIndex : 1000,
     top : 0,
-    height : 40,
+    height : 0,
     width : '100%',
     backgroundColor : '#111',
     visible : true
@@ -297,12 +302,11 @@ function displayBundleList() {"use strict";
                             desc : description
                         });
                         
-                        iconFile = Omadi.display.getNodeTypeImagePath(item.name_table);
-                        if(iconFile.exists() && iconFile.isFile()){
-                            icon.image = iconFile;
-                        }
-                        else{
-                            icon.image = '/images/icon_default.png';
+                        iconFile = Omadi.display.getIconFile(item.name_table);
+                        
+                        icon.image = iconFile;
+                        
+                        if(typeof iconFile.imageNotLoaded !== 'undefined' && iconFile.imageNotLoaded){
                             Omadi.display.insertBundleIcon(item.name_table, icon);
                         }
             
@@ -337,6 +341,12 @@ function displayBundleList() {"use strict";
                         }
             
                         dataRows.push(row_t);
+                    }
+                    else{
+                        iconFile = Omadi.display.getIconFile(item.name_table);
+                        if(typeof iconFile.imageNotLoaded !== 'undefined' && iconFile.imageNotLoaded){
+                            Omadi.display.insertBundleIcon(item.name_table);
+                        }
                     }
                 }
             }
@@ -469,7 +479,8 @@ function setupBottomButtons() {"use strict";
             
             alertsWindow = Ti.UI.createWindow({
                 navBarHidden : true,
-                url : '/main_windows/message_center.js'
+                url : '/main_windows/message_center.js',
+                orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
             });
     
             Omadi.display.loading();
@@ -555,7 +566,8 @@ function setupBottomButtons() {"use strict";
 
         recentWindow = Ti.UI.createWindow({
             navBarHidden : true,
-            url : '/main_windows/recent.js'
+            url : '/main_windows/recent.js',
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
         });
 
         Omadi.display.loading();
@@ -602,7 +614,8 @@ function setupBottomButtons() {"use strict";
     
             tagsReadyWindow = Ti.UI.createWindow({
                 navBarHidden : true,
-                url : '/main_windows/tags_ready.js'
+                url : '/main_windows/tags_ready.js',
+                orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
             });
     
             Omadi.display.loading();
@@ -657,25 +670,55 @@ function showNextAlertInQueue(e) {"use strict";
 }
 
 function showNetworkStatusHandler(){"use strict";
-    headerListView.top = 0;
+    if(Ti.App.isIOS7){
+        headerListView.top = 20;
+    }
+    else{
+        headerListView.top = 0;   
+    }
+    
+    networkStatusView.height = 45;
 }
 
 function showNetworkStatus(){"use strict";
     networkStatusAnimation.duration = 500;
-    networkStatusAnimation.top = 0;
+    if(Ti.App.isIOS7){
+        networkStatusAnimation.top = 20;
+    }
+    else{
+        networkStatusAnimation.top = 0; 
+    }
+    
+    networkStatusView.height = 45;
+    
     networkStatusAnimation.addEventListener('complete', showNetworkStatusHandler);
     
     headerListView.animate(networkStatusAnimation);
 }
 
 function hideNetworkStatusHandler(){"use strict";
-    headerListView.top = -40;
+    if(Ti.App.isIOS7){
+        headerListView.top = -20;
+    }
+    else{
+        headerListView.top = -40;
+    }
+    
+    networkStatusView.height = 0;
 }
 
 function hideNetworkStatus(){"use strict";
     
     networkStatusAnimation.duration = 1000;
-    networkStatusAnimation.top = -40;
+    if(Ti.App.isIOS7){
+        networkStatusAnimation.top = -20;
+    }
+    else{
+        networkStatusAnimation.top = -40;    
+    }
+    
+    networkStatusView.height = 0;
+    
     networkStatusAnimation.addEventListener('complete', hideNetworkStatusHandler);
     
     headerListView.animate(networkStatusAnimation);
@@ -705,7 +748,7 @@ function sendingDataMainMenu(e){"use strict";
             networkStatusLabel.setVisible(true);
         }
     }
-    else{
+    else if(typeof uploadingProgressBar !== 'undefined' && uploadingProgressBar !== null){
         uploadingProgressBar.setValue(0.01);
         uploadingProgressBar.setMessage(e.message);
         uploadingProgressBar.uploadingBytes = e.uploadingBytes;
@@ -714,7 +757,6 @@ function sendingDataMainMenu(e){"use strict";
         
         networkStatusLabel.setVisible(false);
         uploadingProgressBar.setVisible(true);
-        
     }
     
     showNetworkStatus();
@@ -896,6 +938,7 @@ function mainMenuFirstSyncInstallComplete(){"use strict";
     //curWin.add(loggedView);
     
     headerListView.add(networkStatusView);
+    
     headerListView.add(loggedView);
     headerListView.add(listView);
     headerListView.add(watermarkImage);
@@ -990,8 +1033,6 @@ function mainMenuFirstSyncInstallComplete(){"use strict";
   
     Ti.App.photoUploadCheck = setInterval(Omadi.service.uploadFile, 60000);
 
-    
-
     if ( typeof curWin.fromSavedCookie !== 'undefined' && !curWin.fromSavedCookie) {
         
         // The option dialog should go after clock in, but some of the options
@@ -1047,13 +1088,9 @@ function mainMenuFirstSyncInstallComplete(){"use strict";
         }
         
         loggedView = null;
-        networkStatusView = null;
-        databaseStatusView = null;
         listView = null;
         curWin = null;
         
-        networkStatusLabel = null;
-        uploadingProgressBar = null;
         refresh_image = null;
         label_top = null;
         offImage = null;

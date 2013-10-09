@@ -8,7 +8,6 @@ var wrapper;
 var webview;
 
 curWin.setBackgroundColor("#fff");
-curWin.setOrientationModes([Titanium.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
 
 function addIOSToolbar(){"use strict";
     var backButton, space, aboutLabel, toolbar;
@@ -91,6 +90,10 @@ function deleteAndroidFile(filePath){"use strict";
         right: 0,
         layout: 'vertical'
     });
+    
+    if(Ti.App.isIOS7){
+        wrapper.top = 20;
+    }
     
     Omadi.display.loading("Downloading...");
     

@@ -391,7 +391,8 @@ Omadi.display.openListWindow = function(type, show_plus, filterValues, nestedWin
         show_plus : show_plus,
         filterValues : filterValues,
         nestedWindows : nestedWindows,
-        showFinalResults : showFinalResults
+        showFinalResults : showFinalResults,
+        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
     });
 
     Omadi.display.loading();
@@ -406,7 +407,8 @@ Omadi.display.openActionsWindow = function() {"use strict";
     var actionsWindow = Ti.UI.createWindow({
         title : 'Actions',
         navBarHidden : true,
-        url : '/main_windows/actions.js'
+        url : '/main_windows/actions.js',
+        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
     });
 
     Omadi.display.loading();
@@ -420,7 +422,8 @@ Omadi.display.openAboutWindow = function() {"use strict";
     var aboutWindow = Ti.UI.createWindow({
         title : 'About',
         navBarHidden : true,
-        url : '/main_windows/about.js'
+        url : '/main_windows/about.js',
+        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
     });
 
     Omadi.display.loading();
@@ -434,7 +437,8 @@ Omadi.display.openDraftsWindow = function() {"use strict";
     var draftsWindow = Titanium.UI.createWindow({
         title : 'Drafts',
         navBarHidden : true,
-        url : '/main_windows/drafts.js'
+        url : '/main_windows/drafts.js',
+        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
     });
 
     Omadi.display.loading();
@@ -449,7 +453,8 @@ Omadi.display.openSettingsWindow = function() {"use strict";
     var settingsWindow = Titanium.UI.createWindow({
         title : 'Settings',
         navBarHidden : true,
-        url : '/main_windows/settings.js'
+        url : '/main_windows/settings.js',
+        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
     });
 
     Omadi.display.loading();
@@ -463,10 +468,12 @@ Omadi.display.openSettingsWindow = function() {"use strict";
 Omadi.display.openJobsWindow = function() {"use strict";
 
     if(Omadi.bundles.dispatch.showJobsScreen()){
+        
         var jobsWindow = Titanium.UI.createWindow({
             title : 'Jobs',
             navBarHidden : true,
-            url : '/main_windows/jobs.js'
+            url : '/main_windows/jobs.js',
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
         });
     
         Omadi.display.loading();
@@ -485,7 +492,8 @@ Omadi.display.openViewWindow = function(type, nid) {"use strict";
         navBarHidden : true,
         type : type,
         url : '/main_windows/individual_object.js',
-        nid : nid
+        nid : nid,
+        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
     });
 
     viewWindow.addEventListener('open', Omadi.display.doneLoading);
@@ -534,7 +542,8 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
             url : '/main_windows/dispatch_form.js',
             type : type,
             nid : nid,
-            form_part : form_part
+            form_part : form_part,
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
         });
     }
     else{
@@ -544,7 +553,8 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
             type : type,
             nid : nid,
             form_part : form_part,
-            usingDispatch : false
+            usingDispatch : false,
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
         });
     }
     
@@ -561,7 +571,8 @@ Omadi.display.openLocalPhotosWindow = function() {"use strict";
 
     var localPhotosWindow = Ti.UI.createWindow({
         navBarHidden : true,
-        url : '/main_windows/localPhotos.js'
+        url : '/main_windows/localPhotos.js',
+        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
     });
     
     localPhotosWindow.addEventListener('close', Omadi.display.showNewNotificationDialog);
@@ -578,7 +589,8 @@ Omadi.display.openMainMenuWindow = function(options) {"use strict";
     
     mainMenuWindow = Titanium.UI.createWindow({
         url : '/main_windows/mainMenu.js',
-        navBarHidden : true
+        navBarHidden : true,
+        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
     });
     
     if(typeof options !== 'undefined'){
@@ -847,41 +859,52 @@ Omadi.display.insertBundleIcon = function(type, imageView){"use strict";
     Ti.API.debug("Getting icon for " + type);
 
     http.onload = function(e) {
-        var iconFile, written, iconFile2;
+        var iconFile, written, iconFile2, path;
         
         if(e.success){
-            Ti.API.debug(e);
-            Ti.API.debug(this);
             
-            iconFile = Omadi.display.getNodeTypeImagePath(type);
+            path = Omadi.display.getNodeTypeImagePath(type);
+            iconFile = Ti.Filesystem.getFile(path);
             
-            Ti.API.debug("exists: " + iconFile.exists());
-            Ti.API.debug("is file: " + iconFile.isFile());
+            Ti.API.info("downloaded icon for " + type);
             
-            written = iconFile.write(this.responseData);
+            if(iconFile){
+               
+                written = iconFile.write(this.responseData);
             
-            if(!written){
-                iconFile.move(iconFile.nativePath + ".png");
-                Ti.API.debug("not written 1");
+                if(!written){
+                    iconFile.move(iconFile.nativePath + ".png");
+                    Ti.API.debug("not written 1");
+                    
+                    iconFile2 = Ti.Filesystem.getFile(Omadi.display.getNodeTypeImagePath(type));
+                    written = iconFile2.write(this.responseData);
+                    
+                    if(written){
+                        if(Ti.App.isIOS){
+                            iconFile2.remoteBackup = false;
+                        }
+                    }
+                }
+                else{
+                    if(Ti.App.isIOS){
+                        iconFile.remoteBackup = false;
+                    }
+                }
+                Ti.API.debug("FILESIZE: " + this.responseData.length);
                 
-                iconFile2 = Omadi.display.getNodeTypeImagePath(type);
-                written = iconFile2.write(this.responseData);
-            }
+                iconFile = null;
+                iconFile2 = null;
+                
+                Ti.API.debug("written icon: " + written);
+                
+                
+                if(typeof imageView !== 'undefined'){
+                    iconFile = Omadi.display.getIconFile(type);
             
-            Ti.API.debug("FILESIZE: " + this.responseData.length);
-            
-            if(Ti.App.isIOS){
-                iconFile.remoteBackup = false;
-            }
-            
-            iconFile = null;
-            
-            Ti.API.debug("written icon: " + written);
-            
-            iconFile = Omadi.display.getNodeTypeImagePath(type);
-            
-            if(typeof imageView !== 'undefined'){
-                imageView.image = iconFile;
+                    if(iconFile && iconFile.exists() && iconFile.isFile()){
+                        imageView.image = iconFile;
+                    }
+                }
             }
         }
     };
@@ -929,7 +952,7 @@ Omadi.display.getDrivingDirectionsTo = function(addressString){"use strict";
 };
 
 Omadi.display.getNodeTypeImagePath = function(type) {"use strict";
-    var bundle, color;
+    var bundle, color, imageFile;
     
     bundle = Omadi.data.getBundle(type);
     
@@ -938,102 +961,31 @@ Omadi.display.getNodeTypeImagePath = function(type) {"use strict";
         color = bundle.data.color;
     }
     
-    return Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, 'icon_' + type + '_' + color + '.png');
+    imageFile = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, 'icon_' + type + '_' + color + '.png');
     
-    // switch(type) {
-        // case 'lead':
-            // return '/images/newicons/lead_green.png'; 
-//             
-        // case 'contact':
-            // return '/images/newicons/contact_dark_blue.png'; 
-//             
-        // case 'account':
-            // return '/images/newicons/account_grey.png';  
-//              
-        // case 'boot':
-            // return '/images/newicons/boot_light_blue.png'; 
-//             
-        // case 'tow':
-            // return '/images/newicons/tow_light_blue.png'; 
-//             
-        // case 'drop_fee':
-            // return '/images/newicons/drop_fee_green.png'; 
-//             
-        // case 'incident_report':
-            // return '/images/newicons/incident_report_red.png'; 
-//             
-        // case 'notification':
-            // return '/images/newicons/notification_orange.png'; 
-//             
-        // case 'pd':
-            // return '/images/newicons/pd_light_blue.png'; 
-//             
-        // case 'potential':
-            // return '/images/newicons/potential_dark_blue.png'; 
-//             
-        // case 'restriction':
-            // return '/images/newicons/restriction_orange.png'; 
-//             
-        // case 'service':
-            // return '/images/newicons/service_green.png'; 
-//             
-        // case 'tag':
-            // return '/images/newicons/tag_light_blue.png'; 
-//             
-        // case 'task':
-            // return '/images/newicons/task_purple.png'; 
-//             
-        // case 'cod':
-            // return '/images/newicons/cod_green.png'; 
-//             
-        // case 'repo':
-            // return '/images/newicons/repo_light_blue.png'; 
-//             
-        // case 'ticket':
-            // return '/images/newicons/ticket_green.png'; 
-//             
-        // case 'inspection':
-            // return '/images/newicons/inspection_orange.png'; 
-//             
-        // case 'timecard':
-            // return '/images/newicons/timecard_dark_blue.png'; 
-//             
-        // case 'permit_request':
-            // return '/images/newicons/permit_request_dark_blue.png'; 
-//             
-        // case 'company_vehicle':
-            // return '/images/newicons/company_vehicle_grey.png'; 
-//             
-        // case 'dispatch':
-            // return '/images/newicons/dispatch_green.png'; 
-//             
-        // case 'club_tow':
-            // return '/images/newicons/club_tow_light_blue.png'; 
-//             
-        // case 'motor_club':
-            // return '/images/newicons/motor_club_grey.png'; 
-//             
-        // case 'tow_yard':
-            // return '/images/newicons/tow_yard_grey.png'; 
-//             
-        // case 'refund_request':
-            // return '/images/newicons/refund_request_orange.png'; 
-//             
-        // case 'tow_request':
-            // return '/images/newicons/tow_request_dark_blue.png'; 
-//             
-        // case 'permit':
-            // return '/images/newicons/permit_dark_blue.png'; 
-//             
-        // case 'spot':
-            // return '/images/newicons/spot_light_blue.png'; 
-// 
-            // //return '/images/icons/' + type + ".png";
-// 
-        // default:
-            // return '/images/newicons/settings_grey.png';
-            // //return '/images/icons/settings.png';
-    // }
+    return imageFile.nativePath;
+    
+    if(imageFile.exists()){
+        return imageFile;
+    }
+    return null;
+    
+    return Ti.Filesystem.getFile(Ti.Filesystem.resourcesDirectory, 'images/icon_default.png');
+};
+
+Omadi.display.getIconFile = function(type){"use strict";
+    var iconFile, path;
+    
+    path = Omadi.display.getNodeTypeImagePath(type);
+    
+    iconFile = Ti.Filesystem.getFile(path);
+    
+    if(!iconFile || !iconFile.exists()){
+        iconFile = Ti.Filesystem.getFile(Ti.Filesystem.resourcesDirectory, 'images/icon_default.png');
+        iconFile.imageNotLoaded = true;
+    }
+    
+    return iconFile;
 };
 
 Omadi.display.displayFile = function(nid, fid, title) {"use strict";
@@ -1048,7 +1000,8 @@ Omadi.display.displayFile = function(nid, fid, title) {"use strict";
                 nid: nid,
                 fid: fid,
                 title: title,
-                url: '/main_windows/fileViewer.js'
+                url: '/main_windows/fileViewer.js',
+                orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
             });
             
             newWin.addEventListener('open', function(){
@@ -1216,7 +1169,8 @@ Omadi.display.openTermsOfService = function(){"use strict";
 
     win = Ti.UI.createWindow({
         layout: 'vertical',
-        navBarHidden: true
+        navBarHidden: true,
+        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
     });
     
     webView = Ti.UI.createWebView({
@@ -1465,7 +1419,8 @@ Omadi.display.showLoadingIndicator = function(show, timeout) {"use strict";
         title : 'Omadi CRM',
         fullscreen : false,
         navBarHidden : true,
-        backgroundColor : '#000'
+        backgroundColor : '#000',
+        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
     });
 
     // black view
@@ -1529,6 +1484,10 @@ Omadi.display.ProgressBar = function(current, max) {"use strict";
         top : 0, //-1 * Ti.Platform.displayCaps.platformHeight * 0.14
         zIndex : 100
     });
+    
+    if(Ti.App.isIOS7){
+        this.progressView.top += 20;
+    }
 
     Ti.UI.currentWindow.add(this.progressView);
 
@@ -1536,10 +1495,13 @@ Omadi.display.ProgressBar = function(current, max) {"use strict";
         width : "96%",
         min : 0,
         max : 1,
-        top : 0,
+        top : 2,
         value : 0,
         color : '#fff',
         message : 'Downloading ...',
+        font: {
+          fontSize: 14  
+        },
         style : (Ti.App.isIOS) ? Titanium.UI.iPhone.ProgressBarStyle.PLAIN : ''
     });
 
@@ -1547,10 +1509,13 @@ Omadi.display.ProgressBar = function(current, max) {"use strict";
         width : "96%",
         min : 0,
         max : 100,
-        top : 0,
+        top : 2,
         value : 0,
         color : '#fff',
         message : 'Installing ...',
+        font: {
+          fontSize: 14  
+        },
         style : (Ti.App.isIOS) ? Titanium.UI.iPhone.ProgressBarStyle.PLAIN : ''
     });
 

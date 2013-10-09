@@ -1524,6 +1524,9 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
     }
     catch(ex) {
         
+        alert("There was a problem packaging your data, so it has been saved as a draft.");
+        Omadi.service.sendErrorReport("Exception in JSON creation: " + ex);
+        
         try {
             db.close();
         }
@@ -1535,9 +1538,6 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
         db = Omadi.utils.openMainDatabase();
         result = db.execute("UPDATE node SET flag_is_updated = 3 WHERE flag_is_updated = 1");
         db.close();
-        
-        alert("There was a problem packaging your data, so it has been saved as a draft.");
-        Omadi.service.sendErrorReport("Exception in JSON creation: " + ex);
     }
     finally{
         // If there was an error before the db was closed above, close it now so the app doesn't freeze

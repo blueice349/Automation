@@ -166,7 +166,7 @@ Omadi.widgets.signature = {
             scrollView, textView, textLabel, overlayButton, overlayLabel, hasText;
         
         win = Ti.UI.createWindow({  
-            
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
         });
         
         hasText = false;

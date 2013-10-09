@@ -32,12 +32,12 @@ function addiOSToolbar() {"use strict";
     space = Titanium.UI.createButton({
         systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
     });
-    label = Titanium.UI.createButton({
-        title : 'Drafts',
-        color : '#fff',
+    label = Titanium.UI.createLabel({
+        text : 'Drafts',
+        color : '#333',
         ellipsize : true,
         wordwrap : false,
-        width : 200,
+        width : Ti.UI.SIZE,
         style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
     });
 
@@ -49,6 +49,7 @@ function addiOSToolbar() {"use strict";
         borderBottom : false,
         height: Ti.UI.SIZE
     });
+    
     wrapperView.add(toolbar);
 }
 
@@ -111,7 +112,7 @@ Drafts.refreshDrafts = function(){"use strict";
             });
             
             rowImg = Ti.UI.createImageView({
-                image: Omadi.display.getNodeTypeImagePath(result.fieldByName('table_name')),
+                image: Omadi.display.getIconFile(result.fieldByName('table_name')),
                 left: 5,
                 top: 5,
                 bottom: 5,
@@ -343,9 +344,7 @@ function closeDraftsWindow(){"use strict";
     var db, result, i, count, section, fullName, row, 
         empty, search, formWindow, dialog, textView, titleLabel, rowImg, timeLabel;
     //Current window's instance
-
-    curWin.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
-    
+ 
     wrapperView = Ti.UI.createView({
        layout: 'vertical',
        bottom: 0,
@@ -353,6 +352,10 @@ function closeDraftsWindow(){"use strict";
        right: 0,
        left: 0 
     });
+    
+    if(Ti.App.isIOS7){
+        wrapperView.top = 20;
+    }
     
     //When back button on the phone is pressed, it opens mainMenu.js and close the current window
     curWin.addEventListener('android:back', function() {

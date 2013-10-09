@@ -11,7 +11,7 @@ var wrapperView;
 var empty = null;
 
 curWin.setBackgroundColor("#eee");
-Ti.UI.currentWindow.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
+
 wrapperView = Ti.UI.createView({
    layout: 'vertical',
    bottom: 0,
@@ -137,22 +137,22 @@ function alertNavButtons(currentWin, currentWinWrapper, type) {"use strict";
         systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
     });
 
-    label = Titanium.UI.createButton({
-        title : type,
-        color : '#fff',
+    label = Titanium.UI.createLabel({
+        text : type,
+        color : '#333',
         ellipsize : true,
         wordwrap : false,
-        width : 200,
+        width : Ti.UI.SIZE,
         focusable : false,
         touchEnabled : false,
         style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
     });
     
     if (type != null) {
-        label.title = type;
+        label.text = type;
     }
     else {
-        label.title = 'Location Alerts';
+        label.text = 'Location Alerts';
     }
 
     refreshImg = Ti.UI.createImageView({
@@ -182,6 +182,10 @@ function alertNavButtons(currentWin, currentWinWrapper, type) {"use strict";
         borderBottom : false,
         height: Ti.UI.SIZE
     });
+    
+    if(Ti.App.isIOS7){
+        toolbar.top += 20;
+    }
 
     currentWinWrapper.add(toolbar);
 }
@@ -372,7 +376,8 @@ function opnAccountAlertsList(e) {"use strict";
         title : e.row.lbl,
         nid : e.row.nid,
         isOpened : true,
-        isChild: true
+        isChild: true,
+        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
     });
     
     accountWrapperView = Ti.UI.createView({

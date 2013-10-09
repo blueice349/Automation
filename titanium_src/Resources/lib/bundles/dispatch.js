@@ -22,10 +22,21 @@ Omadi.bundles.dispatch.showJobsScreen = function(){"use strict";
 };
 
 Omadi.bundles.dispatch.showNewDispatchJobs = function(){"use strict";
+      var newJobs, currentUserJobs;
+      
       if(Ti.App.Properties.getBool('newDispatchJob', false)){
-          Ti.App.Properties.setBool('newDispatchJob', false);
+            Ti.App.Properties.setBool('newDispatchJob', false);
           
-          Omadi.display.openJobsWindow();
+            newJobs = Omadi.bundles.dispatch.getNewJobs();
+            if(newJobs.length > 0){
+                Omadi.display.openJobsWindow();
+            }
+            else{
+                currentUserJobs = Omadi.bundles.dispatch.getCurrentUserJobs();
+                if(currentUserJobs.length > 0){
+                    Omadi.display.openJobsWindow();
+                }
+            }
       }
 };
 
@@ -535,9 +546,6 @@ Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
         }
         result.close();
         db.close();
-        
-        Ti.API.debug("new jobs");
-        Ti.API.debug(newDispatchNids);
         
         for(i = 0; i < newDispatchNids.length; i ++){
             

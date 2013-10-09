@@ -618,7 +618,7 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         color_unset = "#fff";
         
         popupWin = Ti.UI.createWindow({
-            
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
         });
         
         opacView = Ti.UI.createView({

@@ -21,7 +21,6 @@ var wrapperView;
 
 curWin = Ti.UI.currentWindow;
 curWin.setBackgroundColor('#eee');
-Ti.UI.currentWindow.setOrientationModes([Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]);
 
 wrapperView = Ti.UI.createView({
    layout: 'vertical',
@@ -30,6 +29,10 @@ wrapperView = Ti.UI.createView({
    right: 0,
    left: 0 
 });
+
+if(Ti.App.isIOS7){
+    wrapperView.top += 20;
+}
 
 function closeWindowObjects(){"use strict";
     Ti.UI.currentWindow.close();   
@@ -722,6 +725,9 @@ function setTableData() {"use strict";
             }
 
             listLabel.color = '#fff';
+            if(Ti.App.isIOS7){
+                listLabel.color = '#333';
+            }
             listLabel.textAlign = Ti.UI.TEXT_ALIGNMENT_CENTER;
             items.push(space);
 
