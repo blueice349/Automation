@@ -301,11 +301,43 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
     }
 };
 
+Omadi.bundles.dispatch.compareStatuses = function(status1, status2){"use strict";
+    var statuses, status1Index, status2Index;
+    
+    statuses = [
+            'call_received',
+            'dispatching_call',
+            'job_accepted',
+            'driving_to_job',
+            'arrived_at_job',
+            'towing_vehicle',
+            'arrived_at_destination',
+            'job_complete'
+    ];
+    
+    status1Index = statuses.indexOf(status1);
+    status2Index = statuses.indexOf(status2);
+    
+    if(status1Index != -1 && status2Index != -1){
+        if(status1Index < status2Index){
+            return -1;
+        }
+        
+        if(status1Index > status2Index){
+            return 1;
+        }
+        return 0;
+    }
+   
+    return false;
+};
+
 Omadi.bundles.dispatch.getStatusOptions = function(nid){"use strict";
     var options, db, result, termResult, vid, dispatchBundle, node, i, j,
         excludeKeys, excludeStatuses, 
         currentStatusKey, currentStatus, status, useKey, dispatchNode, dispatchNid,
-        dispatchInstances, statusInstance, fieldOptions;
+        dispatchInstances, statusInstance, fieldOptions, maxStatusToShow, 
+        currentFormPart, workNodeTypeInfo, formPartStatus, formPartIndex, statusCompare;
     
     options = [];
     
@@ -316,77 +348,200 @@ Omadi.bundles.dispatch.getStatusOptions = function(nid){"use strict";
         dispatchNode = Omadi.data.nodeLoad(dispatchNid);
         
         if(dispatchNode){
-            Ti.API.debug(dispatchNode);
-            currentStatusKey = dispatchNode.field_dispatching_status.dbValues[0];
             
+            currentStatusKey = dispatchNode.field_dispatching_status.dbValues[0];
             dispatchInstances = Omadi.data.getFields('dispatch');
             
-            if(typeof dispatchInstances.field_dispatching_status !== 'undefined'){
-                statusInstance = dispatchInstances.field_dispatching_status;
+            currentFormPart = node.form_part;
+            maxStatusToShow = '_none';
+            workNodeTypeInfo = Omadi.data.getBundle(node.type);
+            
+            if(typeof workNodeTypeInfo.data.dispatch !== 'undefined' && typeof workNodeTypeInfo.data.dispatch.dispatch_parts !== 'undefine'){
                 
-                excludeKeys = [];
-                
-                if(currentStatusKey !== null){
-                    switch(currentStatusKey){
-                        case 'job_complete':
-                            excludeKeys.push('job_complete');
-                            /* falls through */
-                        case 'arrived_at_destination':
-                            excludeKeys.push('arrived_at_destination');
-                            /* falls through */
-                        case 'towing_vehicle':
-                            excludeKeys.push('towing_vehicle');
-                            /* falls through */
-                        case 'arrived_at_job':
-                            excludeKeys.push('arrived_at_job');
-                            /* falls through */
-                        case 'driving_to_job':
-                            excludeKeys.push('driving_to_job');
-                            /* falls through */
-                        case 'job_accepted':
-                            excludeKeys.push('job_accepted');
-                            /* falls through */
-                        case 'dispatching_call':
-                            excludeKeys.push('dispatching_call');
-                            /* falls through */
-                        case 'call_received':
-                            excludeKeys.push('call_received');
-                            break;       
+                for(formPartIndex in workNodeTypeInfo.data.dispatch.dispatch_parts){
+                    if(workNodeTypeInfo.data.dispatch.dispatch_parts.hasOwnProperty(formPartIndex)){
+                        formPartStatus = workNodeTypeInfo.data.dispatch.dispatch_parts[formPartIndex];
+                        
+                        if(formPartStatus != null && formPartStatus > ""){
+                            if(formPartIndex > currentFormPart){
+                                maxStatusToShow = formPartStatus;
+                                break;
+                            }
+                        }
                     }
                 }
             }
             
-            excludeKeys.push(null);
+            statusCompare = Omadi.bundles.dispatch.compareStatuses(currentStatusKey, maxStatusToShow);
             
-            fieldOptions = Omadi.widgets.list_text.getOptions(statusInstance);
+            if(statusCompare < 0 || statusCompare === false){
             
-            for(i = 0; i < fieldOptions.length; i ++){
-                useKey = true;
-                
-                for(j = 0; j < excludeKeys.length; j ++){
-                    if(fieldOptions[i].dbValue == excludeKeys[j]){
-                        useKey = false;
-                        break;
+                if(typeof dispatchInstances.field_dispatching_status !== 'undefined'){
+                    statusInstance = dispatchInstances.field_dispatching_status;
+                    fieldOptions = Omadi.widgets.list_text.getOptions(statusInstance);
+                    
+                    switch(currentStatusKey){
+                        
+                        case 'call_received':
+                        case 'dispatching_call':
+                            
+                            options.push({
+                               dbValue: 'job_accepted',
+                               title: 'Job Accepted',
+                               nextPart: false
+                            });
+                            
+                            /*fall through*/
+                            
+                        case 'job_accepted':
+                            
+                            if(maxStatusToShow == 'driving_to_job'){
+                                options.push({
+                                   dbValue: 'driving_to_job',
+                                   title: 'Driving to Job +',
+                                   nextPart: true
+                                });
+                                break;
+                            }
+                            else{
+                                options.push({
+                                   dbValue: 'driving_to_job',
+                                   title: 'Driving to Job',
+                                   nextPart: false
+                                });
+                            }
+                            
+                            /*fall through*/
+                            
+                        case 'driving_to_job':
+                            
+                            if(maxStatusToShow == 'arrived_at_job'){
+                                options.push({
+                                   dbValue: 'arrived_at_job',
+                                   title: 'Arrived at Job +',
+                                   nextPart: true
+                                });
+                                break;
+                            }
+                            else{
+                                options.push({
+                                   dbValue: 'arrived_at_job',
+                                   title: 'Arrived at Job',
+                                   nextPart: false
+                                });
+                            }
+                            
+                            /*fall through*/
+                            
+                        case 'arrived_at_job':
+                            
+                            if(maxStatusToShow == 'towing_vehicle'){
+                                options.push({
+                                   dbValue: 'towing_vehicle',
+                                   title: 'Towing Vehicle +',
+                                   nextPart: true
+                                });
+                                break;
+                            }
+                            else{
+                                options.push({
+                                   dbValue: 'towing_vehicle',
+                                   title: 'Towing Vehicle',
+                                   nextPart: false
+                                });
+                            }
+                            
+                            /*fall through*/
+                            
+                        case 'towing_vehicle':
+                            
+                            if(maxStatusToShow == 'arrived_at_destination'){
+                                options.push({
+                                   dbValue: 'arrived_at_destination',
+                                   title: 'Arrived at Destination +',
+                                   nextPart: true
+                                });
+                                break;
+                            }
+                            else{
+                                options.push({
+                                   dbValue: 'arrived_at_destination',
+                                   title: 'Arrived at Destination',
+                                   nextPart: false
+                                });
+                            }
+                            
+                            /*fall through*/
+                            
+                        case 'arrived_at_destination':
+                            
+                            if(maxStatusToShow == 'job_complete'){
+                                options.push({
+                                   dbValue: 'job_complete',
+                                   title: 'Job Complete +',
+                                   nextPart: true
+                                });
+                                break;
+                            }
+                            else{
+                                options.push({
+                                   dbValue: 'job_complete',
+                                   title: 'Job Complete',
+                                   nextPart: false
+                                });
+                            }
+            
+                            break;
                     }
-                }
-                
-                if(useKey){
-                    options.push({
-                       dbValue: fieldOptions[i].dbValue,
-                       title: fieldOptions[i].title
-                    });
                 }
             }
         }
     }
     
-    //Ti.API.debug(options);
-    
     return options;
 };
 
-Omadi.bundles.dispatch.updateStatus = function(nid, status){"use strict";
+Omadi.bundles.dispatch.isDispatch = function(type, nid){"use strict";
+    var db, result, formWindow, intNid, isDispatch, dispatchNid, bundle;
+    
+    isDispatch = false;
+   
+    if(type == 'dispatch'){
+        isDispatch = true;
+    }
+    else{
+        intNid = parseInt(nid, 10);
+        if(!isNaN(intNid)){
+            db = Omadi.utils.openMainDatabase();
+            result = db.execute("SELECT dispatch_nid FROM node where nid = " + intNid);
+            if(result.isValidRow()){
+                dispatchNid = result.field(0, Ti.Database.FIELD_TYPE_INT);
+                if(dispatchNid != 0){
+                    isDispatch = true;
+                }
+            }
+            result.close();
+            db.close();   
+        }
+        else{
+            // This is a new node from plus button
+            bundle = Omadi.data.getBundle(type);
+            if(typeof bundle.data.dispatch !== 'undefined' && typeof bundle.data.dispatch.force_dispatch !== 'undefined' && bundle.data.dispatch.force_dispatch == 1){
+                // Do not allow a force dispatch to create its own node without a dispatch node
+                isDispatch = true;
+            }
+        }
+    }  
+    
+    return isDispatch;
+};
+
+Omadi.bundles.dispatch.updateStatus = function(nid, status, background){"use strict";
     var dialog, http;
+    
+    if(typeof background === 'undefined'){
+        background = false;
+    }
     
     if(!Ti.Network.online){
         dialog = Ti.UI.createOptionDialog({
@@ -399,10 +554,17 @@ Omadi.bundles.dispatch.updateStatus = function(nid, status){"use strict";
         else {
             dialog.show();
         }
+        
+        if(background){
+          // TODO: update the dispatch node in the local database and set the dispatch timestmap and status  
+        }
     }
     else{
-        Omadi.display.loading('Updating...');
-                
+        
+        if(!background){
+            Omadi.display.loading('Updating...');
+        }
+        
         Omadi.data.setUpdating(true);
         
         http = Ti.Network.createHTTPClient();
@@ -424,12 +586,14 @@ Omadi.bundles.dispatch.updateStatus = function(nid, status){"use strict";
                 Omadi.service.fetchedJSON = JSON.parse(this.responseText);            
                 Omadi.data.processFetchedJson();
                 
-                if(!Omadi.service.fetchedJSON.dispatch_update_status.success){
+                if(!background && !Omadi.service.fetchedJSON.dispatch_update_status.success){
                     alert(Omadi.service.fetchedJSON.dispatch_update_status.text);
                 }
             }
             else{
-                alert("The status was not updated because an unknown error occurred.");
+                if(!background){
+                    alert("The status was not updated because an unknown error occurred.");
+                }
                 Omadi.service.sendErrorReport("Bad response text for update dispatch status: " + this.responseText);
             }
     
@@ -442,20 +606,21 @@ Omadi.bundles.dispatch.updateStatus = function(nid, status){"use strict";
             
             Omadi.display.doneLoading();
     
-            Ti.API.error(JSON.stringify(e));
             dialog = Ti.UI.createAlertDialog({
                 message : 'An error occured. Please try again.',
                 buttonNames: ['OK']
             });
             
-            if ( typeof alertQueue !== 'undefined') {
-                alertQueue.push(dialog);
-            }
-            else {
-                dialog.show();
+            if(!background){
+                if ( typeof alertQueue !== 'undefined') {
+                    alertQueue.push(dialog);
+                }
+                else {
+                    dialog.show();
+                }
             }
             
-            Omadi.service.sendErrorReport('Could not accept job' + JSON.stringify(e));
+            Omadi.service.sendErrorReport('Could not update status: ' + JSON.stringify(e));
         };
         
         http.send(JSON.stringify({
@@ -467,29 +632,35 @@ Omadi.bundles.dispatch.updateStatus = function(nid, status){"use strict";
 
 Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
     
-    var http, dialog, nid = 0, statusDialog, statusOptions, options, i;
+    var http, dialog, nid = 0, node, statusDialog, statusOptions, options, i;
     
     if(typeof args[0] !== 'undefined'){
         nid = args[0];
     }
     
     if(nid){
-        if(!Ti.Network.online){
-            dialog = Ti.UI.createOptionDialog({
-                message : 'Your Internet connection was lost. Please try again after you get an Internet connection.'
+        
+        statusOptions = Omadi.bundles.dispatch.getStatusOptions(nid);
+        
+        if(statusOptions.length == 0){
+            statusDialog = Ti.UI.createAlertDialog({
+                title: 'Update Form Info First',
+                message: 'Go to the form now?',
+                buttonNames: ['Yes', 'Cancel'] 
             });
             
-            if ( typeof alertQueue !== 'undefined') {
-                alertQueue.push(dialog);
-            }
-            else {
-                dialog.show();
-            }
+            statusDialog.addEventListener('click', function(e){
+                if(e.index === 0){
+                    node = Omadi.data.nodeLoad(nid);
+                    
+                    Omadi.display.openFormWindow(node.type, node.nid, node.form_part + 1);
+                }
+            });
+            
+            statusDialog.show();
         }
         else{
-            
-            statusOptions = Omadi.bundles.dispatch.getStatusOptions(nid);
-            
+        
             options = [];
             for(i = 0; i < statusOptions.length; i ++){
                 options.push(statusOptions[i].title);
@@ -506,8 +677,14 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
             statusDialog.addEventListener('click', function(e){
                 if(e.index >= 0 && e.index != e.source.cancel){
                     var status = statusOptions[e.index].dbValue;
-                    Ti.API.debug(status);
-                    Omadi.bundles.dispatch.updateStatus(nid, status);
+                    
+                    if(statusOptions[e.index].nextPart){
+                        node = Omadi.data.nodeLoad(nid);
+                        Omadi.display.openFormWindow(node.type, node.nid, node.form_part + 1)
+                    }
+                    else{
+                        Omadi.bundles.dispatch.updateStatus(nid, status);
+                    }
                 }
             });
             
@@ -522,7 +699,8 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
 
 Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
     /*global list_search_node_matches_search_criteria*/
-    var newJobs, db, result, sql, nowTimestamp, dispatchBundle, newDispatchNids, i, node;
+    var newJobs, db, result, sql, nowTimestamp, dispatchBundle, newDispatchNids, i, 
+        jobDiscontinued, nid, title, viewed, type, changed;
     
     nowTimestamp = Omadi.utils.getUTCTimestamp();
     newJobs = [];
@@ -532,7 +710,7 @@ Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
     
         db = Omadi.utils.openMainDatabase();
         
-        sql = "SELECT n.nid FROM dispatch ";
+        sql = "SELECT n.nid, n.title, n.viewed, n.table_name, dispatch.job_discontinued, n.changed FROM dispatch ";
         sql += "INNER JOIN node n ON n.dispatch_nid = dispatch.nid ";
         sql += "WHERE n.dispatch_nid > 0 ";
         sql += "AND dispatch.dispatched_to_driver IS NULL "; 
@@ -541,27 +719,30 @@ Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
         
         newDispatchNids = [];
         while(result.isValidRow()){
-            newDispatchNids.push(result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT));
+            jobDiscontinued = result.fieldByName('job_discontinued');
+            nid = result.fieldByName('nid');
+            title = result.fieldByName('title');
+            viewed = result.fieldByName('viewed');
+            type = result.fieldByName('table_name');
+            
+            if(jobDiscontinued != null && jobDiscontinued > ""){
+                // This job has been discontinued
+                // We never want a discontinued job to show up in the new jobs list
+            }
+            else{
+                newJobs.push({
+                   nid: nid,
+                   title: title,
+                   viewed: viewed,
+                   type: type,
+                   isDiscontinued: false
+                });
+            }
+            
             result.next();
         }
         result.close();
         db.close();
-        
-        for(i = 0; i < newDispatchNids.length; i ++){
-            
-            // TODO: only show a new job if the user is in the dispatch list                  
-            
-            node = Omadi.data.nodeLoad(newDispatchNids[i]);
-            if(node && node.nid && node.dispatch_nid > 0){
-                
-                    newJobs.push({
-                       nid: node.nid,
-                       title: node.title,
-                       viewed: node.viewed,
-                       type: node.type
-                    });
-            }
-        }
     }
     
     return newJobs;
@@ -570,7 +751,7 @@ Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
 Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
     /*global list_search_node_matches_search_criteria*/
     var newJobs, db, result, sql, nowTimestamp, currentUserUid, 
-        i, node, currentUserJobNids, dispatchBundle;
+        i, nid, title, viewed, type, dispatchBundle, jobDiscontinued, changed, isDiscontinued;
     
     nowTimestamp = Omadi.utils.getUTCTimestamp();
     newJobs = [];
@@ -581,7 +762,7 @@ Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
         currentUserUid = Omadi.utils.getUid();
         db = Omadi.utils.openMainDatabase();
         
-        sql = "SELECT n.nid FROM dispatch ";
+        sql = "SELECT n.nid, n.title, n.viewed, n.table_name, dispatch.job_discontinued, n.changed FROM dispatch ";
         sql += "INNER JOIN node n ON n.dispatch_nid = dispatch.nid ";
         sql += "WHERE n.dispatch_nid > 0 ";
         sql += "AND dispatch.dispatched_to_driver = " + currentUserUid + " "; 
@@ -589,30 +770,41 @@ Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
         
         result = db.execute(sql);
         
-        currentUserJobNids = [];
         while(result.isValidRow()){
-            currentUserJobNids.push(result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT));
+            jobDiscontinued = result.fieldByName('job_discontinued');
+            nid = result.fieldByName('nid');
+            title = result.fieldByName('title');
+            viewed = result.fieldByName('viewed');
+            type = result.fieldByName('table_name');
+            
+            if(jobDiscontinued != null && jobDiscontinued > ""){
+                // This job has been discontinued
+                changed = result.fieldByName('changed', Ti.Database.FIELD_TYPE_INT);
+                if(nowTimestamp - changed < 900){
+                    // Only show the job if it was changed in the last 15 minutes
+                    newJobs.push({
+                       nid: nid,
+                       title: title,
+                       viewed: viewed,
+                       type: type,
+                       isDiscontinued: true
+                    });
+                }
+            }
+            else{
+                newJobs.push({
+                   nid: nid,
+                   title: title,
+                   viewed: viewed,
+                   type: type,
+                   isDiscontinued: false
+                });
+            }
             result.next();
         }
         result.close();
         db.close();
         
-        Ti.API.debug("current jobs");
-        Ti.API.debug(currentUserJobNids);
-        
-        for(i = 0; i < currentUserJobNids.length; i ++){
-            
-            node = Omadi.data.nodeLoad(currentUserJobNids[i]);
-            
-            if(node){
-                newJobs.push({
-                   nid: node.nid,
-                   title: node.title,
-                   viewed: node.viewed,
-                   type: node.type
-                });
-            }
-        }
     }
     
     return newJobs;

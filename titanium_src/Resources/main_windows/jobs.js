@@ -48,7 +48,8 @@ function addiOSToolbar() {"use strict";
 
 function refreshJobsTable(firstTimeThrough){"use strict";
     var newJobsSection, currentUserJobsSection, newJobs, backgroundColor, row, textView,
-        i, rowImg, titleLabel, currentUserJobs, dispatchBundle, newJobsHeader, currentJobsHeader;
+        i, rowImg, titleLabel, currentUserJobs, dispatchBundle, newJobsHeader, 
+        currentJobsHeader, discontinuedView, discontinuedLabel, isDiscontinued;
     
     dispatchBundle = Omadi.data.getBundle('dispatch');
     newJobs = Omadi.bundles.dispatch.getNewJobs();
@@ -134,16 +135,6 @@ function refreshJobsTable(firstTimeThrough){"use strict";
         headerView: currentJobsHeader
     });
     
-   
-    
-    // separator = ' - ';
-    // if ( typeof dispatchBundle.data.title_fields !== 'undefined' && typeof dispatchBundle.data.title_fields.separator !== 'undefined') {
-        // separator = dispatchBundle.data.title_fields.separator;
-    // }
-//     
-    // whiteSpaceTest = Omadi.utils.trimWhiteSpace(separator);
-
-    
     if(newJobs.length){
         
         for(i = 0; i < newJobs.length; i ++){
@@ -195,6 +186,41 @@ function refreshJobsTable(firstTimeThrough){"use strict";
             
             //textView.add(timeLabel);
             row.add(textView);
+            
+            if(newJobs[i].isDiscontinued){
+                
+                discontinuedView = Ti.UI.createView({
+                    top: 0,
+                    height: 45,
+                    left: 0,
+                    right: 0,
+                    width: '100%',
+                    backgroundColor: '#fed',
+                    opacity: 0.7,
+                    zIndex: 5,
+                    bubbleParent: false
+                });
+                
+                discontinuedLabel = Ti.UI.createLabel({
+                    text: 'DISCONTINUED',
+                    textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+                    color: '#900',
+                    font: {
+                        fontWeight: 'bold',
+                        fontSize: 20
+                    },
+                    touchEnabled: false,
+                    bubbleParent: false
+                });
+                
+                discontinuedView.addEventListener('click', function(e){
+                    e.cancelBubble = true; 
+                });
+            
+                discontinuedView.add(discontinuedLabel);
+                row.add(discontinuedView);
+            }
+            
             newJobsSection.add(row);
         }
     }
@@ -254,8 +280,41 @@ function refreshJobsTable(firstTimeThrough){"use strict";
             
             row.add(rowImg);
             textView.add(titleLabel);
-            //textView.add(timeLabel);
             row.add(textView);
+            
+            if(currentUserJobs[i].isDiscontinued){
+                
+                discontinuedView = Ti.UI.createView({
+                    top: 0,
+                    height: 45,
+                    left: 0,
+                    right: 0,
+                    width: '100%',
+                    backgroundColor: '#fed',
+                    opacity: 0.7,
+                    zIndex: 5,
+                    bubbleParent: false
+                });
+                
+                discontinuedLabel = Ti.UI.createLabel({
+                    text: 'DISCONTINUED',
+                    textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+                    color: '#900',
+                    font: {
+                        fontWeight: 'bold',
+                        fontSize: 20
+                    },
+                    touchEnabled: false,
+                    bubbleParent: false
+                });
+                
+                discontinuedView.addEventListener('click', function(e){
+                    e.cancelBubble = true; 
+                });
+            
+                discontinuedView.add(discontinuedLabel);
+                row.add(discontinuedView);
+            }
             
             currentUserJobsSection.add(row);
         }

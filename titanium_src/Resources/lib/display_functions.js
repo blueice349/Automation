@@ -488,13 +488,28 @@ Omadi.display.openJobsWindow = function() {"use strict";
 };
 
 Omadi.display.openViewWindow = function(type, nid) {"use strict";
-    var viewWindow = Titanium.UI.createWindow({
-        navBarHidden : true,
-        type : type,
-        url : '/main_windows/individual_object.js',
-        nid : nid,
-        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
-    });
+    var isDispatch, viewWindow;
+    
+    isDispatch = Omadi.bundles.dispatch.isDispatch(type, nid);
+    
+    if(isDispatch){
+        viewWindow = Titanium.UI.createWindow({
+            navBarHidden : true,
+            type : type,
+            url : '/main_windows/dispatch_view.js',
+            nid : nid,
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+        });
+    }
+    else{
+        viewWindow = Titanium.UI.createWindow({
+            navBarHidden : true,
+            type : type,
+            url : '/main_windows/individual_object.js',
+            nid : nid,
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+        });
+    }
 
     viewWindow.addEventListener('open', Omadi.display.doneLoading);
     Omadi.display.loading();
@@ -507,34 +522,7 @@ Omadi.display.openViewWindow = function(type, nid) {"use strict";
 Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
     var db, result, formWindow, intNid, isDispatch, dispatchNid, bundle;
     
-    isDispatch = false;
-    
-    if(type == 'dispatch'){
-        isDispatch = true;
-    }
-    else{
-        intNid = parseInt(nid, 10);
-        if(!isNaN(intNid)){
-            db = Omadi.utils.openMainDatabase();
-            result = db.execute("SELECT dispatch_nid FROM node where nid = " + intNid);
-            if(result.isValidRow()){
-                dispatchNid = result.field(0, Ti.Database.FIELD_TYPE_INT);
-                if(dispatchNid != 0){
-                    isDispatch = true;
-                }
-            }
-            result.close();
-            db.close();   
-        }
-        else{
-            // This is a new node from plus button
-            bundle = Omadi.data.getBundle(type);
-            if(typeof bundle.data.dispatch !== 'undefined' && typeof bundle.data.dispatch.force_dispatch !== 'undefined' && bundle.data.dispatch.force_dispatch == 1){
-                // Do not allow a force dispatch to create its own node without a dispatch node
-                isDispatch = true;
-            }
-        }
-    }
+    isDispatch = Omadi.bundles.dispatch.isDispatch(type, nid);
     
     if(isDispatch){
         formWindow = Ti.UI.createWindow({
@@ -964,13 +952,6 @@ Omadi.display.getNodeTypeImagePath = function(type) {"use strict";
     imageFile = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, 'icon_' + type + '_' + color + '.png');
     
     return imageFile.nativePath;
-    
-    if(imageFile.exists()){
-        return imageFile;
-    }
-    return null;
-    
-    return Ti.Filesystem.getFile(Ti.Filesystem.resourcesDirectory, 'images/icon_default.png');
 };
 
 Omadi.display.getIconFile = function(type){"use strict";

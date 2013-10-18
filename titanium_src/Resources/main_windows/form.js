@@ -64,7 +64,9 @@ function get_android_menu(menu_exists) {"use strict";
    
     win.activity.onCreateOptionsMenu = function(e) {
         var db, result, menu_zero, bundle, btn_tt, btn_id, 
-            menu_first, menu_second, menu_third, menu_save_new, iconFile;
+            menu_first, menu_second, menu_third, menu_save_new, 
+            iconFile, windowFormPart;
+            
         btn_tt = [];
         btn_id = [];
     
@@ -75,9 +77,11 @@ function get_android_menu(menu_exists) {"use strict";
            
         if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
             
-            if (bundle.data.form_parts.parts.length >= node.form_part + 2) {
+            windowFormPart = Ti.UI.currentWindow.form_part;
+            
+            if (bundle.data.form_parts.parts.length >= windowFormPart + 2) {
                 menu_zero = menu.add({
-                    title : "Save + " + bundle.data.form_parts.parts[node.form_part + 1].label,
+                    title : "Save + " + bundle.data.form_parts.parts[windowFormPart + 1].label,
                     order : 0
                 });
                 menu_zero.setIcon("/images/save_arrow_white.png");
@@ -98,7 +102,7 @@ function get_android_menu(menu_exists) {"use strict";
             title : 'Save',
             order : 1
         });
-        menu_first.setIcon("/images/save_white.png");
+        menu_first.setIcon("/images/save_light_blue.png");
         
         menu_save_new = menu.add({
             title : 'Save + New',
@@ -836,7 +840,7 @@ function addiOSToolbar() {"use strict";
         });
     
         actions.addEventListener('click', function(e) {
-            var bundle, btn_tt, btn_id, postDialog;
+            var bundle, btn_tt, btn_id, postDialog, windowFormPart;
             
             if(typeof Omadi.widgets.currentlyFocusedField !== 'undefined'){
                 Omadi.widgets.currentlyFocusedField.blur();
@@ -856,10 +860,12 @@ function addiOSToolbar() {"use strict";
             }
             
             if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
+                
+                windowFormPart = Ti.UI.currentWindow.form_part;
+                
+                if (bundle.data.form_parts.parts.length >= windowFormPart + 2) {
     
-                if (bundle.data.form_parts.parts.length >= node.form_part + 2) {
-    
-                    btn_tt.push("Save + " + bundle.data.form_parts.parts[node.form_part + 1].label);
+                    btn_tt.push("Save + " + bundle.data.form_parts.parts[windowFormPart + 1].label);
                     btn_id.push('next');
                 }
             }
@@ -1746,7 +1752,9 @@ function continuousSave(){"use strict";
     });
     
     if(Ti.App.isIOS7){
-        wrapperView.top = 20;
+        if(!Ti.UI.currentWindow.usingDispatch){
+            wrapperView.top = 20;   
+        }
     }
     
     if(Ti.UI.currentWindow.usingDispatch){

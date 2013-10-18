@@ -50,15 +50,11 @@ var formWrapperView = Ti.UI.createView({
     backgroundColor : '#EEEEEE'
 });
 
-if(Ti.App.isIOS7){
-    formWrapperView.top = 20;
-}
-
 curWin.add(formWrapperView);
-
+var scrollView;
 
 if (Ti.App.isAndroid) {
-    var scrollView = Ti.UI.createScrollView({
+    scrollView = Ti.UI.createScrollView({
         contentHeight : 'auto',
         backgroundColor : '#EEEEEE',
         showHorizontalScrollIndicator : false,
@@ -68,8 +64,16 @@ if (Ti.App.isAndroid) {
     });
 }
 else {
-    var scrollView = Ti.UI.createScrollView({
-        top : 45,
+    
+    var scrollViewTop;
+    if(Ti.UI.currentWindow.usingDispatch){
+        scrollViewTop = 0;
+    }
+    else{
+        scrollViewTop = 45;
+    }
+    scrollView = Ti.UI.createScrollView({
+        top : scrollViewTop,
         contentHeight : 'auto',
         backgroundColor : '#EEEEEE',
         showHorizontalScrollIndicator : false,
@@ -978,7 +982,9 @@ fields_result.close();
 db.close();
 
 if (Ti.App.isIOS) {
-    iOSActionMenu(curWin);
+    if(!Ti.UI.currentWindow.usingDispatch){
+        iOSActionMenu(curWin);
+    }
 }
 
 function iOSActionMenu(actualWindow) {"use strict";

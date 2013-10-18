@@ -316,6 +316,13 @@ Omadi.widgets.calculation_field = {
                                             }
                                             
                                             // TODO: make sure the node is a reference, not just a value, as nested calls to this could result in incorrect calculations
+                                            if(typeof node[field_name] === 'undefined'){
+                                                node[field_name] = {};
+                                            }
+                                            if(typeof node[field_name].dbValues === 'undefined'){
+                                                node[field_name].dbValues = [];
+                                            }
+                                            
                                             node[field_name].dbValues[0] = finalValue; 
                                         }
                                     }

@@ -3334,7 +3334,6 @@ Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
                             can_view : 0
                         };
 
-                        //var node_type_Omadi.service.fetchedJSON.node_type = JSON.parse(_nd);
 
                         if (data.no_mobile_display != null && data.no_mobile_display == 1) {
                             is_disabled = true;

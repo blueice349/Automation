@@ -5,7 +5,7 @@ Ti.include("/lib/functions.js");
 Ti.include("/lib/form_functions.js");
 
 var tabs, dispatchTab, workTab;
-var dispatchNode, workNode, workBundle = null;
+var dispatchNode, workNode;
 var dispatchWindow, workWindow;
 var dispatchWindowOpen, workWindowOpen;
 var iOSTabbedBar;
@@ -13,111 +13,17 @@ var NO_JOB_TYPE_LABEL = "No Job Type";
 var dispatchSavedInfo, workSavedInfo, continuousDispatchInfo, continuousWorkInfo;
 var setSendingData = false;
 
-function exitForm(){"use strict";
-    var dialog, photoNids;
-
-    dialog = Ti.UI.createAlertDialog({
-        cancel : 1,
-        buttonNames : ['Exit', 'Cancel'],
-        title : 'Really Exit Form?',
-        message : 'Any unsaved changes will be lost.'
-    });
-
-    dialog.addEventListener('click', function(e) {
-        var db, result, numPhotos, secondDialog, negativeNid, query, continuousId, photoNids, types, dialogTitle, dialogMessage, messageParts, windowNid;
-
-        if (e.index == 0) {
-            
-            Ti.App.removeEventListener("omadi:dispatch:towTypeChanged", towTypeChanged);
-            Ti.App.removeEventListener("omadi:dispatch:savedDispatchNode", savedDispatchNode);
-            
-            windowNid = parseInt(Ti.UI.currentWindow.nid, 10);
-            if (isNaN(windowNid)) {
-                windowNid = 0;
-            }
-
-            if (dispatchWindowOpen) {
-                Omadi.form.adjustFileTable(dispatchNode, dispatchNode.nid);
-                dispatchWindow.close();
-            }
-
-            if (workWindowOpen) {
-                Omadi.form.adjustFileTable(workNode, workNode.nid);
-                workWindow.close();
-            }
-            
-            // Remove any fully-saved nodes that may not have been linked
-            db = Omadi.utils.openMainDatabase();
-            db.execute("BEGIN IMMEDIATE TRANSACTION");
-            db.execute("DELETE FROM node WHERE flag_is_updated = 5");
-            db.execute("COMMIT TRANSACTION");
-            db.close();
-            
-            if(setSendingData){
-                // This screen set sending data to true, so free it up in case it's still set
-                // which would be the case for one node validating and the other not validating
-                Omadi.service.setSendingData(false);
-            }
-        }
-    });
-
-    dialog.show();
-}
-
-function savedWorkNowSaveDispatch(){"use strict";
-    Ti.App.removeEventListener("omadi:dispatch:savedDispatchNode", savedWorkNowSaveDispatch);
+function exitView(){"use strict";
     
     if (dispatchWindowOpen) {
-        dispatchWindow.fireEvent("omadi:saveForm", {
-            saveType : "normal"
-        });
+        dispatchWindow.close();
     }
-}
 
-function dispatchSaveForms(saveType){"use strict";
-    if(workWindowOpen && dispatchWindowOpen){
-        // When both forms are open, save one at a time to avoid negative nid conflicts
-        
-        Ti.App.removeEventListener("omadi:dispatch:savedDispatchNode", savedWorkNowSaveDispatch);
-        Ti.App.addEventListener("omadi:dispatch:savedDispatchNode", savedWorkNowSaveDispatch);
-        
-        workWindow.fireEvent("omadi:saveForm", {
-            saveType : saveType
-        });
+    if (workWindowOpen) {
+        workWindow.close();
     }
-    else if (workWindowOpen) {
-        workWindow.fireEvent("omadi:saveForm", {
-            saveType : saveType
-        });
-    }
-    else if (dispatchWindowOpen) {
-        // The savetype on a dispatch will always be normal since we do not want it to have more parts
-        dispatchWindow.fireEvent("omadi:saveForm", {
-            saveType : "normal"
-        });
-    }
-}
-
-function saveForAndroid(saveType){"use strict";
-    var dialog, workLabel = workTab.text;
-
-    if (workLabel == NO_JOB_TYPE_LABEL) {
-        dialog = Ti.UI.createAlertDialog({
-            buttonNames : ['OK'],
-            title : 'Cannot Save',
-            message : 'You must set the job type first.'
-        }).show();
-    }
-    else if ((workNode.nid == 'new' || workNode.nid < 0) && workNode.flag_is_updated != 3 && !workWindowOpen) {
-        dialog = Ti.UI.createAlertDialog({
-            buttonNames : ['OK'],
-            title : 'Cannot Save',
-            message : 'Fill out the job tab first.'
-        }).show();
-    }
-    else{
-        dispatchSaveForms(saveType);
-    }
+    
+    Ti.UI.currentWindow.close();
 }
 
 function createAndroidToolbar(workNodeTypeLabel, openDispatch) {"use strict";
@@ -134,8 +40,7 @@ function createAndroidToolbar(workNodeTypeLabel, openDispatch) {"use strict";
         
         Ti.UI.currentWindow.activity.onCreateOptionsMenu = function(e) {
             var db, result, menu_zero, bundle, btn_tt, btn_id, 
-                menu_first, menu_second, menu_third, menu_save_new, 
-                iconFile, menu, windowFormPart;
+                menu_first, menu_second, menu_third, menu_save_new, iconFile, menu;
             
             btn_tt = [];
             btn_id = [];
@@ -145,16 +50,14 @@ function createAndroidToolbar(workNodeTypeLabel, openDispatch) {"use strict";
             
             bundle = Omadi.data.getBundle(workNode.type);
             
-            windowFormPart = Ti.UI.currentWindow.form_part;
-            
             // Do not allow going to the next part on dispatch create
             // The problem is that the dispatch_id won't be on the screen
             // and the dispatch_form.js won't be called, but only form.js
             if (workNode.nid > 0 && bundle.data.form_parts != null && bundle.data.form_parts != "") {
                 
-                if (bundle.data.form_parts.parts.length >= windowFormPart + 2) {
+                if (bundle.data.form_parts.parts.length >= workNode.form_part + 2) {
                     menu_zero = menu.add({
-                        title : "Save + " + bundle.data.form_parts.parts[windowFormPart + 1].label,
+                        title : "Save + " + bundle.data.form_parts.parts[workNode.form_part + 1].label,
                         order : 0
                     });
                     menu_zero.setIcon("/images/save_arrow_white.png");
@@ -309,7 +212,7 @@ function createiOSToolbar(workNodeTypeLabel, openDispatch) {"use strict";
             style : Ti.UI.iPhone.SystemButtonStyle.BORDERED
         });
 
-        back.addEventListener('click', exitForm);
+        back.addEventListener('click', exitView);
 
         space = Ti.UI.createButton({
             systemButton : Ti.UI.iPhone.SystemButton.FLEXIBLE_SPACE
@@ -339,7 +242,6 @@ function createiOSToolbar(workNodeTypeLabel, openDispatch) {"use strict";
                     }
                 }
                 else {
-
                     dispatchWindow.show();
                     if (workWindowOpen) {
                         workWindow.hide();
@@ -363,6 +265,7 @@ function createiOSToolbar(workNodeTypeLabel, openDispatch) {"use strict";
                         }
                     }
                     else {
+
                         workWindow.show();
                         if (dispatchWindowOpen) {
                             dispatchWindow.hide();
@@ -378,77 +281,58 @@ function createiOSToolbar(workNodeTypeLabel, openDispatch) {"use strict";
         });
 
         actions.addEventListener('click', function(e) {
-            var bundle, btn_tt, btn_id, postDialog, workLabel, windowFormPart;
-
-            workLabel = iOSTabbedBar.labels[1];
-
-            if (workLabel == NO_JOB_TYPE_LABEL) {
-                postDialog = Ti.UI.createAlertDialog({
-                    buttonNames : ['OK'],
-                    title : 'No Actions',
-                    message : 'You must set the job type first.'
-                }).show();
+            var db, result, bundle, btn_tt, btn_id, form_part, postDialog, to_type, to_bundle;
+        
+            bundle = Omadi.data.getBundle(workNode.type);
+            
+            db = Omadi.utils.openMainDatabase();
+            result = db.execute('SELECT form_part FROM node WHERE nid=' + workNode.nid);
+            form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
+            result.close();
+            db.close();
+    
+            btn_tt = [];
+            btn_id = [];
+            
+            if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
+    
+                if (bundle.data.form_parts.parts.length >= form_part + 2) {
+                   
+                    btn_tt.push(bundle.data.form_parts.parts[form_part + 1].label);
+                    btn_id.push(form_part + 1);
+                }
             }
-            else if ((workNode.nid == 'new' || workNode.nid < 0) && workNode.flag_is_updated != 3 && !workWindowOpen) {
-                postDialog = Ti.UI.createAlertDialog({
-                    buttonNames : ['OK'],
-                    title : 'No Actions',
-                    message : 'Fill out the job tab first.'
-                }).show();
-            }
-            else {
-                bundle = Omadi.data.getBundle(workNode.type);
-                btn_tt = [];
-                btn_id = [];
-
-                btn_tt.push('Save');
-                btn_id.push('normal');
-
-                // Do not allow going to the next part on dispatch create
-                // The problem is that the dispatch_id won't be on the screen
-                // and the dispatch_form.js won't be called, but only form.js
-                if (workNode.nid > 0 && bundle.data.form_parts != null && bundle.data.form_parts != "") {
-                    
-                    windowFormPart = Ti.UI.currentWindow.form_part;
-                    
-                    if (bundle.data.form_parts.parts.length >= windowFormPart + 2) {
-
-                        btn_tt.push("Save + " + bundle.data.form_parts.parts[windowFormPart + 1].label);
-                        btn_id.push('next');
+    
+            btn_tt.push('Edit');
+            btn_id.push(form_part);
+    
+            if(typeof bundle.data.custom_copy !== 'undefined'){
+                for(to_type in bundle.data.custom_copy){
+                    if(bundle.data.custom_copy.hasOwnProperty(to_type)){
+                        to_bundle = Omadi.data.getBundle(to_type);
+                        if(to_bundle){
+                            btn_tt.push("Copy to " + to_bundle.label);
+                            btn_id.push(to_type);
+                        }
                     }
                 }
-
-                //Currently do not allow saving drafts with dispatch
-                btn_tt.push('Save as Draft');
-                btn_id.push('draft');
-
-                btn_tt.push('Cancel');
-                btn_id.push('cancel');
-
-                postDialog = Titanium.UI.createOptionDialog();
-                postDialog.options = btn_tt;
-                postDialog.show();
-
-                postDialog.addEventListener('click', function(ev) {
-
-                    //if(Ti.UI.currentWindow.nodeSaved === false){
-                    if (ev.index != -1) {
-                        if (btn_id[ev.index] == 'next') {
-                            dispatchSaveForms("next_part");
-                        }
-                        else if (btn_id[ev.index] == 'draft') {
-                            dispatchSaveForms("draft");
-                        }
-                        else if (btn_id[ev.index] == 'normal') {
-                            dispatchSaveForms("normal");
-                        }
-                    }
-                    //}
-                    //else{
-                    //    alert("The form data was saved correctly, but this screen didn't close for some reason. You can exit safely. Please report what you did to get this screen.");
-                    //}
-                });
             }
+    
+            btn_tt.push('Cancel');
+    
+            postDialog = Titanium.UI.createOptionDialog();
+            postDialog.options = btn_tt;
+            postDialog.show();
+    
+            postDialog.addEventListener('click', function(ev) {
+                if (ev.index == btn_tt.length - 1) {
+                    Ti.API.info("Fix this logic");
+                }
+                else if (ev.index != -1) {
+                    Omadi.display.openFormWindow(workNode.type, workNode.nid, btn_id[ev.index]);
+                }
+            });
+            
         });
 
         items = [back, space, iOSTabbedBar, space, actions];
@@ -549,53 +433,6 @@ function setFormWindowTop(e) {"use strict";
     }
     if(typeof workWindow !== 'undefined'){
         workWindow.top = top;
-    }
-}
-
-function towTypeChanged(e) {"use strict";
-    var newNodeType, newBundle, windowTop;
-
-    newNodeType = e.dbValue;
-
-    newBundle = Omadi.data.getBundle(newNodeType);
-    if (newBundle) {
-        if(Ti.App.isAndroid){
-            workTab.setText(newBundle.label);
-        }
-        else{
-            iOSTabbedBar.setLabels(["DISPATCH", newBundle.label]);
-        }
-        
-        workNode = {
-            type : newNodeType,
-            nid : 'new',
-            form_part : -1
-        };
-
-        if (workWindowOpen) {
-            workWindow.close();
-        }
-        
-        windowTop = getWindowTopPixels();
-
-        workWindow = Ti.UI.createWindow({
-            url : '/main_windows/form.js',
-            type : workNode.type,
-            nid : workNode.nid,
-            form_part : -1,
-            bottom : 0,
-            right : 0,
-            left : 0,
-            top: windowTop,
-            zIndex : 1,
-            usingDispatch : true,
-            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
-        });
-
-        workWindowOpen = false;
-    }
-    else {
-        alert("There was a problem with the " + newNodeType + " selection. Please select a different option.");
     }
 }
 
@@ -747,37 +584,8 @@ function savedDispatchNode(e) {"use strict";
     }
 }
 
-function updateDispatchStatus(){"use strict";
-    var savedFormPart, windowFormPart, updateToStatus;
-    
-    if(workNode !== null){
-        savedFormPart = workNode.form_part;
-        windowFormPart = parseInt(Ti.UI.currentWindow.form_part, 10);
-        
-        if(!isNaN(windowFormPart)){
-        
-            if(windowFormPart > savedFormPart){
-                // We're doing a next part
-                
-                if(workBundle === null){
-                    workBundle = Omadi.data.getBundle(workNode.type);
-                }
-                
-                if(typeof workBundle.data.dispatch !== 'undefined' && typeof workBundle.data.dispatch.dispatch_parts !== 'undefined'){
-                    
-                    if(typeof workBundle.data.dispatch.dispatch_parts[windowFormPart] !== 'undefined'){
-                        // Update the actual status
-                        updateToStatus = workBundle.data.dispatch.dispatch_parts[windowFormPart];
-                        Omadi.bundles.dispatch.updateStatus(workNode.nid, updateToStatus, true);
-                    }
-                }
-            }
-        }
-    }
-}
-
 ( function() {"use strict";
-    var openDispatch, workLabel, dialog, allowRecover, windowTop;
+    var workBundle, openDispatch, workLabel, dialog, allowRecover, windowTop;
 
     // Initialize vars
 
@@ -791,12 +599,6 @@ function updateDispatchStatus(){"use strict";
 
     Ti.Gesture.addEventListener("orientationchange", setFormWindowTop);
     
-    Ti.App.removeEventListener("omadi:dispatch:towTypeChanged", towTypeChanged);
-    Ti.App.addEventListener("omadi:dispatch:towTypeChanged", towTypeChanged);
-    
-    Ti.App.removeEventListener("omadi:dispatch:savedDispatchNode", savedDispatchNode);
-    Ti.App.addEventListener("omadi:dispatch:savedDispatchNode", savedDispatchNode);
-
     if (Ti.UI.currentWindow.nid == 'new') {
 
         if (Ti.UI.currentWindow.type != 'dispatch') {
@@ -825,6 +627,7 @@ function updateDispatchStatus(){"use strict";
         openDispatch = true;
     }
     else {
+        
         workNode = Omadi.data.nodeLoad(Ti.UI.currentWindow.nid);
         allowRecover = true;
         if(workNode.nid > 0){
@@ -866,7 +669,7 @@ function updateDispatchStatus(){"use strict";
             Ti.UI.currentWindow.form_part = dispatchNode.form_part;
         }
     }
-
+    
     workLabel = NO_JOB_TYPE_LABEL;
     
     if(workNode !== null){
@@ -874,23 +677,22 @@ function updateDispatchStatus(){"use strict";
        
         if (workBundle) {
             workLabel = workBundle.label;
-            updateDispatchStatus();
         }
     }
 
     if (Ti.App.isAndroid) {
         createAndroidToolbar(workLabel, openDispatch);
-        Ti.UI.currentWindow.addEventListener("android:back", exitForm);
+        Ti.UI.currentWindow.addEventListener("android:back", exitView);
     }
     else {
         createiOSToolbar(workLabel, openDispatch);
     }
-    
+
     windowTop = getWindowTopPixels();
     
     if(dispatchNode !== null){
         dispatchWindow = Ti.UI.createWindow({
-            url : '/main_windows/form.js',
+            url : '/main_windows/individual_object.js',
             type : 'dispatch',
             nid : dispatchNode.nid,
             form_part : 0,
@@ -903,10 +705,10 @@ function updateDispatchStatus(){"use strict";
             orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
         });
     }
-    
+
     if(workNode !== null){
         workWindow = Ti.UI.createWindow({
-            url : '/main_windows/form.js',
+            url : '/main_windows/individual_object.js',
             type : workNode.type,
             nid : workNode.nid,
             form_part : Ti.UI.currentWindow.form_part,
@@ -927,5 +729,4 @@ function updateDispatchStatus(){"use strict";
         workWindowOpen = true;
         workWindow.open();
     }
-    
 }());
