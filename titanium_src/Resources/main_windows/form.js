@@ -211,19 +211,22 @@ function formToNode(){"use strict";
 function validateMinLength(node, instance){"use strict";
     var minLength, form_errors = [], i;
     
-    if (node[instance.field_name].dbValues.length > 0) {
-        if (instance.settings.min_length != null) {
-            minLength = parseInt(instance.settings.min_length, 10);
-            if(minLength >= 0){
-                for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
-                    if(node[instance.field_name].dbValues[i] !== null && node[instance.field_name].dbValues[i] > ''){
-                        if (node[instance.field_name].dbValues[i].length < minLength) {
-                            form_errors.push(instance.label + " requires at least " + minLength + " characters");
-                        }  
+    if (typeof node[instance.field_name] !== 'undefined' &&
+        typeof node[instance.field_name].dbValues !== 'undefined' &&
+        node[instance.field_name].dbValues !== null &&
+        node[instance.field_name].dbValues.length > 0) {
+            if (instance.settings.min_length != null) {
+                minLength = parseInt(instance.settings.min_length, 10);
+                if(minLength >= 0){
+                    for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
+                        if(node[instance.field_name].dbValues[i] !== null && node[instance.field_name].dbValues[i] > ''){
+                            if (node[instance.field_name].dbValues[i].length < minLength) {
+                                form_errors.push(instance.label + " requires at least " + minLength + " characters");
+                            }  
+                        }
                     }
                 }
             }
-        }
     }
     
     
@@ -233,19 +236,21 @@ function validateMinLength(node, instance){"use strict";
 function validateMaxLength(node, instance){"use strict";
     var maxLength, form_errors = [], i;
     
-    if (node[instance.field_name].dbValues.length > 0) {
-        if (instance.settings.max_length != null) {
-            maxLength = parseInt(instance.settings.max_length, 10);
-            if(maxLength > 0){
-                for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
-                    if (node[instance.field_name].dbValues[i].length > maxLength) {
-                        form_errors.push(instance.label + " cannot have more than " + maxLength + " characters.");
-                    }  
+    if (typeof node[instance.field_name] !== 'undefined' &&
+        typeof node[instance.field_name].dbValues !== 'undefined' &&
+        node[instance.field_name].dbValues !== null &&
+        node[instance.field_name].dbValues.length > 0) {
+            if (instance.settings.max_length != null) {
+                maxLength = parseInt(instance.settings.max_length, 10);
+                if(maxLength > 0){
+                    for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
+                        if (node[instance.field_name].dbValues[i].length > maxLength) {
+                            form_errors.push(instance.label + " cannot have more than " + maxLength + " characters.");
+                        }  
+                    }
                 }
             }
-        }
     }
-    
     
     return form_errors;
 }
@@ -255,24 +260,28 @@ function validateMaxValue(node, instance){"use strict";
     
     absoluteMaxValue = (instance.type == 'number_integer') ? 2147483647 : 99999999;
     
-    if (node[instance.field_name].dbValues.length > 0) {
-        if (instance.settings.max != null && instance.settings.max.length > 0) {
-            maxValue = parseFloat(instance.settings.max);
-            if(maxValue > absoluteMaxValue){
+    if (typeof node[instance.field_name] !== 'undefined' &&
+        typeof node[instance.field_name].dbValues !== 'undefined' &&
+        node[instance.field_name].dbValues !== null &&
+        node[instance.field_name].dbValues.length > 0) {
+            
+            if (instance.settings.max != null && instance.settings.max.length > 0) {
+                maxValue = parseFloat(instance.settings.max);
+                if(maxValue > absoluteMaxValue){
+                    maxValue = absoluteMaxValue;
+                }
+            }
+            else{
                 maxValue = absoluteMaxValue;
             }
-        }
-        else{
-            maxValue = absoluteMaxValue;
-        }
-        
-        Ti.API.debug("Max value : " + maxValue);
-        
-        for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
-            if (node[instance.field_name].dbValues[i] !== null && node[instance.field_name].dbValues[i] > maxValue) {
-                form_errors.push(instance.label + " cannot be greater than " + maxValue + ".");
-            }  
-        }
+            
+            Ti.API.debug("Max value : " + maxValue);
+            
+            for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
+                if (node[instance.field_name].dbValues[i] !== null && node[instance.field_name].dbValues[i] > maxValue) {
+                    form_errors.push(instance.label + " cannot be greater than " + maxValue + ".");
+                }  
+            }
     }
     
     return form_errors;
@@ -283,22 +292,26 @@ function validateMinValue(node, instance){"use strict";
     
     absoluteMinValue = (instance.type == 'number_integer') ? -2147483648 : -99999999;
     
-    if (node[instance.field_name].dbValues.length > 0) {
-        if (instance.settings.min != null && instance.settings.min.length > 0) {
-            minValue = parseFloat(instance.settings.min);
-            if(minValue < absoluteMinValue){
+    if (typeof node[instance.field_name] !== 'undefined' &&
+        typeof node[instance.field_name].dbValues !== 'undefined' &&
+        node[instance.field_name].dbValues !== null &&
+        node[instance.field_name].dbValues.length > 0) {
+            
+            if (instance.settings.min != null && instance.settings.min.length > 0) {
+                minValue = parseFloat(instance.settings.min);
+                if(minValue < absoluteMinValue){
+                    minValue = absoluteMinValue;
+                }
+            }
+            else{
                 minValue = absoluteMinValue;
             }
-        }
-        else{
-            minValue = absoluteMinValue;
-        }
-        
-        for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
-            if (node[instance.field_name].dbValues[i] !== null && node[instance.field_name].dbValues[i] < minValue) {
-                form_errors.push(instance.label + " cannot be less than " + minValue + ".");
-            }  
-        }
+            
+            for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
+                if (node[instance.field_name].dbValues[i] !== null && node[instance.field_name].dbValues[i] < minValue) {
+                    form_errors.push(instance.label + " cannot be less than " + minValue + ".");
+                }  
+            }
     }
     
     return form_errors;
@@ -307,15 +320,16 @@ function validateMinValue(node, instance){"use strict";
 function validatePhone(node, instance){"use strict";
     var form_errors = [], i, regExp;
     
-   
-    
-    if (node[instance.field_name].dbValues.length > 0) {
+    if (typeof node[instance.field_name] !== 'undefined' &&
+        typeof node[instance.field_name].dbValues !== 'undefined' &&
+        node[instance.field_name].dbValues !== null &&
+        node[instance.field_name].dbValues.length > 0) {
         
-        for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
-            if (!Omadi.utils.isEmpty(node[instance.field_name].dbValues[i]) && !node[instance.field_name].dbValues[i].match(/\D*(\d*)\D*[2-9][0-8]\d\D*[2-9]\d{2}\D*\d{4}\D*\d*\D*/g)) {
-                form_errors.push(instance.label + " is not a valid North American phone number. 10 digits are required.");
-            }  
-        }
+            for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
+                if (!Omadi.utils.isEmpty(node[instance.field_name].dbValues[i]) && !node[instance.field_name].dbValues[i].match(/\D*(\d*)\D*[2-9][0-8]\d\D*[2-9]\d{2}\D*\d{4}\D*\d*\D*/g)) {
+                    form_errors.push(instance.label + " is not a valid North American phone number. 10 digits are required.");
+                }  
+            }
     }
     
     return form_errors;
@@ -325,13 +339,16 @@ function validateEmail(node, instance){"use strict";
     
     var form_errors = [], i, regExp;
     
-    if (node[instance.field_name].dbValues.length > 0) {
+    if (typeof node[instance.field_name] !== 'undefined' &&
+        typeof node[instance.field_name].dbValues !== 'undefined' &&
+        node[instance.field_name].dbValues !== null &&
+        node[instance.field_name].dbValues.length > 0) {
         
-        for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
-            if (!Omadi.utils.isEmpty(node[instance.field_name].dbValues[i]) && !node[instance.field_name].dbValues[i].match(/^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,4}$/i)) {
-                form_errors.push(instance.label + " is not a valid email address.");
-            }  
-        }
+            for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
+                if (!Omadi.utils.isEmpty(node[instance.field_name].dbValues[i]) && !node[instance.field_name].dbValues[i].match(/^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,4}$/i)) {
+                    form_errors.push(instance.label + " is not a valid email address.");
+                }  
+            }
     }
     
     return form_errors;
@@ -358,10 +375,9 @@ function validateRequired(node, instance){"use strict";
     
     isEmpty = true;
             
-    if(typeof node[instance.field_name].dbValues !== 'undefined' && node[instance.field_name].dbValues.length > 0){
+    if(typeof node[instance.field_name].dbValues !== 'undefined' && node[instance.field_name].dbValues !== null && node[instance.field_name].dbValues.length > 0){
         dbValues = node[instance.field_name].dbValues;
         for(i = 0; i < dbValues.length; i ++){
-            
             
             switch(instance.type){
                 case 'text':
@@ -455,17 +471,31 @@ function validateRestrictions(node){"use strict";
         account = null;
         license_plate = null;
         
-        if(typeof node.vin !== 'undefined' && typeof node.vin.dbValues !== 'undefined' && node.vin.dbValues.length > 0 && node.vin.dbValues[0] != null && node.vin.dbValues[0] != ""){
-            vin = node.vin.dbValues[0].toUpperCase();
+        if(typeof node.vin !== 'undefined' && 
+            typeof node.vin.dbValues !== 'undefined' && 
+            node.vin.dbValues !== null && 
+            node.vin.dbValues.length > 0 && 
+            node.vin.dbValues[0] != null && 
+            node.vin.dbValues[0] != ""){
+                vin = node.vin.dbValues[0].toUpperCase();
         }
         
-        if(typeof node.license_plate___plate !== 'undefined' && typeof node.license_plate___plate.dbValues !== 'undefined' && node.license_plate___plate.dbValues.length > 0 && node.license_plate___plate.dbValues[0] != null && node.license_plate___plate.dbValues[0] != ""){
-            license_plate = node.license_plate___plate.dbValues[0].toUpperCase();
+        if(typeof node.license_plate___plate !== 'undefined' && 
+            typeof node.license_plate___plate.dbValues !== 'undefined' && 
+            node.license_plate___plate.dbValues !== null && 
+            node.license_plate___plate.dbValues.length > 0 && 
+            node.license_plate___plate.dbValues[0] != null && 
+            node.license_plate___plate.dbValues[0] != ""){
+                license_plate = node.license_plate___plate.dbValues[0].toUpperCase();
         }
         
-        if(typeof node.enforcement_account !== 'undefined' && typeof node.enforcement_account.dbValues !== 'undefined' && node.enforcement_account.dbValues.length > 0 && node.enforcement_account.dbValues[0] != null){
-            nid = node.enforcement_account.dbValues[0];
-            account = node.enforcement_account.textValues[0];
+        if(typeof node.enforcement_account !== 'undefined' && 
+            typeof node.enforcement_account.dbValues !== 'undefined' && 
+            node.enforcement_account.dbValue !== null && 
+            node.enforcement_account.dbValues.length > 0 && 
+            node.enforcement_account.dbValues[0] != null){
+                nid = node.enforcement_account.dbValues[0];
+                account = node.enforcement_account.textValues[0];
         }
         
         if(nid !== null && nid > 0){

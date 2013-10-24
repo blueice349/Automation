@@ -556,7 +556,7 @@ Omadi.service.sendUpdates = function() {"use strict";
                 
                 // Disable on production
                 // Temporarily send photo and node data to my email
-                Omadi.data.sendDebugData(false);
+                // Omadi.data.sendDebugData(false);
             };
 
             //Connection error:
@@ -640,7 +640,7 @@ Omadi.service.logout = function() {"use strict";
     Ti.App.fireEvent('upload_gps_locations');
     Ti.App.fireEvent('stop_gps');
     
-    Omadi.service.sendErrorReport("Logging out.");
+    //Omadi.service.sendErrorReport("Logging out.");
     
     if(Ti.App.isAndroid){
         Omadi.background.android.stopGPSService();
@@ -989,7 +989,10 @@ Omadi.service.photoUploadError = function(e){"use strict";
     // Get back the memory used for the photo upload
     Omadi.service.currentFileUpload = null;
     
-    Omadi.service.sendErrorReport("Upload failed. Code: " + e.code + ", Error: " + e.error);
+    if(e.error != "The request timed out" && e.error != "Read timed out"){
+        Omadi.service.sendErrorReport("Upload failed. Code: " + e.code + ", Error: " + e.error);
+    }
+    
     Ti.API.error("Upload failed. Code: " + e.code + ", Error: " + e.error);
     
     //Ti.API.error(JSON.stringify(e));
@@ -1193,7 +1196,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
         lastUploadStartTimestamp, tmpImageView, 
         blobImage, maxDiff, imageData, uploadPhoto,
         numFilesReadyToUpload, payload, cookie, 
-        origAppStartMillis, currentWinStartMillis;
+        origAppStartMillis, currentWinStartMillis, windowURL;
         
     if(typeof isBackground === 'undefined'){
         isBackground = false;
@@ -1218,7 +1221,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
             else{
                 if(origAppStartMillis != Ti.UI.currentWindow.appStartMillis){
                     if(Ti.App.isAndroid){
-                        Omadi.service.sendErrorReport("An extra android upload activity was REJECTED, background: " + isBackground + " : "  + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
+                        //Omadi.service.sendErrorReport("An extra android upload activity was REJECTED, background: " + isBackground + " : "  + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
                         return;
                         //Ti.Android.currentActivity.finish();
                     }
@@ -1231,7 +1234,12 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
         }
     }
     else{
-        Omadi.service.sendErrorReport("AppStartMillis upload was undefined, background: " + isBackground);
+        
+        windowURL = "";
+        if(typeof Ti.UI.currentWindow.url !== 'undefined'){
+            windowURL = Ti.UI.currentWindow.url;
+        }
+        Omadi.service.sendErrorReport("AppStartMillis upload was undefined, background: " + isBackground + ", url: " + windowURL);
     }
     
     Ti.API.debug("Attempting to upload a file");
@@ -1291,7 +1299,8 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
                         
                         try{
                             Omadi.service.uploadFileHTTP = Ti.Network.createHTTPClient({
-                                enableKeepAlive: false
+                                enableKeepAlive: false,
+                                validatesSecureCertificate: false
                             });
                             
                             Omadi.service.uploadFileHTTP.onsendstream = Omadi.service.photoUploadStream;

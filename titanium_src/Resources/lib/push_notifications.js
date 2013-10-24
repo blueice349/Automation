@@ -181,6 +181,8 @@ Omadi.push_notifications.logoutUser = function() {"use strict";
     
     Ti.App.registeredPushListener = false;
     
+    Omadi.push_notifications.unsubscribeACSPush();
+    
     Cloud.Users.logout(function(e) {
         if (e.success) {
             Ti.API.info("ACS User logged out successfully");
@@ -198,6 +200,16 @@ Omadi.push_notifications.logoutUser = function() {"use strict";
 
             Omadi.service.sendErrorReport('onACSLogout' + JSON.stringify(e));
         }
+    });
+};
+
+Omadi.push_notifications.unsubscribeACSPush = function(){"use strict";
+    
+    Cloud.PushNotifications.unsubscribe({
+        channel: Omadi.utils.getClientAccount(),
+        device_token: Omadi.push_notifications.getUserDeviceToken()
+    }, function(){
+        Ti.API.debug("Successfully unsubscribed from push.");
     });
 };
 
@@ -224,7 +236,8 @@ Omadi.push_notifications.setupACSPush = function() {"use strict";
             var dialog = Ti.UI.createAlertDialog({
                 message : 'There was a problem setting up push notifications. Please try again by logging back in.'
             });
-            if ( typeof alertQueue !== 'undefined') {
+            
+            if ( typeof alertQueue !== 'undefined' && useAlertQueue) {
                 alertQueue.push(dialog);
             }
             else {

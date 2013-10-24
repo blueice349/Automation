@@ -893,7 +893,7 @@ function mainMenuFirstSyncInstallComplete(){"use strict";
     
     Ti.UI.currentWindow.appStartMillis = (new Date()).getTime();
     Ti.App.Properties.setDouble("omadi:appStartMillis", Ti.UI.currentWindow.appStartMillis);
-    Omadi.service.sendErrorReport("Main Menu was opened with millis: " + Ti.UI.currentWindow.appStartMillis);
+    //Omadi.service.sendErrorReport("Main Menu was opened with millis: " + Ti.UI.currentWindow.appStartMillis);
    
     listView = Titanium.UI.createTableView({
         data : [],

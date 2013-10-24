@@ -6,6 +6,9 @@
     <property name="acs-oauth-secret-development" type="string">Me0qsCx0A9gQJeCH1A1jQI4jzPwufceM</property>
     <property name="acs-oauth-key-development" type="string">GC7XPTxo8bhjtWckrPlRDDs8MsxjVzQs</property>
     <property name="acs-api-key-development" type="string">ri6O3S14Hjfa0ROGxXg9qDAdVhRFDl77</property>
+    <property name="acs-push-type-development" type="string">mqtt</property>
+    <property name="acs-push-type-production" type="string">mqtt</property>
+    <property name="acs-push-type" type="string">mqtt</property>
     <!--
     <property name="acs-oauth-secret" type="string">c3rahBI7uNneWbjATBKC7OIKesFgSDDA</property>
     <property name="acs-oauth-key" type="string">gVLP9yzsZ22dP9h0mEgluUEtl9pYIeyN</property>
@@ -28,7 +31,7 @@
     </deployment-targets>
     <id>com.omadi.crm</id>
     <name>Omadi</name>
-    <version>2.7.4</version>
+    <version>2.7.5</version>
     <publisher>Omadi</publisher>
     <url>http://www.omadi.com</url>
     <description>Mobile CRM From Omadi</description>
@@ -48,9 +51,14 @@
             <service url="android_gps_event.js"/>
         </services>
         <manifest android:installLocation="preferExternal"
-            android:versionCode="42" android:versionName="2.7.4">
+            android:versionCode="43" android:versionName="2.7.5">
             <uses-sdk android:minSdkVersion="10"/>
             <uses-permission android:name="android.permission.READ_LOGS"/>
+            <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+            <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+            <uses-permission android:name="android.permission.VIBRATE"/>
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
             <uses-permission android:name="android.permission.CAMERA"/>
             <uses-permission android:name="android.permission.INTERNET"/>
             <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
