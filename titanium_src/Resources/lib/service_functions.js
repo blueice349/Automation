@@ -426,7 +426,7 @@ Omadi.service.isSendingData = function(){"use strict";
 Omadi.service.sendUpdateRetries = 0;
 Omadi.service.sendUpdates = function() {"use strict";
     /*jslint eqeq: true*/
-    var isSendingData, http, secondsLeft, origAppStartMillis;
+    var isSendingData, http, secondsLeft, origAppStartMillis, currentWinStartMillis, windowURL;
     
     Ti.API.error("Sending Data Now");
     
@@ -435,24 +435,39 @@ Omadi.service.sendUpdates = function() {"use strict";
     // for all the open activities, but it should only be called once
     if(typeof Ti.UI.currentWindow.appStartMillis !== 'undefined'){
         origAppStartMillis = Ti.App.Properties.getDouble('omadi:appStartMillis', 0);
-        if(origAppStartMillis == 0 || origAppStartMillis == null || origAppStartMillis == ""){
-            Omadi.service.sendErrorReport("AppStartMillis was zero: " + origAppStartMillis);
+        currentWinStartMillis = parseInt(Ti.UI.currentWindow.appStartMillis, 10);
+        
+        if(isNaN(origAppStartMillis) || isNaN(currentWinStartMillis)){
+            Ti.API.error("start millis is NaN: " + currentWinStartMillis + " - " + origAppStartMillis);
+            Omadi.service.sendErrorReport("start millis is NaN: " + currentWinStartMillis + " - " + origAppStartMillis);
         }
         else{
-            if(origAppStartMillis != Ti.UI.currentWindow.appStartMillis){
-                if(Ti.App.isAndroid){
-                    Omadi.service.sendErrorReport("An extra android activity should be shut down: " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
-                    //Ti.Android.currentActivity.finish();
-                }
-                else{
-                    Omadi.service.sendErrorReport("An extra iOS event should be shut down: " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
-                    //return;
+            if(origAppStartMillis == 0 || currentWinStartMillis == 0){
+                Ti.API.error("AppStartMillis upload was zero: " + origAppStartMillis + " - " + currentWinStartMillis);
+                Omadi.service.sendErrorReport("AppStartMillis upload was zero: " + origAppStartMillis + " - " + currentWinStartMillis);
+            }
+            else{
+                if(origAppStartMillis != Ti.UI.currentWindow.appStartMillis){
+                    if(Ti.App.isAndroid){
+                        //Omadi.service.sendErrorReport("An extra android upload activity was REJECTED, background: " + isBackground + " : "  + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
+                        return;
+                        //Ti.Android.currentActivity.finish();
+                    }
+                    //else{
+                        Omadi.service.sendErrorReport("An extra iOS send update event is being REJECTED: " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
+                        return;
+                    //}
                 }
             }
         }
     }
     else{
-        Omadi.service.sendErrorReport("AppStartMillis was undefined");
+        
+        windowURL = "";
+        if(typeof Ti.UI.currentWindow.url !== 'undefined'){
+            windowURL = Ti.UI.currentWindow.url;
+        }
+        Omadi.service.sendErrorReport("AppStartMillis upload was undefined, url: " + windowURL);
     }
 
     if (Ti.Network.online) {
@@ -1225,10 +1240,10 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
                         return;
                         //Ti.Android.currentActivity.finish();
                     }
-                    else{
+                    //else{
                         Omadi.service.sendErrorReport("An extra iOS upload event is being REJECTED, background: " + isBackground + " : " + Ti.UI.currentWindow.appStartMillis + " - " + origAppStartMillis);
                         return;
-                    }
+                    //}
                 }
             }
         }

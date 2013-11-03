@@ -311,11 +311,14 @@ function loggingOutLoginScreen(){"use strict";
     Ti.App.backgroundPhotoUploadCheck = setInterval(Omadi.service.uploadBackgroundFile, 60000);
 }
 
+var savedUsername = null;
+var termsView;
+
 ( function() {"use strict";
 
-        var termsView, termsIAgreeLabel, termsOfServiceLabel, termsWrapper, loginButton, 
+        var termsIAgreeLabel, termsOfServiceLabel, termsWrapper, loginButton, 
             block_i, db, result, passwordField, usernameField, version_label, 
-            logo, savedPortal, savedUsername, domainName, elements, i;
+            logo, savedPortal, domainName, elements, i;
         /*global clearCache*/
 
         Omadi.location.unset_GPS_uploading();
@@ -648,14 +651,34 @@ function loggingOutLoginScreen(){"use strict";
             passwordField.value = "";
         });
         
+        var agreedToTerms = false;
+        if(savedUsername && savedUsername.length > 1){
+            agreedToTerms = true;
+        }
         termsView = Ti.UI.createView({
             width : 24,
             height : 24,
             borderRadius : 5,
             borderWidth : 1,
-            selected : false,
+            selected : agreedToTerms,
             borderColor : '#495A8B',
             backgroundColor : '#FFF'
+        });
+        
+        if(agreedToTerms){
+            termsView.backgroundImage = '/images/selected_test.png';
+        }
+        
+        // Deselect the agree to terms if it's not the same user as the last user logged in
+        usernameField.addEventListener('change', function(e){
+            if(savedUsername == e.value){
+                termsView.selected = true;
+                termsView.backgroundImage = '/images/selected_test.png';
+            }
+            else{
+                termsView.selected = false;
+                termsView.backgroundImage = null;
+            }
         });
 
         termsIAgreeLabel = Ti.UI.createLabel({

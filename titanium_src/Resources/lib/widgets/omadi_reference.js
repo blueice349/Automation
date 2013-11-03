@@ -54,7 +54,8 @@ Omadi.widgets.omadi_reference = {
     getNewElement : function(node, instance, index) {"use strict";
 
         var settings, widgetView, dbValue, textValue, nodeTypes, possibleValues, options,
-            i, query, db, result, wrapper, autocomplete_table, calculatedTop, isHidden;
+            i, query, db, result, wrapper, autocomplete_table, calculatedTop, isHidden,
+            vehicleNid;
 
         dbValue = "";
         textValue = "";
@@ -77,6 +78,15 @@ Omadi.widgets.omadi_reference = {
         for (i in instance.settings.reference_types) {
             if (instance.settings.reference_types.hasOwnProperty(i)) {
                 nodeTypes.push(instance.settings.reference_types[i]);
+            }
+        }
+        
+        // Special case to automatically select the truck the user is in 
+        if(nodeTypes.length == 1 && dbValue == "" && instance.isRequired && nodeTypes[0] == 'company_vehicle'){
+            vehicleNid = Omadi.bundles.companyVehicle.getCurrentVehicleNid();
+            if(vehicleNid > 0){
+                textValue = Omadi.bundles.companyVehicle.getCurrentVehicleName();
+                dbValue = vehicleNid;
             }
         }
         

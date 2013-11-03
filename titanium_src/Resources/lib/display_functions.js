@@ -465,23 +465,29 @@ Omadi.display.openSettingsWindow = function() {"use strict";
     return settingsWindow;
 };
 
+Omadi.display.currentJobsWindow = null;
 Omadi.display.openJobsWindow = function() {"use strict";
 
     if(Omadi.bundles.dispatch.showJobsScreen()){
         
-        var jobsWindow = Titanium.UI.createWindow({
-            title : 'Jobs',
-            navBarHidden : true,
-            url : '/main_windows/jobs.js',
-            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
-        });
+        if(Omadi.display.currentJobsWindow === null){
+            Omadi.display.currentJobsWindow = Titanium.UI.createWindow({
+                title : 'Jobs',
+                navBarHidden : true,
+                url : '/main_windows/jobs.js',
+                orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+            });
+        
+            Omadi.display.loading();
+            Omadi.display.currentJobsWindow.addEventListener('open', Omadi.display.doneLoading);
+            Omadi.display.currentJobsWindow.addEventListener('close', function(){
+                Omadi.display.currentJobsWindow = null;
+            });
+        
+            Omadi.display.currentJobsWindow.open();
+        }
     
-        Omadi.display.loading();
-        jobsWindow.addEventListener('open', Omadi.display.doneLoading);
-    
-        jobsWindow.open();
-    
-        return jobsWindow;
+        return Omadi.display.currentJobsWindow;
     }
     
     return null;

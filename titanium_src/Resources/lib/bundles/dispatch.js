@@ -26,7 +26,7 @@ Omadi.bundles.dispatch.showNewDispatchJobs = function(){"use strict";
       
       if(Ti.App.Properties.getBool('newDispatchJob', false)){
             Ti.App.Properties.setBool('newDispatchJob', false);
-          
+            
             newJobs = Omadi.bundles.dispatch.getNewJobs();
             if(newJobs.length > 0){
                 Omadi.display.openJobsWindow();
@@ -330,6 +330,50 @@ Omadi.bundles.dispatch.compareStatuses = function(status1, status2){"use strict"
     }
    
     return false;
+};
+
+Omadi.bundles.dispatch.checkInsertNode = function(insert){"use strict";
+     var userUID, uidIndex, showNewDispatch;
+     userUID = Omadi.utils.getUid();
+     showNewDispatch = false;
+     
+     // Show if assigned
+     if(insert.send_dispatch_requests_to !== 'undefined'){
+         if(Omadi.utils.isArray(insert.send_dispatch_requests_to)){
+             for(uidIndex in insert.send_dispatch_requests_to){
+                 if(insert.send_dispatch_requests_to.hasOwnProperty(uidIndex)){
+                    if(userUID == insert.send_dispatch_requests_to[uidIndex]){
+                        showNewDispatch = true;
+                    }
+                 }
+             }
+         }
+         else if(userUID == insert.send_dispatch_requests_to){
+             showNewDispatch = true;
+         }
+     }
+     
+     // Show if it's the driver
+     if(insert.dispatched_to_driver !== 'undefined'){
+         if(Omadi.utils.isArray(insert.dispatched_to_driver)){
+             for(uidIndex in insert.dispatched_to_driver){
+                 if(insert.dispatched_to_driver.hasOwnProperty(uidIndex)){
+                    if(userUID == insert.dispatched_to_driver[uidIndex]){
+                        showNewDispatch = true;
+                    }
+                 }
+             }
+         }
+         else if(userUID == insert.send_dispatch_requests_to){
+             showNewDispatch = true;
+         }
+     }
+     
+     Ti.API.info("Showing new dispatch: " + showNewDispatch);
+     
+     if(showNewDispatch){
+        Ti.App.Properties.setBool('newDispatchJob', true);
+     }
 };
 
 Omadi.bundles.dispatch.getStatusOptions = function(nid){"use strict";

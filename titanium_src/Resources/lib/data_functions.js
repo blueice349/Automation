@@ -2950,26 +2950,25 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                             // Allow a notification or dispatch screen to be shown if this is not a full reset 
                             // OR if the node has actually changed even though this is a full reset
                             if((fullResetLastSync > 0 && nodeChangedTimestamp >= fullResetLastSync) || fullResetLastSync == 0){
-                            
-                                if (type == 'notification' && Omadi.service.fetchedJSON.node[type].insert[i].viewed == 0) {
-                                    notifications = Ti.App.Properties.getObject('newNotifications', {
-                                        count : 0,
-                                        nid : 0
-                                    });
-        
-                                    Ti.App.Properties.setObject('newNotifications', {
-                                        count : notifications.count + 1,
-                                        nid : Omadi.service.fetchedJSON.node[type].insert[i].nid
-                                    });
-                                }
-                                else if(Omadi.service.fetchedJSON.node[type].insert[i].viewed == 0 && 
-                                        type != 'dispatch' &&
-                                        typeof Omadi.service.fetchedJSON.node[type].insert[i].dispatch_nid !== 'undefined' &&
-                                        Omadi.service.fetchedJSON.node[type].insert[i].dispatch_nid > 0){
-                                     
-                                     // TODO: only set the newDispatchJob if the user is the assigned driver or in the dispatch list
-                                     
-                                     Ti.App.Properties.setBool('newDispatchJob', true);
+                                
+                                if(Omadi.service.fetchedJSON.node[type].insert[i].viewed == 0){
+                                    if (type == 'notification') {
+                                        notifications = Ti.App.Properties.getObject('newNotifications', {
+                                            count : 0,
+                                            nid : 0
+                                        });
+            
+                                        Ti.App.Properties.setObject('newNotifications', {
+                                            count : notifications.count + 1,
+                                            nid : Omadi.service.fetchedJSON.node[type].insert[i].nid
+                                        });
+                                    }
+                                    else if(type == 'dispatch' &&
+                                            typeof Omadi.service.fetchedJSON.node[type].insert[i].dispatch_nid !== 'undefined' &&
+                                            Omadi.service.fetchedJSON.node[type].insert[i].dispatch_nid > 0){
+                                         
+                                         Omadi.bundles.dispatch.checkInsertNode(Omadi.service.fetchedJSON.node[type].insert[i]);
+                                    }
                                 }
                             }
                             
