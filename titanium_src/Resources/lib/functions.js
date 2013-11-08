@@ -19,6 +19,7 @@ Ti.include('/lib/util_functions.js');
 Ti.include('/lib/data_functions.js');
 Ti.include('/lib/display_functions.js');
 Ti.include('/lib/bundle_functions.js');
+Ti.include('/lib/print_functions.js');
 
 if(Ti.App.isAndroid){
     Ti.include('/lib/android/background.js');

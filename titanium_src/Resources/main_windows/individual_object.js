@@ -895,10 +895,11 @@ function openAndroidMenuItem(e){"use strict";
 }
 
 if (Ti.App.isAndroid) {
+   
     var activity = curWin.activity;
     activity.onCreateOptionsMenu = function(e) {"use strict";
         var db, result, bundle, menu_zero, form_part, menu_edit, 
-            customCopy, to_type, to_bundle, order, iconFile;
+            customCopy, to_type, to_bundle, order, iconFile, menu_print;
         
         order = 0;
         bundle = Omadi.data.getBundle(curWin.type);
@@ -947,6 +948,19 @@ if (Ti.App.isAndroid) {
             menu_edit.addEventListener("click", openAndroidMenuItem);
             
             order++;
+        }
+        
+        if(Omadi.print.canPrintReceipt(curWin.nid)){
+            menu_print = e.menu.add({
+                title : 'Print',
+                order : order 
+            });
+            
+            menu_print.addEventListener('click', function(){
+                Omadi.print.printReceipt(curWin.nid);
+            });
+            
+            order ++;
         }
         
         if(typeof bundle.data.custom_copy !== 'undefined'){
@@ -1018,6 +1032,9 @@ function iOSActionMenu(actualWindow) {"use strict";
 
     edit.addEventListener('click', function() {
         var db, result, bundle, btn_tt, btn_id, form_part, postDialog, to_type, to_bundle;
+        
+        Omadi.print.printReceipt(curWin.nid);
+        return;
         
         bundle = Omadi.data.getBundle(curWin.type);
         
