@@ -1307,6 +1307,9 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                 case 'phone':
                                 case 'email':
                                 case 'link_field':
+                                case 'location':
+                                case 'license_plate':
+                                case 'vehicle_fields':
                                     for ( i = 0; i < node[field_name].dbValues.length; i++) {
                                         if (node[field_name].dbValues[i] === null) {
                                             node[field_name].textValues[i] = "";

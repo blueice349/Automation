@@ -139,7 +139,12 @@ Omadi.print.getPrintCommands = function(){"use strict";
 
 
 Omadi.print.getPrintCommand = function(node, item){"use strict";
-    var buffer;
+    var buffer, addLineBreak, stringValue, styleBuffer;
+    
+    addLineBreak = true;
+    styleBuffer = Ti.createBuffer({
+        type: Ti.Codec.TYPE_BYTE 
+    });
     
     buffer = Ti.createBuffer({
         type: Ti.Codec.TYPE_BYTE
@@ -147,57 +152,238 @@ Omadi.print.getPrintCommand = function(node, item){"use strict";
     
     if(typeof item.settings !== 'undefined'){
         if(typeof item.settings.alignment !== 'undefined'){
+            // Always put this in the regular buffer - not styleBuffer - as it is used for the entire line
             buffer.append(Omadi.print.commands.textAlignment(item.settings.alignment));
         }
         
         if(typeof item.settings.size !== 'undefined'){
-            buffer.append(Omadi.print.commands.size(parseInt(item.settings.size, 10)));
+            styleBuffer.append(Omadi.print.commands.size(parseInt(item.settings.size, 10)));
         }
         else{
-            buffer.append(Omadi.print.commands.size(0));   
+            styleBuffer.append(Omadi.print.commands.size(0));   
         }
         
         if(typeof item.settings.style !== 'undefined'){
             if(typeof item.settings.style.bold !== 'undefined' && item.settings.style.bold == 'bold'){
-                buffer.append(Omadi.print.commands.bold(true));
+                styleBuffer.append(Omadi.print.commands.bold(true));
             }
             else{
-                buffer.append(Omadi.print.commands.bold(false));   
+                styleBuffer.append(Omadi.print.commands.bold(false));   
             }
             
             if(typeof item.settings.style.invert_color !== 'undefined' && item.settings.style.invert_color == 'invert_color'){
-                buffer.append(Omadi.print.commands.invertColor(true));
+                styleBuffer.append(Omadi.print.commands.invertColor(true));
             }
             else{
-                buffer.append(Omadi.print.commands.invertColor(false));   
+                styleBuffer.append(Omadi.print.commands.invertColor(false));   
             }
             
             if(typeof item.settings.style.upside_down !== 'undefined' && item.settings.style.upside_down == 'upside_down'){
-                buffer.append(Omadi.print.commands.upsideDown(true));
+                styleBuffer.append(Omadi.print.commands.upsideDown(true));
             }
             else{
-                buffer.append(Omadi.print.commands.upsideDown(false));   
+                styleBuffer.append(Omadi.print.commands.upsideDown(false));   
             }
             
             if(typeof item.settings.style.thick_underline !== 'undefined' && item.settings.style.thick_underline == 'thick_underline'){
-                buffer.append(Omadi.print.commands.underline(2));
+                styleBuffer.append(Omadi.print.commands.underline(2));
             }
             else if(typeof item.settings.style.underline !== 'undefined' && item.settings.style.underline == 'underline'){
-                buffer.append(Omadi.print.commands.underline(1));
+                styleBuffer.append(Omadi.print.commands.underline(1));
             }
             else{
-                buffer.append(Omadi.print.commands.underline(0));   
+                styleBuffer.append(Omadi.print.commands.underline(0));   
+            }
+            
+            if(typeof item.settings.style.no_line_break !== 'undefined' && item.settings.style.no_line_break == 'no_line_break'){
+                addLineBreak = false;
             }
         }
     }
     
     if(item.type == 'line' || item.type == 'area'){
         if(typeof item.value !== 'undefined'){
-            buffer.append(Omadi.print.stringToByteArray(item.value + "\n"));
+            
+            stringValue = item.value;
+            if(addLineBreak){
+                stringValue += "\n";
+            }
+            // Do not add the space like is done with the value item
+            buffer.append(styleBuffer);
+            buffer.append(Omadi.print.stringToByteArray(stringValue));
+        }
+    }
+    else if(item.type == 'value'){
+        if(typeof item.value !== 'undefined'){
+            
+            stringValue = Omadi.print.getValue(item.value, node);
+            
+            if(addLineBreak){
+                stringValue += "\n";
+            }
+            else{
+                stringValue += " ";
+            }
+            
+            buffer.append(styleBuffer);
+            buffer.append(Omadi.print.stringToByteArray(stringValue));
+        }
+    }
+    else if(item.type == 'item'){
+        if(typeof item.value !== 'undefined'){
+            var labels, values, maxLabelLength, maxValueLength, innerItem, index, labelValue,
+                lineLength, extraSpaces, i, label, value, numLabelSpaces, labelSpaces, j,
+                numValueSpaces, valueSpaces, valueValue, itemValue, resetBuffer;
+            
+            resetBuffer = Ti.createBuffer({
+                type: Ti.Codec.TYPE_BYTE 
+            });
+            
+            resetBuffer.append(Omadi.print.commands.size(0));   
+            resetBuffer.append(Omadi.print.commands.bold(false));
+            resetBuffer.append(Omadi.print.commands.invertColor(false)); 
+            resetBuffer.append(Omadi.print.commands.upsideDown(false)); 
+            resetBuffer.append(Omadi.print.commands.underline(0));    
+            
+            labels = [];
+            values = [];
+            maxLabelLength = maxValueLength = 0;
+            
+            for(index in item.value){
+                if(item.value.hasOwnProperty(index)){
+                    innerItem = item.value[index];
+                    
+                    valueValue = Omadi.print.getValue(innerItem.value, node).toString();
+                    labelValue = innerItem.label.toString();
+                        
+                    if(valueValue.length > maxValueLength){
+                        maxValueLength = valueValue.length;
+                    }
+                    
+                    if(labelValue.length > maxLabelLength){
+                        maxLabelLength = labelValue.length;
+                    }
+                    
+                    labels.push(labelValue);
+                    values.push(valueValue);
+                }
+            }
+            
+            lineLength = 48;
+            extraSpaces = 3;
+            
+            if(typeof item.settings.alignment !== 'undefined'){
+                if(item.settings.alignment == 'justify'){
+                    if(item.settings.size == 0){
+                        extraSpaces = lineLength - maxLabelLength - maxValueLength;
+                    }
+                    else if(item.settings.size == 1){
+                        extraSpaces = lineLength - maxLabelLength - (maxValueLength * 2);
+                    }
+                }
+            }
+            
+            stringValue = "";
+            
+            for(i = 0; i < labels.length; i ++){
+
+                label = labels[i].toString();
+                value = values[i].toString();
+                
+                numLabelSpaces = maxLabelLength - label.length + extraSpaces;
+                
+                labelSpaces = "";
+                for(j = 0; j < numLabelSpaces; j ++){
+                    labelSpaces += " ";
+                }
+                
+                numValueSpaces = maxValueLength - value.length;
+                
+                valueSpaces = "";
+                for(j = 0; j < numValueSpaces; j ++){
+                    valueSpaces += " ";
+                }
+                
+                buffer.append(resetBuffer);
+                buffer.append(Omadi.print.stringToByteArray(label + labelSpaces));
+                buffer.append(Omadi.print.stringToByteArray(valueSpaces));
+                //buffer.append(styleBuffer);
+                buffer.append(Omadi.print.stringToByteArray(value + "\n"));
+                
+                Ti.API.debug(label + labelSpaces + valueSpaces + value);
+            }
         }
     }
     
     return buffer;
+};
+
+Omadi.print.getValue = function(fieldOption, node){"use strict";
+    var fieldNames, fieldName, stringValue, referenceField, i,
+        referenceNode, instances, instance, parts, partFieldName;
+    
+    fieldNames = fieldOption.split('|');
+    fieldName = fieldNames[1];
+    stringValue = "";
+    
+    if(fieldNames[0] == 'null'){    
+        instances = Omadi.data.getFields(node.type);
+        
+        Ti.API.debug(fieldName);
+        
+        if(typeof instances[fieldName] !== 'undefined'){
+            Ti.API.debug(fieldName);    
+            instance = instances[fieldName];
+            
+            stringValue = Omadi.print.getTextValue(node, instance);        
+        }
+    }
+    else{
+        referenceField = fieldNames[0];
+        if(typeof node[referenceField] !== 'undefined' && 
+            typeof node[referenceField].dbValues !== 'undefined' &&
+            typeof node[referenceField].dbValues[0] != 'undefined'){
+                
+                referenceNode = Omadi.data.nodeLoad(node[referenceField].dbValues[0]);   
+                
+                if(referenceNode){
+                    instances = Omadi.data.getFields(referenceNode.type);
+                    if(typeof instances[fieldName] !== 'undefined'){
+                        instance = instances[fieldName];
+                        
+                        if(typeof referenceNode[fieldName] !== 'undefined'){
+                            stringValue = Omadi.print.getTextValue(referenceNode, instance);        
+                        } 
+                    }
+                }
+        }
+    }
+    
+    return stringValue;
+};
+
+Omadi.print.getTextValue = function(node, instance){"use strict";
+    var dbValue, textValue, value, fieldName;
+    
+    value = "";
+    fieldName = instance.field_name;
+    
+    if(typeof node[fieldName] !== 'undefined' &&
+        typeof node[fieldName].dbValues !== 'undefined' &&
+        typeof node[fieldName].dbValues[0] != 'undefined'){
+            
+        dbValue = node[fieldName].dbValues[0];
+        
+    }
+    
+    if(typeof node[fieldName] && 
+        typeof node[fieldName].textValues !== 'undefined' &&
+        typeof node[fieldName].textValues[0] != 'undefined'){
+            
+            value = node[fieldName].textValues[0];
+    }
+    
+    return value;
 };
 
 Omadi.print.commands.textAlignment = function(align){"use strict";
