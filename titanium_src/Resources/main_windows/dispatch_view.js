@@ -26,6 +26,16 @@ function exitView(){"use strict";
     Ti.UI.currentWindow.close();
 }
 
+var androidMenuItemData = [];
+function openAndroidMenuItem(e){"use strict";
+    var itemIndex, itemData;
+    
+    itemIndex = e.source.getOrder();
+    itemData = androidMenuItemData[itemIndex];
+    
+    Omadi.display.openFormWindow(itemData.type, itemData.nid, itemData.form_part);
+}
+
 function createAndroidToolbar(workNodeTypeLabel, openDispatch) {"use strict";
     var selectedTab;
     
@@ -39,58 +49,98 @@ function createAndroidToolbar(workNodeTypeLabel, openDispatch) {"use strict";
     if (Ti.App.isAndroid) {
         
         Ti.UI.currentWindow.activity.onCreateOptionsMenu = function(e) {
-            var db, result, menu_zero, bundle, btn_tt, btn_id, 
-                menu_first, menu_second, menu_third, menu_save_new, iconFile, menu;
+            var db, result, bundle, menu_zero, form_part, menu_edit, 
+                customCopy, to_type, to_bundle, order, iconFile, menu_print;
             
-            btn_tt = [];
-            btn_id = [];
-        
-            menu = e.menu;
-            menu.clear();
-            
+            order = 0;
             bundle = Omadi.data.getBundle(workNode.type);
-            
-            // Do not allow going to the next part on dispatch create
-            // The problem is that the dispatch_id won't be on the screen
-            // and the dispatch_form.js won't be called, but only form.js
-            if (workNode.nid > 0 && bundle.data.form_parts != null && bundle.data.form_parts != "") {
+           
+            if(workNode != null && workNode.perm_edit == true){
                 
-                if (bundle.data.form_parts.parts.length >= workNode.form_part + 2) {
-                    menu_zero = menu.add({
-                        title : "Save + " + bundle.data.form_parts.parts[workNode.form_part + 1].label,
-                        order : 0
+                db = Omadi.utils.openMainDatabase();
+    
+                result = db.execute('SELECT form_part FROM node WHERE nid=' + workNode.nid);
+                form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
+                
+                result.close();
+                db.close();
+            
+                if (bundle.data.form_parts != null && bundle.data.form_parts != "" && (bundle.data.form_parts.parts.length >= form_part + 2)) {
+        
+                    menu_zero = e.menu.add({
+                        title : bundle.data.form_parts.parts[form_part + 1].label,
+                        order : order
                     });
+                    
+                    androidMenuItemData[order] = {
+                        type: workNode.type,
+                        nid: workNode.nid,
+                        form_part: form_part + 1  
+                    };
+        
                     menu_zero.setIcon("/images/save_arrow_white.png");
-                    menu_zero.addEventListener("click", function(ev) {
-                        saveForAndroid("next_part");
-                    });
+                    menu_zero.addEventListener("click", openAndroidMenuItem);
+                    
+                    order++;
+                }
+        
+                menu_edit = e.menu.add({
+                    title : 'Edit',
+                    order : order
+                });
+                
+                androidMenuItemData[order] = {
+                    type: workNode.type,
+                    nid: workNode.nid,
+                    form_part: form_part
+                };
+                
+                menu_edit.setIcon("/images/edit_white.png");
+                menu_edit.addEventListener("click", openAndroidMenuItem);
+                
+                order++;
+            }
+            
+            if(Omadi.print.canPrintReceipt(workNode.nid)){
+                menu_print = e.menu.add({
+                    title : 'Print',
+                    order : order 
+                });
+                
+                menu_print.setIcon("/images/printer_white.png");
+                
+                menu_print.addEventListener('click', function(){
+                    Omadi.print.printReceipt(workNode.nid);
+                });
+                
+                order ++;
+            }
+            
+            if(typeof bundle.data.custom_copy !== 'undefined'){
+                for(to_type in bundle.data.custom_copy){
+                    if(bundle.data.custom_copy.hasOwnProperty(to_type)){
+                        to_bundle = Omadi.data.getBundle(to_type);
+                        if(to_bundle && to_bundle.can_create == 1){
+                            customCopy = e.menu.add({
+                                title : "Copy to " + to_bundle.label,
+                                order : order
+                            });
+                            //iconFile = Omadi.display.getIconFile(to_type);
+                            //customCopy.setIcon(iconFile.nativePath);
+                            
+                            androidMenuItemData[order] = {
+                                type: workNode.type,
+                                nid: workNode.nid,
+                                form_part: to_type 
+                            };
+                
+                            customCopy.addEventListener("click", openAndroidMenuItem);
+                            
+                            order ++;
+                        }
+                    }
                 }
             }
-        
-            btn_tt.push('Save');
-            
-            btn_tt.push('Save as Draft');
-            btn_tt.push('Cancel');
-        
-            menu_first = menu.add({
-                title : 'Save',
-                order : 1
-            });
-            menu_first.setIcon("/images/save_light_blue.png");
-        
-            menu_second = menu.add({
-                title : 'Save as Draft',
-                order : 2
-            });
-            menu_second.setIcon("/images/display_drafts_white.png");
-        
-            menu_first.addEventListener("click", function(e) {
-                saveForAndroid("normal");
-            });
-        
-            menu_second.addEventListener("click", function(e) {
-                saveForAndroid("draft");
-            });
         };
         
         dispatchTab = Ti.UI.createLabel({

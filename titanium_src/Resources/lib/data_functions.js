@@ -335,6 +335,7 @@ Omadi.data.deleteContinuousNodes = function(){"use strict";
   
 };
 
+Omadi.data.trySaveNodeTries = 0;
 Omadi.data.trySaveNode = function(node, saveType){"use strict";
     var dialog, closeAfterSave;
     /*jslint nomen: true*/
@@ -349,14 +350,23 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
     // Do not allow drafts or continuous saves to happen while an update is happening as it can cause problems
     if(Omadi.data.isUpdating()){
         if(saveType != 'continuous'){
-            Omadi.display.loading("Waiting...");
+            if(Omadi.data.trySaveNodeTries == 0){
+                // Only show waiting once and not everytime it passes through here
+                Omadi.display.loading("Waiting...");   
+            }
             setTimeout(function(){
                 Omadi.data.trySaveNode(node, saveType);
             }, 1000);
+            
+            Omadi.data.trySaveNodeTries ++;
+            
+            if(Omadi.data.trySaveNodeTries > 10){
+                Omadi.data.setUpdating(false);
+            }
         }
     }
     else{
-        
+        Omadi.data.trySaveNodeTries = 0;
         Omadi.display.doneLoading();
         
         if(saveType != 'continuous'){

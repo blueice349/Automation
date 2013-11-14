@@ -94,16 +94,12 @@ public class StarMicronicsModule extends KrollModule{
 		KrollDict d = new KrollDict();
 		List<String> portNames = new ArrayList<String>();
 		
-		Log.i("PRINT", "PRINT Device List Coming");
-		
 		try {
 			List<PortInfo> portList = StarIOPort.searchPrinter("BT:"); 
 			
 			for (PortInfo port : portList) {
 				portNames.add(port.getPortName());
-				
 				Log.i("PRINT", "PRINT Port Name: " + port.getPortName());
-				Log.i("PRINT", "PRINT MAC Address: " + port.getMacAddress()); 
 			}
 			
 			if(portList.size() > 0){
@@ -192,13 +188,9 @@ public class StarMicronicsModule extends KrollModule{
 			errorCallback = (KrollFunction) options.get("error");
 		}
 		
-		Log.i("PRINT", "PRINT in print");
-		
 		portName = (String)options.get("portName");
 		
 		ti.modules.titanium.BufferProxy buffer = (ti.modules.titanium.BufferProxy)options.get("commands");
-		
-		Log.i("PRINT", "PRINT 1");
 		
 		byte[] commands;
 		KrollDict d = new KrollDict();
@@ -206,18 +198,10 @@ public class StarMicronicsModule extends KrollModule{
 		
 		StarIOPort port = null;
 		
-		Log.i("PRINT", "PRINT in print2");
-		
 		try{
 			
 	        commands = buffer.getBuffer();
-	        Log.i("PRINT", "PRINT ===KABOOM===");
-	        for(int i = 0; i < commands.length; i ++){
-				Log.i("PRINT", "PRINT " + commands[i]);
-			}
-	        
-	        
-	        Log.i("PRINT", "PRINT " + commands.toString());
+	      
 			/*
 				using StarIOPort3.1.jar (support USB Port)
 				Android OS Version: upper 2.2
@@ -254,34 +238,6 @@ public class StarMicronicsModule extends KrollModule{
 			if (true == status.offline){
 				d.put("error", "Printer is offline.");
 				invokeCallback((TiBaseActivity) activity, errorCallback, getKrollObject(), d);
-			}
-			
-			
-			ArrayList<Byte> list = new ArrayList<Byte>();
-            Byte[] tempList;
-			byte[] outputByteBuffer = null;
-			
-			list.addAll(Arrays.asList(new Byte[]{0x1d, 0x57, 0x40, 0x32}));           //Page Area Setting     <GS> <W> nL nH  (nL = 64, nH = 2)
-			
-			list.addAll(Arrays.asList(new Byte[]{0x1b, 0x61, 0x01}));                 //Center Justification  <ESC> a n       (0 Left, 1 Center, 2 Right)
-			
-//            outputByteBuffer = ("[Print Stored Logo Below]\n\n").getBytes();
-//            port.writePort(outputByteBuffer, 0, outputByteBuffer.length);
-//			
-//            list.addAll(Arrays.asList(new Byte[]{0x1b, 0x66, 0x00}));                 //Stored Logo Printing  <ESC> f n       (n = Store Logo # = 0 or 1 or 2 etc.)
-			
-			outputByteBuffer = ("\nStar Clothing Boutique\n" +
-					            "123 Star Road\n" +
-					            "City, State 12345\n\n").getBytes();
-			tempList = new Byte[outputByteBuffer.length];
-			CopyArray(outputByteBuffer, tempList);
-			list.addAll(Arrays.asList(tempList));
-			
-			byte[] commands2 = convertFromListByteArrayTobyteArray(list);
-			
-			Log.i("PRINT", "PRINT ***BOOM***");
-			for(int i = 0; i < commands2.length; i ++){
-				Log.i("PRINT", "PRINT " + commands2[i]);
 			}
 
 			port.writePort(commands, 0, commands.length);
@@ -340,6 +296,167 @@ public class StarMicronicsModule extends KrollModule{
 				}
 				catch (StarIOPortException e) { }
 			}
+		}
+	}
+	
+	/**
+	 * This function shows how to read the MSR data(credit card) of a portable printer.
+	 * The function first puts the printer into MSR read mode, then asks the user to swipe a credit card
+	 * The function waits for a response from the user.
+	 * The user can cancel MSR mode or have the printer read the card.
+	 * @param context - Activity for displaying messages to the user
+	 * @param portName - Port name to use for communication. This should be (TCP:<IPAddress> or BT:<Device pair name>)
+	 * @param portSettings - Should be mini, the port settings mini is used for portable printers
+	 */
+	
+	private static StarIOPort portForMoreThanOneFunction = null;
+	
+	@Kroll.method
+	public void mcrCancel(HashMap options){
+		KrollFunction errorCallback = null;
+		KrollFunction successCallback = null;
+		KrollDict d = new KrollDict();
+		Activity activity = TiApplication.getInstance().getCurrentActivity();
+		
+		if (options.containsKey("success")) {
+			successCallback = (KrollFunction) options.get("success");
+		}
+		
+		try{
+			//If the user cancels MSR mode, the character 0x04 is sent to the printer
+			//This function also closes the port
+			portForMoreThanOneFunction.writePort(new byte[] {0x04}, 0, 1);
+			try
+			{
+				Thread.sleep(3000);
+			}
+			catch(InterruptedException e) {}
+			
+			invokeCallback((TiBaseActivity) activity, successCallback, getKrollObject(), d);
+		}
+		catch(StarIOPortException e){
+			d.put("error", e.getMessage());
+			invokeCallback((TiBaseActivity) activity, errorCallback, getKrollObject(), d);
+		}
+		finally{
+			if(portForMoreThanOneFunction != null){
+				try {
+					StarIOPort.releasePort(portForMoreThanOneFunction);
+				} catch (StarIOPortException e1) {}
+			}
+		}
+	}
+	
+	@Kroll.method
+	public void mcrMode(HashMap options){
+		KrollDict d = new KrollDict();
+		Activity activity = TiApplication.getInstance().getCurrentActivity();
+		KrollFunction errorCallback = null;
+		KrollFunction successCallback = null;
+		String portName = null;
+		
+		try{
+			
+			if (options.containsKey("success")) {
+				successCallback = (KrollFunction) options.get("success");
+			}
+			if (options.containsKey("error")) {
+				errorCallback = (KrollFunction) options.get("error");
+			}
+			
+			portName = (String)options.get("portName");
+			
+			portForMoreThanOneFunction = StarIOPort.getPort(portName, "mini", 10000);
+
+			try{
+				// Wait to allow the connection to happen successfully
+				Thread.sleep(500);
+			}
+			catch(InterruptedException e) {}
+			
+			Log.d("MCR", "MCR Waiting...");
+			
+			// Put the printer in Card reading mode
+			portForMoreThanOneFunction.writePort(new byte[] {0x1b, 0x4d, 0x45}, 0, 3);
+			
+			if(successCallback != null){
+				invokeCallback((TiBaseActivity) activity, successCallback, getKrollObject(), d);
+    		}
+		}
+    	catch (StarIOPortException e){
+    		
+    		if(errorCallback != null){
+	    		d.put("error", e.getMessage());
+				invokeCallback((TiBaseActivity) activity, errorCallback, getKrollObject(), d);
+    		}
+    		
+			if(portForMoreThanOneFunction != null){
+				try {
+					StarIOPort.releasePort(portForMoreThanOneFunction);
+				} 
+				catch (StarIOPortException e1) {}
+			}
+    	}
+	}
+	
+	@Kroll.method
+	public void readPort(HashMap options){
+		String errorString = null;
+		byte[] mcrData = new byte[100];
+		KrollDict d = new KrollDict();
+		Activity activity = TiApplication.getInstance().getCurrentActivity();
+		KrollFunction errorCallback = null;
+		KrollFunction successCallback = null;
+		String retval = "";
+		
+		int bytesRead = 0;
+			
+		if (options.containsKey("success")) {
+			successCallback = (KrollFunction) options.get("success");
+		}
+		if (options.containsKey("error")) {
+			errorCallback = (KrollFunction) options.get("error");
+		}
+
+		try{
+			bytesRead = portForMoreThanOneFunction.readPort(mcrData, 0, mcrData.length);
+			
+			int i;
+			
+			Log.d("MCR", "MCR read " + bytesRead);
+			//ti.modules.titanium.BufferProxy buffer = new ti.modules.titanium.BufferProxy();
+			//buffer.setLength(mcrData.length);
+			byte[] cardData = new byte[bytesRead];
+			
+			for(i = 0; i < bytesRead; i ++){
+				Log.d("MCR", "MCR " + mcrData[i]);
+				cardData[i] = mcrData[i];
+			}
+			
+			retval = new String(cardData);
+			
+		}
+		catch(StarIOPortException e){
+			errorString = e.getMessage();
+		}
+		finally{
+			if(portForMoreThanOneFunction != null){
+				try {
+					StarIOPort.releasePort(portForMoreThanOneFunction);
+				} 
+				catch (StarIOPortException e1) {}
+			}
+		}
+		
+		if(errorString != null){
+			if(errorCallback != null){
+	    		d.put("error", errorString);
+				invokeCallback((TiBaseActivity) activity, errorCallback, getKrollObject(), d);
+			}
+		}
+		else if(successCallback != null){
+    		d.put("cardData", retval);
+			invokeCallback((TiBaseActivity) activity, successCallback, getKrollObject(), d);
 		}
 	}
 	

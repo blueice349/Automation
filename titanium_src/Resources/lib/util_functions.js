@@ -616,39 +616,51 @@ Omadi.utils.inArray = function(val, haystack) {"use strict";
 };
 
 Omadi.utils.applyNumberFormat = function(instance, value) {"use strict";
+    var value_str = '', format;
     
-    var value_str = '';
+    if(isNaN(value)){
+        value = 0;
+    }
     
     if (instance.settings != null && instance.settings.number_format != null && instance.settings.number_format != "") {
-        switch (instance.settings.number_format) {
-            case 'currency':
-                value_str = '$' + (Math.round(Math.abs(value) * 100) / 100).toFixed(2);
-                break;
-                
-            case 'integer':
-                value_str = Math.round(Math.abs(value)).toFixed(0);
-                break;
-                
-            case 'one decimal':
-                value_str = (Math.round(Math.abs(value) * 10) / 10).toFixed(1);
-                break;
-                
-            case 'two decimal':
-                value_str = (Math.round(Math.abs(value) * 100) / 100).toFixed(2);
-                break;
-                
-            case 'three decimal':
-                value_str = (Math.round(Math.abs(value) * 1000) / 1000).toFixed(3);
-                break;
-                
-            default:
-                value_str = (Math.round(Math.abs(value) * 100) / 100).toFixed(2);
-                break;
-        }
+        format = instance.settings.number_format;    
     }
-    else {
-        value_str = (Math.round(Math.abs(value) * 100) / 100).toFixed(2);
+    else if(instance.type == 'number_integer'){
+        format = 'integer';
     }
+    else if(instance.type == 'number_decimal'){
+        format = 'two decimal';
+    }
+    else if(instance.type == 'calculation_field'){
+        format = 'currency';
+    }
+    
+    switch (format) {
+        case 'currency':
+            value_str = '$' + (Math.round(Math.abs(value) * 100) / 100).toFixed(2);
+            break;
+            
+        case 'integer':
+            value_str = Math.round(Math.abs(value)).toFixed(0);
+            break;
+            
+        case 'one decimal':
+            value_str = (Math.round(Math.abs(value) * 10) / 10).toFixed(1);
+            break;
+            
+        case 'two decimal':
+            value_str = (Math.round(Math.abs(value) * 100) / 100).toFixed(2);
+            break;
+            
+        case 'three decimal':
+            value_str = (Math.round(Math.abs(value) * 1000) / 1000).toFixed(3);
+            break;
+            
+        default:
+            value_str = (Math.round(Math.abs(value) * 100) / 100).toFixed(2);
+            break;
+    }
+    
     return value_str;
 };
 

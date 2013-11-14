@@ -767,6 +767,13 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
             form_part: '_view',
             dispatch_nid : dispatchNid
         });
+        
+        if(Omadi.print.canPrintReceipt(e.row.nid)){
+            options.push('Print');
+            buttonData.push({
+                form_part: '_print' 
+            });
+        }
     
         if ( typeof bundle.data.custom_copy !== 'undefined') {
             for (to_type in bundle.data.custom_copy) {
@@ -810,9 +817,12 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
                         if (form_part == '_cancel') {
                             Ti.API.info("Cancelled");
                         }
-                        else if (form_part == '_view') {
+                        else if(form_part == '_view') {
                             ev.source.eventRow.setBackgroundColor('#fff');
                             Omadi.display.openViewWindow(node_type, e.row.nid);
+                        }
+                        else if(form_part == '_print'){
+                            Omadi.print.printReceipt(e.row.nid);
                         }
                         else if(form_part.toString().indexOf('_extra_') == 0){
                             extraOptionIndex = parseInt(form_part.substring(7), 10);

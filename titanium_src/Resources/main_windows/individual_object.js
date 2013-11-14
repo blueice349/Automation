@@ -713,9 +713,17 @@ function doFieldOutput(fieldObj) {"use strict";
     }
 }
 
+var regionCount = 0;
 function doRegionOutput(regionObj) {"use strict";
-    var i, partsFieldsDone = {}, field_name, field_parts;
-
+    var i, partsFieldsDone = {}, field_name, field_parts, top;
+    
+    if(regionCount == 0 && Ti.App.isIOS){
+        top = 20;   
+    }
+    else{
+        top = 0;
+    }
+    
     scrollView.add(Ti.UI.createLabel({
         text : regionObj.label.toUpperCase(),
         color : '#ddd',
@@ -749,7 +757,8 @@ function doRegionOutput(regionObj) {"use strict";
             }]
         },
         ellipsize : true,
-        wordWrap : false
+        wordWrap : false,
+        top: top
     }));
 
     if ( typeof regionObj.fields !== 'undefined') {
@@ -770,6 +779,8 @@ function doRegionOutput(regionObj) {"use strict";
             }
         }
     }
+    
+    regionCount ++;
 }
 
 ( function() {"use strict";
@@ -899,7 +910,7 @@ if (Ti.App.isAndroid) {
     var activity = curWin.activity;
     activity.onCreateOptionsMenu = function(e) {"use strict";
         var db, result, bundle, menu_zero, form_part, menu_edit, 
-            customCopy, to_type, to_bundle, order, iconFile, menu_print;
+            customCopy, to_type, to_bundle, order, iconFile, menu_print, menu_charge;
         
         order = 0;
         bundle = Omadi.data.getBundle(curWin.type);
@@ -956,8 +967,23 @@ if (Ti.App.isAndroid) {
                 order : order 
             });
             
+            menu_print.setIcon("/images/printer_white.png");
+            
             menu_print.addEventListener('click', function(){
                 Omadi.print.printReceipt(curWin.nid);
+            });
+            
+            order ++;
+            
+            menu_charge = e.menu.add({
+                title : 'Charge',
+                order : order 
+            });
+            
+            //menu_charge.setIcon("/images/printer_white.png");
+            
+            menu_charge.addEventListener('click', function(){
+                Omadi.print.chargeCard(curWin.nid);
             });
             
             order ++;
@@ -1032,9 +1058,6 @@ function iOSActionMenu(actualWindow) {"use strict";
 
     edit.addEventListener('click', function() {
         var db, result, bundle, btn_tt, btn_id, form_part, postDialog, to_type, to_bundle;
-        
-        Omadi.print.printReceipt(curWin.nid);
-        return;
         
         bundle = Omadi.data.getBundle(curWin.type);
         

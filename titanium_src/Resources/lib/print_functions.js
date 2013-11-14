@@ -14,7 +14,9 @@ Omadi.print.init = function(){"use strict";
 };
 
 Omadi.print.canPrintReceipt = function(nid){"use strict";
-    var bundle, node;
+    var bundle, node, retval, allowAtPart;
+    
+    retval = false;
     
     node = Omadi.data.nodeLoad(nid);
     
@@ -28,45 +30,236 @@ Omadi.print.canPrintReceipt = function(nid){"use strict";
         Omadi.utils.isArray(bundle.data.mobile_printer.receipt.items) &&
         bundle.data.mobile_printer.receipt.items.length > 0){
             
-            return true;       
+            // Make sure enough data is saved to be able to print the receipt
+            if(typeof bundle.data.mobile_printer.allow_at_part !== 'undefined'){
+                allowAtPart = parseInt(bundle.data.mobile_printer.allow_at_part, 10);
+                if(node.form_part >= allowAtPart){
+                    retval = true;
+                }
+            }
+            else{
+                // The form can be printed during any part
+                retval = true;
+            }     
     }
     
-    return false;
+    return retval;
 };
 
-Omadi.print.selectPrinter = function(){"use strict";
+Omadi.print.onLogoutPrint = function(){"use strict";
+    // Clear the saved port Name 
+    Ti.App.Properties.setString("omadi:printerPortName", "");
+};
+
+(function(){"use strict";
     
-    Omadi.print.StarMicronics.getBluetoothDeviceList({
-       success: function(e){
-           var i, dialog, portNames;
-           Ti.API.debug(JSON.stringify(e.portNames));
-           
-           portNames = [];
-           for(i = 0; i < e.portNames.length; i ++){
-               portNames.push(e.portNames[i].replace("BT:", ""));
-           }
-           portNames.push("- Cancel -");
-           
-           dialog = Ti.UI.createOptionDialog({
-              options: portNames,
-              title: 'Select Printer',
-              cancel: portNames.length - 1,
-              origPortNames: e.portNames
-           });
-           
-           dialog.addEventListener('click', function(e){
-              if(e.index >= 0 && e.index != e.source.cancel){
-                  Omadi.print.openConnection(e.source.origPortNames[e.index]);
-              } 
-           });
-           
-           dialog.show();
-       },
-       error: function(e){
-           Ti.API.error("Error selecting a printer: " + e.error);
-           alert(e.error);
-       }
+    Ti.App.removeEventListener('loggingOut', Omadi.print.onLogoutPrint);
+    Ti.App.addEventListener('loggingOut', Omadi.print.onLogoutPrint);
+}());
+
+Omadi.print.doCharge = function(e){"use strict";
+    alert("Successful card read.");
+    Ti.API.debug(e.cardData);
+};
+
+Omadi.print.cancelCharge = function(e){"use strict";
+    
+    Omadi.display.loading("Cancelling...");
+    Omadi.print.StarMicronics.mcrCancel({
+        success: function(e){
+            Omadi.display.doneLoading();
+            Ti.API.debug("Charge successfully cancelled.");
+        },
+        error: function(e){
+            Omadi.display.doneLoading();
+            Ti.API.debug("Error cancelling: " + e.error);
+        }
     });  
+};
+
+Omadi.print.startMCRMode = function(portName){"use strict";
+    
+    Omadi.display.loading("Connecting...");
+    
+    Omadi.print.StarMicronics.mcrMode({
+        success: function(e){
+            
+            Omadi.display.doneLoading();
+            
+            var dialog = Ti.UI.createAlertDialog({
+                title: 'Swipe Card',
+                message: 'Press done after card was read successfully.',
+                buttonNames: ['Done', 'Cancel'],
+                cancel: 1
+            });
+            
+            dialog.addEventListener('click', function(e){
+                 if(e.index === 0){
+                     Omadi.print.StarMicronics.readPort({
+                        success: Omadi.print.doCharge,
+                        error: function(e){
+                            alert("Error reading card data: " + e.error);
+                        }
+                     });
+                 }
+                 else{
+                     Omadi.print.cancelCharge();
+                 }
+            });
+            dialog.show();
+        },
+        error: function(e){
+            Omadi.display.doneLoading();
+            
+            alert("Error enabling Card Reader: " + e.error);
+        },
+        portName: portName
+    });  
+};
+
+Omadi.print.chargeCard = function(nid){"use strict";
+    var portName, commands;
+    
+    Omadi.print.printNid = nid;
+    
+    if(Ti.App.isAndroid){
+    
+        Omadi.print.init();
+        
+        portName = Ti.App.Properties.getString("omadi:printerPortName", "");
+        
+        if(portName == ""){
+        
+            Omadi.print.StarMicronics.getBluetoothDeviceList({
+               success: function(e){
+                   var i, dialog, portNames;
+                  
+                   portNames = [];
+                   for(i = 0; i < e.portNames.length; i ++){
+                       portNames.push(e.portNames[i].replace("BT:", ""));
+                   }
+                   portNames.push("- Cancel -");
+                   
+                   dialog = Ti.UI.createOptionDialog({
+                      options: portNames,
+                      title: 'Select Printer',
+                      cancel: portNames.length - 1,
+                      origPortNames: e.portNames
+                   });
+                   
+                   dialog.addEventListener('click', function(e){
+                       var portName, commands;
+                       if(e.index >= 0 && e.index != e.source.cancel){
+                            portName = e.source.origPortNames[e.index];
+                            
+                            Ti.App.Properties.setString("omadi:printerPortName", portName);
+                            
+                            Omadi.print.startMCRMode(portName);
+                        } 
+                   });
+                   
+                   dialog.show();
+               },
+               error: function(e){
+                   Ti.API.error("Error selecting a printer: " + e.error);
+                   alert(e.error);
+               }
+            });  
+        }
+        else{                  
+            Omadi.print.startMCRMode(portName);
+        }
+    }
+};
+
+Omadi.print.printReceipt = function(nid){"use strict";
+    var portName, commands;
+    
+    Omadi.print.printNid = nid;
+    
+    if(Ti.App.isAndroid){
+    
+        Omadi.print.init();
+        
+        portName = Ti.App.Properties.getString("omadi:printerPortName", "");
+        
+        if(portName == ""){
+        
+            Omadi.print.StarMicronics.getBluetoothDeviceList({
+               success: function(e){
+                   var i, dialog, portNames;
+                   Ti.API.debug(JSON.stringify(e.portNames));
+                   
+                   portNames = [];
+                   for(i = 0; i < e.portNames.length; i ++){
+                       portNames.push(e.portNames[i].replace("BT:", ""));
+                   }
+                   portNames.push("- Cancel -");
+                   
+                   dialog = Ti.UI.createOptionDialog({
+                      options: portNames,
+                      title: 'Select Printer',
+                      cancel: portNames.length - 1,
+                      origPortNames: e.portNames
+                   });
+                   
+                   dialog.addEventListener('click', function(e){
+                       var portName, commands;
+                       if(e.index >= 0 && e.index != e.source.cancel){
+                            portName = e.source.origPortNames[e.index];
+                            
+                            Ti.App.Properties.setString("omadi:printerPortName", portName);
+                            
+                            commands = Omadi.print.getPrintCommands();
+                            
+                            if(commands.length > 0){
+                                
+                                Omadi.print.StarMicronics.print({
+                                    success: function(e){
+                                        
+                                    },
+                                    error: function(e){
+                                        alert("Error Printing: " + e.error);
+                                    },
+                                    portName: portName,
+                                    commands: commands
+                                });
+                            }
+                            else{
+                                alert("An error occurred generating the receipt.");
+                            }
+                        } 
+                   });
+                   
+                   dialog.show();
+               },
+               error: function(e){
+                   Ti.API.error("Error selecting a printer: " + e.error);
+                   alert(e.error);
+               }
+            });  
+        }
+        else{
+            commands = Omadi.print.getPrintCommands();
+                            
+            if(commands.length > 0){
+                
+                Omadi.print.StarMicronics.print({
+                    success: function(e){
+                        
+                    },
+                    error: function(e){
+                        alert("Error Printing: " + e.error + ".");
+                    },
+                    portName: portName,
+                    commands: commands
+                });
+            }
+            else{
+                alert("An error occurred generating the receipt.");
+            }
+        }
+    }
 };
 
 Omadi.print.openConnection = function(portName){"use strict";
@@ -131,8 +324,8 @@ Omadi.print.getPrintCommands = function(){"use strict";
         buffer.append(Omadi.print.getPrintCommand(node, item));
     }
     
-    // Add 5 new lines so the page can be ripped off properly
-    buffer.append(Omadi.print.stringToByteArray("\n\n\n"));
+    // Add 4 new lines so the page can be ripped off properly
+    buffer.append(Omadi.print.stringToByteArray("\n\n\n\n"));
     
     return buffer;
 };
@@ -233,7 +426,7 @@ Omadi.print.getPrintCommand = function(node, item){"use strict";
         if(typeof item.value !== 'undefined'){
             var labels, values, maxLabelLength, maxValueLength, innerItem, index, labelValue,
                 lineLength, extraSpaces, i, label, value, numLabelSpaces, labelSpaces, j,
-                numValueSpaces, valueSpaces, valueValue, itemValue, resetBuffer;
+                numValueSpaces, valueSpaces, valueValue, itemValue, resetBuffer, innerItems;
             
             resetBuffer = Ti.createBuffer({
                 type: Ti.Codec.TYPE_BYTE 
@@ -249,68 +442,72 @@ Omadi.print.getPrintCommand = function(node, item){"use strict";
             values = [];
             maxLabelLength = maxValueLength = 0;
             
-            for(index in item.value){
-                if(item.value.hasOwnProperty(index)){
-                    innerItem = item.value[index];
-                    
-                    valueValue = Omadi.print.getValue(innerItem.value, node).toString();
-                    labelValue = innerItem.label.toString();
+            if(Omadi.utils.isArray(item.value)){
+                innerItems = item.value.sort(Omadi.utils.sortByWeight);
+                
+                for(index in innerItems){
+                    if(innerItems.hasOwnProperty(index)){
+                        innerItem = innerItems[index];
                         
-                    if(valueValue.length > maxValueLength){
-                        maxValueLength = valueValue.length;
+                        valueValue = Omadi.print.getValue(innerItem.value, node).toString();
+                        labelValue = innerItem.label.toString();
+                            
+                        if(valueValue.length > maxValueLength){
+                            maxValueLength = valueValue.length;
+                        }
+                        
+                        if(labelValue.length > maxLabelLength){
+                            maxLabelLength = labelValue.length;
+                        }
+                        
+                        labels.push(labelValue);
+                        values.push(valueValue);
+                    }
+                }
+                
+                lineLength = 48;
+                extraSpaces = 3;
+                
+                if(typeof item.settings.alignment !== 'undefined'){
+                    if(item.settings.alignment == 'justify'){
+                        if(item.settings.size == 0){
+                            extraSpaces = lineLength - maxLabelLength - maxValueLength;
+                        }
+                        else if(item.settings.size == 1){
+                            extraSpaces = lineLength - maxLabelLength - (maxValueLength * 2);
+                        }
+                    }
+                }
+                
+                stringValue = "";
+                
+                for(i = 0; i < labels.length; i ++){
+    
+                    label = labels[i].toString();
+                    value = values[i].toString();
+                    
+                    numLabelSpaces = maxLabelLength - label.length + extraSpaces;
+                    
+                    labelSpaces = "";
+                    for(j = 0; j < numLabelSpaces; j ++){
+                        labelSpaces += " ";
                     }
                     
-                    if(labelValue.length > maxLabelLength){
-                        maxLabelLength = labelValue.length;
+                    numValueSpaces = maxValueLength - value.length;
+                    
+                    valueSpaces = "";
+                    for(j = 0; j < numValueSpaces; j ++){
+                        valueSpaces += " ";
                     }
                     
-                    labels.push(labelValue);
-                    values.push(valueValue);
+                    buffer.append(resetBuffer);
+                    buffer.append(Omadi.print.stringToByteArray(label + labelSpaces));
+                    buffer.append(Omadi.print.stringToByteArray(valueSpaces));
+                    buffer.append(styleBuffer);
+                    buffer.append(Omadi.print.stringToByteArray(value + "\n"));
+                    
+                    Ti.API.debug(label + labelSpaces + valueSpaces + value);
                 }
-            }
-            
-            lineLength = 48;
-            extraSpaces = 3;
-            
-            if(typeof item.settings.alignment !== 'undefined'){
-                if(item.settings.alignment == 'justify'){
-                    if(item.settings.size == 0){
-                        extraSpaces = lineLength - maxLabelLength - maxValueLength;
-                    }
-                    else if(item.settings.size == 1){
-                        extraSpaces = lineLength - maxLabelLength - (maxValueLength * 2);
-                    }
-                }
-            }
-            
-            stringValue = "";
-            
-            for(i = 0; i < labels.length; i ++){
-
-                label = labels[i].toString();
-                value = values[i].toString();
-                
-                numLabelSpaces = maxLabelLength - label.length + extraSpaces;
-                
-                labelSpaces = "";
-                for(j = 0; j < numLabelSpaces; j ++){
-                    labelSpaces += " ";
-                }
-                
-                numValueSpaces = maxValueLength - value.length;
-                
-                valueSpaces = "";
-                for(j = 0; j < numValueSpaces; j ++){
-                    valueSpaces += " ";
-                }
-                
-                buffer.append(resetBuffer);
-                buffer.append(Omadi.print.stringToByteArray(label + labelSpaces));
-                buffer.append(Omadi.print.stringToByteArray(valueSpaces));
-                //buffer.append(styleBuffer);
-                buffer.append(Omadi.print.stringToByteArray(value + "\n"));
-                
-                Ti.API.debug(label + labelSpaces + valueSpaces + value);
             }
         }
     }
@@ -368,19 +565,32 @@ Omadi.print.getTextValue = function(node, instance){"use strict";
     value = "";
     fieldName = instance.field_name;
     
-    if(typeof node[fieldName] !== 'undefined' &&
-        typeof node[fieldName].dbValues !== 'undefined' &&
-        typeof node[fieldName].dbValues[0] != 'undefined'){
-            
-        dbValue = node[fieldName].dbValues[0];
+    switch(instance.type){
+        case 'calculation_field':
+        case 'number_integer':
+        case 'number_decimal':
         
-    }
-    
-    if(typeof node[fieldName] && 
-        typeof node[fieldName].textValues !== 'undefined' &&
-        typeof node[fieldName].textValues[0] != 'undefined'){
+            value = 0;
             
-            value = node[fieldName].textValues[0];
+            if(typeof node[instance.field_name] !== 'undefined'){
+                if(typeof node[instance.field_name].dbValues !== 'undefined'){
+                    if(typeof node[instance.field_name].dbValues[0] !== 'undefined'){
+                        value = node[instance.field_name].dbValues[0];
+                    }
+                }
+            }
+            
+            value = Omadi.utils.applyNumberFormat(instance, value);
+            break;
+            
+        default:
+        
+        if(typeof node[fieldName] && 
+            typeof node[fieldName].textValues !== 'undefined' &&
+            typeof node[fieldName].textValues[0] != 'undefined'){
+                
+                value = node[fieldName].textValues[0];
+        }
     }
     
     return value;
@@ -526,34 +736,3 @@ Omadi.print.stringToByteArray = function(str){"use strict";
     return buffer;
 };
 
-Omadi.print.printReceipt = function(nid){"use strict";
-    var commands;
-    
-    Omadi.print.printNid = nid;
-    
-    commands = Omadi.print.getPrintCommands();
-    
-    
-    
-    Ti.API.debug("Command");
-    Ti.API.debug(commands);
-    
-    if(Ti.App.isAndroid){
-        Omadi.print.init();
-        
-        Omadi.print.StarMicronics.print({
-            success: function(e){
-                
-            },
-            error: function(e){
-                alert("Error Printing: " + e.error);
-            },
-            portName: "BT:Star Micronics",
-            commands: commands
-        });
-    }
-    
-    //Omadi.print.init();
-    
-    //Omadi.print.selectPrinter();
-};
