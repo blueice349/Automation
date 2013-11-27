@@ -975,18 +975,18 @@ if (Ti.App.isAndroid) {
             
             order ++;
             
-            menu_charge = e.menu.add({
-                title : 'Charge',
-                order : order 
-            });
-            
-            //menu_charge.setIcon("/images/printer_white.png");
-            
-            menu_charge.addEventListener('click', function(){
-                Omadi.print.chargeCard(curWin.nid);
-            });
-            
-            order ++;
+            // menu_charge = e.menu.add({
+                // title : 'Charge',
+                // order : order 
+            // });
+//             
+            // //menu_charge.setIcon("/images/printer_white.png");
+//             
+            // menu_charge.addEventListener('click', function(){
+                // Omadi.print.chargeCard(curWin.nid);
+            // });
+//             
+            // order ++;
         }
         
         if(typeof bundle.data.custom_copy !== 'undefined'){

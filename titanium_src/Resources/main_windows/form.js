@@ -1038,7 +1038,6 @@ function changeViolationFieldOptions(violation_field_name){"use strict";
                         if (dataRow.description != null) {
                             descriptions[dataRow.tid] = dataRow.description;
                         }
-                        
                     }
                 }
         
