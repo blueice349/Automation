@@ -1180,13 +1180,22 @@ function setupViolationField(){"use strict";
 }
 
 function recalculateCalculationFields(){"use strict";
-    var field_name;
+    var field_name, isHidden;
     
     for(field_name in instances){
         if(instances.hasOwnProperty(field_name)){
             if(instances[field_name].type == 'calculation_field'){
                 if(typeof fieldWrappers[field_name] !== 'undefined'){
-                    Omadi.widgets.shared.redraw(instances[field_name]);
+                    isHidden = false;
+                    if(typeof instances[field_name].settings.hidden !== 'undefined'){
+                        if(instances[field_name].settings.hidden == 1){
+                            isHidden = true;
+                        }
+                    }
+                    if(!isHidden){
+                        // There's no need to redraw for an instance that is not visible
+                        Omadi.widgets.shared.redraw(instances[field_name]);
+                    }
                 }
             }
         }

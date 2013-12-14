@@ -380,6 +380,19 @@ Omadi.widgets.calculation_field = {
                 }
             }
             
+            // Round the final value if applicable
+            if(typeof instance.settings.rounding !== 'undefined'){
+                if(instance.settings.rounding == 'up'){
+                    final_value = Math.ceil(final_value);
+                }
+                else if(instance.settings.rounding == 'down'){
+                    final_value = Math.floor(final_value);
+                }
+                else if(instance.settings.rounding == 'integer'){
+                    final_value = Math.round(final_value);
+                }
+            }
+            
             return [{
                 'cached_final_value' : cached_final_value,
                 'final_value' : final_value,
@@ -393,7 +406,7 @@ Omadi.widgets.calculation_field = {
     },
     getTableView: function(node, instance) {"use strict";
         var result, row_values, tableView, cal_value, cal_value_str, isNegative, 
-            row, row_label, value, idx, dbValue, origValue, onlyShowTotal;
+            row, row_label, value, idx, dbValue, origValue, onlyShowTotal, showZeroRows;
         /*global isNumber*/
         
         dbValue = null;
@@ -429,6 +442,13 @@ Omadi.widgets.calculation_field = {
             onlyShowTotal = true;
         }
         
+        showZeroRows = true;
+        if(typeof instance.settings.show_only_non_zero_rows !== 'undefined'){
+            if(instance.settings.show_only_non_zero_rows == 1){
+                showZeroRows = false;
+            }
+        }
+        
         if (!onlyShowTotal) {
             cal_value = 0;
             cal_value_str = "";
@@ -442,6 +462,13 @@ Omadi.widgets.calculation_field = {
                 }
                 else if(typeof cal_value === 'string'){
                     cal_value = parseFloat(cal_value);
+                }
+                
+                if(cal_value == 0){
+                    if(!showZeroRows){
+                        // If the setting to skip zero rows is enabled, do not show them
+                        continue;
+                    }
                 }
                 
                 isNegative = (cal_value < 0) ? true : false;

@@ -31,7 +31,9 @@ import android.os.Message;
 import android.provider.MediaStore.Images;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.io.File;
+import android.graphics.BitmapFactory;
+import android.graphics.Bitmap;
 
 import com.starmicronics.stario.StarIOPort;
 import com.starmicronics.stario.PortInfo;
@@ -192,16 +194,81 @@ public class StarMicronicsModule extends KrollModule{
 		
 		ti.modules.titanium.BufferProxy buffer = (ti.modules.titanium.BufferProxy)options.get("commands");
 		
-		byte[] commands;
+		Object[] printImages = (Object[])options.get("images");
+		
 		KrollDict d = new KrollDict();
 		Activity activity = TiApplication.getInstance().getCurrentActivity();
+		
+		Log.d("PRINT", "PRINT: printImagesLength: " + printImages.length);
+		
+		ArrayList<Integer> bufferInterruptionIndexes = new ArrayList<Integer>();
+		ArrayList<byte[]> interruptionCommands = new ArrayList<byte[]>();
+		
+		int i;
+		for(i = 0; i < printImages.length; i ++){
+			HashMap imageData = (HashMap)printImages[i];
+			
+			String path = null;
+			Integer bufferIndex = -1;
+			Integer imageWidth = 575;
+			
+			if(imageData.containsKey("path")){
+				path = (String) imageData.get("path");
+				Log.d("PRINT", "PRINT: path: " + path);
+				
+				if(imageData.containsKey("width")){
+					imageWidth = (Integer) imageData.get("width");
+				}	
+			
+				if(imageData.containsKey("path")){
+					bufferIndex = (Integer) imageData.get("bufferIndex");
+					Log.d("PRINT", "PRINT: bufferIndex: " + bufferIndex);
+					
+					path = path.replaceFirst("file://", "");
+					
+					//String url = getPathToApplicationAsset(path);
+					
+					Bitmap bitmap = BitmapFactory.decodeFile(path);
+					
+					if(bitmap != null){
+						
+						Log.d("PRINT", "PRINT: height: " + bitmap.getHeight());
+						
+						StarBitmap starBitmap = new StarBitmap(bitmap, false, imageWidth.intValue());
+						byte[] imageCommand;
+						Log.d("PRINT", "PRINT: starbitmap");
+						
+						try{
+							imageCommand = starBitmap.getImageEscPosDataForPrinting(true, true);
+							Log.d("PRINT", "PRINT: imagecommand: " + imageCommand);
+							
+							bufferInterruptionIndexes.add(bufferIndex);
+							interruptionCommands.add(imageCommand);
+							
+							Log.d("PRINT", "PRINT: imagedata: " + imageCommand.length);
+						}
+						catch (StarIOPortException e){
+							// TODO: get rid of the callback - just don't print the image 
+							d.put("error", e.getMessage());
+							invokeCallback((TiBaseActivity) activity, errorCallback, getKrollObject(), d);
+						}
+					}
+					else{
+						// TODO: get rid of the callback - just don't print the image
+						d.put("error", "Could not locate the file.");
+						invokeCallback((TiBaseActivity) activity, errorCallback, getKrollObject(), d);
+					}
+				}
+			}
+		}
+		
+		byte[] commands;
 		
 		StarIOPort port = null;
 		
 		try{
+			commands = buffer.getBuffer();
 			
-	        commands = buffer.getBuffer();
-	      
 			/*
 				using StarIOPort3.1.jar (support USB Port)
 				Android OS Version: upper 2.2
@@ -239,8 +306,34 @@ public class StarMicronicsModule extends KrollModule{
 				d.put("error", "Printer is offline.");
 				invokeCallback((TiBaseActivity) activity, errorCallback, getKrollObject(), d);
 			}
-
-			port.writePort(commands, 0, commands.length);
+			
+			int currentByteOffset = 0;
+			int numBytesToWrite = 0;
+			
+			if(interruptionCommands.size() > 0){
+				for(i = 0; i < interruptionCommands.size(); i ++){
+					byte[] interruptionCommand = interruptionCommands.get(i);
+					Integer bufferInterruptionIndex = bufferInterruptionIndexes.get(i);
+					
+					numBytesToWrite = bufferInterruptionIndex - currentByteOffset;
+					if(numBytesToWrite > 0){
+						port.writePort(commands, currentByteOffset, numBytesToWrite);
+					}
+					
+					currentByteOffset = bufferInterruptionIndex;
+					
+					port.writePort(interruptionCommand, 0, interruptionCommand.length);
+				}
+				
+				if(currentByteOffset + 1 < commands.length){
+					port.writePort(commands, currentByteOffset, commands.length - currentByteOffset);
+				}
+			}
+			else{
+				port.writePort(commands, 0, commands.length);
+			}
+			
+			Log.d("PRINT", "PRINT: after image write");
 
 			status = port.endCheckedBlock();
 

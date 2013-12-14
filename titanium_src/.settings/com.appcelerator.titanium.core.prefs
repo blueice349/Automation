@@ -44,3 +44,6 @@ provisioning_profiles/distribution/0BC35D5D-AABD-486B-9EA6-099A611AB8EE/uuid=0BC
 provisioning_profiles/distribution/5A714F4B-371C-474C-8A8A-A8FF1BE2FE24/appid=com.omadi.crm
 provisioning_profiles/distribution/5A714F4B-371C-474C-8A8A-A8FF1BE2FE24/name=app_store_distribution
 provisioning_profiles/distribution/5A714F4B-371C-474C-8A8A-A8FF1BE2FE24/uuid=5A714F4B-371C-474C-8A8A-A8FF1BE2FE24
+provisioning_profiles/distribution/F73DFE19-A580-49F0-9107-84CA4DE5BDAC/appid=com.omadi.crm
+provisioning_profiles/distribution/F73DFE19-A580-49F0-9107-84CA4DE5BDAC/name=App Store Distribution 2013 1
+provisioning_profiles/distribution/F73DFE19-A580-49F0-9107-84CA4DE5BDAC/uuid=F73DFE19-A580-49F0-9107-84CA4DE5BDAC

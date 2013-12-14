@@ -126,7 +126,12 @@ Omadi.widgets.number_integer = {
             if (e.source.lastValue != e.source.value) {
                 tempValue = "";
                 if(e.source.value !== null){
-                    tempValue = (e.source.value + "".toString()).replace(/[^0-9\-]/g, '');
+                    if((e.source.value + "".toString()).match(/^-?\d*$/)){
+                        tempValue = e.source.value;
+                    }
+                    else{
+                        tempValue = e.source.lastValue;
+                    }
                 }
                 
                 if (tempValue != e.source.value) {

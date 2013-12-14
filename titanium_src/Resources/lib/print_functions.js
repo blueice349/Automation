@@ -22,6 +22,8 @@ Omadi.print.canPrintReceipt = function(nid){"use strict";
     
     bundle = Omadi.data.getBundle(node.type);
     
+    Ti.API.debug(JSON.stringify(bundle));
+    
     if(bundle && 
         typeof bundle.data !== 'undefined' &&
         typeof bundle.data.mobile_printer !== 'undefined' &&
@@ -29,6 +31,7 @@ Omadi.print.canPrintReceipt = function(nid){"use strict";
         typeof bundle.data.mobile_printer.receipt.items !== 'undefined' &&
         Omadi.utils.isArray(bundle.data.mobile_printer.receipt.items) &&
         bundle.data.mobile_printer.receipt.items.length > 0){
+            
             
             // Make sure enough data is saved to be able to print the receipt
             if(typeof bundle.data.mobile_printer.allow_at_part !== 'undefined'){
@@ -172,6 +175,8 @@ Omadi.print.chargeCard = function(nid){"use strict";
     }
 };
 
+Omadi.print.printImages = [];
+
 Omadi.print.printReceipt = function(nid){"use strict";
     var portName, commands;
     
@@ -222,7 +227,8 @@ Omadi.print.printReceipt = function(nid){"use strict";
                                         alert("Error Printing: " + e.error);
                                     },
                                     portName: portName,
-                                    commands: commands
+                                    commands: commands,
+                                    images: Omadi.print.printImages
                                 });
                             }
                             else{
@@ -252,7 +258,8 @@ Omadi.print.printReceipt = function(nid){"use strict";
                         alert("Error Printing: " + e.error + ".");
                     },
                     portName: portName,
-                    commands: commands
+                    commands: commands,
+                    images: Omadi.print.printImages
                 });
             }
             else{
@@ -298,10 +305,13 @@ Omadi.print.closeConnection = function(){"use strict";
 
 
 Omadi.print.getPrintCommands = function(){"use strict";
-    var node, bundle, i, item, buffer, items;
+    var node, bundle, i, item, buffer, items, instances, fieldNames, 
+        fieldName, isImage, imageData, nativePath, imageFile, imagePath, isSignature;
     
     node = Omadi.data.nodeLoad(Omadi.print.printNid);
     bundle = Omadi.data.getBundle(node.type);
+    
+    Omadi.print.printImages = [];
     
     buffer = Ti.createBuffer({
         type: Ti.Codec.TYPE_BYTE,
@@ -318,16 +328,97 @@ Omadi.print.getPrintCommands = function(){"use strict";
     
     items = bundle.data.mobile_printer.receipt.items.sort(Omadi.utils.sortByWeight);
     
+    instances = Omadi.data.getFields(node.type);
+    
     for(i = 0; i < items.length; i ++){
         item = items[i];
+        isImage = false;
+        isSignature = false;
         
-        buffer.append(Omadi.print.getPrintCommand(node, item));
+        if(typeof item.value !== 'undefined'){
+            
+            if(item.type == 'value'){
+                fieldNames = item.value.split('|');
+                fieldName = fieldNames[1];
+                
+                if(fieldNames[0] == 'null'){    
+                    
+                    if(typeof instances[fieldName] !== 'undefined'){
+                        
+                       if(instances[fieldName].type == 'image'){
+                           isImage = true;
+                           
+                           if(instances[fieldName].widget.type == 'omadi_image_signature'){
+                               isSignature = true;
+                           }
+                       }      
+                    }
+                }
+                // TODO: add the fieldName[0] != null
+            }
+            
+            if(isImage){
+                Ti.API.debug("We have an image.");
+                
+                imagePath = Omadi.data.getFinishedUploadPath(node.nid, fieldName, 0);
+                if(imagePath){
+                
+                    imageFile = Ti.Filesystem.getFile(imagePath);
+                    
+                    if(imageFile.exists()){
+                        Ti.API.debug("Path: " + imageFile.resolve());
+                        imageData = {
+                            path: imagePath.replace("file://", ""),
+                            bufferIndex: buffer.length,
+                            width: 575
+                        };
+                        
+                        Omadi.print.printImages.push(imageData);
+                    }
+                    else{
+                        Ti.API.error("file does not exist.");
+                        
+                        if(isSignature){
+                            buffer.append(Omadi.print.stringToByteArray(Omadi.print.getSignaturePrintText(instances[fieldName])));
+                        }
+                    }
+                }
+                else{
+                    
+                    if(isSignature){
+                        buffer.append(Omadi.print.stringToByteArray(Omadi.print.getSignaturePrintText(instances[fieldName])));
+                    }
+                     Ti.API.error("file not on device.");
+                }
+            }
+            else{
+                Ti.API.debug("We have something: " + item.value);
+                buffer.append(Omadi.print.getPrintCommand(node, item));   
+            }
+        }
     }
     
     // Add 4 new lines so the page can be ripped off properly
     buffer.append(Omadi.print.stringToByteArray("\n\n\n\n"));
     
     return buffer;
+};
+
+Omadi.print.getSignaturePrintText = function(instance){"use strict";
+    var output = "";
+    
+    if(typeof instance.settings.signature_text !== 'undefined' && 
+            instance.settings.signature_text.length != null && 
+            instance.settings.signature_text.length != ""){
+        
+        output += instance.settings.signature_text;         
+    }
+    
+    output += "\n\n\n\n";
+    output += "X_______________________________________________";
+    output += "\n";
+    
+    return output;
 };
 
 
@@ -409,6 +500,7 @@ Omadi.print.getPrintCommand = function(node, item){"use strict";
     else if(item.type == 'value'){
         if(typeof item.value !== 'undefined'){
             
+           
             stringValue = Omadi.print.getValue(item.value, node);
             
             if(addLineBreak){

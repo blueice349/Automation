@@ -1587,11 +1587,27 @@ Omadi.data.getNodeTableInsertStatement = function(node) {"use strict";
     return sql;
 };
 
+Omadi.data.getFinishedUploadPath = function(nid, fieldName, delta){"use strict";
+    var listDB, result, path;
+    
+    path = null;
+    listDB = Omadi.utils.openListDatabase();
+    
+    result = listDB.execute("SELECT file_path FROM _files WHERE nid = " + nid + " AND field_name='" + fieldName + "' AND delta = " + delta);
+    if(result.isValidRow()){
+        path = result.field(0);
+    }
+    result.close();
+    listDB.close();
+    
+    return path;  
+};
+
 Omadi.data.getNumFilesReadyToUpload = function(uid){"use strict";
     var mainDB, result, sql, retval = 0;
     
     try{
-        sql = "SELECT COUNT(*) FROM _files WHERE nid > 0";
+        sql = "SELECT COUNT(*) FROM _files WHERE nid > 0 AND finished = 0";
         
         if(typeof uid !== 'undefined'){
             sql += " AND uid = " + uid;
@@ -1626,14 +1642,17 @@ Omadi.data.maxBytesPerUpload = 2097152; // 2MB
 
 Omadi.data.getFileArray = function(onlyUploadable){"use strict";
     var files, sql, listDB, result, nextFile, now, node, message, lastErrorTimestamp, 
-        neverUploadIds, dialog;
+        neverUploadIds, dialog, deleteFile, photoWidget, photoDeleteOption, imageFile, 
+        thumbFile, deleteFinishedIds;
     
     if(typeof onlyUploadable === 'undefined'){
         onlyUploadable = true;
     }
     
     neverUploadIds = [];
+    deleteFinishedIds = [];
     files = [];
+    
     
     sql = "SELECT * FROM _files ";
         
@@ -1658,7 +1677,6 @@ Omadi.data.getFileArray = function(onlyUploadable){"use strict";
             
             try{
                 
-           
                 nextFile = {
                     nid : result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT),
                     id : result.fieldByName('id', Ti.Database.FIELD_TYPE_INT),
@@ -1679,7 +1697,8 @@ Omadi.data.getFileArray = function(onlyUploadable){"use strict";
                     fid : result.fieldByName('fid'),
                     uid : result.fieldByName('uid'),
                     client_account : result.fieldByName('client_account'),
-                    uploading : result.fieldByName('uploading')
+                    uploading : result.fieldByName('uploading'),
+                    finished : result.fieldByName('finished'),
                 };
                 
                 if(nextFile.filesize != null){
@@ -1724,6 +1743,20 @@ Omadi.data.getFileArray = function(onlyUploadable){"use strict";
                     nextFile.fid = 0;
                 }
                 
+                if(nextFile.finished != null){
+                    nextFile.finished = parseInt(nextFile.finished, 10);
+                }
+                else{
+                    nextFile.finished = 0;
+                }
+                
+                if(nextFile.uploaded != null){
+                    nextFile.uploaded = parseInt(nextFile.uploaded, 10);
+                }
+                else{
+                    nextFile.uploaded = 0;
+                }
+                
                 if(nextFile.type == 'video' || nextFile.type == 'file'){
                     nextFile.numUploadParts = Math.ceil(nextFile.filesize / Omadi.data.maxBytesPerUpload);
                     nextFile.uploadPart = (nextFile.bytes_uploaded / Omadi.data.maxBytesPerUpload) + 1;
@@ -1766,6 +1799,39 @@ Omadi.data.getFileArray = function(onlyUploadable){"use strict";
                                     // This file should stop attempting to be uploaded
                                     neverUploadIds.push(nextFile.id);
                                 }
+                            }
+                        }
+                    }
+                    else if(nextFile.finished > 0){
+                        // We don't show the finished uploads
+                        
+                        if(now > nextFile.finished + (3600 * 16)){
+                            // Delete any files that have been uploaded and still exist on the device for too long
+                            
+                            deleteFile = true;
+                            
+                            photoWidget = Ti.App.Properties.getString("photoWidget", 'take');
+                            photoDeleteOption = Ti.App.Properties.getString("deleteOnUpload", "false");
+                           
+                            if(photoWidget == 'choose' && photoDeleteOption == "false"){
+                                deleteFile = false;
+                            }
+                            
+                            if(deleteFile){
+                                imageFile = Ti.Filesystem.getFile(nextFile.file_path);
+                                if(imageFile.exists()){
+                                    imageFile.deleteFile();
+                                } 
+                                
+                                // Delete the thumbnail if one is saved
+                                if(nextFile.thumb_path != null && nextFile.thumb_path.length > 10){
+                                    thumbFile = Ti.Filesystem.getFile(nextFile.thumb_path);
+                                    if(thumbFile.exists()){
+                                       thumbFile.deleteFile();
+                                    }
+                                }
+                                
+                                deleteFinishedIds.push(nextFile.id);
                             }
                         }
                     }
@@ -1814,6 +1880,11 @@ Omadi.data.getFileArray = function(onlyUploadable){"use strict";
     catch(exDB){
         Ti.API.error("Error in get file query load: " + exDB);
         Omadi.service.sendErrorReport("Error in get file query load: " + exDB);
+    }
+    
+    if(deleteFinishedIds.length > 0){
+        // Delete the record from the files table
+        listDB.execute("DELETE FROM _files WHERE id IN(" + deleteFinishedIds.join(',') + ")");
     }
     
     if(neverUploadIds.length > 0){

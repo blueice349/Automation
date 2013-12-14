@@ -208,7 +208,7 @@ function updateUploadBytes(){"use strict";
     var db, result, http, cookies, i, numFilesLeft;
     
     db = Omadi.utils.openListDatabase();
-    result = db.execute("SELECT filesize, bytes_uploaded FROM _files WHERE nid > 0");
+    result = db.execute("SELECT filesize, bytes_uploaded FROM _files WHERE nid > 0 AND finished = 0");
     uploadBytesLeft = 0;
     numFilesLeft = 0;
     

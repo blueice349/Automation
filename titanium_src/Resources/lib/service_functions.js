@@ -880,57 +880,9 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                 // Check if the file is ready for deletion
                 if(bytesUploaded == 0 || bytesUploaded >= filesize || uploadFinished){
                     
-                    // We're done with this file, so let's delete it
-                    
-                    if(Ti.App.isAndroid){
-                       deleteFile = true;
-                        
-                       photoWidget = Ti.App.Properties.getString("photoWidget", 'take');
-                       photoDeleteOption = Ti.App.Properties.getString("deleteOnUpload", "false");
-                       
-                       if(photoWidget == 'choose' && photoDeleteOption == "false"){
-                            deleteFile = false;
-                       }
-                        
-                       if(deleteFile){
-                        
-                            imageFile = Ti.Filesystem.getFile(filePath);
-                            if(imageFile.exists()){
-                                imageFile.deleteFile();
-                            } 
-                            
-                            // Delete the thumbnail if one is saved
-                            if(thumbPath != null && thumbPath.length > 10){
-                                thumbFile = Ti.Filesystem.getFile(thumbPath);
-                                if(thumbFile.exists()){
-                                    thumbFile.deleteFile();
-                                }
-                            }
-                        }
-                    }
-                    else{// isIOS
-                        
-                        imageFile = Ti.Filesystem.getFile(filePath);
-                        if(imageFile.exists()){
-                            imageFile.deleteFile();
-                        } 
-                        
-                        // Delete the thumbnail if one is saved
-                        if(thumbPath != null && thumbPath.length > 10){
-                            thumbFile = Ti.Filesystem.getFile(thumbPath);
-                            if(thumbFile.exists()){
-                                thumbFile.deleteFile();
-                            }
-                        }
-                    }
-                    
-                    // Get rid of file pointers
-                    imageFile = null;
-                    thumbFile = null;
-                    
                     try{
-                        //Deleting file after upload.
-                        listDB.execute("DELETE FROM _files WHERE id=" + photoId);
+                        //Finishing the file after upload so it's available on the device for printing
+                        listDB.execute("UPDATE _files SET uploading=0, finished=" + Omadi.utils.getUTCTimestamp() + " WHERE id=" + photoId);
                     }
                     catch(sqlEx2){
                         Omadi.service.sendErrorReport("Exception in upload success ex2: " + sqlEx2 + ", json: " + JSON.stringify(json));

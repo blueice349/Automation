@@ -106,7 +106,7 @@ Omadi.widgets.number_decimal = {
         widgetView.dbValue = dbValue;
         widgetView.textValue = textValue;
         widgetView.setValue(textValue);
-        widgetView.setKeyboardType(Ti.UI.KEYBOARD_NUMBERS_PUNCTUATION);
+        widgetView.setKeyboardType(Ti.UI.KEYBOARD_DECIMAL_PAD);
             
         if (settings.max != null) {
             widgetView.maxValue = settings.max;
@@ -126,11 +126,19 @@ Omadi.widgets.number_decimal = {
             var tempValue;
             /*global setConditionallyRequiredLabels*/
             /*jslint regexp: true*/
-
-            if (e.source.lastValue != e.source.value) {
+            Ti.API.debug(e.source.value);
+            Ti.API.debug(e.source.lastValue);
+            
+            // Must compare as strings since 4. and 4 would need to be different, but wouldn't be for a number
+            if ((e.source.lastValue + "".toString()) != (e.source.value + "".toString())) {
                 tempValue = "";
                 if(e.source.value !== null){
-                    tempValue = (e.source.value + "".toString()).replace(/[^0-9\.\-]/g, '');
+                    if((e.source.value + "".toString()).match(/^-?\d*\.?\d*$/)){
+                        tempValue = e.source.value;
+                    }
+                    else{
+                        tempValue = e.source.lastValue;
+                    }
                 }
                 
                 if (tempValue != e.source.value) {
