@@ -36,12 +36,13 @@ Omadi.bundles.tag.getExpiredTags = function(){"use strict";
     
     db = Omadi.utils.openMainDatabase();
     
-    sql = "SELECT n.nid, n.title, n.viewed FROM node n ";
+    sql = "SELECT n.nid, n.title, n.viewed, account.account_name FROM node n ";
     sql += "LEFT JOIN tag ON tag.nid = n.nid ";
     sql += "LEFT JOIN account ON account.nid = tag.enforcement_account ";
     sql += "WHERE n.table_name = 'tag' ";
     sql += "AND ((tag.in_how_many_days_does_tag_exp * 3600) + tag.enforcement_start_timestamp) < " + nowTimestamp + " ";
     sql += "AND ((account.tow_tag_without_approval = 1) OR (tag._tag_ready_timestamp > 0 AND tag._tag_ready_timestamp < " + nowTimestamp + ")) ";
+    sql += " ORDER BY account.account_name ASC";
     
     result = db.execute(sql);
     
@@ -50,7 +51,8 @@ Omadi.bundles.tag.getExpiredTags = function(){"use strict";
         expired.push({
            nid: result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT),
            title: result.fieldByName('title'),
-           viewed: result.fieldByName('viewed')
+           viewed: result.fieldByName('viewed'),
+           account_name: result.fieldByName('account_name')
         });
         
         nids.push(result.fieldByName('nid', Ti.Database.FIELD_TYPE_INT));

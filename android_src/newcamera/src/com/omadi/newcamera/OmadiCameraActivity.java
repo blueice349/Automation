@@ -374,7 +374,14 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 
 	public void takePicture() {
 		Log.d("CAMERA", "CAMERA Taking picture");
-		camera.takePicture(null, null, jpegCallback);
+		if(camera != null){
+			try{
+				camera.takePicture(null, null, jpegCallback);
+			}
+			catch(Exception e){
+				Log.d("CAMERA", "CAMERA could not take picture: " + e.getMessage());
+			}
+		}
 	}
 
 	// support user defined callback for this in the future?

@@ -3047,12 +3047,16 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                             nid : Omadi.service.fetchedJSON.node[type].insert[i].nid
                                         });
                                     }
-                                    else if(type == 'dispatch' &&
-                                            typeof Omadi.service.fetchedJSON.node[type].insert[i].dispatch_nid !== 'undefined' &&
-                                            Omadi.service.fetchedJSON.node[type].insert[i].dispatch_nid > 0){
-                                         
-                                         Omadi.bundles.dispatch.checkInsertNode(Omadi.service.fetchedJSON.node[type].insert[i]);
-                                    }
+                                }
+                                
+                                // Allow previously viewed dispatches to popup the dispatch screen
+                                // The login of when that pops up is dependent on the server's response
+                                //  and the code in the dispatch bundle .js file
+                                if(type == 'dispatch' &&
+                                        typeof Omadi.service.fetchedJSON.node[type].insert[i].dispatch_nid !== 'undefined' &&
+                                        Omadi.service.fetchedJSON.node[type].insert[i].dispatch_nid > 0){
+                                     
+                                     Omadi.bundles.dispatch.checkInsertNode(Omadi.service.fetchedJSON.node[type].insert[i]);
                                 }
                             }
                             

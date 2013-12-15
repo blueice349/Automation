@@ -546,7 +546,7 @@ function validateRestrictions(node){"use strict";
 
 
 
-function validate_form_data(node){"use strict";
+function validate_form_data(node, saveType){"use strict";
     
     var field_name, instance, values, form_errors, isEmpty, i, region_name;
     
@@ -554,53 +554,59 @@ function validate_form_data(node){"use strict";
     
     try{
         
-        form_errors = form_errors.concat(validateRestrictions(node));
-        // Only show restriction error if one exists
-        if(form_errors.length == 0){
-            
-            for(field_name in instances){
-                if(instances.hasOwnProperty(field_name)){
-                    
-                    instance = instances[field_name];
-                    
-                    region_name = instance.region;
-                    
-                    if(instance.disabled == 0 && typeof regionViews[region_name] !== 'undefined'){                
-                        if(typeof node[field_name] !== 'undefined'){
+        if(saveType == 'draft'){
+            form_errors = form_errors.concat(validateRestrictions(node));
+        }
+        else if(saveType != 'continuous'){
+        
+            form_errors = form_errors.concat(validateRestrictions(node));
+            // Only show restriction error if one exists
+            if(form_errors.length == 0){
+                
+                for(field_name in instances){
+                    if(instances.hasOwnProperty(field_name)){
                         
-                            /*** REQUIRED FIELD VALIDATION / CONDITIONALLY REQUIRED ***/
-                            form_errors = form_errors.concat(validateRequired(node, instance));
+                        instance = instances[field_name];
+                        
+                        region_name = instance.region;
+                        
+                        if(instance.disabled == 0 && typeof regionViews[region_name] !== 'undefined'){                
+                            if(typeof node[field_name] !== 'undefined'){
                             
-                            /*** MIN_LENGTH VALIDATION ***/
-                            switch(instance.type){
-                                case 'text_long':
-                                case 'text':
-                                    form_errors = form_errors.concat(validateMinLength(node, instance));
-                                    break;
-                            }
-                            
-                            /*** MAX_LENGTH VALIDATION ***/
-                            switch(instance.type){
-                                case 'text':
-                                    form_errors = form_errors.concat(validateMaxLength(node, instance));
-                                    break;
-                            }
-                            
-                            /*** MIN/MAX VALUE VALIDATION ***/
-                            switch(instance.type){
-                                case 'number_integer':
-                                case 'number_decimal':
-                                    form_errors = form_errors.concat(validateMinValue(node, instance));
-                                    form_errors = form_errors.concat(validateMaxValue(node, instance));
-                                    break;
-                            }
-                            
-                            if(instance.type === 'phone'){
-                                form_errors = form_errors.concat(validatePhone(node, instance));
-                            }
-                            
-                            if(instance.type === 'email'){
-                                form_errors = form_errors.concat(validateEmail(node, instance));
+                                /*** REQUIRED FIELD VALIDATION / CONDITIONALLY REQUIRED ***/
+                                form_errors = form_errors.concat(validateRequired(node, instance));
+                                
+                                /*** MIN_LENGTH VALIDATION ***/
+                                switch(instance.type){
+                                    case 'text_long':
+                                    case 'text':
+                                        form_errors = form_errors.concat(validateMinLength(node, instance));
+                                        break;
+                                }
+                                
+                                /*** MAX_LENGTH VALIDATION ***/
+                                switch(instance.type){
+                                    case 'text':
+                                        form_errors = form_errors.concat(validateMaxLength(node, instance));
+                                        break;
+                                }
+                                
+                                /*** MIN/MAX VALUE VALIDATION ***/
+                                switch(instance.type){
+                                    case 'number_integer':
+                                    case 'number_decimal':
+                                        form_errors = form_errors.concat(validateMinValue(node, instance));
+                                        form_errors = form_errors.concat(validateMaxValue(node, instance));
+                                        break;
+                                }
+                                
+                                if(instance.type === 'phone'){
+                                    form_errors = form_errors.concat(validatePhone(node, instance));
+                                }
+                                
+                                if(instance.type === 'email'){
+                                    form_errors = form_errors.concat(validateEmail(node, instance));
+                                }
                             }
                         }
                     }
@@ -781,8 +787,8 @@ function save_form_data(saveType) {"use strict";
     
     form_errors = [];
     
-    if(node._isDraft === false && node._isContinuous === false){
-        form_errors = validate_form_data(node);
+    if(node._isContinuous === false){
+        form_errors = validate_form_data(node, saveType);
     }
     
     if(form_errors.length > 0){

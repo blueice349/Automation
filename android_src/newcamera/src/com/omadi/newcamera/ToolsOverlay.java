@@ -95,8 +95,16 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 						captureDegrees = degrees;
 						captureButtonPressed = true;
 						
+						
 						if(hasAutoFocus){
-							camera.autoFocus(toolsOverlay);
+							if(camera != null){
+								try{
+									camera.autoFocus(toolsOverlay);
+								}
+								catch(Exception e){
+									OmadiCameraActivity.cameraActivity.takePicture();
+								}
+							}
 						}
 						else{
 							OmadiCameraActivity.cameraActivity.takePicture();

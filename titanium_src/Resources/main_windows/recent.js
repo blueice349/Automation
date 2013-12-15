@@ -282,7 +282,9 @@ function savedNodeRecent(){"use strict";
     var recentlySavedTab, recentlySavedWindow, recentlyViewedTab, recentlyViewedWindow;
     
     curWin.addEventListener("android:back", function(){
-       curWin.close(); 
+       if(curWin){
+          curWin.close();
+       } 
     });
     
     Ti.App.removeEventListener('loggingOut', loggingOutRecent);

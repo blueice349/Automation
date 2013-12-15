@@ -333,9 +333,19 @@ Omadi.bundles.dispatch.compareStatuses = function(status1, status2){"use strict"
 };
 
 Omadi.bundles.dispatch.checkInsertNode = function(insert){"use strict";
+    /*jslint nomen:true*/
      var userUID, uidIndex, showNewDispatch;
      userUID = Omadi.utils.getUid();
      showNewDispatch = false;
+     
+     Ti.API.info("Inserting a dispatch node");
+     
+     if(typeof insert._no_dispatch_popup !== 'undefined'){
+         if(insert._no_dispatch_popup){
+             // Do not add this to the list for a popup since the server says no
+             return;
+         }
+     }
      
      // Show if assigned
      if(insert.send_dispatch_requests_to !== 'undefined'){
@@ -369,7 +379,21 @@ Omadi.bundles.dispatch.checkInsertNode = function(insert){"use strict";
          }
      }
      
-     Ti.API.info("Showing new dispatch: " + showNewDispatch);
+     if(showNewDispatch){
+         // The user is part of this dispatch, so possibly dispatch if the below is true
+         
+         if(typeof insert.field_dispatching_status !== 'undefined' && insert.field_dispatching_status == 'dispatching_call'){
+             // The job is being dispatched or re-dispatched, so show the jobs dialog
+             // the job has been re-dispatched
+             showNewDispatch = true;
+         }
+         else if(insert.viewed > 0){
+             // This is not checked when calling this function like it is for notifications
+             // Make sure the dispatch isn't shows when changed and not required to see the popup
+             // as defined just above
+             showNewDispatch = false;
+         }
+     }
      
      if(showNewDispatch){
         Ti.App.Properties.setBool('newDispatchJob', true);

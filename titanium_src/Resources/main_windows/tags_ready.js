@@ -53,7 +53,8 @@ function loggingOutTagsReady(){"use strict";
 }
 
 (function(){"use strict";
-    var expiredTags, data, i, row, textView, rowImg, titleLabel, backgroundColor;
+    var expiredTags, data, i, row, textView, rowImg, titleLabel, backgroundColor, 
+        currentAccountName, tableSection;
     
     Ti.App.removeEventListener("savedNode", savedNodeTagsReady);
     Ti.App.addEventListener("savedNode", savedNodeTagsReady);
@@ -64,8 +65,20 @@ function loggingOutTagsReady(){"use strict";
     expiredTags = Omadi.bundles.tag.getExpiredTags();
     
     data = [];
+    currentAccountName = null;
     
     for(i = 0; i < expiredTags.length; i ++){
+        
+        if(expiredTags[i].account_name != currentAccountName){
+            
+            tableSection = Ti.UI.createTableViewSection({
+                headerTitle: expiredTags[i].account_name
+            });
+            
+            data.push(tableSection);
+            
+            currentAccountName = expiredTags[i].account_name;
+        }
         
         backgroundColor = '#eee';
         if(expiredTags[i].viewed > 0){
@@ -124,7 +137,11 @@ function loggingOutTagsReady(){"use strict";
         //textView.add(timeLabel);
         row.add(textView);
         
-        data.push(row);
+        tableSection.add(row);
+        
+        //data.push(row);
+        
+        
     }
     
     wrapperView = Ti.UI.createView({
