@@ -848,6 +848,8 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                         jsonArray[parseInt(json.delta, 10)] = json.file_id;
                     }
                     
+                    Ti.API.debug("Json Array: " + JSON.stringify(jsonArray));
+                    
                     try{
                         subDB.execute("UPDATE " + tableName + " SET " + json.field_name + "='" + dbEsc(JSON.stringify(jsonArray)) + "' WHERE nid=" + json.nid);
                     }

@@ -1485,7 +1485,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                 case 'file':
                                     // This includes signature and video fields
                                     
-                                    subResult = listDB.execute('SELECT * FROM _files WHERE nid IN(' + node.nid + ',0) AND field_name ="' + field_name + '" ORDER BY delta ASC');
+                                    subResult = listDB.execute('SELECT * FROM _files WHERE finished = 0 AND nid IN(' + node.nid + ',0) AND field_name ="' + field_name + '" ORDER BY delta ASC');
     
                                     node[field_name].imageData = [];
                                     node[field_name].degrees = [];
