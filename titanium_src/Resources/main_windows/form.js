@@ -62,7 +62,7 @@ function get_android_menu(menu_exists) {"use strict";
     /*jslint eqeq: true */
    /*global Omadi, save_form_data*/
    
-    win.activity.onCreateOptionsMenu = function(e) {
+    Ti.Android.currentActivity.onCreateOptionsMenu = function(e) {
         var db, result, menu_zero, bundle, btn_tt, btn_id, 
             menu_first, menu_second, menu_third, menu_save_new, 
             iconFile, windowFormPart;
@@ -1863,6 +1863,13 @@ function continuousSave(){"use strict";
                     region.settings.always_expanded == 1){
                         
                         expanded = true;
+                }
+                else if(typeof region.settings !== 'undefined' && 
+                    region.settings != null &&
+                    typeof region.settings.always_collapsed !== 'undefined' && 
+                    region.settings.always_collapsed == 1){
+                        
+                        expanded = false;
                 }
                 else if(region_form_part < node.form_part){
                     expanded = false;

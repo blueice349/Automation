@@ -364,9 +364,7 @@ function displayBundleList() {"use strict";
 
 function setupAndroidMenu() {"use strict";
 
-    var activity = Ti.Android.currentActivity;
-
-    activity.onCreateOptionsMenu = function(e) {
+    Ti.Android.currentActivity.onCreateOptionsMenu = function(e) {
 
         var menu, menuItem, menu_draft, menu_about, menu_settings;
 

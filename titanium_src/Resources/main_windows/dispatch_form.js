@@ -132,7 +132,7 @@ function createAndroidToolbar(workNodeTypeLabel, openDispatch) {"use strict";
 
     if (Ti.App.isAndroid) {
         
-        Ti.UI.currentWindow.activity.onCreateOptionsMenu = function(e) {
+        Ti.Android.currentActivity.onCreateOptionsMenu = function(e) {
             var db, result, menu_zero, bundle, btn_tt, btn_id, 
                 menu_first, menu_second, menu_third, menu_save_new, 
                 iconFile, menu, windowFormPart;

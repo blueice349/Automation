@@ -135,30 +135,32 @@ Omadi.widgets.omadi_reference = {
             widgetView.bottom = 1;
             widgetView.setText(textValue);
             
-            widgetView.addEventListener('click', function(e) {
-                var postDialog = Titanium.UI.createOptionDialog();
-                postDialog.options = e.source.options;
-                postDialog.cancel = -1;
-                postDialog.widgetView = e.source;
-                postDialog.show();
-
-                postDialog.addEventListener('click', function(ev) {
-                    var text;
-                    
-                    if (ev.index >= 0) {
+            if(instance.can_edit){
+                widgetView.addEventListener('click', function(e) {
+                    var postDialog = Titanium.UI.createOptionDialog();
+                    postDialog.options = e.source.options;
+                    postDialog.cancel = -1;
+                    postDialog.widgetView = e.source;
+                    postDialog.show();
+    
+                    postDialog.addEventListener('click', function(ev) {
+                        var text;
                         
-                        if(ev.source.widgetView.possibleValues[ev.index].nid === null){
-                            text = '';   
+                        if (ev.index >= 0) {
+                            
+                            if(ev.source.widgetView.possibleValues[ev.index].nid === null){
+                                text = '';   
+                            }
+                            else{
+                                text = ev.source.options[ev.index];
+                            }
+                            ev.source.widgetView.textValue = text;
+                            ev.source.widgetView.dbValue = ev.source.widgetView.possibleValues[ev.index].nid;
+                            ev.source.widgetView.setText(text);
                         }
-                        else{
-                            text = ev.source.options[ev.index];
-                        }
-                        ev.source.widgetView.textValue = text;
-                        ev.source.widgetView.dbValue = ev.source.widgetView.possibleValues[ev.index].nid;
-                        ev.source.widgetView.setText(text);
-                    }
+                    });
                 });
-            });
+            }
             
             wrapper.add(widgetView);
             

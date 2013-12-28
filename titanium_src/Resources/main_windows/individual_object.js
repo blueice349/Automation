@@ -907,8 +907,7 @@ function openAndroidMenuItem(e){"use strict";
 
 if (Ti.App.isAndroid) {
    
-    var activity = curWin.activity;
-    activity.onCreateOptionsMenu = function(e) {"use strict";
+    Ti.Android.currentActivity.onCreateOptionsMenu = function(e) {"use strict";
         var db, result, bundle, menu_zero, form_part, menu_edit, 
             customCopy, to_type, to_bundle, order, iconFile, menu_print, menu_charge;
         

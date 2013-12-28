@@ -769,8 +769,7 @@ function setTableData() {"use strict";
                 topBar.add(showAllButton);
             }
 
-            var activity = curWin.activity;
-            activity.onCreateOptionsMenu = function(e) {
+            Ti.Android.currentActivity.onCreateOptionsMenu = function(e) {
 
                 var menu = e.menu;
 
