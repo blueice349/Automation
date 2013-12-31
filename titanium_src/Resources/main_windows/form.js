@@ -1,5 +1,4 @@
 
-
 Ti.include("/lib/widgets.js");
 Ti.include("/lib/form_functions.js");
 /*global Omadi*/
@@ -28,7 +27,6 @@ Ti.UI.currentWindow.saveInterval = null;
 if (Ti.App.isAndroid) {
     cameraAndroid = require('com.omadi.newcamera');
 }
-
 
 function cancelOpt() {"use strict";
     var dialog, photoNids;
@@ -826,8 +824,71 @@ function save_form_data(saveType) {"use strict";
     }
 }
 
+function showActionsOptions(e){"use strict";
+    var bundle, btn_tt, btn_id, postDialog, windowFormPart;
+    
+    if(typeof Omadi.widgets.currentlyFocusedField !== 'undefined'){
+        Omadi.widgets.currentlyFocusedField.blur();
+    }
+    
+    bundle = Omadi.data.getBundle(node.type);
+    btn_tt = [];
+    btn_id = [];
 
+    btn_tt.push('Save');
+    btn_id.push('normal');
 
+    //Ti.API.info('BUNDLE: ' + JSON.stringify(bundle));
+    if(bundle.can_create == 1){
+        btn_tt.push("Save + New");
+        btn_id.push("new");
+    }
+    
+    if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
+        
+        windowFormPart = Ti.UI.currentWindow.form_part;
+        
+        if (bundle.data.form_parts.parts.length >= windowFormPart + 2) {
+
+            btn_tt.push("Save + " + bundle.data.form_parts.parts[windowFormPart + 1].label);
+            btn_id.push('next');
+        }
+    }
+    
+    btn_tt.push('Save as Draft');
+    btn_id.push('draft');
+    
+    btn_tt.push('Cancel');
+    btn_id.push('cancel');
+
+    postDialog = Titanium.UI.createOptionDialog();
+    postDialog.options = btn_tt;
+    postDialog.cancel = btn_tt.length - 1;
+    postDialog.show();
+
+    postDialog.addEventListener('click', function(ev) {
+        
+        if(Ti.UI.currentWindow.nodeSaved === false){
+            if(ev.index != -1){
+                if(btn_id[ev.index] == 'next'){
+                    save_form_data('next_part');
+                }
+                else if(btn_id[ev.index] == 'draft'){
+                    save_form_data('draft');
+                }
+                else if(btn_id[ev.index] == 'new'){
+                    save_form_data('new');
+                }
+                else if(btn_id[ev.index] == 'normal'){
+                    save_form_data('normal');
+                }
+            }
+        }
+        else{
+            alert("The form data was saved correctly, but this screen didn't close for some reason. You can exit safely. Please report what you did to get this screen.");
+        }
+    });
+}
 
 function addiOSToolbar() {"use strict";
     /*jslint eqeq: true, vars: true*/
@@ -875,70 +936,7 @@ function addiOSToolbar() {"use strict";
             style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
         });
     
-        actions.addEventListener('click', function(e) {
-            var bundle, btn_tt, btn_id, postDialog, windowFormPart;
-            
-            if(typeof Omadi.widgets.currentlyFocusedField !== 'undefined'){
-                Omadi.widgets.currentlyFocusedField.blur();
-            }
-            
-            bundle = Omadi.data.getBundle(node.type);
-            btn_tt = [];
-            btn_id = [];
-    
-            btn_tt.push('Save');
-            btn_id.push('normal');
-    
-            //Ti.API.info('BUNDLE: ' + JSON.stringify(bundle));
-            if(bundle.can_create == 1){
-                btn_tt.push("Save + New");
-                btn_id.push("new");
-            }
-            
-            if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
-                
-                windowFormPart = Ti.UI.currentWindow.form_part;
-                
-                if (bundle.data.form_parts.parts.length >= windowFormPart + 2) {
-    
-                    btn_tt.push("Save + " + bundle.data.form_parts.parts[windowFormPart + 1].label);
-                    btn_id.push('next');
-                }
-            }
-            
-            btn_tt.push('Save as Draft');
-            btn_id.push('draft');
-            
-            btn_tt.push('Cancel');
-            btn_id.push('cancel');
-    
-            postDialog = Titanium.UI.createOptionDialog();
-            postDialog.options = btn_tt;
-            postDialog.show();
-    
-            postDialog.addEventListener('click', function(ev) {
-                
-                if(Ti.UI.currentWindow.nodeSaved === false){
-                    if(ev.index != -1){
-                        if(btn_id[ev.index] == 'next'){
-                            save_form_data('next_part');
-                        }
-                        else if(btn_id[ev.index] == 'draft'){
-                            save_form_data('draft');
-                        }
-                        else if(btn_id[ev.index] == 'new'){
-                            save_form_data('new');
-                        }
-                        else if(btn_id[ev.index] == 'normal'){
-                            save_form_data('normal');
-                        }
-                    }
-                }
-                else{
-                    alert("The form data was saved correctly, but this screen didn't close for some reason. You can exit safely. Please report what you did to get this screen.");
-                }
-            });
-        });
+        actions.addEventListener('click', showActionsOptions);
 
         // create and add toolbar
         var toolbar = Ti.UI.iOS.createToolbar({
@@ -1749,6 +1747,8 @@ function continuousSave(){"use strict";
             node = loadCustomCopyNode(node, win.type, win.form_part);
             
             win.origNid = node.origNid;
+            node.custom_copy_orig_nid = node.origNid;
+            
             win.type = node.type;
             win.nid = 'new';
             win.form_part = 0;
@@ -1760,6 +1760,10 @@ function continuousSave(){"use strict";
                 Ti.App.removeEventListener("formFullyLoaded", formFullyLoadedForm);
             });
         }
+    }
+    
+    if(typeof node.custom_copy_orig_nid === 'undefined'){
+        node.custom_copy_orig_nid = 0;
     }
     
     Ti.UI.currentWindow.node = node;
@@ -2070,6 +2074,35 @@ function continuousSave(){"use strict";
             clearInterval(Ti.UI.currentWindow.saveInterval);
         } 
     });
+    
+    if(!Ti.UI.currentWindow.usingDispatch){
+        var doneButtonWrapper = Ti.UI.createView({
+            width: '100%',
+            height: 55,
+            top: 10,
+            backgroundGradient: Omadi.display.backgroundGradientGray
+        });
+        
+        var doneButton = Ti.UI.createLabel({
+            text: 'DONE',
+            backgroundGradient: Omadi.display.backgroundGradientBlue,
+            font: {
+                fontSize: 18,
+                fontWeight: 'bold'
+            },
+            borderRadius: 10,
+            width: '90%',
+            height: 35,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+            color: '#fff',
+            bottom: 30,
+            top: 10
+        });
+        
+        doneButton.addEventListener('click', showActionsOptions);
+        doneButtonWrapper.add(doneButton);
+        scrollView.add(doneButtonWrapper);
+    }
     
 }());
 

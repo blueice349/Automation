@@ -22,7 +22,8 @@ Omadi.bundles.companyVehicle.askAboutVehicle = function() {"use strict";
         dialog = Ti.UI.createOptionDialog({
             title : 'Which Vehicle Will You Drive?',
             options : options,
-            vehicles : vehicles
+            vehicles : vehicles,
+            cancel : options.length - 1
         });
 
         dialog.addEventListener('click', function(e) {

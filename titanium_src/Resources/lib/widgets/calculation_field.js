@@ -192,6 +192,9 @@ Omadi.widgets.calculation_field = {
                                         parent_node[calculation_row.field_name_1].dbValues[0] != null) {
                                             field_1_multiplier = parent_node[calculation_row.field_name_1].dbValues[0];
                                     }
+                                    else if(typeof calculation_row.default_value !== 'undefined'){
+                                        field_1_multiplier = calculation_row.default_value;
+                                    }
                                 }
                             }
                             else if (node[calculation_row.field_name_1] != null && node[calculation_row.field_name_1].dbValues[0] != null) {

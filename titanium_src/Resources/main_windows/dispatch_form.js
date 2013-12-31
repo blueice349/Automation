@@ -4,6 +4,7 @@
 Ti.include("/lib/functions.js");
 Ti.include("/lib/form_functions.js");
 
+
 var tabs, dispatchTab, workTab;
 var dispatchNode, workNode, workBundle = null;
 var dispatchWindow, workWindow;
@@ -299,6 +300,82 @@ function createAndroidToolbar(workNodeTypeLabel, openDispatch) {"use strict";
     }
 }
 
+function actionsButtonClicked(e){"use strict";
+    var bundle, btn_tt, btn_id, postDialog, workLabel, windowFormPart;
+    
+    if(Ti.App.isAndroid){
+        workLabel = workTab.text;
+    }
+    else{
+        workLabel = iOSTabbedBar.labels[1];
+    }
+
+    if (workLabel == NO_JOB_TYPE_LABEL) {
+        postDialog = Ti.UI.createAlertDialog({
+            buttonNames : ['OK'],
+            title : 'No Actions',
+            message : 'You must set the job type first.'
+        }).show();
+    }
+    else if ((workNode.nid == 'new' || workNode.nid < 0) && workNode.flag_is_updated != 3 && !workWindowOpen) {
+        postDialog = Ti.UI.createAlertDialog({
+            buttonNames : ['OK'],
+            title : 'No Actions',
+            message : 'Fill out the job tab first.'
+        }).show();
+    }
+    else {
+        bundle = Omadi.data.getBundle(workNode.type);
+        btn_tt = [];
+        btn_id = [];
+
+        btn_tt.push('Save');
+        btn_id.push('normal');
+
+        // Do not allow going to the next part on dispatch create
+        // The problem is that the dispatch_id won't be on the screen
+        // and the dispatch_form.js won't be called, but only form.js
+        if (workNode.nid > 0 && bundle.data.form_parts != null && bundle.data.form_parts != "") {
+            
+            windowFormPart = Ti.UI.currentWindow.form_part;
+            
+            if (bundle.data.form_parts.parts.length >= windowFormPart + 2) {
+
+                btn_tt.push("Save + " + bundle.data.form_parts.parts[windowFormPart + 1].label);
+                btn_id.push('next');
+            }
+        }
+
+        //Currently do not allow saving drafts with dispatch
+        btn_tt.push('Save as Draft');
+        btn_id.push('draft');
+
+        btn_tt.push('Cancel');
+        btn_id.push('cancel');
+
+        postDialog = Titanium.UI.createOptionDialog();
+        postDialog.options = btn_tt;
+        postDialog.cancel = btn_tt.length - 1;
+        postDialog.show();
+
+        postDialog.addEventListener('click', function(ev) {
+
+            //if(Ti.UI.currentWindow.nodeSaved === false){
+            if (ev.index != -1) {
+                if (btn_id[ev.index] == 'next') {
+                    dispatchSaveForms("next_part");
+                }
+                else if (btn_id[ev.index] == 'draft') {
+                    dispatchSaveForms("draft");
+                }
+                else if (btn_id[ev.index] == 'normal') {
+                    dispatchSaveForms("normal");
+                }
+            }
+        });
+    }
+};
+
 function createiOSToolbar(workNodeTypeLabel, openDispatch) {"use strict";
     var back, space, toolbar, items, buttonBar, actions;
 
@@ -377,79 +454,7 @@ function createiOSToolbar(workNodeTypeLabel, openDispatch) {"use strict";
             style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
         });
 
-        actions.addEventListener('click', function(e) {
-            var bundle, btn_tt, btn_id, postDialog, workLabel, windowFormPart;
-
-            workLabel = iOSTabbedBar.labels[1];
-
-            if (workLabel == NO_JOB_TYPE_LABEL) {
-                postDialog = Ti.UI.createAlertDialog({
-                    buttonNames : ['OK'],
-                    title : 'No Actions',
-                    message : 'You must set the job type first.'
-                }).show();
-            }
-            else if ((workNode.nid == 'new' || workNode.nid < 0) && workNode.flag_is_updated != 3 && !workWindowOpen) {
-                postDialog = Ti.UI.createAlertDialog({
-                    buttonNames : ['OK'],
-                    title : 'No Actions',
-                    message : 'Fill out the job tab first.'
-                }).show();
-            }
-            else {
-                bundle = Omadi.data.getBundle(workNode.type);
-                btn_tt = [];
-                btn_id = [];
-
-                btn_tt.push('Save');
-                btn_id.push('normal');
-
-                // Do not allow going to the next part on dispatch create
-                // The problem is that the dispatch_id won't be on the screen
-                // and the dispatch_form.js won't be called, but only form.js
-                if (workNode.nid > 0 && bundle.data.form_parts != null && bundle.data.form_parts != "") {
-                    
-                    windowFormPart = Ti.UI.currentWindow.form_part;
-                    
-                    if (bundle.data.form_parts.parts.length >= windowFormPart + 2) {
-
-                        btn_tt.push("Save + " + bundle.data.form_parts.parts[windowFormPart + 1].label);
-                        btn_id.push('next');
-                    }
-                }
-
-                //Currently do not allow saving drafts with dispatch
-                btn_tt.push('Save as Draft');
-                btn_id.push('draft');
-
-                btn_tt.push('Cancel');
-                btn_id.push('cancel');
-
-                postDialog = Titanium.UI.createOptionDialog();
-                postDialog.options = btn_tt;
-                postDialog.show();
-
-                postDialog.addEventListener('click', function(ev) {
-
-                    //if(Ti.UI.currentWindow.nodeSaved === false){
-                    if (ev.index != -1) {
-                        if (btn_id[ev.index] == 'next') {
-                            dispatchSaveForms("next_part");
-                        }
-                        else if (btn_id[ev.index] == 'draft') {
-                            dispatchSaveForms("draft");
-                        }
-                        else if (btn_id[ev.index] == 'normal') {
-                            dispatchSaveForms("normal");
-                        }
-                    }
-                    //}
-                    //else{
-                    //    alert("The form data was saved correctly, but this screen didn't close for some reason. You can exit safely. Please report what you did to get this screen.");
-                    //}
-                });
-            }
-        });
+        actions.addEventListener('click', actionsButtonClicked);
 
         items = [back, space, iOSTabbedBar, space, actions];
 
@@ -894,7 +899,7 @@ function updateDispatchStatus(){"use strict";
             type : 'dispatch',
             nid : dispatchNode.nid,
             form_part : 0,
-            bottom : 0,
+            bottom : 45,
             right : 0,
             left : 0,
             top: windowTop,
@@ -910,7 +915,7 @@ function updateDispatchStatus(){"use strict";
             type : workNode.type,
             nid : workNode.nid,
             form_part : Ti.UI.currentWindow.form_part,
-            bottom : 0,
+            bottom : 45,
             right : 0,
             left : 0,
             top: windowTop,
@@ -927,5 +932,32 @@ function updateDispatchStatus(){"use strict";
         workWindowOpen = true;
         workWindow.open();
     }
+    
+    var doneButtonWrapper = Ti.UI.createView({
+        width: '100%',
+        height: 45,
+        bottom: 0,
+        backgroundGradient: Omadi.display.backgroundGradientGray
+    });
+    
+    var doneButton = Ti.UI.createLabel({
+        text: 'DONE',
+        backgroundGradient: Omadi.display.backgroundGradientBlue,
+        font: {
+            fontSize: 18,
+            fontWeight: 'bold'
+        },
+        borderRadius: 10,
+        width: '90%',
+        height: 35,
+        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+        color: '#fff',
+        bottom: 5,
+        top: 5
+    });
+    
+    doneButton.addEventListener('click', actionsButtonClicked);
+    doneButtonWrapper.add(doneButton);
+    Ti.UI.currentWindow.add(doneButtonWrapper);
     
 }());

@@ -510,7 +510,7 @@ Omadi.service.sendUpdates = function() {"use strict";
 
             //When connected
             http.onload = function(e) {
-                var subDB, dialog, json, nameTable;
+                var subDB, dialog, json, nameTable, dir, file, string;
                 
                 //alert("Data Received");
                 //Parses response into strings
@@ -523,22 +523,77 @@ Omadi.service.sendUpdates = function() {"use strict";
 
                     Omadi.service.fetchedJSON = JSON.parse(this.responseText);
                         
-                    Ti.API.debug("parsed data");
+                    // Free the memory
+                    this.responseText = null;
                     
-                    subDB = Omadi.utils.openMainDatabase();
-
-                    //Terms:
-                    if (Omadi.service.fetchedJSON.terms) {
-                        Omadi.data.processTermsJson(subDB);
-                    }
-
-                    for (nameTable in Omadi.service.fetchedJSON.node) {
-                        if (Omadi.service.fetchedJSON.node.hasOwnProperty(nameTable)) {
-                            Omadi.data.processNodeJson(nameTable, subDB);
+                    Omadi.data.processFetchedJson();
+                    
+                    // subDB = Omadi.utils.openMainDatabase();
+// 
+                    // //Terms:
+                    // if (Omadi.service.fetchedJSON.terms) {
+                        // Omadi.data.processTermsJson(subDB);
+                    // }
+// 
+                    // for (nameTable in Omadi.service.fetchedJSON.node) {
+                        // if (Omadi.service.fetchedJSON.node.hasOwnProperty(nameTable)) {
+                            // Omadi.data.processNodeJson(nameTable, subDB);
+                        // }
+                    // }
+// 
+                    // subDB.close();
+                }
+                else if(this.responseData !== null){
+                    // In some very rare cases, this.responseText will be null
+                    // Here, we write the data to a file, read it back and do the installation
+                    try{
+                        dir = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory);
+                        
+                        if(!dir.exists()){
+                            dir.createDirectory();
+                        }
+                        
+                        Ti.API.debug("JSON String Length: " + this.responseData.length);
+                        
+                        file = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory + "/download_" + Omadi.utils.getUTCTimestamp() + ".txt");
+                        
+                        if(file.write(this.responseData)){
+                           
+                           string = file.read();
+                           
+                           if(isJsonString(string.text)){
+                                Ti.API.debug("Is JSON");
+                                
+                                Omadi.service.fetchedJSON = JSON.parse(string.text);
+                                
+                                // Free the memory
+                                string = null;
+                                
+                                Omadi.data.processFetchedJson();
+                            }
+                            else{
+                                Omadi.service.sendErrorReport("Text is not json");
+                                if (Omadi.service.progressBar !== null) {
+                                    Omadi.service.progressBar.close();
+                                    Omadi.service.progressBar = null;
+                                }
+                            }
+                        }
+                        else{
+                            Omadi.service.sendErrorReport("Failed to write to the download file");
+                        }
+                        
+                        if(file.exists()){
+                            file.deleteFile();
                         }
                     }
-
-                    subDB.close();
+                    catch(ex){
+                        Ti.API.debug("Exception at data: " + ex);
+                        Omadi.service.sendErrorReport("Exception at json data: " + ex);
+                    }
+                    
+                    file = null;
+                    dir = null;
                 }
                 else {
                     
@@ -1416,6 +1471,7 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
         //json = '{ "timestamp" : "' + Omadi.utils.getUTCTimestamp() + '", "data" : { ';
         obj = {
             timestamp : Omadi.utils.getUTCTimestamp(),
+            last_sync_timestamp: Omadi.data.getLastUpdateTimestamp(),
             data : {}
         };
 
@@ -1477,6 +1533,7 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
                 obj.data.node[nid].no_data_fields = node.no_data_fields;
                 obj.data.node[nid].sync_hash = node.sync_hash;
                 obj.data.node[nid].dispatch_nid = node.dispatch_nid;
+                obj.data.node[nid].custom_copy_orig_nid = node.custom_copy_orig_nid;
 
                 for (field_name in instances) {
                     if (instances.hasOwnProperty(field_name)) {

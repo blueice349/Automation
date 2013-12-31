@@ -55,7 +55,7 @@ Omadi.widgets.omadi_reference = {
 
         var settings, widgetView, dbValue, textValue, nodeTypes, possibleValues, options,
             i, query, db, result, wrapper, autocomplete_table, calculatedTop, isHidden,
-            vehicleNid;
+            vehicleNid, addressLabel;
 
         dbValue = "";
         textValue = "";
@@ -117,6 +117,19 @@ Omadi.widgets.omadi_reference = {
             height : Ti.UI.SIZE,
             layout : 'vertical'
         });
+        
+        addressLabel = Ti.UI.createLabel({
+            text: '',
+            height: 20,
+            color: '#666',
+            font: {
+                fontSize: 12
+            }
+        });
+        
+        if(dbValue > 0){
+            addressLabel.text = Omadi.widgets.omadi_reference.getFirstStreetAddress(dbValue);
+        }
         
         if(instance.widget.type == 'omadi_reference_select'){
             
@@ -203,6 +216,7 @@ Omadi.widgets.omadi_reference = {
             widgetView.clickedAutocomplete = false;
             widgetView.touched = false;
             widgetView.blurred = true;
+            widgetView.addressLabel = addressLabel;
             
             if(!isHidden){
                 widgetView.defaultValueChildFields = Omadi.widgets.omadi_reference.setupParentDefaultFields(instance);
@@ -222,7 +236,7 @@ Omadi.widgets.omadi_reference = {
                 widgetView.autocomplete_table = autocomplete_table;
         
                 autocomplete_table.addEventListener('click', function(e) {
-                    var i, callback;
+                    var i, callback, street;
                     
                     e.source.textField.textValue = e.source.textField.value = e.rowData.title;
                     e.source.textField.dbValue = e.rowData.nid;
@@ -230,6 +244,9 @@ Omadi.widgets.omadi_reference = {
                     e.source.autocomplete_table.setHeight(0);
                     e.source.autocomplete_table.setBorderWidth(0);
                     e.source.autocomplete_table.setVisible(false);
+                    
+                    street = Omadi.widgets.omadi_reference.getFirstStreetAddress(e.rowData.nid);
+                    e.source.textField.addressLabel.text = street;
                     
                     e.source.textField.setColor('#006600');
         
@@ -293,7 +310,7 @@ Omadi.widgets.omadi_reference = {
                 widgetView.addEventListener('change', function(e) {
                     /*global setConditionallyRequiredLabels*/
         
-                    var possibleValues, tableData, i, j, regEx, row, upperCaseValue, callback;
+                    var possibleValues, tableData, i, j, regEx, row, upperCaseValue, callback, street;
                     
                     Ti.API.debug("auto: " + e.source.clickedAutocomplete);
                     
@@ -329,6 +346,9 @@ Omadi.widgets.omadi_reference = {
                                         e.source.autocomplete_table.setHeight(0);
                                         e.source.autocomplete_table.setBorderWidth(0);
                                         e.source.autocomplete_table.setVisible(false);
+                                        
+                                        street = Omadi.widgets.omadi_reference.getFirstStreetAddress(e.source.dbValue);
+                                        e.source.addressLabel.text = street;
                                         
                                         e.source.setColor('#006600');
                                         
@@ -397,6 +417,7 @@ Omadi.widgets.omadi_reference = {
         
                 wrapper.add(widgetView);
                 wrapper.add(autocomplete_table);
+                wrapper.add(addressLabel);
             }
         }
 
@@ -497,6 +518,32 @@ Omadi.widgets.omadi_reference = {
                 }
             }
         }
+    },
+    getFirstStreetAddress : function(nid){"use strict";
+        var instances, node, street, field_name;
+        
+        street = '';
+        node = Omadi.data.nodeLoad(nid);
+        
+        if(node){
+            instances = Omadi.data.getFields(node.type);
+            for(field_name in instances){
+                if(instances.hasOwnProperty(field_name)){
+                    if(instances[field_name].type == 'location'){
+                        if(typeof instances[field_name].part !== 'undefined' && instances[field_name].part == 'street'){
+                            if(typeof node[field_name] !== 'undefined' && 
+                                typeof node[field_name].dbValues !== 'undefined' && 
+                                typeof node[field_name].dbValues[0] !== 'undefined'){
+                                    
+                                    street = node[field_name].dbValues[0];
+                                    break;
+                            }   
+                        }
+                    }
+                }
+            }   
+        }
+        return street;
     }
 };
 

@@ -4,6 +4,50 @@
 
 Omadi.display = Omadi.display || {};
 
+Omadi.display.backgroundGradientBlue = {
+    type : 'linear',
+    startPoint : {
+        x : '50%',
+        y : '0%'
+    },
+    endPoint : {
+        x : '50%',
+        y : '100%'
+    },
+    colors : [{
+        color : '#2BC4F3',
+        offset : 0.0
+    }, {
+        color : '#00AEEE',
+        offset : 0.25
+    }, {
+        color : '#00AEEE',
+        offset : 1.0
+    }]
+};
+
+Omadi.display.backgroundGradientGray = {
+    type : 'linear',
+    startPoint : {
+        x : '50%',
+        y : '0%'
+    },
+    endPoint : {
+        x : '50%',
+        y : '100%'
+    },
+    colors : [{
+        color : '#A7A9AC',
+        offset : 0.0
+    }, {
+        color : '#6D6E71',
+        offset : 0.25
+    }, {
+        color : '#58595B',
+        offset : 1.0
+    }]
+};
+
 Omadi.display.largePhotoWindow = null;
 
 Omadi.display.showBigImage = function(imageView) {"use strict";
@@ -780,10 +824,21 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
                 if (bundle.data.custom_copy.hasOwnProperty(to_type)) {
                     to_bundle = Omadi.data.getBundle(to_type);
                     if (to_bundle && to_bundle.can_create == 1) {
-                        options.push("Copy to " + to_bundle.label);
-                        buttonData.push({
-                            form_part : to_type
-                        });
+                        if(typeof bundle.data.custom_copy[to_type] !== 'undefined' && 
+                            typeof bundle.data.custom_copy[to_type].conversion_type !== 'undefined' &&
+                            bundle.data.custom_copy[to_type].conversion_type == 'change'){
+                            
+                                options.push("Change to " + to_bundle.label);
+                                buttonData.push({
+                                    form_part : to_type
+                                }); 
+                        }
+                        else{
+                            options.push("Copy to " + to_bundle.label);
+                            buttonData.push({
+                                form_part : to_type
+                            });
+                        }
                         hasCustomCopy = true;
                     }
                 }
@@ -804,6 +859,7 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
             postDialog = Titanium.UI.createOptionDialog();
             postDialog.options = options;
             postDialog.eventRow = e.row;
+            postDialog.cancel = options.length - 1;
             postDialog.show();
     
             postDialog.addEventListener('click', function(ev) {

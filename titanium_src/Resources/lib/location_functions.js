@@ -1,4 +1,5 @@
 /*jslint eqeq:true, plusplus: true*/
+
 Omadi.location = Omadi.location || {};
 
 Omadi.location.isLocationEnabled = function(){"use strict";
