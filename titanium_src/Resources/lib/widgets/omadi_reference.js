@@ -120,11 +120,14 @@ Omadi.widgets.omadi_reference = {
         
         addressLabel = Ti.UI.createLabel({
             text: '',
-            height: 20,
+            height: 0,
+            width: Ti.UI.FILL,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
             color: '#666',
             font: {
                 fontSize: 12
-            }
+            },
+            top: 0
         });
         
         if(dbValue > 0){
@@ -222,9 +225,9 @@ Omadi.widgets.omadi_reference = {
                 widgetView.defaultValueChildFields = Omadi.widgets.omadi_reference.setupParentDefaultFields(instance);
         
                 autocomplete_table = Titanium.UI.createTableView({
-                    zIndex : 999,
+                    //zIndex : 999,
                     height : 0,
-                    backgroundColor : '#FFFFFF',
+                    backgroundColor : '#fff',
                     visible : false,
                     borderColor : '#000',
                     borderWidth : 0,
@@ -247,8 +250,9 @@ Omadi.widgets.omadi_reference = {
                     
                     street = Omadi.widgets.omadi_reference.getFirstStreetAddress(e.rowData.nid);
                     e.source.textField.addressLabel.text = street;
+                    e.source.textField.addressLabel.height = 20;
                     
-                    e.source.textField.setColor('#006600');
+                    e.source.textField.setColor('#060');
         
                     if (Ti.App.isAndroid) {
                         // Make sure the cursor is at the end of the text
@@ -322,12 +326,14 @@ Omadi.widgets.omadi_reference = {
                     
                     if (e.source.touched === true) {
                         //Ti.API.info("changed");
-                            
+                         
                         e.source.dbValue = null;
                         e.source.textValue = e.source.value;
                         
                         e.source.setColor('#ee0000');
-        
+                        
+                        e.source.addressLabel.height = 0;
+                        
                         if (e.source.lastValue != e.source.value && e.source.value != '') {
                             possibleValues = e.source.possibleValues;
         
@@ -349,6 +355,7 @@ Omadi.widgets.omadi_reference = {
                                         
                                         street = Omadi.widgets.omadi_reference.getFirstStreetAddress(e.source.dbValue);
                                         e.source.addressLabel.text = street;
+                                        e.source.addressLabel.height = 20;
                                         
                                         e.source.setColor('#006600');
                                         

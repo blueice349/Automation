@@ -1548,6 +1548,10 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
                         else {
                             obj.data.node[nid][field_name] = null;
                         }
+                        
+                        if(instances[field_name].type == 'extra_price'){
+                            obj.data.node[nid][field_name + "___data"] = node[field_name].tempData;
+                        }
                     }
                 }
             }
@@ -1570,9 +1574,14 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
             Omadi.service.sendErrorReport("DB WOULD NOT CLOSE");
         }
         
-        db = Omadi.utils.openMainDatabase();
-        result = db.execute("UPDATE node SET flag_is_updated = 3 WHERE flag_is_updated = 1");
-        db.close();
+        try{
+            db = Omadi.utils.openMainDatabase();
+            result = db.execute("UPDATE node SET flag_is_updated = 3 WHERE flag_is_updated = 1");
+            db.close();
+        }
+        catch(nothing2){
+            Omadi.service.sendErrorReport("Could not save bad JSON as a draft.");
+        }
     }
     finally{
         // If there was an error before the db was closed above, close it now so the app doesn't freeze

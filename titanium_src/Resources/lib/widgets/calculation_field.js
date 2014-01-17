@@ -88,14 +88,15 @@ Omadi.widgets.calculation_field = {
             recalculateButton = Ti.UI.createButton({
                  title: 'Recalculate',
                  style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
-                 backgroundColor: '#ccc',
+                 backgroundGradient: Omadi.display.backgroundGradientGray,
                  borderColor: '#999',
                  borderWidth: 1,
                  right: 15,
                  width: 150,
                  borderRadius: 10,
-                 color: '#444',
-                 instance: instance
+                 color: '#eee',
+                 instance: instance,
+                 top: 10
             });
             
             recalculateButton.addEventListener('click', function(e){
@@ -117,7 +118,7 @@ Omadi.widgets.calculation_field = {
         var entity, final_value, row_values, idx, calculation_row, value, field_1_multiplier,
             field_2_multiplier, numeric_multiplier, cached_final_value, instances, required_instance_final_values,
             parent_field, start_timestamp, end_timestamp, difference, at_time, relative_increment_time, day_count, 
-            parent_node, zero, criteria_index, field_name, finalValue;
+            parent_node, zero, criteria_index, field_name, finalValue, priceIdx;
         
         /*global list_search_node_matches_search_criteria,mktime*/
         
@@ -196,6 +197,16 @@ Omadi.widgets.calculation_field = {
                                         field_1_multiplier = calculation_row.default_value;
                                     }
                                 }
+                            }
+                            else if(instances[calculation_row.field_name_1].type == 'extra_price'){
+                                if (node[calculation_row.field_name_1] != null && node[calculation_row.field_name_1].dbValues != null) {
+                                    field_1_multiplier = 0;
+                                    for(priceIdx = 0; priceIdx < node[calculation_row.field_name_1].dbValues.length; priceIdx ++){
+                                        if(!isNaN(parseFloat(node[calculation_row.field_name_1].dbValues[priceIdx]))){
+                                            field_1_multiplier += parseFloat(node[calculation_row.field_name_1].dbValues[priceIdx]);
+                                        }
+                                    }
+                                }                                  
                             }
                             else if (node[calculation_row.field_name_1] != null && node[calculation_row.field_name_1].dbValues[0] != null) {
                                 field_1_multiplier = node[calculation_row.field_name_1].dbValues[0];
@@ -284,6 +295,16 @@ Omadi.widgets.calculation_field = {
                                         field_2_multiplier = parent_node[calculation_row.field_name_2].dbValues[0];
                                     }
                                 }
+                            }
+                            else if(instances[calculation_row.field_name_2].type == 'extra_price'){
+                                if (node[calculation_row.field_name_2] != null && node[calculation_row.field_name_2].dbValues != null) {
+                                    field_2_multiplier = 0;
+                                    for(priceIdx = 0; priceIdx < node[calculation_row.field_name_2].dbValues.length; priceIdx ++){
+                                        if(!isNaN(parseFloat(node[calculation_row.field_name_2].dbValues[priceIdx]))){
+                                            field_2_multiplier += parseFloat(node[calculation_row.field_name_2].dbValues[priceIdx]);
+                                        }
+                                    }
+                                }                                  
                             }
                             else if (node[calculation_row.field_name_2] != null && node[calculation_row.field_name_2].dbValues[0] != null) {
                                 field_2_multiplier = node[calculation_row.field_name_2].dbValues[0];
@@ -489,7 +510,7 @@ Omadi.widgets.calculation_field = {
                 row_label = Ti.UI.createLabel({
                     text : row_values[idx].row_label + "  ",
                     textAlign : Ti.UI.TEXT_ALIGNMENT_RIGHT,
-                    width : '59.5%',
+                    width : '64.5%',
                     font : {
                         fontSize : 15
                     },
@@ -504,7 +525,7 @@ Omadi.widgets.calculation_field = {
                 value = Ti.UI.createLabel({
                     text : "  " + cal_value_str,
                     textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
-                    width : '40%',
+                    width : '35%',
                     font : {
                         fontFamily : 'Helvetica Neue',
                         fontSize : 15
@@ -549,9 +570,10 @@ Omadi.widgets.calculation_field = {
             row_label = Ti.UI.createLabel({
                 text : instance.label + "  ",
                 textAlign : Ti.UI.TEXT_ALIGNMENT_RIGHT,
-                width : '59.5%',
+                width : '64.5%',
                 left : 0,
                 top : 1,
+                bottom: 1,
                 font : {
                     fontSize : 16,
                     fontWeight : 'bold'
@@ -564,7 +586,7 @@ Omadi.widgets.calculation_field = {
             value = Ti.UI.createLabel({
                 text : "  " + cal_value_str,
                 textAlign : 'left',
-                width : '40%',
+                width : '35%',
                 right : 0,
                 top : 1,
                 font : {

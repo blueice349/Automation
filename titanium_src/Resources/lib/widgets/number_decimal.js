@@ -106,7 +106,7 @@ Omadi.widgets.number_decimal = {
         widgetView.dbValue = dbValue;
         widgetView.textValue = textValue;
         widgetView.setValue(textValue);
-        widgetView.setKeyboardType(Ti.UI.KEYBOARD_DECIMAL_PAD);
+        widgetView.setKeyboardType(Ti.UI.KEYBOARD_DEFAULT);
             
         if (settings.max != null) {
             widgetView.maxValue = settings.max;

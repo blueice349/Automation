@@ -196,7 +196,7 @@ function formToNode(){"use strict";
            }
        }
        
-       //Ti.API.debug(node);
+       Ti.API.debug(node);
    }
    catch(ex){
        Omadi.service.sendErrorReport("Bundling node from form: " + ex);
@@ -559,7 +559,7 @@ function validate_form_data(node, saveType){"use strict";
         
             form_errors = form_errors.concat(validateRestrictions(node));
             // Only show restriction error if one exists
-            if(form_errors.length == 0){
+            if(form_errors && form_errors.length == 0){
                 
                 for(field_name in instances){
                     if(instances.hasOwnProperty(field_name)){
@@ -789,7 +789,7 @@ function save_form_data(saveType) {"use strict";
         form_errors = validate_form_data(node, saveType);
     }
     
-    if(form_errors.length > 0){
+    if(form_errors && form_errors.length > 0){
         dialog = Titanium.UI.createAlertDialog({
             title : 'Form Validation',
             buttonNames : ['OK'],

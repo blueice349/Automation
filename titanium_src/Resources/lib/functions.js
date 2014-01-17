@@ -645,6 +645,64 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                     }
 
                                     break;
+                                    
+                                case 'extra_price':
+                                    
+                                    if (search_operator == '__blank') {
+                                        row_matches[criteria_index] = true;
+                                        if (nodeDBValues.length > 0) {
+                                            for ( i = 0; i < nodeDBValues.length; i++) {
+                                                if (nodeDBValues[i] != 0) {
+                                                    row_matches[criteria_index] = false;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    for ( i = 0; i < nodeDBValues.length; i++) {
+                                        node_value = nodeDBValues[i];
+                                        switch(search_operator) {
+                                            case '__filled':
+                                                if (node_value != 0) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                                
+                                            case '>':
+                                                if (node_value > search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                            case '>=':
+                                                if (node_value >= search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                            case '!=':
+                                                if (node_value != search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                            case '<':
+                                                if (node_value < search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                            case '<=':
+                                                if (node_value <= search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+
+                                            default:
+                                                if (node_value == search_value) {
+                                                    row_matches[criteria_index] = true;
+                                                }
+                                                break;
+                                        }
+                                    }
+
+                                    break;
 
                                 case 'auto_increment':
 

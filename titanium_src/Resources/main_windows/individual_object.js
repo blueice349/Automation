@@ -345,6 +345,20 @@ function doFieldOutput(fieldObj) {"use strict";
                 rowView.add(valueView);
                     
             }
+            else if (fieldObj.type === 'extra_price') {
+                labelView.height = Ti.UI.SIZE;
+                labelView.width = '100%';
+                labelLabel.textAlign = Ti.UI.TEXT_ALIGNMENT_LEFT;
+                labelLabel.left = '2%';
+                
+                scrollView.add(labelView);
+                tableView = Omadi.widgets.extra_price.getTableView(node, fieldObj);
+                scrollView.add(tableView);
+                scrollView.add(Ti.UI.createView({
+                    width: '100%',
+                    height: 10
+                }));
+            }
             else if (fieldObj.type == 'metadata') {
                 valueLabel = Ti.UI.createLabel({
                     text : fieldObj.textValue,
@@ -505,11 +519,7 @@ function doFieldOutput(fieldObj) {"use strict";
                         if (node[fieldObj.field_name].imageData[i] > "") {
                             fileId = node[fieldObj.field_name].dbValues[i];
                             
-                            
                             imagePath = node[fieldObj.field_name].imageData[i];
-                            
-                            //alert(imagePath);
-                            
                             degrees = node[fieldObj.field_name].degrees[i];
                             
                             contentImage = Ti.UI.createImageView({
@@ -525,26 +535,6 @@ function doFieldOutput(fieldObj) {"use strict";
                                 filePath : imagePath
                             });
                             
-                            // if(Ti.App.isAndroid && degrees > 0){
-                                // transform = Ti.UI.create2DMatrix();
-                                // animation = Ti.UI.createAnimation();
-//                                 
-                                // rotateDegrees = degrees;
-                                // if(rotateDegrees == 270){
-                                    // rotateDegrees = 90;
-                                // }
-                                // else if(rotateDegrees == 90){
-                                    // rotateDegrees = 270;
-                                // }
-//                                 
-                                // transform = transform.rotate(rotateDegrees);
-                                // animation.transform = transform;
-                                // animation.duration = 1;
-//                                 
-                                // contentImage.animate(animation);
-                            // }
-    
-                            //contentImage.addEventListener('click', displayLargeImage);
                             valueView.add(contentImage);
                             
                             contentWidth += 110;
@@ -1100,6 +1090,7 @@ function iOSActionMenu(actualWindow) {"use strict";
 
         postDialog = Titanium.UI.createOptionDialog();
         postDialog.options = btn_tt;
+        postDialog.cancel = btn_tt.length - 1;
         postDialog.show();
 
         postDialog.addEventListener('click', function(ev) {

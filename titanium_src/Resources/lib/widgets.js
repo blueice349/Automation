@@ -25,6 +25,7 @@ Ti.include('/lib/widgets/auto_increment.js');
 Ti.include('/lib/widgets/omadi_time.js');
 Ti.include('/lib/widgets/file.js');
 Ti.include('/lib/widgets/list_text.js');
+Ti.include('/lib/widgets/extra_price.js');
 
 /*jslint eqeq: true, plusplus: true, nomen: true*/
 /*global  Omadi*/
@@ -77,6 +78,8 @@ Omadi.widgets.getFieldView = function (node, instance){"use strict";
             fieldView = Omadi.widgets.file.getFieldView(node, instance); break;
         case 'list_text':
             fieldView = Omadi.widgets.list_text.getFieldView(node, instance); break;
+        case 'extra_price':
+            fieldView = Omadi.widgets.extra_price.getFieldView(node, instance); break;
     }
     
     return fieldView;
@@ -557,7 +560,8 @@ Omadi.widgets.getTextField = function(instance){"use strict";
         focusable: true,
         
         // iOS options
-        borderStyle: Ti.UI.INPUT_BORDERSTYLE_ROUNDED,
+        //borderStyle: Ti.UI.INPUT_BORDERSTYLE_ROUNDED,
+        leftButtonPadding: 8,
         suppressReturn: true,
         
         // Custom variables
@@ -588,7 +592,12 @@ Omadi.widgets.getTextField = function(instance){"use strict";
     }
     
     textField.addEventListener('focus', function(e){
+        e.source.setBackgroundColor('#def');
         Omadi.widgets.currentlyFocusedField = e.source; 
+    });
+    
+    textField.addEventListener('blur', function(e){
+        e.source.setBackgroundColor('#fff');
     });
     
     return textField;
