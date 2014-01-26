@@ -182,6 +182,16 @@ Omadi.utils.getUsername = function(uid){"use strict";
     return username;
 };
 
+Omadi.utils.formatCurrency = function(amount){"use strict";
+    var price = "";
+    if(amount != ""){
+        if(!isNaN(parseFloat(amount))){
+            price = '$' + parseFloat(Math.round(amount * 100) / 100).toFixed(2);
+        }
+    }  
+    return price;
+};
+
 Omadi.utils.formatMegaBytes = function(bytes){"use strict";
     var mb = bytes / 1048576;
     return Math.round(mb * 10) / 10;

@@ -2,9 +2,15 @@
 <<<<<<<=HEAD
 >>>>>>>=new_android
 eclipse.preferences.version=1
+provisioning_profiles/adhoc/0ADC10EC-42AE-42F5-94EA-9805D824784C/appid=com.omadi.crm
+provisioning_profiles/adhoc/0ADC10EC-42AE-42F5-94EA-9805D824784C/name=Ad Hoc 2013 3
+provisioning_profiles/adhoc/0ADC10EC-42AE-42F5-94EA-9805D824784C/uuid=0ADC10EC-42AE-42F5-94EA-9805D824784C
 provisioning_profiles/adhoc/0BC35D5D-AABD-486B-9EA6-099A611AB8EE/appid=com.omadi.crm
 provisioning_profiles/adhoc/0BC35D5D-AABD-486B-9EA6-099A611AB8EE/name=Omadi_distribution_12sep07
 provisioning_profiles/adhoc/0BC35D5D-AABD-486B-9EA6-099A611AB8EE/uuid=0BC35D5D-AABD-486B-9EA6-099A611AB8EE
+provisioning_profiles/adhoc/453F3D4E-0862-4A12-938C-BC0A2AC242BF/appid=com.omadi.crm
+provisioning_profiles/adhoc/453F3D4E-0862-4A12-938C-BC0A2AC242BF/name=Ad Hoc 2013 4
+provisioning_profiles/adhoc/453F3D4E-0862-4A12-938C-BC0A2AC242BF/uuid=453F3D4E-0862-4A12-938C-BC0A2AC242BF
 provisioning_profiles/adhoc/562D9B1E-E2FE-4944-8B57-65768CEBA541/appid=com.omadi.crm
 provisioning_profiles/adhoc/562D9B1E-E2FE-4944-8B57-65768CEBA541/name=Latest Ad Hoc Dist 6
 provisioning_profiles/adhoc/562D9B1E-E2FE-4944-8B57-65768CEBA541/uuid=562D9B1E-E2FE-4944-8B57-65768CEBA541

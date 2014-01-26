@@ -198,15 +198,19 @@ Omadi.widgets.calculation_field = {
                                     }
                                 }
                             }
-                            else if(instances[calculation_row.field_name_1].type == 'extra_price'){
-                                if (node[calculation_row.field_name_1] != null && node[calculation_row.field_name_1].dbValues != null) {
-                                    field_1_multiplier = 0;
-                                    for(priceIdx = 0; priceIdx < node[calculation_row.field_name_1].dbValues.length; priceIdx ++){
-                                        if(!isNaN(parseFloat(node[calculation_row.field_name_1].dbValues[priceIdx]))){
-                                            field_1_multiplier += parseFloat(node[calculation_row.field_name_1].dbValues[priceIdx]);
+                            else if(typeof instances[calculation_row.field_name_1] !== 'undefined' &&
+                                instances[calculation_row.field_name_1] != null &&
+                                typeof instances[calculation_row.field_name_1].type !== 'undefined' && 
+                                instances[calculation_row.field_name_1].type == 'extra_price'){
+                                    
+                                    if (node[calculation_row.field_name_1] != null && node[calculation_row.field_name_1].dbValues != null) {
+                                        field_1_multiplier = 0;
+                                        for(priceIdx = 0; priceIdx < node[calculation_row.field_name_1].dbValues.length; priceIdx ++){
+                                            if(!isNaN(parseFloat(node[calculation_row.field_name_1].dbValues[priceIdx]))){
+                                                field_1_multiplier += parseFloat(node[calculation_row.field_name_1].dbValues[priceIdx]);
+                                            }
                                         }
-                                    }
-                                }                                  
+                                    }                                  
                             }
                             else if (node[calculation_row.field_name_1] != null && node[calculation_row.field_name_1].dbValues[0] != null) {
                                 field_1_multiplier = node[calculation_row.field_name_1].dbValues[0];
@@ -282,7 +286,7 @@ Omadi.widgets.calculation_field = {
             
                         if (calculation_row.field_name_2 != null && calculation_row.field_name_2 != "") {
                             
-                            if (Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_1] != null) {
+                            if (Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_2] != null) {
                                 field_2_multiplier = Omadi.widgets.calculation_field.calculated_field_cache[calculation_row.field_name_2];
                             }
                             else if (calculation_row.type == 'parent_field_value') {
@@ -296,15 +300,19 @@ Omadi.widgets.calculation_field = {
                                     }
                                 }
                             }
-                            else if(instances[calculation_row.field_name_2].type == 'extra_price'){
-                                if (node[calculation_row.field_name_2] != null && node[calculation_row.field_name_2].dbValues != null) {
-                                    field_2_multiplier = 0;
-                                    for(priceIdx = 0; priceIdx < node[calculation_row.field_name_2].dbValues.length; priceIdx ++){
-                                        if(!isNaN(parseFloat(node[calculation_row.field_name_2].dbValues[priceIdx]))){
-                                            field_2_multiplier += parseFloat(node[calculation_row.field_name_2].dbValues[priceIdx]);
+                            else if(typeof instances[calculation_row.field_name_2] !== 'undefined' &&
+                                instances[calculation_row.field_name_2] != null &&
+                                typeof instances[calculation_row.field_name_2].type !== 'undefined' && 
+                                instances[calculation_row.field_name_2].type == 'extra_price'){
+                                    
+                                    if (node[calculation_row.field_name_2] != null && node[calculation_row.field_name_2].dbValues != null) {
+                                        field_2_multiplier = 0;
+                                        for(priceIdx = 0; priceIdx < node[calculation_row.field_name_2].dbValues.length; priceIdx ++){
+                                            if(!isNaN(parseFloat(node[calculation_row.field_name_2].dbValues[priceIdx]))){
+                                                field_2_multiplier += parseFloat(node[calculation_row.field_name_2].dbValues[priceIdx]);
+                                            }
                                         }
-                                    }
-                                }                                  
+                                    }                               
                             }
                             else if (node[calculation_row.field_name_2] != null && node[calculation_row.field_name_2].dbValues[0] != null) {
                                 field_2_multiplier = node[calculation_row.field_name_2].dbValues[0];

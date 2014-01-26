@@ -1071,7 +1071,12 @@ function iOSActionMenu(actualWindow) {"use strict";
 
         btn_tt.push('Edit');
         btn_id.push(form_part);
-
+        
+        if(Omadi.print.canPrintReceipt(curWin.nid)){
+            
+            btn_tt.push('Print');
+            btn_id.push('_print');
+        }
 
         if(typeof bundle.data.custom_copy !== 'undefined'){
             for(to_type in bundle.data.custom_copy){
@@ -1094,11 +1099,21 @@ function iOSActionMenu(actualWindow) {"use strict";
         postDialog.show();
 
         postDialog.addEventListener('click', function(ev) {
-            if (ev.index == btn_tt.length - 1) {
+            var formPart;
+            
+            if (ev.index == ev.source.cancel) {
                 Ti.API.info("Fix this logic");
             }
             else if (ev.index != -1) {
-                Omadi.display.openFormWindow(curWin.type, curWin.nid, btn_id[ev.index]);
+                
+                formPart = btn_id[ev.index];
+                
+                if(formPart == '_print'){
+                    Omadi.print.printReceipt(curWin.nid);
+                }
+                else{
+                    Omadi.display.openFormWindow(curWin.type, curWin.nid, formPart);
+                }
             }
         });
 

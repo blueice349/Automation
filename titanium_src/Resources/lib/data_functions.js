@@ -544,7 +544,12 @@ Omadi.data.nodeSave = function(node) {"use strict";
                     fieldNames.push(field_name);
                     
                     if(instances[field_name].type == 'extra_price'){
-                        fieldNames.push(field_name + "___data");
+                        // Must check if data exists in node to add the extra field since the same
+                        // check is done later on to add the data.
+                        // This this is wrong, the column vs value count could be off.
+                        if ( typeof node[field_name] !== 'undefined') {
+                            fieldNames.push(field_name + "___data");
+                        }
                     }
                 }
             }
@@ -2870,7 +2875,12 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
         if (result.field(0, Ti.Database.FIELD_TYPE_INT) > 0) {
 
             //Insert
-            if (Omadi.service.fetchedJSON && Omadi.service.fetchedJSON.node && Omadi.service.fetchedJSON.node[type] && Omadi.service.fetchedJSON.node[type].insert) {
+            if (Omadi.service.fetchedJSON && 
+                Omadi.service.fetchedJSON.node && 
+                typeof Omadi.service.fetchedJSON.node[type] !== 'undefined' &&
+                Omadi.service.fetchedJSON.node[type] && 
+                typeof Omadi.service.fetchedJSON.node[type].insert !== 'undefined' &&
+                Omadi.service.fetchedJSON.node[type].insert) {
 
                 Ti.API.debug("inserting " + type + " nodes");
                 //Ti.API.debug(Omadi.service.fetchedJSON.node[type]);
@@ -3152,6 +3162,7 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
 
             if (typeof Omadi.service.fetchedJSON.node !== 'undefined' && 
                 typeof Omadi.service.fetchedJSON.node[type] !== 'undefined' && 
+                Omadi.service.fetchedJSON.node[type] && 
                 typeof Omadi.service.fetchedJSON.node[type]['delete'] !== 'undefined' && 
                 Omadi.service.fetchedJSON.node[type]['delete'] && 
                 Omadi.service.fetchedJSON.node[type]['delete'].length) {

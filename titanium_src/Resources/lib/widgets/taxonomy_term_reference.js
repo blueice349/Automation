@@ -357,9 +357,14 @@ Omadi.widgets.taxonomy_term_reference = {
 
         return wrapperView;
     },
-    getOptions : function(instance) {"use strict";
+    getOptions : function(instance, useNone) {"use strict";
 
         var db, result, vid, options;
+        
+        if(typeof useNone === 'undefined'){
+            useNone = true;
+        }
+        
         db = Omadi.utils.openMainDatabase();
         
         options = [];
@@ -373,7 +378,7 @@ Omadi.widgets.taxonomy_term_reference = {
     
            
     
-            if (instance.settings.cardinality != -1 && instance.required == 0) {
+            if (instance.settings.cardinality != -1 && instance.required == 0 && useNone) {
                 options.push({
                     title : '- None -',
                     dbValue : null

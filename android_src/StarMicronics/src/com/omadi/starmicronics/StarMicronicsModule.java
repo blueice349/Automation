@@ -31,7 +31,7 @@ import android.os.Message;
 import android.provider.MediaStore.Images;
 import java.util.List;
 import java.util.ArrayList;
-import java.io.File;
+import java.io.File;s
 import android.graphics.BitmapFactory;
 import android.graphics.Bitmap;
 
@@ -109,7 +109,7 @@ public class StarMicronicsModule extends KrollModule{
 				invokeCallback((TiBaseActivity) activity, successCallback, getKrollObject(), d);
 			}
 			else{
-				d.put("error", "No blue tooth devices available.");
+				d.put("error", "No bluetooth devices available.");
 				invokeCallback((TiBaseActivity) activity, errorCallback, getKrollObject(), d);
 			}
 		}
@@ -219,45 +219,43 @@ public class StarMicronicsModule extends KrollModule{
 				if(imageData.containsKey("width")){
 					imageWidth = (Integer) imageData.get("width");
 				}	
-			
-				if(imageData.containsKey("path")){
-					bufferIndex = (Integer) imageData.get("bufferIndex");
-					Log.d("PRINT", "PRINT: bufferIndex: " + bufferIndex);
+				
+				bufferIndex = (Integer) imageData.get("bufferIndex");
+				Log.d("PRINT", "PRINT: bufferIndex: " + bufferIndex);
+				
+				path = path.replaceFirst("file://", "");
+				
+				//String url = getPathToApplicationAsset(path);
+				
+				Bitmap bitmap = BitmapFactory.decodeFile(path);
+				
+				if(bitmap != null){
 					
-					path = path.replaceFirst("file://", "");
+					Log.d("PRINT", "PRINT: height: " + bitmap.getHeight());
 					
-					//String url = getPathToApplicationAsset(path);
+					StarBitmap starBitmap = new StarBitmap(bitmap, false, imageWidth.intValue());
+					byte[] imageCommand;
+					Log.d("PRINT", "PRINT: starbitmap");
 					
-					Bitmap bitmap = BitmapFactory.decodeFile(path);
-					
-					if(bitmap != null){
+					try{
+						imageCommand = starBitmap.getImageEscPosDataForPrinting(true, true);
+						Log.d("PRINT", "PRINT: imagecommand: " + imageCommand);
 						
-						Log.d("PRINT", "PRINT: height: " + bitmap.getHeight());
+						bufferInterruptionIndexes.add(bufferIndex);
+						interruptionCommands.add(imageCommand);
 						
-						StarBitmap starBitmap = new StarBitmap(bitmap, false, imageWidth.intValue());
-						byte[] imageCommand;
-						Log.d("PRINT", "PRINT: starbitmap");
-						
-						try{
-							imageCommand = starBitmap.getImageEscPosDataForPrinting(true, true);
-							Log.d("PRINT", "PRINT: imagecommand: " + imageCommand);
-							
-							bufferInterruptionIndexes.add(bufferIndex);
-							interruptionCommands.add(imageCommand);
-							
-							Log.d("PRINT", "PRINT: imagedata: " + imageCommand.length);
-						}
-						catch (StarIOPortException e){
-							// TODO: get rid of the callback - just don't print the image 
-							d.put("error", e.getMessage());
-							invokeCallback((TiBaseActivity) activity, errorCallback, getKrollObject(), d);
-						}
+						Log.d("PRINT", "PRINT: imagedata: " + imageCommand.length);
 					}
-					else{
-						// TODO: get rid of the callback - just don't print the image
-						d.put("error", "Could not locate the file.");
-						invokeCallback((TiBaseActivity) activity, errorCallback, getKrollObject(), d);
+					catch (StarIOPortException e){
+						// TODO: get rid of the callback - just don't print the image 
+						//d.put("error", e.getMessage());
+						//invokeCallback((TiBaseActivity) activity, errorCallback, getKrollObject(), d);
 					}
+				}
+				else{
+					// TODO: get rid of the callback - just don't print the image
+					//d.put("error", "Could not locate the file.");
+					//invokeCallback((TiBaseActivity) activity, errorCallback, getKrollObject(), d);
 				}
 			}
 		}

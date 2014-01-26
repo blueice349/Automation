@@ -240,7 +240,9 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
             Omadi.display.loading('Accepting...');
             Omadi.data.setUpdating(true);
             
-            http = Ti.Network.createHTTPClient();
+            http = Ti.Network.createHTTPClient({
+                validatesSecureCertificate: false
+            });
             http.setTimeout(15000);
             http.open('POST', Omadi.DOMAIN_NAME + '/js-dispatch/dispatch/accept_job.json');
         
@@ -635,7 +637,9 @@ Omadi.bundles.dispatch.updateStatus = function(nid, status, background){"use str
         
         Omadi.data.setUpdating(true);
         
-        http = Ti.Network.createHTTPClient();
+        http = Ti.Network.createHTTPClient({
+            validatesSecureCertificate: false
+        });
         http.setTimeout(15000);
         http.open('POST', Omadi.DOMAIN_NAME + '/js-dispatch/dispatch/update_status.json');
     

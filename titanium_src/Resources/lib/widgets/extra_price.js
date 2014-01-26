@@ -132,14 +132,24 @@ Omadi.widgets.extra_price = {
         descView.setKeyboardType(Ti.UI.KEYBOARD_DEFAULT);
         descView.check_conditional_fields = affectsAnotherConditionalField(instance);
         descView.width = '60%';
-        descView.possibleValues = Omadi.widgets.taxonomy_term_reference.getOptions(instance);
+        descView.possibleValues = Omadi.widgets.taxonomy_term_reference.getOptions(instance, false);
         descView.touched = false;
         
         //Ti.API.error(descView.possibleValues);
         
         priceValue = dbValue;
         if(priceValue != ""){
-            priceValue = parseFloat(Math.round(dbValue * 100) / 100).toFixed(2);
+            if(!isNaN(parseFloat(dbValue))){
+                priceValue = parseFloat(Math.round(dbValue * 100) / 100).toFixed(2);
+            }
+            else{
+                priceValue = "";
+            }
+        }
+        
+        // We only want to show blank instead of 0.00 or 0
+        if(priceValue == 0){
+            priceValue = "";
         }
         
         priceView = Omadi.widgets.getTextField(instance);
@@ -211,7 +221,12 @@ Omadi.widgets.extra_price = {
                     // }
                     
                     for ( i = 0; i < possibleValues.length; i++) {
-    
+                        
+                        if(possibleValues[i].title == '' || e.source.value.length == 0){
+                            // Don't show emtpy entries
+                            continue;
+                        }
+                        
                         regEx = new RegExp(e.source.value, 'i');
                         if (possibleValues[i].title.search(regEx) != -1) {
                             //Check match
@@ -347,9 +362,7 @@ Omadi.widgets.extra_price = {
                         }
                     }
                     
-                    if(price != ""){
-                        price = parseFloat(Math.round(price * 100) / 100).toFixed(2);
-                    }
+                    price = Omadi.utils.formatCurrency(price);
                     
                     row = Ti.UI.createView({
                         width: '100%',
@@ -391,7 +404,7 @@ Omadi.widgets.extra_price = {
                         width: Ti.UI.SIZE, 
                         height: Ti.UI.SIZE,
                         wordWrap: true,
-                        text: '$' + price,
+                        text: price,
                         font: {
                             fontSize: 14
                         },

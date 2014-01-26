@@ -77,7 +77,9 @@ Omadi.bundles.companyVehicle.setUserVehicle = function(vehicle_nid) {"use strict
         db.execute("UPDATE history SET in_vehicle_nid = " + vehicle_nid + " WHERE id_hist=1");
         db.close();
         
-        http = Ti.Network.createHTTPClient();
+        http = Ti.Network.createHTTPClient({
+            validatesSecureCertificate: false
+        });
         http.setTimeout(60000);
         http.open('POST', Omadi.DOMAIN_NAME + '/js-company-vehicle/company_vehicle/enter_vehicle.json');
     

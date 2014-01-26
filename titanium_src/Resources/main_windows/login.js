@@ -259,7 +259,7 @@ function updateUploadBytes(){"use strict";
         if(result.isValidRow()){
             cookies.push(result.fieldByName('token'));
         }
-        db.close();  
+        db.close();
         
         for(i = 0; i < cookies.length; i ++){
             http = Ti.Network.createHTTPClient();
