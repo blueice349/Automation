@@ -405,6 +405,8 @@ Omadi.widgets.shared = {
         
         node = formToNode();
         
+        Ti.API.debug(JSON.stringify(node));
+        
         fieldView = instance.fieldView;
         children = fieldView.getChildren();
         
@@ -627,7 +629,9 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         color_unset = "#fff";
         
         popupWin = Ti.UI.createWindow({
-            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
+            modal: true,
+            navBarHidden: true
         });
         
         opacView = Ti.UI.createView({

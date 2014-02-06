@@ -936,7 +936,7 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                 
                 // Check if the file is ready for deletion
                 if(bytesUploaded == 0 || bytesUploaded >= filesize || uploadFinished){
-                    
+                    Ti.API.error("UPload is finished for nid " + nid + " and delta " + delta);
                     try{
                         //Finishing the file after upload so it's available on the device for printing
                         listDB.execute("UPDATE _files SET uploading=0, finished=" + Omadi.utils.getUTCTimestamp() + " WHERE id=" + photoId);
@@ -1123,7 +1123,7 @@ Omadi.service.photoUploadError = function(e){"use strict";
     }
     
     if (Omadi.utils.isLoggedIn() && saveFailedUpload) {
-        Omadi.data.saveFailedUpload(photoId);
+        //Omadi.data.saveFailedUpload(photoId, true);
     }
     
     Ti.App.fireEvent("doneSendingPhotos");
@@ -1204,12 +1204,16 @@ Omadi.service.abortFileUpload = function(){"use strict";
     if(typeof Omadi.service.uploadFileHTTP !== 'undefined' && Omadi.service.uploadFileHTTP !== null){
         Omadi.service.uploadFileHTTP.abort();
         Ti.API.info("Aborted current file upload.");
-        
+        Omadi.service.uploadFileHTTP = null;
+    }
+    
+    try{
         db = Omadi.utils.openListDatabase();
         db.execute("UPDATE _files SET uploading = 0");
         db.close();
-        
-        Omadi.service.uploadFileHTTP = null;
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Error aborting http upload: " + ex);
     }
 };
 
@@ -1537,6 +1541,7 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
 
                 for (field_name in instances) {
                     if (instances.hasOwnProperty(field_name)) {
+                        
                         if ( typeof node[field_name] !== 'undefined' && typeof node[field_name].dbValues !== 'undefined' && node[field_name].dbValues.length > 0) {
                             if (node[field_name].dbValues.length > 1) {
                                 obj.data.node[nid][field_name] = node[field_name].dbValues;
@@ -1551,6 +1556,56 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
                         
                         if(instances[field_name].type == 'extra_price'){
                             obj.data.node[nid][field_name + "___data"] = node[field_name].tempData;
+                        }
+                        
+                        if(instances[field_name].type == 'image' && 
+                            typeof instances[field_name].widget !== 'undefined' &&
+                            typeof instances[field_name].widget.type !== 'undefined' &&
+                            instances[field_name].widget.type == 'omadi_image_signature' &&
+                            obj.data.node[nid][field_name] == -1){
+                                
+                                var files = Omadi.data.getFileArray(false);
+                                var fi;
+                                
+                                Ti.API.debug("adding signature: " + JSON.stringify(files));
+                                
+                                for(fi = 0; fi < files.length; fi ++){
+                                    
+                                    Ti.API.debug("file data" + JSON.stringify(files[fi]));
+                                    
+                                    if(files[fi].field_name == field_name){
+                                        if(files[fi].nid == node.nid){
+                                             
+                                           try{
+                                                var imageFile = Ti.Filesystem.getFile(files[fi].file_path);
+                                                
+                                                if(imageFile.exists() && imageFile.isFile()){
+                                                    var imageBlob = imageFile.read();
+                                                    
+                                                    if(!imageBlob){
+                                                        Omadi.service.sendErrorReport("initial signature blob is null");
+                                                    } 
+                                                    else{
+                                                        
+                                                        var imageData = Ti.Utils.base64encode(imageBlob);
+                        
+                                                        try{
+                                                            imageData = imageData.getText();
+                                                            obj.data.node[nid][field_name] = [{nid: -1, data: imageData}];
+                                                        }
+                                                        catch(ex6){
+                                                            Omadi.service.sendErrorReport("Exception getting text of base64 signature of size " + imageBlob.length + ": " + ex6); 
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            catch(exRead){
+                                                Ti.API.debug("Exception reading initial signature file: " + exRead);
+                                                Omadi.service.sendErrorReport("Exception reading initial signature file: " + exRead);
+                                            }
+                                        }
+                                    }
+                                }
                         }
                     }
                 }

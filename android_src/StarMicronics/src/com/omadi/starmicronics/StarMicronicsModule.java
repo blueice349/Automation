@@ -31,7 +31,7 @@ import android.os.Message;
 import android.provider.MediaStore.Images;
 import java.util.List;
 import java.util.ArrayList;
-import java.io.File;s
+import java.io.File;
 import android.graphics.BitmapFactory;
 import android.graphics.Bitmap;
 

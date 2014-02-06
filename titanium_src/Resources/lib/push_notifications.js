@@ -32,11 +32,21 @@ Omadi.push_notifications.getUserDeviceToken = function(){"use strict";
 
 Omadi.push_notifications.registerAndroid = function() {"use strict";
     
+    try{
+    // Clear status will clear the cache and allow the switch to gcm
+        //CloudPush.clearStatus();
+    }
+    catch(ex){
+        Ti.API.error("Could not clear cloudpush status: " + ex);
+        Omadi.service.sendErrorReport("Could not clear cloudpush status: " + ex);
+    }
+    
     CloudPush.retrieveDeviceToken({
         success: function(e){
             Omadi.push_notifications.setUserDeviceToken(e.deviceToken);
-            CloudPush.enabled = true;
             CloudPush.focusAppOnPush = true;
+            CloudPush.enabled = true;
+            CloudPush.singleCallback = true;
             Omadi.push_notifications.loginUser();
         },
         error: function(e){
@@ -55,43 +65,40 @@ Omadi.push_notifications.registerAndroid = function() {"use strict";
         }
     });
     
-    CloudPush.addEventListener('callback', function(e){
-        var sound, dialog, payload;
-        
-        Ti.API.debug(JSON.stringify(e));
-        
-        sound = Ti.Media.createSound({
-            url : Titanium.Filesystem.getFile(Titanium.Filesystem.resourcesDirectory, "sounds/notificationBeep.wav"),
-            volume : 1.0
+    CloudPush.addEventListener('callback', Omadi.push_notifications.androidPushCallback);
+};
+
+Omadi.push_notifications.androidPushCallback = function(e){"use strict";
+    var sound, dialog, payload;
+    
+    Ti.API.debug(JSON.stringify(e));
+    
+    sound = Ti.Media.createSound({
+        url : Titanium.Filesystem.getFile(Titanium.Filesystem.resourcesDirectory, "sounds/notificationBeep.wav"),
+        volume : 1.0
+    });
+
+    sound.play();
+    
+    payload = JSON.parse(e.payload);
+    
+    if (payload.fetchUpdates == 1) {
+        Omadi.service.fetchUpdates(true);
+    }
+
+    if (payload.showAlert == 1) {
+        dialog = Ti.UI.createAlertDialog({
+            message : payload.alert,
+            title : payload.title
         });
 
-
-// {"type":"callback",
-// "source":{"showTrayNotification":true,"enabled":true,"focusAppOnPush":false,"showAppOnTrayClick":true,"showTrayNotificationsWhenFocused":false,"invocationAPIs":[],"apiName":"Cloudpush","_events":{"callback":{}}},
-// "payload":"{\"fetchUpdates\":1,\"android\":{\"sound\":\"sounds\\/notificationBeep.wav\",\"alert\":\"You have a new notification.\"},\"volume\":1}"}
-
-        sound.play();
-        
-        payload = JSON.parse(e.payload);
-        
-        if (payload.fetchUpdates == 1) {
-            Omadi.service.fetchUpdates(true);
+        if ( typeof alertQueue !== 'undefined' && useAlertQueue) {
+            alertQueue.push(dialog);
         }
-
-        if (payload.showAlert == 1) {
-            dialog = Ti.UI.createAlertDialog({
-                message : payload.alert,
-                title : payload.title
-            });
-
-            if ( typeof alertQueue !== 'undefined' && useAlertQueue) {
-                alertQueue.push(dialog);
-            }
-            else {
-                dialog.show();
-            }
+        else {
+            dialog.show();
         }
-    });
+    }
 };
 
 Omadi.push_notifications.registeriOS = function() {"use strict";
@@ -191,50 +198,68 @@ Omadi.push_notifications.logoutUser = function() {"use strict";
             var dialog = Ti.UI.createAlertDialog({
                 message : "There was a problem disabling push notifications. You may still receive push notifications even though you are logged out."
             });
-            if ( typeof alertQueue !== 'undefined') {
-                alertQueue.push(dialog);
-            }
-            else {
-                dialog.show();
-            }
-
-            Omadi.service.sendErrorReport('onACSLogout' + JSON.stringify(e));
+           
+            dialog.show();
+           
+            Omadi.service.sendErrorReport('onACSLogout ' + JSON.stringify(e));
         }
     });
 };
 
 Omadi.push_notifications.unsubscribeACSPush = function(){"use strict";
     
-    Cloud.PushNotifications.unsubscribe({
-        channel: Omadi.utils.getClientAccount(),
+    if(Ti.App.isAndroid){
+        CloudPush.removeEventListener('callback', Omadi.push_notifications.androidPushCallback);
+    }
+    
+    Cloud.PushNotifications.unsubscribeToken({
         device_token: Omadi.push_notifications.getUserDeviceToken()
-    }, function(){
-        Ti.API.debug("Successfully unsubscribed from push.");
+    }, function(e){
+        if(e.success){
+            Ti.API.debug("Successfully unsubscribed from push.");    
+        }
+        else{
+            
+            if(e.message == 'Subscription not found'){
+                // do nothing
+                Ti.API.debug("Not subscribed, so unsubscribe was not needed.");
+            }
+            else{
+                var dialog = Ti.UI.createAlertDialog({
+                    message : "There was a problem disabling push notifications. You may still receive push notifications even though you are logged out."
+                });
+                
+                dialog.show();
+                
+                Omadi.service.sendErrorReport('onACSUnsubscribe ' + JSON.stringify(e));
+            }
+        }
     });
 };
 
 Omadi.push_notifications.setupACSPush = function() {"use strict";
 
     var type, userDeviceToken = Omadi.push_notifications.getUserDeviceToken();
-
-    if (Ti.App.isAndroid) {
+    if(Ti.App.isAndroid){
         type = 'android';
     }
-    else {
+    else{
         type = 'ios';
     }
-
+    
     Cloud.PushNotifications.subscribe({
         channel : Omadi.utils.getClientAccount(),
-        type : type,
-        device_token : userDeviceToken
+        device_token : userDeviceToken,
+        type: type
     }, function(e) {
         if (e.success) {
             Ti.API.info("ACS Push notification subscription successful");
         }
         else {
             var dialog = Ti.UI.createAlertDialog({
-                message : 'There was a problem setting up push notifications. Please try again by logging back in.'
+                title : 'Push Notifications',
+                message : 'There was a problem setting up push notifications. Please try again by logging back in.',
+                buttonNames: ['Ok']
             });
             
             if ( typeof alertQueue !== 'undefined' && useAlertQueue) {
@@ -325,7 +350,6 @@ Omadi.push_notifications.createUser = function() {"use strict";
 Omadi.push_notifications.init = function() {"use strict";
     
     if(Ti.App.isAndroid){
-        
         Omadi.push_notifications.registerAndroid();
     }
     else {

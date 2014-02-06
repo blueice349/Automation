@@ -949,8 +949,8 @@ Omadi.widgets.image = {
             
             mime = imageView.mimeType;
             imageName = filePath.replace(/^.*[\\\/]/, '');
-            imageView.dbValue = '-1';
-            imageView.fid = '-1';
+            imageView.dbValue = -1;
+            imageView.fid = -1;
             imageView.degrees = degrees;
             imageView.filePath = filePath;   
             imageView.thumbPath = thumbPath;
@@ -959,6 +959,7 @@ Omadi.widgets.image = {
             fieldName = imageView.instance.field_name;
             imageIndex = imageView.imageIndex;
             
+            Ti.API.debug("Saved Path: " + filePath);
             
             location = Omadi.location.getLastLocation();
             

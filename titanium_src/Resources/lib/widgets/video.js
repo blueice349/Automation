@@ -356,6 +356,8 @@ Omadi.widgets.video = {
                         filePath = e.intent.data;
                         source = Ti.Filesystem.getFile(filePath);
                         
+                        Omadi.display.loading("Please Wait...");
+                        
                         if(Ti.Filesystem.isExternalStoragePresent()){
                             movieFile = Titanium.Filesystem.getFile(Titanium.Filesystem.externalStorageDirectory, "v_" + Omadi.utils.getUTCTimestamp() + '.mp4');
                         }
@@ -367,9 +369,9 @@ Omadi.widgets.video = {
                         filePath = movieFile.nativePath;
                         
                         Ti.API.debug(filePath);
+                        
                         Ti.API.debug("filesize: " + movieFile.getSize());
                         Ti.API.debug("Is external: " + Ti.Filesystem.isExternalStoragePresent());
-                        
                         
                         Omadi.widgets.image.saveFileInfo(imageView, filePath, '', 0, movieFile.getSize(), 'video');
                         
@@ -377,7 +379,6 @@ Omadi.widgets.video = {
                         if(Ti.UI.currentWindow.saveContinually && typeof save_form_data !== 'undefined'){
                             save_form_data('continuous');
                         }
-                        
                         
                         if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
                                     
@@ -411,9 +412,9 @@ Omadi.widgets.video = {
                             imageView.parentView.add(newImageView);
                             imageView.parentView.remove(imageView);
                             imageView = null;
-                            
-                            Omadi.display.doneLoading();
                         }
+                        
+                        Omadi.display.doneLoading();
                     } 
                     else {
                         Ti.UI.createNotification({
@@ -425,6 +426,8 @@ Omadi.widgets.video = {
             });
         }
         else{ // is IOS
+            
+            //Omadi.display.loading("")
             
             Ti.Media.openPhotoGallery({
                 allowEditing: false,
@@ -447,6 +450,8 @@ Omadi.widgets.video = {
                     
                     Ti.API.info("Media length: " + event.media.length + " bytes");
                     Ti.API.info("media type: " + event.mediaType);
+                    
+                    Omadi.display.loading("Please Wait...");
                     
                     videoFile = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, "v_" + Omadi.utils.getUTCTimestamp() + '.mp4');
                     
@@ -480,46 +485,29 @@ Omadi.widgets.video = {
                     }
                     
                     if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
-                                
-                        newImageView = Omadi.widgets.video.getImageView(imageView.parentView, imageView.imageIndex, null, filePath, 0);
+                        
                         takeNextPhotoView = Omadi.widgets.video.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
-                        
-                        //newImageView.setImage("/images/video-selected.png");
-                        if(Ti.App.isIOS){
-                            newImageView.image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
-                        }
-                        else{
-                            newImageView.image = '/images/video_selected.png';
-                            newImageView.height = 100;
-                            newImageView.width = 100;
-                        }
-                        
-                        imageView.parentView.add(newImageView);
+                        imageView.image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
                         imageView.parentView.add(takeNextPhotoView);
-                        
                         imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
-                        imageView.parentView.remove(imageView);
-                        imageView = null;
+                            
+                        // newImageView = Omadi.widgets.video.getImageView(imageView.parentView, imageView.imageIndex, null, filePath, 0);
+                        // takeNextPhotoView = Omadi.widgets.video.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, 0);
+//                          
+                        // newImageView.image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
+//                        
+                        // imageView.parentView.add(newImageView);
+                        // imageView.parentView.add(takeNextPhotoView);
+//                         
+                        // imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
+                        // imageView.parentView.remove(imageView);
+                        // imageView = null;
                     }
                     else{
-                        
-                        newImageView = Omadi.widgets.video.getImageView(imageView.parentView, imageView.imageIndex, null, filePath, 0);
-                       
-                        if(Ti.App.isIOS){
-                            newImageView.image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
-                        }
-                        else{
-                            newImageView.image = '/images/video_selected.png';
-                            newImageView.height = 100;
-                            newImageView.width = 100;
-                        }
-                        
-                        imageView.parentView.add(newImageView);
-                        imageView.parentView.remove(imageView);
-                        imageView = null;
-                        
-                        Omadi.display.doneLoading();
+                        imageView.image = thumbVideo.thumbnailImageAtTime(0, Ti.Media.VIDEO_TIME_OPTION_NEAREST_KEYFRAME);
                     }
+                    
+                    Omadi.display.doneLoading();
                 }
             });
         }

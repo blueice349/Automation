@@ -11,8 +11,6 @@ var currentOrderField = 'changed';
 var wrapperView;
 var search;
 
-curWin.setBackgroundColor('#eee');
-
 wrapperView = Ti.UI.createView({
    layout: 'vertical',
    bottom: 0,
@@ -278,6 +276,14 @@ function savedNodeRecent(){"use strict";
     Ti.UI.currentWindow.close();
 }
 
+function searchAndroidFocusHandler(){"use strict";
+    
+    search.setSoftKeyboardOnFocus(Ti.UI.Android.SOFT_KEYBOARD_SHOW_ON_FOCUS);
+    search.removeEventListener('click', searchAndroidFocusHandler);
+    
+    search.focus();
+}
+
 (function(){"use strict";
     var recentlySavedTab, recentlySavedWindow, recentlyViewedTab, recentlyViewedWindow;
     
@@ -303,12 +309,16 @@ function savedNodeRecent(){"use strict";
     search = Ti.UI.createSearchBar({
         hintText : 'Search...',
         autocorrect : false,
-        barColor : '#666',
         showCancel: true,
-        height : 35,
-        color: '#000',
-        backgroundColor: '#666'
+        height : 35
     });
+    
+    // if(Ti.App.isAndroid){
+//         
+        // search.softKeyboardOnFocus = Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS;
+//         
+        // search.addEventListener('click', searchAndroidFocusHandler);
+    // }
     
     if(Ti.App.isAndroid){
         search.height = 45;
@@ -384,6 +394,16 @@ function savedNodeRecent(){"use strict";
         wrapperView = null;
         curWin = null;
     });
+    
+    if(Ti.App.isAndroid){
+        search.hide();
+        
+        //Hiding on Android makes it so the keyboard doesn't automatically pop up
+        // Showing it 1/2 second later will then show the search field, but not bring up the keyboard
+        setTimeout(function(){
+            search.show(); 
+        }, 500);
+    }
     
 }());
 

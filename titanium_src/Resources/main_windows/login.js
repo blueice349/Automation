@@ -297,6 +297,10 @@ function updateUploadBytes(){"use strict";
 
 function loggingOutLoginScreen(){"use strict";
     
+    startBackgroundUploads();
+}
+
+function startBackgroundUploads(){"use strict";
     updateUploadBytes();
     Omadi.service.doBackgroundUploads = true;
     
@@ -309,6 +313,12 @@ function loggingOutLoginScreen(){"use strict";
     }
     
     Ti.App.backgroundPhotoUploadCheck = setInterval(Omadi.service.uploadBackgroundFile, 60000);
+    
+    // Stop uploading the initial file while logged in
+    Omadi.service.abortFileUpload();
+    
+    // Immediately try to upload the next file
+    Omadi.service.uploadBackgroundFile();
 }
 
 var savedUsername = null;
@@ -947,8 +957,31 @@ var termsView;
         });
 
         Ti.UI.currentWindow.addEventListener('android:back', function() {
-            // TODO: if uploading a file, ask first before closing the app
-            Ti.UI.currentWindow.close();
+            var dialog;
+            
+            if(Omadi.data.getNumFilesReadyToUpload() > 0){
+                dialog = Ti.UI.createAlertDialog({
+                    title: 'Please Wait for Upload',
+                    message: 'Files must upload before exiting the application. If you must close it now, please force stop the application in the Android Application Manager.',
+                    buttonNames: ['OK', 'Close Anyway']
+                });  
+                
+                dialog.addEventListener('click', function(e){
+                    var dialog2;
+                    if(e.index == 1){
+                        dialog2 = Ti.UI.createAlertDialog({
+                            title: 'Nope',
+                            message: 'No can do. Go to the Android Settings app, find the Application Manager, select the Omadi app, and press the "Force Close" button.',
+                            buttonNames: ['OK'] 
+                        }).show();
+                    }
+                });
+                
+                dialog.show();
+            }
+            else{
+                Ti.UI.currentWindow.close();    
+            }
         });
 
         Ti.App.Properties.removeProperty('logStatus');
@@ -989,6 +1022,9 @@ var termsView;
             });
 
             startGPSService();
+        }
+        else{
+            startBackgroundUploads();
         }
         
         // closeApp is fired in case memory is getting low and a restart is necessary

@@ -524,7 +524,7 @@ Omadi.data.trySaveNode = function(node, saveType){"use strict";
 Omadi.data.nodeSave = function(node) {"use strict";
     var query, field_name, fieldNames, instances, result, db, smallestNid, insertValues, j, k, 
         instance, value_to_insert, has_data, content_s, saveNid, continuousNid, photoNids, origNid,
-        continuousId, tempNid, listDB, trueWindowNid, priceIdx, priceTotal, priceData;
+        continuousId, tempNid, listDB, trueWindowNid, priceIdx, priceTotal, priceData, jsonValue;
 
     /*global treatArray*/
     /*jslint nomen: true*/
@@ -656,10 +656,15 @@ Omadi.data.nodeSave = function(node) {"use strict";
                                     if(!isNaN(parseFloat(node[field_name].dbValues[priceIdx]))){
                                         priceTotal += parseFloat(node[field_name].dbValues[priceIdx]);
                                         
-                                        priceData.push({
-                                            desc:  node[field_name].textValues[priceIdx],
-                                            price: node[field_name].dbValues[priceIdx]
-                                        });
+                                        jsonValue = node[field_name].textValues[priceIdx];
+                                        
+                                        if(jsonValue != null){
+                                            priceData.push({
+                                                desc:  jsonValue.desc,
+                                                price: node[field_name].dbValues[priceIdx],
+                                                details: jsonValue.details
+                                            });
+                                        }
                                     }
                                 }
                             }
@@ -1092,6 +1097,8 @@ Omadi.data.deletePhotoUploadByPath = function(filePath, deleteFile){"use strict"
 Omadi.data.deletePhotoUpload = function(id, deleteFile) {"use strict";
     var file, db, result, filePath = null, thumbPath = null, thumbFile;
     
+    
+    
     db = Omadi.utils.openListDatabase();
     if(typeof deleteFile !== 'undefined' && deleteFile == true){
         result = db.execute("SELECT file_path, thumb_path FROM _files WHERE id = " + id);
@@ -1107,16 +1114,18 @@ Omadi.data.deletePhotoUpload = function(id, deleteFile) {"use strict";
     db.execute("DELETE FROM _files WHERE id = " + id);
     db.close();
     
+    Ti.API.error("DELETING a file: " + filePath);
+    
     if(filePath !== null){
         file = Ti.Filesystem.getFile(filePath);
         if(file.exists() && file.isFile()){
-            file.deleteFile();
+            //file.deleteFile();
         }
         
         if(thumbPath != null && thumbPath.length > 10){
             thumbFile = Ti.Filesystem.getFile(thumbPath);
             if(thumbFile.exists() && thumbFile.isFile()){
-                thumbFile.deleteFile();
+                //thumbFile.deleteFile();
             }
         }
     }
@@ -1531,7 +1540,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                         if(Omadi.utils.isArray(node[field_name].tempData)){
                                             for(i = 0; i < node[field_name].tempData.length; i ++){
                                                 node[field_name].dbValues[i] = node[field_name].tempData[i].price;
-                                                node[field_name].textValues[i] = node[field_name].tempData[i].desc;
+                                                node[field_name].textValues[i] = node[field_name].tempData[i];
                                                 
                                                 if(!isNaN(parseFloat(node[field_name].dbValues[i]))){
                                                     node[field_name].finalValue += parseFloat(node[field_name].dbValues[i]);
@@ -1759,7 +1768,7 @@ Omadi.data.getFileArray = function(onlyUploadable){"use strict";
                     uid : result.fieldByName('uid'),
                     client_account : result.fieldByName('client_account'),
                     uploading : result.fieldByName('uploading'),
-                    finished : result.fieldByName('finished'),
+                    finished : result.fieldByName('finished')
                 };
                 
                 if(nextFile.filesize != null){
@@ -1878,21 +1887,23 @@ Omadi.data.getFileArray = function(onlyUploadable){"use strict";
                                 deleteFile = false;
                             }
                             
+                            Ti.API.error("ABOUT TO DELETE A FINISHED FILE!: " + nextFile.file_path);
+                            
                             if(deleteFile){
                                 imageFile = Ti.Filesystem.getFile(nextFile.file_path);
                                 if(imageFile.exists()){
-                                    imageFile.deleteFile();
+                                    //imageFile.deleteFile();
                                 } 
                                 
                                 // Delete the thumbnail if one is saved
                                 if(nextFile.thumb_path != null && nextFile.thumb_path.length > 10){
                                     thumbFile = Ti.Filesystem.getFile(nextFile.thumb_path);
                                     if(thumbFile.exists()){
-                                       thumbFile.deleteFile();
+                                       //thumbFile.deleteFile();
                                     }
                                 }
                                 
-                                deleteFinishedIds.push(nextFile.id);
+                                //deleteFinishedIds.push(nextFile.id);
                             }
                         }
                     }
@@ -1996,8 +2007,10 @@ Omadi.data.getNextPhotoData = function(){"use strict";
             
             if(!imageFile.exists() || !imageFile.isFile()){
                
-                Ti.API.error("File does not exist");
-                Omadi.data.deletePhotoUpload(nextFile.id, false);
+                Ti.API.error("File does not exist: " + nextFile.file_path);
+                
+                //Omadi.data.deletePhotoUpload(nextFile.id, false);
+                
                 Omadi.service.sendErrorReport("The file at " + nextFile.file_path + " for node #" + nextFile.nid + " cannot be found for upload.");
                 
                 alert("The file at " + nextFile.file_path + " for node #" + nextFile.nid + " cannot be found for upload.");
@@ -3154,6 +3167,28 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                     negativeNid : Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid,
                                     positiveNid : Omadi.service.fetchedJSON.node[type].insert[i].nid
                                 });
+                            }
+                            
+                            // Set signature fields to show as uploaded
+                            for (field_name in instances) {
+                                if(instances.hasOwnProperty(field_name)){
+                                    if(instances[field_name].type == 'image'){
+                                        
+                                        if(typeof instances[field_name].widget !== 'undefined' &&
+                                            typeof instances[field_name].widget.type !== 'undefined' &&
+                                            instances[field_name].widget.type &&
+                                            instances[field_name].widget.type == 'omadi_image_signature'){
+                                                
+                                                listDB = Omadi.utils.openListDatabase();
+                                                // Remove the signature from the non-uploaded list since it was synched in the original form JSON
+                                                listDB.execute("UPDATE _files SET finished = " + Omadi.utils.getUTCTimestamp() + " WHERE nid=" + Omadi.service.fetchedJSON.node[type].insert[i].nid + " AND type='signature'");
+                                                listDB.close();
+                                                
+                                                // The DB query only needs to be done once for all fields if multiple signature fields exist on the form
+                                                break;
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

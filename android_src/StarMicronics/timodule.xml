@@ -7,7 +7,7 @@
 	<iphone>
 	</iphone>
 	<android xmlns:android="http://schemas.android.com/apk/res/android">
-	    <manifest package="com.omadi.starmicronics">
+	    <manifest>
 	        <uses-sdk android:minSdkVersion="8" />
 	        <uses-permission android:name="android.permission.BLUETOOTH"/>
 	        <uses-feature android:name="android.hardware.bluetooth" android:required="false"/>

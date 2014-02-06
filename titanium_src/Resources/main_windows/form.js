@@ -1,8 +1,10 @@
 
-Ti.include("/lib/widgets.js");
-Ti.include("/lib/form_functions.js");
 /*global Omadi*/
 /*jslint eqeq:true,plusplus:true*/
+
+Ti.include("/lib/widgets.js");
+Ti.include("/lib/form_functions.js");
+
 
 Ti.API.info("Form Window Opened");
 
@@ -196,7 +198,7 @@ function formToNode(){"use strict";
            }
        }
        
-       Ti.API.debug(node);
+       //Ti.API.debug(JSON.stringify(node));
    }
    catch(ex){
        Omadi.service.sendErrorReport("Bundling node from form: " + ex);

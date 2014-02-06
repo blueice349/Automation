@@ -53,8 +53,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	
 	private int deviceHeight;
 	private int deviceWidth;
-	//RelativeLayout rootlayout;
-	//RelativeLayout enerlayout;
+	
 	FrameLayout frameCameraViewContainer;
 	private ImageView rotatingImage;
 	private ImageView done;
@@ -63,7 +62,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	private boolean isPreviewRunning = false;
 	
 	public static ToolsOverlay toolsOverlay = null;
-	//VerticalSeekBar zoomControls;
+	
 	private SensorManager sensorManager = null;
 	Bitmap bitmap = null;
 	
@@ -122,7 +121,6 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 		    Camera.Parameters p = camera.getParameters();
 		    if(p!=null){
 		    	
-			    
 			    Size optimalSize = getOptimalPreviewSize(p, height);
 			    if(optimalSize != null){
 			    	
@@ -141,8 +139,6 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 			    p.setPictureFormat(ImageFormat.JPEG);
 			    
 			    camera.setParameters(p);
-			    
-		
 			    camera.setPreviewDisplay(previewHolder);
 			    camera.startPreview();
 		    }
@@ -153,7 +149,6 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	    }
 
 	    isPreviewRunning = true;
-		
 		toolsOverlay.cameraInitialized(camera);
 	}
 	
@@ -247,32 +242,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	public void surfaceCreated(SurfaceHolder previewHolder) {
 		Log.d("CAMERA", "CAMERA SURFACE CREATED");
 		
-    try{
-      camera = Camera.open();
-		}
-    catch(Exception e){
-      Log.e("CAMERA", "CAMERA Could not open camera: " + e.getMessage());
-    }
-		/*
-		 * Disabling this since it can end up picking a bad preview
-		 * size which can create stretching issues (TIMOB-8151).
-		 * Original words of wisdom left by some unknown person:
-		 * "using default preview size may be causing problem on some devices, setting dimensions manually"
-		 * We may want to expose camera parameters to the developer for extra control.
-		Parameters cameraParams = camera.getParameters();
-		Camera.Size previewSize = cameraParams.getSupportedPreviewSizes().get((cameraParams.getSupportedPreviewSizes().size()) - 1);
-		cameraParams.setPreviewSize(previewSize.width, previewSize.height );
-		camera.setParameters(cameraParams);
-		*/
-//
-//		try {
-//			Log.i(LCAT, "setting preview display");
-//			camera.setPreviewDisplay(previewHolder);
-//		} catch(IOException e) {
-//			e.printStackTrace();
-//		}
-		
-		//toolsOverlay.cam
+	    
 	}
 
 	// make sure to call release() otherwise you will have to force kill the app before 
@@ -288,14 +258,15 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 		
 		Log.d("CAMERA", "CAMERA ON RESUME");
 		
+		try{
+			camera = Camera.open();
+		}
+	    catch(Exception e){
+	    	Log.e("CAMERA", "CAMERA Could not open camera: " + e.getMessage());
+	    }
+		
 		cameraActivity = this;
 		previewLayout.addView(preview);
-		
-		//previewLayout.addView(localOverlayProxy.getOrCreateView().getNativeView(), new FrameLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-		
-		//if(camera != null){
-			//toolsOverlay.cameraInitialized();
-		//}
 		
 		previewLayout.addView(toolsOverlay);
 		
@@ -312,11 +283,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 		Log.d("CAMERA", "CAMERA ON PAUSE");
 		
 		previewLayout.removeView(toolsOverlay);
-		
 		previewLayout.removeView(preview);
-		
-		//previewLayout.removeView(localOverlayProxy.getOrCreateView().getNativeView());
-
 		sensorManager.unregisterListener(this);
 		
 		try {
@@ -334,43 +301,6 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 		
 		Log.d("CAMERA", "CAMERA Sensor unregistered");
 	}
-	
-	
-//	/**
-//	 * Calculating the degrees needed to rotate the image imposed on the button
-//	 * so it is always facing the user in the right direction
-//	 *
-//	 * @param toDegrees
-//	 * @return
-//	 */
-//	private RotateAnimation getRotateAnimation(float toDegrees) {
-//		float compensation = 0;
-//
-//		if (Math.abs(degrees - toDegrees) > 180) {
-//			compensation = 360;
-//		}
-//
-//		// When the device is being held on the left side (default position for
-//		// a camera) we need to add, not subtract from the toDegrees.
-//		if (toDegrees == 0) {
-//			compensation = -compensation;
-//		}
-//
-//		// Creating the animation and the RELATIVE_TO_SELF means that he image
-//		// will rotate on it center instead of a corner.
-//		RotateAnimation animation = new RotateAnimation(degrees, toDegrees
-//				- compensation, Animation.RELATIVE_TO_SELF, 0.5f,
-//				Animation.RELATIVE_TO_SELF, 0.5f);
-//
-//		// Adding the time needed to rotate the image
-//		animation.setDuration(250);
-//
-//		// Set the animation to stop after reaching the desired position. With
-//		// out this it would return to the original state.
-//		animation.setFillAfter(true);
-//
-//		return animation;
-//	}
 
 	public void takePicture() {
 		Log.d("CAMERA", "CAMERA Taking picture");
@@ -383,25 +313,12 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 			}
 		}
 	}
-
-	// support user defined callback for this in the future?
-//	static ShutterCallback shutterCallback = new ShutterCallback() {
-//		public void onShutter() {
-//		}
-//	};
-//
-//	// support user defined callback for this in the future?
-//	static PictureCallback rawCallback = new PictureCallback() {
-//		public void onPictureTaken(byte[] data, Camera camera) {
-//		}
-//	};
 	
 	public PictureCallback jpegCallback = new PictureCallback() {
 
 		public void onPictureTaken(byte[] data, Camera camera) {
 			try {
 				Log.d("CAMERA", "CAMERA JPEG generated");
-				//toolsOverlay.pictureTaken();
 				
 				FileOutputStream outputStream = null;
 				FileOutputStream thumbOutputStream = null;
@@ -412,22 +329,6 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 					
 					cameraActivity.setResult(Activity.RESULT_OK);
 					cameraActivity.finish();
-					//java.util.Date date = new java.util.Date();
-					
-					//String filePath = OmadiCameraActivity.storageDirectory + "/p_" + System.currentTimeMillis() + ".jpg";
-					
-					// Titanium passes in the string with file:// included, so remove it
-					//filePath = filePath.replaceFirst("file://", "");
-					
-					//URI fileURI = URI.create(filePath);
-					
-					//Log.i("CHRIS", "PATH: " + filePath);
-					//Log.i("CHRIS", "PATH URI: " + fileURI.getPath());
-					
-					// get the degrees before the file is saved
-					
-					
-					//Log.i("CHRIS", "degrees: " + degrees);
 					
 					// write photo to storage
 					outputStream = new FileOutputStream(filePath);
@@ -452,38 +353,7 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 					exif.setAttribute(ExifInterface.TAG_ORIENTATION, orientation + "");
 					exif.saveAttributes();
 	
-					
 					String thumbPath = filePath.replaceAll(".jpg$", "_thumb.jpg");
-					
-					// Create thumbnail
-//					try     
-//			        {
-//			            final int THUMBNAIL_HEIGHT = 100;
-//			            Log.d("CAMERA", "CAMERA: thumbPath: " + thumbPath);
-//			            
-//			            BitmapFactory.Options options = new BitmapFactory.Options();
-//			            options.inSampleSize = 4;
-//			            
-//			            Bitmap imageBitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
-//			            Float width = new Float(imageBitmap.getWidth());
-//			            Float height = new Float(imageBitmap.getHeight());
-//			            Float ratio = width / height;
-//
-//			            imageBitmap = Bitmap.createScaledBitmap(imageBitmap, (int)(THUMBNAIL_HEIGHT * ratio), THUMBNAIL_HEIGHT, false);
-//
-//			            thumbOutputStream = new FileOutputStream(thumbPath);
-//			            imageBitmap.compress(Bitmap.CompressFormat.JPEG, 90, thumbOutputStream);
-//			            thumbOutputStream.close();
-//			            
-//			            // Save orientation to thumbnail
-//				        ExifInterface thumbExif = new ExifInterface(thumbPath);
-//				        thumbExif.setAttribute(ExifInterface.TAG_ORIENTATION, orientation + "");
-//				        thumbExif.saveAttributes();
-//			        }
-//			        catch(Exception ex) {
-//			        	Log.e("CAMERA", "CAMERA: Could not create thumbnail: " + ex.getMessage());
-//			        	thumbPath = "";
-//			        }
 			        
 					Message msg = Message.obtain();
 					Bundle messageVars = new Bundle();
@@ -516,23 +386,20 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	static Handler messageHandler = new Handler() {
 		@Override
 		public void dispatchMessage(Message msg) {
-//			KrollDict eventData = new KrollDict();
-//			eventData.put("source", CustomcameraModule.eve);
-//			eventData.put("media", msg.obj);
-//			CustomcameraModule.getInstance().fireEvent("successCameraCapture",
-//					eventData);
-
-			HashMap<String, Object> hm = new HashMap<String, Object>();
 			
-			Bundle messageVars = msg.getData();
-			
-			//hm.put("source", NewcameraModule.eve);
-			hm.put("filePath", messageVars.getString("filePath"));
-			hm.put("thumbPath", messageVars.getString("thumbPath"));
-			hm.put("degrees", messageVars.getInt("degrees"));
-			//hm.put("media", messageVars.getByteArray("media"));
-
-			NewcameraModule.finishedCallback.callAsync(NewcameraModule.getInstance().getKrollObject(), hm);
+			if(NewcameraModule.finishedCallback != null){
+				NewcameraModule instance = NewcameraModule.getInstance();
+				if(instance != null){
+					
+					HashMap<String, Object> hm = new HashMap<String, Object>();
+					Bundle messageVars = msg.getData();
+					hm.put("filePath", messageVars.getString("filePath"));
+					hm.put("thumbPath", messageVars.getString("thumbPath"));
+					hm.put("degrees", messageVars.getInt("degrees"));
+					
+					NewcameraModule.finishedCallback.callAsync(instance.getKrollObject(), hm);
+				}
+			}
 		}
 	};
 
@@ -561,11 +428,10 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	 * something changes.
 	 */
 	public void onSensorChanged(SensorEvent event) {
-		//Log.i("CHRIS", "IN SENSOR");
+		
 		try{
 			synchronized (this) {
 				if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-					//RotateAnimation animation = null;
 					
 					int lastDegrees = degrees;
 					
@@ -573,14 +439,10 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 						
 						if (event.values[1] > 0 && orientation != ExifInterface.ORIENTATION_ROTATE_90) {
 							// UP
-							//orientation = ExifInterface.ORIENTATION_ROTATE_90;
-							//animation = getRotateAnimation(270);
 							degrees = 270;
 						} 
 						else if (event.values[1] < 0 && orientation != ExifInterface.ORIENTATION_ROTATE_270) {
 							// UP SIDE DOWN
-							//orientation = ExifInterface.ORIENTATION_ROTATE_270;
-							//animation = getRotateAnimation(90);
 							degrees = 90;
 						}
 						
@@ -589,14 +451,10 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 						
 						if (event.values[0] > 0 && orientation != ExifInterface.ORIENTATION_NORMAL) {
 							// LEFT
-							//orientation = ExifInterface.ORIENTATION_NORMAL;
-							//animation = getRotateAnimation(0);
 							degrees = 0;
 						} 
 						else if (event.values[0] < 0 && orientation != ExifInterface.ORIENTATION_ROTATE_180) {
 							// RIGHT
-							//orientation = ExifInterface.ORIENTATION_ROTATE_180;
-							//animation = getRotateAnimation(180);
 							degrees = 180;
 						}
 						
@@ -605,7 +463,6 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 					if(lastDegrees != degrees){
 						toolsOverlay.degreesChanged(degrees);
 					}
-					
 				}
 			}
 		}

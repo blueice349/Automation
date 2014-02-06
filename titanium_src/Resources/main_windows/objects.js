@@ -613,13 +613,20 @@ function setTableData() {"use strict";
             search = Ti.UI.createSearchBar({
                 hintText : 'Search...',
                 autocorrect : false,
-                barColor : '#666',
-                color : '#000',
                 focusable : false
             });
             
             if(Ti.App.isAndroid){
                 search.height = 45;
+                
+                search.hide();
+                
+                //Hiding on Android makes it so the keyboard doesn't automatically pop up
+                // Showing it 1/2 second later will then show the search field, but not bring up the keyboard
+                setTimeout(function(){
+                    search.show(); 
+                }, 500);
+                
             }
             else{
                 search.height = 35;

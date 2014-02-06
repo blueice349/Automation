@@ -565,7 +565,9 @@ function setupBottomButtons() {"use strict";
         recentWindow = Ti.UI.createWindow({
             navBarHidden : true,
             url : '/main_windows/recent.js',
-            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
+            backgroundColor: '#eee',
+            windowSoftInputMode: Ti.UI.SOFT_INPUT_STATE_HIDDEN
         });
 
         Omadi.display.loading();
