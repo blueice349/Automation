@@ -315,7 +315,7 @@ function startBackgroundUploads(){"use strict";
     Ti.App.backgroundPhotoUploadCheck = setInterval(Omadi.service.uploadBackgroundFile, 60000);
     
     // Stop uploading the initial file while logged in
-    Omadi.service.abortFileUpload();
+    //Omadi.service.abortFileUpload();
     
     // Immediately try to upload the next file
     Omadi.service.uploadBackgroundFile();

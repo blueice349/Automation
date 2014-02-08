@@ -1768,7 +1768,8 @@ Omadi.data.getFileArray = function(onlyUploadable){"use strict";
                     uid : result.fieldByName('uid'),
                     client_account : result.fieldByName('client_account'),
                     uploading : result.fieldByName('uploading'),
-                    finished : result.fieldByName('finished')
+                    finished : result.fieldByName('finished'),
+                    upload_part : 1
                 };
                 
                 if(nextFile.filesize != null){
@@ -1829,12 +1830,12 @@ Omadi.data.getFileArray = function(onlyUploadable){"use strict";
                 
                 if(nextFile.type == 'video' || nextFile.type == 'file'){
                     nextFile.numUploadParts = Math.ceil(nextFile.filesize / Omadi.data.maxBytesPerUpload);
-                    nextFile.uploadPart = (nextFile.bytes_uploaded / Omadi.data.maxBytesPerUpload) + 1;
+                    nextFile.upload_part = (nextFile.bytes_uploaded / Omadi.data.maxBytesPerUpload) + 1;
                     nextFile.uploading_bytes = Omadi.data.maxBytesPerUpload;
                 }
                 else{
                     nextFile.numUploadParts = 1;
-                    nextFile.uploadPart = 1;
+                    nextFile.upload_part = 1;
                     nextFile.uploading_bytes = nextFile.filesize;
                 }
                 
@@ -2131,7 +2132,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                                             nextFile.filesize = imageBlob.length;
                                             
                                             nextFile.numUploadParts = 1;
-                                            nextFile.uploadPart = 1;
+                                            nextFile.upload_part = 1;
                                             nextFile.uploading_bytes = nextFile.filesize;
                                         }
                                         
@@ -2206,7 +2207,7 @@ Omadi.data.getNextPhotoData = function(){"use strict";
                 }
                 
                 if(!nextFile.loaded && !errorOccurred){
-                    Ti.API.debug("Upload Part: " + nextFile.uploadPart + "/" + nextFile.numUploadParts);
+                    Ti.API.debug("Upload Part: " + nextFile.upload_part + "/" + nextFile.numUploadParts);
                     Ti.API.debug(nextFile);
                     
                     try{
@@ -3179,8 +3180,8 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                             instances[field_name].widget.type &&
                                             instances[field_name].widget.type == 'omadi_image_signature'){
                                                 
-                                                listDB = Omadi.utils.openListDatabase();
                                                 // Remove the signature from the non-uploaded list since it was synched in the original form JSON
+                                                listDB = Omadi.utils.openListDatabase();
                                                 listDB.execute("UPDATE _files SET finished = " + Omadi.utils.getUTCTimestamp() + " WHERE nid=" + Omadi.service.fetchedJSON.node[type].insert[i].nid + " AND type='signature'");
                                                 listDB.close();
                                                 

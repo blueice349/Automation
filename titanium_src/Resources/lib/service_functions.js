@@ -1344,7 +1344,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
                             Omadi.service.uploadFileHTTP.photoId = Omadi.service.currentFileUpload.id;
                             Omadi.service.uploadFileHTTP.delta = Omadi.service.currentFileUpload.delta;
                             Omadi.service.uploadFileHTTP.field_name = Omadi.service.currentFileUpload.field_name;
-                            Omadi.service.uploadFileHTTP.uploadPart = Omadi.service.currentFileUpload.uploadPart;
+                            Omadi.service.uploadFileHTTP.upload_part = Omadi.service.currentFileUpload.upload_part;
                             Omadi.service.uploadFileHTTP.numUploadParts = Omadi.service.currentFileUpload.numUploadParts;
                             Omadi.service.uploadFileHTTP.tries = Omadi.service.currentFileUpload.tries;
                             Omadi.service.uploadFileHTTP.isBackground = isBackground;
@@ -1368,6 +1368,8 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
                                 Omadi.utils.setCookieHeader(Omadi.service.uploadFileHTTP);
                             }
                             
+                            Ti.API.debug("before payload");
+                            
                             payload = JSON.stringify({
                                 file_data : Omadi.service.currentFileUpload.file_data,
                                 filename : Omadi.service.currentFileUpload.file_name,
@@ -1382,8 +1384,13 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
                                 type : Omadi.service.currentFileUpload.type,
                                 fid : Omadi.service.currentFileUpload.fid,
                                 filesize : Omadi.service.currentFileUpload.filesize,
-                                mobile_id : Omadi.service.currentFileUpload.id
+                                mobile_id : Omadi.service.currentFileUpload.id,
+                                bytes_uploaded : Omadi.service.currentFileUpload.bytes_uploaded,
+                                uploading_bytes : Omadi.service.currentFileUpload.uploading_bytes,
+                                upload_part : Omadi.service.currentFileUpload.upload_part
                             });
+                            
+                            Ti.API.debug("after payload def");
                             
                             // var tempFile = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, '_temp.txt');
                             // tempFile.write(payload);
@@ -1391,7 +1398,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
                             // tempFile = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, '_temp.txt');
                             // payload = tempFile.read();
                             
-                            if(Omadi.service.currentFileUpload.uploadPart == 1){
+                            if(Omadi.service.currentFileUpload.upload_part == 1){
                                 Ti.App.fireEvent("sendingData", {
                                     message : 'Uploading files. ' + numFilesReadyToUpload + ' to go...',
                                     progress : true
@@ -1406,6 +1413,8 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
                             Omadi.service.uploadFileHTTP.setValidatesSecureCertificate(false);
                             
                             Omadi.service.uploadFileHTTP.send(payload);
+                            
+                            Ti.API.debug("after payload send");
                         }
                         catch(ex2){
                             Omadi.service.sendErrorReport("Exception sending upload data: " + ex2);

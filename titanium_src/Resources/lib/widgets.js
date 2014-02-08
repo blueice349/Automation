@@ -630,8 +630,8 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         
         popupWin = Ti.UI.createWindow({
             orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
-            modal: true,
-            navBarHidden: true
+            //modal: true,
+            //navBarHidden: true
         });
         
         opacView = Ti.UI.createView({
