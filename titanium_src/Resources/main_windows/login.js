@@ -931,7 +931,7 @@ var termsView;
                         //label_error.text = "Network timeout. Please try again.";
                     }
                     else {
-                        alert("There was a problem logging you in. Please try again.");
+                        alert("There was a problem logging you in. Please try again. Details: " + e.error);
                         Omadi.service.sendErrorReport("Error logging in: " + e.error);
                         //label_error.text = "An error has occurred. Please try again.";
                     }

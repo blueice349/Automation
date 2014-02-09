@@ -55,6 +55,7 @@ Omadi.widgets.number_integer = {
             addAnotherItemButton.addEventListener('click', function(e) {
                 var instance = e.source.instance;
                 instance.numVisibleFields++;
+                Omadi.widgets.unfocusField();
                 Omadi.widgets.shared.redraw(instance);
             });
 

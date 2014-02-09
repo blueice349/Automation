@@ -837,7 +837,7 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
     try{
         json = JSON.parse(this.responseText);
     
-        if (json.nid) {
+        if (json !== null && json.nid) {
             
             if(typeof json.bytes_uploaded !== 'undefined'){
                 bytesUploaded = json.bytes_uploaded;

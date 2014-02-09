@@ -121,6 +121,8 @@ Omadi.widgets.license_plate = {
                     if(e.source.value !== null){
                         tempValue = (e.source.value + "".toString()).replace(/[^0-9a-zA-Z]/g, '');
                         tempValue = tempValue.toUpperCase();
+                        // Change the oh's to zeros
+                        tempValue = tempValue.replace(/O/g, '0');
                     }
                     
                     e.source.dbValue = tempValue;

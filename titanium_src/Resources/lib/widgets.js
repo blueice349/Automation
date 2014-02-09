@@ -605,6 +605,13 @@ Omadi.widgets.getTextField = function(instance){"use strict";
     return textField;
 };
 
+Omadi.widgets.unfocusField = function(){"use strict";
+    if(typeof Omadi.widgets.currentlyFocusedField !== 'undefined'){
+        if(Omadi.widgets.currentlyFocusedField != null && typeof Omadi.widgets.currentlyFocusedField.blur !== 'undefined'){
+            Omadi.widgets.currentlyFocusedField.blur();
+        }
+    }
+};
 
 Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         

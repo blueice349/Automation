@@ -242,13 +242,24 @@ public class OmadiCameraActivity extends TiBaseActivity implements SurfaceHolder
 	public void surfaceCreated(SurfaceHolder previewHolder) {
 		Log.d("CAMERA", "CAMERA SURFACE CREATED");
 		
-	    
+//		try{
+//			camera.setPreviewDisplay(previewHolder);
+//			camera.startPreview();
+//		}
+//	    catch(Exception e){
+//	    	Log.e("CAMERA", "CAMERA Could not start preview: " + e.getMessage());
+//	    }
 	}
 
 	// make sure to call release() otherwise you will have to force kill the app before 
 	// the built in camera will open
 	public void surfaceDestroyed(SurfaceHolder previewHolder) {
-		camera.release();
+		try{
+			camera.release();
+		}
+		catch(Exception e){
+			Log.e("CAMERA", "CAMERA exception releasing: " + e.getMessage());
+		}
 		camera = null;
 	}
 

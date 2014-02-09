@@ -1119,13 +1119,13 @@ Omadi.data.deletePhotoUpload = function(id, deleteFile) {"use strict";
     if(filePath !== null){
         file = Ti.Filesystem.getFile(filePath);
         if(file.exists() && file.isFile()){
-            //file.deleteFile();
+            file.deleteFile();
         }
         
         if(thumbPath != null && thumbPath.length > 10){
             thumbFile = Ti.Filesystem.getFile(thumbPath);
             if(thumbFile.exists() && thumbFile.isFile()){
-                //thumbFile.deleteFile();
+                thumbFile.deleteFile();
             }
         }
     }
@@ -1893,18 +1893,18 @@ Omadi.data.getFileArray = function(onlyUploadable){"use strict";
                             if(deleteFile){
                                 imageFile = Ti.Filesystem.getFile(nextFile.file_path);
                                 if(imageFile.exists()){
-                                    //imageFile.deleteFile();
+                                    imageFile.deleteFile();
                                 } 
                                 
                                 // Delete the thumbnail if one is saved
                                 if(nextFile.thumb_path != null && nextFile.thumb_path.length > 10){
                                     thumbFile = Ti.Filesystem.getFile(nextFile.thumb_path);
                                     if(thumbFile.exists()){
-                                       //thumbFile.deleteFile();
+                                       thumbFile.deleteFile();
                                     }
                                 }
                                 
-                                //deleteFinishedIds.push(nextFile.id);
+                                deleteFinishedIds.push(nextFile.id);
                             }
                         }
                     }

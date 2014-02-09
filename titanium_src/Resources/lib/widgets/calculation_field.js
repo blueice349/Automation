@@ -102,6 +102,7 @@ Omadi.widgets.calculation_field = {
             recalculateButton.addEventListener('click', function(e){
                 var instance = e.source.instance;
                 
+                Omadi.widgets.unfocusField();
                 // Reset the cached values
                 Omadi.widgets.calculation_field.calculated_field_cache = {};
                 Omadi.widgets.shared.redraw(instance);
@@ -218,67 +219,70 @@ Omadi.widgets.calculation_field = {
                             
                             // If this is a time calculation, the saved value can be completely 
                             // recalculated to the current value, or if empty according to the current time
-                            if (calculation_row.datestamp_end_field != null && calculation_row.datestamp_end_field != "") {
+                            if (field_1_multiplier > 0 && calculation_row.datestamp_end_field != null && calculation_row.datestamp_end_field != "") {
                                 
                                 start_timestamp = field_1_multiplier;
                                 field_1_multiplier = 0;
                                 
                                 if (node[calculation_row.datestamp_end_field] != null && node[calculation_row.datestamp_end_field].dbValues[0] != null) {
-                                    
                                     end_timestamp = node[calculation_row.datestamp_end_field].dbValues[0];
-                                    if (calculation_row.type == 'time-only') {
-                                        if (end_timestamp < start_timestamp) {
-                                            end_timestamp += (24 * 3600);
-                                        }
+                                }
+                                else{
+                                    end_timestamp = Omadi.utils.getUTCTimestamp();   
+                                }
+                                
+                                if (calculation_row.type == 'time-only') {
+                                    if (end_timestamp < start_timestamp) {
+                                        end_timestamp += (24 * 3600);
                                     }
-            
-                                    difference = end_timestamp - start_timestamp;
-            
-                                    switch(calculation_row.datestamp_interval) {
-                                        case 'minute':
-                                            field_1_multiplier = difference / 60;
-                                            break;
-                                        case 'hour':
-                                            field_1_multiplier = difference / 3600;
-                                            break;
-                                        case 'day':
-                                            field_1_multiplier = difference / (3600 * 24);
-                                            break;
-                                        case 'week':
-                                            field_1_multiplier = difference / (3600 * 24 * 7);
-                                            break;
+                                }
+        
+                                difference = end_timestamp - start_timestamp;
+        
+                                switch(calculation_row.datestamp_interval) {
+                                    case 'minute':
+                                        field_1_multiplier = difference / 60;
+                                        break;
+                                    case 'hour':
+                                        field_1_multiplier = difference / 3600;
+                                        break;
+                                    case 'day':
+                                        field_1_multiplier = difference / (3600 * 24);
+                                        break;
+                                    case 'week':
+                                        field_1_multiplier = difference / (3600 * 24 * 7);
+                                        break;
+                                }
+                              
+                                if (calculation_row.type == 'time') {
+                                    
+                                    if (calculation_row.interval_rounding == 'up') {
+                                        field_1_multiplier = Math.ceil(field_1_multiplier);
                                     }
-                                  
-                                    if (calculation_row.type == 'time') {
+                                    else if (calculation_row.interval_rounding == 'down') {
+                                        field_1_multiplier = Math.floor(field_1_multiplier);
+                                    }
+                                    else if (calculation_row.interval_rounding == 'integer') {
+                                        field_1_multiplier = Math.round(field_1_multiplier);
+                                    }
+                                    else if (calculation_row.interval_rounding == 'increment-at-time') {
                                         
-                                        if (calculation_row.interval_rounding == 'up') {
-                                            field_1_multiplier = Math.ceil(field_1_multiplier);
+                                        at_time = calculation_row.increment_at_time;
+                                        start_timestamp = Number(start_timestamp);
+                                        relative_increment_time = at_time = mktime(0,0,0, Omadi.utils.PHPFormatDate('n', start_timestamp), Omadi.utils.PHPFormatDate('j', start_timestamp), Omadi.utils.PHPFormatDate('Y', start_timestamp));
+                                        
+                                        day_count = 0;
+                                        if (relative_increment_time < start_timestamp) {
+                                            relative_increment_time += (3600 * 24);
                                         }
-                                        else if (calculation_row.interval_rounding == 'down') {
-                                            field_1_multiplier = Math.floor(field_1_multiplier);
+        
+                                        while (relative_increment_time <= end_timestamp) {
+                                            day_count++;
+                                            relative_increment_time += (3600 * 24);
                                         }
-                                        else if (calculation_row.interval_rounding == 'integer') {
-                                            field_1_multiplier = Math.round(field_1_multiplier);
-                                        }
-                                        else if (calculation_row.interval_rounding == 'increment-at-time') {
-                                            
-                                            at_time = calculation_row.increment_at_time;
-                                            start_timestamp = Number(start_timestamp);
-                                            relative_increment_time = at_time = mktime(0,0,0, Omadi.utils.PHPFormatDate('n', start_timestamp), Omadi.utils.PHPFormatDate('j', start_timestamp), Omadi.utils.PHPFormatDate('Y', start_timestamp));
-                                            
-                                            day_count = 0;
-                                            if (relative_increment_time < start_timestamp) {
-                                                relative_increment_time += (3600 * 24);
-                                            }
-            
-                                            while (relative_increment_time <= end_timestamp) {
-                                                day_count++;
-                                                relative_increment_time += (3600 * 24);
-                                            }
-            
-                                            field_1_multiplier = day_count;
-                                            
-                                        }
+        
+                                        field_1_multiplier = day_count;
+                                        
                                     }
                                 }
                             }

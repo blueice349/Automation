@@ -726,26 +726,59 @@ Omadi.widgets.image = {
                                 newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex, null, null, filePath, thumbPath, degrees);
                                 takeNextPhotoView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, null, null, 0);
                                 
+                                //imageView.image = filePath;
+                                
+                                imageView.hide();
+                                imageView.setWidth(0);
+                                imageView.setLeft(0);
                                 imageView.parentView.add(newImageView);
                                 imageView.parentView.add(takeNextPhotoView);
                                 
                                 imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
-                                imageView.parentView.remove(imageView);
-                                imageView = null;
+                                //imageView.parentView.remove(imageView);
+                                //imageView = null;
                                 
                                 // Allow the newImageView time to show up, and then click it
                                 setTimeout(function(){
-                                     takeNextPhotoView.fireEvent('click');
+                                     try{
+                                        takeNextPhotoView.fireEvent('click');
+                                     }
+                                     catch(ex){
+                                         Omadi.service.sendErrorReport("Exception firing click event " + ex);
+                                     }
                                      Omadi.display.doneLoading();
-                                }, 100);
+                                }, 150);
+                                
+                                setTimeout(function(){
+                                    try{
+                                        imageView.parentView.remove(imageView);
+                                    }
+                                    catch(ex2){
+                                        Omadi.service.sendErrorReport("Exception removing image view 1 " + ex2);
+                                    }
+                                }, 1000);
                             }
                             else{
                                
                                 newImageView = Omadi.widgets.image.getImageView(imageView.parentView, imageView.imageIndex, null, null, filePath, thumbPath, degrees);
-    
+                                
+                                //imageView.image = filePath;
+                                imageView.hide();
+                                imageView.setWidth(0);
+                                imageView.setLeft(0);
+                                
                                 imageView.parentView.add(newImageView);
-                                imageView.parentView.remove(imageView);
-                                imageView = null;
+                                
+                                
+                                setTimeout(function(){
+                                    try{
+                                        imageView.parentView.remove(imageView);
+                                    }
+                                    catch(ex3){
+                                        Omadi.service.sendErrorReport("Exception removing image view 2 " + ex3);
+                                    }
+                                }, 1000);
+                                //imageView = null;
                                 
                                 Omadi.display.doneLoading();
                             }

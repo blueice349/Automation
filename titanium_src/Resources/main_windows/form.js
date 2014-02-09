@@ -464,7 +464,7 @@ function validateRestrictions(node){"use strict";
     form_errors = [];
     
     // Only check on creation
-    if(node.nid === 'new'){
+    if(node.nid === 'new' || node.nid < 0){
     
         nid = null;
         vin = null;
@@ -829,9 +829,7 @@ function save_form_data(saveType) {"use strict";
 function showActionsOptions(e){"use strict";
     var bundle, btn_tt, btn_id, postDialog, windowFormPart;
     
-    if(typeof Omadi.widgets.currentlyFocusedField !== 'undefined'){
-        Omadi.widgets.currentlyFocusedField.blur();
-    }
+    Omadi.widgets.unfocusField();
     
     bundle = Omadi.data.getBundle(node.type);
     btn_tt = [];

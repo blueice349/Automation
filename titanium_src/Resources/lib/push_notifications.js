@@ -1,7 +1,7 @@
-Omadi.push_notifications = {};
-
 /*jslint eqeq:true*/
 /*global dbEsc, alertQueue, useAlertQueue*/
+
+Omadi.push_notifications = {};
 
 var Cloud = require('ti.cloud');
 
@@ -47,6 +47,10 @@ Omadi.push_notifications.registerAndroid = function() {"use strict";
             CloudPush.focusAppOnPush = true;
             CloudPush.enabled = true;
             CloudPush.singleCallback = true;
+            CloudPush.showTrayNotification = false;
+            CloudPush.showTrayNotificationsWhenFocused = false;
+            CloudPush.showAppOnTrayClick = false;
+            
             Omadi.push_notifications.loginUser();
         },
         error: function(e){
