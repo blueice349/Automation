@@ -51,7 +51,15 @@ Omadi.widgets.phone = {
             addAnotherItemButton = Ti.UI.createButton({
                 title : 'Add another item',
                 right : 15,
-                instance : instance
+                instance : instance,
+                style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+                backgroundGradient: Omadi.display.backgroundGradientGray,
+                borderColor: '#999',
+                borderWidth: 1,
+                width: 150,
+                borderRadius: 10,
+                color: '#eee',
+                top: 10
             });
 
             addAnotherItemButton.addEventListener('click', function(e) {

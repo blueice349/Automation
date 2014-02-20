@@ -1973,11 +1973,11 @@ function continuousSave(){"use strict";
                         var fieldView = Omadi.widgets.getFieldView(node, instance);
                         if(fieldView !== null){
                             fieldView.wrapper = fieldWrapper;
-                               
+                              
                             fieldWrapper.add(fieldView);
                             fieldWrappers[instance.field_name] = fieldWrapper;
                             regionViews[region_name].add(fieldWrapper);
-                            
+                           
                             if(instance.widget.type == 'violation_select'){
                                 hasViolationField = true;
                             }
@@ -2017,40 +2017,46 @@ function continuousSave(){"use strict";
         Ti.App.removeEventListener('loggingOut', loggingOutForm);
         Ti.App.removeEventListener('photoUploaded', photoUploadedForm);
         
-        // Remove region views from memory
-        for(regionWrappers_i in regionWrappers){
-            if(regionWrappers.hasOwnProperty(regionWrappers_i)){
-                
-                for(regionView_i in regionViews){
-                    if(regionViews.hasOwnProperty(regionView_i)){
-                        regionViews[regionView_i] = null;
-                    }
-                }
-                
-                if(typeof regionWrappers[regionWrappers_i] !== 'undefined' && regionWrappers[regionWrappers_i] != null){
-                    if(regionWrappers[regionWrappers_i].children.length > 0){
-                        for(regionWrapperChild_i in regionWrappers[regionWrappers_i].children){
-                            if(regionWrappers[regionWrappers_i].children.hasOwnProperty(regionWrapperChild_i)){
-                                if(typeof regionWrappers[regionWrappers_i].children[regionWrapperChild_i] !== 'undefined' && regionWrappers[regionWrappers_i].children[regionWrapperChild_i] != null){
-                                    regionWrappers[regionWrappers_i].remove(regionWrappers[regionWrappers_i].children[regionWrapperChild_i]);
-                                    regionWrappers[regionWrappers_i].children[regionWrapperChild_i] = null;
-                                }
-                            }
+        try{
+            // Remove region views from memory
+            for(regionWrappers_i in regionWrappers){
+                if(regionWrappers.hasOwnProperty(regionWrappers_i)){
+                    
+                    for(regionView_i in regionViews){
+                        if(regionViews.hasOwnProperty(regionView_i)){
+                            regionViews[regionView_i] = null;
                         }
                     }
                     
-                    scrollView.remove(regionWrappers[regionWrappers_i]);
-                    regionWrappers[regionWrappers_i] = null;
+                    if(typeof regionWrappers[regionWrappers_i] !== 'undefined' && regionWrappers[regionWrappers_i] != null){
+                        if(regionWrappers[regionWrappers_i].children.length > 0){
+                            for(regionWrapperChild_i in regionWrappers[regionWrappers_i].children){
+                                if(regionWrappers[regionWrappers_i].children.hasOwnProperty(regionWrapperChild_i)){
+                                    if(typeof regionWrappers[regionWrappers_i].children[regionWrapperChild_i] !== 'undefined' && regionWrappers[regionWrappers_i].children[regionWrapperChild_i] != null){
+                                        regionWrappers[regionWrappers_i].remove(regionWrappers[regionWrappers_i].children[regionWrapperChild_i]);
+                                        regionWrappers[regionWrappers_i].children[regionWrapperChild_i] = null;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        scrollView.remove(regionWrappers[regionWrappers_i]);
+                        regionWrappers[regionWrappers_i] = null;
+                    }
                 }
             }
+            
+            if(scrollView != null){
+                wrapperView.remove(scrollView);
+                scrollView = null;
+            }
+            
+            win.remove(wrapperView);
+        }
+        catch(nothing){
+            
         }
         
-        if(scrollView != null){
-            wrapperView.remove(scrollView);
-            scrollView = null;
-        }
-        
-        //win.remove(wrapperView);
         wrapperView = null;
         
         fieldViews = null;
@@ -2064,17 +2070,14 @@ function continuousSave(){"use strict";
         node = null;
         win = null;
         regionWrapperView = null;
-    });
-    
-    Ti.UI.currentWindow.saveInterval = setInterval(continuousSave, 15000);
-    
-    Ti.UI.currentWindow.addEventListener('close', function(){
-        Ti.API.error("Form window close event");
+        
         if(typeof Ti.UI.currentWindow.saveInterval !== 'undefined'){
             clearInterval(Ti.UI.currentWindow.saveInterval);
         } 
     });
     
+    Ti.UI.currentWindow.saveInterval = setInterval(continuousSave, 15000);
+   
     if(!Ti.UI.currentWindow.usingDispatch){
         var doneButtonWrapper = Ti.UI.createView({
             width: '100%',

@@ -103,9 +103,8 @@ Omadi.widgets.signature = {
         sigLine = Ti.UI.createView({
             width:'90%',
             height:2,
-            backgroundColor:'#000',
-            bottom:70,
-            opacity: 0.5
+            backgroundColor:'#999',
+            bottom:70
         });
 
         thex = Ti.UI.createLabel({
@@ -114,10 +113,9 @@ Omadi.widgets.signature = {
             width:'auto',
             height:'auto',
             font:{fontFamily:'Arial',fontSize:24},
-            color:'#000',
+            color:'#999',
             bottom:75,
-            left:20,
-            opacity: 0.5
+            left:20
         });
 
         
@@ -166,7 +164,9 @@ Omadi.widgets.signature = {
             scrollView, textView, textLabel, overlayButton, overlayLabel, hasText;
         
         win = Ti.UI.createWindow({  
-            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
+            modal: true,
+            navBarHidden: true
         });
         
         hasText = false;
@@ -176,7 +176,6 @@ Omadi.widgets.signature = {
             instance.settings.signature_text.length != ""){
             
             hasText = true;
-            
             
             scrollView = Ti.UI.createScrollView({
                 contentHeight: 'auto',
@@ -215,16 +214,13 @@ Omadi.widgets.signature = {
            top: 0,
            bottom: 0,
            left: 0,
-           right: 0,
-           backgroundColor: '#ddd',
-           opacity: 0.8 
+           right: 0
         });
         
         outsideWrapper = Ti.UI.createView({
            width: '95%',
            height: Ti.UI.SIZE,
-           layout: 'vertical',
-           opacity: 1.0
+           layout: 'vertical'
         });
         
         wrapper = Ti.UI.createView({
@@ -232,8 +228,7 @@ Omadi.widgets.signature = {
             height: 220,
             borderColor: '#aaa',
             borderWidth: 2,
-            backgroundColor: '#fff',
-            opacity: 1.0
+            backgroundColor: '#fff'
         });
         
         buttonView = Ti.UI.createView({
@@ -290,9 +285,8 @@ Omadi.widgets.signature = {
         sigLine = Ti.UI.createView({
             width:'90%',
             height:2,
-            backgroundColor:'#000',
-            bottom:70,
-            opacity: 0.5
+            backgroundColor:'#999',
+            bottom:70
         });
 
         thex = Ti.UI.createLabel({
@@ -301,10 +295,9 @@ Omadi.widgets.signature = {
             width:'auto',
             height:'auto',
             font:{fontFamily:'Arial',fontSize:24},
-            color:'#000',
+            color:'#999',
             bottom:75,
-            left:20,
-            opacity: 0.5
+            left:20
         });
         
         paintView = Paint.createPaintView({
@@ -314,7 +307,6 @@ Omadi.widgets.signature = {
             instance : instance,
             strokeWidth: 4,
             strokeColor: '#666',
-            opacity: 1.0,
             touchEnabled: true,
             backgroundColor: '#fff'
         });
@@ -327,7 +319,6 @@ Omadi.widgets.signature = {
                 backgroundColor: '#fff',
                 borderWidth: 2,
                 borderColor: '#ccc',
-                opacity: 1.0,
                 scrollView: scrollView
             });
             
@@ -350,7 +341,6 @@ Omadi.widgets.signature = {
                 bottom: 0,
                 top: 0,
                 backgroundColor: '#999',
-                opacity: 0.8,
                 wrapper: wrapper,
                 scrollView: scrollView
             });
@@ -407,20 +397,27 @@ Omadi.widgets.signature = {
         
         
         doneButton.addEventListener('click',function(e){
-            var blob = paintView.toImage();
+            var blob;
             
-            Omadi.widgets.signature.removePreviousSignature(instance);
-            
-            e.source.widgetView.imageView.setImage(blob);
-            e.source.widgetView.imageWrapper.setVisible(true);
-            e.source.widgetView.imageWrapper.setHeight(Ti.UI.SIZE);
-            
-            // This waiting is really only for the Android devices, but it's not a hugely back thing
-            // To leave for a possibly slow iOS device
+            try{
+                blob = paintView.toImage();
+                
+                Omadi.widgets.signature.removePreviousSignature(instance);
+                
+                e.source.widgetView.imageView.setImage(blob);
+                e.source.widgetView.imageWrapper.setVisible(true);
+                e.source.widgetView.imageWrapper.setHeight(Ti.UI.SIZE);
+                
+                // This waiting is really only for the Android devices, but it's not a hugely back thing
+                // To leave for a possibly slow iOS device
 
-            setTimeout(function(){
-                Omadi.widgets.signature.saveSignature(e.source);
-            }, 1000);
+                setTimeout(function(){
+                    Omadi.widgets.signature.saveSignature(e.source);
+                }, 1000);
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception getting signature image: " + ex);
+            }
             
             e.source.win.close();
         });

@@ -48,8 +48,7 @@ var loggedView = Titanium.UI.createView({
     top : 40,
     backgroundColor : '#333',
     height : 45,
-    width : '100%',
-    opacity : 1
+    width : '100%'
 });
 
 var headerListView = Ti.UI.createView({

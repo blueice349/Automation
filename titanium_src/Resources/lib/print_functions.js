@@ -1,5 +1,7 @@
 /*jslint eqeq:true,plusplus:true*/
 
+Ti.include('/lib/CC_functions.js');
+
 Omadi.print = {};
 
 Omadi.print.StarMicronics = null;
@@ -61,8 +63,28 @@ Omadi.print.onLogoutPrint = function(){"use strict";
 }());
 
 Omadi.print.doCharge = function(e){"use strict";
+    /*global CreditCartTrackData*/
     alert("Successful card read.");
     Ti.API.debug(e.cardData);
+    
+    var trackData;
+    
+    try{
+        trackData = new CreditCardTrackData(e.cardData);
+        
+        Ti.API.debug(JSON.stringify(trackData));
+        
+        if(trackData.is_card_valid()){
+            alert("Now send to CMS");
+        }
+        else{
+            alert("Card is not valid");
+        }
+    }
+    catch(ex){
+        Ti.API.error("Problem with card: " + ex);
+        alert("A problem occurred with the card: " + ex);
+    }
 };
 
 Omadi.print.cancelCharge = function(e){"use strict";
@@ -225,7 +247,7 @@ Omadi.print.printReceipt = function(nid){"use strict";
                             
                             Omadi.print.StarMicronics.print({
                                 success: function(e){
-                                    alert("Printing Successful.");
+                                    //alert("Printing Successful.");
                                 },
                                 error: function(e){
                                     alert("Error Printing: " + e.error);
@@ -257,7 +279,7 @@ Omadi.print.printReceipt = function(nid){"use strict";
             
             Omadi.print.StarMicronics.print({
                 success: function(e){
-                    alert("Printing Successful.");
+                    //alert("Printing Successful.");
                 },
                 error: function(e){
                     alert("Error Printing: " + e.error + ".");

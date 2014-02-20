@@ -148,7 +148,13 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
                height: '100%'
             });
             
-            imageView.bigImg = fullImage.toImage();
+            try{
+                imageView.bigImg = fullImage.toImage();
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception setting bigImg: " + ex);
+                return;
+            }
         }
         else if(imageView.bigImg !== null){ 
             //fullImage = Omadi.display.getImageViewFromData(imageView.bigImg, Ti.Platform.displayCaps.platformWidth, Ti.Platform.displayCaps.platformHeight - 50);    
@@ -605,6 +611,8 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
     return formWindow;
 };
 
+
+
 Omadi.display.openLocalPhotosWindow = function() {"use strict";
 
     var localPhotosWindow = Ti.UI.createWindow({
@@ -817,6 +825,11 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
             buttonData.push({
                 form_part: '_print' 
             });
+            
+            options.push('Charge');
+            buttonData.push({
+                form_part: '_charge' 
+            });
         }
     
         if ( typeof bundle.data.custom_copy !== 'undefined') {
@@ -879,6 +892,9 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
                         }
                         else if(form_part == '_print'){
                             Omadi.print.printReceipt(e.row.nid);
+                        }
+                        else if(form_part == '_charge'){
+                            Omadi.print.chargeCard(e.row.nid);
                         }
                         else if(form_part.toString().indexOf('_extra_') == 0){
                             extraOptionIndex = parseInt(form_part.substring(7), 10);
@@ -1189,8 +1205,7 @@ Omadi.display.getImageViewFromData = function(blobImage, maxWidth, maxHeight) {"
         imageView = Titanium.UI.createImageView({
             image : blobImage,
             width : 'auto',
-            height : 'auto',
-            opacity : 1.0
+            height : 'auto'
         });
 
         blobImage = imageView.toBlob();
@@ -1205,7 +1220,13 @@ Omadi.display.getImageViewFromData = function(blobImage, maxWidth, maxHeight) {"
         if (multiple >= 1) {
             imageView.height = parseInt(blobImage.height / multiple, 10);
             imageView.width = parseInt(blobImage.width / multiple, 10);
-            imageView.image = imageView.toImage();
+            
+            try{
+                imageView.image = imageView.toImage();   
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception setting image in Omadi.display.getImageViewFromData: " + ex);
+            }
         }
 
         return imageView;
@@ -1290,18 +1311,29 @@ Omadi.display.setImageViewThumbnail = function(imageView, nid, file_id) {"use st
             Omadi.utils.setCookieHeader(http);
 
             http.onload = function(e) {
+                var blob;
+                
                 tempImg = Ti.UI.createImageView({
                     height : 'auto',
                     width : 'auto',
                     image : this.responseData
                 });
-
-                if (tempImg.toImage().height > 100 || tempImg.toImage().width > 100) {
-                    imageView.setImage(Omadi.display.getImageViewFromData(tempImg.toImage(), 100, 100).toBlob());
+                
+                try{
+                    blob = tempImg.toImage();
+                    
+                    if (blob.height > 100 || blob.width > 100) {
+                        imageView.setImage(Omadi.display.getImageViewFromData(blob, 100, 100).toBlob());
+                    }
+                    else {
+                        imageView.setImage(this.responseData);
+                    }
                 }
-                else {
+                catch(ex){
+                    Omadi.service.sendErrorReport("Exception displaying image thumbnail in Omadi.display.setImageViewThumbnail: " + ex);
                     imageView.setImage(this.responseData);
                 }
+                
                 imageView.height = null;
                 imageView.width = null;
                 imageView.isImage = true;
@@ -1344,13 +1376,21 @@ Omadi.display.setImageViewVideoThumbnail = function(imageView, nid, file_id, fie
                     width : 'auto',
                     image : this.responseData
                 });
-
-                if (tempImg.toImage().height > 100 || tempImg.toImage().width > 100) {
-                    imageView.setImage(Omadi.display.getImageViewFromData(tempImg.toImage(), 100, 100).toBlob());
+                
+                try{
+                    var blob = tempImg.toImage();
+                    if (blob.height > 100 || blob.width > 100) {
+                        imageView.setImage(Omadi.display.getImageViewFromData(blob, 100, 100).toBlob());
+                    }
+                    else {
+                        imageView.setImage(this.responseData);
+                    }
                 }
-                else {
+                catch(ex){
+                    Omadi.service.sendErrorReport("Exception displaying video thumbnail: " + ex);
                     imageView.setImage(this.responseData);
                 }
+                
                 imageView.height = null;
                 imageView.width = null;
                 imageView.isImage = true;
@@ -1405,17 +1445,6 @@ Omadi.display.loading = function(message) {"use strict";
     if ( typeof message === 'undefined') {
         message = 'Loading...';
     }
-
-    // Ti.Gesture.fireEvent('orientationchange');
-    //
-    // if(Omadi.display.currentOrientation == Ti.UI.PORTRAIT || Omadi.display.currentOrientation == Ti.UI.UPSIDE_PORTRAIT){
-    // height = Math.max(Ti.Platform.displayCaps.getPlatformHeight(), Ti.Platform.displayCaps.getPlatformWidth());
-    // width = Math.min(Ti.Platform.displayCaps.getPlatformHeight(), Ti.Platform.displayCaps.getPlatformWidth());
-    // }
-    // else{
-    // height = Math.min(Ti.Platform.displayCaps.getPlatformHeight(), Ti.Platform.displayCaps.getPlatformWidth());
-    // width = Math.max(Ti.Platform.displayCaps.getPlatformHeight(), Ti.Platform.displayCaps.getPlatformWidth());
-    // }
 
     indicator = Ti.UI.createLabel({
         top : 0,

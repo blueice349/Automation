@@ -493,7 +493,7 @@ public class StarMicronicsModule extends KrollModule{
 	@Kroll.method
 	public void readPort(HashMap options){
 		String errorString = null;
-		byte[] mcrData = new byte[100];
+		byte[] mcrData = new byte[200];
 		KrollDict d = new KrollDict();
 		Activity activity = TiApplication.getInstance().getCurrentActivity();
 		KrollFunction errorCallback = null;

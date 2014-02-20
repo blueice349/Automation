@@ -637,31 +637,28 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
         
         popupWin = Ti.UI.createWindow({
             orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
-            //modal: true,
-            //navBarHidden: true
+            modal: true,
+            navBarHidden: true
         });
         
         opacView = Ti.UI.createView({
             left : 0,
             right : 0,
             top : 0,
-            bottom : 0,
-            backgroundColor : '#000000',
-            opacity : 0.5
+            bottom : 0
         });
         
         numItemsSelected = 0;
         popupWin.add(opacView);
     
         wrapperView = Ti.UI.createView({
-            backgroundColor : '#FFFFFF',
+            backgroundColor : '#fff',
             left : '5%',
             right : '5%',
             height: Ti.UI.SIZE,
             borderRadius : 10,
             borderWidth : 2,
-            borderColor : '#FFFFFF',
-            opacity: 1,
+            borderColor : '#fff',
             layout: 'vertical'
         });
         popupWin.add(wrapperView);
@@ -681,8 +678,6 @@ Omadi.widgets.getMultipleSelector = function(buttonView){"use strict";
             height: listHeight,
             options: options
         });
-        
-        //scrollView.add(listView);
         
         dbValues = buttonView.dbValue;
         

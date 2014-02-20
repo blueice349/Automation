@@ -2957,9 +2957,11 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                 dispatch_nid : Omadi.service.fetchedJSON.node[type].insert[i].dispatch_nid
                             }));
     
-                            query = 'INSERT OR REPLACE  INTO ' + type + ' (nid, ';
+                            query = 'INSERT OR REPLACE  INTO ' + type + ' (';
     
                             fieldNames = [];
+                            fieldNames.push('nid');
+                            
                             for (field_name in instances) {
                                 if (instances.hasOwnProperty(field_name)) {
                                     fieldNames.push("`" + field_name + "`");
@@ -2982,9 +2984,10 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                             //Ti.API.error(fieldNames);
                             
                             query += fieldNames.join(',');
-                            query += ') VALUES (' + Omadi.service.fetchedJSON.node[type].insert[i].nid + ',';
+                            query += ') VALUES (';
     
                             values = [];
+                            values.push(Omadi.service.fetchedJSON.node[type].insert[i].nid);
     
                             for (field_name in instances) {
                                 if(instances.hasOwnProperty(field_name)){
@@ -3112,7 +3115,7 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                             query += ')';
                         
                             //Ti.API.debug(query);
-    
+                            
                             queries.push(query);
                             
                             // Don't display new items from a full reset, as it is just annoying

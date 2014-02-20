@@ -51,7 +51,15 @@ Omadi.widgets.text = {
             addAnotherItemButton = Ti.UI.createButton({
                title: 'Add another item',
                right: 15,
-               instance: instance
+               instance: instance,
+               style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+                backgroundGradient: Omadi.display.backgroundGradientGray,
+                borderColor: '#999',
+                borderWidth: 1,
+                width: 150,
+                borderRadius: 10,
+                color: '#eee',
+                top: 10
             });
             
             addAnotherItemButton.addEventListener('click', function(e){
@@ -69,6 +77,7 @@ Omadi.widgets.text = {
             var i;
             
             for(i = 0; i < instance.elements.length; i ++){
+                Ti.API.debug("Cleaning up an element");
                 fieldView.remove(instance.elements[i]);
                 instance.elements[i] = null;
             }
@@ -77,6 +86,9 @@ Omadi.widgets.text = {
         });  
        
         return fieldView;
+    },
+    cleanup : function(instance, fieldView){"use strict";
+        
     },
     getNewElement: function(node, instance, index){"use strict";
         

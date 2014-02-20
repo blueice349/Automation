@@ -175,16 +175,19 @@ Omadi.widgets.rules_field = {
             //Ti.API.info("hide keyboard in row click listener");
         }
 
-        detail_popup = Ti.UI.createView({
-            backgroundColor : '#00000000'
+        detail_popup = Ti.UI.createWindow({
+            modal: true,
+            navBarHidden: true,
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
         });
-        detail_popup.left = detail_popup.right = detail_popup.top = detail_popup.bottom = 0;
 
         translucent = Ti.UI.createView({
-            opacity : 0.5,
-            backgroundColor : '#000'
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0
         });
-        translucent.left = translucent.right = translucent.top = translucent.bottom = 0;
+        
         detail_popup.add(translucent);
 
         table_format_bg = Ti.UI.createView({
@@ -310,15 +313,19 @@ Omadi.widgets.rules_field = {
         detailsVal = e.source.details;
         forms_str = '- All -';
 
-        if (typeof e.source.formTypes !== 'undefined' && e.source.formTypes.length < 4 && e.source.formTypes.length > 0) {
-            forms_str = '';
-            for ( i = 0; i < e.source.formTypes.length; i++) {
-                forms_str += e.source.formTypes[i] + ((i == e.source.formTypes.length - 1) ? "" : ", ");
+        if (typeof e.source.formTypes !== 'undefined' && typeof e.source.formTypes.length !== 'undefined'){
+            
+            if(e.source.formTypes.length < 4 && e.source.formTypes.length > 0) {
+                forms_str = '';
+                for (i = 0; i < e.source.formTypes.length; i++) {
+                    forms_str += e.source.formTypes[i] + ((i == e.source.formTypes.length - 1) ? "" : ", ");
+                }
             }
         }
-        else if (e.source.formTypes.length == 0) {
+        else{
             forms_str = '- NONE -';
         }
+        
         formsViewLabel.text = forms_str;
 
         dttmView = Ti.UI.createScrollView({
@@ -329,21 +336,26 @@ Omadi.widgets.rules_field = {
             width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
             left : 1
         });
+        
         detail_row.add(dttmView);
-        dttmViewLabel = Ti.UI.createLabel({
-            top : 0,
-            left : 5,
-            right : 5,
-            text : Omadi.widgets.rules_field.getTimeRulesText(detailsVal.time_rules),
-            height : Ti.UI.SIZE,
-            color : '#1c1c1c',
-            font : {
-                fontFamily : 'Helvetica Neue',
-                fontSize : 16
-            },
-            textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT
-        });
-        dttmView.add(dttmViewLabel);
+        
+        if(typeof detailsVal.time_rules !== 'undefined'){
+            dttmViewLabel = Ti.UI.createLabel({
+                top : 0,
+                left : 5,
+                right : 5,
+                text : Omadi.widgets.rules_field.getTimeRulesText(detailsVal.time_rules),
+                height : Ti.UI.SIZE,
+                color : '#1c1c1c',
+                font : {
+                    fontFamily : 'Helvetica Neue',
+                    fontSize : 16
+                },
+                textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT
+            });
+            
+            dttmView.add(dttmViewLabel);
+        }
 
         descView = Ti.UI.createScrollView({
             height : 175,
@@ -354,25 +366,30 @@ Omadi.widgets.rules_field = {
             width : (Ti.Platform.displayCaps.platformWidth - 20) / 3
         });
         detail_row.add(descView);
-        descViewLabel = Ti.UI.createLabel({
-            top : 0,
-            left : 5,
-            right : 5,
-            text : detailsVal.description,
-            height : Ti.UI.SIZE,
-            color : '#1c1c1c',
-            font : {
-                fontSize : 16
-            },
-            textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT
-        });
-        descView.add(descViewLabel);
+        
+        if(typeof detailsVal.description !== 'undefined'){
+            descViewLabel = Ti.UI.createLabel({
+                top : 0,
+                left : 5,
+                right : 5,
+                text : detailsVal.description,
+                height : Ti.UI.SIZE,
+                color : '#1c1c1c',
+                font : {
+                    fontSize : 16
+                },
+                textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT
+            });
+            descView.add(descViewLabel);
+        }
+        
+        detail_popup.open();
+        
+        //Ti.UI.currentWindow.add(detail_popup);
 
-        Ti.UI.currentWindow.add(detail_popup);
-
-        translucent.addEventListener('click', function(ent) {
-            Ti.UI.currentWindow.remove(detail_popup);
-        });
+        // translucent.addEventListener('click', function(ent) {
+            // Ti.UI.currentWindow.remove(detail_popup);
+        // });
     },
     getTimeRulesText : function(timeValue) {"use strict";
         var timeStrings = [], dayStrings = [], times = [], returnVal, rows, i, row, values, day, time, timeString, startDay, currentDay, lastConsecutive, dayPatrolStrings, day_index;

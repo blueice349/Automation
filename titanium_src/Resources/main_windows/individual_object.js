@@ -59,7 +59,6 @@ if (Ti.App.isAndroid) {
         backgroundColor : '#EEEEEE',
         showHorizontalScrollIndicator : false,
         showVerticalScrollIndicator : true,
-        opacity : 1,
         layout : 'vertical'
     });
 }
@@ -78,7 +77,6 @@ else {
         backgroundColor : '#EEEEEE',
         showHorizontalScrollIndicator : false,
         showVerticalScrollIndicator : true,
-        opacity : 1,
         layout : 'vertical',
         bottom : '0'
     });

@@ -958,7 +958,7 @@ var termsView;
 
         Ti.UI.currentWindow.addEventListener('android:back', function() {
             var dialog;
-            
+           
             if(Omadi.data.getNumFilesReadyToUpload() > 0){
                 dialog = Ti.UI.createAlertDialog({
                     title: 'Please Wait for Upload',

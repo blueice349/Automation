@@ -31,6 +31,10 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.RelativeLayout.LayoutParams;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.content.DialogInterface;
+import android.os.Handler;
 
 public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCallback{
 	
@@ -55,6 +59,37 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 	
 	public int getDegreesAtCapture(){
 		return captureDegrees;
+	}
+	
+	public void resetCaptureButton(){
+		this.captureButtonPressed = false;
+	}
+	
+	public void photoSaved(){
+		final AlertDialog.Builder dialog = new AlertDialog.Builder(context).setMessage("Photo Saved");
+		  
+		final AlertDialog alert = dialog.create();
+		alert.show();
+
+		// Hide after some seconds
+		final Handler handler  = new Handler();
+		final Runnable runnable = new Runnable() {
+		    @Override
+		    public void run() {
+		        if (alert.isShowing()) {
+		            alert.dismiss();
+		        }
+		    }
+		};
+
+		alert.setOnDismissListener(new DialogInterface.OnDismissListener() {
+		    @Override
+		    public void onDismiss(DialogInterface dialog) {
+		        handler.removeCallbacks(runnable);
+		    }
+		});
+
+		handler.postDelayed(runnable, 1000);
 	}
 	
 	public ToolsOverlay(Context c){
@@ -95,20 +130,28 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 						captureDegrees = degrees;
 						captureButtonPressed = true;
 						
-						
-						if(hasAutoFocus){
-							if(camera != null){
-								try{
-									camera.autoFocus(toolsOverlay);
-								}
-								catch(Exception e){
-									OmadiCameraActivity.cameraActivity.takePicture();
+						Log.d("CAMERA", "On click listener");
+						try{
+							if(hasAutoFocus){
+								if(camera != null){
+									try{
+										camera.autoFocus(toolsOverlay);
+									}
+									catch(Exception e){
+										OmadiCameraActivity.cameraActivity.takePicture();
+									}
 								}
 							}
+							else{
+								OmadiCameraActivity.cameraActivity.takePicture();
+							}
 						}
-						else{
-							OmadiCameraActivity.cameraActivity.takePicture();
+						catch(Exception e){
+							// nothing here
+							Log.e("CAMERA", "Exception in capture image onclick: " + e.getMessage());
 						}
+						
+						captureButtonPressed = false;
 					}
 				}
 			});

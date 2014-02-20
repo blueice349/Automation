@@ -344,47 +344,46 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                         else if (errorDescription.indexOf("imeout") != -1) {
                             errorDescription = 'Error: Timeout. Please check your Internet connection.';
                         }
-
-                        message = "There was a network error, and your data could not be synched. Do you want to retry now?" + errorDescription;
-
-                        dialog = Titanium.UI.createAlertDialog({
-                            title : 'Omadi',
-                            buttonNames : ['Yes', 'No'],
-                            cancel : 1,
-                            click_index : e.index,
-                            sec_obj : e.section,
-                            row_obj : e.row,
-                            message : message
-                        });
-
-                        dialog.addEventListener('click', function(e) {
-                            if (Ti.App.isAndroid) {
-                                if (e.index != 1) {
-                                    setTimeout(function() {
-                                        Omadi.service.fetchUpdates(true);
-                                    }, 800);
+                        
+                        if(Omadi.data.getLastUpdateTimestamp() <= 1){
+                            
+                            Omadi.service.sendErrorReport("Network Error with dialog: " + errorDescription);
+                            
+                            message = "There was a network error, and your data could not be synched. Do you want to retry now?";
+                            dialog = Titanium.UI.createAlertDialog({
+                                title : 'Omadi',
+                                buttonNames : ['Yes', 'No'],
+                                cancel : 1,
+                                click_index : e.index,
+                                sec_obj : e.section,
+                                row_obj : e.row,
+                                message : message
+                            });
+    
+                            dialog.addEventListener('click', function(e) {
+                                if (Ti.App.isAndroid) {
+                                    if (e.index != 1) {
+                                        setTimeout(function() {
+                                            Omadi.service.fetchUpdates(true);
+                                        }, 800);
+                                    }
+    
                                 }
-
-                            }
-                            else {
-                                if (e.cancel === false) {
-                                    setTimeout(function() {
-                                        Omadi.service.fetchUpdates(true);
-                                    }, 800);
+                                else {
+                                    if (e.cancel === false) {
+                                        setTimeout(function() {
+                                            Omadi.service.fetchUpdates(true);
+                                        }, 800);
+                                    }
+    
                                 }
-
-                            }
-                        });
-
-                        dialog.show();
-
+                            });
+    
+                            dialog.show();
+                        }
                     }
 
                     Omadi.data.setUpdating(false);
-                    
-                    //Omadi.service.uploadFile();
-
-                    Ti.API.error("Services are down");
                 };
 
                 http.send();
