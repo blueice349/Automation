@@ -105,7 +105,10 @@ function deleteAndroidFile(filePath){"use strict";
         // Open a label view
         
         try {
-            http = Ti.Network.createHTTPClient();
+            http = Ti.Network.createHTTPClient({
+                enableKeepAlive: false,
+                validatesSecureCertificate: false
+            });
             http.setTimeout(30000);
             http.open('GET', url);
     
@@ -158,7 +161,10 @@ function deleteAndroidFile(filePath){"use strict";
         if (Ti.Filesystem.isExternalStoragePresent()) {
             
             try {
-                http = Ti.Network.createHTTPClient();
+                http = Ti.Network.createHTTPClient({
+                    enableKeepAlive: false,
+                    validatesSecureCertificate: false
+                });
                 http.setTimeout(30000);
                 http.open('GET', url);
         

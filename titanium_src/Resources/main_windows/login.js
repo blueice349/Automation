@@ -262,7 +262,10 @@ function updateUploadBytes(){"use strict";
         db.close();
         
         for(i = 0; i < cookies.length; i ++){
-            http = Ti.Network.createHTTPClient();
+            http = Ti.Network.createHTTPClient({
+                enableKeepAlive: false,
+                validatesSecureCertificate: false
+            });
             http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync/logout.json');
             http.setTimeout(15000);
             http.setRequestHeader("Content-Type", "application/json");
@@ -647,14 +650,29 @@ var termsView;
 
         portal.addEventListener('focus', function(e) {
             scrollBoxesToTop();
+            e.source.backgroundColor = '#def';
+        });
+        
+        portal.addEventListener('blur', function(e) {
+            e.source.backgroundColor = '#fff';
         });
 
         usernameField.addEventListener('focus', function(e) {
             scrollBoxesToTop();
+            e.source.backgroundColor = '#def';
+        });
+        
+        usernameField.addEventListener('blur', function(e) {
+            e.source.backgroundColor = '#fff';
         });
 
         passwordField.addEventListener('focus', function(e) {
             scrollBoxesToTop();
+            e.source.backgroundColor = '#def';
+        });
+        
+        passwordField.addEventListener('blur', function(e) {
+            e.source.backgroundColor = '#fff';
         });
 
         Ti.UI.currentWindow.addEventListener('focus', function() {
@@ -755,7 +773,7 @@ var termsView;
         loginButton = Titanium.UI.createButton({
             title : 'Log In',
             width : 200,
-            height : 45,
+            height : Ti.UI.SIZE,
             top : 15,
             style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             backgroundGradient : {
@@ -827,7 +845,10 @@ var termsView;
 
                 Omadi.display.loading("Logging you in...");
                 //Create internet connection
-                var xhr = Ti.Network.createHTTPClient();
+                var xhr = Ti.Network.createHTTPClient({
+                    enableKeepAlive: false,
+                    validatesSecureCertificate: false
+                });
                
                 xhr.setTimeout(10000);
 

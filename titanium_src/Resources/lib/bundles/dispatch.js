@@ -241,6 +241,7 @@ Omadi.bundles.dispatch.acceptJob = function(args){"use strict";
             Omadi.data.setUpdating(true);
             
             http = Ti.Network.createHTTPClient({
+                enableKeepAlive: false,
                 validatesSecureCertificate: false
             });
             http.setTimeout(15000);
@@ -337,7 +338,6 @@ Omadi.bundles.dispatch.compareStatuses = function(status1, status2){"use strict"
 Omadi.bundles.dispatch.checkInsertNode = function(insert){"use strict";
     /*jslint nomen:true*/
      var userUID, uidIndex, showNewDispatch;
-     userUID = Omadi.utils.getUid();
      showNewDispatch = false;
      
      Ti.API.info("Inserting a dispatch node");
@@ -348,6 +348,8 @@ Omadi.bundles.dispatch.checkInsertNode = function(insert){"use strict";
              return;
          }
      }
+     
+     userUID = Omadi.utils.getUid();
      
      // Show if assigned
      if(insert.send_dispatch_requests_to !== 'undefined'){
@@ -383,18 +385,19 @@ Omadi.bundles.dispatch.checkInsertNode = function(insert){"use strict";
      
      if(showNewDispatch){
          // The user is part of this dispatch, so possibly dispatch if the below is true
+         showNewDispatch = false;
          
          if(typeof insert.field_dispatching_status !== 'undefined' && insert.field_dispatching_status == 'dispatching_call'){
              // The job is being dispatched or re-dispatched, so show the jobs dialog
              // the job has been re-dispatched
              showNewDispatch = true;
          }
-         else if(insert.viewed > 0){
-             // This is not checked when calling this function like it is for notifications
-             // Make sure the dispatch isn't shows when changed and not required to see the popup
-             // as defined just above
-             showNewDispatch = false;
-         }
+         // else if(insert.viewed > 0){
+             // // This is not checked when calling this function like it is for notifications
+             // // Make sure the dispatch isn't shows when changed and not required to see the popup
+             // // as defined just above
+             // showNewDispatch = false;
+         // }
      }
      
      if(showNewDispatch){
@@ -638,6 +641,7 @@ Omadi.bundles.dispatch.updateStatus = function(nid, status, background){"use str
         Omadi.data.setUpdating(true);
         
         http = Ti.Network.createHTTPClient({
+            enableKeepAlive: false,
             validatesSecureCertificate: false
         });
         http.setTimeout(15000);

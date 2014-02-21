@@ -716,8 +716,6 @@ function hideNetworkStatus(){"use strict";
         networkStatusAnimation.top = -40;    
     }
     
-    networkStatusView.height = 0;
-    
     networkStatusAnimation.addEventListener('complete', hideNetworkStatusHandler);
     
     headerListView.animate(networkStatusAnimation);
@@ -881,6 +879,15 @@ function mainMenuFirstSyncInstallComplete(){"use strict";
     Ti.App.fireEvent('showNextAlertInQueue');
 }
 
+function sendDelayedUpdates(){"use strict";
+    // Wait one second before actually sending the update
+    setTimeout(Omadi.service.sendUpdates, 500);
+}
+
+function userInitiatedUpdateCheck(){"use strict";
+    Omadi.service.checkUpdate(true, true);
+}
+
 ( function() {"use strict";
     var db, result, formWindow, time_format, askAboutInspection, dialog, i, showingAlert, nowTimestamp;
     
@@ -973,8 +980,8 @@ function mainMenuFirstSyncInstallComplete(){"use strict";
     Ti.App.removeEventListener('openForm', openFormCallback);
     Ti.App.addEventListener('openForm', openFormCallback);
     
-    Ti.App.removeEventListener('sendUpdates', Omadi.service.sendUpdates);
-    Ti.App.addEventListener('sendUpdates', Omadi.service.sendUpdates);
+    Ti.App.removeEventListener('sendUpdates', sendDelayedUpdates);
+    Ti.App.addEventListener('sendUpdates', sendDelayedUpdates);
     
     Ti.App.removeEventListener('full_update_from_menu', fullUpdateFromMenu);
     Ti.App.addEventListener('full_update_from_menu', fullUpdateFromMenu);
@@ -1014,10 +1021,9 @@ function mainMenuFirstSyncInstallComplete(){"use strict";
         Omadi.data.setUpdating(false);
     });
     
-    refresh_image.addEventListener('click', Omadi.service.checkUpdate);
+    refresh_image.addEventListener('click', userInitiatedUpdateCheck);
     
     offImage.addEventListener('click', function(e) {
-        
         Omadi.display.logoutButtonPressed();
     });
 
@@ -1068,7 +1074,7 @@ function mainMenuFirstSyncInstallComplete(){"use strict";
         Ti.App.removeEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
         Ti.App.removeEventListener("sendingData", sendingDataMainMenu);
         Ti.App.removeEventListener('loggingOut', loggingOutMainMenu);
-        Ti.App.removeEventListener('sendUpdates', Omadi.service.sendUpdates);
+        Ti.App.removeEventListener('sendUpdates', sendDelayedUpdates);
         Ti.App.removeEventListener('omadi:finishedDataSync', setupBottomButtons);
         Ti.App.removeEventListener('normal_update_from_menu', normalUpdateFromMenu);
         Ti.App.removeEventListener('full_update_from_menu', fullUpdateFromMenu);

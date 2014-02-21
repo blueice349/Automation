@@ -395,7 +395,6 @@ Omadi.widgets.signature = {
             wrapper.add(overlayButton);
         }
         
-        
         doneButton.addEventListener('click',function(e){
             var blob;
             

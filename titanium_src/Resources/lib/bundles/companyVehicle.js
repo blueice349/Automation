@@ -78,6 +78,7 @@ Omadi.bundles.companyVehicle.setUserVehicle = function(vehicle_nid) {"use strict
         db.close();
         
         http = Ti.Network.createHTTPClient({
+            enableKeepAlive: false,
             validatesSecureCertificate: false
         });
         http.setTimeout(60000);
@@ -149,7 +150,10 @@ Omadi.bundles.companyVehicle.exitVehicle = function(){"use strict";
         else{
             Omadi.display.loading();
             
-            http = Ti.Network.createHTTPClient();
+            http = Ti.Network.createHTTPClient({
+                enableKeepAlive: false,
+                validatesSecureCertificate: false
+            });
             http.setTimeout(30000);
             http.open('POST', Omadi.DOMAIN_NAME + '/js-company-vehicle/company_vehicle/exit_vehicle.json');
         

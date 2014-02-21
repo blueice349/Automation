@@ -158,7 +158,10 @@ Omadi.location.uploadGPSCoordinates = function() {"use strict";
                 }
                 json += "], \"current_time\": \" " + Omadi.utils.getUTCTimestamp() + "\" }";
 
-                http = Ti.Network.createHTTPClient();
+                http = Ti.Network.createHTTPClient({
+                    enableKeepAlive: false,
+                    validatesSecureCertificate: false
+                });
                 //Timeout until error:
                 http.setTimeout(30000);
                 

@@ -131,8 +131,7 @@ Omadi.widgets.license_plate = {
                     if (tempValue != e.source.value) {
                         e.source.value = tempValue;
                         
-                        
-                        if (Ti.App.isAndroid) {
+                        if (Ti.App.isAndroid && e.source.value != null && typeof e.source.value.length !== 'undefined') {
                             e.source.setSelection(e.source.value.length, e.source.value.length);
                         }
                     }

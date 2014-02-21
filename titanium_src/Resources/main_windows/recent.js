@@ -310,7 +310,8 @@ function searchAndroidFocusHandler(){"use strict";
         hintText : 'Search...',
         autocorrect : false,
         showCancel: true,
-        height : 35
+        height : 35,
+        barColor: '#111'
     });
     
     // if(Ti.App.isAndroid){

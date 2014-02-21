@@ -87,7 +87,7 @@ Omadi.push_notifications.androidPushCallback = function(e){"use strict";
     payload = JSON.parse(e.payload);
     
     if (payload.fetchUpdates == 1) {
-        Omadi.service.fetchUpdates(true);
+        Omadi.service.fetchUpdates(true, true);
     }
 
     if (payload.showAlert == 1) {
@@ -139,7 +139,7 @@ Omadi.push_notifications.registeriOS = function() {"use strict";
             sound.play();
 
             if (e.data.fetchUpdates == 1) {
-                Omadi.service.fetchUpdates();
+                Omadi.service.fetchUpdates(true, true);
             }
 
             if (e.data.showAlert == 1) {
@@ -397,7 +397,10 @@ Omadi.push_notifications.linkACSUserId = function() {"use strict";
 
 Omadi.push_notifications.sendACSUserId = function(acsUserID) {"use strict";
 
-    var http = Ti.Network.createHTTPClient();
+    var http = Ti.Network.createHTTPClient({
+        enableKeepAlive: false,
+        validatesSecureCertificate: false
+    });
     http.setTimeout(15000);
     http.open('POST', Omadi.DOMAIN_NAME + '/js-notifications/push_notifications.json');
 

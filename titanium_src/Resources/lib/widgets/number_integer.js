@@ -145,12 +145,12 @@ Omadi.widgets.number_integer = {
                 
                 if (tempValue != e.source.value) {
                     e.source.value = tempValue;
-                    if (Ti.App.isAndroid) {
+                    if (Ti.App.isAndroid && e.source.value != null && typeof e.source.value.length !== 'undefined') {
                         e.source.setSelection(e.source.value.length, e.source.value.length);
                     }
                 }
 
-                if (e.source.value.length > 0) {
+                if (e.source.value != null && typeof e.source.value.length !== 'undefined' && e.source.value.length > 0) {
                     e.source.dbValue = parseInt(e.source.value, 10);
                 }
                 else {

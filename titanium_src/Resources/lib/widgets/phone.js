@@ -127,7 +127,7 @@ Omadi.widgets.phone = {
                 tempValue = e.source.value.replace(/[^0-9\-\(\)\. ex]/g, '');
                 if (tempValue != e.source.value) {
                     e.source.value = tempValue;
-                    if (Ti.App.isAndroid) {
+                    if (Ti.App.isAndroid && e.source.value != null && typeof e.source.value.length !== 'undefined') {
                         e.source.setSelection(e.source.value.length, e.source.value.length);
                     }
                 }

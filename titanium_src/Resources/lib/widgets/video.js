@@ -280,7 +280,10 @@ Omadi.widgets.video = {
         }
         else{
             
-            http = Ti.Network.createHTTPClient();
+            http = Ti.Network.createHTTPClient({
+                enableKeepAlive: false,
+                validatesSecureCertificate: false
+            });
             http.onload = function(e){
                 /*global isJsonString*/
                

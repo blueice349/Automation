@@ -926,7 +926,10 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
 Omadi.display.insertBundleIcon = function(type, imageView){"use strict";
     var http;
     
-    http = Ti.Network.createHTTPClient();
+    http = Ti.Network.createHTTPClient({
+        enableKeepAlive: false,
+        validatesSecureCertificate: false
+    });
     http.setTimeout(45000);
     http.cache = false;
     http.enableKeepAlive = false;
@@ -1101,7 +1104,10 @@ Omadi.display.displayFullImage = function(imageView) {"use strict";
         Omadi.display.loading();
         
         try {
-            http = Ti.Network.createHTTPClient();
+            http = Ti.Network.createHTTPClient({
+                enableKeepAlive: false,
+                validatesSecureCertificate: false
+            });
             http.setTimeout(30000);
             http.open('GET', Omadi.DOMAIN_NAME + '/sync/file/' + imageView.nid + '/' + imageView.fid);
 
@@ -1163,7 +1169,10 @@ Omadi.display.displayLargeImage = function(imageView, nid, file_id, showInImageV
         }
         
         try {
-            http = Ti.Network.createHTTPClient();
+            http = Ti.Network.createHTTPClient({
+                enableKeepAlive: false,
+                validatesSecureCertificate: false
+            });
             http.setTimeout(30000);
             http.open('GET', Omadi.DOMAIN_NAME + '/sync/file/' + nid + '/' + file_id);
 
@@ -1303,7 +1312,10 @@ Omadi.display.setImageViewThumbnail = function(imageView, nid, file_id) {"use st
 
     if (nid > 0 && file_id > 0) {
         try {
-            http = Ti.Network.createHTTPClient();
+            http = Ti.Network.createHTTPClient({
+                enableKeepAlive: false,
+                validatesSecureCertificate: false
+            });
             http.setTimeout(30000);
             Ti.API.info(Omadi.DOMAIN_NAME + '/sync/image/thumbnail/' + nid + '/' + file_id);
             http.open('GET', Omadi.DOMAIN_NAME + '/sync/image/thumbnail/' + nid + '/' + file_id);
@@ -1311,27 +1323,12 @@ Omadi.display.setImageViewThumbnail = function(imageView, nid, file_id) {"use st
             Omadi.utils.setCookieHeader(http);
 
             http.onload = function(e) {
-                var blob;
-                
-                tempImg = Ti.UI.createImageView({
-                    height : 'auto',
-                    width : 'auto',
-                    image : this.responseData
-                });
-                
+
                 try{
-                    blob = tempImg.toImage();
-                    
-                    if (blob.height > 100 || blob.width > 100) {
-                        imageView.setImage(Omadi.display.getImageViewFromData(blob, 100, 100).toBlob());
-                    }
-                    else {
-                        imageView.setImage(this.responseData);
-                    }
+                    imageView.setImage(this.responseData);
                 }
                 catch(ex){
                     Omadi.service.sendErrorReport("Exception displaying image thumbnail in Omadi.display.setImageViewThumbnail: " + ex);
-                    imageView.setImage(this.responseData);
                 }
                 
                 imageView.height = null;
@@ -1360,7 +1357,10 @@ Omadi.display.setImageViewVideoThumbnail = function(imageView, nid, file_id, fie
 
     if (nid > 0 && file_id > 0) {
         try {
-            http = Ti.Network.createHTTPClient();
+            http = Ti.Network.createHTTPClient({
+                enableKeepAlive: false,
+                validatesSecureCertificate: false
+            });
             http.setTimeout(30000);
             
             url = Omadi.DOMAIN_NAME + '/sync/video_file/video_thumbnail/' + nid + '/' + file_id + '/' + field_name;
@@ -1371,24 +1371,12 @@ Omadi.display.setImageViewVideoThumbnail = function(imageView, nid, file_id, fie
             Omadi.utils.setCookieHeader(http);
 
             http.onload = function(e) {
-                tempImg = Ti.UI.createImageView({
-                    height : 'auto',
-                    width : 'auto',
-                    image : this.responseData
-                });
                 
                 try{
-                    var blob = tempImg.toImage();
-                    if (blob.height > 100 || blob.width > 100) {
-                        imageView.setImage(Omadi.display.getImageViewFromData(blob, 100, 100).toBlob());
-                    }
-                    else {
-                        imageView.setImage(this.responseData);
-                    }
+                    imageView.setImage(this.responseData);
                 }
                 catch(ex){
                     Omadi.service.sendErrorReport("Exception displaying video thumbnail: " + ex);
-                    imageView.setImage(this.responseData);
                 }
                 
                 imageView.height = null;

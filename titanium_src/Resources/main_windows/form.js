@@ -1699,6 +1699,9 @@ function continuousSave(){"use strict";
     }
 }
     
+function saveDispatchForm(e){"use strict";
+    save_form_data(e.saveType);
+}
 
 (function(){"use strict";
     var field_name, tempNid;
@@ -1806,9 +1809,7 @@ function continuousSave(){"use strict";
     }
     
     if(Ti.UI.currentWindow.usingDispatch){
-        Ti.UI.currentWindow.addEventListener("omadi:saveForm", function(e){
-            save_form_data(e.saveType);
-        });
+        Ti.UI.currentWindow.addEventListener("omadi:saveForm", saveDispatchForm);
     }
     else{
         if (Ti.App.isAndroid) {
@@ -2016,6 +2017,8 @@ function continuousSave(){"use strict";
         
         Ti.App.removeEventListener('loggingOut', loggingOutForm);
         Ti.App.removeEventListener('photoUploaded', photoUploadedForm);
+        
+        Ti.UI.currentWindow.removeEventListener("omadi:saveForm", saveDispatchForm);
         
         try{
             // Remove region views from memory

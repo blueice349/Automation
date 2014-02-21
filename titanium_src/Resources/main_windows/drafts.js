@@ -191,10 +191,8 @@ Drafts.refreshDrafts = function(){"use strict";
         search = Ti.UI.createSearchBar({
             hintText : 'Search...',
             autocorrect : false,
-            barColor : '#666',
             showCancel: true,
-            color: '#000',
-            backgroundColor: '#666'
+            barColor: '#111'
         });
         
         if(Ti.App.isAndroid){

@@ -21,7 +21,10 @@ Omadi.service.refreshSession = function() {"use strict";
                 
                 Omadi.data.setUpdating(true);
 
-                http = Ti.Network.createHTTPClient();
+                http = Ti.Network.createHTTPClient({
+                    enableKeepAlive: false,
+                    validatesSecureCertificate: false
+                });
                 http.setTimeout(10000);
                 http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync/refreshSession.json');
 
@@ -133,7 +136,10 @@ Omadi.service.setNodeViewed = function(nid) {"use strict";
     db.close();
 
     /** UPDATE the web server mainDB **/
-    http = Ti.Network.createHTTPClient();
+    http = Ti.Network.createHTTPClient({
+        enableKeepAlive: false,
+        validatesSecureCertificate: false
+    });
     http.setTimeout(10000);
     http.open('POST', Omadi.DOMAIN_NAME + '/js-forms/custom_forms/viewed.json?nid=' + nid);
 
@@ -143,11 +149,19 @@ Omadi.service.setNodeViewed = function(nid) {"use strict";
     // We don't care about the response, as this is a very trivial thing
 };
 
-Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
+Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use strict";
     var http, progress = null, lastSyncTimestamp;
     /*global isJsonString*/
     /*jslint eqeq:true*/
     try {
+        
+        if(typeof useProgressBar === 'undefined'){
+            useProgressBar = false;
+        }
+        
+        if(typeof userInitiated === 'undefined'){
+            userInitiated = false;
+        }
 
         if (!Omadi.data.isUpdating()) {
 
@@ -158,10 +172,14 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                     Omadi.service.progressBar = new Omadi.display.ProgressBar(0, 100);
                 }
 
-                http = Ti.Network.createHTTPClient();
+                http = Ti.Network.createHTTPClient({
+                    enableKeepAlive: false,
+                    validatesSecureCertificate: false,
+                    userInitiated: userInitiated
+                });
 
                 //Timeout until error:
-                http.setTimeout(30000);
+                http.setTimeout(35000);
                 //http.setValidatesSecureCertificate(false);
 
                 //While streamming - following method should be called b4 open URL
@@ -345,37 +363,27 @@ Omadi.service.fetchUpdates = function(useProgressBar) {"use strict";
                             errorDescription = 'Error: Timeout. Please check your Internet connection.';
                         }
                         
-                        if(Omadi.data.getLastUpdateTimestamp() <= 1){
+                        if(Omadi.data.getLastUpdateTimestamp() <= 1 || this.userInitiated){
                             
                             Omadi.service.sendErrorReport("Network Error with dialog: " + errorDescription);
                             
-                            message = "There was a network error, and your data could not be synched. Do you want to retry now?";
+                            message = "There was a network error";
                             dialog = Titanium.UI.createAlertDialog({
-                                title : 'Omadi',
-                                buttonNames : ['Yes', 'No'],
+                                title : 'Network Error',
+                                buttonNames : ['Retry', 'Cancel'],
                                 cancel : 1,
                                 click_index : e.index,
                                 sec_obj : e.section,
                                 row_obj : e.row,
-                                message : message
+                                message : "A network error occurred. Do you want to retry?"
                             });
     
                             dialog.addEventListener('click', function(e) {
-                                if (Ti.App.isAndroid) {
-                                    if (e.index != 1) {
-                                        setTimeout(function() {
-                                            Omadi.service.fetchUpdates(true);
-                                        }, 800);
-                                    }
-    
-                                }
-                                else {
-                                    if (e.cancel === false) {
-                                        setTimeout(function() {
-                                            Omadi.service.fetchUpdates(true);
-                                        }, 800);
-                                    }
-    
+                                
+                                if(e.index == 0){
+                                    setTimeout(function() {
+                                        Omadi.service.fetchUpdates(true);
+                                    }, 300);
                                 }
                             });
     
@@ -500,8 +508,11 @@ Omadi.service.sendUpdates = function() {"use strict";
             
             Omadi.service.setSendingData(true);
             
-            http = Ti.Network.createHTTPClient();
-            http.setTimeout(45000);
+            http = Ti.Network.createHTTPClient({
+                enableKeepAlive: false,
+                validatesSecureCertificate: false
+            });
+            http.setTimeout(10000);
             http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync.json');
 
             http.setRequestHeader("Content-Type", "application/json");
@@ -676,19 +687,34 @@ Omadi.service.sendUpdates = function() {"use strict";
 
                     Omadi.service.sendErrorReport('500 error on send update: ' + e.error);
                 }
+                else{
+                    
+                    Omadi.service.sendErrorReport("Failed to send data: " + e.error);
+                    
+                    dialog = Titanium.UI.createAlertDialog({
+                        title : 'Network Error',
+                        buttonNames : ['Retry', 'Cancel'],
+                        message : "A network error occurred while sending your data. Once the network issues are resolved, the data will sync correctly."
+                    });
+                    
+                    dialog.addEventListener('click', function(e){
+                        if(e.index === 0){
+                            Ti.App.fireEvent('sendUpdates');
+                        } 
+                    });
+
+                    dialog.show();
+                    
+                    Omadi.service.sendErrorReport('User logged out with code ' + this.status);
+                }
                 
                 Omadi.service.setSendingData(false);
                 Ti.App.fireEvent("doneSendingData");
-                
-                Ti.UI.currentWindow.close();
-                /*** IMPORTANT: CANNOT DO ANYTHING AFTER THE WINDOW IS CLOSED ***/
             };
 
             Ti.App.fireEvent("sendingData", {
                 message : 'Saving data to server...'
             });
-            
-            //alert("Before packaging");
             
             http.send(Omadi.service.getUpdatedNodeJSON());
         }
@@ -778,7 +804,10 @@ Omadi.service.sendLogoutRequest = function(){"use strict";
     }
     
     if(doRequest){
-        http = Ti.Network.createHTTPClient();
+        http = Ti.Network.createHTTPClient({
+            enableKeepAlive: false,
+            validatesSecureCertificate: false
+        });
         http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync/logout.json');
     
         //Timeout until error:
@@ -1442,7 +1471,10 @@ Omadi.service.sendErrorReport = function(message) {"use strict";
     version = Ti.Platform.version;
     platform = Ti.Platform.name;
     
-    http = Ti.Network.createHTTPClient();
+    http = Ti.Network.createHTTPClient({
+        enableKeepAlive: false,
+        validatesSecureCertificate: false
+    });
     http.setTimeout(30000);
     
     http.onerror = function(){
@@ -1658,12 +1690,16 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
     }
 };
 
-Omadi.service.checkUpdate = function(useProgressBar){"use strict";
-    var db, result;
+Omadi.service.checkUpdate = function(useProgressBar, userInitiated){"use strict";
+    var db, result, sendUpdates = false;
     Ti.API.info("Checking for sync updates.");
     
     if ( typeof useProgressBar === 'undefined') {
         useProgressBar = true;
+    }
+    
+    if(typeof userInitiated === 'undefined'){
+        userInitiated = false;
     }
     // else {
         // useProgressBar = true;
@@ -1677,12 +1713,17 @@ Omadi.service.checkUpdate = function(useProgressBar){"use strict";
     result = db.execute('SELECT COUNT(*) as numNodes FROM node WHERE flag_is_updated=1');
 
     if (result.isValidRow() && result.field(0, Ti.Database.FIELD_TYPE_INT) > 0) {
-        Omadi.service.sendUpdates();
+        sendUpdates = true;
     }
     result.close();
     db.close();
-
-    Omadi.service.fetchUpdates(useProgressBar);
+    
+    if(sendUpdates){
+        Omadi.service.sendUpdates();
+    }
+    else{
+        Omadi.service.fetchUpdates(useProgressBar, userInitiated);
+    }
 };
 
 
