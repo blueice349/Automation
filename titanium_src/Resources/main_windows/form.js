@@ -177,9 +177,7 @@ function formToNode(){"use strict";
    var field_name, fieldWrapper, instance, node;
    
    node = getNewNode();
-   
    node.no_data = "";
-   //node.title = "";
    
    try{
        
@@ -193,12 +191,8 @@ function formToNode(){"use strict";
                node[instance.field_name] = {};
                node[instance.field_name].dbValues = Omadi.widgets.getDBValues(fieldWrapper);
                node[instance.field_name].textValues = Omadi.widgets.getTextValues(fieldWrapper);
-               
-               //Ti.API.debug(JSON.stringify(getDBValues(fieldWrapper)));
            }
        }
-       
-       //Ti.API.debug(JSON.stringify(node));
    }
    catch(ex){
        Omadi.service.sendErrorReport("Bundling node from form: " + ex);
@@ -211,24 +205,28 @@ function formToNode(){"use strict";
 function validateMinLength(node, instance){"use strict";
     var minLength, form_errors = [], i;
     
-    if (typeof node[instance.field_name] !== 'undefined' &&
-        typeof node[instance.field_name].dbValues !== 'undefined' &&
-        node[instance.field_name].dbValues !== null &&
-        node[instance.field_name].dbValues.length > 0) {
-            if (instance.settings.min_length != null) {
-                minLength = parseInt(instance.settings.min_length, 10);
-                if(minLength >= 0){
-                    for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
-                        if(node[instance.field_name].dbValues[i] !== null && node[instance.field_name].dbValues[i] > ''){
-                            if (node[instance.field_name].dbValues[i].length < minLength) {
-                                form_errors.push(instance.label + " requires at least " + minLength + " characters");
-                            }  
+    try{
+        if (typeof node[instance.field_name] !== 'undefined' &&
+            typeof node[instance.field_name].dbValues !== 'undefined' &&
+            node[instance.field_name].dbValues !== null &&
+            node[instance.field_name].dbValues.length > 0) {
+                if (instance.settings.min_length != null) {
+                    minLength = parseInt(instance.settings.min_length, 10);
+                    if(minLength >= 0){
+                        for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
+                            if(node[instance.field_name].dbValues[i] !== null && node[instance.field_name].dbValues[i] > ''){
+                                if (node[instance.field_name].dbValues[i].length < minLength) {
+                                    form_errors.push(instance.label + " requires at least " + minLength + " characters");
+                                }  
+                            }
                         }
                     }
                 }
-            }
+        }
     }
-    
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in validate min length: " + ex);
+    }
     
     return form_errors;
 }
@@ -236,20 +234,25 @@ function validateMinLength(node, instance){"use strict";
 function validateMaxLength(node, instance){"use strict";
     var maxLength, form_errors = [], i;
     
-    if (typeof node[instance.field_name] !== 'undefined' &&
-        typeof node[instance.field_name].dbValues !== 'undefined' &&
-        node[instance.field_name].dbValues !== null &&
-        node[instance.field_name].dbValues.length > 0) {
-            if (instance.settings.max_length != null) {
-                maxLength = parseInt(instance.settings.max_length, 10);
-                if(maxLength > 0){
-                    for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
-                        if (node[instance.field_name].dbValues[i].length > maxLength) {
-                            form_errors.push(instance.label + " cannot have more than " + maxLength + " characters.");
-                        }  
+    try{
+        if (typeof node[instance.field_name] !== 'undefined' &&
+            typeof node[instance.field_name].dbValues !== 'undefined' &&
+            node[instance.field_name].dbValues !== null &&
+            node[instance.field_name].dbValues.length > 0) {
+                if (instance.settings.max_length != null) {
+                    maxLength = parseInt(instance.settings.max_length, 10);
+                    if(maxLength > 0){
+                        for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
+                            if (node[instance.field_name].dbValues[i].length > maxLength) {
+                                form_errors.push(instance.label + " cannot have more than " + maxLength + " characters.");
+                            }  
+                        }
                     }
                 }
-            }
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in validate max length: " + ex);
     }
     
     return form_errors;
@@ -258,30 +261,35 @@ function validateMaxLength(node, instance){"use strict";
 function validateMaxValue(node, instance){"use strict";
     var maxValue, absoluteMaxValue, form_errors = [], i;
     
-    absoluteMaxValue = (instance.type == 'number_integer') ? 2147483647 : 99999999;
-    
-    if (typeof node[instance.field_name] !== 'undefined' &&
-        typeof node[instance.field_name].dbValues !== 'undefined' &&
-        node[instance.field_name].dbValues !== null &&
-        node[instance.field_name].dbValues.length > 0) {
-            
-            if (instance.settings.max != null && instance.settings.max.length > 0) {
-                maxValue = parseFloat(instance.settings.max);
-                if(maxValue > absoluteMaxValue){
+    try{
+        absoluteMaxValue = (instance.type == 'number_integer') ? 2147483647 : 99999999;
+        
+        if (typeof node[instance.field_name] !== 'undefined' &&
+            typeof node[instance.field_name].dbValues !== 'undefined' &&
+            node[instance.field_name].dbValues !== null &&
+            node[instance.field_name].dbValues.length > 0) {
+                
+                if (instance.settings.max != null && instance.settings.max.length > 0) {
+                    maxValue = parseFloat(instance.settings.max);
+                    if(maxValue > absoluteMaxValue){
+                        maxValue = absoluteMaxValue;
+                    }
+                }
+                else{
                     maxValue = absoluteMaxValue;
                 }
-            }
-            else{
-                maxValue = absoluteMaxValue;
-            }
-            
-            Ti.API.debug("Max value : " + maxValue);
-            
-            for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
-                if (node[instance.field_name].dbValues[i] !== null && node[instance.field_name].dbValues[i] > maxValue) {
-                    form_errors.push(instance.label + " cannot be greater than " + maxValue + ".");
-                }  
-            }
+                
+                Ti.API.debug("Max value : " + maxValue);
+                
+                for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
+                    if (node[instance.field_name].dbValues[i] !== null && node[instance.field_name].dbValues[i] > maxValue) {
+                        form_errors.push(instance.label + " cannot be greater than " + maxValue + ".");
+                    }  
+                }
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in validate max value: " + ex);
     }
     
     return form_errors;
@@ -290,46 +298,56 @@ function validateMaxValue(node, instance){"use strict";
 function validateMinValue(node, instance){"use strict";
     var minValue, absoluteMinValue, form_errors = [], i;
     
-    absoluteMinValue = (instance.type == 'number_integer') ? -2147483648 : -99999999;
-    
-    if (typeof node[instance.field_name] !== 'undefined' &&
-        typeof node[instance.field_name].dbValues !== 'undefined' &&
-        node[instance.field_name].dbValues !== null &&
-        node[instance.field_name].dbValues.length > 0) {
-            
-            if (instance.settings.min != null && instance.settings.min.length > 0) {
-                minValue = parseFloat(instance.settings.min);
-                if(minValue < absoluteMinValue){
+    try{
+        absoluteMinValue = (instance.type == 'number_integer') ? -2147483648 : -99999999;
+        
+        if (typeof node[instance.field_name] !== 'undefined' &&
+            typeof node[instance.field_name].dbValues !== 'undefined' &&
+            node[instance.field_name].dbValues !== null &&
+            node[instance.field_name].dbValues.length > 0) {
+                
+                if (instance.settings.min != null && instance.settings.min.length > 0) {
+                    minValue = parseFloat(instance.settings.min);
+                    if(minValue < absoluteMinValue){
+                        minValue = absoluteMinValue;
+                    }
+                }
+                else{
                     minValue = absoluteMinValue;
                 }
-            }
-            else{
-                minValue = absoluteMinValue;
-            }
-            
-            for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
-                if (node[instance.field_name].dbValues[i] !== null && node[instance.field_name].dbValues[i] < minValue) {
-                    form_errors.push(instance.label + " cannot be less than " + minValue + ".");
-                }  
-            }
+                
+                for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
+                    if (node[instance.field_name].dbValues[i] !== null && node[instance.field_name].dbValues[i] < minValue) {
+                        form_errors.push(instance.label + " cannot be less than " + minValue + ".");
+                    }  
+                }
+        }
     }
-    
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in validate min value: " + ex);
+    }
+        
     return form_errors;
 }
 
 function validatePhone(node, instance){"use strict";
     var form_errors = [], i, regExp;
     
-    if (typeof node[instance.field_name] !== 'undefined' &&
-        typeof node[instance.field_name].dbValues !== 'undefined' &&
-        node[instance.field_name].dbValues !== null &&
-        node[instance.field_name].dbValues.length > 0) {
-        
-            for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
-                if (!Omadi.utils.isEmpty(node[instance.field_name].dbValues[i]) && !node[instance.field_name].dbValues[i].match(/\D*(\d*)\D*[2-9][0-8]\d\D*[2-9]\d{2}\D*\d{4}\D*\d*\D*/g)) {
-                    form_errors.push(instance.label + " is not a valid North American phone number. 10 digits are required.");
-                }  
-            }
+    try{
+        if (typeof node[instance.field_name] !== 'undefined' &&
+            typeof node[instance.field_name].dbValues !== 'undefined' &&
+            node[instance.field_name].dbValues !== null &&
+            node[instance.field_name].dbValues.length > 0) {
+            
+                for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
+                    if (!Omadi.utils.isEmpty(node[instance.field_name].dbValues[i]) && !node[instance.field_name].dbValues[i].match(/\D*(\d*)\D*[2-9][0-8]\d\D*[2-9]\d{2}\D*\d{4}\D*\d*\D*/g)) {
+                        form_errors.push(instance.label + " is not a valid North American phone number. 10 digits are required.");
+                    }  
+                }
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in validate phone: " + ex);
     }
     
     return form_errors;
@@ -339,16 +357,21 @@ function validateEmail(node, instance){"use strict";
     
     var form_errors = [], i, regExp;
     
-    if (typeof node[instance.field_name] !== 'undefined' &&
-        typeof node[instance.field_name].dbValues !== 'undefined' &&
-        node[instance.field_name].dbValues !== null &&
-        node[instance.field_name].dbValues.length > 0) {
-        
-            for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
-                if (!Omadi.utils.isEmpty(node[instance.field_name].dbValues[i]) && !node[instance.field_name].dbValues[i].match(/^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,4}$/i)) {
-                    form_errors.push(instance.label + " is not a valid email address.");
-                }  
-            }
+    try{
+        if (typeof node[instance.field_name] !== 'undefined' &&
+            typeof node[instance.field_name].dbValues !== 'undefined' &&
+            node[instance.field_name].dbValues !== null &&
+            node[instance.field_name].dbValues.length > 0) {
+            
+                for(i = 0; i < node[instance.field_name].dbValues.length; i ++){
+                    if (!Omadi.utils.isEmpty(node[instance.field_name].dbValues[i]) && !node[instance.field_name].dbValues[i].match(/^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,4}$/i)) {
+                        form_errors.push(instance.label + " is not a valid email address.");
+                    }  
+                }
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in validate email: " + ex);
     }
     
     return form_errors;
@@ -374,177 +397,196 @@ function validateRequired(node, instance){"use strict";
     var isEmpty, form_errors = [], dbValues = [], i;
     
     isEmpty = true;
-            
-    if(typeof node[instance.field_name].dbValues !== 'undefined' && node[instance.field_name].dbValues !== null && node[instance.field_name].dbValues.length > 0){
-        dbValues = node[instance.field_name].dbValues;
-        for(i = 0; i < dbValues.length; i ++){
-            
-            switch(instance.type){
-                case 'text':
-                case 'text_long':
-                case 'phone':
-                case 'email':
-                case 'link_field':
-                case 'location':
-                case 'vehicle_fields':
-                case 'license_plate':
-                case 'rules_field':
-                case 'list_text':
-                    if(dbValues[i] > ""){
-                        isEmpty = false;
-                    }
-                    break;
+    
+    try{ 
+        if(typeof node[instance.field_name].dbValues !== 'undefined' && 
+            node[instance.field_name].dbValues !== null && 
+            node[instance.field_name].dbValues.length > 0){
+                
+            dbValues = node[instance.field_name].dbValues;
+            for(i = 0; i < dbValues.length; i ++){
+                
+                switch(instance.type){
+                    case 'text':
+                    case 'text_long':
+                    case 'phone':
+                    case 'email':
+                    case 'link_field':
+                    case 'location':
+                    case 'vehicle_fields':
+                    case 'license_plate':
+                    case 'rules_field':
+                    case 'list_text':
+                        if(dbValues[i] > ""){
+                            isEmpty = false;
+                        }
+                        break;
+                        
+                    case 'number_integer':
+                    case 'number_decimal':
+                    case 'image':
+                    case 'datestamp':
+                    case 'omadi_time':
                     
-                case 'number_integer':
-                case 'number_decimal':
-                case 'image':
-                case 'datestamp':
-                case 'omadi_time':
-                
-                    if(!Omadi.utils.isEmpty(dbValues[i])){
-                        isEmpty = false;
-                    }
-                    break;
-                
-                case 'omadi_reference':
-                case 'taxonomy_term_reference':
-                case 'user_reference':
-                case 'file':
-                case 'auto_increment':
-                case 'list_boolean': 
-                    if(!Omadi.utils.isEmpty(dbValues[i]) && dbValues[i] != 0){
-                        isEmpty = false;
-                    }
-                    break;
+                        if(!Omadi.utils.isEmpty(dbValues[i])){
+                            isEmpty = false;
+                        }
+                        break;
                     
-                case 'calculation_field':
-                    isEmpty = false;
-                    break;
-                
-                default: 
-                    Ti.API.error("Missing field type def in validate_form_data for field_name " + instance.field_name);
-                    break;
+                    case 'omadi_reference':
+                    case 'taxonomy_term_reference':
+                    case 'user_reference':
+                    case 'file':
+                    case 'auto_increment':
+                    case 'list_boolean': 
+                        if(!Omadi.utils.isEmpty(dbValues[i]) && dbValues[i] != 0){
+                            isEmpty = false;
+                        }
+                        break;
+                        
+                    case 'calculation_field':
+                        isEmpty = false;
+                        break;
+                    
+                    default: 
+                        Ti.API.error("Missing field type def in validate_form_data for field_name " + instance.field_name);
+                        break;
+                }
             }
         }
-    }
-    
-    if (((instance.is_title === true) || (instance.isRequired) || instance.isConditionallyRequired) && instance.can_view == true){
         
-         if(isEmpty){
-             if(instance.type == 'location'){
-                 
-                 if(instance.part == 'postal_code'){
-                     if(typeof instance.settings.require_zip !== 'undefined' && instance.settings.require_zip == 1){
+        if (((instance.is_title === true) || (instance.isRequired) || instance.isConditionallyRequired) && instance.can_view == true){
+            
+             if(isEmpty){
+                 if(instance.type == 'location'){
+                     
+                     if(instance.part == 'postal_code'){
+                         if(typeof instance.settings.require_zip !== 'undefined' && instance.settings.require_zip == 1){
+                             form_errors.push(instance.label + " " + instance.partLabel + " is required");
+                         }
+                     }
+                     else{
                          form_errors.push(instance.label + " " + instance.partLabel + " is required");
                      }
                  }
                  else{
-                     form_errors.push(instance.label + " " + instance.partLabel + " is required");
+                            
+                     if(instance.partLabel === null){
+                         form_errors.push(instance.label + " is required");
+                     }
+                     else{
+                         form_errors.push(instance.label + " " + instance.partLabel + " is required");
+                     }
                  }
              }
-             else{
-                        
-                 if(instance.partLabel === null){
-                     form_errors.push(instance.label + " is required");
-                 }
-                 else{
-                     form_errors.push(instance.label + " " + instance.partLabel + " is required");
-                 }
-             }
-         }
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in validate required: " + ex);
     }
     
     return form_errors;
 }
 
 function validateRestrictions(node){"use strict";
-    var instances, query, db, result, timestamp, field_name, vin, license_plate, nid, restrictions, form_errors, i, account;
+    var instances, query, db = null, result, timestamp, field_name, vin, license_plate, nid, restrictions, form_errors, i, account;
     
     restrictions = [];
     form_errors = [];
     
-    // Only check on creation
-    if(node.nid === 'new' || node.nid < 0){
-    
-        nid = null;
-        vin = null;
-        account = null;
-        license_plate = null;
+    try{
+        // Only check on creation
+        if(node.nid === 'new' || node.nid < 0){
         
-        if(typeof node.vin !== 'undefined' && 
-            typeof node.vin.dbValues !== 'undefined' && 
-            node.vin.dbValues !== null && 
-            node.vin.dbValues.length > 0 && 
-            node.vin.dbValues[0] != null && 
-            node.vin.dbValues[0] != ""){
-                vin = node.vin.dbValues[0].toUpperCase();
-        }
-        
-        if(typeof node.license_plate___plate !== 'undefined' && 
-            typeof node.license_plate___plate.dbValues !== 'undefined' && 
-            node.license_plate___plate.dbValues !== null && 
-            node.license_plate___plate.dbValues.length > 0 && 
-            node.license_plate___plate.dbValues[0] != null && 
-            node.license_plate___plate.dbValues[0] != ""){
-                license_plate = node.license_plate___plate.dbValues[0].toUpperCase();
-        }
-        
-        if(typeof node.enforcement_account !== 'undefined' && 
-            typeof node.enforcement_account.dbValues !== 'undefined' && 
-            node.enforcement_account.dbValue !== null && 
-            node.enforcement_account.dbValues.length > 0 && 
-            node.enforcement_account.dbValues[0] != null){
-                nid = node.enforcement_account.dbValues[0];
-                account = node.enforcement_account.textValues[0];
-        }
-        
-        if(nid !== null && nid > 0){
-            timestamp = Omadi.utils.getUTCTimestamp();
+            nid = null;
+            vin = null;
+            account = null;
+            license_plate = null;
             
-            query = 'SELECT restriction_license_plate___plate, vin, restrict_entire_account, restriction_start_date, restriction_end_date ';
-            query += ' FROM restriction WHERE restriction_account="' + nid + '"';
-            query += ' AND ((restriction_start_date < ' + timestamp + ' OR restriction_start_date IS NULL) ';
-            query += ' AND (restriction_end_date > ' + timestamp + ' OR restriction_end_date IS NULL))';
-            
-            //Ti.API.error(query);
-            
-            db = Omadi.utils.openMainDatabase();
-            result = db.execute(query);
-        
-            while (result.isValidRow()) {
-                
-                restrictions.push({
-                    license_plate : result.fieldByName('restriction_license_plate___plate'),
-                    restrict_entire_account : result.fieldByName('restrict_entire_account'),
-                    startTime: result.fieldByName('restriction_start_date'),
-                    endTime: result.fieldByName('restriction_end_date'),
-                    vin : result.fieldByName('vin')
-                });
-                result.next();
+            if(typeof node.vin !== 'undefined' && 
+                typeof node.vin.dbValues !== 'undefined' && 
+                node.vin.dbValues !== null && 
+                node.vin.dbValues.length > 0 && 
+                node.vin.dbValues[0] != null && 
+                node.vin.dbValues[0] != ""){
+                    vin = node.vin.dbValues[0].toUpperCase();
             }
-            result.close();
-                
-            for(i = 0; i < restrictions.length; i ++){
-              // Ti.API.info(JSON.stringify(restrictions[i]));
-                if(restrictions[i].restrict_entire_account == 1){
-                    form_errors.push("No parking enforcement is allowed for \"" + account + "\" right now due to a restriction.");
-                }
-                else if(restrictions[i].license_plate != null && license_plate == restrictions[i].license_plate.toUpperCase()){
-                    form_errors.push("The license plate \"" + license_plate + "\" is currently restricted for \"" + account + "\".");
-                }
-                else if(restrictions[i].vin != null && vin == restrictions[i].vin.toUpperCase()){
-                    form_errors.push("The VIN \"" + vin + "\" is currently restricted for \"" + account + "\".");
-                }
+            
+            if(typeof node.license_plate___plate !== 'undefined' && 
+                typeof node.license_plate___plate.dbValues !== 'undefined' && 
+                node.license_plate___plate.dbValues !== null && 
+                node.license_plate___plate.dbValues.length > 0 && 
+                node.license_plate___plate.dbValues[0] != null && 
+                node.license_plate___plate.dbValues[0] != ""){
+                    license_plate = node.license_plate___plate.dbValues[0].toUpperCase();
             }
-            db.close();
+            
+            if(typeof node.enforcement_account !== 'undefined' && 
+                typeof node.enforcement_account.dbValues !== 'undefined' && 
+                node.enforcement_account.dbValue !== null && 
+                node.enforcement_account.dbValues.length > 0 && 
+                node.enforcement_account.dbValues[0] != null){
+                    nid = node.enforcement_account.dbValues[0];
+                    account = node.enforcement_account.textValues[0];
+            }
+            
+            if(nid !== null && nid > 0){
+                timestamp = Omadi.utils.getUTCTimestamp();
+                
+                query = 'SELECT restriction_license_plate___plate, vin, restrict_entire_account, restriction_start_date, restriction_end_date ';
+                query += ' FROM restriction WHERE restriction_account="' + nid + '"';
+                query += ' AND ((restriction_start_date < ' + timestamp + ' OR restriction_start_date IS NULL) ';
+                query += ' AND (restriction_end_date > ' + timestamp + ' OR restriction_end_date IS NULL))';
+                
+                //Ti.API.error(query);
+                
+                db = Omadi.utils.openMainDatabase();
+                result = db.execute(query);
+            
+                while (result.isValidRow()) {
+                    
+                    restrictions.push({
+                        license_plate : result.fieldByName('restriction_license_plate___plate'),
+                        restrict_entire_account : result.fieldByName('restrict_entire_account'),
+                        startTime: result.fieldByName('restriction_start_date'),
+                        endTime: result.fieldByName('restriction_end_date'),
+                        vin : result.fieldByName('vin')
+                    });
+                    result.next();
+                }
+                result.close();
+                    
+                for(i = 0; i < restrictions.length; i ++){
+                  // Ti.API.info(JSON.stringify(restrictions[i]));
+                    if(restrictions[i].restrict_entire_account == 1){
+                        form_errors.push("No parking enforcement is allowed for \"" + account + "\" right now due to a restriction.");
+                    }
+                    else if(restrictions[i].license_plate != null && license_plate == restrictions[i].license_plate.toUpperCase()){
+                        form_errors.push("The license plate \"" + license_plate + "\" is currently restricted for \"" + account + "\".");
+                    }
+                    else if(restrictions[i].vin != null && vin == restrictions[i].vin.toUpperCase()){
+                        form_errors.push("The VIN \"" + vin + "\" is currently restricted for \"" + account + "\".");
+                    }
+                }
+                db.close();
+            }
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in validate min value: " + ex);
+        
+        if(db != null){
+            try{
+                db.close();
+            }
+            catch(nothing){
+                
+            }
         }
     }
     
     return form_errors;
 }
-
-
-
 
 function validate_form_data(node, saveType){"use strict";
     
@@ -561,7 +603,7 @@ function validate_form_data(node, saveType){"use strict";
         
             form_errors = form_errors.concat(validateRestrictions(node));
             // Only show restriction error if one exists
-            if(form_errors && form_errors.length == 0){
+            if(form_errors !== null && form_errors.length == 0){
                 
                 for(field_name in instances){
                     if(instances.hasOwnProperty(field_name)){

@@ -444,13 +444,6 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
 
                                     if (search_operator == '__blank') {
                                         row_matches[criteria_index] = true;
-                                        if (nodeDBValues.length > 0) {
-                                            for ( i = 0; i < nodeDBValues.length; i++) {
-                                                if (nodeDBValues[i] !== null && nodeDBValues[i] > '') {
-                                                    row_matches[criteria_index] = false;
-                                                }
-                                            }
-                                        }
                                     }
 
                                     for ( i = 0; i < nodeDBValues.length; i++) {
@@ -461,7 +454,11 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                                     row_matches[criteria_index] = true;
                                                 }
                                                 break;
-
+                                            case '__blank':
+                                                if (nodeDBValues[i] !== null && nodeDBValues[i] > '') {
+                                                    row_matches[criteria_index] = false;
+                                                }
+                                                break;
                                             case 'not like':
                                                 if (strpos(node_value, search_value) === false) {
                                                     row_matches[criteria_index] = true;
@@ -592,13 +589,6 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                     
                                     if (search_operator == '__blank') {
                                         row_matches[criteria_index] = true;
-                                        if (nodeDBValues.length > 0) {
-                                            for ( i = 0; i < nodeDBValues.length; i++) {
-                                                if (nodeDBValues[i] !== null && nodeDBValues[i] > '') {
-                                                    row_matches[criteria_index] = false;
-                                                }
-                                            }
-                                        }
                                     }
                                     
                                     for ( i = 0; i < nodeDBValues.length; i++) {
@@ -609,7 +599,11 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                                     row_matches[criteria_index] = true;
                                                 }
                                                 break;
-                                                
+                                            case '__blank':
+                                                if (nodeDBValues[i] !== null && nodeDBValues[i] > '') {
+                                                    row_matches[criteria_index] = false;
+                                                }
+                                                break;
                                             case '>':
                                                 if (node_value > search_value) {
                                                     row_matches[criteria_index] = true;
@@ -650,13 +644,6 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                     
                                     if (search_operator == '__blank') {
                                         row_matches[criteria_index] = true;
-                                        if (nodeDBValues.length > 0) {
-                                            for ( i = 0; i < nodeDBValues.length; i++) {
-                                                if (nodeDBValues[i] != 0) {
-                                                    row_matches[criteria_index] = false;
-                                                }
-                                            }
-                                        }
                                     }
                                     
                                     for ( i = 0; i < nodeDBValues.length; i++) {
@@ -668,6 +655,11 @@ function list_search_node_matches_search_criteria(node, criteria) {"use strict";
                                                 }
                                                 break;
                                                 
+                                            case '__blank':
+                                                if (nodeDBValues[i] != 0) {
+                                                    row_matches[criteria_index] = false;
+                                                }
+                                                break;
                                             case '>':
                                                 if (node_value > search_value) {
                                                     row_matches[criteria_index] = true;
