@@ -578,6 +578,19 @@ Omadi.display.openViewWindow = function(type, nid) {"use strict";
 Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
     var db, result, formWindow, intNid, isDispatch, dispatchNid, bundle;
     
+    try{
+        var FormModule = require('ui/Form');
+        var form = new FormModule(Omadi);
+        var formWindow = form.getWindow(type, nid, form_part, false);
+        formWindow.addEventListener('open', Omadi.display.doneLoading);
+        Omadi.display.loading();
+        formWindow.open();
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception opening form: " + ex);
+    }
+    return formWindow;
+    
     isDispatch = Omadi.bundles.dispatch.isDispatch(type, nid);
     
     if(isDispatch){

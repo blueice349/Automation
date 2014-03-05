@@ -1,5 +1,139 @@
 /*jslint eqeq:true*/
 
+function getRegionHeaderView(region, expanded){"use strict";
+    
+    var arrow_img, regionHeader, regionHeaderWrapper, collapsedView;
+    
+    arrow_img = Ti.UI.createImageView({
+        image : '/images/light_arrow_left.png',
+        width : 29,
+        height : 29,
+        top: 5,
+        right: 5,
+        zIndex : 999,
+        touchEnabled: false
+    });
+    
+    if(expanded){
+        arrow_img.image = '/images/light_arrow_down.png';
+    }
+    
+    regionHeaderWrapper = Ti.UI.createView({
+        height: Ti.UI.SIZE,
+        width: '100%'
+    });
+
+    regionHeader = Ti.UI.createLabel({
+        text : region.label.toUpperCase(),
+        color : '#ddd',
+        font : {
+            fontSize : 18,
+            fontWeight : 'bold'
+        },
+        textAlign : 'center',
+        width : '100%',
+        top: 0,
+        height : 40,
+        ellipsize : true,
+        wordWrap : false,
+        zIndex : 998,
+        region_name: region.region_name,
+        expanded: expanded,
+        backgroundGradient : {
+            type : 'linear',
+            startPoint : {
+                x : '50%',
+                y : '0%'
+            },
+            endPoint : {
+                x : '50%',
+                y : '100%'
+            },
+            colors : [{
+                color : '#555',
+                offset : 0.0
+            }, {
+                color : '#666',
+                offset : 0.3
+            }, {
+                color : '#333',
+                offset : 1.0
+            }]
+        }
+    });
+    
+    collapsedView = Ti.UI.createLabel({
+        top: 40,
+        width: '100%',
+        height: Ti.UI.SIZE,
+        text: region.label + ' is Collapsed',
+        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        color: '#666',
+        font: {
+            fontSize: 13
+        },
+        backgroundColor: '#ddd'
+    });
+    
+    if(expanded){
+        collapsedView.visible = false;
+        collapsedView.borderWidth = 0;
+    }
+    
+    regionHeader.arrow = arrow_img;
+    regionHeader.collapsedView = collapsedView;
+    
+    regionHeader.addEventListener('click', function(e) {
+        
+        var regionView;
+        e.source.expanded = !e.source.expanded;
+        
+        if (e.source.expanded === true) {
+            
+            regionView = regionViews[e.source.region_name];
+            
+            e.source.collapsedView.hide();
+            e.source.collapsedView.setBorderWidth(0);
+
+            regionView.show();
+            //regionView.setHeight(Ti.UI.SIZE);
+            
+            e.source.arrow.setImage("/images/light_arrow_down.png");
+            
+            regionView.setHeight(Ti.UI.SIZE);
+            
+            // For iOS, just make sure the region is expanded as layout doesn't always happen
+            if(Ti.App.isIOS){
+                setTimeout(function(){
+                    regionView.setHeight(Ti.UI.SIZE);
+                }, 100);
+            }
+        }
+        else {
+            
+            regionView = regionViews[e.source.region_name];
+            
+            e.source.collapsedView.show();
+            e.source.collapsedView.setBorderWidth(1);
+            
+            regionView.hide();
+            
+            regionView.setHeight(0);
+           
+            e.source.arrow.setImage("/images/light_arrow_left.png");
+        }
+    });
+    
+    regionHeaderWrapper.add(regionHeader);
+    regionHeaderWrapper.add(arrow_img);
+    regionHeaderWrapper.add(collapsedView);
+    
+    return regionHeaderWrapper;
+}
+
+
 function FormModule(Omadi) {"use strict";
     this.Omadi = Omadi;
 }
@@ -31,104 +165,103 @@ FormModule.prototype.getNewNode = function(){"use strict";
     return node;
 };
 
-FormModule.prototype.formWindowOnClose = function(){"use strict";
+function formWindowOnClose(){"use strict";
     var regionWrappers_i, regionView_i, field_i, regionWrapperChild_i;
     
     Ti.App.removeEventListener('loggingOut', loggingOutForm);
     Ti.App.removeEventListener('photoUploaded', photoUploadedForm);
     Ti.UI.currentWindow.removeEventListener("omadi:saveForm", saveDispatchForm);
     
-    var field_child_i, j, k;
-    var i, j, k;
-    
-    try{
-        
-        if(scrollView != null){
-           
-           if(typeof scrollView.children !== 'undefined' && scrollView.children.length > 0){
-               for(i = scrollView.children.length - 1; i >= 0; i --){
-                   
-                   if(typeof scrollView.children[i].children !== 'undefined'){
-                       for(j = scrollView.children[i].children.length - 1; j >= 0; j --){
-                           
-                           if(typeof scrollView.children[i].children[j].children !== 'undefined'){
-                               for(k = scrollView.children[i].children[j].children.length - 1; k >= 0; k --){
-                                   
-                                    Ti.API.debug("removing k=" + k);
-                                    scrollView.children[i].children[j].remove(scrollView.children[i].children[j].children[k]);
-                                    scrollView.children[i].children[j].children[k] = null;
-                               }
-                           }
-                           
-                           Ti.API.debug("removing j=" + j);
-                           scrollView.children[i].remove(scrollView.children[i].children[j]);
-                           scrollView.children[i].children[j] = null;
-                       }
-                   }
-                   
-                   Ti.API.debug("removing i=" + i);
-                   scrollView.remove(scrollView.children[i]);
-                   scrollView.children[i] = null;
-               }
-           }
-            
-           
-        }
-    }
-    catch(nothing3){
-        Ti.API.error("exception cleaning scroll view " + nothing3);
-    }
-    
-    try{
-        for(i in regionWrappers){
-            if(regionWrappers.hasOwnProperty(i)){
-                
-                if(typeof regionWrappers[i].children !== 'undefined'){
-                    for(j = regionWrappers[i].children.length - 1; j >= 0; j --){
-                        Ti.API.debug("removing region wrappers j=" + j);
-                        
-                        regionWrappers[i].remove(regionWrappers[i].children[j]);
-                        regionWrappers[i].children[j] = null;
-                    }
-                }
-                
-                Ti.API.debug("Nulling region wrapper i=" + i);
-                regionWrappers[i] = null;
-            }
-        }
-        
-        for(i in regionViews){
-            if(regionViews.hasOwnProperty(i)){
-                
-                if(typeof regionViews[i].children !== 'undefined'){
-                    for(j = regionViews[i].children.length - 1; j >= 0; j --){
-                        Ti.API.debug("removing region views j=" + j);
-                        
-                        regionViews[i].remove(regionViews[i].children[j]);
-                        regionViews[i].children[j] = null;
-                    }
-                }
-                
-                Ti.API.debug("Nulling region view i=" + i);
-                regionViews[i] = null;
-            }
-        }
-    }
-    catch(nothing4){
-        Ti.API.error("exception cleaning arrays " + nothing4);
-    }
-    
-    try{
-        wrapperView.remove(scrollView);
-        scrollView = null;
-    }
-    catch(nothing5){
-        Ti.API.error("exception with wrapperview cleanup " + nothing5);
-    }
-   
-};
+    // var field_child_i, j, k;
+    // var i, j, k;
+//     
+    // try{
+//         
+        // if(scrollView != null){
+//            
+           // if(typeof scrollView.children !== 'undefined' && scrollView.children.length > 0){
+               // for(i = scrollView.children.length - 1; i >= 0; i --){
+//                    
+                   // if(typeof scrollView.children[i].children !== 'undefined'){
+                       // for(j = scrollView.children[i].children.length - 1; j >= 0; j --){
+//                            
+                           // if(typeof scrollView.children[i].children[j].children !== 'undefined'){
+                               // for(k = scrollView.children[i].children[j].children.length - 1; k >= 0; k --){
+//                                    
+                                    // Ti.API.debug("removing k=" + k);
+                                    // scrollView.children[i].children[j].remove(scrollView.children[i].children[j].children[k]);
+                                    // scrollView.children[i].children[j].children[k] = null;
+                               // }
+                           // }
+//                            
+                           // Ti.API.debug("removing j=" + j);
+                           // scrollView.children[i].remove(scrollView.children[i].children[j]);
+                           // scrollView.children[i].children[j] = null;
+                       // }
+                   // }
+//                    
+                   // Ti.API.debug("removing i=" + i);
+                   // scrollView.remove(scrollView.children[i]);
+                   // scrollView.children[i] = null;
+               // }
+           // }
+//             
+//            
+        // }
+    // }
+    // catch(nothing3){
+        // Ti.API.error("exception cleaning scroll view " + nothing3);
+    // }
+//     
+    // try{
+        // for(i in regionWrappers){
+            // if(regionWrappers.hasOwnProperty(i)){
+//                 
+                // if(typeof regionWrappers[i].children !== 'undefined'){
+                    // for(j = regionWrappers[i].children.length - 1; j >= 0; j --){
+                        // Ti.API.debug("removing region wrappers j=" + j);
+//                         
+                        // regionWrappers[i].remove(regionWrappers[i].children[j]);
+                        // regionWrappers[i].children[j] = null;
+                    // }
+                // }
+//                 
+                // Ti.API.debug("Nulling region wrapper i=" + i);
+                // regionWrappers[i] = null;
+            // }
+        // }
+//         
+        // for(i in regionViews){
+            // if(regionViews.hasOwnProperty(i)){
+//                 
+                // if(typeof regionViews[i].children !== 'undefined'){
+                    // for(j = regionViews[i].children.length - 1; j >= 0; j --){
+                        // Ti.API.debug("removing region views j=" + j);
+//                         
+                        // regionViews[i].remove(regionViews[i].children[j]);
+                        // regionViews[i].children[j] = null;
+                    // }
+                // }
+//                 
+                // Ti.API.debug("Nulling region view i=" + i);
+                // regionViews[i] = null;
+            // }
+        // }
+    // }
+    // catch(nothing4){
+        // Ti.API.error("exception cleaning arrays " + nothing4);
+    // }
+//     
+    // try{
+        // //wrapperView.remove(scrollView);
+        // //scrollView = null;
+    // }
+    // catch(nothing5){
+        // Ti.API.error("exception with wrapperview cleanup " + nothing5);
+    // }
+}
 
-FormModule.prototype.getWindow = function(type, nid, form_part){"use strict";
+FormModule.prototype.getWindow = function(type, nid, form_part, usingDispatch){
     
     var self = Ti.UI.createWindow({
         navBarHidden: true,
@@ -237,7 +370,7 @@ FormModule.prototype.getWindow = function(type, nid, form_part){"use strict";
     });
     
     if(Ti.App.isIOS7){
-        if(!Ti.UI.currentWindow.usingDispatch){
+        if(!usingDispatch){
             wrapperView.top = 20;   
         }
     }
@@ -281,16 +414,7 @@ FormModule.prototype.getWindow = function(type, nid, form_part){"use strict";
         }
     }
     
-    wrapperView.add(scrollView);
-    
-    //scrollView.addEventListener('scroll', function(e){
-        //scrollPositionY = e.y;
-    //});
-    
-    self.add(wrapperView);
-    self.addEventListener('close', this.formWindowOnClose);
-    
-    
+    self.addEventListener('close', formWindowOnClose);
     
     for(region_name in regions){
         if(regions.hasOwnProperty(region_name)){
@@ -348,19 +472,29 @@ FormModule.prototype.getWindow = function(type, nid, form_part){"use strict";
                     regionView.height = 5;
                 }
 //                 
-                // regionWrapperView.add(regionView);
-                //scrollView.add(regionWrapperView);
+                regionWrapperView.add(regionView);
+                scrollView.add(regionWrapperView);
                 
                 scrollView.add(Ti.UI.createView({
                     height: 10,
                     width: '100%'
                 }));
                  
-                this.regionWrappers[region_name] = regionWrapperView;
-                this.regionViews[region_name] = regionView;
+                Ti.API.debug("Added region " + region_name);
+                //this.regionWrappers[region_name] = regionWrapperView;
+                //this.regionViews[region_name] = regionView;
             }
         }
     }
+    
+    wrapperView.add(scrollView);
+    
+    //scrollView.addEventListener('scroll', function(e){
+        //scrollPositionY = e.y;
+    //});
+    
+    self.add(wrapperView);
+    
     
     return self;
 };
