@@ -579,7 +579,7 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
     var db, result, formWindow, intNid, isDispatch, dispatchNid, bundle;
     
     try{
-        var FormModule = require('ui/Form');
+        var FormModule = require('ui/FormModule');
         var form = new FormModule(Omadi);
         var formWindow = form.getWindow(type, nid, form_part, false);
         formWindow.addEventListener('open', Omadi.display.doneLoading);

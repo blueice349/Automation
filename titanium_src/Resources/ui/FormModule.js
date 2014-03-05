@@ -1,6 +1,6 @@
 /*jslint eqeq:true*/
 
-function getRegionHeaderView(region, expanded){"use strict";
+function getRegionHeaderView(regionView, region, expanded){"use strict";
     
     var arrow_img, regionHeader, regionHeaderWrapper, collapsedView;
     
@@ -84,15 +84,15 @@ function getRegionHeaderView(region, expanded){"use strict";
     
     regionHeader.arrow = arrow_img;
     regionHeader.collapsedView = collapsedView;
+    regionHeader.regionView = regionView;
     
     regionHeader.addEventListener('click', function(e) {
         
         var regionView;
         e.source.expanded = !e.source.expanded;
+        regionView = e.source.regionView;
         
         if (e.source.expanded === true) {
-            
-            regionView = regionViews[e.source.region_name];
             
             e.source.collapsedView.hide();
             e.source.collapsedView.setBorderWidth(0);
@@ -112,9 +112,7 @@ function getRegionHeaderView(region, expanded){"use strict";
             }
         }
         else {
-            
-            regionView = regionViews[e.source.region_name];
-            
+          
             e.source.collapsedView.show();
             e.source.collapsedView.setBorderWidth(1);
             
@@ -133,6 +131,41 @@ function getRegionHeaderView(region, expanded){"use strict";
     return regionHeaderWrapper;
 }
 
+function loggingOut(){"use strict";
+    Ti.UI.currentWindow.close();
+}
+
+function photoUploaded(e){"use strict";
+    
+    var nid, delta, fid, field_name, dbValues;
+    
+    nid = parseInt(e.nid, 10);
+    delta = parseInt(e.delta, 10);
+    field_name = e.field_name;
+    fid = parseInt(e.fid, 10);
+    
+    // if(Ti.UI.currentWindow.nid == nid){
+        // if(typeof fieldWrappers[field_name] !== 'undefined'){
+            // //alert("Just saved delta " + delta);
+            // Omadi.widgets.setValueWidgetProperty(field_name, 'dbValue', fid, delta);
+            // Omadi.widgets.setValueWidgetProperty(field_name, 'fid', fid, delta);
+        // }
+    // }
+}
+
+function formWindowOnClose(){"use strict";
+    var regionWrappers_i, regionView_i, field_i, regionWrapperChild_i;
+    
+    Ti.App.removeEventListener('loggingOut', loggingOut);
+    Ti.App.removeEventListener('photoUploaded', photoUploaded);
+    // TODO: finish saveDispatch form
+    //Ti.UI.currentWindow.removeEventListener("omadi:saveForm", saveDispatchForm);
+}
+
+
+//+++++++++++++++++++++++++
+// Public functions
+//+++++++++++++++++++++++++
 
 function FormModule(Omadi) {"use strict";
     this.Omadi = Omadi;
@@ -164,102 +197,6 @@ FormModule.prototype.getNewNode = function(){"use strict";
     
     return node;
 };
-
-function formWindowOnClose(){"use strict";
-    var regionWrappers_i, regionView_i, field_i, regionWrapperChild_i;
-    
-    Ti.App.removeEventListener('loggingOut', loggingOutForm);
-    Ti.App.removeEventListener('photoUploaded', photoUploadedForm);
-    Ti.UI.currentWindow.removeEventListener("omadi:saveForm", saveDispatchForm);
-    
-    // var field_child_i, j, k;
-    // var i, j, k;
-//     
-    // try{
-//         
-        // if(scrollView != null){
-//            
-           // if(typeof scrollView.children !== 'undefined' && scrollView.children.length > 0){
-               // for(i = scrollView.children.length - 1; i >= 0; i --){
-//                    
-                   // if(typeof scrollView.children[i].children !== 'undefined'){
-                       // for(j = scrollView.children[i].children.length - 1; j >= 0; j --){
-//                            
-                           // if(typeof scrollView.children[i].children[j].children !== 'undefined'){
-                               // for(k = scrollView.children[i].children[j].children.length - 1; k >= 0; k --){
-//                                    
-                                    // Ti.API.debug("removing k=" + k);
-                                    // scrollView.children[i].children[j].remove(scrollView.children[i].children[j].children[k]);
-                                    // scrollView.children[i].children[j].children[k] = null;
-                               // }
-                           // }
-//                            
-                           // Ti.API.debug("removing j=" + j);
-                           // scrollView.children[i].remove(scrollView.children[i].children[j]);
-                           // scrollView.children[i].children[j] = null;
-                       // }
-                   // }
-//                    
-                   // Ti.API.debug("removing i=" + i);
-                   // scrollView.remove(scrollView.children[i]);
-                   // scrollView.children[i] = null;
-               // }
-           // }
-//             
-//            
-        // }
-    // }
-    // catch(nothing3){
-        // Ti.API.error("exception cleaning scroll view " + nothing3);
-    // }
-//     
-    // try{
-        // for(i in regionWrappers){
-            // if(regionWrappers.hasOwnProperty(i)){
-//                 
-                // if(typeof regionWrappers[i].children !== 'undefined'){
-                    // for(j = regionWrappers[i].children.length - 1; j >= 0; j --){
-                        // Ti.API.debug("removing region wrappers j=" + j);
-//                         
-                        // regionWrappers[i].remove(regionWrappers[i].children[j]);
-                        // regionWrappers[i].children[j] = null;
-                    // }
-                // }
-//                 
-                // Ti.API.debug("Nulling region wrapper i=" + i);
-                // regionWrappers[i] = null;
-            // }
-        // }
-//         
-        // for(i in regionViews){
-            // if(regionViews.hasOwnProperty(i)){
-//                 
-                // if(typeof regionViews[i].children !== 'undefined'){
-                    // for(j = regionViews[i].children.length - 1; j >= 0; j --){
-                        // Ti.API.debug("removing region views j=" + j);
-//                         
-                        // regionViews[i].remove(regionViews[i].children[j]);
-                        // regionViews[i].children[j] = null;
-                    // }
-                // }
-//                 
-                // Ti.API.debug("Nulling region view i=" + i);
-                // regionViews[i] = null;
-            // }
-        // }
-    // }
-    // catch(nothing4){
-        // Ti.API.error("exception cleaning arrays " + nothing4);
-    // }
-//     
-    // try{
-        // //wrapperView.remove(scrollView);
-        // //scrollView = null;
-    // }
-    // catch(nothing5){
-        // Ti.API.error("exception with wrapperview cleanup " + nothing5);
-    // }
-}
 
 FormModule.prototype.getWindow = function(type, nid, form_part, usingDispatch){
     
@@ -348,12 +285,12 @@ FormModule.prototype.getWindow = function(type, nid, form_part, usingDispatch){
         // });
     // }
 //     
-    // Ti.App.removeEventListener('photoUploaded', photoUploadedForm);
-    // Ti.App.addEventListener('photoUploaded', photoUploadedForm);
-//     
-    // Ti.App.removeEventListener('loggingOut', loggingOutForm);
-    // Ti.App.addEventListener('loggingOut', loggingOutForm);
-//     
+    Ti.App.removeEventListener('photoUploaded', photoUploaded);
+    Ti.App.addEventListener('photoUploaded', photoUploaded);
+    
+    Ti.App.removeEventListener('loggingOut', loggingOut);
+    Ti.App.addEventListener('loggingOut', loggingOut);
+    
     // if(Ti.UI.currentWindow.nid != "new" && Ti.UI.currentWindow.nid > 0){
         // Omadi.service.setNodeViewed(Ti.UI.currentWindow.nid);
     // }
@@ -454,12 +391,7 @@ FormModule.prototype.getWindow = function(type, nid, form_part, usingDispatch){
                     layout: 'vertical'
                 });
                 
-                regionWrapperView.add(getRegionHeaderView(region, expanded));
-                regionWrapperView.add(Ti.UI.createView({
-                    height: 10,
-                    width: '100%'
-                }));
-                 
+                // Setup the full region view that will contain the fields
                 regionView = Ti.UI.createView({
                     width : '100%',
                     backgroundColor : '#eee',
@@ -471,7 +403,15 @@ FormModule.prototype.getWindow = function(type, nid, form_part, usingDispatch){
                     regionView.visible = false;
                     regionView.height = 5;
                 }
-//                 
+                
+                // Add the region header that is clickable for expanding, collapsing
+                regionWrapperView.add(getRegionHeaderView(regionView, region, expanded));
+                // Add a little space below the header
+                regionWrapperView.add(Ti.UI.createView({
+                    height: 10,
+                    width: '100%'
+                }));
+                  
                 regionWrapperView.add(regionView);
                 scrollView.add(regionWrapperView);
                 

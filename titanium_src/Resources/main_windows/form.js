@@ -1701,9 +1701,7 @@ function photoUploadedForm(e){"use strict";
     }
 }
 
-function loggingOutForm(){"use strict";
-    Ti.UI.currentWindow.close();
-}
+
 
 function formFullyLoadedForm(){"use strict";
     var field_name;
