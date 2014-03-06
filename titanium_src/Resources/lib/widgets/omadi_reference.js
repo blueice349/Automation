@@ -297,19 +297,20 @@ Omadi.widgets.omadi_reference = {
                     e.source.blurred = true;
                 });
                 
-                Ti.UI.currentWindow.addEventListener("customCopy", function(){
-                    var i, callback;
-                    
-                    Ti.API.debug("In CUSTOM COPY");
-                    Omadi.widgets.omadi_reference.setChildDefaultValues(widgetView);
-                    //Ti.API.debug(widgetView.onChangeCallbacks);
-                    if (widgetView.onChangeCallbacks.length > 0) {
-                        for ( i = 0; i < widgetView.onChangeCallbacks.length; i++) {
-                            callback = widgetView.onChangeCallbacks[i];
-                            callback(widgetView.onChangeCallbackArgs[i]);
-                        }
-                    }
-                });
+                // TODO: get this part working with the formmodule
+                // Ti.UI.currentWindow.addEventListener("customCopy", function(){
+                    // var i, callback;
+//                     
+                    // Ti.API.debug("In CUSTOM COPY");
+                    // Omadi.widgets.omadi_reference.setChildDefaultValues(widgetView);
+                    // //Ti.API.debug(widgetView.onChangeCallbacks);
+                    // if (widgetView.onChangeCallbacks.length > 0) {
+                        // for ( i = 0; i < widgetView.onChangeCallbacks.length; i++) {
+                            // callback = widgetView.onChangeCallbacks[i];
+                            // callback(widgetView.onChangeCallbackArgs[i]);
+                        // }
+                    // }
+                // });
         
                 widgetView.addEventListener('change', function(e) {
                     /*global setConditionallyRequiredLabels*/

@@ -1,6 +1,12 @@
+
 /*jslint plusplus:true,eqeq:true,nomen:true*/
 
 Omadi.data = Omadi.data || {};
+
+Omadi.data.cache = {};
+Omadi.data.cache.fields = {};
+Omadi.data.cache.regions = {};
+Omadi.data.cache.fakeFields = {};
 
 Omadi.data.cameraAndroid = null;
 
@@ -126,12 +132,13 @@ Omadi.data.fieldExists = function(nodeType, fieldName){"use strict";
     return false;
 };
 
-var _staticFields = {};
+
+
 Omadi.data.getFields = function(type) {"use strict";
     var db, result, instances, field_name, nameParts;
-
-    if ( typeof _staticFields[type] !== 'undefined') {
-        instances = _staticFields[type];
+    
+    if (typeof Omadi.data.cache.fields[type] !== 'undefined') {
+        instances = Omadi.data.cache.fields[type];
     }
     else {
 
@@ -177,18 +184,18 @@ Omadi.data.getFields = function(type) {"use strict";
         result.close();
         db.close();
 
-        _staticFields[type] = instances;
+        Omadi.data.cache.fields[type] = instances;
     }
 
     return instances;
 };
 
-var _staticFakeFields = {};
+
 Omadi.data.getFakeFields = function(type){"use strict";
     var db, result, fakeFields, field_name, nameParts;
-
-    if ( typeof _staticFakeFields[type] !== 'undefined') {
-        fakeFields = _staticFakeFields[type];
+    
+    if ( typeof Omadi.data.cache.fakeFields[type] !== 'undefined') {
+        fakeFields = Omadi.data.cache.fakeFields[type];
     }
     else {
 
@@ -206,7 +213,7 @@ Omadi.data.getFakeFields = function(type){"use strict";
         result.close();
         db.close();
 
-        _staticFakeFields[type] = fakeFields;
+        Omadi.data.cache.fakeFields[type] = fakeFields;
     }
 
     return fakeFields;
@@ -215,31 +222,38 @@ Omadi.data.getFakeFields = function(type){"use strict";
 Omadi.data.getRegions = function(type) {"use strict";
 
     var db, result, regions, region_name, region_settings;
-
-    regions = {};
-    db = Omadi.utils.openMainDatabase();
-    result = db.execute("SELECT rid, node_type, label, region_name, weight, settings FROM regions WHERE node_type = '" + type + "' ORDER BY weight ASC");
     
-    while (result.isValidRow()) {
-        region_name = result.fieldByName('region_name');
-        
-        //Ti.API.debug(region_name);
-        region_settings = result.fieldByName('settings');
-        
-        //Ti.API.debug(region_settings);
-        
-        regions[region_name] = {
-            rid : result.fieldByName('rid'),
-            node_type : result.fieldByName('node_type'),
-            label : result.fieldByName('label'),
-            region_name : result.fieldByName('region_name'),
-            weight : result.fieldByName('weight'),
-            settings : JSON.parse(result.fieldByName('settings'))
-        };
-        result.next();
+    if ( typeof Omadi.data.cache.regions[type] !== 'undefined') {
+        regions = Omadi.data.cache.regions[type];
     }
-    result.close();
-    db.close();
+    else {
+        regions = {};
+        db = Omadi.utils.openMainDatabase();
+        result = db.execute("SELECT rid, node_type, label, region_name, weight, settings FROM regions WHERE node_type = '" + type + "' ORDER BY weight ASC");
+        
+        while (result.isValidRow()) {
+            region_name = result.fieldByName('region_name');
+            
+            //Ti.API.debug(region_name);
+            region_settings = result.fieldByName('settings');
+            
+            //Ti.API.debug(region_settings);
+            
+            regions[region_name] = {
+                rid : result.fieldByName('rid'),
+                node_type : result.fieldByName('node_type'),
+                label : result.fieldByName('label'),
+                region_name : result.fieldByName('region_name'),
+                weight : result.fieldByName('weight'),
+                settings : JSON.parse(result.fieldByName('settings'))
+            };
+            result.next();
+        }
+        result.close();
+        db.close();
+        
+        Omadi.data.cache.regions[type] = regions;
+    }
 
     return regions;
 };
@@ -312,7 +326,7 @@ Omadi.data.getNodeTitle = function(node) {"use strict";
 Omadi.data.deleteContinuousNodes = function(){"use strict";
   var db, result, deleteNids, i;
   
-  Ti.UI.currentWindow.saveContinually = false;
+  Ti.App.saveContinually = false;
   
   deleteNids = [];
   db = Omadi.utils.openMainDatabase();
@@ -332,194 +346,9 @@ Omadi.data.deleteContinuousNodes = function(){"use strict";
       Ti.API.debug("DELETING: " + deleteNids[i]);
       Omadi.data.deleteNode(deleteNids[i]);
   }
-  
 };
 
-Omadi.data.trySaveNodeTries = 0;
-Omadi.data.trySaveNode = function(node, saveType){"use strict";
-    var dialog, closeAfterSave;
-    /*jslint nomen: true*/
-    
-    if(typeof saveType === 'undefined'){
-        saveType = 'regular';
-    }
-    
-    closeAfterSave = true;
-    
-    // Allow instant saving of drafts and continuous saves
-    // Do not allow drafts or continuous saves to happen while an update is happening as it can cause problems
-    if(Omadi.data.isUpdating()){
-        if(saveType != 'continuous'){
-            if(Omadi.data.trySaveNodeTries == 0){
-                // Only show waiting once and not everytime it passes through here
-                Omadi.display.loading("Waiting...");   
-            }
-            setTimeout(function(){
-                Omadi.data.trySaveNode(node, saveType);
-            }, 1000);
-            
-            Omadi.data.trySaveNodeTries ++;
-            
-            if(Omadi.data.trySaveNodeTries > 10){
-                Omadi.data.setUpdating(false);
-            }
-        }
-    }
-    else{
-        Omadi.data.trySaveNodeTries = 0;
-        Omadi.display.doneLoading();
-        
-        if(saveType != 'continuous'){
-            Omadi.display.loading("Saving...");
-        }
-        
-        try{
-            
-            // Do not allow the web server's data in a background update
-            // to overwrite the local data just being saved
-            Ti.App.allowBackgroundUpdate = false;
-            
-            node = Omadi.data.nodeSave(node);
-            
-            // Now that the node is saved on the phone or a big error occurred, allow background logouts
-            Ti.App.allowBackgroundLogout = true;
-            
-            if(node._saved === true){
-                // Don't set the node as saved on a continuous save, as that can mess up windows closing, etc.
-                if(!node._isContinuous){
-                    Ti.UI.currentWindow.nodeSaved = true;
-                }
-            }
-            
-            // Setup the current node and nid in the window so a duplicate won't be made for this window
-            Ti.UI.currentWindow.node = node;
-            Ti.UI.currentWindow.nid = node.nid;
-            
-            //Omadi.display.doneLoading();
-            
-            if(node._saved === true){
-                
-                if(Ti.UI.currentWindow.usingDispatch){
-                    // Let the dispatch_form.js window take care of the rest once the data is in the database
-                    Ti.App.fireEvent("omadi:dispatch:savedDispatchNode",{
-                        nodeNid: node._saveNid,
-                        nodeType: node.type,
-                        isContinuous: node._isContinuous,
-                        isDraft: node._isDraft,
-                        saveType: saveType
-                    });
-                    
-                    // if in dispatch, the dispatch_form.js will take care of closing the window
-                    closeAfterSave = false;
-                }
-                else if(Ti.UI.currentWindow.url !== 'undefined' && Ti.UI.currentWindow.url.indexOf("mainMenu.js") !== -1){
-                    // If the node save is called from the main menu, do not close
-                    // This is the case for the clock-in dialog at login
-                    closeAfterSave = false;
-                }
-                
-                if(node._isContinuous === true){
-                    // Keep the window open, do not sync
-                    Omadi.display.doneLoading();
-                }
-                else{
-                    
-                    Ti.App.fireEvent("savedNode");
-                    // Delete the continuous node if one exists
-                    Omadi.data.deleteContinuousNodes();
-                    
-                    if(typeof node._deleteNid !== 'undefined' && node._deleteNid < 0){
-                        Omadi.data.deleteNode(node._deleteNid);
-                    }
-                    
-                    if(node._isDraft === true){
-                        
-                        if(closeAfterSave){
-                            Ti.UI.currentWindow.close();
-                        }
-                    }
-                    else if(Ti.Network.online){
-                        
-                        if (saveType === "next_part") {    
-                            
-                            Ti.App.fireEvent('openForm', {
-                                node_type: node.type,
-                                nid: node.nid,
-                                form_part: node.form_part + 1
-                            });                       
-                        }
-                        else if(saveType == 'new'){
-                            
-                            Ti.App.fireEvent('openForm', {
-                                node_type: node.type,
-                                nid: node.nid,
-                                form_part: node.type
-                            });
-                        }
-                        
-                        if(!Ti.UI.currentWindow.usingDispatch){
-                            // Send updates immediately only when not using dispatch
-                            // When using dispatch, the dispatch_form.js window will initialize this
-                            Ti.App.fireEvent('sendUpdates');
-                        }
-                        
-                        if(closeAfterSave){
-                            Ti.UI.currentWindow.close();
-                        }
-                    }
-                    else{
-                        if(Ti.UI.currentWindow.url.indexOf('form.js') !== -1){
-                            dialog = Titanium.UI.createAlertDialog({
-                                title : 'Form Validation',
-                                buttonNames : ['OK'],
-                                message: 'Alert management of this ' + node.type.toUpperCase() + ' immediately. You do not have an Internet connection right now.  Your data was saved and will be synched when you connect to the Internet.'
-                            });
-                            
-                            dialog.show();
-                            
-                            dialog.addEventListener('click', function(ev) {
-                                
-                                if (saveType === "next_part") {
-                                    // Omadi.display.openFormWindow(node.type, node.nid, node.form_part + 1);
-                                    Ti.App.fireEvent('openForm', {
-                                        node_type: node.type,
-                                        nid: node.nid,
-                                        form_part: node.form_part + 1
-                                    });
-                                }
-                                else if(saveType == 'new'){
-                                    //Omadi.display.openFormWindow(node.type, node.nid, node.type);
-                                    
-                                    Ti.App.fireEvent('openForm', {
-                                        node_type: node.type,
-                                        nid: node.nid,
-                                        form_part: node.type
-                                    });
-                                }
-                                
-                                Omadi.display.loading();
-                                
-                                if(closeAfterSave){
-                                    Ti.UI.currentWindow.close();
-                                }
-                            });
-                        }
-                    }
-                }
-            }
-            else{
-                
-                // Allow background updates again
-                Ti.App.allowBackgroundUpdate = true;
-                Omadi.service.sendErrorReport("Node failed to save on the phone");
-            }
-        }
-        catch(ex){
-            Omadi.display.doneLoading();
-            Omadi.service.sendErrorReport("Exception in trysavenode: " + ex);
-        }
-    } 
-};
+
 
 Omadi.data.nodeSave = function(node) {"use strict";
     var query, field_name, fieldNames, instances, result, db, smallestNid, insertValues, j, k, 
@@ -569,12 +398,12 @@ Omadi.data.nodeSave = function(node) {"use strict";
     if(node._isContinuous){
         
         // Start a new record if the continuous_nid isn't set
-        if(typeof Ti.UI.currentWindow.continuous_nid == 'undefined' || Ti.UI.currentWindow.continuous_nid == null || Ti.UI.currentWindow.continuous_nid == 0){
-            Ti.UI.currentWindow.continuous_nid = Omadi.data.getNewNodeNid();
+        if(!node.continuous_nid){
+            node.continuous_nid = Omadi.data.getNewNodeNid();
         }
         
         // Save the actual nid as the continuous negative NID
-        saveNid = Ti.UI.currentWindow.continuous_nid;
+        saveNid = node.continuous_nid;
         
         // The continuous_nid will be saved as the current window's NID
     }
@@ -745,9 +574,9 @@ Omadi.data.nodeSave = function(node) {"use strict";
             }
             
             if (node._isContinuous) {          
-                Ti.API.debug("SAVING TO CONTINUOUS: " + saveNid + " " + Ti.UI.currentWindow.nid);    
+                Ti.API.debug("SAVING TO CONTINUOUS: " + saveNid + " " + node.nid);    
                 
-                continuousNid = Ti.UI.currentWindow.nid;
+                continuousNid = node.continuous_nid;
                 if(continuousNid == 'new'){
                     continuousNid = 0;
                 } 
@@ -780,16 +609,16 @@ Omadi.data.nodeSave = function(node) {"use strict";
             
             photoNids = [0];
             
-            if(typeof Ti.UI.currentWindow.continuous_nid !== 'undefined'){
-                continuousId = parseInt(Ti.UI.currentWindow.continuous_nid, 10);
+            if(!node.continuous_nid){
+                continuousId = parseInt(node.continuous_nid, 10);
                 if(!isNaN(continuousId) && continuousId != 0){
                     photoNids.push(continuousId);
                 }
             }
             
             trueWindowNid = 'new';
-            if(typeof Ti.UI.currentWindow.nid !== 'undefined'){
-                trueWindowNid = parseInt(Ti.UI.currentWindow.nid, 10);
+            if(!node.nid){
+                trueWindowNid = parseInt(node.nid, 10);
                 if(!isNaN(trueWindowNid) && trueWindowNid != 0){
                     photoNids.push(trueWindowNid);
                 }
@@ -821,10 +650,15 @@ Omadi.data.nodeSave = function(node) {"use strict";
     
     try {
         db.execute("COMMIT TRANSACTION");
-        db.close();
     }
     catch(nothing) {
-
+        
+    }
+    finally{
+        try{
+             db.close();
+        }
+        catch(dbEx){}
     }
     
     return node;
@@ -2578,6 +2412,9 @@ Omadi.data.processFakeFieldsJson = function(mainDB) {"use strict";
                 mainDB.execute(queries[i]);
             }
             mainDB.execute("COMMIT TRANSACTION");
+            
+            // Reset the fake field cache
+            Omadi.data.cache.fakeFields = {};
         }
     }
     catch(ex){
@@ -2589,7 +2426,11 @@ Omadi.data.processFakeFieldsJson = function(mainDB) {"use strict";
 
 Omadi.data.processFieldsJson = function(mainDB) {"use strict";
     /*global ROLE_ID_ADMIN, ROLE_ID_OMADI_AGENT*/
-    var result, fid, field_exists, field_type, db_type, field_name, label, widgetString, settingsString, region, part, queries, description, bundle, weight, required, disabled, can_view, can_edit, settings, omadi_session_details, roles, permissionsString, permIdx, roleIdx, i;
+    var result, fid, field_exists, field_type, db_type, field_name, label, widgetString, 
+        settingsString, region, part, queries, description, bundle, weight, required, 
+        disabled, can_view, can_edit, settings, omadi_session_details, roles, 
+        permissionsString, permIdx, roleIdx, i;
+        
     try {
         queries = [];
 
@@ -2765,6 +2606,9 @@ Omadi.data.processFieldsJson = function(mainDB) {"use strict";
                 mainDB.execute(queries[i]);
             }
             mainDB.execute("COMMIT TRANSACTION");
+            
+            // Reset the field cache
+            Omadi.data.cache.fields = {};
         }
     }
     catch(ex) {
@@ -3407,6 +3251,9 @@ Omadi.data.processRegionsJson = function(mainDB) {"use strict";
                 mainDB.execute(queries[i]);
             }
             mainDB.execute("COMMIT TRANSACTION");
+            
+            // Reset the region cache
+            Omadi.data.cache.regions = {};
         }
     }
     catch(ex) {

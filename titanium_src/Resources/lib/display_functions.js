@@ -576,20 +576,34 @@ Omadi.display.openViewWindow = function(type, nid) {"use strict";
 };
 
 Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
-    var db, result, formWindow, intNid, isDispatch, dispatchNid, bundle;
+    var db, result, formWindow, intNid, isDispatch, dispatchNid, bundle, FormModule, formObject, node;
     
     try{
-        var FormModule = require('ui/FormModule');
-        var form = new FormModule(Omadi);
-        var formWindow = form.getWindow(type, nid, form_part, false);
+        FormModule = require('ui/FormModule');
+        formWindow = FormModule.getWindow(Omadi, type, nid, form_part, false);
+        
         formWindow.addEventListener('open', Omadi.display.doneLoading);
+        
         Omadi.display.loading();
         formWindow.open();
+        
+        // Must be called after getWindow
+        node = FormModule.getNode();
+        
+        // Set node as viewed if it hasn't yet been viewed and it's been saved to the server
+        if(nid != "new" && nid > 0 && (typeof node.viewed == 'undefined' || node.viewed == 0)){
+            Omadi.service.setNodeViewed(nid);
+        }
     }
     catch(ex){
         Omadi.service.sendErrorReport("Exception opening form: " + ex);
     }
     return formWindow;
+    
+    
+    
+    
+    
     
     isDispatch = Omadi.bundles.dispatch.isDispatch(type, nid);
     
