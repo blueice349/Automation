@@ -576,19 +576,37 @@ Omadi.display.openViewWindow = function(type, nid) {"use strict";
 };
 
 Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
-    var db, result, formWindow, intNid, isDispatch, dispatchNid, bundle, FormModule, formObject, node;
+    var db, result, formWindow, intNid, isDispatch, dispatchNid, bundle, FormModule, Dispatch, formObject, node;
     
     try{
-        FormModule = require('ui/FormModule');
-        formWindow = FormModule.getWindow(Omadi, type, nid, form_part, false);
         
-        formWindow.addEventListener('open', Omadi.display.doneLoading);
+        isDispatch = Omadi.bundles.dispatch.isDispatch(type, nid);
         
-        Omadi.display.loading();
-        formWindow.open();
+        if(isDispatch){
+            Dispatch = require('ui/DispatchForm');
+            formWindow = Dispatch.getWindow(Omadi);
+            
+            formWindow.addEventListener('open', Omadi.display.doneLoading);
+            
+            Omadi.display.loading();
+            formWindow.open();
+            
+            // Must be called after getWindow
+            //node = FormModule.getNode();
+        }
+        else{
         
-        // Must be called after getWindow
-        node = FormModule.getNode();
+            FormModule = require('ui/FormModule');
+            formWindow = FormModule.getWindow(Omadi, type, nid, form_part, false);
+            
+            formWindow.addEventListener('open', Omadi.display.doneLoading);
+            
+            Omadi.display.loading();
+            formWindow.open();
+            
+            // Must be called after getWindow
+            node = FormModule.getNode(type);
+        }
         
         // Set node as viewed if it hasn't yet been viewed and it's been saved to the server
         if(nid != "new" && nid > 0 && (typeof node.viewed == 'undefined' || node.viewed == 0)){
@@ -605,7 +623,7 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
     
     
     
-    isDispatch = Omadi.bundles.dispatch.isDispatch(type, nid);
+    
     
     if(isDispatch){
         formWindow = Ti.UI.createWindow({

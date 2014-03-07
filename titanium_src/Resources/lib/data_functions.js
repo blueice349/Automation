@@ -397,6 +397,8 @@ Omadi.data.nodeSave = function(node) {"use strict";
     
     if(node._isContinuous){
         
+        Ti.API.debug("Saving continuous id: " + node.continuous_nid);
+        
         // Start a new record if the continuous_nid isn't set
         if(!node.continuous_nid){
             node.continuous_nid = Omadi.data.getNewNodeNid();
@@ -409,7 +411,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
     }
     else if (node.nid == 'new') {
         Ti.API.debug("Saving new node");
-        node.nid = saveNid = Omadi.data.getNewNodeNid();
+        node.nid = saveNid = node.continuous_nid;  //Omadi.data.getNewNodeNid();
     }
     else if(node._isDraft){
         // This else if must come after the node.nid == 'new'
@@ -418,7 +420,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
         // If this node has a positive nid, make sure we create a copy with a new negative nid
         if(node.nid > 0){
             node.origNid = node.nid;
-            saveNid = Omadi.data.getNewNodeNid();
+            saveNid = node.continuous_nid;  //Omadi.data.getNewNodeNid();
         }
     }
     else if(typeof node.flag_is_updated !== 'undefined' && node.flag_is_updated == 3){
@@ -427,7 +429,8 @@ Omadi.data.nodeSave = function(node) {"use strict";
         // The continuous_nid is actually the originally saved draft, 
         // as a continuous save is saved over the original draft
         // The logic elsewhere will not delete the node unless the node is correctly saved
-        node._deleteNid = node.continuous_nid;
+        
+        //node._deleteNid = node.continuous_nid;
     }
     
     node._saveNid = saveNid;

@@ -1346,7 +1346,6 @@ function affectsAnotherConditionalField(check_instance){"use strict";
                     for (i in search_criteria) {
                         if(search_criteria.hasOwnProperty(i)){
                             
-                            
                             if(check_instance.field_name == search_criteria[i].field_name){
                                 Ti.API.debug(search_criteria[i].field_name + " -> " + field_name);
                                 affectedFields.push(field_name);

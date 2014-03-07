@@ -1,8 +1,10 @@
 
 var Omadi;
 
-Ti.include("/lib/widgets.js");
-Ti.include("/lib/form_functions.js");
+// Ti.include("/lib/widgets.js");
+// Ti.include("/lib/form_functions.js");
+
+Ti.include("/lib/functions.js");
 
 var ImageFactory = null;
 

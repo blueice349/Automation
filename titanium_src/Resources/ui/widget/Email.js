@@ -4,7 +4,7 @@ var Widget, Omadi;
 
 Widget = {};
 
-function TextWidget(formObj, instance, fieldViewWrapper){"use strict";
+function EmailWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
     this.instance = instance;
     this.fieldView = null;
@@ -38,7 +38,7 @@ function TextWidget(formObj, instance, fieldViewWrapper){"use strict";
     }
 }
 
-TextWidget.prototype.getFieldView = function(){"use strict";
+EmailWidget.prototype.getFieldView = function(){"use strict";
     
     var i, element, addButton;
     
@@ -90,13 +90,11 @@ TextWidget.prototype.getFieldView = function(){"use strict";
     return this.fieldView;
 };
 
-TextWidget.prototype.redraw = function(){"use strict";
+EmailWidget.prototype.redraw = function(){"use strict";
     Ti.API.debug("in redraw");
     var origFieldView;
     
     this.formObj.formToNode();
-        
-    //Ti.API.debug(JSON.stringify(this.formObj.node));
     
     this.node = this.formObj.node;
     if(typeof this.node[this.instance.field_name] !== 'undefined'){
@@ -121,7 +119,7 @@ TextWidget.prototype.redraw = function(){"use strict";
     this.fieldViewWrapper.remove(origFieldView);
 };
 
-TextWidget.prototype.getNewElement = function(index){"use strict";
+EmailWidget.prototype.getNewElement = function(index){"use strict";
     var dbValue, textValue, element;
     
     dbValue = "";
@@ -137,7 +135,7 @@ TextWidget.prototype.getNewElement = function(index){"use strict";
         }
     }
     
-    Ti.API.debug("Creating text field");
+    Ti.API.debug("Creating email field: " + this.instance.label);
     
     element = this.formObj.getTextField(this.instance);
     
@@ -145,35 +143,15 @@ TextWidget.prototype.getNewElement = function(index){"use strict";
     element.textValue = textValue;
     element.setValue(textValue);
     element.fieldName = this.instance.field_name;
-    element.setAutocapitalization(Ti.UI.TEXT_AUTOCAPITALIZATION_WORDS);
+    element.maxLength = 255;
+    // Got to be at least a@a.co, additional validation is happening later
+    element.minLength = 6;
+    element.setAutocapitalization(Ti.UI.TEXT_AUTOCAPITALIZATION_NONE);
     
     element.check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
     this.formObj.addCheckConditionalFields(element.check_conditional_fields);
     
-    if(typeof this.instance.settings.min_length !== 'undefined'){
-        this.instance.settings.min_length = parseInt(this.instance.settings.min_length, 10);
-        
-        if (this.instance.settings.min_length > 0) {
-            element.minLength = this.instance.settings.min_length;
-        }
-    }
-    
-    if(typeof this.instance.settings.max_length !== 'undefined'){
-        this.instance.settings.max_length = parseInt(this.instance.settings.max_length, 10);
-        
-        if (this.instance.settings.max_length > 0) {
-            element.maxLength = this.instance.settings.max_length;
-        }
-    }
-    
-    if (typeof this.instance.settings.capitalization !== null && this.instance.settings.capitalization != null) {
-        element.capitalization = this.instance.settings.capitalization;
-    }
-    
-    
-    
     element.addEventListener('change', function(e) {
-        /*global setConditionallyRequiredLabels*/
         var now, milliseconds, timeChange;
         
         now = new Date();
@@ -185,17 +163,6 @@ TextWidget.prototype.getNewElement = function(index){"use strict";
             
             Ti.API.debug("text value changed: *" + e.source.lastValue + "* -> *" + e.source.value + "*");
             
-            if(typeof e.source.capitalization !== 'undefined'){
-                if(e.source.capitalization == 'all_caps' && e.source.value !== null){
-                  
-                    e.source.value = (e.source.value + "".toString()).toUpperCase();
-                  
-                    if (Ti.App.isAndroid && e.source.value != null && typeof e.source.value.length !== 'undefined') {
-                        e.source.setSelection(e.source.value.length, e.source.value.length);
-                    }
-                }
-            }
-       
             e.source.dbValue = e.source.value;
             e.source.textValue = e.source.value;
             
@@ -218,7 +185,7 @@ TextWidget.prototype.getNewElement = function(index){"use strict";
 exports.getFieldView = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
     
     Omadi = OmadiObj;
-    Widget[instance.field_name] = new TextWidget(FormObj, instance, fieldViewWrapper);
+    Widget[instance.field_name] = new EmailWidget(FormObj, instance, fieldViewWrapper);
     
     return Widget[instance.field_name].getFieldView();
 };

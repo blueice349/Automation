@@ -1,7 +1,9 @@
 /*jslint eqeq:true,plusplus:true*/
 
 
-var FormObj, Omadi;
+var FormObj, Omadi, ActiveFormObj;
+
+FormObj = {};
 
 function getRegionHeaderView(regionView, region, expanded){"use strict";
     
@@ -114,12 +116,12 @@ function getRegionHeaderView(regionView, region, expanded){"use strict";
 }
 
 function loggingOut(){"use strict";
-
-    if(FormObj.saveInterval){
-        clearInterval(FormObj.saveInterval);
+    var i;
+    for(i in FormObj){
+        if(FormObj.hasOwnProperty(i)){
+            FormObj[i].closeWindow();
+        }
     }
-    
-    FormObj.win.close();
 }
 
 function photoUploaded(e){"use strict";
@@ -142,21 +144,18 @@ function photoUploaded(e){"use strict";
 }
 
 function formWindowOnClose(){"use strict";
-    var regionWrappers_i, regionView_i, field_i, regionWrapperChild_i;
+    var i;
     
-    if(FormObj.saveInterval){
-        clearInterval(FormObj.saveInterval);
-    }
+    Ti.API.debug("Window closing");
     
+    ActiveFormObj.closeWindow();
+      
     Ti.App.removeEventListener('loggingOut', loggingOut);
     Ti.App.removeEventListener('photoUploaded', photoUploaded);
+    
     // TODO: finish saveDispatch form
     //Ti.UI.currentWindow.removeEventListener("omadi:saveForm", saveDispatchForm);
 }
-
-
-
-
 
 function sort_by_weight(a, b) {"use strict";
     if (a.weight != null && a.weight != "" && b.weight != null && b.weight != "") {
@@ -165,293 +164,6 @@ function sort_by_weight(a, b) {"use strict";
     return 0;
 }
 
-function setConditionallyRequiredLabelForInstance(node, instance) {"use strict";
-    
-    /*jslint nomen: true*/
-    /*global search_criteria_search_order, labelViews*/
-   
-    //var entityArr = createEntityMultiple();
-    
-    var search_criteria, row_matches, row_idx, criteria_row, field_name, 
-        search_operator, search_value, search_values, values, i, makeRequired,
-        and_groups, and_group_index, and_group, and_group_match, j, or_match;
-    
-    try {
-    
-        row_matches = [];
-        
-        // instance = instances[check_field_name];
-         //Ti.API.debug("In Conditional for " + instance.field_name);
-         //Ti.API.debug(instance);
-        
-        if (instance.settings.criteria != null && instance.settings.criteria.search_criteria != null) {
-            //instance.settings.criteria.search_criteria.sort(search_criteria_search_order);
-            
-            search_criteria = instance.settings.criteria.search_criteria;
-            search_criteria.sort(sort_by_weight);
-            
-            for (row_idx in search_criteria) {
-                if(search_criteria.hasOwnProperty(row_idx)){
-                    
-                    criteria_row = search_criteria[row_idx];
-                    
-                    row_matches[row_idx] = false;
-                    
-                    field_name = criteria_row.field_name;
-                    search_operator = criteria_row.operator;
-                    search_value = criteria_row.value;
-                    values = [];
-                    
-                    //Ti.API.debug(field_name);
-                    if(typeof node[field_name] !== 'undefined'){
-                       values = node[field_name].dbValues;
-                    }
-                    
-                    if(typeof this.instances[field_name] !== 'undefined' && typeof this.instances[field_name].type !== 'undefined'){
-                    
-                        //Ti.API.debug(JSON.stringify(values));
-                        switch(instances[field_name].type) {
-                            case 'text':
-                            case 'text_long':
-                            case 'link_field':
-                            case 'phone':
-                            case 'license_plate':
-                            case 'vehicle_fields':
-                            case 'number_integer':
-                            case 'number_decimal':
-                            case 'email':
-                            case 'datestamp':
-                            case 'omadi_reference':
-                            case 'omadi_time':
-                            case 'calculation_field':
-                            case 'location':
-                            
-                                if (search_operator == '__filled') {
-                                    for (i = 0; i < values.length; i++) {
-                                        if (values[i] != null && values[i] != "") {
-                                            row_matches[row_idx] = true;
-                                        }
-                                    }
-                                }
-                                else {
-                                    if (values.length == 0) {
-                                        row_matches[row_idx] = true;
-                                    }
-                                    else {
-                                        for (i = 0; i < values.length; i ++){
-                                            if (values[i] == null || values[i] == "") {
-                                                row_matches[row_idx] = true;
-                                            }
-                                        }
-                                    }
-                                }
-                                break;
-                                
-                            //case 'location':
-                                
-                                // Ti.API.debug(instances[field_name]);
-                                
-                                // if (search_operator == '__filled') {
-                                    // for (i = 0; i < values.length; i++) {
-                                        // if (values[i] != null && values[i] != "") {
-                                            // row_matches[row_idx] = true;
-                                        // }
-                                    // }
-                                // }
-                                // else {
-                                    // if (values.length == 0) {
-                                        // row_matches[row_idx] = true;
-                                    // }
-                                    // else {
-                                        // for (i = 0; i < values.length; i ++){
-                                            // if (values[i] == null || values[i] == "") {
-                                                // row_matches[row_idx] = true;
-                                            // }
-                                        // }
-                                    // }
-                                // }
-                                //break;
-                                
-                            case 'taxonomy_term_reference':
-                            case 'user_reference':
-        
-                                search_values = [];
-                                if (!Omadi.utils.isArray(search_value)) {
-                                    for (i in search_value) {
-                                        if (search_value.hasOwnProperty(i)) {
-                                            search_values.push(i);
-                                        }
-                                    }
-                                    search_value = search_values;
-                                }
-                                else {
-                                    if (search_value.length == 0) {
-                                        row_matches[row_idx] = true;
-                                        break;
-                                    }
-                                }
-                                
-                                
-                                if (search_operator == '__blank') {
-                                    row_matches[row_idx] = true;
-                                    if(values.length > 0){
-                                        for(i = 0; i < values.length; i ++){
-                                            if(values[i] > 0){
-                                                row_matches[row_idx] = false;
-                                            }
-                                        }
-                                    }
-                                }
-                                else if (search_operator == '__filled') {
-                                    row_matches[row_idx] = false;
-                                    if(values.length > 0){
-                                        for(i = 0; i < values.length; i ++){
-                                            if(values[i] > 0){
-                                                row_matches[row_idx] = true;
-                                            }
-                                        }
-                                    }
-                                }
-                                else if (search_operator == '!=') {
-                                    row_matches[row_idx] = true;
-                                    if (search_value.__null == '__null' && (values.length === 0 || values[0] == null)) {
-                                        row_matches[row_idx] = false;
-                                    }
-                                    else {
-                                        for (i = 0; i < search_value.length; i ++){
-                                            if(values.indexOf(search_value[i]) !== -1){
-                                                row_matches[row_idx] = false;
-                                            }
-                                        }
-        
-                                    }
-                                }
-                                else if (search_operator == '=') {
-                                    
-                                    if (search_value.indexOf('__null') !== -1 && (values.length === 0 || values[0] == null)) {
-                                        row_matches[row_idx] = true;
-                                    }
-                                    else {
-                                        for (i = 0; i < search_value.length; i ++){
-                                            for(j = 0; j < values.length; j ++){
-                                                if (values[j] == search_value[i]){
-                                                    row_matches[row_idx] = true;
-                                                }   
-                                            }
-                                        }
-                                    }
-                                }
-        
-                                break;
-        
-                            case 'list_boolean':
-                               
-                                if (search_operator == '__filled') {
-                                    for (i = 0; i < values.length; i++) {
-                                        if (values[i] != null && values[i] == "1") {
-                                            row_matches[row_idx] = true;
-                                        }
-                                    }
-                                }
-                                else {
-                                    if (values.length == 0) {
-                                        row_matches[row_idx] = true;
-                                    }
-                                    else {
-                                        for (i = 0; i < values.length; i ++){
-                                            if (values[i] == null || values[i] == "0") {
-                                                row_matches[row_idx] = true;
-                                            }
-                                        }
-                                    }
-                                }
-                                break;
-                        }
-                    }
-                }
-            }
-    
-            makeRequired = true;
-            
-            //Ti.API.error(JSON.stringify(row_matches));
-            
-            if (row_matches.length == 1) {
-                makeRequired = row_matches[0];
-            }
-            else {
-                // Group each criteria row into groups of ors with the matching result of each or
-                and_groups = [];
-                and_group_index = 0;
-                and_groups[and_group_index] = [];
-                //print_r($criteria['search_criteria']);
-                for (i in search_criteria) {
-                    if(search_criteria.hasOwnProperty(i)){
-                        criteria_row = search_criteria[i];
-                        if (i == 0) {
-                            and_groups[and_group_index][0] = row_matches[i];
-                        }
-                        else {
-                            if (criteria_row.row_operator == null || criteria_row.row_operator != 'or') {
-                                and_group_index++;
-                                and_groups[and_group_index] = [];
-                            }
-                            and_groups[and_group_index][0] = row_matches[i];
-                        }
-                    }
-                }
-    
-                // Get the final result, making sure each and group is TRUE
-                for (i in and_groups) {
-                    if(and_groups.hasOwnProperty(i)){
-                        and_group = and_groups[i];
-                        and_group_match = false;
-                        for (j in and_group) {
-                            if(and_group.hasOwnProperty(j)){
-                                // Make sure at least one item in an and group is true (or the only item is true)
-                                if (and_group[j]) {
-                                    and_group_match = true;
-                                    break;
-                                }
-                            }
-                        }
-        
-                        // If one and group doesn't match the whole return value of this function is false
-                        if (!and_group_match) {
-                            makeRequired = false;
-                            break;
-                        }
-                    }
-                }
-            }
-            
-            if(typeof labelViews[instance.field_name] !== 'undefined'){
-            
-                if (makeRequired) {
-                    if (!instance.isConditionallyRequired) {
-                        if(labelViews[instance.field_name].text.substring(0,1) != '*'){
-                            labelViews[instance.field_name].text = '*' + labelViews[instance.field_name].text;
-                        }
-                        labelViews[instance.field_name].color = 'red';
-                        //instance.required = true;
-                    }
-                    instance.isConditionallyRequired = true;
-                }
-                else {
-                    if (instance.isConditionallyRequired) {
-                        labelViews[instance.field_name].text = labelViews[instance.field_name].text.substring(1, labelViews[instance.field_name].text.length);
-                        labelViews[instance.field_name].color = Omadi.widgets.label.color;
-                        ///instance.required = false;
-                    }
-                    instance.isConditionallyRequired = false;
-                }
-            }
-        }
-    }
-    catch(ex){
-        // TODO: make this work
-        Omadi.service.sendErrorReport("Changing conditional value: " + ex);
-    }
-}
 
 
 
@@ -478,25 +190,34 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
     this.nodeSaved = false;
     this.trySaveNodeTries = 0;
     this.continuous_nid = 0;
+    this.currentlyFocusedField = null;
+    this.labelViews = {};
+    this.checkConditionalFieldNames = {};
     
     Ti.App.saveContinually = true;
     
     try{
         if(this.nid == 'new'){
             this.initNewNode();
-            this.continuous_nid = Omadi.data.getNewNodeNid();
+            
+            if(this.usingDispatch){
+                if(this.type == 'dispatch'){
+                    this.node.dispatch_nid = this.continuous_nid + 1;
+                }
+                else{
+                    this.node.dispatch_nid = this.continuous_nid - 1;
+                }
+            }
         }
         else{
-            
             this.node = Omadi.data.nodeLoad(this.nid);
             
-            if(this.node.continuous_nid != null && this.node.continuous_nid != 0){
-                tempNid = this.node.nid;
-                this.node.nid = this.node.continuous_nid;
-                this.node.continuous_nid = tempNid;
-            }
-            else{
+            if(this.node.continuous_nid == null || this.node.continuous_nid == 0){
                 this.node.continuous_nid = Omadi.data.getNewNodeNid();
+                if(this.type == 'dispatch'){
+                    // For dispatch nodes, decrement the save id so it's not the same as the one for the work node
+                    this.node.continuous_nid --;
+                }
             }
             
             // Make sure the window nid is updated to the real nid, as it could have changed in nodeLoad
@@ -532,8 +253,17 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
     }
 }
 
+FormModule.prototype.closeWindow = function(){"use strict";
+     clearInterval(this.saveInterval);  
+     
+     try{
+        this.win.close();
+     }
+     catch(ex){} 
+};
+
 FormModule.prototype.trySaveNode = function(saveType){"use strict";
-    var dialog, closeAfterSave;
+    var dialog, closeAfterSave, nodeType;
     /*jslint nomen: true*/
     
     if(typeof saveType === 'undefined'){
@@ -541,6 +271,8 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
     }
     
     closeAfterSave = true;
+    
+    nodeType = this.node.type;
     
     // Allow instant saving of drafts and continuous saves
     // Do not allow drafts or continuous saves to happen while an update is happening as it can cause problems
@@ -551,7 +283,7 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
                 Omadi.display.loading("Waiting...");   
             }
             setTimeout(function(){
-                FormObj.trySaveNode(saveType);
+                FormObj[nodeType].trySaveNode(saveType);
             }, 1000);
             
             this.trySaveNodeTries ++;
@@ -775,7 +507,9 @@ FormModule.prototype.loadCustomCopyNode = function(originalNode, from_type, to_t
 FormModule.prototype.formToNode = function(){"use strict";
     /*global fieldViews*/
    
-   var field_name, fieldWrapper, instance;
+   var field_name, fieldWrapper, instance, origNode;
+   
+   //origNode = this.node;
    
    this.initNewNode();
    this.node.no_data = "";
@@ -790,8 +524,8 @@ FormModule.prototype.formToNode = function(){"use strict";
                instance = fieldWrapper.instance;
                
                this.node[instance.field_name] = {};
-               this.node[instance.field_name].dbValues = Omadi.widgets.getDBValues(fieldWrapper);
-               this.node[instance.field_name].textValues = Omadi.widgets.getTextValues(fieldWrapper);
+               this.node[instance.field_name].dbValues = this.getDBValues(fieldWrapper);
+               this.node[instance.field_name].textValues = this.getTextValues(fieldWrapper);
            }
        }
    }
@@ -799,6 +533,109 @@ FormModule.prototype.formToNode = function(){"use strict";
        this.sendError("Bundling node from form: " + ex);
        alert("There was a problem bundling the submitted data. The cause of the error was sent to support.");
    }
+};
+
+FormModule.prototype.getDBValues = function(fieldWrapper){"use strict";
+    var dbValues = [], i, j, k, m, children, subChildren, subSubChildren, subSubSubChildren;
+    
+    if(typeof fieldWrapper !== 'undefined'){
+        children = fieldWrapper.getChildren();
+        
+        // Find the dbValue up to 4 levels deep in the UI elements
+        // The only one going 4 levels deep is the image field with widget signature
+        
+        for(i = 0; i < children.length; i ++){
+            if(typeof children[i].dbValue !== 'undefined'){
+                if(typeof children[i].dbValue === 'object' && children[i].dbValue instanceof Array){
+                    dbValues = children[i].dbValue;
+                }
+                else{
+                    dbValues.push(Omadi.utils.trimWhiteSpace(children[i].dbValue));
+                }
+            }
+            else if(children[i].getChildren().length > 0){
+                subChildren = children[i].getChildren();
+                for(j = 0; j < subChildren.length; j ++){
+                    if(typeof subChildren[j].dbValue !== 'undefined'){
+                        
+                        if(typeof subChildren[j].dbValue === 'object' && subChildren[j].dbValue instanceof Array){
+                            //Ti.API.debug(JSON.stringify(subChildren[j].dbValue));
+                            dbValues = subChildren[j].dbValue;
+                        }
+                        else{
+                            dbValues.push(Omadi.utils.trimWhiteSpace(subChildren[j].dbValue));
+                        }
+                    }
+                    else if(subChildren[j].getChildren().length > 0){
+                        subSubChildren = subChildren[j].getChildren();
+                        for(k = 0; k < subSubChildren.length; k ++){
+                            if(typeof subSubChildren[k].dbValue !== 'undefined'){
+                                if(typeof subSubChildren[k].dbValue === 'object' && subSubChildren[k].dbValue instanceof Array){
+                                    dbValues = subSubChildren[k].dbValue;
+                                }
+                                else{
+                                    dbValues.push(Omadi.utils.trimWhiteSpace(subSubChildren[k].dbValue));
+                                }
+                            }
+                            else if(subSubChildren[k].getChildren().length > 0){
+                                subSubSubChildren = subSubChildren[k].getChildren();
+                                for(m = 0; m < subSubSubChildren.length; m ++){
+                                    if(typeof subSubSubChildren[m].dbValue !== 'undefined'){
+                                        if(typeof subSubSubChildren[m].dbValue === 'object' && subSubSubChildren[m].dbValue instanceof Array){
+                                            dbValues = subSubSubChildren[m].dbValue;
+                                        }
+                                        else{
+                                            dbValues.push(Omadi.utils.trimWhiteSpace(subSubSubChildren[m].dbValue));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return dbValues;
+};
+
+FormModule.prototype.getTextValues = function(fieldWrapper){"use strict";
+    var textValues = [], i, j, k, m, children, subChildren, subSubChildren, subSubSubChildren;
+    
+    children = fieldWrapper.getChildren();
+    
+    // Find the textValue up to 3 levels deep in the UI elements
+    for(i = 0; i < children.length; i ++){
+        if(typeof children[i].textValue !== 'undefined'){
+            textValues.push(children[i].textValue);
+        }
+        else if(children[i].getChildren().length > 0){
+            subChildren = children[i].getChildren();
+            for(j = 0; j < subChildren.length; j ++){
+                if(typeof subChildren[j].textValue !== 'undefined'){
+                    textValues.push(subChildren[j].textValue);
+                }
+                else if(subChildren[j].getChildren().length > 0){
+                    subSubChildren = subChildren[j].getChildren();
+                    for(k = 0; k < subSubChildren.length; k ++){
+                        if(typeof subSubChildren[k].textValue !== 'undefined'){
+                            textValues.push(subSubChildren[k].textValue);
+                        }
+                        else if(subSubChildren[k].getChildren().length > 0){
+                            subSubSubChildren = subSubChildren[k].getChildren();
+                            for(m = 0; m < subSubSubChildren.length; m ++){
+                                if(typeof subSubSubChildren[m].textValue !== 'undefined'){
+                                    textValues.push(subSubSubChildren[m].textValue);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    return textValues;
 };
 
 // *** getRegionWrappers ***************************
@@ -905,13 +742,13 @@ FormModule.prototype.setupMenu = function(){"use strict";
             Ti.API.debug("Creating options menu");
             
             try{
-                bundle = Omadi.data.getBundle(FormObj.node.type);
+                bundle = Omadi.data.getBundle(ActiveFormObj.node.type);
                 
                 e.menu.clear();
                    
                 if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
                     
-                    windowFormPart = FormObj.form_part;
+                    windowFormPart = ActiveFormObj.form_part;
                     
                     if (bundle.data.form_parts.parts.length >= windowFormPart + 2) {
                         menu_zero = e.menu.add({
@@ -920,7 +757,7 @@ FormModule.prototype.setupMenu = function(){"use strict";
                         });
                         menu_zero.setIcon("/images/save_arrow_white.png");
                         menu_zero.addEventListener("click", function(ev) {
-                            FormObj.saveForm('next_part');
+                            ActiveFormObj.saveForm('next_part');
                         });
                     }
                 }
@@ -952,16 +789,16 @@ FormModule.prototype.setupMenu = function(){"use strict";
                 // MENU - EVENTS
                 //======================================
                 menu_first.addEventListener("click", function(e) {
-                    FormObj.saveForm('normal');
+                    ActiveFormObj.saveForm('normal');
                 });
                 
                 menu_save_new.addEventListener("click", function(e) {
                     Ti.API.debug("SAVING + NEW");
-                    FormObj.saveForm('new');
+                    ActiveFormObj.saveForm('new');
                 });
             
                 menu_second.addEventListener("click", function(e) {
-                    FormObj.saveForm('draft');
+                    ActiveFormObj.saveForm('draft');
                 });
             }
             catch(ex){
@@ -1513,6 +1350,19 @@ FormModule.prototype.initNewNode = function(){"use strict";
     this.node.changed = now;
     this.node.changed_uid = uid;
     this.node.flag_is_updated = 0;
+    
+    if(!this.continuous_nid){
+        this.node.continuous_nid = this.continuous_nid = Omadi.data.getNewNodeNid();
+        
+        if(this.type == 'dispatch'){
+            // For dispatch nodes, decrement the save id so it's not the same as the one for the work node
+            this.continuous_nid --;
+            this.node.continuous_nid --;
+        }
+    }
+    else{
+        this.node.continuous_nid = this.continuous_nid;
+    }
 };
 
 FormModule.prototype.adjustFileTable = function(){"use strict";
@@ -1546,7 +1396,7 @@ FormModule.prototype.adjustFileTable = function(){"use strict";
         }
         
         Omadi.data.deleteContinuousNodes();
-        FormObj.win.close();
+        ActiveFormObj.win.close();
     }
     else if(Omadi.utils.getPhotoWidget() == 'choose'){
         // This is not a draft, and we don't care about the taken photos
@@ -1554,7 +1404,7 @@ FormModule.prototype.adjustFileTable = function(){"use strict";
         // Photos should be managed externally except when uploaded successfully
         
         Omadi.data.deleteContinuousNodes();
-        FormObj.win.close();
+        ActiveFormObj.win.close();
     }
     else{
         
@@ -1752,7 +1602,7 @@ FormModule.prototype.adjustFileTable = function(){"use strict";
                     db_toDeleteImage.close();
                     
                     Omadi.data.deleteContinuousNodes();
-                    FormObj.win.close();
+                    ActiveFormObj.win.close();
                 }
             });
             
@@ -1761,7 +1611,7 @@ FormModule.prototype.adjustFileTable = function(){"use strict";
         else{
             
             Omadi.data.deleteContinuousNodes();
-            FormObj.win.close();
+            ActiveFormObj.win.close();
         }
     }
 };
@@ -1781,12 +1631,12 @@ FormModule.prototype.cancelOpt = function(e){"use strict";
         
         if (e.index == 0) {
             
-            windowNid = parseInt(FormObj.nid, 10);
+            windowNid = parseInt(ActiveFormObj.nid, 10);
             if(isNaN(windowNid)){
               windowNid = 0;   
             }
             
-            FormObj.adjustFileTable();
+            ActiveFormObj.adjustFileTable();
         }
     });
 
@@ -2005,8 +1855,11 @@ FormModule.prototype.getWindow = function(){"use strict";
                 // }
             // }
         // }
-        
-        this.saveInterval = setInterval(this.continuousSave, 15000);
+        Ti.API.debug("Form Object count = " + Omadi.utils.count(FormObj));
+        // Setup only one interval where all forms will be saved together
+        if(Omadi.utils.count(FormObj) == 1){
+            this.saveInterval = setInterval(this.continuousSave, 15000);
+        }
    
         if(!this.usingDispatch){
             doneButtonWrapper = Ti.UI.createView({
@@ -2032,9 +1885,19 @@ FormModule.prototype.getWindow = function(){"use strict";
                 top: 10
             });
             
-            doneButton.addEventListener('click', FormObj.showActionsOptions);
+            doneButton.addEventListener('click', ActiveFormObj.showActionsOptions);
             doneButtonWrapper.add(doneButton);
             scrollView.add(doneButtonWrapper);
+        }
+        
+        if(Omadi.utils.count(this.checkConditionalFieldNames) > 0){
+            this.formToNode();
+            for(i in this.checkConditionalFieldNames){
+                if(this.checkConditionalFieldNames.hasOwnProperty(i)){
+                    Ti.API.debug("checking conditional for " + this.checkConditionalFieldNames[i]);
+                    this.setConditionallyRequiredLabelForInstance(this.instances[this.checkConditionalFieldNames[i]]);
+                }
+            }
         }
         
         this.win.addEventListener("android:back", this.cancelOpt);
@@ -2049,9 +1912,9 @@ FormModule.prototype.getWindow = function(){"use strict";
 FormModule.prototype.showActionsOptions = function(e){"use strict";
     var bundle, btn_tt, btn_id, postDialog, windowFormPart;
     
-    Omadi.widgets.unfocusField();
+    ActiveFormObj.unfocusField();
     
-    bundle = Omadi.data.getBundle(FormObj.node.type);
+    bundle = Omadi.data.getBundle(ActiveFormObj.node.type);
     btn_tt = [];
     btn_id = [];
 
@@ -2066,7 +1929,7 @@ FormModule.prototype.showActionsOptions = function(e){"use strict";
     
     if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
         
-        windowFormPart = FormObj.form_part;
+        windowFormPart = ActiveFormObj.form_part;
         
         if (bundle.data.form_parts.parts.length >= windowFormPart + 2) {
 
@@ -2088,19 +1951,19 @@ FormModule.prototype.showActionsOptions = function(e){"use strict";
 
     postDialog.addEventListener('click', function(ev) {
         
-        if(FormObj.nodeSaved === false){
+        if(ActiveFormObj.nodeSaved === false){
             if(ev.index != -1){
                 if(btn_id[ev.index] == 'next'){
-                    FormObj.saveForm('next_part');
+                    ActiveFormObj.saveForm('next_part');
                 }
                 else if(btn_id[ev.index] == 'draft'){
-                    FormObj.saveForm('draft');
+                    ActiveFormObj.saveForm('draft');
                 }
                 else if(btn_id[ev.index] == 'new'){
-                    FormObj.saveForm('new');
+                    ActiveFormObj.saveForm('new');
                 }
                 else if(btn_id[ev.index] == 'normal'){
-                    FormObj.saveForm('normal');
+                    ActiveFormObj.saveForm('normal');
                 }
             }
         }
@@ -2111,11 +1974,16 @@ FormModule.prototype.showActionsOptions = function(e){"use strict";
 };
 
 FormModule.prototype.continuousSave = function(){"use strict";
-    if(Ti.App.saveContinually){
-        FormObj.saveForm('continuous');
-    }
-    else if(FormObj.saveInterval){
-        clearInterval(FormObj.saveInterval);
+    var i;
+    for(i in FormObj){
+        if(FormObj.hasOwnProperty(i)){
+            if(Ti.App.saveContinually){
+                FormObj[i].saveForm('continuous');
+            }
+            else if(FormObj[i].saveInterval){
+                clearInterval(FormObj[i].saveInterval);
+            }       
+        }
     }
 };
 
@@ -2126,9 +1994,29 @@ FormModule.prototype.getFieldView = function(instance, fieldViewWrapper){"use st
     Module = null;
     
     switch(instance.type){
-        case 'text':
-            Module = require('ui/widget/Text');
-        break;
+        case 'auto_increment': Module = require('ui/widget/AutoIncrement'); break;
+        case 'calculation_field': Module = require('ui/widget/CalculationField'); break;
+        case 'datestamp': Module = require('ui/widget/Datestamp'); break;
+        case 'email': Module = require('ui/widget/Email'); break;
+        case 'extra_price': Module = require('ui/widget/ExtraPrice'); break;
+        case 'file': Module = require('ui/widget/File'); break;
+        case 'image': Module = require('ui/widget/Image'); break;
+        case 'license_plate': Module = require('ui/widget/LicensePlate'); break;
+        case 'link_field': Module = require('ui/widget/LinkField'); break;
+        case 'list_boolean': Module = require('ui/widget/ListBoolean'); break;
+        case 'list_text': Module = require('ui/widget/ListText'); break;
+        case 'location': Module = require('ui/widget/Location'); break;
+        case 'number_decimal': Module = require('ui/widget/NumberDecimal'); break;
+        case 'number_integer': Module = require('ui/widget/NumberInteger'); break;
+        case 'omadi_reference': Module = require('ui/widget/OmadiReference'); break;
+        case 'omadi_time': Module = require('ui/widget/OmadiTime'); break;
+        case 'phone': Module = require('ui/widget/Phone'); break;
+        case 'rules_field': Module = require('ui/widget/RulesField'); break;
+        case 'taxonomy_term_reference': Module = require('ui/widget/TaxonomyTermReference'); break;
+        case 'text': Module = require('ui/widget/Text'); break;
+        case 'text_long': Module = require('ui/widget/TextLong'); break;
+        case 'user_reference': Module = require('ui/widget/UserReference'); break;
+        case 'vehicle_fields': Module = require('ui/widget/VehicleFields'); break;
     }
     
     if(Module){
@@ -2138,17 +2026,575 @@ FormModule.prototype.getFieldView = function(instance, fieldViewWrapper){"use st
     return fieldView;
 };
 
+FormModule.prototype.getRegularLabelView = function(instance){"use strict";
+    var labelText, labelView, nameParts, part, isRequired;
+    
+    try{
+        isRequired = (instance.isRequired || instance.isConditionallyRequired);
+        
+        if(typeof instance.label !== 'undefined'){
+            labelText = instance.label;
+        }
+        else{
+            labelText = "";
+        }
+        
+        if(instance.field_name.indexOf('___') !== -1){
+            nameParts = instance.field_name.split('___');
+            part = nameParts[1];
+            if(typeof instance.settings.parts !== 'undefined'){
+                labelText += " " + instance.settings.parts[part];
+            }
+        }
+        
+        labelView = Ti.UI.createLabel({
+            text : ( isRequired ? '*' : '') + labelText,
+            color : isRequired ? 'red' : "#4C5A88",
+            font : {
+                fontSize : 16,
+                fontWeight : 'bold'
+            },
+            textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT,
+            left: '4%',
+            touchEnabled : false,
+            height : Ti.UI.SIZE,
+            width: '96%',
+            ellipsize: true
+        });
+        
+        this.labelViews[instance.field_name] = labelView;
+    }
+    catch(ex){
+        this.sendError("Could not get regular label: " + ex);
+    }
+    
+    return labelView;
+};
 
+FormModule.prototype.unfocusField = function(){"use strict";
+    if(typeof this.currentlyFocusedField !== 'undefined'){
+        if(this.currentlyFocusedField != null && typeof this.currentlyFocusedField.blur !== 'undefined'){
+            this.currentlyFocusedField.blur();
+        }
+    }
+};
 
+FormModule.prototype.getSpacerView = function(){"use strict";
+    return Ti.UI.createView({
+        height: 10,
+        width: '100%' 
+    });  
+};
 
+FormModule.prototype.getLabelField = function(instance){"use strict";
+    
+    var labelView = Titanium.UI.createLabel({
+        backgroundGradient : {
+            type : 'linear',
+            startPoint : {
+                x : '50%',
+                y : '0%'
+            },
+            endPoint : {
+                x : '50%',
+                y : '100%'
+            },
+            colors : [{
+                color : '#f3f3f3',
+                offset : 0.0
+            }, {
+                color : '#f9f9f9',
+                offset : 0.4
+            }, {
+                color : '#bbb',
+                offset : 1.0
+            }]
+        },
+        borderRadius : 10,
+        borderColor : '#999',
+        borderWidth : 1,
+        color : '#000',
+        textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER,
+        font : {
+            fontSize : 16
+        },
+        left: '4%',
+        height: 35,
+        width: '92%',
+        
+        // Android options
+        ellipsize : true,
+        wordWrap : false,
+        
+        // custom
+        fieldName : instance.field_name,
+        instance : instance
+    });
+    
+    if (!instance.can_edit) {
+        labelView.setBackgroundGradient(null);
+        labelView.setBackgroundColor('#ccc');
+        labelView.setColor('#666');
+    }
+        
+    return labelView;
+};
+
+FormModule.prototype.getTextField = function(instance){"use strict";
+    
+    var textField, now;
+    
+    now = new Date();
+    
+    textField = Ti.UI.createTextField({
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        borderColor: '#999',
+        borderWidth: 1,
+        textAlign: Ti.UI.TEXT_ALIGNMENT_LEFT,
+        left: '4%',
+        height: 35,
+        width: '92%',
+        color: '#000',
+        autocapitalization: Ti.UI.TEXT_AUTOCAPITALIZATION_NONE,
+        autocorrect: false,
+        editable: instance.can_edit,
+        enabled: instance.can_edit,
+        font: {
+            fontSize: 16,
+            fontFamily: "Arial"
+        },
+        returnKeyType: Ti.UI.RETURNKEY_DONE,
+        
+        // Android options
+        keepScreenOn: true,
+        ellipsize: false,
+        focusable: true,
+        
+        // iOS options
+        //borderStyle: Ti.UI.INPUT_BORDERSTYLE_ROUNDED,
+        leftButtonPadding: 8,
+        suppressReturn: true,
+        
+        // Custom variables
+        fieldName: instance.field_name,
+        instance : instance,
+        lastChange: now.getTime()
+    });
+    
+    if(Ti.App.isAndroid){
+        textField.setHeight(Ti.UI.SIZE);
+    }
+    else{
+        textField.setHeight(35);
+    }
+
+    if (!instance.can_edit) {
+        
+        textField.setBackgroundColor('#ccc');
+        textField.setColor('#666');
+        
+        if (Ti.App.isAndroid) {
+            textField.setSoftKeyboardOnFocus(Ti.UI.Android.SOFT_KEYBOARD_HIDE_ON_FOCUS);
+        }
+        else{
+            textField.setBorderStyle(Ti.UI.INPUT_BORDERSTYLE_NONE);
+            textField.setPaddingLeft(7);
+            textField.setPaddingRight(7);
+        }
+    }
+    
+    textField.addEventListener('focus', function(e){
+        e.source.setBackgroundColor('#def');
+        ActiveFormObj.currentlyFocusedField = e.source;
+    });
+    
+    textField.addEventListener('blur', function(e){
+        e.source.setBackgroundColor('#fff');
+    });
+    
+    return textField;
+};
+
+FormModule.prototype.affectsAnotherConditionalField = function(check_instance){"use strict";
+    
+    var node, search_criteria, affectedFields, field_name, i, affectsAField, instance;
+    
+    affectedFields = [];
+    
+    for(field_name in this.instances){
+        if(this.instances.hasOwnProperty(field_name)){
+            instance = this.instances[field_name];
+            if(instance.disabled == 0){
+                if(typeof instance.settings.criteria !== 'undefined' && typeof instance.settings.criteria.search_criteria !== 'undefined'){
+                    search_criteria = instance.settings.criteria.search_criteria;
+                    
+                    for (i in search_criteria) {
+                        if(search_criteria.hasOwnProperty(i)){
+                            
+                            if(check_instance.field_name == search_criteria[i].field_name){
+                                
+                                Ti.API.debug(search_criteria[i].field_name + " -> " + field_name);
+                                affectedFields.push(field_name);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    return affectedFields;
+};
+
+FormModule.prototype.setConditionallyRequiredLabels = function(check_instance, check_fields){"use strict";
+    /*global setConditionallyRequiredLabelForInstance*/
+    var node, search_criteria, affectedFields, field_name, i, instance;
+    
+    if(typeof check_fields !== 'undefined'){
+        affectedFields = check_fields;
+    }
+    else{
+        affectedFields = affectsAnotherConditionalField(check_instance);
+    }
+    
+    Ti.API.debug("Affecting fields: " + JSON.stringify(affectedFields));
+    
+    if(affectedFields.length > 0){
+        this.formToNode();
+        for(i = 0; i < affectedFields.length; i ++){
+            this.setConditionallyRequiredLabelForInstance(this.instances[affectedFields[i]]);
+        }
+    }
+};
+
+FormModule.prototype.setConditionallyRequiredLabelForInstance = function(instance) {"use strict";
+    /*jslint nomen: true*/
+    
+    var search_criteria, row_matches, row_idx, criteria_row, field_name, 
+        search_operator, search_value, search_values, values, i, makeRequired,
+        and_groups, and_group_index, and_group, and_group_match, j, or_match;
+    
+    try {
+    
+        row_matches = [];
+        
+        if (instance.settings.criteria != null && instance.settings.criteria.search_criteria != null) {
+            
+            search_criteria = instance.settings.criteria.search_criteria;
+            search_criteria.sort(sort_by_weight);
+            
+            for (row_idx in search_criteria) {
+                if(search_criteria.hasOwnProperty(row_idx)){
+                    
+                    criteria_row = search_criteria[row_idx];
+                    
+                    row_matches[row_idx] = false;
+                    
+                    field_name = criteria_row.field_name;
+                    search_operator = criteria_row.operator;
+                    search_value = criteria_row.value;
+                    values = [];
+                    
+                    //Ti.API.debug(field_name);
+                    if(typeof this.node[field_name] !== 'undefined'){
+                       values = this.node[field_name].dbValues;
+                    }
+                    
+                    if(typeof this.instances[field_name] !== 'undefined' && typeof this.instances[field_name].type !== 'undefined'){
+                    
+                        //Ti.API.debug(JSON.stringify(values));
+                        switch(this.instances[field_name].type) {
+                            case 'text':
+                            case 'text_long':
+                            case 'link_field':
+                            case 'phone':
+                            case 'license_plate':
+                            case 'vehicle_fields':
+                            case 'number_integer':
+                            case 'number_decimal':
+                            case 'email':
+                            case 'datestamp':
+                            case 'omadi_reference':
+                            case 'omadi_time':
+                            case 'calculation_field':
+                            case 'location':
+                            
+                                if (search_operator == '__filled') {
+                                    for (i = 0; i < values.length; i++) {
+                                        if (values[i] != null && values[i] != "") {
+                                            row_matches[row_idx] = true;
+                                        }
+                                    }
+                                }
+                                else {
+                                    if (values.length == 0) {
+                                        row_matches[row_idx] = true;
+                                    }
+                                    else {
+                                        for (i = 0; i < values.length; i ++){
+                                            if (values[i] == null || values[i] == "") {
+                                                row_matches[row_idx] = true;
+                                            }
+                                        }
+                                    }
+                                }
+                                break;
+                                
+                            //case 'location':
+                                
+                                // Ti.API.debug(instances[field_name]);
+                                
+                                // if (search_operator == '__filled') {
+                                    // for (i = 0; i < values.length; i++) {
+                                        // if (values[i] != null && values[i] != "") {
+                                            // row_matches[row_idx] = true;
+                                        // }
+                                    // }
+                                // }
+                                // else {
+                                    // if (values.length == 0) {
+                                        // row_matches[row_idx] = true;
+                                    // }
+                                    // else {
+                                        // for (i = 0; i < values.length; i ++){
+                                            // if (values[i] == null || values[i] == "") {
+                                                // row_matches[row_idx] = true;
+                                            // }
+                                        // }
+                                    // }
+                                // }
+                                //break;
+                                
+                            case 'taxonomy_term_reference':
+                            case 'user_reference':
+        
+                                search_values = [];
+                                if (!Omadi.utils.isArray(search_value)) {
+                                    for (i in search_value) {
+                                        if (search_value.hasOwnProperty(i)) {
+                                            search_values.push(i);
+                                        }
+                                    }
+                                    search_value = search_values;
+                                }
+                                else {
+                                    if (search_value.length == 0) {
+                                        row_matches[row_idx] = true;
+                                        break;
+                                    }
+                                }
+                                
+                                
+                                if (search_operator == '__blank') {
+                                    row_matches[row_idx] = true;
+                                    if(values.length > 0){
+                                        for(i = 0; i < values.length; i ++){
+                                            if(values[i] > 0){
+                                                row_matches[row_idx] = false;
+                                            }
+                                        }
+                                    }
+                                }
+                                else if (search_operator == '__filled') {
+                                    row_matches[row_idx] = false;
+                                    if(values.length > 0){
+                                        for(i = 0; i < values.length; i ++){
+                                            if(values[i] > 0){
+                                                row_matches[row_idx] = true;
+                                            }
+                                        }
+                                    }
+                                }
+                                else if (search_operator == '!=') {
+                                    row_matches[row_idx] = true;
+                                    if (search_value.__null == '__null' && (values.length === 0 || values[0] == null)) {
+                                        row_matches[row_idx] = false;
+                                    }
+                                    else {
+                                        for (i = 0; i < search_value.length; i ++){
+                                            if(values.indexOf(search_value[i]) !== -1){
+                                                row_matches[row_idx] = false;
+                                            }
+                                        }
+        
+                                    }
+                                }
+                                else if (search_operator == '=') {
+                                    
+                                    if (search_value.indexOf('__null') !== -1 && (values.length === 0 || values[0] == null)) {
+                                        row_matches[row_idx] = true;
+                                    }
+                                    else {
+                                        for (i = 0; i < search_value.length; i ++){
+                                            for(j = 0; j < values.length; j ++){
+                                                if (values[j] == search_value[i]){
+                                                    row_matches[row_idx] = true;
+                                                }   
+                                            }
+                                        }
+                                    }
+                                }
+        
+                                break;
+        
+                            case 'list_boolean':
+                               
+                                if (search_operator == '__filled') {
+                                    for (i = 0; i < values.length; i++) {
+                                        if (values[i] != null && values[i] == "1") {
+                                            row_matches[row_idx] = true;
+                                        }
+                                    }
+                                }
+                                else {
+                                    if (values.length == 0) {
+                                        row_matches[row_idx] = true;
+                                    }
+                                    else {
+                                        for (i = 0; i < values.length; i ++){
+                                            if (values[i] == null || values[i] == "0") {
+                                                row_matches[row_idx] = true;
+                                            }
+                                        }
+                                    }
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+    
+            makeRequired = true;
+            
+            //Ti.API.error(JSON.stringify(row_matches));
+            
+            if (row_matches.length == 1) {
+                makeRequired = row_matches[0];
+            }
+            else {
+                // Group each criteria row into groups of ors with the matching result of each or
+                and_groups = [];
+                and_group_index = 0;
+                and_groups[and_group_index] = [];
+                //print_r($criteria['search_criteria']);
+                for (i in search_criteria) {
+                    if(search_criteria.hasOwnProperty(i)){
+                        criteria_row = search_criteria[i];
+                        if (i == 0) {
+                            and_groups[and_group_index][0] = row_matches[i];
+                        }
+                        else {
+                            if (criteria_row.row_operator == null || criteria_row.row_operator != 'or') {
+                                and_group_index++;
+                                and_groups[and_group_index] = [];
+                            }
+                            and_groups[and_group_index][0] = row_matches[i];
+                        }
+                    }
+                }
+    
+                // Get the final result, making sure each and group is TRUE
+                for (i in and_groups) {
+                    if(and_groups.hasOwnProperty(i)){
+                        and_group = and_groups[i];
+                        and_group_match = false;
+                        for (j in and_group) {
+                            if(and_group.hasOwnProperty(j)){
+                                // Make sure at least one item in an and group is true (or the only item is true)
+                                if (and_group[j]) {
+                                    and_group_match = true;
+                                    break;
+                                }
+                            }
+                        }
+        
+                        // If one and group doesn't match the whole return value of this function is false
+                        if (!and_group_match) {
+                            makeRequired = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            if(typeof this.labelViews[instance.field_name] !== 'undefined'){
+            
+                if (makeRequired) {
+                    if (!this.instances[instance.field_name].isConditionallyRequired) {
+                        if(this.labelViews[instance.field_name].text.substring(0,1) != '*'){
+                            this.labelViews[instance.field_name].text = '*' + this.labelViews[instance.field_name].text;
+                        }
+                        this.labelViews[instance.field_name].color = 'red';
+                    }
+                    this.instances[instance.field_name].isConditionallyRequired = true;
+                }
+                else {
+                    if (this.instances[instance.field_name].isConditionallyRequired) {
+                        this.labelViews[instance.field_name].text = this.labelViews[instance.field_name].text.substring(1, this.labelViews[instance.field_name].text.length);
+                        this.labelViews[instance.field_name].color = "#4C5A88";
+                    }
+                    this.instances[instance.field_name].isConditionallyRequired = false;
+                }
+            }
+        }
+    }
+    catch(ex){
+        this.sendError("Changing conditional value: " + ex);
+    }
+};
+
+FormModule.prototype.addCheckConditionalFields = function(fieldNames){"use strict";
+    var i;
+    for(i = 0; i < fieldNames.length; i ++){
+        this.checkConditionalFieldNames[fieldNames[i]] = fieldNames[i];
+    }
+};
+
+exports.reset = function(){"use strict";
+    FormObj = {};
+};
+
+exports.resetAllButDispatch = function(){"use strict";
+    var i, DispatchFormObj = null;
+    for(i in FormObj){
+        if(FormObj.hasOwnProperty(i)){
+            if(i == 'dispatch'){
+                DispatchFormObj = FormObj[i];
+            }
+        }
+    }
+    
+    FormObj = {};
+    
+    if(DispatchFormObj !== null){
+        FormObj.dispatch = DispatchFormObj;
+    }
+};
+
+exports.getDispatchObject = function(OmadiObj, type, nid, form_part, usingDispatch){"use strict";
+    Omadi = OmadiObj;
+    
+    FormObj[type] = new FormModule(type, nid, form_part, usingDispatch);
+    FormObj[type].getWindow();
+    ActiveFormObj = FormObj[type];
+    
+    return FormObj[type];
+};
 
 exports.getWindow = function(OmadiObj, type, nid, form_part, usingDispatch){"use strict";
     Omadi = OmadiObj;
-    FormObj = new FormModule(type, nid, form_part, usingDispatch);
     
-    return FormObj.getWindow();
+    if(!usingDispatch){
+        FormObj = {};
+    }
+    
+    FormObj[type] = new FormModule(type, nid, form_part, usingDispatch);
+    ActiveFormObj = FormObj[type];
+    
+    return FormObj[type].getWindow();
 };
 
-exports.getNode = function(){"use strict";
-    return FormObj.node;  
+exports.getNode = function(type){"use strict";
+    return FormObj[type].node;  
 };
