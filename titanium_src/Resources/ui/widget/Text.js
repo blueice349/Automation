@@ -137,7 +137,7 @@ TextWidget.prototype.getNewElement = function(index){"use strict";
         }
     }
     
-    Ti.API.debug("Creating text field");
+    Ti.API.debug("Creating text field: " + this.instance.label);
     
     element = this.formObj.getTextField(this.instance);
     
@@ -170,10 +170,7 @@ TextWidget.prototype.getNewElement = function(index){"use strict";
         element.capitalization = this.instance.settings.capitalization;
     }
     
-    
-    
     element.addEventListener('change', function(e) {
-        /*global setConditionallyRequiredLabels*/
         var now, milliseconds, timeChange;
         
         now = new Date();
@@ -182,8 +179,6 @@ TextWidget.prototype.getNewElement = function(index){"use strict";
         
         if(e.source.lastValue != e.source.value && (timeChange > 20)){
             e.source.lastChange = milliseconds;
-            
-            Ti.API.debug("text value changed: *" + e.source.lastValue + "* -> *" + e.source.value + "*");
             
             if(typeof e.source.capitalization !== 'undefined'){
                 if(e.source.capitalization == 'all_caps' && e.source.value !== null){
@@ -203,7 +198,7 @@ TextWidget.prototype.getNewElement = function(index){"use strict";
                 if(typeof e.source.lastValue === 'undefined' || typeof e.source.value === 'undefined' || 
                           e.source.lastValue == "" || e.source.value == ""){
                     Ti.API.debug("Checking conditionally required");
-                    Widget[e.source.fieldName].formObj.setConditionallyRequiredLabels(Widget[e.source.fieldName].instance, e.source.check_conditional_fields);
+                    Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
                 }
             }
             

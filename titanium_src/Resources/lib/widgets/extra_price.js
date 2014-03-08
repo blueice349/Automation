@@ -39,8 +39,7 @@ Omadi.widgets.extra_price = {
 
         // Add the actual fields
         for ( i = 0; i < instance.numVisibleFields; i++) {
-
-            element = Omadi.widgets.extra_price.getNewElement(node, instance, i);
+            element = this.getNewElement(node, instance, i);
             instance.elements.push(element);
             fieldView.add(element);
             fieldView.add(Omadi.widgets.getSpacerView());

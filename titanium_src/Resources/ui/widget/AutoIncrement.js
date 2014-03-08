@@ -127,7 +127,6 @@ AutoIncrementWidget.prototype.getNewElement = function(index){"use strict";
     return element;
 };
 
-
 exports.getFieldView = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
     
     Omadi = OmadiObj;

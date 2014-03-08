@@ -75,12 +75,12 @@ Omadi.widgets.taxonomy_term_reference = {
         if (instance.settings.cardinality == -1) {
             dbValue = [];
             textValue = '';
-            if ( typeof node[instance.field_name] !== 'undefined') {
-                if ( typeof node[instance.field_name].dbValues !== 'undefined') {
+            if (typeof node[instance.field_name] !== 'undefined') {
+                if (typeof node[instance.field_name].dbValues !== 'undefined') {
                     dbValue = node[instance.field_name].dbValues;
                 }
 
-                if ( typeof node[instance.field_name].textValues !== 'undefined') {
+                if (typeof node[instance.field_name].textValues !== 'undefined') {
                     textValue = node[instance.field_name].textValues;
                     if (textValue.length > 0) {
                         textValue = textValue.join(', ');
@@ -102,12 +102,12 @@ Omadi.widgets.taxonomy_term_reference = {
         else {
             dbValue = null;
             textValue = "";
-            if ( typeof node[instance.field_name] !== 'undefined') {
-                if ( typeof node[instance.field_name].dbValues !== 'undefined' && typeof node[instance.field_name].dbValues[index] !== 'undefined') {
+            if (typeof node[instance.field_name] !== 'undefined') {
+                if (typeof node[instance.field_name].dbValues !== 'undefined' && typeof node[instance.field_name].dbValues[index] !== 'undefined') {
                     dbValue = node[instance.field_name].dbValues[index];
                 }
 
-                if ( typeof node[instance.field_name].textValues !== 'undefined' && typeof node[instance.field_name].textValues[index] !== 'undefined') {
+                if (typeof node[instance.field_name].textValues !== 'undefined' && typeof node[instance.field_name].textValues[index] !== 'undefined') {
                     textValue = node[instance.field_name].textValues[index];
                 }
             }

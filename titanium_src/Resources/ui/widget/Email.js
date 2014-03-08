@@ -145,7 +145,8 @@ EmailWidget.prototype.getNewElement = function(index){"use strict";
     element.fieldName = this.instance.field_name;
     element.maxLength = 255;
     // Got to be at least a@a.co, additional validation is happening later
-    element.minLength = 6;
+    // minLength has no effect right now
+    //element.minLength = 6;
     element.setAutocapitalization(Ti.UI.TEXT_AUTOCAPITALIZATION_NONE);
     
     element.check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);

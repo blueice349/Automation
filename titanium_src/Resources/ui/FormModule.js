@@ -193,6 +193,8 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
     this.currentlyFocusedField = null;
     this.labelViews = {};
     this.checkConditionalFieldNames = {};
+    this.scrollView = null;
+    this.scrollPositionY = 0;
     
     Ti.App.saveContinually = true;
     
@@ -252,6 +254,27 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
         Ti.API.error("Exception initializing the FormModule");
     }
 }
+
+FormModule.prototype.scrollToField = function(e) {"use strict";
+    var calculatedTop, amountToScrollUp;
+
+    if ( typeof this.scrollView !== 'undefined' && this.scrollView !== null) {
+        calculatedTop = e.source.convertPointToView({
+            x : 0,
+            y : 0
+        }, this.scrollView);
+        
+        amountToScrollUp = 187; // (4*38) + 35;
+        
+        if(calculatedTop.y < 210){ // 187 + 23
+            amountToScrollUp -= (210 - calculatedTop.y);
+        }
+        
+        if(amountToScrollUp > 0){
+            this.scrollView.scrollTo(0, this.scrollPositionY + amountToScrollUp);
+        }
+    }
+};
 
 FormModule.prototype.closeWindow = function(){"use strict";
      clearInterval(this.saveInterval);  
@@ -1623,7 +1646,7 @@ FormModule.prototype.cancelOpt = function(e){"use strict";
         cancel : 1,
         buttonNames : ['Exit', 'Cancel'],
         title : 'Really Exit Form?',
-        message: 'Any unsaved changes will be lost.'
+        message: 'All changes will be lost.'
     });
 
     dialog.addEventListener('click', function(e) {
@@ -1643,9 +1666,527 @@ FormModule.prototype.cancelOpt = function(e){"use strict";
     dialog.show(); 
 };
 
+FormModule.prototype.getFormFieldValues = function(field_name){"use strict";
+    var retval = {};
+    
+    if(typeof this.fieldWrappers[field_name] !== 'undefined'){
+        retval.dbValues = this.getDBValues(this.fieldWrappers[field_name]);
+        retval.textValues = this.getTextValues(this.fieldWrappers[field_name]);
+    }
+    
+    return retval;
+};
+
+FormModule.prototype.setValues = function(field_name, defaultValues){"use strict";
+    
+    this.setValueWidgetProperty(field_name, ['textValue'], defaultValues.textValues[0]);
+    this.setValueWidgetProperty(field_name, ['dbValue'], defaultValues.dbValues[0]);
+    
+    if(this.instances[field_name].type == 'taxonomy_term_reference' || 
+        (this.instances[field_name].type == 'omadi_reference' && this.instances[field_name].widget.type == 'omadi_reference_select')){
+        this.setValueWidgetProperty(field_name, ['text'], defaultValues.textValues[0]);
+    }
+    else{
+        this.setValueWidgetProperty(field_name, ['value'], defaultValues.textValues[0]);
+    }
+};
+
+FormModule.prototype.setValueWidgetProperty = function(field_name, property, value, setIndex){"use strict";
+    var i, j, k, m, children, subChildren, subSubChildren, subSubSubChildren;
+    
+    //TODO: currently, this does not support 4 levels deep, which is required for the signature fields
+    
+    if(typeof setIndex === 'undefined'){
+        // setIndex == -1 means that the value should be set for all elements, even when there are multiples
+        setIndex = -1;
+    }
+    
+    if(typeof property === 'string'){
+        property = [property];
+    }
+    
+    // Android has a problem with an integer being set for a value or text... cast it to a string
+    if(property[0] == 'value' || property[0] == 'text'){
+        value = value + "".toString();
+    }
+    
+    if(typeof this.fieldWrappers[field_name] !== 'undefined'){
+        children = this.fieldWrappers[field_name].getChildren();
+        
+        if(setIndex == -1){
+            for(i = 0; i < children.length; i ++){
+                if(typeof children[i].dbValue !== 'undefined'){
+                   
+                    if(property.length == 1){
+                        this.fieldWrappers[field_name].children[i][property[0]] = value;
+                    }
+                    else if(property.length == 2){
+                        this.fieldWrappers[field_name].children[i][property[0]][property[1]] = value;
+                    }
+                }
+                
+                if(children[i].getChildren().length > 0){
+                    subChildren = children[i].getChildren();
+                    for(j = 0; j < subChildren.length; j ++){
+                        if(typeof subChildren[j].dbValue !== 'undefined'){
+                            //Ti.API.debug(field_name + " " + property[0] + " sub children");
+                            if(property.length == 1){
+                                this.fieldWrappers[field_name].children[i].children[j][property[0]] = value;
+                            }
+                            else if(property.length == 2){
+                                this.fieldWrappers[field_name].children[i].children[j][property[0]][property[1]] = value;
+                            }
+                        }
+                        
+                        if(subChildren[j].getChildren().length > 0){
+                            subSubChildren = subChildren[j].getChildren();
+                            for(k = 0; k < subSubChildren.length; k ++){
+                                if(typeof subSubChildren[k].dbValue !== 'undefined'){
+                                    //Ti.API.debug(field_name + " " + property[0] + " sub sub children");
+                                    if(property.length == 1){
+                                        //Ti.API.debug('value: ' + value);
+                                        this.fieldWrappers[field_name].children[i].children[j].children[k][property[0]] = value;
+                                    }
+                                    else if(property.length == 2){
+                                        this.fieldWrappers[field_name].children[i].children[j].children[k][property[0]][property[1]] = value;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else{
+            for(i = 0; i < children.length; i ++){
+                if(typeof children[i].dbValue !== 'undefined'){
+                    if(i == setIndex){
+                        if(property.length == 1){
+                            this.fieldWrappers[field_name].children[i][property[0]] = value;
+                        }
+                        else if(property.length == 2){
+                            this.fieldWrappers[field_name].children[i][property[0]][property[1]] = value;
+                        }
+                    }
+                }
+                
+                if(children[i].getChildren().length > 0){
+                    subChildren = children[i].getChildren();
+                    for(j = 0; j < subChildren.length; j ++){
+                        if(typeof subChildren[j].dbValue !== 'undefined'){
+                            if(j == setIndex){
+                                if(property.length == 1){
+                                    this.fieldWrappers[field_name].children[i].children[j][property[0]] = value;
+                                }
+                                else if(property.length == 2){
+                                    this.fieldWrappers[field_name].children[i].children[j][property[0]][property[1]] = value;
+                                }
+                            }
+                        }
+                        
+                        if(subChildren[j].getChildren().length > 0){
+                            subSubChildren = subChildren[j].getChildren();
+                            for(k = 0; k < subSubChildren.length; k ++){
+                                if(typeof subSubChildren[k].dbValue !== 'undefined'){
+                                    if(k == setIndex){
+                                        if(property.length == 1){
+                                            this.fieldWrappers[field_name].children[i].children[j].children[k][property[0]] = value;
+                                        }
+                                        else if(property.length == 2){
+                                            this.fieldWrappers[field_name].children[i].children[j].children[k][property[0]][property[1]] = value;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+};
+
+FormModule.prototype.getMultipleSelector = function(buttonView){"use strict";
+    var popupWin, opacView, numItemsSelected, wrapperView, descriptionView, listView, descriptionLabel, 
+        i, j, color_set, color_unset, cancelButton, itemLabel, itemRow, topButtonsView, okButton, options, data, dbValues, 
+        descriptionText, selectedIndexes, screenHeight, listHeight, label, labelView;
+    
+    try{
+        if(buttonView.instance.widget.type == 'violation_select' && buttonView.options.length == 0){
+            alert("No violations are enforceable for a " + Ti.UI.currentWindow.type + " at the selected account and time.");
+        }
+        else{
+            
+            screenHeight = Ti.Platform.displayCaps.platformHeight;
+            
+            if (Ti.App.isAndroid) {
+                Ti.UI.Android.hideSoftKeyboard();
+                Ti.API.debug("hide keyboard in open_mult_selector");
+            }
+            
+            color_set = "#246";
+            color_unset = "#fff";
+            
+            popupWin = Ti.UI.createWindow({
+                orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
+                modal: true,
+                navBarHidden: true
+            });
+            
+            opacView = Ti.UI.createView({
+                left : 0,
+                right : 0,
+                top : 0,
+                bottom : 0
+            });
+            
+            numItemsSelected = 0;
+            popupWin.add(opacView);
+        
+            wrapperView = Ti.UI.createView({
+                backgroundColor : '#fff',
+                left : '5%',
+                right : '5%',
+                height: Ti.UI.SIZE,
+                borderRadius : 10,
+                borderWidth : 2,
+                borderColor : '#fff',
+                layout: 'vertical'
+            });
+            popupWin.add(wrapperView);
+            
+            options = buttonView.options;
+            
+            listHeight = options.length * 32;
+            
+            if(listHeight > screenHeight - 65){
+            
+                listHeight = screenHeight - 65;
+            }
+            
+            listView = Titanium.UI.createTableView({
+                data : [],
+                scrollable : true,
+                height: listHeight,
+                options: options
+            });
+            
+            dbValues = buttonView.dbValue;
+            
+            for(i = 0; i < options.length; i ++){
+                options[i].isSelected = false;
+            }
+            
+            for(i = 0; i < options.length; i ++){
+                for(j = 0; j < dbValues.length; j ++){
+                    if(dbValues[j] == options[i].dbValue){
+                        options[i].isSelected = true;
+                    }
+                }
+            }
+        
+            
+            data = [];
+            selectedIndexes = [];
+            
+            for(i = 0; i < options.length; i ++){
+                
+                // This label must be added for the Android label color to change
+                // Otherwise, setcolor is not defined for the row
+                label = Ti.UI.createLabel({
+                    text: options[i].title,
+                    width: '100%',
+                    height: Ti.UI.FILL,
+                    color: (options[i].isSelected ? '#fff' : '#000'),
+                    left: 10,
+                    font: {
+                        fontSize: 16,
+                        fontWeight: 'bold'
+                    }
+                });
+                
+                itemRow = Ti.UI.createTableViewRow({
+                    height : 30,
+                    isSelected : options[i].isSelected,
+                    dbValue : options[i].dbValue,
+                    textValue: options[i].title,
+                    description : options[i].description,
+                    backgroundColor : (options[i].isSelected ? color_set : color_unset),
+                    listView: listView,
+                    label: label
+                });
+                
+                itemRow.add(label);
+        
+                if (options[i].isSelected) {
+                    numItemsSelected++;
+                    selectedIndexes.push(i);
+                }
+                data.push(itemRow);
+            }
+            
+            listView.setData(data);
+            
+            listView.addEventListener('click', function(e) {
+                
+                if (!e.row.isSelected) {
+                    e.rowData.listView.data[0].rows[e.index].isSelected = true;
+                    e.row.label.setColor('#fff');
+                    e.row.setBackgroundColor(color_set);
+                    
+                    numItemsSelected++;
+                    selectedIndexes.push(e.index);
+                }
+                else {
+                    e.rowData.listView.data[0].rows[e.index].isSelected = false;
+                    e.row.setBackgroundColor(color_unset);
+                    e.row.label.setColor('#000');
+                    numItemsSelected--;
+                    selectedIndexes.splice(selectedIndexes.indexOf(e.index), 1);
+                }
+                
+                if(descriptionLabel != null){
+                    if(numItemsSelected == 1){
+                     
+                        if(options[selectedIndexes[0]].description > ""){
+                            
+                            descriptionText = options[selectedIndexes[0]].description;
+                        }
+                        else{
+                            descriptionText = "";
+                        }
+                        
+                    }
+                    else if(numItemsSelected == 0){
+                        descriptionText = "";
+                    }
+                    else{
+                        descriptionText = "";
+                    }
+                    
+                    descriptionLabel.setText(descriptionText);
+                }
+            });
+            
+            topButtonsView = Ti.UI.createView({
+                bottom: 0,
+                height : 44,
+                width : '100%',
+                backgroundGradient : {
+                    type : 'linear',
+                    startPoint : {
+                        x : '50%',
+                        y : '0%'
+                    },
+                    endPoint : {
+                        x : '50%',
+                        y : '100%'
+                    },
+                    colors : [{
+                        color : '#ccc',
+                        offset : 0.0
+                    }, {
+                        color : '#999',
+                        offset : 1.0
+                    }]
+                }
+            });
+            
+            labelView = Ti.UI.createLabel({
+               text: buttonView.instance.label,
+               width: '100%',
+               textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+               color: '#333',
+               font: {
+                   fontWeight: 'bold',
+                   fontSize: 14
+               },
+               zIndex: 0
+            });
+            
+            topButtonsView.add(labelView);
+            
+            descriptionView = Ti.UI.createView({
+                width: '100%',
+                height: Ti.UI.SIZE,
+                backgroundColor: '#eee',
+                borderColor: '#999',
+                borderWidth: 1
+            });
+                
+            if(buttonView.instance.widget.type == 'violation_select'){
+                
+                if(numItemsSelected == 1){
+                    
+                    if(options[selectedIndexes[0]].description > ""){
+                            
+                        descriptionText = options[selectedIndexes[0]].description;
+                    }
+                    else{
+                        descriptionText = "";
+                    }
+                }
+                else if(numItemsSelected == 0){
+                    descriptionText = "";
+                }
+                else{
+                    descriptionText = "";
+                }
+                
+                descriptionLabel = Titanium.UI.createLabel({
+                    ellipsize : false,
+                    wordWrap : true,
+                    font : {
+                        fontSize : 14
+                    },
+                    color : '#000',
+                    height : Ti.UI.SIZE,
+                    width: '96%',
+                    text: descriptionText,
+                    left: '2%',
+                    right: '2%'
+                });
+                
+                descriptionView.add(descriptionLabel);
+            }
+            
+            okButton = Ti.UI.createLabel({
+                text : 'Done',
+                right : 10,
+                width: 80,
+                height: 35,
+                listView: listView,
+                buttonView: buttonView,
+                style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+                color: '#fff',
+                borderRadius: 5,
+                font: {
+                    fontSize: 14,
+                    fontWeight: 'bold'
+                },
+                borderWidth: 1,
+                textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+                borderColor: '#555',
+                backgroundGradient : {
+                    type : 'linear',
+                    startPoint : {
+                        x : '50%',
+                        y : '0%'
+                    },
+                    endPoint : {
+                        x : '50%',
+                        y : '100%'
+                    },
+                    colors : [{
+                        color : '#999',
+                        offset : 0.0
+                    }, {
+                        color : '#444',
+                        offset : 1.0
+                    }]
+                },
+                zIndex: 1,
+                formObj: this
+            });
+            topButtonsView.add(okButton);
+            
+            okButton.addEventListener('click', function(e) {
+                /*global setConditionallyRequiredLabels*/
+                var i, aux_ret, valid_return, data, dbValues, textValue, textValues, listView;
+                aux_ret = [];
+                valid_return = [];
+                dbValues = [];
+                textValue = "";
+                textValues = [];
+        
+                listView = e.source.listView;
+                
+                for (i = 0; i < listView.data[0].rows.length; i++) {
+                    if (listView.data[0].rows[i].isSelected) {
+                        
+                        textValues.push(listView.data[0].rows[i].textValue);
+                        dbValues.push(listView.data[0].rows[i].dbValue);   
+                    }
+                }
+                
+                if(textValues.length > 0){
+                    textValue = textValues.join(', ');
+                }
+        
+                e.source.buttonView.dbValue = dbValues;
+                e.source.buttonView.textValue = textValue;
+                e.source.buttonView.setText(textValue);
+                
+                if(descriptionLabel != null){                
+                    e.source.buttonView.descriptionLabel.setText(descriptionLabel.text);
+                }
+                
+                if(e.source.buttonView.check_conditional_fields.length > 0){
+                    e.source.formObj.setConditionallyRequiredLabels(e.source.buttonView.instance, e.source.buttonView.check_conditional_fields);
+                }
+    
+                popupWin.close();
+            });
+        
+            cancelButton = Ti.UI.createLabel({
+                text : 'Cancel',
+                width: 80,
+                left : 10,
+                height: 35,
+                listView: listView,
+                buttonView: buttonView,
+                style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+                color: '#fff',
+                borderRadius: 5,
+                textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+                font: {
+                    fontSize: 14,
+                    fontWeight: 'bold'
+                },
+                borderWidth: 1,
+                borderColor: '#555',
+                backgroundGradient : {
+                    type : 'linear',
+                    startPoint : {
+                        x : '50%',
+                        y : '0%'
+                    },
+                    endPoint : {
+                        x : '50%',
+                        y : '100%'
+                    },
+                    colors : [{
+                        color : '#999',
+                        offset : 0.0
+                    }, {
+                        color : '#444',
+                        offset : 1.0
+                    }]
+                },
+                zIndex: 1
+            });
+            
+            topButtonsView.add(cancelButton);
+            cancelButton.addEventListener('click', function() {
+                popupWin.close();
+            });
+            
+            wrapperView.add(topButtonsView);
+            wrapperView.add(descriptionView);
+            wrapperView.add(listView);
+            
+            popupWin.open();
+        }
+   }
+   catch(ex){
+       this.sendError("Could not open multi-selector: " + buttonView.instance.label + " " + ex);
+   }
+};
+
+
 FormModule.prototype.getWindow = function(){"use strict";
     
-    var i, wrapperView, scrollView, regionWrappers, field_name, widgetView, 
+    var i, wrapperView, regionWrappers, field_name, widgetView, 
         fieldWrapper, fieldView, omadi_session_details, roles, showField, instance, 
         regionName, widget, resetFields, resetRegions, doneButton, doneButtonWrapper;
     
@@ -1702,7 +2243,7 @@ FormModule.prototype.getWindow = function(){"use strict";
             }
         }
         
-        scrollView = Ti.UI.createScrollView({
+        this.scrollView = Ti.UI.createScrollView({
             contentHeight : 'auto',
             showHorizontalScrollIndicator : false,
             showVerticalScrollIndicator : true,
@@ -1722,9 +2263,9 @@ FormModule.prototype.getWindow = function(){"use strict";
             regionWrappers = this.getRegionWrappers();
             
             for(i = 0; i < regionWrappers.length; i ++){
-                scrollView.add(regionWrappers[i]);
+                this.scrollView.add(regionWrappers[i]);
                       
-                scrollView.add(Ti.UI.createView({
+                this.scrollView.add(Ti.UI.createView({
                     height: 10,
                     width: '100%'
                 }));
@@ -1824,37 +2365,23 @@ FormModule.prototype.getWindow = function(){"use strict";
             if(this.regionViews.hasOwnProperty(regionName)){
                 if(this.regionViews[regionName].getChildren().length == 0){
                     if(regionWrappers[regionName] != null){
-                        scrollView.remove(regionWrappers[regionName]);
+                        this.scrollView.remove(regionWrappers[regionName]);
                         regionWrappers[regionName] = null;
                     }
                 }
             }
         }
             
+        this.scrollView.addEventListener('scroll', function(e){
+            ActiveFormObj.scrollPositionY = e.y;
+        });
         
-            
-        wrapperView.add(scrollView);
-        
-        //scrollView.addEventListener('scroll', function(e){
-            //scrollPositionY = e.y;
-        //});
-        
+        wrapperView.add(this.scrollView);
         this.win.add(wrapperView);
         
         // TODO: get this working with the omadi reference widget module
         //Ti.UI.currentWindow.fireEvent("customCopy");
         
-        // TODO: uncomment and get working
-        // for(field_name in instances){
-            // if(instances.hasOwnProperty(field_name)){
-                // widgetView = Omadi.widgets.getValueWidget(field_name);
-//                 
-                // if(widgetView && typeof widgetView.check_conditional_fields !== 'undefined'){
-                    // // TODO: do the below
-                    // //setConditionallyRequiredLabels(instances[field_name], widgetView.check_conditional_fields);
-                // }
-            // }
-        // }
         Ti.API.debug("Form Object count = " + Omadi.utils.count(FormObj));
         // Setup only one interval where all forms will be saved together
         if(Omadi.utils.count(FormObj) == 1){
@@ -1887,7 +2414,7 @@ FormModule.prototype.getWindow = function(){"use strict";
             
             doneButton.addEventListener('click', ActiveFormObj.showActionsOptions);
             doneButtonWrapper.add(doneButton);
-            scrollView.add(doneButtonWrapper);
+            this.scrollView.add(doneButtonWrapper);
         }
         
         if(Omadi.utils.count(this.checkConditionalFieldNames) > 0){
@@ -2255,7 +2782,7 @@ FormModule.prototype.setConditionallyRequiredLabels = function(check_instance, c
         affectedFields = check_fields;
     }
     else{
-        affectedFields = affectsAnotherConditionalField(check_instance);
+        affectedFields = this.affectsAnotherConditionalField(check_instance);
     }
     
     Ti.API.debug("Affecting fields: " + JSON.stringify(affectedFields));

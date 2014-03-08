@@ -146,7 +146,8 @@ LinkFieldWidget.prototype.getNewElement = function(index){"use strict";
     element.maxLength = 1024;
     
     // got to be at least a.co, not much validation for now
-    element.minLength = 4;
+    // minLength has no effect right now
+    //element.minLength = 4;
     element.setAutocapitalization(Ti.UI.TEXT_AUTOCAPITALIZATION_NONE);
     
     element.check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
@@ -171,7 +172,7 @@ LinkFieldWidget.prototype.getNewElement = function(index){"use strict";
                 if(typeof e.source.lastValue === 'undefined' || typeof e.source.value === 'undefined' || 
                           e.source.lastValue == "" || e.source.value == ""){
                     Ti.API.debug("Checking conditionally required");
-                    Widget[e.source.fieldName].formObj.setConditionallyRequiredLabels(Widget[e.source.fieldName].instance, e.source.check_conditional_fields);
+                    Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
                 }
             }
             

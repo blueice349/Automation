@@ -1,7 +1,6 @@
 /*jslint eqeq:true, plusplus: true*/
 
 var Widget, Omadi;
-
 Widget = {};
 
 function ListTextWidget(formObj, instance, fieldViewWrapper){"use strict";
@@ -193,7 +192,6 @@ ListTextWidget.prototype.getNewElement = function(index){"use strict";
     
     if (this.instance.can_edit) {
         element.addEventListener('click', function(e) {
-            /*global setConditionallyRequiredLabels*/
             var i, postDialog, textOptions;
 
             textOptions = [];

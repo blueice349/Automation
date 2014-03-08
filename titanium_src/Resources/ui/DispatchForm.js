@@ -56,7 +56,7 @@ DispatchForm.prototype.exitForm = function(){"use strict";
         cancel : 1,
         buttonNames : ['Exit', 'Cancel'],
         title : 'Really Exit Form?',
-        message : 'Any unsaved changes will be lost.'
+        message : 'All changes will be lost.'
     });
 
     dialog.addEventListener('click', function(e) {

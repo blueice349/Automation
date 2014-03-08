@@ -1,7 +1,6 @@
 /*jslint eqeq:true, plusplus: true*/
 
 var Widget, Omadi;
-
 Widget = {};
 
 function DatestampWidget(formObj, instance, fieldViewWrapper){"use strict";
@@ -493,7 +492,6 @@ DatestampWidget.prototype.displayPicker = function(element, type) {"use strict";
     
     okButton.addEventListener('click', function(e) {
         var year, month, date, hour, minute, second, newDate, i, callback, pickerValue, datePickerValue, dbValue, now;
-        /*global setConditionallyRequiredLabels*/
         
         if(typeof e.source.date_picker !== 'undefined'){
             pickerValue = e.source.date_picker.getValue();
@@ -564,8 +562,6 @@ DatestampWidget.prototype.displayPicker = function(element, type) {"use strict";
     });
 
     clearButton.addEventListener('click', function(e) {
-        /*global setConditionallyRequiredLabels*/
-
         e.source.element.dbValue = null;
         e.source.element.textValue = "";
 
