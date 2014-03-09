@@ -584,28 +584,39 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
         
         if(isDispatch){
             Dispatch = require('ui/DispatchForm');
-            formWindow = Dispatch.getWindow(Omadi);
+            formWindow = Dispatch.getWindow(Omadi, type, nid, form_part);
             
-            formWindow.addEventListener('open', Omadi.display.doneLoading);
-            
-            Omadi.display.loading();
-            formWindow.open();
-            
-            // Must be called after getWindow
-            //node = FormModule.getNode();
+            if(formWindow){
+                formWindow.addEventListener('open', Omadi.display.doneLoading);
+                
+                Omadi.display.loading();
+                formWindow.open();
+                
+                // Must be called after getWindow
+                //node = FormModule.getNode();
+            }
+            else{
+                Omadi.service.sendErrorReport("Could not open dispatch form window");
+            }
         }
         else{
         
             FormModule = require('ui/FormModule');
             formWindow = FormModule.getWindow(Omadi, type, nid, form_part, false);
             
-            formWindow.addEventListener('open', Omadi.display.doneLoading);
+            if(formWindow){
             
-            Omadi.display.loading();
-            formWindow.open();
-            
-            // Must be called after getWindow
-            node = FormModule.getNode(type);
+                formWindow.addEventListener('open', Omadi.display.doneLoading);
+                
+                Omadi.display.loading();
+                formWindow.open();
+                
+                // Must be called after getWindow
+                node = FormModule.getNode(type);
+            }
+            else{
+                Omadi.service.sendErrorReport("Could not open regular form window");
+            }
         }
         
         // Set node as viewed if it hasn't yet been viewed and it's been saved to the server

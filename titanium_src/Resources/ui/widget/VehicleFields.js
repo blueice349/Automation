@@ -20,7 +20,6 @@ function VehicleFieldsWidget(formObj, instance, fieldViewWrapper){"use strict";
         
         if(typeof this.nodeElement.dbValues !== 'undefined' && this.nodeElement.dbValues != null){
             this.dbValues = this.nodeElement.dbValues;
-            
         }
         
         if(typeof this.nodeElement.textValues !== 'undefined' && this.nodeElement.textValues != null){
@@ -84,9 +83,6 @@ VehicleFieldsWidget.prototype.getFieldView = function(){"use strict";
         this.fieldView.add(this.formObj.getSpacerView());
     }
     
-    
-    //this.formObj.setConditionallyRequiredLabelForInstance(this.instance);
-    
     return this.fieldView;
 };
 
@@ -95,8 +91,6 @@ VehicleFieldsWidget.prototype.redraw = function(){"use strict";
     var origFieldView;
     
     this.formObj.formToNode();
-        
-    //Ti.API.debug(JSON.stringify(this.formObj.node));
     
     this.node = this.formObj.node;
     if(typeof this.node[this.instance.field_name] !== 'undefined'){

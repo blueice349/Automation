@@ -1367,8 +1367,10 @@ FormModule.prototype.initNewNode = function(){"use strict";
     this.node.form_part = 0;
     this.node.dispatch_nid = 0;
     
+    // Set the original values passed in
     this.node.nid = this.nid;
     this.node.type = this.type;
+    this.node.form_part = this.form_part;
     
     this.node.changed = now;
     this.node.changed_uid = uid;

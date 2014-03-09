@@ -155,7 +155,7 @@ TextLongWidget.prototype.getNewElement = function(index){"use strict";
         editable: this.instance.can_edit,
         enabled: this.instance.can_edit,
         font: {
-            fontSize: Omadi.widgets.fontSize
+            fontSize: 16
         },
         returnKeyType: Ti.UI.RETURNKEY_DEFAULT,
         

@@ -32,11 +32,7 @@ Omadi.data.isUpdating = function() {"use strict";
 };
 
 function dbEsc(string) {"use strict";
-    if (string === null) {
-        return '';
-    }
-
-    if ( typeof string === 'undefined') {
+    if (typeof string === 'undefined' || string === null || string === false) {
         return '';
     }
 
@@ -348,8 +344,6 @@ Omadi.data.deleteContinuousNodes = function(){"use strict";
   }
 };
 
-
-
 Omadi.data.nodeSave = function(node) {"use strict";
     var query, field_name, fieldNames, instances, result, db, smallestNid, insertValues, j, k, 
         instance, value_to_insert, has_data, content_s, saveNid, continuousNid, photoNids, origNid,
@@ -582,8 +576,8 @@ Omadi.data.nodeSave = function(node) {"use strict";
                 continuousNid = node.continuous_nid;
                 if(continuousNid == 'new'){
                     continuousNid = 0;
-                } 
-                db.execute("INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",4,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + continuousNid + "," + node.dispatch_nid + "," + node.custom_copy_orig_nid + ")");
+                }
+                query = "INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",4,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + continuousNid + "," + node.dispatch_nid + "," + node.custom_copy_orig_nid + ")";
             }
             else if (node._isDraft) {
                 // if (saveNid > 0) {
@@ -598,17 +592,20 @@ Omadi.data.nodeSave = function(node) {"use strict";
                 Ti.API.debug("SAVING DRAFT: " + saveNid + " " + origNid);
                 //Omadi.service.sendErrorReport("Saved draft: saveNid = " + saveNid + ", origNid = " + origNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
                 // Only save drafts as a negative nid
-                db.execute("INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",3,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + origNid + "," + node.dispatch_nid + "," + node.custom_copy_orig_nid + ")");
+                query = "INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",3,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + origNid + "," + node.dispatch_nid + "," + node.custom_copy_orig_nid + ")";
             }
             else if (saveNid > 0) {
                 //Omadi.service.sendErrorReport("Saved update: saveNid = " + saveNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
-                db.execute("UPDATE node SET changed=" + node.changed + ", changed_uid=" + node.changed_uid + ", title='" + dbEsc(node.title) + "', flag_is_updated=1, table_name='" + node.type + "', form_part=" + node.form_part + ", no_data_fields='" + node.no_data + "',viewed=" + node.viewed + " WHERE nid=" + saveNid);
+                query = "UPDATE node SET changed=" + node.changed + ", changed_uid=" + node.changed_uid + ", title='" + dbEsc(node.title) + "', flag_is_updated=1, table_name='" + node.type + "', form_part=" + node.form_part + ", no_data_fields='" + node.no_data + "',viewed=" + node.viewed + " WHERE nid=" + saveNid;
             }
             else {
                 //Omadi.service.sendErrorReport("Saved new: saveNid = " + saveNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
                 // Give all permissions for this node. Once it comes back, the correct permissions will be there.  If it never gets uploaded, the user should be able to do whatever they want with that info.
-                db.execute("INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",1,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1,0," + node.dispatch_nid + "," + node.custom_copy_orig_nid + ")");   
+                query = "INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",1,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1,0," + node.dispatch_nid + "," + node.custom_copy_orig_nid + ")";
             }
+            
+            Ti.API.error(query);
+            db.execute(query);
             
             photoNids = [0];
             
@@ -627,8 +624,8 @@ Omadi.data.nodeSave = function(node) {"use strict";
                 }
             }
             
-            // Do not save the photos to the continuous save unless the original window is new
-            if(!node._isContinuous || isNaN(trueWindowNid)){
+            // Do not save the photos to the continuous
+            if(!node._isContinuous){
                 listDB = Omadi.utils.openListDatabase();
                 listDB.execute('UPDATE _files SET nid=' + saveNid + ' WHERE nid IN (' + photoNids.join(',') + ')');
                 listDB.close();
@@ -1109,6 +1106,9 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                 if (dbValue === null) {
                                     dbValue = "";
                                 }
+                                else if(dbValue === false){
+                                    dbValue = "";
+                                }
     
                                 node[real_field_name].parts[part] = {
                                     label : instances[field_name].settings.parts[part],
@@ -1197,7 +1197,9 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                             for ( i = 0; i < node[field_name].dbValues.length; i += 1) {
                                 node[field_name].textValues[i] = "";
                             }
-    
+                            
+                            Ti.API.error(JSON.stringify(node));
+                            
                             switch(instances[field_name].type) {
                                 case 'text':
                                 case 'text_long':
@@ -1215,6 +1217,8 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                             node[field_name].textValues[i] = node[field_name].dbValues[i];
                                         }
                                     }
+                                    
+                                    
                                     break;
     
                                 case 'number_integer':

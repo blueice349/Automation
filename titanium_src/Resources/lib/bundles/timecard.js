@@ -103,12 +103,13 @@ Omadi.bundles.timecard.isUserClockedIn = function(){"use strict";
 };
 
 Omadi.bundles.timecard.doClockIn = function() {"use strict";
+    /*jslint nomen:true*/
     var now, node, uid;
     uid = Omadi.utils.getUid();
     now = Omadi.utils.getUTCTimestamp();
     
     node = {
-        nid : 'new',
+        nid : Omadi.data.getNewNodeNid(),
         clock_in_time : {
             dbValues : [now]
         },
@@ -128,8 +129,24 @@ Omadi.bundles.timecard.doClockIn = function() {"use strict";
     
     Ti.App.removeEventListener('doneSendingData', Omadi.bundles.timecard.removeStatus);
     Ti.App.addEventListener('doneSendingData', Omadi.bundles.timecard.removeStatus);
-
-    Omadi.data.trySaveNode(node);
+    
+    try{
+        Omadi.display.loading();
+        node = Omadi.data.nodeSave(node);
+        if(node._saved){
+            Ti.App.fireEvent('sendUpdates');
+        }
+        else{
+            Omadi.bundles.timecard.removeStatus();
+            alert("A problem occurred clocking in. Please try again.");
+            Omadi.service.sendErrorReport("Could not do a clock in timecard entry: not saved");
+        }
+    }
+    catch(ex){
+        Omadi.bundles.timecard.removeStatus();
+        alert("A problem occurred clocking in. Please try again.");
+        Omadi.service.sendErrorReport("Could not save a timecard entry: " + ex);
+    }
 };
 
 Omadi.bundles.timecard.userShouldClockInOut = function(){"use strict";
@@ -177,6 +194,7 @@ Omadi.bundles.timecard.getLastClockInNid = function(){"use strict";
 };
 
 Omadi.bundles.timecard.doClockOut = function(logoutNext) {"use strict";
+    /*jslint nomen:true*/
     var now, lastNid, lastNode;
     
     lastNid = Omadi.bundles.timecard.getLastClockInNid();
@@ -194,9 +212,23 @@ Omadi.bundles.timecard.doClockOut = function(logoutNext) {"use strict";
     Ti.App.removeEventListener('doneSendingData', Omadi.bundles.timecard.removeStatus);
     Ti.App.addEventListener('doneSendingData', Omadi.bundles.timecard.removeStatus);
     
-    Omadi.data.trySaveNode(lastNode);
-    
-    //Ti.API.debug("LOgoutnext: " + logoutNext);
+    try{
+        Omadi.display.loading();
+        lastNode = Omadi.data.nodeSave(lastNode);
+        if(lastNode._saved){
+            Ti.App.fireEvent('sendUpdates');
+        }
+        else{
+            Omadi.bundles.timecard.removeStatus();
+            alert("A problem occurred clocking out. Please try again.");
+            Omadi.service.sendErrorReport("Could not do a clock out timecard entry: not saved");
+        }
+    }
+    catch(ex){
+        Omadi.bundles.timecard.removeStatus();
+        alert("A problem occurred clocking out. Please try again.");
+        Omadi.service.sendErrorReport("Could not do a clock out timecard entry: " + ex);
+    }
     
     if(logoutNext){
     

@@ -169,7 +169,8 @@ SignatureWidget.prototype.getNewElement = function(index){"use strict";
         font:{
             fontWeight:'bold',
             fontSize:14
-        }
+        },
+        instance: this.instance
     });
     
     imageWrapper = Ti.UI.createView({
