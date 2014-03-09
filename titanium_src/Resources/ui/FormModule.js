@@ -2515,6 +2515,7 @@ FormModule.prototype.continuousSave = function(){"use strict";
 };
 
 FormModule.prototype.getFieldView = function(instance, fieldViewWrapper){"use strict";
+    /*jslint nomen:true*/
     var fieldView, Module;
     
     fieldView = null;
@@ -2526,8 +2527,24 @@ FormModule.prototype.getFieldView = function(instance, fieldViewWrapper){"use st
         case 'datestamp': Module = require('ui/widget/Datestamp'); break;
         case 'email': Module = require('ui/widget/Email'); break;
         case 'extra_price': Module = require('ui/widget/ExtraPrice'); break;
-        case 'file': Module = require('ui/widget/File'); break;
-        case 'image': Module = require('ui/widget/Image'); break;
+        case 'file': 
+            if(typeof instance.settings._display !== 'undefined' && instance.settings._display['default'].type == 'omadi_file_video'){
+                Module = require('ui/widget/Video');
+            }
+            else{
+                Module = require('ui/widget/File'); 
+            }
+            break;
+            
+        case 'image': 
+            if(instance.widget.type == 'omadi_image_signature'){
+                Module = require('ui/widget/Signature');    
+            }
+            else{
+                Module = require('ui/widget/Image'); 
+            }
+            break;
+            
         case 'license_plate': Module = require('ui/widget/LicensePlate'); break;
         case 'link_field': Module = require('ui/widget/LinkField'); break;
         case 'list_boolean': Module = require('ui/widget/ListBoolean'); break;
