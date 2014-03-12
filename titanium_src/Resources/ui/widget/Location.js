@@ -119,6 +119,13 @@ LocationWidget.prototype.getNewElement = function(index){"use strict";
                 dbValue = this.node[real_field_name].parts[part].textValue;
             }
         }
+        else if(typeof this.node[this.instance.field_name] !== 'undefined'){
+            if(typeof this.node[this.instance.field_name].textValues !== 'undefined'){
+                if(typeof this.node[this.instance.field_name].textValues[0] !== 'undefined'){
+                     dbValue = textValue = this.node[this.instance.field_name].textValues[0];    
+                }
+            }
+        }
         
         if (dbValue == "" && typeof this.instance.settings.state_default_value !== 'undefined') {
             dbValue = this.instance.state_default_value;
@@ -139,6 +146,13 @@ LocationWidget.prototype.getNewElement = function(index){"use strict";
         if (typeof this.node[real_field_name] !== 'undefined') {
             if (typeof this.node[real_field_name].parts[part].textValue !== 'undefined') {
                 dbValue = textValue = this.node[real_field_name].parts[part].textValue;
+            }
+        }
+        else if(typeof this.node[this.instance.field_name] !== 'undefined'){
+            if(typeof this.node[this.instance.field_name].textValues !== 'undefined'){
+                if(typeof this.node[this.instance.field_name].textValues[0] !== 'undefined'){
+                     dbValue = textValue = this.node[this.instance.field_name].textValues[0];    
+                }
             }
         }
     }
@@ -439,12 +453,12 @@ LocationWidget.prototype.getStates = function() {"use strict";
     return states;
 };
 
-exports.getFieldView = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
+exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
     
     Omadi = OmadiObj;
     Widget[instance.field_name] = new LocationWidget(FormObj, instance, fieldViewWrapper);
     
-    return Widget[instance.field_name].getFieldView();
+    return Widget[instance.field_name];
 };
 
 

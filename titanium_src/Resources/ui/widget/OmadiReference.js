@@ -83,17 +83,23 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
         i, query, db, result, wrapper, autocomplete_table, calculatedTop, isHidden,
         vehicleNid, addressLabel;
 
-    dbValue = "";
+    dbValue = null;
     textValue = "";
     if ( typeof this.node[this.instance.field_name] !== 'undefined') {
-        if ( typeof this.node[this.instance.field_name].dbValues !== 'undefined' && typeof this.node[this.instance.field_name].dbValues[index] !== 'undefined') {
+        if ( typeof this.node[this.instance.field_name].dbValues !== 'undefined' && 
+                typeof this.node[this.instance.field_name].dbValues[index] !== 'undefined') {
             dbValue = this.node[this.instance.field_name].dbValues[index];
         }
 
-        if ( typeof this.node[this.instance.field_name].textValues !== 'undefined' && typeof this.node[this.instance.field_name].textValues[index] !== 'undefined') {
+        if ( typeof this.node[this.instance.field_name].textValues !== 'undefined' && 
+                typeof this.node[this.instance.field_name].textValues[index] !== 'undefined') {
             textValue = this.node[this.instance.field_name].textValues[index];
         }
     }
+    
+    Ti.API.error(JSON.stringify(this.node));
+        Ti.API.error(this.instance.field_name);
+        Ti.API.error(dbValue);
 
     Ti.API.debug("Creating omadi_reference field: " + this.instance.label);
 
@@ -107,7 +113,7 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
     }
     
     // Special case to automatically select the truck the user is in 
-    if(nodeTypes.length == 1 && dbValue == "" && this.instance.isRequired && nodeTypes[0] == 'company_vehicle'){
+    if(nodeTypes.length == 1 && dbValue == null && this.instance.isRequired && nodeTypes[0] == 'company_vehicle'){
         vehicleNid = Omadi.bundles.companyVehicle.getCurrentVehicleNid();
         if(vehicleNid > 0){
             textValue = Omadi.bundles.companyVehicle.getCurrentVehicleName();
@@ -269,38 +275,43 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
             autocomplete_table.addEventListener('click', function(e) {
                 var i, callback, street;
                 
-                e.source.textField.textValue = e.source.textField.value = e.rowData.title;
-                e.source.textField.dbValue = e.rowData.nid;
-    
-                e.source.autocomplete_table.setHeight(0);
-                e.source.autocomplete_table.setBorderWidth(0);
-                e.source.autocomplete_table.setVisible(false);
-                
-                street = Widget[e.source.textField.instance.field_name].getFirstStreetAddress(e.rowData.nid);
-                e.source.textField.addressLabel.text = street;
-                e.source.textField.addressLabel.height = 20;
-                
-                e.source.textField.setColor('#060');
-    
-                if (Ti.App.isAndroid) {
-                    // Make sure the cursor is at the end of the text
-                    e.source.textField.setSelection(e.source.textField.value.length, e.source.textField.value.length);
-                }
-    
-                // Pretend like this is just loaded - mainly a fix for android, but makes sense for both
-                //e.source.textField.touched = false;
-                
-                e.source.textField.clickedAutocomplete = true;
-                
-                Widget[e.source.textField.instance.field_name].setChildDefaultValues(e.source.textField);
-    
-                if ( typeof e.source.textField.onChangeCallbacks !== 'undefined') {
-                    if (e.source.textField.onChangeCallbacks.length > 0) {
-                        for ( i = 0; i < e.source.textField.onChangeCallbacks.length; i++) {
-                            callback = e.source.textField.onChangeCallbacks[i];
-                            callback(e.source.textField.onChangeCallbackArgs[i]);
+                try{
+                    e.source.textField.textValue = e.source.textField.value = e.rowData.title;
+                    e.source.textField.dbValue = e.rowData.nid;
+        
+                    e.source.autocomplete_table.setHeight(0);
+                    e.source.autocomplete_table.setBorderWidth(0);
+                    e.source.autocomplete_table.setVisible(false);
+                    
+                    street = Widget[e.source.textField.instance.field_name].getFirstStreetAddress(e.rowData.nid);
+                    e.source.textField.addressLabel.text = street;
+                    e.source.textField.addressLabel.height = 20;
+                    
+                    e.source.textField.setColor('#060');
+        
+                    if (Ti.App.isAndroid) {
+                        // Make sure the cursor is at the end of the text
+                        e.source.textField.setSelection(e.source.textField.value.length, e.source.textField.value.length);
+                    }
+        
+                    // Pretend like this is just loaded - mainly a fix for android, but makes sense for both
+                    //e.source.textField.touched = false;
+                    
+                    e.source.textField.clickedAutocomplete = true;
+                    
+                    Widget[e.source.textField.instance.field_name].setChildDefaultValues(e.source.textField);
+        
+                    if ( typeof e.source.textField.onChangeCallbacks !== 'undefined') {
+                        if (e.source.textField.onChangeCallbacks.length > 0) {
+                            for ( i = 0; i < e.source.textField.onChangeCallbacks.length; i++) {
+                                callback = e.source.textField.onChangeCallbacks[i];
+                                Widget[e.source.textField.instance.field_name].formObj[callback](e.source.textField.onChangeCallbackArgs[i]);
+                            }
                         }
                     }
+                }
+                catch(ex1){
+                    Omadi.service.sendErrorReport("Exception in omadi reference auto complete: " + ex1);
                 }
             });
     
@@ -340,115 +351,119 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
             widgetView.addEventListener('change', function(e) {
                 var possibleValues, tableData, i, j, regEx, row, upperCaseValue, callback, street;
                 
-                Ti.API.debug("auto: " + e.source.clickedAutocomplete);
+                try{
                 
-                if(Ti.App.isAndroid && e.source.clickedAutocomplete){
-                    e.source.clickedAutocomplete = false;
-                    Ti.API.debug("IN clicked auto");
-                    return;
-                }
-                
-                if (e.source.touched === true) {
-                     
-                    e.source.dbValue = null;
-                    e.source.textValue = e.source.value;
+                    if(Ti.App.isAndroid && e.source.clickedAutocomplete){
+                        e.source.clickedAutocomplete = false;
+                        Ti.API.debug("IN clicked auto");
+                        return;
+                    }
                     
-                    e.source.setColor('#ee0000');
-                    e.source.addressLabel.setHeight(0);
-                    
-                    if (e.source.lastValue != e.source.value && e.source.value != '') {
-                        possibleValues = e.source.possibleValues;
-    
-                        upperCaseValue = e.source.value.toUpperCase();
-                        tableData = [];
-    
-                        for ( i = 0; i < possibleValues.length; i++) {
-    
-                            regEx = new RegExp(e.source.value, 'i');
-                            if (possibleValues[i].title.search(regEx) != -1) {
-                                //Check match
-                                if (upperCaseValue == possibleValues[i].title.toUpperCase()) {
-                                    e.source.dbValue = possibleValues[i].nid;
-                                    
-                                    Widget[e.source.instance.field_name].setChildDefaultValues(e.source);
-                                    
-                                    e.source.autocomplete_table.setHeight(0);
-                                    e.source.autocomplete_table.setBorderWidth(0);
-                                    e.source.autocomplete_table.setVisible(false);
-                                    
-                                    street = Widget[e.source.instance.field_name].getFirstStreetAddress(e.source.dbValue);
-                                    
-                                    e.source.addressLabel.text = street;
-                                    e.source.addressLabel.height = 20;
-                                    
-                                    e.source.setColor('#006600');
-                                    
-                                    if (e.source.onChangeCallbacks.length > 0) {
-                                        for ( j = 0; j < e.source.onChangeCallbacks.length; j++) {
-                                            callback = e.source.onChangeCallbacks[j];
-                                            callback(e.source.onChangeCallbackArgs[j]);
+                    if (e.source.touched === true) {
+                         
+                        e.source.dbValue = null;
+                        e.source.textValue = e.source.value;
+                        
+                        e.source.setColor('#ee0000');
+                        e.source.addressLabel.setHeight(0);
+                        
+                        if (e.source.lastValue != e.source.value && e.source.value != '') {
+                            possibleValues = e.source.possibleValues;
+        
+                            upperCaseValue = e.source.value.toUpperCase();
+                            tableData = [];
+        
+                            for ( i = 0; i < possibleValues.length; i++) {
+        
+                                regEx = new RegExp(e.source.value, 'i');
+                                if (possibleValues[i].title.search(regEx) != -1) {
+                                    //Check match
+                                    if (upperCaseValue == possibleValues[i].title.toUpperCase()) {
+                                        e.source.dbValue = possibleValues[i].nid;
+                                        
+                                        Widget[e.source.instance.field_name].setChildDefaultValues(e.source);
+                                        
+                                        e.source.autocomplete_table.setHeight(0);
+                                        e.source.autocomplete_table.setBorderWidth(0);
+                                        e.source.autocomplete_table.setVisible(false);
+                                        
+                                        street = Widget[e.source.instance.field_name].getFirstStreetAddress(e.source.dbValue);
+                                        
+                                        e.source.addressLabel.text = street;
+                                        e.source.addressLabel.height = 20;
+                                        
+                                        e.source.setColor('#006600');
+                                        
+                                        if (e.source.onChangeCallbacks.length > 0) {
+                                            for ( j = 0; j < e.source.onChangeCallbacks.length; j++) {
+                                                callback = e.source.onChangeCallbacks[j];
+                                                Widget[e.source.instance.field_name].formObj[callback](e.source.onChangeCallbackArgs[j]);
+                                            }
+                                        }
+                                    }
+                                    else {
+                                        e.source.dbValue = null;
+                                        
+                                         //Create partial matching row
+                                        row = Ti.UI.createTableViewRow({
+                                            height : 38,
+                                            title : possibleValues[i].title,
+                                            nid : possibleValues[i].nid,
+                                            color : '#000000',
+                                            autocomplete_table : e.source.autocomplete_table,
+                                            textField : e.source
+                                        });
+                                        
+                                        Ti.API.debug(possibleValues[i].title);
+            
+                                        // apply rows to data array
+                                        tableData.push(row);
+            
+                                        if (tableData.length >= 4) {
+                                            break;
                                         }
                                     }
                                 }
-                                else {
-                                    e.source.dbValue = null;
-                                    
-                                     //Create partial matching row
-                                    row = Ti.UI.createTableViewRow({
-                                        height : 38,
-                                        title : possibleValues[i].title,
-                                        nid : possibleValues[i].nid,
-                                        color : '#000000',
-                                        autocomplete_table : e.source.autocomplete_table,
-                                        textField : e.source
-                                    });
-                                    
-                                    Ti.API.debug(possibleValues[i].title);
+                            }
         
-                                    // apply rows to data array
-                                    tableData.push(row);
+                            e.source.autocomplete_table.setData(tableData);
         
-                                    if (tableData.length >= 4) {
-                                        break;
-                                    }
-                                }
+                            if (tableData.length == 0) {
+                                e.source.autocomplete_table.setBorderWidth(0);
+                                e.source.autocomplete_table.setHeight(0);
+                                e.source.autocomplete_table.setVisible(false);
+                            }
+                            else {
+                                e.source.autocomplete_table.setBorderWidth(1);
+                                e.source.autocomplete_table.setHeight(38 * tableData.length);
+                                e.source.autocomplete_table.setVisible(true);
+                            }
+                            
+                            if(e.source.blurred){
+                                e.source.blurred = false;
+                                Widget[e.source.instance.field_name].formObj.scrollToField(e);
                             }
                         }
-    
-                        e.source.autocomplete_table.setData(tableData);
-    
-                        if (tableData.length == 0) {
+                        else {
                             e.source.autocomplete_table.setBorderWidth(0);
                             e.source.autocomplete_table.setHeight(0);
                             e.source.autocomplete_table.setVisible(false);
                         }
-                        else {
-                            e.source.autocomplete_table.setBorderWidth(1);
-                            e.source.autocomplete_table.setHeight(38 * tableData.length);
-                            e.source.autocomplete_table.setVisible(true);
-                        }
-                        
-                        if(e.source.blurred){
-                            e.source.blurred = false;
-                            Widget[e.source.instance.field_name].formObj.scrollToField(e);
+                    }
+                    
+                    if(e.source.check_conditional_fields.length > 0){
+                        if(typeof e.source.lastValue === 'undefined' || typeof e.source.value === 'undefined' || 
+                                  e.source.lastValue == "" || e.source.value == ""){
+                            Ti.API.debug("Checking conditionally required");
+                            Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
                         }
                     }
-                    else {
-                        e.source.autocomplete_table.setBorderWidth(0);
-                        e.source.autocomplete_table.setHeight(0);
-                        e.source.autocomplete_table.setVisible(false);
-                    }
-                }
                 
-                if(e.source.check_conditional_fields.length > 0){
-                    if(typeof e.source.lastValue === 'undefined' || typeof e.source.value === 'undefined' || 
-                              e.source.lastValue == "" || e.source.value == ""){
-                        Ti.API.debug("Checking conditionally required");
-                        Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
-                    }
+                    e.source.lastValue = e.source.value;
                 }
-            
-                e.source.lastValue = e.source.value;
+                catch(ex){
+                    Omadi.service.sendError("Exception in omadi reference change event: " + ex);
+                }
             });
     
             wrapper.add(widgetView);
@@ -547,12 +562,12 @@ OmadiReferenceWidget.prototype.getFirstStreetAddress = function(nid){"use strict
 };
 
 
-exports.getFieldView = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
+exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
     
     Omadi = OmadiObj;
     Widget[instance.field_name] = new OmadiReferenceWidget(FormObj, instance, fieldViewWrapper);
     
-    return Widget[instance.field_name].getFieldView();
+    return Widget[instance.field_name];
 };
 
 

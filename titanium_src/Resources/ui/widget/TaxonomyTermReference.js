@@ -440,11 +440,10 @@ TaxonomyTermReferenceWidget.prototype.getOptions = function(useNone) {"use stric
     return options;
 };
 
-
-exports.getFieldView = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
+exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
     
     Omadi = OmadiObj;
     Widget[instance.field_name] = new TaxonomyTermReferenceWidget(FormObj, instance, fieldViewWrapper);
     
-    return Widget[instance.field_name].getFieldView();
+    return Widget[instance.field_name];
 };

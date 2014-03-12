@@ -127,12 +127,12 @@ AutoIncrementWidget.prototype.getNewElement = function(index){"use strict";
     return element;
 };
 
-exports.getFieldView = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
+exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
     
     Omadi = OmadiObj;
     Widget[instance.field_name] = new AutoIncrementWidget(FormObj, instance, fieldViewWrapper);
     
-    return Widget[instance.field_name].getFieldView();
+    return Widget[instance.field_name];
 };
 
 

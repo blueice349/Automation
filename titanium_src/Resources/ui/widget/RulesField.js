@@ -538,12 +538,11 @@ RulesFieldWidget.prototype.getTimeRulesText = function(timeValue) {"use strict";
     return returnVal;
 };
 
-
-exports.getFieldView = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
+exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
     Omadi = OmadiObj;
     Widget[instance.field_name] = new RulesFieldWidget(FormObj, instance, fieldViewWrapper);
     
-    return Widget[instance.field_name].getFieldView();
+    return Widget[instance.field_name];
 };
 
 

@@ -137,9 +137,6 @@ DatestampWidget.prototype.getNewElement = function(index){"use strict";
     else {
         showTime = false;
     }
-    
-    Ti.API.debug(JSON.stringify(this.instance));
-    Ti.API.error(showTime);
 
     jsDate = new Date();
 
@@ -165,7 +162,8 @@ DatestampWidget.prototype.getNewElement = function(index){"use strict";
         textValue: textValue,
         showTime: showTime,
         jsDate: jsDate,
-        instance: this.instance
+        instance: this.instance,
+        onChangeCallbacks : []
     });
     
     element.check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
@@ -493,86 +491,96 @@ DatestampWidget.prototype.displayPicker = function(element, type) {"use strict";
     okButton.addEventListener('click', function(e) {
         var year, month, date, hour, minute, second, newDate, i, callback, pickerValue, datePickerValue, dbValue, now;
         
-        if(typeof e.source.date_picker !== 'undefined'){
-            pickerValue = e.source.date_picker.getValue();
-            
-            if (e.source.element.showTime) {
-                if(e.source.element.dbValue === null){
-                    // The clear button was pressed at some point
+        try{
+            if(typeof e.source.date_picker !== 'undefined'){
+                pickerValue = e.source.date_picker.getValue();
+                
+                if (e.source.element.showTime) {
+                    if(e.source.element.dbValue === null){
+                        // The clear button was pressed at some point
+                        pickerValue.setHours(0);
+                        pickerValue.setMinutes(0);
+                    }
+                    else{
+                        pickerValue.setHours(e.source.element.jsDate.getHours());
+                        pickerValue.setMinutes(e.source.element.jsDate.getMinutes());
+                    }    
+                }
+                else {
                     pickerValue.setHours(0);
                     pickerValue.setMinutes(0);
                 }
+                
+                pickerValue.setSeconds(0);
+                
+                newDate = pickerValue;
+            }
+            else if(typeof e.source.time_picker !== 'undefined'){
+                pickerValue = e.source.time_picker.getValue();
+                
+                if(e.source.element.dbValue === null){
+                    // The clear button was pressed at some point
+                    now = new Date();
+                    pickerValue.setFullYear(now.getFullYear());
+                    pickerValue.setMonth(now.getMonth());    
+                    pickerValue.setDate(now.getDate());
+                }
                 else{
-                    pickerValue.setHours(e.source.element.jsDate.getHours());
-                    pickerValue.setMinutes(e.source.element.jsDate.getMinutes());
-                }    
-            }
-            else {
-                pickerValue.setHours(0);
-                pickerValue.setMinutes(0);
-            }
-            
-            pickerValue.setSeconds(0);
-            
-            newDate = pickerValue;
-        }
-        else if(typeof e.source.time_picker !== 'undefined'){
-            pickerValue = e.source.time_picker.getValue();
-            
-            if(e.source.element.dbValue === null){
-                // The clear button was pressed at some point
-                now = new Date();
-                pickerValue.setFullYear(now.getFullYear());
-                pickerValue.setMonth(now.getMonth());    
-                pickerValue.setDate(now.getDate());
-            }
-            else{
-                pickerValue.setFullYear(e.source.element.jsDate.getFullYear());
-                pickerValue.setMonth(e.source.element.jsDate.getMonth());    
-                pickerValue.setDate(e.source.element.jsDate.getDate());
+                    pickerValue.setFullYear(e.source.element.jsDate.getFullYear());
+                    pickerValue.setMonth(e.source.element.jsDate.getMonth());    
+                    pickerValue.setDate(e.source.element.jsDate.getDate());
+                }
+                
+                newDate = pickerValue;
             }
             
-            newDate = pickerValue;
-        }
-        
-        e.source.element.jsDate = newDate;
-        e.source.element.dbValue = dbValue = Math.ceil(newDate.getTime() / 1000);
-        e.source.element.textValue = Omadi.utils.formatDate(e.source.element.dbValue, e.source.element.showTime);
-        e.source.element.dateView.setText(Omadi.utils.formatDate(dbValue, false));
-        
-        if(e.source.element.showTime){
-            e.source.element.timeView.setText(Omadi.utils.formatTime(dbValue));
-        }
-        //Ti.API.debug(newDate.toString());
-
-        if ( typeof e.source.element.onChangeCallbacks !== 'undefined') {
-            if (e.source.element.onChangeCallbacks.length > 0) {
-                for ( i = 0; i < e.source.element.onChangeCallbacks.length; i++) {
-                    callback = e.source.element.onChangeCallbacks[i];
-                    callback(e.source.element.onChangeCallbackArgs[i]);
+            e.source.element.jsDate = newDate;
+            e.source.element.dbValue = dbValue = Math.ceil(newDate.getTime() / 1000);
+            e.source.element.textValue = Omadi.utils.formatDate(e.source.element.dbValue, e.source.element.showTime);
+            e.source.element.dateView.setText(Omadi.utils.formatDate(dbValue, false));
+            
+            if(e.source.element.showTime){
+                e.source.element.timeView.setText(Omadi.utils.formatTime(dbValue));
+            }
+            //Ti.API.debug(newDate.toString());
+    
+            if ( typeof e.source.element.onChangeCallbacks !== 'undefined') {
+                if (e.source.element.onChangeCallbacks.length > 0) {
+                    for ( i = 0; i < e.source.element.onChangeCallbacks.length; i++) {
+                        callback = e.source.element.onChangeCallbacks[i];
+                        Widget[e.source.element.instance.field_name].formObj[callback](e.source.element.onChangeCallbackArgs[i]);
+                    }
                 }
             }
+    
+            if (e.source.element.check_conditional_fields.length > 0) {
+                Widget[e.source.element.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.element.instance, e.source.element.check_conditional_fields);
+            }
         }
-
-        if (e.source.element.check_conditional_fields.length > 0) {
-            Widget[e.source.element.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.element.instance, e.source.element.check_conditional_fields);
+        catch(ex){
+            Omadi.service.sendErrorReport("Date ok button clicked problem: " + ex);    
         }
-
+    
         dateWindow.close();
     });
 
     clearButton.addEventListener('click', function(e) {
-        e.source.element.dbValue = null;
-        e.source.element.textValue = "";
-
-        e.source.element.dateView.setText("");
-        
-        if(e.source.element.showTime){
-            e.source.element.timeView.setText("");
+        try{
+            e.source.element.dbValue = null;
+            e.source.element.textValue = "";
+    
+            e.source.element.dateView.setText("");
+            
+            if(e.source.element.showTime){
+                e.source.element.timeView.setText("");
+            }
+    
+            if (e.source.element.check_conditional_fields.length > 0) {
+                Widget[e.source.element.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.element.instance, e.source.element.check_conditional_fields);
+            }
         }
-
-        if (e.source.element.check_conditional_fields.length > 0) {
-            Widget[e.source.element.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.element.instance, e.source.element.check_conditional_fields);
+        catch(ex){
+            Omadi.service.sendErrorReport("Date clear button clicked problem: " + ex);    
         }
 
         dateWindow.close();
@@ -587,16 +595,15 @@ DatestampWidget.prototype.displayPicker = function(element, type) {"use strict";
     dateWindow.add(wrapperView);
 
     dateWindow.open();
-
 };
 
 
-exports.getFieldView = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
+exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
     
     Omadi = OmadiObj;
     Widget[instance.field_name] = new DatestampWidget(FormObj, instance, fieldViewWrapper);
     
-    return Widget[instance.field_name].getFieldView();
+    return Widget[instance.field_name];
 };
 
 

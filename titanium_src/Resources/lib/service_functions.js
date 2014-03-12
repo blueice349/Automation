@@ -1503,7 +1503,6 @@ Omadi.service.sendErrorReport = function(message) {"use strict";
 
 Omadi.service.getUpdatedNodeJSON = function() {"use strict";
     /*jslint eqeq:true,plusplus:true*/
-    /*global isNumber*/
 
     var db, result, obj, nid, tid, nids, node, instances, field_name, i, v_result;
 

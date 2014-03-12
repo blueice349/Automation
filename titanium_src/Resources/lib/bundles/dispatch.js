@@ -589,6 +589,7 @@ Omadi.bundles.dispatch.isDispatch = function(type, nid){"use strict";
             result = db.execute("SELECT dispatch_nid FROM node where nid = " + intNid);
             if(result.isValidRow()){
                 dispatchNid = result.field(0, Ti.Database.FIELD_TYPE_INT);
+                Ti.API.error("Dispatch nid: " + dispatchNid);
                 if(dispatchNid != 0){
                     isDispatch = true;
                 }
@@ -774,7 +775,6 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
 };
 
 Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
-    /*global list_search_node_matches_search_criteria*/
     var newJobs, db, result, sql, nowTimestamp, dispatchBundle, newDispatchNids, i, 
         jobDiscontinued, nid, title, viewed, type, changed;
     
@@ -825,7 +825,6 @@ Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
 };
 
 Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
-    /*global list_search_node_matches_search_criteria*/
     var newJobs, db, result, sql, nowTimestamp, currentUserUid, 
         i, nid, title, viewed, type, dispatchBundle, jobDiscontinued, changed, isDiscontinued;
     

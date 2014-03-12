@@ -96,10 +96,18 @@ LicensePlateWidget.prototype.getNewElement = function(index){"use strict";
     if (part == 'plate') {
         dbValue = "";
         textValue = "";
+        
         if ( typeof this.node[real_field_name] !== 'undefined') {
             // The "false" will still allow "FALSE", so we're okay here since CAPS is mandated for a final value
             if ( typeof this.node[real_field_name].parts[part].textValue !== 'undefined' && this.node[real_field_name].parts[part].textValue !== "false") {
                 dbValue = textValue = this.node[real_field_name].parts[part].textValue;
+            }
+        }
+        else if(typeof this.node[this.instance.field_name] !== 'undefined'){
+            if(typeof this.node[this.instance.field_name].textValues !== 'undefined'){
+                if(typeof this.node[this.instance.field_name].textValues[0] !== 'undefined'){
+                     dbValue = textValue = this.node[this.instance.field_name].textValues[0];    
+                }
             }
         }
     }
@@ -108,9 +116,17 @@ LicensePlateWidget.prototype.getNewElement = function(index){"use strict";
         states = this.getStates();
         dbValue = "";
         textValue = "- None -";
+        
         if ( typeof this.node[real_field_name] !== 'undefined') {
             if ( typeof this.node[real_field_name].parts[part].textValue !== 'undefined') {
                 dbValue = this.node[real_field_name].parts[part].textValue;
+            }
+        }
+        else if(typeof this.node[this.instance.field_name] !== 'undefined'){
+            if(typeof this.node[this.instance.field_name].textValues !== 'undefined'){
+                if(typeof this.node[this.instance.field_name].textValues[0] !== 'undefined'){
+                     dbValue = textValue = this.node[this.instance.field_name].textValues[0];    
+                }
             }
         }
 
@@ -134,6 +150,8 @@ LicensePlateWidget.prototype.getNewElement = function(index){"use strict";
 
     if (part == "plate") {
         widgetView = this.formObj.getTextField(this.instance);
+        
+        Ti.API.error(textValue + " " + dbValue);
         
         widgetView.dbValue = dbValue;
         widgetView.textValue = textValue;
@@ -445,12 +463,12 @@ LicensePlateWidget.prototype.getStates = function() {"use strict";
     return states;
 };
 
-exports.getFieldView = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
+exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
     
     Omadi = OmadiObj;
     Widget[instance.field_name] = new LicensePlateWidget(FormObj, instance, fieldViewWrapper);
     
-    return Widget[instance.field_name].getFieldView();
+    return Widget[instance.field_name];
 };
 
 

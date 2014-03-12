@@ -71,7 +71,7 @@ Omadi.widgets.list_text = {
         // This is a specialty section for only dispatch forms
         // Do not allow the work form to change if it has already been saved
         if(instance.field_name == 'field_tow_type'){
-            if(dbValue !== null && typeof node.dispatch_id !== 'undefined' && node.dispatch_id != 0){
+            if(dbValue !== null && typeof node.dispatch_nid !== 'undefined' && node.dispatch_nid != 0){
                 instance.can_edit = false;
             }
             else if(typeof Ti.UI.currentWindow.field_tow_type !== 'undefined' && Ti.UI.currentWindow.field_tow_type != null){

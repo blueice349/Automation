@@ -20,7 +20,6 @@ Omadi.bundles.tag.hasSavedTags = function(){"use strict";
 };
 
 Omadi.bundles.tag.getExpiredTags = function(){"use strict";
-    /*global list_search_node_matches_search_criteria*/
     var expired, db, result, sql, nowTimestamp, nids, restricted, i, j, ready, isReady, nodes, node, 
     tagBundle, searchFieldName, criteriaRow, finalReady, communityViolations, v_idx, 
     community_idx, foundCommunity, userUid;
@@ -90,7 +89,7 @@ Omadi.bundles.tag.getExpiredTags = function(){"use strict";
                 node = Omadi.data.nodeLoad(ready[i].nid);
                 nodes[ready[i].nid] = node;
                 
-                if(!list_search_node_matches_search_criteria(node, tagBundle.data.node_type_specific.criteria)){
+                if(!Omadi.utils.list_search_node_matches_search_criteria(node, tagBundle.data.node_type_specific.criteria)){
                     finalReady.push(ready[i]);
                 }
             }

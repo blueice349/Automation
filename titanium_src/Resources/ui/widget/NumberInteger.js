@@ -20,7 +20,6 @@ function NumberIntegerWidget(formObj, instance, fieldViewWrapper){"use strict";
         
         if(typeof this.nodeElement.dbValues !== 'undefined' && this.nodeElement.dbValues != null){
             this.dbValues = this.nodeElement.dbValues;
-            
         }
         
         if(typeof this.nodeElement.textValues !== 'undefined' && this.nodeElement.textValues != null){
@@ -119,7 +118,7 @@ NumberIntegerWidget.prototype.redraw = function(){"use strict";
 NumberIntegerWidget.prototype.getNewElement = function(index){"use strict";
     var dbValue, textValue, element;
     
-    dbValue = "";
+    dbValue = null;
     textValue = "";
     
     if(this.nodeElement){
@@ -207,10 +206,10 @@ NumberIntegerWidget.prototype.getNewElement = function(index){"use strict";
 };
 
 
-exports.getFieldView = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
+exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
     
     Omadi = OmadiObj;
     Widget[instance.field_name] = new NumberIntegerWidget(FormObj, instance, fieldViewWrapper);
     
-    return Widget[instance.field_name].getFieldView();
+    return Widget[instance.field_name];
 };

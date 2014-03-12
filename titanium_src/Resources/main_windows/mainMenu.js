@@ -854,23 +854,27 @@ function backgroundCheckForUpdates(){"use strict";
 
 function showContinuousSavedNode(){"use strict";
     var db, result, continuousSave;
-    
-    db = Omadi.utils.openMainDatabase();
-    result = db.execute("SELECT nid, table_name, form_part FROM node WHERE flag_is_updated = 4 ORDER BY changed DESC");
-    continuousSave = null;
-    
-    if(result.isValidRow()){
-        continuousSave = {
-            node_type: result.fieldByName('table_name'),
-            nid: result.fieldByName('nid'),
-            form_part: result.fieldByName('form_part')
-        };
+    try{
+        db = Omadi.utils.openMainDatabase();
+        result = db.execute("SELECT nid, table_name, form_part FROM node WHERE flag_is_updated = 4 AND table_name != 'dispatch' ORDER BY changed DESC");
+        continuousSave = null;
+        
+        if(result.isValidRow()){
+            continuousSave = {
+                node_type: result.fieldByName('table_name'),
+                nid: result.fieldByName('nid'),
+                form_part: result.fieldByName('form_part')
+            };
+        }
+        result.close();
+        db.close();
+        
+        if(continuousSave !== null){
+            Omadi.display.openFormWindow(continuousSave.node_type, continuousSave.nid, continuousSave.form_part);
+        }
     }
-    result.close();
-    db.close();
-    
-    if(continuousSave !== null){
-        Omadi.display.openFormWindow(continuousSave.node_type, continuousSave.nid, continuousSave.form_part);
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception opening continuous saved node: " + ex);
     }
 }
 

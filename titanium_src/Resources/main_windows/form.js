@@ -1184,10 +1184,7 @@ function changeViolationFieldOptions(violation_field_name){"use strict";
     Omadi.widgets.setValueWidgetProperty(violation_field_name, ['options'], options);
 }
 
-
-
 function setupViolationField(){"use strict";
-    
     var field_name, instance, valueWidget, widget, referenceWidget, datestampWidget;
     // NOTE: this will not work with time fields with multiple cardinality
     

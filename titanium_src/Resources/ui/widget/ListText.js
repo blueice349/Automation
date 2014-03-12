@@ -137,18 +137,18 @@ ListTextWidget.prototype.getNewElement = function(index){"use strict";
     // This is a specialty section for only dispatch forms
     // Do not allow the work form to change if it has already been saved
     if(this.instance.field_name == 'field_tow_type'){
-        if(dbValue !== null && typeof this.node.dispatch_id !== 'undefined' && this.node.dispatch_id != 0){
+        if(dbValue !== null && this.node.nid > 0){
             this.instance.can_edit = false;
         }
-        else if(typeof Ti.UI.currentWindow.field_tow_type !== 'undefined' && Ti.UI.currentWindow.field_tow_type != null){
-            dbValue = Ti.UI.currentWindow.field_tow_type;
-            for(i = 0; i < options.length; i ++){
-                if(options[i].dbValue == dbValue){
-                    textValue = options[i].title;
-                    break;
-                }
-            }
-        }
+        // else if(typeof Ti.UI.currentWindow.field_tow_type !== 'undefined' && Ti.UI.currentWindow.field_tow_type != null){
+            // dbValue = Ti.UI.currentWindow.field_tow_type;
+            // for(i = 0; i < options.length; i ++){
+                // if(options[i].dbValue == dbValue){
+                    // textValue = options[i].title;
+                    // break;
+                // }
+            // }
+        // }
     }
     
     if (dbValue === null && typeof this.instance.settings.default_value !== 'undefined') {
@@ -185,6 +185,7 @@ ListTextWidget.prototype.getNewElement = function(index){"use strict";
     element.setText(textValue);
     element.textValue = textValue;
     element.dbValue = dbValue;
+    element.widget = this;
     
     // TODO: allow conditional fields for this widget
     //element.check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
@@ -218,9 +219,15 @@ ListTextWidget.prototype.getNewElement = function(index){"use strict";
                     
                     // This is a special case for dispatching
                     if(ev.source.element.fieldName == 'field_tow_type'){
-                        Ti.App.fireEvent("omadi:dispatch:towTypeChanged", {
-                            dbValue : ev.source.element.dbValue
-                        });
+                        try{
+                            ev.source.element.widget.formObj.win.dispatchTabGroup.fireEvent("omadi:dispatch:towTypeChanged", {
+                                dbValue: ev.source.element.dbValue 
+                            });
+                        }
+                        catch(ex){
+                            Omadi.service.sendErrorReport("Could not fire towtype changed event");
+                            alert("Could not change tow type. Please try again.");
+                        }
                     }
                 }
             });
@@ -269,12 +276,12 @@ ListTextWidget.prototype.getOptions = function() {"use strict";
 };
 
 
-exports.getFieldView = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
+exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
     
     Omadi = OmadiObj;
     Widget[instance.field_name] = new ListTextWidget(FormObj, instance, fieldViewWrapper);
     
-    return Widget[instance.field_name].getFieldView();
+    return Widget[instance.field_name];
 };
 
 

@@ -139,6 +139,9 @@ SignatureWidget.prototype.getNewElement = function(index){"use strict";
         }
     }
     
+    Ti.API.error("Signature element");
+    Ti.API.error(JSON.stringify(this.node));
+    
     imageNid = this.formObj.nid;
     if(typeof this.formObj.origNid !== 'undefined'){
         imageNid = this.formObj.origNid;
@@ -625,12 +628,12 @@ SignatureWidget.prototype.saveFileInfo = function(imageView, filePath, thumbPath
     }
 };
 
-exports.getFieldView = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
+exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
     
     Omadi = OmadiObj;
     Widget[instance.field_name] = new SignatureWidget(FormObj, instance, fieldViewWrapper);
     
-    return Widget[instance.field_name].getFieldView();
+    return Widget[instance.field_name];
 };
 
 

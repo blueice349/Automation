@@ -121,8 +121,6 @@ Omadi.widgets.calculation_field = {
             parent_field, start_timestamp, end_timestamp, difference, at_time, relative_increment_time, day_count, 
             parent_node, zero, criteria_index, field_name, finalValue, priceIdx;
         
-        /*global list_search_node_matches_search_criteria,mktime*/
-        
         instances = Omadi.data.getFields(node.type);
         final_value = 0;
         
@@ -269,7 +267,7 @@ Omadi.widgets.calculation_field = {
                                         
                                         at_time = calculation_row.increment_at_time;
                                         start_timestamp = Number(start_timestamp);
-                                        relative_increment_time = at_time = mktime(0,0,0, Omadi.utils.PHPFormatDate('n', start_timestamp), Omadi.utils.PHPFormatDate('j', start_timestamp), Omadi.utils.PHPFormatDate('Y', start_timestamp));
+                                        relative_increment_time = at_time = Omadi.utils.mktime(0,0,0, Omadi.utils.PHPFormatDate('n', start_timestamp), Omadi.utils.PHPFormatDate('j', start_timestamp), Omadi.utils.PHPFormatDate('Y', start_timestamp));
                                         
                                         day_count = 0;
                                         if (relative_increment_time < start_timestamp) {
@@ -365,7 +363,7 @@ Omadi.widgets.calculation_field = {
                                 }
                             }
                             
-                            if (!list_search_node_matches_search_criteria(node, calculation_row.criteria)) {
+                            if (!Omadi.utils.list_search_node_matches_search_criteria(node, calculation_row.criteria)) {
                                 zero = true;
                             }
                         }
@@ -561,7 +559,7 @@ Omadi.widgets.calculation_field = {
             } 
             
             // Set the calculated dbValue for the view
-            if(!isNumber(cal_value)){
+            if(!Omadi.utils.isNumber(cal_value)){
                 cal_value = 0;
             }
             
@@ -685,7 +683,7 @@ Omadi.widgets.calculation_field = {
                 cal_value = parseFloat(cal_value);
             }
             
-            if(!isNumber(cal_value)){
+            if(!Omadi.utils.isNumber(cal_value)){
                 cal_value = 0;
             }
             

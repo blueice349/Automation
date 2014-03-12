@@ -94,8 +94,6 @@ ExtraPriceWidget.prototype.redraw = function(){"use strict";
     var origFieldView;
     
     this.formObj.formToNode();
-        
-    //Ti.API.debug(JSON.stringify(this.formObj.node));
     
     this.node = this.formObj.node;
     if(typeof this.node[this.instance.field_name] !== 'undefined'){
@@ -438,6 +436,11 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
                         
                         ev.source.descView.textValue = jsonValue;
                         ev.source.descView.setText(ev.source.options[ev.index]);
+                        
+                        if(e.source.check_conditional_fields.length > 0){
+                            Ti.API.debug("Checking conditionally required");
+                            Widget[e.source.descView.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.descView.instance, e.source.descView.check_conditional_fields);
+                        }
                     }
                 }
             });
@@ -562,12 +565,12 @@ ExtraPriceWidget.prototype.getOptions = function() {"use strict";
     return options;
 };
 
-exports.getFieldView = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
+exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
     
     Omadi = OmadiObj;
     Widget[instance.field_name] = new ExtraPriceWidget(FormObj, instance, fieldViewWrapper);
     
-    return Widget[instance.field_name].getFieldView();
+    return Widget[instance.field_name];
 };
 
 
