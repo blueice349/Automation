@@ -78,15 +78,20 @@ Gallery.failedSaveToPhotoGallery = function(e){"use strict";
 };
 
 Gallery.deleteOptionSelected = function(e){"use strict";
-    if(e.index === 1){
-        
-        Omadi.display.loading();
-        Omadi.data.deletePhotoUpload(e.source.imageView.photoId, true);
-        
-        Gallery.remove(e.source.imageView);
-        // galleryWrapper.remove(gallery);
-        // Gallery.update();
-        Omadi.display.doneLoading();
+    try{
+        if(e.index === 1){
+            
+            Omadi.display.loading();
+            Omadi.data.deletePhotoUpload(e.source.imageView.photoId, true);
+            
+            Gallery.remove(e.source.imageView);
+            // galleryWrapper.remove(gallery);
+            // Gallery.update();
+            Omadi.display.doneLoading();
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in deleteoption selected in gallery: " + ex);
     }
 };
 
@@ -119,130 +124,131 @@ Gallery.emailComplete = function(e){"use strict";
 };
 
 Gallery.confirmDeleteOptionSelected = function(e){"use strict";
-    if(e.index === 0){
-        
-        Omadi.display.loading();
-        
-        Omadi.data.deletePhotoUpload(e.source.imageView.photoId, true);
-        
-        //galleryWrapper.remove(gallery);
-        //Gallery.update();
-        
-        Gallery.remove(e.source.imageView);
-        
-        Omadi.display.doneLoading();
+    try{
+        if(e.index === 0){
+            
+            Omadi.display.loading();
+            
+            Omadi.data.deletePhotoUpload(e.source.imageView.photoId, true);
+            
+            //galleryWrapper.remove(gallery);
+            //Gallery.update();
+            
+            Gallery.remove(e.source.imageView);
+            
+            Omadi.display.doneLoading();
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception confirming delete option: " + ex);
     }
 };
 
 Gallery.imageOptionClicked = function(e){"use strict";
     var alertDialog, emailDialog, imageFile;
+    try{
+        if(e.index >= 0){
+            
+            if(e.source.options[e.index] == "View Photo"){
+                // View photo
+                Omadi.display.displayFullImage(e.source.imageView);
+            }
+            else if(e.source.options[e.index] == "Email Photo"){
+                // Email Photo
     
-    if(e.index >= 0){
-        
-        if(e.source.options[e.index] == "View Photo"){
-            // View photo
-            Omadi.display.displayFullImage(e.source.imageView);
-        }
-        else if(e.source.options[e.index] == "Email Photo"){
-            // Email Photo
-
-            imageFile = Ti.Filesystem.getFile(e.source.imageView.filePath);
-            if(imageFile.exists()){
-                
-                emailDialog = Ti.UI.createEmailDialog({
-                    subject: "Photo",
-                    messageBody: "See the attached photo",
-                    imageView: e.source.imageView
-                });
-                
-                if(emailDialog.isSupported()){
+                imageFile = Ti.Filesystem.getFile(e.source.imageView.filePath);
+                if(imageFile.exists()){
                     
-                    if(Ti.Network.online){
+                    emailDialog = Ti.UI.createEmailDialog({
+                        subject: "Photo",
+                        messageBody: "See the attached photo",
+                        imageView: e.source.imageView
+                    });
+                    
+                    if(emailDialog.isSupported()){
                         
-                        emailDialog.addAttachment(imageFile);
-                        emailDialog.addEventListener('complete', Gallery.emailComplete);
-                        emailDialog.open();
+                        if(Ti.Network.online){
+                            
+                            emailDialog.addAttachment(imageFile);
+                            emailDialog.addEventListener('complete', Gallery.emailComplete);
+                            emailDialog.open();
+                        }
+                        else{
+                            alert("You do not have an Internet connection.");
+                        }
                     }
                     else{
-                        alert("You do not have an Internet connection.");
+                        alert("Email support is not enabled for this device.");
                     }
                 }
                 else{
-                    alert("Email support is not enabled for this device.");
+                    alert("The photo could not be found probably because it was just uploaded.");
                 }
             }
-            else{
-                alert("The photo could not be found probably because it was just uploaded.");
-            }
-        }
-        else if(e.source.options[e.index] == "Delete Photo"){
-            
-            // Delete Photo
-            alertDialog = Ti.UI.createAlertDialog({
-                title: 'Really Delete Photo?',
-                buttonNames: ['Delete', 'Cancel'],
-                cancel: 1,
-                imageView: e.source.imageView
-            });
-            
-            alertDialog.addEventListener('click', Gallery.confirmDeleteOptionSelected);
-            alertDialog.show();
-        }
-        else if(e.source.options[e.index] == "Save to Photo Gallery"){
-            
-            // Save to Photo Gallery
-            imageFile = Ti.Filesystem.getFile(e.source.imageView.filePath);
-            if(imageFile.exists()){
-                Ti.Media.saveToPhotoGallery(imageFile, {
-                    success: Gallery.savedToPhotoGallery,
-                    error: Gallery.failedSaveToPhotoGallery
+            else if(e.source.options[e.index] == "Delete Photo"){
+                
+                // Delete Photo
+                alertDialog = Ti.UI.createAlertDialog({
+                    title: 'Really Delete Photo?',
+                    buttonNames: ['Delete', 'Cancel'],
+                    cancel: 1,
+                    imageView: e.source.imageView
                 });
+                
+                alertDialog.addEventListener('click', Gallery.confirmDeleteOptionSelected);
+                alertDialog.show();
             }
-            else{
-                alert("The photo could not be found probably because it was just uploaded.");
+            else if(e.source.options[e.index] == "Save to Photo Gallery"){
+                
+                // Save to Photo Gallery
+                imageFile = Ti.Filesystem.getFile(e.source.imageView.filePath);
+                if(imageFile.exists()){
+                    Ti.Media.saveToPhotoGallery(imageFile, {
+                        success: Gallery.savedToPhotoGallery,
+                        error: Gallery.failedSaveToPhotoGallery
+                    });
+                }
+                else{
+                    alert("The photo could not be found probably because it was just uploaded.");
+                }
             }
         }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in imageoption clicked in local photos: " + ex);
     }
 };
 
 Gallery.imageClicked = function(e){"use strict";
 
     var dialog, options;
-    
-    options = [];
-    options.push('View Photo');
-    options.push('Email Photo');
-    
-    if(Ti.App.isIOS){
-        options.push("Save to Photo Gallery");
+    try{
+        options = [];
+        options.push('View Photo');
+        options.push('Email Photo');
+        
+        if(Ti.App.isIOS){
+            options.push("Save to Photo Gallery");
+        }
+        
+        options.push('Delete Photo');
+        options.push('Cancel');
+        
+        
+        dialog = Ti.UI.createOptionDialog({
+            title: 'Photo Options',
+            options: options,
+            imageView: e.source,
+            cancel: (options.length - 1)
+        });
+        
+        dialog.addEventListener('click', Gallery.imageOptionClicked);
+        
+        dialog.show();
     }
-    
-    options.push('Delete Photo');
-    options.push('Cancel');
-    
-    
-    dialog = Ti.UI.createOptionDialog({
-        title: 'Photo Options',
-        options: options,
-        imageView: e.source,
-        cancel: (options.length - 1)
-    });
-    
-    dialog.addEventListener('click', Gallery.imageOptionClicked);
-    
-    dialog.show();
-    
-    // if(e.source.isChecked){
-        // e.source.setBorderWidth(0);
-        // e.source.setBackgroundColor('#fff');
-        // e.source.setBorderColor('#ccc');
-    // }
-    // else{
-        // e.source.setBorderWidth(2);
-        // e.source.setBackgroundColor('#ccc');
-        // e.source.setBorderColor('#333');
-    // }
-    // e.source.isChecked = !e.source.isChecked;
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception with imageClicked in local photos: " + ex);
+    }
 };
 
 // function showButtons(){"use strict";

@@ -52,41 +52,9 @@ SignatureWidget.prototype.getFieldView = function(){"use strict";
     this.fieldView.add(this.formObj.getRegularLabelView(this.instance));
     
     // Add the actual fields
-    for(i = 0; i < this.numVisibleFields; i ++){
-        element = this.getNewElement(i);
-        this.fieldView.add(element);
-        this.fieldView.add(this.formObj.getSpacerView());
-    }
-    
-    if(this.instance.settings.cardinality == -1){
-        
-        addButton = Ti.UI.createButton({
-            title: 'Add another item',
-            right: 15,
-            style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
-            backgroundGradient: Omadi.display.backgroundGradientGray,
-            borderColor: '#999',
-            borderWidth: 1,
-            width: 150,
-            borderRadius: 10,
-            color: '#eee',
-            top: 10,
-            height: Ti.UI.SIZE,
-            fieldName: this.instance.field_name
-        });
-            
-        addButton.addEventListener('click', function(e){
-            Widget[e.source.fieldName].numVisibleFields ++;
-            Widget[e.source.fieldName].formObj.unfocusField();
-            Widget[e.source.fieldName].redraw();
-        });
-        
-        this.fieldView.add(addButton);
-        this.fieldView.add(this.formObj.getSpacerView());
-    }
-    
-    
-    //this.formObj.setConditionallyRequiredLabelForInstance(this.instance);
+    element = this.getNewElement(0);
+    this.fieldView.add(element);
+    this.fieldView.add(this.formObj.getSpacerView());
     
     return this.fieldView;
 };
@@ -251,7 +219,12 @@ SignatureWidget.prototype.getNewElement = function(index){"use strict";
     widgetView.signNowButton = signNowButton;
     
     buttonView.addEventListener('click', function(e){
-        Widget[e.source.instance.field_name].openSignatureView(widgetView);
+        try{
+            Widget[e.source.instance.field_name].openSignatureView(widgetView);
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception in signature button click: " + ex);
+        }
     });
     
     numImagesShowing = 1;
@@ -476,11 +449,16 @@ SignatureWidget.prototype.openSignatureView = function(widgetView){"use strict";
         textView.overlayButton = overlayButton;
         
         textView.addEventListener('click', function(e){
-            if(!e.source.scrollView.scrollingEnabled){
-                e.source.scrollView.scrollingEnabled = true;
-                e.source.scrollView.scrollTo(0, 0);
-                e.source.overlayButton.height = Ti.UI.FILL;
-                e.source.overlayButton.width = '100%';
+            try{
+                if(!e.source.scrollView.scrollingEnabled){
+                    e.source.scrollView.scrollingEnabled = true;
+                    e.source.scrollView.scrollTo(0, 0);
+                    e.source.overlayButton.height = Ti.UI.FILL;
+                    e.source.overlayButton.width = '100%';
+                }
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception in signature textview click: " + ex);
             }
         });
         
@@ -489,10 +467,15 @@ SignatureWidget.prototype.openSignatureView = function(widgetView){"use strict";
         
         overlayButton.add(overlayLabel);
         overlayButton.addEventListener('click', function(e){
-           e.source.width = 0;
-           e.source.height = 0; 
-           e.source.scrollView.scrollToBottom();
-           e.source.scrollView.scrollingEnabled = false;
+            try{
+               e.source.width = 0;
+               e.source.height = 0; 
+               e.source.scrollView.scrollToBottom();
+               e.source.scrollView.scrollingEnabled = false;
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception in signature overlay button click: " + ex);
+            }
         });
     }
     

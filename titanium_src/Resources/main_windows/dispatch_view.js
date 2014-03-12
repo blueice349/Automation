@@ -110,7 +110,12 @@ function createAndroidToolbar(workNodeTypeLabel, openDispatch) {"use strict";
                 menu_print.setIcon("/images/printer_white.png");
                 
                 menu_print.addEventListener('click', function(){
-                    Omadi.print.printReceipt(workNode.nid);
+                    try{
+                        Omadi.print.printReceipt(workNode.nid);
+                    }
+                    catch(ex){
+                        Omadi.service.sendErrorReport("exception with menu_print click in dispatch view: " + ex);
+                    }
                 });
                 
                 order ++;
@@ -125,8 +130,6 @@ function createAndroidToolbar(workNodeTypeLabel, openDispatch) {"use strict";
                                 title : "Copy to " + to_bundle.label,
                                 order : order
                             });
-                            //iconFile = Omadi.display.getIconFile(to_type);
-                            //customCopy.setIcon(iconFile.nativePath);
                             
                             androidMenuItemData[order] = {
                                 type: workNode.type,
@@ -135,7 +138,6 @@ function createAndroidToolbar(workNodeTypeLabel, openDispatch) {"use strict";
                             };
                 
                             customCopy.addEventListener("click", openAndroidMenuItem);
-                            
                             order ++;
                         }
                     }
@@ -162,29 +164,34 @@ function createAndroidToolbar(workNodeTypeLabel, openDispatch) {"use strict";
         });
         
         dispatchTab.addEventListener('click', function(e){
-            if(selectedTab != 'dispatch'){
-                selectedTab = 'dispatch';
-                dispatchTab.setBackgroundColor('#00AEEE');
-                workTab.setBackgroundColor('#444');
-                
-                if (!dispatchWindowOpen) {
-                    if(dispatchNode !== null){
-                        dispatchWindowOpen = true;
-                        dispatchWindow.open();
+            try{
+                if(selectedTab != 'dispatch'){
+                    selectedTab = 'dispatch';
+                    dispatchTab.setBackgroundColor('#00AEEE');
+                    workTab.setBackgroundColor('#444');
+                    
+                    if (!dispatchWindowOpen) {
+                        if(dispatchNode !== null){
+                            dispatchWindowOpen = true;
+                            dispatchWindow.open();
+                        }
+                        else{
+                            alert("You do not have access to the dispatch section.");
+                            selectedTab = 'work';
+                            dispatchTab.setBackgroundColor('#444');
+                            workTab.setBackgroundColor('#00AEEE');
+                        }
                     }
-                    else{
-                        alert("You do not have access to the dispatch section.");
-                        selectedTab = 'work';
-                        dispatchTab.setBackgroundColor('#444');
-                        workTab.setBackgroundColor('#00AEEE');
+                    else {
+                        dispatchWindow.show();
+                        if (workWindowOpen) {
+                            workWindow.hide();
+                        }
                     }
                 }
-                else {
-                    dispatchWindow.show();
-                    if (workWindowOpen) {
-                        workWindow.hide();
-                    }
-                }
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("exception in dispatchtab click: " + ex);
             }
         });
         
@@ -207,34 +214,39 @@ function createAndroidToolbar(workNodeTypeLabel, openDispatch) {"use strict";
         });
         
         workTab.addEventListener('click', function(e){
-            if(selectedTab != 'work'){
-                if (e.source.text != NO_JOB_TYPE_LABEL) {
-                    
-                    selectedTab = 'work';
-                    workTab.setBackgroundColor('#00AEEE');
-                    dispatchTab.setBackgroundColor('#444');
-                    
-                    if (!workWindowOpen) {
-                        if(workNode !== null){
-                            workWindowOpen = true;
-                            workWindow.open();
+            try{
+                if(selectedTab != 'work'){
+                    if (e.source.text != NO_JOB_TYPE_LABEL) {
+                        
+                        selectedTab = 'work';
+                        workTab.setBackgroundColor('#00AEEE');
+                        dispatchTab.setBackgroundColor('#444');
+                        
+                        if (!workWindowOpen) {
+                            if(workNode !== null){
+                                workWindowOpen = true;
+                                workWindow.open();
+                            }
+                            else{
+                                alert("You do not have access to the work form section.");
+                                selectedTab = 'dispatch';
+                                dispatchTab.setBackgroundColor('#00AEEE');
+                                workTab.setBackgroundColor('#444');
+                            }
                         }
-                        else{
-                            alert("You do not have access to the work form section.");
-                            selectedTab = 'dispatch';
-                            dispatchTab.setBackgroundColor('#00AEEE');
-                            workTab.setBackgroundColor('#444');
+                        else {
+    
+                            workWindow.show();
+                            if (dispatchWindowOpen) {
+                                dispatchWindow.hide();
+                            }
                         }
                     }
-                    else {
-
-                        workWindow.show();
-                        if (dispatchWindowOpen) {
-                            dispatchWindow.hide();
-                        }
-                    }
-                }
-            }  
+                }  
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("exception with worktab click in dispatch view: " + ex);
+            }
         });
         
         // create and add toolbar
@@ -278,50 +290,55 @@ function createiOSToolbar(workNodeTypeLabel, openDispatch) {"use strict";
         });
 
         iOSTabbedBar.addEventListener('click', function(e) {
-            var workLabel = e.source.labels[1];
-
-            if (e.index == 0) {
-                if (!dispatchWindowOpen) {
-                    if(dispatchNode !== null){
-                        dispatchWindowOpen = true;
-                        dispatchWindow.open();
-                    }
-                    else{
-                        alert("You do not have access to the dispatch section.");
-                        e.source.setIndex(1);
-                    }
-                }
-                else {
-                    dispatchWindow.show();
-                    if (workWindowOpen) {
-                        workWindow.hide();
-                    }
-                }
-            }
-            else {
-
-                if (workLabel == NO_JOB_TYPE_LABEL) {
-                    e.source.setIndex(0);
-                }
-                else {
-                    if (!workWindowOpen) {
-                        if(workNode !== null){
-                            workWindowOpen = true;
-                            workWindow.open();
+            try{
+                var workLabel = e.source.labels[1];
+    
+                if (e.index == 0) {
+                    if (!dispatchWindowOpen) {
+                        if(dispatchNode !== null){
+                            dispatchWindowOpen = true;
+                            dispatchWindow.open();
                         }
                         else{
-                            alert("You do not have access to the work form section.");
-                            e.source.setIndex(0);
+                            alert("You do not have access to the dispatch section.");
+                            e.source.setIndex(1);
                         }
                     }
                     else {
-
-                        workWindow.show();
-                        if (dispatchWindowOpen) {
-                            dispatchWindow.hide();
+                        dispatchWindow.show();
+                        if (workWindowOpen) {
+                            workWindow.hide();
                         }
                     }
                 }
+                else {
+    
+                    if (workLabel == NO_JOB_TYPE_LABEL) {
+                        e.source.setIndex(0);
+                    }
+                    else {
+                        if (!workWindowOpen) {
+                            if(workNode !== null){
+                                workWindowOpen = true;
+                                workWindow.open();
+                            }
+                            else{
+                                alert("You do not have access to the work form section.");
+                                e.source.setIndex(0);
+                            }
+                        }
+                        else {
+    
+                            workWindow.show();
+                            if (dispatchWindowOpen) {
+                                dispatchWindow.hide();
+                            }
+                        }
+                    }
+                }
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("exception with ios tab click in dispatch view: " + ex);
             }
         });
 
@@ -332,57 +349,65 @@ function createiOSToolbar(workNodeTypeLabel, openDispatch) {"use strict";
 
         actions.addEventListener('click', function(e) {
             var db, result, bundle, btn_tt, btn_id, form_part, postDialog, to_type, to_bundle;
+            try{
+                bundle = Omadi.data.getBundle(workNode.type);
+                
+                db = Omadi.utils.openMainDatabase();
+                result = db.execute('SELECT form_part FROM node WHERE nid=' + workNode.nid);
+                form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
+                result.close();
+                db.close();
         
-            bundle = Omadi.data.getBundle(workNode.type);
-            
-            db = Omadi.utils.openMainDatabase();
-            result = db.execute('SELECT form_part FROM node WHERE nid=' + workNode.nid);
-            form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
-            result.close();
-            db.close();
-    
-            btn_tt = [];
-            btn_id = [];
-            
-            if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
-    
-                if (bundle.data.form_parts.parts.length >= form_part + 2) {
-                   
-                    btn_tt.push(bundle.data.form_parts.parts[form_part + 1].label);
-                    btn_id.push(form_part + 1);
+                btn_tt = [];
+                btn_id = [];
+                
+                if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
+        
+                    if (bundle.data.form_parts.parts.length >= form_part + 2) {
+                       
+                        btn_tt.push(bundle.data.form_parts.parts[form_part + 1].label);
+                        btn_id.push(form_part + 1);
+                    }
                 }
-            }
-    
-            btn_tt.push('Edit');
-            btn_id.push(form_part);
-    
-            if(typeof bundle.data.custom_copy !== 'undefined'){
-                for(to_type in bundle.data.custom_copy){
-                    if(bundle.data.custom_copy.hasOwnProperty(to_type)){
-                        to_bundle = Omadi.data.getBundle(to_type);
-                        if(to_bundle){
-                            btn_tt.push("Copy to " + to_bundle.label);
-                            btn_id.push(to_type);
+        
+                btn_tt.push('Edit');
+                btn_id.push(form_part);
+        
+                if(typeof bundle.data.custom_copy !== 'undefined'){
+                    for(to_type in bundle.data.custom_copy){
+                        if(bundle.data.custom_copy.hasOwnProperty(to_type)){
+                            to_bundle = Omadi.data.getBundle(to_type);
+                            if(to_bundle){
+                                btn_tt.push("Copy to " + to_bundle.label);
+                                btn_id.push(to_type);
+                            }
                         }
                     }
                 }
+        
+                btn_tt.push('Cancel');
+        
+                postDialog = Titanium.UI.createOptionDialog();
+                postDialog.options = btn_tt;
+                postDialog.show();
+        
+                postDialog.addEventListener('click', function(ev) {
+                    try{
+                        if (ev.index == btn_tt.length - 1) {
+                            Ti.API.info("Fix this logic");
+                        }
+                        else if (ev.index != -1) {
+                            Omadi.display.openFormWindow(workNode.type, workNode.nid, btn_id[ev.index]);
+                        }
+                    }
+                    catch(ex){
+                        Omadi.service.sendErrorReport("exception with post dialog in actions dispatch view: " + ex);
+                    }
+                });
             }
-    
-            btn_tt.push('Cancel');
-    
-            postDialog = Titanium.UI.createOptionDialog();
-            postDialog.options = btn_tt;
-            postDialog.show();
-    
-            postDialog.addEventListener('click', function(ev) {
-                if (ev.index == btn_tt.length - 1) {
-                    Ti.API.info("Fix this logic");
-                }
-                else if (ev.index != -1) {
-                    Omadi.display.openFormWindow(workNode.type, workNode.nid, btn_id[ev.index]);
-                }
-            });
-            
+            catch(ex){
+                Omadi.service.sendErrorReport("exception clicking actions on dispatch view: " + ex);
+            }
         });
 
         items = [back, space, iOSTabbedBar, space, actions];

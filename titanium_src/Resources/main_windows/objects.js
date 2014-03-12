@@ -723,7 +723,12 @@ function setTableData() {"use strict";
 
             plusButton.addEventListener('click', function() {
                 search.blur();
-                Omadi.display.openFormWindow(curWin.type, 'new', 0);
+                
+                Ti.App.fireEvent('openFormWindow', {
+                    node_type: curWin.type,
+                    nid: 'new',
+                    form_part: 0 
+                });
             });
 
             items.push(back);
@@ -799,7 +804,12 @@ function setTableData() {"use strict";
 
                     newItem.setIcon("/images/newiconds/plus_btn_grey.png");
                     newItem.addEventListener("click", function(e) {
-                        Omadi.display.openFormWindow(curWin.type, 'new', 0);
+                        
+                        Ti.App.fireEvent('openFormWindow', {
+                            node_type: curWin.type,
+                            nid: 'new',
+                            form_part: 0 
+                        });
                     });
                 }
             };

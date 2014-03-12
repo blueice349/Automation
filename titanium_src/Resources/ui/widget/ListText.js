@@ -73,9 +73,14 @@ ListTextWidget.prototype.getFieldView = function(){"use strict";
         });
             
         addButton.addEventListener('click', function(e){
-            Widget[e.source.fieldName].numVisibleFields ++;
-            Widget[e.source.fieldName].formObj.unfocusField();
-            Widget[e.source.fieldName].redraw();
+            try{
+                Widget[e.source.fieldName].numVisibleFields ++;
+                Widget[e.source.fieldName].formObj.unfocusField();
+                Widget[e.source.fieldName].redraw();
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception in list text add another: " + ex);
+            }
         });
         
         this.fieldView.add(addButton);
@@ -194,44 +199,52 @@ ListTextWidget.prototype.getNewElement = function(index){"use strict";
     if (this.instance.can_edit) {
         element.addEventListener('click', function(e) {
             var i, postDialog, textOptions;
-
-            textOptions = [];
-            for ( i = 0; i < e.source.options.length; i++) {
-                textOptions.push(e.source.options[i].title);
-            }
-
-            postDialog = Titanium.UI.createOptionDialog();
-            postDialog.options = textOptions;
-            postDialog.cancel = -1;
-            postDialog.element = e.source;
-            postDialog.show();
-
-            postDialog.addEventListener('click', function(ev) {
-                if (ev.index >= 0) {
-                    var textValue = ev.source.options[ev.index];
-
-                    if (textValue == '- None -') {
-                        textValue = "";
-                    }
-                    ev.source.element.textValue = textValue;
-                    ev.source.element.setText(textValue);
-                    ev.source.element.value = ev.source.element.dbValue = ev.source.element.options[ev.index].dbValue;
-                    
-                    // This is a special case for dispatching
-                    if(ev.source.element.fieldName == 'field_tow_type'){
-                        try{
-                            ev.source.element.widget.formObj.win.dispatchTabGroup.fireEvent("omadi:dispatch:towTypeChanged", {
-                                dbValue: ev.source.element.dbValue 
-                            });
-                        }
-                        catch(ex){
-                            Omadi.service.sendErrorReport("Could not fire towtype changed event");
-                            alert("Could not change tow type. Please try again.");
-                        }
-                    }
+            try{
+                textOptions = [];
+                for ( i = 0; i < e.source.options.length; i++) {
+                    textOptions.push(e.source.options[i].title);
                 }
-            });
-            
+    
+                postDialog = Titanium.UI.createOptionDialog();
+                postDialog.options = textOptions;
+                postDialog.cancel = -1;
+                postDialog.element = e.source;
+                postDialog.show();
+    
+                postDialog.addEventListener('click', function(ev) {
+                    try{
+                        if (ev.index >= 0) {
+                            var textValue = ev.source.options[ev.index];
+        
+                            if (textValue == '- None -') {
+                                textValue = "";
+                            }
+                            ev.source.element.textValue = textValue;
+                            ev.source.element.setText(textValue);
+                            ev.source.element.value = ev.source.element.dbValue = ev.source.element.options[ev.index].dbValue;
+                            
+                            // This is a special case for dispatching
+                            if(ev.source.element.fieldName == 'field_tow_type'){
+                                try{
+                                    ev.source.element.widget.formObj.win.dispatchTabGroup.fireEvent("omadi:dispatch:towTypeChanged", {
+                                        dbValue: ev.source.element.dbValue 
+                                    });
+                                }
+                                catch(ex){
+                                    Omadi.service.sendErrorReport("Could not fire towtype changed event");
+                                    alert("Could not change tow type. Please try again.");
+                                }
+                            }
+                        }
+                    }
+                    catch(ex2){
+                        Omadi.service.sendErrorReport("Exception in list text dialog click: " + ex2);
+                    }
+                });
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception in list text label click: " + ex);
+            }
         });
     }
     

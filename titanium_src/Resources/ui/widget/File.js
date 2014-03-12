@@ -109,7 +109,7 @@ FileWidget.prototype.getNewElement = function(index){"use strict";
     if(index == 0 || dbValue !== null){
         Ti.API.debug("Creating file field: " + this.instance.label);
 
-        widgetView = Omadi.widgets.getLabelField(this.instance);
+        widgetView = this.formObj.getLabelField(this.instance);
         
         widgetView.dbValue = dbValue;
         widgetView.textValue = textValue;
@@ -137,7 +137,7 @@ FileWidget.prototype.getNewElement = function(index){"use strict";
             widgetView.color = '#999';
         }
         
-        widgetView.nid = node.nid;
+        widgetView.nid = this.node.nid;
         widgetView.height = Ti.UI.SIZE;
         
         return widgetView;

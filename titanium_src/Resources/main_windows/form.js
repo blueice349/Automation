@@ -1809,17 +1809,6 @@ function saveDispatchForm(e){"use strict";
     
     Ti.API.debug("LOADED NODE: " + JSON.stringify(node));
     
-    if(win.nid < 0){
-        Ti.API.error("WIN NID: " + win.nid);
-        
-        Ti.App.removeEventListener('switchedItUp', switchedNodeIdForm);
-        Ti.App.addEventListener('switchedItUp', switchedNodeIdForm);
-        
-        Ti.UI.currentWindow.addEventListener('close', function(){
-           Ti.App.removeEventListener('switchedItUp', switchedNodeIdForm); 
-        });
-    }
-    
     Ti.App.removeEventListener('photoUploaded', photoUploadedForm);
     Ti.App.addEventListener('photoUploaded', photoUploadedForm);
     

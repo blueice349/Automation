@@ -14,12 +14,17 @@ Omadi.bundles.timecard.askClockOutLogout = function(){"use strict";
         });
     
         verifyLogout.addEventListener('click', function(e) {
-            if(e.index == 0){
-                Omadi.bundles.timecard.doClockOut(true);
+            try{
+                if(e.index == 0){
+                    Omadi.bundles.timecard.doClockOut(true);
+                }
+                else if (e.index == 1) {
+                    Ti.API.info("Logging out from 3-button timecard dialog.");
+                    Omadi.service.logout();
+                }
             }
-            else if (e.index == 1) {
-                Ti.API.info("Logging out from 3-button timecard dialog.");
-                Omadi.service.logout();
+            catch(ex){
+                Omadi.service.sendErrorReport("exception verify logout: " + ex);
             }
         });
     }
@@ -31,9 +36,14 @@ Omadi.bundles.timecard.askClockOutLogout = function(){"use strict";
         });
 
         verifyLogout.addEventListener('click', function(e) {
-            if (e.index == 0) {
-                Ti.API.info("Logging out from timecard regular logout.");
-                Omadi.service.logout();
+            try{
+                if (e.index == 0) {
+                    Ti.API.info("Logging out from timecard regular logout.");
+                    Omadi.service.logout();
+                }
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("exception verify logout 2: " + ex);
             }
         });
     }
@@ -56,15 +66,18 @@ Omadi.bundles.timecard.askClockIn = function(){"use strict";
             });
             
             dialog.addEventListener('click', function(e){
-               dialog.hide();
-               
-               if(e.index == 0){
-                   Omadi.bundles.timecard.doClockIn();
-               }
-               
-               if(typeof alertQueue !== 'undefined'){
-                   Ti.App.fireEvent('showNextAlertInQueue');
-               }
+               try{
+                   if(e.index == 0){
+                       Omadi.bundles.timecard.doClockIn();
+                   }
+                   
+                   if(typeof alertQueue !== 'undefined'){
+                       Ti.App.fireEvent('showNextAlertInQueue');
+                   }
+                }
+                catch(ex){
+                    Omadi.service.sendErrorReport("exception in clock in now?: " + ex);
+                }
             });
             
             if(typeof alertQueue !== 'undefined'){

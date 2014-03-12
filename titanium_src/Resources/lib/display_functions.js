@@ -83,14 +83,11 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
         
         if(Ti.App.isAndroid){
             Omadi.display.largePhotoWindow.addEventListener("android:back", function(e){
-                
-                //Ti.Gesture.removeEventListener('orientationchange', Omadi.display.largePhotoResize);
                 Omadi.display.largePhotoWindow.close(); 
                 Omadi.display.largePhotoWindow = null;
             });
         }
         else{
-            
             
             back = Ti.UI.createButton({
                 title : 'Back',
@@ -98,8 +95,13 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
             });
             
             back.addEventListener('click', function() {
-                Omadi.display.largePhotoWindow.close();
-                Omadi.display.largePhotoWindow = null;
+                try{
+                    Omadi.display.largePhotoWindow.close();
+                    Omadi.display.largePhotoWindow = null;
+                }
+                catch(ex){
+                    Omadi.service.sendErrorReport("exception on back button with show big image: " + ex);
+                }
             });
         
             space = Titanium.UI.createButton({
@@ -260,7 +262,12 @@ Omadi.display.iOSBackToolbar = function(actualWindow, label){"use strict";
         });
         
         back.addEventListener('click', function() {
-            actualWindow.close();
+            try{
+                actualWindow.close();
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("exception on back for iosbacktoolbar: " + ex);
+            }
         });
     
         space = Titanium.UI.createButton({
@@ -305,9 +312,14 @@ Omadi.display.showLogoutDialog = function(){"use strict";
         });
 
         verifyLogout.addEventListener('click', function(e) {
-            if (e.index == 0) {
-                Ti.API.info('Logging out from Regular logout dialog');
-                Omadi.service.logout();
+            try{
+                if (e.index == 0) {
+                    Ti.API.info('Logging out from Regular logout dialog');
+                    Omadi.service.logout();
+                }
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("exception on really logout verify logout: " + ex);
             }
         });
 
@@ -575,6 +587,7 @@ Omadi.display.openViewWindow = function(type, nid) {"use strict";
     return viewWindow;
 };
 
+Omadi.display.FormModule = null;
 Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
     var db, result, formWindow, intNid, isDispatch, dispatchNid, bundle, FormModule, Dispatch, formObject, node;
     
@@ -601,8 +614,8 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
         }
         else{
         
-            FormModule = require('ui/FormModule');
-            formWindow = FormModule.getWindow(Omadi, type, nid, form_part, false);
+            Omadi.display.FormModule = require('ui/FormModule');
+            formWindow = Omadi.display.FormModule.getWindow(Omadi, type, nid, form_part, false);
             
             if(formWindow){
             
@@ -612,7 +625,7 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
                 formWindow.open();
                 
                 // Must be called after getWindow
-                node = FormModule.getNode(type);
+                node = Omadi.display.FormModule.getNode(type);
             }
             else{
                 Omadi.service.sendErrorReport("Could not open regular form window");
@@ -628,46 +641,7 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
         Omadi.service.sendErrorReport("Exception opening form: " + ex);
     }
     return formWindow;
-    
-    
-    
-    
-    
-    
-    
-    
-    if(isDispatch){
-        formWindow = Ti.UI.createWindow({
-            navBarHidden : true,
-            url : '/main_windows/dispatch_form.js',
-            type : type,
-            nid : nid,
-            form_part : form_part,
-            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
-        });
-    }
-    else{
-        formWindow = Ti.UI.createWindow({
-            navBarHidden : true,
-            url : '/main_windows/form.js',
-            type : type,
-            nid : nid,
-            form_part : form_part,
-            usingDispatch : false,
-            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
-        });
-    }
-    
-    formWindow.addEventListener('close', Omadi.display.showNewNotificationDialog);
-    formWindow.addEventListener('open', Omadi.display.doneLoading);
-    Omadi.display.loading();
-
-    formWindow.open();
-
-    return formWindow;
 };
-
-
 
 Omadi.display.openLocalPhotosWindow = function() {"use strict";
 
@@ -741,18 +715,23 @@ Omadi.display.showNewNotificationDialog = function(){"use strict";
                 });
     
                 dialog.addEventListener('click', function(e) {
-                    if (e.index !== e.source.cancel) {
-                        newWin = Omadi.display.openListWindow('notification', false, [], [], true);
-                        if(typeof alertQueue !== 'undefined'){
-                            newWin.addEventListener('close', function(){
-                                Ti.App.fireEvent('showNextAlertInQueue');
-                            });
-                       }
-                    }
-                    else{
-                        if(typeof alertQueue !== 'undefined'){
-                            Ti.App.fireEvent('showNextAlertInQueue');
+                    try{
+                        if (e.index !== e.source.cancel) {
+                            newWin = Omadi.display.openListWindow('notification', false, [], [], true);
+                            if(typeof alertQueue !== 'undefined'){
+                                newWin.addEventListener('close', function(){
+                                    Ti.App.fireEvent('showNextAlertInQueue');
+                                });
+                           }
                         }
+                        else{
+                            if(typeof alertQueue !== 'undefined'){
+                                Ti.App.fireEvent('showNextAlertInQueue');
+                            }
+                        }
+                    }
+                    catch(ex){
+                        Omadi.service.sendErrorReport("exception view the notification list?: " + ex);
                     }
                 });
                 
@@ -772,18 +751,23 @@ Omadi.display.showNewNotificationDialog = function(){"use strict";
                 });
     
                 dialog.addEventListener('click', function(e) {
-                    if (e.index !== e.source.cancel) {
-                        newWin = Omadi.display.openViewWindow('notification', newNotifications.nid);
-                        if(typeof alertQueue !== 'undefined'){
-                            newWin.addEventListener('close', function(){
+                    try{
+                        if (e.index !== e.source.cancel) {
+                            newWin = Omadi.display.openViewWindow('notification', newNotifications.nid);
+                            if(typeof alertQueue !== 'undefined'){
+                                newWin.addEventListener('close', function(){
+                                    Ti.App.fireEvent('showNextAlertInQueue');
+                                });
+                            }
+                        }
+                        else{
+                            if(typeof alertQueue !== 'undefined'){
                                 Ti.App.fireEvent('showNextAlertInQueue');
-                            });
+                            }
                         }
                     }
-                    else{
-                        if(typeof alertQueue !== 'undefined'){
-                            Ti.App.fireEvent('showNextAlertInQueue');
-                        }
+                    catch(ex){
+                        Omadi.service.sendErrorReport("exception read the notification now?: " + ex);
                     }
                 });
                 
@@ -882,10 +866,10 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
                 form_part: '_print' 
             });
             
-            options.push('Charge');
-            buttonData.push({
-                form_part: '_charge' 
-            });
+            //options.push('Charge');
+            //buttonData.push({
+            //    form_part: '_charge' 
+            //});
         }
     
         if ( typeof bundle.data.custom_copy !== 'undefined') {
@@ -934,41 +918,56 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
             postDialog.addEventListener('click', function(ev) {
                 var buttonInfo, form_part;
                 
-                if(ev.index >= 0){
-                    buttonInfo = buttonData[ev.index];
-                    form_part = buttonInfo.form_part;
-                    
-                    if(typeof form_part !== 'undefined'){
-                        if (form_part == '_cancel') {
-                            Ti.API.info("Cancelled");
-                        }
-                        else if(form_part == '_view') {
-                            ev.source.eventRow.setBackgroundColor('#fff');
-                            Omadi.display.openViewWindow(node_type, e.row.nid);
-                        }
-                        else if(form_part == '_print'){
-                            Omadi.print.printReceipt(e.row.nid);
-                        }
-                        else if(form_part == '_charge'){
-                            Omadi.print.chargeCard(e.row.nid);
-                        }
-                        else if(form_part.toString().indexOf('_extra_') == 0){
-                            extraOptionIndex = parseInt(form_part.substring(7), 10);
-                            extraOptionCallback = extraOptions[extraOptionIndex].callback;
-                            extraOptionCallback(extraOptions[extraOptionIndex].callbackArgs);
-                        }
-                        else if (!isNaN(parseInt(form_part, 10))){
-                            // form+_part is a number, so it is editing the current node
-                            if(isEditEnabled === true) {
+                try{
+                    if(ev.index >= 0){
+                        buttonInfo = buttonData[ev.index];
+                        form_part = buttonInfo.form_part;
+                        
+                        if(typeof form_part !== 'undefined'){
+                            if (form_part == '_cancel') {
+                                Ti.API.info("Cancelled");
+                            }
+                            else if(form_part == '_view') {
                                 ev.source.eventRow.setBackgroundColor('#fff');
-                                Omadi.display.openFormWindow(node_type, e.row.nid, form_part);   
+                                Omadi.display.openViewWindow(node_type, e.row.nid);
+                            }
+                            else if(form_part == '_print'){
+                                Omadi.print.printReceipt(e.row.nid);
+                            }
+                            else if(form_part == '_charge'){
+                                Omadi.print.chargeCard(e.row.nid);
+                            }
+                            else if(form_part.toString().indexOf('_extra_') == 0){
+                                extraOptionIndex = parseInt(form_part.substring(7), 10);
+                                extraOptionCallback = extraOptions[extraOptionIndex].callback;
+                                extraOptionCallback(extraOptions[extraOptionIndex].callbackArgs);
+                            }
+                            else if (!isNaN(parseInt(form_part, 10))){
+                                // form+_part is a number, so it is editing the current node
+                                if(isEditEnabled === true) {
+                                    ev.source.eventRow.setBackgroundColor('#fff');
+                                    //Omadi.display.openFormWindow(node_type, e.row.nid, form_part);   
+                                    Ti.App.fireEvent('openFormWindow', {
+                                       node_type: node_type,
+                                       nid: e.row.nid,
+                                       form_part: form_part
+                                    });
+                                }
+                            }
+                            else{
+                                // The form part is a string, so it is a copy to function
+                                // Omadi.display.openFormWindow(node_type, e.row.nid, form_part);
+                                Ti.App.fireEvent('openFormWindow', {
+                                   node_type: node_type,
+                                   nid: e.row.nid,
+                                   form_part: form_part
+                                });
                             }
                         }
-                        else{
-                            // The form part is a string, so it is a copy to function
-                            Omadi.display.openFormWindow(node_type, e.row.nid, form_part);
-                        }
                     }
+                }
+                catch(ex){
+                    Omadi.service.sendErrorReport("exception dialog form options: " + ex);
                 }
             });
         }
@@ -1052,37 +1051,41 @@ Omadi.display.insertBundleIcon = function(type, imageView){"use strict";
 };
 
 Omadi.display.getDrivingDirectionsTo = function(addressString){"use strict";
-    
-    if(addressString){
-        
-        Titanium.Geolocation.accuracy = Titanium.Geolocation.ACCURACY_BEST;
-        Titanium.Geolocation.distanceFilter = 10;
-        Titanium.Geolocation.getCurrentPosition(function(e){
-            var url, longitude, latitude, intent;
+    try{
+        if(addressString){
             
-            if (e.error){
-                alert("There was a problem getting directions: " + e.error);
-                return;
-            }
-            
-            longitude = e.coords.longitude;
-            latitude = e.coords.latitude;
-           
-            addressString = addressString.replace(/ /g, '+');
-            
-            if(Ti.App.isAndroid){
-                url = "http://maps.google.com/maps?mode=driving&t=m&saddr="; 
-                url += latitude + "," + longitude;
-                url += "&daddr=" + addressString;
-            }
-            else{
-                url = "http://maps.apple.com/maps?mode=driving&t=m&saddr="; 
-                url += latitude + "," + longitude;
-                url += "&daddr=" + addressString;
-            }
-              
-            Ti.Platform.openURL(url);
-        });
+            Titanium.Geolocation.accuracy = Titanium.Geolocation.ACCURACY_BEST;
+            Titanium.Geolocation.distanceFilter = 10;
+            Titanium.Geolocation.getCurrentPosition(function(e){
+                var url, longitude, latitude, intent;
+                
+                if (e.error){
+                    alert("There was a problem getting directions: " + e.error);
+                    return;
+                }
+                
+                longitude = e.coords.longitude;
+                latitude = e.coords.latitude;
+               
+                addressString = addressString.replace(/ /g, '+');
+                
+                if(Ti.App.isAndroid){
+                    url = "http://maps.google.com/maps?mode=driving&t=m&saddr="; 
+                    url += latitude + "," + longitude;
+                    url += "&daddr=" + addressString;
+                }
+                else{
+                    url = "http://maps.apple.com/maps?mode=driving&t=m&saddr="; 
+                    url += latitude + "," + longitude;
+                    url += "&daddr=" + addressString;
+                }
+                  
+                Ti.Platform.openURL(url);
+            });
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception getting driving directions: " + ex);
     }
 };
 
@@ -1118,149 +1121,162 @@ Omadi.display.getIconFile = function(type){"use strict";
 
 Omadi.display.displayFile = function(nid, fid, title) {"use strict";
     var http, webview, newWin;
-    
-    if(Ti.Network.online){
-        if (nid > 0 && fid > 0) {
-            Omadi.display.loading();
-    
-            newWin = Titanium.UI.createWindow({
-                navBarHidden: true,
-                nid: nid,
-                fid: fid,
-                title: title,
-                url: '/main_windows/fileViewer.js',
-                orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
-            });
-            
-            newWin.addEventListener('open', function(){
-               Omadi.display.doneLoading(); 
-            });
-            
-            newWin.open();
+    try{
+        if(Ti.Network.online){
+            if (nid > 0 && fid > 0) {
+                Omadi.display.loading();
+        
+                newWin = Titanium.UI.createWindow({
+                    navBarHidden: true,
+                    nid: nid,
+                    fid: fid,
+                    title: title,
+                    url: '/main_windows/fileViewer.js',
+                    orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+                });
+                
+                newWin.addEventListener('open', function(){
+                   Omadi.display.doneLoading(); 
+                });
+                
+                newWin.open();
+            }
+        }
+        else{
+            alert("You are not connected to the Internet, so the file cannot be downloaded.");
         }
     }
-    else{
-        alert("You are not connected to the Internet, so the file cannot be downloaded.");
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in display file: " + ex);
     }
 };
 
 Omadi.display.displayFullImage = function(imageView) {"use strict";
-
-    var http, db, result;
+    try{
+        var http, db, result;
+        
+        if (imageView.bigImg !== null || (typeof imageView.filePath !== 'undefined' && imageView.filePath !== null)) {
+            Ti.API.debug("Displaying big image");
+            
+            Omadi.display.loading();
+            Omadi.display.showBigImage(imageView);
+            Omadi.display.doneLoading();
+        }
+        else if (imageView.nid > 0 && imageView.fid > 0) {
+            
+            Omadi.display.loading();
+            
+            try {
+                http = Ti.Network.createHTTPClient({
+                    enableKeepAlive: false,
+                    validatesSecureCertificate: false
+                });
+                http.setTimeout(30000);
+                http.open('GET', Omadi.DOMAIN_NAME + '/sync/file/' + imageView.nid + '/' + imageView.fid);
     
-    if (imageView.bigImg !== null || (typeof imageView.filePath !== 'undefined' && imageView.filePath !== null)) {
-        Ti.API.debug("Displaying big image");
-        
-        Omadi.display.loading();
-        Omadi.display.showBigImage(imageView);
-        Omadi.display.doneLoading();
-    }
-    else if (imageView.nid > 0 && imageView.fid > 0) {
-        
-        Omadi.display.loading();
-        
-        try {
-            http = Ti.Network.createHTTPClient({
-                enableKeepAlive: false,
-                validatesSecureCertificate: false
-            });
-            http.setTimeout(30000);
-            http.open('GET', Omadi.DOMAIN_NAME + '/sync/file/' + imageView.nid + '/' + imageView.fid);
-
-            Omadi.utils.setCookieHeader(http);
-
-            http.onload = function(e) {
-                //Ti.API.info('=========== Success ========');
-                
-                if(this.responseData !== null){
+                Omadi.utils.setCookieHeader(http);
+    
+                http.onload = function(e) {
+                    //Ti.API.info('=========== Success ========');
                     
-                    imageView.bigImg = this.responseData;
-                   
-                    Omadi.display.showBigImage(imageView);
-                }
-                else{
-                    alert("There was a problem downloading the photo.");
-                }
-                
-                Omadi.display.doneLoading();
-            };
-
-            http.onerror = function(e) {
-                Ti.API.error("Error in download Image 2");
+                    if(this.responseData !== null){
+                        
+                        imageView.bigImg = this.responseData;
+                       
+                        Omadi.display.showBigImage(imageView);
+                    }
+                    else{
+                        alert("There was a problem downloading the photo.");
+                    }
+                    
+                    Omadi.display.doneLoading();
+                };
+    
+                http.onerror = function(e) {
+                    Ti.API.error("Error in download Image 2");
+                    Omadi.display.doneLoading();
+                    alert("There was an error retrieving the file.");
+                };
+    
+                http.send();
+            }
+            catch(e) {
                 Omadi.display.doneLoading();
                 alert("There was an error retrieving the file.");
-            };
-
-            http.send();
+                Omadi.service.sendErrorReport("Exception showing full photo file: " + e);
+            }
         }
-        catch(e) {
-            Omadi.display.doneLoading();
-            alert("There was an error retrieving the file.");
-            Ti.API.info("==== ERROR ===" + e);
+        else{
+            alert("The photo could not be displayed.");
+            Omadi.service.sendErrorReport("Could not show full photo file.");
         }
     }
-    else{
-        alert("The photo could not be displayed.");
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception showing full photo: " + ex);
     }
 };
 
 Omadi.display.displayLargeImage = function(imageView, nid, file_id, showInImageView) {"use strict";
-
-    var http;
-    
-    if(typeof showInImageView === 'undefined'){
-        showInImageView = false;
-    }
-
-    if (imageView.bigImg !== null) {
-        Ti.API.debug("Displaying big image");
-        Omadi.display.showBigImage(imageView);
-        return;
-    }
-
-    if (nid > 0 && file_id > 0) {
+    try{
+        var http;
         
-        if(!showInImageView){
-            Omadi.display.loading();
+        if(typeof showInImageView === 'undefined'){
+            showInImageView = false;
         }
-        
-        try {
-            http = Ti.Network.createHTTPClient({
-                enableKeepAlive: false,
-                validatesSecureCertificate: false
-            });
-            http.setTimeout(30000);
-            http.open('GET', Omadi.DOMAIN_NAME + '/sync/file/' + nid + '/' + file_id);
-
-            Omadi.utils.setCookieHeader(http);
-
-            http.onload = function(e) {
-                //Ti.API.info('=========== Success ========');
-                imageView.bigImg = this.responseData;
-                
-                if(showInImageView){
-                    imageView.image = this.responseData;
-                }
-                else{
-                    Omadi.display.showBigImage(imageView);
+    
+        if (imageView.bigImg !== null) {
+            Ti.API.debug("Displaying big image");
+            Omadi.display.showBigImage(imageView);
+            return;
+        }
+    
+        if (nid > 0 && file_id > 0) {
+            
+            if(!showInImageView){
+                Omadi.display.loading();
+            }
+            
+            try {
+                http = Ti.Network.createHTTPClient({
+                    enableKeepAlive: false,
+                    validatesSecureCertificate: false
+                });
+                http.setTimeout(30000);
+                http.open('GET', Omadi.DOMAIN_NAME + '/sync/file/' + nid + '/' + file_id);
+    
+                Omadi.utils.setCookieHeader(http);
+    
+                http.onload = function(e) {
+                    //Ti.API.info('=========== Success ========');
+                    imageView.bigImg = this.responseData;
+                    
+                    if(showInImageView){
+                        imageView.image = this.responseData;
+                    }
+                    else{
+                        Omadi.display.showBigImage(imageView);
+                        Omadi.display.doneLoading();
+                    }
+                    imageView.fullImageLoaded = true;
+                };
+    
+                http.onerror = function(e) {
+                    Ti.API.error("Error in download Image 2");
                     Omadi.display.doneLoading();
-                }
-                imageView.fullImageLoaded = true;
-            };
-
-            http.onerror = function(e) {
-                Ti.API.error("Error in download Image 2");
+                    alert("There was an error retrieving the file.");
+                };
+    
+                http.send();
+            }
+            catch(e) {
                 Omadi.display.doneLoading();
                 alert("There was an error retrieving the file.");
-            };
-
-            http.send();
+                Omadi.service.sendErrorReport("exception in retrieving large image file: " + e);
+            }
         }
-        catch(e) {
-            Omadi.display.doneLoading();
-            alert("There was an error retrieving the file.");
-            Ti.API.info("==== ERROR ===" + e);
-        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("exception in retrieving large image: " + ex);
     }
 };
 
@@ -1305,60 +1321,68 @@ Omadi.display.getImageViewFromData = function(blobImage, maxWidth, maxHeight) {"
 Omadi.display.openTermsOfService = function(){"use strict";
 
     var win, webView, toolbar, space, titleLabel, backButton;
-
-    win = Ti.UI.createWindow({
-        layout: 'vertical',
-        navBarHidden: true,
-        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
-    });
-    
-    webView = Ti.UI.createWebView({
-        url : 'https://omadi.com/terms.txt',
-        height : Ti.UI.FILL
-    });
-    
-    if(Ti.App.isAndroid){
-        win.addEventListener("android:back", function(e){
-            win.close();
+    try{
+        win = Ti.UI.createWindow({
+            layout: 'vertical',
+            navBarHidden: true,
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
         });
+        
+        webView = Ti.UI.createWebView({
+            url : 'https://omadi.com/terms.txt',
+            height : Ti.UI.FILL
+        });
+        
+        if(Ti.App.isAndroid){
+            win.addEventListener("android:back", function(e){
+                win.close();
+            });
+        }
+        else{
+            backButton = Ti.UI.createButton({
+                title : 'Back',
+                style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+            });
+            
+            backButton.addEventListener('click', function() {
+                try{
+                    win.close();
+                }
+                catch(ex){
+                    Omadi.service.sendErrorReport("exception with back button for open terms of service: " + ex);
+                }
+            });
+            
+            space = Titanium.UI.createButton({
+                systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+            });
+            
+            titleLabel = Titanium.UI.createButton({
+                title : "Terms of Service",
+                color : '#fff',
+                ellipsize : true,
+                wordwrap : false,
+                width : Ti.UI.SIZE,
+                focusable : false,
+                touchEnabled : false,
+                style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+            });
+        
+            toolbar = Titanium.UI.iOS.createToolbar({
+                items : [backButton, space, titleLabel, space],
+                top : 0,
+                borderTop : false,
+                borderBottom : false
+            });
+            win.add(toolbar);
+        }
+        
+        win.add(webView);
+        win.open();
     }
-    else{
-        backButton = Ti.UI.createButton({
-            title : 'Back',
-            style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-        });
-        
-        backButton.addEventListener('click', function() {
-            win.close();
-        });
-        
-        space = Titanium.UI.createButton({
-            systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
-        });
-        
-        titleLabel = Titanium.UI.createButton({
-            title : "Terms of Service",
-            color : '#fff',
-            ellipsize : true,
-            wordwrap : false,
-            width : Ti.UI.SIZE,
-            focusable : false,
-            touchEnabled : false,
-            style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
-        });
-    
-        toolbar = Titanium.UI.iOS.createToolbar({
-            items : [backButton, space, titleLabel, space],
-            top : 0,
-            borderTop : false,
-            borderBottom : false
-        });
-        win.add(toolbar);
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception opening terms of service: " + ex);
     }
-    
-    win.add(webView);
-    win.open();
-    
 };
 
 // Download Image from the server
@@ -1508,7 +1532,12 @@ Omadi.display.loading = function(message) {"use strict";
     });
     
     indicator.addEventListener('click', function(e) {
-        e.source.hide();
+        try{
+            e.source.hide();
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("exception hiding the indicator: " + ex);
+        }
     });
     
     Ti.UI.currentWindow.addEventListener('close', function(){

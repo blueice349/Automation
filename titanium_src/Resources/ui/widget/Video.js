@@ -248,20 +248,24 @@ VideoWidget.prototype.getImageView = function(widgetView, index, nid, fid, degre
  
     imageView.addEventListener('click', function(e) {
         var dialog;
-        
-        if(e.source.fid === null){
-            e.source.setTouchEnabled(false);
-            Omadi.display.loading();
-            Widget[e.source.instance.field_name].openVideoChooser(e.source);
-            Omadi.display.doneLoading();
-            
-            // Allow the imageView to be touched again after waiting a little bit
-            setTimeout(function(){
-                imageView.setTouchEnabled(true);
-            }, 1000);
+        try{
+            if(e.source.fid === null){
+                e.source.setTouchEnabled(false);
+                Omadi.display.loading();
+                Widget[e.source.instance.field_name].openVideoChooser(e.source);
+                Omadi.display.doneLoading();
+                
+                // Allow the imageView to be touched again after waiting a little bit
+                setTimeout(function(){
+                    imageView.setTouchEnabled(true);
+                }, 1000);
+            }
+            else{
+                Widget[e.source.instance.field_name].openVideoPlayer(e.source);
+            }
         }
-        else{
-            Widget[e.source.instance.field_name].openVideoPlayer(e.source);
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception in video image view click: " + ex);
         }
     });
    
@@ -287,11 +291,16 @@ VideoWidget.prototype.openVideoPlayer = function(imageView){"use strict";
         });
         
         back.addEventListener('click', function(e) {
-            Widget[e.source.instance.field_name].videoPlayer.stop();
-            Widget[e.source.instance.field_name].videoPlayer = null;
-            
-            Widget[e.source.instance.field_name].videoWin.close();
-            Widget[e.source.instance.field_name].videoWin = null;
+            try{
+                Widget[e.source.instance.field_name].videoPlayer.stop();
+                Widget[e.source.instance.field_name].videoPlayer = null;
+                
+                Widget[e.source.instance.field_name].videoWin.close();
+                Widget[e.source.instance.field_name].videoWin = null;
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception in video back button pressed: " + ex);
+            }
         });
     
         space = Titanium.UI.createButton({

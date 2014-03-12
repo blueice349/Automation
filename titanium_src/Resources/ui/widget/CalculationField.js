@@ -157,12 +157,17 @@ CalculationFieldWidget.prototype.getNewElement = function(index, showCalc){"use 
         });
         
         recalculateButton.addEventListener('click', function(e){
-            var instance = e.source.instance;
-            
-            Widget[e.source.instance.field_name].formObj.unfocusField();
-            // Reset the cached values
-            CalculatedFieldCache = {};
-            Widget[e.source.instance.field_name].redraw(instance);
+            try{
+                var instance = e.source.instance;
+                
+                Widget[e.source.instance.field_name].formObj.unfocusField();
+                // Reset the cached values
+                CalculatedFieldCache = {};
+                Widget[e.source.instance.field_name].redraw(instance);
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception while clicking recalculate: " + ex);
+            }
         });
         
         widgetView.add(recalculateButton);

@@ -74,9 +74,14 @@ NumberIntegerWidget.prototype.getFieldView = function(){"use strict";
         });
             
         addButton.addEventListener('click', function(e){
-            Widget[e.source.fieldName].numVisibleFields ++;
-            Widget[e.source.fieldName].formObj.unfocusField();
-            Widget[e.source.fieldName].redraw();
+            try{
+                Widget[e.source.fieldName].numVisibleFields ++;
+                Widget[e.source.fieldName].formObj.unfocusField();
+                Widget[e.source.fieldName].redraw();
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception in integer add another: " + ex);
+            }
         });
         
         this.fieldView.add(addButton);

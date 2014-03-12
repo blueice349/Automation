@@ -890,7 +890,11 @@ function openAndroidMenuItem(e){"use strict";
     itemIndex = e.source.getOrder();
     itemData = androidMenuItemData[itemIndex];
     
-    Omadi.display.openFormWindow(itemData.type, itemData.nid, itemData.form_part);
+    Ti.App.fireEvent('openFormWindow', {
+        node_type: itemData.type,
+        nid: itemData.nid,
+        form_part: itemData.form_part 
+    });
 }
 
 if (Ti.App.isAndroid) {
@@ -1045,76 +1049,88 @@ function iOSActionMenu(actualWindow) {"use strict";
 
     edit.addEventListener('click', function() {
         var db, result, bundle, btn_tt, btn_id, form_part, postDialog, to_type, to_bundle;
-        
-        bundle = Omadi.data.getBundle(curWin.type);
-        
-        db = Omadi.utils.openMainDatabase();
-        result = db.execute('SELECT form_part FROM node WHERE nid=' + curWin.nid);
-        form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
-        result.close();
-        db.close();
-
-
-        btn_tt = [];
-        btn_id = [];
-        
-        if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
-
-            if (bundle.data.form_parts.parts.length >= form_part + 2) {
-               
-                btn_tt.push(bundle.data.form_parts.parts[form_part + 1].label);
-                btn_id.push(form_part + 1);
-            }
-        }
-
-        btn_tt.push('Edit');
-        btn_id.push(form_part);
-        
-        if(Omadi.print.canPrintReceipt(curWin.nid)){
+        try{
+            bundle = Omadi.data.getBundle(curWin.type);
             
-            btn_tt.push('Print');
-            btn_id.push('_print');
-        }
-
-        if(typeof bundle.data.custom_copy !== 'undefined'){
-            for(to_type in bundle.data.custom_copy){
-                if(bundle.data.custom_copy.hasOwnProperty(to_type)){
-                    to_bundle = Omadi.data.getBundle(to_type);
-                    if(to_bundle){
-                        btn_tt.push("Copy to " + to_bundle.label);
-                        btn_id.push(to_type);
+            db = Omadi.utils.openMainDatabase();
+            result = db.execute('SELECT form_part FROM node WHERE nid=' + curWin.nid);
+            form_part = result.fieldByName('form_part', Ti.Database.FIELD_TYPE_INT);
+            result.close();
+            db.close();
+    
+    
+            btn_tt = [];
+            btn_id = [];
+            
+            if (bundle.data.form_parts != null && bundle.data.form_parts != "") {
+    
+                if (bundle.data.form_parts.parts.length >= form_part + 2) {
+                   
+                    btn_tt.push(bundle.data.form_parts.parts[form_part + 1].label);
+                    btn_id.push(form_part + 1);
+                }
+            }
+    
+            btn_tt.push('Edit');
+            btn_id.push(form_part);
+            
+            if(Omadi.print.canPrintReceipt(curWin.nid)){
+                
+                btn_tt.push('Print');
+                btn_id.push('_print');
+            }
+    
+            if(typeof bundle.data.custom_copy !== 'undefined'){
+                for(to_type in bundle.data.custom_copy){
+                    if(bundle.data.custom_copy.hasOwnProperty(to_type)){
+                        to_bundle = Omadi.data.getBundle(to_type);
+                        if(to_bundle){
+                            btn_tt.push("Copy to " + to_bundle.label);
+                            btn_id.push(to_type);
+                        }
                     }
                 }
             }
-        }
-        
-
-        btn_tt.push('Cancel');
-
-        postDialog = Titanium.UI.createOptionDialog();
-        postDialog.options = btn_tt;
-        postDialog.cancel = btn_tt.length - 1;
-        postDialog.show();
-
-        postDialog.addEventListener('click', function(ev) {
-            var formPart;
             
-            if (ev.index == ev.source.cancel) {
-                Ti.API.info("Fix this logic");
-            }
-            else if (ev.index != -1) {
-                
-                formPart = btn_id[ev.index];
-                
-                if(formPart == '_print'){
-                    Omadi.print.printReceipt(curWin.nid);
+    
+            btn_tt.push('Cancel');
+    
+            postDialog = Titanium.UI.createOptionDialog();
+            postDialog.options = btn_tt;
+            postDialog.cancel = btn_tt.length - 1;
+            postDialog.show();
+    
+            postDialog.addEventListener('click', function(ev) {
+                var formPart;
+                try{
+                    if (ev.index == ev.source.cancel) {
+                        Ti.API.info("Fix this logic");
+                    }
+                    else if (ev.index != -1) {
+                        
+                        formPart = btn_id[ev.index];
+                        
+                        if(formPart == '_print'){
+                            Omadi.print.printReceipt(curWin.nid);
+                        }
+                        else{
+                            
+                            Ti.App.fireEvent('openFormWindow', {
+                                node_type: curWin.type,
+                                nid: curWin.nid,
+                                form_part: formPart 
+                            });
+                        }
+                    }
                 }
-                else{
-                    Omadi.display.openFormWindow(curWin.type, curWin.nid, formPart);
+                catch(ex){
+                    Omadi.service.sendErrorReport("Exception with action click on view: " + ex);
                 }
-            }
-        });
-
+            });
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception with viewing actions on view: " + ex);
+        }
     });
 
     //Check is node editable or not

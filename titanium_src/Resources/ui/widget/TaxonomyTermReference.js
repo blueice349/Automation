@@ -196,21 +196,25 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
         element.autocomplete_table = autocomplete_table;
 
         autocomplete_table.addEventListener('click', function(e) {
-
-            e.source.textField.textValue = e.source.textField.value = e.rowData.title;
-            e.source.textField.dbValue = e.rowData.dbValue;
-
-            e.source.autocomplete_table.setHeight(0);
-            e.source.autocomplete_table.setBorderWidth(0);
-            e.source.autocomplete_table.setVisible(false);
-
-            if (Ti.App.isAndroid) {
-                // Make sure the cursor is at the end of the text
-                e.source.textField.setSelection(e.source.textField.value.length, e.source.textField.value.length);
+            try{
+                e.source.textField.textValue = e.source.textField.value = e.rowData.title;
+                e.source.textField.dbValue = e.rowData.dbValue;
+    
+                e.source.autocomplete_table.setHeight(0);
+                e.source.autocomplete_table.setBorderWidth(0);
+                e.source.autocomplete_table.setVisible(false);
+    
+                if (Ti.App.isAndroid) {
+                    // Make sure the cursor is at the end of the text
+                    e.source.textField.setSelection(e.source.textField.value.length, e.source.textField.value.length);
+                }
+    
+                // Pretend like this is just loaded - mainly a fix for android, but makes sense for both
+                e.source.textField.touched = false;
             }
-
-            // Pretend like this is just loaded - mainly a fix for android, but makes sense for both
-            e.source.textField.touched = false;
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception in taxonomy autocomplete click: " + ex);
+            }
         });
         
         element.addEventListener('focus', function(e){
@@ -358,26 +362,30 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
                         postDialog.show();
     
                         postDialog.addEventListener('click', function(ev) {
-                            
-                            if (ev.index >= 0 && ev.index != ev.source.cancel) {
-                                var textValue = ev.source.options[ev.index];
-    
-                                if (textValue == '- None -') {
-                                    textValue = "";
+                            try{
+                                if (ev.index >= 0 && ev.index != ev.source.cancel) {
+                                    var textValue = ev.source.options[ev.index];
+        
+                                    if (textValue == '- None -') {
+                                        textValue = "";
+                                    }
+                                    ev.source.element.textValue = textValue;
+                                    ev.source.element.setText(textValue);
+                                    ev.source.element.value = ev.source.element.dbValue = ev.source.element.options[ev.index].dbValue;
+                                    
+                                    if (ev.source.element.check_conditional_fields.length > 0) {
+                                        Widget[ev.source.element.instance.field_name].formObj.setConditionallyRequiredLabels(ev.source.element.instance, ev.source.element.check_conditional_fields);
+                                    }
                                 }
-                                ev.source.element.textValue = textValue;
-                                ev.source.element.setText(textValue);
-                                ev.source.element.value = ev.source.element.dbValue = ev.source.element.options[ev.index].dbValue;
-                                
-                                if (ev.source.element.check_conditional_fields.length > 0) {
-                                    Widget[ev.source.element.instance.field_name].formObj.setConditionallyRequiredLabels(ev.source.element.instance, ev.source.element.check_conditional_fields);
-                                }
+                            }
+                            catch(ex){
+                                Omadi.service.sendErrorReport("Exception in taxonomy post dialog click: " + ex);
                             }
                         });
                     }
                 }
                 catch(ex){
-                    Widget[e.source.instance.field_name].formObj.sendError("could not open taxonomy term select box: " + e.source.instance.label + " " + ex);
+                    Omadi.service.sendErrorReport("could not open taxonomy term select box: " + e.source.instance.label + " " + ex);
                 }
             });
         }

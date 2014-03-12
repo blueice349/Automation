@@ -818,162 +818,166 @@ var termsView;
         scrollView.add(block_i);
 
         loginButton.addEventListener('click', function() {
-
-            //Onblur the text fields, remove keyboard from screen
-            portal.blur();
-            passwordField.blur();
-            usernameField.blur();
-
-            portal.setValue(portal.getValue().toString().toLowerCase());
-
-            if (!Ti.Network.online) {
-                alert("You do not have a network connection. You cannot login until you connect to the Internet.");
-            }
-            else if (portal.value == "") {
-                alert("You must enter a valid client account in the top box.");
-            }
-            else if (usernameField.value == "") {
-                alert("A valid username is required.");
-            }
-            else if (passwordField.value == "") {
-                alert("A valid password is required.");
-            }
-            else if (termsView.selected === false) {
-                alert("You must to agree to the Terms of Service before using the app.");
-            }
-            else {
-
-                Omadi.display.loading("Logging you in...");
-                //Create internet connection
-                var xhr = Ti.Network.createHTTPClient({
-                    enableKeepAlive: false,
-                    validatesSecureCertificate: false
-                });
-               
-                xhr.setTimeout(10000);
-
-                xhr.open('POST', 'https://' + portal.value + '.omadi.com/js-sync/sync/login.json');
-                xhr.setRequestHeader("Content-Type", "application/json");
-
-                // When infos are retrieved:
-                xhr.onload = function(e) {
-                    var db_list, list_result, cookie, dialog, loginJSON;
-                    
-                    if(typeof Ti.App.backgroundPhotoUploadCheck !== 'undefined'){
-                        clearInterval(Ti.App.backgroundPhotoUploadCheck);
-                    }
-                    
-                    db_list = Omadi.utils.openListDatabase();
-
-                    list_result = db_list.execute("SELECT domain FROM domains WHERE domain='" + dbEsc(portal.value) + "'");
-
-                    if (list_result.rowCount > 0) {
-                        //Exists
-                        Ti.API.info('database exists');
-                    }
-                    else {
-                        db_list.execute("BEGIN IMMEDIATE TRANSACTION");
-                        //Create another database
-                        Ti.API.info('database does not exist, creating a new one');
-                        db_list.execute("INSERT INTO domains (domain, db_name) VALUES ('" + dbEsc(portal.value) + "','" + dbEsc(Omadi.utils.getUserDBName(portal.value, usernameField.value)) + "')");
-                        db_list.execute("COMMIT TRANSACTION");
-                    }
-
-                    list_result.close();
-
-                    db_list.execute("BEGIN IMMEDIATE TRANSACTION");
-                    db_list.execute("UPDATE history SET domain = '" + dbEsc(portal.value) + "', username = '" + dbEsc(usernameField.value) + "', db_name='" + dbEsc("db_" + portal.value + '_' + usernameField.value) + "' WHERE id_hist=1");
-                    db_list.execute("COMMIT TRANSACTION");
-
-                    //Passes parameter to the second window:
-                    domainName = 'https://' + portal.value + '.omadi.com';
-                    Omadi.DOMAIN_NAME = domainName;
-
-                    setProperties(domainName, this.responseText);
-                    
-                    setClientAccount(domainName, db_list);
-                    
-                    Ti.App.removeEventListener('bytesStreamed', bytesStreamedLogin);
-                    
-                    Omadi.display.doneLoading();
-                    
-                    // Stop uploading a background file, as the new login with invalidate the session
-                    Omadi.service.abortFileUpload();
-                    
-                    mainMenuWindow = Omadi.display.openMainMenuWindow({
-                        fromSavedCookie: false
+            try{
+                //Onblur the text fields, remove keyboard from screen
+                portal.blur();
+                passwordField.blur();
+                usernameField.blur();
+    
+                portal.setValue(portal.getValue().toString().toLowerCase());
+    
+                if (!Ti.Network.online) {
+                    alert("You do not have a network connection. You cannot login until you connect to the Internet.");
+                }
+                else if (portal.value == "") {
+                    alert("You must enter a valid client account in the top box.");
+                }
+                else if (usernameField.value == "") {
+                    alert("A valid username is required.");
+                }
+                else if (passwordField.value == "") {
+                    alert("A valid password is required.");
+                }
+                else if (termsView.selected === false) {
+                    alert("You must to agree to the Terms of Service before using the app.");
+                }
+                else {
+    
+                    Omadi.display.loading("Logging you in...");
+                    //Create internet connection
+                    var xhr = Ti.Network.createHTTPClient({
+                        enableKeepAlive: false,
+                        validatesSecureCertificate: false
                     });
-                    
-                    // Right when the main menu window closes, check for additional files to upload
-                    mainMenuWindow.addEventListener('close', function(){
-                        updateUploadBytes();
-                        Omadi.service.uploadBackgroundFile(); 
-                    });
-
-                    cookie = this.getResponseHeader('Set-Cookie');
-                    
-                    //Ti.API.info("Login Details: " + this.responseText);
-
-                    list_result = db_list.execute('SELECT COUNT(*) AS count FROM login WHERE id_log=1');
-                    if (list_result.fieldByName('count') > 0) {
+                   
+                    xhr.setTimeout(10000);
+    
+                    xhr.open('POST', 'https://' + portal.value + '.omadi.com/js-sync/sync/login.json');
+                    xhr.setRequestHeader("Content-Type", "application/json");
+    
+                    // When infos are retrieved:
+                    xhr.onload = function(e) {
+                        var db_list, list_result, cookie, dialog, loginJSON;
+                        
+                        if(typeof Ti.App.backgroundPhotoUploadCheck !== 'undefined'){
+                            clearInterval(Ti.App.backgroundPhotoUploadCheck);
+                        }
+                        
+                        db_list = Omadi.utils.openListDatabase();
+    
+                        list_result = db_list.execute("SELECT domain FROM domains WHERE domain='" + dbEsc(portal.value) + "'");
+    
+                        if (list_result.rowCount > 0) {
+                            //Exists
+                            Ti.API.info('database exists');
+                        }
+                        else {
+                            db_list.execute("BEGIN IMMEDIATE TRANSACTION");
+                            //Create another database
+                            Ti.API.info('database does not exist, creating a new one');
+                            db_list.execute("INSERT INTO domains (domain, db_name) VALUES ('" + dbEsc(portal.value) + "','" + dbEsc(Omadi.utils.getUserDBName(portal.value, usernameField.value)) + "')");
+                            db_list.execute("COMMIT TRANSACTION");
+                        }
+    
+                        list_result.close();
+    
                         db_list.execute("BEGIN IMMEDIATE TRANSACTION");
-                        db_list.execute("UPDATE login SET picked = '" + dbEsc(domainName) + "', login_json = '" + dbEsc(Ti.Utils.base64encode(this.responseText)) + "', is_logged = 'true', cookie = '" + dbEsc(cookie) + "', logged_time = '" + Omadi.utils.getUTCTimestamp() + "' WHERE id_log=1");
+                        db_list.execute("UPDATE history SET domain = '" + dbEsc(portal.value) + "', username = '" + dbEsc(usernameField.value) + "', db_name='" + dbEsc("db_" + portal.value + '_' + usernameField.value) + "' WHERE id_hist=1");
                         db_list.execute("COMMIT TRANSACTION");
-                    }
-                    else {
-                        db_list.execute("BEGIN IMMEDIATE TRANSACTION");
-                        db_list.execute("INSERT INTO login SET picked = '" + dbEsc(domainName) + "', login_json = '" + dbEsc(Ti.Utils.base64encode(this.responseText)) + "', is_logged = 'true', cookie = '" + dbEsc(cookie) + "', logged_time = '" + Omadi.utils.getUTCTimestamp() + "', id_log=1");
-                        db_list.execute("COMMIT TRANSACTION");
-                    }
+    
+                        //Passes parameter to the second window:
+                        domainName = 'https://' + portal.value + '.omadi.com';
+                        Omadi.DOMAIN_NAME = domainName;
+    
+                        setProperties(domainName, this.responseText);
+                        
+                        setClientAccount(domainName, db_list);
+                        
+                        Ti.App.removeEventListener('bytesStreamed', bytesStreamedLogin);
+                        
+                        Omadi.display.doneLoading();
+                        
+                        // Stop uploading a background file, as the new login with invalidate the session
+                        Omadi.service.abortFileUpload();
+                        
+                        mainMenuWindow = Omadi.display.openMainMenuWindow({
+                            fromSavedCookie: false
+                        });
+                        
+                        // Right when the main menu window closes, check for additional files to upload
+                        mainMenuWindow.addEventListener('close', function(){
+                            updateUploadBytes();
+                            Omadi.service.uploadBackgroundFile(); 
+                        });
+    
+                        cookie = this.getResponseHeader('Set-Cookie');
+                        
+                        //Ti.API.info("Login Details: " + this.responseText);
+    
+                        list_result = db_list.execute('SELECT COUNT(*) AS count FROM login WHERE id_log=1');
+                        if (list_result.fieldByName('count') > 0) {
+                            db_list.execute("BEGIN IMMEDIATE TRANSACTION");
+                            db_list.execute("UPDATE login SET picked = '" + dbEsc(domainName) + "', login_json = '" + dbEsc(Ti.Utils.base64encode(this.responseText)) + "', is_logged = 'true', cookie = '" + dbEsc(cookie) + "', logged_time = '" + Omadi.utils.getUTCTimestamp() + "' WHERE id_log=1");
+                            db_list.execute("COMMIT TRANSACTION");
+                        }
+                        else {
+                            db_list.execute("BEGIN IMMEDIATE TRANSACTION");
+                            db_list.execute("INSERT INTO login SET picked = '" + dbEsc(domainName) + "', login_json = '" + dbEsc(Ti.Utils.base64encode(this.responseText)) + "', is_logged = 'true', cookie = '" + dbEsc(cookie) + "', logged_time = '" + Omadi.utils.getUTCTimestamp() + "', id_log=1");
+                            db_list.execute("COMMIT TRANSACTION");
+                        }
+                        
+                        // Get rid of any background uploads as the cookie is updated
+                        db_list.execute("DELETE FROM background_files WHERE client_account='" + dbEsc(portal.value) + "' AND username = '" + dbEsc(usernameField.value) + "'");
+    
+                        db_list.close();
+                        passwordField.value = "";
+    
+                        startGPSService();
+                    };
+    
+                    //If username and pass wrong:
+                    xhr.onerror = function(e) {
+                        //Ti.API.info("status is: " + this.status);
+                        Omadi.display.doneLoading();
+    
+                        if(!Ti.Network.online){
+                            alert("You do not have a connection to the Internet. Please connect and try again.");
+                        }
+                        else if (this.status == 401 || this.status == 404) {
+                            //label_error.text = "Check your username and password. Then try again.";
+                            alert("Make sure client account, username and password are correct.");
+                        }
+                        else if(this.error && this.error.indexOf("imeout") !== -1){
+                            alert("There was a network error. Make sure you're connected to the Internet.");
+                            //label_error.text = "Network timeout. Please try again.";
+                        }
+                        else {
+                            alert("There was a problem logging you in. Please try again. Details: " + e.error);
+                            Omadi.service.sendErrorReport("Error logging in: " + e.error);
+                            //label_error.text = "An error has occurred. Please try again.";
+                        }
+                    };
                     
-                    // Get rid of any background uploads as the cookie is updated
-                    db_list.execute("DELETE FROM background_files WHERE client_account='" + dbEsc(portal.value) + "' AND username = '" + dbEsc(usernameField.value) + "'");
-
-                    db_list.close();
-                    passwordField.value = "";
-
-                    startGPSService();
-                };
-
-                //If username and pass wrong:
-                xhr.onerror = function(e) {
-                    //Ti.API.info("status is: " + this.status);
-                    Omadi.display.doneLoading();
-
-                    if(!Ti.Network.online){
-                        alert("You do not have a connection to the Internet. Please connect and try again.");
-                    }
-                    else if (this.status == 401 || this.status == 404) {
-                        //label_error.text = "Check your username and password. Then try again.";
-                        alert("Make sure client account, username and password are correct.");
-                    }
-                    else if(this.error && this.error.indexOf("imeout") !== -1){
-                        alert("There was a network error. Make sure you're connected to the Internet.");
-                        //label_error.text = "Network timeout. Please try again.";
-                    }
-                    else {
-                        alert("There was a problem logging you in. Please try again. Details: " + e.error);
-                        Omadi.service.sendErrorReport("Error logging in: " + e.error);
-                        //label_error.text = "An error has occurred. Please try again.";
-                    }
-                };
-                
-                xhr.send(JSON.stringify({
-                    username : usernameField.value,
-                    password : passwordField.value,
-                    device_id : Ti.Platform.getId(),
-                    app_version : Ti.App.version,
-                    device_data : {
-                        model : Ti.Platform.model,
-                        version : Ti.Platform.version,
-                        architecture : Ti.Platform.architecture,
-                        platform : Ti.Platform.name,
-                        os_type : Ti.Platform.ostype,
-                        screen_density : Ti.Platform.displayCaps.density,
-                        primary_language : Ti.Platform.locale,
-                        processor_count : Ti.Platform.processorCount
-                    }
-                }));
+                    xhr.send(JSON.stringify({
+                        username : usernameField.value,
+                        password : passwordField.value,
+                        device_id : Ti.Platform.getId(),
+                        app_version : Ti.App.version,
+                        device_data : {
+                            model : Ti.Platform.model,
+                            version : Ti.Platform.version,
+                            architecture : Ti.Platform.architecture,
+                            platform : Ti.Platform.name,
+                            os_type : Ti.Platform.ostype,
+                            screen_density : Ti.Platform.displayCaps.density,
+                            primary_language : Ti.Platform.locale,
+                            processor_count : Ti.Platform.processorCount
+                        }
+                    }));
+                }
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception with login button clicked: " + ex);
             }
         });
 

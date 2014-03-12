@@ -70,52 +70,56 @@ DispatchForm.prototype.showActionsOptions = function(e){"use strict";
 
     postDialog.addEventListener('click', function(ev) {
         var form_errors, dialog, i;
-        
-        if(ev.index >= 0 && ev.index != ev.source.cancel){
-            if(Dispatch.workObj.nodeSaved === false){
-                
-                Dispatch.workObj.formToNode();
-                Dispatch.dispatchObj.formToNode();
-                
-                Dispatch.workObj.validate_form_data(btn_id[ev.index]);
-                Dispatch.dispatchObj.validate_form_data(btn_id[ev.index]);
-                
-                form_errors = Dispatch.workObj.form_errors;
-                for(i = 0; i < Dispatch.dispatchObj.form_errors.length; i ++){
-                    form_errors.push(Dispatch.dispatchObj.form_errors[i] + " (dispatch Tab)");
-                }
-                
-                if(form_errors.length > 0){
-                    dialog = Titanium.UI.createAlertDialog({
-                        title : 'Dispatch Validation',
-                        buttonNames : ['OK'],
-                        message: form_errors.join("\n")
-                    });
+        try{
+            if(ev.index >= 0 && ev.index != ev.source.cancel){
+                if(Dispatch.workObj.nodeSaved === false){
                     
-                    dialog.show();
+                    Dispatch.workObj.formToNode();
+                    Dispatch.dispatchObj.formToNode();
+                    
+                    Dispatch.workObj.validate_form_data(btn_id[ev.index]);
+                    Dispatch.dispatchObj.validate_form_data(btn_id[ev.index]);
+                    
+                    form_errors = Dispatch.workObj.form_errors;
+                    for(i = 0; i < Dispatch.dispatchObj.form_errors.length; i ++){
+                        form_errors.push(Dispatch.dispatchObj.form_errors[i] + " (dispatch Tab)");
+                    }
+                    
+                    if(form_errors.length > 0){
+                        dialog = Titanium.UI.createAlertDialog({
+                            title : 'Dispatch Validation',
+                            buttonNames : ['OK'],
+                            message: form_errors.join("\n")
+                        });
+                        
+                        dialog.show();
+                    }
+                    else{
+                    
+                        // if(btn_id[ev.index] == 'next'){
+                            // ActiveFormObj.saveForm('next_part');
+                        // }
+                        // else if(btn_id[ev.index] == 'draft'){
+                            // ActiveFormObj.saveForm('draft');
+                        // }
+                        // else if(btn_id[ev.index] == 'new'){
+                            // ActiveFormObj.saveForm('new');
+                        // }
+                        // else if(btn_id[ev.index] == 'normal'){
+                            // ActiveFormObj.saveForm('normal');
+                        // }
+                        
+                        Dispatch.dispatchObj.saveForm('normal');
+                        Dispatch.workObj.saveForm('normal');
+                    }
                 }
                 else{
-                
-                    // if(btn_id[ev.index] == 'next'){
-                        // ActiveFormObj.saveForm('next_part');
-                    // }
-                    // else if(btn_id[ev.index] == 'draft'){
-                        // ActiveFormObj.saveForm('draft');
-                    // }
-                    // else if(btn_id[ev.index] == 'new'){
-                        // ActiveFormObj.saveForm('new');
-                    // }
-                    // else if(btn_id[ev.index] == 'normal'){
-                        // ActiveFormObj.saveForm('normal');
-                    // }
-                    
-                    Dispatch.dispatchObj.saveForm('normal');
-                    Dispatch.workObj.saveForm('normal');
+                    alert("The form data was saved correctly, but this screen didn't close for some reason. You can exit safely.");
                 }
             }
-            else{
-                alert("The form data was saved correctly, but this screen didn't close for some reason. You can exit safely.");
-            }
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception in dispatch form dispatch post dialog click: " + ex);
         }
     });
 };
@@ -278,38 +282,42 @@ DispatchForm.prototype.exitForm = function(){"use strict";
 
     dialog.addEventListener('click', function(e) {
         var db, result, numPhotos, secondDialog, negativeNid, query, continuousId, photoNids, types, dialogTitle, dialogMessage, messageParts, windowNid;
-
-        if (e.index == 0) {
-            
-            windowNid = parseInt(Ti.UI.currentWindow.nid, 10);
-            if (isNaN(windowNid)) {
-                windowNid = 0;
+        try{
+            if (e.index == 0) {
+                
+                windowNid = parseInt(Ti.UI.currentWindow.nid, 10);
+                if (isNaN(windowNid)) {
+                    windowNid = 0;
+                }
+                
+                if(Dispatch.dispatchObj !== null){
+                    Dispatch.dispatchObj.closeWindow();
+                }
+                
+                if(Dispatch.workObj !== null){
+                    Dispatch.workObj.closeWindow();
+                }
+                
+                // Remove any fully-saved nodes that may not have been linked
+                db = Omadi.utils.openMainDatabase();
+                db.execute("BEGIN IMMEDIATE TRANSACTION");
+                db.execute("DELETE FROM node WHERE flag_is_updated = 5");
+                db.execute("COMMIT TRANSACTION");
+                db.close();
+                
+                if(this.setSendingData){
+                    // This screen set sending data to true, so free it up in case it's still set
+                    // which would be the case for one node validating and the other not validating
+                    Omadi.service.setSendingData(false);
+                }
+                
+                Omadi.data.deleteContinuousNodes();
+                
+                Dispatch.tabGroup.close();
             }
-            
-            if(Dispatch.dispatchObj !== null){
-                Dispatch.dispatchObj.closeWindow();
-            }
-            
-            if(Dispatch.workObj !== null){
-                Dispatch.workObj.closeWindow();
-            }
-            
-            // Remove any fully-saved nodes that may not have been linked
-            db = Omadi.utils.openMainDatabase();
-            db.execute("BEGIN IMMEDIATE TRANSACTION");
-            db.execute("DELETE FROM node WHERE flag_is_updated = 5");
-            db.execute("COMMIT TRANSACTION");
-            db.close();
-            
-            if(this.setSendingData){
-                // This screen set sending data to true, so free it up in case it's still set
-                // which would be the case for one node validating and the other not validating
-                Omadi.service.setSendingData(false);
-            }
-            
-            Omadi.data.deleteContinuousNodes();
-            
-            Dispatch.tabGroup.close();
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception in really exit dialog form?: " + ex);
         }
     });
 

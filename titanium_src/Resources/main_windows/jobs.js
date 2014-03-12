@@ -387,29 +387,33 @@ function loggingOutJobs(){"use strict";
     refreshJobsTable(true);
     
     tableView.addEventListener('click', function(e) {
-        if(e.row.type == 'newJob'){
-            Omadi.display.showDialogFormOptions(e, [{
-                text: 'Accept Job',
-                callback: Omadi.bundles.dispatch.acceptJob,
-                callbackArgs: [e.row.nid]
-            },{
-                text: 'Driving Directions',
-                callback: Omadi.bundles.dispatch.getDrivingDirections,
-                callbackArgs: [e.row.nid]
-            }]);
+        try{
+            if(e.row.type == 'newJob'){
+                Omadi.display.showDialogFormOptions(e, [{
+                    text: 'Accept Job',
+                    callback: Omadi.bundles.dispatch.acceptJob,
+                    callbackArgs: [e.row.nid]
+                },{
+                    text: 'Driving Directions',
+                    callback: Omadi.bundles.dispatch.getDrivingDirections,
+                    callbackArgs: [e.row.nid]
+                }]);
+            }
+            else{
+                Omadi.display.showDialogFormOptions(e, [{
+                    text: 'Update Status',
+                    callback: Omadi.bundles.dispatch.showUpdateStatusDialog,
+                    callbackArgs: [e.row.nid]
+                },{
+                    text: 'Driving Directions',
+                    callback: Omadi.bundles.dispatch.getDrivingDirections,
+                    callbackArgs: [e.row.nid]
+                }]);
+            }
         }
-        else{
-            Omadi.display.showDialogFormOptions(e, [{
-                text: 'Update Status',
-                callback: Omadi.bundles.dispatch.showUpdateStatusDialog,
-                callbackArgs: [e.row.nid]
-            },{
-                text: 'Driving Directions',
-                callback: Omadi.bundles.dispatch.getDrivingDirections,
-                callbackArgs: [e.row.nid]
-            }]);
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception with jobs tableview click: " + ex);
         }
-        
     });
     
     wrapperView.add(tableView);

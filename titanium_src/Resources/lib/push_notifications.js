@@ -305,8 +305,13 @@ Omadi.push_notifications.loginUser = function() {"use strict";
                 });
                 
                 dialog.addEventListener('click', function(e){
-                    if(e.index == 0){
-                        Omadi.push_notifications.init();
+                    try{
+                        if(e.index == 0){
+                            Omadi.push_notifications.init();
+                        }
+                    }
+                    catch(ex){
+                        Omadi.service.sendErrorReport("exception in second try init push notifications: " + ex);
                     }
                 });
                 

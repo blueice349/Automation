@@ -66,10 +66,15 @@ Drafts.deleteDraft = function(nid){"use strict";
     });
     
     dialog.addEventListener('click', function(e){
-        if(e.index == 0){
-            Ti.API.debug("DELETING nid " + e.source.nid);
-            Omadi.data.deleteNode(e.source.nid);
-            Drafts.refreshDrafts();
+        try{
+            if(e.index == 0){
+                Ti.API.debug("DELETING nid " + e.source.nid);
+                Omadi.data.deleteNode(e.source.nid);
+                Drafts.refreshDrafts();
+            }
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("exception in click for draft delete: " + ex);
         }
     });
     
@@ -273,17 +278,17 @@ Drafts.refreshDrafts = function(){"use strict";
         //When the user clicks on a certain contact, it opens individual_contact.js
         tableView.addEventListener('click', function(e) {
             //Hide keyboard when returning
-// 
-            // if (e.row.nid != null) {
-                // Omadi.display.openFormWindow(e.row.node_type, e.row.nid, e.row.form_part);
-            // }
-            
-            if(e.row.nid != null){
-                Omadi.display.showDialogFormOptions(e, [{
-                    text: 'Delete Draft',
-                    callback: Drafts.deleteDraft,
-                    callbackArgs: [e.row.nid]
-                }]);
+            try{            
+                if(e.row.nid != null){
+                    Omadi.display.showDialogFormOptions(e, [{
+                        text: 'Delete Draft',
+                        callback: Drafts.deleteDraft,
+                        callbackArgs: [e.row.nid]
+                    }]);
+                }
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("exception in drafts tableview click: " + ex);
             }
         });
 

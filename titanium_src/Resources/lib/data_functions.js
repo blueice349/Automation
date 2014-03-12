@@ -348,10 +348,8 @@ Omadi.data.nodeSave = function(node) {"use strict";
     var query, field_name, fieldNames, instances, result, db, smallestNid, insertValues, j, k, 
         instance, value_to_insert, has_data, content_s, saveNid, continuousNid, photoNids, origNid,
         continuousId, tempNid, listDB, trueWindowNid, priceIdx, priceTotal, priceData, jsonValue;
-
-    /*global treatArray*/
     /*jslint nomen: true*/
-
+    
     node._saved = false;
 
     instances = Omadi.data.getFields(node.type);
@@ -383,7 +381,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
         // For autocomplete widgets
         node = Omadi.widgets.taxonomy_term_reference.addNewTerms(node);
     }
-
+    
     node.title = Omadi.data.getNodeTitle(node);
     
     // Setup the default for the saveNid
@@ -508,7 +506,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
                         }
                         else {
                             if (node[field_name].dbValues.length == 1) {
-                                value_to_insert = node[field_name].dbValues.pop();
+                                value_to_insert = node[field_name].dbValues[0];
                             }
                             
                         }
@@ -1835,8 +1833,13 @@ Omadi.data.getFileArray = function(onlyUploadable){"use strict";
         });
         
         dialog.addEventListener('click', function(e){
-            if(e.index === 1){
-                Omadi.display.openLocalPhotosWindow();
+            try{
+                if(e.index === 1){
+                    Omadi.display.openLocalPhotosWindow();
+                }
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("exception upload problem dialog: " + ex);
             }
         });
         
@@ -2136,10 +2139,15 @@ Omadi.data.getNextPhotoData = function(){"use strict";
         });
         
         dialog.addEventListener('click', function(e){
-           if(e.index == 0){
-               Omadi.service.sendErrorReport("Actually closing the app by user");
-               Omadi.utils.closeApp();
-           } 
+            try{
+               if(e.index == 0){
+                   Omadi.service.sendErrorReport("Actually closing the app by user");
+                   Omadi.utils.closeApp();
+               } 
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("exception the app is currently using too much memory: " + ex);
+            }
         });
         
         dialog.show();
@@ -2738,7 +2746,6 @@ Omadi.data.processUsersJson = function(mainDB) {"use strict";
 
 Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
     /*jslint nomen: true*/
-    /*global treatArray*/
 
     var closeDB, instances, fakeFields, queries, i, j, field_name, query, 
         fieldNames, no_data, values, value, notifications = {}, numSets, 
@@ -2949,10 +2956,6 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                                 }
                                                 else {
                                                     values.push("null");
-                                                }
-                                                
-                                                if(instances[field_name].type == 'file'){
-                                                    Ti.API.error(value);
                                                 }
                                                 break;
                 

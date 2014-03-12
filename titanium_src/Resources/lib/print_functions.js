@@ -119,17 +119,22 @@ Omadi.print.startMCRMode = function(portName){"use strict";
             });
             
             dialog.addEventListener('click', function(e){
-                 if(e.index === 0){
-                     Omadi.print.StarMicronics.readPort({
-                        success: Omadi.print.doCharge,
-                        error: function(e){
-                            alert("Error reading card data: " + e.error);
-                        }
-                     });
-                 }
-                 else{
-                     Omadi.print.cancelCharge();
-                 }
+                try{
+                     if(e.index === 0){
+                         Omadi.print.StarMicronics.readPort({
+                            success: Omadi.print.doCharge,
+                            error: function(e){
+                                alert("Error reading card data: " + e.error);
+                            }
+                         });
+                     }
+                     else{
+                         Omadi.print.cancelCharge();
+                     }
+                }
+                catch(ex){
+                    Omadi.service.sendErrorReport("exception with swipe card click: " + ex);
+                }
             });
             dialog.show();
         },
@@ -174,12 +179,17 @@ Omadi.print.chargeCard = function(nid){"use strict";
                    
                    dialog.addEventListener('click', function(e){
                        var portName, commands;
-                       if(e.index >= 0 && e.index != e.source.cancel){
-                            portName = e.source.origPortNames[e.index];
-                            
-                            Ti.App.Properties.setString("omadi:printerPortName", portName);
-                            
-                            Omadi.print.startMCRMode(portName);
+                       try{
+                           if(e.index >= 0 && e.index != e.source.cancel){
+                                portName = e.source.origPortNames[e.index];
+                                
+                                Ti.App.Properties.setString("omadi:printerPortName", portName);
+                                
+                                Omadi.print.startMCRMode(portName);
+                            }
+                        }
+                        catch(ex){
+                            Omadi.service.sendErrorReport("exception selecting a printer for mcr: " + ex);
                         }
                    });
                    
@@ -200,98 +210,108 @@ Omadi.print.chargeCard = function(nid){"use strict";
 Omadi.print.printImages = [];
 
 Omadi.print.printReceipt = function(nid){"use strict";
-    var portName, commands;
-    
-    Omadi.print.printNid = nid;
-    
-    
-    Omadi.print.init();
-    
-    portName = Ti.App.Properties.getString("omadi:printerPortName", "");
-    
-    if(portName == ""){
-        Ti.API.debug("About to get bluetooth device list!");
+    try{
+        var portName, commands;
         
-        Omadi.print.StarMicronics.getBluetoothDeviceList({
-           success: function(e){
-               Ti.API.debug("Success getting printer list");
-               
-               var i, dialog, portNames;
-               Ti.API.debug(JSON.stringify(e.portNames));
-               
-               portNames = [];
-               for(i = 0; i < e.portNames.length; i ++){
-                   portNames.push(e.portNames[i].replace("BT:", ""));
-               }
-               portNames.push("- Cancel -");
-               
-               dialog = Ti.UI.createOptionDialog({
-                  options: portNames,
-                  title: 'Select Printer',
-                  cancel: portNames.length - 1,
-                  origPortNames: e.portNames
-               });
-               
-               dialog.addEventListener('click', function(e){
-                   var portName, commands;
-                   if(e.index >= 0 && e.index != e.source.cancel){
-                        portName = e.source.origPortNames[e.index];
-                        
-                        Ti.App.Properties.setString("omadi:printerPortName", portName);
-                        
-                        Ti.API.debug("about to get commands");
-                        commands = Omadi.print.getPrintCommands();
-                        
-                        Ti.API.debug("just got commands");
-                        if(commands.length > 0){
-                            
-                            Omadi.print.StarMicronics.print({
-                                success: function(e){
-                                    //alert("Printing Successful.");
-                                },
-                                error: function(e){
-                                    alert("Error Printing: " + e.error);
-                                },
-                                portName: portName,
-                                commands: commands,
-                                images: Omadi.print.printImages
-                            });
-                        }
-                        else{
-                            alert("An error occurred generating the receipt.");
-                        }
-                    } 
-               });
-               
-               dialog.show();
-           },
-           error: function(e){
-               Ti.API.error("Error selecting a printer: " + e.error);
-               alert("Error selecting a printer: " + e.error);
-           }
-        });  
-    }
-    else{
-        Ti.API.debug("about to get commands 2");
-        commands = Omadi.print.getPrintCommands();
-                   Ti.API.debug("just got commands 2");     
-        if(commands.length > 0){
+        Omadi.print.printNid = nid;
+        
+        
+        Omadi.print.init();
+        
+        portName = Ti.App.Properties.getString("omadi:printerPortName", "");
+        
+        if(portName == ""){
+            Ti.API.debug("About to get bluetooth device list!");
             
-            Omadi.print.StarMicronics.print({
-                success: function(e){
-                    //alert("Printing Successful.");
-                },
-                error: function(e){
-                    alert("Error Printing: " + e.error + ".");
-                },
-                portName: portName,
-                commands: commands,
-                images: Omadi.print.printImages
-            });
+            Omadi.print.StarMicronics.getBluetoothDeviceList({
+               success: function(e){
+                   Ti.API.debug("Success getting printer list");
+                   
+                   var i, dialog, portNames;
+                   Ti.API.debug(JSON.stringify(e.portNames));
+                   
+                   portNames = [];
+                   for(i = 0; i < e.portNames.length; i ++){
+                       portNames.push(e.portNames[i].replace("BT:", ""));
+                   }
+                   portNames.push("- Cancel -");
+                   
+                   dialog = Ti.UI.createOptionDialog({
+                      options: portNames,
+                      title: 'Select Printer',
+                      cancel: portNames.length - 1,
+                      origPortNames: e.portNames
+                   });
+                   
+                   dialog.addEventListener('click', function(e){
+                       var portName, commands;
+                       try{
+                           if(e.index >= 0 && e.index != e.source.cancel){
+                                portName = e.source.origPortNames[e.index];
+                                
+                                Ti.App.Properties.setString("omadi:printerPortName", portName);
+                                
+                                Ti.API.debug("about to get commands");
+                                commands = Omadi.print.getPrintCommands();
+                                
+                                Ti.API.debug("just got commands");
+                                if(commands.length > 0){
+                                    
+                                    Omadi.print.StarMicronics.print({
+                                        success: function(e){
+                                            //alert("Printing Successful.");
+                                        },
+                                        error: function(e){
+                                            alert("Error Printing: " + e.error);
+                                        },
+                                        portName: portName,
+                                        commands: commands,
+                                        images: Omadi.print.printImages
+                                    });
+                                }
+                                else{
+                                    alert("An error occurred generating the receipt.");
+                                }
+                            } 
+                        }
+                        catch(ex){
+                            Omadi.service.sendErrorReport("exception in select printer for print: " + ex);
+                        }
+                   });
+                   
+                   dialog.show();
+               },
+               error: function(e){
+                   Ti.API.error("Error selecting a printer: " + e.error);
+                   alert("Error selecting a printer: " + e.error);
+               }
+            });  
         }
         else{
-            alert("An error occurred generating the receipt.");
+            Ti.API.debug("about to get commands 2");
+            commands = Omadi.print.getPrintCommands();
+                       Ti.API.debug("just got commands 2");     
+            if(commands.length > 0){
+                
+                Omadi.print.StarMicronics.print({
+                    success: function(e){
+                        //alert("Printing Successful.");
+                    },
+                    error: function(e){
+                        alert("Error Printing: " + e.error + ".");
+                    },
+                    portName: portName,
+                    commands: commands,
+                    images: Omadi.print.printImages
+                });
+            }
+            else{
+                alert("An error occurred generating the receipt.");
+            }
         }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in print receipt: " + ex);
     }
 };
 

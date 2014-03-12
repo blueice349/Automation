@@ -72,9 +72,14 @@ OmadiTimeWidget.prototype.getFieldView = function(){"use strict";
         });
             
         addButton.addEventListener('click', function(e){
-            Widget[e.source.fieldName].numVisibleFields ++;
-            Widget[e.source.fieldName].formObj.unfocusField();
-            Widget[e.source.fieldName].redraw();
+            try{
+                Widget[e.source.fieldName].numVisibleFields ++;
+                Widget[e.source.fieldName].formObj.unfocusField();
+                Widget[e.source.fieldName].redraw();
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception in omadi time add another: " + ex);
+            }
         });
         
         this.fieldView.add(addButton);
@@ -146,7 +151,7 @@ OmadiTimeWidget.prototype.getNewElement = function(index){"use strict";
         timeText = Omadi.utils.formatTime(dbValue);
     }
 
-    element = Omadi.widgets.getLabelField(this.instance);
+    element = this.formObj.getLabelField(this.instance);
     element.setText(textValue);
     element.textValue = textValue;
     element.dbValue = dbValue;
@@ -156,8 +161,13 @@ OmadiTimeWidget.prototype.getNewElement = function(index){"use strict";
     this.formObj.addCheckConditionalFields(element.check_conditional_fields);
 
     element.addEventListener('click', function(e) {
-        if (e.source.instance.can_edit) {
-            Widget[e.source.instance.field_name].displayPicker(e.source);
+        try{
+            if (e.source.instance.can_edit) {
+                Widget[e.source.instance.field_name].displayPicker(e.source);
+            }
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception in omadi time click: " + ex);
         }
     });
     
@@ -251,7 +261,8 @@ OmadiTimeWidget.prototype.displayPicker = function(element) {"use strict";
                 color : '#444',
                 offset : 1.0
             }]
-        }
+        },
+        instance: instance
     });
     topButtonsView.add(okButton);
 
@@ -324,7 +335,8 @@ OmadiTimeWidget.prototype.displayPicker = function(element) {"use strict";
                 color : '#444',
                 offset : 1.0
             }]
-        }
+        },
+        instance: instance
     });
 
     topButtonsView.add(cancelButton);
@@ -356,38 +368,48 @@ OmadiTimeWidget.prototype.displayPicker = function(element) {"use strict";
     
     okButton.time_picker = time_picker;
     okButton.element = element;
+    clearButton.element = element;
     
     wrapperView.add(time_picker);
 
     okButton.addEventListener('click', function(e) {
         var newDate, i, callback;
-
-        newDate = e.source.time_picker.getValue();
-        e.source.element.jsDate = newDate;
-        e.source.element.textValue = Omadi.utils.PHPFormatDate('g:i A', Math.ceil(newDate.getTime() / 1000));
-        e.source.element.dbValue = Omadi.widgets.omadi_time.dateToSeconds(e.source.element.textValue);
-
-        e.source.element.setText(e.source.element.textValue);
-
-        if (e.source.element.check_conditional_fields.length > 0) {
-            Ti.API.debug("Checking conditionally required");
-            Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+        try{
+            newDate = e.source.time_picker.getValue();
+            e.source.element.jsDate = newDate;
+            e.source.element.textValue = Omadi.utils.PHPFormatDate('g:i A', Math.ceil(newDate.getTime() / 1000));
+            e.source.element.dbValue = Widget[e.source.instance.field_name].dateToSeconds(e.source.element.textValue);
+    
+            e.source.element.setText(e.source.element.textValue);
+    
+            if (e.source.element.check_conditional_fields.length > 0) {
+                Ti.API.debug("Checking conditionally required");
+                Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+            }
         }
-
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception in ok button click in omadi time: " + ex);
+        }
+        
         dateWindow.close();
     });
 
     clearButton.addEventListener('click', function(e) {
-        e.source.element.dbValue = null;
-        e.source.element.textValue = "";
-
-        e.source.element.setText(e.source.element.textValue);
-
-        if (e.source.element.check_conditional_fields.length > 0) {
-            Ti.API.debug("Checking conditionally required");
-            Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+        try{
+            e.source.element.dbValue = null;
+            e.source.element.textValue = "";
+    
+            e.source.element.setText(e.source.element.textValue);
+    
+            if (e.source.element.check_conditional_fields.length > 0) {
+                Ti.API.debug("Checking conditionally required");
+                Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+            }  
         }
-
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception in omadi time clear button: " + ex);
+        }
+        
         dateWindow.close();
     });
 
@@ -400,7 +422,7 @@ OmadiTimeWidget.prototype.displayPicker = function(element) {"use strict";
     dateWindow.open();
 };
 
-OmadiTime.prototype.dateToSeconds = function(time_text) {"use strict";
+OmadiTimeWidget.prototype.dateToSeconds = function(time_text) {"use strict";
 
     var is_pm, is_am, time_split, seconds;
 

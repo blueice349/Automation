@@ -96,10 +96,6 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
             textValue = this.node[this.instance.field_name].textValues[index];
         }
     }
-    
-    Ti.API.error(JSON.stringify(this.node));
-        Ti.API.error(this.instance.field_name);
-        Ti.API.error(dbValue);
 
     Ti.API.debug("Creating omadi_reference field: " + this.instance.label);
 
@@ -161,8 +157,24 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
         top: 0
     });
     
+    addressLabel.addEventListener('click', function(e){
+        try{
+            var node;
+            if(typeof e.source.widgetView !== 'undefined' && e.source.widgetView.dbValue !== null && e.source.widgetView.dbValue > 0){
+                node = Omadi.data.nodeLoad(e.source.widgetView.dbValue);
+                if(node){
+                    Omadi.display.openViewWindow(node.type, node.nid);
+                }
+            }
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception in address label click from reference: " + ex);
+        }
+    });
+    
     if(dbValue > 0){
-        addressLabel.text = this.getFirstStreetAddress(dbValue);
+        addressLabel.text = this.getFirstStreetAddress(dbValue) + ' - touch to view';
+        addressLabel.height = 20;
     }
     
     if(this.instance.widget.type == 'omadi_reference_select'){
@@ -182,38 +194,58 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
         widgetView.bottom = 1;
         widgetView.setText(textValue);
         
+        widgetView.check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
+        this.formObj.addCheckConditionalFields(widgetView.check_conditional_fields);
+        
         if(this.instance.can_edit){
             widgetView.addEventListener('click', function(e) {
-                var postDialog = Titanium.UI.createOptionDialog();
-                postDialog.options = e.source.options;
-                postDialog.cancel = -1;
-                postDialog.widgetView = e.source;
-                postDialog.show();
-
-                postDialog.addEventListener('click', function(ev) {
-                    var text;
-                    
-                    if (ev.index >= 0) {
-                        
-                        if(ev.source.widgetView.possibleValues[ev.index].nid === null){
-                            text = '';   
+                try{
+                    var postDialog = Titanium.UI.createOptionDialog();
+                    postDialog.options = e.source.options;
+                    postDialog.cancel = -1;
+                    postDialog.widgetView = e.source;
+                    postDialog.show();
+    
+                    postDialog.addEventListener('click', function(ev) {
+                        var text, street;
+                        try{
+                            if (ev.index >= 0) {
+                                
+                                if(ev.source.widgetView.possibleValues[ev.index].nid === null){
+                                    text = '';   
+                                    
+                                    ev.source.widgetView.addressLabel.text = '';
+                                    ev.source.widgetView.addressLabel.height = 0;
+                                }
+                                else{
+                                    text = ev.source.options[ev.index];
+                                    
+                                    street = Widget[ev.source.widgetView.instance.field_name].getFirstStreetAddress(ev.source.widgetView.possibleValues[ev.index].nid);
+                                    ev.source.widgetView.addressLabel.text = street + ' - touch to view';
+                                    ev.source.widgetView.addressLabel.height = 20;
+                                }
+                                ev.source.widgetView.textValue = text;
+                                ev.source.widgetView.dbValue = ev.source.widgetView.possibleValues[ev.index].nid;
+                                ev.source.widgetView.setText(text);
+                                
+                                if (ev.source.widgetView.check_conditional_fields.length > 0) {
+                                    Widget[ev.source.widgetView.instance.field_name].formObj.setConditionallyRequiredLabels(ev.source.widgetView.instance, ev.source.widgetView.check_conditional_fields);
+                                }
+                            }
                         }
-                        else{
-                            text = ev.source.options[ev.index];
+                        catch(ex){
+                            Omadi.service.sendErrorReport("exception changing omadi reference select value dialog: " + ex);
                         }
-                        ev.source.widgetView.textValue = text;
-                        ev.source.widgetView.dbValue = ev.source.widgetView.possibleValues[ev.index].nid;
-                        ev.source.widgetView.setText(text);
-                        
-                        if (ev.source.element.check_conditional_fields.length > 0) {
-                            Widget[ev.source.widgetView.instance.field_name].formObj.setConditionallyRequiredLabels(ev.source.widgetView.instance, ev.source.widgetView.check_conditional_fields);
-                        }
-                    }
-                });
+                    });
+                }
+                catch(ex){
+                    Omadi.service.sendErrorReport("Exception in omadi reference widget view click: " + ex);
+                }
             });
         }
         
         wrapper.add(widgetView);
+        wrapper.add(addressLabel);
     }
     else{
     
@@ -232,8 +264,6 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
             if(textValue == ''){
                 widgetView.text = '- No Options -';
             }
-            
-            wrapper.add(widgetView);
         }
         else{
             widgetView = this.formObj.getTextField(this.instance);
@@ -253,7 +283,10 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
         widgetView.clickedAutocomplete = false;
         widgetView.touched = false;
         widgetView.blurred = true;
-        widgetView.addressLabel = addressLabel;
+        
+        if(dbValue > 0){
+            widgetView.setColor('#060');
+        }
         
         if(!isHidden){
             
@@ -284,7 +317,7 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                     e.source.autocomplete_table.setVisible(false);
                     
                     street = Widget[e.source.textField.instance.field_name].getFirstStreetAddress(e.rowData.nid);
-                    e.source.textField.addressLabel.text = street;
+                    e.source.textField.addressLabel.text = street + ' - touch to view';
                     e.source.textField.addressLabel.height = 20;
                     
                     e.source.textField.setColor('#060');
@@ -389,7 +422,7 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                                         
                                         street = Widget[e.source.instance.field_name].getFirstStreetAddress(e.source.dbValue);
                                         
-                                        e.source.addressLabel.text = street;
+                                        e.source.addressLabel.text = street + ' - touch to view';
                                         e.source.addressLabel.height = 20;
                                         
                                         e.source.setColor('#006600');
@@ -471,6 +504,9 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
             wrapper.add(addressLabel);
         }
     }
+    
+    widgetView.addressLabel = addressLabel;
+    addressLabel.widgetView = widgetView;
 
     return wrapper;
 };

@@ -72,22 +72,26 @@ Omadi.bundles.inspection.askToReviewLastInspection = function(){"use strict";
                             
                             dialog.addEventListener('click', function(e){
                                var newWin, vehicle_nid;
-                               
-                               if(e.index == 0){
-                               
-                                   newWin = Omadi.display.openFormWindow('inspection', lastInspectionReportNid, 1);
+                               try{
+                                   if(e.index == 0){
                                    
-                                   if(typeof alertQueue !== 'undefined'){
-                                       newWin.addEventListener('close', function(){
-                                            Ti.App.fireEvent('showNextAlertInQueue'); 
-                                       });
-                                   }
-                               }
-                               else{
-                                   if(typeof alertQueue !== 'undefined'){
-                                        Ti.App.fireEvent('showNextAlertInQueue');
-                                   }
-                               }
+                                       newWin = Omadi.display.openFormWindow('inspection', lastInspectionReportNid, 1);
+                                       
+                                       if(typeof alertQueue !== 'undefined'){
+                                           newWin.addEventListener('close', function(){
+                                                Ti.App.fireEvent('showNextAlertInQueue'); 
+                                           });
+                                       }
+                                    }
+                                    else{
+                                        if(typeof alertQueue !== 'undefined'){
+                                            Ti.App.fireEvent('showNextAlertInQueue');
+                                        }
+                                    }
+                                }
+                                catch(ex){
+                                    Omadi.service.sendErrorReport("exception review last inspection report: " + ex);
+                                }
                             });
                             
                             if(typeof alertQueue !== 'undefined'){
@@ -198,13 +202,21 @@ Omadi.bundles.inspection.askToCreateInspection = function(showLogout){"use stric
         });
         
         dialog.addEventListener('click', function(e){
-           
-           if(e.index == 0){
-               Omadi.display.openFormWindow('inspection', 'new', 0);
-           }
-           else if(showLogout){
-               Omadi.display.showLogoutDialog();
-           }
+           try{
+               if(e.index == 0){
+                   Ti.App.fireEvent('openFormWindow', {
+                        node_type: 'inspection',
+                        nid: 'new',
+                        form_part: 0 
+                   });
+               }
+               else if(showLogout){
+                   Omadi.display.showLogoutDialog();
+               }
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("exception ask to create inspection: " + ex);
+            }
         });
         
         dialog.show();

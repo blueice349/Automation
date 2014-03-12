@@ -225,24 +225,33 @@ LicensePlateWidget.prototype.getNewElement = function(index){"use strict";
         this.formObj.addCheckConditionalFields(widgetView.check_conditional_fields);
 
         widgetView.addEventListener('click', function(e) {
-            var postDialog = Titanium.UI.createOptionDialog({
-                title: Widget[e.source.instance.field_name].formObj.labelViews[e.source.instance.field_name].text
-            });
-            
-            postDialog.options = e.source.options;
-            postDialog.cancel = states.length;
-            postDialog.widgetView = e.source;
-            postDialog.show();
-
-            postDialog.addEventListener('click', function(ev) {
-                var stateIndex;
+            try{
+                var postDialog = Titanium.UI.createOptionDialog({
+                    title: Widget[e.source.instance.field_name].formObj.labelViews[e.source.instance.field_name].text
+                });
                 
-                if (ev.index >= 0 && ev.index != ev.source.cancel) {
-                    ev.source.widgetView.textValue = ev.source.options[ev.index];
-                    ev.source.widgetView.dbValue = ev.source.widgetView.states[ev.index].usps;
-                    ev.source.widgetView.setText(ev.source.options[ev.index]);
-                }
-            });
+                postDialog.options = e.source.options;
+                postDialog.cancel = states.length;
+                postDialog.widgetView = e.source;
+                postDialog.show();
+    
+                postDialog.addEventListener('click', function(ev) {
+                    var stateIndex;
+                    try{
+                        if (ev.index >= 0 && ev.index != ev.source.cancel) {
+                            ev.source.widgetView.textValue = ev.source.options[ev.index];
+                            ev.source.widgetView.dbValue = ev.source.widgetView.states[ev.index].usps;
+                            ev.source.widgetView.setText(ev.source.options[ev.index]);
+                        }
+                    }
+                    catch(ex){
+                        Omadi.service.sendErrorReport("Exception in license plate dialog click: " + ex);
+                    }
+                });
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception in license plate state click: " + ex);
+            }
         });
     }
 

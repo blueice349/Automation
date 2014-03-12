@@ -70,9 +70,14 @@ Omadi.service.refreshSession = function() {"use strict";
                             });
     
                             dialog.addEventListener('click', function(e) {
-                                var db_func = Omadi.utils.openListDatabase();
-                                db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
-                                db_func.close();
+                                try{
+                                    var db_func = Omadi.utils.openListDatabase();
+                                    db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+                                    db_func.close();
+                                }
+                                catch(ex){
+                                    Omadi.service.sendErrorReport("exception in logged out 403: " + ex);
+                                }
                             });
     
                             Omadi.service.logout();
@@ -91,11 +96,14 @@ Omadi.service.refreshSession = function() {"use strict";
                             });
     
                             dialog.addEventListener('click', function(e) {
-    
-                                var db_func = Omadi.utils.openListDatabase();
-                                db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
-                                db_func.close();
-    
+                                try{
+                                    var db_func = Omadi.utils.openListDatabase();
+                                    db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+                                    db_func.close();
+                                }
+                                catch(ex){
+                                    Omadi.service.sendErrorReport("exception in logged out 401: " + ex);
+                                }
                             });
     
                             dialog.show();
@@ -319,10 +327,14 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                             });
     
                             dialog.addEventListener('click', function(e) {
-                                var db_func = Omadi.utils.openListDatabase();
-                                db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
-                                db_func.close();
-                                //win.close();
+                                try{
+                                    var db_func = Omadi.utils.openListDatabase();
+                                    db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+                                    db_func.close();
+                                }
+                                catch(ex){
+                                    Omadi.service.sendErrorReport("exception in logged out update 403: " + ex);
+                                }
                             });
     
                             dialog.show();
@@ -340,11 +352,14 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                             });
     
                             dialog.addEventListener('click', function(e) {
-    
-                                var db_func = Omadi.utils.openListDatabase();
-                                db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
-                                db_func.close();
-    
+                                try{
+                                    var db_func = Omadi.utils.openListDatabase();
+                                    db_func.execute('UPDATE login SET picked = "null", login_json = "null", is_logged = "false", cookie = "null" WHERE "id_log"=1');
+                                    db_func.close();
+                                }
+                                catch(ex){
+                                    Omadi.service.sendErrorReport("exception in logged out update 401: " + ex);
+                                }
                             });
     
                             dialog.show();
@@ -402,7 +417,7 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
         }
     }
     catch(ex) {
-        alert("Fetching updates: " + ex);
+        Omadi.service.sendErrorReport("exception changing omadi reference select value: " + ex);
     }
 };
 
@@ -620,11 +635,14 @@ Omadi.service.sendUpdates = function() {"use strict";
                     dialog.show();
 
                     dialog.addEventListener('click', function(e) {
-                        //Omadi.data.setUpdating(false)
-
-                        Ti.App.Properties.setString('logStatus', "The server logged you out");
-                        Ti.API.info('From Functions ... Value is : ' + Ti.App.Properties.getString('logStatus'));
-                        Omadi.service.logout();
+                        try{
+                            Ti.App.Properties.setString('logStatus', "The server logged you out");
+                            Ti.API.info('From Functions ... Value is : ' + Ti.App.Properties.getString('logStatus'));
+                            Omadi.service.logout();
+                        }
+                        catch(ex){
+                            Omadi.service.sendErrorReport("exception on logstatus logout: " + ex);
+                        }
                     });
                 }
                 
@@ -1070,7 +1088,12 @@ Omadi.service.photoUploadError = function(e){"use strict";
             });
             
             Omadi.service.photoUploadErrorDialog.addEventListener('click', function(){
-                 Omadi.service.photoUploadErrorDialog = null;
+                try{
+                    Omadi.service.photoUploadErrorDialog = null;
+                }
+                catch(ex){
+                    Omadi.service.sendErrorReport("exception photouploaderrordialog: " + ex);
+                }
             });
             
             Omadi.service.photoUploadErrorDialog.show();

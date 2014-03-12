@@ -155,37 +155,45 @@ UserReferenceWidget.prototype.getNewElement = function(index){"use strict";
     if (this.instance.can_edit) {
         element.addEventListener('click', function(e) {
             var i, postDialog;
-
-            if (e.source.instance.settings.cardinality == -1) {
-                Widget[e.source.instance.field_name].formObj.getMultipleSelector(e.source);
-            }
-            else {
-                postDialog = Titanium.UI.createOptionDialog({
-                    title: Widget[e.source.instance.field_name].formObj.labelViews[e.source.instance.field_name].text
-                });
-                
-                postDialog.options = e.source.textOptions;
-                postDialog.cancel = e.source.textOptions.length - 1;
-                postDialog.element = e.source;
-                postDialog.show();
-
-                postDialog.addEventListener('click', function(ev) {
+            try{
+                if (e.source.instance.settings.cardinality == -1) {
+                    Widget[e.source.instance.field_name].formObj.getMultipleSelector(e.source);
+                }
+                else {
+                    postDialog = Titanium.UI.createOptionDialog({
+                        title: Widget[e.source.instance.field_name].formObj.labelViews[e.source.instance.field_name].text
+                    });
                     
-                    if (ev.index >= 0 && ev.index != ev.source.cancel) {
-                        var textValue = ev.source.options[ev.index];
-
-                        if (textValue == '- None -') {
-                            textValue = "";
+                    postDialog.options = e.source.textOptions;
+                    postDialog.cancel = e.source.textOptions.length - 1;
+                    postDialog.element = e.source;
+                    postDialog.show();
+    
+                    postDialog.addEventListener('click', function(ev) {
+                        try{
+                            if (ev.index >= 0 && ev.index != ev.source.cancel) {
+                                var textValue = ev.source.options[ev.index];
+        
+                                if (textValue == '- None -') {
+                                    textValue = "";
+                                }
+                                ev.source.element.textValue = textValue;
+                                ev.source.element.setText(textValue);
+                                ev.source.element.value = ev.source.element.dbValue = ev.source.element.options[ev.index].dbValue;
+                            }
+        
+                            if (ev.source.element.check_conditional_fields.length > 0) {
+                                Widget[ev.source.element.instance.field_name].formObj.setConditionallyRequiredLabels(ev.source.element.instance, ev.source.element.check_conditional_fields);
+                            }
                         }
-                        ev.source.element.textValue = textValue;
-                        ev.source.element.setText(textValue);
-                        ev.source.element.value = ev.source.element.dbValue = ev.source.element.options[ev.index].dbValue;
-                    }
-
-                    if (ev.source.element.check_conditional_fields.length > 0) {
-                        Widget[ev.source.element.instance.field_name].formObj.setConditionallyRequiredLabels(ev.source.element.instance, ev.source.element.check_conditional_fields);
-                    }
-                });
+                        catch(ex){
+                            Omadi.service.sendErrorReport("Exception in user reference dialog click: " + ex);
+                        }
+                    });
+                }
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception in user reference widget click: " + ex);
             }
         });
     }

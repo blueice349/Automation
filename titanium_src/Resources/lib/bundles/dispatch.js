@@ -727,10 +727,19 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
             });
             
             statusDialog.addEventListener('click', function(e){
-                if(e.index === 0){
-                    node = Omadi.data.nodeLoad(nid);
-                    
-                    Omadi.display.openFormWindow(node.type, node.nid, node.form_part + 1);
+                try{
+                    if(e.index === 0){
+                        node = Omadi.data.nodeLoad(nid);
+                        
+                        Ti.App.fireEvent('openFormWindow', {
+                            node_type: node.type, 
+                            nid: node.nid, 
+                            form_part: node.form_part + 1
+                        });
+                    }
+                }
+                catch(ex){
+                    Omadi.service.sendErrorReport("exception update form info first: " + ex);
                 }
             });
             
@@ -752,16 +761,25 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
             });
             
             statusDialog.addEventListener('click', function(e){
-                if(e.index >= 0 && e.index != e.source.cancel){
-                    var status = statusOptions[e.index].dbValue;
-                    
-                    if(statusOptions[e.index].nextPart){
-                        node = Omadi.data.nodeLoad(nid);
-                        Omadi.display.openFormWindow(node.type, node.nid, node.form_part + 1)
+                try{
+                    if(e.index >= 0 && e.index != e.source.cancel){
+                        var status = statusOptions[e.index].dbValue;
+                        
+                        if(statusOptions[e.index].nextPart){
+                            node = Omadi.data.nodeLoad(nid);
+                            Ti.App.fireEvent('openFormWindow', {
+                                node_type: node.type,
+                                nid: node.nid,
+                                form_part: node.form_part + 1
+                            });
+                        }
+                        else{
+                            Omadi.bundles.dispatch.updateStatus(nid, status);
+                        }
                     }
-                    else{
-                        Omadi.bundles.dispatch.updateStatus(nid, status);
-                    }
+                }
+                catch(ex){
+                    Omadi.service.sendErrorReport("Exception updaging job status: " + ex);
                 }
             });
             

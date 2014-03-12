@@ -160,6 +160,8 @@ ImageWidget.prototype.getNewElement = function(index){"use strict";
                     }
                 }
                 
+                Ti.API.debug("imageNid: " + imageNid + ", dbValue:" + dbValue[i]);
+                
                 if(localDelta === null){
                     Ti.API.debug("Uploaded index: " + i);
                     widgetView.add(this.getImageView(widgetView, i, imageNid, dbValue[i], null, null, 0));
@@ -296,41 +298,49 @@ ImageWidget.prototype.getImageView = function(widgetView, index, nid, fid, fileP
     if(widgetType == 'choose'){
         imageView.addEventListener('click', function(e) {
             var dialog;
-            
-            if(e.source.fid === null && e.source.filePath === null){
-                e.source.setTouchEnabled(false);
-                Omadi.display.loading();
-                
-                Widget[e.source.instance.field_name].openPictureChooser(e.source);
-                Omadi.display.doneLoading();
-                
-                // Allow the imageView to be touched again after waiting a little bit
-                setTimeout(function(){
-                    imageView.setTouchEnabled(true);
-                }, 1000);
+            try{
+                if(e.source.fid === null && e.source.filePath === null){
+                    e.source.setTouchEnabled(false);
+                    Omadi.display.loading();
+                    
+                    Widget[e.source.instance.field_name].openPictureChooser(e.source);
+                    Omadi.display.doneLoading();
+                    
+                    // Allow the imageView to be touched again after waiting a little bit
+                    setTimeout(function(){
+                        imageView.setTouchEnabled(true);
+                    }, 1000);
+                }
+                else{
+                    Widget[e.source.instance.field_name].showPhotoOptions(e.source);
+                }
             }
-            else{
-                Widget[e.source.instance.field_name].showPhotoOptions(e.source);
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception imageview clicked: " + ex);
             }
         });
     }
     else{
         imageView.addEventListener('click', function(e) {
-            
-            if (e.source.fid === null && e.source.filePath === null) {
-                e.source.setTouchEnabled(false);
-                Omadi.display.loading();
-                Widget[e.source.instance.field_name].openCamera(e.source);
-                Omadi.display.doneLoading();
-                
-                // Allow the imageView to be touched again after waiting a little bit
-                setTimeout(function(){
-                    e.source.setTouchEnabled(true);
-                }, 1000);
+            try{
+                if (e.source.fid === null && e.source.filePath === null) {
+                    e.source.setTouchEnabled(false);
+                    Omadi.display.loading();
+                    Widget[e.source.instance.field_name].openCamera(e.source);
+                    Omadi.display.doneLoading();
+                    
+                    // Allow the imageView to be touched again after waiting a little bit
+                    setTimeout(function(){
+                        e.source.setTouchEnabled(true);
+                    }, 1000);
+                }
+                else {
+                    
+                    Widget[e.source.instance.field_name].showPhotoOptions(e.source);
+                }
             }
-            else {
-                
-                Widget[e.source.instance.field_name].showPhotoOptions(e.source);
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception in imageview click 2: " + ex);
             }
         });
     }
@@ -367,65 +377,70 @@ ImageWidget.prototype.showPhotoOptions = function(imageView){"use strict";
 
 ImageWidget.prototype.clickedPhotoOption = function(e){"use strict";
     var dialog, message, title;
-    
-    if(e.index === 0){
-        Omadi.display.displayFullImage(e.source.imageView);
-    }
-    else if(e.index === 1){
-        
-        if(e.source.isDeletePhoto){
-            message = "The photo will be deleted.";
-            title = "Delete Photo";
+    try{
+        if(e.index === 0){
+            Omadi.display.displayFullImage(e.source.imageView);
         }
-        else{
-            message = "The photo will be removed.";
-            title = "Remove Photo";
-        }
-        
-        dialog = Ti.UI.createAlertDialog({
-            buttonNames: ['OK', 'Cancel'],
-            title: title,
-            message: message,
-            imageView: e.source.imageView,
-            isDeletePhoto: e.source.isDeletePhoto
-        });
-        
-        dialog.addEventListener('click', function(e2){  
-            var filePath = null, imageViews, newPhotoView;
-            /*global save_form_data*/              
-            if(e2.index === 0){
-                
-                if(typeof e2.source.imageView.filePath !== 'undefined' && e2.source.imageView.filePath != null){
-                    filePath = e2.source.imageView.filePath;   
-                }
-                
-                imageViews = e2.source.imageView.parentView.children;
-                
-                if(imageViews.length > 1){
-                    newPhotoView = imageViews[imageViews.length - 1];
-                    if(newPhotoView.nid === null && newPhotoView.fid === null){
-                        Ti.API.debug("Moving the new photo delta down one");
-                        newPhotoView.imageIndex --;
+        else if(e.index === 1){
+            
+            if(e.source.isDeletePhoto){
+                message = "The photo will be deleted.";
+                title = "Delete Photo";
+            }
+            else{
+                message = "The photo will be removed.";
+                title = "Remove Photo";
+            }
+            
+            dialog = Ti.UI.createAlertDialog({
+                buttonNames: ['OK', 'Cancel'],
+                title: title,
+                message: message,
+                imageView: e.source.imageView,
+                isDeletePhoto: e.source.isDeletePhoto
+            });
+            
+            dialog.addEventListener('click', function(e2){  
+                var filePath = null, imageViews, newPhotoView;
+                try{
+                    if(e2.index === 0){
+                        
+                        if(typeof e2.source.imageView.filePath !== 'undefined' && e2.source.imageView.filePath != null){
+                            filePath = e2.source.imageView.filePath;   
+                        }
+                        
+                        imageViews = e2.source.imageView.parentView.children;
+                        
+                        if(imageViews.length > 1){
+                            newPhotoView = imageViews[imageViews.length - 1];
+                            if(newPhotoView.nid === null && newPhotoView.fid === null){
+                                Ti.API.debug("Moving the new photo delta down one");
+                                newPhotoView.imageIndex --;
+                            }
+                        }
+                        
+                        // Remove the image from the scroll view before the file reference or data is deleted
+                        e2.source.imageView.parentView.remove(e2.source.imageView);
+                        
+                        if(filePath !== null){
+                            Ti.API.debug("Removing file reference in DB: " + filePath + " " + e2.source.isDeletePhoto);
+                            // Do the removal for an image stored on the phone
+                            Omadi.data.deletePhotoUploadByPath(filePath, e2.source.isDeletePhoto); 
+                        }
+                        else{
+                            Omadi.service.sendErrorReport("Trying to remove image, filepath is null");
+                        }
                     }
                 }
-                
-                // Remove the image from the scroll view before the file reference or data is deleted
-                e2.source.imageView.parentView.remove(e2.source.imageView);
-                
-                if(filePath !== null){
-                    Ti.API.debug("Removing file reference in DB: " + filePath + " " + e2.source.isDeletePhoto);
-                    // Do the removal for an image stored on the phone
-                    Omadi.data.deletePhotoUploadByPath(filePath, e2.source.isDeletePhoto); 
+                catch(ex){
+                    Omadi.service.sendErrorReport("in clicked photo option dialog: " + ex);
                 }
-                else{
-                    Omadi.service.sendErrorReport("Trying to remove image, filepath is null");
-                }
-                
-                // Make sure the photo data is saved
-                save_form_data('continuous');
-            }
-        });
-        dialog.show();
+            });
+            dialog.show();
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in clicked photo option: " + ex);
     }
 };
 
@@ -517,49 +532,53 @@ ImageWidget.prototype.openPictureChooser = function(imageView){"use strict";
             
             useButton.addEventListener('click', function(e){
                 var i, file, localImageView, newImageView, chooseNextImageView, copiedFile, dbPath;
-                
-                localImageView = e.source.imageView;
-                
-                for(i = 0; i < rows.length; i ++){
+                try{
+                    localImageView = e.source.imageView;
                     
-                    if(rows[i].isChecked){
-                        file = rows[i].photoFile;
+                    for(i = 0; i < rows.length; i ++){
                         
-                        Ti.API.debug(file.getNativePath());
-                        dbPath = file.getNativePath();
-                        
-                        Widget[e.source.instance.field_name].saveFileInfo(localImageView, dbPath, "", 0, file.getSize(), 'image');
-                        
-                        localImageView.filePath = dbPath;
-                        
-                        if (localImageView.instance.settings.cardinality == -1 || (localImageView.imageIndex + 1) < localImageView.instance.settings.cardinality) {
-                            newImageView = Widget[e.source.instance.field_name].getImageView(localImageView.parentView, localImageView.imageIndex, null, null, dbPath, null, 0);
-                            chooseNextImageView = Widget[e.source.instance.field_name].getImageView(localImageView.parentView, localImageView.imageIndex + 1, null, null, null, null, 0);
+                        if(rows[i].isChecked){
+                            file = rows[i].photoFile;
                             
-                            localImageView.parentView.add(newImageView);
-                            localImageView.parentView.add(chooseNextImageView);
+                            Ti.API.debug(file.getNativePath());
+                            dbPath = file.getNativePath();
                             
-                            localImageView.parentView.setContentWidth(localImageView.parentView.getContentWidth() + 110);
-                            localImageView.parentView.remove(localImageView);
-                            imageView = null;
+                            Widget[e.source.instance.field_name].saveFileInfo(localImageView, dbPath, "", 0, file.getSize(), 'image');
                             
-                            localImageView = chooseNextImageView;
+                            localImageView.filePath = dbPath;
+                            
+                            if (localImageView.instance.settings.cardinality == -1 || (localImageView.imageIndex + 1) < localImageView.instance.settings.cardinality) {
+                                newImageView = Widget[e.source.instance.field_name].getImageView(localImageView.parentView, localImageView.imageIndex, null, null, dbPath, null, 0);
+                                chooseNextImageView = Widget[e.source.instance.field_name].getImageView(localImageView.parentView, localImageView.imageIndex + 1, null, null, null, null, 0);
+                                
+                                localImageView.parentView.add(newImageView);
+                                localImageView.parentView.add(chooseNextImageView);
+                                
+                                localImageView.parentView.setContentWidth(localImageView.parentView.getContentWidth() + 110);
+                                localImageView.parentView.remove(localImageView);
+                                imageView = null;
+                                
+                                localImageView = chooseNextImageView;
+                            }
                         }
                     }
+                    
+                    pictureWindow.hide(); 
+                    
+                    // Clean up some memory
+                    for(i = 0; i < rows.length; i ++){
+                        table.remove(rows[i]);
+                        rows[i] = null;
+                    }
+                    rows = null;
+                    pictureWindow.remove(table);
+                    table = null;
+                    
+                    pictureWindow = null;
                 }
-                
-                pictureWindow.hide(); 
-                
-                // Clean up some memory
-                for(i = 0; i < rows.length; i ++){
-                    table.remove(rows[i]);
-                    rows[i] = null;
+                catch(ex){
+                    Omadi.service.sendErrorReport("Exception in image use button: " + ex);
                 }
-                rows = null;
-                pictureWindow.remove(table);
-                table = null;
-                
-                pictureWindow = null;
             });
             
             cancelButton = Ti.UI.createButton({
@@ -570,19 +589,23 @@ ImageWidget.prototype.openPictureChooser = function(imageView){"use strict";
             
             cancelButton.addEventListener('click', function(){
                 var i;
-                
-                pictureWindow.hide(); 
-                
-               // Clean up some memory
-                for(i = 0; i < rows.length; i ++){
-                    table.remove(rows[i]);
-                    rows[i] = null;
+                try{
+                    pictureWindow.hide(); 
+                    
+                   // Clean up some memory
+                    for(i = 0; i < rows.length; i ++){
+                        table.remove(rows[i]);
+                        rows[i] = null;
+                    }
+                    rows = null;
+                    pictureWindow.remove(table);
+                    table = null;
+                    
+                    pictureWindow = null;
                 }
-                rows = null;
-                pictureWindow.remove(table);
-                table = null;
-                
-                pictureWindow = null;
+                catch(ex){
+                    Omadi.service.sendErrorReport("Exception with cancel button in image: " + ex);
+                }
             });
             
             buttons.add(useButton);
@@ -708,18 +731,22 @@ ImageWidget.prototype.openPictureChooser = function(imageView){"use strict";
 };
 
 ImageWidget.prototype.imageRowClicked = function(e){"use strict";
-
-    if(e.source.isChecked){
-        e.source.checkbox.setBackgroundImage(null);
-        e.source.checkbox.setBorderWidth(1);
-        e.source.setBackgroundColor('#fff');
+    try{
+        if(e.source.isChecked){
+            e.source.checkbox.setBackgroundImage(null);
+            e.source.checkbox.setBorderWidth(1);
+            e.source.setBackgroundColor('#fff');
+        }
+        else{
+            e.source.checkbox.setBackgroundImage('/images/selected_test.png');
+            e.source.checkbox.setBorderWidth(2);
+            e.source.setBackgroundColor('#eee');
+        }
+        e.source.isChecked = !e.source.isChecked;
     }
-    else{
-        e.source.checkbox.setBackgroundImage('/images/selected_test.png');
-        e.source.checkbox.setBorderWidth(2);
-        e.source.setBackgroundColor('#eee');
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in imagerowclicked: " + ex);
     }
-    e.source.isChecked = !e.source.isChecked;
 };
 
 ImageWidget.prototype.openCamera = function(imageView) {"use strict";
@@ -899,22 +926,37 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
             overlayView.add(navBar);
 
             captureButton.addEventListener('click', function(evt) {
-                Ti.Media.takePicture();
+                try{
+                    Ti.Media.takePicture();
+                }
+                catch(ex){
+                    Omadi.service.sendErrorReport("Exception in capture button click: " + ex);
+                }
             });
             doneButton.addEventListener('click', function(evt) {
-                Ti.Media.hideCamera();
+                try{
+                    Ti.Media.hideCamera();
+                }
+                catch(ex){
+                    Omadi.service.sendErrorReport("Exception in donebutton click for photo: " + ex);
+                }
             });
 
             flashButton.addEventListener('click', function(evt) {
-                if (Ti.Media.cameraFlashMode == Ti.Media.CAMERA_FLASH_ON) {
-                    Ti.App.Properties.setInt("flashMode", Ti.Media.CAMERA_FLASH_OFF);
-                    evt.source.backgroundImage = "/images/flashOff.png";
-                    Ti.Media.cameraFlashMode = Ti.Media.CAMERA_FLASH_OFF;
+                try{
+                    if (Ti.Media.cameraFlashMode == Ti.Media.CAMERA_FLASH_ON) {
+                        Ti.App.Properties.setInt("flashMode", Ti.Media.CAMERA_FLASH_OFF);
+                        evt.source.backgroundImage = "/images/flashOff.png";
+                        Ti.Media.cameraFlashMode = Ti.Media.CAMERA_FLASH_OFF;
+                    }
+                    else {
+                        Ti.App.Properties.setInt("flashMode", Ti.Media.CAMERA_FLASH_ON);
+                        evt.source.backgroundImage = "/images/flashOn.png";
+                        Ti.Media.cameraFlashMode = Ti.Media.CAMERA_FLASH_ON;
+                    }
                 }
-                else {
-                    Ti.App.Properties.setInt("flashMode", Ti.Media.CAMERA_FLASH_ON);
-                    evt.source.backgroundImage = "/images/flashOn.png";
-                    Ti.Media.cameraFlashMode = Ti.Media.CAMERA_FLASH_ON;
+                catch(ex){
+                    Omadi.service.sendErrorReport("Exception in flash button click: " + ex);
                 }
             });
 

@@ -159,25 +159,30 @@ ListBooleanWidget.prototype.getNewElement = function(index){"use strict";
     }
 
     element.addEventListener('click', function(e) {
-        if(e.source.instance.can_edit){
-            if (e.source.value == 0) {
-                e.source.setBackgroundImage('/images/selected_test.png');
-                e.source.borderWidth = 2;
-                e.source.value = true;
-                e.source.dbValue = "1";
-                e.source.textValue = "1";
+        try{
+            if(e.source.instance.can_edit){
+                if (e.source.value == 0) {
+                    e.source.setBackgroundImage('/images/selected_test.png');
+                    e.source.borderWidth = 2;
+                    e.source.value = true;
+                    e.source.dbValue = "1";
+                    e.source.textValue = "1";
+                }
+                else {
+                    e.source.setBackgroundImage(null);
+                    e.source.borderWidth = 1;
+                    e.source.value = false;
+                    e.source.dbValue = "0";
+                    e.source.textValue = "0";
+                }
+    
+                if (e.source.check_conditional_fields.length > 0) {
+                    Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+                }
             }
-            else {
-                e.source.setBackgroundImage(null);
-                e.source.borderWidth = 1;
-                e.source.value = false;
-                e.source.dbValue = "0";
-                e.source.textValue = "0";
-            }
-
-            if (e.source.check_conditional_fields.length > 0) {
-                Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
-            }
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception in checkbox click: " + ex);
         }
     });
     

@@ -49,28 +49,37 @@ function addIOSToolbar(){"use strict";
 }
 
 function openAndroidFile(filePath, mimeType){"use strict";
-
-    var intent = Ti.Android.createIntent({
-        action: Ti.Android.ACTION_VIEW,
-        type: mimeType,
-        data: filePath
-    });
-    try {
-        Ti.Android.currentActivity.startActivity(intent);
-    } 
-    catch(e) {
-        Ti.API.debug(e);
-        alert('No apps are installed to open the file!');
+    try{
+        var intent = Ti.Android.createIntent({
+            action: Ti.Android.ACTION_VIEW,
+            type: mimeType,
+            data: filePath
+        });
+        try {
+            Ti.Android.currentActivity.startActivity(intent);
+        } 
+        catch(e) {
+            Ti.API.debug(e);
+            alert('No apps are installed to open the file!');
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("exception in openandroid file: " + ex);
     }
 }
 
 function deleteAndroidFile(filePath){"use strict";
-    var file = Ti.Filesystem.getFile(filePath);
-    
-    if(file.isFile()){
-        Omadi.display.loading("Deleting...");
-        file.deleteFile();
-        Omadi.display.doneLoading();
+    try{
+        var file = Ti.Filesystem.getFile(filePath);
+        
+        if(file.isFile()){
+            Omadi.display.loading("Deleting...");
+            file.deleteFile();
+            Omadi.display.doneLoading();
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("exception in delete android file: " + ex);
     }
 }
 

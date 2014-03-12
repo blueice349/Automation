@@ -176,19 +176,29 @@ LocationWidget.prototype.getNewElement = function(index){"use strict";
         widgetView.real_field_name = real_field_name;
 
         widgetView.addEventListener('click', function(e) {
-            var postDialog = Titanium.UI.createOptionDialog();
-            postDialog.options = e.source.options;
-            postDialog.cancel = -1;
-            postDialog.widgetView = e.source;
-            postDialog.show();
-
-            postDialog.addEventListener('click', function(ev) {
-                if (ev.index >= 0) {
-                    ev.source.widgetView.textValue = ev.source.options[ev.index];
-                    ev.source.widgetView.dbValue = ev.source.widgetView.states[ev.index].usps;
-                    ev.source.widgetView.setText(ev.source.options[ev.index]);
-                }
-            });
+            try{
+                var postDialog = Titanium.UI.createOptionDialog();
+                postDialog.options = e.source.options;
+                postDialog.cancel = -1;
+                postDialog.widgetView = e.source;
+                postDialog.show();
+    
+                postDialog.addEventListener('click', function(ev) {
+                    try{
+                        if (ev.index >= 0) {
+                            ev.source.widgetView.textValue = ev.source.options[ev.index];
+                            ev.source.widgetView.dbValue = ev.source.widgetView.states[ev.index].usps;
+                            ev.source.widgetView.setText(ev.source.options[ev.index]);
+                        }
+                    }
+                    catch(ex){
+                        Omadi.service.sendErrorReport("Exception in location province dialog click: " + ex);
+                    }
+                });
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception in location province click: " + ex);
+            }
         });
     }
     else {

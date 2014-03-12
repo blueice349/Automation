@@ -74,9 +74,14 @@ VehicleFieldsWidget.prototype.getFieldView = function(){"use strict";
         });
             
         addButton.addEventListener('click', function(e){
-            Widget[e.source.fieldName].numVisibleFields ++;
-            Widget[e.source.fieldName].formObj.unfocusField();
-            Widget[e.source.fieldName].redraw();
+            try{
+                Widget[e.source.fieldName].numVisibleFields ++;
+                Widget[e.source.fieldName].formObj.unfocusField();
+                Widget[e.source.fieldName].redraw();
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception in vehicle fields add another: " + ex);
+            }
         });
         
         this.fieldView.add(addButton);
@@ -212,21 +217,25 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
     widgetView.autocomplete_table = autocomplete_table;
 
     autocomplete_table.addEventListener('click', function(e) {
-
-        e.source.textField.textValue = e.source.textField.value = e.source.textField.dbValue = e.rowData.title;
-
-        if (Ti.App.isAndroid) {
-            // Make sure the cursor is at the end of the text
-            e.source.textField.setSelection(e.source.textField.value.length, e.source.textField.value.length);
+        try{
+            e.source.textField.textValue = e.source.textField.value = e.source.textField.dbValue = e.rowData.title;
+    
+            if (Ti.App.isAndroid) {
+                // Make sure the cursor is at the end of the text
+                e.source.textField.setSelection(e.source.textField.value.length, e.source.textField.value.length);
+            }
+    
+            // Pretend like this is just loaded - mainly a fix for android, but makes sense for both
+            //e.source.textField.touched = false;
+            e.source.textField.clickedAutocomplete = true;
+    
+            e.source.autocomplete_table.setHeight(0);
+            e.source.autocomplete_table.setBorderWidth(0);
+            e.source.autocomplete_table.setVisible(false);
         }
-
-        // Pretend like this is just loaded - mainly a fix for android, but makes sense for both
-        //e.source.textField.touched = false;
-        e.source.textField.clickedAutocomplete = true;
-
-        e.source.autocomplete_table.setHeight(0);
-        e.source.autocomplete_table.setBorderWidth(0);
-        e.source.autocomplete_table.setVisible(false);
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception in vehicle fields autocomplete click: " + ex);
+        }
     });
 
     if (!this.instance.can_edit) {

@@ -72,9 +72,14 @@ DatestampWidget.prototype.getFieldView = function(){"use strict";
         });
             
         addButton.addEventListener('click', function(e){
-            Widget[e.source.fieldName].numVisibleFields ++;
-            Widget[e.source.fieldName].formObj.unfocusField();
-            Widget[e.source.fieldName].redraw();
+            try{
+                Widget[e.source.fieldName].numVisibleFields ++;
+                Widget[e.source.fieldName].formObj.unfocusField();
+                Widget[e.source.fieldName].redraw();
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception redrawing datestamp field: " + ex);
+            }
         });
         
         this.fieldView.add(addButton);
@@ -176,9 +181,13 @@ DatestampWidget.prototype.getNewElement = function(index){"use strict";
     dateView.bottom = 1;
 
     dateView.addEventListener('click', function(e) {
-        Ti.API.debug("Date clicked");
-        if (e.source.instance.can_edit) {
-            Widget[e.source.fieldName].displayPicker(e.source.element, 'date');
+        try{
+            if (e.source.instance.can_edit) {
+                Widget[e.source.fieldName].displayPicker(e.source.element, 'date');
+            }
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception in dateview click datestamp: " + ex);
         }
     });
     
@@ -201,9 +210,13 @@ DatestampWidget.prototype.getNewElement = function(index){"use strict";
         dateView.right = null;
 
         timeView.addEventListener('click', function(e) {
-            Ti.API.debug("Time clicked");
-            if (e.source.instance.can_edit) {
-                Widget[e.source.fieldName].displayPicker(e.source.element, 'time');
+            try{
+                if (e.source.instance.can_edit) {
+                    Widget[e.source.fieldName].displayPicker(e.source.element, 'time');
+                }
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception with timeview clicked in datestamp: " + ex);
             }
         });
         
@@ -409,7 +422,7 @@ DatestampWidget.prototype.displayPicker = function(element, type) {"use strict";
 
     topButtonsView.add(clearButton);
     cancelButton.addEventListener('click', function() {
-
+        dateWindow.close();
     });
 
     widgetDate = element.jsDate;

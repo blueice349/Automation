@@ -77,9 +77,14 @@ ExtraPriceWidget.prototype.getFieldView = function(){"use strict";
         });
             
         addButton.addEventListener('click', function(e){
-            Widget[e.source.fieldName].numVisibleFields ++;
-            Widget[e.source.fieldName].formObj.unfocusField();
-            Widget[e.source.fieldName].redraw();
+            try{
+                Widget[e.source.fieldName].numVisibleFields ++;
+                Widget[e.source.fieldName].formObj.unfocusField();
+                Widget[e.source.fieldName].redraw();
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception adding one to extra price: " + ex);
+            }
         });
         
         this.fieldView.add(addButton);
@@ -262,31 +267,35 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
         
         autocomplete_table.addEventListener('click', function(e) {
             var jsonValue;
-            
-            e.source.textField.value = e.rowData.title;
-            
-            jsonValue = e.source.textValue;
-                       
-            if(jsonValue == null){
-                jsonValue = {};
+            try{
+                e.source.textField.value = e.rowData.title;
+                
+                jsonValue = e.source.textValue;
+                           
+                if(jsonValue == null){
+                    jsonValue = {};
+                }
+                
+                jsonValue.desc = e.rowData.title;
+                e.source.textField.textValue = jsonValue;
+    
+                e.source.autocomplete_table.setHeight(0);
+                e.source.autocomplete_table.setBorderWidth(0);
+                e.source.autocomplete_table.setVisible(false);
+    
+                e.source.lastValue = e.rowData.title;
+                
+                if (Ti.App.isAndroid) {
+                    // Make sure the cursor is at the end of the text
+                    e.source.textField.setSelection(e.source.textField.value.length, e.source.textField.value.length);
+                }
+                
+                // Pretend like this is just loaded - mainly a fix for android, but makes sense for both
+                e.source.textField.touched = false;
             }
-            
-            jsonValue.desc = e.rowData.title;
-            e.source.textField.textValue = jsonValue;
-
-            e.source.autocomplete_table.setHeight(0);
-            e.source.autocomplete_table.setBorderWidth(0);
-            e.source.autocomplete_table.setVisible(false);
-
-            e.source.lastValue = e.rowData.title;
-            
-            if (Ti.App.isAndroid) {
-                // Make sure the cursor is at the end of the text
-                e.source.textField.setSelection(e.source.textField.value.length, e.source.textField.value.length);
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception touching autocomplete in extra price: " + ex);
             }
-            
-            // Pretend like this is just loaded - mainly a fix for android, but makes sense for both
-            e.source.textField.touched = false;
         });
 
         descView.addEventListener('change', function(e) {
@@ -406,46 +415,55 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
         descView.addEventListener('click', function(e){
             var dialog, options, i;
             
-            options = [];
-            for(i = 0; i < e.source.possibleValues.length; i ++){
-                options.push(e.source.possibleValues[i].title);
-            }
-            
-            options.push('Cancel');
-            
-            dialog = Ti.UI.createOptionDialog({
-                title: 'Description',
-                options: options,
-                cancel: options.length - 1,
-                descView: e.source
-            });
-            
-            dialog.addEventListener('click', function(ev){
+            try{
+                options = [];
+                for(i = 0; i < e.source.possibleValues.length; i ++){
+                    options.push(e.source.possibleValues[i].title);
+                }
                 
-                if(ev.index !== null && ev.index != ev.source.cancel){
-                    
-                    if(typeof ev.source.options[ev.index] !== 'undefined'){
-                        
-                        jsonValue = ev.source.descView.textValue;
-                       
-                        if(jsonValue == null){
-                            jsonValue = {};
-                        }
-                        
-                        jsonValue.desc = ev.source.options[ev.index];
-                        
-                        ev.source.descView.textValue = jsonValue;
-                        ev.source.descView.setText(ev.source.options[ev.index]);
-                        
-                        if(e.source.check_conditional_fields.length > 0){
-                            Ti.API.debug("Checking conditionally required");
-                            Widget[e.source.descView.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.descView.instance, e.source.descView.check_conditional_fields);
+                options.push('Cancel');
+                
+                dialog = Ti.UI.createOptionDialog({
+                    title: 'Description',
+                    options: options,
+                    cancel: options.length - 1,
+                    descView: e.source
+                });
+                
+                dialog.addEventListener('click', function(ev){
+                    try{
+                        if(ev.index !== null && ev.index != ev.source.cancel){
+                            
+                            if(typeof ev.source.options[ev.index] !== 'undefined'){
+                                
+                                jsonValue = ev.source.descView.textValue;
+                               
+                                if(jsonValue == null){
+                                    jsonValue = {};
+                                }
+                                
+                                jsonValue.desc = ev.source.options[ev.index];
+                                
+                                ev.source.descView.textValue = jsonValue;
+                                ev.source.descView.setText(ev.source.options[ev.index]);
+                                
+                                if(e.source.check_conditional_fields.length > 0){
+                                    Ti.API.debug("Checking conditionally required");
+                                    Widget[e.source.descView.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.descView.instance, e.source.descView.check_conditional_fields);
+                                }
+                            }
                         }
                     }
-                }
-            });
-            
-            dialog.show();
+                    catch(ex){
+                        Omadi.service.sendErrorReport("Exception with desc view dialog click: " + ex);
+                    }
+                });
+                
+                dialog.show();
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception desc view click in extra price: " + ex);
+            }
         });
     }
     

@@ -471,22 +471,27 @@ function setupBottomButtons() {"use strict";
     alertsView.add(alertsImg);
     alertsView.add(alertsLabel);
     alertsView.addEventListener('click', function() {
-        var alertsWindow, locationEnabled;
-        
-        locationEnabled = Omadi.location.isLocationEnabled();
-        
-        if(locationEnabled){
+        try{
+            var alertsWindow, locationEnabled;
             
-            alertsWindow = Ti.UI.createWindow({
-                navBarHidden : true,
-                url : '/main_windows/message_center.js',
-                orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
-            });
-    
-            Omadi.display.loading();
-    
-            alertsWindow.addEventListener('open', Omadi.display.doneLoading);
-            alertsWindow.open();
+            locationEnabled = Omadi.location.isLocationEnabled();
+            
+            if(locationEnabled){
+                
+                alertsWindow = Ti.UI.createWindow({
+                    navBarHidden : true,
+                    url : '/main_windows/message_center.js',
+                    orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+                });
+        
+                Omadi.display.loading();
+        
+                alertsWindow.addEventListener('open', Omadi.display.doneLoading);
+                alertsWindow.open();
+            }
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception alerts view clicked: " + ex);
         }
     });
     
@@ -563,19 +568,23 @@ function setupBottomButtons() {"use strict";
     recentView.add(recentLabel);
     recentView.addEventListener('click', function() {
         var recentWindow;
-
-        recentWindow = Ti.UI.createWindow({
-            navBarHidden : true,
-            url : '/main_windows/recent.js',
-            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
-            backgroundColor: '#eee',
-            windowSoftInputMode: Ti.UI.SOFT_INPUT_STATE_HIDDEN
-        });
-
-        Omadi.display.loading();
-
-        recentWindow.addEventListener('open', Omadi.display.doneLoading);
-        recentWindow.open();
+        try{
+            recentWindow = Ti.UI.createWindow({
+                navBarHidden : true,
+                url : '/main_windows/recent.js',
+                orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
+                backgroundColor: '#eee',
+                windowSoftInputMode: Ti.UI.SOFT_INPUT_STATE_HIDDEN
+            });
+    
+            Omadi.display.loading();
+    
+            recentWindow.addEventListener('open', Omadi.display.doneLoading);
+            recentWindow.open();
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception recent view clicked: " + ex);
+        }
     });
     
     numButtons ++;
@@ -613,17 +622,21 @@ function setupBottomButtons() {"use strict";
         tagsReadyView.add(tagsReadyLabel);
         tagsReadyView.addEventListener('click', function() {
             var tagsReadyWindow;
-    
-            tagsReadyWindow = Ti.UI.createWindow({
-                navBarHidden : true,
-                url : '/main_windows/tags_ready.js',
-                orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
-            });
-    
-            Omadi.display.loading();
-    
-            tagsReadyWindow.addEventListener('open', Omadi.display.doneLoading);
-            tagsReadyWindow.open();
+            try{
+                tagsReadyWindow = Ti.UI.createWindow({
+                    navBarHidden : true,
+                    url : '/main_windows/tags_ready.js',
+                    orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+                });
+        
+                Omadi.display.loading();
+        
+                tagsReadyWindow.addEventListener('open', Omadi.display.doneLoading);
+                tagsReadyWindow.open();
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception with tagsready view click: " + ex);
+            }
         });
         
         numButtons ++;
@@ -775,6 +788,10 @@ function afterUploadCloseMainMenu(){
 function loggingOutMainMenu(e){"use strict";
     var lastUploadStartTimestamp, db;
     
+    if(Omadi.display.FormModule !== null){
+        Omadi.display.FormModule.loggingOut();
+    }
+    
     Omadi.service.abortFileUpload();
     
     Ti.UI.currentWindow.close();
@@ -834,11 +851,6 @@ function fullUpdateFromMenu(e){"use strict";
     Omadi.service.checkUpdate('from_menu');
 }
 
-function openFormCallback(e){"use strict";
-    
-    Omadi.display.openFormWindow(e.node_type, e.nid, e.form_part);
-}
-
 function backgroundCheckForUpdates(){"use strict";
     
     // allowBackground update is set to true at the beginning of the main menu opening.
@@ -893,6 +905,26 @@ function sendDelayedUpdates(){"use strict";
 
 function userInitiatedUpdateCheck(){"use strict";
     Omadi.service.checkUpdate(true, true);
+}
+
+function switchedNodeIdMainMenu(e){"use strict";
+    Ti.API.error("Switched it up: " + JSON.stringify(e));
+    
+    if(Omadi.display.FormModule !== null){
+        Omadi.display.FormModule.switchedNid(e);
+    }
+}
+
+function photoUploadedMainMenu(e){"use strict";
+    Ti.API.error("Photo Uploaded main menu: " + JSON.stringify(e));
+    
+    if(Omadi.display.FormModule !== null){
+        Omadi.display.FormModule.photoUploaded(e);
+    }
+}
+
+function openFormWindow(e){"use strict";
+    Omadi.display.openFormWindow(e.node_type, e.nid, e.form_part);
 }
 
 ( function() {"use strict";
@@ -984,9 +1016,6 @@ function userInitiatedUpdateCheck(){"use strict";
     Ti.App.removeEventListener('loggingOut', loggingOutMainMenu);
     Ti.App.addEventListener('loggingOut', loggingOutMainMenu);
     
-    Ti.App.removeEventListener('openForm', openFormCallback);
-    Ti.App.addEventListener('openForm', openFormCallback);
-    
     Ti.App.removeEventListener('sendUpdates', sendDelayedUpdates);
     Ti.App.addEventListener('sendUpdates', sendDelayedUpdates);
     
@@ -1005,6 +1034,15 @@ function userInitiatedUpdateCheck(){"use strict";
     Ti.App.removeEventListener("omadi:syncInstallComplete", displayBundleList);
     Ti.App.addEventListener("omadi:syncInstallComplete", displayBundleList);
     
+    Ti.App.removeEventListener('switchedItUp', switchedNodeIdMainMenu);
+    Ti.App.addEventListener('switchedItUp', switchedNodeIdMainMenu);
+    
+    Ti.App.removeEventListener('photoUploaded', photoUploadedMainMenu);
+    Ti.App.addEventListener('photoUploaded', photoUploadedMainMenu);
+    
+    Ti.App.removeEventListener('openFormWindow', openFormWindow);
+    Ti.App.addEventListener('openFormWindow', openFormWindow);
+    
     if(Ti.App.isIOS){
         Ti.App.removeEventListener('resume', Omadi.service.checkUpdate);
         Ti.App.addEventListener('resume', Omadi.service.checkUpdate);
@@ -1015,17 +1053,21 @@ function userInitiatedUpdateCheck(){"use strict";
 
     listView.addEventListener('click', function(e) {
         var nextWindow;
-
-        Omadi.data.setUpdating(true);
-
-        if (e.source.is_plus) {
-            Omadi.display.openFormWindow(e.row.name_table, 'new', 0);
+        try{
+            Omadi.data.setUpdating(true);
+    
+            if (e.source.is_plus) {
+                Omadi.display.openFormWindow(e.row.name_table, 'new', 0);
+            }
+            else {
+                Omadi.display.openListWindow(e.row.name_table, e.row.show_plus, [], [], false);
+            }
+    
+            Omadi.data.setUpdating(false);
         }
-        else {
-            Omadi.display.openListWindow(e.row.name_table, e.row.show_plus, [], [], false);
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception swith listview clicked on main menu: " + ex);
         }
-
-        Omadi.data.setUpdating(false);
     });
     
     refresh_image.addEventListener('click', userInitiatedUpdateCheck);
@@ -1074,7 +1116,6 @@ function userInitiatedUpdateCheck(){"use strict";
             Ti.App.removeEventListener('resume', Omadi.service.checkUpdate);
         }
         
-        Ti.App.removeEventListener('openForm', openFormCallback);
         Ti.App.removeEventListener('showNextAlertInQueue', showNextAlertInQueue);
         Ti.App.removeEventListener("omadi:syncInstallComplete", displayBundleList);
         Ti.App.removeEventListener("doneSendingData", doneSendingDataMainMenu);
@@ -1085,6 +1126,9 @@ function userInitiatedUpdateCheck(){"use strict";
         Ti.App.removeEventListener('omadi:finishedDataSync', setupBottomButtons);
         Ti.App.removeEventListener('normal_update_from_menu', normalUpdateFromMenu);
         Ti.App.removeEventListener('full_update_from_menu', fullUpdateFromMenu);
+        Ti.App.removeEventListener('switchedItUp', switchedNodeIdMainMenu); 
+        Ti.App.removeEventListener('photoUploaded', photoUploadedMainMenu);
+        Ti.App.removeEventListener('openFormWindow', openFormWindow);
         
         Ti.Network.removeEventListener('change', networkChangedMainMenu);
         

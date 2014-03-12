@@ -27,22 +27,25 @@ Omadi.bundles.companyVehicle.askAboutVehicle = function() {"use strict";
         });
 
         dialog.addEventListener('click', function(e) {
-            
-            if (e.index == e.source.options.length - 1 || e.index == -1) {
-                if(Omadi.bundles.companyVehicle.getCurrentVehicleNid() > 0){
-                    Omadi.bundles.companyVehicle.exitVehicle();   
+            try{
+                if (e.index == e.source.options.length - 1 || e.index == -1) {
+                    if(Omadi.bundles.companyVehicle.getCurrentVehicleNid() > 0){
+                        Omadi.bundles.companyVehicle.exitVehicle();   
+                    }
+                }
+                else if(typeof e.source.vehicles[e.index] !== 'undefined'){
+                    Omadi.bundles.companyVehicle.setUserVehicle(e.source.vehicles[e.index].nid);
+                    
+                    Omadi.bundles.inspection.askToReviewLastInspection();
+                }
+                
+                if ( typeof alertQueue !== 'undefined') {
+                    Ti.App.fireEvent('showNextAlertInQueue');
                 }
             }
-            else if(typeof e.source.vehicles[e.index] !== 'undefined'){
-                Omadi.bundles.companyVehicle.setUserVehicle(e.source.vehicles[e.index].nid);
-                
-                Omadi.bundles.inspection.askToReviewLastInspection();
+            catch(ex){
+                Omadi.service.sendErrorReport("exception selecting vehicle: " + ex);
             }
-            
-            if ( typeof alertQueue !== 'undefined') {
-                Ti.App.fireEvent('showNextAlertInQueue');
-            }
-
         });
 
         if ( typeof alertQueue !== 'undefined') {

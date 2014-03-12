@@ -144,7 +144,6 @@ function createiOSToolbar(){"use strict";
         
         back.addEventListener('click', function() {
             curWin.close();
-            //tabGroup.close();
         });
         
         space = Ti.UI.createButton({
@@ -161,17 +160,22 @@ function createiOSToolbar(){"use strict";
         });
         
         buttonBar.addEventListener('click', function(e){
-            if(e.index == 0){
-                currentOrderField = 'changed';
+            try{
+                if(e.index == 0){
+                    currentOrderField = 'changed';
+                }
+                else{
+                    currentOrderField = 'viewed';
+                }
+                
+                tableView.setData(getTableViewData(currentOrderField));  
+                
+                tableView.scrollToIndex(0);
+                search.setValue('');
             }
-            else{
-                currentOrderField = 'viewed';
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception in button bar click in recent: " + ex);
             }
-            
-            tableView.setData(getTableViewData(currentOrderField));  
-            
-            tableView.scrollToIndex(0);
-            search.setValue('');
         });
         
         items = [back, space, buttonBar, space];
@@ -214,15 +218,20 @@ function createAndroidTabs(){"use strict";
         });
         
         savedTab.addEventListener('click', function(e){
-            if(currentOrderField != 'changed'){
-                currentOrderField = 'changed';
-                savedTab.setBackgroundColor('#00AEEE');
-                viewedTab.setBackgroundColor('#444');
-                tableView.setData(getTableViewData(currentOrderField));
-            }  
-            
-            tableView.scrollToIndex(0);
-            search.setValue('');
+            try{
+                if(currentOrderField != 'changed'){
+                    currentOrderField = 'changed';
+                    savedTab.setBackgroundColor('#00AEEE');
+                    viewedTab.setBackgroundColor('#444');
+                    tableView.setData(getTableViewData(currentOrderField));
+                }  
+                
+                tableView.scrollToIndex(0);
+                search.setValue('');
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception with recent saved tab click: " + ex);
+            }
         });
         
         viewedTab = Ti.UI.createLabel({
@@ -244,14 +253,19 @@ function createAndroidTabs(){"use strict";
         });
         
         viewedTab.addEventListener('click', function(e){
-            if(currentOrderField != 'viewed'){
-                currentOrderField = 'viewed';
-                viewedTab.setBackgroundColor('#00AEEE');
-                savedTab.setBackgroundColor('#444');
-                tableView.setData(getTableViewData(currentOrderField));
-            }  
-            tableView.scrollToIndex(0);
-            search.setValue('');
+            try{
+                if(currentOrderField != 'viewed'){
+                    currentOrderField = 'viewed';
+                    viewedTab.setBackgroundColor('#00AEEE');
+                    savedTab.setBackgroundColor('#444');
+                    tableView.setData(getTableViewData(currentOrderField));
+                }  
+                tableView.scrollToIndex(0);
+                search.setValue('');
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception with viewed tab click in recent: " + ex);
+            }
         });
         
         // create and add toolbar
