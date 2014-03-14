@@ -215,9 +215,45 @@ TextWidget.prototype.onChangeListener = function(e) {"use strict";
     }
 };
 
-exports.cleanUp = function(){"use strict";
+TextWidget.prototype.cleanUp = function(){"use strict";
+    var i, j;
+    Ti.API.debug("in text widget cleanup");
+    
+    try{
+    
+        for(j = 0; j < this.elements.length; j ++){
+            this.fieldView.remove(this.elements[j]);
+            this.elements[j] = null;
+        }
+        
+        //this.fieldViewWrapper.remove(this.fieldView);
+        this.fieldView = null;
+        this.fieldViewWrapper = null;
+        this.formObj = null;
+        this.node = null;
+        this.dbValues = null;
+        this.textValues = null;
+        this.nodeElement = null;
+        this.instance = null;
+        
+        for(i in Widget){
+            if(Widget.hasOwnProperty(i)){
+                Widget[i] = null;
+            }
+        }
+        
+        
+        Ti.API.debug("At end of text widget cleanup");
+    }
+    catch(ex){
+        try{
+            Omadi.service.sendErrorReport("Exception cleaning up text widget field: " + ex);
+        }
+        catch(ex1){}
+    }
+    
     Omadi = null;
-    Widget = null;
+    Widget = {};
 };
 
 exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
