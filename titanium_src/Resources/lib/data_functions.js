@@ -339,7 +339,7 @@ Omadi.data.deleteContinuousNodes = function(){"use strict";
   
   for(i = 0; i < deleteNids.length; i ++){
       
-      Ti.API.debug("DELETING: " + deleteNids[i]);
+      Ti.API.debug("DELETING NODE with nid: " + deleteNids[i]);
       Omadi.data.deleteNode(deleteNids[i]);
   }
 };
@@ -349,94 +349,101 @@ Omadi.data.nodeSave = function(node) {"use strict";
         instance, value_to_insert, has_data, content_s, saveNid, continuousNid, photoNids, origNid,
         continuousId, tempNid, listDB, trueWindowNid, priceIdx, priceTotal, priceData, jsonValue;
     /*jslint nomen: true*/
+    try{
+        node._saved = false;
     
-    node._saved = false;
-
-    instances = Omadi.data.getFields(node.type);
-
-    fieldNames = [];
-
-    for (field_name in instances) {
-        if (instances.hasOwnProperty(field_name)) {
-            if (field_name != null && typeof instances[field_name] !== 'undefined') {
-                
-                // Don't save anything for rules_field, as they are read-only for mobile devices
-                if(instances[field_name].type != 'rules_field'){
-                    fieldNames.push(field_name);
+        instances = Omadi.data.getFields(node.type);
+    
+        fieldNames = [];
+    
+        for (field_name in instances) {
+            if (instances.hasOwnProperty(field_name)) {
+                if (field_name != null && typeof instances[field_name] !== 'undefined') {
                     
-                    if(instances[field_name].type == 'extra_price'){
-                        // Must check if data exists in node to add the extra field since the same
-                        // check is done later on to add the data.
-                        // This this is wrong, the column vs value count could be off.
-                        if ( typeof node[field_name] !== 'undefined') {
-                            fieldNames.push(field_name + "___data");
+                    // Don't save anything for rules_field, as they are read-only for mobile devices
+                    if(instances[field_name].type != 'rules_field'){
+                        fieldNames.push(field_name);
+                        
+                        if(instances[field_name].type == 'extra_price'){
+                            // Must check if data exists in node to add the extra field since the same
+                            // check is done later on to add the data.
+                            // This this is wrong, the column vs value count could be off.
+                            if ( typeof node[field_name] !== 'undefined') {
+                                fieldNames.push(field_name + "___data");
+                            }
                         }
                     }
                 }
             }
         }
-    }
-
-    if(typeof Omadi.widgets !== 'undefined'){
-        // For autocomplete widgets
-        node = Omadi.widgets.taxonomy_term_reference.addNewTerms(node);
-    }
     
-    node.title = Omadi.data.getNodeTitle(node);
-    
-    // Setup the default for the saveNid
-    saveNid = node.nid;
-    
-    if(node._isContinuous){
-        
-        Ti.API.debug("Saving continuous id: " + node.continuous_nid);
-        
-        // Start a new record if the continuous_nid isn't set
-        if(!node.continuous_nid){
-            node.continuous_nid = Omadi.data.getNewNodeNid();
+        if(typeof Omadi.widgets !== 'undefined'){
+            // For autocomplete widgets
+            node = Omadi.widgets.taxonomy_term_reference.addNewTerms(node);
         }
         
-        // Save the actual nid as the continuous negative NID
-        saveNid = node.continuous_nid;
-        origNid = node.nid;
+        node.title = Omadi.data.getNodeTitle(node);
         
-        if(isNaN(origNid)){
-            origNid = 0;
+        // Setup the default for the saveNid
+        saveNid = node.nid;
+        
+        if(node._isContinuous){
+            
+            Ti.API.debug("Saving continuous id: " + node.continuous_nid);
+            
+            // Start a new record if the continuous_nid isn't set
+            if(!node.continuous_nid){
+                node.continuous_nid = Omadi.data.getNewNodeNid();
+            }
+            
+            // Save the actual nid as the continuous negative NID
+            saveNid = node.continuous_nid;
+            origNid = node.nid;
+            
+            if(isNaN(origNid)){
+                origNid = 0;
+            }
+            
+            // The continuous_nid will be saved as the current window's NID
+        }
+        else if (node.nid == 'new') {
+            Ti.API.debug("Saving new node");
+            if(!node.continuous_nid){
+                node.continuous_nid = Omadi.data.getNewNodeNid();
+            }
+            node.nid = saveNid = node.continuous_nid;  //Omadi.data.getNewNodeNid();
+        }
+        else if(node._isDraft){
+            // This else if must come after the node.nid == 'new'
+            
+            // If the draft is already saved as a negative nid, then don't generate a new one
+            // If this node has a positive nid, make sure we create a copy with a new negative nid
+            if(node.nid > 0){
+                node.origNid = node.nid;
+                saveNid = node.continuous_nid;
+            }
+        }
+        else if(typeof node.flag_is_updated !== 'undefined' && node.flag_is_updated == 3 && node.continuous_nid < 0){
+            // This was saved as a draft, and we are doing a regular save
+            // Delete the draft version after a successful node save
+            // as a continuous save is saved over the original draft
+            // The logic elsewhere will not delete the node unless the node is correctly saved
+            Ti.API.debug("Saving draft to normal: " + JSON.stringify(node));
+            if(node.nid > 0){
+                // Only do the delete when the original nid is greater than 0
+                // ie. a draft should not be deleted if it's never been to the server, or the data moving to the server will be deleted
+                node._deleteNid = node.continuous_nid;
+            }
         }
         
-        // The continuous_nid will be saved as the current window's NID
-    }
-    else if (node.nid == 'new') {
-        Ti.API.debug("Saving new node");
-        if(!node.continuous_nid){
-            node.continuous_nid = Omadi.data.getNewNodeNid();
+        node._saveNid = saveNid;
+        
+        if(typeof node.sync_hash === 'undefined' || node.sync_has == null){
+            node.sync_hash = Ti.Utils.md5HexDigest(JSON.stringify(node) + (new Date()).getTime());
         }
-        node.nid = saveNid = node.continuous_nid;  //Omadi.data.getNewNodeNid();
     }
-    // else if(node._isDraft){
-        // // This else if must come after the node.nid == 'new'
-//         
-        // // If the draft is already saved as a negative nid, then don't generate a new one
-        // // If this node has a positive nid, make sure we create a copy with a new negative nid
-        // if(node.nid > 0){
-            // node.origNid = node.nid;
-            // saveNid = node.continuous_nid;  //Omadi.data.getNewNodeNid();
-        // }
-    // }
-    // else if(typeof node.flag_is_updated !== 'undefined' && node.flag_is_updated == 3){
-        // // This was saved as a draft, and we are doing a regular save
-        // // Delete the draft version after a successful node save
-        // // The continuous_nid is actually the originally saved draft, 
-        // // as a continuous save is saved over the original draft
-        // // The logic elsewhere will not delete the node unless the node is correctly saved
-//         
-        // //node._deleteNid = node.continuous_nid;
-    // }
-    
-    node._saveNid = saveNid;
-    
-    if(typeof node.sync_hash === 'undefined' || node.sync_has == null){
-        node.sync_hash = Ti.Utils.md5HexDigest(JSON.stringify(node) + (new Date()).getTime());
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in first part of node save: " + ex);
     }
     
     db = Omadi.utils.openMainDatabase();
@@ -597,7 +604,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
                 // Ti.API.debug("SAVING DRAFT: " + saveNid + " " + origNid);
                 //Omadi.service.sendErrorReport("Saved draft: saveNid = " + saveNid + ", origNid = " + origNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
                 // Only save drafts as a negative nid
-                query = "INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",3,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + node.continuous_nid + "," + node.dispatch_nid + "," + node.custom_copy_orig_nid + ")";
+                query = "INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",3,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + node.origNid + "," + node.dispatch_nid + "," + node.custom_copy_orig_nid + ")";
             }
             else if (saveNid > 0) {
                 //Omadi.service.sendErrorReport("Saved update: saveNid = " + saveNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
@@ -667,42 +674,53 @@ Omadi.data.nodeSave = function(node) {"use strict";
         catch(dbEx){}
     }
     
+    if(node._saved === true){
+         if(typeof node._deleteNid !== 'undefined'){
+              // This was setup with the drafts section above
+              Omadi.data.deleteNode(node._deleteNid);  
+         }
+    }
+    
     return node;
 };
 
 Omadi.data.deleteNode = function(nid){"use strict";
     var db, result, table_name, listDB, dispatchNid;
-    
-    // Currently, only delete negative nids, which are drafts or non-saved nodes
-    // To delete positive nids, we need to sync that to the server, which is not yet supported
-    if(nid < 0){
-        db = Omadi.utils.openMainDatabase();
-        dispatchNid = 0;
-        
-        result = db.execute("SELECT table_name, dispatch_nid FROM node WHERE nid = " + nid);
-        
-        if(result.isValidRow()){
-            table_name = result.fieldByName("table_name");
-            dispatchNid = result.fieldByName("dispatch_nid", Ti.Database.FIELD_TYPE_INT);
-
-            db.execute("DELETE FROM node WHERE nid = " + nid);
+    try{
+        // Currently, only delete negative nids, which are drafts or non-saved nodes
+        // To delete positive nids, we need to sync that to the server, which is not yet supported
+        if(nid < 0){
+            db = Omadi.utils.openMainDatabase();
+            dispatchNid = 0;
             
-            if(table_name){
-                db.execute("DELETE FROM " + table_name + " WHERE nid = " + nid);
+            result = db.execute("SELECT table_name, dispatch_nid FROM node WHERE nid = " + nid);
+            
+            if(result.isValidRow()){
+                table_name = result.fieldByName("table_name");
+                dispatchNid = result.fieldByName("dispatch_nid", Ti.Database.FIELD_TYPE_INT);
+    
+                db.execute("DELETE FROM node WHERE nid = " + nid);
+                
+                if(table_name){
+                    db.execute("DELETE FROM " + table_name + " WHERE nid = " + nid);
+                }
+            }
+            
+            result.close();
+            db.close();
+            
+            listDB = Omadi.utils.openListDatabase();
+            // Delete any photos from the DB where the nid matches
+            listDB.execute("UPDATE _files SET nid = -1000000 WHERE nid = " + nid);
+            listDB.close();
+            
+            if(dispatchNid < 0){
+                Omadi.data.deleteNode(dispatchNid);
             }
         }
-        
-        result.close();
-        db.close();
-        
-        listDB = Omadi.utils.openListDatabase();
-        // Delete any photos from the DB where the nid matches
-        listDB.execute("UPDATE _files SET nid = -1000000 WHERE nid = " + nid);
-        listDB.close();
-        
-        if(dispatchNid < 0){
-            Omadi.data.deleteNode(dispatchNid);
-        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception deleting node: " + ex);
     }
 };
 
@@ -3044,11 +3062,16 @@ Omadi.data.processNodeJson = function(type, mainDB) {"use strict";
                                 // Make sure we don't add a duplicate from doing a next_part action directly after a node save
                                 //if(typeof Ti.UI.currentWindow.nid !== 'undefined' && Ti.UI.currentWindow.nid == Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid){
                                 //    Ti.API.error("SWITCHING UP THE NID from " + Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid + " to " + Omadi.service.fetchedJSON.node[type].insert[i].nid);
-    
-                                Ti.App.fireEvent('switchedItUp', {
-                                    negativeNid : Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid,
-                                    positiveNid : Omadi.service.fetchedJSON.node[type].insert[i].nid
-                                });
+                                
+                                try{
+                                    Ti.App.fireEvent('switchedItUp', {
+                                        negativeNid : Omadi.service.fetchedJSON.node[type].insert[i].__negative_nid,
+                                        positiveNid : Omadi.service.fetchedJSON.node[type].insert[i].nid
+                                    });
+                                }
+                                catch(switchedEx){
+                                    Omadi.service.sendErrorReport("exception switching it up: " + switchedEx);
+                                }
                             }
                             
                             // Set signature fields to show as uploaded

@@ -1013,8 +1013,8 @@ var termsView;
 
         if (Omadi.utils.isLoggedIn() === true) {
             //Already logged in
-            Ti.App.Properties.setBool("sessionRefreshed", false);
-            Omadi.service.refreshSession();
+            //Ti.App.Properties.setBool("sessionRefreshed", false);
+            //Omadi.service.refreshSession();
             
             db = Omadi.utils.openListDatabase();
             result = db.execute('SELECT * FROM login WHERE "id_log"=1');
@@ -1027,26 +1027,26 @@ var termsView;
             db.close();
             
             // Don't allow the upload checks anymore on the login screen
-            if(typeof Ti.App.backgroundPhotoUploadCheck !== 'undefined'){
-                clearInterval(Ti.App.backgroundPhotoUploadCheck);
-            }
+            // if(typeof Ti.App.backgroundPhotoUploadCheck !== 'undefined'){
+                // clearInterval(Ti.App.backgroundPhotoUploadCheck);
+            // }
             
-            Ti.App.removeEventListener('bytesStreamed', bytesStreamedLogin);
+            //Ti.App.removeEventListener('bytesStreamed', bytesStreamedLogin);
             
             // Stop uploading a background file, as the new login with invalidate the session
-            Omadi.service.abortFileUpload();
+            //Omadi.service.abortFileUpload();
             
             mainMenuWindow = Omadi.display.openMainMenuWindow({
                 fromSavedCookie: true
             });
             
             // Right when the main menu window closes, check for additional files to upload
-            mainMenuWindow.addEventListener('close', function(){
-                updateUploadBytes();
-                Omadi.service.uploadBackgroundFile(); 
-            });
-
-            startGPSService();
+            // mainMenuWindow.addEventListener('close', function(){
+                // updateUploadBytes();
+                // Omadi.service.uploadBackgroundFile(); 
+            // });
+// 
+            // startGPSService();
         }
         else{
             startBackgroundUploads();

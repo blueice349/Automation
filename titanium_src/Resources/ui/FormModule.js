@@ -193,13 +193,38 @@ function getRegionHeaderView(regionView, region, expanded){"use strict";
 }
 
 
-function formWindowOnClose(){"use strict";
-    var i;
-    
-    Ti.API.debug("Window closing");
-    
-    ActiveFormObj.closeWindow();
-}
+// function formWindowOnClose(){"use strict";
+    // var i, j;
+//     
+    // Ti.API.debug("Window closing");
+//     
+    // clearInterval(ActiveFormObj.saveInterval); 
+    // ActiveFormObj.saveInterval = null; 
+//     
+    // try{
+        // for(i in FormObj){
+            // if(FormObj.hasOwnProperty(i)){
+                // for(j in FormObj[i].fieldObjects){
+                    // if(FormObj[i].fieldObjects.hasOwnProperty(j)){
+                        // try{
+                            // FormObj[i].fieldObjects[j].cleanUp();
+                        // }
+                        // catch(ex1){
+                            // Omadi.service.sendErrorReport("Failed to cleanup object: " + ex1);
+                        // }
+                    // }
+                // }
+            // }
+        // }
+    // }
+    // catch(ex){
+        // Omadi.service.sendErrorReport("Failed to cleanup: " + ex);
+    // }
+    // // Clear out everything in FormObj
+     // FormObj = null;
+     // ActiveFormObj = null;
+     // Omadi = null;
+// }
 
 function sort_by_weight(a, b) {"use strict";
     if (a.weight != null && a.weight != "" && b.weight != null && b.weight != "") {
@@ -242,6 +267,9 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
     this.scrollView = null;
     this.scrollPositionY = 0;
     this.fieldObjects = {};
+    this.flag_is_updated = 0;
+    
+    //this.Paint = require('ti.paint');
     
     this.win = Ti.UI.createWindow({
         navBarHidden: true,
@@ -252,7 +280,7 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
         left: 0
     });
     
-    this.win.addEventListener('close', formWindowOnClose);
+    //this.win.addEventListener('close', formWindowOnClose);
     this.win.addEventListener("android:back", this.cancelOpt);
     
     Ti.App.saveContinually = true;
@@ -284,13 +312,21 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
                 // this is something saved on the server.
                 // Make the original regular nid the positive server nid
                 // Make the continuous a new one
+                origNid = this.node.nid;
+                
                 this.origNid = this.node.origNid = this.node.continuous_nid;
                 this.nid = this.node.nid = this.origNid;
                 
-                this.node.continuous_nid = Omadi.data.getNewNodeNid();
-                if(this.type == 'dispatch'){
-                    // For dispatch nodes, decrement the save id so it's not the same as the one for the work node
-                    this.node.continuous_nid --;
+                if(origNid < 0){
+                    // This will be for drafts or from continuous saves
+                    this.node.continuous_nid = origNid;
+                }
+                else{
+                    this.node.continuous_nid = Omadi.data.getNewNodeNid();
+                    if(this.type == 'dispatch'){
+                        // For dispatch nodes, decrement the save id so it's not the same as the one for the work node
+                        this.node.continuous_nid --;
+                    }
                 }
             }
             
@@ -309,6 +345,9 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
             this.nid = this.node.nid;
             this.continuous_nid = this.node.continuous_nid;
             this.dispatch_nid = this.node.dispatch_nid;
+            
+            // Make sure this is set for deleting drafts properly
+            this.flag_is_updated = this.node.flag_is_updated;
             
             Ti.API.debug("continuous nid: " + this.continuous_nid);
             Ti.API.debug("window nid: " + this.nid);
@@ -332,6 +371,10 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
             this.nid = 'new';
             
             this.form_part = 0;
+        }
+        
+        if(this.node !== null && typeof this.node.custom_copy_orig_nid === 'undefined'){
+            this.node.custom_copy_orig_nid = 0;
         }
     }
     catch(ex){
@@ -412,13 +455,23 @@ FormModule.prototype.initNewWindowFromCurrentData = function(form_part){"use str
     if(isNaN(form_part)){
         // This is a save + new
         if(form_part == this.node.type){
-            this.node = FormModule.prototype.loadCustomCopyNode(this.node, this.type, this.type);
+            
+            //this.node = this.initNewNode();
+            
+            this.node = this.loadCustomCopyNode(this.node, this.type, this.type);
+            
+            this.node.continuous_nid = this.continuous_nid = Omadi.data.getNewNodeNid();
+            this.nid = this.node.nid = 'new';
+            this.type = this.node.type;
+            this.form_part = this.node.form_part = 0;
+            this.dispatch_nid = this.node.dispatch_nid = 0;
+            this.origNid = this.node.origNid = 0;
+            this.flag_is_updated = this.node.flag_is_updated = 0;
             
             // // Reset everything          
             // FormObj = {};
-//             
             // FormObj[this.type] = this;
-            // ActiveFormObj = this;
+            ActiveFormObj = this;
             
             this.win.remove(this.wrapperView);
             this.wrapperView = null;
@@ -433,13 +486,13 @@ FormModule.prototype.initNewWindowFromCurrentData = function(form_part){"use str
         // This is a save + next
         this.node.form_part = this.form_part = form_part;
         
-        Ti.API.info(JSON.stringify(this.node));
+        //Ti.API.info(JSON.stringify(this.node));
             
         // // Reset everything          
         // FormObj = {};
 //         
         // FormObj[this.type] = this;
-        // ActiveFormObj = this;
+        ActiveFormObj = this;
         
         this.win.remove(this.wrapperView);
         this.wrapperView = null;
@@ -516,14 +569,41 @@ FormModule.prototype.scrollToField = function(e) {"use strict";
 };
 
 FormModule.prototype.closeWindow = function(){"use strict";
+     var i, j;
+     
      clearInterval(this.saveInterval); 
      
      this.saveInterval = null; 
+    
+     // try{
+        // for(i in FormObj){
+            // if(FormObj.hasOwnProperty(i)){
+                // for(j in FormObj[i].fieldObjects){
+                    // if(FormObj[i].fieldObjects.hasOwnProperty(j)){
+                        // try{
+                            // FormObj[i].fieldObjects[j].cleanUp();
+                        // }
+                        // catch(ex1){
+                            // Omadi.service.sendErrorReport("Failed to cleanup object: " + ex1);
+                        // }
+                    // }
+                // }
+            // }
+        // }
+     // }
+     // catch(ex){
+        // Omadi.service.sendErrorReport("Failed to cleanup: " + ex);
+     // }
+    
+     // Clear out everything in FormObj
+     // FormObj = {};
+     // ActiveFormObj = null;
+     // Omadi = null;
      
      try{
         this.win.close();
      }
-     catch(ex){} 
+     catch(ex3){} 
 };
 
 FormModule.prototype.trySaveNode = function(saveType){"use strict";
@@ -562,21 +642,22 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
         Omadi.display.doneLoading();
         
         if(saveType != 'continuous'){
-            Omadi.display.loading("Saving...");
+            if(Ti.App.isAndroid){
+                // Just let android do its thing
+                //Omadi.display.loading("Saving...");
+            }
+            else{
+                //Omadi.display.loading("Saving...", ActiveFormObj.win);   
+            }
         }
         
         try{
-            
             // Do not allow the web server's data in a background update
             // to overwrite the local data just being saved
             Ti.App.allowBackgroundUpdate = false;
             
-            
-            
             this.node = Omadi.data.nodeSave(this.node);
             
-            
-             
             // Now that the node is saved on the phone or a big error occurred, allow background logouts
             Ti.App.allowBackgroundLogout = true;
             
@@ -619,10 +700,6 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
                     //if(this.usingDispatch)
                     //Omadi.data.deleteContinuousNodes();
                     
-                    if(typeof this.node._deleteNid !== 'undefined' && this.node._deleteNid < 0){
-                        Omadi.data.deleteNode(this.node._deleteNid);
-                    }
-                    
                     if(this.node._isDraft === true){
                         
                         if(closeAfterSave){
@@ -631,6 +708,12 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
                     }
                     else if(Ti.Network.online){
                         
+                        
+                        if(!this.usingDispatch){
+                            // Send updates immediately only when not using dispatch
+                            // When using dispatch, the DispatchForm module will initialize this
+                            Ti.App.fireEvent('sendUpdates');
+                        }
                         
                         if (saveType === "next_part") {         
                             
@@ -643,13 +726,6 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
                             this.initNewWindowFromCurrentData(this.node.type);
                                                   
                             closeAfterSave = false;
-                        }
-                        
-                        
-                        if(!this.usingDispatch){
-                            // Send updates immediately only when not using dispatch
-                            // When using dispatch, the DispatchForm module will initialize this
-                            Ti.App.fireEvent('sendUpdates');
                         }
                         
                         if(closeAfterSave){
@@ -995,7 +1071,6 @@ FormModule.prototype.getRegionWrappers = function(){"use strict";
 };
 
 FormModule.prototype.setupMenu = function(){"use strict";
-    /*jslint eqeq: true */
     
     try {
         if(Ti.App.isAndroid){
@@ -1122,8 +1197,14 @@ FormModule.prototype.setupMenu = function(){"use strict";
                 title : 'Actions',
                 style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
             });
-        
-            actions.addEventListener('click', this.showActionsOptions);
+            
+            if(this.usingDispatch){
+                actions.title = 'Save';
+                actions.addEventListener('click', ActiveFormObj.parentTabObj.doDispatchSave);
+            }
+            else{
+                actions.addEventListener('click', ActiveFormObj.showActionsOptions);
+            }
     
             // create and add toolbar
             toolbar = Ti.UI.iOS.createToolbar({
@@ -1606,6 +1687,7 @@ FormModule.prototype.saveForm = function(saveType){"use strict";
     
     this.formToNode();
     
+    
     if(saveType == 'draft'){
         this.node._isDraft = true;
     }
@@ -1687,10 +1769,10 @@ FormModule.prototype.initNewNode = function(){"use strict";
     this.node.form_part = this.form_part;
     this.node.dispatch_nid = this.dispatch_nid;
     this.node.origNid = this.origNid;
+    this.node.flag_is_updated = this.flag_is_updated;
     
     this.node.changed = now;
     this.node.changed_uid = uid;
-    this.node.flag_is_updated = 0;
     
     if(!this.continuous_nid){
         this.node.continuous_nid = this.continuous_nid = Omadi.data.getNewNodeNid();
@@ -1718,6 +1800,8 @@ FormModule.prototype.initNewNode = function(){"use strict";
 FormModule.prototype.adjustFileTable = function(){"use strict";
     var fileNids, db, query, numPhotos, result, types, dialogTitle,
         dialogMessage, messageParts, secondDialog, continuousId;
+    
+    Ti.API.debug("In adjust file table");
     
     try{
         continuousId = this.continuous_nid;
@@ -1747,7 +1831,7 @@ FormModule.prototype.adjustFileTable = function(){"use strict";
             }
             
             Omadi.data.deleteContinuousNodes();
-            ActiveFormObj.win.close();
+            ActiveFormObj.closeWindow();
         }
         else if(Omadi.utils.getPhotoWidget() == 'choose'){
             // This is not a draft, and we don't care about the taken photos
@@ -1959,6 +2043,7 @@ FormModule.prototype.adjustFileTable = function(){"use strict";
                     }
                     catch(ex){
                         Omadi.service.sendErrorReport("Exception in form second dialog click: " + ex);
+                        ActiveFormObj.closeWindow();
                     }
                 });
                 
@@ -1989,15 +2074,24 @@ FormModule.prototype.cancelOpt = function(e){"use strict";
 
     dialog.addEventListener('click', function(e) {
         var windowNid;
+        
         try{
-            if (e.index == 0) {
-                
-                windowNid = parseInt(ActiveFormObj.nid, 10);
-                if(isNaN(windowNid)){
-                  windowNid = 0;   
+            if(ActiveFormObj.usingDispatch){
+                if (e.index == 0) {
+                    Omadi.data.deleteContinuousNodes();
+                    ActiveFormObj.win.dispatchTabGroup.close();
                 }
-                
-                ActiveFormObj.adjustFileTable();
+            }
+            else{
+                if (e.index == 0) {
+                    
+                    windowNid = parseInt(ActiveFormObj.nid, 10);
+                    if(isNaN(windowNid)){
+                      windowNid = 0;   
+                    }
+                    
+                    ActiveFormObj.adjustFileTable();
+                }      
             }
         }
         catch(ex){
@@ -2485,8 +2579,6 @@ FormModule.prototype.getMultipleSelector = function(buttonView){"use strict";
                 width: 80,
                 left : 10,
                 height: 35,
-                listView: listView,
-                buttonView: buttonView,
                 style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
                 color: '#fff',
                 borderRadius: 5,
@@ -2550,11 +2642,11 @@ FormModule.prototype.getWindow = function(){"use strict";
            right: 0,
            left: 0 
         });
+        // Setup the menu early in case something crashes, at least iOS will have a back button
+        this.setupMenu();
         
         if(Ti.App.isIOS7){
-            if(!this.usingDispatch){
-                this.wrapperView.top = 20;   
-            }
+            this.wrapperView.top = 20;   
         }
         
         // Do not let the app log this user out while on the form screen
@@ -2563,11 +2655,6 @@ FormModule.prototype.getWindow = function(){"use strict";
         
         omadi_session_details = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
         roles = omadi_session_details.user.roles;
-
-        
-        if(typeof this.node.custom_copy_orig_nid === 'undefined'){
-            this.node.custom_copy_orig_nid = 0;
-        }
         
         this.scrollView = Ti.UI.createScrollView({
             contentHeight : 'auto',
@@ -2581,8 +2668,6 @@ FormModule.prototype.getWindow = function(){"use strict";
         
         this.instances = Omadi.data.getFields(this.type);
         this.regions = Omadi.data.getRegions(this.type);
-        
-        this.setupMenu();
         
         try{
             regionWrappers = this.getRegionWrappers();
@@ -2724,40 +2809,39 @@ FormModule.prototype.getWindow = function(){"use strict";
                 }
             }
        
-            if(this.type != 'dispatch'){
-                doneButtonWrapper = Ti.UI.createView({
-                    width: '100%',
-                    height: 55,
-                    top: 10,
-                    backgroundGradient: Omadi.display.backgroundGradientGray
-                });
-                
-                doneButton = Ti.UI.createLabel({
-                    text: 'DONE',
-                    backgroundGradient: Omadi.display.backgroundGradientBlue,
-                    font: {
-                        fontSize: 18,
-                        fontWeight: 'bold'
-                    },
-                    borderRadius: 10,
-                    width: '90%',
-                    height: 35,
-                    textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
-                    color: '#fff',
-                    bottom: 30,
-                    top: 10
-                });
-                
-                if(this.usingDispatch){
-                    doneButton.addEventListener('click', ActiveFormObj.parentTabObj.showActionsOptions);
-                }
-                else{
-                    doneButton.addEventListener('click', ActiveFormObj.showActionsOptions);   
-                }    
-                
-                doneButtonWrapper.add(doneButton);
-                this.scrollView.add(doneButtonWrapper);
+            doneButtonWrapper = Ti.UI.createView({
+                width: '100%',
+                height: 55,
+                top: 10,
+                backgroundGradient: Omadi.display.backgroundGradientGray
+            });
+            
+            doneButton = Ti.UI.createLabel({
+                text: 'DONE',
+                backgroundGradient: Omadi.display.backgroundGradientBlue,
+                font: {
+                    fontSize: 18,
+                    fontWeight: 'bold'
+                },
+                borderRadius: 10,
+                width: '90%',
+                height: 35,
+                textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+                color: '#fff',
+                bottom: 30,
+                top: 10
+            });
+            
+            if(this.usingDispatch){
+                doneButton.text = 'SAVE';
+                doneButton.addEventListener('click', ActiveFormObj.parentTabObj.doDispatchSave);
             }
+            else{
+                doneButton.addEventListener('click', ActiveFormObj.showActionsOptions);   
+            }    
+            
+            doneButtonWrapper.add(doneButton);
+            this.scrollView.add(doneButtonWrapper);
             
             if(Omadi.utils.count(this.checkConditionalFieldNames) > 0){
                 this.formToNode();
@@ -2801,7 +2885,7 @@ FormModule.prototype.recalculateCalculationFields = function(){"use strict";
                         
                         if(count == 0){
                             // Reset the cache for calculation fields on recalc
-                            this.fieldObjects[field_name].resetCache();
+                            //this.fieldObjects[field_name].resetCache();
                         }
                         
                         count ++;
@@ -2816,7 +2900,7 @@ FormModule.prototype.recalculateCalculationFields = function(){"use strict";
                         if(!isHidden){
                             Ti.API.debug("redrawing a calc field");
                             // There's no need to redraw for an instance that is not visible
-                            this.fieldObjects[field_name].redraw();
+                            //this.fieldObjects[field_name].redraw();
                         }
                     }
                 }
@@ -3119,7 +3203,7 @@ FormModule.prototype.continuousSave = function(){"use strict";
 
 FormModule.prototype.getFieldView = function(instance, fieldViewWrapper){"use strict";
     /*jslint nomen:true*/
-    var fieldView, Module;
+    var fieldView, Module, fieldObject;
     
     fieldView = null;
     Module = null;
@@ -3168,8 +3252,9 @@ FormModule.prototype.getFieldView = function(instance, fieldViewWrapper){"use st
         }
         
         if(Module){
-           this.fieldObjects[instance.field_name] = Module.getFieldObject(Omadi, this, instance, fieldViewWrapper); 
-           fieldView = this.fieldObjects[instance.field_name].getFieldView(); 
+           //this.fieldObjects[instance.field_name] = Module.getFieldObject(Omadi, this, instance, fieldViewWrapper);
+           fieldObject = Module.getFieldObject(Omadi, this, instance, fieldViewWrapper); 
+           fieldView = fieldObject.getFieldView(); 
         }
     }
     catch(ex){
@@ -3765,27 +3850,34 @@ exports.resetAllButDispatch = function(){"use strict";
     }
 };
 
-exports.getDispatchObject = function(OmadiObj, type, nid, form_part, usingDispatch){"use strict";
+exports.getDispatchObject = function(OmadiObj, type, nid, form_part, parentTabObj){"use strict";
+    
     Omadi = OmadiObj;
     
-    FormObj[type] = new FormModule(type, nid, form_part, usingDispatch);
-    FormObj[type].getWindow();
+    FormObj[type] = new FormModule(type, nid, form_part, true);
     ActiveFormObj = FormObj[type];
+    ActiveFormObj.parentTabObj = parentTabObj;
+    ActiveFormObj.getWindow();
     
-    return FormObj[type];
+    return ActiveFormObj;
 };
 
 exports.getWindow = function(OmadiObj, type, nid, form_part, usingDispatch){"use strict";
-    Omadi = OmadiObj;
-    
-    if(!usingDispatch){
-        FormObj = {};
+    try{
+        Omadi = OmadiObj;
+        
+        if(!usingDispatch){
+            FormObj = {};
+        }
+        
+        FormObj[type] = new FormModule(type, nid, form_part, usingDispatch);
+        ActiveFormObj = FormObj[type];
+        
+        return FormObj[type].getWindow();
     }
-    
-    FormObj[type] = new FormModule(type, nid, form_part, usingDispatch);
-    ActiveFormObj = FormObj[type];
-    
-    return FormObj[type].getWindow();
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception getting window for form: " + ex);
+    }
 };
 
 exports.getNode = function(type){"use strict";
@@ -3795,17 +3887,21 @@ exports.getNode = function(type){"use strict";
 exports.switchedNid = function(e){"use strict";
     var i;
     Ti.API.info("In switched nid: " + JSON.stringify(e));
-    
-    for(i in FormObj){
-        if(FormObj.hasOwnProperty(i)){
-            if(e.negativeNid == FormObj[i].nid){
-                FormObj[i].nid = e.positiveNid;
-                FormObj[i].node.nid = e.positiveNid;
-                FormObj[i].origNid = e.positiveNid;
-                FormObj[i].node.origNid = e.positiveNid;
-                Ti.API.info("Switched it up correctly");
+    try{
+        for(i in FormObj){
+            if(FormObj.hasOwnProperty(i)){
+                if(e.negativeNid == FormObj[i].nid){
+                    FormObj[i].nid = e.positiveNid;
+                    FormObj[i].node.nid = e.positiveNid;
+                    FormObj[i].origNid = e.positiveNid;
+                    FormObj[i].node.origNid = e.positiveNid;
+                    Ti.API.info("Switched it up correctly");
+                }
             }
         }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception switching the nid in a form: " + ex);
     }
 };
 
@@ -3813,31 +3909,41 @@ exports.photoUploaded = function(e){"use strict";
     var i, nid, delta, fid, field_name, dbValues;
     Ti.API.info("In photo Uploaded: " + JSON.stringify(e));
     
-    nid = parseInt(e.nid, 10);
-    delta = parseInt(e.delta, 10);
-    field_name = e.field_name;
-    fid = parseInt(e.fid, 10);
-    
-    for(i in FormObj){
-        if(FormObj.hasOwnProperty(i)){
-            if(FormObj[i].nid == nid){
-                if(typeof FormObj[i].fieldWrappers[field_name] !== 'undefined'){
-                    
-                    Ti.API.info("Just inserted a photo uploaded.");
-                    
-                    FormObj[i].setValueWidgetProperty(field_name, 'dbValue', fid, delta);
-                    FormObj[i].setValueWidgetProperty(field_name, 'fid', fid, delta);
+    try{
+        nid = parseInt(e.nid, 10);
+        delta = parseInt(e.delta, 10);
+        field_name = e.field_name;
+        fid = parseInt(e.fid, 10);
+        
+        for(i in FormObj){
+            if(FormObj.hasOwnProperty(i)){
+                if(FormObj[i].nid == nid){
+                    if(typeof FormObj[i].fieldWrappers[field_name] !== 'undefined'){
+                        
+                        Ti.API.info("Just inserted a photo uploaded.");
+                        
+                        FormObj[i].setValueWidgetProperty(field_name, 'dbValue', fid, delta);
+                        FormObj[i].setValueWidgetProperty(field_name, 'fid', fid, delta);
+                    }
                 }
             }
         }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception switching the photo id in a form: " + ex);
     }
 };
 
 exports.loggingOut = function(){"use strict";
     var i;
-    for(i in FormObj){
-        if(FormObj.hasOwnProperty(i)){
-            FormObj[i].closeWindow();
+    try{
+        for(i in FormObj){
+            if(FormObj.hasOwnProperty(i)){
+                FormObj[i].closeWindow();
+            }
         }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in form logout: " + ex);
     }
 };

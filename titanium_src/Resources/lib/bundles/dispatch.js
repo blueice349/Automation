@@ -729,6 +729,8 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
             statusDialog.addEventListener('click', function(e){
                 try{
                     if(e.index === 0){
+                        Omadi.display.loading();
+                       
                         node = Omadi.data.nodeLoad(nid);
                         
                         Ti.App.fireEvent('openFormWindow', {
@@ -736,6 +738,8 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
                             nid: node.nid, 
                             form_part: node.form_part + 1
                         });
+                        
+                        setTimeout(Omadi.display.doneLoading, 5000);
                     }
                 }
                 catch(ex){
@@ -801,12 +805,12 @@ Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
     dispatchBundle = Omadi.data.getBundle('dispatch');
     
     if(dispatchBundle){
-    
         db = Omadi.utils.openMainDatabase();
         
         sql = "SELECT n.nid, n.title, n.viewed, n.table_name, dispatch.job_discontinued, n.changed FROM dispatch ";
         sql += "INNER JOIN node n ON n.dispatch_nid = dispatch.nid ";
         sql += "WHERE n.dispatch_nid > 0 ";
+        sql += "AND n.flag_is_updated != 4 ";
         sql += "AND dispatch.dispatched_to_driver IS NULL "; 
         sql += "AND dispatch.field_dispatching_status != 'job_complete'";
         result = db.execute(sql);
@@ -858,6 +862,7 @@ Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
         sql = "SELECT n.nid, n.title, n.viewed, n.table_name, dispatch.job_discontinued, n.changed FROM dispatch ";
         sql += "INNER JOIN node n ON n.dispatch_nid = dispatch.nid ";
         sql += "WHERE n.dispatch_nid > 0 ";
+        sql += "AND n.flag_is_updated != 4 ";
         sql += "AND dispatch.dispatched_to_driver = " + currentUserUid + " "; 
         sql += "AND (dispatch.field_dispatching_status IS NULL OR dispatch.field_dispatching_status <> 'job_complete') ";
         

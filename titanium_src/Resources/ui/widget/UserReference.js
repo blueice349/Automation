@@ -130,8 +130,6 @@ UserReferenceWidget.prototype.getNewElement = function(index){"use strict";
         }
     }
 
-    Ti.API.debug("Creating user_reference field");
-
     options = this.getOptions();
     textOptions = [];
 

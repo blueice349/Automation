@@ -135,7 +135,7 @@ ListTextWidget.prototype.getNewElement = function(index){"use strict";
         }
     }
     
-    Ti.API.debug("Creating text_list field: " + this.instance.label);
+    Ti.API.debug("Creating list_text field: " + this.instance.label);
     
     options = this.getOptions();
     
@@ -190,7 +190,6 @@ ListTextWidget.prototype.getNewElement = function(index){"use strict";
     element.setText(textValue);
     element.textValue = textValue;
     element.dbValue = dbValue;
-    element.widget = this;
     
     // TODO: allow conditional fields for this widget
     //element.check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
@@ -226,7 +225,7 @@ ListTextWidget.prototype.getNewElement = function(index){"use strict";
                             // This is a special case for dispatching
                             if(ev.source.element.fieldName == 'field_tow_type'){
                                 try{
-                                    ev.source.element.widget.formObj.win.dispatchTabGroup.fireEvent("omadi:dispatch:towTypeChanged", {
+                                    Widget[ev.source.element.instance.field_name].formObj.win.dispatchTabGroup.fireEvent("omadi:dispatch:towTypeChanged", {
                                         dbValue: ev.source.element.dbValue 
                                     });
                                 }

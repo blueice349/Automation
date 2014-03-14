@@ -13,8 +13,11 @@ function SignatureWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.nodeElement = null;
     this.numVisibleFields = 1;
     this.fieldViewWrapper = fieldViewWrapper;
+    this.element = null;
+    this.imageView = null;
+    this.imageWrapper = null;
     
-    this.Paint = require('ti.paint');
+    this.Paint = formObj.Paint;
     
     if(typeof this.node[this.instance.field_name] !== 'undefined'){
         this.nodeElement = this.node[this.instance.field_name];
@@ -52,8 +55,8 @@ SignatureWidget.prototype.getFieldView = function(){"use strict";
     this.fieldView.add(this.formObj.getRegularLabelView(this.instance));
     
     // Add the actual fields
-    element = this.getNewElement(0);
-    this.fieldView.add(element);
+    this.element = this.getNewElement(0);
+    this.fieldView.add(this.element);
     this.fieldView.add(this.formObj.getSpacerView());
     
     return this.fieldView;
@@ -92,7 +95,7 @@ SignatureWidget.prototype.redraw = function(){"use strict";
 
 SignatureWidget.prototype.getNewElement = function(index){"use strict";
     var widgetView, dbValue, imageData, i, numImagesShowing = 0, 
-        signNowButton, imageNid, imageView, eraseButton, buttonView, imageWrapper, sigLine, thex, isSigned;
+        signNowButton, imageNid, buttonView, imageWrapper, sigLine, thex, isSigned;
 
     dbValue = null;
     imageData = [];
@@ -106,9 +109,6 @@ SignatureWidget.prototype.getNewElement = function(index){"use strict";
             imageData = this.node[this.instance.field_name].imageData;
         }
     }
-    
-    Ti.API.error("Signature element");
-    Ti.API.error(JSON.stringify(this.node));
     
     imageNid = this.formObj.nid;
     if(typeof this.formObj.origNid !== 'undefined'){
@@ -144,7 +144,7 @@ SignatureWidget.prototype.getNewElement = function(index){"use strict";
         instance: this.instance
     });
     
-    imageWrapper = Ti.UI.createView({
+    this.imageWrapper = Ti.UI.createView({
         height: 0,
         width: '100%',
         visible: false
@@ -152,7 +152,7 @@ SignatureWidget.prototype.getNewElement = function(index){"use strict";
     
     isSigned = (typeof dbValue === 'number');
     
-    imageView = Ti.UI.createImageView({
+    this.imageView = Ti.UI.createImageView({
         width: '100%',
         height: 200,
         image : (isSigned ? '/images/signature-loading.png' : dbValue),
@@ -162,28 +162,26 @@ SignatureWidget.prototype.getNewElement = function(index){"use strict";
         bigImg : null,
         nid : imageNid,
         fid : dbValue,
-        widgetView : widgetView,
         imageIndex : 0,
         dbValue : dbValue,
         instance : this.instance,
-        parentView : widgetView,
         borderColor: '#ccc',
         borderWidth: 2
     });
     
     if (Omadi.utils.isArray(imageData)) {
         if(typeof imageData[0] !== 'undefined'){
-            imageView.image = imageData[0];
+            this.imageView.image = imageData[0];
         }
     }
     
     if(isSigned){
-        imageWrapper.visible = true;
-        imageWrapper.height = Ti.UI.SIZE;
-        Omadi.display.displayLargeImage(imageView, imageNid, dbValue, true);
+        this.imageWrapper.visible = true;
+        this.imageWrapper.height = Ti.UI.SIZE;
+        Omadi.display.displayLargeImage(this.imageView, imageNid, dbValue, true);
     }
     else{
-        imageWrapper.height = 0;
+        this.imageWrapper.height = 0;
         buttonView.add(signNowButton);
     }
     
@@ -205,22 +203,17 @@ SignatureWidget.prototype.getNewElement = function(index){"use strict";
         left:20
     });
 
-    imageWrapper.add(imageView);
-    imageWrapper.add(sigLine);
-    imageWrapper.add(thex);
-    imageWrapper.imageView = imageView;
+    this.imageWrapper.add(this.imageView);
+    this.imageWrapper.add(sigLine);
+    this.imageWrapper.add(thex);
     
-    widgetView.add(imageWrapper);
+    widgetView.add(this.imageWrapper);
     widgetView.add(buttonView);
     
-    widgetView.imageWrapper = imageWrapper;
-    widgetView.imageView = imageView;
-    widgetView.eraseButton = eraseButton;
-    widgetView.signNowButton = signNowButton;
-    
     buttonView.addEventListener('click', function(e){
+        var widget = Widget[e.source.instance.field_name];
         try{
-            Widget[e.source.instance.field_name].openSignatureView(widgetView);
+            widget.openSignatureView();
         }
         catch(ex){
             Omadi.service.sendErrorReport("Exception in signature button click: " + ex);
@@ -248,7 +241,7 @@ SignatureWidget.prototype.getNewElement = function(index){"use strict";
     return widgetView;
 };
 
-SignatureWidget.prototype.openSignatureView = function(widgetView){"use strict";
+SignatureWidget.prototype.openSignatureView = function(){"use strict";
     
     var win, thex, sigLine, screenShadow, wrapper, outsideWrapper, wrapperShadow, 
         doneButton, clearButton, cancelButton, paintView, buttonView, 
@@ -340,7 +333,6 @@ SignatureWidget.prototype.openSignatureView = function(widgetView){"use strict";
             fontSize:14
         },
         win: win,
-        widgetView: widgetView,
         instance: this.instance
     });
      
@@ -497,16 +489,18 @@ SignatureWidget.prototype.openSignatureView = function(widgetView){"use strict";
     }
     
     doneButton.addEventListener('click',function(e){
-        var blob;
+        var blob, widget;
         
         try{
             blob = paintView.toImage();
             
-            Widget[e.source.instance.field_name].removePreviousSignature();
+            widget = Widget[e.source.instance.field_name];
             
-            e.source.widgetView.imageView.setImage(blob);
-            e.source.widgetView.imageWrapper.setVisible(true);
-            e.source.widgetView.imageWrapper.setHeight(Ti.UI.SIZE);
+            widget.removePreviousSignature();
+            
+            widget.imageView.setImage(blob);
+            widget.imageWrapper.setVisible(true);
+            widget.imageWrapper.setHeight(Ti.UI.SIZE);
             
             // This waiting is really only for the Android devices, but it's not a hugely back thing
             // To leave for a possibly slow iOS device
@@ -538,39 +532,43 @@ SignatureWidget.prototype.openSignatureView = function(widgetView){"use strict";
 };
 
 SignatureWidget.prototype.saveSignature = function(doneButton){"use strict";
-    var filePath, file, blob;
+    var filePath, file, blob, widget;
 
     Ti.API.debug("SAVING SIGNATURE");
-
-    file = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, "s_" + Omadi.utils.getUTCTimestamp() + '.bmp');
+    try{
+        file = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, "s_" + Omadi.utils.getUTCTimestamp() + '.bmp');
+        
+        filePath = file.getNativePath();
+        
+        this.imageView.filePath = filePath;
     
-    filePath = file.getNativePath();
+        if(file){
     
-    doneButton.widgetView.imageView.filePath = filePath;
-
-    if(file){
-
-        blob = doneButton.widgetView.imageView.toBlob();
-        file.write(blob);
-
-        this.saveFileInfo(doneButton.widgetView.imageView, filePath, '', 0, blob.length, 'signature');
+            blob = this.imageView.toBlob();
+            file.write(blob);
+    
+            this.saveFileInfo(this.imageView, filePath, '', 0, blob.length, 'signature');
+        }
+        else{
+    
+            Omadi.service.sendErrorReport("File is not available for signature.");
+            alert("There was a problem saving the signature.");
+        }
     }
-    else{
-
-        Omadi.service.sendErrorReport("File is not available for signature.");
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception saving signature: " + ex);
         alert("There was a problem saving the signature.");
     }
 };
 
 SignatureWidget.prototype.removePreviousSignature = function(){"use strict";
     var nid, db;
-    /*global dbEsc*/
     
     if(typeof this.formObj.nid !== 'undefined'){
         nid = this.formObj.nid;
         
         db = Omadi.utils.openListDatabase();
-        db.execute("DELETE FROM _files WHERE nid = 0 AND field_name = '" + dbEsc(this.instance.field_name) + "'");
+        db.execute("DELETE FROM _files WHERE nid = 0 AND field_name = '" + this.instance.field_name + "'");
         db.close();
     }
 };
@@ -607,7 +605,7 @@ SignatureWidget.prototype.saveFileInfo = function(imageView, filePath, thumbPath
         db.close();
     }
     catch(ex) {
-        alert("Problem saving the photo to the database: " + ex);
+        alert("Problem saving the signature to the database: " + ex);
     }
 };
 

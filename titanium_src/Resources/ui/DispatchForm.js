@@ -124,14 +124,72 @@ DispatchForm.prototype.showActionsOptions = function(e){"use strict";
     });
 };
 
+DispatchForm.prototype.doDispatchSave = function(){"use strict";
+    var form_errors, dialog, i;
+    try{
+        if(Dispatch.workObj === null){
+            alert("You must first select a job type.");
+        }
+        else if(Dispatch.workObj.nodeSaved === false){
+            
+            if(Ti.App.isAndroid){
+                // Android doesn't like adding anything to tab groups
+                Omadi.display.loading("Saving...");
+            }
+            else{
+                // iOS won't show the loading screen unless it's on the tabgroup
+                Omadi.display.loading("Saving...", Dispatch.tabGroup);
+            }
+            
+            Dispatch.workObj.formToNode();
+            Dispatch.dispatchObj.formToNode();
+            
+            Dispatch.workObj.validate_form_data('normal');
+            Dispatch.dispatchObj.validate_form_data('normal');
+            
+            form_errors = Dispatch.workObj.form_errors;
+            for(i = 0; i < Dispatch.dispatchObj.form_errors.length; i ++){
+                form_errors.push(Dispatch.dispatchObj.form_errors[i] + " (dispatch Tab)");
+            }
+            
+            if(form_errors.length > 0){
+                
+                Omadi.display.doneLoading();
+                
+                dialog = Titanium.UI.createAlertDialog({
+                    title : 'Dispatch Validation',
+                    buttonNames : ['OK'],
+                    message: form_errors.join("\n")
+                });
+                
+                dialog.show();
+            }
+            else{
+                Dispatch.dispatchObj.saveForm('normal');
+                Dispatch.workObj.saveForm('normal');
+            }
+        }
+        else{
+            alert("The form data was saved correctly, but this screen didn't close for some reason. You can exit safely.");
+            Omadi.service.sendErrorReport("User got the dispatch screen did not close alert.");
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Could not dodispatchsave: " + ex);
+    }
+};
+
 DispatchForm.prototype.getWindow = function(){"use strict";
-    var dispatchWin, workWin, allowRecover, openDispatch, workBundle;
+    var dispatchWin, workWin, allowRecover, openDispatch, workBundle, db, result, tempDispatchNid, iconFile;
     
     try{
         openDispatch = false;
-        
         this.tabGroup = Ti.UI.createTabGroup({
-            navBarHidden: true
+            navBarHidden: true,
+            tabsBackgroundImage: '/images/black_button1.png',
+            activeTabBackgroundImage: '/images/blue_button1.png',
+            tabsTintColor: '#fff',
+            activeTabIconTint: '#fff'
         });
         
         this.FormModule = require('ui/FormModule');
@@ -168,6 +226,8 @@ DispatchForm.prototype.getWindow = function(){"use strict";
             this.workNode = Omadi.data.nodeLoad(this.nid);
             allowRecover = true;
             
+            Ti.API.debug(JSON.stringify(this.workNode));
+            
             if(this.workNode){
                 if(this.workNode.nid > 0){
                     allowRecover = false;
@@ -179,8 +239,31 @@ DispatchForm.prototype.getWindow = function(){"use strict";
                     openDispatch = true;
                 }
                 else {
-                    this.dispatchNode = Omadi.data.nodeLoad(this.workNode.dispatch_nid);
-                    openDispatch = false;
+                    
+                    if(this.nid < 0 && this.workNode.dispatch_nid > 0){
+                        // Load the corresponding negative id for the dispatch
+                        try{
+                            db = Omadi.utils.openMainDatabase();
+                            result = db.execute("SELECT nid FROM node WHERE dispatch_nid = " + this.workNode.dispatch_nid);
+                            tempDispatchNid = 0;
+                            if(result.isValidRow()){
+                                tempDispatchNid = result.field(0);
+                            }
+                            result.close();
+                            db.close();
+                            
+                            this.dispatchNode = Omadi.data.nodeLoad(tempDispatchNid);
+                            openDispatch = false;
+                        }
+                        catch(exDB){
+                            Ti.API.debug("exception when loading a continuously saved disaptch: " + exDB);
+                        }
+                    }
+                    else{
+                    
+                        this.dispatchNode = Omadi.data.nodeLoad(this.workNode.dispatch_nid);
+                        openDispatch = false;
+                    }
                 }
                 
                 this.workNode.form_part = this.form_part;
@@ -188,6 +271,7 @@ DispatchForm.prototype.getWindow = function(){"use strict";
                 // Recover from a crash with the correct work node if the work node was never looked at
                 if(allowRecover){   
                     if((this.workNode === null || typeof this.workNode.nid === 'undefined') && 
+                        this.dispatchNode !== null && 
                         typeof this.dispatchNode.field_tow_type !== 'undefined' &&
                         typeof this.dispatchNode.field_tow_type.dbValues !== 'undefined' && 
                         typeof this.dispatchNode.field_tow_type.dbValues[0] !== 'undefined'){
@@ -205,14 +289,38 @@ DispatchForm.prototype.getWindow = function(){"use strict";
             }
         }
         
+        // Make sure at least a new dispatch will be created
+        if(this.dispatchNode === null){
+            this.dispatchNode = {
+                type : "dispatch",
+                nid : 'new',
+                form_part : 0
+            };
+            
+            openDispatch = true;
+        }
+        
+        if(this.workNode !== null){
+            if(typeof this.workNode.type !== 'undefined' && this.workNode.type !== null){
+                if(typeof this.dispatchNode.field_tow_type === 'undefined' ||
+                    typeof this.dispatchNode.field_tow_type.dbValues === 'undefined' ||
+                    typeof this.dispatchNode.field_tow_type.dbValues[0] === 'undefined'){
+                        
+                        this.dispatchNode.field_tow_type = {
+                          dbValues: [this.workNode.type]
+                        };
+                 }
+            }
+        }
+        
         //create app tabs
-        this.dispatchObj = this.FormModule.getDispatchObject(Omadi, 'dispatch', this.dispatchNode.nid, 0, true);
+        this.dispatchObj = this.FormModule.getDispatchObject(Omadi, 'dispatch', this.dispatchNode.nid, 0, this);
+        
         this.dispatchTab = Ti.UI.createTab({
             title: 'Dispatch',
-            window: this.dispatchObj.win
+            window: this.dispatchObj.win,
+            icon: '/images/icon_dispatch_white.png'
         });
-        
-        this.dispatchObj.parentTabObj = this;
         
         this.dispatchObj.win.dispatchTabGroup = this.tabGroup;
         
@@ -233,15 +341,15 @@ DispatchForm.prototype.getWindow = function(){"use strict";
         }
         
         if(this.workNode.type !== null){
-            this.workObj = this.FormModule.getDispatchObject(Omadi, this.workNode.type, this.workNode.nid, this.workNode.form_part, true);
+            this.workObj = this.FormModule.getDispatchObject(Omadi, this.workNode.type, this.workNode.nid, this.workNode.form_part, this);
        
             workBundle = Omadi.data.getBundle(this.workNode.type);
             this.workTab = Ti.UI.createTab({
                 title: workBundle.label,
-                window: this.workObj.win
+                window: this.workObj.win,
+                icon: '/images/icon_truck_white.png'
             });
             
-            this.workObj.parentTabObj = this;
             this.workObj.win.dispatchTabGroup = this.tabGroup;
         }
         
@@ -261,6 +369,18 @@ DispatchForm.prototype.getWindow = function(){"use strict";
         this.tabGroup.addEventListener("omadi:dispatch:towTypeChanged", Dispatch.towTypeChanged);
         this.tabGroup.addEventListener("omadi:dispatch:savedDispatchNode", Dispatch.savedDispatchNode);
         this.tabGroup.addEventListener("android:back", this.exitForm);
+        
+        if(Ti.App.isAndroid){
+            this.tabGroup.addEventListener("open", function(e) {
+                Dispatch.tabGroup.activity.onCreateOptionsMenu = function(e) {
+                    var menuItem = e.menu.add({
+                        title : "Save",
+                        icon : "/images/save_light_blue.png"
+                    });
+                    menuItem.addEventListener("click", Dispatch.doDispatchSave);
+                };
+            });
+        }
     }
     catch(ex){
         Omadi.service.sendErrorReport("Could not open dispatch window: " + ex);
@@ -362,20 +482,24 @@ DispatchForm.prototype.savedDispatchNode = function(e){"use strict";
     if (Dispatch.workSavedInfo !== null && Dispatch.dispatchSavedInfo !== null) {
         // Both nodes are saved, so we can close the window
         
-        Omadi.data.deleteContinuousNodes();
-        
         Dispatch.setSendingData = false;
         // Allow the updates to go through now that all the data is present
         Omadi.service.setSendingData(false);
         
         Ti.App.fireEvent('sendUpdates');
         
-        if(Dispatch.dispatchObj !== null){
-            Dispatch.dispatchObj.closeWindow();
-        }
+        Omadi.data.deleteContinuousNodes();
         
-        if(Dispatch.workObj !== null){
-            Dispatch.workObj.closeWindow();
+        if(Ti.App.isAndroid){
+            // This cannot be done on iOS
+            // Also, don't close the tabs because that will cause some flashing of screens on iOS... simply close the tabgroup
+            if(Dispatch.dispatchObj !== null){
+                Dispatch.dispatchObj.closeWindow();
+            }
+            
+            if(Dispatch.workObj !== null){
+                Dispatch.workObj.closeWindow();
+            }
         }
         
         Dispatch.tabGroup.close();
@@ -384,7 +508,6 @@ DispatchForm.prototype.savedDispatchNode = function(e){"use strict";
 
 DispatchForm.prototype.towTypeChanged = function(e) {"use strict";
     var newNodeType, newBundle, windowTop, workNode;
-    Ti.API.error("In tow type changed");
     
     try{
         newNodeType = e.dbValue;
@@ -398,16 +521,23 @@ DispatchForm.prototype.towTypeChanged = function(e) {"use strict";
                 Dispatch.workObj.initNewNodeTypeForDispatch(newNodeType);   
             }
             else{
-                Dispatch.workObj = Dispatch.FormModule.getDispatchObject(Omadi, newNodeType, 'new', -1, true);
-                Dispatch.workObj.parentTabObj = Dispatch;
+                Dispatch.workObj = Dispatch.FormModule.getDispatchObject(Omadi, newNodeType, 'new', -1, Dispatch);
                 
                 Dispatch.workTab = Ti.UI.createTab({
                     title: newBundle.label,
-                    window: Dispatch.workObj.win
+                    window: Dispatch.workObj.win,
+                    icon: '/images/icon_dispatch_white.png'
                 });
                 
                 Dispatch.tabGroup.addTab(Dispatch.workTab);
                 Dispatch.workObj.win.dispatchTabGroup = Dispatch.tabGroup;
+                
+                if(Ti.App.isIOS){
+                    setTimeout(function(){
+                        Dispatch.workTab.setActiveTab(Dispatch.dispatchTab);
+                    }, 500);
+                    //Dispatch.dispatchTab.setActive(true);
+                }
             }
         }
         else {
@@ -427,6 +557,14 @@ DispatchForm.prototype.sendError = function(message){"use strict";
     Omadi.service.sendErrorReport(message);
 };
 
+exports.getNode = function(){"use strict";
+    var node = {};
+    if(Dispatch.workObj !== null){
+        node = Dispatch.workObj.node;
+    }
+    
+    return node;
+};
 
 exports.getWindow = function(OmadiObj, type, nid, form_part){"use strict";
     Omadi = OmadiObj;

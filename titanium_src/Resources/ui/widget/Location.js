@@ -16,13 +16,13 @@ function LocationWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.nodeElement = null;
     this.numVisibleFields = 1;
     this.fieldViewWrapper = fieldViewWrapper;
+    this.element = null;
     
     if(typeof this.node[this.instance.field_name] !== 'undefined'){
         this.nodeElement = this.node[this.instance.field_name];
         
         if(typeof this.nodeElement.dbValues !== 'undefined' && this.nodeElement.dbValues != null){
             this.dbValues = this.nodeElement.dbValues;
-            
         }
         
         if(typeof this.nodeElement.textValues !== 'undefined' && this.nodeElement.textValues != null){
@@ -61,8 +61,8 @@ LocationWidget.prototype.getFieldView = function(){"use strict";
     this.fieldView.add(this.formObj.getRegularLabelView(this.instance));
     
     // Add the actual fields
-    element = this.getNewElement(0);
-    this.fieldView.add(element);
+    this.setupNewElement(0);
+    this.fieldView.add(this.element);
     this.fieldView.add(this.formObj.getSpacerView());
    
     return this.fieldView;
@@ -97,8 +97,8 @@ LocationWidget.prototype.redraw = function(){"use strict";
     this.fieldViewWrapper.remove(origFieldView);
 };
 
-LocationWidget.prototype.getNewElement = function(index){"use strict";
-    var settings, widgetView, dbValue, textValue, part, nameParts, real_field_name, i, options, states;
+LocationWidget.prototype.setupNewElement = function(index){"use strict";
+    var dbValue, textValue, part, nameParts, real_field_name, i, options, states;
 
     nameParts = this.instance.field_name.split('___');
 
@@ -167,34 +167,37 @@ LocationWidget.prototype.getNewElement = function(index){"use strict";
             options.push(states[i].title);
         }
         
-        widgetView = this.formObj.getLabelField(this.instance);
-        widgetView.setText(textValue);
-        widgetView.textValue = textValue;
-        widgetView.dbValue = dbValue;
-        widgetView.options = options;
-        widgetView.states = states;
-        widgetView.real_field_name = real_field_name;
+        this.element = this.formObj.getLabelField(this.instance);
+        this.element.setText(textValue);
+        this.element.textValue = textValue;
+        this.element.dbValue = dbValue;
+        this.element.options = options;
+        this.element.states = states;
+        this.element.real_field_name = real_field_name;
 
-        widgetView.addEventListener('click', function(e) {
+        this.element.addEventListener('click', function(e) {
             try{
                 var postDialog = Titanium.UI.createOptionDialog();
                 postDialog.options = e.source.options;
                 postDialog.cancel = -1;
-                postDialog.widgetView = e.source;
-                postDialog.show();
-    
+                postDialog.instance = e.source.instance;
+                
                 postDialog.addEventListener('click', function(ev) {
+                    var widget;
                     try{
                         if (ev.index >= 0) {
-                            ev.source.widgetView.textValue = ev.source.options[ev.index];
-                            ev.source.widgetView.dbValue = ev.source.widgetView.states[ev.index].usps;
-                            ev.source.widgetView.setText(ev.source.options[ev.index]);
+                            widget = Widget[ev.source.instance.field_name];
+                            widget.element.textValue = ev.source.options[ev.index];
+                            widget.element.dbValue = widget.element.states[ev.index].usps;
+                            widget.element.setText(ev.source.options[ev.index]);
                         }
                     }
                     catch(ex){
                         Omadi.service.sendErrorReport("Exception in location province dialog click: " + ex);
                     }
                 });
+                
+                postDialog.show();
             }
             catch(ex){
                 Omadi.service.sendErrorReport("Exception in location province click: " + ex);
@@ -202,33 +205,33 @@ LocationWidget.prototype.getNewElement = function(index){"use strict";
         });
     }
     else {
-        widgetView = this.formObj.getTextField(this.instance);
+        this.element = this.formObj.getTextField(this.instance);
 
-        widgetView.dbValue = dbValue;
-        widgetView.textValue = textValue;
-        widgetView.setValue(textValue);
-        widgetView.setAutocapitalization(Ti.UI.TEXT_AUTOCAPITALIZATION_WORDS);
-        widgetView.real_field_name = real_field_name;
+        this.element.dbValue = dbValue;
+        this.element.textValue = textValue;
+        this.element.setValue(textValue);
+        this.element.setAutocapitalization(Ti.UI.TEXT_AUTOCAPITALIZATION_WORDS);
+        this.element.real_field_name = real_field_name;
         
-        widgetView.check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
-        this.formObj.addCheckConditionalFields(widgetView.check_conditional_fields);
+        this.element.check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
+        this.formObj.addCheckConditionalFields(this.element.check_conditional_fields);
 
         if(part == 'street'){
-            widgetView.maxLength = 255;
+            this.element.maxLength = 255;
         }
         else if(part == 'city'){
-            widgetView.maxLength = 255;
+            this.element.maxLength = 255;
         }
         else if (part == 'postal_code') {
-            widgetView.setKeyboardType(Ti.UI.KEYBOARD_NUMBERS_PUNCTUATION);
-            widgetView.maxLength = 16;
+            this.element.setKeyboardType(Ti.UI.KEYBOARD_NUMBERS_PUNCTUATION);
+            this.element.maxLength = 16;
         }
 
-        widgetView.addEventListener('focus', function(e) {
+        this.element.addEventListener('focus', function(e) {
             e.source.touched = true;
         });
 
-        widgetView.addEventListener('change', function(e) {
+        this.element.addEventListener('change', function(e) {
             /*global setConditionallyRequiredLabels*/
             e.source.dbValue = e.source.value;
             e.source.textValue = e.source.value;
@@ -244,9 +247,6 @@ LocationWidget.prototype.getNewElement = function(index){"use strict";
             e.source.lastValue = e.source.value;
         });
     }
-
-
-    return widgetView;
 };
 
 LocationWidget.prototype.getStates = function() {"use strict";

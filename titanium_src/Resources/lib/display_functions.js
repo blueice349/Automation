@@ -587,48 +587,50 @@ Omadi.display.openViewWindow = function(type, nid) {"use strict";
     return viewWindow;
 };
 
-Omadi.display.FormModule = null;
+//Omadi.display.FormModule = null;
 Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
-    var db, result, formWindow, intNid, isDispatch, dispatchNid, bundle, FormModule, Dispatch, formObject, node;
+    var db, result, formWindow, intNid, isDispatch, dispatchNid, bundle, Dispatch, formObject, node, FormModule;
     
     try{
+        Ti.API.debug("opening form window");
         
         isDispatch = Omadi.bundles.dispatch.isDispatch(type, nid);
         
         if(isDispatch){
+            Omadi.display.loading();
+            
             Dispatch = require('ui/DispatchForm');
             formWindow = Dispatch.getWindow(Omadi, type, nid, form_part);
             
             if(formWindow){
                 formWindow.addEventListener('open', Omadi.display.doneLoading);
-                
-                Omadi.display.loading();
                 formWindow.open();
                 
                 // Must be called after getWindow
-                //node = FormModule.getNode();
+                node = Dispatch.getNode();
             }
             else{
                 Omadi.service.sendErrorReport("Could not open dispatch form window");
+                Omadi.display.doneLoading();
             }
         }
         else{
-        
-            Omadi.display.FormModule = require('ui/FormModule');
-            formWindow = Omadi.display.FormModule.getWindow(Omadi, type, nid, form_part, false);
+            Omadi.display.loading();
+            
+            FormModule = require('ui/FormModule');
+            formWindow = FormModule.getWindow(Omadi, type, nid, form_part, false);
             
             if(formWindow){
             
                 formWindow.addEventListener('open', Omadi.display.doneLoading);
-                
-                Omadi.display.loading();
                 formWindow.open();
                 
                 // Must be called after getWindow
-                node = Omadi.display.FormModule.getNode(type);
+                node = FormModule.getNode(type);
             }
             else{
                 Omadi.service.sendErrorReport("Could not open regular form window");
+                Omadi.display.doneLoading();
             }
         }
         
@@ -952,6 +954,9 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
                                        nid: e.row.nid,
                                        form_part: form_part
                                     });
+                                    
+                                    Omadi.display.loading();
+                                    setTimeout(Omadi.display.doneLoading, 5000);
                                 }
                             }
                             else{
@@ -962,6 +967,9 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
                                    nid: e.row.nid,
                                    form_part: form_part
                                 });
+                                
+                                Omadi.display.loading();
+                                setTimeout(Omadi.display.doneLoading, 5000);
                             }
                         }
                     }
@@ -1507,58 +1515,71 @@ Omadi.display.hideLoadingIndicator = function() {"use strict";
 // Omadi.display.currentOrientaion = e.orientation;
 // });
 
-Omadi.display.loading = function(message) {"use strict";
+Omadi.display.loading = function(message, win) {"use strict";
     var height, width;
-
-    if ( typeof message === 'undefined') {
-        message = 'Loading...';
+    try{
+        if ( typeof message === 'undefined') {
+            message = 'Loading...';
+        }
+        
+        if(typeof win === 'undefined'){
+            win = Ti.UI.currentWindow;
+        }
+    
+        indicator = Ti.UI.createLabel({
+            top : 0,
+            bottom : 0,
+            left : 0,
+            right : 0,
+            opacity : 0.85,
+            backgroundColor : '#fff',
+            zIndex : 1000,
+            color : '#666',
+            text : message,
+            font : {
+                fontWeight : 'bold',
+                fontSize : 35
+            },
+            textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
+        });
+        
+        indicator.addEventListener('click', function(e) {
+            try{
+                e.source.hide();
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("exception hiding the indicator: " + ex);
+            }
+        });
+        
+        Ti.UI.currentWindow.addEventListener('close', function(){
+            try{
+                if(indicator){
+                    indicator.hide();
+                    win.remove(indicator);
+                    indicator = null; 
+                }
+            }
+            catch(nothing){}
+        });
+        
+        if(indicator !== null){
+            win.add(indicator);
+        }
     }
-
-    indicator = Ti.UI.createLabel({
-        top : 0,
-        bottom : 0,
-        left : 0,
-        right : 0,
-        opacity : 0.85,
-        backgroundColor : '#fff',
-        zIndex : 1000,
-        color : '#666',
-        text : message,
-        font : {
-            fontWeight : 'bold',
-            fontSize : 35
-        },
-        textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
-    });
-    
-    indicator.addEventListener('click', function(e) {
-        try{
-            e.source.hide();
-        }
-        catch(ex){
-            Omadi.service.sendErrorReport("exception hiding the indicator: " + ex);
-        }
-    });
-    
-    Ti.UI.currentWindow.addEventListener('close', function(){
-        if(indicator){
-            indicator.hide();
-            Ti.UI.currentWindow.remove(indicator);
-            indicator = null; 
-        }
-    });
-    
-    if(indicator !== null){
-        Ti.UI.currentWindow.add(indicator);
-    }
+    catch(nothing2){}
 };
 
 Omadi.display.doneLoading = function() {"use strict";
-    
-    if (indicator !== null) {
-        indicator.hide();
-        Ti.UI.currentWindow.remove(indicator);
-        indicator = null;
+    try{
+        if (indicator !== null) {
+            indicator.hide();
+            Ti.UI.currentWindow.remove(indicator);
+            indicator = null;
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("doneLoading: " + ex);
     }
 };
 

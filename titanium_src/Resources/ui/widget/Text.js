@@ -20,7 +20,6 @@ function TextWidget(formObj, instance, fieldViewWrapper){"use strict";
         
         if(typeof this.nodeElement.dbValues !== 'undefined' && this.nodeElement.dbValues != null){
             this.dbValues = this.nodeElement.dbValues;
-            
         }
         
         if(typeof this.nodeElement.textValues !== 'undefined' && this.nodeElement.textValues != null){
@@ -31,6 +30,9 @@ function TextWidget(formObj, instance, fieldViewWrapper){"use strict";
     if(this.instance.settings.cardinality == -1){
         if(Omadi.utils.isArray(this.dbValues)){
             this.numVisibleFields = this.dbValues.length;
+        }
+        if(this.numVisibleFields < 1){
+            this.numVisibleFields = 1;
         }
     }
     else{
@@ -74,25 +76,24 @@ TextWidget.prototype.getFieldView = function(){"use strict";
             fieldName: this.instance.field_name
         });
             
-        addButton.addEventListener('click', function(e){
-            try{
-                Widget[e.source.fieldName].numVisibleFields ++;
-                Widget[e.source.fieldName].formObj.unfocusField();
-                Widget[e.source.fieldName].redraw();
-            }
-            catch(ex){
-                Omadi.service.sendErrorReport("Exception in text field add another: " + ex);
-            }
-        });
+        addButton.addEventListener('click', this.addAnotherCallback);
         
         this.fieldView.add(addButton);
         this.fieldView.add(this.formObj.getSpacerView());
     }
     
-    
-    //this.formObj.setConditionallyRequiredLabelForInstance(this.instance);
-    
     return this.fieldView;
+};
+
+TextWidget.prototype.addAnotherCallback = function(e){"use strict";
+    try{
+        Widget[e.source.fieldName].numVisibleFields ++;
+        Widget[e.source.fieldName].formObj.unfocusField();
+        Widget[e.source.fieldName].redraw();
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in text field add another: " + ex);
+    }
 };
 
 TextWidget.prototype.redraw = function(){"use strict";
@@ -101,8 +102,6 @@ TextWidget.prototype.redraw = function(){"use strict";
     
     this.formObj.formToNode();
         
-    //Ti.API.debug(JSON.stringify(this.formObj.node));
-    
     this.node = this.formObj.node;
     if(typeof this.node[this.instance.field_name] !== 'undefined'){
         this.nodeElement = this.node[this.instance.field_name];
@@ -175,45 +174,51 @@ TextWidget.prototype.getNewElement = function(index){"use strict";
         element.capitalization = this.instance.settings.capitalization;
     }
     
-    element.addEventListener('change', function(e) {
-        var now, milliseconds, timeChange;
-        
-        now = new Date();
-        milliseconds = now.getTime();
-        timeChange = milliseconds - e.source.lastChange;
-        
-        if(e.source.lastValue != e.source.value && (timeChange > 20)){
-            e.source.lastChange = milliseconds;
-            
-            if(typeof e.source.capitalization !== 'undefined'){
-                if(e.source.capitalization == 'all_caps' && e.source.value !== null){
-                  
-                    e.source.value = (e.source.value + "".toString()).toUpperCase();
-                  
-                    if (Ti.App.isAndroid && e.source.value != null && typeof e.source.value.length !== 'undefined') {
-                        e.source.setSelection(e.source.value.length, e.source.value.length);
-                    }
-                }
-            }
-       
-            e.source.dbValue = e.source.value;
-            e.source.textValue = e.source.value;
-            
-            if(e.source.check_conditional_fields.length > 0){
-                if(typeof e.source.lastValue === 'undefined' || typeof e.source.value === 'undefined' || 
-                          e.source.lastValue == "" || e.source.value == ""){
-                    Ti.API.debug("Checking conditionally required");
-                    Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
-                }
-            }
-            
-            e.source.lastValue = e.source.value;
-        }
-    });
+    element.addEventListener('change', this.onChangeListener);
     
     return element;
 };
 
+TextWidget.prototype.onChangeListener = function(e) {"use strict";
+    var now, milliseconds, timeChange;
+    
+    now = new Date();
+    milliseconds = now.getTime();
+    timeChange = milliseconds - e.source.lastChange;
+    
+    if(e.source.lastValue != e.source.value && (timeChange > 20)){
+        e.source.lastChange = milliseconds;
+        
+        if(typeof e.source.capitalization !== 'undefined'){
+            if(e.source.capitalization == 'all_caps' && e.source.value !== null){
+              
+                e.source.value = (e.source.value + "".toString()).toUpperCase();
+              
+                if (Ti.App.isAndroid && e.source.value != null && typeof e.source.value.length !== 'undefined') {
+                    e.source.setSelection(e.source.value.length, e.source.value.length);
+                }
+            }
+        }
+   
+        e.source.dbValue = e.source.value;
+        e.source.textValue = e.source.value;
+        
+        if(e.source.check_conditional_fields.length > 0){
+            if(typeof e.source.lastValue === 'undefined' || typeof e.source.value === 'undefined' || 
+                      e.source.lastValue == "" || e.source.value == ""){
+                Ti.API.debug("Checking conditionally required");
+                Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+            }
+        }
+        
+        e.source.lastValue = e.source.value;
+    }
+};
+
+exports.cleanUp = function(){"use strict";
+    Omadi = null;
+    Widget = null;
+};
 
 exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
     

@@ -22,6 +22,7 @@ function ImageWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.nodeElement = null;
     this.numVisibleFields = 1;
     this.fieldViewWrapper = fieldViewWrapper;
+    this.element = null;
     
     if(Ti.App.isAndroid){
         this.cameraAndroid = require('com.omadi.newcamera');
@@ -63,8 +64,8 @@ ImageWidget.prototype.getFieldView = function(){"use strict";
     this.fieldView.add(this.formObj.getRegularLabelView(this.instance));
     
     // Add the actual fields
-    element = this.getNewElement(0);
-    this.fieldView.add(element);
+    this.element = this.getNewElement(0);
+    this.fieldView.add(this.element);
     this.fieldView.add(this.formObj.getSpacerView());
   
     return this.fieldView;
@@ -277,11 +278,9 @@ ImageWidget.prototype.getImageView = function(widgetView, index, nid, fid, fileP
         touchEnabled: true,
         nid : nid,
         fid : fid,
-        widgetView : widgetView,
         imageIndex : index,
         dbValue : fid,
         instance : widgetView.instance,
-        parentView : widgetView,
         degrees: degrees,
         filePath : filePath
     });
@@ -331,7 +330,7 @@ ImageWidget.prototype.getImageView = function(widgetView, index, nid, fid, fileP
                     
                     // Allow the imageView to be touched again after waiting a little bit
                     setTimeout(function(){
-                        e.source.setTouchEnabled(true);
+                       e.source.setTouchEnabled(true);
                     }, 1000);
                 }
                 else {
@@ -401,7 +400,7 @@ ImageWidget.prototype.clickedPhotoOption = function(e){"use strict";
             });
             
             dialog.addEventListener('click', function(e2){  
-                var filePath = null, imageViews, newPhotoView;
+                var filePath = null, imageViews, newPhotoView, parentView;
                 try{
                     if(e2.index === 0){
                         
@@ -409,7 +408,8 @@ ImageWidget.prototype.clickedPhotoOption = function(e){"use strict";
                             filePath = e2.source.imageView.filePath;   
                         }
                         
-                        imageViews = e2.source.imageView.parentView.children;
+                        parentView = Widget[e2.source.imageView.instance.field_name].element;
+                        imageViews = parentView.children;
                         
                         if(imageViews.length > 1){
                             newPhotoView = imageViews[imageViews.length - 1];
@@ -420,7 +420,8 @@ ImageWidget.prototype.clickedPhotoOption = function(e){"use strict";
                         }
                         
                         // Remove the image from the scroll view before the file reference or data is deleted
-                        e2.source.imageView.parentView.remove(e2.source.imageView);
+                        
+                        parentView.remove(e2.source.imageView);
                         
                         if(filePath !== null){
                             Ti.API.debug("Removing file reference in DB: " + filePath + " " + e2.source.isDeletePhoto);
@@ -465,8 +466,8 @@ ImageWidget.prototype.openPictureChooser = function(imageView){"use strict";
         earliestTimestamp, rows, modified, row, image, extension, checkbox, refreshButton, 
         topBar, titleLabel, buttons, useButton, cancelButton, parentView, allImageViews, 
         filename, allUsedFileNames;
-        
-    parentView = imageView.parentView;
+    
+    parentView = Widget[imageView.instance.field_name].element;
     
     allImageViews = parentView.getChildren();
     allUsedFileNames = [];
@@ -531,9 +532,10 @@ ImageWidget.prototype.openPictureChooser = function(imageView){"use strict";
             });
             
             useButton.addEventListener('click', function(e){
-                var i, file, localImageView, newImageView, chooseNextImageView, copiedFile, dbPath;
+                var i, file, localImageView, newImageView, chooseNextImageView, copiedFile, dbPath, parentView;
                 try{
                     localImageView = e.source.imageView;
+                    parentView = Widget[e.source.imageView.instance.field_name].element;
                     
                     for(i = 0; i < rows.length; i ++){
                         
@@ -548,14 +550,14 @@ ImageWidget.prototype.openPictureChooser = function(imageView){"use strict";
                             localImageView.filePath = dbPath;
                             
                             if (localImageView.instance.settings.cardinality == -1 || (localImageView.imageIndex + 1) < localImageView.instance.settings.cardinality) {
-                                newImageView = Widget[e.source.instance.field_name].getImageView(localImageView.parentView, localImageView.imageIndex, null, null, dbPath, null, 0);
-                                chooseNextImageView = Widget[e.source.instance.field_name].getImageView(localImageView.parentView, localImageView.imageIndex + 1, null, null, null, null, 0);
+                                newImageView = Widget[e.source.instance.field_name].getImageView(parentView, localImageView.imageIndex, null, null, dbPath, null, 0);
+                                chooseNextImageView = Widget[e.source.instance.field_name].getImageView(parentView, localImageView.imageIndex + 1, null, null, null, null, 0);
                                 
-                                localImageView.parentView.add(newImageView);
-                                localImageView.parentView.add(chooseNextImageView);
+                                parentView.add(newImageView);
+                                parentView.add(chooseNextImageView);
                                 
-                                localImageView.parentView.setContentWidth(localImageView.parentView.getContentWidth() + 110);
-                                localImageView.parentView.remove(localImageView);
+                                parentView.setContentWidth(parentView.getContentWidth() + 110);
+                                parentView.remove(localImageView);
                                 imageView = null;
                                 
                                 localImageView = chooseNextImageView;
@@ -811,7 +813,7 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                 success : function(event) {
                     Ti.API.info('Photo complete success in JS');
                      
-                     var startIndex, newImageView, i, addedPhoto, takeNextPhotoView, lastIndex, cardinality;
+                     var startIndex, newImageView, i, addedPhoto, takeNextPhotoView, lastIndex, cardinality, parentView;
                      
                      if(typeof imageView.addedPhotos !== 'undefined'){
                         
@@ -820,13 +822,15 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                         imageView.setLeft(0);
                         
                         lastIndex = 0;
+                        
+                        parentView = Widget[imageView.instance.field_name].element;
                          
                         for(i = 0; i < imageView.addedPhotos.length; i ++){
                             addedPhoto = imageView.addedPhotos[i];
                             
-                            newImageView = Widget[imageView.instance.field_name].getImageView(imageView.parentView, addedPhoto.imageIndex, null, null, addedPhoto.filePath, "", addedPhoto.degrees);
+                            newImageView = Widget[imageView.instance.field_name].getImageView(parentView, addedPhoto.imageIndex, null, null, addedPhoto.filePath, "", addedPhoto.degrees);
                             
-                            imageView.parentView.add(newImageView);
+                            parentView.add(newImageView);
                             
                             lastIndex = addedPhoto.imageIndex;  
                         }    
@@ -843,16 +847,16 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                         Ti.API.debug("last Index: " + lastIndex);
                         
                         if(cardinality == -1 || (lastIndex + 1) < cardinality){
-                            takeNextPhotoView = Widget[imageView.instance.field_name].getImageView(imageView.parentView, lastIndex + 1, null, null, null, null, 0);
-                            imageView.parentView.add(takeNextPhotoView);
+                            takeNextPhotoView = Widget[imageView.instance.field_name].getImageView(parentView, lastIndex + 1, null, null, null, null, 0);
+                            parentView.add(takeNextPhotoView);
                         }
                         
-                        imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + (imageView.addedPhotos.length * 110));
+                        parentView.setContentWidth(parentView.getContentWidth() + (imageView.addedPhotos.length * 110));
                         
                         // Remove the original imageView from the parent
                         setTimeout(function(){
                             try{
-                                imageView.parentView.remove(imageView);
+                                parentView.remove(imageView);
                             }
                             catch(ex2){
                                 Omadi.service.sendErrorReport("Exception removing image view 1 " + ex2);
@@ -887,7 +891,7 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
     }
     else { // this is iOS
         try {
-
+            
             overlayView = Ti.UI.createView({
                 zIndex: 100    
             });
@@ -964,9 +968,9 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
 
                 success : function(event) {
                     var newImageView, tmpImageView, blob, maxDiff, newHeight, newWidth, 
-                        imageFile, filePath, thumbPath, thumbFile, thumbBlob, takeNextPhotoView;
+                        imageFile, filePath, thumbPath, thumbFile, thumbBlob, takeNextPhotoView, parentView;
 
-                    Omadi.display.loading("Saving Photo...");
+                    Omadi.display.loading("Saving Photo...", Widget[imageView.instance.field_name].formObj.win);
                     
                     imageView.mimeType = event.media.mimeType;
                     
@@ -977,7 +981,7 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                     imageFile.setRemoteBackup(false);
                     
                     Omadi.display.doneLoading();
-                    Omadi.display.loading("Creating Thumbnail...");
+                    Omadi.display.loading("Creating Thumbnail...", Widget[imageView.instance.field_name].formObj.win);
                     
                     thumbPath = Ti.Filesystem.applicationDataDirectory + "p_" + Omadi.utils.getUTCTimestamp() + '_thumb.jpg';
                     thumbFile = Ti.Filesystem.getFile(thumbPath);
@@ -994,21 +998,18 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                             
                     Widget[imageView.instance.field_name].saveFileInfo(imageView, filePath, thumbPath, 0, event.media.length, 'image');
                     
-                    // Save a draft of this image in case a crash happens soon
-                    if(Ti.App.saveContinually && typeof save_form_data !== 'undefined'){
-                        save_form_data('continuous');
-                    }
-                   
+                    parentView = Widget[imageView.instance.field_name].element;
+                    
                     if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
                         
-                        newImageView = Widget[imageView.instance.field_name].getImageView(imageView.parentView, imageView.imageIndex, null, null, filePath, thumbPath, 0);
-                        takeNextPhotoView = Widget[imageView.instance.field_name].getImageView(imageView.parentView, imageView.imageIndex + 1, null, null, null, null, 0);
+                        newImageView = Widget[imageView.instance.field_name].getImageView(parentView, imageView.imageIndex, null, null, filePath, thumbPath, 0);
+                        takeNextPhotoView = Widget[imageView.instance.field_name].getImageView(parentView, imageView.imageIndex + 1, null, null, null, null, 0);
                         
-                        imageView.parentView.add(newImageView);
-                        imageView.parentView.add(takeNextPhotoView);
+                        parentView.add(newImageView);
+                        parentView.add(takeNextPhotoView);
                         
-                        imageView.parentView.setContentWidth(imageView.parentView.getContentWidth() + 110);
-                        imageView.parentView.remove(imageView);
+                        parentView.setContentWidth(parentView.getContentWidth() + 110);
+                        parentView.remove(imageView);
                         imageView = null;
                         
                         // Allow the newImageView time to show up, and then click it
@@ -1019,10 +1020,10 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                     }
                     else{
                         
-                        newImageView = Widget[imageView.instance.field_name].getImageView(imageView.parentView, imageView.imageIndex, null, null, filePath, thumbPath, 0);
+                        newImageView = Widget[imageView.instance.field_name].getImageView(parentView, imageView.imageIndex, null, null, filePath, thumbPath, 0);
                         
-                        imageView.parentView.add(newImageView);
-                        imageView.parentView.remove(imageView);
+                        parentView.add(newImageView);
+                        parentView.remove(imageView);
                         imageView = null;
                         
                         Omadi.display.doneLoading();

@@ -40,7 +40,7 @@ var listView;
 
 var jsonLogin = JSON.parse(Ti.App.Properties.getString("Omadi_session_details"));
 
-Ti.API.debug(jsonLogin);
+//Ti.API.debug(jsonLogin);
 
 var name = jsonLogin.user.realname;
 var roles = jsonLogin.user.roles;
@@ -900,7 +900,8 @@ function mainMenuFirstSyncInstallComplete(){"use strict";
 
 function sendDelayedUpdates(){"use strict";
     // Wait one second before actually sending the update
-    setTimeout(Omadi.service.sendUpdates, 500);
+    //setTimeout(Omadi.service.sendUpdates, 500);
+    Omadi.service.sendUpdates();
 }
 
 function userInitiatedUpdateCheck(){"use strict";
@@ -910,7 +911,7 @@ function userInitiatedUpdateCheck(){"use strict";
 function switchedNodeIdMainMenu(e){"use strict";
     Ti.API.error("Switched it up: " + JSON.stringify(e));
     
-    if(Omadi.display.FormModule !== null){
+    if(typeof Omadi.display.FormModule !== 'undefined' && Omadi.display.FormModule !== null){
         Omadi.display.FormModule.switchedNid(e);
     }
 }
@@ -1154,13 +1155,13 @@ function openFormWindow(e){"use strict";
         a = null;
     });
     
-    Ti.API.debug("About to check for updates.");
-    
     // Only after the first sync after login
     Ti.App.addEventListener('omadi:finishedDataSync', mainMenuFirstSyncInstallComplete);
     Omadi.service.checkUpdate('from_menu');
     
-    showContinuousSavedNode();
+    // Allow the main menu to show up faster and on iOS, if that doesn't happen, the main menu will appear on top of the form screen
+    // Wait some time before loading the continuous node
+    setTimeout(showContinuousSavedNode, 1000);
     
 }());
 

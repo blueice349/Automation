@@ -20,7 +20,6 @@ function NumberDecimalWidget(formObj, instance, fieldViewWrapper){"use strict";
         
         if(typeof this.nodeElement.dbValues !== 'undefined' && this.nodeElement.dbValues != null){
             this.dbValues = this.nodeElement.dbValues;
-            
         }
         
         if(typeof this.nodeElement.textValues !== 'undefined' && this.nodeElement.textValues != null){
@@ -31,6 +30,9 @@ function NumberDecimalWidget(formObj, instance, fieldViewWrapper){"use strict";
     if(this.instance.settings.cardinality == -1){
         if(Omadi.utils.isArray(this.dbValues)){
             this.numVisibleFields = this.dbValues.length;
+        }
+        if(this.numVisibleFields < 1){
+            this.numVisibleFields = 1;
         }
     }
     else{

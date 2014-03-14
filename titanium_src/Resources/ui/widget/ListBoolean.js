@@ -32,7 +32,7 @@ function ListBooleanWidget(formObj, instance, fieldViewWrapper){"use strict";
 
 ListBooleanWidget.prototype.getFieldView = function(){"use strict";
     
-    var i, element, addButton, wrapper, labelView;
+    var element, addButton, wrapper, labelView;
     
     this.fieldView = Ti.UI.createView({
        width: '100%',
@@ -49,7 +49,7 @@ ListBooleanWidget.prototype.getFieldView = function(){"use strict";
     
     
     // Add the actual fields
-    element = this.getNewElement(i);
+    element = this.getNewElement(0);
     
     labelView = this.formObj.getRegularLabelView(this.instance);
     labelView.setWidth('80%');
@@ -133,7 +133,7 @@ ListBooleanWidget.prototype.getNewElement = function(index){"use strict";
         borderWidth : 1,
         backgroundColor : '#FFF',
         enabled : true,
-        left: '2%',
+        left: '4%',
 
         instance : this.instance,
         dbValue : dbValue,

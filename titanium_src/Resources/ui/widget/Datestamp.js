@@ -30,6 +30,9 @@ function DatestampWidget(formObj, instance, fieldViewWrapper){"use strict";
         if(Omadi.utils.isArray(this.dbValues)){
             this.numVisibleFields = this.dbValues.length;
         }
+        if(this.numVisibleFields < 1){
+            this.numVisibleFields = 1;
+        }
     }
     else{
         this.numVisibleFields = this.instance.settings.cardinality;

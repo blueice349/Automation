@@ -13,6 +13,8 @@ function TaxonomyTermReferenceWidget(formObj, instance, fieldViewWrapper){"use s
     this.nodeElement = null;
     this.numVisibleFields = 1;
     this.fieldViewWrapper = fieldViewWrapper;
+    this.element = [];
+    this.elementWrapper = [];
     
     if(typeof this.node[this.instance.field_name] !== 'undefined'){
         this.nodeElement = this.node[this.instance.field_name];
@@ -46,8 +48,8 @@ TaxonomyTermReferenceWidget.prototype.getFieldView = function(){"use strict";
     
     // Add the actual fields
     for(i = 0; i < this.numVisibleFields; i ++){
-        element = this.getNewElement(i);
-        this.fieldView.add(element);
+        this.elementWrapper[i] = this.getNewElement(i);
+        this.fieldView.add(this.elementWrapper[i]);
         this.fieldView.add(this.formObj.getSpacerView());
     }
     
@@ -100,7 +102,7 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
         }
     }
     
-    Ti.API.debug("Creating text_list field: " + this.instance.label);
+    Ti.API.debug("Creating taxonomy field: " + this.instance.label);
     
     options = this.getOptions();
     
@@ -332,6 +334,7 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
         element.setText(textValue);
         element.textValue = textValue;
         element.dbValue = dbValue;
+        element.delta = index;
         
         element.check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
         this.formObj.addCheckConditionalFields(element.check_conditional_fields);
@@ -358,23 +361,25 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
                         
                         postDialog.options = textOptions;
                         postDialog.cancel = textOptions.length - 1;
-                        postDialog.element = e.source;
-                        postDialog.show();
+                        postDialog.instance = e.source.instance;
+                        postDialog.delta = e.source.delta;
     
                         postDialog.addEventListener('click', function(ev) {
+                            var widget, textValue;
                             try{
                                 if (ev.index >= 0 && ev.index != ev.source.cancel) {
-                                    var textValue = ev.source.options[ev.index];
-        
+                                    textValue = ev.source.options[ev.index];
+                                    widget = Widget[ev.source.instance.field_name];
+                                    
                                     if (textValue == '- None -') {
                                         textValue = "";
                                     }
-                                    ev.source.element.textValue = textValue;
-                                    ev.source.element.setText(textValue);
-                                    ev.source.element.value = ev.source.element.dbValue = ev.source.element.options[ev.index].dbValue;
+                                    widget.element[ev.source.delta].textValue = textValue;
+                                    widget.element[ev.source.delta].setText(textValue);
+                                    widget.element[ev.source.delta].value = widget.element[ev.source.delta].dbValue = widget.element[ev.source.delta].options[ev.index].dbValue;
                                     
-                                    if (ev.source.element.check_conditional_fields.length > 0) {
-                                        Widget[ev.source.element.instance.field_name].formObj.setConditionallyRequiredLabels(ev.source.element.instance, ev.source.element.check_conditional_fields);
+                                    if (widget.element[ev.source.delta].check_conditional_fields.length > 0) {
+                                        Widget[ev.source.instance.field_name].formObj.setConditionallyRequiredLabels(ev.source.instance, widget.element[ev.source.delta].check_conditional_fields);
                                     }
                                 }
                             }
@@ -382,6 +387,8 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
                                 Omadi.service.sendErrorReport("Exception in taxonomy post dialog click: " + ex);
                             }
                         });
+                        
+                        postDialog.show();
                     }
                 }
                 catch(ex){
@@ -396,6 +403,8 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
         height : Ti.UI.SIZE,
         width : '100%'
     });
+    
+    this.element[index] = element;
     
     wrapper.add(element);
     wrapper.add(descriptionLabel);
