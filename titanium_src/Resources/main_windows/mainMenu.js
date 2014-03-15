@@ -759,9 +759,9 @@ function showAndroidMemoryAlert(){"use strict";
                 AndroidSysUtil.KillMyProcess();
             }
             else if(e.index == 2){
-                dialog2 = Ti.UI.createDialog({
+                dialog2 = Ti.UI.createAlertDialog({
                     title: "Low Memory Info",
-                    message: "On the Android version, memory is not being managed correctly due to a bug in our middleware. This issue should be resolved by summer 2014 by our middleware provider and you will receive that update.",
+                    message: "On the Android version of this app, memory is not being managed correctly due to a bug. This issue is estimated to be resolved in summer 2014 by our middleware provider, and you will receive that update as it becomes available. We understand this is a very annoying issue, and we are currently coming up with ways to mitigate this issue before summer 2014.",
                     buttonNames: ['OK', 'Restart', 'Ignore']
                 });
                 
@@ -789,15 +789,17 @@ function showAndroidMemoryAlert(){"use strict";
     dialog.show();
 }
 
+var lastAvailableBytes = 0;
 function checkAndroidMemoryAfterGC(){"use strict";
     var availableBytes;
     
     try{
         availableBytes = Ti.Platform.getAvailableMemory();
         
-        Ti.API.debug("Ti Available Memory after GC + 1 sec: " + availableBytes + " bytes");
+        Ti.API.debug("Ti Available Memory after GC + 1 sec: " + lastAvailableBytes + " -> " + availableBytes + " bytes");
+        Omadi.service.sendErrorReport("Just forced a GC: " + lastAvailableBytes + " -> " + availableBytes);
         
-        if(availableBytes < 8000000){
+        if(availableBytes < 600000){
             Omadi.service.sendErrorReport("Showing Android memory alert: " + availableBytes);
             showAndroidMemoryAlert();
         }
@@ -808,15 +810,11 @@ function checkAndroidMemoryAfterGC(){"use strict";
 }
 
 function checkAndroidMemory(){"use strict";
-    var availableBytes;
-    
     try{
-        availableBytes = Ti.Platform.getAvailableMemory();
+        lastAvailableBytes = Ti.Platform.getAvailableMemory();
         
-        Ti.API.debug("Ti Available Memory: " + availableBytes + " bytes");
-        
-        if(availableBytes < 8000000){
-            AndroidSysUtil.OptimiseMemory();
+        if(lastAvailableBytes < 1800000){
+            AndroidSysUtil.OptimiseMemory();            
             setTimeout(checkAndroidMemoryAfterGC, 1000);
         }
     }
@@ -916,6 +914,7 @@ function loggingOutMainMenu(e){"use strict";
 function networkChangedMainMenu(e){"use strict";
     var isOnline = e.online;
     if (isOnline) {
+        Ti.API.debug("Checking for updates from network changed.");
         Omadi.service.checkUpdate();
     }
 }
@@ -1257,6 +1256,8 @@ function openFormWindow(e){"use strict";
     
     // Only after the first sync after login
     Ti.App.addEventListener('omadi:finishedDataSync', mainMenuFirstSyncInstallComplete);
+    
+    Ti.API.debug("About to check for updates.");
     Omadi.service.checkUpdate('from_menu');
     
     // Allow the main menu to show up faster and on iOS, if that doesn't happen, the main menu will appear on top of the form screen

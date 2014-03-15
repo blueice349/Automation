@@ -823,7 +823,10 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
                     else if(Ti.Network.online){
                         
                         
-                        if(!this.usingDispatch){
+                        if(this.usingDispatch){
+                            closeAfterSave = false;  
+                        }
+                        else{
                             // Send updates immediately only when not using dispatch
                             // When using dispatch, the DispatchForm module will initialize this
                             Ti.App.fireEvent('sendUpdates');
@@ -857,23 +860,27 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
                         dialog.show();
                         
                         dialog.addEventListener('click', function(ev) {
+                            var closeAfterSave = true;
                             try{
+                                
+                                if(ActiveFormObj.usingDispatch){
+                                    closeAfterSave = false;  
+                                }
+                                
                                 if (saveType === "next_part") {
-                                    this.initNewWindowFromCurrentData(this.node.form_part + 1);
+                                    ActiveFormObj.initNewWindowFromCurrentData(ActiveFormObj.node.form_part + 1);
                                     
                                     closeAfterSave = false;
                                 }
                                 else if(saveType == 'new'){
                                     
-                                    this.initNewWindowFromCurrentData(this.node.type);
+                                    ActiveFormObj.initNewWindowFromCurrentData(ActiveFormObj.node.type);
                                     
                                     closeAfterSave = false;
                                 }
                                 
-                                Omadi.display.loading();
-                                
                                 if(closeAfterSave){
-                                    this.closeWindow();
+                                    ActiveFormObj.closeWindow();
                                 }
                             }
                             catch(ex){
