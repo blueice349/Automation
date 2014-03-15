@@ -62,18 +62,32 @@ Omadi.data.setLastUpdateTimestamp = function(sync_timestamp) {"use strict";
     }
 };
 
-Omadi.data.getLastUpdateTimestamp = function() {"use strict";
-
-    var result, timestamp = 0, db = Omadi.utils.openMainDatabase();
-    result = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
-    if (result.isValidRow()) {
-        timestamp = result.field(0, Ti.Database.FIELD_TYPE_INT);
+Omadi.data.getLastUpdateTimestamp = function(useDB) {"use strict";
+    var result, timestamp = 0, db;
+    
+    try{
+        if(typeof useDB === 'undefined'){
+            db = Omadi.utils.openMainDatabase();    
+        }
+        else{
+            db = useDB;
+        }
+        
+        result = db.execute('SELECT timestamp FROM updated WHERE rowid=1');
+        if (result.isValidRow()) {
+            timestamp = result.field(0, Ti.Database.FIELD_TYPE_INT);
+        }
+        result.close();
+        
+        if(typeof useDB === 'undefined'){
+            db.close();
+        }
     }
-    result.close();
-    db.close();
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception getting last update timestamp: "+ ex);
+    }
 
     return timestamp;
-    //return Ti.App.Properties.getDouble("sync_timestamp", 0);
 };
 
 Omadi.data.bundleCache = {};

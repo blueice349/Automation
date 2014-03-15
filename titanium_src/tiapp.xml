@@ -44,7 +44,8 @@
     <fullscreen>true</fullscreen>
     <navbar-hidden>true</navbar-hidden>
     <analytics>false</analytics>
-    <guid>499c0629-a0d0-4306-a779-84c90b949759</guid>
+    <!--<guid>499c0629-a0d0-4306-a779-84c90b949759</guid>-->
+    <guid>5127c4b7-1a9d-4a54-8071-b44d9b5e1689</guid>
     <iphone/>
     <android xmlns:android="http://schemas.android.com/apk/res/android">
         <services>
@@ -103,5 +104,6 @@
         <module platform="iphone">ti.imagefactory</module>
         <module platform="android" version="1.0">com.omadi.starmicronics</module>
         <module platform="iphone" version="0.1">com.omadi.starmicronics</module>
+        <module platform="android">uk.me.thepotters.atf.sys</module>
     </modules>
 </ti:app>

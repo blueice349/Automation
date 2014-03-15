@@ -445,6 +445,177 @@ Omadi.service.isSendingData = function(){"use strict";
     return isSendingData;
 };
 
+Omadi.service.sendDataOnLoad = function(e){"use strict";
+    var subDB, dialog, json, nameTable, dir, file, string;
+                
+    Ti.API.debug("Got response");
+    
+    try{
+        if (this.responseText !== null && this.responseText !== "null" && this.responseText !== "" && this.responseText !== "" && isJsonString(this.responseText) === true) {
+    
+            Omadi.service.fetchedJSON = JSON.parse(this.responseText);
+                
+            // Free the memory (probably doesn't actually do anything)
+            this.responseText = null;
+            
+            Omadi.data.processFetchedJson();
+        }
+        else if(this.responseData !== null){
+            // In some very rare cases, this.responseText will be null
+            // Here, we write the data to a file, read it back and do the installation
+            try{
+                dir = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory);
+                
+                if(!dir.exists()){
+                    dir.createDirectory();
+                }
+                
+                Ti.API.debug("JSON String Length: " + this.responseData.length);
+                
+                file = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory + "/download_" + Omadi.utils.getUTCTimestamp() + ".txt");
+                
+                if(file.write(this.responseData)){
+                   
+                   string = file.read();
+                   
+                   if(isJsonString(string.text)){
+                        Ti.API.debug("Is JSON");
+                        
+                        Omadi.service.fetchedJSON = JSON.parse(string.text);
+                        
+                        // Free the memory
+                        string = null;
+                        
+                        Omadi.data.processFetchedJson();
+                    }
+                    else{
+                        Omadi.service.sendErrorReport("Text is not json");
+                        if (Omadi.service.progressBar !== null) {
+                            Omadi.service.progressBar.close();
+                            Omadi.service.progressBar = null;
+                        }
+                    }
+                }
+                else{
+                    Omadi.service.sendErrorReport("Failed to write to the download file");
+                }
+                
+                if(file.exists()){
+                    file.deleteFile();
+                }
+            }
+            catch(ex){
+                Ti.API.debug("Exception at data: " + ex);
+                Omadi.service.sendErrorReport("Exception at json data: " + ex);
+            }
+            
+            file = null;
+            dir = null;
+        }
+        else {
+            
+            if(Ti.App.isAndroid){
+                Ti.Media.vibrate();
+            }
+    
+            dialog = Ti.UI.createAlertDialog({
+                title : 'Omadi',
+                buttonNames : ['OK'],
+                message : "The server disconnected you. Please login again."
+            });
+    
+            dialog.show();
+    
+            dialog.addEventListener('click', function(e) {
+                try{
+                    Ti.App.Properties.setString('logStatus', "The server logged you out");
+                    Ti.API.info('From Functions ... Value is : ' + Ti.App.Properties.getString('logStatus'));
+                    Omadi.service.logout();
+                }
+                catch(ex){
+                    Omadi.service.sendErrorReport("exception on logstatus logout: " + ex);
+                }
+            });
+        }
+        
+        Omadi.service.setSendingData(false);
+        
+        Ti.App.fireEvent("doneSendingData");
+    }
+    catch(ex1){
+        Omadi.service.sendErrorReport("Exception in update data onload: " + ex1);
+    }
+};
+
+Omadi.service.sendDataOnError = function(e){"use strict";
+    var dialog, db;
+    try{
+        Ti.API.error('Error Status: ' + e.error + ", message: " + this.status);
+        
+        if (this.status == 403 || this.status == 401) {
+            
+            // Only logout when background logout is enabled
+            // Currently, it should only be disabled when the user is filling out a form
+            if(Ti.App.allowBackgroundLogout){
+                dialog = Titanium.UI.createAlertDialog({
+                    title : 'Please Login Again',
+                    buttonNames : ['OK'],
+                    message : "You have been logged out. Your latest data was saved, and it will be sent to the server after you login again."
+                });
+    
+                Omadi.service.sendErrorReport('User logged out with code ' + this.status);
+    
+                dialog.show();
+    
+                Omadi.service.logout();
+            }
+        }
+        else if (this.status == 500) {
+    
+            // Set the node as a draft
+            db = Omadi.utils.openMainDatabase();
+            db.execute("UPDATE node SET flag_is_updated = 3 WHERE nid < 0");
+            db.close();
+    
+            dialog = Titanium.UI.createAlertDialog({
+                title : 'Service Error',
+                buttonNames : ['OK'],
+                message : "There was a problem synching your data to the server. Your latest data was saved as a DRAFT for you to save later."
+            });
+    
+            dialog.show();
+    
+            Omadi.service.sendErrorReport('500 error on send update: ' + e.error);
+        }
+        else{
+            
+            Omadi.service.sendErrorReport("Failed to send data: " + e.error);
+            
+            dialog = Titanium.UI.createAlertDialog({
+                title : 'Network Error',
+                buttonNames : ['Retry', 'Cancel'],
+                message : "A network error occurred while sending your data. Once the network issues are resolved, the data will sync correctly."
+            });
+            
+            dialog.addEventListener('click', function(e){
+                if(e.index === 0){
+                    Ti.App.fireEvent('sendUpdates');
+                } 
+            });
+    
+            dialog.show();
+            
+            Omadi.service.sendErrorReport('User logged out with code ' + this.status);
+        }
+        
+        Omadi.service.setSendingData(false);
+        Ti.App.fireEvent("doneSendingData");
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception with update data onerror callback: " + ex);
+    }
+};
+
 Omadi.service.sendUpdateRetries = 0;
 Omadi.service.sendUpdates = function() {"use strict";
     /*jslint eqeq: true*/
@@ -525,216 +696,23 @@ Omadi.service.sendUpdates = function() {"use strict";
             
             http = Ti.Network.createHTTPClient({
                 enableKeepAlive: false,
-                validatesSecureCertificate: false
+                validatesSecureCertificate: false,
+                timeout: 10000
             });
-            http.setTimeout(10000);
+            
             http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync.json');
 
             http.setRequestHeader("Content-Type", "application/json");
             Omadi.utils.setCookieHeader(http);
-
-            //When connected
-            http.onload = function(e) {
-                var subDB, dialog, json, nameTable, dir, file, string;
-                
-                //alert("Data Received");
-                //Parses response into strings
-                //Ti.API.info("Onload reached - Here follows the json: ");
-                //Ti.API.info(this.responseText.substr(0, 200));
-                
-                Ti.API.debug("Got response");
-                
-                if (this.responseText !== null && this.responseText !== "null" && this.responseText !== "" && this.responseText !== "" && isJsonString(this.responseText) === true) {
-
-                    Omadi.service.fetchedJSON = JSON.parse(this.responseText);
-                        
-                    // Free the memory
-                    this.responseText = null;
-                    
-                    Omadi.data.processFetchedJson();
-                    
-                    // subDB = Omadi.utils.openMainDatabase();
-// 
-                    // //Terms:
-                    // if (Omadi.service.fetchedJSON.terms) {
-                        // Omadi.data.processTermsJson(subDB);
-                    // }
-// 
-                    // for (nameTable in Omadi.service.fetchedJSON.node) {
-                        // if (Omadi.service.fetchedJSON.node.hasOwnProperty(nameTable)) {
-                            // Omadi.data.processNodeJson(nameTable, subDB);
-                        // }
-                    // }
-// 
-                    // subDB.close();
-                }
-                else if(this.responseData !== null){
-                    // In some very rare cases, this.responseText will be null
-                    // Here, we write the data to a file, read it back and do the installation
-                    try{
-                        dir = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory);
-                        
-                        if(!dir.exists()){
-                            dir.createDirectory();
-                        }
-                        
-                        Ti.API.debug("JSON String Length: " + this.responseData.length);
-                        
-                        file = Ti.Filesystem.getFile(Ti.Filesystem.tempDirectory + "/download_" + Omadi.utils.getUTCTimestamp() + ".txt");
-                        
-                        if(file.write(this.responseData)){
-                           
-                           string = file.read();
-                           
-                           if(isJsonString(string.text)){
-                                Ti.API.debug("Is JSON");
-                                
-                                Omadi.service.fetchedJSON = JSON.parse(string.text);
-                                
-                                // Free the memory
-                                string = null;
-                                
-                                Omadi.data.processFetchedJson();
-                            }
-                            else{
-                                Omadi.service.sendErrorReport("Text is not json");
-                                if (Omadi.service.progressBar !== null) {
-                                    Omadi.service.progressBar.close();
-                                    Omadi.service.progressBar = null;
-                                }
-                            }
-                        }
-                        else{
-                            Omadi.service.sendErrorReport("Failed to write to the download file");
-                        }
-                        
-                        if(file.exists()){
-                            file.deleteFile();
-                        }
-                    }
-                    catch(ex){
-                        Ti.API.debug("Exception at data: " + ex);
-                        Omadi.service.sendErrorReport("Exception at json data: " + ex);
-                    }
-                    
-                    file = null;
-                    dir = null;
-                }
-                else {
-                    
-                    if(Ti.App.isAndroid){
-                        Ti.Media.vibrate();
-                    }
-
-                    dialog = Ti.UI.createAlertDialog({
-                        title : 'Omadi',
-                        buttonNames : ['OK'],
-                        message : "The server disconnected you. Please login again."
-                    });
-
-                    dialog.show();
-
-                    dialog.addEventListener('click', function(e) {
-                        try{
-                            Ti.App.Properties.setString('logStatus', "The server logged you out");
-                            Ti.API.info('From Functions ... Value is : ' + Ti.App.Properties.getString('logStatus'));
-                            Omadi.service.logout();
-                        }
-                        catch(ex){
-                            Omadi.service.sendErrorReport("exception on logstatus logout: " + ex);
-                        }
-                    });
-                }
-                
-                Ti.API.debug("BEFORE set sending data");
-                
-                Omadi.service.setSendingData(false);
-                Ti.API.debug("AFTER set sending data");
-                Ti.App.fireEvent("doneSendingData");
-                
-                // Disable on production
-                // Temporarily send photo and node data to my email
-                // Omadi.data.sendDebugData(false);
-            };
-
-            //Connection error:
-            http.onerror = function(e) {
-                var dialog, db;
-                Ti.API.error('Code status: ' + e.error);
-                Ti.API.error('CODE ERROR = ' + this.status);
-                
-                //Ti.API.info("Progress bar = " + progress);
-                //alert("Data Received with error");
-                
-                // if(Ti.App.isAndroid){
-                    // Titanium.Media.vibrate();
-                // }
-
-                if (this.status == 403 || this.status == 401) {
-                    
-                    // Only logout when background logout is enabled
-                    // Currently, it should only be disabled when the user is filling out a form
-                    if(Ti.App.allowBackgroundLogout){
-                        dialog = Titanium.UI.createAlertDialog({
-                            title : 'Please Login Again',
-                            buttonNames : ['OK'],
-                            message : "You have been logged out. Your latest data was saved, and it will be sent to the server after you login again."
-                        });
-    
-                        Omadi.service.sendErrorReport('User logged out with code ' + this.status);
-    
-                        dialog.show();
-    
-                        Omadi.service.logout();
-                    }
-                }
-                else if (this.status == 500) {
-
-                    // Set the node as a draft
-                    db = Omadi.utils.openMainDatabase();
-                    db.execute("UPDATE node SET flag_is_updated = 3 WHERE nid < 0");
-                    db.close();
-
-                    dialog = Titanium.UI.createAlertDialog({
-                        title : 'Service Error',
-                        buttonNames : ['OK'],
-                        message : "There was a problem synching your data to the server. Your latest data was saved as a DRAFT for you to save later."
-                    });
-
-                    dialog.show();
-
-                    Omadi.service.sendErrorReport('500 error on send update: ' + e.error);
-                }
-                else{
-                    
-                    Omadi.service.sendErrorReport("Failed to send data: " + e.error);
-                    
-                    dialog = Titanium.UI.createAlertDialog({
-                        title : 'Network Error',
-                        buttonNames : ['Retry', 'Cancel'],
-                        message : "A network error occurred while sending your data. Once the network issues are resolved, the data will sync correctly."
-                    });
-                    
-                    dialog.addEventListener('click', function(e){
-                        if(e.index === 0){
-                            Ti.App.fireEvent('sendUpdates');
-                        } 
-                    });
-
-                    dialog.show();
-                    
-                    Omadi.service.sendErrorReport('User logged out with code ' + this.status);
-                }
-                
-                Omadi.service.setSendingData(false);
-                Ti.App.fireEvent("doneSendingData");
-            };
-
+            
+            http.onload = Omadi.service.sendDataOnLoad;
+            http.onerror = Omadi.service.sendDataOnError;
+            
+            http.send(Omadi.service.getUpdatedNodeJSON());
+            
             Ti.App.fireEvent("sendingData", {
                 message : 'Saving data to server...'
             });
-            
-            http.send(Omadi.service.getUpdatedNodeJSON());
         }
     }
     else{
@@ -1527,32 +1505,26 @@ Omadi.service.sendErrorReport = function(message) {"use strict";
 Omadi.service.getUpdatedNodeJSON = function() {"use strict";
     /*jslint eqeq:true,plusplus:true*/
 
-    var db, result, obj, nid, tid, nids, node, instances, field_name, i, v_result;
-
+    var db, result, obj, nid, tid, nids, node, instances, field_name, i, v_result, output;
+    
+    nids = [];
+    
     try {
         
         db = Omadi.utils.openMainDatabase();
-        //Initial JSON values:
-        //var current_timestamp = Math.round(new Date() / 1000);
-        //json = '{ "timestamp" : "' + Omadi.utils.getUTCTimestamp() + '", "data" : { ';
+        
         obj = {
             timestamp : Omadi.utils.getUTCTimestamp(),
-            last_sync_timestamp: Omadi.data.getLastUpdateTimestamp(),
+            last_sync_timestamp: Omadi.data.getLastUpdateTimestamp(db),
             data : {}
         };
-
-        nids = [];
- 
+        
         result = db.execute("SELECT nid FROM node WHERE flag_is_updated = 1");
-
         while (result.isValidRow()) {
             nids.push(result.fieldByName('nid'));
-            Ti.API.info(result.fieldByName('nid'));
-            result.next();
-            
-            
+            Ti.API.info("Sending nid: " + result.fieldByName('nid'));
+            result.next();   
         }
-
         result.close();
         
         result = db.execute('SELECT * FROM term_data WHERE tid < 0 ORDER BY tid DESC');
@@ -1564,21 +1536,19 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
                 v_result = db.execute('SELECT * FROM vocabulary WHERE vid = ' + result.fieldByName('vid'));
 
                 tid = result.fieldByName('tid');
-
                 obj.data.term[tid] = {};
                 obj.data.term[tid].created = result.fieldByName('created');
                 obj.data.term[tid].tid = result.fieldByName('tid');
                 obj.data.term[tid].machine_name = v_result.fieldByName('machine_name');
                 obj.data.term[tid].vid = result.fieldByName('vid');
                 obj.data.term[tid].name = result.fieldByName('name');
-
                 v_result.close();
 
                 result.next();
             }
         }
         result.close();
-        // Make sure the db is closed before odeLoad is called or any other function that opens the db
+        // Make sure the db is closed before nodeLoad is called or any other function that opens the db
         db.close();
 
         if (nids.length > 0) {
@@ -1672,11 +1642,7 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
                     }
                 }
             }
-        }
-        
-        Ti.API.info(JSON.stringify(obj));
-        
-        return JSON.stringify(obj);
+        }        
     }
     catch(ex) {
         
@@ -1700,16 +1666,18 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
             Omadi.service.sendErrorReport("Could not save bad JSON as a draft.");
         }
     }
-    finally{
-        // If there was an error before the db was closed above, close it now so the app doesn't freeze
-        try {
-            db.close();
-        }
-        catch(nothing2) {
-            Ti.API.error("db would not close");
-            Omadi.service.sendErrorReport("DB WOULD NOT CLOSE");
-        }
+    
+    
+    output = "";
+    try{
+        output = JSON.stringify(obj);
     }
+    catch(jsonEx){
+        Omadi.service.sendErrorReport("Error stringifying obj: " + jsonEx);
+    }
+    
+    Ti.API.info("Data: " + output);
+    return output;
 };
 
 Omadi.service.checkUpdate = function(useProgressBar, userInitiated){"use strict";

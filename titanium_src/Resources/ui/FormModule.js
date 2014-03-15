@@ -268,6 +268,7 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
     this.scrollPositionY = 0;
     this.fieldObjects = {};
     this.flag_is_updated = 0;
+    this.fieldRegionWrappers = {};
     
     //this.Paint = require('ti.paint');
     
@@ -569,12 +570,17 @@ FormModule.prototype.scrollToField = function(e) {"use strict";
 };
 
 FormModule.prototype.closeWindow = function(){"use strict";
-     var i, j;
+     var i, j, k;
      
-     clearInterval(this.saveInterval); 
+     try{
+         if(this.saveInterval !== null){
+            clearInterval(this.saveInterval); 
+            this.saveInterval = null;
+         } 
+     }
+     catch(ex1){}
      
-     this.saveInterval = null; 
-    
+     
      // try{
         // for(i in FormObj){
             // if(FormObj.hasOwnProperty(i)){
@@ -601,9 +607,115 @@ FormModule.prototype.closeWindow = function(){"use strict";
      // Omadi = null;
      
      try{
+        this.win.remove(this.scrollView);
         this.win.close();
      }
      catch(ex3){} 
+     
+     
+     try{
+     //ActiveFormObj = null;
+         //Omadi = null;
+         
+         Ti.API.debug("in closewindow");
+        
+         // try{
+            // for(i in FormObj){
+                // if(FormObj.hasOwnProperty(i)){
+                    // for(j in FormObj[i].fieldObjects){
+                        // if(FormObj[i].fieldObjects.hasOwnProperty(j)){
+                            // try{
+                                // FormObj[i].fieldObjects[j].cleanUp();
+                            // }
+                            // catch(ex1){
+                                // Omadi.service.sendErrorReport("Failed to cleanup object: " + ex1);
+                            // }
+                        // }
+                    // }
+                // }
+            // }
+         // }
+         // catch(ex){
+            // Omadi.service.sendErrorReport("Failed to cleanup: " + ex);
+         // }
+        
+         // Clear out everything in FormObj
+         // FormObj = {};
+         // ActiveFormObj = null;
+         // Omadi = null;
+         
+         try{
+             for(j in this.regionViews){
+                 if(this.regionViews.hasOwnProperty(j)){
+                     if(typeof this.fieldRegionWrappers[j] !== 'undefined'){
+                         for(k = 0; k < this.fieldRegionWrappers[j].length; k ++){
+                             this.regionViews[j].remove(this.fieldRegionWrappers[j][k]);
+                             this.fieldRegionWrappers[j][k] = null;
+                         }
+                         this.fieldRegionWrappers[j] = null;
+                     }
+                     this.scrollView.remove(this.regionViews[j]);
+                     this.regionViews[j] = null;
+                 }
+             }
+         }
+         catch(exRegion){
+             Omadi.service.sendErrorReport("Exception removing region views: " + exRegion);
+         }
+         
+         this.regionViews = {};
+         this.fieldRegionWrappers = {};
+         
+         
+         this.scrollView = null;
+         
+         for(j in this.fieldObjects){
+            if(this.fieldObjects.hasOwnProperty(j)){
+                try{
+                    this.fieldObjects[j].cleanUp();
+                }
+                catch(ex1){
+                    Omadi.service.sendErrorReport("Failed to cleanup object: " + ex1);
+                }
+                
+                this.fieldObjects[j] = null;
+            }
+         }
+         
+         this.fieldObjects = {};
+//          
+         // // for(j in this.fieldWrappers){
+             // // if(this.fieldWrappers.hasOwnProperty(j)){
+                 // // this.fieldWrappers[j] = null;
+             // // }
+         // // }
+//          
+         // this.fieldWrappers = {};
+//          
+         for(j in this.labelViews){
+             if(this.labelViews.hasOwnProperty(j)){
+                 this.labelViews[j] = null;
+             }
+         }
+//          
+         // this.labelViews = {};
+         // this.scrollView = null;
+//          
+//          
+         //Omadi = null;
+         // ActiveFormObj = null;
+         
+         this.currentlyFocusedField = null;
+         
+         //FormObj = {};
+         //ActiveFormObj = null;
+         
+         Ti.API.debug("end of closewindow");
+         
+     }
+     catch(ex){
+         Ti.API.error("Exception in close window: " + ex);
+     }
 };
 
 FormModule.prototype.trySaveNode = function(saveType){"use strict";
@@ -695,6 +807,8 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
                 else{
                     
                     Ti.App.fireEvent("savedNode");
+                    
+                    
                     // Delete the continuous node if one exists
                     
                     //if(this.usingDispatch)
@@ -2741,7 +2855,13 @@ FormModule.prototype.getWindow = function(){"use strict";
                                         if(fieldView){
                                             
                                             fieldWrapper.add(fieldView);
-                                            this.fieldWrappers[instance.field_name] = fieldWrapper;
+                                            //this.fieldWrappers[instance.field_name] = fieldWrapper;
+                                            
+                                            if(typeof this.fieldRegionWrappers[instance.region] === 'undefined'){
+                                                this.fieldRegionWrappers[instance.region] = [];
+                                            }
+                                            
+                                            this.fieldRegionWrappers[instance.region].push(fieldWrapper);
                                             
                                             this.regionViews[instance.region].add(fieldWrapper);
                                            
@@ -2854,12 +2974,12 @@ FormModule.prototype.getWindow = function(){"use strict";
             }
             
             if(this.hasViolationField !== false){
-                this.setupViolationFields(this.hasViolationField);
+                //this.setupViolationFields(this.hasViolationField);
             }
             
             this.win.add(this.wrapperView);
             
-            this.recalculateCalculationFields();
+            //this.recalculateCalculationFields();
         }
         catch(exBottom){
             Omadi.service.sendErrorReport("Exception in creating the bottom part of the form: " + exBottom);
@@ -3252,9 +3372,9 @@ FormModule.prototype.getFieldView = function(instance, fieldViewWrapper){"use st
         }
         
         if(Module){
-           //this.fieldObjects[instance.field_name] = Module.getFieldObject(Omadi, this, instance, fieldViewWrapper);
-           fieldObject = Module.getFieldObject(Omadi, this, instance, fieldViewWrapper); 
-           fieldView = fieldObject.getFieldView(); 
+           this.fieldObjects[instance.field_name] = Module.getFieldObject(Omadi, this, instance, fieldViewWrapper);
+           //fieldObject = Module.getFieldObject(Omadi, this, instance, fieldViewWrapper); 
+           fieldView = this.fieldObjects[instance.field_name].getFieldView(); 
         }
     }
     catch(ex){
@@ -3443,7 +3563,10 @@ FormModule.prototype.getTextField = function(instance){"use strict";
     
     textField.addEventListener('focus', function(e){
         e.source.setBackgroundColor('#def');
-        ActiveFormObj.currentlyFocusedField = e.source;
+        try{
+            ActiveFormObj.currentlyFocusedField = e.source;
+        }
+        catch(ex){}
     });
     
     textField.addEventListener('blur', function(e){

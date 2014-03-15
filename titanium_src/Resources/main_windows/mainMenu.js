@@ -1,9 +1,6 @@
 
 var Omadi;
 
-// Ti.include("/lib/widgets.js");
-// Ti.include("/lib/form_functions.js");
-
 Ti.include("/lib/functions.js");
 
 var ImageFactory = null;
@@ -11,6 +8,13 @@ var ImageFactory = null;
 if (Ti.App.isIOS) {
     Ti.include('/lib/iOS/backgroundLocation.js');
     ImageFactory = require('ti.imagefactory');
+}
+
+//var GarbageCollector = null;
+var AndroidSysUtil = null;
+if(Ti.App.isAndroid){
+    //GarbageCollector = require("prakash.garbagecollector");
+    AndroidSysUtil = require("uk.me.thepotters.atf.sys");
 }
 
 /*jslint eqeq:true, plusplus: true, nomen: true*/
@@ -737,6 +741,90 @@ function hideNetworkStatus(){"use strict";
     headerListView.animate(networkStatusAnimation);
 }
 
+function showAndroidMemoryAlert(){"use strict";
+    var dialog;
+    
+    dialog = Ti.UI.createAlertDialog({
+        title: "Low Memory",
+        message: "Your device is running low on memory. Restart the app?",
+        buttonNames: ['Restart', 'Ignore', 'Info'] 
+    });
+    
+    dialog.addEventListener('click', function(e){
+        var dialog2;
+        try{
+            if(e.index == 0){
+                Omadi.service.sendErrorReport("User is restarting app");
+                Ti.Android.currentActivity.finish();
+                AndroidSysUtil.KillMyProcess();
+            }
+            else if(e.index == 2){
+                dialog2 = Ti.UI.createDialog({
+                    title: "Low Memory Info",
+                    message: "On the Android version, memory is not being managed correctly due to a bug in our middleware. This issue should be resolved by summer 2014 by our middleware provider and you will receive that update.",
+                    buttonNames: ['OK', 'Restart', 'Ignore']
+                });
+                
+                dialog2.addEventListener('click', function(e2){
+                    try{
+                        if(e2.index == 1){
+                            Omadi.service.sendErrorReport("User is restarting app after reading info.");
+                            Ti.Android.currentActivity.finish();
+                            AndroidSysUtil.KillMyProcess();
+                        }
+                    }
+                    catch(ex2){
+                        Omadi.service.sendErrorReport("Exception in low memory alert after reading info: " + ex2);
+                    }
+                });
+                
+                dialog2.show();
+            }
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception in low memory alert: " + ex);
+        }
+    });
+    
+    dialog.show();
+}
+
+function checkAndroidMemoryAfterGC(){"use strict";
+    var availableBytes;
+    
+    try{
+        availableBytes = Ti.Platform.getAvailableMemory();
+        
+        Ti.API.debug("Ti Available Memory after GC + 1 sec: " + availableBytes + " bytes");
+        
+        if(availableBytes < 8000000){
+            Omadi.service.sendErrorReport("Showing Android memory alert: " + availableBytes);
+            showAndroidMemoryAlert();
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception checking android memory after GC: " + ex);
+    }
+}
+
+function checkAndroidMemory(){"use strict";
+    var availableBytes;
+    
+    try{
+        availableBytes = Ti.Platform.getAvailableMemory();
+        
+        Ti.API.debug("Ti Available Memory: " + availableBytes + " bytes");
+        
+        if(availableBytes < 8000000){
+            AndroidSysUtil.OptimiseMemory();
+            setTimeout(checkAndroidMemoryAfterGC, 1000);
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception checking android memory: " + ex);
+    }
+}
+
 function doneSendingDataMainMenu(e){"use strict";
     Ti.API.debug("Done Sending data event received");
     
@@ -744,8 +832,13 @@ function doneSendingDataMainMenu(e){"use strict";
     Ti.App.allowBackgroundUpdate = true;
     
     hideNetworkStatus();
+    
     Omadi.service.uploadFile();
+    
+    checkAndroidMemory();
 }
+
+
 
 function doneSendingPhotosMainMenu(e){"use strict";
     hideNetworkStatus();
@@ -902,6 +995,8 @@ function sendDelayedUpdates(){"use strict";
     // Wait one second before actually sending the update
     //setTimeout(Omadi.service.sendUpdates, 500);
     Omadi.service.sendUpdates();
+    
+    //Ti.API.debug("Not going to send updates you idiot!!!");
 }
 
 function userInitiatedUpdateCheck(){"use strict";
@@ -1084,9 +1179,9 @@ function openFormWindow(e){"use strict";
         Omadi.display.logoutButtonPressed();
     });
     
-    Ti.App.syncInterval = setInterval(backgroundCheckForUpdates, 300000);
+    //Ti.App.syncInterval = setInterval(backgroundCheckForUpdates, 300000);
   
-    Ti.App.photoUploadCheck = setInterval(Omadi.service.uploadFile, 60000);
+    //Ti.App.photoUploadCheck = setInterval(Omadi.service.uploadFile, 60000);
 
     if ( typeof curWin.fromSavedCookie !== 'undefined' && !curWin.fromSavedCookie) {
         
@@ -1108,51 +1203,56 @@ function openFormWindow(e){"use strict";
     Omadi.push_notifications.init();
     
     Ti.UI.currentWindow.addEventListener('close', function() {
-        Ti.API.info('Closing main menu');
-        
-        clearInterval(Ti.App.syncInterval);
-        clearInterval(Ti.App.photoUploadCheck);
-        
-        if(Ti.App.isIOS){
-            Ti.App.removeEventListener('resume', Omadi.service.checkUpdate);
-        }
-        
-        Ti.App.removeEventListener('showNextAlertInQueue', showNextAlertInQueue);
-        Ti.App.removeEventListener("omadi:syncInstallComplete", displayBundleList);
-        Ti.App.removeEventListener("doneSendingData", doneSendingDataMainMenu);
-        Ti.App.removeEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
-        Ti.App.removeEventListener("sendingData", sendingDataMainMenu);
-        Ti.App.removeEventListener('loggingOut', loggingOutMainMenu);
-        Ti.App.removeEventListener('sendUpdates', sendDelayedUpdates);
-        Ti.App.removeEventListener('omadi:finishedDataSync', setupBottomButtons);
-        Ti.App.removeEventListener('normal_update_from_menu', normalUpdateFromMenu);
-        Ti.App.removeEventListener('full_update_from_menu', fullUpdateFromMenu);
-        Ti.App.removeEventListener('switchedItUp', switchedNodeIdMainMenu); 
-        Ti.App.removeEventListener('photoUploaded', photoUploadedMainMenu);
-        Ti.App.removeEventListener('openFormWindow', openFormWindow);
-        
-        Ti.Network.removeEventListener('change', networkChangedMainMenu);
-        
-        // Release memory
         try{
-            Ti.UI.currentWindow.remove(loggedView);
-            Ti.UI.currentWindow.remove(networkStatusView);
-            Ti.UI.currentWindow.remove(databaseStatusView);
-            Ti.UI.currentWindow.remove(listView);
+            Ti.API.info('Closing main menu');
+            
+            //clearInterval(Ti.App.syncInterval);
+            //clearInterval(Ti.App.photoUploadCheck);
+            
+            if(Ti.App.isIOS){
+                Ti.App.removeEventListener('resume', Omadi.service.checkUpdate);
+            }
+            
+            Ti.App.removeEventListener('showNextAlertInQueue', showNextAlertInQueue);
+            Ti.App.removeEventListener("omadi:syncInstallComplete", displayBundleList);
+            Ti.App.removeEventListener("doneSendingData", doneSendingDataMainMenu);
+            Ti.App.removeEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
+            Ti.App.removeEventListener("sendingData", sendingDataMainMenu);
+            Ti.App.removeEventListener('loggingOut', loggingOutMainMenu);
+            Ti.App.removeEventListener('sendUpdates', sendDelayedUpdates);
+            Ti.App.removeEventListener('omadi:finishedDataSync', setupBottomButtons);
+            Ti.App.removeEventListener('normal_update_from_menu', normalUpdateFromMenu);
+            Ti.App.removeEventListener('full_update_from_menu', fullUpdateFromMenu);
+            Ti.App.removeEventListener('switchedItUp', switchedNodeIdMainMenu); 
+            Ti.App.removeEventListener('photoUploaded', photoUploadedMainMenu);
+            Ti.App.removeEventListener('openFormWindow', openFormWindow);
+            
+            Ti.Network.removeEventListener('change', networkChangedMainMenu);
+            
+            // Release memory
+            try{
+                Ti.UI.currentWindow.remove(loggedView);
+                Ti.UI.currentWindow.remove(networkStatusView);
+                Ti.UI.currentWindow.remove(databaseStatusView);
+                Ti.UI.currentWindow.remove(listView);
+            }
+            catch(ex){
+                Ti.API.debug("Could not remove a view from the main menu window");
+            }
+            
+            loggedView = null;
+            listView = null;
+            curWin = null;
+            
+            refresh_image = null;
+            label_top = null;
+            offImage = null;
+            actionsButton = null;
+            a = null;
         }
-        catch(ex){
-            Ti.API.debug("Could not remove a view from the main menu window");
+        catch(ex1){
+            Omadi.service.sendErrorReport("In closing of main menu: " + ex1);
         }
-        
-        loggedView = null;
-        listView = null;
-        curWin = null;
-        
-        refresh_image = null;
-        label_top = null;
-        offImage = null;
-        actionsButton = null;
-        a = null;
     });
     
     // Only after the first sync after login

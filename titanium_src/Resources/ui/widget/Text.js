@@ -4,7 +4,7 @@ var Widget, Omadi;
 
 Widget = {};
 
-function TextWidget(formObj, instance, fieldViewWrapper){"use strict";
+function TextWidget(formObj, instance){"use strict";
     this.formObj = formObj;
     this.instance = instance;
     this.fieldView = null;
@@ -13,7 +13,8 @@ function TextWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.textValues = [];
     this.nodeElement = null;
     this.numVisibleFields = 1;
-    this.fieldViewWrapper = fieldViewWrapper;
+    this.elements = [];
+    //this.fieldViewWrapper = fieldViewWrapper;
     
     if(typeof this.node[this.instance.field_name] !== 'undefined'){
         this.nodeElement = this.node[this.instance.field_name];
@@ -54,8 +55,8 @@ TextWidget.prototype.getFieldView = function(){"use strict";
     
     // Add the actual fields
     for(i = 0; i < this.numVisibleFields; i ++){
-        element = this.getNewElement(i);
-        this.fieldView.add(element);
+        this.elements[i] = this.getNewElement(i);
+        this.fieldView.add(this.elements[i]);
         this.fieldView.add(this.formObj.getSpacerView());
     }
     
@@ -121,8 +122,8 @@ TextWidget.prototype.redraw = function(){"use strict";
     
     origFieldView.hide();
     
-    this.fieldViewWrapper.add(this.fieldView);
-    this.fieldViewWrapper.remove(origFieldView);
+    //this.fieldViewWrapper.add(this.fieldView);
+    //this.fieldViewWrapper.remove(origFieldView);
 };
 
 TextWidget.prototype.getNewElement = function(index){"use strict";
@@ -220,7 +221,9 @@ TextWidget.prototype.cleanUp = function(){"use strict";
     Ti.API.debug("in text widget cleanup");
     
     try{
-    
+        
+        Widget[this.instance.field_name] = null;
+        
         for(j = 0; j < this.elements.length; j ++){
             this.fieldView.remove(this.elements[j]);
             this.elements[j] = null;
@@ -228,20 +231,13 @@ TextWidget.prototype.cleanUp = function(){"use strict";
         
         //this.fieldViewWrapper.remove(this.fieldView);
         this.fieldView = null;
-        this.fieldViewWrapper = null;
+        //this.fieldViewWrapper = null;
         this.formObj = null;
         this.node = null;
         this.dbValues = null;
         this.textValues = null;
         this.nodeElement = null;
         this.instance = null;
-        
-        for(i in Widget){
-            if(Widget.hasOwnProperty(i)){
-                Widget[i] = null;
-            }
-        }
-        
         
         Ti.API.debug("At end of text widget cleanup");
     }
@@ -253,13 +249,13 @@ TextWidget.prototype.cleanUp = function(){"use strict";
     }
     
     Omadi = null;
-    Widget = {};
+    
 };
 
 exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
     
     Omadi = OmadiObj;
-    Widget[instance.field_name] = new TextWidget(FormObj, instance, fieldViewWrapper);
+    Widget[instance.field_name] = new TextWidget(FormObj, instance);
     
     return Widget[instance.field_name];
 };
