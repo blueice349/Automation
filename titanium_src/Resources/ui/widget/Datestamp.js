@@ -11,6 +11,8 @@ function DatestampWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.dbValues = [];
     this.textValues = [];
     this.elements = [];
+    this.dateViews = [];
+    this.timeViews = [];
     this.nodeElement = null;
     this.numVisibleFields = 1;
     this.fieldViewWrapper = fieldViewWrapper;
@@ -100,6 +102,7 @@ DatestampWidget.prototype.redraw = function(){"use strict";
     this.formObj.formToNode();
         
     this.node = this.formObj.node;
+    
     if(typeof this.node[this.instance.field_name] !== 'undefined'){
         this.nodeElement = this.node[this.instance.field_name];
         
@@ -180,14 +183,17 @@ DatestampWidget.prototype.getNewElement = function(index){"use strict";
     
     dateView = this.formObj.getLabelField(this.instance);
     dateView.setText(dateText);
-    dateView.element = element;
     dateView.top = 1;
     dateView.bottom = 1;
+    dateView.delta = index;
+    dateView.jsDate = jsDate;
+    dateView.origDBValue = dbValue;
+    dateView.instance = this.instance;
 
     dateView.addEventListener('click', function(e) {
         try{
             if (e.source.instance.can_edit) {
-                Widget[e.source.fieldName].displayPicker(e.source.element, 'date');
+                Widget[e.source.instance.field_name].displayPicker(e.source.delta, e.source.jsDate, 'date', showTime, e.source.origDBValue);
             }
         }
         catch(ex){
@@ -195,19 +201,23 @@ DatestampWidget.prototype.getNewElement = function(index){"use strict";
         }
     });
     
-    element.dateView = dateView;
+    this.dateViews[index] = dateView;
+    
     element.add(dateView);
     
     if(showTime){
         
         timeView = this.formObj.getLabelField(this.instance);
         timeView.setText(timeText);
-        timeView.element = element;
         timeView.top = 1;
         timeView.bottom = 1;
         timeView.width = '37%';
         timeView.right = '4%';
         timeView.left = null;
+        timeView.delta = index;
+        timeView.jsDate = jsDate;
+        timeView.origDBValue = dbValue;
+        timeView.instance = this.instance;
         
         dateView.width = '53%';
         dateView.left = '4%';
@@ -216,7 +226,7 @@ DatestampWidget.prototype.getNewElement = function(index){"use strict";
         timeView.addEventListener('click', function(e) {
             try{
                 if (e.source.instance.can_edit) {
-                    Widget[e.source.fieldName].displayPicker(e.source.element, 'time');
+                    Widget[e.source.instance.field_name].displayPicker(e.source.delta, e.source.jsDate, 'time', true, e.source.origDBValue);
                 }
             }
             catch(ex){
@@ -224,16 +234,17 @@ DatestampWidget.prototype.getNewElement = function(index){"use strict";
             }
         });
         
-        element.timeView = timeView;
+        this.timeViews[index] = timeView;
+        
         element.add(timeView);
     }
     
     return element;
 };
 
-DatestampWidget.prototype.displayPicker = function(element, type) {"use strict";
+DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime, origDBValue) {"use strict";
 
-    var dateWindow, titleLabel, minDate, opacView, maxDate, widgetDate, 
+    var titleLabel, minDate, opacView, maxDate, 
         okButton, clearButton, wrapperView, buttonView, topButtonsView, 
         widgetYear, date_picker, time_picker, doneButton, cancelButton, 
         innerWrapperView;
@@ -244,10 +255,14 @@ DatestampWidget.prototype.displayPicker = function(element, type) {"use strict";
         Ti.UI.Android.hideSoftKeyboard();
     }
     
-    dateWindow = Ti.UI.createWindow({
+    this.dateWindow = Ti.UI.createWindow({
         orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
         modal: true,
-        navBarHidden: true
+        navBarHidden: true,
+        delta: delta,
+        jsDate: jsDate,
+        showTime: showTime,
+        origDBValue: origDBValue
     });
 
     opacView = Ti.UI.createView({
@@ -257,7 +272,7 @@ DatestampWidget.prototype.displayPicker = function(element, type) {"use strict";
         bottom : 0
     });
 
-    dateWindow.add(opacView);
+    this.dateWindow.add(opacView);
     
     // Use a scrollview with ios as the time picker isn't shown in landscape mode
     wrapperView = Ti.UI.createView({
@@ -265,7 +280,7 @@ DatestampWidget.prototype.displayPicker = function(element, type) {"use strict";
        height: Ti.UI.SIZE
     });
 
-    innerWrapperView = Ti.UI.createView({
+    this.dateWindow.innerWrapperView = Ti.UI.createView({
         layout : 'vertical',
         height : Ti.UI.SIZE,
         width : Ti.UI.FILL,
@@ -287,6 +302,7 @@ DatestampWidget.prototype.displayPicker = function(element, type) {"use strict";
     });
     
     wrapperView.add(titleLabel);
+ 
  
     topButtonsView = Ti.UI.createView({
         height : 50,
@@ -346,7 +362,12 @@ DatestampWidget.prototype.displayPicker = function(element, type) {"use strict";
                 color : '#444',
                 offset : 1.0
             }]
-        }
+        },
+        delta: delta,
+        instance: this.instance,
+        origDBValue: origDBValue,
+        jsDate: jsDate,
+        showTime: showTime
     });
     topButtonsView.add(okButton);
 
@@ -355,7 +376,6 @@ DatestampWidget.prototype.displayPicker = function(element, type) {"use strict";
         width : 75,
         left : 10,
         height: 35,
-        element : element,
         style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
         color : '#fff',
         borderRadius : 5,
@@ -383,7 +403,8 @@ DatestampWidget.prototype.displayPicker = function(element, type) {"use strict";
                 color : '#444',
                 offset : 1.0
             }]
-        }
+        },
+        instance: this.instance
     });
 
     clearButton = Ti.UI.createLabel({
@@ -391,7 +412,6 @@ DatestampWidget.prototype.displayPicker = function(element, type) {"use strict";
         width : 80,
         left : 100,
         height: 35,
-        element : element,
         style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
         color : '#fff',
         borderRadius : 5,
@@ -419,18 +439,18 @@ DatestampWidget.prototype.displayPicker = function(element, type) {"use strict";
                 color : '#444',
                 offset : 1.0
             }]
-        }
+        },
+        instance: this.instance
     });
 
     topButtonsView.add(cancelButton);
 
     topButtonsView.add(clearButton);
-    cancelButton.addEventListener('click', function() {
-        dateWindow.close();
+    cancelButton.addEventListener('click', function(e) {
+        Widget[e.source.instance.field_name].dateWindow.close();
     });
 
-    widgetDate = element.jsDate;
-    widgetYear = widgetDate.getFullYear();
+    widgetYear = jsDate.getFullYear();
 
     //Min
     minDate = new Date();
@@ -445,44 +465,41 @@ DatestampWidget.prototype.displayPicker = function(element, type) {"use strict";
     maxDate.setDate(31);
     
     if(type == 'date'){
-        date_picker = Titanium.UI.createPicker({
+        this.dateWindow.date_picker = Titanium.UI.createPicker({
             useSpinner : true,
             borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-            value : widgetDate,
+            value : jsDate,
             type : Ti.UI.PICKER_TYPE_DATE,
             minDate : minDate,
             maxDate : maxDate,
             color : '#000000',
-            element : element,
             height : Ti.UI.SIZE,
             width : Ti.UI.FILL,
             textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
         });
         
         if(Ti.App.isAndroid){
-            date_picker.width = Ti.UI.SIZE;
+            this.dateWindow.date_picker.width = Ti.UI.SIZE;
         }
         
         // This sounds really stupid - and it is! If this onchange listener isn't in place, 
         // then the date won't actually be recorded
-        date_picker.addEventListener('change', function(e){
+        this.dateWindow.date_picker.addEventListener('change', function(e){
           // Empty, but necessary
           // do not remove this change listener
         });
 
-        innerWrapperView.add(date_picker);
-        okButton.date_picker = date_picker;
+        this.dateWindow.innerWrapperView.add(this.dateWindow.date_picker);
     }
     
-    if (element.showTime && type == 'time') {
-        time_picker = Titanium.UI.createPicker({
+    if (showTime && type == 'time') {
+        this.dateWindow.time_picker = Titanium.UI.createPicker({
             useSpinner : true,
             borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-            value : widgetDate,
+            value : jsDate,
             type : Ti.UI.PICKER_TYPE_TIME,
             color : '#000000',
             timezone : null,
-            element : element,
             height : Ti.UI.SIZE,
             width : Ti.UI.FILL,
             textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER,
@@ -490,37 +507,37 @@ DatestampWidget.prototype.displayPicker = function(element, type) {"use strict";
         });
         
         if(Ti.App.isAndroid){
-            time_picker.width = Ti.UI.SIZE;
+            this.dateWindow.time_picker.width = Ti.UI.SIZE;
         }
         
-        okButton.time_picker = time_picker;
-        innerWrapperView.add(time_picker);
+        this.dateWindow.innerWrapperView.add(this.dateWindow.time_picker);
 
         // This sounds really stupid - and it is! If this onchange listener isn't in place, 
         // then the date won't actually be recorded
-        time_picker.addEventListener('change', function(e){ 
+        this.dateWindow.time_picker.addEventListener('change', function(e){ 
            // Empty, but necessary
         });
     }
     
-    okButton.element = element;
-    
     okButton.addEventListener('click', function(e) {
-        var year, month, date, hour, minute, second, newDate, i, callback, pickerValue, datePickerValue, dbValue, now;
+        var year, month, date, hour, minute, second, newDate, i, callback, pickerValue, datePickerValue, dbValue, textValue, now, dateWindow;
         
         try{
-            if(typeof e.source.date_picker !== 'undefined'){
-                pickerValue = e.source.date_picker.getValue();
+            dateWindow = Widget[e.source.instance.field_name].dateWindow;
+            
+            if(typeof dateWindow.date_picker !== 'undefined'){
                 
-                if (e.source.element.showTime) {
-                    if(e.source.element.dbValue === null){
+                pickerValue = dateWindow.date_picker.getValue();
+                
+                if (e.source.showTime) {
+                    if(e.source.origDBValue === null){
                         // The clear button was pressed at some point
                         pickerValue.setHours(0);
                         pickerValue.setMinutes(0);
                     }
                     else{
-                        pickerValue.setHours(e.source.element.jsDate.getHours());
-                        pickerValue.setMinutes(e.source.element.jsDate.getMinutes());
+                        pickerValue.setHours(e.source.jsDate.getHours());
+                        pickerValue.setMinutes(e.source.jsDate.getMinutes());
                     }    
                 }
                 else {
@@ -532,10 +549,10 @@ DatestampWidget.prototype.displayPicker = function(element, type) {"use strict";
                 
                 newDate = pickerValue;
             }
-            else if(typeof e.source.time_picker !== 'undefined'){
-                pickerValue = e.source.time_picker.getValue();
+            else if(typeof dateWindow.time_picker !== 'undefined'){
+                pickerValue = dateWindow.time_picker.getValue();
                 
-                if(e.source.element.dbValue === null){
+                if(e.source.origDBValue === null){
                     // The clear button was pressed at some point
                     now = new Date();
                     pickerValue.setFullYear(now.getFullYear());
@@ -543,42 +560,68 @@ DatestampWidget.prototype.displayPicker = function(element, type) {"use strict";
                     pickerValue.setDate(now.getDate());
                 }
                 else{
-                    pickerValue.setFullYear(e.source.element.jsDate.getFullYear());
-                    pickerValue.setMonth(e.source.element.jsDate.getMonth());    
-                    pickerValue.setDate(e.source.element.jsDate.getDate());
+                    pickerValue.setFullYear(e.source.jsDate.getFullYear());
+                    pickerValue.setMonth(e.source.jsDate.getMonth());    
+                    pickerValue.setDate(e.source.jsDate.getDate());
                 }
                 
                 newDate = pickerValue;
             }
             
-            e.source.element.jsDate = newDate;
-            e.source.element.dbValue = dbValue = Math.ceil(newDate.getTime() / 1000);
-            e.source.element.textValue = Omadi.utils.formatDate(e.source.element.dbValue, e.source.element.showTime);
-            e.source.element.dateView.setText(Omadi.utils.formatDate(dbValue, false));
+            e.source.jsDate = newDate;
+            dbValue = Math.ceil(newDate.getTime() / 1000);
+            textValue = Omadi.utils.formatDate(dbValue, e.source.showTime);
             
-            if(e.source.element.showTime){
-                e.source.element.timeView.setText(Omadi.utils.formatTime(dbValue));
+            Widget[e.source.instance.field_name].elements[e.source.delta].dbValue = dbValue;
+            Widget[e.source.instance.field_name].elements[e.source.delta].textValue = textValue;
+            
+            Widget[e.source.instance.field_name].dateViews[e.source.delta].jsDate = newDate;
+            Widget[e.source.instance.field_name].dateViews[e.source.delta].setText(Omadi.utils.formatDate(dbValue, false));
+            Widget[e.source.instance.field_name].dateViews[e.source.delta].origDBValue = dbValue;
+            
+            if(e.source.showTime){
+                Widget[e.source.instance.field_name].timeViews[e.source.delta].setText(Omadi.utils.formatTime(dbValue));
+                Widget[e.source.instance.field_name].timeViews[e.source.delta].origDBValue = dbValue;
+                Widget[e.source.instance.field_name].timeViews[e.source.delta].jsDate = newDate;
             }
             //Ti.API.debug(newDate.toString());
     
-            if ( typeof e.source.element.onChangeCallbacks !== 'undefined') {
-                if (e.source.element.onChangeCallbacks.length > 0) {
-                    for ( i = 0; i < e.source.element.onChangeCallbacks.length; i++) {
-                        callback = e.source.element.onChangeCallbacks[i];
-                        Widget[e.source.element.instance.field_name].formObj[callback](e.source.element.onChangeCallbackArgs[i]);
+            if ( typeof Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks !== 'undefined') {
+                if (Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks.length > 0) {
+                    for ( i = 0; i < Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks.length; i++) {
+                        callback = Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks[i];
+                        Widget[e.source.instance.field_name].formObj[callback](Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbackArgs[i]);
                     }
                 }
             }
     
-            if (e.source.element.check_conditional_fields.length > 0) {
-                Widget[e.source.element.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.element.instance, e.source.element.check_conditional_fields);
+            if (Widget[e.source.instance.field_name].elements[e.source.delta].check_conditional_fields.length > 0) {
+                Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, Widget[e.source.element.instance.field_name].elements[e.source.delta].check_conditional_fields);
             }
         }
         catch(ex){
             Omadi.service.sendErrorReport("Date ok button clicked problem: " + ex);    
         }
-    
-        dateWindow.close();
+        
+        try{
+            if(type == 'time'){
+                Widget[e.source.instance.field_name].dateWindow.innerWrapperView.remove(Widget[e.source.instance.field_name].dateWindow.time_picker);
+                Widget[e.source.instance.field_name].dateWindow.time_picker = null;
+            }
+            else{
+                Widget[e.source.instance.field_name].dateWindow.innerWrapperView.remove(Widget[e.source.instance.field_name].dateWindow.date_picker);
+                Widget[e.source.instance.field_name].dateWindow.date_picker = null;
+            }
+            
+            Widget[e.source.instance.field_name].dateWindow.remove(Widget[e.source.instance.field_name].dateWindow.innerWrapperView);
+            
+            Widget[e.source.instance.field_name].dateWindow.close();
+            Widget[e.source.instance.field_name].dateWindow = null; 
+        
+        }
+        catch(ex1){
+            Omadi.service.sendErrorReport("Date ok button closing window problem: " + ex1);
+        }
     });
 
     clearButton.addEventListener('click', function(e) {
@@ -600,18 +643,52 @@ DatestampWidget.prototype.displayPicker = function(element, type) {"use strict";
             Omadi.service.sendErrorReport("Date clear button clicked problem: " + ex);    
         }
 
-        dateWindow.close();
+        try{
+            if(type == 'time'){
+                Widget[e.source.instance.field_name].dateWindow.innerWrapperView.remove(Widget[e.source.instance.field_name].dateWindow.time_picker);
+                Widget[e.source.instance.field_name].dateWindow.time_picker = null;
+            }
+            else{
+                Widget[e.source.instance.field_name].dateWindow.innerWrapperView.remove(Widget[e.source.instance.field_name].dateWindow.date_picker);
+                Widget[e.source.instance.field_name].dateWindow.date_picker = null;
+            }
+            
+            Widget[e.source.instance.field_name].dateWindow.remove(Widget[e.source.instance.field_name].dateWindow.innerWrapperView);
+            
+            Widget[e.source.instance.field_name].dateWindow.close();
+            Widget[e.source.instance.field_name].dateWindow = null; 
+        }
+        catch(ex1){
+            Omadi.service.sendErrorReport("Date clear button closing window problem: " + ex1);
+        }
     });
 
-    cancelButton.addEventListener('click', function() {
+    cancelButton.addEventListener('click', function(e) {
 
-        dateWindow.close();
+        try{
+            if(type == 'time'){
+                Widget[e.source.instance.field_name].dateWindow.innerWrapperView.remove(Widget[e.source.instance.field_name].dateWindow.time_picker);
+                Widget[e.source.instance.field_name].dateWindow.time_picker = null;
+            }
+            else{
+                Widget[e.source.instance.field_name].dateWindow.innerWrapperView.remove(Widget[e.source.instance.field_name].dateWindow.date_picker);
+                Widget[e.source.instance.field_name].dateWindow.date_picker = null;
+            }
+            
+            Widget[e.source.instance.field_name].dateWindow.remove(Widget[e.source.instance.field_name].dateWindow.innerWrapperView);
+            
+            Widget[e.source.instance.field_name].dateWindow.close();
+            Widget[e.source.instance.field_name].dateWindow = null; 
+        }
+        catch(ex1){
+            Omadi.service.sendErrorReport("Date cancel button closing window problem: " + ex1);
+        }
     });
 
-    wrapperView.add(innerWrapperView);
-    dateWindow.add(wrapperView);
+    wrapperView.add(this.dateWindow.innerWrapperView);
+    this.dateWindow.add(wrapperView);
 
-    dateWindow.open();
+    this.dateWindow.open();
 };
 
 DatestampWidget.prototype.cleanUp = function(){"use strict";
@@ -623,6 +700,17 @@ DatestampWidget.prototype.cleanUp = function(){"use strict";
         Widget[this.instance.field_name] = null;
         
         for(j = 0; j < this.elements.length; j ++){
+            
+            if(typeof this.timeViews[j] !== 'undefined'){
+                this.elements[j].remove(this.timeViews[j]);
+                this.timeViews[j] = null;
+            }
+            
+            if(typeof this.dateViews[j] !== 'undefined'){
+                this.elements[j].remove(this.dateViews[j]);
+                this.dateViews[j] = null;
+            }
+            
             this.fieldView.remove(this.elements[j]);
             this.elements[j] = null;
         }

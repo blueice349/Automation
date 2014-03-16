@@ -9,7 +9,7 @@ Omadi.widgets.video = {
         imageData = [];
         degreeData = [];
         
-        Ti.API.debug(node);
+        //Ti.API.debug(node);
 
         if ( typeof node[instance.field_name] !== 'undefined') {
             if ( typeof node[instance.field_name].dbValues !== 'undefined') {

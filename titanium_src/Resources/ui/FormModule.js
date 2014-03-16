@@ -962,7 +962,7 @@ FormModule.prototype.formToNode = function(){"use strict";
        alert("There was a problem bundling the submitted data. The cause of the error was sent to support.");
    }
    
-   Ti.API.info(JSON.stringify(this.node));
+   //Ti.API.info(JSON.stringify(this.node));
 };
 
 FormModule.prototype.getDBValues = function(fieldWrapper){"use strict";
@@ -2966,6 +2966,7 @@ FormModule.prototype.getWindow = function(){"use strict";
             
             this.win.add(this.wrapperView);
             
+            // Give the window a second to popup before recalculating
             this.recalculateCalculationFields();
         }
         catch(exBottom){
@@ -3005,7 +3006,7 @@ FormModule.prototype.recalculateCalculationFields = function(){"use strict";
                         }
                         
                         if(!isHidden){
-                            Ti.API.debug("redrawing a calc field");
+                            Ti.API.debug("redrawing a calc field: " + field_name);
                             // There's no need to redraw for an instance that is not visible
                             this.fieldObjects[field_name].redraw();
                         }

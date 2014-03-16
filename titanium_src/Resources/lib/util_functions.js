@@ -705,8 +705,17 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
                     criteria_row = criteria.search_criteria[criteria_index];
                     row_matches[criteria_index] = false;
                     field_name = criteria_row.field_name;
-                    nodeDBValues = node[field_name].dbValues;
-                    nodeTextValues = node[field_name].textValues;
+                    nodeDBValues = [];
+                    nodeTextValues = [];
+                    
+                    if(typeof node[field_name] !== 'undefined' && node[field_name] !== null){
+                        if(typeof node[field_name].dbValues !== 'undefined'){
+                            nodeDBValues = node[field_name].dbValues;    
+                        }
+                        if(typeof node[field_name].textValues !== 'undefined'){
+                            nodeTextValues = node[field_name].textValues;    
+                        }
+                    }
 
                     if (instances[field_name] != null) {
                         search_field = instances[field_name];
@@ -722,7 +731,7 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
                                 compare_times = [];
 
                                 for ( i = 0; i < nodeDBValues.length; i++) {
-                                    compare_times[i] = search_time_value + mktime(0, 0, 0, Omadi.utils.PHPFormatDate('n', Number(nodeDBValues[i])), Omadi.utils.PHPFormatDate('j', Number(nodeDBValues[i])), Omadi.utils.PHPFormatDate('Y', Number(nodeDBValues[i])));
+                                    compare_times[i] = search_time_value + Omadi.utils.mktime(0, 0, 0, Omadi.utils.PHPFormatDate('n', Number(nodeDBValues[i])), Omadi.utils.PHPFormatDate('j', Number(nodeDBValues[i])), Omadi.utils.PHPFormatDate('Y', Number(nodeDBValues[i])));
                                 }
 
                                 if (search_operator == 'after-time') {
@@ -753,7 +762,7 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
 
                                     for ( i = 0; i < nodeDBValues.length; i++) {
 
-                                        compare_times2[i] = search_time_value2 + mktime(0, 0, 0, Omadi.utils.PHPFormatDate('n', Number(nodeDBValues[i])), Omadi.utils.PHPFormatDate('j', Number(nodeDBValues[i])), Omadi.utils.PHPFormatDate('Y', Number(nodeDBValues[i])));
+                                        compare_times2[i] = search_time_value2 + Omadi.utils.mktime(0, 0, 0, Omadi.utils.PHPFormatDate('n', Number(nodeDBValues[i])), Omadi.utils.PHPFormatDate('j', Number(nodeDBValues[i])), Omadi.utils.PHPFormatDate('Y', Number(nodeDBValues[i])));
 
                                     }
 

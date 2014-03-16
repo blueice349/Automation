@@ -811,56 +811,62 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                     Ti.API.info('Photo complete success in JS');
                      
                      var startIndex, newImageView, i, addedPhoto, takeNextPhotoView, lastIndex, cardinality, parentView;
-                     
-                     if(typeof imageView.addedPhotos !== 'undefined'){
-                        
-                        imageView.hide();
-                        imageView.setWidth(0);
-                        imageView.setLeft(0);
-                        
-                        lastIndex = 0;
-                        
-                        parentView = Widget[imageView.instance.field_name].elements[0];
-                         
-                        for(i = 0; i < imageView.addedPhotos.length; i ++){
-                            addedPhoto = imageView.addedPhotos[i];
+                     try{
+                         if(typeof imageView.addedPhotos !== 'undefined'){
                             
-                            newImageView = Widget[imageView.instance.field_name].getImageView(parentView, addedPhoto.imageIndex, null, null, addedPhoto.filePath, "", addedPhoto.degrees);
+                            imageView.hide();
+                            imageView.setWidth(0);
+                            imageView.setLeft(0);
                             
-                            parentView.add(newImageView);
+                            lastIndex = 0;
                             
-                            lastIndex = addedPhoto.imageIndex;  
-                        }    
-                        
-                        cardinality = -1;
-                        if(typeof imageView.instance.settings.cardinality !== 'undefined'){
-                            cardinality = parseInt(imageView.instance.settings.cardinality, 10);
-                            if(isNaN(cardinality)){
-                                cardinality = -1;
+                            parentView = Widget[imageView.instance.field_name].elements[0];
+                             
+                            for(i = 0; i < imageView.addedPhotos.length; i ++){
+                                addedPhoto = imageView.addedPhotos[i];
+                                
+                                newImageView = Widget[imageView.instance.field_name].getImageView(parentView, addedPhoto.imageIndex, null, null, addedPhoto.filePath, "", addedPhoto.degrees);
+                                
+                                parentView.add(newImageView);
+                                
+                                lastIndex = addedPhoto.imageIndex;  
+                            }    
+                            
+                            cardinality = -1;
+                            if(typeof imageView.instance.settings.cardinality !== 'undefined'){
+                                cardinality = parseInt(imageView.instance.settings.cardinality, 10);
+                                if(isNaN(cardinality)){
+                                    cardinality = -1;
+                                }
                             }
-                        }
-                        
-                        Ti.API.debug("Cardinality: " + cardinality);
-                        Ti.API.debug("last Index: " + lastIndex);
-                        
-                        if(cardinality == -1 || (lastIndex + 1) < cardinality){
-                            takeNextPhotoView = Widget[imageView.instance.field_name].getImageView(parentView, lastIndex + 1, null, null, null, null, 0);
-                            parentView.add(takeNextPhotoView);
-                        }
-                        
-                        parentView.setContentWidth(parentView.getContentWidth() + (imageView.addedPhotos.length * 110));
-                        
-                        // Remove the original imageView from the parent
-                        setTimeout(function(){
-                            try{
-                                parentView.remove(imageView);
+                            
+                            // Make sure we never lose a photo due to a crash
+                            Widget[imageView.instance.field_name].formObj.saveForm('continuous');
+                            
+                            Ti.API.debug("Cardinality: " + cardinality);
+                            Ti.API.debug("last Index: " + lastIndex);
+                            
+                            if(cardinality == -1 || (lastIndex + 1) < cardinality){
+                                takeNextPhotoView = Widget[imageView.instance.field_name].getImageView(parentView, lastIndex + 1, null, null, null, null, 0);
+                                parentView.add(takeNextPhotoView);
                             }
-                            catch(ex2){
-                                Omadi.service.sendErrorReport("Exception removing image view 1 " + ex2);
-                            }
-                        }, 1000);                           
+                            
+                            parentView.setContentWidth(parentView.getContentWidth() + (imageView.addedPhotos.length * 110));
+                            
+                            // Remove the original imageView from the parent
+                            setTimeout(function(){
+                                try{
+                                    parentView.remove(imageView);
+                                }
+                                catch(ex2){
+                                    Omadi.service.sendErrorReport("Exception removing image view 1 " + ex2);
+                                }
+                            }, 1000);                           
+                         }
                      }
-                     
+                     catch(ex){
+                         Omadi.service.sendErrorReport("Exception in Android saving image: " + ex);
+                     }
                 },
                 error : function(error) {
                     Omadi.service.sendErrorReport("Error capturing a photo" + JSON.stringify(error));
@@ -966,64 +972,72 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                 success : function(event) {
                     var newImageView, tmpImageView, blob, maxDiff, newHeight, newWidth, 
                         imageFile, filePath, thumbPath, thumbFile, thumbBlob, takeNextPhotoView, parentView;
-
-                    Omadi.display.loading("Saving Photo...", Widget[imageView.instance.field_name].formObj.win);
                     
-                    imageView.mimeType = event.media.mimeType;
-                    
-                    filePath = Ti.Filesystem.applicationDataDirectory + "p_" + Omadi.utils.getUTCTimestamp() + '.jpg';
-                    imageFile = Ti.Filesystem.getFile(filePath);
-                    
-                    imageFile.write(event.media);
-                    imageFile.setRemoteBackup(false);
-                    
-                    Omadi.display.doneLoading();
-                    Omadi.display.loading("Creating Thumbnail...", Widget[imageView.instance.field_name].formObj.win);
-                    
-                    thumbPath = Ti.Filesystem.applicationDataDirectory + "p_" + Omadi.utils.getUTCTimestamp() + '_thumb.jpg';
-                    thumbFile = Ti.Filesystem.getFile(thumbPath);
-                    
-                    thumbBlob = ImageFactory.imageAsThumbnail(event.media, {
-                        size: 100, 
-                        borderSize: 0, 
-                        cornerRadius: 0, 
-                        quality: ImageFactory.QUALITY_HIGH 
-                    });
-                    
-                    thumbFile.write(thumbBlob);
-                    thumbFile.setRemoteBackup(false);
-                            
-                    Widget[imageView.instance.field_name].saveFileInfo(imageView, filePath, thumbPath, 0, event.media.length, 'image');
-                    
-                    parentView = Widget[imageView.instance.field_name].elements[0];
-                    
-                    if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
+                    try{
+                        Omadi.display.loading("Saving Photo...", Widget[imageView.instance.field_name].formObj.win);
                         
-                        newImageView = Widget[imageView.instance.field_name].getImageView(parentView, imageView.imageIndex, null, null, filePath, thumbPath, 0);
-                        takeNextPhotoView = Widget[imageView.instance.field_name].getImageView(parentView, imageView.imageIndex + 1, null, null, null, null, 0);
+                        imageView.mimeType = event.media.mimeType;
                         
-                        parentView.add(newImageView);
-                        parentView.add(takeNextPhotoView);
+                        filePath = Ti.Filesystem.applicationDataDirectory + "p_" + Omadi.utils.getUTCTimestamp() + '.jpg';
+                        imageFile = Ti.Filesystem.getFile(filePath);
                         
-                        parentView.setContentWidth(parentView.getContentWidth() + 110);
-                        parentView.remove(imageView);
-                        imageView = null;
-                        
-                        // Allow the newImageView time to show up, and then click it
-                        setTimeout(function(){
-                             takeNextPhotoView.fireEvent('click');
-                             Omadi.display.doneLoading();
-                        }, 100);
-                    }
-                    else{
-                        
-                        newImageView = Widget[imageView.instance.field_name].getImageView(parentView, imageView.imageIndex, null, null, filePath, thumbPath, 0);
-                        
-                        parentView.add(newImageView);
-                        parentView.remove(imageView);
-                        imageView = null;
+                        imageFile.write(event.media);
+                        imageFile.setRemoteBackup(false);
                         
                         Omadi.display.doneLoading();
+                        Omadi.display.loading("Creating Thumbnail...", Widget[imageView.instance.field_name].formObj.win);
+                        
+                        thumbPath = Ti.Filesystem.applicationDataDirectory + "p_" + Omadi.utils.getUTCTimestamp() + '_thumb.jpg';
+                        thumbFile = Ti.Filesystem.getFile(thumbPath);
+                        
+                        thumbBlob = ImageFactory.imageAsThumbnail(event.media, {
+                            size: 100, 
+                            borderSize: 0, 
+                            cornerRadius: 0, 
+                            quality: ImageFactory.QUALITY_HIGH 
+                        });
+                        
+                        thumbFile.write(thumbBlob);
+                        thumbFile.setRemoteBackup(false);
+                                
+                        Widget[imageView.instance.field_name].saveFileInfo(imageView, filePath, thumbPath, 0, event.media.length, 'image');
+                        
+                        parentView = Widget[imageView.instance.field_name].elements[0];
+                        
+                        if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
+                            
+                            newImageView = Widget[imageView.instance.field_name].getImageView(parentView, imageView.imageIndex, null, null, filePath, thumbPath, 0);
+                            takeNextPhotoView = Widget[imageView.instance.field_name].getImageView(parentView, imageView.imageIndex + 1, null, null, null, null, 0);
+                            
+                            parentView.add(newImageView);
+                            parentView.add(takeNextPhotoView);
+                            
+                            parentView.setContentWidth(parentView.getContentWidth() + 110);
+                            parentView.remove(imageView);
+                            imageView = null;
+                            
+                            // Allow the newImageView time to show up, and then click it
+                            setTimeout(function(){
+                                 takeNextPhotoView.fireEvent('click');
+                                 Omadi.display.doneLoading();
+                            }, 100);
+                        }
+                        else{
+                            
+                            newImageView = Widget[imageView.instance.field_name].getImageView(parentView, imageView.imageIndex, null, null, filePath, thumbPath, 0);
+                            
+                            parentView.add(newImageView);
+                            parentView.remove(imageView);
+                            imageView = null;
+                            
+                            Omadi.display.doneLoading();
+                        }
+                        
+                        // Make sure we never lose a photo due to a crash
+                        Widget[imageView.instance.field_name].formObj.saveForm('continuous');
+                    }
+                    catch(ex){
+                        Omadi.service.sendErrorReport("Exception saving iOS photo: " + ex);
                     }
                 },
                 error : function(error) {

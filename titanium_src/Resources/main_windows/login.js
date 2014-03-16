@@ -332,12 +332,6 @@ function openMainScreen(loggedIn){"use strict";
     var db, result, domainName;
     
     try{
-        Ti.App.removeEventListener('sendUpdates', Omadi.service.sendUpdates);
-        Ti.App.addEventListener('sendUpdates', Omadi.service.sendUpdates);
-        
-        Ti.UI.currentWindow.addEventListener('close', function(){
-            Ti.App.removeEventListener('sendUpdates', Omadi.service.sendUpdates);
-        });
         
         // Don't allow the upload checks anymore on the login screen
         if(typeof Ti.App.backgroundPhotoUploadCheck !== 'undefined' && Ti.App.backgroundPhotoUploadCheck !== null){
@@ -897,8 +891,6 @@ function openMainScreen(loggedIn){"use strict";
                     xhr.onload = function(e) {
                         var db_list, list_result, cookie, dialog, loginJSON;
                         try{
-                            
-                            
                             db_list = Omadi.utils.openListDatabase();
         
                             list_result = db_list.execute("SELECT domain FROM domains WHERE domain='" + dbEsc(portal.value) + "'");

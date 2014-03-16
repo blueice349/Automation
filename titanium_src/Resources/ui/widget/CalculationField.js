@@ -76,7 +76,7 @@ CalculationFieldWidget.prototype.redraw = function(skipFormToNode){"use strict";
         skipFormToNode = false;
     }
     
-    if(skipFormToNode){
+    if(!skipFormToNode){
         this.formObj.formToNode();
     }
     
@@ -84,6 +84,10 @@ CalculationFieldWidget.prototype.redraw = function(skipFormToNode){"use strict";
     //Ti.API.debug(JSON.stringify(this.formObj.node));
     
     this.node = this.formObj.node;
+    
+    
+    Ti.API.debug(JSON.stringify(this.node.enforcement_end_timestamp));
+    
     if(typeof this.node[this.instance.field_name] !== 'undefined'){
         this.nodeElement = this.node[this.instance.field_name];
         
@@ -187,6 +191,9 @@ CalculationFieldWidget.prototype.getTableView = function() {"use strict";
     tableView = null;
     
     try{
+        
+        this.formObj.formToNode();
+    
         this.node = this.formObj.node;
         
         dbValue = null;
@@ -371,7 +378,7 @@ CalculationFieldWidget.prototype.getTableView = function() {"use strict";
                 
                 isNegative = (cal_value < 0) ? true : false;
                 // Is negative. And if it is -ve then write in this value in (brackets).
-                cal_value_str = Omadi.utils.applyNumberFormat(instance, cal_value);
+                cal_value_str = Omadi.utils.applyNumberFormat(this.instance, cal_value);
                 cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
                 
                 row = Ti.UI.createView({
@@ -470,7 +477,7 @@ CalculationFieldWidget.prototype.getTableView = function() {"use strict";
                 
                 isNegative = (cal_value < 0) ? true : false;
                 // Is negative. And if it is -ve then write in this value in (brackets).
-                cal_value_str = Omadi.utils.applyNumberFormat(instance, cal_value);
+                cal_value_str = Omadi.utils.applyNumberFormat(this.instance, cal_value);
                 cal_value_str = (isNegative) ? "(" + cal_value_str + ")" : cal_value_str;
                 
                 value.add(Ti.UI.createLabel({
@@ -536,6 +543,8 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
         
         this.node = this.formObj.node;
         
+        //Ti.API.debug(JSON.stringify(CalculatedFieldCache));
+        
         instances = Omadi.data.getFields(this.formObj.type);
         final_value = 0;
         
@@ -576,6 +585,7 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
                                 // TODO: make sure the node is a reference, not just a value, as nested calls to this could result in incorrect calculations
                                 if(typeof required_instance_final_values[0].final_value !== 'undefined'){
                                     this.node[calculation_row.field_name_1].dbValues[0] = required_instance_final_values[0].final_value;
+                                    this.formObj.node[calculation_row.field_name_1].dbValues[0] = required_instance_final_values[0].final_value;
                                 }
                         }
                         
@@ -585,12 +595,13 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
                             instances[calculation_row.field_name_2].type == 'calculation_field' &&
                             typeof CalculatedFieldCache[calculation_row.field_name_2] === 'undefined') {
                                 // Make sure a dependency calculation is made first
-                                required_instance_final_values = this.getRowValues(this.node, instances[calculation_row.field_name_2]);
+                                required_instance_final_values = this.getRowValues(instances[calculation_row.field_name_2]);
                                 CalculatedFieldCache[calculation_row.field_name_2] = required_instance_final_values[0].final_value;
                                 
                                 // TODO: make sure the node is a reference, not just a value, as nested calls to this could result in incorrect calculations
                                 if(typeof required_instance_final_values[0].final_value !== 'undefined'){
                                     this.node[calculation_row.field_name_2].dbValues[0] = required_instance_final_values[0].final_value;
+                                    this.formObj.node[calculation_row.field_name_2].dbValues[0] = required_instance_final_values[0].final_value;
                                 }
                         }
                         
@@ -645,6 +656,8 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
                                 else{
                                     end_timestamp = Omadi.utils.getUTCTimestamp();   
                                 }
+                                
+                                Ti.API.info("end timestamp: " + end_timestamp);
                                 
                                 if (calculation_row.type == 'time-only') {
                                     if (end_timestamp < start_timestamp) {
@@ -761,7 +774,7 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
                                             }
                                             else{
                                                 // Calculate the value of the search criteria value
-                                                required_instance_final_values = this.getRowValues(this.node, instances[field_name]);
+                                                required_instance_final_values = this.getRowValues(instances[field_name]);
                                                 finalValue = required_instance_final_values[0].final_value;  
                                                 CalculatedFieldCache[field_name] = finalValue;
                                             }

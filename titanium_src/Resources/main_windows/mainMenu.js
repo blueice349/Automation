@@ -1135,6 +1135,9 @@ function openFormWindow(e){"use strict";
     Ti.App.removeEventListener('openFormWindow', openFormWindow);
     Ti.App.addEventListener('openFormWindow', openFormWindow);
     
+    Ti.App.removeEventListener('sendUpdates', Omadi.service.sendUpdates);
+    Ti.App.addEventListener('sendUpdates', Omadi.service.sendUpdates);
+    
     if(Ti.App.isIOS){
         Ti.App.removeEventListener('resume', Omadi.service.checkUpdate);
         Ti.App.addEventListener('resume', Omadi.service.checkUpdate);
@@ -1213,7 +1216,7 @@ function openFormWindow(e){"use strict";
             Ti.App.removeEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
             Ti.App.removeEventListener("sendingData", sendingDataMainMenu);
             Ti.App.removeEventListener('loggingOut', loggingOutMainMenu);
-            //Ti.App.removeEventListener('sendUpdates', sendDelayedUpdates);
+            Ti.App.removeEventListener('sendUpdates', Omadi.service.sendUpdates);
             Ti.App.removeEventListener('omadi:finishedDataSync', setupBottomButtons);
             Ti.App.removeEventListener('normal_update_from_menu', normalUpdateFromMenu);
             Ti.App.removeEventListener('full_update_from_menu', fullUpdateFromMenu);

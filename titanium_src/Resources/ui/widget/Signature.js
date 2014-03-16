@@ -547,6 +547,9 @@ SignatureWidget.prototype.saveSignature = function(doneButton){"use strict";
             file.write(blob);
     
             this.saveFileInfo(this.imageView, filePath, '', 0, blob.length, 'signature');
+            
+            // Make sure we never lose a signature due to a crash
+            this.formObj.saveForm('continuous');
         }
         else{
     
