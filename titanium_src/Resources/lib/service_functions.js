@@ -620,11 +620,10 @@ Omadi.service.sendDataOnError = function(e){"use strict";
 };
 
 Omadi.service.sendUpdateRetries = 0;
+Omadi.service.lastSendUpdates = 0;
 Omadi.service.sendUpdates = function() {"use strict";
     /*jslint eqeq: true*/
-    var isSendingData, http, secondsLeft, origAppStartMillis, currentWinStartMillis, windowURL;
-    
-    Ti.API.error("Sending Data Now");
+    var isSendingData, http, secondsLeft, origAppStartMillis, currentWinStartMillis, windowURL, timestamp;
     
     // Remove the activity if the appStartMillis don't match the current runtime
     // This may come up when the app crashes, and this function is called multiple times
@@ -665,6 +664,17 @@ Omadi.service.sendUpdates = function() {"use strict";
         }
         Omadi.service.sendErrorReport("AppStartMillis upload was undefined, url: " + windowURL);
     }
+    
+    Ti.API.error("Sending Data Now");
+    timestamp = Omadi.utils.getUTCTimestamp();
+    
+    if((timestamp - Omadi.service.lastSendUpdates) < 2){
+        // Do not send updates within 2 seconds of each other
+        Ti.API.error("Not allowing data send - too soon after previous send.");
+        return;
+    }
+    
+    Omadi.service.lastSendUpdates = timestamp;
 
     if (Ti.Network.online) {
         //alert("Has network");
@@ -1683,9 +1693,20 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
     return output;
 };
 
+Omadi.service.lastCheckUpdate = 0;
 Omadi.service.checkUpdate = function(useProgressBar, userInitiated){"use strict";
-    var db, result, sendUpdates = false;
+    var db, result, sendUpdates = false, timestamp;
     Ti.API.info("Checking for sync updates.");
+    
+    timestamp = Omadi.utils.getUTCTimestamp();
+    
+    if((timestamp - Omadi.service.lastCheckUpdate) < 2){
+        // Only allow updates within 2 seconds of each other
+        Ti.API.error("Not allowing update - too soon after previous update.");
+        return;
+    }
+    
+    Omadi.service.lastCheckUpdate = timestamp;
     
     if ( typeof useProgressBar === 'undefined') {
         useProgressBar = true;

@@ -339,6 +339,20 @@ DispatchForm.prototype.getWindow = function(){"use strict";
                 }
             }
         }
+        else{
+            this.dispatchObj.formToNode();
+            if(typeof this.dispatchObj.node.field_tow_type !== 'undefined' && this.dispatchObj.node.field_tow_type != null){
+                if(typeof this.dispatchObj.node.field_tow_type.dbValues !== 'undefined' && this.dispatchObj.node.field_tow_type.dbValues != null){
+                    if(typeof this.dispatchObj.node.field_tow_type.dbValues[0] !== 'undefined'){
+                        workBundle = Omadi.data.getBundle(this.workNode.type);
+                        this.dispatchObj.setValues('field_tow_type', {
+                            dbValues: [this.workNode.type],
+                            textValues: [workBundle.label]
+                        });
+                    }
+                }
+            }
+        }
         
         if(this.workNode.type !== null){
             this.workObj = this.FormModule.getDispatchObject(Omadi, this.workNode.type, this.workNode.nid, this.workNode.form_part, this);

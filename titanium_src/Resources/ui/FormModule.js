@@ -2204,6 +2204,7 @@ FormModule.prototype.setValues = function(field_name, defaultValues){"use strict
     this.setValueWidgetProperty(field_name, ['dbValue'], defaultValues.dbValues[0]);
     
     if(this.instances[field_name].type == 'taxonomy_term_reference' || 
+        this.instances[field_name].type == 'list_text' || 
         (this.instances[field_name].type == 'omadi_reference' && this.instances[field_name].widget.type == 'omadi_reference_select')){
         this.setValueWidgetProperty(field_name, ['text'], defaultValues.textValues[0]);
     }
@@ -2331,11 +2332,13 @@ FormModule.prototype.setValueWidgetProperty = function(field_name, property, val
 FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValues){"use strict";
     var opacView, numItemsSelected, wrapperView, descriptionView, 
         i, j, color_set, color_unset, cancelButton, itemLabel, itemRow, topButtonsView, okButton, data, 
-        descriptionText, selectedIndexes, screenHeight, listHeight, label, labelView, instance;
+        descriptionText, selectedIndexes, screenHeight, listHeight, label, labelView, instance, nodeType;
     
     try{
         
+        
         instance = fieldObject.instance;
+        nodeType = instance.bundle;
         
         Ti.API.debug("in multi selector");
         
@@ -2405,8 +2408,6 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                 options[i].isSelected = false;
             }
             
-            
-            
             for(i = 0; i < options.length; i ++){
                 for(j = 0; j < dbValues.length; j ++){
                     if(dbValues[j] == options[i].dbValue){
@@ -2458,7 +2459,7 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
             this.popupWin.listView.addEventListener('click', function(e) {
                 try{
                     if (!e.row.isSelected) {
-                        ActiveFormObj.popupWin.listView.data[0].rows[e.index].isSelected = true;
+                        FormObj[nodeType].popupWin.listView.data[0].rows[e.index].isSelected = true;
                         e.row.label.setColor('#fff');
                         e.row.setBackgroundColor(color_set);
                         
@@ -2466,14 +2467,14 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                         selectedIndexes.push(e.index);
                     }
                     else {
-                        ActiveFormObj.popupWin.listView.data[0].rows[e.index].isSelected = false;
+                        FormObj[nodeType].popupWin.listView.data[0].rows[e.index].isSelected = false;
                         e.row.setBackgroundColor(color_unset);
                         e.row.label.setColor('#000');
                         numItemsSelected--;
                         selectedIndexes.splice(selectedIndexes.indexOf(e.index), 1);
                     }
                     
-                    if(ActiveFormObj.popupWin.descriptionLabel != null){
+                    if(FormObj[nodeType].popupWin.descriptionLabel != null){
                         if(numItemsSelected == 1){
                          
                             if(options[selectedIndexes[0]].description > ""){
@@ -2492,7 +2493,7 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                             descriptionText = "";
                         }
                         
-                        ActiveFormObj.popupWin.descriptionLabel.setText(descriptionText);
+                        FormObj[nodeType].popupWin.descriptionLabel.setText(descriptionText);
                     }
                 }
                 catch(ex){
@@ -2632,7 +2633,7 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                 textValues = [];
                 
                 try{
-                    listView = ActiveFormObj.popupWin.listView;
+                    listView = FormObj[nodeType].popupWin.listView;
                     
                     for (i = 0; i < listView.data[0].rows.length; i++) {
                         if (listView.data[0].rows[i].isSelected) {
@@ -2646,36 +2647,28 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                         textValue = textValues.join(', ');
                     }
                         
-                    //ActiveFormObj.setValueWidgetProperty(e.source.instance.field_name, ['dbValue'], dbValues);
-                    //ActiveFormObj.setValueWidgetProperty(e.source.instance.field_name, ['textValue'], textValue);
-                    //ActiveFormObj.setValueWidgetProperty(e.source.instance.field_name, ['text'], textValue);
+                    FormObj[nodeType].popupWin.fieldObject.elements[0].dbValue = dbValues;
+                    FormObj[nodeType].popupWin.fieldObject.elements[0].textValue = textValue;
+                    FormObj[nodeType].popupWin.fieldObject.elements[0].setText(textValue);
                     
-                    ActiveFormObj.popupWin.fieldObject.elements[0].dbValue = dbValues;
-                    ActiveFormObj.popupWin.fieldObject.elements[0].textValue = textValue;
-                    ActiveFormObj.popupWin.fieldObject.elements[0].setText(textValue);
-                    
-                    //e.source.buttonView.dbValue = dbValues;
-                    //e.source.buttonView.textValue = textValue;
-                    //e.source.buttonView.setText(textValue);
-                    
-                    if(ActiveFormObj.popupWin.descriptionLabel != null){                
-                        ActiveFormObj.popupWin.fieldObject.descriptionLabel.setText(ActiveFormObj.popupWin.descriptionLabel.text);
+                    if(FormObj[nodeType].popupWin.descriptionLabel != null){                
+                        FormObj[nodeType].popupWin.fieldObject.descriptionLabel.setText(FormObj[nodeType].popupWin.descriptionLabel.text);
                     }
                     
-                    if(ActiveFormObj.popupWin.fieldObject.elements[0].check_conditional_fields.length > 0){
-                        ActiveFormObj.setConditionallyRequiredLabels(e.source.instance, ActiveFormObj.popupWin.fieldObject.elements[0].check_conditional_fields);
+                    if(FormObj[nodeType].popupWin.fieldObject.elements[0].check_conditional_fields.length > 0){
+                        FormObj[nodeType].setConditionallyRequiredLabels(e.source.instance, FormObj[nodeType].popupWin.fieldObject.elements[0].check_conditional_fields);
                     }
                 }
                 catch(ex){
                     Omadi.service.sendErrorReport("Exception in form ok button pressed for multi select: " + ex);
                 }
                 
-                ActiveFormObj.popupWin.listView = null;
-                ActiveFormObj.popupWin.descriptionLabel = null;
-                ActiveFormObj.fieldObject = null;
+                FormObj[nodeType].popupWin.listView = null;
+                FormObj[nodeType].popupWin.descriptionLabel = null;
+                FormObj[nodeType].fieldObject = null;
                 
-                ActiveFormObj.popupWin.close();
-                ActiveFormObj.popupWin = null;
+                FormObj[nodeType].popupWin.close();
+                FormObj[nodeType].popupWin = null;
             });
         
             cancelButton = Ti.UI.createLabel({
@@ -2716,18 +2709,18 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
             
             topButtonsView.add(cancelButton);
             cancelButton.addEventListener('click', function() {
-                ActiveFormObj.popupWin.listView = null;
-                ActiveFormObj.popupWin.descriptionLabel = null;
-                ActiveFormObj.fieldObject = null;
-                ActiveFormObj.popupWin.close();
-                ActiveFormObj.popupWin = null;
+                FormObj[nodeType].popupWin.listView = null;
+                FormObj[nodeType].popupWin.descriptionLabel = null;
+                FormObj[nodeType].fieldObject = null;
+                FormObj[nodeType].popupWin.close();
+                FormObj[nodeType].popupWin = null;
             });
             
             wrapperView.add(topButtonsView);
             wrapperView.add(descriptionView);
-            wrapperView.add(ActiveFormObj.popupWin.listView);
+            wrapperView.add(FormObj[nodeType].popupWin.listView);
             
-            ActiveFormObj.popupWin.open();
+            FormObj[nodeType].popupWin.open();
         }
    }
    catch(ex){

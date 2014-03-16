@@ -156,7 +156,7 @@ UserReferenceWidget.prototype.getNewElement = function(index){"use strict";
             var i, postDialog;
             try{
                 if (e.source.instance.settings.cardinality == -1) {
-                    Widget[e.source.instance.field_name].formObj.getMultipleSelector(e.source);
+                    Widget[e.source.instance.field_name].formObj.getMultipleSelector(Widget[e.source.instance.field_name], e.source.options, e.source.dbValue);
                 }
                 else {
                     postDialog = Titanium.UI.createOptionDialog({

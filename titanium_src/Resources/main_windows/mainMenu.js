@@ -27,6 +27,7 @@ var version = 'Omadi Inc';
 var alertQueue = [];
 var currentAlertIndex = 0;
 var useAlertQueue = true;
+var isInitialized = false;
 
 var databaseStatusView = Titanium.UI.createView({
     backgroundColor : '#333',
@@ -799,7 +800,7 @@ function checkAndroidMemoryAfterGC(){"use strict";
         Ti.API.debug("Ti Available Memory after GC + 1 sec: " + lastAvailableBytes + " -> " + availableBytes + " bytes");
         Omadi.service.sendErrorReport("Just forced a GC: " + lastAvailableBytes + " -> " + availableBytes);
         
-        if(availableBytes < 600000){
+        if(availableBytes < 800000){
             Omadi.service.sendErrorReport("Showing Android memory alert: " + availableBytes);
             showAndroidMemoryAlert();
         }
@@ -913,7 +914,8 @@ function loggingOutMainMenu(e){"use strict";
 
 function networkChangedMainMenu(e){"use strict";
     var isOnline = e.online;
-    if (isOnline) {
+    Ti.API.debug("Network changed to online: " + isOnline);
+    if (isOnline && isInitialized) {
         Ti.API.debug("Checking for updates from network changed.");
         Omadi.service.checkUpdate();
     }
@@ -990,13 +992,11 @@ function mainMenuFirstSyncInstallComplete(){"use strict";
     Ti.App.fireEvent('showNextAlertInQueue');
 }
 
-function sendDelayedUpdates(){"use strict";
-    // Wait one second before actually sending the update
-    //setTimeout(Omadi.service.sendUpdates, 500);
-    //Omadi.service.sendUpdates();
-    
-    Ti.API.error("Not going to send updates you idiot!!!");
-}
+// function sendDelayedUpdates(){"use strict";
+    // // Wait one second before actually sending the update
+    // //setTimeout(Omadi.service.sendUpdates, 500);
+    // Omadi.service.sendUpdates();
+// }
 
 function userInitiatedUpdateCheck(){"use strict";
     Omadi.service.checkUpdate(true, true);
@@ -1111,9 +1111,6 @@ function openFormWindow(e){"use strict";
     Ti.App.removeEventListener('loggingOut', loggingOutMainMenu);
     Ti.App.addEventListener('loggingOut', loggingOutMainMenu);
     
-    Ti.App.removeEventListener('sendUpdates', sendDelayedUpdates);
-    Ti.App.addEventListener('sendUpdates', sendDelayedUpdates);
-    
     Ti.App.removeEventListener('full_update_from_menu', fullUpdateFromMenu);
     Ti.App.addEventListener('full_update_from_menu', fullUpdateFromMenu);
     
@@ -1178,9 +1175,8 @@ function openFormWindow(e){"use strict";
         Omadi.display.logoutButtonPressed();
     });
     
-    //Ti.App.syncInterval = setInterval(backgroundCheckForUpdates, 300000);
-  
-    //Ti.App.photoUploadCheck = setInterval(Omadi.service.uploadFile, 60000);
+    Ti.App.syncInterval = setInterval(backgroundCheckForUpdates, 300000);
+    Ti.App.photoUploadCheck = setInterval(Omadi.service.uploadFile, 60000);
 
     if ( typeof curWin.fromSavedCookie !== 'undefined' && !curWin.fromSavedCookie) {
         
@@ -1188,7 +1184,6 @@ function openFormWindow(e){"use strict";
         // are blocked because of the alert dialog being show in askclockin
         
         Omadi.bundles.timecard.askClockIn();
-        
         Omadi.bundles.companyVehicle.askAboutVehicle();
         
         //Omadi.bundles.inspection.askToReviewLastInspection();
@@ -1205,8 +1200,8 @@ function openFormWindow(e){"use strict";
         try{
             Ti.API.info('Closing main menu');
             
-            //clearInterval(Ti.App.syncInterval);
-            //clearInterval(Ti.App.photoUploadCheck);
+            clearInterval(Ti.App.syncInterval);
+            clearInterval(Ti.App.photoUploadCheck);
             
             if(Ti.App.isIOS){
                 Ti.App.removeEventListener('resume', Omadi.service.checkUpdate);
@@ -1218,7 +1213,7 @@ function openFormWindow(e){"use strict";
             Ti.App.removeEventListener("doneSendingPhotos", doneSendingPhotosMainMenu);
             Ti.App.removeEventListener("sendingData", sendingDataMainMenu);
             Ti.App.removeEventListener('loggingOut', loggingOutMainMenu);
-            Ti.App.removeEventListener('sendUpdates', sendDelayedUpdates);
+            //Ti.App.removeEventListener('sendUpdates', sendDelayedUpdates);
             Ti.App.removeEventListener('omadi:finishedDataSync', setupBottomButtons);
             Ti.App.removeEventListener('normal_update_from_menu', normalUpdateFromMenu);
             Ti.App.removeEventListener('full_update_from_menu', fullUpdateFromMenu);
@@ -1264,5 +1259,6 @@ function openFormWindow(e){"use strict";
     // Wait some time before loading the continuous node
     setTimeout(showContinuousSavedNode, 1000);
     
+    isInitialized = true;
 }());
 

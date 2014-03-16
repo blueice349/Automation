@@ -140,23 +140,23 @@ Omadi.bundles.timecard.doClockIn = function() {"use strict";
         form_part : 0
     };
     
-    Ti.App.removeEventListener('doneSendingData', Omadi.bundles.timecard.removeStatus);
-    Ti.App.addEventListener('doneSendingData', Omadi.bundles.timecard.removeStatus);
+    //Ti.App.removeEventListener('doneSendingData', Omadi.bundles.timecard.removeStatus);
+    //Ti.App.addEventListener('doneSendingData', Omadi.bundles.timecard.removeStatus);
     
     try{
-        Omadi.display.loading();
+        //Omadi.display.loading();
         node = Omadi.data.nodeSave(node);
         if(node._saved){
             Ti.App.fireEvent('sendUpdates');
         }
         else{
-            Omadi.bundles.timecard.removeStatus();
+            //Omadi.bundles.timecard.removeStatus();
             alert("A problem occurred clocking in. Please try again.");
             Omadi.service.sendErrorReport("Could not do a clock in timecard entry: not saved");
         }
     }
     catch(ex){
-        Omadi.bundles.timecard.removeStatus();
+        //Omadi.bundles.timecard.removeStatus();
         alert("A problem occurred clocking in. Please try again.");
         Omadi.service.sendErrorReport("Could not save a timecard entry: " + ex);
     }

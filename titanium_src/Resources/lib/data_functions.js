@@ -581,7 +581,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
             query += insertValues.join(',');
             query += ")";
     
-            Ti.API.error(query);
+            //Ti.API.error(query);
             
             db.execute(query);
         }
@@ -630,7 +630,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
                 query = "INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",1,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1,0," + node.dispatch_nid + "," + node.custom_copy_orig_nid + ")";
             }
             
-            Ti.API.error(query);
+            //Ti.API.error(query);
             db.execute(query);
             
             photoNids = [0];
