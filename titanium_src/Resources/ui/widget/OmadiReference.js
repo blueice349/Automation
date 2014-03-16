@@ -392,7 +392,9 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                     widget.element.blurred = true;
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("exception in omadi reference blur: " + ex);
+                    try{
+                        Omadi.service.sendErrorReport("exception in omadi reference blur: " + ex);
+                    }catch(ex1){}
                 }
             });
             
@@ -628,6 +630,47 @@ OmadiReferenceWidget.prototype.getFirstStreetAddress = function(nid){"use strict
     return street;
 };
 
+OmadiReferenceWidget.prototype.cleanUp = function(){"use strict";
+    var i, j;
+    Ti.API.debug("in integer widget cleanup");
+    
+    try{
+        Widget[this.instance.field_name] = null;
+        
+        this.elementWrapper.remove(this.element);
+        this.elementWrapper.remove(this.addressLabel);
+        
+        this.element = null;
+        this.addressLabel = null;
+        
+        if(this.autocomplete_table !== null){
+            this.elementWrapper.remove(this.autocomplete_table);
+            this.autocomplete_table = null;
+        }
+        
+        this.fieldView.remove(this.elementWrapper);
+        this.elementWrapper = null;
+        
+        this.fieldView = null;
+        this.fieldViewWrapper = null;
+        this.formObj = null;
+        this.node = null;
+        this.dbValues = null;
+        this.textValues = null;
+        this.nodeElement = null;
+        this.instance = null;
+        
+        Ti.API.debug("At end of integer widget cleanup");
+    }
+    catch(ex){
+        try{
+            Omadi.service.sendErrorReport("Exception cleaning up integer widget field: " + ex);
+        }
+        catch(ex1){}
+    }
+    
+    Omadi = null;
+};
 
 exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
     

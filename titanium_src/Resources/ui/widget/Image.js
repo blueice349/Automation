@@ -22,7 +22,7 @@ function ImageWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.nodeElement = null;
     this.numVisibleFields = 1;
     this.fieldViewWrapper = fieldViewWrapper;
-    this.element = null;
+    this.elements = [];
     
     if(Ti.App.isAndroid){
         this.cameraAndroid = require('com.omadi.newcamera');
@@ -32,8 +32,7 @@ function ImageWidget(formObj, instance, fieldViewWrapper){"use strict";
         this.nodeElement = this.node[this.instance.field_name];
         
         if(typeof this.nodeElement.dbValues !== 'undefined' && this.nodeElement.dbValues != null){
-            this.dbValues = this.nodeElement.dbValues;
-            
+            this.dbValues = this.nodeElement.dbValues;   
         }
         
         if(typeof this.nodeElement.textValues !== 'undefined' && this.nodeElement.textValues != null){
@@ -53,8 +52,6 @@ function ImageWidget(formObj, instance, fieldViewWrapper){"use strict";
 
 ImageWidget.prototype.getFieldView = function(){"use strict";
     
-    var i, element, addButton;
-    
     this.fieldView = Ti.UI.createView({
        width: '100%',
        layout: 'vertical',
@@ -64,8 +61,8 @@ ImageWidget.prototype.getFieldView = function(){"use strict";
     this.fieldView.add(this.formObj.getRegularLabelView(this.instance));
     
     // Add the actual fields
-    this.element = this.getNewElement(0);
-    this.fieldView.add(this.element);
+    this.elements[0] = this.getNewElement(0);
+    this.fieldView.add(this.elements[0]);
     this.fieldView.add(this.formObj.getSpacerView());
   
     return this.fieldView;
@@ -280,7 +277,7 @@ ImageWidget.prototype.getImageView = function(widgetView, index, nid, fid, fileP
         fid : fid,
         imageIndex : index,
         dbValue : fid,
-        instance : widgetView.instance,
+        instance : this.instance,
         degrees: degrees,
         filePath : filePath
     });
@@ -408,7 +405,7 @@ ImageWidget.prototype.clickedPhotoOption = function(e){"use strict";
                             filePath = e2.source.imageView.filePath;   
                         }
                         
-                        parentView = Widget[e2.source.imageView.instance.field_name].element;
+                        parentView = Widget[e2.source.imageView.instance.field_name].elements[0];
                         imageViews = parentView.children;
                         
                         if(imageViews.length > 1){
@@ -467,7 +464,7 @@ ImageWidget.prototype.openPictureChooser = function(imageView){"use strict";
         topBar, titleLabel, buttons, useButton, cancelButton, parentView, allImageViews, 
         filename, allUsedFileNames;
     
-    parentView = Widget[imageView.instance.field_name].element;
+    parentView = Widget[imageView.instance.field_name].elements[0];
     
     allImageViews = parentView.getChildren();
     allUsedFileNames = [];
@@ -535,7 +532,7 @@ ImageWidget.prototype.openPictureChooser = function(imageView){"use strict";
                 var i, file, localImageView, newImageView, chooseNextImageView, copiedFile, dbPath, parentView;
                 try{
                     localImageView = e.source.imageView;
-                    parentView = Widget[e.source.imageView.instance.field_name].element;
+                    parentView = Widget[e.source.imageView.instance.field_name].elements[0];
                     
                     for(i = 0; i < rows.length; i ++){
                         
@@ -823,7 +820,7 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                         
                         lastIndex = 0;
                         
-                        parentView = Widget[imageView.instance.field_name].element;
+                        parentView = Widget[imageView.instance.field_name].elements[0];
                          
                         for(i = 0; i < imageView.addedPhotos.length; i ++){
                             addedPhoto = imageView.addedPhotos[i];
@@ -998,7 +995,7 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                             
                     Widget[imageView.instance.field_name].saveFileInfo(imageView, filePath, thumbPath, 0, event.media.length, 'image');
                     
-                    parentView = Widget[imageView.instance.field_name].element;
+                    parentView = Widget[imageView.instance.field_name].elements[0];
                     
                     if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
                         
@@ -1130,6 +1127,38 @@ ImageWidget.prototype.saveAndroidFileInfo = function(fieldName, imageIndex, file
     }
 };
 
+ImageWidget.prototype.cleanUp = function(){"use strict";
+    var i, j;
+    Ti.API.debug("in image widget cleanup");
+    
+    try{
+        Widget[this.instance.field_name] = null;
+        
+        for(j = 0; j < this.elements.length; j ++){
+            this.fieldView.remove(this.elements[j]);
+            this.elements[j] = null;
+        }
+        
+        this.fieldView = null;
+        this.fieldViewWrapper = null;
+        this.formObj = null;
+        this.node = null;
+        this.dbValues = null;
+        this.textValues = null;
+        this.nodeElement = null;
+        this.instance = null;
+        
+        Ti.API.debug("At end of image widget cleanup");
+    }
+    catch(ex){
+        try{
+            Omadi.service.sendErrorReport("Exception cleaning up image widget field: " + ex);
+        }
+        catch(ex1){}
+    }
+    
+    Omadi = null;
+};
 
 exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
     

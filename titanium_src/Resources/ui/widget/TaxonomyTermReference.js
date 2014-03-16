@@ -13,8 +13,9 @@ function TaxonomyTermReferenceWidget(formObj, instance, fieldViewWrapper){"use s
     this.nodeElement = null;
     this.numVisibleFields = 1;
     this.fieldViewWrapper = fieldViewWrapper;
-    this.element = [];
-    this.elementWrapper = [];
+    this.elements = [];
+    this.elementWrappers = [];
+    this.descriptionLabel = null;
     
     if(typeof this.node[this.instance.field_name] !== 'undefined'){
         this.nodeElement = this.node[this.instance.field_name];
@@ -45,11 +46,12 @@ TaxonomyTermReferenceWidget.prototype.getFieldView = function(){"use strict";
     });
     
     this.fieldView.add(this.formObj.getRegularLabelView(this.instance));
+    this.options = this.getOptions();
     
     // Add the actual fields
     for(i = 0; i < this.numVisibleFields; i ++){
-        this.elementWrapper[i] = this.getNewElement(i);
-        this.fieldView.add(this.elementWrapper[i]);
+        this.elementWrappers[i] = this.getNewElement(i);
+        this.fieldView.add(this.elementWrappers[i]);
         this.fieldView.add(this.formObj.getSpacerView());
     }
     
@@ -86,7 +88,7 @@ TaxonomyTermReferenceWidget.prototype.redraw = function(){"use strict";
 };
 
 TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use strict";
-    var dbValue, textValue, element, options, descriptionText, descriptionLabel, wrapper, i, 
+    var dbValue, textValue, element, descriptionText, wrapper, i, 
         defaultTerm, isAutocomplete, autocomplete_table;
     
     dbValue = null;
@@ -103,8 +105,6 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
     }
     
     Ti.API.debug("Creating taxonomy field: " + this.instance.label);
-    
-    options = this.getOptions();
     
     if (this.instance.settings.cardinality == -1) {
         dbValue = [];
@@ -152,8 +152,9 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
         }
     }
     
+    
     descriptionText = "";
-    descriptionLabel = Ti.UI.createLabel({
+    this.descriptionLabel = Ti.UI.createLabel({
         height : Ti.UI.SIZE,
         width : '100%',
         text : descriptionText,
@@ -172,8 +173,7 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
     if(isAutocomplete){
         element = this.formObj.getTextField(this.instance);
         element.view_title = this.instance.label;
-        element.descriptionLabel = descriptionLabel;
-        element.possibleValues = options;
+        element.possibleValues = this.options;
         element.setValue(textValue);
         element.textValue = textValue;
         element.dbValue = dbValue;
@@ -228,17 +228,24 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
         });
         
         element.addEventListener('blur', function(e) {
-            e.source.autocomplete_table.setBorderWidth(0);
-            e.source.autocomplete_table.setHeight(0);
-            e.source.autocomplete_table.setVisible(false);
-            e.source.blurred = true;
-            
-            if(typeof e.source.instance.settings.restrict_new_autocomplete_terms !== 'undefined' && 
-                e.source.instance.settings.restrict_new_autocomplete_terms == 1 && 
-                e.source.dbValue === null && 
-                e.source.value > ""){
-                    
-                    alert("The value \"" + e.source.value + "\" will not be saved for the \"" + e.source.instance.label + "\" field because new items have been disabled by the administrator.");
+            try{
+                e.source.autocomplete_table.setBorderWidth(0);
+                e.source.autocomplete_table.setHeight(0);
+                e.source.autocomplete_table.setVisible(false);
+                e.source.blurred = true;
+                
+                if(typeof e.source.instance.settings.restrict_new_autocomplete_terms !== 'undefined' && 
+                    e.source.instance.settings.restrict_new_autocomplete_terms == 1 && 
+                    e.source.dbValue === null && 
+                    e.source.value > ""){
+                        
+                        alert("The value \"" + e.source.value + "\" will not be saved for the \"" + e.source.instance.label + "\" field because new items have been disabled by the administrator.");
+                }
+            }
+            catch(ex){
+                try{
+                    Omadi.service.sendErrorReport("exception in taxonomy term blur: " + ex);
+                }catch(ex1){}
             }
         });
         
@@ -322,19 +329,19 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
             }
         });
         
-        descriptionLabel.setHeight(0);
+        this.descriptionLabel.setHeight(0);
     }
     else{
         element = this.formObj.getLabelField(this.instance);
         element.top = 1;
         element.bottom = 1;
         element.view_title = this.instance.label;
-        element.descriptionLabel = descriptionLabel;
-        element.options = options;
+        element.options = this.options;
         element.setText(textValue);
         element.textValue = textValue;
         element.dbValue = dbValue;
         element.delta = index;
+        element.descriptionLabel = this.descriptionLabel;
         
         element.check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
         this.formObj.addCheckConditionalFields(element.check_conditional_fields);
@@ -345,7 +352,7 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
                 
                 try{
                     if (e.source.instance.settings.cardinality == -1) {
-                        Widget[e.source.instance.field_name].formObj.getMultipleSelector(e.source);
+                        Widget[e.source.instance.field_name].formObj.getMultipleSelector(Widget[e.source.instance.field_name], e.source.options, e.source.dbValue);
                     }
                     else {
                         textOptions = [];
@@ -374,12 +381,12 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
                                     if (textValue == '- None -') {
                                         textValue = "";
                                     }
-                                    widget.element[ev.source.delta].textValue = textValue;
-                                    widget.element[ev.source.delta].setText(textValue);
-                                    widget.element[ev.source.delta].value = widget.element[ev.source.delta].dbValue = widget.element[ev.source.delta].options[ev.index].dbValue;
+                                    widget.elements[ev.source.delta].textValue = textValue;
+                                    widget.elements[ev.source.delta].setText(textValue);
+                                    widget.elements[ev.source.delta].value = widget.elements[ev.source.delta].dbValue = widget.elements[ev.source.delta].options[ev.index].dbValue;
                                     
-                                    if (widget.element[ev.source.delta].check_conditional_fields.length > 0) {
-                                        Widget[ev.source.instance.field_name].formObj.setConditionallyRequiredLabels(ev.source.instance, widget.element[ev.source.delta].check_conditional_fields);
+                                    if (widget.elements[ev.source.delta].check_conditional_fields.length > 0) {
+                                        Widget[ev.source.instance.field_name].formObj.setConditionallyRequiredLabels(ev.source.instance, widget.elements[ev.source.delta].check_conditional_fields);
                                     }
                                 }
                             }
@@ -404,10 +411,10 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
         width : '100%'
     });
     
-    this.element[index] = element;
+    this.elements[index] = element;
     
     wrapper.add(element);
-    wrapper.add(descriptionLabel);
+    wrapper.add(this.descriptionLabel);
     
     if(isAutocomplete){
         wrapper.add(autocomplete_table);
@@ -455,6 +462,51 @@ TaxonomyTermReferenceWidget.prototype.getOptions = function(useNone) {"use stric
     db.close();
 
     return options;
+};
+
+TaxonomyTermReferenceWidget.prototype.cleanUp = function(){"use strict";
+    var i, j;
+    Ti.API.debug("in taxonomy widget cleanup");
+    
+    try{
+        
+        Widget[this.instance.field_name] = null;
+        
+        for(j = 0; j < this.elementWrappers.length; j ++){
+            this.elementWrappers[j].remove(this.elements[j]);
+            this.elementWrappers[j].remove(this.descriptionLabel);
+            if(typeof this.elements[j].descriptionLabel !== 'undefined'){
+                this.elements[j].descriptionLabel = null;
+            }
+            this.elements[j] = null;
+        }
+        
+        this.descriptionLabel = null;
+        
+        for(j = 0; j < this.elementWrappers.length; j ++){
+            this.fieldView.remove(this.elementWrappers[j]);
+            this.elementWrappers[j] = null;
+        }
+        
+        this.fieldView = null;
+        this.fieldViewWrapper = null;
+        this.formObj = null;
+        this.node = null;
+        this.dbValues = null;
+        this.textValues = null;
+        this.nodeElement = null;
+        this.instance = null;
+        
+        Ti.API.debug("At end of taxonomy widget cleanup");
+    }
+    catch(ex){
+        try{
+            Omadi.service.sendErrorReport("Exception cleaning up taxonomy widget field: " + ex);
+        }
+        catch(ex1){}
+    }
+    
+    Omadi = null;
 };
 
 exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";

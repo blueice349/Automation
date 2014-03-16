@@ -171,12 +171,6 @@ Omadi.widgets.text_long = {
             // changedContentValue(e.source);
             // noDataChecboxEnableDisable(e.source, e.source.reffer_index);
         });
-
-        widgetView.addEventListener('blur', function(e) {
-            //Ti.API.info(e.source.value.length + ' or ' + e.value.length + ' Field number ==> min: ' + e.source.myminLength + ' max: ' + e.source.mymaxLength);
-            
-            
-        });
         
         return widgetView;
     }

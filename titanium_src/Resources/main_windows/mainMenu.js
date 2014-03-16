@@ -879,7 +879,7 @@ function afterUploadCloseMainMenu(){
 function loggingOutMainMenu(e){"use strict";
     var lastUploadStartTimestamp, db;
     
-    if(Omadi.display.FormModule !== null){
+    if(typeof Omadi.display.FormModule !== 'undefined' && Omadi.display.FormModule !== null){
         Omadi.display.FormModule.loggingOut();
     }
     
@@ -993,9 +993,9 @@ function mainMenuFirstSyncInstallComplete(){"use strict";
 function sendDelayedUpdates(){"use strict";
     // Wait one second before actually sending the update
     //setTimeout(Omadi.service.sendUpdates, 500);
-    Omadi.service.sendUpdates();
+    //Omadi.service.sendUpdates();
     
-    //Ti.API.debug("Not going to send updates you idiot!!!");
+    Ti.API.error("Not going to send updates you idiot!!!");
 }
 
 function userInitiatedUpdateCheck(){"use strict";

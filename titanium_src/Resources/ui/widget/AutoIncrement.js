@@ -9,6 +9,7 @@ function AutoIncrementWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
     this.instance = instance;
     this.fieldView = null;
+    this.elements = [];
     this.node = formObj.node;
     this.dbValues = [];
     this.textValues = [];
@@ -21,7 +22,6 @@ function AutoIncrementWidget(formObj, instance, fieldViewWrapper){"use strict";
         
         if(typeof this.nodeElement.dbValues !== 'undefined' && this.nodeElement.dbValues != null){
             this.dbValues = this.nodeElement.dbValues;
-            
         }
         
         if(typeof this.nodeElement.textValues !== 'undefined' && this.nodeElement.textValues != null){
@@ -51,8 +51,8 @@ AutoIncrementWidget.prototype.getFieldView = function(){"use strict";
     
     this.fieldView.add(this.formObj.getRegularLabelView(this.instance));
     
-    element = this.getNewElement(0);
-    this.fieldView.add(element);
+    this.elements[0] = this.getNewElement(0);
+    this.fieldView.add(this.elements[0]);
     this.fieldView.add(this.formObj.getSpacerView());
     
     return this.fieldView;
@@ -125,6 +125,40 @@ AutoIncrementWidget.prototype.getNewElement = function(index){"use strict";
     });
     
     return element;
+};
+
+AutoIncrementWidget.prototype.cleanUp = function(){"use strict";
+    var i, j;
+    Ti.API.debug("in auto increment widget cleanup");
+    
+    try{
+        
+        Widget[this.instance.field_name] = null;
+        
+        for(j = 0; j < this.elements.length; j ++){
+            this.fieldView.remove(this.elements[j]);
+            this.elements[j] = null;
+        }
+        
+        this.fieldView = null;
+        this.fieldViewWrapper = null;
+        this.formObj = null;
+        this.node = null;
+        this.dbValues = null;
+        this.textValues = null;
+        this.nodeElement = null;
+        this.instance = null;
+        
+        Ti.API.debug("At end of auto increment widget cleanup");
+    }
+    catch(ex){
+        try{
+            Omadi.service.sendErrorReport("Exception cleaning up auto increment widget field: " + ex);
+        }
+        catch(ex1){}
+    }
+    
+    Omadi = null;
 };
 
 exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";

@@ -448,7 +448,7 @@ Omadi.service.isSendingData = function(){"use strict";
 Omadi.service.sendDataOnLoad = function(e){"use strict";
     var subDB, dialog, json, nameTable, dir, file, string;
                 
-    Ti.API.debug("Got response");
+    Omadi.display.doneLoading();
     
     try{
         if (this.responseText !== null && this.responseText !== "null" && this.responseText !== "" && this.responseText !== "" && isJsonString(this.responseText) === true) {
@@ -550,6 +550,9 @@ Omadi.service.sendDataOnLoad = function(e){"use strict";
 Omadi.service.sendDataOnError = function(e){"use strict";
     var dialog, db;
     try{
+        
+        Omadi.display.doneLoading();
+        
         Ti.API.error('Error Status: ' + e.error + ", message: " + this.status);
         
         if (this.status == 403 || this.status == 401) {

@@ -14,6 +14,7 @@ function VehicleFieldsWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.nodeElement = null;
     this.numVisibleFields = 1;
     this.fieldViewWrapper = fieldViewWrapper;
+    
     this.element = null;
     this.autocomplete_table = null;
     this.elementWrapper = null;
@@ -225,13 +226,11 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
         this.element.minLength = this.instance.settings.min_length;
     }
 
-     this.element.addEventListener('focus', function(e){
-       //Ti.API.debug("focused");
+    this.element.addEventListener('focus', function(e){
        e.source.touched = true; 
     });
     
     this.element.addEventListener('click', function(e){
-        //Ti.API.debug("Clicked");
        e.source.touched = true; 
     });
 
@@ -245,7 +244,9 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
             e.source.blurred = true;
         }
         catch(ex){
-            Omadi.service.sendErrorReport("in vehicle fields blue: " + ex);
+            try{
+                Omadi.service.sendErrorReport("exception in vehicle fields blur: " + ex);
+            }catch(ex1){}
         }
     });
 
@@ -380,6 +381,40 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
     return wrapper;
 };
 
+VehicleFieldsWidget.prototype.cleanUp = function(){"use strict";
+    var i, j;
+    Ti.API.debug("in vehicle widget cleanup");
+    
+    try{
+        Widget[this.instance.field_name] = null;
+        
+        this.elementWrapper.remove(this.element);
+        this.elementWrapper.remove(this.autocomplete_table);
+        this.element = null;
+        this.autocomplete_table = null;
+        this.fieldView.remove(this.elementWrapper);
+        this.elementWrapper = null;
+        
+        this.fieldView = null;
+        this.fieldViewWrapper = null;
+        this.formObj = null;
+        this.node = null;
+        this.dbValues = null;
+        this.textValues = null;
+        this.nodeElement = null;
+        this.instance = null;
+        
+        Ti.API.debug("At end of vehicle widget cleanup");
+    }
+    catch(ex){
+        try{
+            Omadi.service.sendErrorReport("Exception cleaning up vehicle widget field: " + ex);
+        }
+        catch(ex1){}
+    }
+    
+    Omadi = null;
+};
 
 exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
     

@@ -10,6 +10,7 @@ function VideoWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.node = formObj.node;
     this.dbValues = [];
     this.textValues = [];
+    this.elements = [];
     this.nodeElement = null;
     this.numVisibleFields = 1;
     this.fieldViewWrapper = fieldViewWrapper;
@@ -50,8 +51,8 @@ VideoWidget.prototype.getFieldView = function(){"use strict";
     this.fieldView.add(this.formObj.getRegularLabelView(this.instance));
     
     // Add the actual fields
-    element = this.getNewElement(0);
-    this.fieldView.add(element);
+    this.elements[0] = this.getNewElement(0);
+    this.fieldView.add(this.elements[0]);
     this.fieldView.add(this.formObj.getSpacerView());
     
     return this.fieldView;
@@ -612,6 +613,39 @@ VideoWidget.prototype.saveFileInfo = function(imageView, filePath, thumbPath, de
     catch(ex) {
         alert("Problem saving the photo to the database: " + ex);
     }
+};
+
+VideoWidget.prototype.cleanUp = function(){"use strict";
+    var i, j;
+    Ti.API.debug("in video widget cleanup");
+    
+    try{
+        Widget[this.instance.field_name] = null;
+        
+        for(j = 0; j < this.elements.length; j ++){
+            this.fieldView.remove(this.elements[j]);
+            this.elements[j] = null;
+        }
+        
+        this.fieldView = null;
+        this.fieldViewWrapper = null;
+        this.formObj = null;
+        this.node = null;
+        this.dbValues = null;
+        this.textValues = null;
+        this.nodeElement = null;
+        this.instance = null;
+        
+        Ti.API.debug("At end of video widget cleanup");
+    }
+    catch(ex){
+        try{
+            Omadi.service.sendErrorReport("Exception cleaning up video widget field: " + ex);
+        }
+        catch(ex1){}
+    }
+    
+    Omadi = null;
 };
 
 exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";

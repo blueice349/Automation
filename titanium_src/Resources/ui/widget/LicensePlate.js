@@ -11,6 +11,7 @@ function LicensePlateWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.node = formObj.node;
     this.dbValues = [];
     this.textValues = [];
+    this.elements = [];
     this.nodeElement = null;
     this.numVisibleFields = 1;
     this.fieldViewWrapper = fieldViewWrapper;
@@ -19,8 +20,7 @@ function LicensePlateWidget(formObj, instance, fieldViewWrapper){"use strict";
         this.nodeElement = this.node[this.instance.field_name];
         
         if(typeof this.nodeElement.dbValues !== 'undefined' && this.nodeElement.dbValues != null){
-            this.dbValues = this.nodeElement.dbValues;
-            
+            this.dbValues = this.nodeElement.dbValues;   
         }
         
         if(typeof this.nodeElement.textValues !== 'undefined' && this.nodeElement.textValues != null){
@@ -42,8 +42,8 @@ LicensePlateWidget.prototype.getFieldView = function(){"use strict";
     this.fieldView.add(this.formObj.getRegularLabelView(this.instance));
     
     // Add the actual fields
-    element = this.getNewElement(0);
-    this.fieldView.add(element);
+    this.elements[0] = this.getNewElement(0);
+    this.fieldView.add(this.elements[0]);
     this.fieldView.add(this.formObj.getSpacerView());
     
     return this.fieldView;
@@ -470,6 +470,39 @@ LicensePlateWidget.prototype.getStates = function() {"use strict";
     });
 
     return states;
+};
+
+LicensePlateWidget.prototype.cleanUp = function(){"use strict";
+    var i, j;
+    Ti.API.debug("in license plate widget cleanup");
+    
+    try{
+        Widget[this.instance.field_name] = null;
+        
+        for(j = 0; j < this.elements.length; j ++){
+            this.fieldView.remove(this.elements[j]);
+            this.elements[j] = null;
+        }
+        
+        this.fieldView = null;
+        this.fieldViewWrapper = null;
+        this.formObj = null;
+        this.node = null;
+        this.dbValues = null;
+        this.textValues = null;
+        this.nodeElement = null;
+        this.instance = null;
+        
+        Ti.API.debug("At end of license plate widget cleanup");
+    }
+    catch(ex){
+        try{
+            Omadi.service.sendErrorReport("Exception cleaning up license plate widget field: " + ex);
+        }
+        catch(ex1){}
+    }
+    
+    Omadi = null;
 };
 
 exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";

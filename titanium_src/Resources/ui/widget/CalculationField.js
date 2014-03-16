@@ -12,6 +12,7 @@ function CalculationFieldWidget(formObj, instance, fieldViewWrapper){"use strict
     this.fieldView = null;
     this.node = formObj.node;
     this.dbValues = [];
+    this.elements = [];
     this.textValues = [];
     this.nodeElement = null;
     this.numVisibleFields = 1;
@@ -52,8 +53,8 @@ CalculationFieldWidget.prototype.getFieldView = function(showCalc){"use strict";
     this.fieldView.add(labelView);
     
     // Add the actual fields
-    element = this.getNewElement(0, showCalc);
-    this.fieldView.add(element);
+    this.elements[0] = this.getNewElement(0, showCalc);
+    this.fieldView.add(this.elements[0]);
     this.fieldView.add(this.formObj.getSpacerView());
     
     if(this.instance.settings.hidden == 1){
@@ -851,6 +852,40 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
         final_value : final_value,
         rows : row_values
     }];
+};
+
+CalculationFieldWidget.prototype.cleanUp = function(){"use strict";
+    var i, j;
+    Ti.API.debug("in calculation widget cleanup");
+    
+    try{
+        
+        Widget[this.instance.field_name] = null;
+        
+        for(j = 0; j < this.elements.length; j ++){
+            this.fieldView.remove(this.elements[j]);
+            this.elements[j] = null;
+        }
+        
+        this.fieldView = null;
+        this.fieldViewWrapper = null;
+        this.formObj = null;
+        this.node = null;
+        this.dbValues = null;
+        this.textValues = null;
+        this.nodeElement = null;
+        this.instance = null;
+        
+        Ti.API.debug("At end of calculation widget cleanup");
+    }
+    catch(ex){
+        try{
+            Omadi.service.sendErrorReport("Exception cleaning up calculation widget field: " + ex);
+        }
+        catch(ex1){}
+    }
+    
+    Omadi = null;
 };
 
 exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";

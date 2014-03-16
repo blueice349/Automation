@@ -463,6 +463,37 @@ LocationWidget.prototype.getStates = function() {"use strict";
     return states;
 };
 
+LocationWidget.prototype.cleanUp = function(){"use strict";
+    var i, j;
+    Ti.API.debug("in location widget cleanup");
+    
+    try{
+        Widget[this.instance.field_name] = null;
+        
+        this.fieldView.remove(this.element);
+        this.element = null;
+        
+        this.fieldView = null;
+        this.fieldViewWrapper = null;
+        this.formObj = null;
+        this.node = null;
+        this.dbValues = null;
+        this.textValues = null;
+        this.nodeElement = null;
+        this.instance = null;
+        
+        Ti.API.debug("At end of location widget cleanup");
+    }
+    catch(ex){
+        try{
+            Omadi.service.sendErrorReport("Exception cleaning up location widget field: " + ex);
+        }
+        catch(ex1){}
+    }
+    
+    Omadi = null;
+};
+
 exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
     
     Omadi = OmadiObj;

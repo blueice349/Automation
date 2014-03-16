@@ -10,6 +10,7 @@ function ListBooleanWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.node = formObj.node;
     this.dbValues = [];
     this.textValues = [];
+    this.elements = [];
     this.nodeElement = null;
     this.numVisibleFields = 1;
     this.fieldViewWrapper = fieldViewWrapper;
@@ -49,7 +50,7 @@ ListBooleanWidget.prototype.getFieldView = function(){"use strict";
     
     
     // Add the actual fields
-    element = this.getNewElement(0);
+    this.elements[0] = this.getNewElement(0);
     
     labelView = this.formObj.getRegularLabelView(this.instance);
     labelView.setWidth('80%');
@@ -59,7 +60,7 @@ ListBooleanWidget.prototype.getFieldView = function(){"use strict";
     
     labelView.setHeight(Ti.UI.SIZE);
     
-    wrapper.add(element);
+    wrapper.add(this.elements[0]);
     wrapper.add(Ti.UI.createView({
         width : 10,
         height : 10
@@ -187,6 +188,40 @@ ListBooleanWidget.prototype.getNewElement = function(index){"use strict";
     });
     
     return element;
+};
+
+ListBooleanWidget.prototype.cleanUp = function(){"use strict";
+    var i, j;
+    Ti.API.debug("in checkbox widget cleanup");
+    
+    try{
+        
+        Widget[this.instance.field_name] = null;
+        
+        for(j = 0; j < this.elements.length; j ++){
+            this.fieldView.remove(this.elements[j]);
+            this.elements[j] = null;
+        }
+        
+        this.fieldView = null;
+        this.fieldViewWrapper = null;
+        this.formObj = null;
+        this.node = null;
+        this.dbValues = null;
+        this.textValues = null;
+        this.nodeElement = null;
+        this.instance = null;
+        
+        Ti.API.debug("At end of checkbox widget cleanup");
+    }
+    catch(ex){
+        try{
+            Omadi.service.sendErrorReport("Exception cleaning up checkbox widget field: " + ex);
+        }
+        catch(ex1){}
+    }
+    
+    Omadi = null;
 };
 
 exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";

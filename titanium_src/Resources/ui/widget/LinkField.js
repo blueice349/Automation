@@ -11,6 +11,7 @@ function LinkFieldWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.node = formObj.node;
     this.dbValues = [];
     this.textValues = [];
+    this.elements = [];
     this.nodeElement = null;
     this.numVisibleFields = 1;
     this.fieldViewWrapper = fieldViewWrapper;
@@ -20,7 +21,6 @@ function LinkFieldWidget(formObj, instance, fieldViewWrapper){"use strict";
         
         if(typeof this.nodeElement.dbValues !== 'undefined' && this.nodeElement.dbValues != null){
             this.dbValues = this.nodeElement.dbValues;
-            
         }
         
         if(typeof this.nodeElement.textValues !== 'undefined' && this.nodeElement.textValues != null){
@@ -55,8 +55,8 @@ LinkFieldWidget.prototype.getFieldView = function(){"use strict";
     
     // Add the actual fields
     for(i = 0; i < this.numVisibleFields; i ++){
-        element = this.getNewElement(i);
-        this.fieldView.add(element);
+        this.elements[i] = this.getNewElement(i);
+        this.fieldView.add(this.elements[i]);
         this.fieldView.add(this.formObj.getSpacerView());
     }
     
@@ -189,6 +189,40 @@ LinkFieldWidget.prototype.getNewElement = function(index){"use strict";
     });
     
     return element;
+};
+
+LinkFieldWidget.prototype.cleanUp = function(){"use strict";
+    var i, j;
+    Ti.API.debug("in link widget cleanup");
+    
+    try{
+        
+        Widget[this.instance.field_name] = null;
+        
+        for(j = 0; j < this.elements.length; j ++){
+            this.fieldView.remove(this.elements[j]);
+            this.elements[j] = null;
+        }
+        
+        this.fieldView = null;
+        this.fieldViewWrapper = null;
+        this.formObj = null;
+        this.node = null;
+        this.dbValues = null;
+        this.textValues = null;
+        this.nodeElement = null;
+        this.instance = null;
+        
+        Ti.API.debug("At end of link widget cleanup");
+    }
+    catch(ex){
+        try{
+            Omadi.service.sendErrorReport("Exception cleaning up link widget field: " + ex);
+        }
+        catch(ex1){}
+    }
+    
+    Omadi = null;
 };
 
 exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";

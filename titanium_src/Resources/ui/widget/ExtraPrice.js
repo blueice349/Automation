@@ -10,6 +10,7 @@ function ExtraPriceWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.node = formObj.node;
     this.dbValues = [];
     this.textValues = [];
+    this.elements = [];
     this.nodeElement = null;
     this.numVisibleFields = 1;
     this.fieldViewWrapper = fieldViewWrapper;
@@ -19,7 +20,6 @@ function ExtraPriceWidget(formObj, instance, fieldViewWrapper){"use strict";
         
         if(typeof this.nodeElement.dbValues !== 'undefined' && this.nodeElement.dbValues != null){
             this.dbValues = this.nodeElement.dbValues;
-            
         }
         
         if(typeof this.nodeElement.textValues !== 'undefined' && this.nodeElement.textValues != null){
@@ -54,8 +54,8 @@ ExtraPriceWidget.prototype.getFieldView = function(){"use strict";
     
     // Add the actual fields
     for(i = 0; i < this.numVisibleFields; i ++){
-        element = this.getNewElement(i);
-        this.fieldView.add(element);
+        this.elements[i] = this.getNewElement(i);
+        this.fieldView.add(this.elements[i]);
         this.fieldView.add(this.formObj.getSpacerView());
     }
     
@@ -259,10 +259,17 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
         });
         
         descView.addEventListener('blur', function(e) {
-            e.source.autocomplete_table.setBorderWidth(0);
-            e.source.autocomplete_table.setHeight(0);
-            e.source.autocomplete_table.setVisible(false);
-            e.source.blurred = true;
+            try{
+                e.source.autocomplete_table.setBorderWidth(0);
+                e.source.autocomplete_table.setHeight(0);
+                e.source.autocomplete_table.setVisible(false);
+                e.source.blurred = true;
+            }
+            catch(ex){
+                try{
+                    Omadi.service.sendErrorReport("exception in extra price blur: " + ex);
+                }catch(ex1){}
+            }
         });
         
         autocomplete_table.addEventListener('click', function(e) {
@@ -581,6 +588,39 @@ ExtraPriceWidget.prototype.getOptions = function() {"use strict";
     db.close();
 
     return options;
+};
+
+ExtraPriceWidget.prototype.cleanUp = function(){"use strict";
+    var i, j;
+    Ti.API.debug("in amounts widget cleanup");
+    
+    try{
+        Widget[this.instance.field_name] = null;
+        
+        for(j = 0; j < this.elements.length; j ++){
+            this.fieldView.remove(this.elements[j]);
+            this.elements[j] = null;
+        }
+        
+        this.fieldView = null;
+        this.fieldViewWrapper = null;
+        this.formObj = null;
+        this.node = null;
+        this.dbValues = null;
+        this.textValues = null;
+        this.nodeElement = null;
+        this.instance = null;
+        
+        Ti.API.debug("At end of amounts widget cleanup");
+    }
+    catch(ex){
+        try{
+            Omadi.service.sendErrorReport("Exception cleaning up amounts widget field: " + ex);
+        }
+        catch(ex1){}
+    }
+    
+    Omadi = null;
 };
 
 exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";

@@ -4,7 +4,7 @@ var Widget, Omadi;
 
 Widget = {};
 
-function TextWidget(formObj, instance){"use strict";
+function TextWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
     this.instance = instance;
     this.fieldView = null;
@@ -14,7 +14,7 @@ function TextWidget(formObj, instance){"use strict";
     this.nodeElement = null;
     this.numVisibleFields = 1;
     this.elements = [];
-    //this.fieldViewWrapper = fieldViewWrapper;
+    this.fieldViewWrapper = fieldViewWrapper;
     
     if(typeof this.node[this.instance.field_name] !== 'undefined'){
         this.nodeElement = this.node[this.instance.field_name];
@@ -231,7 +231,7 @@ TextWidget.prototype.cleanUp = function(){"use strict";
         
         //this.fieldViewWrapper.remove(this.fieldView);
         this.fieldView = null;
-        //this.fieldViewWrapper = null;
+        this.fieldViewWrapper = null;
         this.formObj = null;
         this.node = null;
         this.dbValues = null;
@@ -249,13 +249,12 @@ TextWidget.prototype.cleanUp = function(){"use strict";
     }
     
     Omadi = null;
-    
 };
 
 exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
     
     Omadi = OmadiObj;
-    Widget[instance.field_name] = new TextWidget(FormObj, instance);
+    Widget[instance.field_name] = new TextWidget(FormObj, instance, fieldViewWrapper);
     
     return Widget[instance.field_name];
 };

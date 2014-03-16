@@ -587,7 +587,7 @@ Omadi.display.openViewWindow = function(type, nid) {"use strict";
     return viewWindow;
 };
 
-//Omadi.display.FormModule = null;
+Omadi.display.FormModule = null;
 Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
     var db, result, formWindow, intNid, isDispatch, dispatchNid, bundle, Dispatch, formObject, node, FormModule;
     
@@ -617,8 +617,8 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
         else{
             Omadi.display.loading();
             
-            FormModule = require('ui/FormModule');
-            formWindow = FormModule.getWindow(Omadi, type, nid, form_part, false);
+            Omadi.display.FormModule = require('ui/FormModule');
+            formWindow = Omadi.display.FormModule.getWindow(Omadi, type, nid, form_part, false);
             
             if(formWindow){
             
@@ -626,7 +626,7 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
                 formWindow.open();
                 
                 // Must be called after getWindow
-                node = FormModule.getNode(type);
+                node = Omadi.display.FormModule.getNode(type);
             }
             else{
                 Omadi.service.sendErrorReport("Could not open regular form window");

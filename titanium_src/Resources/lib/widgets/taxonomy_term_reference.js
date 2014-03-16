@@ -194,16 +194,23 @@ Omadi.widgets.taxonomy_term_reference = {
             widgetView.addEventListener('click', Omadi.widgets.taxonomy_term_reference.scrollUp);
     
             widgetView.addEventListener('blur', function(e) {
-                e.source.autocomplete_table.setBorderWidth(0);
-                e.source.autocomplete_table.setHeight(0);
-                e.source.autocomplete_table.setVisible(false);
-                
-                if(typeof e.source.instance.settings.restrict_new_autocomplete_terms !== 'undefined' && 
-                    e.source.instance.settings.restrict_new_autocomplete_terms == 1 && 
-                    e.source.dbValue === null && 
-                    e.source.value > ""){
-                        
-                        alert("The value \"" + e.source.value + "\" will not be saved for the \"" + e.source.instance.label + "\" field because new items have been disabled by the administrator.");
+                try{
+                    e.source.autocomplete_table.setBorderWidth(0);
+                    e.source.autocomplete_table.setHeight(0);
+                    e.source.autocomplete_table.setVisible(false);
+                    
+                    if(typeof e.source.instance.settings.restrict_new_autocomplete_terms !== 'undefined' && 
+                        e.source.instance.settings.restrict_new_autocomplete_terms == 1 && 
+                        e.source.dbValue === null && 
+                        e.source.value > ""){
+                            
+                            alert("The value \"" + e.source.value + "\" will not be saved for the \"" + e.source.instance.label + "\" field because new items have been disabled by the administrator.");
+                    }
+                }
+                catch(ex){
+                    try{
+                        Omadi.service.sendErrorReport("exception in omadi reference blur: " + ex);
+                    }catch(ex1){}
                 }
             });
             

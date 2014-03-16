@@ -17,14 +17,13 @@ function SignatureWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.imageView = null;
     this.imageWrapper = null;
     
-    this.Paint = formObj.Paint;
+    this.Paint = require('ti.paint');
     
     if(typeof this.node[this.instance.field_name] !== 'undefined'){
         this.nodeElement = this.node[this.instance.field_name];
         
         if(typeof this.nodeElement.dbValues !== 'undefined' && this.nodeElement.dbValues != null){
             this.dbValues = this.nodeElement.dbValues;
-            
         }
         
         if(typeof this.nodeElement.textValues !== 'undefined' && this.nodeElement.textValues != null){
@@ -607,6 +606,49 @@ SignatureWidget.prototype.saveFileInfo = function(imageView, filePath, thumbPath
     catch(ex) {
         alert("Problem saving the signature to the database: " + ex);
     }
+};
+
+SignatureWidget.prototype.cleanUp = function(){"use strict";
+    var i, j;
+    Ti.API.debug("in signature widget cleanup");
+    
+    try{
+        
+        Widget[this.instance.field_name] = null;
+        
+        if(this.imageView !== null){
+            this.imageWrapper.remove(this.imageView);
+            this.imageView = null;
+        }
+        
+        if(this.imageWrapper !== null){
+            this.element.remove(this.imageWrapper);
+            this.imageWrapper = null;
+        }
+        
+        this.fieldView.remove(this.element);
+        this.element = null;
+        
+        this.fieldView = null;
+        this.fieldViewWrapper = null;
+        this.formObj = null;
+        this.node = null;
+        this.dbValues = null;
+        this.textValues = null;
+        this.nodeElement = null;
+        this.instance = null;
+        this.Paint = null;
+        
+        Ti.API.debug("At end of signature widget cleanup");
+    }
+    catch(ex){
+        try{
+            Omadi.service.sendErrorReport("Exception cleaning up signature widget field: " + ex);
+        }
+        catch(ex1){}
+    }
+    
+    Omadi = null;
 };
 
 exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";

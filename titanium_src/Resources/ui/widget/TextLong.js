@@ -11,6 +11,7 @@ function TextLongWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.node = formObj.node;
     this.dbValues = [];
     this.textValues = [];
+    this.elements = [];
     this.nodeElement = null;
     this.numVisibleFields = 1;
     this.fieldViewWrapper = fieldViewWrapper;
@@ -20,7 +21,6 @@ function TextLongWidget(formObj, instance, fieldViewWrapper){"use strict";
         
         if(typeof this.nodeElement.dbValues !== 'undefined' && this.nodeElement.dbValues != null){
             this.dbValues = this.nodeElement.dbValues;
-            
         }
         
         if(typeof this.nodeElement.textValues !== 'undefined' && this.nodeElement.textValues != null){
@@ -55,8 +55,8 @@ TextLongWidget.prototype.getFieldView = function(){"use strict";
     
     // Add the actual fields
     for(i = 0; i < this.numVisibleFields; i ++){
-        element = this.getNewElement(i);
-        this.fieldView.add(element);
+        this.elements[i] = this.getNewElement(i);
+        this.fieldView.add(this.elements[i]);
         this.fieldView.add(this.formObj.getSpacerView());
     }
     
@@ -221,17 +221,64 @@ TextLongWidget.prototype.getNewElement = function(index){"use strict";
     });
     
     element.addEventListener('focus', function(e){
-        e.source.setBackgroundColor('#def');
-        Widget[e.source.instance.field_name].formObj.currentlyFocusedField = e.source;
+        try{
+            e.source.setBackgroundColor('#def');
+            Widget[e.source.instance.field_name].formObj.currentlyFocusedField = e.source;
+        }
+        catch(ex){
+            try{
+                Omadi.service.sendErrorReport("Exception in text long focus listener: " + ex);
+            }
+            catch(ex1){}
+        }
     });
     
     element.addEventListener('blur', function(e){
-        e.source.setBackgroundColor('#fff');
+        try{
+            e.source.setBackgroundColor('#fff');
+        }
+        catch(ex){
+            try{
+                Omadi.service.sendErrorReport("exception in text long blur: " + ex);
+            }catch(ex1){}
+        }
     });
     
     return element;
 };
 
+TextLongWidget.prototype.cleanUp = function(){"use strict";
+    var i, j;
+    Ti.API.debug("in text long widget cleanup");
+    
+    try{
+        Widget[this.instance.field_name] = null;
+        
+        for(j = 0; j < this.elements.length; j ++){
+            this.fieldView.remove(this.elements[j]);
+            this.elements[j] = null;
+        }
+        
+        this.fieldView = null;
+        this.fieldViewWrapper = null;
+        this.formObj = null;
+        this.node = null;
+        this.dbValues = null;
+        this.textValues = null;
+        this.nodeElement = null;
+        this.instance = null;
+        
+        Ti.API.debug("At end of text long widget cleanup");
+    }
+    catch(ex){
+        try{
+            Omadi.service.sendErrorReport("Exception cleaning up text long widget field: " + ex);
+        }
+        catch(ex1){}
+    }
+    
+    Omadi = null;
+};
 
 exports.getFieldObject = function(OmadiObj, FormObj, instance, fieldViewWrapper){"use strict";
     
