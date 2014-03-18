@@ -47,14 +47,14 @@ Omadi.widgets.email = {
 
         if (settings.cardinality == -1) {
             addAnotherItemButton = Ti.UI.createButton({
-                title : 'Add another item',
+                title : ' Add another item ',
                 right : 15,
                 instance : instance,
                 style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
                 backgroundGradient: Omadi.display.backgroundGradientGray,
                 borderColor: '#999',
                 borderWidth: 1,
-                width: 150,
+                width: 180,
                 borderRadius: 10,
                 color: '#eee',
                 top: 10

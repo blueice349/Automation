@@ -592,7 +592,7 @@ OmadiReferenceWidget.prototype.setChildDefaultValues = function(widgetView) {"us
 
                     if ( typeof parentNode[defaultValueField] !== 'undefined') {
                         defaultValues = parentNode[defaultValueField];
-
+                        
                         Ti.API.debug("real defaults: " + JSON.stringify(defaultValues));
 
                         this.formObj.setValues(childFieldName, defaultValues);

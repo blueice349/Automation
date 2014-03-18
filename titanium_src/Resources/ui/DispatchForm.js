@@ -28,6 +28,8 @@ function DispatchForm(type, nid, form_part){"use strict";
     
     this.continuousDispatchInfo = null;
     this.continuousWorkInfo = null;
+    
+    this.currentWorkFormPart = -1;
 }
 
 DispatchForm.prototype.showActionsOptions = function(e){"use strict";
@@ -224,6 +226,8 @@ DispatchForm.prototype.getWindow = function(){"use strict";
         }
         else {
             this.workNode = Omadi.data.nodeLoad(this.nid);
+            this.currentWorkFormPart = this.workNode.form_part;
+            
             allowRecover = true;
             
             Ti.API.debug(JSON.stringify(this.workNode));
@@ -236,6 +240,7 @@ DispatchForm.prototype.getWindow = function(){"use strict";
                 if (this.workNode.type == 'dispatch') {
                     this.dispatchNode = this.workNode;
                     this.workNode = Omadi.data.nodeLoad(this.dispatchNode.dispatch_nid);
+                    this.currentWorkFormPart = this.workNode.form_part;
                     openDispatch = true;
                 }
                 else {
@@ -401,6 +406,8 @@ DispatchForm.prototype.getWindow = function(){"use strict";
         alert("There was a problem loading this dispatch. Please contact support.");
     }
     
+    this.updateDispatchStatus();
+  
     return this.tabGroup;
 };
 
@@ -456,6 +463,42 @@ DispatchForm.prototype.exitForm = function(){"use strict";
     });
 
     dialog.show();
+};
+
+DispatchForm.prototype.updateDispatchStatus = function(){"use strict";
+    var savedFormPart, windowFormPart, updateToStatus, workBundle;
+    
+    try{
+        if(this.workNode !== null){
+            savedFormPart = this.currentWorkFormPart;
+            windowFormPart = this.form_part;
+            
+            Ti.API.debug("About to update dispatch status: " + savedFormPart + " " + windowFormPart);
+            
+            if(!isNaN(windowFormPart)){
+            
+                if(windowFormPart > savedFormPart){
+                    // We're doing a next part
+                    workBundle = Omadi.data.getBundle(this.workNode.type);
+                    
+                    if(typeof workBundle.data.dispatch !== 'undefined' && typeof workBundle.data.dispatch.dispatch_parts !== 'undefined'){
+                        if(typeof workBundle.data.dispatch.dispatch_parts[windowFormPart] !== 'undefined'){
+                            
+                            // Update the actual status
+                            updateToStatus = workBundle.data.dispatch.dispatch_parts[windowFormPart];
+                            
+                            Ti.API.debug("Updating status to " + updateToStatus);
+                            
+                            Omadi.bundles.dispatch.updateStatus(this.workNode.nid, updateToStatus, true);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception updating dispatch status in form: " + ex);
+    }
 };
 
 DispatchForm.prototype.savedDispatchNode = function(e){"use strict";
@@ -540,7 +583,7 @@ DispatchForm.prototype.towTypeChanged = function(e) {"use strict";
                 Dispatch.workTab = Ti.UI.createTab({
                     title: newBundle.label,
                     window: Dispatch.workObj.win,
-                    icon: '/images/icon_dispatch_white.png'
+                    icon: '/images/icon_truck_white.png'
                 });
                 
                 Dispatch.tabGroup.addTab(Dispatch.workTab);

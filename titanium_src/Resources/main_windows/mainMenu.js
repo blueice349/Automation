@@ -834,7 +834,9 @@ function doneSendingDataMainMenu(e){"use strict";
     
     Omadi.service.uploadFile();
     
-    checkAndroidMemory();
+    if(Ti.App.isAndroid){
+        checkAndroidMemory();
+    }
 }
 
 

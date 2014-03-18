@@ -3,6 +3,7 @@
 var Widget, Omadi;
 Widget = {};
 
+
 function DatestampWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
     this.instance = instance;
@@ -63,17 +64,18 @@ DatestampWidget.prototype.getFieldView = function(){"use strict";
     if(this.instance.settings.cardinality == -1){
         
         addButton = Ti.UI.createButton({
-            title: 'Add another item',
+            title: ' Add another item ',
             right: 15,
             style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             backgroundGradient: Omadi.display.backgroundGradientGray,
             borderColor: '#999',
             borderWidth: 1,
-            width: 150,
+            width: Ti.UI.SIZE,
             borderRadius: 10,
             color: '#eee',
             top: 10,
             height: Ti.UI.SIZE,
+            horizontalWrap: false,
             fieldName: this.instance.field_name
         });
             
@@ -404,7 +406,11 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
                 offset : 1.0
             }]
         },
-        instance: this.instance
+        delta: delta,
+        instance: this.instance,
+        origDBValue: origDBValue,
+        jsDate: jsDate,
+        showTime: showTime
     });
 
     clearButton = Ti.UI.createLabel({
@@ -440,7 +446,11 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
                 offset : 1.0
             }]
         },
-        instance: this.instance
+        delta: delta,
+        instance: this.instance,
+        origDBValue: origDBValue,
+        jsDate: jsDate,
+        showTime: showTime
     });
 
     topButtonsView.add(cancelButton);
@@ -596,7 +606,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
             }
     
             if (Widget[e.source.instance.field_name].elements[e.source.delta].check_conditional_fields.length > 0) {
-                Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, Widget[e.source.element.instance.field_name].elements[e.source.delta].check_conditional_fields);
+                Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, Widget[e.source.instance.field_name].elements[e.source.delta].check_conditional_fields);
             }
         }
         catch(ex){
@@ -604,6 +614,8 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
         }
         
         try{
+            Widget[e.source.instance.field_name].dateWindow.close();
+            
             if(type == 'time'){
                 Widget[e.source.instance.field_name].dateWindow.innerWrapperView.remove(Widget[e.source.instance.field_name].dateWindow.time_picker);
                 Widget[e.source.instance.field_name].dateWindow.time_picker = null;
@@ -614,10 +626,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
             }
             
             Widget[e.source.instance.field_name].dateWindow.remove(Widget[e.source.instance.field_name].dateWindow.innerWrapperView);
-            
-            Widget[e.source.instance.field_name].dateWindow.close();
-            Widget[e.source.instance.field_name].dateWindow = null; 
-        
+            Widget[e.source.instance.field_name].dateWindow = null;
         }
         catch(ex1){
             Omadi.service.sendErrorReport("Date ok button closing window problem: " + ex1);
@@ -625,18 +634,31 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
     });
 
     clearButton.addEventListener('click', function(e) {
+        var callback, i;
+        
         try{
-            e.source.element.dbValue = null;
-            e.source.element.textValue = "";
-    
-            e.source.element.dateView.setText("");
+            Widget[e.source.instance.field_name].elements[e.source.delta].dbValue = null;
+            Widget[e.source.instance.field_name].elements[e.source.delta].textValue = "";
             
-            if(e.source.element.showTime){
-                e.source.element.timeView.setText("");
+            Widget[e.source.instance.field_name].dateViews[e.source.delta].setText("");
+            Widget[e.source.instance.field_name].dateViews[e.source.delta].origDBValue = null;
+            
+            if(e.source.showTime){
+                Widget[e.source.instance.field_name].timeViews[e.source.delta].setText("");
+                Widget[e.source.instance.field_name].timeViews[e.source.delta].origDBValue = null;
             }
     
-            if (e.source.element.check_conditional_fields.length > 0) {
-                Widget[e.source.element.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.element.instance, e.source.element.check_conditional_fields);
+            if ( typeof Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks !== 'undefined') {
+                if (Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks.length > 0) {
+                    for ( i = 0; i < Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks.length; i++) {
+                        callback = Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks[i];
+                        Widget[e.source.instance.field_name].formObj[callback](Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbackArgs[i]);
+                    }
+                }
+            }
+    
+            if (Widget[e.source.instance.field_name].elements[e.source.delta].check_conditional_fields.length > 0) {
+                Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, Widget[e.source.instance.field_name].elements[e.source.delta].check_conditional_fields);
             }
         }
         catch(ex){
@@ -644,6 +666,8 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
         }
 
         try{
+            Widget[e.source.instance.field_name].dateWindow.close();
+            
             if(type == 'time'){
                 Widget[e.source.instance.field_name].dateWindow.innerWrapperView.remove(Widget[e.source.instance.field_name].dateWindow.time_picker);
                 Widget[e.source.instance.field_name].dateWindow.time_picker = null;
@@ -654,8 +678,6 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
             }
             
             Widget[e.source.instance.field_name].dateWindow.remove(Widget[e.source.instance.field_name].dateWindow.innerWrapperView);
-            
-            Widget[e.source.instance.field_name].dateWindow.close();
             Widget[e.source.instance.field_name].dateWindow = null; 
         }
         catch(ex1){
@@ -666,6 +688,8 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
     cancelButton.addEventListener('click', function(e) {
 
         try{
+            Widget[e.source.instance.field_name].dateWindow.close();
+            
             if(type == 'time'){
                 Widget[e.source.instance.field_name].dateWindow.innerWrapperView.remove(Widget[e.source.instance.field_name].dateWindow.time_picker);
                 Widget[e.source.instance.field_name].dateWindow.time_picker = null;
@@ -676,8 +700,6 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
             }
             
             Widget[e.source.instance.field_name].dateWindow.remove(Widget[e.source.instance.field_name].dateWindow.innerWrapperView);
-            
-            Widget[e.source.instance.field_name].dateWindow.close();
             Widget[e.source.instance.field_name].dateWindow = null; 
         }
         catch(ex1){

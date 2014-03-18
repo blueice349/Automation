@@ -947,6 +947,9 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
                             else if (!isNaN(parseInt(form_part, 10))){
                                 // form+_part is a number, so it is editing the current node
                                 if(isEditEnabled === true) {
+                                    
+                                    Omadi.display.loading();
+                                    
                                     ev.source.eventRow.setBackgroundColor('#fff');
                                     //Omadi.display.openFormWindow(node_type, e.row.nid, form_part);   
                                     Ti.App.fireEvent('openFormWindow', {
@@ -955,11 +958,12 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
                                        form_part: form_part
                                     });
                                     
-                                    Omadi.display.loading();
                                     setTimeout(Omadi.display.doneLoading, 5000);
                                 }
                             }
                             else{
+                                Omadi.display.loading();
+                                
                                 // The form part is a string, so it is a copy to function
                                 // Omadi.display.openFormWindow(node_type, e.row.nid, form_part);
                                 Ti.App.fireEvent('openFormWindow', {
@@ -968,7 +972,6 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
                                    form_part: form_part
                                 });
                                 
-                                Omadi.display.loading();
                                 setTimeout(Omadi.display.doneLoading, 5000);
                             }
                         }

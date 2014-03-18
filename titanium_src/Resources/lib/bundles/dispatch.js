@@ -770,12 +770,17 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
                         var status = statusOptions[e.index].dbValue;
                         
                         if(statusOptions[e.index].nextPart){
+                            
+                            Omadi.display.loading();
+                            
                             node = Omadi.data.nodeLoad(nid);
                             Ti.App.fireEvent('openFormWindow', {
                                 node_type: node.type,
                                 nid: node.nid,
                                 form_part: node.form_part + 1
                             });
+                            
+                            setTimeout(Omadi.display.doneLoading, 5000);
                         }
                         else{
                             Omadi.bundles.dispatch.updateStatus(nid, status);
@@ -783,7 +788,7 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
                     }
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("Exception updaging job status: " + ex);
+                    Omadi.service.sendErrorReport("Exception updating job status: " + ex);
                 }
             });
             

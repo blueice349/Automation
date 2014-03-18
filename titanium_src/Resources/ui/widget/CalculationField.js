@@ -81,12 +81,8 @@ CalculationFieldWidget.prototype.redraw = function(skipFormToNode){"use strict";
     }
     
     Ti.API.debug("In calculation redraw for " + this.instance.label);
-    //Ti.API.debug(JSON.stringify(this.formObj.node));
     
     this.node = this.formObj.node;
-    
-    
-    Ti.API.debug(JSON.stringify(this.node.enforcement_end_timestamp));
     
     if(typeof this.node[this.instance.field_name] !== 'undefined'){
         this.nodeElement = this.node[this.instance.field_name];
@@ -148,13 +144,13 @@ CalculationFieldWidget.prototype.getNewElement = function(index, showCalc){"use 
     
     if(this.instance.settings.include_recalculate_button == 1){
         recalculateButton = Ti.UI.createButton({
-             title: 'Recalculate',
+             title: ' Recalculate ',
              style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
              backgroundGradient: Omadi.display.backgroundGradientGray,
              borderColor: '#999',
              borderWidth: 1,
              right: 15,
-             width: 150,
+             width: Ti.UI.SIZE,
              borderRadius: 10,
              color: '#eee',
              instance: this.instance,

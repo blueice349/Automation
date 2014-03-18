@@ -47,13 +47,13 @@ Omadi.widgets.extra_price = {
 
         if (instance.can_edit) {
             addAnotherItemButton = Ti.UI.createButton({
-                title : 'Add another item',
+                title : ' Add another item ',
                 style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
                  backgroundGradient: Omadi.display.backgroundGradientGray,
                  borderColor: '#999',
                  borderWidth: 1,
                  right: 15,
-                 width: 150,
+                 width: 180,
                  borderRadius: 10,
                  color: '#eee',
                  instance: instance

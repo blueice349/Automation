@@ -367,7 +367,7 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
             this.node = this.loadCustomCopyNode(this.node, this.type, this.form_part);
             
             origNid = this.node.origNid;
-            this.node.custom_copy_orig_nid = this.node.origNid;
+            this.custom_copy_orig_nid = this.node.custom_copy_orig_nid = this.node.origNid;
             
             this.type = this.node.type;
             this.nid = 'new';
@@ -376,7 +376,7 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
         }
         
         if(this.node !== null && typeof this.node.custom_copy_orig_nid === 'undefined'){
-            this.node.custom_copy_orig_nid = 0;
+            this.custom_copy_orig_nid = this.node.custom_copy_orig_nid = 0;
         }
     }
     catch(ex){
@@ -451,6 +451,7 @@ FormModule.prototype.loadCustomCopyNode = function(originalNode, from_type, to_t
 };
 
 FormModule.prototype.initNewWindowFromCurrentData = function(form_part){"use strict";
+    var imageNids, field_name, listDB, result;
     
     this.nodeSaved = false;
     
@@ -486,7 +487,55 @@ FormModule.prototype.initNewWindowFromCurrentData = function(form_part){"use str
     }
     else{
         // This is a save + next
+        
         this.node.form_part = this.form_part = form_part;
+        
+        try{
+            
+            // Permenantely fix this later - this is to get it out
+            // This simply adds in the correct images that were just taken
+            imageNids = [0, this.node.continuous_nid];
+            if(this.node.nid != 'new'){
+                imageNids.push(this.node.nid);
+            }
+            
+            if(this.node.origNid != 'new'){
+                imageNids.push(this.node.origNid);
+            }
+            
+            listDB = Omadi.utils.openListDatabase();
+            for(field_name in this.instances){
+                if(this.instances.hasOwnProperty(field_name)){
+                    result = listDB.execute('SELECT * FROM _files WHERE nid IN(' + imageNids.join(',') + ') AND field_name ="' + field_name + '" ORDER BY delta ASC');
+            
+                    this.node[field_name].imageData = [];
+                    this.node[field_name].deltas = [];
+                    this.node[field_name].degrees = [];
+                    this.node[field_name].thumbData = [];
+                    
+                    if (result.rowCount > 0) {
+                        while (result.isValidRow()) {
+                            
+                            this.node[field_name].imageData.push(result.fieldByName('file_path'));
+                            this.node[field_name].deltas.push(result.fieldByName('delta'));
+                            this.node[field_name].degrees.push(result.fieldByName('degrees', Ti.Database.FIELD_TYPE_INT));
+                            this.node[field_name].thumbData.push(result.fieldByName('thumb_path'));
+                            
+                            result.next();
+                        }
+                    }
+                    result.close();
+                }
+            }
+            listDB.close();
+        }
+        catch(ex){
+            this.sendError("Exception setting up the imagedata for a form + next part: " + ex);
+            try{
+                listDB.close();
+            }
+            catch(ex1){}
+        }
         
         //Ti.API.info(JSON.stringify(this.node));
             
@@ -1770,61 +1819,66 @@ FormModule.prototype.saveForm = function(saveType){"use strict";
     
     Ti.API.info("Saving with type: " + saveType);
     
-    this.formToNode();
-    
-    
-    if(saveType == 'draft'){
-        this.node._isDraft = true;
-    }
-    else{
-        this.node._isDraft = false;
-    }
-    
-    if(saveType == 'continuous'){
-        this.node._isContinuous = true;
-    }
-    else{
-        this.node._isContinuous = false;
-    }
-    
-    this.node.viewed = Omadi.utils.getUTCTimestamp();
-    
-    this.form_errors = [];
-    
-    if(this.node._isContinuous === false){
-        this.validate_form_data(saveType);
-    }
-    
-    if(this.form_errors && this.form_errors.length > 0){
-        dialog = Titanium.UI.createAlertDialog({
-            title : 'Form Validation',
-            buttonNames : ['OK'],
-            message: this.form_errors.join("\n")
-        });
+    try{
+        this.formToNode();
         
-        dialog.show();
-    }
-    else{
         
-        try{
-
-            //TODO: fix the below
-            /*else if (pass_it === false && Ti.App.Properties.getString("timestamp_offset") > OFF_BY) {
+        if(saveType == 'draft'){
+            this.node._isDraft = true;
+        }
+        else{
+            this.node._isDraft = false;
+        }
         
-                var actual_time = Math.round(new Date().getTime() / 1000);
-                actual_time = parseInt(actual_time) + parseInt(Ti.App.Properties.getString("timestamp_offset"));
+        if(saveType == 'continuous'){
+            this.node._isContinuous = true;
+        }
+        else{
+            this.node._isContinuous = false;
+        }
         
-                var server_time = new Date(actual_time);
+        this.node.viewed = Omadi.utils.getUTCTimestamp();
         
-            }*/
+        this.form_errors = [];
+        
+        if(this.node._isContinuous === false){
+            this.validate_form_data(saveType);
+        }
+        
+        if(this.form_errors && this.form_errors.length > 0){
+            dialog = Titanium.UI.createAlertDialog({
+                title : 'Form Validation',
+                buttonNames : ['OK'],
+                message: this.form_errors.join("\n")
+            });
             
-            this.trySaveNode(saveType);
+            dialog.show();
         }
-        catch(ex){
-            alert("Saving to mobile database: " + ex);
+        else{
+            
+            try{
+    
+                //TODO: fix the below
+                /*else if (pass_it === false && Ti.App.Properties.getString("timestamp_offset") > OFF_BY) {
+            
+                    var actual_time = Math.round(new Date().getTime() / 1000);
+                    actual_time = parseInt(actual_time) + parseInt(Ti.App.Properties.getString("timestamp_offset"));
+            
+                    var server_time = new Date(actual_time);
+            
+                }*/
+                
+                this.trySaveNode(saveType);
+            }
+            catch(ex){
+                alert("Saving to mobile database: " + ex);
+            }
+            
+            Omadi.display.doneLoading();
         }
-        
-        Omadi.display.doneLoading();
+    }
+    catch(ex1){
+        Omadi.service.sendErrorReport("Exception saving form: " + ex1);
     }
 };
 
@@ -1855,6 +1909,7 @@ FormModule.prototype.initNewNode = function(){"use strict";
     this.node.dispatch_nid = this.dispatch_nid;
     this.node.origNid = this.origNid;
     this.node.flag_is_updated = this.flag_is_updated;
+    this.node.custom_copy_orig_nid = this.custom_copy_orig_nid;
     
     this.node.changed = now;
     this.node.changed_uid = uid;
@@ -2199,17 +2254,26 @@ FormModule.prototype.getFormFieldValues = function(field_name){"use strict";
 };
 
 FormModule.prototype.setValues = function(field_name, defaultValues){"use strict";
-    
-    this.setValueWidgetProperty(field_name, ['textValue'], defaultValues.textValues[0]);
-    this.setValueWidgetProperty(field_name, ['dbValue'], defaultValues.dbValues[0]);
-    
-    if(this.instances[field_name].type == 'taxonomy_term_reference' || 
-        this.instances[field_name].type == 'list_text' || 
-        (this.instances[field_name].type == 'omadi_reference' && this.instances[field_name].widget.type == 'omadi_reference_select')){
-        this.setValueWidgetProperty(field_name, ['text'], defaultValues.textValues[0]);
+    try{
+        if(typeof defaultValues.dbValues[0] !== 'undefined'){
+            this.setValueWidgetProperty(field_name, ['dbValue'], defaultValues.dbValues[0]);    
+        }
+        
+        if(typeof defaultValues.textValues[0] !== 'undefined'){
+            this.setValueWidgetProperty(field_name, ['textValue'], defaultValues.textValues[0]);
+        
+            if(this.instances[field_name].type == 'taxonomy_term_reference' || 
+                this.instances[field_name].type == 'list_text' || 
+                (this.instances[field_name].type == 'omadi_reference' && this.instances[field_name].widget.type == 'omadi_reference_select')){
+                this.setValueWidgetProperty(field_name, ['text'], defaultValues.textValues[0]);
+            }
+            else{
+                this.setValueWidgetProperty(field_name, ['value'], defaultValues.textValues[0]);
+            }
+        }
     }
-    else{
-        this.setValueWidgetProperty(field_name, ['value'], defaultValues.textValues[0]);
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in setValues: " + ex);
     }
 };
 
@@ -2281,8 +2345,11 @@ FormModule.prototype.setValueWidgetProperty = function(field_name, property, val
         }
         else{
             for(i = 0; i < children.length; i ++){
+                Ti.API.debug("in i " + i + " " + property[0] + " " + value);
                 if(typeof children[i].dbValue !== 'undefined'){
+                    Ti.API.debug("further in i " + i + " " + property[0] + " " + value);
                     if(i == setIndex){
+                        Ti.API.debug("Setting i " + i + " " + property[0] + " " + value);
                         if(property.length == 1){
                             this.fieldWrappers[field_name].children[i][property[0]] = value;
                         }
@@ -2295,8 +2362,11 @@ FormModule.prototype.setValueWidgetProperty = function(field_name, property, val
                 if(children[i].getChildren().length > 0){
                     subChildren = children[i].getChildren();
                     for(j = 0; j < subChildren.length; j ++){
+                        Ti.API.debug("in j " + j + " " + property[0] + " " + value);
                         if(typeof subChildren[j].dbValue !== 'undefined'){
+                            Ti.API.debug("further in j " + j + " " + property[0] + " " + value);
                             if(j == setIndex){
+                                Ti.API.debug("Setting j " + j + " " + property[0] + " " + value);
                                 if(property.length == 1){
                                     this.fieldWrappers[field_name].children[i].children[j][property[0]] = value;
                                 }
@@ -2309,8 +2379,11 @@ FormModule.prototype.setValueWidgetProperty = function(field_name, property, val
                         if(subChildren[j].getChildren().length > 0){
                             subSubChildren = subChildren[j].getChildren();
                             for(k = 0; k < subSubChildren.length; k ++){
+                                Ti.API.debug("in k " + k + " " + property[0] + " " + value);
                                 if(typeof subSubChildren[k].dbValue !== 'undefined'){
+                                    Ti.API.debug("further in k " + k + " " + property[0] + " " + value);
                                     if(k == setIndex){
+                                        Ti.API.debug("Setting k " + k + " " + property[0] + " " + value);
                                         if(property.length == 1){
                                             this.fieldWrappers[field_name].children[i].children[j].children[k][property[0]] = value;
                                         }
@@ -2335,14 +2408,10 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
         descriptionText, selectedIndexes, screenHeight, listHeight, label, labelView, instance, nodeType;
     
     try{
-        
-        
         instance = fieldObject.instance;
         nodeType = instance.bundle;
         
         Ti.API.debug("in multi selector");
-        
-        Ti.API.debug("in multi selector again");
         
         if(instance.widget.type == 'violation_select' && options.length == 0){
             alert("No violations are enforceable for a " + this.type + " at the selected account and time.");
@@ -2366,7 +2435,7 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
             });
             
             this.popupWin.instance = instance;
-            this.popupWin.fieldObject = fieldObject;
+            this.popupWinFieldObject = fieldObject;
             
             opacView = Ti.UI.createView({
                 left : 0,
@@ -2647,16 +2716,16 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                         textValue = textValues.join(', ');
                     }
                         
-                    FormObj[nodeType].popupWin.fieldObject.elements[0].dbValue = dbValues;
-                    FormObj[nodeType].popupWin.fieldObject.elements[0].textValue = textValue;
-                    FormObj[nodeType].popupWin.fieldObject.elements[0].setText(textValue);
+                    FormObj[nodeType].popupWinFieldObject.elements[0].dbValue = dbValues;
+                    FormObj[nodeType].popupWinFieldObject.elements[0].textValue = textValue;
+                    FormObj[nodeType].popupWinFieldObject.elements[0].setText(textValue);
                     
                     if(FormObj[nodeType].popupWin.descriptionLabel != null){                
-                        FormObj[nodeType].popupWin.fieldObject.descriptionLabel.setText(FormObj[nodeType].popupWin.descriptionLabel.text);
+                        FormObj[nodeType].popupWinFieldObject.descriptionLabel.setText(FormObj[nodeType].popupWin.descriptionLabel.text);
                     }
                     
-                    if(FormObj[nodeType].popupWin.fieldObject.elements[0].check_conditional_fields.length > 0){
-                        FormObj[nodeType].setConditionallyRequiredLabels(e.source.instance, FormObj[nodeType].popupWin.fieldObject.elements[0].check_conditional_fields);
+                    if(FormObj[nodeType].popupWinFieldObject.elements[0].check_conditional_fields.length > 0){
+                        FormObj[nodeType].setConditionallyRequiredLabels(e.source.instance, FormObj[nodeType].popupWinFieldObject.elements[0].check_conditional_fields);
                     }
                 }
                 catch(ex){
@@ -2665,7 +2734,7 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                 
                 FormObj[nodeType].popupWin.listView = null;
                 FormObj[nodeType].popupWin.descriptionLabel = null;
-                FormObj[nodeType].fieldObject = null;
+                FormObj[nodeType].popupWinFieldObject = null;
                 
                 FormObj[nodeType].popupWin.close();
                 FormObj[nodeType].popupWin = null;
@@ -2711,7 +2780,7 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
             cancelButton.addEventListener('click', function() {
                 FormObj[nodeType].popupWin.listView = null;
                 FormObj[nodeType].popupWin.descriptionLabel = null;
-                FormObj[nodeType].fieldObject = null;
+                FormObj[nodeType].popupWinFieldObject = null;
                 FormObj[nodeType].popupWin.close();
                 FormObj[nodeType].popupWin = null;
             });
@@ -2769,6 +2838,13 @@ FormModule.prototype.getWindow = function(){"use strict";
         
         this.instances = Omadi.data.getFields(this.type);
         this.regions = Omadi.data.getRegions(this.type);
+        
+        // Reset the conditionally required selection that might have been set previously as this.instances could be cached
+        for(i in this.instances){
+            if(this.instances.hasOwnProperty(i)){
+                this.instances[i].isConditionallyRequired = false;
+            }
+        }
         
         try{
             regionWrappers = this.getRegionWrappers();
@@ -3206,7 +3282,6 @@ FormModule.prototype.changeViolationFieldOptions = function(violation_field_name
                     else{
                         this.setValueWidgetProperty(violation_field_name, ['descriptionLabel', 'text'], "");
                     }
-                    
                     /**** END SETTING CURRENT FORM DEFAULT VALUES *****/
                 }
             }
@@ -3605,7 +3680,6 @@ FormModule.prototype.affectsAnotherConditionalField = function(check_instance){"
 };
 
 FormModule.prototype.setConditionallyRequiredLabels = function(check_instance, check_fields){"use strict";
-    /*global setConditionallyRequiredLabelForInstance*/
     var node, search_criteria, affectedFields, field_name, i, instance;
     
     if(typeof check_fields !== 'undefined'){
@@ -4040,7 +4114,7 @@ exports.photoUploaded = function(e){"use strict";
                 if(FormObj[i].nid == nid){
                     if(typeof FormObj[i].fieldWrappers[field_name] !== 'undefined'){
                         
-                        Ti.API.info("Just inserted a photo uploaded.");
+                        Ti.API.info("Just inserted a photo uploaded with delta: " + delta + ", fid: " + fid + ", field_name: " + field_name);
                         
                         FormObj[i].setValueWidgetProperty(field_name, 'dbValue', fid, delta);
                         FormObj[i].setValueWidgetProperty(field_name, 'fid', fid, delta);

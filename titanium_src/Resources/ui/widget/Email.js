@@ -64,13 +64,13 @@ EmailWidget.prototype.getFieldView = function(){"use strict";
     if(this.instance.settings.cardinality == -1){
         
         addButton = Ti.UI.createButton({
-            title: 'Add another item',
+            title: ' Add another item ',
             right: 15,
             style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
             backgroundGradient: Omadi.display.backgroundGradientGray,
             borderColor: '#999',
             borderWidth: 1,
-            width: 150,
+            width: Ti.UI.SIZE,
             borderRadius: 10,
             color: '#eee',
             top: 10,

@@ -368,11 +368,20 @@ Omadi.push_notifications.init = function() {"use strict";
 };
 
 Omadi.push_notifications.needToLinkUser = function() {"use strict";
-    var loginJson = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
-    if ( typeof loginJson.user.acs_user_id !== 'undefined' && loginJson.user.acs_user_id > '') {
-        return false;
+    var retval, loginJson;
+    
+    retval = false;
+    try{
+        loginJson = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
+        if ( typeof loginJson.user.acs_user_id === 'undefined' || loginJson.user.acs_user_id == null || loginJson.user.acs_user_id == '') {
+            retval = true;
+        }
     }
-    return true;
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in needtolinkuser: " + ex);
+    }
+    
+    return retval;
 };
 
 Omadi.push_notifications.linkACSUserId = function() {"use strict";

@@ -1002,39 +1002,42 @@ ImageWidget.prototype.openCamera = function(imageView) {"use strict";
                                 
                         Widget[imageView.instance.field_name].saveFileInfo(imageView, filePath, thumbPath, 0, event.media.length, 'image');
                         
-                        parentView = Widget[imageView.instance.field_name].elements[0];
-                        
-                        if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
+                        try{
+                            parentView = Widget[imageView.instance.field_name].elements[0];
                             
-                            newImageView = Widget[imageView.instance.field_name].getImageView(parentView, imageView.imageIndex, null, null, filePath, thumbPath, 0);
-                            takeNextPhotoView = Widget[imageView.instance.field_name].getImageView(parentView, imageView.imageIndex + 1, null, null, null, null, 0);
-                            
-                            parentView.add(newImageView);
-                            parentView.add(takeNextPhotoView);
-                            
-                            parentView.setContentWidth(parentView.getContentWidth() + 110);
-                            parentView.remove(imageView);
-                            imageView = null;
-                            
-                            // Allow the newImageView time to show up, and then click it
-                            setTimeout(function(){
-                                 takeNextPhotoView.fireEvent('click');
-                                 Omadi.display.doneLoading();
-                            }, 100);
+                            if (imageView.instance.settings.cardinality == -1 || (imageView.imageIndex + 1) < imageView.instance.settings.cardinality) {
+                                
+                                newImageView = Widget[imageView.instance.field_name].getImageView(parentView, imageView.imageIndex, null, null, filePath, thumbPath, 0);
+                                takeNextPhotoView = Widget[imageView.instance.field_name].getImageView(parentView, imageView.imageIndex + 1, null, null, null, null, 0);
+                                
+                                parentView.add(newImageView);
+                                parentView.add(takeNextPhotoView);
+                                
+                                parentView.setContentWidth(parentView.getContentWidth() + 110);
+                                parentView.remove(imageView);
+                                imageView = null;
+                                
+                                // Allow the newImageView time to show up, and then click it
+                                setTimeout(function(){
+                                     takeNextPhotoView.fireEvent('click');
+                                     Omadi.display.doneLoading();
+                                }, 100);
+                            }
+                            else{
+                                
+                                newImageView = Widget[imageView.instance.field_name].getImageView(parentView, imageView.imageIndex, null, null, filePath, thumbPath, 0);
+                                
+                                parentView.add(newImageView);
+                                parentView.remove(imageView);
+                                imageView = null;
+                                
+                                Omadi.display.doneLoading();
+                            }
                         }
-                        else{
-                            
-                            newImageView = Widget[imageView.instance.field_name].getImageView(parentView, imageView.imageIndex, null, null, filePath, thumbPath, 0);
-                            
-                            parentView.add(newImageView);
-                            parentView.remove(imageView);
-                            imageView = null;
-                            
-                            Omadi.display.doneLoading();
+                        catch(ex1){
+                            Omadi.service.sendErrorReport("Exception setting up another imageview in iOS: " + ex1);
                         }
                         
-                        // Make sure we never lose a photo due to a crash
-                        Widget[imageView.instance.field_name].formObj.saveForm('continuous');
                     }
                     catch(ex){
                         Omadi.service.sendErrorReport("Exception saving iOS photo: " + ex);
