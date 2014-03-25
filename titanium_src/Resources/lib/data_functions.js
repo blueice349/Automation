@@ -336,25 +336,30 @@ Omadi.data.getNodeTitle = function(node) {"use strict";
 Omadi.data.deleteContinuousNodes = function(){"use strict";
   var db, result, deleteNids, i;
   
-  Ti.App.saveContinually = false;
-  
-  deleteNids = [];
-  db = Omadi.utils.openMainDatabase();
-  
-  result = db.execute("SELECT nid FROM node WHERE flag_is_updated = 4");  
-  
-  while(result.isValidRow()){
-      deleteNids.push(result.fieldByName('nid'));
-      result.next();
-  }
-  
-  result.close();
-  db.close();
-  
-  for(i = 0; i < deleteNids.length; i ++){
+  try{
+      Ti.App.saveContinually = false;
       
-      Ti.API.debug("DELETING NODE with nid: " + deleteNids[i]);
-      Omadi.data.deleteNode(deleteNids[i]);
+      deleteNids = [];
+      db = Omadi.utils.openMainDatabase();
+      
+      result = db.execute("SELECT nid FROM node WHERE flag_is_updated = 4");  
+      
+      while(result.isValidRow()){
+          deleteNids.push(result.fieldByName('nid'));
+          result.next();
+      }
+      
+      result.close();
+      db.close();
+      
+      for(i = 0; i < deleteNids.length; i ++){
+          
+          Ti.API.debug("DELETING NODE with nid: " + deleteNids[i]);
+          Omadi.data.deleteNode(deleteNids[i]);
+      }
+  }
+  catch(ex){
+      Omadi.service.sendErrorReport("Exception deleteContinuousNodes: " + ex);
   }
 };
 
@@ -3419,12 +3424,11 @@ Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
 
         //Node type inserts
         if (Omadi.service.fetchedJSON.node_type.insert) {
-            //Multiple nodes inserts
             if (Omadi.service.fetchedJSON.node_type.insert.length) {
 
                 for ( i = 0; i < Omadi.service.fetchedJSON.node_type.insert.length; i++) {
                     type = Omadi.service.fetchedJSON.node_type.insert[i].type;
-                    
+
                     if (type != 'user') {
                         
                         //Increment the progress bar
@@ -3437,9 +3441,16 @@ Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
                             Ti.API.debug("CREATING TABLE " + type);
                             queries.push("CREATE TABLE " + type + " ('nid' INTEGER PRIMARY KEY NOT NULL UNIQUE )");
                         }
-
-                        title_fields = Omadi.service.fetchedJSON.node_type.insert[i].data.title_fields;
-                        data = Omadi.service.fetchedJSON.node_type.insert[i].data;
+                        
+                        data = [];
+                        if(typeof Omadi.service.fetchedJSON.node_type.insert[i].data !== 'undefined'){
+                            data = Omadi.service.fetchedJSON.node_type.insert[i].data;
+                        }
+                        
+                        title_fields = [];
+                        if(typeof data.title_fields !== 'undefined'){
+                            title_fields = data.title_fields;        
+                        }
                         
                         childForms = '';
                         if(typeof Omadi.service.fetchedJSON.node_type.insert[i].child_forms !== 'undefined'){
@@ -3563,6 +3574,7 @@ Omadi.data.processNodeTypeJson = function(mainDB) {"use strict";
     }
     catch(ex) {
         alert("Installing form types: " + ex);
+        Omadi.service.sendErrorReport("FATAL Exception installing form types: " + ex);
     }
 };
 

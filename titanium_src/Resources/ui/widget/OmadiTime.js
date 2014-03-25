@@ -1,7 +1,8 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget, Omadi;
+var Widget, Omadi, dateWindow;
 Widget = {};
+dateWindow = null;
 
 function OmadiTimeWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
@@ -180,250 +181,255 @@ OmadiTimeWidget.prototype.getNewElement = function(index){"use strict";
 
 OmadiTimeWidget.prototype.displayPicker = function(element) {"use strict";
 
-    var dateWindow, titleLabel, minDate, opacView, widgetDate, okButton, clearButton, wrapperView, 
+    var titleLabel, minDate, opacView, widgetDate, okButton, clearButton, wrapperView, 
         buttonView, topButtonsView, time_picker, doneButton, cancelButton;
-
-    if (Ti.App.isAndroid) {
-        Ti.UI.Android.hideSoftKeyboard();
-    }
-
-    dateWindow = Ti.UI.createWindow({
-        orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
-        modal: true,
-        navBarHidden: true
-    });
-
-    opacView = Ti.UI.createView({
-        left : 0,
-        right : 0,
-        top : 0,
-        bottom : 0
-    });
-
-    dateWindow.add(opacView);
-
-    wrapperView = Ti.UI.createView({
-        layout : 'vertical',
-        height : Ti.UI.SIZE,
-        width : Ti.UI.SIZE
-    });
-
-    topButtonsView = Ti.UI.createView({
-        bottom : 0,
-        height : 44,
-        backgroundGradient : {
-            type : 'linear',
-            startPoint : {
-                x : '50%',
-                y : '0%'
-            },
-            endPoint : {
-                x : '50%',
-                y : '100%'
-            },
-            colors : [{
-                color : '#ccc',
-                offset : 0.0
-            }, {
-                color : '#999',
-                offset : 1.0
-            }]
+    
+    try{
+        if (Ti.App.isAndroid) {
+            Ti.UI.Android.hideSoftKeyboard();
         }
-    });
-
-    wrapperView.add(topButtonsView);
-
-    okButton = Ti.UI.createLabel({
-        text : 'Done',
-        right : 10,
-        width : 80,
-        height: 35,
-        style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
-        color : '#fff',
-        borderRadius : 5,
-        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
-        font : {
-            fontSize : 14,
-            fontWeight: 'bold'
-        },
-        borderWidth : 1,
-        borderColor : '#555',
-        backgroundGradient : {
-            type : 'linear',
-            startPoint : {
-                x : '50%',
-                y : '0%'
-            },
-            endPoint : {
-                x : '50%',
-                y : '100%'
-            },
-            colors : [{
-                color : '#999',
-                offset : 0.0
-            }, {
-                color : '#444',
-                offset : 1.0
-            }]
-        },
-        instance: instance
-    });
-    topButtonsView.add(okButton);
-
-    cancelButton = Ti.UI.createLabel({
-        text : 'Cancel',
-        width : 80,
-        left : 10,
-        height: 35,
-        element : element,
-        style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
-        color : '#fff',
-        borderRadius : 5,
-        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
-        font : {
-            fontSize : 14,
-            fontWeight: 'bold'
-        },
-        borderWidth : 1,
-        borderColor : '#555',
-        backgroundGradient : {
-            type : 'linear',
-            startPoint : {
-                x : '50%',
-                y : '0%'
-            },
-            endPoint : {
-                x : '50%',
-                y : '100%'
-            },
-            colors : [{
-                color : '#999',
-                offset : 0.0
-            }, {
-                color : '#444',
-                offset : 1.0
-            }]
-        }
-    });
-
-    clearButton = Ti.UI.createLabel({
-        text : 'Clear',
-        width : 80,
-        left : 100,
-        height: 35,
-        element : element,
-        style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
-        color : '#fff',
-        borderRadius : 5,
-        textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
-        font : {
-            fontSize : 14,
-            fontWeight: 'bold'
-        },
-        borderWidth : 1,
-        borderColor : '#555',
-        backgroundGradient : {
-            type : 'linear',
-            startPoint : {
-                x : '50%',
-                y : '0%'
-            },
-            endPoint : {
-                x : '50%',
-                y : '100%'
-            },
-            colors : [{
-                color : '#999',
-                offset : 0.0
-            }, {
-                color : '#444',
-                offset : 1.0
-            }]
-        },
-        instance: instance
-    });
-
-    topButtonsView.add(cancelButton);
-    topButtonsView.add(clearButton);
-
-    widgetDate = element.jsDate;
-
-    time_picker = Titanium.UI.createPicker({
-        useSpinner : true,
-        borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
-        value : widgetDate,
-        font : {
-            fontSize : 18
-        },
-        type : Ti.UI.PICKER_TYPE_TIME,
-        color : '#000000',
-        timezone : null,
-        element : element,
-        height : Ti.UI.SIZE, 
-        width : '100%',
-        format24 : (Omadi.utils.getTimeFormat().indexOf('H') !== -1 ? true : false)  // Only available on Android
-    });
-
-    // This sounds really stupid - and it is! If this onchange listener isn't in place, 
-    // then the date won't actually be recorded
-    time_picker.addEventListener('change', function(e) {
-        // Empty, but necessary
-    });
     
-    okButton.time_picker = time_picker;
-    okButton.element = element;
-    clearButton.element = element;
+        dateWindow = Ti.UI.createWindow({
+            orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
+            modal: true,
+            navBarHidden: true
+        });
     
-    wrapperView.add(time_picker);
-
-    okButton.addEventListener('click', function(e) {
-        var newDate, i, callback;
-        try{
-            newDate = e.source.time_picker.getValue();
-            e.source.element.jsDate = newDate;
-            e.source.element.textValue = Omadi.utils.PHPFormatDate('g:i A', Math.ceil(newDate.getTime() / 1000));
-            e.source.element.dbValue = Widget[e.source.instance.field_name].dateToSeconds(e.source.element.textValue);
+        opacView = Ti.UI.createView({
+            left : 0,
+            right : 0,
+            top : 0,
+            bottom : 0
+        });
     
-            e.source.element.setText(e.source.element.textValue);
+        dateWindow.add(opacView);
     
-            if (e.source.element.check_conditional_fields.length > 0) {
-                Ti.API.debug("Checking conditionally required");
-                Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+        wrapperView = Ti.UI.createView({
+            layout : 'vertical',
+            height : Ti.UI.SIZE,
+            width : Ti.UI.SIZE
+        });
+    
+        topButtonsView = Ti.UI.createView({
+            bottom : 0,
+            height : 44,
+            backgroundGradient : {
+                type : 'linear',
+                startPoint : {
+                    x : '50%',
+                    y : '0%'
+                },
+                endPoint : {
+                    x : '50%',
+                    y : '100%'
+                },
+                colors : [{
+                    color : '#ccc',
+                    offset : 0.0
+                }, {
+                    color : '#999',
+                    offset : 1.0
+                }]
             }
-        }
-        catch(ex){
-            Omadi.service.sendErrorReport("Exception in ok button click in omadi time: " + ex);
-        }
-        
-        dateWindow.close();
-    });
-
-    clearButton.addEventListener('click', function(e) {
-        try{
-            e.source.element.dbValue = null;
-            e.source.element.textValue = "";
+        });
     
-            e.source.element.setText(e.source.element.textValue);
+        wrapperView.add(topButtonsView);
     
-            if (e.source.element.check_conditional_fields.length > 0) {
-                Ti.API.debug("Checking conditionally required");
-                Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
-            }  
-        }
-        catch(ex){
-            Omadi.service.sendErrorReport("Exception in omadi time clear button: " + ex);
-        }
+        okButton = Ti.UI.createLabel({
+            text : 'Done',
+            right : 10,
+            width : 80,
+            height: 35,
+            style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+            color : '#fff',
+            borderRadius : 5,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+            font : {
+                fontSize : 14,
+                fontWeight: 'bold'
+            },
+            borderWidth : 1,
+            borderColor : '#555',
+            backgroundGradient : {
+                type : 'linear',
+                startPoint : {
+                    x : '50%',
+                    y : '0%'
+                },
+                endPoint : {
+                    x : '50%',
+                    y : '100%'
+                },
+                colors : [{
+                    color : '#999',
+                    offset : 0.0
+                }, {
+                    color : '#444',
+                    offset : 1.0
+                }]
+            },
+            instance: element.instance
+        });
+        topButtonsView.add(okButton);
+    
+        cancelButton = Ti.UI.createLabel({
+            text : 'Cancel',
+            width : 80,
+            left : 10,
+            height: 35,
+            element : element,
+            style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+            color : '#fff',
+            borderRadius : 5,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+            font : {
+                fontSize : 14,
+                fontWeight: 'bold'
+            },
+            borderWidth : 1,
+            borderColor : '#555',
+            backgroundGradient : {
+                type : 'linear',
+                startPoint : {
+                    x : '50%',
+                    y : '0%'
+                },
+                endPoint : {
+                    x : '50%',
+                    y : '100%'
+                },
+                colors : [{
+                    color : '#999',
+                    offset : 0.0
+                }, {
+                    color : '#444',
+                    offset : 1.0
+                }]
+            }
+        });
+    
+        clearButton = Ti.UI.createLabel({
+            text : 'Clear',
+            width : 80,
+            left : 100,
+            height: 35,
+            element : element,
+            style : Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+            color : '#fff',
+            borderRadius : 5,
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+            font : {
+                fontSize : 14,
+                fontWeight: 'bold'
+            },
+            borderWidth : 1,
+            borderColor : '#555',
+            backgroundGradient : {
+                type : 'linear',
+                startPoint : {
+                    x : '50%',
+                    y : '0%'
+                },
+                endPoint : {
+                    x : '50%',
+                    y : '100%'
+                },
+                colors : [{
+                    color : '#999',
+                    offset : 0.0
+                }, {
+                    color : '#444',
+                    offset : 1.0
+                }]
+            },
+            instance: element.instance
+        });
+    
+        topButtonsView.add(cancelButton);
+        topButtonsView.add(clearButton);
+    
+        widgetDate = element.jsDate;
+    
+        time_picker = Titanium.UI.createPicker({
+            useSpinner : true,
+            borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
+            value : widgetDate,
+            font : {
+                fontSize : 18
+            },
+            type : Ti.UI.PICKER_TYPE_TIME,
+            color : '#000000',
+            timezone : null,
+            element : element,
+            height : Ti.UI.SIZE, 
+            width : '100%',
+            format24 : (Omadi.utils.getTimeFormat().indexOf('H') !== -1 ? true : false)  // Only available on Android
+        });
+    
+        // This sounds really stupid - and it is! If this onchange listener isn't in place, 
+        // then the date won't actually be recorded
+        time_picker.addEventListener('change', function(e) {
+            // Empty, but necessary
+        });
         
-        dateWindow.close();
-    });
-
-    cancelButton.addEventListener('click', function() {
-        dateWindow.close();
-    });
-
-    dateWindow.add(wrapperView);
-
-    dateWindow.open();
+        okButton.time_picker = time_picker;
+        okButton.element = element;
+        clearButton.element = element;
+        
+        wrapperView.add(time_picker);
+    
+        okButton.addEventListener('click', function(e) {
+            var newDate, i, callback;
+            try{
+                newDate = e.source.time_picker.getValue();
+                e.source.element.jsDate = newDate;
+                e.source.element.textValue = Omadi.utils.PHPFormatDate('g:i A', Math.ceil(newDate.getTime() / 1000));
+                e.source.element.dbValue = Widget[e.source.instance.field_name].dateToSeconds(e.source.element.textValue);
+        
+                e.source.element.setText(e.source.element.textValue);
+        
+                if (e.source.element.check_conditional_fields.length > 0) {
+                    Ti.API.debug("Checking conditionally required");
+                    Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+                }
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception in ok button click in omadi time: " + ex);
+            }
+            
+            dateWindow.close();
+        });
+    
+        clearButton.addEventListener('click', function(e) {
+            try{
+                e.source.element.dbValue = null;
+                e.source.element.textValue = "";
+        
+                e.source.element.setText(e.source.element.textValue);
+        
+                if (e.source.element.check_conditional_fields.length > 0) {
+                    Ti.API.debug("Checking conditionally required");
+                    Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, e.source.check_conditional_fields);
+                }  
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception in omadi time clear button: " + ex);
+            }
+            
+            dateWindow.close();
+        });
+    
+        cancelButton.addEventListener('click', function() {
+            dateWindow.close();
+        });
+    
+        dateWindow.add(wrapperView);
+    
+        dateWindow.open();
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in omadi time display picker: " + ex);
+    }
 };
 
 OmadiTimeWidget.prototype.dateToSeconds = function(time_text) {"use strict";

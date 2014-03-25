@@ -1,8 +1,12 @@
 /*jslint eqeq:true, plusplus: true*/
 
-var Widget, Omadi;
+var Widget, Omadi, dateWindow, date_picker, time_picker, innerWrapperView, wrapperView;
 Widget = {};
-
+dateWindow = null;
+date_picker = null;
+time_picker = null;
+innerWrapperView = null;
+wrapperView = null;
 
 function DatestampWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
@@ -247,9 +251,8 @@ DatestampWidget.prototype.getNewElement = function(index){"use strict";
 DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime, origDBValue) {"use strict";
 
     var titleLabel, minDate, opacView, maxDate, 
-        okButton, clearButton, wrapperView, buttonView, topButtonsView, 
-        widgetYear, date_picker, time_picker, doneButton, cancelButton, 
-        innerWrapperView;
+        okButton, clearButton, buttonView, topButtonsView, 
+        widgetYear, doneButton, cancelButton;
     
     Ti.API.debug("in display picker");
     
@@ -257,7 +260,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
         Ti.UI.Android.hideSoftKeyboard();
     }
     
-    this.dateWindow = Ti.UI.createWindow({
+    dateWindow = Ti.UI.createWindow({
         orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
         modal: true,
         navBarHidden: true,
@@ -274,7 +277,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
         bottom : 0
     });
 
-    this.dateWindow.add(opacView);
+    dateWindow.add(opacView);
     
     // Use a scrollview with ios as the time picker isn't shown in landscape mode
     wrapperView = Ti.UI.createView({
@@ -282,7 +285,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
        height: Ti.UI.SIZE
     });
 
-    this.dateWindow.innerWrapperView = Ti.UI.createView({
+    innerWrapperView = Ti.UI.createView({
         layout : 'vertical',
         height : Ti.UI.SIZE,
         width : Ti.UI.FILL,
@@ -457,7 +460,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
 
     topButtonsView.add(clearButton);
     cancelButton.addEventListener('click', function(e) {
-        Widget[e.source.instance.field_name].dateWindow.close();
+        dateWindow.close();
     });
 
     widgetYear = jsDate.getFullYear();
@@ -475,7 +478,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
     maxDate.setDate(31);
     
     if(type == 'date'){
-        this.dateWindow.date_picker = Titanium.UI.createPicker({
+        date_picker = Titanium.UI.createPicker({
             useSpinner : true,
             borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
             value : jsDate,
@@ -489,21 +492,21 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
         });
         
         if(Ti.App.isAndroid){
-            this.dateWindow.date_picker.width = Ti.UI.SIZE;
+            date_picker.width = Ti.UI.SIZE;
         }
         
         // This sounds really stupid - and it is! If this onchange listener isn't in place, 
         // then the date won't actually be recorded
-        this.dateWindow.date_picker.addEventListener('change', function(e){
+        date_picker.addEventListener('change', function(e){
           // Empty, but necessary
           // do not remove this change listener
         });
 
-        this.dateWindow.innerWrapperView.add(this.dateWindow.date_picker);
+        innerWrapperView.add(date_picker);
     }
     
     if (showTime && type == 'time') {
-        this.dateWindow.time_picker = Titanium.UI.createPicker({
+        time_picker = Titanium.UI.createPicker({
             useSpinner : true,
             borderStyle : Titanium.UI.INPUT_BORDERSTYLE_ROUNDED,
             value : jsDate,
@@ -517,27 +520,25 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
         });
         
         if(Ti.App.isAndroid){
-            this.dateWindow.time_picker.width = Ti.UI.SIZE;
+            time_picker.width = Ti.UI.SIZE;
         }
         
-        this.dateWindow.innerWrapperView.add(this.dateWindow.time_picker);
+        innerWrapperView.add(time_picker);
 
         // This sounds really stupid - and it is! If this onchange listener isn't in place, 
         // then the date won't actually be recorded
-        this.dateWindow.time_picker.addEventListener('change', function(e){ 
+        time_picker.addEventListener('change', function(e){ 
            // Empty, but necessary
         });
     }
     
     okButton.addEventListener('click', function(e) {
-        var year, month, date, hour, minute, second, newDate, i, callback, pickerValue, datePickerValue, dbValue, textValue, now, dateWindow;
+        var year, month, date, hour, minute, second, newDate, i, callback, pickerValue, datePickerValue, dbValue, textValue, now;
         
         try{
-            dateWindow = Widget[e.source.instance.field_name].dateWindow;
-            
-            if(typeof dateWindow.date_picker !== 'undefined'){
+            if(date_picker !== null){
                 
-                pickerValue = dateWindow.date_picker.getValue();
+                pickerValue = date_picker.getValue();
                 
                 if (e.source.showTime) {
                     if(e.source.origDBValue === null){
@@ -559,8 +560,8 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
                 
                 newDate = pickerValue;
             }
-            else if(typeof dateWindow.time_picker !== 'undefined'){
-                pickerValue = dateWindow.time_picker.getValue();
+            else if(time_picker !== null){
+                pickerValue = time_picker.getValue();
                 
                 if(e.source.origDBValue === null){
                     // The clear button was pressed at some point
@@ -614,19 +615,22 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
         }
         
         try{
-            Widget[e.source.instance.field_name].dateWindow.close();
+            dateWindow.close();
             
             if(type == 'time'){
-                Widget[e.source.instance.field_name].dateWindow.innerWrapperView.remove(Widget[e.source.instance.field_name].dateWindow.time_picker);
-                Widget[e.source.instance.field_name].dateWindow.time_picker = null;
+                innerWrapperView.remove(time_picker);
+                time_picker = null;
             }
             else{
-                Widget[e.source.instance.field_name].dateWindow.innerWrapperView.remove(Widget[e.source.instance.field_name].dateWindow.date_picker);
-                Widget[e.source.instance.field_name].dateWindow.date_picker = null;
+                innerWrapperView.remove(date_picker);
+                date_picker = null;
             }
             
-            Widget[e.source.instance.field_name].dateWindow.remove(Widget[e.source.instance.field_name].dateWindow.innerWrapperView);
-            Widget[e.source.instance.field_name].dateWindow = null;
+            wrapperView.remove(innerWrapperView);
+            dateWindow.remove(wrapperView);
+            innerWrapperView = null;
+            wrapperView = null;
+            dateWindow = null; 
         }
         catch(ex1){
             Omadi.service.sendErrorReport("Date ok button closing window problem: " + ex1);
@@ -666,19 +670,22 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
         }
 
         try{
-            Widget[e.source.instance.field_name].dateWindow.close();
+            dateWindow.close();
             
             if(type == 'time'){
-                Widget[e.source.instance.field_name].dateWindow.innerWrapperView.remove(Widget[e.source.instance.field_name].dateWindow.time_picker);
-                Widget[e.source.instance.field_name].dateWindow.time_picker = null;
+                innerWrapperView.remove(time_picker);
+                time_picker = null;
             }
             else{
-                Widget[e.source.instance.field_name].dateWindow.innerWrapperView.remove(Widget[e.source.instance.field_name].dateWindow.date_picker);
-                Widget[e.source.instance.field_name].dateWindow.date_picker = null;
+                innerWrapperView.remove(date_picker);
+                date_picker = null;
             }
             
-            Widget[e.source.instance.field_name].dateWindow.remove(Widget[e.source.instance.field_name].dateWindow.innerWrapperView);
-            Widget[e.source.instance.field_name].dateWindow = null; 
+            wrapperView.remove(innerWrapperView);
+            dateWindow.remove(wrapperView);
+            innerWrapperView = null;
+            wrapperView = null;
+            dateWindow = null;  
         }
         catch(ex1){
             Omadi.service.sendErrorReport("Date clear button closing window problem: " + ex1);
@@ -688,29 +695,32 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
     cancelButton.addEventListener('click', function(e) {
 
         try{
-            Widget[e.source.instance.field_name].dateWindow.close();
+            dateWindow.close();
             
             if(type == 'time'){
-                Widget[e.source.instance.field_name].dateWindow.innerWrapperView.remove(Widget[e.source.instance.field_name].dateWindow.time_picker);
-                Widget[e.source.instance.field_name].dateWindow.time_picker = null;
+                innerWrapperView.remove(time_picker);
+                time_picker = null;
             }
             else{
-                Widget[e.source.instance.field_name].dateWindow.innerWrapperView.remove(Widget[e.source.instance.field_name].dateWindow.date_picker);
-                Widget[e.source.instance.field_name].dateWindow.date_picker = null;
+                innerWrapperView.remove(date_picker);
+                date_picker = null;
             }
             
-            Widget[e.source.instance.field_name].dateWindow.remove(Widget[e.source.instance.field_name].dateWindow.innerWrapperView);
-            Widget[e.source.instance.field_name].dateWindow = null; 
+            wrapperView.remove(innerWrapperView);
+            dateWindow.remove(wrapperView);
+            innerWrapperView = null;
+            wrapperView = null;
+            dateWindow = null; 
         }
         catch(ex1){
             Omadi.service.sendErrorReport("Date cancel button closing window problem: " + ex1);
         }
     });
 
-    wrapperView.add(this.dateWindow.innerWrapperView);
-    this.dateWindow.add(wrapperView);
+    wrapperView.add(innerWrapperView);
+    dateWindow.add(wrapperView);
 
-    this.dateWindow.open();
+    dateWindow.open();
 };
 
 DatestampWidget.prototype.cleanUp = function(){"use strict";

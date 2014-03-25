@@ -1467,7 +1467,8 @@ Omadi.display.setImageViewVideoThumbnail = function(imageView, nid, file_id, fie
                     imageView.setImage(this.responseData);
                 }
                 catch(ex){
-                    Omadi.service.sendErrorReport("Exception displaying video thumbnail: " + ex);
+                    //Omadi.service.sendErrorReport("Exception displaying video thumbnail: " + ex);
+                    imageView.setImage('/images/video_loading.png');
                 }
                 
                 imageView.height = null;

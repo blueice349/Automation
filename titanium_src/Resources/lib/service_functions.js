@@ -565,8 +565,11 @@ Omadi.service.sendDataOnError = function(e){"use strict";
                     buttonNames : ['OK'],
                     message : "You have been logged out. Your latest data was saved, and it will be sent to the server after you login again."
                 });
-    
-                Omadi.service.sendErrorReport('User logged out with code ' + this.status);
+                
+                try{
+                    Omadi.service.sendErrorReport('User logged out with code ' + this.status + " " + e.error);
+                }
+                catch(none){}
     
                 dialog.show();
     
@@ -592,7 +595,10 @@ Omadi.service.sendDataOnError = function(e){"use strict";
         }
         else{
             
-            Omadi.service.sendErrorReport("Failed to send data: " + e.error);
+            try{
+                Omadi.service.sendErrorReport('Showed the user a network error dialog: ' + this.status + " " + e.error);
+            }
+            catch(none){}
             
             dialog = Titanium.UI.createAlertDialog({
                 title : 'Network Error',
@@ -607,8 +613,6 @@ Omadi.service.sendDataOnError = function(e){"use strict";
             });
     
             dialog.show();
-            
-            Omadi.service.sendErrorReport('User logged out with code ' + this.status);
         }
         
         Omadi.service.setSendingData(false);
