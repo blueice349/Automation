@@ -1270,7 +1270,8 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
         lastUploadStartTimestamp, tmpImageView, 
         blobImage, maxDiff, imageData, uploadPhoto,
         numFilesReadyToUpload, payload, cookie, 
-        origAppStartMillis, currentWinStartMillis, windowURL;
+        origAppStartMillis, currentWinStartMillis, windowURL,
+        isSendingData;
         
     if(typeof isBackground === 'undefined'){
         isBackground = false;
@@ -1335,7 +1336,10 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
         
         // Make sure no images are currently uploading
         // Maximum of 90 seconds apart for images uploading
-        if (!isUploading || (nowTimestamp - lastUploadStartTimestamp) > 90) {
+        // Also make sure form data is not being saved - mainly because of photos being messed up taken on a form update
+        isSendingData = Omadi.service.isSendingData();
+        
+        if (!isSendingData && (!isUploading || (nowTimestamp - lastUploadStartTimestamp) > 90)){
 
             numFilesReadyToUpload = Omadi.data.getNumFilesReadyToUpload();
             
@@ -1474,7 +1478,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
             }
         }
         else{
-            Ti.API.debug("now: " + nowTimestamp + ", last: " + lastUploadStartTimestamp + ", isUploadin: " + isUploading);
+            Ti.API.debug("now: " + nowTimestamp + ", last: " + lastUploadStartTimestamp + ", isUploading: " + isUploading + ", isSendingData: " + isSendingData);
         }
     }
 };

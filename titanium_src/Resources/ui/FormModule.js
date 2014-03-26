@@ -1,7 +1,10 @@
 /*jslint eqeq:true,plusplus:true*/
 
-var FormObj, Omadi, ActiveFormObj, popupWin, popupWinFieldObject;
+var FormObj, Omadi, ActiveFormObj, popupWin, popupWinListView, popupWinFieldObject, popupWinDescriptionLabel;
 FormObj = {};
+popupWin = null;
+popupWinListView = null;
+popupWinDescriptionLabel = null;
 
 function rules_field_passed_time_check(time_rule, timestamp) {"use strict";
     var retval, timestamp_day, timestamp_midnight, days, day_rule, values, start_time, end_time;
@@ -2464,7 +2467,7 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                 listHeight = screenHeight - 65;
             }
             
-            popupWin.listView = Titanium.UI.createTableView({
+            popupWinListView = Titanium.UI.createTableView({
                 data : [],
                 scrollable : true,
                 height: listHeight,
@@ -2521,12 +2524,12 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                 data.push(itemRow);
             }
             
-            popupWin.listView.setData(data);
+            popupWinListView.setData(data);
             
-            popupWin.listView.addEventListener('click', function(e) {
+            popupWinListView.addEventListener('click', function(e) {
                 try{
                     if (!e.row.isSelected) {
-                        popupWin.listView.data[0].rows[e.index].isSelected = true;
+                        popupWinListView.data[0].rows[e.index].isSelected = true;
                         e.row.label.setColor('#fff');
                         e.row.setBackgroundColor(color_set);
                         
@@ -2534,14 +2537,14 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                         selectedIndexes.push(e.index);
                     }
                     else {
-                        popupWin.listView.data[0].rows[e.index].isSelected = false;
+                        popupWinListView.data[0].rows[e.index].isSelected = false;
                         e.row.setBackgroundColor(color_unset);
                         e.row.label.setColor('#000');
                         numItemsSelected--;
                         selectedIndexes.splice(selectedIndexes.indexOf(e.index), 1);
                     }
                     
-                    if(popupWin.descriptionLabel != null){
+                    if(popupWinDescriptionLabel != null){
                         if(numItemsSelected == 1){
                          
                             if(options[selectedIndexes[0]].description > ""){
@@ -2560,7 +2563,7 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                             descriptionText = "";
                         }
                         
-                        popupWin.descriptionLabel.setText(descriptionText);
+                        popupWinDescriptionLabel.setText(descriptionText);
                     }
                 }
                 catch(ex){
@@ -2633,7 +2636,7 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                     descriptionText = "";
                 }
                 
-                popupWin.descriptionLabel = Titanium.UI.createLabel({
+                popupWinDescriptionLabel = Titanium.UI.createLabel({
                     ellipsize : false,
                     wordWrap : true,
                     font : {
@@ -2647,10 +2650,10 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                     right: '2%'
                 });
                 
-                descriptionView.add(popupWin.descriptionLabel);
+                descriptionView.add(popupWinDescriptionLabel);
             }
             else{
-                popupWin.descriptionLabel = null;
+                popupWinDescriptionLabel = null;
             }
             
             okButton = Ti.UI.createLabel({
@@ -2692,7 +2695,7 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
             topButtonsView.add(okButton);
             
             okButton.addEventListener('click', function(e) {
-                var i, aux_ret, valid_return, data, dbValues, textValue, textValues, listView;
+                var i, aux_ret, valid_return, data, dbValues, textValue, textValues;
                 aux_ret = [];
                 valid_return = [];
                 dbValues = [];
@@ -2700,13 +2703,12 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                 textValues = [];
                 
                 try{
-                    listView = popupWin.listView;
-                    
-                    for (i = 0; i < listView.data[0].rows.length; i++) {
-                        if (listView.data[0].rows[i].isSelected) {
+
+                    for (i = 0; i < popupWinListView.data[0].rows.length; i++) {
+                        if (popupWinListView.data[0].rows[i].isSelected) {
                             
-                            textValues.push(listView.data[0].rows[i].textValue);
-                            dbValues.push(listView.data[0].rows[i].dbValue);   
+                            textValues.push(popupWinListView.data[0].rows[i].textValue);
+                            dbValues.push(popupWinListView.data[0].rows[i].dbValue);   
                         }
                     }
                     
@@ -2718,8 +2720,8 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                     popupWinFieldObject.elements[0].textValue = textValue;
                     popupWinFieldObject.elements[0].setText(textValue);
                     
-                    if(popupWin.descriptionLabel != null){                
-                        popupWinFieldObject.descriptionLabel.setText(popupWin.descriptionLabel.text);
+                    if(popupWinDescriptionLabel != null){                
+                        popupWinFieldObject.descriptionLabel.setText(popupWinDescriptionLabel.text);
                     }
                     
                     if(popupWinFieldObject.elements[0].check_conditional_fields.length > 0){
@@ -2731,8 +2733,8 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                 }
                 
                 try{
-                    popupWin.listView = null;
-                    popupWin.descriptionLabel = null;
+                    popupWinListView = null;
+                    popupWinDescriptionLabel = null;
                     popupWinFieldObject = null;
                     
                     popupWin.close();
@@ -2782,8 +2784,8 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
             topButtonsView.add(cancelButton);
             cancelButton.addEventListener('click', function() {
                 try{
-                    popupWin.listView = null;
-                    popupWin.descriptionLabel = null;
+                    popupWinListView = null;
+                    popupWinDescriptionLabel = null;
                     popupWinFieldObject = null;
                     popupWin.close();
                     popupWin = null;
@@ -2795,7 +2797,7 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
             
             wrapperView.add(topButtonsView);
             wrapperView.add(descriptionView);
-            wrapperView.add(popupWin.listView);
+            wrapperView.add(popupWinListView);
             
             popupWin.open();
         }
@@ -3140,167 +3142,196 @@ FormModule.prototype.changeViolationFieldOptions = function(violation_field_name
     var db, result, options, textOptions, i, j, violation_instance, parentNid, parentNidDBValues, reference_field_name, 
         rules_parent_field_name, parentNodeType, rulesData, dataRow, node_type, tids, used_tids, all_others_row,
         rules_violation_time_field_name, violationTimestampValues, violation_timestamp, violationTerms, violation_term, 
-        descriptions, violationDBValues, isViolationValid, textValues, violationTextValues;
+        descriptions, violationDBValues, isViolationValid, textValues, violationTextValues, origRulesData;
     /*global rules_field_passed_time_check*/
     
     try{
-        node_type = this.type;
         
-        violation_instance = this.instances[violation_field_name];
-        
-        options = this.getTaxonomyOptions(violation_instance, false);
-        
-        violationTerms = [];
-        for(i = 0; i < options.length; i ++){
-            violationTerms[options[i].dbValue] = options[i];
+        try{
+            node_type = this.type;
+            
+            violation_instance = this.instances[violation_field_name];
+            
+            options = this.getTaxonomyOptions(violation_instance, false);
+            
+            violationTerms = [];
+            for(i = 0; i < options.length; i ++){
+                violationTerms[options[i].dbValue] = options[i];
+            }
+            
+            reference_field_name = violation_instance.widget.rules_field_name;
+            rules_parent_field_name = violation_instance.widget.rules_parent_field_name;
+            rules_violation_time_field_name = violation_instance.widget.rules_violation_time_field_name;
+            
+            parentNidDBValues = this.getDBValues(this.fieldWrappers[reference_field_name]);
+         
+            violationTimestampValues = this.getDBValues(this.fieldWrappers[rules_violation_time_field_name]);
+            
+            violation_timestamp = null;
+            if(violationTimestampValues.length > 0){
+                violation_timestamp = violationTimestampValues[0];
+            }
+            
+            descriptions = [];
         }
-        
-        db = Omadi.utils.openMainDatabase();
-        
-        reference_field_name = violation_instance.widget.rules_field_name;
-        rules_parent_field_name = violation_instance.widget.rules_parent_field_name;
-        rules_violation_time_field_name = violation_instance.widget.rules_violation_time_field_name;
-        
-        parentNidDBValues = this.getDBValues(this.fieldWrappers[reference_field_name]);
-     
-        violationTimestampValues = this.getDBValues(this.fieldWrappers[rules_violation_time_field_name]);
-        
-        violation_timestamp = null;
-        if(violationTimestampValues.length > 0){
-            violation_timestamp = violationTimestampValues[0];
+        catch(extop){
+            Omadi.service.sendErrorReport("Exception in changeviolationfieldoptions top: " + extop);
         }
-        
-        descriptions = [];
         
         if(parentNidDBValues.length > 0){
             parentNid = parentNidDBValues[0];
             if(parentNid > 0){
-                result = db.execute('SELECT table_name FROM node WHERE nid = ' + parentNid);
-                parentNodeType = result.fieldByName('table_name');
-                result.close();
                 
-                result = db.execute('SELECT ' + rules_parent_field_name + ' FROM ' + parentNodeType + ' WHERE nid = ' + parentNid);
-                rulesData = result.fieldByName(rules_parent_field_name);
-                rulesData = JSON.parse(rulesData);
+                try{
+                    db = Omadi.utils.openMainDatabase();
+                    result = db.execute('SELECT table_name FROM node WHERE nid = ' + parentNid);
+                    parentNodeType = result.fieldByName('table_name');
+                    result.close();
+                    
+                    result = db.execute('SELECT ' + rules_parent_field_name + ' FROM ' + parentNodeType + ' WHERE nid = ' + parentNid);
+                    origRulesData = result.fieldByName(rules_parent_field_name);
+                    result.close();
+                    db.close();
+                }
+                catch(exDB){
+                    Omadi.service.sendErrorRepot("Exception getting violation data: " + exDB);
+                    try{
+                        db.close();
+                    }
+                    catch(exdb){}
+                }
                 
-                if (rulesData != false && rulesData != null && rulesData != "" && rulesData.length > 0) {
-                    tids = {};
-                    used_tids = [];
-                    all_others_row = [];
-            
-                    for (i in rulesData) {
-                        if(rulesData.hasOwnProperty(i)){
-                            dataRow = rulesData[i];
-                            
-                            if (!isNaN(dataRow.tid)) {
-                                if (dataRow.node_types[node_type] != null && dataRow.node_types[node_type] != "") {
-                                    if (rules_field_passed_time_check(dataRow.time_rules, violation_timestamp)) {
+                if(origRulesData){
+                    try{
+                        rulesData = JSON.parse(origRulesData);
+                    }
+                    catch(exJSON){
+                        Omadi.service.sendErrorReport("Exception parsing violation JSON: " + exJSON + " " + origRulesData);
+                    }
+                    
+                    if (rulesData != false && rulesData != null && rulesData != "" && rulesData.length > 0) {
+                        tids = {};
+                        used_tids = [];
+                        all_others_row = [];
                 
-                                        tids[dataRow.tid] = true;
+                        for (i in rulesData) {
+                            if(rulesData.hasOwnProperty(i)){
+                                dataRow = rulesData[i];
+                                
+                                if (!isNaN(dataRow.tid)) {
+                                    if (dataRow.node_types[node_type] != null && dataRow.node_types[node_type] != "") {
+                                        if (rules_field_passed_time_check(dataRow.time_rules, violation_timestamp)) {
+                    
+                                            tids[dataRow.tid] = true;
+                                        }
                                     }
+        
+                                    used_tids[dataRow.tid] = true;
                                 }
-    
-                                used_tids[dataRow.tid] = true;
-                            }
-                            else if (dataRow.tid == 'ALL') {
-                                all_others_row.push(dataRow);
-                            }
-                            
-                            if (dataRow.description != null) {
-                                descriptions[dataRow.tid] = dataRow.description;
+                                else if (dataRow.tid == 'ALL') {
+                                    all_others_row.push(dataRow);
+                                }
+                                
+                                if (typeof dataRow.description !== 'undefined' && dataRow.description != null) {
+                                    descriptions[dataRow.tid] = dataRow.description;
+                                }
                             }
                         }
-                    }
-            
-                    if (all_others_row.length > 0) {
-                        if (all_others_row[0].node_types[node_type] != null && all_others_row[0].node_types[node_type] != "") {
-                            if (rules_field_passed_time_check(all_others_row[0].time_rules, violation_timestamp)) {
-                                for (i in violationTerms) {
-                                    if(violationTerms.hasOwnProperty(i)){
-                                        violation_term = violationTerms[i].dbValue;
-                                        if (typeof used_tids[violation_term] === 'undefined') {
-                                            tids[violation_term] = true;
+                
+                        if (all_others_row.length > 0) {
+                            if (all_others_row[0].node_types[node_type] != null && all_others_row[0].node_types[node_type] != "") {
+                                if (rules_field_passed_time_check(all_others_row[0].time_rules, violation_timestamp)) {
+                                    for (i in violationTerms) {
+                                        if(violationTerms.hasOwnProperty(i)){
+                                            violation_term = violationTerms[i].dbValue;
+                                            if (typeof used_tids[violation_term] === 'undefined') {
+                                                tids[violation_term] = true;
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-                    
-                    options = [];
-                    
-                    for(i in tids){
-                        if(tids.hasOwnProperty(i)){
-                            if(typeof descriptions[i] !== 'undefined'){
-                                violationTerms[i].description = descriptions[i];
-                            }
-                            
-                            options.push(violationTerms[i]);
-                        }
-                    }  
-                    
-                    /**** START SETTING CURRENT FORM DEFAULT VALUES *****/
-                    
-                    violationDBValues = this.getDBValues(this.fieldWrappers[violation_field_name]);
-                    
-                    violationTextValues = [];
-                    for(i = 0; i < violationDBValues.length; i ++){
-                        for(j in violationTerms){
-                            if(violationTerms.hasOwnProperty(j)){
+                        
+                        options = [];
+                        
+                        for(i in tids){
+                            if(tids.hasOwnProperty(i)){
+                                if(typeof descriptions[i] !== 'undefined'){
+                                    violationTerms[i].description = descriptions[i];
+                                }
                                 
-                                if(violationTerms[j].dbValue == violationDBValues[i]){
-                                    violationTextValues[i] = violationTerms[j].title;
+                                options.push(violationTerms[i]);
+                            }
+                        }  
+                        
+                        /**** START SETTING CURRENT FORM DEFAULT VALUES *****/
+                        
+                        violationDBValues = this.getDBValues(this.fieldWrappers[violation_field_name]);
+                        
+                        violationTextValues = [];
+                        for(i = 0; i < violationDBValues.length; i ++){
+                            for(j in violationTerms){
+                                if(violationTerms.hasOwnProperty(j)){
+                                    
+                                    if(violationTerms[j].dbValue == violationDBValues[i]){
+                                        violationTextValues[i] = violationTerms[j].title;
+                                    }
                                 }
                             }
                         }
-                    }
-                    
-                    
-                    // Get rid of any violations that don't apply to this property
-                    if(violationDBValues.length > 0){
-                        for(i = violationDBValues.length - 1; i >= 0; i --){
-                            isViolationValid = false;
-                            for(j = 0; j < options.length; j ++){
-                                if(violationDBValues[i] == options[j].dbValue){
-                                    isViolationValid = true;
-                                    break;
+                        
+                        
+                        // Get rid of any violations that don't apply to this property
+                        if(violationDBValues.length > 0){
+                            for(i = violationDBValues.length - 1; i >= 0; i --){
+                                isViolationValid = false;
+                                for(j = 0; j < options.length; j ++){
+                                    if(violationDBValues[i] == options[j].dbValue){
+                                        isViolationValid = true;
+                                        break;
+                                    }
+                                }
+                                if(!isViolationValid){
+                                    violationDBValues.splice(i, 1);
+                                    violationTextValues.splice(i, 1);
                                 }
                             }
-                            if(!isViolationValid){
-                                violationDBValues.splice(i, 1);
-                                violationTextValues.splice(i, 1);
+                        }
+                        
+                        // Set the violations to possibly fewer violations
+                        this.setValueWidgetProperty(violation_field_name, ['dbValue'], violationDBValues);
+                        
+                        // Set the textValues for the widget
+                        violationTextValues = violationTextValues.join(', ');
+                        this.setValueWidgetProperty(violation_field_name, ['textValue'], violationTextValues);
+                        this.setValueWidgetProperty(violation_field_name, ['text'], violationTextValues);
+                        
+                        // Set the description for the selected violation if one exists
+                        if(violationDBValues.length == 1){
+                            if(typeof violationTerms[violationDBValues[0]].description !== 'undefined'){
+                                this.setValueWidgetProperty(violation_field_name, ['descriptionLabel', 'text'], violationTerms[violationDBValues[0]].description);
                             }
                         }
-                    }
-                    
-                    // Set the violations to possibly fewer violations
-                    this.setValueWidgetProperty(violation_field_name, ['dbValue'], violationDBValues);
-                    
-                    // Set the textValues for the widget
-                    violationTextValues = violationTextValues.join(', ');
-                    this.setValueWidgetProperty(violation_field_name, ['textValue'], violationTextValues);
-                    this.setValueWidgetProperty(violation_field_name, ['text'], violationTextValues);
-                    
-                    // Set the description for the selected violation if one exists
-                    if(violationDBValues.length == 1){
-                        if(typeof violationTerms[violationDBValues[0]].description !== 'undefined'){
-                            this.setValueWidgetProperty(violation_field_name, ['descriptionLabel', 'text'], violationTerms[violationDBValues[0]].description);
+                        else{
+                            this.setValueWidgetProperty(violation_field_name, ['descriptionLabel', 'text'], "");
                         }
+                        /**** END SETTING CURRENT FORM DEFAULT VALUES *****/
                     }
-                    else{
-                        this.setValueWidgetProperty(violation_field_name, ['descriptionLabel', 'text'], "");
-                    }
-                    /**** END SETTING CURRENT FORM DEFAULT VALUES *****/
                 }
             }
         }
         
-        db.close();
         
         Ti.API.debug("Options: " + JSON.stringify(options));
         
-        /*** FINALLY SET THE ALLOWABLE VIOLATION OPTIONS FOR THE WIDGET ***/
-        this.setValueWidgetProperty(violation_field_name, ['options'], options);
+        try{
+            /*** FINALLY SET THE ALLOWABLE VIOLATION OPTIONS FOR THE WIDGET ***/
+            this.setValueWidgetProperty(violation_field_name, ['options'], options);
+        }
+        catch(ex1){
+            Omadi.service.sendErrorReport("Exception setting violation options: " + ex1);
+        }
     }
     catch(ex){
         Omadi.service.sendErrorReport("Could not change the violation options: " + ex);
