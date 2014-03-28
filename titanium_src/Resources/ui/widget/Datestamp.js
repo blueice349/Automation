@@ -2,11 +2,6 @@
 
 var Widget, Omadi, dateWindow, date_picker, time_picker, innerWrapperView, wrapperView;
 Widget = {};
-dateWindow = null;
-date_picker = null;
-time_picker = null;
-innerWrapperView = null;
-wrapperView = null;
 
 function DatestampWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.formObj = formObj;
@@ -536,6 +531,8 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
         var year, month, date, hour, minute, second, newDate, i, callback, pickerValue, datePickerValue, dbValue, textValue, now;
         
         try{
+            newDate = null;
+            
             if(date_picker !== null){
                 
                 pickerValue = date_picker.getValue();
@@ -578,36 +575,44 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
                 
                 newDate = pickerValue;
             }
-            
-            e.source.jsDate = newDate;
-            dbValue = Math.ceil(newDate.getTime() / 1000);
-            textValue = Omadi.utils.formatDate(dbValue, e.source.showTime);
-            
-            Widget[e.source.instance.field_name].elements[e.source.delta].dbValue = dbValue;
-            Widget[e.source.instance.field_name].elements[e.source.delta].textValue = textValue;
-            
-            Widget[e.source.instance.field_name].dateViews[e.source.delta].jsDate = newDate;
-            Widget[e.source.instance.field_name].dateViews[e.source.delta].setText(Omadi.utils.formatDate(dbValue, false));
-            Widget[e.source.instance.field_name].dateViews[e.source.delta].origDBValue = dbValue;
-            
-            if(e.source.showTime){
-                Widget[e.source.instance.field_name].timeViews[e.source.delta].setText(Omadi.utils.formatTime(dbValue));
-                Widget[e.source.instance.field_name].timeViews[e.source.delta].origDBValue = dbValue;
-                Widget[e.source.instance.field_name].timeViews[e.source.delta].jsDate = newDate;
+            else{
+                Omadi.service.sendErrorReport("Neither the time picker nor the date picker were defined.");
             }
-            //Ti.API.debug(newDate.toString());
-    
-            if ( typeof Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks !== 'undefined') {
-                if (Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks.length > 0) {
-                    for ( i = 0; i < Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks.length; i++) {
-                        callback = Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks[i];
-                        Widget[e.source.instance.field_name].formObj[callback](Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbackArgs[i]);
+            
+            if(newDate){
+                e.source.jsDate = newDate;
+                dbValue = Math.ceil(newDate.getTime() / 1000);
+                textValue = Omadi.utils.formatDate(dbValue, e.source.showTime);
+                
+                Widget[e.source.instance.field_name].elements[e.source.delta].dbValue = dbValue;
+                Widget[e.source.instance.field_name].elements[e.source.delta].textValue = textValue;
+                
+                Widget[e.source.instance.field_name].dateViews[e.source.delta].jsDate = newDate;
+                Widget[e.source.instance.field_name].dateViews[e.source.delta].setText(Omadi.utils.formatDate(dbValue, false));
+                Widget[e.source.instance.field_name].dateViews[e.source.delta].origDBValue = dbValue;
+                
+                if(e.source.showTime){
+                    Widget[e.source.instance.field_name].timeViews[e.source.delta].setText(Omadi.utils.formatTime(dbValue));
+                    Widget[e.source.instance.field_name].timeViews[e.source.delta].origDBValue = dbValue;
+                    Widget[e.source.instance.field_name].timeViews[e.source.delta].jsDate = newDate;
+                }
+                //Ti.API.debug(newDate.toString());
+        
+                if ( typeof Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks !== 'undefined') {
+                    if (Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks.length > 0) {
+                        for ( i = 0; i < Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks.length; i++) {
+                            callback = Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks[i];
+                            Widget[e.source.instance.field_name].formObj[callback](Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbackArgs[i]);
+                        }
                     }
                 }
+        
+                if (Widget[e.source.instance.field_name].elements[e.source.delta].check_conditional_fields.length > 0) {
+                    Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, Widget[e.source.instance.field_name].elements[e.source.delta].check_conditional_fields);
+                }
             }
-    
-            if (Widget[e.source.instance.field_name].elements[e.source.delta].check_conditional_fields.length > 0) {
-                Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, Widget[e.source.instance.field_name].elements[e.source.delta].check_conditional_fields);
+            else{
+                Omadi.service.sendErrorReport("Newdate is null or not defined");
             }
         }
         catch(ex){

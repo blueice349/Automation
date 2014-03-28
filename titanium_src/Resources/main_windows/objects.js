@@ -576,36 +576,20 @@ function setTableData() {"use strict";
             listLabel.left = 10;
         }
 
-        var showAllButton = Ti.UI.createButton({
-            title : 'Show All',
+        var showAllButton = Ti.UI.createLabel({
+            text : 'Show All',
             top : 5,
             right : 10,
             width : 100,
             height : 35,
-            style : (Ti.App.isIOS ? Titanium.UI.iPhone.SystemButtonStyle.BORDERED : ''),
-            backgroundGradient : {
-                type : 'linear',
-                startPoint : {
-                    x : '50%',
-                    y : '0%'
-                },
-                endPoint : {
-                    x : '50%',
-                    y : '100%'
-                },
-                colors : [{
-                    color : '#ccc',
-                    offset : 0.0
-                }, {
-                    color : '#ddd',
-                    offset : 0.25
-                }, {
-                    color : '#aaa',
-                    offset : 1.0
-                }]
-            },
+            backgroundGradient : Omadi.display.backgroundGradientBlue,
             borderRadius : 5,
-            color : '#000'
+            color : '#eee',
+            textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+            font: {
+                fontSize: 16,
+                fontWeight: 'bold'
+            }
         });
 
         if (showFinalResults) {

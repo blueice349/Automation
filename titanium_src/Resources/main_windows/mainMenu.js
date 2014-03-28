@@ -961,7 +961,7 @@ function backgroundCheckForUpdates(){"use strict";
 }
 
 function showContinuousSavedNode(){"use strict";
-    var db, result, continuousSave;
+    var db, result, continuousSave, listDB, dialog;
     try{
         db = Omadi.utils.openMainDatabase();
         result = db.execute("SELECT nid, table_name, form_part FROM node WHERE flag_is_updated = 4 AND table_name != 'dispatch' ORDER BY changed DESC");
@@ -979,6 +979,27 @@ function showContinuousSavedNode(){"use strict";
         
         if(continuousSave !== null){
             Omadi.display.openFormWindow(continuousSave.node_type, continuousSave.nid, continuousSave.form_part);
+        }
+        else{
+            
+            // Check to see if any photos are orphans
+            listDB = Omadi.utils.openListDatabase();
+            result = listDB.execute("SELECT COUNT(*) FROM _files WHERE nid = 0");
+            if(result.isValidRow()){
+                if(result.field(0) > 0){
+                     // Let omadi know about the problem
+                    Omadi.service.sendErrorReport("Photo with a 0 nid was found without a node to load.");
+                    Omadi.data.sendDebugData(false);
+                    
+                    // If no form pops up, that probably means the app crashed while taking a photo and something weird happened
+                    listDB.execute("UPDATE _files SET nid = -1000000 WHERE nid = 0");
+                    
+                    // Let the user know about the problem
+                    alert("A recent photo was not attached to a form properly, but it was saved. To see it, go to Actions -> Photos Not Uploaded");
+                }
+            }
+            result.close();
+            listDB.close();
         }
     }
     catch(ex){

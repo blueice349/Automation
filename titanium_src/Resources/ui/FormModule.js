@@ -2,9 +2,6 @@
 
 var FormObj, Omadi, ActiveFormObj, popupWin, popupWinListView, popupWinFieldObject, popupWinDescriptionLabel;
 FormObj = {};
-popupWin = null;
-popupWinListView = null;
-popupWinDescriptionLabel = null;
 
 function rules_field_passed_time_check(time_rule, timestamp) {"use strict";
     var retval, timestamp_day, timestamp_midnight, days, day_rule, values, start_time, end_time;
@@ -794,17 +791,14 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
             // Now that the node is saved on the phone or a big error occurred, allow background logouts
             Ti.App.allowBackgroundLogout = true;
             
+            // Setup the current node and nid in the window so a duplicate won't be made for this window
+            this.nid = this.node.nid;
+            
             if(this.node._saved === true){
                 // Don't set the node as saved on a continuous save, as that can mess up windows closing, etc.
                 if(!this.node._isContinuous){
                     this.nodeSaved = true;
                 }
-            }
-            
-            // Setup the current node and nid in the window so a duplicate won't be made for this window
-            this.nid = this.node.nid;
-            
-            if(this.node._saved === true){
                 
                 if(this.usingDispatch){
                     Ti.API.debug("about to fire save dispatchnode");
@@ -906,10 +900,13 @@ FormModule.prototype.trySaveNode = function(saveType){"use strict";
                 }
             }
             else{
-                
                 // Allow background updates again
                 Ti.App.allowBackgroundUpdate = true;
-                Omadi.service.sendErrorReport("Node failed to save on the phone");
+                
+                if(saveType != 'continuous'){
+                    Omadi.service.sendErrorReport("Node failed to save on the phone: " + JSON.stringify(this.node));
+                    alert("There is a problem with the form data, and it cannot not be saved. Please fix the data or close the form.");
+                }
             }
         }
         catch(ex){
@@ -3027,7 +3024,23 @@ FormModule.prototype.getWindow = function(){"use strict";
             
             if(this.usingDispatch){
                 doneButton.text = 'SAVE';
+                
+                doneButton.addEventListener('click', function(e){
+                    var saveButton = e.source;
+                    saveButton.setText('SAVING...');
+                    saveButton.setBackgroundGradient(Omadi.display.backgroundGradientGray);
+                    
+                    setTimeout(function(){
+                        try{
+                            saveButton.setText("SAVE");
+                            saveButton.setBackgroundGradient(Omadi.display.backgroundGradientBlue);
+                        }
+                        catch(ex){}
+                    }, 2000);
+                });
+                
                 doneButton.addEventListener('click', ActiveFormObj.parentTabObj.doDispatchSave);
+                
             }
             else{
                 doneButton.addEventListener('click', ActiveFormObj.showActionsOptions);   
@@ -3258,7 +3271,9 @@ FormModule.prototype.changeViolationFieldOptions = function(violation_field_name
                         for(i in tids){
                             if(tids.hasOwnProperty(i)){
                                 if(typeof descriptions[i] !== 'undefined'){
-                                    violationTerms[i].description = descriptions[i];
+                                    if(typeof violationTerms[i] !== 'undefined'){
+                                        violationTerms[i].description = descriptions[i];
+                                    }
                                 }
                                 
                                 options.push(violationTerms[i]);
@@ -3266,7 +3281,6 @@ FormModule.prototype.changeViolationFieldOptions = function(violation_field_name
                         }  
                         
                         /**** START SETTING CURRENT FORM DEFAULT VALUES *****/
-                        
                         violationDBValues = this.getDBValues(this.fieldWrappers[violation_field_name]);
                         
                         violationTextValues = [];
@@ -3309,7 +3323,7 @@ FormModule.prototype.changeViolationFieldOptions = function(violation_field_name
                         
                         // Set the description for the selected violation if one exists
                         if(violationDBValues.length == 1){
-                            if(typeof violationTerms[violationDBValues[0]].description !== 'undefined'){
+                            if(typeof violationTerms[violationDBValues[0]] !== 'undefined' && typeof violationTerms[violationDBValues[0]].description !== 'undefined'){
                                 this.setValueWidgetProperty(violation_field_name, ['descriptionLabel', 'text'], violationTerms[violationDBValues[0]].description);
                             }
                         }
@@ -3321,9 +3335,6 @@ FormModule.prototype.changeViolationFieldOptions = function(violation_field_name
                 }
             }
         }
-        
-        
-        Ti.API.debug("Options: " + JSON.stringify(options));
         
         try{
             /*** FINALLY SET THE ALLOWABLE VIOLATION OPTIONS FOR THE WIDGET ***/

@@ -30,6 +30,8 @@ function DispatchForm(type, nid, form_part){"use strict";
     this.continuousWorkInfo = null;
     
     this.currentWorkFormPart = -1;
+    
+    this.lastSaveTime = 0;
 }
 
 DispatchForm.prototype.showActionsOptions = function(e){"use strict";
@@ -127,49 +129,57 @@ DispatchForm.prototype.showActionsOptions = function(e){"use strict";
 };
 
 DispatchForm.prototype.doDispatchSave = function(){"use strict";
-    var form_errors, dialog, i;
+    var form_errors, dialog, i, now;
+    
+    now = (new Date()).getTime();
     try{
         if(Dispatch.workObj === null){
             alert("You must first select a job type.");
         }
         else if(Dispatch.workObj.nodeSaved === false){
             
-            if(Ti.App.isAndroid){
-                // Android doesn't like adding anything to tab groups
-                Omadi.display.loading("Saving...");
-            }
-            else{
-                // iOS won't show the loading screen unless it's on the tabgroup
-                Omadi.display.loading("Saving...", Dispatch.tabGroup);
-            }
-            
-            Dispatch.workObj.formToNode();
-            Dispatch.dispatchObj.formToNode();
-            
-            Dispatch.workObj.validate_form_data('normal');
-            Dispatch.dispatchObj.validate_form_data('normal');
-            
-            form_errors = Dispatch.workObj.form_errors;
-            for(i = 0; i < Dispatch.dispatchObj.form_errors.length; i ++){
-                form_errors.push(Dispatch.dispatchObj.form_errors[i] + " (dispatch Tab)");
-            }
-            
-            if(form_errors.length > 0){
+            // Only allow the button to work once per second
+            if(now - Dispatch.lastSaveTime > 1000){
+                Dispatch.lastSaveTime = now;
                 
-                Omadi.display.doneLoading();
+                if(Ti.App.isAndroid){
+                    // Android doesn't like adding anything to tab groups
+                    //Omadi.display.loading("Saving...");
+                }
+                else{
+                    // iOS won't show the loading screen unless it's on the tabgroup
+                    Omadi.display.loading("Saving...", Dispatch.tabGroup);
+                }
                 
-                dialog = Titanium.UI.createAlertDialog({
-                    title : 'Dispatch Validation',
-                    buttonNames : ['OK'],
-                    message: form_errors.join("\n")
-                });
+                Dispatch.workObj.formToNode();
+                Dispatch.dispatchObj.formToNode();
                 
-                dialog.show();
+                Dispatch.workObj.validate_form_data('normal');
+                Dispatch.dispatchObj.validate_form_data('normal');
+                
+                form_errors = Dispatch.workObj.form_errors;
+                for(i = 0; i < Dispatch.dispatchObj.form_errors.length; i ++){
+                    form_errors.push(Dispatch.dispatchObj.form_errors[i] + " (dispatch Tab)");
+                }
+                
+                if(form_errors.length > 0){
+                    
+                    Omadi.display.doneLoading();
+                    
+                    dialog = Titanium.UI.createAlertDialog({
+                        title : 'Dispatch Validation',
+                        buttonNames : ['OK'],
+                        message: form_errors.join("\n")
+                    });
+                    
+                    dialog.show();
+                }
+                else{
+                    Dispatch.dispatchObj.saveForm('normal');
+                    Dispatch.workObj.saveForm('normal');
+                }
             }
-            else{
-                Dispatch.dispatchObj.saveForm('normal');
-                Dispatch.workObj.saveForm('normal');
-            }
+            
         }
         else{
             alert("The form data was saved correctly, but this screen didn't close for some reason. You can exit safely.");

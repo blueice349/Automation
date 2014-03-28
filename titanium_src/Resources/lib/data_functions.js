@@ -366,7 +366,7 @@ Omadi.data.deleteContinuousNodes = function(){"use strict";
 Omadi.data.nodeSave = function(node) {"use strict";
     var query, field_name, fieldNames, instances, result, db, smallestNid, insertValues, j, k, 
         instance, value_to_insert, has_data, content_s, saveNid, continuousNid, photoNids, origNid,
-        continuousId, tempNid, listDB, trueWindowNid, priceIdx, priceTotal, priceData, jsonValue;
+        continuousId, tempNid, listDB, trueWindowNid, priceIdx, priceTotal, priceData, jsonValue, nodeHasData;
     /*jslint nomen: true*/
     try{
         node._saved = false;
@@ -469,7 +469,8 @@ Omadi.data.nodeSave = function(node) {"use strict";
     db.execute("BEGIN IMMEDIATE TRANSACTION");
     
     try {
-
+        nodeHasData = false;
+        
         if(fieldNames.length > 0){
             query = "INSERT OR REPLACE INTO " + node.type + " (nid, `";
             query += fieldNames.join('`,`');
@@ -529,6 +530,10 @@ Omadi.data.nodeSave = function(node) {"use strict";
                             
                             insertValues.push(priceTotal);
                             value_to_insert = JSON.stringify(priceData);
+                            
+                            if(priceTotal != 0){
+                                nodeHasData = true;
+                            }
                         }
                         else {
                             if (node[field_name].dbValues.length == 1) {
@@ -556,6 +561,9 @@ Omadi.data.nodeSave = function(node) {"use strict";
                                 if (Omadi.utils.isEmpty(value_to_insert)) {
                                     value_to_insert = "null";
                                 }
+                                else{
+                                    nodeHasData = true;
+                                }
     
                                 insertValues.push("'" + dbEsc(value_to_insert) + "'");
                                 break;
@@ -571,11 +579,16 @@ Omadi.data.nodeSave = function(node) {"use strict";
                                 }
                                 else {
                                     insertValues.push("'" + dbEsc(value_to_insert) + "'");
+                                    nodeHasData = true;
                                 }
                                 break;
     
                             default:
-    
+                                
+                                if(("".toString() + value_to_insert).length > 0){
+                                    nodeHasData = true;    
+                                }
+                                
                                 insertValues.push("'" + dbEsc(value_to_insert) + "'");
                                 break;
                         }
@@ -585,92 +598,104 @@ Omadi.data.nodeSave = function(node) {"use strict";
     
             query += insertValues.join(',');
             query += ")";
-    
-            //Ti.API.error(query);
             
-            db.execute(query);
         }
-
-        try {
-            // Make sure dispatch_nid is set for the save
-            if(typeof node.dispatch_nid === 'undefined'){
-                node.dispatch_nid = 0;
-            }
+        
+        // Only save if data exists or it's a continuously saved node in the background
+        if(nodeHasData || node._isContinuous){
             
-            if(typeof node.custom_copy_orig_nid === 'undefined'){
-                node.custom_copy_orig_nid = 0;
-            }
-            
-            if (node._isContinuous) {          
-                Ti.API.debug("SAVING TO CONTINUOUS: " + saveNid + " " + origNid + " " + node.dispatch_nid);    
+            try {
+                db.execute(query);
                 
-                // continuousNid = node.continuous_nid;
-                // if(continuousNid == 'new'){
-                    // continuousNid = 0;
-                // }
-                query = "INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",4,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + origNid + "," + node.dispatch_nid + "," + node.custom_copy_orig_nid + ")";
-            }
-            else if (node._isDraft) {
-                // if (saveNid > 0) {
-                    // db.execute("UPDATE node SET changed=" + node.changed + ", changed_uid=" + node.changed_uid + ", title='" + dbEsc(node.title) + "', flag_is_updated=3, table_name='" + node.type + "', form_part=" + node.form_part + ", no_data_fields='" + node.no_data + "',viewed=" + node.viewed + " WHERE nid=" + saveNid);
-                // }
-                // else {
-                // origNid = 0;
-                // if(typeof node.origNid !== 'undefined'){
-                    // origNid = node.origNid;
-                // }
-//                 
-                // Ti.API.debug("SAVING DRAFT: " + saveNid + " " + origNid);
-                //Omadi.service.sendErrorReport("Saved draft: saveNid = " + saveNid + ", origNid = " + origNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
-                // Only save drafts as a negative nid
-                query = "INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",3,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + node.origNid + "," + node.dispatch_nid + "," + node.custom_copy_orig_nid + ")";
-            }
-            else if (saveNid > 0) {
-                //Omadi.service.sendErrorReport("Saved update: saveNid = " + saveNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
-                query = "UPDATE node SET changed=" + node.changed + ", changed_uid=" + node.changed_uid + ", title='" + dbEsc(node.title) + "', flag_is_updated=1, table_name='" + node.type + "', form_part=" + node.form_part + ", no_data_fields='" + node.no_data + "',viewed=" + node.viewed + " WHERE nid=" + saveNid;
-            }
-            else {
-                //Omadi.service.sendErrorReport("Saved new: saveNid = " + saveNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
-                // Give all permissions for this node. Once it comes back, the correct permissions will be there.  If it never gets uploaded, the user should be able to do whatever they want with that info.
-                query = "INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",1,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1,0," + node.dispatch_nid + "," + node.custom_copy_orig_nid + ")";
-            }
-            
-            //Ti.API.error(query);
-            db.execute(query);
-            
-            photoNids = [0];
-            
-            if(!node.continuous_nid){
-                continuousId = parseInt(node.continuous_nid, 10);
-                if(!isNaN(continuousId) && continuousId != 0){
-                    photoNids.push(continuousId);
+                // Make sure dispatch_nid is set for the save
+                if(typeof node.dispatch_nid === 'undefined'){
+                    node.dispatch_nid = 0;
                 }
-            }
-            
-            trueWindowNid = 'new';
-            if(!node.nid){
-                trueWindowNid = parseInt(node.nid, 10);
-                if(!isNaN(trueWindowNid) && trueWindowNid != 0){
-                    photoNids.push(trueWindowNid);
+                
+                if(typeof node.custom_copy_orig_nid === 'undefined'){
+                    node.custom_copy_orig_nid = 0;
                 }
-            }
+                
+                if (node._isContinuous) {          
+                    Ti.API.debug("SAVING TO CONTINUOUS: " + saveNid + " " + origNid + " " + node.dispatch_nid);    
+                    
+                    // continuousNid = node.continuous_nid;
+                    // if(continuousNid == 'new'){
+                        // continuousNid = 0;
+                    // }
+                    query = "INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",4,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + origNid + "," + node.dispatch_nid + "," + node.custom_copy_orig_nid + ")";
+                }
+                else if (node._isDraft) {
+                    // if (saveNid > 0) {
+                        // db.execute("UPDATE node SET changed=" + node.changed + ", changed_uid=" + node.changed_uid + ", title='" + dbEsc(node.title) + "', flag_is_updated=3, table_name='" + node.type + "', form_part=" + node.form_part + ", no_data_fields='" + node.no_data + "',viewed=" + node.viewed + " WHERE nid=" + saveNid);
+                    // }
+                    // else {
+                    // origNid = 0;
+                    // if(typeof node.origNid !== 'undefined'){
+                        // origNid = node.origNid;
+                    // }
+    //                 
+                    // Ti.API.debug("SAVING DRAFT: " + saveNid + " " + origNid);
+                    //Omadi.service.sendErrorReport("Saved draft: saveNid = " + saveNid + ", origNid = " + origNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
+                    // Only save drafts as a negative nid
+                    query = "INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",3,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + node.origNid + "," + node.dispatch_nid + "," + node.custom_copy_orig_nid + ")";
+                }
+                else if (saveNid > 0) {
+                    //Omadi.service.sendErrorReport("Saved update: saveNid = " + saveNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
+                    query = "UPDATE node SET changed=" + node.changed + ", changed_uid=" + node.changed_uid + ", title='" + dbEsc(node.title) + "', flag_is_updated=1, table_name='" + node.type + "', form_part=" + node.form_part + ", no_data_fields='" + node.no_data + "',viewed=" + node.viewed + " WHERE nid=" + saveNid;
+                }
+                else {
+                    //Omadi.service.sendErrorReport("Saved new: saveNid = " + saveNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
+                    // Give all permissions for this node. Once it comes back, the correct permissions will be there.  If it never gets uploaded, the user should be able to do whatever they want with that info.
+                    query = "INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",1,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1,0," + node.dispatch_nid + "," + node.custom_copy_orig_nid + ")";
+                }
+                
+                //Ti.API.error(query);
+                db.execute(query);
+                
+                photoNids = [0];
+                
+                if(!node.continuous_nid){
+                    continuousId = parseInt(node.continuous_nid, 10);
+                    if(!isNaN(continuousId) && continuousId != 0){
+                        photoNids.push(continuousId);
+                    }
+                }
+                
+                trueWindowNid = 'new';
+                if(!node.nid){
+                    trueWindowNid = parseInt(node.nid, 10);
+                    if(!isNaN(trueWindowNid) && trueWindowNid != 0){
+                        photoNids.push(trueWindowNid);
+                    }
+                }
+                
+                // Do not save the photos to the continuous
+                // Do not save photos to a dispatch node
+                if(!node._isContinuous && node.type != 'dispatch'){
+                    
+                    
+                    
+                    listDB = Omadi.utils.openListDatabase();
+                    listDB.execute('UPDATE _files SET nid=' + saveNid + ' WHERE nid IN (' + photoNids.join(',') + ')');
+                    listDB.close();
+                }
+    
+                node._saved = true;
+                Ti.API.debug("NODE SAVE WAS SUCCESSFUL");
             
-            // Do not save the photos to the continuous
-            // Do not save photos to a dispatch node
-            if(!node._isContinuous && node.type != 'dispatch'){
-                listDB = Omadi.utils.openListDatabase();
-                listDB.execute('UPDATE _files SET nid=' + saveNid + ' WHERE nid IN (' + photoNids.join(',') + ')');
-                listDB.close();
             }
-
-            node._saved = true;
-            Ti.API.debug("NODE SAVE WAS SUCCESSFUL");
-        }
-        catch(ex1) {
-            Omadi.display.doneLoading();
-            alert("Error saving to the node table: " + ex1);
-            db.execute("DELETE FROM " + node.type + " WHERE nid = " + saveNid);
-            Omadi.service.sendErrorReport("Error saving to the node table: " + ex1);
+            catch(ex1) {
+                Omadi.display.doneLoading();
+                alert("Error saving to the node table: " + ex1);
+                db.execute("DELETE FROM " + node.type + " WHERE nid = " + saveNid);
+                Omadi.service.sendErrorReport("Error saving to the node table: " + ex1);
+            }
+        }    
+        else{
+            // The node didn't have any data to save in fields, so do not save, and send a report
+            Omadi.service.sendErrorReport("Node has no data: " + JSON.stringify(node));
+            node._saved = false;
         }
 
     }

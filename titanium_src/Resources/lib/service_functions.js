@@ -1121,7 +1121,7 @@ Omadi.service.photoUploadError = function(e){"use strict";
     }
     else if (e.code == 406){
         // Something was wrong with the file - too small for a photo or video
-        saveFailedUpload = true;
+        //saveFailedUpload = true;
     }
     else if(e.code == -1){
         
@@ -1131,7 +1131,7 @@ Omadi.service.photoUploadError = function(e){"use strict";
         else{
             incrementTries = true;
             if(numTries > 5){
-                saveFailedUpload = true;
+                //saveFailedUpload = true;
             }
         }
     }
@@ -1142,7 +1142,7 @@ Omadi.service.photoUploadError = function(e){"use strict";
     
     try{
         subDB = Omadi.utils.openListDatabase();
-    
+
         subDB.execute("UPDATE _files SET uploading = 0 WHERE id = " + photoId);
         
         if(incrementTries){
@@ -1169,7 +1169,7 @@ Omadi.service.photoUploadError = function(e){"use strict";
     }
     
     if (Omadi.utils.isLoggedIn() && saveFailedUpload) {
-        //Omadi.data.saveFailedUpload(photoId, true);
+        Omadi.data.saveFailedUpload(photoId, true);
     }
     
     Ti.App.fireEvent("doneSendingPhotos");
