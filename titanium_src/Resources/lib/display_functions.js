@@ -589,18 +589,88 @@ Omadi.display.openViewWindow = function(type, nid) {"use strict";
 
 Omadi.display.FormModule = null;
 Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
-    var db, result, formWindow, intNid, isDispatch, dispatchNid, bundle, Dispatch, formObject, node, FormModule;
+    var db, result, formWindow, intNid, isDispatch, dispatchNid, bundle, Dispatch, formObject, node, 
+        FormModule, tempFormPart, fromBundle, to_type, newIsDispatch, isChangeTo, initNewDispatch;
     
     try{
         Ti.API.debug("opening form window");
         
         isDispatch = Omadi.bundles.dispatch.isDispatch(type, nid);
+        initNewDispatch = false;
+        
+        try{
+            tempFormPart = parseInt(form_part, 10);
+            if(form_part != tempFormPart){
+                Ti.API.info("This is a custom copy from " + type + " to " + form_part);
+                
+                to_type = form_part;
+                
+                newIsDispatch = Omadi.bundles.dispatch.isDispatch(to_type, 'new');
+                fromBundle = Omadi.data.getBundle(type);
+                
+                isChangeTo = false;
+                if(fromBundle){
+                    if(typeof fromBundle.data !== 'undefined'){
+                        if(typeof fromBundle.data.custom_copy !== 'undefined'){
+                            if(typeof fromBundle.data.custom_copy[to_type] !== 'undefined'){
+                                
+                                if(typeof fromBundle.data.custom_copy[to_type].conversion_type !== 'undefined' && 
+                                    fromBundle.data.custom_copy[to_type].conversion_type == 'change'){
+                                       isChangeTo = true; 
+                                }        
+                            }
+                        }
+                    }                    
+                }
+
+                
+                if(isDispatch){
+                    
+                    if(isChangeTo){
+                        // Always keep current dispatches dispatched for change conversions
+                        // isDispatch = true; // nothing changed
+                        // Example: Dispatched PPI to drop fee
+                        // Keep original dispatch node
+                    }
+                    else{
+                        if(!newIsDispatch){
+                            // For copy to a type that doesn't have a forced dispatch, do not add a dispatch to it
+                            // Example: Dispatched PPI to Restriction - we don't want a dispatch connected to it
+                            isDispatch = false;
+                        }
+                        else{
+                            // no change as we're copying a dispatch to a new dispatch
+                            // But a new dispatch must be created in the screen later on
+                            // Example: dispatched tag to a dispatched PPI
+                            // A new dispatch node must be created
+                            initNewDispatch = true;
+                        }
+                    }
+                }
+                else{
+                    if(newIsDispatch){
+                        // Need to create a dispatch for this copy to
+                        // Example: Regular tag to dispatched PPI - if the PPI is force dispatched
+                        // A new dispatch node must be created
+                        isDispatch = true;
+                        initNewDispatch = true;
+                    }
+                    else{
+                        //isDispatch = false;// nothing changed
+                        // Example: Regular tag to regular restriction
+                    }
+                }                 
+            }
+        }
+        catch(copyEx){
+            Omadi.service.sendErrorReport("Exception with custom copy in dispatch: " + copyEx);
+        }
         
         if(isDispatch){
             Omadi.display.loading();
             
             Dispatch = require('ui/DispatchForm');
-            formWindow = Dispatch.getWindow(Omadi, type, nid, form_part);
+            formWindow = Dispatch.getWindow(Omadi, type, nid, form_part, initNewDispatch);
             
             if(formWindow){
                 formWindow.addEventListener('open', Omadi.display.doneLoading);

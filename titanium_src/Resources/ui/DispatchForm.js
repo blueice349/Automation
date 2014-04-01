@@ -3,6 +3,8 @@ var Dispatch, Omadi;
 
 
 function DispatchForm(type, nid, form_part){"use strict";
+    var tempFormPart, origNid;
+    
     //create module instance
     
     this.type = type;
@@ -191,8 +193,73 @@ DispatchForm.prototype.doDispatchSave = function(){"use strict";
     }
 };
 
-DispatchForm.prototype.getWindow = function(){"use strict";
-    var dispatchWin, workWin, allowRecover, openDispatch, workBundle, db, result, tempDispatchNid, iconFile;
+//******** loadCustomCopyNode ****************************************************
+// Pass in original node, from node type, and to node type
+// Return a modified node with the new type initialized with correct data transfer
+//********************************************************************************
+DispatchForm.prototype.loadCustomCopyNode = function(originalNode, from_type, to_type){"use strict";
+    var fromBundle, newNode, to_field_name, from_field_name, index;
+    
+    fromBundle = Omadi.data.getBundle(from_type);
+    
+    newNode = {
+        created : Omadi.utils.getUTCTimestamp(),
+        author_uid: Omadi.utils.getUid(),
+        form_part: 0,
+        nid: 'new',
+        type: to_type,
+        changed: Omadi.utils.getUTCTimestamp(),
+        changed_uid: Omadi.utils.getUid(),
+        origNid: originalNode.nid
+    };
+    
+    if(fromBundle){
+        if(originalNode){
+            if(typeof fromBundle.data !== 'undefined'){
+                if(typeof fromBundle.data.custom_copy !== 'undefined'){
+                    if(typeof fromBundle.data.custom_copy[to_type] !== 'undefined'){
+                        for(to_field_name in fromBundle.data.custom_copy[to_type]){
+                            if(fromBundle.data.custom_copy[to_type].hasOwnProperty(to_field_name)){
+                                from_field_name = fromBundle.data.custom_copy[to_type][to_field_name];
+                                if(typeof originalNode[from_field_name] !== 'undefined'){
+                                    newNode[to_field_name] = originalNode[from_field_name];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // If there is also a child/parent relationship with the forms, add the parent reference to the child node
+        if(typeof fromBundle.child_forms !== 'undefined' && fromBundle.child_forms.length){
+            for(index in fromBundle.child_forms){
+                if(fromBundle.child_forms.hasOwnProperty(index)){
+                    
+                    if(fromBundle.child_forms[index].child_node_type == to_type){
+                        
+                        newNode[fromBundle.child_forms[index].child_field_name] = {};
+                        newNode[fromBundle.child_forms[index].child_field_name].dbValues = [];
+                        newNode[fromBundle.child_forms[index].child_field_name].textValues = [];
+                        newNode[fromBundle.child_forms[index].child_field_name].dbValues.push(originalNode.nid);
+                        newNode[fromBundle.child_forms[index].child_field_name].textValues.push(originalNode.title);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    else{
+        Ti.API.error("No bundle found for " + from_type);
+        Omadi.service.sendErrorReport("No bundle found for " + from_type);
+    }
+    
+    return newNode;
+};
+
+DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
+    var dispatchWin, workWin, allowRecover, openDispatch, workBundle, db, result, 
+        tempDispatchNid, iconFile, tempFormPart, origNid, copyToBundle;
     
     try{
         openDispatch = false;
@@ -236,13 +303,13 @@ DispatchForm.prototype.getWindow = function(){"use strict";
         }
         else {
             this.workNode = Omadi.data.nodeLoad(this.nid);
-            this.currentWorkFormPart = this.workNode.form_part;
             
             allowRecover = true;
             
-            Ti.API.debug(JSON.stringify(this.workNode));
-            
             if(this.workNode){
+                
+                this.currentWorkFormPart = this.workNode.form_part;
+                
                 if(this.workNode.nid > 0){
                     allowRecover = false;
                 }
@@ -299,18 +366,20 @@ DispatchForm.prototype.getWindow = function(){"use strict";
                 }
             }
             else{
-                alert("A problem occurred loading this dispatch. Please contact support.");
+                alert("A problem occurred loading this dispatch. Omadi support has been notified about this issue.");
                 Omadi.service.sendErrorReport("The work node passed into the dispatch form is invalid: " + this.nid);   
             }
         }
         
         // Make sure at least a new dispatch will be created
-        if(this.dispatchNode === null){
+        if(this.dispatchNode === null || initNewDispatch){
             this.dispatchNode = {
                 type : "dispatch",
                 nid : 'new',
                 form_part : 0
             };
+            
+            
             
             openDispatch = true;
         }
@@ -327,6 +396,9 @@ DispatchForm.prototype.getWindow = function(){"use strict";
                  }
             }
         }
+        
+        Ti.API.debug("Here");
+        Ti.API.debug(JSON.stringify(this.dispatchNode));
         
         //create app tabs
         this.dispatchObj = this.FormModule.getDispatchObject(Omadi, 'dispatch', this.dispatchNode.nid, 0, this);
@@ -370,8 +442,23 @@ DispatchForm.prototype.getWindow = function(){"use strict";
         }
         
         if(this.workNode.type !== null){
+            
+            try{
+                tempFormPart = parseInt(this.form_part, 10);
+                if(this.form_part != tempFormPart){
+                    Ti.API.info("This is a custom copy to " + this.form_part);
+                    
+                    this.workNode.form_part = this.form_part;
+                }
+            }
+            catch(copyEx){
+                Omadi.service.sendErrorReport("Exception with custom copy in dispatch: " + copyEx);
+            }
+            
             this.workObj = this.FormModule.getDispatchObject(Omadi, this.workNode.type, this.workNode.nid, this.workNode.form_part, this);
-       
+            
+            this.workNode = this.workObj.node;
+            
             workBundle = Omadi.data.getBundle(this.workNode.type);
             this.workTab = Ti.UI.createTab({
                 title: workBundle.label,
@@ -381,6 +468,30 @@ DispatchForm.prototype.getWindow = function(){"use strict";
             
             this.workObj.win.dispatchTabGroup = this.tabGroup;
         }
+        
+        // Add this in at the end so the regular work form can't mess with the tow_type on a copy function
+        // This section is for form copies to make sure the tow type is set correctly
+        try{
+            tempFormPart = parseInt(this.form_part, 10);
+            if(this.form_part !== tempFormPart){
+                
+                copyToBundle = Omadi.data.getBundle(this.form_part);
+                
+                this.dispatchObj.setValues('field_tow_type', {
+                    dbValues: [this.form_part],
+                    textValues: [copyToBundle.label]
+                });
+                
+                // Be sure to disable changing the tow type or there's no point to the copy as all data will be overwritten by blank data
+                this.dispatchObj.setValueWidgetProperty('field_tow_type', 'touchEnabled', false, 0);
+                this.dispatchObj.setValueWidgetProperty('field_tow_type', 'backgroundGradient', null, 0);
+                this.dispatchObj.setValueWidgetProperty('field_tow_type', 'backgroundColor', '#ccc', 0);
+            }
+        }
+        catch(copyEx){
+            Omadi.service.sendErrorReport("Exception with custom copy in dispatch: " + copyEx);
+        }
+        
         
         if(openDispatch){
             this.tabGroup.addTab(this.dispatchTab);
@@ -633,10 +744,10 @@ exports.getNode = function(){"use strict";
     return node;
 };
 
-exports.getWindow = function(OmadiObj, type, nid, form_part){"use strict";
+exports.getWindow = function(OmadiObj, type, nid, form_part, initNewDispatch){"use strict";
     Omadi = OmadiObj;
     
     Dispatch = new DispatchForm(type, nid, form_part);
     
-    return Dispatch.getWindow();
+    return Dispatch.getWindow(initNewDispatch);
 };

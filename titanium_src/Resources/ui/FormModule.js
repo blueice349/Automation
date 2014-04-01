@@ -372,6 +372,15 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
             this.nid = 'new';
             
             this.form_part = 0;
+            
+            if(this.usingDispatch){
+                if(this.type == 'dispatch'){
+                    this.node.dispatch_nid = this.dispatch_nid = this.continuous_nid + 1;
+                }
+                else{
+                    this.node.dispatch_nid = this.dispatch_nid = this.continuous_nid - 1;
+                }
+            }
         }
         
         if(this.node !== null && typeof this.node.custom_copy_orig_nid === 'undefined'){
@@ -382,72 +391,6 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
         Ti.API.error("Exception initializing the FormModule");
     }
 }
-
-FormModule.prototype.loadCustomCopyNode = function(originalNode, from_type, to_type){"use strict";
-    var fromBundle, newNode, to_field_name, from_field_name, index;
-    
-    newNode = {
-        created : Omadi.utils.getUTCTimestamp(),
-        author_uid: Omadi.utils.getUid(),
-        form_part: 0,
-        nid: 'new',
-        type: to_type,
-        changed: Omadi.utils.getUTCTimestamp(),
-        changed_uid: Omadi.utils.getUid(),
-        origNid: originalNode.nid
-    };
-    
-    try{
-        
-        fromBundle = Omadi.data.getBundle(from_type);
-        
-        if(fromBundle){
-            if(originalNode){
-                if(typeof fromBundle.data !== 'undefined'){
-                    if(typeof fromBundle.data.custom_copy !== 'undefined'){
-                        if(typeof fromBundle.data.custom_copy[to_type] !== 'undefined'){
-                            for(to_field_name in fromBundle.data.custom_copy[to_type]){
-                                if(fromBundle.data.custom_copy[to_type].hasOwnProperty(to_field_name)){
-                                    from_field_name = fromBundle.data.custom_copy[to_type][to_field_name];
-                                    if(typeof originalNode[from_field_name] !== 'undefined'){
-                                        newNode[to_field_name] = originalNode[from_field_name];
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            
-            // If there is also a child/parent relationship with the forms, add the parent reference to the child node
-            if(typeof fromBundle.child_forms !== 'undefined' && fromBundle.child_forms.length){
-                for(index in fromBundle.child_forms){
-                    if(fromBundle.child_forms.hasOwnProperty(index)){
-                        
-                        if(fromBundle.child_forms[index].child_node_type == to_type){
-                            
-                            newNode[fromBundle.child_forms[index].child_field_name] = {};
-                            newNode[fromBundle.child_forms[index].child_field_name].dbValues = [];
-                            newNode[fromBundle.child_forms[index].child_field_name].textValues = [];
-                            newNode[fromBundle.child_forms[index].child_field_name].dbValues.push(originalNode.nid);
-                            newNode[fromBundle.child_forms[index].child_field_name].textValues.push(originalNode.title);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        else{
-            Ti.API.error("No bundle found for " + from_type);
-            Omadi.service.sendErrorReport("No bundle found for " + from_type);
-        }
-    }
-    catch(ex){
-        this.sendError("Could not copy custom form: " + ex);
-    }
-    
-    return newNode;
-};
 
 FormModule.prototype.initNewWindowFromCurrentData = function(form_part){"use strict";
     var imageNids, field_name, listDB, result;
@@ -2339,11 +2282,11 @@ FormModule.prototype.setValueWidgetProperty = function(field_name, property, val
         }
         else{
             for(i = 0; i < children.length; i ++){
-                Ti.API.debug("in i " + i + " " + property[0] + " " + value);
+               // Ti.API.debug("in i " + i + " " + property[0] + " " + value);
                 if(typeof children[i].dbValue !== 'undefined'){
-                    Ti.API.debug("further in i " + i + " " + property[0] + " " + value);
+                    //Ti.API.debug("further in i " + i + " " + property[0] + " " + value);
                     if(i == setIndex){
-                        Ti.API.debug("Setting i " + i + " " + property[0] + " " + value);
+                       // Ti.API.debug("Setting i " + i + " " + property[0] + " " + value);
                         if(property.length == 1){
                             this.fieldWrappers[field_name].children[i][property[0]] = value;
                         }
@@ -2356,11 +2299,11 @@ FormModule.prototype.setValueWidgetProperty = function(field_name, property, val
                 if(children[i].getChildren().length > 0){
                     subChildren = children[i].getChildren();
                     for(j = 0; j < subChildren.length; j ++){
-                        Ti.API.debug("in j " + j + " " + property[0] + " " + value);
+                        //Ti.API.debug("in j " + j + " " + property[0] + " " + value);
                         if(typeof subChildren[j].dbValue !== 'undefined'){
-                            Ti.API.debug("further in j " + j + " " + property[0] + " " + value);
+                           // Ti.API.debug("further in j " + j + " " + property[0] + " " + value);
                             if(j == setIndex){
-                                Ti.API.debug("Setting j " + j + " " + property[0] + " " + value);
+                               // Ti.API.debug("Setting j " + j + " " + property[0] + " " + value);
                                 if(property.length == 1){
                                     this.fieldWrappers[field_name].children[i].children[j][property[0]] = value;
                                 }
@@ -2373,11 +2316,11 @@ FormModule.prototype.setValueWidgetProperty = function(field_name, property, val
                         if(subChildren[j].getChildren().length > 0){
                             subSubChildren = subChildren[j].getChildren();
                             for(k = 0; k < subSubChildren.length; k ++){
-                                Ti.API.debug("in k " + k + " " + property[0] + " " + value);
+                               // Ti.API.debug("in k " + k + " " + property[0] + " " + value);
                                 if(typeof subSubChildren[k].dbValue !== 'undefined'){
-                                    Ti.API.debug("further in k " + k + " " + property[0] + " " + value);
+                                    //Ti.API.debug("further in k " + k + " " + property[0] + " " + value);
                                     if(k == setIndex){
-                                        Ti.API.debug("Setting k " + k + " " + property[0] + " " + value);
+                                       // Ti.API.debug("Setting k " + k + " " + property[0] + " " + value);
                                         if(property.length == 1){
                                             this.fieldWrappers[field_name].children[i].children[j].children[k][property[0]] = value;
                                         }
@@ -4095,6 +4038,7 @@ exports.resetAllButDispatch = function(){"use strict";
 };
 
 exports.getDispatchObject = function(OmadiObj, type, nid, form_part, parentTabObj){"use strict";
+    var tempFormPart;
     
     Omadi = OmadiObj;
     
@@ -4191,3 +4135,4 @@ exports.loggingOut = function(){"use strict";
         Omadi.service.sendErrorReport("Exception in form logout: " + ex);
     }
 };
+

@@ -533,7 +533,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
         try{
             newDate = null;
             
-            if(date_picker !== null){
+            if(typeof date_picker !== 'undefined' && date_picker !== null){
                 
                 pickerValue = date_picker.getValue();
                 
@@ -557,7 +557,7 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
                 
                 newDate = pickerValue;
             }
-            else if(time_picker !== null){
+            else if(typeof time_picker !== 'undefined' && time_picker !== null){
                 pickerValue = time_picker.getValue();
                 
                 if(e.source.origDBValue === null){
