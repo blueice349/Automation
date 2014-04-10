@@ -440,7 +440,8 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                             tableData = [];
         
                             for ( i = 0; i < possibleValues.length; i++) {
-        
+                                // TODO: make sure the regular expression is valid
+                                
                                 regEx = new RegExp(widget.element.value, 'i');
                                 if (possibleValues[i].title.search(regEx) != -1) {
                                     //Check match

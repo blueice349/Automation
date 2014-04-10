@@ -290,7 +290,7 @@ function displayBundleList() {"use strict";
                 for(j = 0; j < colorGroups[colors[i]].length; j ++){
                     item = colorGroups[colors[i]][j];
                 
-                    if (item.can_view === 1) {
+                    if (item.can_view === 1 || item.can_create) {
             
                         row_t = Ti.UI.createTableViewRow({
                             height : 53,
@@ -1170,11 +1170,14 @@ function openFormWindow(e){"use strict";
     Ti.Network.addEventListener('change', networkChangedMainMenu);
 
     listView.addEventListener('click', function(e) {
-        var nextWindow;
+        var nextWindow, bundle;
         try{
             Omadi.data.setUpdating(true);
-    
-            if (e.source.is_plus) {
+            
+            bundle = Omadi.data.getBundle(e.row.name_table);
+            
+            if (e.source.is_plus || !bundle.can_view) {
+                // A click anywhere when only create permissions are available will go to the new form
                 Omadi.display.openFormWindow(e.row.name_table, 'new', 0);
             }
             else {

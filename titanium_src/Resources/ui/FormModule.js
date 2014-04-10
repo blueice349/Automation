@@ -1764,7 +1764,6 @@ FormModule.prototype.saveForm = function(saveType){"use strict";
     try{
         this.formToNode();
         
-        
         if(saveType == 'draft'){
             this.node._isDraft = true;
         }
@@ -1782,6 +1781,7 @@ FormModule.prototype.saveForm = function(saveType){"use strict";
         this.node.viewed = Omadi.utils.getUTCTimestamp();
         
         this.form_errors = [];
+        Ti.API.debug("About to validate");
         
         if(this.node._isContinuous === false){
             this.validate_form_data(saveType);
@@ -1833,49 +1833,55 @@ FormModule.prototype.sendError = function(message){"use strict";
 FormModule.prototype.initNewNode = function(){"use strict";
 
     var uid, now;
-    uid = Omadi.utils.getUid();
-    now = Omadi.utils.getUTCTimestamp();
-    
-    if(typeof this.form_part === 'undefined'){
-        Ti.API.error("form part is undefined!!!: " + this.type);
-    }
-    
-    this.node = {};
-    this.node.created = now;
-    this.node.author_uid = uid;
-   
-    // Set the original values passed in
-    this.node.nid = this.nid;
-    this.node.type = this.type;
-    this.node.form_part = this.form_part;
-    this.node.dispatch_nid = this.dispatch_nid;
-    this.node.origNid = this.origNid;
-    this.node.flag_is_updated = this.flag_is_updated;
-    this.node.custom_copy_orig_nid = this.custom_copy_orig_nid;
-    
-    this.node.changed = now;
-    this.node.changed_uid = uid;
-    
-    if(!this.continuous_nid){
-        this.node.continuous_nid = this.continuous_nid = Omadi.data.getNewNodeNid();
+    try{
+        uid = Omadi.utils.getUid();
+        now = Omadi.utils.getUTCTimestamp();
         
-        if(this.type == 'dispatch'){
-            // For dispatch nodes, decrement the save id so it's not the same as the one for the work node
-            this.continuous_nid --;
-            this.node.continuous_nid --;
+        if(typeof this.form_part === 'undefined'){
+            Ti.API.error("form part is undefined!!!: " + this.type);
         }
-    }
-    else{
-        this.node.continuous_nid = this.continuous_nid;
-    }
-    
-    if(this.origNid == 0){
-        if(this.continuous_nid > 0 || this.nid == 'new'){
-            this.origNid = this.node.origNid = this.continuous_nid;
+        
+        this.node = {};
+        this.node.created = now;
+        this.node.author_uid = uid;
+       
+        // Set the original values passed in
+        this.node.nid = this.nid;
+        this.node.type = this.type;
+        this.node.form_part = this.form_part;
+        this.node.dispatch_nid = this.dispatch_nid;
+        this.node.origNid = this.origNid;
+        this.node.flag_is_updated = this.flag_is_updated;
+        this.node.custom_copy_orig_nid = this.custom_copy_orig_nid;
+        
+        this.node.changed = now;
+        this.node.changed_uid = uid;
+        
+        if(!this.continuous_nid){
+            this.node.continuous_nid = this.continuous_nid = Omadi.data.getNewNodeNid();
+            
+            if(this.type == 'dispatch'){
+                // For dispatch nodes, decrement the save id so it's not the same as the one for the work node
+                this.continuous_nid --;
+                this.node.continuous_nid --;
+            }
         }
         else{
-            this.origNid = this.node.origNid = this.nid;
+            this.node.continuous_nid = this.continuous_nid;
         }
+        
+        if(this.origNid == 0){
+            if(this.continuous_nid > 0 || this.nid == 'new'){
+                this.origNid = this.node.origNid = this.continuous_nid;
+            }
+            else{
+                this.origNid = this.node.origNid = this.nid;
+            }
+        }
+    }
+    catch(ex){
+        Ti.API.error("Exception initializing a new node: " + ex);
+        Omadi.service.sendErrorReport("Exception initializing a new node: " + ex);
     }
 };
 

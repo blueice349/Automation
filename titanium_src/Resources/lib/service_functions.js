@@ -1591,6 +1591,7 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
                 obj.data.node[nid].sync_hash = node.sync_hash;
                 obj.data.node[nid].dispatch_nid = node.dispatch_nid;
                 obj.data.node[nid].custom_copy_orig_nid = node.custom_copy_orig_nid;
+                obj.data.node[nid].last_location = node.last_location;
 
                 for (field_name in instances) {
                     if (instances.hasOwnProperty(field_name)) {
@@ -1644,7 +1645,15 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
                         
                                                         try{
                                                             imageData = imageData.getText();
-                                                            obj.data.node[nid][field_name] = [{nid: -1, data: imageData}];
+                                                            var lastLocation = Omadi.location.getLastLocation();
+                                                            
+                                                            obj.data.node[nid][field_name] = [{
+                                                                nid: -1, 
+                                                                data: imageData,
+                                                                latitude: lastLocation.latitude,
+                                                                longitude: lastLocation.longitude,
+                                                                accuracy: lastLocation.accuracy
+                                                            }];
                                                         }
                                                         catch(ex6){
                                                             Omadi.service.sendErrorReport("Exception getting text of base64 signature of size " + imageBlob.length + ": " + ex6); 

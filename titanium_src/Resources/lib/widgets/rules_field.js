@@ -52,7 +52,12 @@ Omadi.widgets.rules_field = {
             widget = instance.widget;
         }
         else {
-            widget = JSON.parse(instance.widget);
+            try{
+                widget = JSON.parse(instance.widget);
+            }
+            catch(ex){
+                widget = null;
+            }
         }
 
         settings = instance.settings;
@@ -73,7 +78,12 @@ Omadi.widgets.rules_field = {
             switch(widget.type) {
                 case 'rules_field_violations':
                     if(typeof nodeValue === 'string'){
-                        nodeValue = JSON.parse(nodeValue);
+                        try{
+                            nodeValue = JSON.parse(nodeValue);
+                        }
+                        catch(ex1){
+                            nodeValue = null;
+                        }
                     }
                     
                     //Ti.API.debug(nodeValue);
@@ -118,7 +128,7 @@ Omadi.widgets.rules_field = {
                                 row.image = Ti.UI.createImageView({
                                     image : '/images/arrow.png',
                                     height : 23,
-                                    width : 23,
+                                    width : '10%',
                                     details : nodeValue[i],
                                     formTypes : formTypes,
                                     text : violation_name
@@ -129,13 +139,13 @@ Omadi.widgets.rules_field = {
                                     height : Ti.UI.SIZE,
                                     color : '#000',
                                     font : {
-                                        fontSize : 15,
-                                        fontFamily : 'Helvetica Neue'
+                                        fontSize : 15
                                     },
                                     ellipsize : true,
                                     wordWrap : false,
                                     details : nodeValue[i],
-                                    formTypes : formTypes
+                                    formTypes : formTypes,
+                                    width: '90%'
                                 });
 
                                 row.add(row.image);
@@ -168,7 +178,9 @@ Omadi.widgets.rules_field = {
         return view;
     },
     showDetail : function(e) {"use strict";
-        var detail_popup, translucent, table_format_bg, headerRow0, headerRowLabel, headerRow, forms, desc, detail_row, dttm, formsView, formsViewLabel, detailsVal, forms_str, i, dttmViewLabel, dttmView, descView, descViewLabel;
+        var detail_popup, translucent, table_format_bg, headerRow0, headerRowLabel, 
+            headerRow, forms, desc, detail_row, dttm, formsView, formsViewLabel, detailsVal, 
+            forms_str, i, dttmViewLabel, dttmView, descView, descViewLabel, closeLabel;
 
         if (Ti.App.isAndroid) {
             Ti.UI.Android.hideSoftKeyboard();
@@ -196,7 +208,7 @@ Omadi.widgets.rules_field = {
             borderWidth : 1,
             left : 4,
             right : 4,
-            height : '250'
+            height : 290
             //layout: 'vertical'
         });
         detail_popup.add(table_format_bg);
@@ -206,7 +218,7 @@ Omadi.widgets.rules_field = {
             height : 30,
             width : Ti.Platform.displayCaps.platformWidth - 8,
             layout : 'horizontal',
-            backgroundImage : '/images/header.png'
+            backgroundGradient: Omadi.display.backgroundGradientBlue
         });
 
         headerRowLabel = Ti.UI.createLabel({
@@ -239,7 +251,7 @@ Omadi.widgets.rules_field = {
             text : 'Forms',
             height : 38,
             width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
-            backgroundImage : '/images/header.png',
+            backgroundGradient: Omadi.display.backgroundGradientGray,
             font : {
                 fontSize : 16,
                 fontWeight : 'bold'
@@ -250,10 +262,10 @@ Omadi.widgets.rules_field = {
         headerRow.add(forms);
 
         dttm = Ti.UI.createLabel({
-            text : 'Date/Time Rules',
+            text : 'Time Rules',
             height : 38,
             width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
-            backgroundImage : '/images/header.png',
+            backgroundGradient: Omadi.display.backgroundGradientGray,
             font : {
                 fontSize : 16,
                 fontWeight : 'bold'
@@ -268,7 +280,7 @@ Omadi.widgets.rules_field = {
             text : 'Description',
             height : 38,
             width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
-            backgroundImage : '/images/header.png',
+            backgroundGradient: Omadi.display.backgroundGradientGray,
             font : {
                 fontFamily : 'Helvetica Neue',
                 fontSize : 16,
@@ -287,6 +299,26 @@ Omadi.widgets.rules_field = {
             layout : 'horizontal'
         });
         table_format_bg.add(detail_row);
+        
+        closeLabel = Ti.UI.createLabel({
+           text: 'Close',
+           color: '#eee',
+           backgroundGradient: Omadi.display.backgroundGradientBlue,
+           font: {
+               fontSize: 18,
+               fontWeight: 'bold'
+           },
+           width: Ti.UI.FILL,
+           top: 250,
+           height: 40,
+           textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+        });
+        
+        closeLabel.addEventListener('click', function(){
+            detail_popup.close();
+        });
+        
+        table_format_bg.add(closeLabel);
 
         formsView = Ti.UI.createScrollView({
             height : 175,

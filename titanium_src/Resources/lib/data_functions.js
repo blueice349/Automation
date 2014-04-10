@@ -271,24 +271,36 @@ Omadi.data.getRegions = function(type) {"use strict";
 Omadi.data.getNewNodeNid = function() {"use strict";
     var db, result, smallestNid;
     //Get smallest nid
-    db = Omadi.utils.openMainDatabase();
-    result = db.execute("SELECT MIN(nid) FROM node");
-
-    if (result.isValidRow()) {
-        smallestNid = result.field(0, Ti.Database.FIELD_TYPE_INT);
-
-        if (smallestNid > 0) {
-            smallestNid = -1;
+    try{
+        db = Omadi.utils.openMainDatabase();
+        result = db.execute("SELECT MIN(nid) FROM node");
+    
+        if (result.isValidRow()) {
+            smallestNid = result.field(0);
+            
+            smallestNid = parseInt(smallestNid, 10);
+            if (isNaN(smallestNid) || smallestNid > 0) {
+                smallestNid = -1;
+            }
+            else {
+                smallestNid--;
+            }
         }
         else {
-            smallestNid--;
+            smallestNid = -1;
         }
+        
+        result.close();
+        db.close();
     }
-    else {
-        smallestNid = -1;
+    catch(ex){
+        Ti.API.error("Exception in getNewNodeNid: " + ex);
+        Omadi.service.sendErrorReport("Exception in getNewNodeNid: " + ex);   
+        try{
+            db.close();
+        }
+        catch(ex1){}
     }
-    result.close();
-    db.close();
 
     return smallestNid;
 };
@@ -366,7 +378,8 @@ Omadi.data.deleteContinuousNodes = function(){"use strict";
 Omadi.data.nodeSave = function(node) {"use strict";
     var query, field_name, fieldNames, instances, result, db, smallestNid, insertValues, j, k, 
         instance, value_to_insert, has_data, content_s, saveNid, continuousNid, photoNids, origNid,
-        continuousId, tempNid, listDB, trueWindowNid, priceIdx, priceTotal, priceData, jsonValue, nodeHasData;
+        continuousId, tempNid, listDB, trueWindowNid, priceIdx, priceTotal, priceData, 
+        jsonValue, nodeHasData, lastLocation;
     /*jslint nomen: true*/
     try{
         node._saved = false;
@@ -464,7 +477,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
     catch(ex){
         Omadi.service.sendErrorReport("Exception in first part of node save: " + ex);
     }
-    
+      
     db = Omadi.utils.openMainDatabase();
     db.execute("BEGIN IMMEDIATE TRANSACTION");
     
@@ -605,6 +618,7 @@ Omadi.data.nodeSave = function(node) {"use strict";
         if(nodeHasData || node._isContinuous){
             
             try {
+                Ti.API.debug(query);
                 db.execute(query);
                 
                 // Make sure dispatch_nid is set for the save
@@ -640,17 +654,51 @@ Omadi.data.nodeSave = function(node) {"use strict";
                     // Only save drafts as a negative nid
                     query = "INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",3,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1," + node.origNid + "," + node.dispatch_nid + "," + node.custom_copy_orig_nid + ")";
                 }
-                else if (saveNid > 0) {
-                    //Omadi.service.sendErrorReport("Saved update: saveNid = " + saveNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
-                    query = "UPDATE node SET changed=" + node.changed + ", changed_uid=" + node.changed_uid + ", title='" + dbEsc(node.title) + "', flag_is_updated=1, table_name='" + node.type + "', form_part=" + node.form_part + ", no_data_fields='" + node.no_data + "',viewed=" + node.viewed + " WHERE nid=" + saveNid;
-                }
-                else {
-                    //Omadi.service.sendErrorReport("Saved new: saveNid = " + saveNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
-                    // Give all permissions for this node. Once it comes back, the correct permissions will be there.  If it never gets uploaded, the user should be able to do whatever they want with that info.
-                    query = "INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid) VALUES (" + saveNid + "," + node.created + "," + node.changed + ",'" + dbEsc(node.title) + "'," + node.author_uid + "," + node.changed_uid + ",1,'" + node.type + "'," + node.form_part + ",'" + node.no_data + "'," + node.viewed + ",'" + node.sync_hash + "',1,1,0," + node.dispatch_nid + "," + node.custom_copy_orig_nid + ")";
+                else{
+                    // This is a save the will be sent to the server
+                    
+                    lastLocation = Omadi.location.getLastLocation();
+                    
+                    if (saveNid > 0) {
+                        
+                        //Omadi.service.sendErrorReport("Saved update: saveNid = " + saveNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
+                        query = "UPDATE node SET changed=" + node.changed + 
+                            ", changed_uid=" + node.changed_uid + 
+                            ", title='" + dbEsc(node.title) + 
+                            "', flag_is_updated=1, table_name='" + node.type + 
+                            "', form_part=" + node.form_part + 
+                            ", no_data_fields='" + node.no_data + 
+                            "',viewed=" + node.viewed + 
+                            ", latitude='" + lastLocation.latitude +
+                            "', longitude='" + lastLocation.longitude +
+                            "', accuracy=" + lastLocation.accuracy +
+                            " WHERE nid=" + saveNid;
+                    }
+                    else {
+                        
+                        //Omadi.service.sendErrorReport("Saved new: saveNid = " + saveNid + ", winNid = " + Ti.UI.currentWindow.nid + ", continuous = " + Ti.UI.currentWindow.continuous_nid);
+                        // Give all permissions for this node. Once it comes back, the correct permissions will be there.  If it never gets uploaded, the user should be able to do whatever they want with that info.
+                        query = "INSERT OR REPLACE INTO node (nid, created, changed, title, author_uid, changed_uid, flag_is_updated, table_name, form_part, no_data_fields, viewed, sync_hash, perm_edit, perm_delete, continuous_nid, dispatch_nid, copied_from_nid, latitude, longitude, accuracy) VALUES (" + 
+                            saveNid + "," + 
+                            node.created + "," + 
+                            node.changed + ",'" + 
+                            dbEsc(node.title) + "'," + 
+                            node.author_uid + "," + 
+                            node.changed_uid + ",1,'" + 
+                            node.type + "'," + 
+                            node.form_part + ",'" + 
+                            node.no_data + "'," + 
+                            node.viewed + ",'" + 
+                            node.sync_hash + "',1,1,0," + 
+                            node.dispatch_nid + "," + 
+                            node.custom_copy_orig_nid + ",'" +
+                            lastLocation.latitude + "','" +
+                            lastLocation.longitude + "'," +
+                            lastLocation.accuracy + ")";
+                    }
                 }
                 
-                //Ti.API.error(query);
+                Ti.API.debug(query);
                 db.execute(query);
                 
                 photoNids = [0];
@@ -673,8 +721,6 @@ Omadi.data.nodeSave = function(node) {"use strict";
                 // Do not save the photos to the continuous
                 // Do not save photos to a dispatch node
                 if(!node._isContinuous && node.type != 'dispatch'){
-                    
-                    
                     
                     listDB = Omadi.utils.openListDatabase();
                     listDB.execute('UPDATE _files SET nid=' + saveNid + ' WHERE nid IN (' + photoNids.join(',') + ')');
@@ -711,12 +757,11 @@ Omadi.data.nodeSave = function(node) {"use strict";
     catch(nothing) {
         
     }
-    finally{
-        try{
-             db.close();
-        }
-        catch(dbEx){}
+    
+    try{
+         db.close();
     }
+    catch(dbEx){}
     
     if(node._saved === true){
          if(typeof node._deleteNid !== 'undefined'){
@@ -1057,7 +1102,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
             
             try{
 
-                result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed, sync_hash, continuous_nid, dispatch_nid, copied_from_nid FROM node WHERE  nid = ' + nid);
+                result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed, sync_hash, continuous_nid, dispatch_nid, copied_from_nid, latitude, longitude, accuracy FROM node WHERE  nid = ' + nid);
         
                 if (result.isValidRow()) {
         
@@ -1078,6 +1123,12 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                     node.continuous_nid = result.fieldByName('continuous_nid', Ti.Database.FIELD_TYPE_STRING);
                     node.dispatch_nid = result.fieldByName('dispatch_nid', Ti.Database.FIELD_TYPE_INT);
                     node.custom_copy_orig_nid = result.fieldByName('copied_from_nid', Ti.Database.FIELD_TYPE_INT);
+                    
+                    node.last_location = {
+                        latitude : result.fieldByName('latitude'),
+                        longitude : result.fieldByName('longitude'),
+                        accuracy : result.fieldByName('accuracy')
+                    };
                 }
                 else{
                     
@@ -1090,7 +1141,7 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
               
                         Ti.App.deletedNegatives[nid] = null;
                         
-                        result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed, sync_hash, continuous_nid, dispatch_nid, copied_from_nid FROM node WHERE  nid = ' + newNid);
+                        result = db.execute('SELECT nid, title, created, changed, author_uid, flag_is_updated, table_name, form_part, changed_uid, no_data_fields, perm_edit, perm_delete, viewed, sync_hash, continuous_nid, dispatch_nid, copied_from_nid, latitude, longitude, accuracy FROM node WHERE  nid = ' + newNid);
         
                         if (result.isValidRow()) {
                 
@@ -1111,6 +1162,12 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                             node.continuous_nid = result.fieldByName('continuous_nid', Ti.Database.FIELD_TYPE_STRING);
                             node.dispatch_nid = result.fieldByName('dispatch_nid', Ti.Database.FIELD_TYPE_INT);
                             node.custom_copy_orig_nid = result.fieldByName('copied_from_nid', Ti.Database.FIELD_TYPE_INT);
+                            
+                            node.last_location = {
+                                latitude : result.fieldByName('latitude'),
+                                longitude : result.fieldByName('longitude'),
+                                accuracy : result.fieldByName('accuracy')
+                            };
                         }
                         else{
                              Omadi.service.sendErrorReport("unrecoverable node load 1 for nid " + nid);
