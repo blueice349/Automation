@@ -44,6 +44,7 @@ Omadi.service.refreshSession = function() {"use strict";
                         db_list.execute("UPDATE login SET is_logged = 'true', cookie = '" + dbEsc(cookie) + "' WHERE id_log=1");
                         db_list.execute("COMMIT TRANSACTION");
                     }
+                    
                     list_result.close();
 
                     db_list.close();
@@ -186,9 +187,16 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                     userInitiated: userInitiated
                 });
 
+                lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp();
+
                 //Timeout until error:
-                http.setTimeout(35000);
-                //http.setValidatesSecureCertificate(false);
+                if(lastSyncTimestamp <= 1){
+                    // Allow extra time for the initial downloads
+                    http.setTimeout(90000);    
+                }
+                else{
+                    http.setTimeout(45000);
+                }
 
                 //While streamming - following method should be called b4 open URL
                 http.ondatastream = function(e) {
@@ -199,7 +207,6 @@ Omadi.service.fetchUpdates = function(useProgressBar, userInitiated) {"use stric
                     }
                 };
                 
-                lastSyncTimestamp = Omadi.data.getLastUpdateTimestamp();
                 Ti.API.debug("lastSynctimestamp: " + lastSyncTimestamp);
                 
                 http.open('GET', Omadi.DOMAIN_NAME + '/js-sync/download.json?sync_timestamp=' + lastSyncTimestamp);

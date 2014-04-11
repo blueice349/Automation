@@ -14,7 +14,7 @@ function LicensePlateWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.elements = [];
     this.nodeElement = null;
     this.numVisibleFields = 1;
-    this.fieldViewWrapper = fieldViewWrapper;
+    this.fieldViewWrapper = fieldViewWrapper;    
     
     if(typeof this.node[this.instance.field_name] !== 'undefined'){
         this.nodeElement = this.node[this.instance.field_name];
@@ -94,6 +94,9 @@ LicensePlateWidget.prototype.getNewElement = function(index){"use strict";
     }
 
     if (part == 'plate') {
+        
+        this.duplicateWarnings = {};
+        
         dbValue = "";
         textValue = "";
         
@@ -112,7 +115,9 @@ LicensePlateWidget.prototype.getNewElement = function(index){"use strict";
         }
     }
     else {
-
+        
+        // Do not create this.duplicateWarnings here so the form module will only take duplicates on the plate field
+        
         states = this.getStates();
         dbValue = "";
         textValue = "- None -";
@@ -168,9 +173,11 @@ LicensePlateWidget.prototype.getNewElement = function(index){"use strict";
         this.formObj.addCheckConditionalFields(widgetView.check_conditional_fields);
         
         widgetView.addEventListener('change', function(e) {
-            var tempValue;
+            var tempValue, now;
             /*jslint regexp: true*/
-
+            
+            now = (new Date()).getTime();
+            
             if (e.source.lastValue != e.source.value) {
                 tempValue = "";
                 if(e.source.value !== null){
@@ -200,6 +207,70 @@ LicensePlateWidget.prototype.getNewElement = function(index){"use strict";
                 }
 
                 e.source.lastValue = e.source.value;
+                
+                if(typeof e.source.instance.settings.duplicate_warning !== 'undefined' && e.source.instance.settings.duplicate_warning == 1){
+                    
+                    //Ti.API.debug("Form part == " + Widget[e.source.instance.field_name].formObj.form_part);
+                    
+                    
+                    // Only check for duplicate warnings if set in the field settings
+                    setTimeout(function(){
+                        var fieldName, value, origLastChange, actualLastChange, widget, formPart;
+                        
+                        try{
+                            fieldName = e.source.instance.field_name;
+                            value = "".toString() + e.source.value;
+                            value = value.trim();
+                            
+                            if(value.length > 0){
+                                if(typeof Widget[fieldName] !== 'undefined'){
+                                    widget = Widget[fieldName];
+                                    
+                                    formPart = widget.formObj.form_part;
+                                    
+                                    if(formPart <= 0){
+                                    
+                                        origLastChange = now;
+                                    
+                                        actualLastChange = widget.elements[0].lastChange;
+                                        
+                                        if(origLastChange == actualLastChange){
+                                            // The last change happened 5 seconds ago, so possibly send request if it hasn't been sent before
+                                            
+                                            if(typeof widget.duplicateWarnings[value] === 'undefined'){
+                                                Ti.API.debug("Send Request baby!");    
+                                                
+                                                widget.setDuplicateWarnings(fieldName, value);
+                                            }
+                                            else{
+                                                Ti.API.debug("Already have the warning cached for " + value);
+                                            }
+                                        }
+                                    }
+                                    else{
+                                        Ti.API.debug("Duplicate form part above 0");
+                                    }
+                                }
+                                else{
+                                    Ti.API.error("duplicate widget " + fieldName + " doesn't exist");
+                                }
+                            }
+                            else{
+                                Ti.API.error("value is blank");
+                            }
+                        }
+                        catch(ex){
+                            Ti.API.error("Exception in duplicate warning timeout: " + ex);
+                            try{
+                                Omadi.service.sendErrorReport("Exception in duplicate warning timeout: " + ex);
+                            }
+                            catch(ex2){}
+                        }
+                        
+                    }, 4000);
+                }
+                
+                e.source.lastChange = now;
             }
         });
     }
@@ -256,6 +327,65 @@ LicensePlateWidget.prototype.getNewElement = function(index){"use strict";
     }
 
     return widgetView;
+};
+
+LicensePlateWidget.prototype.setDuplicateWarnings = function(fieldName, value){"use strict";
+    
+    var http, actualFieldName;
+    
+    http = Ti.Network.createHTTPClient({
+        enableKeepAlive: false,
+        validatesSecureCertificate: false
+    });
+    http.setTimeout(10000);
+    http.open('POST', Omadi.DOMAIN_NAME + '/js-fields/omadi_fields/duplicate_warnings.json');
+
+    Omadi.utils.setCookieHeader(http);
+    http.setRequestHeader("Content-Type", "application/json");
+    
+    http.onload = function(e) {
+        var json;
+        
+        try{
+            Ti.API.debug("SUCCESS!");
+            Ti.API.debug(this.responseText);
+            
+            json = JSON.parse(this.responseText);
+            
+            if(typeof Widget[fieldName] !== 'undefined'){
+            
+                Widget[fieldName].duplicateWarnings[value] = json;
+                
+                if(typeof Widget[fieldName].formObj !== 'undefined'){
+                    Widget[fieldName].formObj.win.fireEvent('duplicateWarningComplete', {
+                        json: json,
+                        fieldName: fieldName,
+                        value: value
+                    });
+                }
+            }
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception on onload of setDuplicateWarnings: " + ex);
+        }
+    };
+
+    http.onerror = function(e) {
+        try{
+            Ti.API.error(JSON.stringify(e));
+            Omadi.service.sendErrorReport("Error on setduplicatewarnings: " + JSON.stringify(e));
+        }
+        catch(ex){
+            
+        }
+    };
+    
+    actualFieldName = fieldName.replace(/___plate/g, '');
+
+    http.send(JSON.stringify({
+        field_name: actualFieldName,
+        value: value
+    }));
 };
 
 LicensePlateWidget.prototype.getStates = function() {"use strict";

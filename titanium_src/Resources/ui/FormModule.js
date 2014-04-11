@@ -246,6 +246,7 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
     
     this.win = null;
     
+    this.alertQueue = [];
     this.node = {};
     this.nid = nid;
     this.origNid = 0;
@@ -1612,6 +1613,7 @@ FormModule.prototype.validateMaxValue = function(instance){"use strict";
     }
 };
 
+
 FormModule.prototype.validate_form_data = function(saveType){"use strict";
     
     var field_name, instance, values, isEmpty, i, region_name;
@@ -1626,6 +1628,7 @@ FormModule.prototype.validate_form_data = function(saveType){"use strict";
         else if(saveType != 'continuous'){
         
             this.validateRestrictions();
+
             // Only show restriction error if one exists
             if(this.form_errors !== null && this.form_errors.length == 0){
                 
@@ -1757,7 +1760,7 @@ FormModule.prototype.validateMaxLength = function(instance){"use strict";
 
 FormModule.prototype.saveForm = function(saveType){"use strict";
     /*jslint nomen: true*/
-    var dialog;
+    var dialog, showingDuplicates;
     
     Ti.API.info("Saving with type: " + saveType);
     
@@ -1798,6 +1801,8 @@ FormModule.prototype.saveForm = function(saveType){"use strict";
         }
         else{
             
+            
+            
             try{
     
                 //TODO: fix the below
@@ -1809,8 +1814,16 @@ FormModule.prototype.saveForm = function(saveType){"use strict";
                     var server_time = new Date(actual_time);
             
                 }*/
+                showingDuplicates = false;
                 
-                this.trySaveNode(saveType);
+                if(this.node._isContinuous === false){
+                    // Only check duplicates on regular saves
+                    showingDuplicates = this.showDuplicateWarnings(saveType);
+                }
+                
+                if(!showingDuplicates){
+                    this.trySaveNode(saveType);
+                }
             }
             catch(ex){
                 alert("Saving to mobile database: " + ex);
@@ -1821,6 +1834,359 @@ FormModule.prototype.saveForm = function(saveType){"use strict";
     }
     catch(ex1){
         Omadi.service.sendErrorReport("Exception saving form: " + ex1);
+    }
+};
+
+FormModule.prototype.showDuplicateWarnings = function(saveType){"use strict";
+    var i, fieldObject, nodeValue, showingDuplicates, alertDialog;
+    // If duplicate warnings are being shown, this function will take care of the node save after the dialog
+    // Returns a boolean: true if duplicates were shown, falst otherwise
+    
+    showingDuplicates = false;
+    
+    for(i in this.fieldObjects){
+        if(this.fieldObjects.hasOwnProperty(i)){
+            fieldObject = this.fieldObjects[i];
+            
+            if(typeof fieldObject.duplicateWarnings !== 'undefined'){
+                if(typeof this.node[fieldObject.instance.field_name] !== 'undefined'){
+                    if(typeof this.node[fieldObject.instance.field_name].dbValues !== 'undefined'){
+                        if(typeof this.node[fieldObject.instance.field_name].dbValues[0] !== 'undefined'){
+                            nodeValue = "".toString() + this.node[fieldObject.instance.field_name].dbValues[0];
+                            nodeValue = nodeValue.trim();
+                            
+                            if(nodeValue.length > 0){
+                                if(typeof fieldObject.duplicateWarnings[nodeValue] !== 'undefined'){
+                                    if(typeof fieldObject.duplicateWarnings[nodeValue].matches !== 'undefined'){
+                                       if(fieldObject.duplicateWarnings[nodeValue].matches.length > 0){
+                                           showingDuplicates = true;
+                                           
+                                           Ti.API.error("Display the duplicate warnings now: " + JSON.stringify(fieldObject.duplicateWarnings[nodeValue]));
+                                           
+                                           this.displayDuplicateWarnings(fieldObject.duplicateWarnings[nodeValue], nodeValue, saveType);
+                                       } 
+                                    }
+                                }
+                                else{
+                                    showingDuplicates = true;
+                                    
+                                    if(Ti.Network.online){
+                                        Ti.API.error("We must fetch the duplicate warnings...");
+                                    
+                                        this.win.addEventListener('duplicateWarningComplete', function(e){
+                                            
+                                            try{
+                                                if(typeof ActiveFormObj.duplicateWaitingAlert !== 'undefined'){
+                                                    if(ActiveFormObj.duplicateWaitingAlert !== null){
+                                                        ActiveFormObj.duplicateWaitingAlert.hide();
+                                                    }
+                                                }
+                                            }
+                                            catch(ex3){
+                                                Omadi.service.sendErrorReport("Exception in closing waiting dialog for duplicatewarningcomplete: " + ex3);
+                                            }
+                                            
+                                            try{
+                                                var json, fieldName, value;
+                                                json = e.json;
+                                                fieldName = e.field_name;
+                                                value = e.value;
+                                                
+                                                ActiveFormObj.displayDuplicateWarnings(json, value, saveType);
+                                            }
+                                            catch(ex1){
+                                                Omadi.service.sendErrorReport("Exception in duplicatewarningcomplete: " + ex1);
+                                            }
+                                        });
+                                        
+                                        fieldObject.setDuplicateWarnings(fieldObject.instance.field_name, nodeValue);
+                                        
+                                        this.duplicateWaitingAlert = Ti.UI.createAlertDialog({
+                                            title: 'Waiting for previous matches',
+                                            message: 'Please wait for previous matches to be generated.',
+                                            buttonNames: ['Abort and Save Now', 'Cancel']
+                                        });
+                                        
+                                        this.duplicateWaitingAlert.addEventListener('click', function(e){
+                                            if(e.index === 0){
+                                                ActiveFormObj.trySaveNode(saveType);
+                                            }
+                                            
+                                            ActiveFormObj.duplicateWaitingAlert = null;
+                                        });
+                                        
+                                        this.duplicateWaitingAlert.show();
+                                    }
+                                    else{
+                                        // Alert the user with the disclaimer
+                                        try{
+                                            Ti.Media.vibrate();
+                                        }
+                                        catch(ex2){}
+                                        
+                                        alertDialog = Ti.UI.createAlertDialog({
+                                            title: 'No Network Connection',
+                                            message: "Unable to fetch previous duplicates because you do not have an Internet connection. \n\nIf you save now, be sure you lookup previous matches manually.",
+                                            buttonNames: ['Save Anyway', 'Cancel'] 
+                                        });
+                                        
+                                        alertDialog.addEventListener('click', function(e){
+                                            if(e.index === 0){
+                                                ActiveFormObj.trySaveNode(saveType);
+                                            }
+                                        });
+                                        
+                                        alertDialog.show();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }    
+    }
+    
+    return showingDuplicates;
+};
+
+
+FormModule.prototype.displayDuplicateWarnings = function(warningJSON, value, saveType){"use strict";
+    var wrapper, headerView, buttonsView, buttonWrapper, scrollView, saveButton, cancelButton, 
+        headerText, warningCount, db, nids, i, result, localNids, title, matches, row, tableData, 
+        textView, rowImg, titleLabel, timeLabel, tableView, now, showWindow;
+    
+    
+    showWindow = true;
+    now = (new Date()).getTime();
+    
+    // Don't show the window on top of itself
+    if(typeof this.duplicateWarningTimestamp !== 'undefined' && this.duplicateWarningTimestamp > 0){
+        if(now - this.duplicateWarningTimestamp < 4000){
+            showWindow = false;
+        }
+    }
+    
+    if(showWindow){
+        this.duplicateWarningTimestamp = now;
+        
+        try{
+            
+            try{
+                Ti.Media.vibrate();
+            }
+            catch(exVib){}
+            
+            matches = warningJSON.matches;
+            warningCount = matches.length;
+            
+            headerText = warningCount + " Previous Match" + (warningCount == 1 ? '' : 'es') + " for \"" + value + "\"";
+            
+            wrapper = Ti.UI.createView({
+               backgroundColor: '#000',
+               height: Ti.UI.FILL,
+               width: Ti.UI.FILL,
+               top: 0,
+               bottom: 0,
+               left: 0,
+               right: 0
+            });
+            
+            scrollView = Ti.UI.createScrollView({
+               top: 40,
+               bottom: 50,
+               left: 0,
+               right: 0,
+               backgroundColor: '#fc7'
+            });
+            
+            nids = [];
+            localNids = {};
+            tableData = [];
+            
+            // Disabled the below for now
+            // for(i = 0; i < matches.length; i ++){
+                // nids.push(matches[i].nid);
+            // }
+    //         
+            // try{
+                // if(nids.length > 0){
+                    // db = Omadi.utils.openMainDatabase();
+    //             
+                    // result = db.execute("SELECT nid FROM node WHERE nid IN (" + nids.join(',') + ")");
+                    // while(result.isValidRow()){
+                        // localNids[result.field(0)] = result.field(0);
+    //                     
+                        // result.next();
+                    // }
+                    // db.close();
+                // }
+            // }
+            // catch(exDB){
+                // Omadi.service.sendErrorReport("Exception in database section of display duplicate: " + exDB);
+            // }
+            
+            for(i = 0; i < matches.length; i ++){
+                title = Omadi.utils.trimWhiteSpace(matches[i].title);
+    
+                if (title.length == 0) {
+                    title = '- No Title -';
+                }
+    
+                row = Ti.UI.createTableViewRow({
+                    width: '100%',
+                    height: Ti.UI.SIZE,
+                    nid: matches[i].nid,
+                    backgroundColor: '#fc9'
+                });
+                
+                textView = Ti.UI.createView({
+                    right: 1,
+                    left: 50,
+                    top: 0,
+                    height: Ti.UI.SIZE,
+                    layout: 'vertical'
+                });            
+                
+                rowImg = Ti.UI.createImageView({
+                    image: Omadi.display.getNodeTypeImagePath(matches[i].type),
+                    top: 5,
+                    left: 5,
+                    width: 35,
+                    height: 35,
+                    bottom: 5
+                });
+                
+                titleLabel = Ti.UI.createLabel({
+                    width: '100%',
+                    text: matches[i].title,
+                    textAlign: Ti.UI.TEXT_ALIGNMENT_LEFT,
+                    height: Ti.UI.SIZE,
+                    font: {
+                        fontSize: 16
+                    },
+                    color: '#000'
+                });
+                
+                timeLabel = Ti.UI.createLabel({
+                    text: 'Saved ' + Omadi.utils.getTimeAgoStr(matches[i].created),
+                    height: Ti.UI.SIZE,
+                    width: '100%',
+                    textAlign: Ti.UI.TEXT_ALIGNMENT_LEFT,
+                    color: '#999',
+                    font: {
+                        fontSize: 14
+                    }
+                });
+                
+                row.add(rowImg);
+                textView.add(titleLabel);
+                textView.add(timeLabel);
+                row.add(textView);
+                
+                tableData.push(row);
+            }
+            
+            tableView = Ti.UI.createTableView({
+                width: '100%',
+                bottom: 0,
+                scrollable: true,
+                top: 0,
+                separatorColor : '#ccc',
+                data: tableData
+            });
+            
+            scrollView.add(tableView);
+            
+            headerView = Ti.UI.createLabel({
+                top: 0,
+                height: 40,
+                width: Ti.UI.FILL,
+                text: headerText,
+                textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+                font: {
+                    fontWeight: 'bold',
+                    fontSize: 18
+                },
+                color: '#eee',
+                backgroundGradient: Omadi.display.backgroundGradientGray
+            });
+            
+            buttonsView = Ti.UI.createView({
+               bottom: 0,
+               width: Ti.UI.FILL,
+               height: 50,
+               backgroundColor: '#999'
+            });
+            
+            buttonWrapper = Ti.UI.createView({
+                layout: 'horizontal',
+                width: Ti.UI.SIZE,
+                top: 5
+            });
+            
+            saveButton = Ti.UI.createLabel({
+                text: 'Continue Saving',
+                color: '#eee',
+                backgroundGradient: Omadi.display.backgroundGradientBlue,
+                height: 40,
+                width: 150,
+                textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+                left: 5,
+                font : {
+                    fontSize: 18,
+                    fontWeight: 'bold'
+                },
+                borderRadius: 5
+            });
+            
+            saveButton.addEventListener('click', function(e){
+                // Allow another save to happen immediately
+                ActiveFormObj.duplicateWarningTimestamp = 0;
+                // Hide the window
+                ActiveFormObj.win.remove(wrapper);
+                // Actually finish the saving process
+                ActiveFormObj.trySaveNode(saveType);
+            });
+            
+            cancelButton = Ti.UI.createLabel({
+                text: 'Cancel',
+                color: '#eee',
+                backgroundGradient: Omadi.display.backgroundGradientGray,
+                height: 40,
+                width: 150,
+                textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+                right: 5,
+                font : {
+                    fontSize: 18,
+                    fontWeight: 'bold'
+                },
+                borderRadius: 5
+            });
+            
+            cancelButton.addEventListener('click', function(e){
+                // Allow another save to happen immediately
+                ActiveFormObj.duplicateWarningTimestamp = 0;
+                
+                // Hide the window
+                ActiveFormObj.win.remove(wrapper);
+                wrapper = null;
+            });
+            
+            buttonWrapper.add(cancelButton);
+            buttonWrapper.add(saveButton);
+            
+            buttonsView.add(buttonWrapper);
+            
+            wrapper.add(headerView);
+            wrapper.add(scrollView);
+            wrapper.add(buttonsView);
+            
+            this.win.add(wrapper);
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception showing duplicate warnings: " + ex);
+        }
     }
 };
 
