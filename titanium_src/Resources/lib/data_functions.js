@@ -375,6 +375,67 @@ Omadi.data.deleteContinuousNodes = function(){"use strict";
   }
 };
 
+Omadi.data.addNewTerms = function(node){"use strict";
+    var instances, field_name, i;
+    
+    try{
+        instances = Omadi.data.getFields(node.type);
+        
+        for(field_name in instances){
+            if(instances.hasOwnProperty(field_name)){
+                if(typeof instances[field_name].type !== 'undefined' && instances[field_name].type == 'taxonomy_term_reference' && instances[field_name].widget.type == 'taxonomy_autocomplete'){
+                    
+                    if(typeof node[field_name] !== 'undefined' && typeof node[field_name].dbValues !== 'undefined'){
+                        for(i = 0; i < node[field_name].dbValues.length; i ++){
+                            if(node[field_name].dbValues[i] == -1){
+                                node[field_name].dbValues[i] = Omadi.data.insertNewTerm(instances[field_name].settings.vocabulary, node[field_name].textValues[i]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in addNewTerms: " + ex);
+    }
+    
+    return node;
+};
+    
+Omadi.data.insertNewTerm = function(machine_name, name){"use strict";
+    var db, result, tid = -2, vid = 0, retval = null;
+    
+    try{
+        db = Omadi.utils.openMainDatabase();
+        result = db.execute("SELECT MIN(tid) FROM term_data");
+        if(result.isValidRow()){
+            tid = result.field(0, Ti.Database.FIELD_TYPE_INT);
+            tid -= 1; 
+        }
+        result.close();
+        
+        result = db.execute("SELECT vid FROM vocabulary WHERE machine_name='" + dbEsc(machine_name) + "'");
+        if(result.isValidRow()){
+            vid = result.fieldByName('vid');
+            
+            // -2 is the first negative tid to use because -1 is a place holder for a non-set new term
+            tid = Math.min(tid, -2);
+            
+            db.execute("INSERT INTO term_data (tid, vid, name, description, weight, created) VALUES (" + tid + "," + vid + ",'" + dbEsc(name) + "','',0," + Omadi.utils.getUTCTimestamp() + ")");
+            Ti.API.debug("tid: " + tid);
+            retval = tid;
+        }
+        result.close();
+        db.close();
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in insertNewTerm: " + ex);
+    }
+    
+    return retval;
+};
+
 Omadi.data.nodeSave = function(node) {"use strict";
     var query, field_name, fieldNames, instances, result, db, smallestNid, insertValues, j, k, 
         instance, value_to_insert, has_data, content_s, saveNid, continuousNid, photoNids, origNid,
@@ -409,10 +470,9 @@ Omadi.data.nodeSave = function(node) {"use strict";
             }
         }
     
-        if(typeof Omadi.widgets !== 'undefined'){
-            // For autocomplete widgets
-            node = Omadi.widgets.taxonomy_term_reference.addNewTerms(node);
-        }
+      
+        // For autocomplete widgets
+        node = Omadi.data.addNewTerms(node);
         
         node.title = Omadi.data.getNodeTitle(node);
         
@@ -466,6 +526,11 @@ Omadi.data.nodeSave = function(node) {"use strict";
                 // ie. a draft should not be deleted if it's never been to the server, or the data moving to the server will be deleted
                 node._deleteNid = node.continuous_nid;
             }
+            
+            saveNid = node.nid;
+        }
+        else{
+            saveNid = node.nid;
         }
         
         node._saveNid = saveNid;

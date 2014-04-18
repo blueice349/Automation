@@ -54,200 +54,280 @@ Omadi.display.showBigImage = function(imageView) {"use strict";
 
     var fullImage, background, transform, rotateDegrees, 
         orientation, screenWidth, screenHeight, picWidth, picHeight, 
-        scrollView, picBlob, toolbar, isRotated, back, space, label;
+        scrollView, picBlob, toolbar, isRotated, back, space, label, 
+        timestamp, webView, imageData, imageFile;
     
     if(Omadi.display.largePhotoWindow === null){
-    
-        Omadi.display.largePhotoWindow = Ti.UI.createWindow({
-            backgroundColor : 'black',
-            top : 0,
-            bottom : 0,
-            right : 0,
-            left : 0,
-            modal: true,
-            width: Ti.UI.FILL,
-            height: Ti.UI.FILL,
-            orientationModes: [Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.PORTRAIT, Ti.UI.UPSIDE_PORTRAIT],
-            modalStyle: Ti.UI.iPhone.MODAL_PRESENTATION_FORMSHEET,
-            navBarHidden: true
-        });
         
-        // scrollView = Ti.UI.createScrollView({
-            // width: Ti.UI.FILL,
-            // height: Ti.UI.FILL,
-            // contentWidth: 'auto',
-            // contentHeight: 'auto',
-            // top: 0,
-            // scrollType: 'horizontal'
-        // });
-        
-        if(Ti.App.isAndroid){
-            Omadi.display.largePhotoWindow.addEventListener("android:back", function(e){
-                Omadi.display.largePhotoWindow.close(); 
-                Omadi.display.largePhotoWindow = null;
-            });
-        }
-        else{
-            
-            back = Ti.UI.createButton({
-                title : 'Back',
-                style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
-            });
-            
-            back.addEventListener('click', function() {
-                try{
-                    Omadi.display.largePhotoWindow.close();
-                    Omadi.display.largePhotoWindow = null;
-                }
-                catch(ex){
-                    Omadi.service.sendErrorReport("exception on back button with show big image: " + ex);
-                }
-            });
-        
-            space = Titanium.UI.createButton({
-                systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
-            });
-            
-            label = Titanium.UI.createButton({
-                title : 'View Photo',
-                color : '#fff',
-                ellipsize : true,
-                wordwrap : false,
-                width : 200,
-                style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
-            });
-        
-            // create and add toolbar
-            toolbar = Ti.UI.iOS.createToolbar({
-                items : [back, space, label, space],
+        try{
+            Omadi.display.largePhotoWindow = Ti.UI.createWindow({
+                backgroundColor : 'black',
                 top : 0,
-                left: 0,
-                borderTop : false,
-                borderBottom : true,
-                zIndex: 100
+                bottom : 0,
+                right : 0,
+                left : 0,
+                modal: true,
+                width: Ti.UI.FILL,
+                height: Ti.UI.FILL,
+                orientationModes: [Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.PORTRAIT, Ti.UI.UPSIDE_PORTRAIT],
+                modalStyle: Ti.UI.iPhone.MODAL_PRESENTATION_FORMSHEET,
+                navBarHidden: true
             });
             
-            Omadi.display.largePhotoWindow.add(toolbar);
-        }
-        
-        // orientation = Ti.Gesture.getOrientation();
-    //     
-        // screenWidth = Ti.Platform.displayCaps.platformWidth;
-        // screenHeight = Ti.Platform.displayCaps.platformHeight;
-    //     
-        // if(orientation == Ti.UI.PORTRAIT || orientation == Ti.UI.UPSIDE_PORTRAIT){
-    //         
-        // }
-        // else{
-    //         
-        // }
-        
-        if(typeof imageView.filePath !== 'undefined' && imageView.filePath !== null){
-            Ti.API.debug("DISPLAYING FULL IMAGE FROM FILE PATH");
-            fullImage = Ti.UI.createImageView({
-               image: imageView.filePath,
-               autorotate: true,
-               height: '100%'
-            });
+            // scrollView = Ti.UI.createScrollView({
+                // width: Ti.UI.FILL,
+                // height: Ti.UI.FILL,
+                // contentWidth: 'auto',
+                // contentHeight: 'auto',
+                // top: 0,
+                // scrollType: 'horizontal'
+            // });
             
-            try{
-                imageView.bigImg = fullImage.toImage();
-            }
-            catch(ex){
-                Omadi.service.sendErrorReport("Exception setting bigImg: " + ex);
-                return;
-            }
-        }
-        else if(imageView.bigImg !== null){ 
-            //fullImage = Omadi.display.getImageViewFromData(imageView.bigImg, Ti.Platform.displayCaps.platformWidth, Ti.Platform.displayCaps.platformHeight - 50);    
-            Ti.API.debug("DISPLAYING FULL IMAGE FROM BLOB");
-            fullImage = Ti.UI.createImageView({
-               image: imageView.bigImg,
-               autorotate: true,
-               height: '100%'
-            });
-        }
-        else{
-            alert("Could not display large photo.");
-            return;
-        }
-        
-        isRotated = false;
-        Ti.API.debug("before dim");
-        
-        picWidth = imageView.bigImg.width;
-        picHeight = imageView.bigImg.height;
-        
-        Ti.API.debug("dimensions: " + picWidth + "x" + picHeight);
-        
-        if(Omadi.utils.getPhotoWidget() == 'choose'){
-            // For the photo chooser, we don't know about any degrees saved
-            // No zooming will be allowed for now
-            picWidth = 1;
-            picHeight = 1;
-        }
-        else if(Ti.App.isAndroid && (imageView.degrees == 270 || imageView.degrees == 90)){    
-            isRotated = true;
-            
-            picWidth = imageView.bigImg.height;
-            picHeight = imageView.bigImg.width;
-        }
-       
-        if (typeof fullImage !== 'undefined' && fullImage != null) {
-            
-            Ti.API.debug("Full Image");
-            
-            Omadi.display.largePhotoWindow.add(fullImage);
-
-            if(picWidth > 150 && picHeight > 150){
-                // Pinch zoom is enabled as baseWidth is defined
-                fullImage.baseHeight = picHeight;
-                fullImage.baseWidth = picWidth;
-                fullImage.height = picHeight;
-                fullImage.width = picWidth;
-                
-                imageView.baseHeight = picHeight;
-                imageView.baseWidth = picWidth;
-            }
-            else if(typeof imageView.baseHeight !== 'undefined' && imageView.baseHeight > 1){
-                // Had to add in this condition because the second time coming into the same photo
-                // it would have a picHeight and picWidth of 1, so zooming wouldn't be possible
-                fullImage.baseHeight = imageView.baseHeight;
-                fullImage.baseWidth = imageView.baseWidth;
-                fullImage.height = imageView.baseHeight;
-                fullImage.width = imageView.baseWidth;
+            if(Ti.App.isAndroid){
+                Omadi.display.largePhotoWindow.addEventListener("android:back", function(e){
+                    Omadi.display.largePhotoWindow.close(); 
+                    Omadi.display.largePhotoWindow = null;
+                });
             }
             else{
                 
-                fullImage.height = Ti.UI.SIZE;
-                fullImage.width = Ti.UI.SIZE;
+                back = Ti.UI.createButton({
+                    title : 'Back',
+                    style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+                });
+                
+                back.addEventListener('click', function() {
+                    try{
+                        Omadi.display.largePhotoWindow.close();
+                        Omadi.display.largePhotoWindow = null;
+                    }
+                    catch(ex){
+                        Omadi.service.sendErrorReport("exception on back button with show big image: " + ex);
+                    }
+                });
+            
+                space = Titanium.UI.createButton({
+                    systemButton : Titanium.UI.iPhone.SystemButton.FLEXIBLE_SPACE
+                });
+                
+                label = Titanium.UI.createButton({
+                    title : 'View Photo',
+                    color : '#fff',
+                    ellipsize : true,
+                    wordwrap : false,
+                    width : 200,
+                    style : Titanium.UI.iPhone.SystemButtonStyle.PLAIN
+                });
+            
+                // create and add toolbar
+                toolbar = Ti.UI.iOS.createToolbar({
+                    items : [back, space, label, space],
+                    top : 20,
+                    left: 0,
+                    borderTop : false,
+                    borderBottom : true,
+                    zIndex: 100
+                });
+                
+                Omadi.display.largePhotoWindow.add(toolbar);
             }
             
-            fullImage.addEventListener('touchstart', function(e){
-                e.source.baseHeight = e.source.height;
-                e.source.baseWidth = e.source.width; 
-            });
+            // orientation = Ti.Gesture.getOrientation();
+        //     
+            // screenWidth = Ti.Platform.displayCaps.platformWidth;
+            // screenHeight = Ti.Platform.displayCaps.platformHeight;
+        //     
+            // if(orientation == Ti.UI.PORTRAIT || orientation == Ti.UI.UPSIDE_PORTRAIT){
+        //         
+            // }
+            // else{
+        //         
+            // }
             
-            fullImage.addEventListener('pinch', function(e){
-                if(e.source.baseWidth > 0){
-                    e.source.height = e.source.baseHeight * e.scale;
-                    e.source.width = e.source.baseWidth * e.scale; 
+            imageData = null;
+            
+            if(typeof imageView.filePath !== 'undefined' && imageView.filePath !== null){
+                Ti.API.debug("DISPLAYING FULL IMAGE FROM FILE PATH");
+                
+                try{
+                    imageFile = Ti.Filesystem.getFile(imageView.filePath);
+                    
+                    if(imageFile.exists()){
+                        imageData = imageFile.read();
+                        // fullImage = Ti.UI.createImageView({
+                           // image: imageFile,
+                           // autorotate: true,
+                           // height: Ti.UI.FILL
+                        // });
+//                         
+                        // imageData = fullImage.toImage();
+                    }
                 }
-            });
+                catch(ex){
+                    Omadi.service.sendErrorReport("Exception setting bigImg: " + ex);
+                    alert("A Problem occurred opening the file.");
+                    return;
+                }
+            }
+            else if(imageView.bigImg !== null){ 
+                //fullImage = Omadi.display.getImageViewFromData(imageView.bigImg, Ti.Platform.displayCaps.platformWidth, Ti.Platform.displayCaps.platformHeight - 50);    
+                Ti.API.debug("DISPLAYING FULL IMAGE FROM BLOB");
+                imageData = imageView.bigImg;
+                
+                // fullImage = Ti.UI.createImageView({
+                  // image: imageView.bigImg,
+                  // autorotate: true,
+                  // height: Ti.UI.FILL
+                // });
+//                 
+                // imageData = fullImage.toImage();
+            }
             
-            fullImage.addEventListener('postlayout', function(e){
-                Ti.API.debug("Rect: " + e.source.rect.width + "x" + e.source.rect.height);
-                e.source.width = e.source.rect.width;
-                e.source.height = e.source.rect.height;
-            });
+            if(imageData === null){
             
-            Omadi.display.largePhotoWindow.fullImage = fullImage;
-            
-            Omadi.display.largePhotoWindow.open();
+                alert("Could not display large photo.");
+            }
+            else{
+                webView = Ti.UI.createWebView({
+                    data: imageData
+                });
+                
+                // timestamp = (new Date()).getTime();
+                // fullImage.lastAnimation = timestamp;
+        //         
+                // isRotated = false;
+                // Ti.API.debug("before dim");
+        //         
+                // picWidth = imageView.bigImg.width;
+                // picHeight = imageView.bigImg.height;
+        //         
+                // Ti.API.debug("dimensions: " + picWidth + "x" + picHeight);
+        //         
+                // if(Omadi.utils.getPhotoWidget() == 'choose'){
+                    // // For the photo chooser, we don't know about any degrees saved
+                    // // No zooming will be allowed for now
+                    // picWidth = 1;
+                    // picHeight = 1;
+                // }
+                // else if(Ti.App.isAndroid && (imageView.degrees == 270 || imageView.degrees == 90)){    
+                    // isRotated = true;
+        //             
+                    // picWidth = imageView.bigImg.height;
+                    // picHeight = imageView.bigImg.width;
+                // }
+        //        
+                // if (typeof fullImage !== 'undefined' && fullImage != null) {
+        //             
+                    // Ti.API.debug("Full Image");
+        //             
+                    // Omadi.display.largePhotoWindow.add(fullImage);
+        // 
+                    // if(picWidth > 150 && picHeight > 150){
+                        // // Pinch zoom is enabled as baseWidth is defined
+                        // fullImage.baseHeight = picHeight;
+                        // fullImage.baseWidth = picWidth;
+                        // fullImage.height = picHeight;
+                        // fullImage.width = picWidth;
+        //                 
+                        // imageView.baseHeight = picHeight;
+                        // imageView.baseWidth = picWidth;
+                    // }
+                    // else if(typeof imageView.baseHeight !== 'undefined' && imageView.baseHeight > 1){
+                        // // Had to add in this condition because the second time coming into the same photo
+                        // // it would have a picHeight and picWidth of 1, so zooming wouldn't be possible
+                        // fullImage.baseHeight = imageView.baseHeight;
+                        // fullImage.baseWidth = imageView.baseWidth;
+                        // fullImage.height = imageView.baseHeight;
+                        // fullImage.width = imageView.baseWidth;
+                    // }
+                    // else{
+        //                 
+                        // fullImage.height = Ti.UI.SIZE;
+                        // fullImage.width = Ti.UI.SIZE;
+                    // }
+        //             
+                    // fullImage.addEventListener('touchstart', function(e){
+                        // e.source.baseHeight = e.source.height;
+                        // e.source.baseWidth = e.source.width; 
+                    // });
+        //             
+                    // fullImage.addEventListener('pinch', function(e){
+                        // var now = (new Date()).getTime();
+                        // if(now - e.source.lastAnimation > 30 && e.source.baseWidth > 0){
+        //                     
+                            // //Ti.API.debug("pinch: " + e.scale);
+        //                     
+                            // e.source.height = e.source.baseHeight * e.scale;
+                            // e.source.width = e.source.baseWidth * e.scale; 
+                            // e.source.lastAnimation = now;
+                        // }
+                    // });
+        //             
+                    // fullImage.addEventListener('touchstart', function(e){
+        //                
+                       // if(e.source.baseWidth > 0){
+        //                    
+                           // //Ti.API.debug("start: " + e.x + " " + e.y);
+        //                    
+                           // e.source.touchStartY = Math.floor(e.y);
+                           // e.source.touchStartX = Math.floor(e.x);
+                           // e.source.touchStartTop = parseInt(e.source.top, 10);
+                           // e.source.touchStartLeft = parseInt(e.source.left, 10);
+        //                    
+                           // if(isNaN(e.source.touchStartTop)){
+                               // e.source.touchStartTop = 0;
+                           // }
+        //                    
+                           // if(isNaN(e.source.touchStartLeft)){
+                               // e.source.touchStartLeft = 0;
+                           // }
+                       // }
+                    // });
+        //             
+                    // // fullImage.addEventListener('touchmove', function(e){
+        // //                
+                       // // var now = (new Date()).getTime();
+                       // // Ti.API.debug(now - e.source.lastAnimation);
+                       // // Ti.API.debug(e.source.touchStartLeft);
+                       // // if(now - e.source.lastAnimation > 30 && e.source.baseWidth > 0 && typeof e.source.touchStartLeft !== 'undefined'){
+        // //                    
+                           // // Ti.API.debug("move: " + e.x + " " + e.y);
+        // //                    
+                           // // e.source.top += Math.floor(e.y) - e.source.touchStartY;
+                           // // e.source.left += Math.floor(e.x) - e.source.touchStartX;
+        // //                    
+                           // // if(e.source.top < 0 && e.source.height < Ti.Platform.displayCaps.platformHeight){
+                               // // e.source.top = 0;
+                           // // }
+        // //                    
+                           // // if(e.source.left < 0 && e.source.width < Ti.Platform.displayCaps.platformWidth){
+                               // // e.source.left = 0;
+                           // // }
+        // //                    
+                           // // e.source.lastAnimation = now;
+                       // // }
+                    // // });
+        //             
+                    // fullImage.addEventListener('postlayout', function(e){
+                        // Ti.API.debug("Rect: " + e.source.rect.width + "x" + e.source.rect.height);
+                        // e.source.width = e.source.rect.width;
+                        // e.source.height = e.source.rect.height;
+                    // });
+        //             
+                    // Omadi.display.largePhotoWindow.fullImage = fullImage;
+                    
+                    Omadi.display.largePhotoWindow.add(webView);
+                    
+                    Omadi.display.largePhotoWindow.open();
+                // }
+                // else{
+                    // alert("Could not open the photo.");
+                    // Omadi.display.largePhotoWindow = null;
+                // }
+            }
         }
-        else{
-            alert("Could not open the photo.");
-            Omadi.display.largePhotoWindow = null;
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception showing large photo: " + ex);
         }
     }
 };
@@ -555,8 +635,85 @@ Omadi.display.openJobsWindow = function() {"use strict";
     return null;
 };
 
-Omadi.display.openViewWindow = function(type, nid) {"use strict";
+Omadi.display.openWebView = function(nid){"use strict";
+    var url, webView, webWin, cookies, i, cookie, setCookie, name, value, matches, toolbar, backButton;
+    
+    url = Omadi.DOMAIN_NAME + '/node/' + nid;
+    
+    try{
+        cookie = Omadi.utils.getCookie();
+        
+        if(cookie != null && cookie > "" && cookie != "null"){
+            
+            value = '';
+            name = '';
+            
+            matches = cookie.match(/^(.+?)=(.+?);/);
+            
+            name = matches[1];
+            value = matches[2];
+                        
+            setCookie = Ti.Network.createCookie({
+                domain: Omadi.DOMAIN_NAME.replace('https://', '.'),
+                path: '/',
+                secure: true,
+                httponly: true,
+                name: name,
+                value: value
+            });
+            
+            Ti.Network.addSystemCookie(setCookie);
+        }
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception setting cookies for web view: " + ex);
+    }
+    
+    webView = Ti.UI.createWebView({
+        url: url 
+    });
+    
+    webWin = Ti.UI.createWindow();
+    
+    if(Ti.App.isIOS){
+        backButton = Ti.UI.createButton({
+            title : 'Back',
+            style : Titanium.UI.iPhone.SystemButtonStyle.BORDERED
+        });
+
+        backButton.addEventListener('click', function() {
+            webWin.close();
+        });
+        
+        // create and add toolbar
+        toolbar = Ti.UI.iOS.createToolbar({
+            items : [backButton],
+            top : 20,
+            borderTop : false,
+            borderBottom : false,
+            height : 35
+        });
+        webWin.add(toolbar);
+        
+        webView.top = 55;
+    }
+    
+    webWin.add(webView);
+    webWin.open({
+        modal: true
+    });
+};
+
+Omadi.display.openViewWindow = function(type, nid, win) {"use strict";
     var isDispatch, viewWindow;
+    
+    if(typeof win === 'undefined'){
+        win = Ti.UI.currentWindow;
+    }
+    
+    Omadi.display.loading("Loading...", win);
+    
+    //Omadi.display.showActivityIndicator();
     
     isDispatch = Omadi.bundles.dispatch.isDispatch(type, nid);
     
@@ -580,8 +737,7 @@ Omadi.display.openViewWindow = function(type, nid) {"use strict";
     }
 
     viewWindow.addEventListener('open', Omadi.display.doneLoading);
-    Omadi.display.loading();
-
+    
     viewWindow.open();
 
     return viewWindow;
@@ -975,7 +1131,12 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
             Omadi.display.openViewWindow(node_type, e.row.nid);
         }
         else {
-    
+            
+            options.push('View Online');
+            buttonData.push({
+                form_part : '_view_online'
+            });
+            
             options.push('Cancel');
             buttonData.push({
                 form_part : '_cancel'
@@ -1002,6 +1163,10 @@ Omadi.display.showDialogFormOptions = function(e, extraOptions) {"use strict";
                             else if(form_part == '_view') {
                                 ev.source.eventRow.setBackgroundColor('#fff');
                                 Omadi.display.openViewWindow(node_type, e.row.nid);
+                            }
+                            else if(form_part == '_view_online') {
+                                ev.source.eventRow.setBackgroundColor('#fff');
+                                Omadi.display.openWebView(e.row.nid);
                             }
                             else if(form_part == '_print'){
                                 Omadi.print.printReceipt(e.row.nid);
@@ -1588,6 +1753,30 @@ Omadi.display.hideLoadingIndicator = function() {"use strict";
 // Ti.Gesture.addEventListener('orientationchange', function(e) {"use strict";
 // Omadi.display.currentOrientaion = e.orientation;
 // });
+
+Omadi.display.showActivityIndicator = function(){"use strict";
+    var style, activityIndicator;
+    
+    if (Ti.App.isIOS){
+      style = Ti.UI.iPhone.ActivityIndicatorStyle.DARK;
+    }
+    else {
+      style = Ti.UI.ActivityIndicatorStyle.DARK;
+    }
+    
+    activityIndicator = Ti.UI.createActivityIndicator({
+      color: 'black',
+      font: {fontFamily:'Arial', fontSize: 26, fontWeight:'bold'},
+      message: 'Loading...',
+      style:style,
+      top:10,
+      left:10,
+      height:Ti.UI.SIZE,
+      width:Ti.UI.SIZE
+    });
+    
+    Ti.UI.currentWindow.add(activityIndicator);
+};
 
 Omadi.display.loading = function(message, win) {"use strict";
     var height, width;

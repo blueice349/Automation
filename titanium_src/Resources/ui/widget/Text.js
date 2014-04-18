@@ -14,6 +14,7 @@ function TextWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.nodeElement = null;
     this.numVisibleFields = 1;
     this.elements = [];
+    this.elementWrappers = [];
     this.fieldViewWrapper = fieldViewWrapper;
     
     if(typeof this.node[this.instance.field_name] !== 'undefined'){
@@ -55,8 +56,8 @@ TextWidget.prototype.getFieldView = function(){"use strict";
     
     // Add the actual fields
     for(i = 0; i < this.numVisibleFields; i ++){
-        this.elements[i] = this.getNewElement(i);
-        this.fieldView.add(this.elements[i]);
+        this.elementWrappers[i] = this.getNewElementWrapper(i);
+        this.fieldView.add(this.elementWrappers[i]);
         this.fieldView.add(this.formObj.getSpacerView());
     }
     
@@ -126,8 +127,8 @@ TextWidget.prototype.redraw = function(){"use strict";
     //this.fieldViewWrapper.remove(origFieldView);
 };
 
-TextWidget.prototype.getNewElement = function(index){"use strict";
-    var dbValue, textValue, element;
+TextWidget.prototype.getNewElementWrapper = function(index){"use strict";
+    var dbValue, textValue, element, wrapper, duplicateWarningButton;
     
     dbValue = "";
     textValue = "";
@@ -144,12 +145,22 @@ TextWidget.prototype.getNewElement = function(index){"use strict";
     
     Ti.API.debug("Creating text field: " + this.instance.label);
     
+    wrapper = Ti.UI.createView({
+       width: '92%',
+       left: '4%',
+       layout: 'horizontal',
+       height: Ti.UI.SIZE
+    });
+    
     element = this.formObj.getTextField(this.instance);
     
+    element.width = '100%';
+    element.left = 0;
     element.dbValue = dbValue;
     element.textValue = textValue;
     element.setValue(textValue);
     element.fieldName = this.instance.field_name;
+    element.fieldIndex = index;
     element.setAutocapitalization(Ti.UI.TEXT_AUTOCAPITALIZATION_WORDS);
     
     element.check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
@@ -177,7 +188,58 @@ TextWidget.prototype.getNewElement = function(index){"use strict";
     
     element.addEventListener('change', this.onChangeListener);
     
-    return element;
+    wrapper.add(element);
+    
+    if(index == 0 && typeof this.instance.settings.duplicate_warning !== 'undefined' && this.instance.settings.duplicate_warning == 1){
+        
+        // Only set the duplicateWarnings property on the first field if many exist, and only when the check should be completed
+        this.duplicateWarnings = {};
+        
+        element.width = '80%';
+        
+        duplicateWarningButton = Ti.UI.createButton({
+           width: 40,
+           height: 40,
+           left: 5,
+           backgroundImage: '/images/checkmark_icon_40.png',
+           instance: this.instance
+        });
+        
+        if(Ti.App.isIOS){
+            duplicateWarningButton.style = Ti.UI.iPhone.SystemButtonStyle.PLAIN;
+        }
+        
+        duplicateWarningButton.addEventListener('click', function(e){
+            var fieldName, value, origLastChange, actualLastChange, widget, formPart;
+            
+            try{
+                fieldName = e.source.instance.field_name;
+                
+                if(typeof Widget[fieldName] !== 'undefined'){
+                    widget = Widget[fieldName];
+                    // Make sure the node object is populated correctly since this is not a regular save
+                    widget.formObj.formToNode();
+                    widget.formObj.showDuplicateWarnings(null);
+                }
+                else{
+                    Ti.API.error("duplicate widget " + fieldName + " doesn't exist");
+                }
+            }
+            catch(ex){
+                Ti.API.error("Exception in duplicate warning timeout: " + ex);
+                try{
+                    Omadi.service.sendErrorReport("Exception in duplicate warning timeout: " + ex);
+                }
+                catch(ex2){}
+            }
+        });
+        
+        wrapper.add(duplicateWarningButton);
+    }
+    
+    this.elements[index] = element;
+    
+    return wrapper;
 };
 
 TextWidget.prototype.onChangeListener = function(e) {"use strict";
@@ -212,7 +274,129 @@ TextWidget.prototype.onChangeListener = function(e) {"use strict";
             }
         }
         
+        if(e.source.fieldIndex == 0 && typeof e.source.instance.settings.duplicate_warning !== 'undefined' && e.source.instance.settings.duplicate_warning == 1){
+                    
+            //Ti.API.debug("Form part == " + Widget[e.source.instance.field_name].formObj.form_part);
+            // Only check for duplicate warnings if set in the field settings
+            setTimeout(function(){
+                var fieldName, value, origLastChange, actualLastChange, widget, formPart;
+                
+                try{
+                    fieldName = e.source.instance.field_name;
+                    value = "".toString() + e.source.value;
+                    value = value.trim();
+                    
+                    if(value.length > 0){
+                        if(typeof Widget[fieldName] !== 'undefined'){
+                            widget = Widget[fieldName];
+                            formPart = widget.formObj.form_part;
+                            
+                            if(formPart <= 0){
+                            
+                                origLastChange = now;
+                            
+                                actualLastChange = widget.elements[0].lastChange;
+                                
+                                if(origLastChange == actualLastChange){
+                                    // The last change happened 5 seconds ago, so possibly send request if it hasn't been sent before
+                                    
+                                    if(typeof widget.duplicateWarnings[value] === 'undefined'){
+                                        Ti.API.debug("Send Request baby!");    
+                                        
+                                        widget.setDuplicateWarnings(fieldName, value, 'silent');
+                                    }
+                                    else{
+                                        Ti.API.debug("Already have the warning cached for " + value);
+                                    }
+                                }
+                            }
+                            else{
+                                Ti.API.debug("Duplicate form part above 0");
+                            }
+                        }
+                        else{
+                            Ti.API.error("duplicate widget " + fieldName + " doesn't exist");
+                        }
+                    }
+                    else{
+                        Ti.API.error("value is blank");
+                    }
+                }
+                catch(ex){
+                    Ti.API.error("Exception in duplicate warning timeout: " + ex);
+                    try{
+                        Omadi.service.sendErrorReport("Exception in duplicate warning timeout: " + ex);
+                    }
+                    catch(ex2){}
+                }
+                
+            }, 4000);
+        }
+        
         e.source.lastValue = e.source.value;
+    }
+};
+
+TextWidget.prototype.setDuplicateWarnings = function(fieldName, value, saveType){"use strict";
+    
+    var http;
+    
+    try{
+        http = Ti.Network.createHTTPClient({
+            enableKeepAlive: false,
+            validatesSecureCertificate: false
+        });
+        http.setTimeout(10000);
+        http.open('POST', Omadi.DOMAIN_NAME + '/js-fields/omadi_fields/duplicate_warnings.json');
+    
+        Omadi.utils.setCookieHeader(http);
+        http.setRequestHeader("Content-Type", "application/json");
+        
+        http.onload = function(e) {
+            var json;
+            
+            try{
+                Ti.API.debug(this.responseText);
+                
+                json = JSON.parse(this.responseText);
+                
+                if(typeof Widget[fieldName] !== 'undefined'){
+                
+                    Widget[fieldName].duplicateWarnings[value] = json;
+                    
+                    if(typeof Widget[fieldName].formObj !== 'undefined'){
+                        Widget[fieldName].formObj.win.fireEvent('duplicateWarningComplete', {
+                            json: json,
+                            fieldName: fieldName,
+                            value: value,
+                            saveType: saveType
+                        });
+                    }
+                }
+            }
+            catch(ex){
+                Omadi.service.sendErrorReport("Exception on onload of setDuplicateWarnings: " + ex);
+            }
+        };
+    
+        http.onerror = function(e) {
+            try{
+                Ti.API.error(JSON.stringify(e));
+                Omadi.service.sendErrorReport("Error on setduplicatewarnings: " + JSON.stringify(e));
+            }
+            catch(ex){
+                
+            }
+        };
+        
+        http.send(JSON.stringify({
+            field_name: fieldName,
+            value: value,
+            nid: Widget[fieldName].formObj.nid
+        }));
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception in setDuplicateWarnings: " + ex);
     }
 };
 
@@ -224,12 +408,14 @@ TextWidget.prototype.cleanUp = function(){"use strict";
         
         Widget[this.instance.field_name] = null;
         
-        for(j = 0; j < this.elements.length; j ++){
-            this.fieldView.remove(this.elements[j]);
+        for(j = 0; j < this.elementWrappers.length; j ++){
+            this.elementWrappers[j].remove(this.elements[j]);
             this.elements[j] = null;
+            
+            this.fieldView.remove(this.elementWrappers[j]);
+            this.elementWrappers[j] = null;
         }
         
-        //this.fieldViewWrapper.remove(this.fieldView);
         this.fieldView = null;
         this.fieldViewWrapper = null;
         this.formObj = null;

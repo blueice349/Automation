@@ -434,25 +434,8 @@ function opnAccountAlertsList(e) {"use strict";
                 name_s = result.fieldByName('title');
                 result.close();
                 db.close();
-        
-                dialog = Titanium.UI.createAlertDialog({
-                    title : 'Omadi - ' + type_vl.charAt(0).toUpperCase() + type_vl.slice(1),
-                    buttonNames : ['Cancel', 'View Form Data'],
-                    cancel : 0,
-                    message : "What would you like to do?"
-                });
-                dialog.show();
                 
-                dialog.addEventListener('click', function(dialog_e) {
-                    try{
-                        if (dialog_e.index != dialog_e.source.cancel) {
-                            Omadi.display.openViewWindow(type_vl, n_nid);
-                        }
-                    }
-                    catch(ex){
-                        Omadi.service.sendErrorReport("Exception with account message dialog click: " + ex);
-                    }
-                });
+                Omadi.display.showDialogFormOptions(row_e);
             }
             catch(ex){
                 Omadi.service.sendErrorReport("Exception with account message list view click: " + ex);

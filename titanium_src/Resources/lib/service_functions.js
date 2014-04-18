@@ -560,6 +560,11 @@ Omadi.service.sendDataOnError = function(e){"use strict";
         
         Omadi.display.doneLoading();
         
+        try{
+            Ti.Media.vibrate();
+        }
+        catch(ex1){}
+        
         Ti.API.error('Error Status: ' + e.error + ", message: " + this.status);
         
         if (this.status == 403 || this.status == 401) {
@@ -603,7 +608,7 @@ Omadi.service.sendDataOnError = function(e){"use strict";
         else{
             
             try{
-                Omadi.service.sendErrorReport('Showed the user a network error dialog: ' + this.status + " " + e.error);
+                Omadi.service.sendErrorReport('Showed the user a network error dialog on send: ' + this.status + " " + e.error);
             }
             catch(none){}
             
@@ -721,7 +726,7 @@ Omadi.service.sendUpdates = function() {"use strict";
             http = Ti.Network.createHTTPClient({
                 enableKeepAlive: false,
                 validatesSecureCertificate: false,
-                timeout: 10000
+                timeout: 15000
             });
             
             http.open('POST', Omadi.DOMAIN_NAME + '/js-sync/sync.json');

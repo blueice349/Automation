@@ -414,7 +414,7 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
             // });
     
             this.element.addEventListener('change', function(e) {
-                var possibleValues, tableData, i, j, regEx, row, upperCaseValue, callback, street, widget;
+                var possibleValues, tableData, i, j, regEx, row, upperCaseValue, callback, street, widget, sanitized;
                 
                 try{
                     
@@ -440,9 +440,11 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                             tableData = [];
         
                             for ( i = 0; i < possibleValues.length; i++) {
-                                // TODO: make sure the regular expression is valid
                                 
-                                regEx = new RegExp(widget.element.value, 'i');
+                                sanitized = "".toString() + widget.element.value;
+                                sanitized = sanitized.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+                                
+                                regEx = new RegExp(sanitized, 'i');
                                 if (possibleValues[i].title.search(regEx) != -1) {
                                     //Check match
                                     if (upperCaseValue == possibleValues[i].title.toUpperCase()) {

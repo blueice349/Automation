@@ -250,7 +250,7 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
         });
         
         element.addEventListener('change', function(e) {
-            var possibleValues, tableData, i, regEx, row, upperCaseValue, callback;
+            var possibleValues, tableData, i, regEx, row, upperCaseValue, callback, sanitized;
 
             if (e.source.touched === true) {
 
@@ -271,8 +271,11 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
                     }
                     
                     for ( i = 0; i < possibleValues.length; i++) {
-
-                        regEx = new RegExp(e.source.value, 'i');
+                        
+                        sanitized = "".toString() + e.source.value;
+                        sanitized = sanitized.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+                        
+                        regEx = new RegExp(sanitized, 'i');
                         if (possibleValues[i].title.search(regEx) != -1) {
                             //Check match
                             if (upperCaseValue == possibleValues[i].title.toUpperCase()) {

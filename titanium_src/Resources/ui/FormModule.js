@@ -2,6 +2,7 @@
 
 var FormObj, Omadi, ActiveFormObj, popupWin, popupWinListView, popupWinFieldObject, popupWinDescriptionLabel;
 FormObj = {};
+popupWin = null;
 
 function rules_field_passed_time_check(time_rule, timestamp) {"use strict";
     var retval, timestamp_day, timestamp_midnight, days, day_rule, values, start_time, end_time;
@@ -1837,8 +1838,51 @@ FormModule.prototype.saveForm = function(saveType){"use strict";
     }
 };
 
+function duplicateWarningCompleteCallback(e){"use strict";
+    var json, fieldName, value, saveType;
+    
+    try{
+        ActiveFormObj.win.removeEventListener('duplicateWarningComplete', duplicateWarningCompleteCallback);
+    }
+    catch(ex4){}
+    
+    try{
+        if(typeof ActiveFormObj.duplicateWaitingAlert !== 'undefined'){
+            if(ActiveFormObj.duplicateWaitingAlert !== null){
+                ActiveFormObj.duplicateWaitingAlert.hide();
+            }
+        }
+    }
+    catch(ex3){
+        Omadi.service.sendErrorReport("Exception in closing waiting dialog for duplicatewarningcomplete: " + ex3);
+    }
+    
+    try{
+        
+        json = e.json;
+        fieldName = e.field_name;
+        value = e.value;
+        saveType = e.saveType;
+        
+        if(typeof json.matches !== 'undefined'){
+            if(json.matches.length > 0){
+                ActiveFormObj.displayDuplicateWarnings(json, value, saveType);
+            }
+            else{
+                alert("No previous matches found.");
+            }    
+        }
+        else{
+            alert("No previous matches found.");
+        }
+    }
+    catch(ex1){
+        Omadi.service.sendErrorReport("Exception in duplicatewarningcomplete: " + ex1);
+    }
+}
+
 FormModule.prototype.showDuplicateWarnings = function(saveType){"use strict";
-    var i, fieldObject, nodeValue, showingDuplicates, alertDialog;
+    var i, fieldObject, nodeValue, showingDuplicates, alertDialog, alertMessage;
     // If duplicate warnings are being shown, this function will take care of the node save after the dialog
     // Returns a boolean: true if duplicates were shown, falst otherwise
     
@@ -1861,10 +1905,16 @@ FormModule.prototype.showDuplicateWarnings = function(saveType){"use strict";
                                        if(fieldObject.duplicateWarnings[nodeValue].matches.length > 0){
                                            showingDuplicates = true;
                                            
-                                           Ti.API.error("Display the duplicate warnings now: " + JSON.stringify(fieldObject.duplicateWarnings[nodeValue]));
+                                           //Ti.API.error("Display the duplicate warnings now: " + JSON.stringify(fieldObject.duplicateWarnings[nodeValue]));
                                            
                                            this.displayDuplicateWarnings(fieldObject.duplicateWarnings[nodeValue], nodeValue, saveType);
                                        } 
+                                       else if(saveType === null){
+                                           alert("No previous matches found.");
+                                       }
+                                    }
+                                    else if(saveType === null){
+                                        alert("No previous matches found.");
                                     }
                                 }
                                 else{
@@ -1873,70 +1923,61 @@ FormModule.prototype.showDuplicateWarnings = function(saveType){"use strict";
                                     if(Ti.Network.online){
                                         Ti.API.error("We must fetch the duplicate warnings...");
                                     
-                                        this.win.addEventListener('duplicateWarningComplete', function(e){
+                                        this.win.addEventListener('duplicateWarningComplete', duplicateWarningCompleteCallback);
+                                        
+                                        fieldObject.setDuplicateWarnings(fieldObject.instance.field_name, nodeValue, saveType);
+                                        
+                                        if(saveType === null){
+                                            this.duplicateWaitingAlert = Ti.UI.createAlertDialog({
+                                                title: 'Waiting for previous matches',
+                                                message: 'Please wait for previous matches to be generated.',
+                                                buttonNames: ['Cancel']
+                                            });
+                                        }
+                                        else{
+                                            this.duplicateWaitingAlert = Ti.UI.createAlertDialog({
+                                                title: 'Waiting for previous matches',
+                                                message: 'Please wait for previous matches to be generated.',
+                                                buttonNames: ['Abort/Save Now', 'Cancel']
+                                            });
                                             
-                                            try{
-                                                if(typeof ActiveFormObj.duplicateWaitingAlert !== 'undefined'){
-                                                    if(ActiveFormObj.duplicateWaitingAlert !== null){
-                                                        ActiveFormObj.duplicateWaitingAlert.hide();
-                                                    }
+                                            this.duplicateWaitingAlert.addEventListener('click', function(e){
+                                                if(e.index === 0){
+                                                    ActiveFormObj.trySaveNode(saveType);
                                                 }
-                                            }
-                                            catch(ex3){
-                                                Omadi.service.sendErrorReport("Exception in closing waiting dialog for duplicatewarningcomplete: " + ex3);
-                                            }
-                                            
-                                            try{
-                                                var json, fieldName, value;
-                                                json = e.json;
-                                                fieldName = e.field_name;
-                                                value = e.value;
                                                 
-                                                ActiveFormObj.displayDuplicateWarnings(json, value, saveType);
-                                            }
-                                            catch(ex1){
-                                                Omadi.service.sendErrorReport("Exception in duplicatewarningcomplete: " + ex1);
-                                            }
-                                        });
-                                        
-                                        fieldObject.setDuplicateWarnings(fieldObject.instance.field_name, nodeValue);
-                                        
-                                        this.duplicateWaitingAlert = Ti.UI.createAlertDialog({
-                                            title: 'Waiting for previous matches',
-                                            message: 'Please wait for previous matches to be generated.',
-                                            buttonNames: ['Abort and Save Now', 'Cancel']
-                                        });
-                                        
-                                        this.duplicateWaitingAlert.addEventListener('click', function(e){
-                                            if(e.index === 0){
-                                                ActiveFormObj.trySaveNode(saveType);
-                                            }
-                                            
-                                            ActiveFormObj.duplicateWaitingAlert = null;
-                                        });
+                                                ActiveFormObj.duplicateWaitingAlert = null;
+                                            });
+                                        }
                                         
                                         this.duplicateWaitingAlert.show();
                                     }
                                     else{
-                                        // Alert the user with the disclaimer
-                                        try{
-                                            Ti.Media.vibrate();
+                                        
+                                        if(saveType === null){
+                                            alert("Please try again when you have an Internet connection.");
                                         }
-                                        catch(ex2){}
-                                        
-                                        alertDialog = Ti.UI.createAlertDialog({
-                                            title: 'No Network Connection',
-                                            message: "Unable to fetch previous duplicates because you do not have an Internet connection. \n\nIf you save now, be sure you lookup previous matches manually.",
-                                            buttonNames: ['Save Anyway', 'Cancel'] 
-                                        });
-                                        
-                                        alertDialog.addEventListener('click', function(e){
-                                            if(e.index === 0){
-                                                ActiveFormObj.trySaveNode(saveType);
+                                        else{
+                                            // Alert the user with the disclaimer
+                                            try{
+                                                Ti.Media.vibrate();
                                             }
-                                        });
-                                        
-                                        alertDialog.show();
+                                            catch(ex2){}
+                                            
+                                            alertDialog = Ti.UI.createAlertDialog({
+                                                title: 'No Network Connection',
+                                                message: "Unable to fetch previous duplicates because you do not have an Internet connection. \n\nIf you save now, be sure you lookup previous matches manually.",
+                                                buttonNames: ['Save Anyway', 'Cancel'] 
+                                            });
+                                            
+                                            alertDialog.addEventListener('click', function(e){
+                                                if(e.index === 0){
+                                                    ActiveFormObj.trySaveNode(saveType);
+                                                }
+                                            });
+                                            
+                                            alertDialog.show();
+                                        }
                                     }
                                 }
                             }
@@ -1949,7 +1990,6 @@ FormModule.prototype.showDuplicateWarnings = function(saveType){"use strict";
     
     return showingDuplicates;
 };
-
 
 FormModule.prototype.displayDuplicateWarnings = function(warningJSON, value, saveType){"use strict";
     var wrapper, headerView, buttonsView, buttonWrapper, scrollView, saveButton, cancelButton, 
@@ -1968,12 +2008,19 @@ FormModule.prototype.displayDuplicateWarnings = function(warningJSON, value, sav
     }
     
     if(showWindow){
+        
         this.duplicateWarningTimestamp = now;
         
         try{
-            
             try{
-                Ti.Media.vibrate();
+                
+                if(Ti.App.isAndroid){
+                    Ti.UI.Android.hideSoftKeyboard();
+                }
+                
+                if(saveType !== null){
+                    Ti.Media.vibrate();
+                }
             }
             catch(exVib){}
             
@@ -2005,26 +2052,26 @@ FormModule.prototype.displayDuplicateWarnings = function(warningJSON, value, sav
             tableData = [];
             
             // Disabled the below for now
-            // for(i = 0; i < matches.length; i ++){
-                // nids.push(matches[i].nid);
-            // }
-    //         
-            // try{
-                // if(nids.length > 0){
-                    // db = Omadi.utils.openMainDatabase();
-    //             
-                    // result = db.execute("SELECT nid FROM node WHERE nid IN (" + nids.join(',') + ")");
-                    // while(result.isValidRow()){
-                        // localNids[result.field(0)] = result.field(0);
-    //                     
-                        // result.next();
-                    // }
-                    // db.close();
-                // }
-            // }
-            // catch(exDB){
-                // Omadi.service.sendErrorReport("Exception in database section of display duplicate: " + exDB);
-            // }
+            for(i = 0; i < matches.length; i ++){
+                nids.push(matches[i].nid);
+            }
+            
+            try{
+                if(nids.length > 0){
+                    db = Omadi.utils.openMainDatabase();
+                
+                    result = db.execute("SELECT nid FROM node WHERE nid IN (" + nids.join(',') + ")");
+                    while(result.isValidRow()){
+                        localNids[result.field(0)] = result.field(0);
+                        
+                        result.next();
+                    }
+                    db.close();
+                }
+            }
+            catch(exDB){
+                Omadi.service.sendErrorReport("Exception in database section of display duplicate: " + exDB);
+            }
             
             for(i = 0; i < matches.length; i ++){
                 title = Omadi.utils.trimWhiteSpace(matches[i].title);
@@ -2037,7 +2084,9 @@ FormModule.prototype.displayDuplicateWarnings = function(warningJSON, value, sav
                     width: '100%',
                     height: Ti.UI.SIZE,
                     nid: matches[i].nid,
-                    backgroundColor: '#fc9'
+                    backgroundColor: '#fc9',
+                    localNid: (typeof localNids[matches[i].nid] === 'undefined') ? false : true,
+                    nodeType: matches[i].type
                 });
                 
                 textView = Ti.UI.createView({
@@ -2096,6 +2145,20 @@ FormModule.prototype.displayDuplicateWarnings = function(warningJSON, value, sav
                 data: tableData
             });
             
+            tableView.addEventListener('click', function(e){
+                try{
+                    if(e.row.localNid){
+                        Omadi.display.openViewWindow(e.row.nodeType, e.row.nid, ActiveFormObj.win);
+                    }
+                    else{
+                        Omadi.display.openWebView(e.row.nid);
+                    }
+                }
+                catch(ex){
+                    Omadi.service.sendErrorReport("Exception in duplicate warning table view click: " + ex);
+                }
+            });
+            
             scrollView.add(tableView);
             
             headerView = Ti.UI.createLabel({
@@ -2125,56 +2188,86 @@ FormModule.prototype.displayDuplicateWarnings = function(warningJSON, value, sav
                 top: 5
             });
             
-            saveButton = Ti.UI.createLabel({
-                text: 'Continue Saving',
-                color: '#eee',
-                backgroundGradient: Omadi.display.backgroundGradientBlue,
-                height: 40,
-                width: 150,
-                textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
-                left: 5,
-                font : {
-                    fontSize: 18,
-                    fontWeight: 'bold'
-                },
-                borderRadius: 5
-            });
-            
-            saveButton.addEventListener('click', function(e){
-                // Allow another save to happen immediately
-                ActiveFormObj.duplicateWarningTimestamp = 0;
-                // Hide the window
-                ActiveFormObj.win.remove(wrapper);
-                // Actually finish the saving process
-                ActiveFormObj.trySaveNode(saveType);
-            });
-            
-            cancelButton = Ti.UI.createLabel({
-                text: 'Cancel',
-                color: '#eee',
-                backgroundGradient: Omadi.display.backgroundGradientGray,
-                height: 40,
-                width: 150,
-                textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
-                right: 5,
-                font : {
-                    fontSize: 18,
-                    fontWeight: 'bold'
-                },
-                borderRadius: 5
-            });
-            
-            cancelButton.addEventListener('click', function(e){
-                // Allow another save to happen immediately
-                ActiveFormObj.duplicateWarningTimestamp = 0;
+            // If saveType === null, then no save button should be displayed, as this is coming from the widget instead of the save button
+            if(saveType !== null){
+                saveButton = Ti.UI.createLabel({
+                    text: 'Continue Saving',
+                    color: '#eee',
+                    backgroundGradient: Omadi.display.backgroundGradientBlue,
+                    height: 40,
+                    width: 150,
+                    textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+                    left: 5,
+                    font : {
+                        fontSize: 18,
+                        fontWeight: 'bold'
+                    },
+                    borderRadius: 5
+                });
                 
-                // Hide the window
-                ActiveFormObj.win.remove(wrapper);
-                wrapper = null;
-            });
-            
-            buttonWrapper.add(cancelButton);
-            buttonWrapper.add(saveButton);
+                saveButton.addEventListener('click', function(e){
+                    // Allow another save to happen immediately
+                    ActiveFormObj.duplicateWarningTimestamp = 0;
+                    // Hide the window
+                    ActiveFormObj.win.remove(wrapper);
+                    // Actually finish the saving process
+                    ActiveFormObj.trySaveNode(saveType);
+                });
+                
+                cancelButton = Ti.UI.createLabel({
+                    text: 'Cancel',
+                    color: '#eee',
+                    backgroundGradient: Omadi.display.backgroundGradientGray,
+                    height: 40,
+                    width: 150,
+                    textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+                    right: 5,
+                    font : {
+                        fontSize: 18,
+                        fontWeight: 'bold'
+                    },
+                    borderRadius: 5
+                });
+                
+                cancelButton.addEventListener('click', function(e){
+                    // Allow another save to happen immediately
+                    ActiveFormObj.duplicateWarningTimestamp = 0;
+                    
+                    // Hide the window
+                    ActiveFormObj.win.remove(wrapper);
+                    wrapper = null;
+                });
+                
+                buttonWrapper.add(cancelButton);
+                buttonWrapper.add(saveButton);
+            }
+            else{
+                cancelButton = Ti.UI.createLabel({
+                    text: 'Done',
+                    color: '#eee',
+                    backgroundGradient: Omadi.display.backgroundGradientBlue,
+                    height: 40,
+                    width: 150,
+                    textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+                    right: 5,
+                    font : {
+                        fontSize: 18,
+                        fontWeight: 'bold'
+                    },
+                    borderRadius: 5
+                });
+                
+                cancelButton.addEventListener('click', function(e){
+                    // Allow another save to happen immediately
+                    ActiveFormObj.duplicateWarningTimestamp = 0;
+                    
+                    // Hide the window
+                    ActiveFormObj.win.remove(wrapper);
+                    wrapper = null;
+                });
+                
+                buttonWrapper.add(cancelButton);
+            }
             
             buttonsView.add(buttonWrapper);
             
@@ -2717,401 +2810,404 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
         descriptionText, selectedIndexes, screenHeight, listHeight, label, labelView, instance, nodeType;
     
     try{
-        instance = fieldObject.instance;
-        nodeType = instance.bundle;
         
-        Ti.API.debug("in multi selector");
-        
-        if(instance.widget.type == 'violation_select' && options.length == 0){
-            alert("No violations are enforceable for a " + this.type + " at the selected account and time.");
-        }
-        else{
+        if(popupWin === null){
             
-            screenHeight = Ti.Platform.displayCaps.platformHeight;
+            instance = fieldObject.instance;
+            nodeType = instance.bundle;
             
-            if (Ti.App.isAndroid) {
-                Ti.UI.Android.hideSoftKeyboard();
-                Ti.API.debug("hide keyboard in open_mult_selector");
+            Ti.API.debug("in multi selector");
+            
+            if(instance.widget.type == 'violation_select' && options.length == 0){
+                alert("No violations are enforceable for a " + this.type + " at the selected account and time.");
             }
-            
-            color_set = "#246";
-            color_unset = "#fff";
-            
-            popupWin = Ti.UI.createWindow({
-                orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
-                modal: true,
-                navBarHidden: true
-            });
-            
-            if(Ti.App.isIOS){
-                popupWin.top = 20;
-            }
-            
-            popupWin.instance = instance;
-            popupWinFieldObject = fieldObject;
-            
-            opacView = Ti.UI.createView({
-                left : 0,
-                right : 0,
-                top : 0,
-                bottom : 0
-            });
-            
-            numItemsSelected = 0;
-            popupWin.add(opacView);
-        
-            wrapperView = Ti.UI.createView({
-                backgroundColor : '#fff',
-                left : '5%',
-                right : '5%',
-                height: Ti.UI.SIZE,
-                borderRadius : 10,
-                borderWidth : 2,
-                borderColor : '#fff',
-                layout: 'vertical'
-            });
-            popupWin.add(wrapperView);
-            
-            listHeight = options.length * 32;
-            
-            if(listHeight > screenHeight - 65){
-            
-                listHeight = screenHeight - 65;
-            }
-            
-            popupWinListView = Titanium.UI.createTableView({
-                data : [],
-                scrollable : true,
-                height: listHeight,
-                options: options
-            });
-            
-            for(i = 0; i < options.length; i ++){
-                options[i].isSelected = false;
-            }
-            
-            for(i = 0; i < options.length; i ++){
-                for(j = 0; j < dbValues.length; j ++){
-                    if(dbValues[j] == options[i].dbValue){
-                        options[i].isSelected = true;
-                    }
-                }
-            }
-            
-            data = [];
-            selectedIndexes = [];
-            
-            for(i = 0; i < options.length; i ++){
-                
-                // This label must be added for the Android label color to change
-                // Otherwise, setcolor is not defined for the row
-                label = Ti.UI.createLabel({
-                    text: options[i].title,
-                    width: '100%',
-                    height: Ti.UI.FILL,
-                    color: (options[i].isSelected ? '#fff' : '#000'),
-                    left: 10,
-                    font: {
-                        fontSize: 16,
-                        fontWeight: 'bold'
-                    }
+            else{
+                popupWin = Ti.UI.createWindow({
+                    orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
+                    modal: true,
+                    navBarHidden: true
                 });
                 
-                itemRow = Ti.UI.createTableViewRow({
-                    height : 30,
-                    isSelected : options[i].isSelected,
-                    dbValue : options[i].dbValue,
-                    textValue: options[i].title,
-                    description : options[i].description,
-                    backgroundColor : (options[i].isSelected ? color_set : color_unset),
-                    label: label
+                screenHeight = Ti.Platform.displayCaps.platformHeight;
+                
+                if (Ti.App.isAndroid) {
+                    Ti.UI.Android.hideSoftKeyboard();
+                    Ti.API.debug("hide keyboard in open_mult_selector");
+                }
+                
+                color_set = "#246";
+                color_unset = "#fff";
+                
+                if(Ti.App.isIOS){
+                    popupWin.top = 20;
+                }
+                
+                popupWin.instance = instance;
+                popupWinFieldObject = fieldObject;
+                
+                opacView = Ti.UI.createView({
+                    left : 0,
+                    right : 0,
+                    top : 0,
+                    bottom : 0
                 });
                 
-                itemRow.add(label);
-        
-                if (options[i].isSelected) {
-                    numItemsSelected++;
-                    selectedIndexes.push(i);
+                numItemsSelected = 0;
+                popupWin.add(opacView);
+            
+                wrapperView = Ti.UI.createView({
+                    backgroundColor : '#fff',
+                    left : '5%',
+                    right : '5%',
+                    height: Ti.UI.SIZE,
+                    borderRadius : 10,
+                    borderWidth : 2,
+                    borderColor : '#fff',
+                    layout: 'vertical'
+                });
+                popupWin.add(wrapperView);
+                
+                listHeight = options.length * 32;
+                
+                if(listHeight > screenHeight - 65){
+                
+                    listHeight = screenHeight - 65;
                 }
-                data.push(itemRow);
-            }
-            
-            popupWinListView.setData(data);
-            
-            popupWinListView.addEventListener('click', function(e) {
-                try{
-                    if (!e.row.isSelected) {
-                        popupWinListView.data[0].rows[e.index].isSelected = true;
-                        e.row.label.setColor('#fff');
-                        e.row.setBackgroundColor(color_set);
-                        
-                        numItemsSelected++;
-                        selectedIndexes.push(e.index);
+                
+                popupWinListView = Titanium.UI.createTableView({
+                    data : [],
+                    scrollable : true,
+                    height: listHeight,
+                    options: options
+                });
+                
+                for(i = 0; i < options.length; i ++){
+                    options[i].isSelected = false;
+                }
+                
+                for(i = 0; i < options.length; i ++){
+                    for(j = 0; j < dbValues.length; j ++){
+                        if(dbValues[j] == options[i].dbValue){
+                            options[i].isSelected = true;
+                        }
                     }
-                    else {
-                        popupWinListView.data[0].rows[e.index].isSelected = false;
-                        e.row.setBackgroundColor(color_unset);
-                        e.row.label.setColor('#000');
-                        numItemsSelected--;
-                        selectedIndexes.splice(selectedIndexes.indexOf(e.index), 1);
-                    }
+                }
+                
+                data = [];
+                selectedIndexes = [];
+                
+                for(i = 0; i < options.length; i ++){
                     
-                    if(popupWinDescriptionLabel != null){
-                        if(numItemsSelected == 1){
-                         
-                            if(options[selectedIndexes[0]].description > ""){
+                    // This label must be added for the Android label color to change
+                    // Otherwise, setcolor is not defined for the row
+                    label = Ti.UI.createLabel({
+                        text: options[i].title,
+                        width: '100%',
+                        height: Ti.UI.FILL,
+                        color: (options[i].isSelected ? '#fff' : '#000'),
+                        left: 10,
+                        font: {
+                            fontSize: 16,
+                            fontWeight: 'bold'
+                        }
+                    });
+                    
+                    itemRow = Ti.UI.createTableViewRow({
+                        height : 30,
+                        isSelected : options[i].isSelected,
+                        dbValue : options[i].dbValue,
+                        textValue: options[i].title,
+                        description : options[i].description,
+                        backgroundColor : (options[i].isSelected ? color_set : color_unset),
+                        label: label
+                    });
+                    
+                    itemRow.add(label);
+            
+                    if (options[i].isSelected) {
+                        numItemsSelected++;
+                        selectedIndexes.push(i);
+                    }
+                    data.push(itemRow);
+                }
+                
+                popupWinListView.setData(data);
+                
+                popupWinListView.addEventListener('click', function(e) {
+                    try{
+                        if (!e.row.isSelected) {
+                            popupWinListView.data[0].rows[e.index].isSelected = true;
+                            e.row.label.setColor('#fff');
+                            e.row.setBackgroundColor(color_set);
+                            
+                            numItemsSelected++;
+                            selectedIndexes.push(e.index);
+                        }
+                        else {
+                            popupWinListView.data[0].rows[e.index].isSelected = false;
+                            e.row.setBackgroundColor(color_unset);
+                            e.row.label.setColor('#000');
+                            numItemsSelected--;
+                            selectedIndexes.splice(selectedIndexes.indexOf(e.index), 1);
+                        }
+                        
+                        if(popupWinDescriptionLabel != null){
+                            if(numItemsSelected == 1){
+                             
+                                if(options[selectedIndexes[0]].description > ""){
+                                    
+                                    descriptionText = options[selectedIndexes[0]].description;
+                                }
+                                else{
+                                    descriptionText = "";
+                                }
                                 
-                                descriptionText = options[selectedIndexes[0]].description;
+                            }
+                            else if(numItemsSelected == 0){
+                                descriptionText = "";
                             }
                             else{
                                 descriptionText = "";
                             }
                             
+                            popupWinDescriptionLabel.setText(descriptionText);
                         }
-                        else if(numItemsSelected == 0){
-                            descriptionText = "";
+                    }
+                    catch(ex){
+                        Omadi.service.sendErrorReport("Exception in form list view click: " + ex);
+                    }
+                });
+                
+                topButtonsView = Ti.UI.createView({
+                    bottom: 0,
+                    height : 44,
+                    width : '100%',
+                    backgroundGradient : {
+                        type : 'linear',
+                        startPoint : {
+                            x : '50%',
+                            y : '0%'
+                        },
+                        endPoint : {
+                            x : '50%',
+                            y : '100%'
+                        },
+                        colors : [{
+                            color : '#ccc',
+                            offset : 0.0
+                        }, {
+                            color : '#999',
+                            offset : 1.0
+                        }]
+                    }
+                });
+                
+                labelView = Ti.UI.createLabel({
+                   text: instance.label,
+                   width: '100%',
+                   textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+                   color: '#333',
+                   font: {
+                       fontWeight: 'bold',
+                       fontSize: 14
+                   },
+                   zIndex: 0
+                });
+                
+                topButtonsView.add(labelView);
+                
+                descriptionView = Ti.UI.createView({
+                    width: '100%',
+                    height: Ti.UI.SIZE,
+                    backgroundColor: '#eee',
+                    borderColor: '#999',
+                    borderWidth: 1
+                });
+                    
+                if(instance.widget.type == 'violation_select'){
+                    
+                    if(numItemsSelected == 1){
+                        
+                        if(options[selectedIndexes[0]].description > ""){
+                                
+                            descriptionText = options[selectedIndexes[0]].description;
                         }
                         else{
                             descriptionText = "";
                         }
-                        
-                        popupWinDescriptionLabel.setText(descriptionText);
                     }
-                }
-                catch(ex){
-                    Omadi.service.sendErrorReport("Exception in form list view click: " + ex);
-                }
-            });
-            
-            topButtonsView = Ti.UI.createView({
-                bottom: 0,
-                height : 44,
-                width : '100%',
-                backgroundGradient : {
-                    type : 'linear',
-                    startPoint : {
-                        x : '50%',
-                        y : '0%'
-                    },
-                    endPoint : {
-                        x : '50%',
-                        y : '100%'
-                    },
-                    colors : [{
-                        color : '#ccc',
-                        offset : 0.0
-                    }, {
-                        color : '#999',
-                        offset : 1.0
-                    }]
-                }
-            });
-            
-            labelView = Ti.UI.createLabel({
-               text: instance.label,
-               width: '100%',
-               textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
-               color: '#333',
-               font: {
-                   fontWeight: 'bold',
-                   fontSize: 14
-               },
-               zIndex: 0
-            });
-            
-            topButtonsView.add(labelView);
-            
-            descriptionView = Ti.UI.createView({
-                width: '100%',
-                height: Ti.UI.SIZE,
-                backgroundColor: '#eee',
-                borderColor: '#999',
-                borderWidth: 1
-            });
-                
-            if(instance.widget.type == 'violation_select'){
-                
-                if(numItemsSelected == 1){
-                    
-                    if(options[selectedIndexes[0]].description > ""){
-                            
-                        descriptionText = options[selectedIndexes[0]].description;
+                    else if(numItemsSelected == 0){
+                        descriptionText = "";
                     }
                     else{
                         descriptionText = "";
                     }
-                }
-                else if(numItemsSelected == 0){
-                    descriptionText = "";
+                    
+                    popupWinDescriptionLabel = Titanium.UI.createLabel({
+                        ellipsize : false,
+                        wordWrap : true,
+                        font : {
+                            fontSize : 14
+                        },
+                        color : '#000',
+                        height : Ti.UI.SIZE,
+                        width: '96%',
+                        text: descriptionText,
+                        left: '2%',
+                        right: '2%'
+                    });
+                    
+                    descriptionView.add(popupWinDescriptionLabel);
                 }
                 else{
-                    descriptionText = "";
+                    popupWinDescriptionLabel = null;
                 }
                 
-                popupWinDescriptionLabel = Titanium.UI.createLabel({
-                    ellipsize : false,
-                    wordWrap : true,
-                    font : {
-                        fontSize : 14
+                okButton = Ti.UI.createLabel({
+                    text : 'Done',
+                    right : 10,
+                    width: 80,
+                    height: 35,
+                    style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+                    color: '#fff',
+                    borderRadius: 5,
+                    font: {
+                        fontSize: 14,
+                        fontWeight: 'bold'
                     },
-                    color : '#000',
-                    height : Ti.UI.SIZE,
-                    width: '96%',
-                    text: descriptionText,
-                    left: '2%',
-                    right: '2%'
+                    borderWidth: 1,
+                    textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+                    borderColor: '#555',
+                    backgroundGradient : {
+                        type : 'linear',
+                        startPoint : {
+                            x : '50%',
+                            y : '0%'
+                        },
+                        endPoint : {
+                            x : '50%',
+                            y : '100%'
+                        },
+                        colors : [{
+                            color : '#999',
+                            offset : 0.0
+                        }, {
+                            color : '#444',
+                            offset : 1.0
+                        }]
+                    },
+                    instance: instance,
+                    zIndex: 1
                 });
+                topButtonsView.add(okButton);
                 
-                descriptionView.add(popupWinDescriptionLabel);
-            }
-            else{
-                popupWinDescriptionLabel = null;
-            }
-            
-            okButton = Ti.UI.createLabel({
-                text : 'Done',
-                right : 10,
-                width: 80,
-                height: 35,
-                style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
-                color: '#fff',
-                borderRadius: 5,
-                font: {
-                    fontSize: 14,
-                    fontWeight: 'bold'
-                },
-                borderWidth: 1,
-                textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
-                borderColor: '#555',
-                backgroundGradient : {
-                    type : 'linear',
-                    startPoint : {
-                        x : '50%',
-                        y : '0%'
-                    },
-                    endPoint : {
-                        x : '50%',
-                        y : '100%'
-                    },
-                    colors : [{
-                        color : '#999',
-                        offset : 0.0
-                    }, {
-                        color : '#444',
-                        offset : 1.0
-                    }]
-                },
-                instance: instance,
-                zIndex: 1
-            });
-            topButtonsView.add(okButton);
-            
-            okButton.addEventListener('click', function(e) {
-                var i, aux_ret, valid_return, data, dbValues, textValue, textValues;
-                aux_ret = [];
-                valid_return = [];
-                dbValues = [];
-                textValue = "";
-                textValues = [];
-                
-                try{
-
-                    for (i = 0; i < popupWinListView.data[0].rows.length; i++) {
-                        if (popupWinListView.data[0].rows[i].isSelected) {
+                okButton.addEventListener('click', function(e) {
+                    var i, aux_ret, valid_return, data, dbValues, textValue, textValues;
+                    aux_ret = [];
+                    valid_return = [];
+                    dbValues = [];
+                    textValue = "";
+                    textValues = [];
+                    
+                    try{
+    
+                        for (i = 0; i < popupWinListView.data[0].rows.length; i++) {
+                            if (popupWinListView.data[0].rows[i].isSelected) {
+                                
+                                textValues.push(popupWinListView.data[0].rows[i].textValue);
+                                dbValues.push(popupWinListView.data[0].rows[i].dbValue);   
+                            }
+                        }
+                        
+                        if(textValues.length > 0){
+                            textValue = textValues.join(', ');
+                        }
                             
-                            textValues.push(popupWinListView.data[0].rows[i].textValue);
-                            dbValues.push(popupWinListView.data[0].rows[i].dbValue);   
+                        popupWinFieldObject.elements[0].dbValue = dbValues;
+                        popupWinFieldObject.elements[0].textValue = textValue;
+                        popupWinFieldObject.elements[0].setText(textValue);
+                        
+                        if(popupWinDescriptionLabel != null){                
+                            popupWinFieldObject.descriptionLabel.setText(popupWinDescriptionLabel.text);
+                        }
+                        
+                        if(popupWinFieldObject.elements[0].check_conditional_fields.length > 0){
+                            FormObj[nodeType].setConditionallyRequiredLabels(e.source.instance, popupWinFieldObject.elements[0].check_conditional_fields);
                         }
                     }
-                    
-                    if(textValues.length > 0){
-                        textValue = textValues.join(', ');
+                    catch(ex){
+                        Omadi.service.sendErrorReport("Exception in form ok button pressed for multi select: " + ex);
                     }
+                    
+                    try{
+                        popupWinListView = null;
+                        popupWinDescriptionLabel = null;
+                        popupWinFieldObject = null;
                         
-                    popupWinFieldObject.elements[0].dbValue = dbValues;
-                    popupWinFieldObject.elements[0].textValue = textValue;
-                    popupWinFieldObject.elements[0].setText(textValue);
-                    
-                    if(popupWinDescriptionLabel != null){                
-                        popupWinFieldObject.descriptionLabel.setText(popupWinDescriptionLabel.text);
+                        popupWin.close();
+                        popupWin = null;
                     }
-                    
-                    if(popupWinFieldObject.elements[0].check_conditional_fields.length > 0){
-                        FormObj[nodeType].setConditionallyRequiredLabels(e.source.instance, popupWinFieldObject.elements[0].check_conditional_fields);
+                    catch(ex1){
+                        Omadi.service.sendErrorReport("Exception closing out the multi-select from ok button: " + ex1);
                     }
-                }
-                catch(ex){
-                    Omadi.service.sendErrorReport("Exception in form ok button pressed for multi select: " + ex);
-                }
+                });
+            
+                cancelButton = Ti.UI.createLabel({
+                    text : 'Cancel',
+                    width: 80,
+                    left : 10,
+                    height: 35,
+                    style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
+                    color: '#fff',
+                    borderRadius: 5,
+                    textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
+                    font: {
+                        fontSize: 14,
+                        fontWeight: 'bold'
+                    },
+                    borderWidth: 1,
+                    borderColor: '#555',
+                    backgroundGradient : {
+                        type : 'linear',
+                        startPoint : {
+                            x : '50%',
+                            y : '0%'
+                        },
+                        endPoint : {
+                            x : '50%',
+                            y : '100%'
+                        },
+                        colors : [{
+                            color : '#999',
+                            offset : 0.0
+                        }, {
+                            color : '#444',
+                            offset : 1.0
+                        }]
+                    },
+                    zIndex: 1
+                });
                 
-                try{
-                    popupWinListView = null;
-                    popupWinDescriptionLabel = null;
-                    popupWinFieldObject = null;
-                    
-                    popupWin.close();
-                    popupWin = null;
-                }
-                catch(ex1){
-                    Omadi.service.sendErrorReport("Exception closing out the multi-select from ok button: " + ex1);
-                }
-            });
-        
-            cancelButton = Ti.UI.createLabel({
-                text : 'Cancel',
-                width: 80,
-                left : 10,
-                height: 35,
-                style: Ti.UI.iPhone.SystemButtonStyle.PLAIN,
-                color: '#fff',
-                borderRadius: 5,
-                textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER,
-                font: {
-                    fontSize: 14,
-                    fontWeight: 'bold'
-                },
-                borderWidth: 1,
-                borderColor: '#555',
-                backgroundGradient : {
-                    type : 'linear',
-                    startPoint : {
-                        x : '50%',
-                        y : '0%'
-                    },
-                    endPoint : {
-                        x : '50%',
-                        y : '100%'
-                    },
-                    colors : [{
-                        color : '#999',
-                        offset : 0.0
-                    }, {
-                        color : '#444',
-                        offset : 1.0
-                    }]
-                },
-                zIndex: 1
-            });
-            
-            topButtonsView.add(cancelButton);
-            cancelButton.addEventListener('click', function() {
-                try{
-                    popupWinListView = null;
-                    popupWinDescriptionLabel = null;
-                    popupWinFieldObject = null;
-                    popupWin.close();
-                    popupWin = null;
-                }
-                catch(ex){
-                    Omadi.service.sendErrorReport("Exception in multi-view cancel button: " + ex);
-                }
-            });
-            
-            wrapperView.add(topButtonsView);
-            wrapperView.add(descriptionView);
-            wrapperView.add(popupWinListView);
-            
-            popupWin.open();
+                topButtonsView.add(cancelButton);
+                cancelButton.addEventListener('click', function() {
+                    try{
+                        popupWinListView = null;
+                        popupWinDescriptionLabel = null;
+                        popupWinFieldObject = null;
+                        popupWin.close();
+                        popupWin = null;
+                    }
+                    catch(ex){
+                        Omadi.service.sendErrorReport("Exception in multi-view cancel button: " + ex);
+                    }
+                });
+                
+                wrapperView.add(topButtonsView);
+                wrapperView.add(descriptionView);
+                wrapperView.add(popupWinListView);
+                
+                popupWin.open();
+            }
         }
    }
    catch(ex){
@@ -3923,6 +4019,14 @@ FormModule.prototype.getLabelField = function(instance){"use strict";
         labelView.setBackgroundColor('#ccc');
         labelView.setColor('#666');
     }
+    
+    labelView.addEventListener('click', function(e){
+        // Unfocus any fields when clicking a non-text field
+        try{
+            ActiveFormObj.unfocusField();
+        }
+        catch(ex){} 
+    });
         
     return labelView;
 };

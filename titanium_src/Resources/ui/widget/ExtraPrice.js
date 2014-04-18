@@ -308,7 +308,7 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
 
         descView.addEventListener('change', function(e) {
             /*global setConditionallyRequiredLabels*/
-            var upperCaseValue, tableData, possibleValues, i, regEx, row, jsonValue;
+            var upperCaseValue, tableData, possibleValues, i, regEx, row, jsonValue, sanitized;
             
             if (e.source.touched === true) {
                 
@@ -336,7 +336,10 @@ ExtraPriceWidget.prototype.getNewElement = function(index){"use strict";
                             continue;
                         }
                         
-                        regEx = new RegExp(e.source.value, 'i');
+                        sanitized = "".toString() + e.source.value;
+                        sanitized = sanitized.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+                        
+                        regEx = new RegExp(sanitized, 'i');
                         if (possibleValues[i].title.search(regEx) != -1) {
                             //Check match
                             if (upperCaseValue == possibleValues[i].title.toUpperCase()) {

@@ -251,7 +251,7 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
     });
 
     this.element.addEventListener('change', function(e) {
-        var possibleValues, tableData, i, regEx, row, db, result, makeValues, widget;
+        var possibleValues, tableData, i, regEx, row, db, result, makeValues, widget, sanitized;
         
         try{
             
@@ -306,8 +306,11 @@ VehicleFieldsWidget.prototype.getNewElement = function(index){"use strict";
                     tableData = [];
     
                     for ( i = 0; i < possibleValues.length; i++) {
-    
-                        regEx = new RegExp(e.source.value, 'i');
+                        
+                        sanitized = "".toString() + e.source.value;
+                        sanitized = sanitized.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+                        
+                        regEx = new RegExp(sanitized, 'i');
                         if (possibleValues[i].search(regEx) != -1) {
                             //Check match
     
