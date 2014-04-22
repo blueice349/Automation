@@ -169,7 +169,6 @@ function loggingOutTagsReady(){"use strict";
             data : data,
             backgroundColor : '#eee',
             scrollable: true
-            
         });
         
         tableView.addEventListener('click', function(e) {

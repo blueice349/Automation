@@ -1621,7 +1621,7 @@ Omadi.service.getUpdatedNodeJSON = function() {"use strict";
                         }
                         
                         if(instances[field_name].type == 'extra_price'){
-                            obj.data.node[nid][field_name + "___data"] = node[field_name].tempData;
+                            obj.data.node[nid][field_name + "___data"] = node[field_name].jsonValue;
                         }
                         
                         if(instances[field_name].type == 'image' && 

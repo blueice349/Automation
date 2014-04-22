@@ -258,6 +258,7 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
     this.instances = {};
     this.regions = {};
     this.hasViolationField = false;
+    this.hasExtraPriceField = [];
     this.saveInterval = null;
     this.nodeSaved = false;
     this.trySaveNodeTries = 0;
@@ -3206,6 +3207,14 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                 wrapperView.add(descriptionView);
                 wrapperView.add(popupWinListView);
                 
+                popupWin.addEventListener('android:back', function(e){
+                    popupWinListView = null;
+                    popupWinDescriptionLabel = null;
+                    popupWinFieldObject = null;
+                    popupWin.close();
+                    popupWin = null;
+                });
+                
                 popupWin.open();
             }
         }
@@ -3349,6 +3358,11 @@ FormModule.prototype.getWindow = function(){"use strict";
                                             if(instance.widget.type == 'violation_select'){
                                                 this.hasViolationField = instance.field_name;
                                             }
+                                            else if(instance.type == 'extra_price'){
+                                                if(instance.field_name != 'total_credits' && instance.field_name != 'total_amount_paid'){
+                                                    this.hasExtraPriceField.push(instance.field_name);   
+                                                }
+                                            }
                                         }
                                         else{
                                             this.sendError("Could not create field: " + JSON.stringify(instance));
@@ -3474,6 +3488,10 @@ FormModule.prototype.getWindow = function(){"use strict";
                 this.setupViolationFields(this.hasViolationField);
             }
             
+            if(this.hasExtraPriceField.length > 0){
+                this.setupExtraPriceFields(this.hasExtraPriceField);
+            }
+            
             this.win.add(this.wrapperView);
             
             // Give the window a second to popup before recalculating
@@ -3544,32 +3562,85 @@ FormModule.prototype.setupViolationFields = function(field_name){"use strict";
             if(typeof this.fieldWrappers[field_name] !== 'undefined'){
                 
                 if (widget.rules_field_name != null && widget.rules_field_name != "") {
-                   
-                    this.setValueWidgetProperty(widget.rules_field_name, 'onChangeCallbacks', ['changeViolationFieldOptions']);
-                    this.setValueWidgetProperty(widget.rules_field_name, 'onChangeCallbackArgs', [[field_name]]);
                     
-                    if (widget.rules_violation_time_field_name != null && widget.rules_violation_time_field_name != "") {
-                        
-                        this.setValueWidgetProperty(widget.rules_violation_time_field_name, 'onChangeCallbacks', ['changeViolationFieldOptions']);
-                        this.setValueWidgetProperty(widget.rules_violation_time_field_name, 'onChangeCallbackArgs', [[field_name]]);
+                    this.addChangeCallback(widget.rules_field_name, 'changeViolationFieldOptions', [field_name]);
+                    
+                    if (widget.rules_violation_time_field_name != null && widget.rules_violation_time_field_name != "") {    
+                        this.addChangeCallback(widget.rules_violation_time_field_name, 'changeViolationFieldOptions', [field_name]);    
                     }
                 }
                 
                 // Initialize the field for default values
-                this.changeViolationFieldOptions(field_name);
+                this.changeViolationFieldOptions([field_name]);
             }
         }
     }
 };
 
-FormModule.prototype.changeViolationFieldOptions = function(violation_field_name){"use strict";
+FormModule.prototype.setupExtraPriceFields = function(fieldNames){"use strict";
+    var instance, valueWidget, widget, referenceWidget, datestampWidget, i, field_name, 
+        categoryFieldName;
+    // NOTE: this will not work with time fields with multiple cardinality
+    
+    for(i = 0; i < fieldNames.length; i ++){
+        field_name = fieldNames[i];
+        
+        if(typeof this.instances[field_name] !== 'undefined'){
+            instance = this.instances[field_name];
+            
+            if(typeof this.fieldWrappers[field_name] !== 'undefined'){
+                // This field is actually showing on the form..
+                
+                //this.addChangeCallback(widget.rules_field_name, 'changeViolationFieldOptions', [field_name]);
+                Ti.API.debug("Setting up extra price fields post render...");
+                if(typeof this.instances[field_name].settings.category_field_name !== 'undefined'){
+                    if(this.instances[field_name].settings.category_field_name > ''){
+                        
+                        categoryFieldName = this.instances[field_name].settings.category_field_name;
+                        
+                        this.addChangeCallback(categoryFieldName, 'changeExtraPriceData', [field_name]);
+                    }
+                }
+            }   
+        }
+    }
+};
+
+FormModule.prototype.changeExtraPriceData = function(args){"use strict";
+    var fieldName, fieldObj;
+    
+    fieldName = args[0];
+    
+    if(typeof this.fieldObjects[fieldName] !== 'undefined'){
+        this.fieldObjects[fieldName].itemChange();
+    }
+};
+
+FormModule.prototype.addChangeCallback = function(fieldName, functionName, args){"use strict";
+    if(typeof this.fieldObjects[fieldName] !== 'undefined'){
+        if(typeof this.fieldObjects[fieldName].elements !== 'undefined'){
+            if(typeof this.fieldObjects[fieldName].elements[0] !== 'undefined'){
+                if(typeof this.fieldObjects[fieldName].elements[0].onChangeCallbacks !== 'undefined'){
+                    this.fieldObjects[fieldName].elements[0].onChangeCallbacks.push({
+                        callback: functionName,
+                        args: args
+                    });
+                }
+            }
+        }
+    }
+};
+
+FormModule.prototype.changeViolationFieldOptions = function(args){"use strict";
     var db, result, options, textOptions, i, j, violation_instance, parentNid, parentNidDBValues, reference_field_name, 
         rules_parent_field_name, parentNodeType, rulesData, dataRow, node_type, tids, used_tids, all_others_row,
         rules_violation_time_field_name, violationTimestampValues, violation_timestamp, violationTerms, violation_term, 
-        descriptions, violationDBValues, isViolationValid, textValues, violationTextValues, origRulesData;
+        descriptions, violationDBValues, isViolationValid, textValues, violationTextValues, origRulesData, violation_field_name;
     /*global rules_field_passed_time_check*/
     
     try{
+        
+        violation_field_name = args[0];
         
         try{
             node_type = this.type;

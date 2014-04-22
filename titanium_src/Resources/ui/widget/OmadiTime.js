@@ -424,7 +424,12 @@ OmadiTimeWidget.prototype.displayPicker = function(element) {"use strict";
         });
     
         dateWindow.add(wrapperView);
-    
+        
+        dateWindow.addEventListener('android:back', function(e){
+            dateWindow.close();
+            dateWindow = null;
+        });
+        
         dateWindow.open();
     }
     catch(ex){

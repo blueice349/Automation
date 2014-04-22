@@ -14,7 +14,7 @@ function OmadiReferenceWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.nodeElement = null;
     this.numVisibleFields = 1;
     this.fieldViewWrapper = fieldViewWrapper;
-    this.element = null;
+    this.elements = [];
     this.elementWrapper = null;
     this.autocomplete_table = null;
     this.addressLabel = null;
@@ -33,8 +33,6 @@ function OmadiReferenceWidget(formObj, instance, fieldViewWrapper){"use strict";
 }
 
 OmadiReferenceWidget.prototype.getFieldView = function(){"use strict";
-    
-    var i, element, addButton;
     
     this.fieldView = Ti.UI.createView({
        width: '100%',
@@ -166,8 +164,8 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
             var node, widget;
             widget = Widget[e.source.instance.field_name];
             
-            if(typeof widget.element !== 'undefined' && widget.element.dbValue !== null && widget.element.dbValue > 0){
-                node = Omadi.data.nodeLoad(widget.element.dbValue);
+            if(typeof widget.elements[0] !== 'undefined' && widget.elements[0].dbValue !== null && widget.elements[0].dbValue > 0){
+                node = Omadi.data.nodeLoad(widget.elements[0].dbValue);
                 if(node){
                     Omadi.display.openViewWindow(node.type, node.nid);
                 }
@@ -196,20 +194,20 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
             options.push(possibleValues[i].title);
         }
         
-        this.element = this.formObj.getLabelField(this.instance);
-        this.element.dbValue = dbValue;
-        this.element.textValue = textValue;
-        this.element.options = options;
-        this.element.possibleValues = possibleValues;
-        this.element.top = 1;
-        this.element.bottom = 1;
-        this.element.setText(textValue);
+        this.elements[0] = this.formObj.getLabelField(this.instance);
+        this.elements[0].dbValue = dbValue;
+        this.elements[0].textValue = textValue;
+        this.elements[0].options = options;
+        this.elements[0].possibleValues = possibleValues;
+        this.elements[0].top = 1;
+        this.elements[0].bottom = 1;
+        this.elements[0].setText(textValue);
         
-        this.element.check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
-        this.formObj.addCheckConditionalFields(this.element.check_conditional_fields);
+        this.elements[0].check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
+        this.formObj.addCheckConditionalFields(this.elements[0].check_conditional_fields);
         
         if(this.instance.can_edit){
-            this.element.addEventListener('click', function(e) {
+            this.elements[0].addEventListener('click', function(e) {
                 try{
                     var postDialog = Titanium.UI.createOptionDialog();
                     postDialog.options = e.source.options;
@@ -224,7 +222,7 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                                 
                                 widget = Widget[ev.source.instance.field_name];
                                 
-                                if(widget.element.possibleValues[ev.index].nid === null){
+                                if(widget.elements[0].possibleValues[ev.index].nid === null){
                                     text = '';   
                                     
                                     widget.addressLabel.text = '';
@@ -233,7 +231,7 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                                 else{
                                     text = ev.source.options[ev.index];
                                     
-                                    street = widget.getFirstStreetAddress(widget.element.possibleValues[ev.index].nid);
+                                    street = widget.getFirstStreetAddress(widget.elements[0].possibleValues[ev.index].nid);
                                     
                                     if(street != ""){
                                         street += ' - ';
@@ -243,12 +241,12 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                                     widget.addressLabel.text = street;
                                     widget.addressLabel.height = 20;
                                 }
-                                widget.element.textValue = text;
-                                widget.element.dbValue = widget.element.possibleValues[ev.index].nid;
-                                widget.element.setText(text);
+                                widget.elements[0].textValue = text;
+                                widget.elements[0].dbValue = widget.elements[0].possibleValues[ev.index].nid;
+                                widget.elements[0].setText(text);
                                 
-                                if (widget.element.check_conditional_fields.length > 0) {
-                                    widget.formObj.setConditionallyRequiredLabels(ev.source.instance, widget.element.check_conditional_fields);
+                                if (widget.elements[0].check_conditional_fields.length > 0) {
+                                    widget.formObj.setConditionallyRequiredLabels(ev.source.instance, widget.elements[0].check_conditional_fields);
                                 }
                             }
                         }
@@ -263,16 +261,16 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
             });
         }
         
-        wrapper.add(this.element);
+        wrapper.add(this.elements[0]);
         wrapper.add(this.addressLabel);
     }
     else{
     
-        this.element = this.formObj.getTextField(this.instance);
+        this.elements[0] = this.formObj.getTextField(this.instance);
         
         if(typeof this.instance.settings.hidden_on_form !== 'undefined' && this.instance.settings.hidden_on_form == 1){
             isHidden = true;
-            this.element = Ti.UI.createLabel({
+            this.elements[0] = Ti.UI.createLabel({
                 text: textValue,
                 font: {
                     fontSize: 14
@@ -281,35 +279,35 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
             });
             
             if(textValue == ''){
-                this.element.text = '- No Options -';
+                this.elements[0].text = '- No Options -';
             }
         }
         else{
-            this.element = this.formObj.getTextField(this.instance);
-            this.element.setValue(textValue);
-            this.element.setAutocapitalization(Ti.UI.TEXT_AUTOCAPITALIZATION_WORDS);
+            this.elements[0] = this.formObj.getTextField(this.instance);
+            this.elements[0].setValue(textValue);
+            this.elements[0].setAutocapitalization(Ti.UI.TEXT_AUTOCAPITALIZATION_WORDS);
             isHidden = false;
         }
         
-        this.element.dbValue = dbValue;
-        this.element.textValue = textValue;
+        this.elements[0].dbValue = dbValue;
+        this.elements[0].textValue = textValue;
         
-        this.element.lastValue = textValue;
-        this.element.touched = false;
-        this.element.possibleValues = possibleValues;
-        this.element.defaultValueChildFields = [];
-        this.element.onChangeCallbacks = [];
-        this.element.clickedAutocomplete = false;
-        this.element.touched = false;
-        this.element.blurred = true;
+        this.elements[0].lastValue = textValue;
+        this.elements[0].touched = false;
+        this.elements[0].possibleValues = possibleValues;
+        this.elements[0].defaultValueChildFields = [];
+        this.elements[0].onChangeCallbacks = [];
+        this.elements[0].clickedAutocomplete = false;
+        this.elements[0].touched = false;
+        this.elements[0].blurred = true;
         
         if(dbValue > 0){
-            this.element.setColor('#060');
+            this.elements[0].setColor('#060');
         }
         
         if(!isHidden){
             
-            this.element.defaultValueChildFields = this.setupParentDefaultFields();
+            this.elements[0].defaultValueChildFields = this.setupParentDefaultFields();
     
             this.autocomplete_table = Titanium.UI.createTableView({
                 height : 0,
@@ -328,8 +326,8 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                 try{
                     widget = Widget[e.source.fieldName];
                     
-                    widget.element.textValue = widget.element.value = e.rowData.title;
-                    widget.element.dbValue = e.rowData.nid;
+                    widget.elements[0].textValue = widget.elements[0].value = e.rowData.title;
+                    widget.elements[0].dbValue = e.rowData.nid;
         
                     widget.autocomplete_table.setHeight(0);
                     widget.autocomplete_table.setBorderWidth(0);
@@ -344,25 +342,25 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                     widget.addressLabel.text = street;
                     widget.addressLabel.height = 20;
                     
-                    widget.element.setColor('#060');
+                    widget.elements[0].setColor('#060');
         
                     if (Ti.App.isAndroid) {
                         // Make sure the cursor is at the end of the text
-                        widget.element.setSelection(widget.element.value.length, widget.element.value.length);
+                        widget.elements[0].setSelection(widget.elements[0].value.length, widget.elements[0].value.length);
                     }
         
                     // Pretend like this is just loaded - mainly a fix for android, but makes sense for both
                     //e.source.textField.touched = false;
                     
-                    widget.element.clickedAutocomplete = true;
+                    widget.elements[0].clickedAutocomplete = true;
                     
-                    widget.setChildDefaultValues(widget.element);
+                    widget.setChildDefaultValues(widget.elements[0]);
         
-                    if ( typeof widget.element.onChangeCallbacks !== 'undefined') {
-                        if (widget.element.onChangeCallbacks.length > 0) {
-                            for ( i = 0; i < widget.element.onChangeCallbacks.length; i++) {
-                                callback = widget.element.onChangeCallbacks[i];
-                                widget.formObj[callback](widget.element.onChangeCallbackArgs[i]);
+                    if ( typeof widget.elements[0].onChangeCallbacks !== 'undefined') {
+                        if (widget.elements[0].onChangeCallbacks.length > 0) {
+                            for ( i = 0; i < widget.elements[0].onChangeCallbacks.length; i++) {
+                                callback = widget.elements[0].onChangeCallbacks[i].callback;
+                                widget.formObj[callback](widget.elements[0].onChangeCallbacks[i].args);
                             }
                         }
                     }
@@ -372,24 +370,24 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                 }
             });
     
-            this.element.check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
-            this.formObj.addCheckConditionalFields(this.element.check_conditional_fields);
+            this.elements[0].check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
+            this.formObj.addCheckConditionalFields(this.elements[0].check_conditional_fields);
     
-            this.element.addEventListener('focus', function(e){
+            this.elements[0].addEventListener('focus', function(e){
                e.source.touched = true; 
             });
             
-            this.element.addEventListener('click', function(e){
+            this.elements[0].addEventListener('click', function(e){
                e.source.touched = true; 
             });
     
-            this.element.addEventListener('blur', function(e) {
+            this.elements[0].addEventListener('blur', function(e) {
                 try{
                     var widget = Widget[e.source.instance.field_name];
                     widget.autocomplete_table.setBorderWidth(0);
                     widget.autocomplete_table.setHeight(0);
                     widget.autocomplete_table.setVisible(false);
-                    widget.element.blurred = true;
+                    widget.elements[0].blurred = true;
                 }
                 catch(ex){
                     try{
@@ -413,42 +411,42 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                 // }
             // });
     
-            this.element.addEventListener('change', function(e) {
+            this.elements[0].addEventListener('change', function(e) {
                 var possibleValues, tableData, i, j, regEx, row, upperCaseValue, callback, street, widget, sanitized;
                 
                 try{
                     
                     widget = Widget[e.source.instance.field_name];
                     if(Ti.App.isAndroid && e.source.clickedAutocomplete){
-                        widget.element.clickedAutocomplete = false;
+                        widget.elements[0].clickedAutocomplete = false;
                         Ti.API.debug("IN clicked auto");
                         return;
                     }
                     
-                    if (widget.element.touched === true) {
+                    if (widget.elements[0].touched === true) {
                          
-                        widget.element.dbValue = null;
-                        widget.element.textValue = widget.element.value;
+                        widget.elements[0].dbValue = null;
+                        widget.elements[0].textValue = widget.elements[0].value;
                         
-                        widget.element.setColor('#ee0000');
+                        widget.elements[0].setColor('#ee0000');
                         widget.addressLabel.setHeight(0);
                         
-                        if (widget.element.lastValue != widget.element.value && widget.element.value != '') {
-                            possibleValues = widget.element.possibleValues;
+                        if (widget.elements[0].lastValue != widget.elements[0].value && widget.elements[0].value != '') {
+                            possibleValues = widget.elements[0].possibleValues;
         
-                            upperCaseValue = widget.element.value.toUpperCase();
+                            upperCaseValue = widget.elements[0].value.toUpperCase();
                             tableData = [];
         
                             for ( i = 0; i < possibleValues.length; i++) {
                                 
-                                sanitized = "".toString() + widget.element.value;
+                                sanitized = "".toString() + widget.elements[0].value;
                                 sanitized = sanitized.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
                                 
                                 regEx = new RegExp(sanitized, 'i');
                                 if (possibleValues[i].title.search(regEx) != -1) {
                                     //Check match
                                     if (upperCaseValue == possibleValues[i].title.toUpperCase()) {
-                                        widget.element.dbValue = possibleValues[i].nid;
+                                        widget.elements[0].dbValue = possibleValues[i].nid;
                                         
                                         widget.setChildDefaultValues(e.source);
                                         
@@ -456,7 +454,7 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                                         widget.autocomplete_table.setBorderWidth(0);
                                         widget.autocomplete_table.setVisible(false);
                                         
-                                        street = widget.getFirstStreetAddress(widget.element.dbValue);
+                                        street = widget.getFirstStreetAddress(widget.elements[0].dbValue);
                                         if(street != ""){
                                             street += ' - ';
                                         }
@@ -465,17 +463,17 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                                         widget.addressLabel.text = street;
                                         widget.addressLabel.height = 20;
                                         
-                                        widget.element.setColor('#006600');
+                                        widget.elements[0].setColor('#006600');
                                         
-                                        if (widget.element.onChangeCallbacks.length > 0) {
-                                            for ( j = 0; j < widget.element.onChangeCallbacks.length; j++) {
-                                                callback = widget.element.onChangeCallbacks[j];
-                                                widget.formObj[callback](widget.element.onChangeCallbackArgs[j]);
+                                        if (widget.elements[0].onChangeCallbacks.length > 0) {
+                                            for ( j = 0; j < widget.elements[0].onChangeCallbacks.length; j++) {
+                                                callback = widget.elements[0].onChangeCallbacks[j].callback;
+                                                widget.formObj[callback](widget.elements[0].onChangeCallbacks[j].args);
                                             }
                                         }
                                     }
                                     else {
-                                        widget.element.dbValue = null;
+                                        widget.elements[0].dbValue = null;
                                         
                                          //Create partial matching row
                                         row = Ti.UI.createTableViewRow({
@@ -511,8 +509,8 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                                 widget.autocomplete_table.setVisible(true);
                             }
                             
-                            if(widget.element.blurred){
-                                widget.element.blurred = false;
+                            if(widget.elements[0].blurred){
+                                widget.elements[0].blurred = false;
                                 widget.formObj.scrollToField(e);
                             }
                         }
@@ -523,22 +521,22 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                         }
                     }
                     
-                    if(widget.element.check_conditional_fields.length > 0){
-                        if(typeof widget.element.lastValue === 'undefined' || typeof widget.element.value === 'undefined' || 
-                                  widget.element.lastValue == "" || widget.element.value == ""){
+                    if(widget.elements[0].check_conditional_fields.length > 0){
+                        if(typeof widget.elements[0].lastValue === 'undefined' || typeof widget.elements[0].value === 'undefined' || 
+                                  widget.elements[0].lastValue == "" || widget.elements[0].value == ""){
                             Ti.API.debug("Checking conditionally required");
-                            widget.formObj.setConditionallyRequiredLabels(widget.element.instance, widget.element.check_conditional_fields);
+                            widget.formObj.setConditionallyRequiredLabels(widget.elements[0].instance, widget.elements[0].check_conditional_fields);
                         }
                     }
                 
-                    widget.element.lastValue = widget.element.value;
+                    widget.elements[0].lastValue = widget.elements[0].value;
                 }
                 catch(ex){
                     Omadi.service.sendErrorReport("Exception in omadi reference change event: " + ex);
                 }
             });
     
-            wrapper.add(this.element);
+            wrapper.add(this.elements[0]);
             wrapper.add(this.autocomplete_table);
             wrapper.add(this.addressLabel);
         }
@@ -640,10 +638,10 @@ OmadiReferenceWidget.prototype.cleanUp = function(){"use strict";
     try{
         Widget[this.instance.field_name] = null;
         
-        this.elementWrapper.remove(this.element);
+        this.elementWrapper.remove(this.elements[0]);
         this.elementWrapper.remove(this.addressLabel);
         
-        this.element = null;
+        this.elements[0] = null;
         this.addressLabel = null;
         
         if(this.autocomplete_table !== null){

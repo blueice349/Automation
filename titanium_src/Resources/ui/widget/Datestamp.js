@@ -609,8 +609,8 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
                     if ( typeof Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks !== 'undefined') {
                         if (Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks.length > 0) {
                             for ( i = 0; i < Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks.length; i++) {
-                                callback = Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks[i];
-                                Widget[e.source.instance.field_name].formObj[callback](Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbackArgs[i]);
+                                callback = Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks[i].callback;
+                                Widget[e.source.instance.field_name].formObj[callback](Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks[i].args);
                             }
                         }
                     }
@@ -668,8 +668,8 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
                 if ( typeof Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks !== 'undefined') {
                     if (Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks.length > 0) {
                         for ( i = 0; i < Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks.length; i++) {
-                            callback = Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks[i];
-                            Widget[e.source.instance.field_name].formObj[callback](Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbackArgs[i]);
+                            callback = Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks[i].callback;
+                            Widget[e.source.instance.field_name].formObj[callback](Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks[i].args);
                         }
                     }
                 }
@@ -732,7 +732,31 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
     
         wrapperView.add(innerWrapperView);
         dateWindow.add(wrapperView);
-    
+        
+        dateWindow.addEventListener('android:back', function(e){
+            try{
+                dateWindow.close();
+                
+                if(type == 'time'){
+                    innerWrapperView.remove(time_picker);
+                    time_picker = null;
+                }
+                else{
+                    innerWrapperView.remove(date_picker);
+                    date_picker = null;
+                }
+                
+                wrapperView.remove(innerWrapperView);
+                dateWindow.remove(wrapperView);
+                innerWrapperView = null;
+                wrapperView = null;
+                dateWindow = null; 
+            }
+            catch(ex1){
+                Omadi.service.sendErrorReport("Date cancel button closing window problem: " + ex1);
+            }
+        });
+        
         dateWindow.open();
     }
 };

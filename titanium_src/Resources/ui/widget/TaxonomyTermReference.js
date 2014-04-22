@@ -192,12 +192,16 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
             borderColor : '#000',
             borderWidth : 0,
             top : 0,
-            textField : element
+            textField : element,
+            delta: index,
+            instance: this.instance
         });
 
         element.autocomplete_table = autocomplete_table;
 
         autocomplete_table.addEventListener('click', function(e) {
+            var callback, i, widget;
+            
             try{
                 e.source.textField.textValue = e.source.textField.value = e.rowData.title;
                 e.source.textField.dbValue = e.rowData.dbValue;
@@ -209,6 +213,21 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
                 if (Ti.App.isAndroid) {
                     // Make sure the cursor is at the end of the text
                     e.source.textField.setSelection(e.source.textField.value.length, e.source.textField.value.length);
+                }
+                
+                widget = Widget[e.source.instance.field_name];
+                
+                if ( typeof widget.elements[e.source.delta].onChangeCallbacks !== 'undefined') {
+                    if (widget.elements[e.source.delta].onChangeCallbacks.length > 0) {
+                        for ( i = 0; i < widget.elements[e.source.delta].onChangeCallbacks.length; i++) {
+                            callback = widget.elements[e.source.delta].onChangeCallbacks[i].callback;
+                            widget.formObj[callback](widget.elements[e.source.delta].onChangeCallbacks[i].args);
+                        }
+                    }
+                }
+                
+                if (widget.elements[e.source.delta].check_conditional_fields.length > 0) {
+                    widget.formObj.setConditionallyRequiredLabels(e.source.instance, widget.elements[e.source.delta].check_conditional_fields);
                 }
     
                 // Pretend like this is just loaded - mainly a fix for android, but makes sense for both
@@ -375,7 +394,7 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
                         postDialog.delta = e.source.delta;
     
                         postDialog.addEventListener('click', function(ev) {
-                            var widget, textValue;
+                            var widget, textValue, callback, i;
                             try{
                                 if (ev.index >= 0 && ev.index != ev.source.cancel) {
                                     textValue = ev.source.options[ev.index];
@@ -388,8 +407,18 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
                                     widget.elements[ev.source.delta].setText(textValue);
                                     widget.elements[ev.source.delta].value = widget.elements[ev.source.delta].dbValue = widget.elements[ev.source.delta].options[ev.index].dbValue;
                                     
+                                    // Call any change callbacks
+                                    if ( typeof widget.elements[ev.source.delta].onChangeCallbacks !== 'undefined') {
+                                        if (widget.elements[ev.source.delta].onChangeCallbacks.length > 0) {
+                                            for ( i = 0; i < widget.elements[ev.source.delta].onChangeCallbacks.length; i++) {
+                                                callback = widget.elements[ev.source.delta].onChangeCallbacks[i].callback;
+                                                widget.formObj[callback](widget.elements[ev.source.delta].onChangeCallbacks[i].args);
+                                            }
+                                        }
+                                    }
+                                    
                                     if (widget.elements[ev.source.delta].check_conditional_fields.length > 0) {
-                                        Widget[ev.source.instance.field_name].formObj.setConditionallyRequiredLabels(ev.source.instance, widget.elements[ev.source.delta].check_conditional_fields);
+                                        widget.formObj.setConditionallyRequiredLabels(ev.source.instance, widget.elements[ev.source.delta].check_conditional_fields);
                                     }
                                 }
                             }
@@ -407,6 +436,8 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
             });
         }
     }
+    
+    element.onChangeCallbacks = [];
     
     wrapper = Ti.UI.createView({
         layout : 'vertical',

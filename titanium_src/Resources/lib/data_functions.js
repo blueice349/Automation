@@ -593,18 +593,26 @@ Omadi.data.nodeSave = function(node) {"use strict";
                                     if(!isNaN(parseFloat(node[field_name].dbValues[priceIdx]))){
                                         priceTotal += parseFloat(node[field_name].dbValues[priceIdx]);
                                         
-                                        jsonValue = node[field_name].textValues[priceIdx];
-                                        
+                                        try{
+                                            if(typeof node[field_name].textValues[priceIdx] !== 'undefined'){
+                                                jsonValue = JSON.parse(node[field_name].textValues[priceIdx]);
+                                            }
+                                            else{
+                                                jsonValue = {};
+                                            }
+                                        }
+                                        catch(exJSON){
+                                            Omadi.service.sendErrorReport("Could not parse JSON for extra_price: " + node[field_name].textValues[priceIdx]);
+                                        }
                                         if(jsonValue != null){
-                                            priceData.push({
-                                                desc:  jsonValue.desc,
-                                                price: node[field_name].dbValues[priceIdx],
-                                                details: jsonValue.details
-                                            });
+                                            priceData.push(jsonValue);
                                         }
                                     }
                                 }
                             }
+                            
+                            Ti.API.error("In save...");
+                            Ti.API.error(JSON.stringify(priceData));
                             
                             insertValues.push(priceTotal);
                             value_to_insert = JSON.stringify(priceData);
@@ -1583,11 +1591,11 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                     node[field_name].tempData = result.fieldByName(field_name + "___data", Ti.Database.FIELD_TYPE_STRING);
                                     node[field_name].finalValue = 0;
                                     if(node[field_name].tempData){
-                                        node[field_name].tempData = JSON.parse(node[field_name].tempData);
-                                        if(Omadi.utils.isArray(node[field_name].tempData)){
-                                            for(i = 0; i < node[field_name].tempData.length; i ++){
-                                                node[field_name].dbValues[i] = node[field_name].tempData[i].price;
-                                                node[field_name].textValues[i] = node[field_name].tempData[i];
+                                        node[field_name].jsonValue = JSON.parse(node[field_name].tempData);
+                                        if(Omadi.utils.isArray(node[field_name].jsonValue)){
+                                            for(i = 0; i < node[field_name].jsonValue.length; i ++){
+                                                node[field_name].dbValues[i] = node[field_name].jsonValue[i].price;
+                                                node[field_name].textValues[i] = JSON.stringify(node[field_name].jsonValue[i]);
                                                 
                                                 if(!isNaN(parseFloat(node[field_name].dbValues[i]))){
                                                     node[field_name].finalValue += parseFloat(node[field_name].dbValues[i]);
@@ -1595,6 +1603,8 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                             }
                                         }
                                     }
+                                    
+                                    Ti.API.error(JSON.stringify(node[field_name]));
 
                                     break;
                                     
@@ -3490,7 +3500,9 @@ Omadi.data.processTermsJson = function(mainDB) {"use strict";
 
     try {
         queries = [];
-
+       
+        Ti.API.error(JSON.stringify(Omadi.service.fetchedJSON.terms));
+       
         if (Omadi.service.fetchedJSON.terms.insert) {
             if (Omadi.service.fetchedJSON.terms.insert.length) {
 
@@ -3504,8 +3516,9 @@ Omadi.data.processTermsJson = function(mainDB) {"use strict";
                     tid = Omadi.service.fetchedJSON.terms.insert[i].tid;
                     name = Omadi.service.fetchedJSON.terms.insert[i].name;
                     desc = Omadi.service.fetchedJSON.terms.insert[i].description;
+                    desc = JSON.stringify(desc);
                     weight = Omadi.service.fetchedJSON.terms.insert[i].weight;
-
+                    
                     if (weight == null) {
                         weight = 0;
                     }
@@ -3525,7 +3538,19 @@ Omadi.data.processTermsJson = function(mainDB) {"use strict";
                         //Increment Progress Bar
                         Omadi.service.progressBar.set();
                     }
-                    queries.push("UPDATE term_data SET name='" + dbEsc(Omadi.service.fetchedJSON.terms.update[i].name) + "', description='" + dbEsc(Omadi.service.fetchedJSON.terms.update[i].description) + "', weight='" + dbEsc(Omadi.service.fetchedJSON.terms.update[i].weight) + "', vid=" + Omadi.service.fetchedJSON.terms.update[i].vid + ' WHERE tid=' + Omadi.service.fetchedJSON.terms.update[i].tid);
+                    
+                    vid = Omadi.service.fetchedJSON.terms.update[i].vid;
+                    tid = Omadi.service.fetchedJSON.terms.update[i].tid;
+                    name = Omadi.service.fetchedJSON.terms.update[i].name;
+                    desc = Omadi.service.fetchedJSON.terms.update[i].description;
+                    desc = JSON.stringify(desc);
+                    weight = Omadi.service.fetchedJSON.terms.update[i].weight;
+                    
+                    if (weight == null) {
+                        weight = 0;
+                    }
+                    
+                    queries.push("UPDATE term_data SET name='" + dbEsc(name) + "', description='" + dbEsc(desc) + "', weight='" + dbEsc(weight) + "', vid=" + vid + ' WHERE tid=' + tid);
                 }
             }
         }
