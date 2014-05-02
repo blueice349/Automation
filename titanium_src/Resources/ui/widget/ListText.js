@@ -11,6 +11,7 @@ function ListTextWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.dbValues = [];
     this.textValues = [];
     this.elements = [];
+    this.elementWrappers = [];
     this.nodeElement = null;
     this.numVisibleFields = 1;
     this.fieldViewWrapper = fieldViewWrapper;
@@ -51,7 +52,7 @@ ListTextWidget.prototype.getFieldView = function(){"use strict";
     
     // Add the actual fields
     for(i = 0; i < this.numVisibleFields; i ++){
-        this.elements[i] = this.getNewElement(i);
+        this.elementWrappers[i] = this.getNewElementWrapper(i);
         this.fieldView.add(this.elements[i]);
         this.fieldView.add(this.formObj.getSpacerView());
     }
@@ -120,7 +121,7 @@ ListTextWidget.prototype.redraw = function(){"use strict";
     this.fieldViewWrapper.remove(origFieldView);
 };
 
-ListTextWidget.prototype.getNewElement = function(index){"use strict";
+ListTextWidget.prototype.getNewElementWrapper = function(index){"use strict";
     var dbValue, textValue, element, options, descriptionText, descriptionLabel, wrapper, i;
     
     dbValue = null;
@@ -143,18 +144,14 @@ ListTextWidget.prototype.getNewElement = function(index){"use strict";
     // This is a specialty section for only dispatch forms
     // Do not allow the work form to change if it has already been saved
     if(this.instance.field_name == 'field_tow_type'){
+        
+        // For iOS, this needs to be set to true initially, and then it can be reset to false below if needed
+        // If this line is gone, the can_edit field will be cached incorrectly, and there's not a way to reverse it
+        this.instance.can_edit = true;
+        
         if(dbValue !== null && this.node.nid > 0){
             this.instance.can_edit = false;
         }
-        // else if(typeof Ti.UI.currentWindow.field_tow_type !== 'undefined' && Ti.UI.currentWindow.field_tow_type != null){
-            // dbValue = Ti.UI.currentWindow.field_tow_type;
-            // for(i = 0; i < options.length; i ++){
-                // if(options[i].dbValue == dbValue){
-                    // textValue = options[i].title;
-                    // break;
-                // }
-            // }
-        // }
     }
     
     if (dbValue === null && typeof this.instance.settings.default_value !== 'undefined') {
@@ -254,6 +251,8 @@ ListTextWidget.prototype.getNewElement = function(index){"use strict";
         width : '100%'
     });
     
+    this.elements[index] = element;
+    
     wrapper.add(element);
     wrapper.add(descriptionLabel);
     
@@ -297,8 +296,12 @@ ListTextWidget.prototype.cleanUp = function(){"use strict";
         Widget[this.instance.field_name] = null;
         
         for(j = 0; j < this.elements.length; j ++){
-            this.fieldView.remove(this.elements[j]);
+            
+            this.elementWrappers[j].remove(this.elements[j]);
             this.elements[j] = null;
+            
+            this.fieldView.remove(this.elementWrappers[j]);
+            this.elementWrappers[j] = null;
         }
         
         this.fieldView = null;

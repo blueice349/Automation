@@ -150,6 +150,9 @@ function getRegionHeaderView(regionView, region, expanded){"use strict";
             e.source.expanded = !e.source.expanded;
             regionView = e.source.regionView;
             
+            // unfocus the field so the screen doesn't jump around everywhere
+            ActiveFormObj.unfocusField();
+            
             if (e.source.expanded === true) {
                 
                 e.source.collapsedView.hide();
@@ -162,12 +165,18 @@ function getRegionHeaderView(regionView, region, expanded){"use strict";
                 
                 regionView.setHeight(Ti.UI.SIZE);
                 
+                ActiveFormObj.unfocusField();
+                
                 // For iOS, just make sure the region is expanded as layout doesn't always happen
                 if(Ti.App.isIOS){
                     setTimeout(function(){
                         regionView.setHeight(Ti.UI.SIZE);
                     }, 100);
                 }
+                
+                setTimeout(function(){
+                    ActiveFormObj.unfocusField();
+                }, 250);
             }
             else {
               
@@ -437,6 +446,7 @@ FormModule.prototype.initNewWindowFromCurrentData = function(form_part){"use str
         
         try{
             
+            //Ti.API.debug("about to go to next part: " + JSON.stringify(this.node));
             // Permenantely fix this later - this is to get it out
             // This simply adds in the correct images that were just taken
             imageNids = [0, this.node.continuous_nid];
@@ -451,29 +461,36 @@ FormModule.prototype.initNewWindowFromCurrentData = function(form_part){"use str
             listDB = Omadi.utils.openListDatabase();
             for(field_name in this.instances){
                 if(this.instances.hasOwnProperty(field_name)){
-                    result = listDB.execute('SELECT * FROM _files WHERE nid IN(' + imageNids.join(',') + ') AND field_name ="' + field_name + '" ORDER BY delta ASC');
-                    
-                    if (result.rowCount > 0) {
+                    if(this.instances[field_name].type == 'image'){
+                        result = listDB.execute('SELECT * FROM _files WHERE nid IN(' + imageNids.join(',') + ') AND field_name ="' + field_name + '" ORDER BY delta ASC');
                         
-                        this.node[field_name].imageData = [];
-                        this.node[field_name].deltas = [];
-                        this.node[field_name].degrees = [];
-                        this.node[field_name].thumbData = [];
-                    
-                        while (result.isValidRow()) {
+                       // Ti.API.debug("Checking for field: " + field_name);
+                        if (result.rowCount > 0) {
                             
-                            this.node[field_name].imageData.push(result.fieldByName('file_path'));
-                            this.node[field_name].deltas.push(result.fieldByName('delta'));
-                            this.node[field_name].degrees.push(result.fieldByName('degrees', Ti.Database.FIELD_TYPE_INT));
-                            this.node[field_name].thumbData.push(result.fieldByName('thumb_path'));
-                            
-                            result.next();
+                            this.node[field_name].imageData = [];
+                            this.node[field_name].deltas = [];
+                            this.node[field_name].degrees = [];
+                            this.node[field_name].thumbData = [];
+                        
+                            while (result.isValidRow()) {
+                                
+                                //Ti.API.debug("Has an image...");
+                                
+                                this.node[field_name].imageData.push(result.fieldByName('file_path'));
+                                this.node[field_name].deltas.push(result.fieldByName('delta'));
+                                this.node[field_name].degrees.push(result.fieldByName('degrees', Ti.Database.FIELD_TYPE_INT));
+                                this.node[field_name].thumbData.push(result.fieldByName('thumb_path'));
+                                
+                                result.next();
+                            }
                         }
+                        result.close();
                     }
-                    result.close();
                 }
             }
             listDB.close();
+            
+            //Ti.API.debug("about to go to next part 2: " + JSON.stringify(this.node));
         }
         catch(ex){
             this.sendError("Exception setting up the imagedata for a form + next part: " + ex);
@@ -1840,7 +1857,7 @@ FormModule.prototype.saveForm = function(saveType){"use strict";
 };
 
 function duplicateWarningCompleteCallback(e){"use strict";
-    var json, fieldName, value, saveType;
+    var json, fieldName, value, saveType, doSave;
     
     try{
         ActiveFormObj.win.removeEventListener('duplicateWarningComplete', duplicateWarningCompleteCallback);
@@ -1865,16 +1882,40 @@ function duplicateWarningCompleteCallback(e){"use strict";
         value = e.value;
         saveType = e.saveType;
         
+        doSave = false;
+        
+        
         if(typeof json.matches !== 'undefined'){
             if(json.matches.length > 0){
                 ActiveFormObj.displayDuplicateWarnings(json, value, saveType);
             }
             else{
-                alert("No previous matches found.");
-            }    
+                if(saveType != null){
+                    doSave = true;
+                }
+                else{
+                    alert("No previous matches found.");
+                }
+            }
         }
         else{
-            alert("No previous matches found.");
+            if(saveType != null){
+                doSave = true;
+            }
+            else{
+                alert("No previous matches found.");
+            }
+        }
+        
+        if(doSave){
+            // Actually finish the saving process
+            if(ActiveFormObj.usingDispatch){
+                ActiveFormObj.trySaveNode(saveType);
+                FormObj.dispatch.trySaveNode(saveType);
+            }
+            else{
+                ActiveFormObj.trySaveNode(saveType);
+            } 
         }
     }
     catch(ex1){
@@ -2149,7 +2190,7 @@ FormModule.prototype.displayDuplicateWarnings = function(warningJSON, value, sav
             tableView.addEventListener('click', function(e){
                 try{
                     if(e.row.localNid){
-                        Omadi.display.openViewWindow(e.row.nodeType, e.row.nid, ActiveFormObj.win);
+                        Omadi.display.openViewWindow(e.row.nodeType, e.row.nid);
                     }
                     else{
                         Omadi.display.openWebView(e.row.nid);
@@ -2207,12 +2248,21 @@ FormModule.prototype.displayDuplicateWarnings = function(warningJSON, value, sav
                 });
                 
                 saveButton.addEventListener('click', function(e){
+                    var i;
+                    
                     // Allow another save to happen immediately
                     ActiveFormObj.duplicateWarningTimestamp = 0;
                     // Hide the window
                     ActiveFormObj.win.remove(wrapper);
+                    
                     // Actually finish the saving process
-                    ActiveFormObj.trySaveNode(saveType);
+                    if(ActiveFormObj.usingDispatch){
+                        ActiveFormObj.trySaveNode(saveType);
+                        FormObj.dispatch.trySaveNode(saveType);
+                    }
+                    else{
+                        ActiveFormObj.trySaveNode(saveType);
+                    } 
                 });
                 
                 cancelButton = Ti.UI.createLabel({
@@ -3406,7 +3456,11 @@ FormModule.prototype.getWindow = function(){"use strict";
             
     
             // Setup only one interval where all forms will be saved together
-            if(Omadi.utils.count(FormObj) == 1){
+            // This is best done by only continuously saving when creating the work node form
+            // This is also best because the dispatch_nids are generated off of a negative ID, that can be interfered with if 
+            //  a continuous node is saved between creating a new dispatch node and creating the work node
+            // Any other way to start the saving may break dispatch
+            if(this.type != 'dispatch'){
                 doContSave = true;
                 if(typeof this.node.flag_is_updated !== 'undefined'){
                     if(this.node.flag_is_updated == 3){
@@ -3579,7 +3633,7 @@ FormModule.prototype.setupViolationFields = function(field_name){"use strict";
 
 FormModule.prototype.setupExtraPriceFields = function(fieldNames){"use strict";
     var instance, valueWidget, widget, referenceWidget, datestampWidget, i, field_name, 
-        categoryFieldName;
+        categoryFieldName, referenceFieldName, modifierFieldName;
     // NOTE: this will not work with time fields with multiple cardinality
     
     for(i = 0; i < fieldNames.length; i ++){
@@ -3601,6 +3655,24 @@ FormModule.prototype.setupExtraPriceFields = function(fieldNames){"use strict";
                         this.addChangeCallback(categoryFieldName, 'changeExtraPriceData', [field_name]);
                     }
                 }
+                
+                if(typeof this.instances[field_name].settings.reference_field_name !== 'undefined'){
+                    if(this.instances[field_name].settings.reference_field_name > ''){
+                        
+                        referenceFieldName = this.instances[field_name].settings.reference_field_name;
+                        
+                        this.addChangeCallback(referenceFieldName, 'changeExtraPriceData', [field_name]);
+                    }
+                }
+                
+                if(typeof this.instances[field_name].settings.modifier_field_name !== 'undefined'){
+                    if(this.instances[field_name].settings.modifier_field_name > ''){
+                        
+                        modifierFieldName = this.instances[field_name].settings.modifier_field_name;
+                        
+                        this.addChangeCallback(modifierFieldName, 'changeExtraPriceData', [field_name]);
+                    }
+                }
             }   
         }
     }
@@ -3617,16 +3689,31 @@ FormModule.prototype.changeExtraPriceData = function(args){"use strict";
 };
 
 FormModule.prototype.addChangeCallback = function(fieldName, functionName, args){"use strict";
+    Ti.API.debug("In addchangecallback: " + fieldName + " " + functionName + " " + JSON.stringify(args));
+    
     if(typeof this.fieldObjects[fieldName] !== 'undefined'){
-        if(typeof this.fieldObjects[fieldName].elements !== 'undefined'){
-            if(typeof this.fieldObjects[fieldName].elements[0] !== 'undefined'){
-                if(typeof this.fieldObjects[fieldName].elements[0].onChangeCallbacks !== 'undefined'){
-                    this.fieldObjects[fieldName].elements[0].onChangeCallbacks.push({
-                        callback: functionName,
-                        args: args
-                    });
-                }
+        
+        if(typeof this.fieldObjects[fieldName].onChangeCallbacks !== 'undefined'){
+            Ti.API.debug("About to push callback");
+            
+            if(!Omadi.utils.isArray(this.fieldObjects[fieldName].onChangeCallbacks)){
+                Ti.API.debug("Not an array");
+                this.fieldObjects[fieldName].onChangeCallbacks = [];
             }
+            else{
+                Ti.API.debug("Is an array");
+            }
+            
+            var length = this.fieldObjects[fieldName].onChangeCallbacks.length;
+            
+            Ti.API.debug("Array Length: " + length);
+            
+            this.fieldObjects[fieldName].onChangeCallbacks.push({
+                callback: functionName,
+                args: args
+            });
+            
+            Ti.API.debug(JSON.stringify(this.fieldObjects[fieldName].onChangeCallbacks));
         }
     }
 };
@@ -3637,7 +3724,7 @@ FormModule.prototype.changeViolationFieldOptions = function(args){"use strict";
         rules_violation_time_field_name, violationTimestampValues, violation_timestamp, violationTerms, violation_term, 
         descriptions, violationDBValues, isViolationValid, textValues, violationTextValues, origRulesData, violation_field_name;
     /*global rules_field_passed_time_check*/
-    
+    Ti.API.debug("In changeviolationfield options");
     try{
         
         violation_field_name = args[0];
@@ -3703,6 +3790,9 @@ FormModule.prototype.changeViolationFieldOptions = function(args){"use strict";
                     catch(exJSON){
                         Omadi.service.sendErrorReport("Exception parsing violation JSON: " + exJSON + " " + origRulesData);
                     }
+                    
+                    Ti.API.debug("Rules data: ");
+                    Ti.API.debug(JSON.stringify(rulesData));
                     
                     if (rulesData != false && rulesData != null && rulesData != "" && rulesData.length > 0) {
                         tids = {};
@@ -3819,6 +3909,8 @@ FormModule.prototype.changeViolationFieldOptions = function(args){"use strict";
         }
         
         try{
+            Ti.API.debug("Options");
+            Ti.API.debug(JSON.stringify(options));
             /*** FINALLY SET THE ALLOWABLE VIOLATION OPTIONS FOR THE WIDGET ***/
             this.setValueWidgetProperty(violation_field_name, ['options'], options);
         }

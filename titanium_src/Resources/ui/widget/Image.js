@@ -175,10 +175,7 @@ ImageWidget.prototype.getNewElement = function(index){"use strict";
         }
     }
 
-    Ti.API.debug("Num images showing 1 : " + numImagesShowing);
-
-    if (Omadi.utils.isArray(imageData) && imageDataAdded.length < imageData.length) {
-
+    if (typeof imageData.length !== 'undefined' && imageDataAdded.length < imageData.length) {
         for ( i = 0; i < imageData.length; i++) {
             if(imageDataAdded.indexOf(i) == -1){
                 Ti.API.debug("Adding local image index: " + numImagesShowing);
@@ -188,7 +185,7 @@ ImageWidget.prototype.getNewElement = function(index){"use strict";
         }
     }
     
-    Ti.API.debug("Num images showing: " + numImagesShowing);
+    Ti.API.debug("Num images showing 2: " + numImagesShowing);
 
     contentWidth = numImagesShowing * 110;
 

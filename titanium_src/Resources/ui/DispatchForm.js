@@ -317,16 +317,30 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
                 if (this.workNode.type == 'dispatch') {
                     this.dispatchNode = this.workNode;
                     this.workNode = Omadi.data.nodeLoad(this.dispatchNode.dispatch_nid);
-                    this.currentWorkFormPart = this.workNode.form_part;
+                    if(this.workNode){
+                        this.currentWorkFormPart = this.workNode.form_part;
+                    }
+                    else{
+                        alert("A problem occurred with opening this dispatch, which may be due to permissions settings.");
+                        return null;
+                    }
+                    
                     openDispatch = true;
                 }
                 else {
                     
                     if(this.nid < 0 && this.workNode.dispatch_nid > 0){
                         // Load the corresponding negative id for the dispatch
+                        Ti.API.debug("Loading the corresponding negative id for the dispatch: " + JSON.stringify(this.workNode));
+                        
                         try{
                             db = Omadi.utils.openMainDatabase();
-                            result = db.execute("SELECT nid FROM node WHERE dispatch_nid = " + this.workNode.dispatch_nid);
+                            // This is used only for recovering from a dispatch that was continuously saved and a crash happened
+                            // This will bring up the correctly saved dispatch node
+                            // The continuous_nid is the original nid of the already server-saved node, which will match up 
+                            //  with the dispatch_nid of the node, which will never change - and it may be duplicated since there is 
+                            //  a regular copy for the server-saved node, and a temporary copy for the continuous node
+                            result = db.execute("SELECT nid FROM node WHERE continuous_nid = " + this.workNode.dispatch_nid);
                             tempDispatchNid = 0;
                             if(result.isValidRow()){
                                 tempDispatchNid = result.field(0);
@@ -441,7 +455,7 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
             }
         }
         
-        if(this.workNode.type !== null){
+        if(this.workNode && this.workNode.type !== null){
             
             try{
                 tempFormPart = parseInt(this.form_part, 10);
@@ -472,26 +486,28 @@ DispatchForm.prototype.getWindow = function(initNewDispatch){"use strict";
         // Add this in at the end so the regular work form can't mess with the tow_type on a copy function
         // This section is for form copies to make sure the tow type is set correctly
         try{
+            
             tempFormPart = parseInt(this.form_part, 10);
             if(this.form_part !== tempFormPart){
                 
                 copyToBundle = Omadi.data.getBundle(this.form_part);
                 
-                this.dispatchObj.setValues('field_tow_type', {
-                    dbValues: [this.form_part],
-                    textValues: [copyToBundle.label]
-                });
-                
-                // Be sure to disable changing the tow type or there's no point to the copy as all data will be overwritten by blank data
-                this.dispatchObj.setValueWidgetProperty('field_tow_type', 'touchEnabled', false, 0);
-                this.dispatchObj.setValueWidgetProperty('field_tow_type', 'backgroundGradient', null, 0);
-                this.dispatchObj.setValueWidgetProperty('field_tow_type', 'backgroundColor', '#ccc', 0);
+                if(copyToBundle && typeof copyToBundle.label !== 'undefined'){
+                    this.dispatchObj.setValues('field_tow_type', {
+                        dbValues: [this.form_part],
+                        textValues: [copyToBundle.label]
+                    });
+                    
+                    // Be sure to disable changing the tow type or there's no point to the copy as all data will be overwritten by blank data
+                    this.dispatchObj.setValueWidgetProperty('field_tow_type', 'touchEnabled', false, 0);
+                    this.dispatchObj.setValueWidgetProperty('field_tow_type', 'backgroundGradient', null, 0);
+                    this.dispatchObj.setValueWidgetProperty('field_tow_type', 'backgroundColor', '#ccc', 0);
+                }
             }
         }
         catch(copyEx){
             Omadi.service.sendErrorReport("Exception with custom copy in dispatch: " + copyEx);
         }
-        
         
         if(openDispatch){
             this.tabGroup.addTab(this.dispatchTab);
@@ -587,7 +603,7 @@ DispatchForm.prototype.exitForm = function(){"use strict";
 };
 
 DispatchForm.prototype.updateDispatchStatus = function(){"use strict";
-    var savedFormPart, windowFormPart, updateToStatus, workBundle;
+    var savedFormPart, windowFormPart, updateToStatus, workBundle, textValue, i;
     
     try{
         if(this.workNode !== null){
@@ -608,9 +624,36 @@ DispatchForm.prototype.updateDispatchStatus = function(){"use strict";
                             // Update the actual status
                             updateToStatus = workBundle.data.dispatch.dispatch_parts[windowFormPart];
                             
-                            Ti.API.debug("Updating status to " + updateToStatus);
+                            if(updateToStatus != ""){
+                                try{
+                                    if(this.dispatchObj && typeof this.dispatchObj.fieldObjects !== 'undefined'){
+                                        if(typeof this.dispatchObj.fieldObjects.field_dispatching_status !== 'undefined'){
+                                            if(typeof this.dispatchObj.fieldObjects.field_dispatching_status.elements !== 'undefined'){
+                                                if(typeof this.dispatchObj.fieldObjects.field_dispatching_status.elements[0] !== 'undefined'){
+                                        
+                                                    this.dispatchObj.fieldObjects.field_dispatching_status.elements[0].dbValue = updateToStatus;
+                                                    
+                                                    textValue = 'Updated Status';
+                                                    for(i = 0; i < this.dispatchObj.fieldObjects.field_dispatching_status.elements[0].options.length; i ++){
+                                                        if(this.dispatchObj.fieldObjects.field_dispatching_status.elements[0].options[i].dbValue == updateToStatus){
+                                                            textValue = this.dispatchObj.fieldObjects.field_dispatching_status.elements[0].options[i].title;
+                                                            break;
+                                                        }
+                                                    }
+                                                    
+                                                    this.dispatchObj.fieldObjects.field_dispatching_status.elements[0].textValue = textValue;
+                                                    this.dispatchObj.fieldObjects.field_dispatching_status.elements[0].setText(textValue);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                catch(ex1){
+                                    Omadi.service.sendErrorReport("Exception updating status on dispatch screen: " + ex1);
+                                }
                             
-                            Omadi.bundles.dispatch.updateStatus(this.workNode.nid, updateToStatus, true);
+                                Omadi.bundles.dispatch.updateStatus(this.workNode.nid, updateToStatus, true);
+                            }
                         }
                     }
                 }

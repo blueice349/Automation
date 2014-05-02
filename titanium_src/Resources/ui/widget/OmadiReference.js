@@ -18,6 +18,7 @@ function OmadiReferenceWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.elementWrapper = null;
     this.autocomplete_table = null;
     this.addressLabel = null;
+    this.onChangeCallbacks = [];
     
     if(typeof this.node[this.instance.field_name] !== 'undefined'){
         this.nodeElement = this.node[this.instance.field_name];
@@ -296,7 +297,6 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
         this.elements[0].touched = false;
         this.elements[0].possibleValues = possibleValues;
         this.elements[0].defaultValueChildFields = [];
-        this.elements[0].onChangeCallbacks = [];
         this.elements[0].clickedAutocomplete = false;
         this.elements[0].touched = false;
         this.elements[0].blurred = true;
@@ -355,12 +355,22 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                     widget.elements[0].clickedAutocomplete = true;
                     
                     widget.setChildDefaultValues(widget.elements[0]);
-        
-                    if ( typeof widget.elements[0].onChangeCallbacks !== 'undefined') {
-                        if (widget.elements[0].onChangeCallbacks.length > 0) {
-                            for ( i = 0; i < widget.elements[0].onChangeCallbacks.length; i++) {
-                                callback = widget.elements[0].onChangeCallbacks[i].callback;
-                                widget.formObj[callback](widget.elements[0].onChangeCallbacks[i].args);
+                    
+                    Ti.API.debug("autocomplete clicked");
+                    
+                    if ( typeof widget.onChangeCallbacks !== 'undefined') {
+                        Ti.API.debug("has change callbacks");
+                        Ti.API.debug(JSON.stringify(widget.onChangeCallbacks));
+                        
+                        if (widget.onChangeCallbacks.length > 0) {
+                            Ti.API.debug("greater than 0");
+                            
+                            for ( i = 0; i < widget.onChangeCallbacks.length; i++) {
+                                Ti.API.debug("In on change");
+                                callback = widget.onChangeCallbacks[i].callback;
+                                widget.formObj[callback](widget.onChangeCallbacks[i].args);
+                                
+                                Ti.API.debug("after on change");
                             }
                         }
                     }
@@ -465,10 +475,10 @@ OmadiReferenceWidget.prototype.getNewElement = function(index){"use strict";
                                         
                                         widget.elements[0].setColor('#006600');
                                         
-                                        if (widget.elements[0].onChangeCallbacks.length > 0) {
-                                            for ( j = 0; j < widget.elements[0].onChangeCallbacks.length; j++) {
-                                                callback = widget.elements[0].onChangeCallbacks[j].callback;
-                                                widget.formObj[callback](widget.elements[0].onChangeCallbacks[j].args);
+                                        if (widget.onChangeCallbacks.length > 0) {
+                                            for ( j = 0; j < widget.onChangeCallbacks.length; j++) {
+                                                callback = widget.onChangeCallbacks[j].callback;
+                                                widget.formObj[callback](widget.onChangeCallbacks[j].args);
                                             }
                                         }
                                     }

@@ -629,9 +629,10 @@ function setupBottomButtons() {"use strict";
             var tagsReadyWindow;
             try{
                 tagsReadyWindow = Ti.UI.createWindow({
-                    navBarHidden : true,
+                    navBarHidden : false,
                     url : '/main_windows/tags_ready.js',
-                    orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+                    orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT],
+                    title: 'Expired Tags'
                 });
         
                 Omadi.display.loading();
@@ -797,8 +798,8 @@ function checkAndroidMemoryAfterGC(){"use strict";
     try{
         availableBytes = Ti.Platform.getAvailableMemory();
         
-        Ti.API.debug("Ti Available Memory after GC + 1 sec: " + lastAvailableBytes + " -> " + availableBytes + " bytes");
-        Omadi.service.sendErrorReport("Just forced a GC: " + lastAvailableBytes + " -> " + availableBytes);
+        //Ti.API.debug("Ti Available Memory after GC + 1 sec: " + lastAvailableBytes + " -> " + availableBytes + " bytes");
+        //Omadi.service.sendErrorReport("Just forced a GC: " + lastAvailableBytes + " -> " + availableBytes);
         
         if(availableBytes < 800000){
             Omadi.service.sendErrorReport("Showing Android memory alert: " + availableBytes);

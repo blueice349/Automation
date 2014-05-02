@@ -754,6 +754,9 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
         isDispatch = Omadi.bundles.dispatch.isDispatch(type, nid);
         initNewDispatch = false;
         
+        Ti.API.debug("IS DISPATCH: " + isDispatch);
+        Ti.API.debug("Type: " + type + ", nid: " + nid + ", form_part: " + form_part);
+        
         try{
             tempFormPart = parseInt(form_part, 10);
             if(form_part != tempFormPart){

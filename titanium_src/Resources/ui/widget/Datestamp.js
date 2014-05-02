@@ -17,6 +17,7 @@ function DatestampWidget(formObj, instance, fieldViewWrapper){"use strict";
     this.nodeElement = null;
     this.numVisibleFields = 1;
     this.fieldViewWrapper = fieldViewWrapper;
+    this.onChangeCallbacks = [];
     
     if(typeof this.node[this.instance.field_name] !== 'undefined'){
         this.nodeElement = this.node[this.instance.field_name];
@@ -176,8 +177,7 @@ DatestampWidget.prototype.getNewElement = function(index){"use strict";
         textValue: textValue,
         showTime: showTime,
         jsDate: jsDate,
-        instance: this.instance,
-        onChangeCallbacks : []
+        instance: this.instance
     });
     
     element.check_conditional_fields = this.formObj.affectsAnotherConditionalField(this.instance);
@@ -536,10 +536,12 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
         }
         
         okButton.addEventListener('click', function(e) {
-            var year, month, date, hour, minute, second, newDate, i, callback, pickerValue, datePickerValue, dbValue, textValue, now;
+            var year, month, date, hour, minute, second, newDate, i, callback, pickerValue, datePickerValue, dbValue, textValue, now, widget;
             
             try{
                 newDate = null;
+                
+                widget = Widget[e.source.instance.field_name];
                 
                 if(typeof date_picker !== 'undefined' && date_picker !== null){
                     
@@ -592,31 +594,31 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
                     dbValue = Math.ceil(newDate.getTime() / 1000);
                     textValue = Omadi.utils.formatDate(dbValue, e.source.showTime);
                     
-                    Widget[e.source.instance.field_name].elements[e.source.delta].dbValue = dbValue;
-                    Widget[e.source.instance.field_name].elements[e.source.delta].textValue = textValue;
+                    widget.elements[e.source.delta].dbValue = dbValue;
+                    widget.elements[e.source.delta].textValue = textValue;
                     
-                    Widget[e.source.instance.field_name].dateViews[e.source.delta].jsDate = newDate;
-                    Widget[e.source.instance.field_name].dateViews[e.source.delta].setText(Omadi.utils.formatDate(dbValue, false));
-                    Widget[e.source.instance.field_name].dateViews[e.source.delta].origDBValue = dbValue;
+                    widget.dateViews[e.source.delta].jsDate = newDate;
+                    widget.dateViews[e.source.delta].setText(Omadi.utils.formatDate(dbValue, false));
+                    widget.dateViews[e.source.delta].origDBValue = dbValue;
                     
                     if(e.source.showTime){
-                        Widget[e.source.instance.field_name].timeViews[e.source.delta].setText(Omadi.utils.formatTime(dbValue));
-                        Widget[e.source.instance.field_name].timeViews[e.source.delta].origDBValue = dbValue;
-                        Widget[e.source.instance.field_name].timeViews[e.source.delta].jsDate = newDate;
+                        widget.timeViews[e.source.delta].setText(Omadi.utils.formatTime(dbValue));
+                        widget.timeViews[e.source.delta].origDBValue = dbValue;
+                        widget.timeViews[e.source.delta].jsDate = newDate;
                     }
                     //Ti.API.debug(newDate.toString());
             
-                    if ( typeof Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks !== 'undefined') {
-                        if (Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks.length > 0) {
-                            for ( i = 0; i < Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks.length; i++) {
-                                callback = Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks[i].callback;
-                                Widget[e.source.instance.field_name].formObj[callback](Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks[i].args);
+                    if ( typeof widget.onChangeCallbacks !== 'undefined') {
+                        if (widget.onChangeCallbacks.length > 0) {
+                            for ( i = 0; i < widget.onChangeCallbacks.length; i++) {
+                                callback = widget.onChangeCallbacks[i].callback;
+                                widget.formObj[callback](widget.onChangeCallbacks[i].args);
                             }
                         }
                     }
             
-                    if (Widget[e.source.instance.field_name].elements[e.source.delta].check_conditional_fields.length > 0) {
-                        Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, Widget[e.source.instance.field_name].elements[e.source.delta].check_conditional_fields);
+                    if (widget.elements[e.source.delta].check_conditional_fields.length > 0) {
+                        widget.formObj.setConditionallyRequiredLabels(e.source.instance, widget.elements[e.source.delta].check_conditional_fields);
                     }
                 }
                 else{
@@ -651,31 +653,33 @@ DatestampWidget.prototype.displayPicker = function(delta, jsDate, type, showTime
         });
     
         clearButton.addEventListener('click', function(e) {
-            var callback, i;
+            var callback, i, widget;
             
             try{
-                Widget[e.source.instance.field_name].elements[e.source.delta].dbValue = null;
-                Widget[e.source.instance.field_name].elements[e.source.delta].textValue = "";
+                widget = Widget[e.source.instance.field_name];
                 
-                Widget[e.source.instance.field_name].dateViews[e.source.delta].setText("");
-                Widget[e.source.instance.field_name].dateViews[e.source.delta].origDBValue = null;
+                widget.elements[e.source.delta].dbValue = null;
+                widget.elements[e.source.delta].textValue = "";
+                
+                widget.dateViews[e.source.delta].setText("");
+                widget.dateViews[e.source.delta].origDBValue = null;
                 
                 if(e.source.showTime){
-                    Widget[e.source.instance.field_name].timeViews[e.source.delta].setText("");
-                    Widget[e.source.instance.field_name].timeViews[e.source.delta].origDBValue = null;
+                    widget.timeViews[e.source.delta].setText("");
+                    widget.timeViews[e.source.delta].origDBValue = null;
                 }
         
-                if ( typeof Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks !== 'undefined') {
-                    if (Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks.length > 0) {
-                        for ( i = 0; i < Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks.length; i++) {
-                            callback = Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks[i].callback;
-                            Widget[e.source.instance.field_name].formObj[callback](Widget[e.source.instance.field_name].elements[e.source.delta].onChangeCallbacks[i].args);
+                if ( typeof widget.elements[e.source.delta].onChangeCallbacks !== 'undefined') {
+                    if (widget.elements[e.source.delta].onChangeCallbacks.length > 0) {
+                        for ( i = 0; i < widget.elements[e.source.delta].onChangeCallbacks.length; i++) {
+                            callback = widget.elements[e.source.delta].onChangeCallbacks[i].callback;
+                            widget.formObj[callback](widget.elements[e.source.delta].onChangeCallbacks[i].args);
                         }
                     }
                 }
         
-                if (Widget[e.source.instance.field_name].elements[e.source.delta].check_conditional_fields.length > 0) {
-                    Widget[e.source.instance.field_name].formObj.setConditionallyRequiredLabels(e.source.instance, Widget[e.source.instance.field_name].elements[e.source.delta].check_conditional_fields);
+                if (widget.elements[e.source.delta].check_conditional_fields.length > 0) {
+                    widget.formObj.setConditionallyRequiredLabels(e.source.instance, widget.elements[e.source.delta].check_conditional_fields);
                 }
             }
             catch(ex){

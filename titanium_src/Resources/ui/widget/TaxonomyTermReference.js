@@ -16,6 +16,7 @@ function TaxonomyTermReferenceWidget(formObj, instance, fieldViewWrapper){"use s
     this.elements = [];
     this.elementWrappers = [];
     this.descriptionLabel = null;
+    this.onChangeCallbacks = [];
     
     if(typeof this.node[this.instance.field_name] !== 'undefined'){
         this.nodeElement = this.node[this.instance.field_name];
@@ -217,11 +218,11 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
                 
                 widget = Widget[e.source.instance.field_name];
                 
-                if ( typeof widget.elements[e.source.delta].onChangeCallbacks !== 'undefined') {
-                    if (widget.elements[e.source.delta].onChangeCallbacks.length > 0) {
-                        for ( i = 0; i < widget.elements[e.source.delta].onChangeCallbacks.length; i++) {
-                            callback = widget.elements[e.source.delta].onChangeCallbacks[i].callback;
-                            widget.formObj[callback](widget.elements[e.source.delta].onChangeCallbacks[i].args);
+                if ( typeof widget.onChangeCallbacks !== 'undefined') {
+                    if (widget.onChangeCallbacks.length > 0) {
+                        for ( i = 0; i < widget.onChangeCallbacks.length; i++) {
+                            callback = widget.onChangeCallbacks[i].callback;
+                            widget.formObj[callback](widget.onChangeCallbacks[i].args);
                         }
                     }
                 }
@@ -408,11 +409,11 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
                                     widget.elements[ev.source.delta].value = widget.elements[ev.source.delta].dbValue = widget.elements[ev.source.delta].options[ev.index].dbValue;
                                     
                                     // Call any change callbacks
-                                    if ( typeof widget.elements[ev.source.delta].onChangeCallbacks !== 'undefined') {
-                                        if (widget.elements[ev.source.delta].onChangeCallbacks.length > 0) {
-                                            for ( i = 0; i < widget.elements[ev.source.delta].onChangeCallbacks.length; i++) {
-                                                callback = widget.elements[ev.source.delta].onChangeCallbacks[i].callback;
-                                                widget.formObj[callback](widget.elements[ev.source.delta].onChangeCallbacks[i].args);
+                                    if ( typeof widget.onChangeCallbacks !== 'undefined') {
+                                        if (widget.onChangeCallbacks.length > 0) {
+                                            for ( i = 0; i < widget.onChangeCallbacks.length; i++) {
+                                                callback = widget.onChangeCallbacks[i].callback;
+                                                widget.formObj[callback](widget.onChangeCallbacks[i].args);
                                             }
                                         }
                                     }
@@ -436,8 +437,6 @@ TaxonomyTermReferenceWidget.prototype.getNewElement = function(index){"use stric
             });
         }
     }
-    
-    element.onChangeCallbacks = [];
     
     wrapper = Ti.UI.createView({
         layout : 'vertical',
