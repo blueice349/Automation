@@ -77,7 +77,7 @@ CalculationFieldWidget.prototype.redraw = function(skipFormToNode){"use strict";
     }
     
     if(!skipFormToNode){
-        this.formObj.formToNode();
+        this.formObj.formToNode(true);
     }
     
     Ti.API.debug("In calculation redraw for " + this.instance.label);
@@ -188,7 +188,7 @@ CalculationFieldWidget.prototype.getTableView = function() {"use strict";
     
     try{
         
-        this.formObj.formToNode();
+        this.formObj.formToNode(true);
     
         this.node = this.formObj.node;
         
@@ -204,7 +204,6 @@ CalculationFieldWidget.prototype.getTableView = function() {"use strict";
                 origValue = this.node[this.instance.field_name].textValues[0];
             }
         }
-        
         
         result = this.getRowValues();
         
@@ -360,11 +359,9 @@ CalculationFieldWidget.prototype.getTableView = function() {"use strict";
                 height : 30
             });
             
-            
             row.add(row_label);
             row.add(value);
             tableView.add(row);
-            
             
             if(origValue !== null && tableView.dbValue != origValue && this.node.form_part >= this.instance.form_part){
                 cal_value = origValue;

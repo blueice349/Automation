@@ -19,8 +19,7 @@ function VideoWidget(formObj, instance, fieldViewWrapper){"use strict";
         this.nodeElement = this.node[this.instance.field_name];
         
         if(typeof this.nodeElement.dbValues !== 'undefined' && this.nodeElement.dbValues != null){
-            this.dbValues = this.nodeElement.dbValues;
-            
+            this.dbValues = this.nodeElement.dbValues;   
         }
         
         if(typeof this.nodeElement.textValues !== 'undefined' && this.nodeElement.textValues != null){

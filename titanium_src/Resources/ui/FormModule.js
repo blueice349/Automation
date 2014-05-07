@@ -943,12 +943,16 @@ FormModule.prototype.loadCustomCopyNode = function(originalNode, from_type, to_t
     return newNode;
 };
 
-FormModule.prototype.formToNode = function(){"use strict";
+FormModule.prototype.formToNode = function(addDispatch){"use strict";
     /*global fieldViews*/
    
    var field_name, fieldWrapper, instance, origNode;
    
    //origNode = this.node;
+   
+   if(typeof addDispatch === 'undefined'){
+       addDispatch = false;
+   }
    
    this.initNewNode();
    this.node.no_data = "";
@@ -966,6 +970,27 @@ FormModule.prototype.formToNode = function(){"use strict";
                this.node[instance.field_name].dbValues = this.getDBValues(fieldWrapper);
                this.node[instance.field_name].textValues = this.getTextValues(fieldWrapper);
            }
+       }
+       
+       try{
+           if(addDispatch === true && this.usingDispatch){
+               if(typeof FormObj.dispatch !== 'undefined'){
+                   for(field_name in FormObj.dispatch.fieldWrappers){
+                        if(FormObj.dispatch.fieldWrappers.hasOwnProperty(field_name)){
+                           fieldWrapper = FormObj.dispatch.fieldWrappers[field_name];
+                   
+                           instance = fieldWrapper.instance;
+                           
+                           this.node[instance.field_name] = {};
+                           this.node[instance.field_name].dbValues = FormObj.dispatch.getDBValues(fieldWrapper);
+                           this.node[instance.field_name].textValues = FormObj.dispatch.getTextValues(fieldWrapper);
+                        }
+                   }
+               }
+           }
+       }
+       catch(dispatchEx){
+           Omadi.service.sendErrorReport("Exception adding dispatch info to node: " + dispatchEx);
        }
    }
    catch(ex){

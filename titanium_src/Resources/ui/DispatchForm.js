@@ -602,8 +602,24 @@ DispatchForm.prototype.exitForm = function(){"use strict";
     dialog.show();
 };
 
+DispatchForm.prototype.getTimestampFieldName = function(status){"use strict";
+
+    switch(status){
+        case 'call_received': return 'time_of_call_0';
+        case 'dispatching_call': return 'job_dispatched_time';
+        case 'job_accepted': return 'job_accepted_time';
+        case 'driving_to_job': return 'started_driving_time';
+        case 'arrived_at_job': return 'arrived_at_job_time';
+        case 'towing_vehicle': return 'started_towing_time';
+        case 'arrived_at_destination': return 'arrived_at_destination_time';
+        case 'job_complete': return 'job_complete_time';
+    }
+    
+    return null;
+};
+
 DispatchForm.prototype.updateDispatchStatus = function(){"use strict";
-    var savedFormPart, windowFormPart, updateToStatus, workBundle, textValue, i;
+    var savedFormPart, windowFormPart, updateToStatus, workBundle, textValue, i, timestampFieldName;
     
     try{
         if(this.workNode !== null){
@@ -632,6 +648,26 @@ DispatchForm.prototype.updateDispatchStatus = function(){"use strict";
                                                 if(typeof this.dispatchObj.fieldObjects.field_dispatching_status.elements[0] !== 'undefined'){
                                         
                                                     this.dispatchObj.fieldObjects.field_dispatching_status.elements[0].dbValue = updateToStatus;
+                                                    
+                                                    try{
+                                                        // Update the timestamp for the status update
+                                                        timestampFieldName = DispatchForm.prototype.getTimestampFieldName(updateToStatus);
+                                                        if(typeof this.dispatchObj.fieldObjects[timestampFieldName] !== 'undefined'){
+                                                            this.dispatchObj.fieldObjects[timestampFieldName].elements[0].dbValue = Omadi.utils.getUTCTimestamp();
+                                                            this.dispatchObj.fieldObjects[timestampFieldName].elements[0].jsTime = (new Date()).getTime();
+                                                            
+                                                            textValue = Omadi.utils.formatDate(this.dispatchObj.fieldObjects[timestampFieldName].elements[0].dbValue, false);
+                                                            
+                                                            this.dispatchObj.fieldObjects[timestampFieldName].elements[0].textValue = textValue; 
+                                                            this.dispatchObj.fieldObjects[timestampFieldName].dateViews[0].setText(textValue);
+                                                            
+                                                            textValue = Omadi.utils.formatTime(this.dispatchObj.fieldObjects[timestampFieldName].elements[0].dbValue);
+                                                            this.dispatchObj.fieldObjects[timestampFieldName].timeViews[0].setText(textValue);
+                                                        }   
+                                                    }
+                                                    catch(timestampEx){
+                                                        Omadi.service.sendErrorReport("Could not set timestamp for dispatch status: " + updateToStatus + " " + timestampEx);
+                                                    }
                                                     
                                                     textValue = 'Updated Status';
                                                     for(i = 0; i < this.dispatchObj.fieldObjects.field_dispatching_status.elements[0].options.length; i ++){

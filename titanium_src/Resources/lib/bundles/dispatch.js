@@ -405,12 +405,26 @@ Omadi.bundles.dispatch.checkInsertNode = function(insert){"use strict";
      }
 };
 
+Omadi.bundles.dispatch.hasStatusOption = function(fieldOptions, status){"use strict";
+    var i, statusTitle;
+    
+    statusTitle = false;
+    for(i = 0; i < fieldOptions.length; i ++){
+        if(fieldOptions[i].dbValue == status){
+            statusTitle = fieldOptions[i].title;
+            break;   
+        }
+    }
+    
+    return statusTitle;
+};
+
 Omadi.bundles.dispatch.getStatusOptions = function(nid){"use strict";
     var options, db, result, termResult, vid, dispatchBundle, node, i, j,
         excludeKeys, excludeStatuses, 
         currentStatusKey, currentStatus, status, useKey, dispatchNode, dispatchNid,
         dispatchInstances, statusInstance, fieldOptions, maxStatusToShow, 
-        currentFormPart, workNodeTypeInfo, formPartStatus, formPartIndex, statusCompare;
+        currentFormPart, workNodeTypeInfo, formPartStatus, formPartIndex, statusCompare, statusTitle;
     
     options = [];
     
@@ -457,111 +471,140 @@ Omadi.bundles.dispatch.getStatusOptions = function(nid){"use strict";
                         
                         case 'call_received':
                         case 'dispatching_call':
+                            statusTitle = Omadi.bundles.dispatch.hasStatusOption(fieldOptions, 'job_accepted');
                             
-                            options.push({
-                               dbValue: 'job_accepted',
-                               title: 'Job Accepted',
-                               nextPart: false
-                            });
+                            if(statusTitle !== false){
+                                options.push({
+                                   dbValue: 'job_accepted',
+                                   title: statusTitle,
+                                   nextPart: false
+                                });
+                            }
                             
                             /*fall through*/
                             
                         case 'job_accepted':
                             
+                            statusTitle = Omadi.bundles.dispatch.hasStatusOption(fieldOptions, 'driving_to_job');
+                            
                             if(maxStatusToShow == 'driving_to_job'){
-                                options.push({
-                                   dbValue: 'driving_to_job',
-                                   title: 'Driving to Job +',
-                                   nextPart: true
-                                });
+                               if(statusTitle !== false){
+                                    options.push({
+                                       dbValue: 'driving_to_job',
+                                       title: statusTitle + ' +',
+                                       nextPart: true
+                                    });
+                                }
                                 break;
                             }
                             else{
-                                options.push({
-                                   dbValue: 'driving_to_job',
-                                   title: 'Driving to Job',
-                                   nextPart: false
-                                });
+                                if(statusTitle !== false){
+                                    options.push({
+                                       dbValue: 'driving_to_job',
+                                       title: statusTitle,
+                                       nextPart: false
+                                    });
+                                }
                             }
                             
                             /*fall through*/
                             
                         case 'driving_to_job':
                             
+                            statusTitle = Omadi.bundles.dispatch.hasStatusOption(fieldOptions, 'arrived_at_job');
                             if(maxStatusToShow == 'arrived_at_job'){
-                                options.push({
-                                   dbValue: 'arrived_at_job',
-                                   title: 'Arrived at Job +',
-                                   nextPart: true
-                                });
+                                if(statusTitle !== false){
+                                    options.push({
+                                       dbValue: 'arrived_at_job',
+                                       title: statusTitle + ' +',
+                                       nextPart: true
+                                    });
+                                }
                                 break;
                             }
                             else{
-                                options.push({
-                                   dbValue: 'arrived_at_job',
-                                   title: 'Arrived at Job',
-                                   nextPart: false
-                                });
+                                if(statusTitle !== false){
+                                    options.push({
+                                       dbValue: 'arrived_at_job',
+                                       title: statusTitle,
+                                       nextPart: false
+                                    });
+                                }
                             }
                             
                             /*fall through*/
                             
                         case 'arrived_at_job':
                             
+                            statusTitle = Omadi.bundles.dispatch.hasStatusOption(fieldOptions, 'towing_vehicle');
                             if(maxStatusToShow == 'towing_vehicle'){
-                                options.push({
-                                   dbValue: 'towing_vehicle',
-                                   title: 'Towing Vehicle +',
-                                   nextPart: true
-                                });
+                                if(statusTitle !== false){
+                                    options.push({
+                                       dbValue: 'towing_vehicle',
+                                       title: statusTitle + ' +',
+                                       nextPart: true
+                                    });
+                                }
                                 break;
                             }
                             else{
-                                options.push({
-                                   dbValue: 'towing_vehicle',
-                                   title: 'Towing Vehicle',
-                                   nextPart: false
-                                });
+                                if(statusTitle !== false){
+                                    options.push({
+                                       dbValue: 'towing_vehicle',
+                                       title: statusTitle,
+                                       nextPart: false
+                                    });
+                                }
                             }
                             
                             /*fall through*/
                             
                         case 'towing_vehicle':
                             
+                            statusTitle = Omadi.bundles.dispatch.hasStatusOption(fieldOptions, 'arrived_at_destination');
                             if(maxStatusToShow == 'arrived_at_destination'){
-                                options.push({
-                                   dbValue: 'arrived_at_destination',
-                                   title: 'Arrived at Destination +',
-                                   nextPart: true
-                                });
+                                if(statusTitle !== false){
+                                    options.push({
+                                       dbValue: 'arrived_at_destination',
+                                       title: statusTitle + ' +',
+                                       nextPart: true
+                                    });
+                                }
                                 break;
                             }
                             else{
-                                options.push({
-                                   dbValue: 'arrived_at_destination',
-                                   title: 'Arrived at Destination',
-                                   nextPart: false
-                                });
+                                if(statusTitle !== false){
+                                    options.push({
+                                       dbValue: 'arrived_at_destination',
+                                       title: statusTitle,
+                                       nextPart: false
+                                    });
+                                }
                             }
                             
                             /*fall through*/
                             
                         case 'arrived_at_destination':
                             
+                            statusTitle = Omadi.bundles.dispatch.hasStatusOption(fieldOptions, 'job_complete');
                             if(maxStatusToShow == 'job_complete'){
-                                options.push({
-                                   dbValue: 'job_complete',
-                                   title: 'Job Complete +',
-                                   nextPart: true
-                                });
+                                if(statusTitle !== false){
+                                    options.push({
+                                       dbValue: 'job_complete',
+                                       title: statusTitle + ' +',
+                                       nextPart: true
+                                    });
+                                }
                                 break;
                             }
                             else{
-                                options.push({
-                                   dbValue: 'job_complete',
-                                   title: 'Job Complete',
-                                   nextPart: false
-                                });
+                                if(statusTitle !== false){
+                                    options.push({
+                                       dbValue: 'job_complete',
+                                       title: statusTitle,
+                                       nextPart: false
+                                    });
+                                }
                             }
             
                             break;
