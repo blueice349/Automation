@@ -864,7 +864,7 @@ Omadi.display.openFormWindow = function(type, nid, form_part) {"use strict";
         }
         
         // Set node as viewed if it hasn't yet been viewed and it's been saved to the server
-        if(nid != "new" && nid > 0 && (typeof node.viewed == 'undefined' || node.viewed == 0)){
+        if(nid != "new" && nid > 0 && (typeof node == 'undefined' || typeof node.viewed == 'undefined' || node.viewed == 0)){
             Omadi.service.setNodeViewed(nid);
         }
     }
