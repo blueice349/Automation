@@ -750,6 +750,101 @@ Omadi.bundles.dispatch.updateStatus = function(nid, status, background){"use str
     }
 };
 
+Omadi.bundles.dispatch.discontinueJob = function(nid, status, background){"use strict";
+    var dialog, http;
+    
+    if(typeof background === 'undefined'){
+        background = false;
+    }
+    
+    if(!Ti.Network.online){
+        dialog = Ti.UI.createOptionDialog({
+            message : 'Your Internet connection was lost. Please try again after you get an Internet connection.'
+        });
+        
+        if ( typeof alertQueue !== 'undefined') {
+            alertQueue.push(dialog);
+        }
+        else {
+            dialog.show();
+        }
+        
+        if(background){
+          // TODO: update the dispatch node in the local database and set the dispatch timestmap and status  
+        }
+    }
+    else{
+        
+        if(!background){
+            Omadi.display.loading('Updating...');
+        }
+        
+        Omadi.data.setUpdating(true);
+        
+        http = Ti.Network.createHTTPClient({
+            enableKeepAlive: false,
+            validatesSecureCertificate: false
+        });
+        http.setTimeout(15000);
+        http.open('POST', Omadi.DOMAIN_NAME + '/js-dispatch/dispatch/discontinue_job.json');
+    
+        http.setRequestHeader("Content-Type", "application/json");
+        Omadi.utils.setCookieHeader(http);
+    
+        http.onload = function(e) {
+            var json;
+            
+            Omadi.display.doneLoading();
+            
+            if (this.responseText !== null && isJsonString(this.responseText) === true) {
+        
+                Omadi.service.fetchedJSON = JSON.parse(this.responseText);            
+                Omadi.data.processFetchedJson();
+                
+                if(!background && !Omadi.service.fetchedJSON.dispatch_update_status.success){
+                    alert(Omadi.service.fetchedJSON.dispatch_update_status.text);
+                }
+            }
+            else{
+                if(!background){
+                    alert("The status was not updated because an unknown error occurred.");
+                }
+                Omadi.service.sendErrorReport("Bad response text for discontinue job: " + this.responseText);
+            }
+    
+            Omadi.data.setUpdating(false);
+            Ti.App.fireEvent('omadi:finishedDataSync');
+        };
+    
+        http.onerror = function(e) {
+            var dialog;
+            
+            Omadi.display.doneLoading();
+    
+            dialog = Ti.UI.createAlertDialog({
+                message : 'An error occured. Please try again.',
+                buttonNames: ['OK']
+            });
+            
+            if(!background){
+                if ( typeof alertQueue !== 'undefined') {
+                    alertQueue.push(dialog);
+                }
+                else {
+                    dialog.show();
+                }
+            }
+            
+            Omadi.service.sendErrorReport('Could not discontinue job: ' + JSON.stringify(e));
+        };
+        
+        http.send(JSON.stringify({
+            nid: nid,
+            status: status
+        }));
+    }
+};
+
 Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
     
     var http, dialog, nid = 0, node, statusDialog, statusOptions, options, i;
@@ -844,6 +939,69 @@ Omadi.bundles.dispatch.showUpdateStatusDialog = function(args){"use strict";
     }
 };
 
+Omadi.bundles.dispatch.showDiscontinueJobDialog = function(args){"use strict";
+    
+    var http, dialog, nid = 0, node, discontinueDialog, discontinueOptions, options, i, discontinueInstances;
+    
+    if(typeof args[0] !== 'undefined'){
+        nid = args[0];
+    }
+    
+    if(nid != 0){
+        
+        discontinueInstances = Omadi.data.getFields('dispatch');
+        if(typeof discontinueInstances.job_discontinued !== 'undefined'){
+            Ti.API.debug("has job discontinued");
+            
+            discontinueOptions = Omadi.widgets.list_text.getOptions(discontinueInstances.job_discontinued);
+            
+            if(discontinueOptions.length > 0){
+                
+                if(discontinueOptions[0].dbValue == null){
+                    // Remove the first element if it is null
+                    discontinueOptions.shift();
+                }
+                
+                Ti.API.debug("Options: " + JSON.stringify(discontinueOptions));
+                
+                options = [];
+                for(i = 0; i < discontinueOptions.length; i ++){
+                    options.push(discontinueOptions[i].title);
+                }
+                
+                options.push('Cancel');
+                
+                discontinueDialog = Ti.UI.createOptionDialog({
+                   title: 'Update Job Status To',
+                   options: options,
+                   cancel: (options.length - 1)
+                });
+                
+                discontinueDialog.addEventListener('click', function(e){
+                    try{
+                        if(e.index >= 0 && e.index != e.source.cancel){
+                            var status = discontinueOptions[e.index].dbValue;
+                            Omadi.bundles.dispatch.discontinueJob(nid, status);
+                        }
+                    }
+                    catch(ex){
+                        Omadi.service.sendErrorReport("Exception updating job status: " + ex);
+                    }
+                });
+                
+                discontinueDialog.show();
+            }
+        }
+        else{
+            alert("Job Discontinued is not setup correctly in your system. Please contact an adminitrator.");    
+        }
+    }
+    else{
+        Omadi.service.sendErrorReport('No NID to discontinue job');
+        alert("An unknown error occurred attempting to discontinue the job.");
+    }  
+};
+
 Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
     var newJobs, db, result, sql, nowTimestamp, dispatchBundle, newDispatchNids, i, 
         jobDiscontinued, nid, title, viewed, type, changed;
@@ -896,7 +1054,8 @@ Omadi.bundles.dispatch.getNewJobs = function(){"use strict";
 
 Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
     var newJobs, db, result, sql, nowTimestamp, currentUserUid, 
-        i, nid, title, viewed, type, dispatchBundle, jobDiscontinued, changed, isDiscontinued;
+        i, nid, title, viewed, type, dispatchBundle, jobDiscontinued, 
+        changed, isDiscontinued, dispatchChanged;
     
     nowTimestamp = Omadi.utils.getUTCTimestamp();
     newJobs = [];
@@ -907,8 +1066,9 @@ Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
         currentUserUid = Omadi.utils.getUid();
         db = Omadi.utils.openMainDatabase();
         
-        sql = "SELECT n.nid, n.title, n.viewed, n.table_name, dispatch.job_discontinued, n.changed FROM dispatch ";
+        sql = "SELECT n.nid, n.title, n.viewed, n.table_name, dispatch.job_discontinued, n.changed, n_dispatch.changed AS dispatch_changed FROM dispatch ";
         sql += "INNER JOIN node n ON n.dispatch_nid = dispatch.nid ";
+        sql += "LEFT JOIN node n_dispatch ON n_dispatch.nid = dispatch.nid ";
         sql += "WHERE n.dispatch_nid > 0 ";
         sql += "AND n.flag_is_updated != 4 ";
         sql += "AND dispatch.dispatched_to_driver = " + currentUserUid + " "; 
@@ -917,35 +1077,43 @@ Omadi.bundles.dispatch.getCurrentUserJobs = function(){"use strict";
         result = db.execute(sql);
         
         while(result.isValidRow()){
-            jobDiscontinued = result.fieldByName('job_discontinued');
-            nid = result.fieldByName('nid');
-            title = result.fieldByName('title');
-            viewed = result.fieldByName('viewed');
-            type = result.fieldByName('table_name');
-            
-            if(jobDiscontinued != null && jobDiscontinued > ""){
-                // This job has been discontinued
-                changed = result.fieldByName('changed', Ti.Database.FIELD_TYPE_INT);
-                if(nowTimestamp - changed < 900){
-                    // Only show the job if it was changed in the last 15 minutes
+            try{
+                jobDiscontinued = result.fieldByName('job_discontinued');
+                nid = result.fieldByName('nid');
+                title = result.fieldByName('title');
+                viewed = result.fieldByName('viewed');
+                type = result.fieldByName('table_name');
+                
+                if(jobDiscontinued != null && jobDiscontinued > ""){
+                    // This job has been discontinued
+                    changed = result.fieldByName('changed', Ti.Database.FIELD_TYPE_INT);
+                    dispatchChanged = result.fieldByName('dispatch_changed', Ti.Database.FIELD_TYPE_INT);
+                    
+                    if(nowTimestamp - changed < 900 || nowTimestamp - dispatchChanged < 900){
+                        // Only show the job if it was changed in the last 15 minutes
+                        newJobs.push({
+                           nid: nid,
+                           title: title,
+                           viewed: viewed,
+                           type: type,
+                           isDiscontinued: true
+                        });
+                    }
+                }
+                else{
                     newJobs.push({
                        nid: nid,
                        title: title,
                        viewed: viewed,
                        type: type,
-                       isDiscontinued: true
+                       isDiscontinued: false
                     });
                 }
             }
-            else{
-                newJobs.push({
-                   nid: nid,
-                   title: title,
-                   viewed: viewed,
-                   type: type,
-                   isDiscontinued: false
-                });
+            catch(ex){
+                Omadi.service.sendErrorReport("Could not load dispatch job: " + ex);
             }
+            
             result.next();
         }
         result.close();

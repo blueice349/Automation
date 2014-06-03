@@ -127,8 +127,11 @@ LocationWidget.prototype.setupNewElement = function(index){"use strict";
             }
         }
         
-        if (dbValue == "" && typeof this.instance.settings.state_default_value !== 'undefined') {
-            dbValue = this.instance.state_default_value;
+        Ti.API.error("Location: " + JSON.stringify(this.instance.settings));
+        Ti.API.error("dbValue: *" + dbValue + "*");
+        
+        if ((dbValue == "" || dbValue == null) && typeof this.instance.settings.state_default_value !== 'undefined') {
+            dbValue = this.instance.settings.state_default_value;
         }
 
         if (dbValue > "") {
@@ -138,6 +141,26 @@ LocationWidget.prototype.setupNewElement = function(index){"use strict";
                     break;
                 }
             }
+        }
+    }
+    else if(part == 'city'){
+        dbValue = "";
+        textValue = "";
+        if (typeof this.node[real_field_name] !== 'undefined') {
+            if (typeof this.node[real_field_name].parts[part].textValue !== 'undefined') {
+                dbValue = textValue = this.node[real_field_name].parts[part].textValue;
+            }
+        }
+        else if(typeof this.node[this.instance.field_name] !== 'undefined'){
+            if(typeof this.node[this.instance.field_name].textValues !== 'undefined'){
+                if(typeof this.node[this.instance.field_name].textValues[0] !== 'undefined'){
+                     dbValue = textValue = this.node[this.instance.field_name].textValues[0];    
+                }
+            }
+        }
+        
+        if ((dbValue == "" || dbValue == null) && typeof this.instance.settings.city_default_value !== 'undefined') {
+            dbValue = textValue = this.instance.settings.city_default_value;
         }
     }
     else {

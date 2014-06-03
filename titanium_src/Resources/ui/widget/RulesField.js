@@ -237,7 +237,7 @@ RulesFieldWidget.prototype.getNewElement = function(index){"use strict";
                     Ti.API.debug("is not string again");
                 }
                 
-                Ti.API.debug(JSON.stringify(nodeValue));
+                //Ti.API.debug(JSON.stringify(nodeValue));
                 
                 if (Omadi.utils.isArray(nodeValue)) {
 
@@ -248,7 +248,7 @@ RulesFieldWidget.prototype.getNewElement = function(index){"use strict";
                         db = Omadi.utils.openMainDatabase();
 
                         for ( i = 0; i < nodeValue.length; i++) {
-                            Ti.API.debug(i);
+                            //Ti.API.debug(i);
                             try{
                                 violation_name = '- ALL OTHER VIOLATIONS -';
                                 if (!isNaN(nodeValue[i].tid)) {
@@ -283,7 +283,8 @@ RulesFieldWidget.prototype.getNewElement = function(index){"use strict";
                                     width : 23,
                                     details : nodeValue[i],
                                     formTypes : formTypes,
-                                    text : violation_name
+                                    text : violation_name,
+                                    instance : this.instance
                                 });
     
                                 row.label = Ti.UI.createLabel({
@@ -297,7 +298,8 @@ RulesFieldWidget.prototype.getNewElement = function(index){"use strict";
                                     ellipsize : true,
                                     wordWrap : false,
                                     details : nodeValue[i],
-                                    formTypes : formTypes
+                                    formTypes : formTypes,
+                                    instance : this.instance
                                 });
     
                                 row.add(row.image);
@@ -337,20 +339,22 @@ RulesFieldWidget.prototype.getNewElement = function(index){"use strict";
 };
 
 RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
-    var detail_popup, translucent, table_format_bg, headerRow0, headerRowLabel, headerRow, 
-        forms, desc, detail_row, dttm, formsView, formsViewLabel, detailsVal, forms_str, i, 
-        dttmViewLabel, dttmView, descView, descViewLabel;
+    var detail_popup, translucent, table_format_bg, headerRow0, headerRowLabel, 
+            headerRow, forms, desc, detail_row, dttm, formsView, formsViewLabel, detailsVal, 
+            forms_str, i, dttmViewLabel, dttmView, descView, descViewLabel, closeLabel;
+
     try{
         if (Ti.App.isAndroid) {
             Ti.UI.Android.hideSoftKeyboard();
+            //Ti.API.info("hide keyboard in row click listener");
         }
-    
+
         detail_popup = Ti.UI.createWindow({
             modal: true,
             navBarHidden: true,
             orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
         });
-    
+
         translucent = Ti.UI.createView({
             left: 0,
             right: 0,
@@ -359,26 +363,26 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
         });
         
         detail_popup.add(translucent);
-    
+
         table_format_bg = Ti.UI.createView({
             backgroundColor : '#FFF',
             borderColor : '#424242',
             borderWidth : 1,
             left : 4,
             right : 4,
-            height : '250'
+            height : 290
             //layout: 'vertical'
         });
         detail_popup.add(table_format_bg);
-    
+
         headerRow0 = Ti.UI.createView({
             top : 0,
             height : 30,
             width : Ti.Platform.displayCaps.platformWidth - 8,
             layout : 'horizontal',
-            backgroundImage : '/images/header.png'
+            backgroundGradient: Omadi.display.backgroundGradientBlue
         });
-    
+
         headerRowLabel = Ti.UI.createLabel({
             text : e.source.text,
             height : Ti.UI.SIZE,
@@ -393,10 +397,10 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
             wordWrap : false,
             textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
         });
-    
+
         table_format_bg.add(headerRow0);
         headerRow0.add(headerRowLabel);
-    
+
         headerRow = Ti.UI.createView({
             top : 33,
             height : 42,
@@ -404,12 +408,12 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
             layout : 'horizontal'
         });
         table_format_bg.add(headerRow);
-    
+
         forms = Ti.UI.createLabel({
             text : 'Forms',
             height : 38,
             width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
-            backgroundImage : '/images/header.png',
+            backgroundGradient: Omadi.display.backgroundGradientGray,
             font : {
                 fontSize : 16,
                 fontWeight : 'bold'
@@ -418,12 +422,12 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
             textAlign : 'center'
         });
         headerRow.add(forms);
-    
+
         dttm = Ti.UI.createLabel({
-            text : 'Date/Time Rules',
+            text : 'Time Rules',
             height : 38,
             width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
-            backgroundImage : '/images/header.png',
+            backgroundGradient: Omadi.display.backgroundGradientGray,
             font : {
                 fontSize : 16,
                 fontWeight : 'bold'
@@ -433,12 +437,12 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
             textAlign : 'center'
         });
         headerRow.add(dttm);
-    
+
         desc = Ti.UI.createLabel({
             text : 'Description',
             height : 38,
             width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
-            backgroundImage : '/images/header.png',
+            backgroundGradient: Omadi.display.backgroundGradientGray,
             font : {
                 fontFamily : 'Helvetica Neue',
                 fontSize : 16,
@@ -449,7 +453,7 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
             textAlign : 'center'
         });
         headerRow.add(desc);
-    
+
         detail_row = Ti.UI.createView({
             width : Ti.Platform.displayCaps.platformWidth - 16,
             top : 75,
@@ -457,7 +461,27 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
             layout : 'horizontal'
         });
         table_format_bg.add(detail_row);
-    
+        
+        closeLabel = Ti.UI.createLabel({
+           text: 'Close',
+           color: '#eee',
+           backgroundGradient: Omadi.display.backgroundGradientBlue,
+           font: {
+               fontSize: 18,
+               fontWeight: 'bold'
+           },
+           width: Ti.UI.FILL,
+           top: 250,
+           height: 40,
+           textAlign: Ti.UI.TEXT_ALIGNMENT_CENTER
+        });
+        
+        closeLabel.addEventListener('click', function(){
+            detail_popup.close();
+        });
+        
+        table_format_bg.add(closeLabel);
+
         formsView = Ti.UI.createScrollView({
             height : 175,
             contentHeight : 'auto',
@@ -479,10 +503,10 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
             textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT
         });
         formsView.add(formsViewLabel);
-    
+
         detailsVal = e.source.details;
         forms_str = '- All -';
-    
+
         if (typeof e.source.formTypes !== 'undefined' && typeof e.source.formTypes.length !== 'undefined'){
             
             if(e.source.formTypes.length < 4 && e.source.formTypes.length > 0) {
@@ -497,7 +521,7 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
         }
         
         formsViewLabel.text = forms_str;
-    
+
         dttmView = Ti.UI.createScrollView({
             height : 170,
             contentHeight : 'auto',
@@ -526,7 +550,7 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
             
             dttmView.add(dttmViewLabel);
         }
-    
+
         descView = Ti.UI.createScrollView({
             height : 175,
             contentHeight : 'auto',
@@ -553,16 +577,248 @@ RulesFieldWidget.prototype.showDetail = function(e) {"use strict";
             descView.add(descViewLabel);
         }
         
+        try{
+            Widget[e.source.instance.field_name].formObj.unfocusField();
+        }
+        catch(ex1){}
+        
         detail_popup.open();
     }
     catch(ex){
-        Omadi.service.sendErrorReport("Exception in showing rules field details: " + ex);
+        Omadi.service.sendErrorReport("Could not show the details for a rules: " + ex);   
     }
+        //Ti.UI.currentWindow.add(detail_popup);
+
+        // translucent.addEventListener('click', function(ent) {
+            // Ti.UI.currentWindow.remove(detail_popup);
+        // });
+
+    // var detail_popup, translucent, table_format_bg, headerRow0, headerRowLabel, headerRow, 
+        // forms, desc, detail_row, dttm, formsView, formsViewLabel, detailsVal, forms_str, i, 
+        // dttmViewLabel, dttmView, descView, descViewLabel;
+    // try{
+        // if (Ti.App.isAndroid) {
+            // Ti.UI.Android.hideSoftKeyboard();
+        // }
+//     
+        // detail_popup = Ti.UI.createWindow({
+            // modal: true,
+            // navBarHidden: true,
+            // orientationModes: [Ti.UI.PORTRAIT, Ti.UI.LANDSCAPE_LEFT, Ti.UI.LANDSCAPE_RIGHT, Ti.UI.UPSIDE_PORTRAIT]
+        // });
+//     
+        // translucent = Ti.UI.createView({
+            // left: 0,
+            // right: 0,
+            // top: 0,
+            // bottom: 0
+        // });
+//         
+        // detail_popup.add(translucent);
+//     
+        // table_format_bg = Ti.UI.createView({
+            // backgroundColor : '#FFF',
+            // borderColor : '#424242',
+            // borderWidth : 1,
+            // left : 4,
+            // right : 4,
+            // height : '250'
+            // //layout: 'vertical'
+        // });
+        // detail_popup.add(table_format_bg);
+//     
+        // headerRow0 = Ti.UI.createView({
+            // top : 0,
+            // height : 30,
+            // width : Ti.Platform.displayCaps.platformWidth - 8,
+            // layout : 'horizontal',
+            // backgroundImage : '/images/header.png'
+        // });
+//     
+        // headerRowLabel = Ti.UI.createLabel({
+            // text : e.source.text,
+            // height : Ti.UI.SIZE,
+            // width : '100%',
+            // color : '#fff',
+            // top : 5,
+            // font : {
+                // fontSize : 18,
+                // fontWeight : 'bold'
+            // },
+            // ellipsize : true,
+            // wordWrap : false,
+            // textAlign : Ti.UI.TEXT_ALIGNMENT_CENTER
+        // });
+//     
+        // table_format_bg.add(headerRow0);
+        // headerRow0.add(headerRowLabel);
+//     
+        // headerRow = Ti.UI.createView({
+            // top : 33,
+            // height : 42,
+            // width : Ti.Platform.displayCaps.platformWidth - 16,
+            // layout : 'horizontal'
+        // });
+        // table_format_bg.add(headerRow);
+//     
+        // forms = Ti.UI.createLabel({
+            // text : 'Forms',
+            // height : 38,
+            // width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
+            // backgroundImage : '/images/header.png',
+            // font : {
+                // fontSize : 16,
+                // fontWeight : 'bold'
+            // },
+            // color : '#fff',
+            // textAlign : 'center'
+        // });
+        // headerRow.add(forms);
+//     
+        // dttm = Ti.UI.createLabel({
+            // text : 'Date/Time Rules',
+            // height : 38,
+            // width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
+            // backgroundImage : '/images/header.png',
+            // font : {
+                // fontSize : 16,
+                // fontWeight : 'bold'
+            // },
+            // left : 1,
+            // color : '#fff',
+            // textAlign : 'center'
+        // });
+        // headerRow.add(dttm);
+//     
+        // desc = Ti.UI.createLabel({
+            // text : 'Description',
+            // height : 38,
+            // width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
+            // backgroundImage : '/images/header.png',
+            // font : {
+                // fontFamily : 'Helvetica Neue',
+                // fontSize : 16,
+                // fontWeight : 'bold'
+            // },
+            // left : 1.5,
+            // color : '#fff',
+            // textAlign : 'center'
+        // });
+        // headerRow.add(desc);
+//     
+        // detail_row = Ti.UI.createView({
+            // width : Ti.Platform.displayCaps.platformWidth - 16,
+            // top : 75,
+            // height : 175,
+            // layout : 'horizontal'
+        // });
+        // table_format_bg.add(detail_row);
+//     
+        // formsView = Ti.UI.createScrollView({
+            // height : 175,
+            // contentHeight : 'auto',
+            // scrollType : 'vertical',
+            // showVerticalScrollIndicator : true,
+            // width : (Ti.Platform.displayCaps.platformWidth - 20) / 3
+        // });
+        // detail_row.add(formsView);
+        // formsViewLabel = Ti.UI.createLabel({
+            // top : 0,
+            // left : 5,
+            // right : 5,
+            // height : Ti.UI.SIZE,
+            // color : '#1c1c1c',
+            // font : {
+                // fontFamily : 'Helvetica Neue',
+                // fontSize : 16
+            // },
+            // textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT
+        // });
+        // formsView.add(formsViewLabel);
+//     
+        // detailsVal = e.source.details;
+        // forms_str = '- All -';
+//     
+        // if (typeof e.source.formTypes !== 'undefined' && typeof e.source.formTypes.length !== 'undefined'){
+//             
+            // if(e.source.formTypes.length < 4 && e.source.formTypes.length > 0) {
+                // forms_str = '';
+                // for (i = 0; i < e.source.formTypes.length; i++) {
+                    // forms_str += e.source.formTypes[i] + ((i == e.source.formTypes.length - 1) ? "" : ", ");
+                // }
+            // }
+        // }
+        // else{
+            // forms_str = '- NONE -';
+        // }
+//         
+        // formsViewLabel.text = forms_str;
+//     
+        // dttmView = Ti.UI.createScrollView({
+            // height : 170,
+            // contentHeight : 'auto',
+            // scrollType : 'vertical',
+            // showVerticalScrollIndicator : true,
+            // width : (Ti.Platform.displayCaps.platformWidth - 20) / 3,
+            // left : 1
+        // });
+//         
+        // detail_row.add(dttmView);
+//         
+        // if(typeof detailsVal.time_rules !== 'undefined'){
+            // dttmViewLabel = Ti.UI.createLabel({
+                // top : 0,
+                // left : 5,
+                // right : 5,
+                // text : getTimeRulesText(detailsVal.time_rules),
+                // height : Ti.UI.SIZE,
+                // color : '#1c1c1c',
+                // font : {
+                    // fontFamily : 'Helvetica Neue',
+                    // fontSize : 16
+                // },
+                // textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT
+            // });
+//             
+            // dttmView.add(dttmViewLabel);
+        // }
+//     
+        // descView = Ti.UI.createScrollView({
+            // height : 175,
+            // contentHeight : 'auto',
+            // scrollType : 'vertical',
+            // showVerticalScrollIndicator : true,
+            // left : 2,
+            // width : (Ti.Platform.displayCaps.platformWidth - 20) / 3
+        // });
+        // detail_row.add(descView);
+//         
+        // if(typeof detailsVal.description !== 'undefined'){
+            // descViewLabel = Ti.UI.createLabel({
+                // top : 0,
+                // left : 5,
+                // right : 5,
+                // text : detailsVal.description,
+                // height : Ti.UI.SIZE,
+                // color : '#1c1c1c',
+                // font : {
+                    // fontSize : 16
+                // },
+                // textAlign : Ti.UI.TEXT_ALIGNMENT_LEFT
+            // });
+            // descView.add(descViewLabel);
+        // }
+//         
+        // detail_popup.open();
+    // }
+    // catch(ex){
+        // Omadi.service.sendErrorReport("Exception in showing rules field details: " + ex);
+    // }
 };
 
 RulesFieldWidget.prototype.cleanUp = function(){"use strict";
     var i, j;
-    Ti.API.debug("in rules widget cleanup");
+    //Ti.API.debug("in rules widget cleanup");
     
     try{
         
@@ -582,7 +838,7 @@ RulesFieldWidget.prototype.cleanUp = function(){"use strict";
         this.nodeElement = null;
         this.instance = null;
         
-        Ti.API.debug("At end of rules widget cleanup");
+        //Ti.API.debug("At end of rules widget cleanup");
     }
     catch(ex){
         try{

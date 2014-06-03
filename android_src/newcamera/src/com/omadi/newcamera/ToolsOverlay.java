@@ -240,8 +240,12 @@ public class ToolsOverlay extends RelativeLayout implements Camera.AutoFocusCall
 								}
 							}
 								
+							try{
+								System.setProperty("OMADI_FLASH", localCameraParams.getFlashMode());
+							}
+							catch(Exception e){
 								
-							System.setProperty("OMADI_FLASH", localCameraParams.getFlashMode());
+							}
 							
 							if(is != null){
 								bitmap = BitmapFactory.decodeStream(is);

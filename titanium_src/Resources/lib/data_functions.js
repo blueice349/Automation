@@ -1342,7 +1342,6 @@ Omadi.data.nodeLoad = function(nid) {"use strict";
                                         case 'file':
                                         case 'datestamp':
                                         case 'omadi_time':
-                                            Ti.API.debug("Loading: " + field_name + " " + dbValue);
                                             
                                             if (!Omadi.utils.isEmpty(dbValue)) {
                                                 dbValue = parseInt(dbValue, 10);
@@ -2440,7 +2439,7 @@ Omadi.data.resetDatabases = function(){"use strict";
 
 
 Omadi.data.processFetchedJson = function(){"use strict";
-    var nodeType, mainDB, gpsDB, dbFile, tableName, GMT_OFFSET, dialog, newNotifications, numItems;
+    var nodeType, mainDB, gpsDB, dbFile, tableName, GMT_OFFSET, dialog, newNotifications, numItems, secondDifference;
     
     try {
         //Parses response into strings
@@ -2457,6 +2456,18 @@ Omadi.data.processFetchedJson = function(){"use strict";
             
             //If delete_all is present, delete all contents:
             Omadi.data.resetDatabases();
+        }
+        else{
+            
+            // Setup the timestamp offset to be used when saving UTC timestamps to the mobile database
+            secondDifference = parseInt(Omadi.service.fetchedJSON.current_server_timestamp, 10);
+            if(!isNaN(secondDifference)){
+                secondDifference -= Omadi.utils.getUTCTimestamp();
+                
+                if(secondDifference){
+                    Ti.App.Properties.setDouble("service:serverTimestampOffset", secondDifference);
+                }
+            }
         }
 
         numItems = parseInt(Omadi.service.fetchedJSON.total_item_count, 10);

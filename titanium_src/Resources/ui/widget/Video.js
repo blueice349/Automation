@@ -594,7 +594,7 @@ VideoWidget.prototype.saveFileInfo = function(imageView, filePath, thumbPath, de
         imageView.filePath = filePath;   
         imageView.thumbPath = thumbPath;
         
-        timestamp = Omadi.utils.getUTCTimestamp();
+        timestamp = Omadi.utils.getUTCTimestampServerCorrected();
         fieldName = imageView.instance.field_name;
         imageIndex = imageView.imageIndex;
         

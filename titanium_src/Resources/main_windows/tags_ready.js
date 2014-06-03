@@ -211,7 +211,7 @@ function showSpecificTags(tags, title){"use strict";
 
 (function(){"use strict";
     var expiredTags, data, i, row, textView, rowImg, titleLabel, backgroundColor, 
-        currentAccountName, tableSection, accountTags;
+        currentAccountName, tableSection, accountTags, accountTagsArray;
     
     Ti.App.removeEventListener("savedNode", savedNodeTagsReady);
     Ti.App.addEventListener("savedNode", savedNodeTagsReady);
@@ -222,34 +222,43 @@ function showSpecificTags(tags, title){"use strict";
     expiredTags = Omadi.bundles.tag.getExpiredTags();
     
     accountTags = {};
-    for(i = 0; i < expiredTags.length; i ++){
-        
-        if(typeof accountTags[expiredTags[i].account_name] === 'undefined'){
-            accountTags[expiredTags[i].account_name] = [];
-        }   
-        
-        accountTags[expiredTags[i].account_name].push(expiredTags[i]);
+    for(i in expiredTags){
+        if(expiredTags.hasOwnProperty(i)){
+            if(expiredTags[i] !== null){
+                
+                if(typeof accountTags[expiredTags[i].account_name] === 'undefined'){
+                    accountTags[expiredTags[i].account_name] = [];
+                }  
+                
+                accountTags[expiredTags[i].account_name].push(expiredTags[i]);
+            }
+        }
     }
     
     data = [];
-    
+    accountTagsArray = [];
     for(i in accountTags){
         if(accountTags.hasOwnProperty(i)){
-        
-            row = Ti.UI.createTableViewRow({
-                width: '100%',
-                height: 40,
-                tags: accountTags[i],
-                title: i + " (" + accountTags[i].length + ")",
-                color: '#000',
-                font: {
-                    fontSize: 18,
-                    fontWeight: 'bold'
-                }
-            });
-            
-            data.push(row);
+            accountTagsArray.push(accountTags[i]);
         }
+    }
+    
+    accountTagsArray = accountTagsArray.sort(function(a, b){return (a[0].account_name < b[0].account_name) ? -1 : 1; });
+    
+    for(i = 0; i < accountTagsArray.length; i ++){
+        row = Ti.UI.createTableViewRow({
+            width: '100%',
+            height: 40,
+            tags: accountTagsArray[i],
+            title: accountTagsArray[i][0].account_name + " (" + accountTagsArray[i].length + ")",
+            color: '#000',
+            font: {
+                fontSize: 18,
+                fontWeight: 'bold'
+            }
+        });
+        
+        data.push(row);
     }
     
     wrapperView = Ti.UI.createView({

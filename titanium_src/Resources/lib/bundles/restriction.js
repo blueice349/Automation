@@ -3,6 +3,66 @@
 
 Omadi.bundles.restriction = {};
 
+Omadi.bundles.restriction.getCurrentRestrictions = function(){"use strict";
+    var restricted, timestamp, query, nid, i, j, nodes, node, accountNids, licensePlate, vin, 
+        db, result, restrictionBundle, restrictions, accountNid;
+    
+    restrictions = {};
+    
+    restrictionBundle = Omadi.data.getBundle('restriction');
+    
+    if(restrictionBundle){
+       
+        timestamp = Omadi.utils.getUTCTimestamp();
+         
+        try{ 
+            query = 'SELECT restriction_account, restriction_license_plate___plate, vin, restrict_entire_account, restriction_start_date, restriction_end_date ';
+            query += ' FROM restriction ';
+            query += ' WHERE ((restriction_start_date < ' + timestamp + ' OR restriction_start_date IS NULL) ';
+            query += ' AND (restriction_end_date > ' + timestamp + ' OR restriction_end_date IS NULL))';
+            
+            db = Omadi.utils.openMainDatabase();
+            result = db.execute(query);
+            
+            while (result.isValidRow()) {
+                
+                accountNid = result.fieldByName('restriction_account');
+                
+                if(typeof restrictions[accountNid] === 'undefined'){
+                    restrictions[accountNid] = {};
+                    restrictions[accountNid].license_plates = [];
+                    restrictions[accountNid].vins = [];
+                    restrictions[accountNid].restrict_entire_account = false;
+                }
+                
+                licensePlate = result.fieldByName('restriction_license_plate___plate', Ti.Database.FIELD_TYPE_STRING);
+                vin = result.fieldByName('vin', Ti.Database.FIELD_TYPE_STRING);
+                
+                if(("".toString() + licensePlate).length > 0){
+                    restrictions[accountNid].license_plates.push(licensePlate.toUpperCase());
+                }
+                
+                if(("".toString() + vin).length > 0){
+                    restrictions[accountNid].vins.push(vin);
+                }
+                
+                if(result.fieldByName('restrict_entire_account') == 1){
+                    restrictions[accountNid].restrict_entire_account = true;
+                }
+                                
+                result.next();
+            }
+            result.close();
+            db.close();
+        }
+        catch(ex){
+            Omadi.service.sendErrorReport("Exception getting restrictions: " + ex);
+        }
+    }
+        
+    return restrictions;
+};
+
 Omadi.bundles.restriction.getRestricted = function(nids){"use strict";
     var restricted, timestamp, query, nid, i, j, nodes, node, accountNids, licensePlate, vin, 
         db, result, restrictionBundle, restrictions, accountNid;

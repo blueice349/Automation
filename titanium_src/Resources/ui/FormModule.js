@@ -2370,7 +2370,7 @@ FormModule.prototype.initNewNode = function(){"use strict";
     var uid, now;
     try{
         uid = Omadi.utils.getUid();
-        now = Omadi.utils.getUTCTimestamp();
+        now = Omadi.utils.getUTCTimestampServerCorrected();
         
         if(typeof this.form_part === 'undefined'){
             Ti.API.error("form part is undefined!!!: " + this.type);

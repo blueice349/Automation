@@ -520,7 +520,7 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
     var entity, final_value, row_values, idx, calculation_row, value, field_1_multiplier,
         field_2_multiplier, numeric_multiplier, cached_final_value, instances, required_instance_final_values,
         parent_field, start_timestamp, end_timestamp, difference, at_time, relative_increment_time, day_count, 
-        parent_node, zero, criteria_index, field_name, finalValue, priceIdx;
+        parent_node, zero, criteria_index, field_name, innerFinalValue, priceIdx;
     
     cached_final_value = 0;
     final_value = 0;
@@ -650,6 +650,8 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
                                     end_timestamp = Omadi.utils.getUTCTimestamp();   
                                 }
                                 
+                               
+                                
                                 Ti.API.info("end timestamp: " + end_timestamp);
                                 
                                 if (calculation_row.type == 'time-only') {
@@ -763,13 +765,13 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
                                             
                                             if(typeof CalculatedFieldCache[field_name] !== 'undefined'){
                                                 // Use the cached value if available
-                                                finalValue = CalculatedFieldCache[field_name];
+                                                innerFinalValue = CalculatedFieldCache[field_name];
                                             }
                                             else{
                                                 // Calculate the value of the search criteria value
                                                 required_instance_final_values = this.getRowValues(instances[field_name]);
-                                                finalValue = required_instance_final_values[0].final_value;  
-                                                CalculatedFieldCache[field_name] = finalValue;
+                                                innerFinalValue = required_instance_final_values[0].final_value;  
+                                                CalculatedFieldCache[field_name] = innerFinalValue;
                                             }
                                             
                                             // TODO: make sure the node is a reference, not just a value, as nested calls to this could result in incorrect calculations
@@ -780,7 +782,7 @@ CalculationFieldWidget.prototype.getRowValues = function(instance){"use strict";
                                                 this.node[field_name].dbValues = [];
                                             }
                                             
-                                            this.node[field_name].dbValues[0] = finalValue; 
+                                            this.node[field_name].dbValues[0] = innerFinalValue; 
                                         }
                                     }
                                 }

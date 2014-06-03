@@ -211,12 +211,6 @@ Omadi.location.uploadSuccess = function(e) {"use strict";
 
     var i, j, responseObj, db, sqlArray, nids, now_timestamp, result;
 
-    //Parses response into strings
-    //Ti.API.info('onLoad for GPS coordiates reached! Here is the reply: ');
-    //Ti.API.info(this.responseText);
-    //Ti.API.info('Requested: ');
-    //Ti.API.info(json);
-
     if (isJsonString(this.responseText) === true) {
         now_timestamp = Omadi.utils.getUTCTimestamp();
 

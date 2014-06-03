@@ -1430,7 +1430,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
                                 Omadi.utils.setCookieHeader(Omadi.service.uploadFileHTTP);
                             }
                             
-                            Ti.API.debug("before payload");
+                            //Ti.API.debug("before payload");
                             
                             payload = JSON.stringify({
                                 file_data : Omadi.service.currentFileUpload.file_data,
@@ -1449,10 +1449,12 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
                                 mobile_id : Omadi.service.currentFileUpload.id,
                                 bytes_uploaded : Omadi.service.currentFileUpload.bytes_uploaded,
                                 uploading_bytes : Omadi.service.currentFileUpload.uploading_bytes,
-                                upload_part : Omadi.service.currentFileUpload.upload_part
+                                upload_part : Omadi.service.currentFileUpload.upload_part,
+                                current_timestamp : Omadi.utils.getUTCTimestamp()
                             });
                             
-                            Ti.API.debug("after payload def");
+                            
+                            //Ti.API.debug("after payload def");
                             
                             // var tempFile = Ti.Filesystem.getFile(Ti.Filesystem.applicationDataDirectory, '_temp.txt');
                             // tempFile.write(payload);
@@ -1467,7 +1469,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
                                 });
                             }
                             
-                            Ti.API.error("Sending photo to server");
+                            //Ti.API.error("Sending photo to server");
                             
                             // var file = Ti.Filesystem.getFile(Omadi.service.currentFileUpload.file_path);
                             // var blob = file.read();
@@ -1476,7 +1478,7 @@ Omadi.service.uploadFile = function(isBackground) {"use strict";
                             
                             Omadi.service.uploadFileHTTP.send(payload);
                             
-                            Ti.API.debug("after payload send");
+                            //Ti.API.debug("after payload send");
                         }
                         catch(ex2){
                             Omadi.service.sendErrorReport("Exception sending upload data: " + ex2);

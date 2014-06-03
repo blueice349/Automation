@@ -129,6 +129,23 @@ Omadi.utils.getUTCTimestamp = function() {"use strict";
     return Math.round(new Date() / 1000);
 };
 
+Omadi.utils.getUTCTimestampServerCorrected = function(){"use strict";
+    var nowServerCorrected, serverOffset;
+        
+    nowServerCorrected = Math.round(new Date() / 1000);
+    
+    serverOffset = Ti.App.Properties.getDouble("service:serverTimestampOffset", 0);
+    
+    // Add the server offset to get a more accurate timestamp += about 5 seconds
+    if(serverOffset != 0){
+        nowServerCorrected += serverOffset;
+    }
+    
+    return nowServerCorrected;
+};
+
+
+
 Omadi.utils.getUid = function(){"use strict";
     var loginJson = JSON.parse(Ti.App.Properties.getString('Omadi_session_details'));
     return parseInt(loginJson.user.uid, 10);
@@ -689,11 +706,9 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
     node_value, weekdays, reference_types, db, result, query, possibleValues, 
     searchValues, chosen_value, retval, and_groups, and_group, and_group_index, 
     and_group_match, useNids;
-
     /*jslint nomen: true*/
 
     try {
-
         row_matches = [];
         if ( typeof criteria.search_criteria !== 'undefined' && criteria.search_criteria != "") {
 
@@ -765,6 +780,12 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
                                         compare_times2[i] = search_time_value2 + Omadi.utils.mktime(0, 0, 0, Omadi.utils.PHPFormatDate('n', Number(nodeDBValues[i])), Omadi.utils.PHPFormatDate('j', Number(nodeDBValues[i])), Omadi.utils.PHPFormatDate('Y', Number(nodeDBValues[i])));
 
                                     }
+                                    
+                                    Ti.API.debug("nodeDBValues[0]: " + nodeDBValues[0]);
+                                    Ti.API.debug("search_time_value: " + search_time_value);
+                                    Ti.API.debug("search_time_value2: " + search_time_value2);
+                                    Ti.API.debug("compare_times[0]: " + compare_times[0]);
+                                    Ti.API.debug("compare_times2[0]: " + compare_times2[0]);
 
                                     if (search_time_value < search_time_value2) {
 
@@ -790,6 +811,8 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
                                             }
                                         }
                                     }
+                                    
+                                    Ti.API.debug("Checking between time: " + row_matches[criteria_index]);
                                 }
                             }
                             else if (search_operator == '__blank') {
@@ -1597,18 +1620,26 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
                 // Get the final result, making sure each and group is TRUE
                 retval = true;
 
+                Ti.API.debug("AND GROUP RESULT: " + JSON.stringify(and_groups));
+
                 for ( i = 0; i < and_groups.length; i++) {
 
                     and_group = and_groups[i];
                     and_group_match = false;
-                    for ( j = 0; j < and_group.length; j++) {
-
-                        // Make sure at least one item in an and group is true (or the only item is true)
-                        if (and_group[j]) {
-
-                            and_group_match = true;
-                            break;
+                    if(and_group.length > 0){
+                        for ( j = 0; j < and_group.length; j++) {
+    
+                            // Make sure at least one item in an and group is true (or the only item is true)
+                            if (and_group[j]) {
+    
+                                and_group_match = true;
+                                break;
+                            }
                         }
+                    }
+                    else{
+                        // If by chance an and group gets created as empty
+                        and_group_match = true;
                     }
 
                     // If one and group doesn't match the whole return value of this function is false
@@ -1630,6 +1661,74 @@ Omadi.utils.list_search_node_matches_search_criteria = function(node, criteria) 
     }
 
     return true;
+};
+
+Omadi.utils.list_search_get_search_sql = function(nodeType, criteria){"use strict";
+    var instances, criteria_index, criteria_row, field_name, instance, ANDs, innerSQL, operator, search_value, searchValues, i;
+    
+    ANDs = [];
+    
+    if ( typeof criteria.search_criteria !== 'undefined' && criteria.search_criteria != "") {
+        instances = Omadi.data.getFields(nodeType);
+
+        for (criteria_index in criteria.search_criteria) {
+            if (criteria.search_criteria.hasOwnProperty(criteria_index)) {
+
+                criteria_row = criteria.search_criteria[criteria_index];
+                field_name = criteria_row.field_name;
+                operator = criteria_row.operator + "".toString();
+                search_value = criteria_row.value != null && criteria_row.value != "" ? criteria_row.value : null;
+
+                if (instances[field_name] != null) {
+                    instance = instances[field_name];
+                    innerSQL = '';
+                    
+                    switch(instance.type){
+                       case 'taxonomy_term_reference':
+                         
+                         if (instance.widget.type == 'options_select' || instance.widget.type == 'violation_select') {
+                             searchValues = [];
+                             if (!Omadi.utils.isArray(search_value)) {
+
+                                for (i in search_value) {
+                                    if (search_value.hasOwnProperty(i)) {
+
+                                        searchValues.push(i);
+                                    }
+                                }
+                                search_value = searchValues;
+                             }
+                             
+                             if(operator == '__blank'){
+                                 innerSQL += field_name + ' IS NULL OR ' + field_name + " = ''";
+                             }
+                             else if(operator == '__filled'){
+                                 innerSQL += field_name + ' IS NOT NULL AND ' + field_name + " != ''";
+                             }
+                             else if(operator == '!='){
+                                 innerSQL += field_name + ' NOT IN (' + search_value.join(',') + ')';
+                                 innerSQL += ' AND ' + field_name + ' IS NOT NULL';
+                                 innerSQL += ' AND ' + field_name + " != ''";
+                             }
+                             // TODO: fill in other options
+                             else{
+                                 // Equal to
+                                 innerSQL += field_name + ' IN (' + search_value.join(',') + ')';
+                             }
+                         }
+                         else{
+                             // TODO: fill this in for autocomplete fields
+                         }
+                       break; 
+                    }
+                    
+                    ANDs.push(innerSQL);
+                }
+            }
+        }
+    }
+    
+    return ANDs.join(' AND ');
 };
 
 Omadi.utils.applyNumberFormat = function(instance, value) {"use strict";

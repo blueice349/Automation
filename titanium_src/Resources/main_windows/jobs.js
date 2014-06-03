@@ -188,7 +188,7 @@ function refreshJobsTable(firstTimeThrough){"use strict";
             row.add(textView);
             
             if(newJobs[i].isDiscontinued){
-                
+                Ti.API.debug("New Job Is Discontinued");
                 discontinuedView = Ti.UI.createView({
                     top: 0,
                     height: 45,
@@ -283,7 +283,7 @@ function refreshJobsTable(firstTimeThrough){"use strict";
             row.add(textView);
             
             if(currentUserJobs[i].isDiscontinued){
-                
+                Ti.API.debug("Current Job Is Discontinued");
                 discontinuedView = Ti.UI.createView({
                     top: 0,
                     height: 45,
@@ -387,6 +387,8 @@ function loggingOutJobs(){"use strict";
     refreshJobsTable(true);
     
     tableView.addEventListener('click', function(e) {
+        var extraOptions, dispatchInstances, hasEditPermissions, discontinuedInstance;
+        
         try{
             if(e.row.type == 'newJob'){
                 Omadi.display.showDialogFormOptions(e, [{
@@ -400,7 +402,8 @@ function loggingOutJobs(){"use strict";
                 }]);
             }
             else{
-                Omadi.display.showDialogFormOptions(e, [{
+                
+                extraOptions = [{
                     text: 'Update Status',
                     callback: Omadi.bundles.dispatch.showUpdateStatusDialog,
                     callbackArgs: [e.row.nid]
@@ -408,7 +411,21 @@ function loggingOutJobs(){"use strict";
                     text: 'Driving Directions',
                     callback: Omadi.bundles.dispatch.getDrivingDirections,
                     callbackArgs: [e.row.nid]
-                }]);
+                }];
+                
+                dispatchInstances = Omadi.data.getFields('dispatch');
+                if(typeof dispatchInstances.job_discontinued !== 'undefined'){
+                    
+                    if(typeof dispatchInstances.job_discontinued.can_edit !== 'undefined' && dispatchInstances.job_discontinued.can_edit){
+                        extraOptions.push({
+                            text: 'Discontinue Job',
+                            callback: Omadi.bundles.dispatch.showDiscontinueJobDialog,
+                            callbackArgs: [e.row.nid]
+                        });
+                    }
+                }
+                
+                Omadi.display.showDialogFormOptions(e, extraOptions);
             }
         }
         catch(ex){

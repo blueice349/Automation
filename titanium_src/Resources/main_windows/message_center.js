@@ -495,9 +495,30 @@ function refreshUIAlertsMessageCenter(e){"use strict";
     loadData();
 }
 
+function deleteOldAlerts(){"use strict";
+    var db, timestamp;
+    
+    // Delete last hour of alert data
+    try{
+        db = Omadi.utils.openGPSDatabase();
+        
+        // only last hour
+        timestamp = Omadi.utils.getUTCTimestamp() - (3600);
+        
+        db.execute("DELETE FROM alerts WHERE timestamp < " + timestamp);
+    }
+    catch(ex){
+        Omadi.service.sendErrorReport("Exception deleting old alerts: " + ex);
+    }
+    
+    try{
+        db.close();
+    }
+    catch(ex1){}
+}
+
 ( function() {"use strict";
 
-    
     Ti.App.removeEventListener('loggingOut', logginOutMessageCenter);
     Ti.App.addEventListener('loggingOut', logginOutMessageCenter);
     
@@ -563,7 +584,7 @@ function refreshUIAlertsMessageCenter(e){"use strict";
         }
     });
     
-    
+    deleteOldAlerts();
     
     curWin.is_opened = true;
     loadData();
@@ -582,7 +603,6 @@ function refreshUIAlertsMessageCenter(e){"use strict";
         Ti.App.removeEventListener('refresh_UI_Alerts', refreshUIAlertsMessageCenter);
         
         // Clean up memory
-        
         Ti.UI.currentWindow.remove(wrapperView);
         wrapperView = null;
         curWin = null;
