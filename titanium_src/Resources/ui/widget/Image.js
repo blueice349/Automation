@@ -144,7 +144,7 @@ ImageWidget.prototype.getNewElement = function(index){"use strict";
     imageDataAdded = [];
     numImagesShowing = 0;
 
-    if (Omadi.utils.isArray(dbValue)) {
+    if (typeof dbValue.length !== 'undefined') {
         for ( i = 0; i < dbValue.length; i++) {
             if (dbValue[i] > 0) {
                 Ti.API.debug("Adding image to scroll view");

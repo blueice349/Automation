@@ -992,7 +992,7 @@ Omadi.service.photoUploadSuccess = function(e){"use strict";
                     Ti.API.error("UPload is finished for nid " + nid + " and delta " + delta);
                     try{
                         //Finishing the file after upload so it's available on the device for printing
-                        listDB.execute("UPDATE _files SET uploading=0, finished=" + Omadi.utils.getUTCTimestamp() + " WHERE id=" + photoId);
+                        listDB.execute("UPDATE _files SET uploading=0, fid=" + json.file_id + ", finished=" + Omadi.utils.getUTCTimestamp() + " WHERE id=" + photoId);
                     }
                     catch(sqlEx2){
                         Omadi.service.sendErrorReport("Exception in upload success ex2: " + sqlEx2 + ", json: " + JSON.stringify(json));

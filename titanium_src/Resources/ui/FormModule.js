@@ -405,7 +405,7 @@ function FormModule(type, nid, form_part, usingDispatch) {"use strict";
 }
 
 FormModule.prototype.initNewWindowFromCurrentData = function(form_part){"use strict";
-    var imageNids, field_name, listDB, result;
+    var imageNids, field_name, listDB, result, fid, i, found;
     
     this.nodeSaved = false;
     
@@ -474,12 +474,38 @@ FormModule.prototype.initNewWindowFromCurrentData = function(form_part){"use str
                         
                             while (result.isValidRow()) {
                                 
-                                //Ti.API.debug("Has an image...");
+                                Ti.API.debug("Has an image...");
                                 
-                                this.node[field_name].imageData.push(result.fieldByName('file_path'));
-                                this.node[field_name].deltas.push(result.fieldByName('delta'));
-                                this.node[field_name].degrees.push(result.fieldByName('degrees', Ti.Database.FIELD_TYPE_INT));
-                                this.node[field_name].thumbData.push(result.fieldByName('thumb_path'));
+                                fid = parseInt(result.fieldByName('fid'), 10);
+                                
+                                Ti.API.debug("Image fid: " + fid);
+                            
+                                if(fid > 0){
+                                    // This image has successfully uploaded
+                                    
+                                    if(typeof this.node[field_name].dbValues !== 'undefined'){
+                                        found = false;
+                                        for(i = 0; i < this.node[field_name].dbValues.length; i ++){
+                                            if(this.node[field_name].dbValues[i] == fid){
+                                                found = true;
+                                            }
+                                        }
+                                        
+                                        if(!found){
+                                            this.node[field_name].dbValues.push(fid);
+                                        }
+                                    }
+                                    else{
+                                        this.node[field_name].dbValues = [];
+                                        this.node[field_name].push(fid);
+                                    }
+                                }
+                                else{
+                                    this.node[field_name].imageData.push(result.fieldByName('file_path'));
+                                    this.node[field_name].deltas.push(result.fieldByName('delta'));
+                                    this.node[field_name].degrees.push(result.fieldByName('degrees', Ti.Database.FIELD_TYPE_INT));
+                                    this.node[field_name].thumbData.push(result.fieldByName('thumb_path'));
+                                }
                                 
                                 result.next();
                             }
@@ -2957,54 +2983,60 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
                     options: options
                 });
                 
-                for(i = 0; i < options.length; i ++){
-                    options[i].isSelected = false;
-                }
+                Ti.API.error("in 1");
+                
                 
                 for(i = 0; i < options.length; i ++){
-                    for(j = 0; j < dbValues.length; j ++){
-                        if(dbValues[j] == options[i].dbValue){
-                            options[i].isSelected = true;
+                    if(typeof options[i] !== 'undefined' && options[i]){
+                        options[i].isSelected = false;
+                    
+                        for(j = 0; j < dbValues.length; j ++){
+                            if(dbValues[j] == options[i].dbValue){
+                                options[i].isSelected = true;
+                            }
                         }
                     }
                 }
+                
+                Ti.API.error("in 3");
                 
                 data = [];
                 selectedIndexes = [];
                 
                 for(i = 0; i < options.length; i ++){
-                    
-                    // This label must be added for the Android label color to change
-                    // Otherwise, setcolor is not defined for the row
-                    label = Ti.UI.createLabel({
-                        text: options[i].title,
-                        width: '100%',
-                        height: Ti.UI.FILL,
-                        color: (options[i].isSelected ? '#fff' : '#000'),
-                        left: 10,
-                        font: {
-                            fontSize: 16,
-                            fontWeight: 'bold'
+                    if(typeof options[i] !== 'undefined' && options[i]){
+                        // This label must be added for the Android label color to change
+                        // Otherwise, setcolor is not defined for the row
+                        label = Ti.UI.createLabel({
+                            text: options[i].title,
+                            width: '100%',
+                            height: Ti.UI.FILL,
+                            color: (options[i].isSelected ? '#fff' : '#000'),
+                            left: 10,
+                            font: {
+                                fontSize: 16,
+                                fontWeight: 'bold'
+                            }
+                        });
+                        
+                        itemRow = Ti.UI.createTableViewRow({
+                            height : 30,
+                            isSelected : options[i].isSelected,
+                            dbValue : options[i].dbValue,
+                            textValue: options[i].title,
+                            description : options[i].description,
+                            backgroundColor : (options[i].isSelected ? color_set : color_unset),
+                            label: label
+                        });
+                        
+                        itemRow.add(label);
+                
+                        if (options[i].isSelected) {
+                            numItemsSelected++;
+                            selectedIndexes.push(i);
                         }
-                    });
-                    
-                    itemRow = Ti.UI.createTableViewRow({
-                        height : 30,
-                        isSelected : options[i].isSelected,
-                        dbValue : options[i].dbValue,
-                        textValue: options[i].title,
-                        description : options[i].description,
-                        backgroundColor : (options[i].isSelected ? color_set : color_unset),
-                        label: label
-                    });
-                    
-                    itemRow.add(label);
-            
-                    if (options[i].isSelected) {
-                        numItemsSelected++;
-                        selectedIndexes.push(i);
+                        data.push(itemRow);
                     }
-                    data.push(itemRow);
                 }
                 
                 popupWinListView.setData(data);
@@ -3295,6 +3327,7 @@ FormModule.prototype.getMultipleSelector = function(fieldObject, options, dbValu
         }
    }
    catch(ex){
+       popupWin = null;
        this.sendError("Could not open multi-selector: " + instance.label + " " + ex);
    }
 };
@@ -3628,7 +3661,7 @@ FormModule.prototype.recalculateCalculationFields = function(){"use strict";
 };
 
 FormModule.prototype.setupViolationFields = function(field_name){"use strict";
-    var instance, valueWidget, widget, referenceWidget, datestampWidget;
+    var instance, valueWidget, widget, referenceWidget, datestampWidget, i;
     // NOTE: this will not work with time fields with multiple cardinality
     
     if(typeof this.instances[field_name] !== 'undefined'){
@@ -3639,6 +3672,10 @@ FormModule.prototype.setupViolationFields = function(field_name){"use strict";
             widget = instance.widget;
             
             if(typeof this.fieldWrappers[field_name] !== 'undefined'){
+                
+                if(typeof this.node[field_name].dbValues !== 'undefined'){
+                    this.origViolations = this.node[field_name].dbValues;
+                }
                 
                 if (widget.rules_field_name != null && widget.rules_field_name != "") {
                     
@@ -3747,7 +3784,7 @@ FormModule.prototype.changeViolationFieldOptions = function(args){"use strict";
     var db, result, options, textOptions, i, j, violation_instance, parentNid, parentNidDBValues, reference_field_name, 
         rules_parent_field_name, parentNodeType, rulesData, dataRow, node_type, tids, used_tids, all_others_row,
         rules_violation_time_field_name, violationTimestampValues, violation_timestamp, violationTerms, violation_term, 
-        descriptions, violationDBValues, isViolationValid, textValues, violationTextValues, origRulesData, violation_field_name;
+        descriptions, violationDBValues, isViolationValid, textValues, violationTextValues, origRulesData, violation_field_name, found;
     /*global rules_field_passed_time_check*/
     Ti.API.debug("In changeviolationfield options");
     try{
@@ -3892,6 +3929,26 @@ FormModule.prototype.changeViolationFieldOptions = function(args){"use strict";
                             }
                         }
                         
+                        // If any previous violations were already saved in this node, allow those violations to be present
+                        if(typeof this.origViolations !== 'undefined' && typeof this.origViolations.length !== 'undefined'){
+                            
+                            for(i = 0; i < this.origViolations.length; i ++){
+                                
+                                found = false;
+                                for(j = 0; j < options.length; j ++){
+                                    if(this.origViolations[i] == options[j].dbValue){
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                                
+                                if(!found){
+                                    if(typeof violationTerms[this.origViolations[i]] !== 'undefined'){
+                                        options.push(violationTerms[this.origViolations[i]]);
+                                    }
+                                }
+                            }
+                        }
                         
                         // Get rid of any violations that don't apply to this property
                         if(violationDBValues.length > 0){
@@ -3921,7 +3978,12 @@ FormModule.prototype.changeViolationFieldOptions = function(args){"use strict";
                         // Set the description for the selected violation if one exists
                         if(violationDBValues.length == 1){
                             if(typeof violationTerms[violationDBValues[0]] !== 'undefined' && typeof violationTerms[violationDBValues[0]].description !== 'undefined'){
-                                this.setValueWidgetProperty(violation_field_name, ['descriptionLabel', 'text'], violationTerms[violationDBValues[0]].description);
+                                if(violationTerms[violationDBValues[0]].description && violationTerms[violationDBValues[0]].description.length > 0){
+                                    this.setValueWidgetProperty(violation_field_name, ['descriptionLabel', 'text'], violationTerms[violationDBValues[0]].description);
+                                }
+                                else{
+                                    this.setValueWidgetProperty(violation_field_name, ['descriptionLabel', 'text'], "");
+                                }
                             }
                         }
                         else{

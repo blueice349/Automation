@@ -51,6 +51,8 @@ Omadi.push_notifications.registerAndroid = function() {"use strict";
             CloudPush.showTrayNotificationsWhenFocused = false;
             CloudPush.showAppOnTrayClick = false;
             
+            Ti.API.debug("Device Token: " + e.deviceToken);
+            
             Omadi.push_notifications.loginUser();
         },
         error: function(e){
@@ -188,9 +190,13 @@ Omadi.push_notifications.getPassword = function() {"use strict";
     return password;
 };
 
-Omadi.push_notifications.logoutUser = function() {"use strict";
+Omadi.push_notifications.logoutUser = function(callback) {"use strict";
     
     Ti.App.registeredPushListener = false;
+    
+    if(typeof callback === 'undefined'){
+        callback = null;
+    }
     
     Omadi.push_notifications.unsubscribeACSPush();
     
@@ -207,16 +213,24 @@ Omadi.push_notifications.logoutUser = function() {"use strict";
            
             Omadi.service.sendErrorReport('onACSLogout ' + JSON.stringify(e));
         }
+        
+        if(callback !== null){
+            callback();
+        }
     });
 };
 
-Omadi.push_notifications.unsubscribeACSPush = function(){"use strict";
+Omadi.push_notifications.unsubscribeACSPush = function(callback){"use strict";
     
     if(Ti.App.isAndroid){
         CloudPush.removeEventListener('callback', Omadi.push_notifications.androidPushCallback);
     }
     
-    Cloud.PushNotifications.unsubscribeToken({
+    if(typeof callback === 'undefined'){
+        callback = null;
+    }
+    
+    Cloud.PushNotifications.unsubscribe({
         device_token: Omadi.push_notifications.getUserDeviceToken()
     }, function(e){
         if(e.success){
@@ -228,15 +242,20 @@ Omadi.push_notifications.unsubscribeACSPush = function(){"use strict";
                 // do nothing
                 Ti.API.debug("Not subscribed, so unsubscribe was not needed.");
             }
-            else{
+            else if(callback === null){
+                // Only show the alert if there is no callback
+                // Callbacks are used to reset the push notifications before logging in again
                 var dialog = Ti.UI.createAlertDialog({
                     message : "There was a problem disabling push notifications. You may still receive push notifications even though you are logged out."
                 });
                 
                 dialog.show();
-                
                 Omadi.service.sendErrorReport('onACSUnsubscribe ' + JSON.stringify(e));
             }
+        }
+        
+        if(callback !== null){
+            callback();
         }
     });
 };
@@ -358,11 +377,28 @@ Omadi.push_notifications.createUser = function() {"use strict";
 
 Omadi.push_notifications.init = function() {"use strict";
     
+    // First logout any current users
+    //Omadi.push_notifications.logoutUser(Omadi.push_notifications.initAfterLogout);
+    
+    //Omadi.push_notifications.unsubscribeACSPush(Omadi.push_notifications.initAfterUnsubscribe);
+    
+    
     if(Ti.App.isAndroid){
         Omadi.push_notifications.registerAndroid();
     }
     else {
-        
+        Omadi.push_notifications.registeriOS();
+    }
+};
+
+Omadi.push_notifications.initAfterUnsubscribe = function(){"use strict";
+    
+    Ti.API.debug("in init after unsubscribe");
+    
+    if(Ti.App.isAndroid){
+        Omadi.push_notifications.registerAndroid();
+    }
+    else {
         Omadi.push_notifications.registeriOS();
     }
 };
